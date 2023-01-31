@@ -1,2 +1,2 @@
-# ProjectZomboid-Vanilla-Lua
+# ProjectZomboid Vanilla Lua
  
