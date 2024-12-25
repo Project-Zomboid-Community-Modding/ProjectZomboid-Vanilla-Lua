@@ -17,11 +17,13 @@ function ISWorldMenuElements.ContextDisassemble()
             return;
         end
         if _data.test then return true; end
-
         local validObjList = {};
         for _,object in ipairs(_data.objects) do
             local square = object:getSquare();
             if square then
+                if not SafeHouse.isSafehouseAllowInteract(square, _data.player) then
+                    return
+                end
                 local moveProps = ISMoveableSpriteProps.fromObject( object );
                 -- Check for partially-destroyed multi-tile objects.
                 if moveProps.isMultiSprite then
@@ -40,7 +42,7 @@ function ISWorldMenuElements.ContextDisassemble()
         if #validObjList == 0 then
             return
         end
-        
+
         local disassembleMenu = _data.context:addOption(getText("ContextMenu_Disassemble"), _data.player, nil);
         local subMenu = ISContextMenu:getNew(_data.context);
         _data.context:addSubMenu(disassembleMenu, subMenu);
@@ -99,7 +101,6 @@ function ISWorldMenuElements.ContextDisassemble()
 
     function self.disassemble( _data, _v )
         if _v and _v.moveProps and _v.square and _v.object then
---            print("destroying item ".._v.moveProps.name, _v.square:getObjects():contains(_v.object));
             if _v.moveProps:canScrapObject( _data.player ) and _v.square:getObjects():contains(_v.object) then
                 if _v.moveProps:walkToAndEquip( _data.player, _v.square, "scrap" ) or ISMoveableDefinitions.cheat then
                     if instanceof(_v.object,"IsoLightSwitch") and _v.object:hasLightBulb() then
@@ -111,7 +112,9 @@ function ISWorldMenuElements.ContextDisassemble()
                             ISTimedActionQueue.add(ISWalkToTimedAction:new(_data.player, adjacent))
                         end
                     end
-                    ISTimedActionQueue.add(ISMoveablesAction:new(_data.player, _v.square, _v.moveProps, "scrap" ));
+                    local direction = _v.moveProps:getFaceDirectionFromSpriteName( _v.moveProps.sprite:getName())
+                    local object, sprInstance = _v.moveProps:findOnSquare( _v.square, _v.moveProps.spriteName );
+                    ISTimedActionQueue.add(ISMoveablesAction:new(_data.player, _v.square, "scrap", nil, object, direction, nil, nil ));
                 end
             end
         end

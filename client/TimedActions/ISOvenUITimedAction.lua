@@ -42,14 +42,9 @@ function ISOvenUITimedAction:perform()
 end
 
 function ISOvenUITimedAction:new(character, stove, mcwave)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o.character = character;
+    local o = ISBaseTimedAction.new(self, character)
     o.stove = stove;
     o.mcwave = mcwave;
-    o.stopOnWalk = true;
-    o.stopOnRun = true;
     o.maxTime = 0;
     return o;
 end

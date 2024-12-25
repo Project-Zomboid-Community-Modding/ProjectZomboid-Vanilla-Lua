@@ -10,6 +10,9 @@ ISCharacterScreen = ISPanelJoypad:derive("ISCharacterScreen");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local AVATAR_BORDER = 2 -- the thin border around the avatar image is 2 pixels thick
 
 local function predicateRazor(item)
 	if item:isBroken() then return false end
@@ -19,6 +22,14 @@ end
 local function predicateScissors(item)
 	if item:isBroken() then return false end
 	return item:hasTag("Scissors") or item:getType() == "Scissors"
+end
+
+local function predicateDoHairdo(item)
+	return item:hasTag("DoHairdo") or item:getType() == "Hairgel" or item:getType() == "Hairspray2"
+end
+
+local function predicateSlickHair(item)
+	return item:hasTag("SlickHair") or item:getType() == "Hairgel"
 end
 
 -----
@@ -72,7 +83,7 @@ function ISCharacterScreen:prerender()
 
 	local x,y,w,h = self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight
 	self:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3);
-	self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 1, 1, 1);
+	self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 0.4, 0.4, 0.4);
 --	self:drawRect(x, y, w, h, 0.8,0,0,0);
 end
 
@@ -92,17 +103,17 @@ function ISCharacterScreen:render()
 	ISCharacterScreen.loadFavouriteWeapon(self);
 
 
-	local z = 25;
+	local z = UI_BORDER_SPACING
 
 	local nameText = self.char:getDescriptor():getForename().." "..self.char:getDescriptor():getSurname()
-	local nameX = self.avatarX + self.avatarWidth + 25
+	local nameX = self.avatarX + self.avatarWidth + AVATAR_BORDER + UI_BORDER_SPACING
 	local nameWid = getTextManager():MeasureStringX(UIFont.Medium, nameText)
 	self:drawText(nameText, nameX, z, 1,1,1,1, UIFont.Medium);
 
 	local professionWid = self.profImage:getWidth()
     if not self.professionTexture then
 		professionWid = math.max(professionWid, getTextManager():MeasureStringX(UIFont.Small, self.profession))
-        self:drawText(self.profession, self.width - 20 - professionWid, z, 1,1,1,1,UIFont.Small);
+        self:drawText(self.profession, self.width - UI_BORDER_SPACING - professionWid, z, 1,1,1,1,UIFont.Small);
         self.profImage:setVisible(false);
     else
         self.profImage:setVisible(true);
@@ -112,32 +123,22 @@ function ISCharacterScreen:render()
 
 	local hairWidth = getTextManager():MeasureStringX(UIFont.Small, self.hairStyle)
 	local beardWidth = self.char:isFemale() and 0 or getTextManager():MeasureStringX(UIFont.Small, self.beardStyle)
-	local hairBeardButtonX = self.xOffset + 10 + math.max(hairWidth, beardWidth) + 10
+	local hairBeardButtonX = self.xOffset + UI_BORDER_SPACING*2 + math.max(hairWidth, beardWidth)
 
-	local panelWidth = self.avatarX + self.avatarWidth + 25 + nameWid + 20 + professionWid + 20
-	panelWidth = math.max(panelWidth, nameX + nameWid + 40 + self.profImage.width + 20)
-	panelWidth = math.max(panelWidth, hairBeardButtonX + self.hairButton.width + 20)
-	self:setWidthAndParentWidth(panelWidth)
+	local panelWidth = self.avatarX + self.avatarWidth + AVATAR_BORDER + nameWid + professionWid + UI_BORDER_SPACING*3
+	panelWidth = math.max(panelWidth, nameX + nameWid + 40 + self.profImage.width + UI_BORDER_SPACING + 1)
+	panelWidth = math.max(panelWidth, hairBeardButtonX + self.hairButton.width + UI_BORDER_SPACING + 1)
+	self:setWidthAndParentWidth(math.max(self.width, panelWidth))
 
-	self.profImage:setX(panelWidth - 20 - self.profImage.width)
+	self.profImage:setX(self.width - UI_BORDER_SPACING - self.profImage.width)
 
 	z = z + FONT_HGT_MEDIUM;
 	self:drawRect(nameX, z, nameWid + 2, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-	z = z + 10;
-
-	local smallFontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-
-	--z = z + smallFontHgt;
-	--self:drawTextRight(getText("IGUI_char_Sex"), self.xOffset, z, 1,1,1,1, UIFont.Small);
-	--self:drawText(self.sexText, self.xOffset + 10, z, 1,1,1,0.5, UIFont.Small);
-
-    z = z + smallFontHgt;
---    self:drawTextRight("Cal", self.xOffset, z, 1,1,1,1, UIFont.Small);
---    self:drawText(round(self.char:getNutrition():getCalories(), 2) .. "", self.xOffset + 10, z, 1,1,1,0.5, UIFont.Small);
+    z = z + UI_BORDER_SPACING * 2;
     self:drawTextRight(getText("IGUI_char_Weight"), self.xOffset, z, 1,1,1,1, UIFont.Small);
     local weightStr = tostring(round(self.char:getNutrition():getWeight(), 0))
-    self:drawText(weightStr, self.xOffset + 10, z, 1,1,1,0.5, UIFont.Small);
+    self:drawText(weightStr, self.xOffset + UI_BORDER_SPACING, z, 1,1,1,0.5, UIFont.Small);
 	if self.char:getNutrition():isIncWeight() or self.char:getNutrition():isIncWeightLot() or self.char:getNutrition():isDecWeight() then
 		local nutritionWidth = getTextManager():MeasureStringX(UIFont.Small, weightStr) + 13;
 		if self.char:getNutrition():isIncWeight() and not self.char:getNutrition():isIncWeightLot() then
@@ -150,39 +151,42 @@ function ISCharacterScreen:render()
 			self:drawTexture(self.weightDecTexture, self.xOffset + nutritionWidth, z + 3, 1, 0.8, 0.8, 0.8)
 		end
 	end
---    z = z + 14;
---    self:drawTextRight("Carb/Prot/Lip", self.xOffset, z, 1,1,1,1, UIFont.Small);
---    self:drawText(round(self.char:getNutrition():getCarbohydrates(),2) .. "," .. round(self.char:getNutrition():getProteins(),2) .. "," .. round(self.char:getNutrition():getLipids(),2), self.xOffset + 10, z, 1,1,1,0.5, UIFont.Small);
---    z = z + 14;
 
-	z = z + smallFontHgt;
+	z = z + BUTTON_HGT + UI_BORDER_SPACING;
+
+	--todo somehow fix the spacing here, between traits and hair
+	local traitIconSize = 18
+	if self.traits[1] ~= nil then
+		traitIconSize = self.traits[1]:getTexture():getHeightOrig() --both height and width of trait icons are 18
+	end
+	local traitIconOffset = (FONT_HGT_SMALL - traitIconSize) / 2 + 1
+
 	local traitBottom = z
-	local finalY = z + (math.max(FONT_HGT_SMALL, 18) - 18) / 2 + 2;
+	local finalY = z + traitIconOffset
 	if #self.traits > 0 then
 		self:drawTextRight(getText("IGUI_char_Traits"), self.xOffset, z, 1,1,1,1, UIFont.Small);
-		local x = self.xOffset + 10;
-		local y = z + (math.max(FONT_HGT_SMALL, 18) - 18) / 2 + 2
+		local x = self.xOffset + UI_BORDER_SPACING;
+		local y = z + traitIconOffset
 		for i,v in ipairs(self.traits) do
 			v:setY(y);
 			v:setX(x);
             v:setVisible(true);
-			traitBottom = y + v:getTexture():getHeightOrig() + 2
-			x = x + v:getTexture():getWidthOrig() + 6;
-			if (i < #self.traits) and (x + v:getTexture():getWidthOrig() > self:getWidth() - 20) then
-				x = self.xOffset + 10
-				y = y + v:getTexture():getHeightOrig() + 2
+			x = x + traitIconSize + 4;
+			if (i < #self.traits) and (x + traitIconSize > self:getWidth() - UI_BORDER_SPACING) then
+				x = self.xOffset + UI_BORDER_SPACING
+				y = y + traitIconSize + 4
 			end
 		end
-		finalY = y + self.traits[1]:getTexture():getHeightOrig();
+		finalY = math.max(y + UI_BORDER_SPACING * 2, z + BUTTON_HGT + UI_BORDER_SPACING*2)
 	end
 
-	finalY = finalY + 20;
+	finalY = finalY + UI_BORDER_SPACING;
 
 	self:drawTextRight(getText("IGUI_char_HairStyle"), self.xOffset, finalY, 1,1,1,1, UIFont.Small);
-	self:drawText(self.hairStyle, self.xOffset + 10, finalY, 1,1,1,0.5, UIFont.Small);
+	self:drawText(self.hairStyle, self.xOffset + UI_BORDER_SPACING, finalY, 1,1,1,0.5, UIFont.Small);
 	self.hairButton:setVisible(true);
 	self.hairButton:setX(hairBeardButtonX);
-	self.hairButton:setY(finalY);
+	self.hairButton:setY(finalY - ((BUTTON_HGT - FONT_HGT_SMALL)/ 2)); --aligns button with text
 	self.hairButton.enable = true;
 	self.hairButton.tooltip = nil;
 	
@@ -201,14 +205,14 @@ function ISCharacterScreen:render()
 --		end
 	end
 
-	finalY = finalY + smallFontHgt + 4;
+	finalY = finalY + BUTTON_HGT + UI_BORDER_SPACING;
 
 	if not self.char:isFemale() then
 		self:drawTextRight(getText("IGUI_char_BeardStyle"), self.xOffset, finalY, 1,1,1,1, UIFont.Small);
-		self:drawText(self.beardStyle, self.xOffset + 10, finalY, 1,1,1,0.5, UIFont.Small);
+		self:drawText(self.beardStyle, self.xOffset + UI_BORDER_SPACING, finalY, 1,1,1,0.5, UIFont.Small);
 		self.beardButton:setVisible(true);
 		self.beardButton:setX(hairBeardButtonX);
-		self.beardButton:setY(finalY);
+		self.beardButton:setY(finalY - ((BUTTON_HGT - FONT_HGT_SMALL)/ 2)); --aligns button with text
 		self.beardButton.enable = true;
 		self.beardButton.tooltip = nil;
 	
@@ -224,15 +228,15 @@ function ISCharacterScreen:render()
 --			end
 		end
 
-		finalY = finalY + smallFontHgt + 4;
+		finalY = finalY + BUTTON_HGT + UI_BORDER_SPACING;
 	end
 
-	self.literatureButton:setY(finalY + 16);
+	self.literatureButton:setY(finalY - ((BUTTON_HGT - FONT_HGT_SMALL)/ 2)); --aligns button with text
 	self.literatureButton:setX(nameX);
 	z = self.literatureButton:getBottom();
 
-	z = math.max(z + 16, traitBottom);
-	z = math.max(z, self.avatarY + self.avatarHeight + 25)
+	z = math.max(z + UI_BORDER_SPACING, traitBottom);
+	z = math.max(z, self.avatarY + self.avatarHeight + UI_BORDER_SPACING + AVATAR_BORDER)
 	local textWid1 = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_char_Favourite_Weapon"))
 	local textWid2 = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_char_Zombies_Killed"))
 	local textWid3 = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_char_Survived_For"))
@@ -240,12 +244,12 @@ function ISCharacterScreen:render()
 	
 	if self.favouriteWeapon then
 		self:drawTextRight(getText("IGUI_char_Favourite_Weapon"), x, z, 1,1,1,1, UIFont.Small);
-		self:drawText(self.favouriteWeapon, x + 10, z, 1,1,1,0.5, UIFont.Small);
-		z = z + smallFontHgt;
+		self:drawText(self.favouriteWeapon, x + UI_BORDER_SPACING, z, 1,1,1,0.5, UIFont.Small);
+		z = z + BUTTON_HGT;
 	end
 	self:drawTextRight(getText("IGUI_char_Zombies_Killed"), x, z, 1,1,1,1, UIFont.Small);
-	self:drawText(self.char:getZombieKills() .. "", x + 10, z, 1,1,1,0.5, UIFont.Small);
-	z = z + smallFontHgt;
+	self:drawText(self.char:getZombieKills() .. "", x + UI_BORDER_SPACING, z, 1,1,1,0.5, UIFont.Small);
+	z = z + BUTTON_HGT;
 	--[[
 	self:drawTextRight(getText("IGUI_char_Survivor_Killed"), x, z, 1,1,1,1, UIFont.Small);
 	self:drawText("0", x + 10, z, 1,1,1,0.5, UIFont.Small);
@@ -256,10 +260,10 @@ function ISCharacterScreen:render()
 	local clock = UIManager.getClock()
 	if instanceof(self.char, 'IsoPlayer') and clock and clock:isDateVisible() then
 		self:drawTextRight(getText("IGUI_char_Survived_For"), x, z, 1,1,1,1, UIFont.Small);
-		self:drawText(self.char:getTimeSurvived(), x + 10, z, 1,1,1,0.5, UIFont.Small);
+		self:drawText(self.char:getTimeSurvived(), x + UI_BORDER_SPACING, z, 1,1,1,0.5, UIFont.Small);
 	end
 	
-	z = z + smallFontHgt + 10
+	z = z + BUTTON_HGT + UI_BORDER_SPACING
 
 	self:setHeightAndParentHeight(z)
 end
@@ -292,12 +296,12 @@ function ISCharacterScreen:create()
 	ISCharacterScreen.loadProfession(self);
 
 	local texSize = 64
-	self.profImage = ISImage:new(self:getWidth() - texSize - 20, 25, texSize, texSize, nil);
+	self.profImage = ISImage:new(self:getWidth() - texSize - UI_BORDER_SPACING-1, UI_BORDER_SPACING+1, texSize, texSize, nil);
 	self.profImage:initialise();
 	self:addChild(self.profImage);
 
-	self.avatarX = 25
-	self.avatarY = 25
+	self.avatarX = UI_BORDER_SPACING+1+AVATAR_BORDER
+	self.avatarY = UI_BORDER_SPACING+1+AVATAR_BORDER
 	self.avatarWidth = 128
 	self.avatarHeight = 256
 	self.avatarPanel = ISCharacterScreenAvatar:new(self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight)
@@ -308,7 +312,7 @@ function ISCharacterScreen:create()
 	self.avatarPanel:setDirection(IsoDirections.S)
 	self.avatarPanel:setIsometric(false)
 
-	self.avatarBackgroundTexture = getTexture("media/ui/avatarBackground.png")
+	self.avatarBackgroundTexture = getTexture("media/ui/avatarBackgroundWhite.png")
 
 	local textWid = 0
 	textWid = self:maxTextWidth(UIFont.Small, getText("IGUI_char_Age"), textWid)
@@ -317,26 +321,25 @@ function ISCharacterScreen:create()
 	textWid = self:maxTextWidth(UIFont.Small, getText("IGUI_char_Traits"), textWid)
 	textWid = self:maxTextWidth(UIFont.Small, getText("IGUI_char_HairStyle"), textWid)
 	textWid = self:maxTextWidth(UIFont.Small, getText("IGUI_char_BeardStyle"), textWid)
-	self.xOffset = self.avatarX + self.avatarWidth + 25 + textWid
+	self.xOffset = self.avatarX + self.avatarWidth + UI_BORDER_SPACING+2 + textWid
 	
 	local btnWid = 70
-	local btnHgt = FONT_HGT_SMALL
 
-	self.hairButton = ISButton:new(0,0, btnWid, btnHgt, getText("IGUI_PlayerStats_Change"), self, ISCharacterScreen.hairMenu);
+	self.hairButton = ISButton:new(0,0, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISCharacterScreen.hairMenu);
 	self.hairButton:initialise();
 	self.hairButton:instantiate();
 	self.hairButton.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.hairButton:setVisible(false);
 	self:addChild(self.hairButton);
 	
-	self.beardButton = ISButton:new(0,0, btnWid, btnHgt, getText("IGUI_PlayerStats_Change"), self, ISCharacterScreen.beardMenu);
+	self.beardButton = ISButton:new(0,0, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISCharacterScreen.beardMenu);
 	self.beardButton:initialise();
 	self.beardButton:instantiate();
 	self.beardButton.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.beardButton:setVisible(false);
 	self:addChild(self.beardButton);
 
-	self.literatureButton = ISButton:new(0, 0, 100, btnHgt, getText("IGUI_char_Literature"), self, ISCharacterScreen.onShowLiterature);
+	self.literatureButton = ISButton:new(0, 0, 100, BUTTON_HGT, getText("IGUI_char_Literature"), self, ISCharacterScreen.onShowLiterature);
 	self.literatureButton:initialise();
 	self.literatureButton:instantiate();
 	self.literatureButton.background = false;
@@ -429,15 +432,19 @@ function ISCharacterScreen:hairMenu(button)
 					option.name = getText("ContextMenu_ShaveHair");
 					if not player:getInventory():containsEvalRecurse(predicateRazor) and not player:getInventory():containsEvalRecurse(predicateScissors) then
 						self:addTooltip(option, getText("Tooltip_requireRazorOrScissors"));
-					end
-				elseif hairStyle:getName():contains("Mohawk") and hairStyle:getName() ~= "MohawkFlat" then
-					if not player:getInventory():containsTypeRecurse("Hairgel") then
-						self:addTooltip(option, getText("Tooltip_requireHairGel"));
+					end					
+				elseif (hairStyle:getName():contains("Mohawk") and hairStyle:getName() ~= "MohawkFlat")  or hairStyle:getName():contains("Spike") then
+					if not player:getInventory():containsEvalRecurse(predicateDoHairdo) then
+						self:addTooltip(option, getText("Tooltip_requireHairGelOrHairSpray"));
 					end
 				elseif hairStyle:getName():contains("GreasedBack") then
-					if not player:getInventory():containsTypeRecurse("Hairgel") then
+					if not player:getInventory():containsEvalRecurse(predicateSlickHair) then
 						self:addTooltip(option, getText("Tooltip_requireHairGel"));
 					end
+				elseif hairStyle:getName():contains("Buffont") then
+					if not player:getInventory():containsTypeRecurse("Hairspray2") then
+						self:addTooltip(option, getText("Tooltip_requireHairSpray"));
+					end	
 				elseif not player:getInventory():containsTagEvalRecurse("Scissors", predicateNotBroken) then
 					self:addTooltip(option, getText("Tooltip_RequireScissors"));
 				end
@@ -469,7 +476,7 @@ function ISCharacterScreen:onShowLiterature()
 	if self.literatureUI == nil then
 		local x = getPlayerScreenLeft(self.playerNum) + 100
 		local y = getPlayerScreenTop(self.playerNum) + 50
-		local w = 400
+		local w = 475
 		local h = getPlayerScreenHeight(self.playerNum) - 50 * 2
 		self.literatureUI = ISLiteratureUI:new(x, y, w, h, self.char, self)
 		self.literatureUI:initialise()
@@ -553,8 +560,10 @@ end
 ISCharacterScreen.onTrimBeard = function(playerObj, beardStyle)
 	local playerInv = playerObj:getInventory()
 	local scissors = playerInv:getFirstEvalRecurse(predicateRazor) or playerInv:getFirstEvalRecurse(predicateScissors);
-	ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), scissors, true)
-	ISTimedActionQueue.add(ISTrimBeard:new(playerObj, beardStyle, scissors, 300));
+	if scissors then
+		ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), scissors, true)
+	end
+	ISTimedActionQueue.add(ISTrimBeard:new(playerObj, beardStyle, scissors));
 end
 
 ISCharacterScreen.onCutHair = function(playerObj, hairStyle, time)

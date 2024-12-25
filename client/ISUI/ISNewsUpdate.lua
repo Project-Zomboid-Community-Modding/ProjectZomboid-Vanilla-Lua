@@ -108,7 +108,10 @@ function ISNewsUpdate:destroy()
         self:removeFromUIManager();
     end
     if self.player and JoypadState.players[self.player+1] then
-        setJoypadFocus(self.player, nil);
+        setJoypadFocus(self.player, self.prevFocus)
+    elseif self.joyfocus and self.joyfocus.focus == self then
+        self.joyfocus.focus = self.prevFocus
+        updateJoypadFocus(self.joyfocus)
     end
 end
 

@@ -8,13 +8,18 @@ require "ISUI/ISPanel"
 WorldFlaresDebug = ISPanel:derive("WorldFlaresDebug");
 WorldFlaresDebug.instance = nil;
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 local function roundstring(_val)
     return tostring(ISDebugUtils.roundNum(_val,2));
 end
 
 function WorldFlaresDebug.OnOpenPanel()
     if WorldFlaresDebug.instance==nil then
-        WorldFlaresDebug.instance = WorldFlaresDebug:new (100, 100, 400, 600, "Flares debugger");
+        WorldFlaresDebug.instance = WorldFlaresDebug:new (100, 100, 642+(getCore():getOptionFontSizeReal()*90), 600, getText("IGUI_DebugMenu_Dev_WorldFlares"));
         WorldFlaresDebug.instance:initialise();
         WorldFlaresDebug.instance:instantiate();
     end
@@ -37,124 +42,94 @@ end
 function WorldFlaresDebug:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "World Flares Debugger", UIFont.Medium, true);
-
-    local boxWidth = 100;
-    local x1, x2 = 10, 75;
-    local y, obj = 50, false;
+    local labelWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Dev_WorldFlares"))
+    ISDebugUtils.addLabel(self, {}, (self.width - labelWidth)/2, UI_BORDER_SPACING+1, getText("IGUI_DebugMenu_Dev_WorldFlares"), UIFont.Medium, true);
+    local columnWidth = (self.width - UI_BORDER_SPACING*4 - 2)/3
+    local top = UI_BORDER_SPACING*2+FONT_HGT_MEDIUM+1
+    local x, y, obj = UI_BORDER_SPACING+1, top, false;
 
     local tickOptions = {};
-    table.insert(tickOptions, { text = "[DEBUG] Show range.", ticked = WorldFlares.getDebugDraw() });
-    y, obj = ISDebugUtils.addTickBox(self,{},x1,y,175,ISDebugUtils.FONT_HGT_SMALL,"Debug range",tickOptions,WorldFlaresDebug.onTicked);
+    table.insert(tickOptions, { text = getText("IGUI_WorldFlares_ShowRange"), ticked = WorldFlares.getDebugDraw() });
+    y, obj = ISDebugUtils.addTickBox(self,{},x,y,BUTTON_HGT,BUTTON_HGT,"Debug range",tickOptions,WorldFlaresDebug.onTicked);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 5;
-
-    _, obj = ISDebugUtils.addLabel(self, {}, x1, y, "Lifetime:", UIFont.Small, true);
-    y, self.entryBoxLifeTime = ISDebugUtils.addTextEntryBox(self, {}, "60", x2, y, boxWidth, 20);
+    _, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_Lifetime")..":", UIFont.Small, true);
+    local boxWidth = columnWidth-obj.width - UI_BORDER_SPACING
+    y, self.entryBoxLifeTime = ISDebugUtils.addTextEntryBox(self, {}, "60", obj:getRight() + UI_BORDER_SPACING, y, boxWidth, BUTTON_HGT);
     self.entryBoxLifeTime:setOnlyNumbers(true);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-    _, obj = ISDebugUtils.addLabel(self, {}, x1, y, "Range:", UIFont.Small, true);
-    y, self.entryBoxRange = ISDebugUtils.addTextEntryBox(self, {}, "50", x2, y, boxWidth, 20);
+    _, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_Range")..":", UIFont.Small, true);
+    boxWidth = columnWidth-obj.width - UI_BORDER_SPACING
+    y, self.entryBoxRange = ISDebugUtils.addTextEntryBox(self, {}, "50", obj:getRight() + UI_BORDER_SPACING, y, boxWidth, BUTTON_HGT);
     self.entryBoxRange:setOnlyNumbers(true);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-    _, obj = ISDebugUtils.addLabel(self, {}, x1, y, "Windspeed:", UIFont.Small, true);
-    y, self.entryBoxWindspeed = ISDebugUtils.addTextEntryBox(self, {}, "0.00014", x2, y, boxWidth, 20);
+    _, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_Windspeed")..":", UIFont.Small, true);
+    boxWidth = columnWidth-obj.width - UI_BORDER_SPACING
+    y, self.entryBoxWindspeed = ISDebugUtils.addTextEntryBox(self, {}, "0.00014", obj:getRight() + UI_BORDER_SPACING, y, boxWidth, BUTTON_HGT);
     self.entryBoxWindspeed:setOnlyNumbers(true);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    y, obj = ISDebugUtils.addLabel(self, {}, x1, y, "ExteriorColor:", UIFont.Small, true);
-
-    y = y + 3;
+    y, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_ColorExt")..":", UIFont.Small, true);
+    y = y + UI_BORDER_SPACING;
 
     self.colExtBoxY = y;
-
-    y = y + 23;
-
-    x2 = 25;
-    boxWidth = 175;
-
-    self.colBoxWidth = boxWidth;
+    self.colBoxWidth = columnWidth;
+    y = y + BUTTON_HGT+UI_BORDER_SPACING;
 
     local objLabel;
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "ext_r", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "ext_r", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "ext_g", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "ext_g", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "ext_b", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "ext_b", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    y, obj = ISDebugUtils.addLabel(self, {}, x1, y, "InteriorColor:", UIFont.Small, true);
-
-    y = y + 3;
+    y, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_ColorInt")..":", UIFont.Small, true);
+    y = y + UI_BORDER_SPACING;
 
     self.colIntBoxY = y;
-
-    y = y + 23;
+    y = y + BUTTON_HGT+UI_BORDER_SPACING;
 
     local objLabel;
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "int_r", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "int_r", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "int_g", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "int_g", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
-
-    --_, objLabel = ISDebugUtils.addLabel(self, {}, x1, y, "0", UIFont.Small, false);
-    y, obj = ISDebugUtils.addSlider(self, "int_b", x1, y, boxWidth, 18, WorldFlaresDebug.onSliderChange);
-    --obj.pretext = "G_exterior: ";
+    y, obj = ISDebugUtils.addSlider(self, "int_b", x, y, columnWidth, BUTTON_HGT, WorldFlaresDebug.onSliderChange);
     obj.valueLabel = objLabel;
     obj:setValues(0, 1, 0.01, 0.01);
     obj:setCurrentValue(1);
+    y = y + UI_BORDER_SPACING;
 
-    y = y + 3;
+    y, obj = ISDebugUtils.addButton(self,"close", x,y,columnWidth,BUTTON_HGT,getText("IGUI_WorldFlares_AddFlare"),WorldFlaresDebug.onClickAddFlare);
+    local addFlareBtn = obj
+    self:setHeight(y+UI_BORDER_SPACING+1);
 
-    y, obj = ISDebugUtils.addButton(self,"close",x1,y,boxWidth,20,"add flare",WorldFlaresDebug.onClickAddFlare);
-
-    y = y + 3;
-
-    self.windowY = y;
-
-    self:setHeight(self.windowY+40);
-    self:setWidth(570);
-
-    self.flaresList = ISScrollingListBox:new(x1+boxWidth+10, 50, 150, self.height - 100);
+    self.flaresList = ISScrollingListBox:new(x+columnWidth+UI_BORDER_SPACING, top, columnWidth, self.height - top - UI_BORDER_SPACING*2 - BUTTON_HGT - 1);
     self.flaresList:initialise();
     self.flaresList:instantiate();
-    self.flaresList.itemheight = 22;
+    self.flaresList.itemheight = BUTTON_HGT;
     self.flaresList.selected = 0;
     self.flaresList.joypadParent = self;
     self.flaresList.font = UIFont.NewSmall;
@@ -164,15 +139,14 @@ function WorldFlaresDebug:createChildren()
     self.flaresList.target = self;
     self:addChild(self.flaresList);
 
-    local bx, by = self.flaresList:getX(), self.flaresList:getY()+self.flaresList:getHeight()+10;
-    local bw, bh = self.flaresList:getWidth(), 20;
-    ISDebugUtils.addButton(self,"close",bx,by,bw,20,"delete flares",WorldFlaresDebug.onClickDeleteFlares);
+    y, obj = ISDebugUtils.addButton(self,"close",addFlareBtn:getRight()+UI_BORDER_SPACING,addFlareBtn.y,columnWidth,BUTTON_HGT,getText("IGUI_WorldFlares_DeleteFlares"),WorldFlaresDebug.onClickDeleteFlares);
+    local deleteFlareBtn = obj
 
-    self.infoX = self.flaresList:getX() + self.flaresList:getWidth()+20;
-    self.infoY = 50;
-    self.infoWidth = self:getWidth() - self.infoX;
+    self.infoX = self.flaresList:getRight()+UI_BORDER_SPACING;
+    self.infoY = top;
+    self.infoWidth = self:getWidth() - self.infoX - UI_BORDER_SPACING - 1;
 
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),WorldFlaresDebug.onClickClose);
+    y, obj = ISDebugUtils.addButton(self,"close",deleteFlareBtn:getRight()+UI_BORDER_SPACING,deleteFlareBtn.y,columnWidth,BUTTON_HGT,getText("IGUI_CraftUI_Close"),WorldFlaresDebug.onClickClose);
 
     self:populateList();
 end
@@ -255,7 +229,7 @@ function WorldFlaresDebug:populateList()
         local flare = WorldFlares.getFlare(i);
 
         local id = flare:getId();
-        self.flaresList:addItem("Flare ["..tostring(id).."]", flare);
+        self.flaresList:addItem(getText("IGUI_WorldFlares_Flare").." ["..tostring(id).."]", flare);
     end
 
     self.flareCount = count;
@@ -295,12 +269,13 @@ function WorldFlaresDebug:prerender()
     ISPanel.prerender(self);
     self:populateList();
 
-    self:drawRect( 10, self.colExtBoxY, self.colBoxWidth, 20, 1.0, self.colExt.r, self.colExt.g, self.colExt.b);
-    self:drawRect( 10, self.colIntBoxY, self.colBoxWidth, 20, 1.0, self.colInt.r, self.colInt.g, self.colInt.b);
+    self:drawRect( UI_BORDER_SPACING+1, self.colExtBoxY, self.colBoxWidth, BUTTON_HGT, 1.0, self.colExt.r, self.colExt.g, self.colExt.b);
+    self:drawRect( UI_BORDER_SPACING+1, self.colIntBoxY, self.colBoxWidth, BUTTON_HGT, 1.0, self.colInt.r, self.colInt.g, self.colInt.b);
 
     local x = self.infoX;
     local y = self.infoY;
-    local w = self.infoWidth-10;
+    local w = self.infoWidth;
+    local w2 = (w-UI_BORDER_SPACING)/2
     local a = 1.0;
 
     local flare = false;
@@ -309,47 +284,47 @@ function WorldFlaresDebug:prerender()
     end
 
     if flare then
-        local yOffset = 16;
-        self:drawText( "Flare ["..tostring(flare:getId()).."]", x, y, 1, 1, 1, a, UIFont.Small);
+        local yOffset = BUTTON_HGT;
+        self:drawText( getText("IGUI_WorldFlares_Flare").." ["..tostring(flare:getId()).."]", x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
         self:drawText( "x = "..roundstring(flare:getX()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
         self:drawText( "y = "..roundstring(flare:getY()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "range = "..tostring(flare:getRange()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Range").." = "..tostring(flare:getRange()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "windspeed = "..roundstring(flare:getWindSpeed()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Windspeed").." = "..roundstring(flare:getWindSpeed()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "intensity(b) = "..roundstring(flare:getIntensity()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Intensity").."(b) = "..roundstring(flare:getIntensity()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "maxLifetime = "..roundstring(flare:getMaxLifeTime()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_MaxLifetime").." = "..roundstring(flare:getMaxLifeTime()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "lifetime = "..roundstring(flare:getLifeTime()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Lifetime").." = "..roundstring(flare:getLifeTime()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "percent = "..roundstring(flare:getPercent()), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Percent").." = "..roundstring(flare:getPercent()), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "intensity = "..roundstring(flare:getIntensityPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Intensity").." = "..roundstring(flare:getIntensityPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "lerp = "..roundstring(flare:getLerpPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_Lerp").." = "..roundstring(flare:getLerpPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "distMod = "..roundstring(flare:getDistModPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_DistMod").." = "..roundstring(flare:getDistModPlayer(0)), x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
-        self:drawText( "Flare color:", x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawText( getText("IGUI_WorldFlares_FlareColor")..":", x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
         local fcol = flare:getColorPlayer(0);
         local c = fcol:getExterior();
-        local h = 20;
-        self:drawRect( x, y, (w/2)-2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
+        local h = BUTTON_HGT;
+        self:drawRect( x, y, w2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
         c = fcol:getInterior();
-        self:drawRect( x+(w/2)+4, y, (w/2)-2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
-        y = y+h+5;
-        self:drawText( "Final color:", x, y, 1, 1, 1, a, UIFont.Small);
+        self:drawRect( x+w2+UI_BORDER_SPACING, y, w2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
+        y = y+h+UI_BORDER_SPACING;
+        self:drawText( getText("IGUI_WorldFlares_FinalColor")..":", x, y, 1, 1, 1, a, UIFont.Small);
         y = y+yOffset;
         fcol = flare:getOutColorPlayer(0);
         c = fcol:getExterior();
-        self:drawRect( x, y, (w/2)-2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
+        self:drawRect( x, y, w2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
         c = fcol:getInterior();
-        self:drawRect( x+(w/2)+4, y, (w/2)-2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
+        self:drawRect( x+w2+UI_BORDER_SPACING, y, w2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
     end
 end
 

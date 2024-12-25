@@ -71,7 +71,6 @@ function ISBaseIcon:getGridSquare()			return self:initGridSquare();	end;
 -------------------------------------------------
 -------------------------------------------------
 function ISBaseIcon:doSearchFocusCheck()									end;
-function ISBaseIcon:setCanRollForSearchFocus()								end;
 -------------------------------------------------
 -------------------------------------------------
 function ISBaseIcon:setIsBeingRemoved(_isBeingRemoved)
@@ -89,6 +88,7 @@ end
 -------------------------------------------------
 --todo: refactor - move grab menu constructor to a new method
 function ISBaseIcon:doContextMenu(_context)
+	if self.isTrack then return; end
 	if self:getIsSeen() and self:getAlpha() > 0 then
 		self:getGridSquare();
 		if (not self.square) then return; end;
@@ -238,8 +238,8 @@ end
 function ISBaseIcon:render()
 	if self:getIsSeen() then
 		self:updateBounce();
-		self:updatePinIconPosition();
 		self:updatePinIconSize();
+		self:updatePinIconPosition();
 		self:renderPinIcon();
 	else
 		self:resetBounce();
@@ -469,6 +469,7 @@ function ISBaseIcon:updatePinIconPosition()
 end
 
 function ISBaseIcon:updatePinIconSize()
+	self:updateZoom()
 	self:setWidth(self.baseWidth / self.zoom);
 	self:setHeight(self.baseHeight / self.zoom);
 end
@@ -480,7 +481,7 @@ function ISBaseIcon:initItem()
 			if self.icon.itemObj then
 				self.itemObj = self.icon.itemObj;
 			elseif self.icon.itemType then
-				self.itemObj = InventoryItemFactory.CreateItem(self.icon.itemType);
+				self.itemObj = instanceItem(self.icon.itemType);
 			else
 				print("[ISBaseIcon][initItem] no item or type for "..self.icon.id);
 			end;
@@ -511,7 +512,7 @@ function ISBaseIcon:getItemList()
 			self.itemList = ArrayList.new();
 			--
 			for _ = 1, self.itemCount do
-				self.itemList:add(InventoryItemFactory.CreateItem(self.itemDef.type));
+				self.itemList:add(instanceItem(self.itemDef.type));
 			end;
 			--
 			if self.itemDef.spawnFuncs then
@@ -525,7 +526,7 @@ function ISBaseIcon:getItemList()
 		--
 		for item in iterList(self.itemList) do
 			if item:IsFood() and item:getHerbalistType() and item:getHerbalistType() ~= "" then
-				if item:getPoisonPower() > 0 and self.character:isRecipeKnown("Herbalist") then
+				if item:getPoisonPower() > 0 and self.character:isRecipeActuallyKnown("Herbalist") then
 					self.isKnownPoison = true;
 					break;
 				end;
@@ -568,7 +569,7 @@ function ISBaseIcon:spotIcon()
 		self:initItemCount();
 		self:getItemList();
 		if self.canRollForSearchFocus then
-			self:setCanRollForSearchFocus(false);
+			self.canRollForSearchFocus = false;
 		end;
 	end;
 end
@@ -657,7 +658,7 @@ function ISBaseIcon:setWorldMarkerPosition()
 	elseif self.itemTexture then
 		self.worldMarker:setHomeOnOffsetX(IsoUtils.XToScreen(0.5, 0.5, 0, 0));
 		self.worldMarker:setHomeOnOffsetY(IsoUtils.YToScreen(0.5, 0.5, 0, 0) - self.itemTexture:getHeight() / 2);
-	end
+	end;
 end
 
 function ISBaseIcon:removeWorldMarker()
@@ -802,8 +803,8 @@ function ISBaseIcon:findPinOffset()
 			end;
 			local tileHeight = 32 * Core.getTileScale()
 			self.pinOffset = tileHeight / 2 - tallestTexture;
-			return
-		end
+			return;
+		end;
 		-- If a forage icon is drawn using an IsoObject, the texture is drawn above the south-east corner of the square.
 		local tallestTexture = 0;
 		for _, texture in ipairs(self.altWorldTexture) do
@@ -812,13 +813,13 @@ function ISBaseIcon:findPinOffset()
 		end;
 		local tileHeight = 32 * Core.getTileScale()
 		self.pinOffset = tileHeight - tallestTexture;
-		return
+		return;
 	end;
 	-- If a forage icon is drawn without an IsoObject, the texture is drawn above the square center.
 	if self.itemTexture then
 		local tileHeight = 32 * Core.getTileScale()
 		self.pinOffset = tileHeight / 2 - self.itemTexture:getHeight();
-	end
+	end;
 end
 
 function ISBaseIcon:findTextureCenter()

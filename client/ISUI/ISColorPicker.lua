@@ -2,6 +2,10 @@ require"ISUI/ISPanelJoypad"
 
 ISColorPicker = ISPanelJoypad:derive("ISColorPicker");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 function ISColorPicker:render()
 	ISPanelJoypad.render(self)
 	for i,color in ipairs(self.colors) do
@@ -174,10 +178,10 @@ function ISColorPicker:setColors(colors, columns, rows)
 end
 
 function ISColorPicker:new(x, y, HSBFactor)
-	local buttonSize = 20
-	local borderSize = 12
-	local columns = 18
-	local rows = 12
+	local buttonSize = BUTTON_HGT
+	local borderSize = UI_BORDER_SPACING+1
+	local columns = 14
+	local rows = 6
 	local width = columns * buttonSize + borderSize * 2
 	local height = rows * buttonSize + borderSize * 2
 	local o = ISPanelJoypad.new(self, x, y, width, height)
@@ -192,25 +196,56 @@ function ISColorPicker:new(x, y, HSBFactor)
 	o.colors = {}
 	local i = 0
 	local newColor = Color.new(1.0, 1.0, 1.0, 1.0);
-	for red = 0,255,51 do
-		for green = 0,255,51 do
-			for blue = 0,255,51 do
-				local col = i % columns
-				local row = math.floor(i / columns)
-				if row % 2 == 0 then row = row / 2 else row = math.floor(row / 2) + 6 end
-				newColor:set(red / 255, green / 255, blue / 255, 1.0)
-				if col == columns-1 and row == rows-1 then
-					-- Pure white
-					newColor:set(1.0, 1.0, 1.0, 1.0)
-				elseif HSBFactor then
-					newColor:changeHSBValue(HSBFactor.h, HSBFactor.s, HSBFactor.b);
-				end
---				o.colors[col + row * columns + 1] = { r = red/255, g = green/255, b = blue/255 }
-				o.colors[col + row * columns + 1] = { r = newColor:getRedFloat(), g = newColor:getGreenFloat(), b = newColor:getBlueFloat() }
-				i = i + 1
+
+	---NEW COLOUR PICKER WITH 84 colours
+	local encodedColors = {555, 303, 304, 403, 503, 314, 315, 505, 414, 523, 524, 525, 535, 545,
+						   444, 300, 400, 310, 500, 311, 501, 510, 422, 521, 433, 532, 533, 544,
+						   333, 420, 330, 430, 431, 530, 341, 442, 443, 543, 451, 550, 553, 554,
+						   222, 020, 121, 030, 132, 230, 141, 142, 050, 052, 243, 250, 343, 353,
+						   111, 033, 035, 134, 043, 233, 044, 144, 145, 053, 055, 154, 254, 455,
+						   000, 002, 003, 004, 005, 103, 113, 125, 224, 225, 325, 235, 345, 445}
+	-- the above numbers are hexcodes for colours, encoded for compactness.
+	-- in hexcode, 0, 1, 2, 3, 4 and 5 represent #00, #33, #66, #99, #CC and #FF respectively.
+	-- for example, 555 becomes #FFFFFF [pure white], and 145 becomes #33CCFF [Chaotica blue]
+
+	-- to convert these to float values, take each digit in each number and divide it by 5
+	-- 555    ->    5/5 = 1.0, 5/5 = 1.0, 5/5 = 1.0    ->    1.0, 1.0, 1.0
+	-- 145    ->    1/5 = 0.2, 4/5 = 0.8, 5/5 = 1.0    ->    0.2, 0.8, 1.0
+
+	for row = 0, rows-1 do
+		for column = 0, columns-1 do
+			local colorCode = encodedColors[column+row*columns+1]
+			newColor:set(
+					math.floor(colorCode/100)/5,
+					math.fmod(math.floor(colorCode/10), 10)/5,
+					math.fmod(colorCode, 10)/5,
+					1.0)
+			if HSBFactor then
+				newColor:changeHSBValue(HSBFactor.h, HSBFactor.s, HSBFactor.b);
 			end
+			o.colors[column + row * columns + 1] = { r = newColor:getRedFloat(), g = newColor:getGreenFloat(), b = newColor:getBlueFloat() }
+			i = i + 1
 		end
 	end
+
+	---OLD COLOUR PICKER WITH 216 COLOURS - left commented just in case
+	--for red = 0,255,51 do
+	--	for green = 0,255,51 do
+	--		for blue = 0,255,51 do
+	--			local col = i % columns
+	--			local row = math.floor(i / columns)
+	--			if row % 2 == 0 then row = row / 2 else row = math.floor(row / 2) + 6 end
+	--			newColor:set(red / 255, green / 255, blue / 255, 1.0)
+	--			if col == columns-1 and row == rows-1 then
+	--				newColor:set(1.0, 1.0, 1.0, 1.0)
+	--			elseif HSBFactor then
+	--				newColor:changeHSBValue(HSBFactor.h, HSBFactor.s, HSBFactor.b);
+	--			end
+	--			o.colors[col + row * columns + 1] = { r = newColor:getRedFloat(), g = newColor:getGreenFloat(), b = newColor:getBlueFloat() }
+	--			i = i + 1
+	--		end
+	--	end
+	--end
 
 	return o
 end

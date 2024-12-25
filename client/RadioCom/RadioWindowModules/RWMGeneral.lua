@@ -7,6 +7,18 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 
 RWMGeneral = RWMPanel:derive("RWMGeneral");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
+local columnWidth = getTextManager():MeasureStringX(UIFont.Small, getText(":   ")) + math.max(
+        getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RadioChannel")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RadioFrequency")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RadioFreqRange")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RadioTwoway")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RadioStrength"))
+)
+
 function RWMGeneral:initialise()
     ISPanel.initialise(self)
 end
@@ -57,8 +69,8 @@ function RWMGeneral:readFromObject( _player, _deviceObject, _deviceData, _device
 
     self:setInfoLines()
 
-    local h = 10+32;
-    local h2 = 10 + (#self.infoLines * (self.fontheight));
+    local h = UI_BORDER_SPACING*2+BUTTON_HGT;
+    local h2 = UI_BORDER_SPACING*2 + (#self.infoLines * (self.fontheight));
     h = h2>h and h2 or h;
 
     self:setHeight(h);
@@ -70,24 +82,23 @@ function RWMGeneral:setInfoLines()
     if self.deviceData then
         self.isTv = self.deviceData:getIsTelevision();
         if self.isTv then
-            self:addInfoLine(getText("IGUI_RadioDevice")..": ", self.deviceData:getDeviceName());
             local zomboidRadio = getZomboidRadio();
             if zomboidRadio then
                 local channelName = zomboidRadio:getChannelName(self.deviceData:getChannel()) or getText("IGUI_RadioUknownChannel");
-                self:addInfoLine(getText("IGUI_RadioChannel")..": ", channelName);
+                self:addInfoLine(getText("IGUI_RadioChannel")..":   ", channelName);
             end
         else
             local zomboidRadio = getZomboidRadio();
             if zomboidRadio then
                 local channelName = zomboidRadio:getChannelName(self.deviceData:getChannel()) or getText("IGUI_RadioUknownChannel");
-                self:addInfoLine(getText("IGUI_RadioChannel")..": ", channelName);
+                self:addInfoLine(getText("IGUI_RadioChannel")..":   ", channelName);
             end
             --self:addInfoLine("Device: ", self.deviceData:getDeviceName());
-            self:addInfoLine(getText("IGUI_RadioFrequency")..": ", tostring(self.deviceData:getChannel()/1000).." MHz");
-            self:addInfoLine(getText("IGUI_RadioFreqRange")..": ", tostring(self.deviceData:getMinChannelRange()/1000).." MHz - " .. tostring(self.deviceData:getMaxChannelRange()/1000).." MHz");
-            self:addInfoLine(getText("IGUI_RadioTwoway")..": ", self.deviceData:getIsTwoWay() and getText("IGUI_RadioYes") or getText("IGUI_RadioNo"));
+            self:addInfoLine(getText("IGUI_RadioFrequency")..":   ", tostring(self.deviceData:getChannel()/1000).." MHz");
+            self:addInfoLine(getText("IGUI_RadioFreqRange")..":   ", tostring(self.deviceData:getMinChannelRange()/1000).." MHz - " .. tostring(self.deviceData:getMaxChannelRange()/1000).." MHz");
+            self:addInfoLine(getText("IGUI_RadioTwoway")..":   ", self.deviceData:getIsTwoWay() and getText("IGUI_RadioYes") or getText("IGUI_RadioNo"));
             if self.deviceData:getIsTwoWay() then
-                self:addInfoLine(getText("IGUI_RadioStrength")..": ", tostring(self.deviceData:getTransmitRange()).." "..getText("IGUI_RadioMeter"));
+                self:addInfoLine(getText("IGUI_RadioStrength")..":   ", tostring(self.deviceData:getTransmitRange()).." "..getText("IGUI_RadioMeter"));
             end
         end
     end
@@ -122,14 +133,14 @@ function RWMGeneral:render()
         --self:drawRectBorder(0, 0, self.width, self.height, 0.9, 0.0, 1.0, 0.0)
     if self.itemTexture then
         -- texture box
-        self:drawRect(10, 5, 32, 32, 1.0, 0.0, 0.0, 0.0)
-        self:drawRectBorder(10, 5, 32, 32, 1.0, 0.8, 0.8, 0.8)
+        self:drawRect(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, 1.0, 0.0, 0.0, 0.0)
+        self:drawRectBorder(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, 1.0, 0.8, 0.8, 0.8)
         -- texture
-        self:drawTextureScaledAspect2(self.itemTexture, 11, 6, 30, 30, 1.0, 1.0, 1.0, 1.0)
+        self:drawTextureScaledAspect2(self.itemTexture, UI_BORDER_SPACING+3, UI_BORDER_SPACING+3, BUTTON_HGT-4, BUTTON_HGT-4, 1.0, 1.0, 1.0, 1.0)
         --self:drawTexture(self.itemTexture, 4+self.itemTexture:getOffsetX(), self.fontheight+4+self.itemTexture:getOffsetY(), 1.0, 1.0, 1.0, 1.0);
     end
 
-    local x, y = 42 + ((self:getWidth()-42)/3),5;
+    local x, y = columnWidth + BUTTON_HGT + UI_BORDER_SPACING*2 + 1,UI_BORDER_SPACING+1;
     for i,v in ipairs(self.infoLines) do
         local ii =i-1;
         self:drawTextRight(v.prefix, x, y+(ii*(self.fontheight)), 1,1,1,1, UIFont.Small);

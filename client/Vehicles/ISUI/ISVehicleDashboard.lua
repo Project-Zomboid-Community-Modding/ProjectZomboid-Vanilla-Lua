@@ -44,6 +44,7 @@ function ISVehicleDashboard:createChildren()
 	self.engineTex.target = self;
 	self:addChild(self.engineTex);
 	
+-- 	self.lightsTex = ISImage:new(250,35, self.iconLights:getWidthOrig(), self.iconLights:getHeightOrig(), self.iconLights);
 	self.lightsTex = ISImage:new(300,35, self.iconLights:getWidthOrig(), self.iconLights:getHeightOrig(), self.iconLights);
 	self.lightsTex:initialise();
 	self.lightsTex:instantiate();
@@ -52,6 +53,19 @@ function ISVehicleDashboard:createChildren()
 	self.lightsTex.target = self;
 	self:addChild(self.lightsTex);
 	
+	self.radioTex = ISImage:new(350,35, self.iconRadio:getWidthOrig()/2, self.iconRadio:getHeightOrig()/2, self.iconRadio);
+-- 	self.radioTex = ISImage:new(350,35, self.iconRadio:getWidthOrig(), self.iconRadio:getHeightOrig(), self.iconRadio);
+    self.radioTex.scaledWidth = 16;
+    self.radioTex.scaledHeight = 16;
+	self.radioTex:initialise();
+	self.radioTex:instantiate();
+	self.radioTex.onclick = ISVehicleDashboard.onClickRadio;
+	self.radioTex.mouseovertext = getText("Tooltip_Dashboard_Radio")
+	self.radioTex.target = self;
+	self:addChild(self.radioTex);
+
+
+-- 	self.heaterTex = ISImage:new(450,35, self.iconHeater:getWidthOrig(), self.iconHeater:getHeightOrig(), self.iconHeater);
 	self.heaterTex = ISImage:new(400,35, self.iconHeater:getWidthOrig(), self.iconHeater:getHeightOrig(), self.iconHeater);
 	self.heaterTex:initialise();
 	self.heaterTex:instantiate();
@@ -102,6 +116,16 @@ function ISVehicleDashboard:createChildren()
 	self.fuelGauge:instantiate()
 	self.fuelGauge:setNeedleWidth(25)
 	self:addChild(self.fuelGauge)
+
+	self.leftSideFuel = ISImage:new(x - 20 + 40, y + 55, self.leftSideFuelTex:getWidthOrig(), self.leftSideFuelTex:getHeightOrig(), self.leftSideFuelTex);
+	self.leftSideFuel:initialise()
+	self.leftSideFuel:instantiate()
+	self:addChild(self.leftSideFuel)
+
+	self.rightSideFuel = ISImage:new(x + 10 + 40, y + 55, self.rightSideFuelTex:getWidthOrig(), self.rightSideFuelTex:getHeightOrig(), self.rightSideFuelTex);
+	self.rightSideFuel:initialise()
+	self.rightSideFuel:instantiate()
+	self:addChild(self.rightSideFuel)
 
 	x = 85
 	y = self.backgroundTex:getHeight() - self.engineGaugeTex:getHeight()
@@ -174,8 +198,19 @@ function ISVehicleDashboard:setVehicle(vehicle)
 			self.fuelValue = self.gasTank:getContainerContentAmount() / self.gasTank:getContainerCapacity()
 		else
 			self.fuelValue = 0.0
-		end	
+		end
 		self.fuelGauge:setVisible(true)
+
+        self.leftSideFuel:setVisible(false)
+        self.rightSideFuel:setVisible(false)
+        local gasArea = part:getArea()
+        if gasArea then
+            if vehicle:leftSideFuel() then
+                self.leftSideFuel:setVisible(true)
+            elseif vehicle:rightSideFuel() then
+                self.rightSideFuel:setVisible(true)
+            end
+        end
 		table.insert(self.gauges, self.fuelGauge)
 	else
 		self.gasTank = nil
@@ -201,6 +236,8 @@ function ISVehicleDashboard:prerender()
 	if not self.vehicle or not ISUIHandler.allUIVisible then return end
 	local alpha = self:getAlphaFlick(0.65);
 	local greyBg = {r=0.5, g=0.5, b=0.5, a=alpha};
+	local goodColor = { r = getCore():getGoodHighlitedColor():getR(), g = getCore():getGoodHighlitedColor():getG(), b = getCore():getGoodHighlitedColor():getB(), a = alpha }
+	local badColor = { r = getCore():getBadHighlitedColor():getR(), g = getCore():getBadHighlitedColor():getG(), b = getCore():getBadHighlitedColor():getB(), a = alpha }
 	if self.gasTank then
 		local current = 0.0
 		if self.vehicle:isEngineRunning() or self.vehicle:isKeysInIgnition() then
@@ -224,10 +261,16 @@ function ISVehicleDashboard:prerender()
 	end
 	self.batteryTex.backgroundColor = greyBg;
 	if not self:checkEngineFull() and self.vehicle:isKeysInIgnition() and (not self.vehicle:isEngineRunning() and not self.vehicle:isEngineStarted()) then
-		self.engineTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
+		self.engineTex.backgroundColor = badColor
+-- 		self.engineTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
 	else
 		if self.vehicle:isEngineRunning() then
-			self.engineTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+
+	        local cond = self.vehicle:getPartById("Engine"):getCondition()
+            local color = ColorInfo.new(0, 0, 0, 1)
+            getCore():getBadHighlitedColor():interp(getCore():getGoodHighlitedColor(), cond/100, color);
+-- 			self.engineTex.backgroundColor = goodColor
+			self.engineTex.backgroundColor = {r=color:getR(), g=color:getG(), b=color:getB(), a=alpha};
 			self.btn_partSpeed.name = self.vehicle:getTransmissionNumberLetter();
 		elseif self.vehicle:isEngineStarted() then
 			self.engineTex.backgroundColor = {r=1, g=0.5, b=0.1, a=alpha};
@@ -239,9 +282,14 @@ function ISVehicleDashboard:prerender()
 	end
 	if self.vehicle:isEngineRunning() or self.vehicle:isKeysInIgnition() then
 		if self.vehicle:getBatteryCharge() > 0 then
-			self.batteryTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+            local color = ColorInfo.new(0, 0, 0, 1)
+            local charge = self.vehicle:getBatteryCharge()
+            getCore():getBadHighlitedColor():interp(getCore():getGoodHighlitedColor(), charge, color);
+-- 			self.batteryTex.backgroundColor = goodColor
+			self.batteryTex.backgroundColor = {r=color:getR(), g=color:getG(), b=color:getB(), a=alpha};
 		else
-			self.batteryTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
+			self.batteryTex.backgroundColor = badColor
+-- 			self.batteryTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
 		end
 	end
 	if not self.vehicle:isKeysInIgnition() then
@@ -274,18 +322,26 @@ function ISVehicleDashboard:prerender()
 			end
 		end
 	else
-		self.wasKeyInIgnition = false
+		if self.wasKeyInIgnition then
+			self.wasKeyInIgnition = false
+			if self.character then
+				self.character:playSound("VehicleRemoveIgnitionKey")
+			end
+		end
 	end
 
 	if self.vehicle:getHeadlightsOn() and not self.vehicle:getHeadlightCanEmmitLight() then
-		self.lightsTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
+		self.lightsTex.backgroundColor = badColor
+-- 		self.lightsTex.backgroundColor = {r=1, g=0, b=0, a=alpha};
 	elseif self.vehicle:getHeadlightsOn() then
-		self.lightsTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+		self.lightsTex.backgroundColor = goodColor
+-- 		self.lightsTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
 	else
 		self.lightsTex.backgroundColor = greyBg;
 	end
 	if self.vehicle:areAllDoorsLocked() then
-		self.doorTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+		self.doorTex.backgroundColor = goodColor
+-- 		self.doorTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
 	elseif self.vehicle:isAnyDoorLocked() then
 		self.doorTex.backgroundColor = {r=1, g=1, b=0, a=alpha};
 	else
@@ -293,19 +349,22 @@ function ISVehicleDashboard:prerender()
 	end
 	if self.vehicle:getPartById("Heater") then
 		if self.vehicle:getPartById("Heater"):getModData().active then
-			self.heaterTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+			self.heaterTex.backgroundColor = goodColor
+-- 			self.heaterTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
 		else
 			self.heaterTex.backgroundColor = greyBg;
 		end
 	end
 	if self.vehicle:isRegulator() then
-		self.speedregulatorTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+		self.speedregulatorTex.backgroundColor = goodColor
+-- 		self.speedregulatorTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
 	else
 		self.speedregulatorTex.backgroundColor = greyBg;
 	end
 	self.trunkTex:setVisible(self.vehicle:getPartById("TruckBed") ~= nil)
 	if self.vehicle:isTrunkLocked() then
-		self.trunkTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+		self.trunkTex.backgroundColor = goodColor
+-- 		self.trunkTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
 		self.trunkTex.mouseovertext = getText("Tooltip_Dashboard_TrunkLocked")
 	else
 		self.trunkTex.backgroundColor = greyBg;
@@ -319,6 +378,19 @@ function ISVehicleDashboard:prerender()
 		end
 	else
 		self.fuelGauge:setTexture(self.gaugeFull);
+	end
+
+	if self.radioTex then
+	    self.radioTex.backgroundColor = greyBg;
+        if self.vehicle:getPartById("Radio") and self.vehicle:getPartById("Radio"):getDeviceData()  and self.vehicle:getPartById("Radio"):getDeviceData():getIsTurnedOn() then
+            self.radioTex.backgroundColor = goodColor
+--             self.radioTex.backgroundColor = {r=0, g=1, b=0, a=alpha};
+        end
+	    if self.vehicle:isKeysInIgnition() or  (self.vehicle:isHotwired() and (self.vehicle:isEngineRunning() or self.vehicle:isStarting())) and self.vehicle:getBatteryCharge() > 0 then
+            if not self.vehicle:getPartById("Radio") or not self.vehicle:getPartById("Radio"):getInventoryItem() then
+                self.radioTex.backgroundColor = badColor
+            end
+        end
 	end
 end
 
@@ -397,24 +469,38 @@ function ISVehicleDashboard:onResolutionChange()
 	end
 	
 	if self.lightsTex then
-		self.lightsTex:setX(self.engineTex:getX() + 255);
+		self.lightsTex:setX(self.engineTex:getX() + 247);
+-- 		self.lightsTex:setX(self.engineTex:getX() + 255);
 		self.lightsTex:setY(self.engineTex:getY());
+	end
+
+	if self.radioTex then
+		self.radioTex:setX(self.lightsTex:getX() + 32);
+		self.radioTex:setY(self.lightsTex:getY() + 2);
 	end
 	
 	if self.heaterTex then
-		self.heaterTex:setX(self.lightsTex:getX() + 32);
-		self.heaterTex:setY(self.lightsTex:getY());
+		self.heaterTex:setX(self.radioTex:getX() + 27);
+-- 		self.heaterTex:setX(self.radioTex:getX() + 32);
+		self.heaterTex:setY(self.radioTex:getY() - 2);
 	end
+
+-- 	if self.heaterTex then
+-- 		self.heaterTex:setX(self.lightsTex:getX() + 32);
+-- 		self.heaterTex:setY(self.lightsTex:getY());
+-- 	end
 	
 	if self.trunkTex then
-		self.trunkTex:setX(self.heaterTex:getX() + 31);
+		self.trunkTex:setX(self.heaterTex:getX() + 27);
 		self.trunkTex:setY(self.heaterTex:getY());
 	end
 
 	if self.ignitionTex then
-		self.ignitionTex:setX(self.trunkTex:getX() + 52);
+		self.ignitionTex:setX(self.engineTex:getX() + 255 + 32 + 31 + 52);
+-- 		self.ignitionTex:setX(self.trunkTex:getX() + 52);
 		self.ignitionTex:setY(self.trunkTex:getY() + 34);
 	end
+
 end
 
 function ISVehicleDashboard:onClickEngine()
@@ -452,6 +538,25 @@ function ISVehicleDashboard:onClickHeater()
 	ISVehicleMenu.onToggleHeater(self.character)
 end
 
+function ISVehicleDashboard:onClickRadio()
+	if getGameSpeed() == 0 then return; end
+	if getGameSpeed() > 1 then setGameSpeed(1); end
+	local radio = self.vehicle:getPartById("Radio")
+	if not radio or not radio:getInventoryItem() or not radio:getDeviceData() then return end
+	getSoundManager():playUISound("VehicleRadioButton")
+	if radio:getDeviceData():getIsTurnedOn() then
+        radio:getDeviceData():setIsTurnedOn(false)
+        if ISRadioWindow.isActive(self.character, radio) then
+            ISRadioWindow.closeIfActive(self.character, radio)
+        end
+        return
+    end
+    if ISRadioWindow.isActive(self.character, radio) then
+        ISRadioWindow.closeIfActive(self.character, radio)
+	else
+        ISVehicleMenu.onSignalDevice(self.character, radio)
+    end
+end
 function ISVehicleDashboard:onClickKeys()
 	if getGameSpeed() == 0 then return; end
 	if getGameSpeed() > 1 then setGameSpeed(1); end
@@ -489,6 +594,9 @@ function ISVehicleDashboard:new(playerNum, chr)
 	o.gaugeEmpty = getTexture("media/ui/vehicles/rj-vehicle_fuelguage-empty.png");
 	o.engineGaugeTex = getTexture("media/ui/vehicles/rj-vehicle_engineguage.png")
 	o.speedGaugeTex = getTexture("media/ui/vehicles/vehicle_spedometer.png")
+	o.leftSideFuelTex = getTexture("media/ui/ArrowLeft.png")
+	o.rightSideFuelTex = getTexture("media/ui/ArrowRight.png")
+	o.iconRadio = getTexture("Icon_Radio_Speaker");
 	o.flickingTimer = 0;
 	o:setWidth(o.dashboardBG:getWidth());
 	return o
@@ -598,6 +706,8 @@ function ISVehicleDashboard.onGameStart()
 	textures.gaugeEmpty = getTexture("media/ui/vehicles/rj-vehicle_fuelguage-empty.png");
 	textures.engineGaugeTex = getTexture("media/ui/vehicles/rj-vehicle_engineguage.png")
 	textures.speedGaugeTex = getTexture("media/ui/vehicles/vehicle_spedometer.png")
+	textures.rightSideFuelTex = getTexture("media/ui/ArrowRight.png")
+	textures.leftSideFuelTex = getTexture("media/ui/ArrowLeft.png")
 end
 
 Events.OnGameStart.Add(ISVehicleDashboard.onGameStart)

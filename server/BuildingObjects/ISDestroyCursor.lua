@@ -16,7 +16,7 @@ function ISDestroyCursor:create(x, y, z, north, sprite)
 		if not ISBuildMenu.cheat then
 			ISWorldObjectContextMenu.equip(player, player:getPrimaryHandItem(), self.sledgehammer:getType(), true)
 		end
-		ISTimedActionQueue.add(ISDestroyStuffAction:new(player, destroy, self.cornerCounter))
+		ISTimedActionQueue.add(ISDestroyStuffAction:new(player, destroy, self:_isWall(destroy) and self.cornerCounter) or nil)
 	end
 end
 
@@ -30,11 +30,13 @@ function ISDestroyCursor:walkTo(x, y, z)
 			self:_isDoorFrame(destroy) or self:_isWall(destroy) then
 		return luautils.walkAdjWindowOrDoor(playerObj, square, destroy, true)
 	end
-	if destroy:getProperties():Is(IsoFlagType.solidfloor) then
+	if destroy and destroy:getProperties():Is(IsoFlagType.solidfloor) then
 		local adjacent = AdjacentFreeTileFinder.Find(square, playerObj)
 		if adjacent ~= nil then
 			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent))
 			return true
+		else
+			return luautils.walkAdjWall(playerObj, square, square:Is(IsoFlagType.collideN))
 		end
 	end
 	return luautils.walkAdj(playerObj, square, true)
@@ -72,7 +74,7 @@ function ISDestroyCursor:_isDoorWallW(object)
 end
 
 function ISDestroyCursor:rotateKey(key)
-	if key == getCore():getKey("Rotate building") then
+	if getCore():isKey("Rotate building", key) then
 		--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
 		--only need to test for "CornerWestWall", if it has that, it will have CornerNorthWall as well
 		if self.cornerCounter == 0 and self.currentObject ~= nil and self.currentObject:getSprite():getProperties():Is("CornerWestWall") then
@@ -104,17 +106,12 @@ function ISDestroyCursor:isValid(square)
 end
 
 function ISDestroyCursor:render(x, y, z, square)
-	if not self.floorSprite then
-		self.floorSprite = IsoSprite.new()
-		self.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
-
 	self.currentObject = nil
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	self.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 
 	if self.currentSquare ~= square then
 		self.objectIndex = 1
@@ -284,6 +281,7 @@ function ISDestroyCursor:canDestroy(object)
 	if object:getZ() > 0 and self:isFloorAtTopOfStairs(object) then return false end
 
 	local spriteName = object:getSprite():getName()
+-- 	getPlayer():Say(tostring(spriteName))
 	if spriteName then
 		-- advertising billboard base
 		if spriteName == "advertising_01_14" then return false end

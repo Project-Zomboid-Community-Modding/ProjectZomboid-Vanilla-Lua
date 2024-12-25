@@ -42,7 +42,8 @@ end
 
 function ISBBQInfoWindow:setObject(bbq)
 	self.object = bbq
-	self.panel:setName(bbq:isPropaneBBQ() and getText("IGUI_BBQ_TypePropane") or getText("IGUI_BBQ_TypeCharcoal"))
+	self.panel:setName(bbq:getTileName())
+-- 	self.panel:setName(bbq:isPropaneBBQ() and getText("IGUI_BBQ_TypePropane") or getText("IGUI_BBQ_TypeCharcoal"))
 	self.spriteName = bbq:getTextureName()
 	self.fuelAmount = bbq:getFuelAmount()
 	self.isLit = bbq:isLit()

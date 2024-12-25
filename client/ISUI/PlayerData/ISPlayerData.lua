@@ -43,10 +43,6 @@ function removeInventoryUI(id)
         print("removing backButtonWheel")
         data.backButtonWheel:removeFromUIManager()
     end
-    if data.safetyUI then
-        print("removing safetyUI")
-        data.safetyUI:removeFromUIManager()
-    end
     if data.craftingUI then
         print("removing craftingUI")
         data.craftingUI:removeFromUIManager()
@@ -80,6 +76,10 @@ function removeInventoryUI(id)
         data.miniMap:saveSettings()
         data.miniMap:removeFromUIManager()
     end
+
+    if data.sleepingUI then
+        data.sleepingUI:removeFromUIManager()
+    end
     
     data.playerInventory = nil;
     data.lootInventory = nil;
@@ -88,11 +88,11 @@ function removeInventoryUI(id)
     data.characterInfo = nil;
     data.playerHotbar = nil;
     data.backButtonWheel = nil
-    data.safetyUI = nil
     data.craftingUI = nil
     data.mechanicsUI = nil
     data.vehicleDashboard = nil
     data.miniMap = nil
+    data.sleepingUI = nil
 
     end
 
@@ -138,15 +138,14 @@ function getPlayerBackButtonWheel(id)
     return nil
 end
 
-function getPlayerSafetyUI(id)
-    local data = getPlayerData(id)
-    if data then return data.safetyUI end
-    return nil
-end
-
 function getPlayerCraftingUI(id)
     local data = getPlayerData(id)
     return data and data.craftingUI
+end
+
+function getPlayerZoneUI(id)
+    local data = getPlayerData(id)
+    return data and data.zoneUI
 end
 
 function getPlayerMechanicsUI(id)
@@ -166,7 +165,17 @@ end
 
 function getPlayerRadialMenu(id)
     local data = getPlayerData(id)
+    if data and not data.radialMenu then
+        data.radialMenu = ISRadialMenu:new(0, 0, 100, 200, id)
+        data.radialMenu:initialise()
+    end
+
     return data and data.radialMenu
+end
+
+function getPlayerSleepingUI(id)
+    local data = getPlayerData(id)
+    return data and data.sleepingUI
 end
 
 function createPlayerData(id)

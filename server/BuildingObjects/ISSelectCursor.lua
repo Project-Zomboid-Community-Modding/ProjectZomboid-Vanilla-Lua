@@ -10,15 +10,11 @@ function ISSelectCursor:isValid(square)
 end
 
 function ISSelectCursor:render(x, y, z, square)
-	if not ISSelectCursor.floorSprite then
-		ISSelectCursor.floorSprite = IsoSprite.new()
-		ISSelectCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	ISSelectCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISSelectCursor:new(character, ui, onSquareSelected)

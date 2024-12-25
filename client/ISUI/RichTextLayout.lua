@@ -1,6 +1,7 @@
 require "ISBaseObject"
 
 ISRichTextLayout = ISBaseObject:derive("ISRichTextLayout")
+local IMAGE_PAD = 5
 
 ISRichTextLayout.drawMargins = false
 
@@ -63,6 +64,20 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 		self.rgb[self.currentLine].r = tonumber(rgb[1])
 		self.rgb[self.currentLine].g = tonumber(rgb[2])
 		self.rgb[self.currentLine].b = tonumber(rgb[3])
+	elseif string.find(command, "GHC") then
+		local rgb = string.split(string.sub(command, 5, string.len(command)), ",");
+		self.rgb[self.currentLine] = {};
+		self.rgb[self.currentLine].r = getCore():getGoodHighlitedColor():getR();
+		self.rgb[self.currentLine].g = getCore():getGoodHighlitedColor():getG();
+		self.rgb[self.currentLine].b = getCore():getGoodHighlitedColor():getB();
+		self.rgbCurrent = self.rgb[self.currentLine]
+	elseif string.find(command, "BHC") then
+		local rgb = string.split(string.sub(command, 5, string.len(command)), ",");
+		self.rgb[self.currentLine] = {};
+		self.rgb[self.currentLine].r = getCore():getBadHighlitedColor():getR();
+		self.rgb[self.currentLine].g = getCore():getBadHighlitedColor():getG();
+		self.rgb[self.currentLine].b = getCore():getBadHighlitedColor():getB();
+		self.rgbCurrent = self.rgb[self.currentLine]
 	end
 	if string.find(command, "RED") then
 		self.rgb[self.currentLine] = {}
@@ -125,12 +140,12 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 		if self.images[self.imageCount] == nil then
 			--print("Could not find texture")
 		end
-		self.imageX[self.imageCount] = x+2
-		self.imageY[self.imageCount] = y
-		self.imageW[self.imageCount] = w
-		self.imageH[self.imageCount] = h
-		self.imageCount = self.imageCount + 1
-		x = x + w + 7
+		self.imageX[self.imageCount] = x+IMAGE_PAD;
+		self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2;
+		self.imageW[self.imageCount] = w;
+		self.imageH[self.imageCount] = h;
+		self.imageCount = self.imageCount + 1;
+		x = x + w + IMAGE_PAD*2;
 --[[
 		local newY = math.max(y + (h / 2) - 7, y)
 
@@ -178,7 +193,7 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 		if self.images[self.imageCount] == nil then
 			--print("Could not find texture")
 		end
-		local mx = (self.width / 2) - self.marginLeft
+		local mx = (self.width - self.marginLeft - self.marginRight) / 2
 		self.imageX[self.imageCount] = mx - (w/2)
 		self.imageY[self.imageCount] = y
 		self.imageW[self.imageCount] = w
@@ -220,12 +235,12 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 		if lineImageHeight < h + 0 then
 			lineImageHeight = h + 0;
 		end
-		self.imageX[self.imageCount] = x+2
-		self.imageY[self.imageCount] = y
+		self.imageX[self.imageCount] = x+IMAGE_PAD
+		self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2
 		self.imageW[self.imageCount] = w
 		self.imageH[self.imageCount] = h
 		self.imageCount = self.imageCount + 1
-		x = x + w + 7
+		x = x + w + IMAGE_PAD*2
 	end
 
 	if string.find(command, "SETX:") then

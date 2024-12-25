@@ -2730,7 +2730,7 @@ RecMedia["0454442e-ce08-4d01-bba5-6a8822bf86d1"] = {
 	},
 };
 
--- Media: VHS: Return of the Nightwatcher [id: 17596597-5bae-4814-927c-c8673b7739af]
+-- Media: VHS: Return of the Nightporter [id: 17596597-5bae-4814-927c-c8673b7739af]
 RecMedia["17596597-5bae-4814-927c-c8673b7739af"] = {
 	itemDisplayName = "RM_dd8e5a36-f247-4679-9808-923ec93f873f",
 	title = "RM_fd60ef8a-a45f-44e5-91a6-90da8a824f8b",

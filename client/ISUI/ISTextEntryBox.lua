@@ -25,6 +25,10 @@ end
 function ISTextEntryBox:setOnlyNumbers(onlyNumbers)
     self.javaObject:setOnlyNumbers(onlyNumbers);
 end
+
+function ISTextEntryBox:setOnlyText(onlyText)
+	self.javaObject:setOnlyText(onlyText);
+end
 --************************************************************************--
 --** ISPanel:instantiate
 --**
@@ -97,6 +101,10 @@ function ISTextEntryBox:setText(str)
     end
 	self.javaObject:SetText(str);
 	self.title = str;
+end
+
+function ISTextEntryBox:setTextRGBA(r, g, b, a)
+    self.javaObject:setTextRGBA(r, g, b, a)
 end
 
 function ISTextEntryBox:onPressDown()

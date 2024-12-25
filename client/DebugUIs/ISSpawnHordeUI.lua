@@ -1,131 +1,157 @@
---***********************************************************
---**                    ROBERT JOHNSON                     **
---***********************************************************
-
 require "ISUI/ISPanelJoypad"
 
 ISSpawnHordeUI = ISCollapsableWindow:derive("ISSpawnHordeUI");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 function ISSpawnHordeUI:createChildren()
+	local x = UI_BORDER_SPACING+1
 	local btnWid = 100
-	local btnHgt = 25
-	local padBottom = 0
-	local y = 60
-	local f = 0.8
+	local y = self:titleBarHeight() + UI_BORDER_SPACING
 	
 	ISCollapsableWindow.createChildren(self)
+
+	local pickedSquareText = getText("IGUI_SpawnHorde_PickedSquare") .. ": " .. self.selectX .. ", " .. self.selectY .. ", " .. self.selectZ
+
+	self.pickedSquareLabel = ISLabel:new(x, y, BUTTON_HGT, pickedSquareText ,1,1,1,1,UIFont.Small, true);
+	self:addChild(self.pickedSquareLabel);
+
+	self.pickNewSq = ISButton:new(self.pickedSquareLabel:getRight() + UI_BORDER_SPACING, y, btnWid, BUTTON_HGT, getText("IGUI_SpawnHorde_PickNewSquare"), self, ISSpawnHordeUI.onSelectNewSquare);
+	self.pickNewSq:initialise();
+	self.pickNewSq:instantiate();
+	self.pickNewSq.borderColor = {r=1, g=1, b=1, a=0.1};
+	self:addChild(self.pickNewSq);
+
+	local farX = self.pickNewSq:getRight()
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 	
-	self.zombiesNbrLabel = ISLabel:new(10, y, 10, "Zombies Number" ,1,1,1,1,UIFont.Small, true);
+	self.zombiesNbrLabel = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieNumber")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.zombiesNbrLabel);
 
-	self.zombiesNbr = ISTextEntryBox:new("1", self.zombiesNbrLabel.x, self.zombiesNbrLabel.y + 15, 100, 20);
+	self.zombiesNbr = ISTextEntryBox:new("1", self.zombiesNbrLabel:getRight() + UI_BORDER_SPACING, y, 100, BUTTON_HGT);
 	self.zombiesNbr:initialise();
 	self.zombiesNbr:instantiate();
 	self.zombiesNbr:setOnlyNumbers(true);
 	self:addChild(self.zombiesNbr);
+	farX = math.max(farX, self.zombiesNbr:getRight())
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 	
-	self.radiusLbl = ISLabel:new(130, y, 10, "Radius" ,1,1,1,1,UIFont.Small, true);
+	self.radiusLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_Radius")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.radiusLbl);
-	y=y+15
 	
-	self.radius = ISTextEntryBox:new("1", self.radiusLbl.x, y, 100, 20);
+	self.radius = ISTextEntryBox:new("1", self.radiusLbl:getRight()+UI_BORDER_SPACING, y, 100, BUTTON_HGT);
 	self.radius:initialise();
 	self.radius:instantiate();
 	self.radius:setOnlyNumbers(true);
 	self:addChild(self.radius);
-	y=y+30
+
+	farX = math.max(farX, self.radius:getRight())
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 	
-	self.outfitLbl = ISLabel:new(10, y, 10, "Zombies Outfit" ,1,1,1,1,UIFont.Small, true);
+	self.outfitLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieOutfit")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.outfitLbl);
-	y=y+15
-	
+
 --	self.outfit = ISTextEntryBox:new("", self.outfitLbl.x, self.outfitLbl.y + 15, 100, 20);
 --	self.outfit:initialise();
 --	self.outfit:instantiate();
 --	self.outfit:setClearButton(true);
 --	self:addChild(self.outfit);
 	
-	self.outfit = ISComboBox:new(self.outfitLbl.x, y, 200, 20)
+	self.outfit = ISComboBox:new(self.outfitLbl:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT)
 	self.outfit:initialise()
 	self:addChild(self.outfit)
 	self.maleOutfits = getAllOutfits(false);
 	self.femaleOutfits = getAllOutfits(true);
-	self.outfit:addOptionWithData("None", nil);
+	self.outfit:addOptionWithData(getText("IGUI_None"), nil);
 	for i=0, self.maleOutfits:size()-1 do
 		local text = "";
 		if not self.femaleOutfits:contains(self.maleOutfits:get(i)) then
-			text = " - Male Only";
+			text = " - " .. getText("IGUI_SpawnHorde_MaleOnly");
 		end
 		self.outfit:addOptionWithData(self.maleOutfits:get(i) .. text, self.maleOutfits:get(i));
 	end
 	for i=0, self.femaleOutfits:size()-1 do
 		if not self.maleOutfits:contains(self.femaleOutfits:get(i)) then
-			self.outfit:addOptionWithData(self.femaleOutfits:get(i) .. " - Female only", self.femaleOutfits:get(i));
+			self.outfit:addOptionWithData(self.femaleOutfits:get(i) .. " - " .. getText("IGUI_SpawnHorde_FemaleOnly"), self.femaleOutfits:get(i));
 		end
 	end
-	y=y+30
+
+	farX = math.max(farX, self.outfit:getRight())
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 	
 	--self.crawlerLbl = ISLabel:new(10, y, 10, "Crawler" ,1,1,1,1,UIFont.Small, true);
 	--self:addChild(self.crawlerLbl);
 	
-	self.boolOptions = ISTickBox:new(10, y, 200, 20, "", self, ISSpawnHordeUI.onBoolOptionsChange);
+	self.boolOptions = ISTickBox:new(x, y, 200, BUTTON_HGT, "", self, ISSpawnHordeUI.onBoolOptionsChange);
 	self.boolOptions:initialise()
 	self:addChild(self.boolOptions)
-	self.boolOptions:addOption("KnockedDown");
-	self.boolOptions:addOption("Crawler");
-	self.boolOptions:addOption("FakeDead");
-	self.boolOptions:addOption("FallOnFront");
-	y=y+self.boolOptions:getHeight()+10
-	
-	
-	_,self.healthSliderTitle = ISDebugUtils.addLabel(self,"Health",10,y,"Health", UIFont.Small, true);
-	_,self.healthSliderLabel = ISDebugUtils.addLabel(self,"Health",80,y,"1", UIFont.Small, false);
-	_,self.healthSlider = ISDebugUtils.addSlider(self, "health", 130, y, 200, 20, ISSpawnHordeUI.onSliderChange)
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_KnockedDown"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Crawler"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_FakeDead"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_FallOnFront"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Invulnerable"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Sitting"))
+	y=y+self.boolOptions:getHeight()+UI_BORDER_SPACING
+
+	_,self.healthSliderTitle = ISDebugUtils.addLabel(self,"Health",x,y,getText("IGUI_SpawnHorde_Health")..": ", UIFont.Small, true);
+	_,self.healthSliderLabel = ISDebugUtils.addLabel(self,"Health",self.healthSliderTitle:getRight() + UI_BORDER_SPACING + BUTTON_HGT,y,"1", UIFont.Small, false);
+	_,self.healthSlider = ISDebugUtils.addSlider(self, "health", self.healthSliderLabel:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT, ISSpawnHordeUI.onSliderChange)
 	self.healthSlider.pretext = "Health: ";
 	self.healthSlider.valueLabel = self.healthSliderLabel;
 	self.healthSlider:setValues(0, 2, 0.1, 0.1, true);
 	self.healthSlider.currentValue = 1.0;
-	y=y+30
 
-	self.pickNewSq = ISButton:new(200, 20, btnWid, btnHgt, "Pick new square", self, ISSpawnHordeUI.onSelectNewSquare);
-	self.pickNewSq.anchorTop = false
-	self.pickNewSq.anchorBottom = true
-	self.pickNewSq:initialise();
-	self.pickNewSq:instantiate();
-	self.pickNewSq.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.pickNewSq);
+	farX = math.max(farX, self.healthSlider:getRight())
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	self.add = ISButton:new(10, self:getHeight() - padBottom - btnHgt - 22, btnWid*f, btnHgt, "Spawn", self, ISSpawnHordeUI.onSpawn);
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StashDebug_Spawn")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Close")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveZombies")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveBodies"))
+	)
+
+	farX = math.max(farX, buttonWid*2 + UI_BORDER_SPACING*2)
+	self:setWidth(farX + x)
+	y = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1
+
+	self.add = ISButton:new(x, y, buttonWid, BUTTON_HGT, getText("IGUI_StashDebug_Spawn"), self, ISSpawnHordeUI.onSpawn);
 	self.add.anchorTop = false
 	self.add.anchorBottom = true
 	self.add:initialise();
 	self.add:instantiate();
 	self.add.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.add);
-	
-	self.removezombies = ISButton:new(self.add.x + (btnWid*f) + 5, self.add.y, btnWid, btnHgt, "Remove zombies", self, ISSpawnHordeUI.onRemoveZombies);
+
+	self.closeButton2 = ISButton:new(self.width - buttonWid - x, self.add.y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Close"), self, ISSpawnHordeUI.close);
+	self.closeButton2.anchorTop = false
+	self.closeButton2.anchorBottom = true
+	self.closeButton2:initialise();
+	self.closeButton2:instantiate();
+	self.closeButton2:enableCancelColor()
+	self:addChild(self.closeButton2);
+
+	self.removezombies = ISButton:new(self.add.x, self.add.y - BUTTON_HGT - UI_BORDER_SPACING, buttonWid, BUTTON_HGT, getText("IGUI_SpawnHorde_RemoveZombies"), self, ISSpawnHordeUI.onRemoveZombies);
 	self.removezombies.anchorTop = false
 	self.removezombies.anchorBottom = true
 	self.removezombies:initialise();
 	self.removezombies:instantiate();
 	self.removezombies.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.removezombies);
-	
-	self.clearbodies = ISButton:new(self.width - btnWid*f - 15 - btnWid, self.add.y, btnWid, btnHgt, "Remove bodies", self, ISSpawnHordeUI.onRemoveBodies);
+
+	self.clearbodies = ISButton:new(self.closeButton2.x, self.removezombies.y, buttonWid, BUTTON_HGT, getText("IGUI_SpawnHorde_RemoveBodies"), self, ISSpawnHordeUI.onRemoveBodies);
 	self.clearbodies.anchorTop = false
 	self.clearbodies.anchorBottom = true
 	self.clearbodies:initialise();
 	self.clearbodies:instantiate();
 	self.clearbodies.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.clearbodies);
-	
-	self.closeButton2 = ISButton:new(self.width - btnWid*f - 10, self.add.y, btnWid*f, btnHgt, "Close", self, ISSpawnHordeUI.close);
-	self.closeButton2.anchorTop = false
-	self.closeButton2.anchorBottom = true
-	self.closeButton2:initialise();
-	self.closeButton2:instantiate();
-	self.closeButton2.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.closeButton2);
+
+	self:setHeight(self.healthSlider:getBottom() + BUTTON_HGT*2 + UI_BORDER_SPACING*3+1)
 end
 
 function ISSpawnHordeUI:onBoolOptionsChange(index, selected)
@@ -176,6 +202,8 @@ function ISSpawnHordeUI:onSpawn()
 	local crawler = false;
 	local isFallOnFront = false;
 	local isFakeDead = false;
+	local isInvulnerable = false;
+	local isSitting = false;
 	if self.maleOutfits:contains(outfit) and not self.femaleOutfits:contains(outfit) then
 		femaleChance = 0;
 	end
@@ -194,20 +222,31 @@ function ISSpawnHordeUI:onSpawn()
 	if self.boolOptions.selected[4] then
 		isFallOnFront = true;
 	end
+	if self.boolOptions.selected[5] then
+		isInvulnerable = true;
+	end
+	if self.boolOptions.selected[6] then
+		isSitting = true;
+	end
 	local health = self.healthSlider:getCurrentValue()
 	if isClient() then
-		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -health %s -outfit %s ", self.selectX, self.selectY, self.selectZ, count, radius, tostring(crawler), tostring(isFallOnFront), tostring(isFakeDead), tostring(knockedDown), tostring(health), outfit or ""))
+		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -health %s -outfit %s ", self.selectX, self.selectY, self.selectZ, count, radius, tostring(crawler), tostring(isFallOnFront), tostring(isFakeDead), tostring(knockedDown), tostring(isInvulnerable), tostring(health), outfit or ""))
 		return
 	end
 	for i=1,count do
 		local x = ZombRand(self.selectX-radius, self.selectX+radius+1);
 		local y = ZombRand(self.selectY-radius, self.selectY+radius+1);
-		addZombiesInOutfit(x, y, self.selectZ, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, health);
+		addZombiesInOutfit(x, y, self.selectZ, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health);
 	end
 end
 
 function ISSpawnHordeUI:getZombiesNumber()
 	local nbr = self.zombiesNbr:getInternalText();
+	nbr = tonumber(nbr)
+	if nbr > 500 then
+	    print("No more than 500 zombies can be spawned at a time to prevent crashing servers etc.")
+	    nbr = 500
+	end
 	return tonumber(nbr) or 1;
 end
 
@@ -286,8 +325,6 @@ end
 
 function ISSpawnHordeUI:render()
 	ISCollapsableWindow.render(self);
-	
-	self:drawText("Picked Square: " .. self.selectX .. "," .. self.selectY .. "," .. self.selectZ, 10, 25, 1, 1, 1, 1, self.font);
 end
 
 function ISSpawnHordeUI:addMarker(square, radius)
@@ -319,8 +356,8 @@ end
 --**
 --************************************************************************--
 function ISSpawnHordeUI:new(x, y, character, square)
-	local width = 400;
-	local height = 350;
+	local width = 1000;
+	local height = 1000;
 	local o = ISCollapsableWindow.new(self, x, y, width, height);
 	o.playerNum = character:getPlayerNum()
 	if y == 0 then
@@ -333,8 +370,10 @@ function ISSpawnHordeUI:new(x, y, character, square)
 	end
 	o.width = width;
 	o.height = height;
+	o.title = getText("IGUI_DebugContext_HordeManager");
 	o.chr = character;
 	o.moveWithMouse = true;
+	o:setResizable(false);
 	o.selectX = square:getX();
 	o.selectY = square:getY();
 	o.selectZ = square:getZ();

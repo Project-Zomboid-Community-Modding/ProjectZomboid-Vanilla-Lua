@@ -41,9 +41,9 @@ function SCampfireSystem:convertOldModData()
 	-- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it.
 	if self.system:loadedWorldVersion() ~= -1 then return end
 	
-	local modData = GameTime:getInstance():getModData()
+	local modData = GameTime.getInstance():getModData()
 	if modData.camping and modData.camping.campfires then
-		self:noise('converting old-style GameTime modData')
+-- 		self:noise('converting old-style GameTime modData')
 		for _,campfire in pairs(modData.camping.campfires) do
 			if not self.system:getObjectAt(campfire.x, campfire.y, campfire.z) then
 				local globalObject = self.system:newObject(campfire.x, campfire.y, campfire.z)
@@ -54,11 +54,11 @@ function SCampfireSystem:convertOldModData()
 		end
 		modData.camping.campfires = nil
 		for k,v in pairs(modData.camping) do
-			self:noise("copied "..tostring(k).."="..tostring(v))
+-- 			self:noise("copied "..tostring(k).."="..tostring(v))
 			camping.playerData[k] = v
 		end
 		modData.camping = nil
-		self:noise('converted '..self:getLuaObjectCount()..' campfires')
+-- 		self:noise('converted '..self:getLuaObjectCount()..' campfires')
 	end
 end
 
@@ -73,7 +73,7 @@ function SCampfireSystem:addCampfire(grid)
 	luaObject:addContainer()
 	luaObject:getIsoObject():transmitCompleteItemToClients()
 
-	self:noise("#campfires="..self:getLuaObjectCount())
+-- 	self:noise("#campfires="..self:getLuaObjectCount())
 	luaObject:saveData()
 	return luaObject;
 end
@@ -85,6 +85,11 @@ function SCampfireSystem:removeCampfire(luaObject)
 	luaObject:removeFireObject()
 	-- This call also removes the luaObject because of the OnObjectAboutToBeRemoved event
 	luaObject:removeIsoObject()
+end
+-- put out
+function SCampfireSystem:putOut(luaObject)
+	if not luaObject then return end
+	luaObject:putOut()
 end
 
 local function stringStarts(_string,_start)
@@ -142,6 +147,11 @@ function SCampfireSystem:lowerFuelAmount()
 	end
 end
 
+function SCampfireSystem:lowerFuelAmountSpecific(luaObject, amt)
+        luaObject.fuelAmt = math.max(luaObject.fuelAmt - amt, 0)
+        luaObject:changeFireLvl()
+end
+
 -- attract the zombie to the campfire and warm the player
 function SCampfireSystem:nearCamp(delay)
 	if isClient() then return end
@@ -175,4 +185,12 @@ end
 
 Events.EveryOneMinute.Add(EveryOneMinute)
 Events.EveryTenMinutes.Add(EveryTenMinutes)
+
+SCampfireSystem.putOut = function(square)
+    if not square then return end
+    local campfire = SCampfireSystem.instance:getLuaObjectAt(square:getX(), square:getY(), square:getZ())
+    if not campfire then return end
+-- 	SCampfireSystem:putOut(campfire)
+    campfire:putOut()
+end
 

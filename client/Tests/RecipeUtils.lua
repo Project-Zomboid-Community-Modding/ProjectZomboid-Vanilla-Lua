@@ -7,19 +7,19 @@ RecipeUtils = {}
 function RecipeUtils.CreateSourceItem1(recipe, source, sourceFullType, options)
 	local item = nil
 	if sourceFullType == "Water" then
-		item = InventoryItemFactory.CreateItem("Base.WaterBottleFull")
+		item = instanceItem("Base.WaterBottle")
 		item:setUsedDelta(item:getUseDelta()) -- a single use
 	elseif source:isDestroy() then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 	elseif getScriptManager():isDrainableItemType(sourceFullType) then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 		item:setUsedDelta(item:getUseDelta()) -- a single use
 	elseif source:getUse() > 0 then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 		if not instanceof(item, "Food") then error(sourceFullType..' is not food') end
 		item:setHungChange(-source:getUse() / 100)
 	else
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 	end
 	if recipe:getOriginalname() == "Insert Battery into Flashlight" and sourceFullType == "Base.Torch" then
 		item:setUsedDelta(0.0)
@@ -78,7 +78,9 @@ local function getAvailableItemCount(source, sourceFullType, availableItems)
 	local count = 0
 	for i=1,availableItems:size() do
 		local item = availableItems:get(i-1)
-		if item:getFullType() == sourceFullType then
+		if luautils.stringStarts(sourceFullType, "Fluid.") and item:getFluidContainer() and item:getFluidContainer():contains(sourceFullType) then
+			count = count + item:getFluidContainer():getAmount()
+		elseif item:getFullType() == sourceFullType then
 			count = count + 1
 		end
 	end

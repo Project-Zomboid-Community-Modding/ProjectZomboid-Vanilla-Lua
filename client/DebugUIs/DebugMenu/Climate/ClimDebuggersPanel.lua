@@ -6,24 +6,28 @@
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 ClimDebuggersPanel = ISDebugSubPanelBase:derive("ClimDebuggersPanel");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 function ClimDebuggersPanel:initialise()
     ISPanel.initialise(self);
-    self:addButtonInfo("Forecaster", ForecasterDebug.OnOpenPanel);
-    self:addButtonInfo("WeatherFx Panel", WeatherFXDebug.OnOpenPanel);
-    self:addButtonInfo("Player Temperature", PlayerClimateDebug.OnOpenPanel);
-    self:addButtonInfo("Thermoregulator", ThermoDebug.OnOpenPanel);
-    self:addButtonInfo("Daily values", DailyValuesDebug.OnOpenPanel);
-    self:addButtonInfo("Climate plotter", ClimateDebug.OnOpenPanel);
-    self:addButtonInfo("Weather plotter", WeatherPeriodDebug.OnOpenPanel);
-    self:addButtonInfo("Thunderbug", ThunderDebug.OnOpenPanel);
-    self:addButtonInfo("WindTickDebug", WindDebug.OnOpenPanel, 20);
-    self:addButtonInfo("Perform simulation test (CURRENT SETTINGS) Note: causes small freeze", ClimDebuggersPanel.OnSimulationButton, 20);
-    self:addButtonInfo("Perform simulation test (MOST DRY)", ClimDebuggersPanel.OnSimulationButtonOverride, 0, 1);
-    self:addButtonInfo("Perform simulation test (DRY)", ClimDebuggersPanel.OnSimulationButtonOverride, 0, 2);
-    self:addButtonInfo("Perform simulation test (NORMAL)", ClimDebuggersPanel.OnSimulationButtonOverride, 0, 3);
-    self:addButtonInfo("Perform simulation test (WET)", ClimDebuggersPanel.OnSimulationButtonOverride, 0, 4);
-    self:addButtonInfo("Perform simulation test (MOST WET)", ClimDebuggersPanel.OnSimulationButtonOverride, 0, 5);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_Forecaster"), ForecasterDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_WeatherFX"), WeatherFXDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_PlayerTemp"), PlayerClimateDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_Thermoregulator"), ThermoDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_DailyVal"), DailyValuesDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_ClimatePlot"), ClimateDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_WeatherPlot"), WeatherPeriodDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_Thunderbug"), ThunderDebug.OnOpenPanel);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_WindTickDebug"), WindDebug.OnOpenPanel, UI_BORDER_SPACING*2);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Current"), ClimDebuggersPanel.OnSimulationButton, UI_BORDER_SPACING*2);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Drier"), ClimDebuggersPanel.OnSimulationButtonOverride, 0, 1);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Dry"), ClimDebuggersPanel.OnSimulationButtonOverride, 0, 2);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Normal"), ClimDebuggersPanel.OnSimulationButtonOverride, 0, 3);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Wet"), ClimDebuggersPanel.OnSimulationButtonOverride, 0, 4);
+    self:addButtonInfo(getText("IGUI_ClimDebuggers_SimTest_Wetter"), ClimDebuggersPanel.OnSimulationButtonOverride, 0, 5);
 end
 
 function ClimDebuggersPanel:addButtonInfo(_title, _func, _marginBot, _arg)
@@ -37,22 +41,31 @@ function ClimDebuggersPanel:createChildren()
 
     local v, obj;
 
-    local x,y,w,margin = 10,10,self.width-30,5;
+    local needsScrollBar = 1
+    if self.height > BUTTON_HGT*15 + UI_BORDER_SPACING*19 + 2 then
+        needsScrollBar = 0
+    end
+
+    local x,y,w = UI_BORDER_SPACING+1,1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH*needsScrollBar - 1;
 
     self:initHorzBars(x,w);
 
-    local h = 20;
+    local h = BUTTON_HGT;
     --y, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
     if self.buttons then
         for k,v in ipairs(self.buttons)  do
-            y, obj = ISDebugUtils.addButton(self,v,x,y+margin,w,h,v.title,ClimDebuggersPanel.onClick);
+            y, obj = ISDebugUtils.addButton(self,v,x,y+UI_BORDER_SPACING,w,h,v.title,ClimDebuggersPanel.onClick);
+            if k == 10 then --just under "onSimulationButton"
+                y, obj = ISDebugUtils.addLabel(self,"freeze_note",x+(w/2),y,getText("IGUI_ClimDebuggers_FreezeNote"), UIFont.Small);
+                obj.center = true;
+            end
             if v.marginBot and v.marginBot>0 then
                 y = y+v.marginBot;
             end
-        end
+            end
     end
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+UI_BORDER_SPACING+1);
 end
 
 

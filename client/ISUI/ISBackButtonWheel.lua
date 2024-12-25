@@ -95,7 +95,7 @@ function ISBackButtonWheel:addCommands()
 	local searchManager = ISSearchManager.getManager(playerObj);
 	if not isPaused and searchManager and not ISBackButtonWheel.disableScavenge then
 		if searchManager.isSearchMode then
-			self:addSlice(getText("UI_disable_search_mode"), getTexture("media/textures/Foraging/eyeconOff_Shade_UI.png"), self.onCommand, self, "ForageMode");
+			self:addSlice(getText("UI_disable_search_mode"), getTexture("media/ui/foraging/eyeconOff.png"), self.onCommand, self, "ForageMode");
 			searchManager:checkCloseIcons();
 			for _, icon in pairs(searchManager.closeIcons) do
 				self:addSlice(getText("IGUI_Pickup") .. " " .. icon.itemObj:getDisplayName(), icon.itemTexture, self.onCommand, self, "ForageItem");
@@ -103,7 +103,7 @@ function ISBackButtonWheel:addCommands()
 				break; --only add the first icon found
 			end;
 		else
-			self:addSlice(getText("UI_enable_search_mode"), getTexture("media/textures/Foraging/eyeconOn_Shade_UI.png"), self.onCommand, self, "ForageMode");
+			self:addSlice(getText("UI_enable_search_mode"), getTexture("media/ui/foraging/eyeconOn.png"), self.onCommand, self, "ForageMode");
 		end;
 	end;
 end

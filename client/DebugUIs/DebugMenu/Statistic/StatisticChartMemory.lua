@@ -6,11 +6,12 @@
 
 require "DebugUIs/DebugMenu/Statistic/StatisticChart"
 
+local UI_BORDER_SPACING = 10
+
 StatisticChartMemory = StatisticChart:derive("StatisticChartMemory");
 StatisticChartMemory.instance = nil;
 StatisticChartMemory.shiftDown = 0;
 StatisticChartMemory.eventsAdded = false;
-
 
 function StatisticChartMemory.doInstance()
     if StatisticChartMemory.instance==nil then
@@ -46,17 +47,17 @@ Events.OnServerStatisticReceived.Add(StatisticChartMemory.OnServerStatisticRecei
 
 function StatisticChartMemory:createChildren()
     StatisticChart.createChildren(self);
-	
-	local labelWidth = 250
+
+	local labelWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_GameStats_Used")..": ")
 	x = self.historyM1:getX()
 	y = self.historyM1:getY()+self.historyM1:getHeight()
-	y = y+8;
-    y = self:addLabelValue(x+5, y, labelWidth, "value","used","used:",0);
+    y = self:addLabelValue(x, y, labelWidth, "value","used",getText("IGUI_GameStats_Used")..":",0);
+    self:setHeight(y+UI_BORDER_SPACING)
 end
 
 function StatisticChartMemory:initVariables()
 	StatisticChart.initVariables(self);
-	self:addVarInfo("used","used",-1,10000000000,"usedMemory");
+	self:addVarInfo("used",getText("IGUI_GameStats_Used"),-1,10000000000,"usedMemory");
 end
 
 function StatisticChartMemory:updateValues()

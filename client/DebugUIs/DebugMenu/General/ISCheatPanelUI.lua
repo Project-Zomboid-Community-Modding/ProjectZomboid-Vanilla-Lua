@@ -2,14 +2,15 @@ ISCheatPanelUI = ISPanel:derive("ISCheatPanelUI");
 ISCheatPanelUI.instance = nil
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISCheatPanelUI.cheatTooltips = {}
-ISCheatPanelUI.cheatTooltips["Fast Move"] = "Fast move:\nMove - arrow keys\nFloor Up/Down - PageUp/PageDown keys"
-ISCheatPanelUI.cheatTooltips["LootZed"] = "Show distribution list\nClick on container icon in loot menu to show"
 
 function ISCheatPanelUI.OnOpenPanel()
     if ISCheatPanelUI.instance==nil then
-        ISCheatPanelUI.instance = ISCheatPanelUI:new (50, 200, 212, 350, getPlayer());
+        ISCheatPanelUI.instance = ISCheatPanelUI:new (50, 200, 212+(getCore():getOptionFontSizeReal()*35), 350, getPlayer());
         ISCheatPanelUI.instance:initialise();
     end
 
@@ -27,21 +28,18 @@ end
 function ISCheatPanelUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_RadioSave"), self, ISCheatPanelUI.onClick);
+    self.ok = ISButton:new((self:getWidth()-btnWid)/2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RadioSave"), self, ISCheatPanelUI.onClick);
     self.ok.internal = "SAVE";
     self.ok.anchorTop = false
     self.ok.anchorBottom = true
     self.ok:initialise();
     self.ok:instantiate();
-    self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:enableAcceptColor()
     self:addChild(self.ok);
 
-    self.tickBox = ISTickBox:new(30, 50, 100, FONT_HGT_SMALL + 5, "Admin Powers", self, self.onTicked)
+    self.tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+FONT_HGT_MEDIUM+1, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT, "Admin Powers", self, self.onTicked)
     self.tickBox.choicesColor = {r=1, g=1, b=1, a=1}
-    self.tickBox.leftMargin = 2
     self.tickBox:setFont(UIFont.Small)
     self:addChild(self.tickBox);
 
@@ -50,71 +48,86 @@ end
 
 function ISCheatPanelUI:addAdminPowerOptions()
     self.setFunction = {}
-    self:addOption("Invisible", self.player:isInvisible(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_Invisible", self.player:isInvisible(), function(self, selected)
         self.player:setInvisible(selected);
     end);
-    self:addOption("God mode", self.player:isGodMod(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_GodMod", self.player:isGodMod(), function(self, selected)
         self.player:setGodMod(selected);
     end);
-    self:addOption("Ghost mode", self.player:isGhostMode(), function(self, selected)
-        self.player:setGhostMode(selected);
-    end);
-    self:addOption("No Clip", self.player:isNoClip(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_NoClip", self.player:isNoClip(), function(self, selected)
         self.player:setNoClip(selected);
     end);
-    self:addOption("Fast Move", ISFastTeleportMove.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_FastMove", ISFastTeleportMove.cheat, function(self, selected)
         ISFastTeleportMove.cheat = selected
     end);
-    self:addOption("Timed Action Instant", self.player:isTimedActionInstantCheat(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_TimedActionInstant", self.player:isTimedActionInstantCheat(), function(self, selected)
         self.player:setTimedActionInstantCheat(selected);
     end);
-    self:addOption("Unlimited Carry", self.player:isUnlimitedCarry(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_UnlimitedCarry", self.player:isUnlimitedCarry(), function(self, selected)
         self.player:setUnlimitedCarry(selected);
     end);
-    self:addOption("Unlimited Endurance", self.player:isUnlimitedEndurance(), function(self, selected)
+    self:addOption("IGUI_CheatPanel_UnlimitedEndurance", self.player:isUnlimitedEndurance(), function(self, selected)
         self.player:setUnlimitedEndurance(selected);
     end);
-    self:addOption("Unlimited Ammo", getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo"), function(self, selected)
+    self:addOption("IGUI_CheatPanel_UnlimitedAmmo", getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo"), function(self, selected)
         getDebugOptions():setBoolean("Cheat.Player.UnlimitedAmmo", selected)
     end)
-    self:addOption("Know All Recipes", getDebugOptions():getBoolean("Cheat.Recipe.KnowAll"), function(self, selected)
+    self:addOption("IGUI_CheatPanel_KnowAllRecipes", getDebugOptions():getBoolean("Cheat.Recipe.KnowAll"), function(self, selected)
         getDebugOptions():setBoolean("Cheat.Recipe.KnowAll", selected)
     end)
-    self:addOption(getText("IGUI_AdminPanel_BuildCheat"), ISBuildMenu.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_SeeAllRecipes", getDebugOptions():getBoolean("Cheat.Recipe.SeeAll"), function(self, selected)
+        getDebugOptions():setBoolean("Cheat.Recipe.SeeAll", selected)
+    end)
+    self:addOption("IGUI_CheatPanel_BuildCheat", ISBuildMenu.cheat, function(self, selected)
         ISBuildMenu.cheat = selected;
         self.player:setBuildCheat(selected);
     end);
-    self:addOption(getText("IGUI_AdminPanel_FarmingCheat"), ISFarmingMenu.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_FarmingCheat", ISFarmingMenu.cheat, function(self, selected)
         ISFarmingMenu.cheat = selected;
         self.player:setFarmingCheat(selected);
     end);
-    self:addOption(getText("IGUI_AdminPanel_HealthCheat"), ISHealthPanel.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_HealthCheat", ISHealthPanel.cheat, function(self, selected)
         ISHealthPanel.cheat = selected;
         self.player:setHealthCheat(selected);
     end);
-    self:addOption(getText("IGUI_AdminPanel_MechanicsCheat"), ISVehicleMechanics.cheat, function(self, selected)
-        ISVehicleMechanics.cheat = selected;
-        self.player:setMechanicsCheat(selected);
-    end);
-    self:addOption(getText("IGUI_AdminPanel_MoveableCheat"), ISMoveableDefinitions.cheat, function(self, selected)
+    -- disable mechanics cheat for non-debug
+    if getDebug() then
+        self:addOption("IGUI_CheatPanel_MechanicsCheat", ISVehicleMechanics.cheat, function(self, selected)
+            ISVehicleMechanics.cheat = selected;
+            self.player:setMechanicsCheat(selected);
+        end);
+    end
+    self:addOption("IGUI_CheatPanel_MoveableCheat", ISMoveableDefinitions.cheat, function(self, selected)
         ISMoveableDefinitions.cheat = selected;
         self.player:setMovablesCheat(selected);
     end);
-    self:addOption("LootZed", ISLootZed.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_LootZed", ISLootZed.cheat, function(self, selected)
         ISLootZed.cheat = selected;
     end);
-    self:addOption("Brush Tool", BrushToolManager.cheat, function(self, selected)
+    self:addOption("IGUI_CheatPanel_LootLog", ISLootLog.cheat, function(self, selected)
+        ISLootLog.cheat = selected;
+    end);
+    self:addOption("IGUI_CheatPanel_BrushTool", BrushToolManager.cheat, function(self, selected)
         BrushToolManager.cheat = selected;
+    end);
+
+    self:addOption("IGUI_CheatPanel_AnimalCheat", AnimalContextMenu.cheat, function(self, selected)
+        AnimalContextMenu.cheat = selected;
+    end);
+
+    self:addOption("IGUI_CheatPanel_AnimalExtraValues", IsoAnimal.isExtraValues(), function(self, selected)
+        IsoAnimal.toggleExtraValues();
     end);
 
     self.tickBox:setWidthToFit()
 
-    self:setHeight(self.tickBox:getBottom() + 40 + 20 + self.ok:getHeight() + 10)
+    self:setHeight(self.tickBox:getBottom() + self.ok:getHeight() + UI_BORDER_SPACING*2+1)
 end
 
 function ISCheatPanelUI:addOption(text, selected, setFunction)
-    local n = self.tickBox:addOption(text)
+    local n = self.tickBox:addOption(getText(text))
     self.tickBox:setSelected(n, selected)
+    ISCheatPanelUI.cheatTooltips[getText(text)] = getText(text.."_tooltip")
     self.setFunction[n] = setFunction
 end
 
@@ -154,12 +167,9 @@ function ISCheatPanelUI:render()
 end
 
 function ISCheatPanelUI:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText("Cheats", self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, "Cheats") / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText("Cheats", self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, "Cheats") / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISCheatPanelUI:onClick(button)
@@ -168,6 +178,7 @@ function ISCheatPanelUI:onClick(button)
             for i=1,#self.tickBox.options do
                 self.setFunction[i](self, self.tickBox:isSelected(i))
             end
+            if isClient() then sendPlayerExtraInfo(self.player) end
         end
         self:setVisible(false);
         self:removeFromUIManager();
@@ -194,3 +205,12 @@ function ISCheatPanelUI:new(x, y, width, height, player)
     ISCheatPanelUI.instance = o;
     return o;
 end
+
+ISCheatPanelUI.EnableCheats = function()
+    local chr = getPlayer();
+    chr:setBuildCheat(ISBuildMenu.cheat);
+    chr:setFarmingCheat(ISFarmingMenu.cheat);
+    chr:setHealthCheat(ISHealthPanel.cheat);
+end
+
+Events.OnGameStart.Add(ISCheatPanelUI.EnableCheats)

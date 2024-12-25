@@ -6,7 +6,10 @@ require "ISUI/ISPanelJoypad"
 require "ISUI/Maps/ISMap"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.SdfCaveat)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISWorldMapSymbols = ISPanelJoypad:derive("ISWorldMapSymbols")
 
@@ -133,8 +136,8 @@ function ISWorldMapSymbolTool_AddSymbol:addSymbol(x, y)
 	local newSymbol = {}
 	local scale = ISMap.SCALE
 	local sym = self.symbolsUI.selectedSymbol
-	local symW = sym.image:getWidth() / 2 * scale
-	local symH = sym.image:getHeight() / 2 * scale
+	local symW = 20 / 2 * scale
+	local symH = 20 / 2 * scale
 	newSymbol.x = self.mapAPI:uiToWorldX(x, y)
 	newSymbol.y = self.mapAPI:uiToWorldY(x, y)
 	newSymbol.symbol = sym.tex
@@ -209,11 +212,11 @@ function ISWorldMapSymbolTool_AddNote:render()
 		local color = self.symbolsUI.currentColor
 		local r,g,b = color:getR(),color:getG(),color:getB()
 		if (self.symbolsUI.playerNum ~= 0) or (JoypadState.players[self.symbolsUI.playerNum+1] and not wasMouseActiveMoreRecentlyThanJoypad()) then
-			self.mapUI:drawTextZoomed(getText("IGUI_Map_AddNote"), self.mapUI.width / 2, self.mapUI.height / 2,
-				ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1, UIFont.Handwritten)
+			self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, getText("IGUI_Map_AddNote"), self.mapUI.width / 2, self.mapUI.height / 2,
+					ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
 		else
-			self.mapUI:drawTextZoomed(getText("IGUI_Map_AddNote"), self:getMouseX(), self:getMouseY(),
-				ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1, UIFont.Handwritten)
+			self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, getText("IGUI_Map_AddNote"), self:getMouseX(), self:getMouseY(),
+					ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
 		end
 	end
 end
@@ -232,9 +235,9 @@ function ISWorldMapSymbolTool_AddNote:onAddNote(button, playerNum)
 		newNote.b = button.parent.currentColor:getB()
 		local textSymbol
 		if button.parent:isTranslation() then
-			textSymbol = self.symbolsAPI:addUntranslatedText(newNote.text, UIFont.Handwritten, newNote.x, newNote.y)
+			textSymbol = self.symbolsAPI:addUntranslatedText(newNote.text, UIFont.SdfCaveat, newNote.x, newNote.y)
 		else
-			textSymbol = self.symbolsAPI:addTranslatedText(newNote.text, UIFont.Handwritten, newNote.x, newNote.y)
+			textSymbol = self.symbolsAPI:addTranslatedText(newNote.text, UIFont.SdfCaveat, newNote.x, newNote.y)
 		end
 		textSymbol:setRGBA(newNote.r, newNote.g, newNote.b, 1.0)
 		textSymbol:setAnchor(0.0, 0.0)
@@ -245,7 +248,7 @@ function ISWorldMapSymbolTool_AddNote:onAddNote(button, playerNum)
 		-- Center on the edited symbol
 		local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
 		if isJoypad then
-			local width = getTextManager():MeasureStringX(UIFont.Handwritten, text) * ISMap.SCALE * self.mapAPI:getWorldScale()
+			local width = getTextManager():MeasureStringX(UIFont.SdfCaveat, text) * ISMap.SCALE * self.mapAPI:getWorldScale()
 			local height = FONT_HGT_HANDWRITTEN * ISMap.SCALE * self.mapAPI:getWorldScale()
 			local uiX = self.mapAPI:worldToUIX(newNote.x, newNote.y) + width / 2
 			local uiY = self.mapAPI:worldToUIY(newNote.x, newNote.y) + height / 2
@@ -358,6 +361,9 @@ function ISWorldMapSymbolTool_EditNote:onEditNote(button, symbol)
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddNote")
 		end
+		if isClient() then
+			self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
+		end
 	end
 	-- Center on the edited symbol
 	local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
@@ -427,6 +433,10 @@ end
 
 function ISWorldMapSymbolTool_MoveAnnotation:onMouseUp(x, y)
 	if self.dragging then
+		if isClient() and self.dragging:isShared() then
+			self.symbolsAPI:sendModifySymbol(self.dragging)
+			self.dragging:setPosition(self.originalX, self.originalY)
+		end
 		self.dragging = nil
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddSymbol")
@@ -485,6 +495,9 @@ end
 function ISWorldMapSymbolTool_MoveAnnotation:onJoypadDownInMap(button, joypadData)
 	if button == Joypad.AButton then
 		if self.dragging then
+			if isClient() and self.dragging:isShared() then
+				self.symbolsAPI:sendModifySymbol(self.dragging)
+			end
 			self.dragging = nil
 			if self.symbolsUI.character then
 				self.symbolsUI.character:playSoundLocal("MapAddSymbol")
@@ -564,6 +577,13 @@ function ISWorldMapSymbolTool_RemoveAnnotation:removeAnnotation()
 		return true
 	end
 	if self.symbolsUI.mouseOverSymbol then
+		if isClient() then
+			local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverSymbol)
+			if symbol:isShared() then
+				self.symbolsAPI:sendRemoveSymbol(symbol)
+				return true
+			end
+		end
 		self.symbolsAPI:removeSymbolByIndex(self.symbolsUI.mouseOverSymbol)
 		self.symbolsUI.mouseOverSymbol = nil
 		if self.symbolsUI.character then
@@ -581,30 +601,167 @@ end
 
 -----
 
+ISWorldMapSymbolTool_Sharing = ISWorldMapSymbolTool:derive("ISWorldMapSymbolTool_Sharing")
+
+function ISWorldMapSymbolTool_Sharing:activate()
+	self.mapAPI:setBoolean("DimUnsharedSymbols", true)
+end
+
+function ISWorldMapSymbolTool_Sharing:deactivate()
+	self.mapAPI:setBoolean("DimUnsharedSymbols", false)
+	if self.propertiesUI and self.propertiesUI:isVisible() then
+		self.propertiesUI:close()
+	end
+end
+
+function ISWorldMapSymbolTool_Sharing:onMouseDown(x, y)
+	local result = self:showPropertiesUI()
+	local joypadData = JoypadState.players[self.mapUI.playerNum+1]
+	if joypadData and self.propertiesUI and self.propertiesUI:isVisible() then
+		joypadData.focus = self.propertiesUI
+	end
+	return result
+end
+
+function ISWorldMapSymbolTool_Sharing:onMouseUp(x, y)
+	return false
+end
+
+function ISWorldMapSymbolTool_Sharing:render()
+	if self.propertiesUI and self.propertiesUI:isVisible() and self.propertiesUI.currentSymbol and self.propertiesUI.currentSymbol then
+		self.symbolsUI:renderSymbolOutline(self.propertiesUI.currentSymbol, 0.5, 0.5, 0.5)
+	end
+	self.symbolsUI:checkAnnotationForSharingMouse()
+	self.symbolsUI:checkAnnotationForSharingJoypad()
+end
+
+function ISWorldMapSymbolTool_Sharing:showPropertiesUI()
+	self.symbolsUI:checkAnnotationForSharingMouse()
+	self.symbolsUI:checkAnnotationForSharingJoypad()
+	if self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol then
+		if not self.propertiesUI then
+			self.propertiesUI = ISWorldMapSharing:new(self.mapUI)
+			self.mapUI:addChild(self.propertiesUI)
+		end
+		if not self.propertiesUI:isVisible() then
+			self.propertiesUI:setVisible(true)
+			self.mapUI:addChild(self.propertiesUI)
+		end
+		if self.symbolsUI.mouseOverNote then
+			local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverNote)
+			self.propertiesUI:setCurrentSymbol(symbol)
+		end
+		if self.symbolsUI.mouseOverSymbol then
+			local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverSymbol)
+			self.propertiesUI:setCurrentSymbol(symbol)
+		end
+		return true
+	end
+	return false
+end
+
+function ISWorldMapSymbolTool_Sharing:onJoypadDownInMap(button, joypadData)
+	if button == Joypad.AButton then
+		self:showPropertiesUI()
+		if self.propertiesUI and self.propertiesUI:isVisible() then
+			setJoypadFocus(joypadData.player, self.propertiesUI)
+		end
+	end
+end
+
+function ISWorldMapSymbolTool_Sharing:getJoypadAButtonText()
+	if self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol then
+		return getText("IGUI_Map_Sharing")
+	end
+	return nil
+end
+
+function ISWorldMapSymbolTool_Sharing:new(symbolsUI)
+	local o = ISWorldMapSymbolTool.new(self, symbolsUI)
+	return o
+end
+
+-----
+
+ISWorldMapSymbolsTabPanel = ISTabPanel:derive("ISWorldMapSymbolsTabPanel")
+
+function ISWorldMapSymbolsTabPanel:render()
+	ISTabPanel.render(self)
+	if self.joypadFocused then
+		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0)
+		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0)
+	end
+	local view = self:getActiveView()
+	if view.joyfocus then
+		self:drawRectBorder(view.x + 0, view.y, view:getWidth(), view:getHeight(), 0.4, 0.2, 1.0, 1.0)
+		self:drawRectBorder(view.x + 1, view.y + 1, view:getWidth()-2, view:getHeight()-2, 0.4, 0.2, 1.0, 1.0)
+	end
+end
+
+function ISWorldMapSymbolsTabPanel:onJoypadDown(button, joypadData)
+	if button == Joypad.AButton then
+		setJoypadFocus(joypadData.player, self:getActiveView())
+	end
+	if button == Joypad.LBumper or button == Joypad.RBumper then
+		local viewIndex = self:getActiveViewIndex()
+		local view = self.viewList[viewIndex].view
+		local setFocus = view.joyfocus
+		if button == Joypad.LBumper then
+			if viewIndex == 1 then
+				viewIndex = #self.viewList
+			else
+				viewIndex = viewIndex - 1
+			end
+		elseif button == Joypad.RBumper then
+			if viewIndex == #self.viewList then
+				viewIndex = 1
+			else
+				viewIndex = viewIndex + 1
+			end
+		end
+		self:activateView(self.viewList[viewIndex].name)
+		if setFocus then
+			setJoypadFocus(joypadData.player, self:getActiveView())
+		end
+	end
+end
+
+function ISWorldMapSymbolsTabPanel:setJoypadFocused(focused)
+	self.joypadFocused = focused;
+end
+
+function ISWorldMapSymbolsTabPanel:new(x, y, width, height, symbolsUI)
+	local o = ISTabPanel.new(self, x, y, width, height)
+	o.symbolsUI = symbolsUI
+	return o
+end
+
+-----
+
 function ISWorldMapSymbols:createChildren()
-	local btnWid = self.width - 20 * 2
-	local btnHgt = FONT_HGT_SMALL + 2 * 2
-	local btnHgt2 = 32
-	local btnPad = 5
-	local padBottom = 10
+	local btnWid = self.width - UI_BORDER_SPACING*2-2
+	local btnWidCol = (self.width - UI_BORDER_SPACING*6-2)/5
+	local btnHgt = BUTTON_HGT
+	local btnPad = UI_BORDER_SPACING
 	local columns = 8
 
 	self:populateSymbolList()
 
 	self.colorButtonInfo = {
-		{ item="Pen", colorInfo=ColorInfo.new(0, 0, 0, 1), tooltip=getText("Tooltip_Map_NeedBlackPen") },
-		{ item="Pencil", colorInfo=ColorInfo.new(0.2, 0.2, 0.2, 1), tooltip=getText("Tooltip_Map_NeedPencil") },
-		{ item="RedPen", colorInfo=ColorInfo.new(1, 0, 0, 1), tooltip=getText("Tooltip_Map_NeedRedPen") },
-		{ item="BluePen", colorInfo=ColorInfo.new(0, 0, 1, 1), tooltip=getText("Tooltip_Map_NeedBluePen") }
+        { item="Pen", colorInfo=ColorInfo.new(0.129, 0.129, 0.129, 1), tooltip=getText("Tooltip_Map_NeedBlackPen") },
+        { item="Pencil", colorInfo=ColorInfo.new(0.2, 0.2, 0.2, 1), tooltip=getText("Tooltip_Map_NeedPencil") },
+        { item="RedPen", colorInfo=ColorInfo.new(0.65, 0.054, 0.054, 1), tooltip=getText("Tooltip_Map_NeedRedPen") },
+        { item="BluePen", colorInfo=ColorInfo.new(0.156, 0.188, 0.49, 1), tooltip=getText("Tooltip_Map_NeedBluePen") },
+		{ item="GreenPen", colorInfo=ColorInfo.new(0.06, 0.39, 0.17, 1), tooltip=getText("Tooltip_Map_NeedGreenPen") },
 	}
 
 	self.colorButtons = {}
-	local buttonX = 30
-	local buttonY = 60
+	local buttonX = UI_BORDER_SPACING+1
+	local buttonY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM +1
 	local column = 0
 	local colorButtons = {}
 	for _,info in ipairs(self.colorButtonInfo) do
-		local colorBtn = ISButton:new(buttonX, buttonY, btnHgt2, btnHgt2, "", self, ISWorldMapSymbols.onButtonClick)
+		local colorBtn = ISButton:new(buttonX, buttonY, btnWidCol, btnHgt, "", self, ISWorldMapSymbols.onButtonClick)
 		colorBtn:initialise()
 		colorBtn.internal = "COLOR"
 		colorBtn.backgroundColor = {r=info.colorInfo:getR(), g=info.colorInfo:getG(), b=info.colorInfo:getB(), a=1}
@@ -616,11 +773,11 @@ function ISWorldMapSymbols:createChildren()
 		if #self.colorButtons == #self.colorButtonInfo then
 			break
 		end
-		buttonX = buttonX + btnHgt2 + btnPad
+		buttonX = buttonX + btnWidCol + btnPad
 		column = column + 1
 		if column == columns then
-			buttonX = 30
-			buttonY = buttonY + btnHgt2 + btnPad
+			buttonX = UI_BORDER_SPACING
+			buttonY = buttonY + btnHgt + btnPad
 			column = 0
 			self:insertNewListOfButtons(colorButtons)
 			colorButtons = {}
@@ -630,51 +787,100 @@ function ISWorldMapSymbols:createChildren()
 	if #colorButtons > 0 then
 		self:insertNewListOfButtons(colorButtons)
 	end
-	
-	local symbolButtons = {}
-	local x = 30
-	local y = buttonY + btnHgt2 + 20
-	column = 0
+
+	local x = UI_BORDER_SPACING+1
+	local y = buttonY + btnHgt + UI_BORDER_SPACING
+	self.panel = ISWorldMapSymbolsTabPanel:new(x, y, self.width-x*2, BUTTON_HGT*8+UI_BORDER_SPACING*9+2, self);
+	self.panel:initialise();
+	self.panel.tabPadX = UI_BORDER_SPACING*2;
+	self.panel.equalTabWidth = false;
+	self:addChild(self.panel);
+
+	local panelTabs = {}
+
+	--detect all needed tabs
 	for i,v in ipairs(self.symbolList) do
-		local symbolBtn = ISButton:new(x, y, btnHgt2, btnHgt2, "", self, ISWorldMapSymbols.onButtonClick)
-		symbolBtn:initialise()
-		symbolBtn:instantiate()
-		symbolBtn.borderColor = {r=0, g=0, b=0, a=0}
-		symbolBtn.backgroundColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
-		symbolBtn.textureColor = {r = 0, g = 0, b = 0, a = 1}
-		self:addChild(symbolBtn)
 		local symbolDef = MapSymbolDefinitions.getInstance():getSymbolById(v)
-		symbolBtn.image = getTexture(symbolDef:getTexturePath())
-		symbolBtn.tex = v
-		symbolBtn.symbol = true
-		table.insert(self.buttonList, symbolBtn)
---[[
-		if not self.selectedSymbol then
-			self.selectedSymbol = symbolBtn
+		found = false
+		for _, x in pairs(panelTabs) do
+			if x == symbolDef:getTab() then
+				found = true
+			end
 		end
---]]
-		table.insert(symbolButtons, self.buttonList[#self.buttonList])
-		x = x + btnHgt2 + btnPad
-		column = column + 1
-		if column == columns then
-			x = 30
-			y = y + btnHgt2 + btnPad
-			column = 0
-			self:insertNewListOfButtonsList(symbolButtons)
-			symbolButtons = {}
+		if not found then
+			table.insert(panelTabs, symbolDef:getTab())
 		end
 	end
-	if #symbolButtons > 0 then
-		self:insertNewListOfButtonsList(symbolButtons)
+
+	--for each tab needed, fill it with the buttons in that tab
+	for i,v in ipairs(panelTabs) do
+		local tab = ISPanelJoypad:new(0, 0, self.panel.width, self.panel.height-BUTTON_HGT);
+		tab.onJoypadDown = function(self, button, joypadData)
+			if button == Joypad.BButton then
+				setJoypadFocus(joypadData.player, self.parent.parent)
+				return
+			end
+			if button == Joypad.LBumper or button == Joypad.RBumper then
+				self.parent:onJoypadDown(button, joypadData)
+				return
+			end
+			ISPanelJoypad.onJoypadDown(self, button, joypadData)
+		end
+		tab:initialise()
+		tab.ID = panelTabs[i]
+		self.panel:addView(getText("IGUI_Map_Tab"..panelTabs[i]), tab)
+
+		local symbolButtons = {}
+		column = 0
+		x = UI_BORDER_SPACING+1
+		y = UI_BORDER_SPACING+1
+		for i,w in ipairs(self.symbolList) do
+			local symbolDef = MapSymbolDefinitions.getInstance():getSymbolById(w)
+			if symbolDef:getTab() == v then
+				local symbolBtn = ISButton:new(x, y, btnHgt, btnHgt, "", self, ISWorldMapSymbols.onButtonClick)
+				symbolBtn:initialise()
+				symbolBtn:instantiate()
+				symbolBtn.borderColor = {r=0, g=0, b=0, a=0}
+				symbolBtn.backgroundColor = {r = 0.5, g = 0.5, b = 0.5, a = 1}
+				symbolBtn.textureColor = {r = 0, g = 0, b = 0, a = 1}
+				tab:addChild(symbolBtn)
+				symbolBtn.image = getTexture(symbolDef:getTexturePath())
+				symbolBtn.tex = w
+				symbolBtn.symbol = true
+				symbolBtn.tab = symbolDef:getTab()
+				table.insert(self.buttonList, symbolBtn)
+				table.insert(symbolButtons, self.buttonList[#self.buttonList])
+				x = x + btnHgt + btnPad
+				column = column + 1
+				if column == columns then
+					x = UI_BORDER_SPACING+1
+					y = y + btnHgt + btnPad
+					column = 0
+					tab:insertNewListOfButtonsList(symbolButtons)
+					symbolButtons = {}
+				end
+			end
+		end
+
+		if #symbolButtons > 0 then
+			tab:insertNewListOfButtonsList(symbolButtons)
+		end
+
+		tab.joypadIndexY = math.floor(#tab.joypadButtonsY / 2)
+		tab.joypadButtons = tab.joypadButtonsY[tab.joypadIndexY]
+		tab.joypadIndex = math.ceil(#tab.joypadButtons / 2)
+		tab.joypadButtons[tab.joypadIndex]:setJoypadFocused(true)
 	end
-	y = self.buttonList[#self.buttonList]:getBottom() + 20
+
+
+	y = self.panel:getBottom() + UI_BORDER_SPACING+1
 
 	self.blackColor = ColorInfo.new(0, 0, 0, 1)
 	self.currentColor = self.blackColor
 
-	btnPad = 10
+	btnPad = UI_BORDER_SPACING
 
-	self.addNoteBtn = ISButton:new(20, y, btnWid, btnHgt, getText("IGUI_Map_AddNote"), self, ISWorldMapSymbols.onButtonClick)
+	self.addNoteBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_AddNote"), self, ISWorldMapSymbols.onButtonClick)
 	self.addNoteBtn.internal = "ADDNOTE"
 	self.addNoteBtn:initialise()
 	self.addNoteBtn:instantiate()
@@ -683,7 +889,7 @@ function ISWorldMapSymbols:createChildren()
 	self:addChild(self.addNoteBtn)
 	y = y + btnHgt + btnPad
 
-	self.editNoteBtn = ISButton:new(20, y, btnWid, btnHgt, getText("IGUI_Map_EditNote"), self, ISWorldMapSymbols.onButtonClick)
+	self.editNoteBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_EditNote"), self, ISWorldMapSymbols.onButtonClick)
 	self.editNoteBtn.internal = "EDITNOTE"
 	self.editNoteBtn:initialise()
 	self.editNoteBtn:instantiate()
@@ -692,7 +898,7 @@ function ISWorldMapSymbols:createChildren()
 	self:addChild(self.editNoteBtn)
 	y = y + btnHgt + btnPad
 
-	self.moveBtn = ISButton:new(20, y, btnWid, btnHgt, getText("IGUI_Map_MoveElement"), self, ISWorldMapSymbols.onButtonClick)
+	self.moveBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_MoveElement"), self, ISWorldMapSymbols.onButtonClick)
 	self.moveBtn.internal = "MOVE"
 	self.moveBtn:initialise()
 	self.moveBtn:instantiate()
@@ -701,20 +907,36 @@ function ISWorldMapSymbols:createChildren()
 	self:addChild(self.moveBtn)
 	y = y + btnHgt + btnPad
 
-	self.removeBtn = ISButton:new(20, y, btnWid, btnHgt, getText("IGUI_Map_RemoveElement"), self, ISWorldMapSymbols.onButtonClick)
+	self.removeBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_RemoveElement"), self, ISWorldMapSymbols.onButtonClick)
 	self.removeBtn.internal = "REMOVE"
 	self.removeBtn:initialise()
 	self.removeBtn:instantiate()
 	self.removeBtn.borderColor.a = 0.0
 --	self.removeBtn.borderColor = {r=1, g=1, b=1, a=0.4}
 	self:addChild(self.removeBtn)
+	y = y + btnHgt + btnPad
 
+	if isClient() then
+		self.sharingBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_Sharing"), self, ISWorldMapSymbols.onButtonClick)
+		self.sharingBtn.internal = "SHARE"
+		self.sharingBtn:initialise()
+		self.sharingBtn:instantiate()
+		self.sharingBtn.borderColor.a = 0.0
+	--	self.sharingBtn.borderColor = {r=1, g=1, b=1, a=0.4}
+		self:addChild(self.sharingBtn)
+	end
+
+	self:insertNewLineOfButtons(self.panel)
 	self:insertNewLineOfButtons(self.addNoteBtn)
 	self:insertNewLineOfButtons(self.editNoteBtn)
 	self:insertNewLineOfButtons(self.moveBtn)
 	self:insertNewLineOfButtons(self.removeBtn)
-
-	self:setHeight(self.removeBtn:getBottom() + 20)
+	if self.sharingBtn then
+		self:insertNewLineOfButtons(self.sharingBtn)
+		self:setHeight(self.sharingBtn:getBottom() + UI_BORDER_SPACING+1)
+	else
+		self:setHeight(self.removeBtn:getBottom() + UI_BORDER_SPACING+1)
+	end
 
 	self:initTools()
 
@@ -725,6 +947,7 @@ function ISWorldMapSymbols:checkInventory()
 	local inv = self.character and self.character:getInventory() or nil
 	local currentEnabled = nil
 	local firstEnabled = nil
+	local illiterate =  self.character and  self.character:getTraits():isIlliterate()
 	for _,colorBtn in ipairs(self.colorButtons) do
 		colorBtn.enable = (inv == nil) or inv:containsTagRecurse(colorBtn.buttonInfo.item) or inv:containsTypeRecurse(colorBtn.buttonInfo.item)
 		colorBtn.borderColor.a = 0.4 -- not selected
@@ -776,6 +999,13 @@ function ISWorldMapSymbols:checkInventory()
 		self.editNoteBtn.tooltip = getText("Tooltip_Map_CantEdit")
 		self.moveBtn.tooltip = getText("Tooltip_Map_CantEdit")
 	end
+	-- illiterate  characters cannot read or write notes
+	if illiterate then
+		self.addNoteBtn.tooltip = getText("ContextMenu_Illiterate")
+		self.addNoteBtn.enable = false
+		self.editNoteBtn.tooltip = getText("ContextMenu_Illiterate")
+		self.editNoteBtn.enable= false
+	end
 
 	if canErase then
 		self.removeBtn.tooltip = nil
@@ -824,6 +1054,9 @@ function ISWorldMapSymbols:initTools()
 	self.tools.EditNote = ISWorldMapSymbolTool_EditNote:new(self)
 	self.tools.MoveAnnotation = ISWorldMapSymbolTool_MoveAnnotation:new(self)
 	self.tools.RemoveAnnotation = ISWorldMapSymbolTool_RemoveAnnotation:new(self)
+	if isClient() then
+		self.tools.Sharing = ISWorldMapSymbolTool_Sharing:new(self)
+	end
 end
 
 function ISWorldMapSymbols:setCurrentTool(tool)
@@ -853,14 +1086,15 @@ function ISWorldMapSymbols:populateSymbolList()
 	end
 end
 
-function ISWorldMapSymbols:prerender()
-	ISPanelJoypad.prerender(self)
-	local y = 20
-	self:drawText(getText("IGUI_Map_MapSymbol"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Map_MapSymbol")) / 2), y, 1,1,1,1, UIFont.Medium)
-
+function ISWorldMapSymbols:prerenderMap()
 	if self.currentTool then
 		self.currentTool:render()
 	end
+end
+
+function ISWorldMapSymbols:prerender()
+	ISPanelJoypad.prerender(self)
+	self:drawText(getText("IGUI_Map_MapSymbol"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Map_MapSymbol")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium)
 
 	if self:canWrite() ~= self.wasCanWrite or self:canErase() ~= self.wasCanErase then
 		self.wasCanWrite = self:canWrite()
@@ -872,12 +1106,15 @@ function ISWorldMapSymbols:prerender()
 	self.editNoteBtn.borderColor.a = (self.currentTool == self.tools.EditNote) and 1 or 0
 	self.moveBtn.borderColor.a = (self.currentTool == self.tools.MoveAnnotation) and 1 or 0
 	self.removeBtn.borderColor.a = (self.currentTool == self.tools.RemoveAnnotation) and 1 or 0
+	if self.sharingBtn then
+		self.sharingBtn.borderColor.a = (self.currentTool == self.tools.Sharing) and 1 or 0
+	end
 end
 
 function ISWorldMapSymbols:render()
 	ISPanelJoypad.render(self)
-	if self.selectedSymbol then
-		self:drawRectBorder(self.selectedSymbol.x - 1, self.selectedSymbol.y - 1, self.selectedSymbol.width + 1, self.selectedSymbol.height + 1, 1, 1, 1, 1)
+	if self.selectedSymbol and self.selectedSymbol.tab == self.panel:getActiveView().ID then
+		self.panel:getActiveView():drawRectBorder(self.selectedSymbol.x - 1, self.selectedSymbol.y - 1, self.selectedSymbol.width + 1, self.selectedSymbol.height + 1, 1, 1, 1, 1)
 	end
 	if self.joyfocus then
 		self:drawRectBorder(2, 2, self:getWidth()-2*2, self:getHeight()-2*2, 1.0, 1.0, 1.0, 1.0);
@@ -889,10 +1126,10 @@ function ISWorldMapSymbols:renderSymbol(symbol, x, y)
 	if not symbol then return end
 	local scale = ISMap.SCALE * self.mapAPI:getWorldScale()
 	local sym = symbol
-	local symW = sym.image:getWidth() / 2 * scale
-	local symH = sym.image:getHeight() / 2 * scale
-	self.mapUI:drawTextureScaled(sym.image, x-symW, y-symH,
-		sym.image:getWidth() * scale, sym.image:getHeight() * scale,
+	local symW = 20 / 2 * scale
+	local symH = 20 / 2 * scale
+	self.mapUI.javaObject:DrawSymbol(sym.image, x-symW, y-symH,
+		20 * scale, 20 * scale,
 		1, sym.textureColor.r, sym.textureColor.g, sym.textureColor.b)
 end
 
@@ -913,9 +1150,9 @@ function ISWorldMapSymbols:renderNoteBeingAddedOrEdited(modal)
 	if modal:isTranslation() then
 		text = getText(text)
 	end
-	self.mapUI:drawTextZoomed(text,
-		self.mapAPI:worldToUIX(self.noteX, self.noteY), self.mapAPI:worldToUIY(self.noteX, self.noteY),
-		ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1, UIFont.Handwritten)
+	self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, text,
+			self.mapAPI:worldToUIX(self.noteX, self.noteY), self.mapAPI:worldToUIY(self.noteX, self.noteY),
+			ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
 end
 
 function ISWorldMapSymbols:onMouseDownMap(x, y)
@@ -963,7 +1200,7 @@ function ISWorldMapSymbols:onButtonClick(button)
 		end
 		self.selectedSymbol = button
 		self:setCurrentTool(self.tools.AddSymbol)
-		if self.joyfocus then
+		if self.panel:getActiveView().joyfocus then
 			button:setJoypadFocused(false)
 			setJoypadFocus(self.playerNum, self.mapUI)
 		end
@@ -1003,6 +1240,14 @@ function ISWorldMapSymbols:onButtonClick(button)
 	if button.internal == "REMOVE" then
 		self.selectedSymbol = nil
 		self:toggleTool(self.tools.RemoveAnnotation)
+		if self.joyfocus then
+			button:setJoypadFocused(false)
+			setJoypadFocus(self.playerNum, self.mapUI)
+		end
+	end
+	if button.internal == "SHARE" then
+		self.selectedSymbol = nil
+		self:toggleTool(self.tools.Sharing)
 		if self.joyfocus then
 			button:setJoypadFocused(false)
 			setJoypadFocus(self.playerNum, self.mapUI)
@@ -1068,14 +1313,21 @@ function ISWorldMapSymbols:updateSymbolColors()
 end
 
 local function filterAny(symbol)
+	if isClient() and not symbol:canClientModify() then return false end
+	return symbol ~= nil
+end
+
+local function filterShare(symbol)
 	return symbol ~= nil
 end
 
 local function filterText(symbol)
+	if isClient() and not symbol:canClientModify() then return false end
 	return symbol ~= nil and symbol:isText()
 end
 
 local function filterTexture(symbol)
+	if isClient() and not symbol:canClientModify() then return false end
 	return symbol ~= nil and symbol:isTexture()
 end
 
@@ -1109,6 +1361,16 @@ function ISWorldMapSymbols:checkTextForEditJoypad()
 	self:hitTestAnnotations(self.mapUI.width / 2, self.mapUI.height / 2, "edit", filterText)
 end
 
+function ISWorldMapSymbols:checkAnnotationForSharingMouse()
+	if (self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] and not wasMouseActiveMoreRecentlyThanJoypad()) then return end
+	self:hitTestAnnotations(self.mapUI:getMouseX(), self.mapUI:getMouseY(), "share", filterShare)
+end
+
+function ISWorldMapSymbols:checkAnnotationForSharingJoypad()
+	if (self.playerNum == 0) and (JoypadState.players[self.playerNum+1] == nil or wasMouseActiveMoreRecentlyThanJoypad()) then return end
+	self:hitTestAnnotations(self.mapUI.width / 2, self.mapUI.height / 2, "share", filterShare)
+end
+
 function ISWorldMapSymbols:hitTestAnnotations(x, y, mode, filter)
 	self.mouseOverNote = nil
 	self.mouseOverSymbol = nil
@@ -1121,23 +1383,37 @@ function ISWorldMapSymbols:hitTestAnnotations(x, y, mode, filter)
 	elseif symbol:isTexture() then
 		self.mouseOverSymbol = hitIndex
 	end
-	local x = symbol:getDisplayX()
-	local y = symbol:getDisplayY()
-	local w = symbol:getDisplayWidth()
-	local h = symbol:getDisplayHeight()
 	local r,g,b = 0,0,1
 	if mode == "remove" then
 		r,g,b = 1,0,0
 	end
+	self:renderSymbolOutline(symbol, r, g, b)
+end
+
+function ISWorldMapSymbols:renderSymbolOutline(symbol, r, g, b)
+	local x = symbol:getDisplayX()
+	local y = symbol:getDisplayY()
+	local w = symbol:getDisplayWidth()
+	local h = symbol:getDisplayHeight()
+
+	local x1 = math.floor(x)
+	local y1 = math.floor(y)
+	local x2 = math.ceil(x + w)
+	local y2 = math.ceil(y + h)
+	x = x1
+	y = y1
+	w = x2 - x1
+	h = y2 - y1
+
 	self.mapUI:drawRectBorder(x - 1, y - 1, w + 2, h + 2, 1, r, g, b)
 	self.mapUI:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, r, g, b)
 end
 
 function ISWorldMapSymbols:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-	self.joypadIndexY = 1
-	self.joypadIndex = 1
+	self.joypadIndexY = 2
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+	self.joypadIndex = 1
 	self.joypadButtons[self.joypadIndex]:setJoypadFocused(true)
 --	self.removeBtn:setJoypadButton(Joypad.Texture.XButton)
 end
@@ -1158,6 +1434,12 @@ function ISWorldMapSymbols:onJoypadDown(button, joypadData)
 		self:undisplay()
 		self:setVisible(false)
 		setJoypadFocus(joypadData.player, self.mapUI)
+		return
+	end
+	local child = self:getJoypadFocus()
+	if child == self.panel then
+		self.panel:onJoypadDown(button, joypadData)
+		return
 	end
 end
 
@@ -1181,8 +1463,8 @@ function ISWorldMapSymbols:new(x, y, width, height, mapUI)
 	o.selectedSymbol = nil
 	o.symbolList = {}
 	o.mapUI = mapUI -- ISUIElement with javaObject=UIWorldMap
-	o.mapAPI = mapUI.javaObject:getAPIv1()
-	o.symbolsAPI = o.mapAPI:getSymbolsAPI()
+	o.mapAPI = mapUI.javaObject:getAPIv2()
+	o.symbolsAPI = o.mapAPI:getSymbolsAPIv2()
 	o.buttonList = {}
 	o.character = mapUI.character
 	o.playerNum = mapUI.playerNum or 0
@@ -1193,9 +1475,6 @@ function ISWorldMapSymbols:new(x, y, width, height, mapUI)
 end
 
 function ISWorldMapSymbols.RequiredWidth()
-	local btnWid = 32
-	local btnPad = 5
-	local columns = 8
-	return (btnWid * columns) + (btnPad * (columns - 1)) + 30 * 2
+	return BUTTON_HGT*8+UI_BORDER_SPACING*11+2
 end
 

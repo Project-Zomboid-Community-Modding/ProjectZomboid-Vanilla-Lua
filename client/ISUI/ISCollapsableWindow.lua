@@ -10,6 +10,7 @@ ISCollapsableWindow = ISPanel:derive("ISCollapsableWindow");
 --ISCollapsableWindow.viewList = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISInventoryPage:initialise
@@ -34,6 +35,11 @@ end
 --************************************************************************--
 function ISCollapsableWindow:createChildren()
 
+	local titleBarHeight = self:titleBarHeight()
+	local buttonHeight = titleBarHeight-2 --minus the 1 pixel border, and icon buttons are square
+	local buttonOffset = 1 + (5-getCore():getOptionFontSizeReal())*2
+	local textButtonOffset = buttonOffset * 3
+
 
 	-- Do corner x + y widget
 	local rh = self:resizeWidgetHeight()
@@ -55,15 +61,19 @@ function ISCollapsableWindow:createChildren()
 	self.resizeWidget2 = resizeWidget;
 
 	local th = self:titleBarHeight()
-	self.closeButton = ISButton:new(3, 0, th, th, "", self, function(self, button) self:close() end);
+	local iconBtnSize = th-2
+	local iconBtnOffset = (th- iconBtnSize)/2;
+
+	self.closeButton = ISButton:new(1, 1, buttonHeight, buttonHeight, "", self, function(self, button) self:close() end);
 	self.closeButton:initialise();
 	self.closeButton.borderColor.a = 0.0;
 	self.closeButton.backgroundColor.a = 0;
 	self.closeButton.backgroundColorMouseOver.a = 0;
 	self.closeButton:setImage(self.closeButtonTexture);
+	--self.closeButton:forceImageSize(th-6, th-6);
 	self:addChild(self.closeButton);
 
-    self.infoButton = ISButton:new(self.closeButton:getRight() + 1, 0, th, th, "", self, ISCollapsableWindow.onInfo);
+    self.infoButton = ISButton:new(1 + buttonHeight + buttonOffset, 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.onInfo);
     self.infoButton:initialise();
     self.infoButton.borderColor.a = 0.0;
     self.infoButton.backgroundColor.a = 0.0;
@@ -73,7 +83,7 @@ function ISCollapsableWindow:createChildren()
     self.infoButton:setVisible(false);
 
 	--  --print("adding pin button");
-	self.pinButton = ISButton:new(self.width - th - 3, 0, th, th, "", self, ISCollapsableWindow.pin);
+	self.pinButton = ISButton:new(self.width - 1 - buttonHeight, 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.pin);
 	self.pinButton.anchorRight = true;
 	self.pinButton.anchorLeft = false;
 	--  --print("initialising pin button");
@@ -89,7 +99,7 @@ function ISCollapsableWindow:createChildren()
 	self.pinButton:setVisible(false);
 
 	-- --print("adding collapse button");
-	self.collapseButton = ISButton:new(self.width - th - 3, 0, th, th, "", self, ISCollapsableWindow.collapse);
+	self.collapseButton = ISButton:new(self.pinButton:getX(), 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.collapse);
 	self.collapseButton.anchorRight = true;
 	self.collapseButton.anchorLeft = false;
 	self.collapseButton:initialise();
@@ -124,7 +134,7 @@ function ISCollapsableWindow:onInfo()
     if not self.infoRichText then
         self.infoRichText = ISModalRichText:new(getCore():getScreenWidth()/2-400,getCore():getScreenHeight()/2-300,600,600,self.infoText, false);
         self.infoRichText:initialise();
-        self.infoRichText.backgroundColor = {r=0, g=0, b=0, a=0.9};
+        self.infoRichText.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.infoRichText.alwaysOnTop = true;
         self.infoRichText.chatText:paginate();
         self.infoRichText:setHeightToContents()
@@ -172,7 +182,7 @@ function ISCollapsableWindow:prerender()
     if self.background and not self.isCollapsed then
 		local rh = self:resizeWidgetHeight()
 		if not self.resizable or not self.resizeWidget:getIsVisible() then rh = 0 end
-        self:drawRect(0, th, self:getWidth(), self.height - th - rh, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+        self:drawRect(0, th, self:getWidth(), self.height - th, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     end
 
 	if self.clearStentil then
@@ -194,10 +204,10 @@ function ISCollapsableWindow:render()
 	end
 	if not self.isCollapsed and self.resizable and self.drawFrame and self.resizeWidget:getIsVisible() then
 		local rh = self:resizeWidgetHeight()
-		self:drawRectBorder(0, height-rh-1, self:getWidth(), rh+1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+		self:drawRectBorder(0, height-rh, self:getWidth(), rh, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 		local r, g, b, a = self.widgetTextureColor.r, self.widgetTextureColor.g, self.widgetTextureColor.b, self.widgetTextureColor.a;
-		self:drawTextureScaled(self.statusbarbkg, 2,  height-rh, self:getWidth() - 4, rh-1, a, r, g, b);
-		self:drawTexture(self.resizeimage, self:getWidth()-9, height-rh, a, r, g, b);
+		self:drawTextureScaled(self.statusbarbkg, 1,  height-rh+1, self:getWidth() - 2, rh-2, a, r, g, b);
+		self:drawTextureScaled(self.resizeimage, self:getWidth()-rh+1, height-rh+1, rh-2, rh-2, 1, 1, 1, 1);
 	end
 
 	if self.clearStentil then
@@ -328,7 +338,7 @@ function ISCollapsableWindow:titleBarHeight()
 end
 
 function ISCollapsableWindow:resizeWidgetHeight()
-	return 8
+	return (BUTTON_HGT/2)+2
 end
 
 function ISCollapsableWindow:setResizable(resizable)
@@ -394,12 +404,12 @@ function ISCollapsableWindow:new (x, y, width, height)
 	o.widgetTextureColor = {r = 1, g = 1, b = 1, a = 1};
 	o.titlebarbkg = getTexture("media/ui/Panel_TitleBar.png");
 	o.statusbarbkg = getTexture("media/ui/Panel_StatusBar.png");
-	o.resizeimage = getTexture("media/ui/Panel_StatusBar_Resize.png");
+	o.resizeimage = getTexture("media/ui/ResizeIcon.png");
 	o.invbasic = getTexture("media/ui/Icon_InventoryBasic.png");
-	o.closeButtonTexture = getTexture("media/ui/Dialog_Titlebar_CloseIcon.png");
-	o.collapseButtonTexture = getTexture("media/ui/Panel_Icon_Collapse.png");
-	o.pinButtonTexture = getTexture("media/ui/Panel_Icon_Pin.png");
-    o.infoBtn = getTexture("media/ui/Panel_info_button.png");
+	o.closeButtonTexture = getTexture("media/ui/inventoryPanes/Button_Close.png");
+	o.collapseButtonTexture = getTexture("media/ui/inventoryPanes/Button_Collapse.png");
+	o.pinButtonTexture = getTexture("media/ui/inventoryPanes/Button_Pin.png");
+    o.infoBtn = getTexture("media/ui/inventoryPanes/Button_Info.png");
 	o.pin = true;
 	o.isCollapsed = false;
 	o.collapseCounter = 0;

@@ -50,7 +50,7 @@ local function CreateObject(sq, spriteName, dir)
 	end
 	javaObject:createLightSource(10, offsetX, offsetY, 0, 0, "Base.Battery", nil, nil)
 
-	local fuel = InventoryItemFactory.CreateItem("Base.Battery")
+	local fuel = instanceItem("Base.Battery")
 	if fuel then
 		fuel:setUsedDelta(1.0)
 		local previous = javaObject:insertNewFuel(fuel, nil)

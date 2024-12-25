@@ -51,22 +51,36 @@ ZombiesZoneDefinition.TrailerPark = {
 		name="Veteran",
 		chance=10,
 		gender="male",
-		maleHairStyles="CrewCut:20",
-		beardStyles="Long:15;Chops:17;Goatee:17;Moustache:17",
 	},
 	Redneck = {
 		name="Redneck",
-		chance=65,
-		maleHairStyles="Mullet:30;Metal:15;Cornrows:5;MohawkShort:5",
-		femaleHairStyles="CrewCut:10;Cornrows:5;MohawkShort:5",
-		beardStyles="Long:13;Chops:13;Goatee:13;Moustache:13",
+		chance=35,
+-- 		chance=65,
 	},
 	Thug = {
 		name="Thug",
 		chance=15,
 		gender="male",
-		maleHairStyles="Mullet:30;Metal:15",
-		beardStyles="Long:13;Chops:13;Goatee:13;Moustache:13",
+	},
+-- 	Goth = {
+-- 		name="Goth",
+-- 		chance=1,
+-- 	},
+	Rocker = {
+		name="Rocker",
+		chance=5,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=5,
+	},
+-- 	ExterminatorSuited = {
+-- 		name="ExterminatorSuited",
+-- 		chance=1,
+-- 	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
 	},
 }
 
@@ -130,6 +144,33 @@ ZombiesZoneDefinition.Spiffo = {
 		name="Cook_Spiffos",
 		chance=50,
 		room="spiffoskitchen",
+	},
+}
+
+ZombiesZoneDefinition.Jays = {
+-- 	Jay = {
+-- 		name="Jay",
+-- 		chance=1,
+-- 	},
+	Waiter_JaysM = {
+		name="Waiter_Jays",
+		toSpawn=1,
+		mandatory="true",
+	},
+	Waiter_Jays = {
+		name="Waiter_Jays",
+		chance=15,
+	},
+	Cook_JaysM = {
+		name="Cook_Jays",
+		toSpawn=1,
+		mandatory="true",
+		room="jayschicken_kitchen",
+	},
+	Cook_Jays = {
+		name="Cook_Jays",
+		chance=50,
+		room="jayschicken_kitchen",
 	},
 }
 
@@ -339,17 +380,71 @@ ZombiesZoneDefinition.StreetPoor = {
 		name="Bandit",
 		chance=5,
 	},
+	Backpacker = {
+		name="Backpacker",
+		chance=1,
+	},
+	Evacuee = {
+		name="Evacuee",
+		chance=1,
+	},
+	GuitarGuy = {
+		name="GuitarGuy",
+		chance=1,
+	},
+	Rocker = {
+		name="Rocker",
+		chance=5,
+	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=5,
+	},
+	Sanitation = {
+		name="Sanitation",
+		chance=1,
+	},
+-- 	ExterminatorSuited = {
+-- 		name="ExterminatorSuited",
+-- 		chance=1,
+-- 	},
 }
 
 ZombiesZoneDefinition.Rocker = {
 	Student = {
 		name="Student",
 		chance=10,
+		beardStyles="null:100",
 	},
 	Punk = {
 		name="Punk",
-		chance=40,
+		chance=20,
+-- 		chance=40,
 		beardStyles="null:90",
+	},
+	Rocker = {
+		name="Rocker",
+		chance=20,
+		beardStyles="null:90",
+	},
+	Goth = {
+		name="Goth",
+		chance=5,
+		beardStyles="null:90",
+	},
+	Grunge = {
+		name="Grunge",
+		chance=20,
+		beardStyles="null:90",
+	},
+	Young = {
+		name="Young",
+		chance=10,
+		beardStyles="null:100",
 	},
 }
 
@@ -367,6 +462,14 @@ ZombiesZoneDefinition.Shelter = {
 		name="Punk",
 		chance=20,
 		beardStyles="null:90",
+	},
+	Backpacker = {
+		name="Backpacker",
+		chance=0.25,
+	},
+	Evacuee = {
+		name="Evacuee",
+		chance=1,
 	},
 }
 
@@ -403,7 +506,24 @@ ZombiesZoneDefinition.Rich = {
 	},
 	Classy = {
 		name="Classy",
-		chance=40,
+		chance=30,
+-- 		chance=40,
+	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	Trader = {
+		name="Trader",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
 	},
 }
 
@@ -420,6 +540,18 @@ ZombiesZoneDefinition.HotelRich = {
 		name="Classy",
 		chance=20,
 	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
+	},
 }
 
 ZombiesZoneDefinition.BaseballFan = {
@@ -428,23 +560,105 @@ ZombiesZoneDefinition.BaseballFan = {
 		chance=20,
 	},
 	BaseballFan_Rangers = {
-		name="BaseballFan_Z",
+		name="BaseballFan_Rangers",
 		chance=20,
 	},
 	BaseballFan_KY = {
-		name="BaseballFan_Z",
+		name="BaseballFan_KY",
 		chance=20,
 	},
 }
 
 -- TODO: how bad can i do an "old zombies" outfit?
 ZombiesZoneDefinition.NursingHome = {
-
+	Classy = {
+		name="Classy",
+		chance=20,
+	},
+	Nurse = {
+		name="Nurse",
+		chance=15,
+	},
+	Bathrobe = {
+		name="Bathrobe",
+		chance=10,
+	},
+	HospitalPatient = {
+		name="HospitalPatient",
+		chance=10,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
+	},
+	Resident = {
+		name="Resident",
+		chance=20,
+	},
 }
 
 -- TODO: gonna need bit more clothing, but should be kinda like the nightclub
 ZombiesZoneDefinition.Young = {
-
+	ClubGoer = {
+		name="ClubGoer",
+		chance=20,
+	},
+	Goth = {
+		name="Goth",
+		chance=1,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=20,
+	},
+	Thug = {
+		name="Thug",
+		chance=5,
+		gender="male",
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=20,
+	},
+	MannequinLeather = {
+		name="MannequinLeather",
+		chance=1,
+	},
+}
+ZombiesZoneDefinition.Nightclub = {
+	ClubGoer = {
+		name="ClubGoer",
+		chance=20,
+	},
+	Goth = {
+		name="Goth",
+		chance=10,
+	},
+	Thug = {
+		name="Thug",
+		chance=5,
+		gender="male",
+	},
+	Tourist = {
+		name="Tourist",
+		chance=5,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=5,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	MannequinLeather = {
+		name="MannequinLeather",
+		chance=1,
+	},
+-- 	CostumeVampire = {
+-- 		name="CostumeVampire",
+-- 		chance=1,
+-- 	},
 }
 
 -- TODO: checkout screenshot mb
@@ -478,6 +692,10 @@ ZombiesZoneDefinition.FarmingStore = {
 	Farmer = {
 		name="Farmer",
 		chance=10,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
 	},
 }
 
@@ -550,6 +768,10 @@ ZombiesZoneDefinition.Farm = {
 		chance=80,
 		beardStyles="Long:15;Moustache:15;Full:15;BeardOnly:15",
 	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.CarRepair = {
@@ -565,12 +787,20 @@ ZombiesZoneDefinition.CarRepair = {
 		gender="male",
 		beardStyles="Chops:10;Goatee:10;Moustache:10;Full:10;BeardOnly:10",
 	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.Fossoil = {
 	Fossoil = {
 		name="Fossoil",
 		chance=15,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
 	},
 }
 
@@ -579,12 +809,20 @@ ZombiesZoneDefinition.Gas2Go = {
 		name="Gas2Go",
 		chance=15,
 	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.ThunderGas = {
 	ThunderGas = {
 		name="ThunderGas",
 		chance=15,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
 	},
 }
 
@@ -611,6 +849,10 @@ ZombiesZoneDefinition.McCoys = {
 		gender="male",
 		chance=5,
 		beardStyles="null:80",
+	},
+	Trucker = {
+		name="Trucker",
+		chance=5,
 	},
 }
 
@@ -651,6 +893,10 @@ ZombiesZoneDefinition.Factory = {
 		gender="male",
 		beardStyles="Chops:10;Goatee:10;Moustache:10;Full:10;BeardOnly:10",
 	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.ConstructionSite = {
@@ -670,6 +916,10 @@ ZombiesZoneDefinition.ConstructionSite = {
 		chance=5,
 		gender="male",
 		beardStyles="Chops:10;Goatee:10;Moustache:10;Full:10;BeardOnly:10",
+	},
+	Trucker = {
+		name="Trucker",
+		chance=1,
 	},
 }
 
@@ -735,6 +985,14 @@ ZombiesZoneDefinition.FancyHotel = {
 		name="Waiter_Restaurant",
 		chance=5,
 	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
 }
 
 ZombiesZoneDefinition.CountryClub = {
@@ -769,6 +1027,14 @@ ZombiesZoneDefinition.CountryClub = {
 		chance=150,
 		room="ballroom",
 	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
+	},
 }
 
 ZombiesZoneDefinition.Spa = {
@@ -788,6 +1054,18 @@ ZombiesZoneDefinition.Spa = {
 		name="Waiter_Restaurant",
 		chance=10,
 	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=10,
+	},
 }
 
 ZombiesZoneDefinition.Golf = {
@@ -803,6 +1081,14 @@ ZombiesZoneDefinition.Golf = {
 		name="Waiter_Restaurant",
 		chance=5,
 	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=20,
+	},
 }
 
 ZombiesZoneDefinition.Police = {
@@ -810,16 +1096,24 @@ ZombiesZoneDefinition.Police = {
 		name="Police",
 		chance=40,
 	},
+	Detective = {
+		name="Detective",
+		chance=10,
+	},
 	OfficeWorkerSkirt = {
 		name="OfficeWorkerSkirt",
-		chance=20,
+		chance=15,
 		gender="female",
 	},
 	OfficeWorker = {
 		name="OfficeWorker",
-		chance=20,
+		chance=15,
 		gender="male",
 		beardStyles="null:80",
+	},
+	Agent = {
+		name="Agent",
+		chance=1,
 	},
 }
 
@@ -828,16 +1122,24 @@ ZombiesZoneDefinition.PoliceState = {
 		name="PoliceState",
 		chance=40,
 	},
+	Detective = {
+		name="Detective",
+		chance=1,
+	},
 	OfficeWorkerSkirt = {
 		name="OfficeWorkerSkirt",
-		chance=20,
+		chance=15,
 		gender="female",
 	},
 	OfficeWorker = {
 		name="OfficeWorker",
-		chance=20,
+		chance=15,
 		gender="male",
 		beardStyles="null:80",
+	},
+	Agent = {
+		name="Agent",
+		chance=10,
 	},
 }
 
@@ -864,12 +1166,6 @@ ZombiesZoneDefinition.Prison = {
 		chance=30,
 		room="medicalstorage",
 	},
-	Priest = {
-		name="Priest",
-		mandatory="true",
-		toSpawn=1,
-		gender="male",
-	},
 	Waiter_Diner = {
 		name="Waiter_Diner",
 		chance=2,
@@ -891,6 +1187,11 @@ ZombiesZoneDefinition.Prison = {
 		chance=30,
 		room="office",
 		beardStyles="null:80",
+	},
+	Agent = {
+		name="Agent",
+		chance=1,
+		room="office",
 	},
 	Security = {
 		name="PrisonGuard",
@@ -957,6 +1258,10 @@ ZombiesZoneDefinition.Army = {
 		name="ArmyCamoGreen",
 		chance=5,
 	},
+	Agent = {
+		name="Agent",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.SecretBase = {
@@ -990,42 +1295,81 @@ ZombiesZoneDefinition.SecretBase = {
 		name="Doctor",
 		chance=10,
 	},
+	Agent = {
+		name="Agent",
+		chance=1,
+	},
 }
 
 ZombiesZoneDefinition.Bar = {
 	Biker = {
 		name="Biker",
 		chance=30,
+-- 		chance=25,
 		beardStyles="Long:10;Chops:10;Goatee:10;Moustache:10;Full:10;BeardOnly:10",
 	},
 	Veteran = {
 		name="Veteran",
 		chance=10,
 		gender="male",
-		maleHairStyles="CrewCut:20",
-		beardStyles="Long:10;Chops:17;Goatee:17;Moustache:17",
 	},
 	Redneck = {
 		name="Redneck",
-		chance=50,
-		maleHairStyles="Mullet:30;Metal:15",
-		femaleHairStyles="CrewCut:10",
-		beardStyles="Long:15;Chops:13;Goatee:13;Moustache:13",
+		chance=35,
+-- 		chance=50,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=5,
+	},
+	Rocker = {
+		name="Rocker",
+		chance=5,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=5,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=1,
+	},
+	Thug = {
+		name="Thug",
+		chance=5,
+		gender="male",
 	},
 }
 
 ZombiesZoneDefinition.Beach = {
 	Tourist = {
 		name="Tourist",
-		chance=30,
+		chance=15,
+-- 		chance=30,
 	},
 	Swimmer = {
 		name="Swimmer",
-		chance=70,
+		chance=65,
+	},
+	Backpacker = {
+		name="Backpacker",
+		chance=5,
+	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=5,
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=5,
 	},
 }
 
 ZombiesZoneDefinition.School = {
+	HonorStudent = {
+		name="HonorStudent",
+		chance=5,
+	},
 	ShellSuit_Black = {
 		name="ShellSuit_Black",
 		chance=3,
@@ -1058,6 +1402,67 @@ ZombiesZoneDefinition.School = {
 		name="Teacher",
 		chance=15,
 	},
+	Varsity = {
+		name="Varsity",
+		chance=5,
+	},
+}
+
+ZombiesZoneDefinition.University = {
+	HonorStudent = {
+		name="HonorStudent",
+		chance=5,
+	},
+	Young = {
+		name="Young",
+		chance=15,
+	},
+	Student = {
+		name="Student",
+		chance=40,
+-- 		chance=50,
+	},
+	Teacher = {
+		name="Teacher",
+		chance=15,
+	},
+	Backpacker = {
+		name="Backpacker",
+		chance=1,
+	},
+	Hobbyist = {
+		name="Hobbyist",
+		chance=1,
+	},
+	Punk = {
+		name="Punk",
+		chance=1,
+	},
+	GuitarGuy = {
+		name="GuitarGuy",
+		chance=1,
+	},
+	ClubGoer = {
+		name="ClubGoer",
+		chance=1,
+	},
+	Goth = {
+		name="Goth",
+		chance=1,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=5,
+	},
+	Grunge = {
+		name="Grunge",
+		chance=5,
+	},
+	IT= {
+		name="IT",
+		toSpawn=1,
+		mandatory="true",
+	},
 }
 
 ZombiesZoneDefinition.Boxing = {
@@ -1078,7 +1483,241 @@ ZombiesZoneDefinition.Boxing = {
 		name="Classy",
 		chance=75,
 	},
+	Retiree = {
+		name="Retiree",
+		chance=10,
+	},
 };
+
+ZombiesZoneDefinition.Nav = {
+	Backpacker = {
+		name="Backpacker",
+		chance=0.25,
+	},
+	Evacuee = {
+		name="Evacuee",
+		chance=0.25,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=0.25,
+	},
+	Sanitation = {
+		name="Sanitation",
+		chance=0.25,
+	},
+}
+
+
+
+ZombiesZoneDefinition.CornMaze = {
+	HonorStudent = {
+		name="HonorStudent",
+		chance=5,
+	},
+	Young = {
+		name="Young",
+		chance=15,
+	},
+	Student = {
+		name="Student",
+		chance=40,
+-- 		chance=50,
+	},
+	Hobbyist = {
+		name="Hobbyist",
+		chance=1,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=5,
+	},
+	Grunge = {
+		name="Grunge",
+		chance=1,
+	},
+	CostumeScarecrow = {
+		name="CostumeScarecrow",
+		chance=5,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=10,
+	},
+}
+
+-- Wild West! Yee Haw!
+ZombiesZoneDefinition.Cowboy = {
+	CostumeWildWestBoss = {
+		name="CostumeWildWestBoss",
+		chance=1,
+	},
+	CostumeWildWestClown = {
+		name="CostumeWildWestClown",
+		chance=4,
+	},
+	CostumeWildWestCowpoke = {
+		name="CostumeWildWestCowpoke",
+		chance=10,
+	},
+	CostumeWildWestFancy = {
+		name="CostumeWildWestFancy",
+		chance=10,
+	},
+	CostumeWildWestMayor = {
+		name="CostumeWildWestMayor",
+		chance=5,
+	},
+	CostumeWildWestMountainPerson = {
+		name="CostumeWildWestMountainPerson",
+		chance=5,
+	},
+	CostumeWildWestOutlaw = {
+		name="CostumeWildWestOutlaw",
+		toSpawn=10,
+	},
+
+
+	Young = {
+		name="Young",
+		chance=10,
+	},
+	Student = {
+		name="Student",
+		chance=10,
+-- 		chance=50,
+	},
+	Varsity = {
+		name="Varsity",
+		chance=1,
+	},
+	Tourist = {
+		name="Tourist",
+		chance=10,
+	},
+	Retiree = {
+		name="Retiree",
+		chance=10,
+	},
+}
+
+
+ZombiesZoneDefinition.Stripclub = {
+	Gaudy = {
+		name="Gaudy",
+		chance=25,
+	},
+	Trucker = {
+		name="Trucker",
+		chance=15,
+	},
+	CowboyStripper = {
+		name="CowboyStripper",
+		chance=1,
+	},
+	FiremanStripper = {
+		name="FiremanStripper",
+		chance=1,
+	},
+	PoliceStripper = {
+		name="PoliceStripper",
+		chance=1,
+	},
+	FiremanStripper = {
+		name="StripperBlack",
+		chance=1,
+	},
+	FiremanStripper = {
+		name="StripperNaked",
+		chance=1,
+	},
+	FiremanStripper = {
+		name="StripperWhite",
+		chance=1,
+	},
+	WaiterStripper = {
+		name="WaiterStripper",
+		chance=1,
+	},
+}
+
+ZombiesZoneDefinition.Mob = {
+	Classy = {
+		name="Classy",
+		chance=10,
+		gender="male",
+	},
+	Clubgoer = {
+		name="Clubgoer",
+		chance=15,
+		gender="female",
+	},
+	Gaudy = {
+		name="Gaudy",
+		chance=15,
+	},
+	Mob = {
+		name="Mob",
+		chance=15,
+		gender="male",
+	},
+	MobCasual = {
+		name="MobCasual",
+		chance=15,
+		gender="male",
+	},
+	Thug = {
+		name="Mob",
+		chance=15,
+		gender="male",
+	},
+	Waiter_Classy = {
+		name="Waiter_Classy",
+		chance=15,
+	}
+}
+
+ZombiesZoneDefinition.Cultists = {
+	Cultist = {
+		name="Cultist",
+		chance=100,
+	},
+}
+
+ZombiesZoneDefinition.SecretLab = {
+	ArmyInstructor = {
+		name="ArmyInstructor",
+		chance=5,
+		gender="male",
+	},
+	ArmyCamoGreen = {
+		name="ArmyCamoGreen",
+		chance=20,
+	},
+	OfficeWorkerSkirt = {
+		name="OfficeWorkerSkirt",
+		chance=10,
+		gender="female",
+	},
+	OfficeWorker = {
+		name="OfficeWorker",
+		chance=10,
+		gender="male",
+		beardStyles="null:80",
+	},
+	Doctor = {
+		name="Doctor",
+		chance=10,
+	},
+	Agent = {
+		name="Agent",
+		chance=5,
+	},
+	HazardSuit = {
+		name="HazardSuit",
+		chance=20,
+	},
+}
 
 -- total chance can be over 100% we don't care as we'll roll on the totalChance and not a 100 (unlike the specific outfits on top of this)
 ZombiesZoneDefinition.Default = {};
@@ -1099,9 +1738,13 @@ table.insert(ZombiesZoneDefinition.Default,{name = "Golfer", chance=0.2});
 table.insert(ZombiesZoneDefinition.Default,{name = "Young", chance=2});
 table.insert(ZombiesZoneDefinition.Default,{name = "OfficeWorker", chance=2, gender="male"});
 table.insert(ZombiesZoneDefinition.Default,{name = "OfficeWorkerSkirt", chance=2, gender="female"});
-table.insert(ZombiesZoneDefinition.Default,{name = "Police", chance=0.5});
-table.insert(ZombiesZoneDefinition.Default,{name = "PoliceState", chance=0.5});
-table.insert(ZombiesZoneDefinition.Default,{name = "Ranger", chance=1});
+-- reduced as they are quite commonplace and also have good gear
+table.insert(ZombiesZoneDefinition.Default,{name = "Police", chance=0.25});
+table.insert(ZombiesZoneDefinition.Default,{name = "PoliceState", chance=0.1});
+table.insert(ZombiesZoneDefinition.Default,{name = "Ranger", chance=0.25});
+-- table.insert(ZombiesZoneDefinition.Default,{name = "Police", chance=0.5});
+-- table.insert(ZombiesZoneDefinition.Default,{name = "PoliceState", chance=0.5});
+-- table.insert(ZombiesZoneDefinition.Default,{name = "Ranger", chance=1});
 table.insert(ZombiesZoneDefinition.Default,{name = "ConstructionWorker", chance=0.5, gender="male"});
 table.insert(ZombiesZoneDefinition.Default,{name = "Farmer", chance=0.5});
 table.insert(ZombiesZoneDefinition.Default,{name = "Student", chance=1});
@@ -1110,3 +1753,18 @@ table.insert(ZombiesZoneDefinition.Default,{name = "Bathrobe", chance=10, room="
 table.insert(ZombiesZoneDefinition.Default,{name = "Naked", chance=10, room="bathroom"});
 table.insert(ZombiesZoneDefinition.Default,{name = "Priest", chance=10, room="church", gender="male"});
 table.insert(ZombiesZoneDefinition.Default,{name = "Bedroom", chance=10, room="bedroom"});
+-- table.insert(ZombiesZoneDefinition.Default,{name = "Backpacker", chance=0.25});
+table.insert(ZombiesZoneDefinition.Default,{name = "Evacuee", chance=0.25});
+table.insert(ZombiesZoneDefinition.Default,{name = "Hobbyist", chance=50, room="comicstore"});
+table.insert(ZombiesZoneDefinition.Default,{name = "HonorStudent", chance=25, room="comicstore"});
+table.insert(ZombiesZoneDefinition.Default,{name = "Goth", chance=10, room="comicstore"});
+table.insert(ZombiesZoneDefinition.Default,{name = "IT", chance=1, room="comicstore"});
+-- table.insert(ZombiesZoneDefinition.Default,{name = "CostumeVampire", chance=1, room="comicstore"});
+table.insert(ZombiesZoneDefinition.Default,{name = "Varsity", chance=0.5});
+table.insert(ZombiesZoneDefinition.Default,{name = "Sanitation", chance=0.1});
+table.insert(ZombiesZoneDefinition.Default,{name = "ExterminatorSuited", chance=0.01});
+table.insert(ZombiesZoneDefinition.Default,{name = "Retiree", chance=1});
+table.insert(ZombiesZoneDefinition.Default,{name = "HospitalPatient", chance=50, room="hospitalroom"});
+table.insert(ZombiesZoneDefinition.Default,{name = "HospitalPatientBathrobe", chance=50, room="hospitalroom"});
+
+

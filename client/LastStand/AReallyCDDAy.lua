@@ -42,21 +42,21 @@ CDDA.OnInitWorld = function()
 	SandboxVars.StartTime = 2;
 	SandboxVars.WaterShutModifier = -1;
 	SandboxVars.ElecShutModifier = -1;
-	SandboxVars.FoodLoot = 3;
-	SandboxVars.CannedFoodLoot = 3;
-	SandboxVars.RangedWeaponLoot = 3;
-	SandboxVars.AmmoLoot = 3;
-	SandboxVars.SurvivalGearsLoot = 3;
-	SandboxVars.MechanicsLoot = 3;
-	SandboxVars.LiteratureLoot = 3;
-	SandboxVars.MedicalLoot = 3;
-	SandboxVars.WeaponLoot = 3;
-	SandboxVars.OtherLoot = 3;
+-- 	SandboxVars.FoodLoot = 3;
+-- 	SandboxVars.CannedFoodLoot = 3;
+-- 	SandboxVars.RangedWeaponLoot = 3;
+-- 	SandboxVars.AmmoLoot = 3;
+-- 	SandboxVars.SurvivalGearsLoot = 3;
+-- 	SandboxVars.MechanicsLoot = 3;
+-- 	SandboxVars.LiteratureLoot = 3;
+-- 	SandboxVars.MedicalLoot = 3;
+-- 	SandboxVars.WeaponLoot = 3;
+-- 	SandboxVars.OtherLoot = 3;
+    SandboxVars.LootItemRemovalList = "";
 	SandboxVars.Temperature = 3;
 	SandboxVars.Rain = 3;
 	--    SandboxVars.erosion = 12
 	SandboxVars.ErosionSpeed = 1
-	SandboxVars.XpMultiplier = "1.0";
 	SandboxVars.Farming = 3;
 	SandboxVars.NatureAbundance = 5;
 	SandboxVars.PlantResilience = 3;
@@ -70,15 +70,18 @@ CDDA.OnInitWorld = function()
 	SandboxVars.StarterKit = false;
 	SandboxVars.TimeSinceApo = 13;
 	SandboxVars.MultiHitZombies = false;
+
+	SandboxVars.MultiplierConfig = {
+		XPMultiplierGlobal = 1,
+		XPMultiplierGlobalToggle = true,
+	}
 	
 
-	SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+	SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
 	-- FIXME: a number of these spawnpoints are invalid :-(
 	if false then
 	local rand = ZombRand(0, 13) + 1
-	CDDA.xcell = CDDA.spawns[rand].xcell;
-	CDDA.ycell = CDDA.spawns[rand].ycell;
 	CDDA.x = CDDA.spawns[rand].x;
 	CDDA.y = CDDA.spawns[rand].y;
 	CDDA.z = CDDA.spawns[rand].z;
@@ -125,26 +128,24 @@ CDDA.completionText = "Survive a night to unlock next challenge.";
 CDDA.image = "media/lua/client/LastStand/AReallyCDDAy.png";
 CDDA.gameMode = "A Really CD DA";
 CDDA.world = "Muldraugh, KY";
-CDDA.xcell = 36;
-CDDA.ycell = 31;
-CDDA.x = 21;
-CDDA.y = 111;
+CDDA.x = 36 * 300 + 21;
+CDDA.y = 31 * 300 + 111;
 CDDA.z = 0;
 
 CDDA.spawns = {
-	{xcell = 35, ycell = 33, x = 288, y = 85, z = 0},
-	{xcell = 35, ycell = 32, x = 193, y = 145, z = 0},
-	{xcell = 35, ycell = 32, x = 270, y = 88, z = 0},
-	{xcell = 35, ycell = 31, x = 240+6, y = 107+6, z = 1},
-	{xcell = 39, ycell = 22, x = 91, y = 255, z = 0},
-	{xcell = 38, ycell = 22, x = 198+6, y = 271+6, z = 1},
-	{xcell = 38, ycell = 22, x = 96, y = 100, z = 1},
-	{xcell = 38, ycell = 22, x = 15, y = 65, z = 0},
-	{xcell = 37, ycell = 22, x = 112+6, y = 185+6, z = 1},
-	{xcell = 37, ycell = 22, x = 111+6, y = 191+6, z = 1},
-	{xcell = 35, ycell = 22, x = 133+6, y = 194+6, z = 1},
-	{xcell = 36, ycell = 33, x = 33+6, y = 247+6, z = 1},
-	{xcell = 38, ycell = 22, x = 273, y = 204+6, z = 1},
+	{x = 10788, y = 9985, z = 0},
+	{x = 10693, y = 9745, z = 0},
+	{x = 10770, y = 9688, z = 0},
+	{x = 10746, y = 9413, z = 1},
+	{x = 11791, y = 6855, z = 0},
+	{x = 11604, y = 6877, z = 1},
+	{x = 11496, y = 6700, z = 1},
+	{x = 11415, y = 6665, z = 0},
+	{x = 11218, y = 6791, z = 1},
+	{x = 11217, y = 6797, z = 1},
+	{x = 10639, y = 6800, z = 1},
+	{x = 10839, y = 12153, z = 1},
+	{x = 11673, y = 6810, z = 1},
 
 }
 

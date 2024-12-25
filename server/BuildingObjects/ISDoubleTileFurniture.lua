@@ -56,9 +56,9 @@ function ISDoubleTileFurniture:setInfo(square, north, sprite)
 	thumpable:setMaxHealth(self:getHealth());
 	thumpable:setHealth(thumpable:getMaxHealth())
 	-- the sound that will be played when our furniture will be broken
-	thumpable:setBreakSound("BreakObject");
+	thumpable:setBreakSound(IsoThumpable.GetBreakFurnitureSound(sprite));
 	square:AddSpecialObject(thumpable);
-	thumpable:transmitCompleteItemToServer();
+	thumpable:transmitCompleteItemToClients();
 end
 
 function ISDoubleTileFurniture:removeFromGround(square)
@@ -89,13 +89,13 @@ function ISDoubleTileFurniture:removeFromGround(square)
 	end
 end
 
-function ISDoubleTileFurniture:new(name, sprite1, sprite2, northSprite1, northSprite2)
+function ISDoubleTileFurniture:new(name, sprite, sprite2, northSprite, northSprite2)
 	local o = {};
 	setmetatable(o, self);
 	self.__index = self;
 	o:init();
-	o:setSprite(sprite1);
-	o:setNorthSprite(northSprite1);
+	o:setSprite(sprite);
+	o:setNorthSprite(northSprite);
 	o.sprite2 = sprite2;
 	o.northSprite2 = northSprite2;
 	o.name = name;
@@ -139,7 +139,7 @@ function ISDoubleTileFurniture:render(x, y, z, square)
 
 	-- render our second tile object
 	local spriteA = IsoSprite.new();
-	spriteA:LoadFramesNoDirPageSimple(spriteAName);
+	spriteA:LoadSingleTexture(spriteAName);
 	if spriteAFree then
 		spriteA:RenderGhostTile(xa, ya, za);
 	else

@@ -11,7 +11,8 @@ require "DebugUIs/DebugChunkState/DebugChunkState_ObjectPickerPanel"
 require "DebugUIs/DebugChunkState/DebugChunkState_VehicleStoryPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 DebugChunkStateUI = ISPanel:derive("DebugChunkStateUI")
 
@@ -25,7 +26,7 @@ DebugChunkStateUI_OptionsPanel = ISPanel:derive("DebugChunkStateUI_OptionsPanel"
 local OptionsPanel = DebugChunkStateUI_OptionsPanel
 
 function OptionsPanel:createChildren()
-	local tickBox = ISTickBox:new(10, 10, 300, 500, "", self, self.onTickBox, option)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
 	tickBox:initialise()
 	self:addChild(tickBox)
 	for i=1,self.gameState:getOptionCount() do
@@ -34,6 +35,8 @@ function OptionsPanel:createChildren()
 		tickBox:setSelected(i, option:getValue())
 	end
 	tickBox:setWidthToFit()
+	self:setWidth(tickBox:getRight() + UI_BORDER_SPACING+1)
+	self:setHeight(tickBox:getBottom() + UI_BORDER_SPACING+1)
 	self.tickBox = tickBox
 end
 
@@ -57,9 +60,37 @@ end
 
 -----
 
+DebugChunkStateUI_SpritePopupPanel = ISPanel:derive("DebugChunkStateUI_SpritePopupPanel")
+local SpritePopupPanel = DebugChunkStateUI_SpritePopupPanel
+
+function SpritePopupPanel:render()
+	if self.sprite then
+		local tex = self.sprite:getTextureForCurrentFrame(IsoDirections.N)
+		if not tex then return end -- IsoDeadBody
+		local texW, texH = tex:getWidthOrig(), tex:getHeightOrig()
+		if texW > self.width or texH > self.height then
+			 -- jumbo tree
+			texW = math.min(texW, self.width)
+			texH = math.min(texH, self.height)
+			self:drawTextureScaledAspect(tex, (self.width - texW) / 2, (self.height - texH) / 2, texW, texH, 1, 1, 1, 1)
+		else
+			self:drawTexture(tex, (self.width - texW) / 2, (self.height - texH) / 2, texW, texH, 1, 1, 1, 1)
+		end
+	end
+end
+
+function SpritePopupPanel:new(x, y, w, h)
+	local o = ISPanel.new(self, x, y, w, h)
+	o.backgroundColor = { r = 1, g = 1, b = 1, a = 1 }
+	o.sprite = nil
+	return o
+end
+
+-----
+
 function DebugChunkStateUI:createChildren()
-	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
-	local combo = ISComboBox:new(10, 10, 150, comboHeight, self, self.onChangePlayer)
+	local panelWidth = 200+(getCore():getOptionFontSizeReal()*50);
+	local combo = ISComboBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangePlayer)
 	self:addChild(combo)
 	combo:addOption("Player 0")
 	combo:addOption("Player 1")
@@ -67,51 +98,56 @@ function DebugChunkStateUI:createChildren()
 	combo:addOption("Player 3")
 	self.comboPlayerIndex = combo
 
-	self.zLevelSlider = ISSliderPanel:new(10, combo:getBottom() + 10, 150, 20, self, self.onChangeZLevel)
+	self.zLevelSlider = ISSliderPanel:new(UI_BORDER_SPACING, combo:getBottom() + UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangeZLevel)
 	self.zLevelSlider:initialise()
+	self.zLevelSlider:setValues(-31, 31, 1, 1, true)
 	self.zLevelSlider:setCurrentValue(self.gameState:fromLua0("getZ"), true)
-	self.zLevelSlider:setValues(0, 7, 1, 1, true)
 	self:addChild(self.zLevelSlider)
 
-	local top = self.zLevelSlider:getBottom() + 10
-	self.objectSections = ISSectionedPanel:new(10, top, 250, self.height - 10 - top)
+	local top = self.zLevelSlider:getBottom() + UI_BORDER_SPACING
+	self.objectSections = ISSectionedPanel:new(UI_BORDER_SPACING, top, panelWidth, self.height - UI_BORDER_SPACING - top)
 	self.objectSections.anchorBottom = true
 	self.objectSections.maintainHeight = false
 	self:addChild(self.objectSections)
 	self.objectSections:setScrollChildren(true)
 	self.objectSections:addScrollBars()
 
-	self.objectList = ISScrollingListBox:new(0, 0, 250, 100)
+	self.objectList = ISScrollingListBox:new(0, 0, panelWidth, 100)
 	self.objectList.debugChunkState = self
 	self.objectList.doDrawItem = function(self, y, item, alt) return self.debugChunkState.doDrawObjectListItem(self, y, item, alt) end
-	self.objectList:setFont(UIFont.DebugConsole, 4)
+	self.objectList:setFont(UIFont.Small, 6)
 	self.objectList.itemheight = self.objectList.fontHgt * 3
 	self.objectList:setHeight(self.objectList.fontHgt * 15)
-	self.objectSections:addSection(self.objectList, "Objects On Square")
+	self.objectSections:addSection(self.objectList, getText("IGUI_ChunkState_ObjectsOnSquare"))
 
-	self.objPropsPanel = DebugChunkStateUI_ObjPropsPanel:new(0, self.objectList:getBottom() + 10, self.objectList.width, 100, self)
-	self.objectSections:addSection(self.objPropsPanel, "Object Details")
+	self.objPropsPanel = DebugChunkStateUI_ObjPropsPanel:new(0, self.objectList:getBottom() + UI_BORDER_SPACING, self.objectList.width, 100, self)
+	self.objectSections:addSection(self.objPropsPanel, getText("IGUI_ChunkState_ObjectDetails"))
 
-	local toolHgt = 30
-	self.toolBar = ISPanel:new(self.width / 2 - 300 / 2, 10, 300, toolHgt)
+	self.spritePopupPanel = SpritePopupPanel:new(0, 0, 64 * Core.getTileScale(), 128 * Core.getTileScale())
+	self.spritePopupPanel.keepOnScreen = true
+	self.spritePopupPanel:setVisible(false)
+	self:addChild(self.spritePopupPanel)
+
+	self.toolBar = ISPanel:new(self.width / 2 - 300 / 2, 10, 300, BUTTON_HGT)
 	self.toolBar:noBackground()
 	self:addChild(self.toolBar)
 --[[
 	local button1 = ISButton:new(0, 0, 60, toolHgt, "CAMERA", self, self.onCamera)
 	self.toolBar:addChild(button1)
 --]]
-	local button2 = ISButton:new(0, 0, 60, toolHgt, "OPTIONS", self, self.onOptions)
+	local button2 = ISButton:new(0, 0, 60, BUTTON_HGT, getText("IGUI_DebugMenu_Options"), self, self.onOptions)
 	self.toolBar:addChild(button2)
 	self.buttonOptions = button2
 	
-	local button3 = ISButton:new(button2:getRight() + 10, 0, 60, toolHgt, "EXIT", self, self.onExit)
+	local button3 = ISButton:new(button2:getRight() + UI_BORDER_SPACING, 0, 60, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
+	button3:enableCancelColor()
 	self.toolBar:addChild(button3)
 	self.buttonExit = button3
 
 	self.toolBar:setWidth(button3:getRight())
-	self.toolBar:setX(self.width / 2 - self.toolBar.width / 2)
+	self.toolBar:setX(self.width / 2)
 
-	self.squarePanel = DebugChunkStateUI_SquarePanel:new(self.width - 300 - 10, 10, 300, self.height - 10 * 2, self)
+	self.squarePanel = DebugChunkStateUI_SquarePanel:new(self.width - panelWidth - 10, 10, panelWidth, self.height - UI_BORDER_SPACING*2, self)
 	self.squarePanel.anchorBottom = true
 	self.squarePanel.maintainHeight = false
 	self:addChild(self.squarePanel)
@@ -119,16 +155,21 @@ function DebugChunkStateUI:createChildren()
 	self.squarePanel:addScrollBars()
 	self.squarePanel:createSections()
 
-	self.objectPickerPanel = DebugChunkState_ObjectPickerPanel:new(self.width / 2 - 500 / 2, self.height - 100, 500, 80, self)
-	self.objectPickerPanel:setY(self.height - self.objectPickerPanel.height - 4)
+	self.objectPickerPanel = DebugChunkState_ObjectPickerPanel:new((self.width - panelWidth*2) / 2, self.height - 100, panelWidth*2, 80, self)
+	self.objectPickerPanel:setY(self.height - self.objectPickerPanel.height - UI_BORDER_SPACING)
 	self:addChild(self.objectPickerPanel)
 
 	self.optionsPanel = DebugChunkStateUI_OptionsPanel:new(0, 0, 300, 400, self.gameState)
 	self.optionsPanel:setVisible(false)
 	self:addChild(self.optionsPanel)
 
-	self.vehicleStoryPanel = DebugChunkState_VehicleStoryPanel:new(self.toolBar.x - 20 - 200, self.toolBar.y, 200, 80, self)
+	local vehicleStoryWidth = 300
+	self.vehicleStoryPanel = DebugChunkState_VehicleStoryPanel:new(self.toolBar.x - UI_BORDER_SPACING - vehicleStoryWidth, self.toolBar.y, vehicleStoryWidth, 80, self)
 	self:addChild(self.vehicleStoryPanel)
+
+	self.objectAtCursorPanel = DebugChunkState_ObjectAtCursorPanel:new(self.vehicleStoryPanel.x - UI_BORDER_SPACING - panelWidth, self.toolBar.y, panelWidth, 0, self)
+	self:addChild(self.objectAtCursorPanel)
+	self.objectAtCursorPanel:setX(self.vehicleStoryPanel.x - 10 - self.objectAtCursorPanel.width)
 end
 
 function DebugChunkStateUI:onChangePlayer()
@@ -271,6 +312,39 @@ function DebugChunkStateUI:onResolutionChange(oldw, oldh, neww, newh)
 	self:setHeight(newh)
 	self.toolBar:setX(self.width / 2 - self.toolBar.width / 2)
 	self.squarePanel:setX(self.width - 10 - self.squarePanel.width)
+	self.objectAtCursorPanel:setX(self.toolBar.x - 10 - self.objectAtCursorPanel.width)
+end
+
+function DebugChunkStateUI:prerender()
+	ISPanel.prerender(self)
+	self.spritePopupPanel.sprite = nil
+
+	local item = self.objectList.items[self.objectList.mouseoverselected]
+	if not item then return end
+	local object = item.item
+	if not object then return end
+	if not object:getSprite() then return end
+	local tex = object:getSprite():getTextureForCurrentFrame(IsoDirections.N)
+	if not tex then return end
+--	if instanceof(object, "IsoDeadBody") then return end
+--	if instanceof(object, "IsoGameCharacter") then return end
+	local spritePopupPanel = self.spritePopupPanel
+	spritePopupPanel.sprite = object:getSprite()
+	spritePopupPanel:setX(self.objectSections:getRight())
+	spritePopupPanel:setY(self.objectList:getAbsoluteY())
+end
+
+function DebugChunkStateUI:render()
+	ISPanel.render(self)
+	if self.spritePopupPanel.sprite == nil then
+		if self.spritePopupPanel:isVisible() then
+			self.spritePopupPanel:setVisible(false)
+		end
+	else
+		if not self.spritePopupPanel:isVisible() then
+			self.spritePopupPanel:setVisible(true)
+		end
+	end
 end
 
 function DebugChunkStateUI:update()
@@ -280,6 +354,7 @@ function DebugChunkStateUI:update()
 	end
 	self:updateObjectProps()
 	self.objectPickerPanel:setVisible(self.gameState:getBoolean("ObjectPicker"))
+	self.objectAtCursorPanel:setVisible(self.gameState:getBoolean("ObjectAtCursor"))
 	self.vehicleStoryPanel:setVisible(self.gameState:getBoolean("VehicleStory"))
 end
 

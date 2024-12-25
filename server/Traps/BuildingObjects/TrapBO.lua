@@ -13,18 +13,28 @@ function TrapBO:create(x, y, z, north, sprite)
     self.sq = cell:getGridSquare(x, y, z);
     self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
     buildUtil.setInfo(self.javaObject, self);
---    self.player:getInventory():RemoveOneOf(self.trap:getType());
+    --    self.player:getInventory():RemoveOneOf(self.trap:getType());
     self.javaObject:setMaxHealth(50);
     self.javaObject:setHealth(self.javaObject:getMaxHealth());
-    self.javaObject:setBlockAllTheSquare(false)
-    self.javaObject:setIsThumpable(false)
+
+    if sprite == "constructedobjects_01_16" then
+        --snare traps
+        self.javaObject:setCanPassThrough(true)
+        self.javaObject:setBlockAllTheSquare(false)
+        self.javaObject:setIsThumpable(false)
+    else
+        --all other traps
+        self.javaObject:setBlockAllTheSquare(true)
+        self.javaObject:setIsThumpable(true)
+    end
+
     self.sq:AddSpecialObject(self.javaObject);
     self.sq:RecalcAllWithNeighbours(true);
 --    buildUtil.addWoodXp();
 --    print("created trap : " .. trap.x .. "," .. trap.y);
 --    table.insert(TrapSystem.traps, trap);
-    CTrapSystem.initObjectModData(self.javaObject, self.trapDef, north, self.character)
-    self.javaObject:transmitCompleteItemToServer();
+    TrapSystem.initObjectModData(self.javaObject, self.trapDef, north, self.character)
+    self.javaObject:transmitCompleteItemToClients();
 
     if self.trap == self.character:getPrimaryHandItem() then
         self.character:setPrimaryHandItem(nil)
@@ -34,7 +44,11 @@ function TrapBO:create(x, y, z, north, sprite)
     end
     self.character:getInventory():Remove(self.trap);
 
-    getCell():setDrag(nil, self.player);
+    if not isServer() then
+        getCell():setDrag(nil, self.player);
+    else
+        sendRemoveItemFromContainer(self.character:getInventory(), self.trap);
+    end
     -- OnObjectAdded event will create the STrapGlobalObject on the server.
     -- This is only needed for singleplayer which doesn't trigger OnObjectAdded.
     triggerEvent("OnObjectAdded", self.javaObject)
@@ -54,6 +68,9 @@ function TrapBO:onTimedActionStart(action)
 end
 
 function TrapBO:new(player, trap)
+    if not trap then
+        return nil;
+    end
     local o = {};
     setmetatable(o, self);
     self.__index = self;

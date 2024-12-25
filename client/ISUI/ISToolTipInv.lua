@@ -59,24 +59,26 @@ function ISToolTipInv:render()
 	-- we render the tool tip for inventory item only if there's no context menu showed
 	if not ISContextMenu.instance or not ISContextMenu.instance.visibleCheck then
 
-     local mx = getMouseX() + 24;
-     local my = getMouseY() + 24;
-     if not self.followMouse then
-        mx = self:getX()
-        my = self:getY()
-        if self.anchorBottomLeft then
-            mx = self.anchorBottomLeft.x
-            my = self.anchorBottomLeft.y
-        end
-     end
+	local mx = getMouseX() + 24;
+	local my = getMouseY() + 24;
+	if not self.followMouse then
+		mx = self:getX()
+		my = self:getY()
+		if self.anchorBottomLeft then
+			mx = self.anchorBottomLeft.x
+			my = self.anchorBottomLeft.y
+		end
+	end
 
-        self.tooltip:setX(mx+11);
-        self.tooltip:setY(my);
+	local PADX = 0
 
-        self.tooltip:setWidth(50)
-        self.tooltip:setMeasureOnly(true)
-        self.item:DoTooltip(self.tooltip);
-        self.tooltip:setMeasureOnly(false)
+	self.tooltip:setX(mx + PADX);
+	self.tooltip:setY(my);
+
+	self.tooltip:setWidth(50)
+	self.tooltip:setMeasureOnly(true)
+	if self.item then self.item:DoTooltip(self.tooltip) end;
+	self.tooltip:setMeasureOnly(false)
 
      -- clampy x, y
 
@@ -87,16 +89,16 @@ function ISToolTipInv:render()
      local tw = self.tooltip:getWidth();
      local th = self.tooltip:getHeight();
      
-     self.tooltip:setX(math.max(0, math.min(mx + 11, maxX - tw - 1)));
+     self.tooltip:setX(math.max(0, math.min(mx + PADX, maxX - tw - 1)));
     if not self.followMouse and self.anchorBottomLeft then
         self.tooltip:setY(math.max(0, math.min(my - th, maxY - th - 1)));
     else
         self.tooltip:setY(math.max(0, math.min(my, maxY - th - 1)));
     end
 
-     self:setX(self.tooltip:getX() - 11);
+     self:setX(self.tooltip:getX() - PADX);
      self:setY(self.tooltip:getY());
-     self:setWidth(tw + 11);
+     self:setWidth(tw + PADX);
      self:setHeight(th);
 
 	if self.followMouse then
@@ -105,7 +107,7 @@ function ISToolTipInv:render()
 
      self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
      self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-     self.item:DoTooltip(self.tooltip);
+     if self.item then self.item:DoTooltip(self.tooltip) end;
 	end
 end
 

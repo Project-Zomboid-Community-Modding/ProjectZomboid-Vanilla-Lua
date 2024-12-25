@@ -9,6 +9,8 @@ ISWhitelistModifyRow = ISPanel:derive("ISWhitelistModifyRow");
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISWhitelistModifyRow:initialise()
     ISPanel.initialise(self);
@@ -17,14 +19,13 @@ end
 
 function ISWhitelistModifyRow:render()
     ISPanel.render(self);
-    local z = 10;
-    self:drawText(getText("IGUI_DbViewer_ModifyRow"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_DbViewer_ModifyRow")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_DbViewer_ModifyRow"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_DbViewer_ModifyRow")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
-    local xoff = 10;
-    local yoff = z + FONT_HGT_MEDIUM + 10;
-    local rowHgt = FONT_HGT_SMALL + 2 * 2
-    self:drawRectBorder(xoff, yoff, self.width - 20, rowHgt, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawRect(xoff, yoff, self.width - 20, rowHgt, self.listHeaderColor.a, self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
+    local xoff = UI_BORDER_SPACING+1;
+    local yoff = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2+1;
+    local rowHgt = BUTTON_HGT
+    self:drawRectBorder(xoff, yoff, self.width - (UI_BORDER_SPACING+1)*2, rowHgt, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    self:drawRect(xoff, yoff, self.width - (UI_BORDER_SPACING+1)*2, rowHgt, self.listHeaderColor.a, self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
     local x = 0;
     for name, type in pairs(self.columns) do
         if type["name"] ~= "id" then
@@ -34,7 +35,7 @@ function ISWhitelistModifyRow:render()
             if self.columnSize[type["name"]] then
                 x = x + self.columnSize[type["name"]];
             else
-                x = x + 100;
+                x = x + 150;
             end
         end
     end
@@ -67,9 +68,7 @@ end
 function ISWhitelistModifyRow:createChildren()
     ISPanel.createChildren(self);
 
-    local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
+    local btnWid = 150
 
     local width = 10
     for _, type in pairs(self.columns) do
@@ -78,31 +77,31 @@ function ISWhitelistModifyRow:createChildren()
             width = width + size
         end
     end
-    self:setWidth(width + 10)
+    self:setWidth(width + UI_BORDER_SPACING)
 
-    self.close = ISButton:new(self:getWidth() - 100 - 10, 0, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISWhitelistModifyRow.onOptionMouseDown);
+    self.close = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1, 0, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISWhitelistModifyRow.onOptionMouseDown);
     self.close.internal = "CLOSE";
     self.close:initialise();
     self.close:instantiate();
     self.close.borderColor = self.buttonBorderColor;
     self:addChild(self.close);
 
-    self.Update = ISButton:new(10, 0, btnWid, btnHgt, getText("IGUI_DbViewer_Update"), self, ISWhitelistModifyRow.onOptionMouseDown);
+    self.Update = ISButton:new(UI_BORDER_SPACING+1, 0, btnWid, BUTTON_HGT, getText("IGUI_DbViewer_Update"), self, ISWhitelistModifyRow.onOptionMouseDown);
     self.Update.internal = "UPDATE";
     self.Update:initialise();
     self.Update:instantiate();
     self.Update.borderColor = self.buttonBorderColor;
     self:addChild(self.Update);
 
-    local x = 10;
-    local y = 10 + FONT_HGT_MEDIUM + 10 + FONT_HGT_SMALL + 2 * 2
-    local entryHgt = FONT_HGT_MEDIUM + 2 * 2
+    local x = UI_BORDER_SPACING+1;
+    local y = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + BUTTON_HGT
+    local entryHgt = FONT_HGT_MEDIUM+6
     for _, type in pairs(self.columns) do
 --        print(type["name"], self.data[type["name"]], type["type"]);
         if type["name"] ~= "id" then
             local size = self.columnSize[type["name"]] + 1;
             if _ == #self.columns then
-               size = self.width - x - 10;
+               size = self.width - x - UI_BORDER_SPACING - 1;
             end
             if type["type"] == "TEXT" or type["type"] == "INTEGER" then
                 self.entry = ISTextEntryBox:new(self.data[type["name"]], x, y, size, entryHgt);
@@ -134,9 +133,9 @@ function ISWhitelistModifyRow:createChildren()
         end
     end
 
-    self.close:setY(y + entryHgt + 20)
+    self.close:setY(y + entryHgt + UI_BORDER_SPACING)
     self.Update:setY(self.close.y)
-    self:setHeight(self.close:getBottom() + padBottom)
+    self:setHeight(self.close:getBottom() + UI_BORDER_SPACING+1)
 end
 
 function ISWhitelistModifyRow:onOptionMouseDown(button, x, y)

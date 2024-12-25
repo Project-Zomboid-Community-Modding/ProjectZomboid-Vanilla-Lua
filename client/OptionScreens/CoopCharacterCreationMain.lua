@@ -18,6 +18,9 @@ function CoopCharacterCreationMain:onOptionMouseDown(button, x, y)
 	if button.internal == "RANDOM" then
 		CharacterCreationHeader.instance:onOptionMouseDown(button, x, y)
 	end
+	if button.internal == "PLAYDEMOVOICE" then
+		CharacterCreationMain.onOptionMouseDown(self, button, x, y);
+	end;
 end
 
 function CoopCharacterCreationMain:new(x, y, width, height)

@@ -30,7 +30,7 @@ function RainCollectorBarrel:create(x, y, z, north, sprite)
     self.javaObject:getModData()["waterMax"] = self.waterMax;
     self.javaObject:getModData()["waterAmount"] = 0;
     self.javaObject:setSpecialTooltip(true)
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 	-- OnObjectAdded event will create the SRainBarrelGlobalObject on the server.
 	-- This is only needed for singleplayer which doesn't trigger OnObjectAdded.
 	triggerEvent("OnObjectAdded", self.javaObject)

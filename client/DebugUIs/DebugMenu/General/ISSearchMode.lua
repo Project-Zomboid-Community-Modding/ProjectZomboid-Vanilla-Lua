@@ -10,6 +10,10 @@ local ID_FADE_IN = 1;
 local ID_FADE_OUT = 2;
 
 ISSearchMode = ISDebugSubPanelBase:derive("ISSearchMode");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 function ISSearchMode:initialise()
     ISPanel.initialise(self);
@@ -25,16 +29,14 @@ function ISSearchMode:createChildren()
 
     local obj;
 
-    local butH = 20;
-    local x,y,w,margin = 10,10,self.width-30,5;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH - 1;
 
     self:initHorzBars(x,w);
+    local barMod = UI_BORDER_SPACING;
 
     y, obj = ISDebugUtils.addLabel(self,"game_title",x+(w/2),y,getText("IGUI_SearchMode_Debug_Title"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
-
-    local barMod = 3;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     local sm = getSearchMode();
     local psm = sm:getSearchModeForPlayer(0);
@@ -45,117 +47,106 @@ function ISSearchMode:createChildren()
     local dark = psm:getDarkness();
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Overlay"),x,y,w, "searchmode_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Mode_Activated"),x,y,w, "searchmode_search_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Icons"),x,y,w, "searchmode_debug_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Icons_Locations"),x,y,w, "searchmode_debug_locations_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Icons_Extended"),x,y,w, "searchmode_debug_extended_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Icons_Vision"),x,y,w, "searchmode_debug_vision_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Icons_Radius"),x,y,w, "searchmode_debug_vision_radius_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Search_Window"),x,y,w, "searchmode_debug_searchwindow_enabled");
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     --y, obj = self:addButton("Fade in SearchMode",x,y+margin,w,butH,margin,ID_FADE_IN);
     --y, obj = self:addButton("Fade out SearchMode",x,y+margin,w,butH,margin,ID_FADE_OUT);
 
     y, obj = ISDebugUtils.addLabel(self,"title2",x+(w/2),y,getText("IGUI_SearchMode_Debug_General_Title"), UIFont.Small);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_General_Fade_Time"),x,y,w,sm, 0, 5, 0.1, "getFadeTime", "setFadeTime", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     --y, obj = self:addFloatOption("Shader Max Desaturation",x,y,w,sm, 0, 1, 0.01, "getMaxDesaturation", "setMaxDesaturation", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+
 
     y, obj = ISDebugUtils.addLabel(self,"title3",x+(w/2),y,getText("IGUI_SearchMode_Debug_Overlay_Config_Title"), UIFont.Small);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Radius_Exterior"),x,y,w,radius, radius:getMin(), radius:getMax(), radius:getStepsize(), "getTargetExterior", "setTargetExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Radius_Interior"),x,y,w,radius, radius:getMin(), radius:getMax(), radius:getStepsize(), "getTargetInterior", "setTargetInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Gradient_Exterior"),x,y,w,gradient, gradient:getMin(), gradient:getMax(), gradient:getStepsize(), "getTargetExterior", "setTargetExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Gradient_Interior"),x,y,w,gradient, gradient:getMin(), gradient:getMax(), gradient:getStepsize(), "getTargetInterior", "setTargetInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Blur_Exterior"),x,y,w,blur, blur:getMin(), blur:getMax(), blur:getStepsize(), "getTargetExterior", "setTargetExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Blur_Interior"),x,y,w,blur, blur:getMin(), blur:getMax(), blur:getStepsize(), "getTargetInterior", "setTargetInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Desaturation_Exterior"),x,y,w,desat, desat:getMin(), desat:getMax(), desat:getStepsize(), "getTargetExterior", "setTargetExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Desaturation_Interior"),x,y,w,desat, desat:getMin(), desat:getMax(), desat:getStepsize(), "getTargetInterior", "setTargetInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Darkness_Exterior"),x,y,w,dark, dark:getMin(), dark:getMax(), dark:getStepsize(), "getTargetExterior", "setTargetExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Config_Darkness_Interior"),x,y,w,dark, dark:getMin(), dark:getMax(), dark:getStepsize(), "getTargetInterior", "setTargetInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = ISDebugUtils.addLabel(self,"title3",x+(w/2),y,getText("IGUI_SearchMode_Debug_Overlay_Override_Title"), UIFont.Small);
     obj.center = true;
     y, obj = ISDebugUtils.addLabel(self,"title4",x+(w/2),y,getText("IGUI_SearchMode_Debug_Overlay_Override_Description"), UIFont.Small);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("Override",x,y,w, "searchmode_override");
-    y=y+10;
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Button"),x,y,w, "searchmode_override");
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Radius_Exterior"),x,y,w,radius, radius:getMin(), radius:getMax(), radius:getStepsize(), "getExterior", "setExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Radius_Interior"),x,y,w,radius, radius:getMin(), radius:getMax(), radius:getStepsize(), "getInterior", "setInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Gradient_Exterior"),x,y,w,gradient, gradient:getMin(), gradient:getMax(), gradient:getStepsize(), "getExterior", "setExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Gradient_Interior"),x,y,w,gradient, gradient:getMin(), gradient:getMax(), gradient:getStepsize(), "getInterior", "setInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Blur_Exterior"),x,y,w,blur, blur:getMin(), blur:getMax(), blur:getStepsize(), "getExterior", "setExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Blur_Interior"),x,y,w,blur, blur:getMin(), blur:getMax(), blur:getStepsize(), "getInterior", "setInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Desaturation_Exterior"),x,y,w,desat, desat:getMin(), desat:getMax(), desat:getStepsize(), "getExterior", "setExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Desaturation_Interior"),x,y,w,desat, desat:getMin(), desat:getMax(), desat:getStepsize(), "getInterior", "setInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Darkness_Exterior"),x,y,w,dark, dark:getMin(), dark:getMax(), dark:getStepsize(), "getExterior", "setExterior", false);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-
+    y = y+UI_BORDER_SPACING
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_Overlay_Override_Darkness_Interior"),x,y,w,dark, dark:getMin(), dark:getMax(), dark:getStepsize(), "getInterior", "setInterior", false);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+1);
 end
 
 function ISSearchMode:addButton(_id,_x,_y,_w,_h,_margin,_command,_marginBot)
@@ -174,8 +165,8 @@ function ISSearchMode:addBoolOption(_id,_x,_y,_w,_tag)
     local y,obj = ISDebugUtils.addLabel(self,_id,_x,_y,_id, UIFont.Small, true);
 
     local tickOptions = {};
-    table.insert(tickOptions, { text = getText("IGUI_SearchMode_Debug_TickBox_Enabled"), ticked = false });
-    local y2,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w/2),_y,_w/2,ISDebugUtils.FONT_HGT_SMALL,_id,tickOptions,ISSearchMode.onTickedValue);
+    table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
+    local y,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w-300),_y,300,BUTTON_HGT,_id,tickOptions,ISSearchMode.onTickedValue);
     --obj2.changeOptionMethod = ClimateOptionsDebug.onTickedValue;
 
     local v = { title = obj, tickboxValue = obj2, tag=_tag };
@@ -187,8 +178,8 @@ end
 
 function ISSearchMode:addFloatOption(_id,_x,_y,_w,_java,_min,_max,_stepsize, _get, _set, _reqIdx)
     local y,obj = ISDebugUtils.addLabel(self,_id,_x,_y,_id, UIFont.Small, true);
-    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, 18,ISSearchMode.onSliderChange);
+    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w-300)-20,_y,"0", UIFont.Small, false);
+    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w-300),_y,300, BUTTON_HGT,ISSearchMode.onSliderChange);
     obj3.valueLabel = obj2;
     --obj3:setCurrentValue(0);
 

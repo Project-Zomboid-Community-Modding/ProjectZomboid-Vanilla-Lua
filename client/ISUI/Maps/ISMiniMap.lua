@@ -9,6 +9,8 @@ ISMiniMapInner = ISUIElement:derive("ISMiniMapInner")
 ISMiniMapTitleBar = ISPanel:derive("ISMiniMapTitleBar")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISMiniMapInner:instantiate()
 	self.javaObject = UIWorldMap.new(self)
@@ -121,8 +123,8 @@ function ISMiniMapInner:onTeleport(worldX, worldY)
 	playerObj:setX(worldX)
 	playerObj:setY(worldY)
 	playerObj:setZ(0.0)
-	playerObj:setLx(worldX)
-	playerObj:setLy(worldY)
+	playerObj:setLastX(worldX)
+	playerObj:setLastY(worldY)
 end
 
 function ISMiniMapInner:new(x, y, width, height, playerNum)
@@ -202,36 +204,36 @@ function ISMiniMapOuter:createChildren()
 	self:addChild(self.titleBar)
 	self.titleBar:setVisible(false)
 
-	local btnWid = 31
-	local btnHgt = self.bottomHeight - 1
+	local btnWid = BUTTON_HGT
+	local btnHgt = BUTTON_HGT
 
-	self.bottomPanel = ISPanel:new(self.borderSize, self.inner:getBottom() + 1, self.inner.width, btnHgt)
+	self.bottomPanel = ISPanel:new(self.borderSize, self.inner:getBottom() + 1, self.inner.width, btnHgt+UI_BORDER_SPACING*2+2)
 	self:addChild(self.bottomPanel)
 	self.bottomPanel:setVisible(false)
 
-	self.button1 = ISButton:new(0, 0, btnWid, btnHgt, "M", self, ISMiniMapOuter.onButton1)
+	self.button1 = ISButton:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, btnWid, btnHgt, "M", self, ISMiniMapOuter.onButton1)
 	self.button1.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button1)
 
-	self.button2 = ISButton:new(self.button1:getRight() + 2, self.button1.y, btnWid, btnHgt, "-", self, function(self) end)
+	self.button2 = ISButton:new(self.button1:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "-", self, function(self) end)
 	self.button2.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.button2:setRepeatWhilePressed(ISMiniMapOuter.onButton2)
 	self.bottomPanel:addChild(self.button2)
 
-	self.button3 = ISButton:new(self.button2:getRight() + 2, self.button1.y, btnWid, btnHgt, "+", self, function(self) end)
+	self.button3 = ISButton:new(self.button2:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "+", self, function(self) end)
 	self.button3.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.button3:setRepeatWhilePressed(ISMiniMapOuter.onButton3)
 	self.bottomPanel:addChild(self.button3)
 
-	self.button4 = ISButton:new(self.button3:getRight() + 2, self.button1.y, btnWid, btnHgt, "~", self, ISMiniMapOuter.onButton4)
+	self.button4 = ISButton:new(self.button3:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "~", self, ISMiniMapOuter.onButton4)
 	self.button4.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button4)
 
-	self.button5 = ISButton:new(self.button4:getRight() + 2, self.button1.y, btnWid, btnHgt, "S", self, ISMiniMapOuter.onButton5)
+	self.button5 = ISButton:new(self.button4:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "S", self, ISMiniMapOuter.onButton5)
 	self.button5.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button5)
 
-	self.button6 = ISButton:new(self.button5:getRight() + 2, self.button1.y, btnWid, btnHgt, "X", self, ISMiniMapOuter.onButton6)
+	self.button6 = ISButton:new(self.button5:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "X", self, ISMiniMapOuter.onButton6)
 	self.button6.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button6)
 
@@ -451,9 +453,15 @@ function ISMiniMap.IsAllowed()
 	return SandboxVars.Map and (SandboxVars.Map.AllowMiniMap == true) or false
 end
 
+function ISMiniMap.NeedsLight()
+	if getCore():getGameMode() == "Tutorial" then return false end
+	if not ISWorldMap.IsAllowed() then return end
+	return SandboxVars.Map and (SandboxVars.Map.MapNeedsLight == true) or false
+end
+
 function ISMiniMap.InitPlayer(playerNum)
-	local width = 200
-	local height = 200
+	local width = BUTTON_HGT*6+UI_BORDER_SPACING*7+6
+	local height = width
 	local sx = getPlayerScreenLeft(playerNum)
 	local sy = getPlayerScreenTop(playerNum)
 	local sw = getPlayerScreenWidth(playerNum)

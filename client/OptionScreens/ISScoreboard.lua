@@ -95,29 +95,29 @@ function ISScoreboard:doAdminButtons()
     self.voipmuteButton.enable = false;
     self.muteButton.enable = false;
 
-    self.kickButton:setVisible(ISScoreboard.isAdmin);
-    self.banButton:setVisible(ISScoreboard.isAdmin);
-    if self.banIpButton then self.banIpButton:setVisible(ISScoreboard.isAdmin); end
-    self.godmodButton:setVisible(ISScoreboard.isAdmin);
-    self.invisibleButton:setVisible(ISScoreboard.isAdmin);
-    self.teleportButton:setVisible(ISScoreboard.isAdmin);
-    self.teleportToYouButton:setVisible(ISScoreboard.isAdmin);
+    self.kickButton:setVisible(getPlayer():getRole():haveCapability(Capability.KickUser));
+    self.banButton:setVisible(getPlayer():getRole():haveCapability(Capability.BanUnbanUser));
+    if self.banIpButton then self.banIpButton:setVisible(getPlayer():getRole():haveCapability(Capability.BanUnbanUser)); end
+    self.godmodButton:setVisible(getPlayer():getRole():haveCapability(Capability.ToggleGodModEveryone));
+    self.invisibleButton:setVisible(getPlayer():getRole():haveCapability(Capability.ToggleInvisibleEveryone));
+    self.teleportButton:setVisible(getPlayer():getRole():haveCapability(Capability.TeleportToPlayer));
+    self.teleportToYouButton:setVisible(getPlayer():getRole():haveCapability(Capability.TeleportPlayerToAnotherPlayer));
 
-    if self.selectedPlayer and ISScoreboard.isAdmin then
+    if self.selectedPlayer then
         local dy = self.listbox:getYScroll()
 		local username = self.selectedPlayer
         if username ~= getSpecificPlayer(0):getDisplayName() then
-            self.kickButton.enable = not (isAccessLevel("gm") or isAccessLevel("observer"));
-            self.banButton.enable = (isAccessLevel("admin") or isAccessLevel("moderator"));
-            self.teleportButton.enable = true;
-            self.teleportToYouButton.enable = true;
-            self.invisibleButton.enable = not isAccessLevel("observer");
-            self.godmodButton.enable = not isAccessLevel("observer");
+            self.kickButton.enable = getPlayer():getRole():haveCapability(Capability.KickUser);
+            self.banButton.enable = getPlayer():getRole():haveCapability(Capability.BanUnbanUser);
+            self.teleportButton.enable = getPlayer():getRole():haveCapability(Capability.TeleportToPlayer);
+            self.teleportToYouButton.enable = getPlayer():getRole():haveCapability(Capability.TeleportPlayerToAnotherPlayer);
+            self.invisibleButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleInvisibleEveryone);
+            self.godmodButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleGodModEveryone);
             self.voipmuteButton.enable = true;
             self.muteButton.enable = true;
 
             if self.banIpButton then
-                self.banIpButton.enable = (isAccessLevel("admin") or isAccessLevel("moderator"));
+                self.banIpButton.enable = getPlayer():getRole():haveCapability(Capability.BanUnbanUser);
             end
 
             local muted = ISChat.instance:isMuted(username)
@@ -130,26 +130,8 @@ function ISScoreboard:doAdminButtons()
             self.voipmuteButton:setX(self.buttonPos[self.voipmuteButton].x)
             self.voipmuteButton:setY(self.buttonPos[self.voipmuteButton].y)
         else
-            self.invisibleButton.enable = not isAccessLevel("observer");
-            self.godmodButton.enable = not isAccessLevel("observer");
-        end
-    elseif self.selectedPlayer then
-        local dy = self.listbox:getYScroll()
-        local username = self.selectedPlayer
-        if username ~= getSpecificPlayer(0):getDisplayName() then
-            self.voipmuteButton.enable = true;
-            self.muteButton.enable = true;
-
-            local muted = ISChat.instance:isMuted(username)
-            self.muteButton:setTitle(muted and getText("UI_Scoreboard_Unmute") or getText("UI_Scoreboard_Mute"))
-            self.muteButton:setX(self.listbox.x + self.listbox.width + 10);
-            self.muteButton:setY(self.listbox.y);
-
-            local voipmuted = VoiceManager:playerGetMute(username)
-            self.voipmuteButton:setTitle(voipmuted and getText("UI_Scoreboard_VOIPUnmute") or getText("UI_Scoreboard_VOIPMute"))
-            self.voipmuteButton:setX(self.muteButton:getRight() + 10);
-            self.voipmuteButton:setY(self.listbox.y);
-
+            self.invisibleButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleInvisibleHimself);
+            self.godmodButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleGodModHimself);
         end
     end
 end
@@ -209,10 +191,14 @@ function ISScoreboard:drawMap(y, item, alt)
         if self.mouseoverselected ~= item.index then
             local fontHgtSmall = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
             local profileText = getText("UI_Scoreboard_SteamName", item.item.profileName)
-            self:drawText(profileText, 4 + avatarW + 8 + self.parent.maxNameWid + 20, y+(item.height - fontHgtSmall)/2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
+            if not getStreamModeActive() then
+                self:drawText(profileText, 4 + avatarW + 8 + self.parent.maxNameWid + 20, y+(item.height - fontHgtSmall)/2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
+            end
             if ISScoreboard.isAdmin then
                 local textWid2 = getTextManager():MeasureStringX(UIFont.Small, profileText)
-                self:drawText(getText("UI_Scoreboard_SteamID", item.item.steamID), 4 + avatarW + 8 + self.parent.maxNameWid + 20 + textWid2 + 20, y+(item.height - fontHgtSmall)/2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
+                if not getStreamModeActive() then
+                    self:drawText(getText("UI_Scoreboard_SteamID", item.item.steamID), 4 + avatarW + 8 + self.parent.maxNameWid + 20 + textWid2 + 20, y+(item.height - fontHgtSmall)/2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
+                end
             end
         end
         item.height = 2 + avatarH + 2
@@ -385,19 +371,6 @@ function ISScoreboard:create()
         self.buttonPos[button] = { x = button.x, y = button.y }
     end
     self.listbox:setWidth(newButX - 10 - self.listbox.x)
-
---    if not ISScoreboard.isAdmin then
---        self.kickButton:setVisible(false);
---        self.banButton:setVisible(false);
---        if self.banIpButton then self.banIpButton:setVisible(false); end
---        self.godmodButton:setVisible(false);
---        self.invisibleButton:setVisible(false);
---        self.teleportButton:setVisible(false);
---        self.teleportToYouButton:setVisible(false);
---        self.muteButton:setVisible(false);
---        self.voipmuteButton:setVisible(false)
-----        self.statsBtn:setVisible(false);
---    end
 
     scoreboardUpdate();
 end

@@ -4,6 +4,8 @@ local statsHalo = true;
 
 local function doSkill(_player, _amount, _name, _perk)
     if _amount == nil or _amount <= 0 then return; end
+    -- if the player already has enough levels in the perk, no xp
+    if SandboxVars and (_player:getPerkLevel(_perk) >= SandboxVars.LevelForMediaXPCutoff) then return; end
 
     --local curXp = _player:getXp():getXP(_perk);
     local amount = 50*_amount;
@@ -12,7 +14,7 @@ local function doSkill(_player, _amount, _name, _perk)
     --end
 
     local oldXp = _player:getXp():getXP(_perk);
-    _player:getXp():AddXP(_perk , amount);
+    addXp(_player, _perk, amount)
     amount = _player:getXp():getXP(_perk) - oldXp;
     --_player:setHaloNote(_name.." +"..round(amount,2));
     --ISRadioInteractions:getInstance().addHalo(_name.." +"..round(amount,2));
@@ -160,6 +162,8 @@ Interactions.FRM = function(_player, _amount) doSkill(_player, _amount, getText(
 Interactions.DOC = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Doctor"), Perks.Doctor); end            --firstaid
 Interactions.ELC = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Electricity"), Perks.Electricity); end           --electricty
 Interactions.MTL = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Metalworking"), Perks.MetalWelding); end            --metalwelding
+Interactions.FKN = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_FlintKnapping"), Perks.FlintKnapping); end
+Interactions.CRV = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Carving"), Perks.Carving); end
 --firearm
 Interactions.AIM = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Aiming"), Perks.Aiming); end            --aiming
 Interactions.REL = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Reloading"), Perks.Reloading); end         --reloading
@@ -176,6 +180,8 @@ Interactions.SPE = function(_player, _amount) doSkill(_player, _amount, getText(
 Interactions.SBU = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_SmallBlunt"), Perks.SmallBlunt); end
 Interactions.LBA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_LongBlade"), Perks.LongBlade); end
 Interactions.SBA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_SmallBlade"), Perks.SmallBlade); end
+Interactions.MAS = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Masonry"), Perks.Masonry); end
+Interactions.POT = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Pottery"), Perks.Pottery); end
 
 local instance = nil;
 
@@ -265,10 +271,12 @@ function ISRadioInteractions:getInstance()
                                 local index = string.find(recipe, "%.");
                                 if index then
                                     recipe = string.sub(recipe, index+1, recipe:len())
-                                    HaloTextHelper.addText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(tostring(recipe))), HaloTextHelper.getColorGreen());
+                                    HaloTextHelper.addGoodText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(tostring(recipe))));
+--                                     HaloTextHelper.addText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(tostring(recipe))), HaloTextHelper.getColorGreen());
                                     --self.addHalo("Learned "..tostring(string.sub(recipe, index+1, recipe:len())));
                                 else
-                                    HaloTextHelper.addText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(recipe)), HaloTextHelper.getColorGreen());
+                                    HaloTextHelper.addGoodText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(recipe)));
+--                                     HaloTextHelper.addText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(recipe)), HaloTextHelper.getColorGreen());
                                     --self.addHalo("Learned "..recipe);
                                 end
                             end
@@ -312,15 +320,18 @@ function ISRadioInteractions:getInstance()
             return;
         end
 
-        local color = HaloTextHelper.getColorGreen();
+        local color = HaloTextHelper.getGoodColor();
+--         local color = HaloTextHelper.getColorGreen();
         local doArrow = 0;
 
         if _amount and (type(_amount) == "number") then
             if _amount<0 then
-                color = _inverseCols and HaloTextHelper.getColorRed() or HaloTextHelper.getColorGreen();
+                color = _inverseCols and HaloTextHelper.getBadColor() or HaloTextHelper.getGoodColor();
+--                 color = _inverseCols and HaloTextHelper.getColorRed() or HaloTextHelper.getColorGreen();
                 doArrow = -1;
             elseif _amount>0 then
-                color = _inverseCols and HaloTextHelper.getColorGreen() or HaloTextHelper.getColorRed();
+                color = _inverseCols and HaloTextHelper.getGoodColor() or HaloTextHelper.getBadColor();
+--                 color = _inverseCols and HaloTextHelper.getColorGreen() or HaloTextHelper.getColorRed();
                 doArrow = 1;
             end
         end

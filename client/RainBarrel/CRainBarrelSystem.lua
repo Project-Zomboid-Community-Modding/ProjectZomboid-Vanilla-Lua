@@ -12,7 +12,7 @@ function CRainBarrelSystem:new()
 end
 
 function CRainBarrelSystem:isValidIsoObject(isoObject)
-	return instanceof(isoObject, "IsoThumpable") and isoObject:getName() == "Rain Collector Barrel"
+	return instanceof(isoObject, "IsoThumpable") and isoObject:getProperties() and (isoObject:getProperties():Val("CustomName") == "Rain Collector Barrel")
 end
 
 function CRainBarrelSystem:newLuaObject(globalObject)

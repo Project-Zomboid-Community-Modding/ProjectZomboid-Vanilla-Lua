@@ -7,10 +7,13 @@
 require "ISUI/ISCollapsableWindow"
 
 ISAnimDebugMonitor = ISCollapsableWindow:derive("ISAnimDebugMonitor");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISAnimDebugMonitor.OnOpenPanel()
     if ISAnimDebugMonitor.instance==nil then
-        ISAnimDebugMonitor.instance = ISAnimDebugMonitor:new (300, 100, 500, 750, getPlayer());
+        ISAnimDebugMonitor.instance = ISAnimDebugMonitor:new (300, 100, 504+(getCore():getOptionFontSizeReal()*56), 750, getPlayer());
         ISAnimDebugMonitor.instance:initialise();
         ISAnimDebugMonitor.instance:instantiate();
     end
@@ -33,71 +36,96 @@ end
 function ISAnimDebugMonitor:createChildren()
     ISCollapsableWindow.createChildren(self);
 
-    local y, margin = self:titleBarHeight()+5, 5;
+    local x, y = UI_BORDER_SPACING+1, self:titleBarHeight()+UI_BORDER_SPACING;
     local obj;
 
-    ISDebugUtils.initHorzBars(self,10,self.width-20);
+    ISDebugUtils.initHorzBars(self,x,self.width-x*2);
 
     --self.buttons = {"Show layers","Active nodes", "Anim tracks", "Show variables", "Show floats"};
 
-    local xmarg = 10;
-    local bw = (self.width/2)-(xmarg*2);
-    local bw1 = (bw-xmarg)/2;
-    local btnh = 16;
+    local widthFull = self.width-x*2
+    local widthHalf = (widthFull - UI_BORDER_SPACING)/2
+    local widthQuarter = (widthHalf - UI_BORDER_SPACING)/2
 
-    y, self.buttonToggleMonitor = ISDebugUtils.addButton(self,"toggle_monitor",xmarg,y,self.width-(xmarg*2),btnh,"Toggle character monitor",ISAnimDebugMonitor.onClick);
-    y = y+margin;
+    local xmarg = 10;
+    local bw = (self.width-(xmarg*3))/2;
+
+    y, self.buttonToggleMonitor = ISDebugUtils.addButton(self,"toggle_monitor",x,y,widthFull,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ToggleMonitor"),ISAnimDebugMonitor.onClick);
+    y = y+UI_BORDER_SPACING;
 
     local cacheY = y;
-    y, self.buttonLayers = ISDebugUtils.addButton(self,"show_layers",xmarg,y,bw,btnh,"Show layers",ISAnimDebugMonitor.onClick);
-    y, self.buttonVariables = ISDebugUtils.addButton(self,"show_variables",xmarg+bw+(xmarg*2),cacheY,bw,btnh,"Show variables",ISAnimDebugMonitor.onClick);
-
-    y = y+margin;
+    y, self.buttonLayers = ISDebugUtils.addButton(self,"show_layers",x,y,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ShowLayers"),ISAnimDebugMonitor.onClick);
+    y, self.buttonVariables = ISDebugUtils.addButton(self,"show_variables",self.buttonLayers:getRight()+UI_BORDER_SPACING,cacheY,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ShowVariables"),ISAnimDebugMonitor.onClick);
+    y = y+UI_BORDER_SPACING;
 
     cacheY = y;
-    y, self.buttonActiveNodes = ISDebugUtils.addButton(self,"active_nodes",xmarg,y,bw1,btnh,"Active nodes",ISAnimDebugMonitor.onClick);
-    y, self.buttonAnimTracks = ISDebugUtils.addButton(self,"anim_tracks",xmarg+bw1+xmarg,cacheY,bw1,btnh,"Anim tracks",ISAnimDebugMonitor.onClick);
-    y, self.buttonStamps = ISDebugUtils.addButton(self,"show_ticks",xmarg+bw+(xmarg*2),cacheY,bw,btnh,"Show tick stamps",ISAnimDebugMonitor.onClick);
+    y, self.buttonActiveNodes = ISDebugUtils.addButton(self,"active_nodes",x,y,widthQuarter,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ActiveNodes"),ISAnimDebugMonitor.onClick);
+    y, self.buttonAnimTracks = ISDebugUtils.addButton(self,"anim_tracks",self.buttonActiveNodes:getRight()+UI_BORDER_SPACING,cacheY,widthQuarter,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_AnimTracs"),ISAnimDebugMonitor.onClick);
+    y, self.buttonStamps = ISDebugUtils.addButton(self,"show_ticks",self.buttonAnimTracks:getRight()+UI_BORDER_SPACING,cacheY,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_TickStamps"),ISAnimDebugMonitor.onClick);
+    y = y+UI_BORDER_SPACING;
 
-    y = y+margin;
+    y = ISDebugUtils.addHorzBar(self,y)+UI_BORDER_SPACING+1;
 
-    y = ISDebugUtils.addHorzBar(self,y)+5;
-
-    y, self.labelVars = ISDebugUtils.addLabel(self, "varedit_title", self.width*0.5, y, "EDIT VARIABLES", UIFont.Small);
+    y, self.labelVars = ISDebugUtils.addLabel(self, "addvar_title", self.width/2, y, getText("IGUI_AnimDebugMonitor_AddVariableLabel"), UIFont.Small);
     self.labelVars.center = true;
-    y = y+3;
+    y = y+UI_BORDER_SPACING;
 
     cacheY = y;
-    y, self.comboVars = ISDebugUtils.addComboBox(self,"combo_vars",xmarg,y,(self.width/2)-(xmarg*2),UIFont.Small,ISAnimDebugMonitor.onCombo);
-    y, self.entryBoxValue = ISDebugUtils.addTextEntryBox(self, "entry_value", "", (self.width/2)+xmarg, cacheY, (self.width/2)-(xmarg*2), 18);
+    y, self.addVarComboType = ISDebugUtils.addComboBox(self,"addvar_type",x,y,widthHalf,UIFont.Small,nil);
+    self.addVarComboType:clear();
+    self.addVarComboType:addOption(getText("IGUI_DebugMenu_String"));
+    self.addVarComboType:addOption(getText("IGUI_DebugMenu_Float"));
+    self.addVarComboType:addOption(getText("IGUI_DebugMenu_Boolean"));
+    self.addVarComboType:setHeight(BUTTON_HGT);
+
+    y, self.addVarKeyLabel = ISDebugUtils.addLabel(self, "addvar_keylabel", self.addVarComboType:getRight()+UI_BORDER_SPACING, cacheY, getText("IGUI_AnimDebugMonitor_Key"), UIFont.Small);
+    local keyLabelWid = self.addVarKeyLabel.width;
+    y, self.addVarKey = ISDebugUtils.addTextEntryBox(self, "addvar_key", "", self.addVarKeyLabel:getRight()+UI_BORDER_SPACING, cacheY, widthHalf-keyLabelWid-UI_BORDER_SPACING, BUTTON_HGT);
+    self.addVarKey.backgroundColor = {r=0, g=0, b=0, a=0.75};
+    y = y+UI_BORDER_SPACING;
+
+    cacheY = y;
+    y, self.addVarValueLabel = ISDebugUtils.addLabel(self, "addvar_valuelabel", x, cacheY, getText("IGUI_AnimDebugMonitor_Value"), UIFont.Small);
+    local valueLabelWidth = self.addVarValueLabel.width;
+    y, self.addVarValue = ISDebugUtils.addTextEntryBox(self, "addvar_value", "", self.addVarValueLabel:getRight()+UI_BORDER_SPACING, cacheY, widthHalf-valueLabelWidth-UI_BORDER_SPACING, BUTTON_HGT);
+    y, self.addVarAddButton = ISDebugUtils.addButton(self,"addvar_add",self.addVarValue:getRight()+UI_BORDER_SPACING,cacheY,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_AddVariable"),ISAnimDebugMonitor.onClick);
+    y = y+UI_BORDER_SPACING;
+
+    y = ISDebugUtils.addHorzBar(self,y)+UI_BORDER_SPACING+1;
+
+    y, self.labelVars = ISDebugUtils.addLabel(self, "varedit_title", self.width*0.5, y, getText("IGUI_AnimDebugMonitor_EditVariableLabel"), UIFont.Small);
+    self.labelVars.center = true;
+    y = y+UI_BORDER_SPACING;
+
+    cacheY = y;
+    y, self.comboVars = ISDebugUtils.addComboBox(self,"combo_vars",x,y,widthHalf,UIFont.Small,ISAnimDebugMonitor.onCombo);
+    self.comboVars:setHeight(BUTTON_HGT)
+    y, self.entryBoxValue = ISDebugUtils.addTextEntryBox(self, "entry_value", "", self.comboVars:getRight()+UI_BORDER_SPACING, cacheY, widthHalf, BUTTON_HGT); --this box is 4 pixels too big for some reason, and won't shrink further
     self.entryBoxValue.backgroundColor = {r=0, g=0, b=0, a=0.75};
-    y = y+margin;
+    y = y+UI_BORDER_SPACING;
 
     cacheY = y;
-    y, self.buttonClearVar = ISDebugUtils.addButton(self,"varedit_clear",xmarg,y,bw,btnh,"Clear variable",ISAnimDebugMonitor.onClick);
-    y, self.buttonSetVar = ISDebugUtils.addButton(self,"varedit_set",xmarg+bw+(xmarg*2),cacheY,bw,btnh,"Set variable",ISAnimDebugMonitor.onClick);
+    y, self.buttonClearVar = ISDebugUtils.addButton(self,"varedit_clear",x,y,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ClearVariable"),ISAnimDebugMonitor.onClick);
+    y, self.buttonSetVar = ISDebugUtils.addButton(self,"varedit_set",self.buttonClearVar:getRight()+UI_BORDER_SPACING,cacheY,widthHalf,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_SetVariable"),ISAnimDebugMonitor.onClick);
+    y = y+UI_BORDER_SPACING;
 
-    y = y+margin;
+    y = ISDebugUtils.addHorzBar(self,y)+UI_BORDER_SPACING+1;
 
-    --y, self.buttonLayers = ISDebugUtils.addButton(self,"varedit_set",xmarg,y,bw,btnh,"Set",ISAnimDebugMonitor.onClick);
-    --y, self.buttonLayers = ISDebugUtils.addButton(self,"varedit_del",xmarg,y,bw,btnh,"Clear",ISAnimDebugMonitor.onClick);
-
-    y = ISDebugUtils.addHorzBar(self,y)+5;
-
-    y, self.labelFloat = ISDebugUtils.addLabel(self, "float_title", self.width*0.5, y, "FLOAT VARIABLES", UIFont.Small);
+    y, self.labelFloat = ISDebugUtils.addLabel(self, "float_title", self.width*0.5, y, getText("IGUI_AnimDebugMonitor_FloatVariableLabel"), UIFont.Small);
     self.labelFloat.center = true;
-    y = y+3;
+    y = y+UI_BORDER_SPACING;
 
-    y, self.comboFloats = ISDebugUtils.addComboBox(self,"combo_floats",xmarg,y,self.width-(xmarg*2),UIFont.Small,ISAnimDebugMonitor.onCombo);
+    y, self.comboFloats = ISDebugUtils.addComboBox(self,"combo_floats",x,y,widthFull,UIFont.Small,ISAnimDebugMonitor.onCombo);
     self.comboFloats:addOption("- NONE -");
     self.comboFloats.selected = 1;
-    y = y+margin;
+    self.comboFloats:setHeight(BUTTON_HGT)
+    y = y+UI_BORDER_SPACING;
 
-    y, self.labelFloatInfo = ISDebugUtils.addLabel(self, "float_info", self.width*0.5, y, "selected float: none [min: -1.0, max: 1.0]", UIFont.Small);
+    y, self.labelFloatInfo = ISDebugUtils.addLabel(self, "float_info", self.width*0.5, y, getText("IGUI_AnimDebugMonitor_SelectedFloat", getText("IGUI_None"), -1.0, 1.0), UIFont.Small);
     self.labelFloatInfo.center = true;
-    y = y+3;
+    y = y+UI_BORDER_SPACING;
 
-    self.floatPlotter = FloatArrayPlotter:new(xmarg,y,self.width-(xmarg*2),100);
+    self.floatPlotter = FloatArrayPlotter:new(x,y,widthFull,BUTTON_HGT*2+UI_BORDER_SPACING);
     self.floatPlotter:initialise();
 
     self.floatPlotter:setHorzLine(0.125,{r=0.05, g=0.05, b=0.05, a=1});
@@ -114,9 +142,9 @@ function ISAnimDebugMonitor:createChildren()
 
     y = self.floatPlotter:getY() + self.floatPlotter:getHeight();
 
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+UI_BORDER_SPACING)+UI_BORDER_SPACING+1;
 
-    local h = self.height-y-self:resizeWidgetHeight()-5;
+    local h = BUTTON_HGT*6;
     --[[
     self.subPanel = ISAnimLoggerOutput:new(10, y, self.width-20, h);
     self.subPanel:initialise();
@@ -134,7 +162,7 @@ function ISAnimDebugMonitor:createChildren()
     self.subPanel.onMouseWheel = ISDebugUtils.onMouseWheel;
     --]]
 
-    self.richtext = ISRichTextPanel:new(xmarg, y, self.width-20, h);
+    self.richtext = ISRichTextPanel:new(x, y, widthFull, h);
     self.richtext:initialise();
 
     self:addChild(self.richtext);
@@ -145,16 +173,17 @@ function ISAnimDebugMonitor:createChildren()
     self.richtext.clip = true
     self.richtext:addScrollBars();
 
-    self.clearText = "No monitor attached.";
+    self.clearText = getText("IGUI_AnimDebugMonitor_NoMonitor");
     self.richtext.text = self.clearText;
     self.richtext:paginate();
 
-    y = y+10;
+    y = y+h+UI_BORDER_SPACING+1;
+    self:setHeight(y)
     --self:setHeight(y);
 
     self:toggleEditEnabled(false);
 
-    self.buttonToggleMonitor.backgroundColor = self.cRed;
+    self.buttonToggleMonitor:enableCancelColor()
 
     self.init = false;
     self.selectedVar = false;
@@ -185,15 +214,8 @@ function ISAnimDebugMonitor:toggleEditEnabled(_b)
     self.buttonSetVar:setEnable(_b);
     --self.comboVars.selected = 1;
     --self.comboFloats.selected = 1;
-    if _b == false then
-        self.buttonLayers.backgroundColor = {r=0, g=0, b=0, a=1.0};
-        self.buttonActiveNodes.backgroundColor = {r=0, g=0, b=0, a=1.0};
-        self.buttonAnimTracks.backgroundColor = {r=0, g=0, b=0, a=1.0};
-        self.buttonVariables.backgroundColor = {r=0, g=0, b=0, a=1.0};
-        self.buttonStamps.backgroundColor = {r=0, g=0, b=0, a=1.0};
-
-        self.buttonClearVar.backgroundColor = {r=0, g=0, b=0, a=1.0};
-        self.buttonSetVar.backgroundColor = {r=0, g=0, b=0, a=1.0};
+    if _b then
+        self:colorButtons()
     end
 end
 
@@ -225,7 +247,7 @@ function ISAnimDebugMonitor:onClick(_button)
         self.monitor = char:getDebugMonitor();
         if self.monitor then
             self.monitor = nil;
-            self.buttonToggleMonitor.backgroundColor = self.cRed;
+            self.buttonToggleMonitor:enableCancelColor();
 
             self:toggleEditEnabled(false);
 
@@ -234,7 +256,7 @@ function ISAnimDebugMonitor:onClick(_button)
             self.floatPlotter:setData(nil);
         else
             self.monitor = AnimatorDebugMonitor.new(char);
-            self.buttonToggleMonitor.backgroundColor = self.cGreen;
+            self.buttonToggleMonitor:enableAcceptColor();
 
             self:toggleEditEnabled(true);
         end
@@ -290,6 +312,17 @@ function ISAnimDebugMonitor:onClick(_button)
             monitor:setFilter(index,val);
         elseif self.buttonStamps==_button then
             monitor:setDoTickStamps(not monitor:isDoTickStamps());
+        elseif self.addVarAddButton==_button then
+            addVariableToSyncList(self.addVarKey:getText());
+            if self.addVarComboType.selected == 1 then -- String
+                getPlayer():setVariable(self.addVarKey:getText(), self.addVarValue:getText());
+            end
+            if self.addVarComboType.selected == 2 then -- Float
+                getPlayer():setVariable(self.addVarKey:getText(), tonumber(self.addVarValue:getText()));
+            end
+            if self.addVarComboType.selected == 3 then -- Boolean
+                getPlayer():setVariable(self.addVarKey:getText(), (self.addVarValue:getText()=="true") or (self.addVarValue:getText()=="True") or (self.addVarValue:getText()=="TRUE") or (self.addVarValue:getText()=="1"));
+            end
         end
     end
 end
@@ -336,11 +369,7 @@ function ISAnimDebugMonitor:update()
             self:scrollToBottom();
         end
 
-        self.buttonLayers.backgroundColor = self.monitor:getFilter(1) and self.cGreen or self.cRed;
-        self.buttonActiveNodes.backgroundColor = self.monitor:getFilter(2) and self.cGreen or self.cRed;
-        self.buttonAnimTracks.backgroundColor = self.monitor:getFilter(3) and self.cGreen or self.cRed;
-        self.buttonVariables.backgroundColor = self.monitor:getFilter(4) and self.cGreen or self.cRed;
-        self.buttonStamps.backgroundColor = self.monitor:isDoTickStamps() and self.cGreen or self.cRed;
+        self:colorButtons()
 
         if self.monitor:IsDirtyFloatList() or (not self.init) then
             local sel = self.comboFloats.options[self.comboFloats.selected];
@@ -386,7 +415,7 @@ function ISAnimDebugMonitor:update()
                 min = ISDebugUtils.roundNum(min,5);
                 max = ISDebugUtils.roundNum(max,5);
                 cur = ISDebugUtils.roundNum(cur,5);
-                self.labelFloatInfo.name = "selected float: "..v.." = "..tostring(cur).." [min: "..min..", max: "..max.."]";
+                self.labelFloatInfo.name = getText("IGUI_AnimDebugMonitor_SelectedFloat", v.." = "..tostring(cur), min, max);
                 floats = self.monitor:getSelectedVarFloatList();
             else
                 self.selectedVar = false;
@@ -394,13 +423,21 @@ function ISAnimDebugMonitor:update()
         end
 
         if not self.selectedVar then
-            self.labelFloatInfo.name = "selected float: none [min: -1.0, max: 1.0]";
+            self.labelFloatInfo.name = getText("IGUI_AnimDebugMonitor_SelectedFloat", getText("IGUI_None"), -1.0, 1.0);
         end
 
         self.floatPlotter:setData(floats);
 
         self.init = true;
     end
+end
+
+function ISAnimDebugMonitor:colorButtons()
+    self.buttonLayers:toggleAcceptCancel(self.monitor:getFilter(1))
+    self.buttonActiveNodes:toggleAcceptCancel(self.monitor:getFilter(2))
+    self.buttonAnimTracks:toggleAcceptCancel(self.monitor:getFilter(3))
+    self.buttonVariables:toggleAcceptCancel(self.monitor:getFilter(4))
+    self.buttonStamps:toggleAcceptCancel(self.monitor:isDoTickStamps())
 end
 
 function ISAnimDebugMonitor:prerender()
@@ -456,7 +493,7 @@ function ISAnimDebugMonitor:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Animator Debug Monitor";
+    o.title = getText("IGUI_AnimDebugMonitor_Title");
     o.resizable = false;
     o.drawFrame = true;
 

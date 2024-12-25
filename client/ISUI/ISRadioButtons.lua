@@ -82,7 +82,7 @@ end
 
 function ISRadioButtons:getTextColor(index, color)
 	local option = self.options[index]
-	if not option.enabled then
+	if not self.enable or not option.enabled then
 		color.r = 0.5
 		color.g = 0.5
 		color.b = 0.5

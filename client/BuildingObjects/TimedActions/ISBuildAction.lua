@@ -9,7 +9,7 @@ ISBuildAction = ISBaseTimedAction:derive("ISBuildAction");
 -- The FMOD events have approx. 10-second duration even though the sounds are shorter.
 ISBuildAction.soundDelay = 6
 
-function ISBuildAction:isReachableThroughWindow(_square)
+function ISBuildAction:isReachableThroughWindowOrDoor(_square)
     local objects = _square:getObjects();
     for i = 0, objects:size() - 1 do
         local object = objects:get(i);
@@ -26,39 +26,59 @@ function ISBuildAction:isReachableThroughWindow(_square)
                     return true;
                 end;
             end;
+        else
+            if object and instanceof(object, "IsoThumpable") and object:isDoor() then
+                return object:IsOpen();
+            else
+                if object and instanceof(object, "IsoThumpable") and object:isCanPath() then
+                    return true;
+                end;
+            end;
         end;
     end;
     return false;
 end
 
 function ISBuildAction:isValid()
-    local plSquare = self.character:getSquare();
-    if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
-        if self.square:isSomethingTo(plSquare) then
-            if (not luautils.isSquareAdjacentToSquare(plSquare, self.square)) then
-                self:stop();
-                return false;
-            end;
-            if not (self:isReachableThroughWindow(self.square) or self:isReachableThroughWindow(plSquare)) then
-                self:stop();
-                return false;
-            end;
-        end;
-    else
-        self:stop();
-        return false;
-    end;
-    ---
     if not self.item.noNeedHammer and self.hammer then
-		return self.hammer:getCondition() > 0;
-	end
+        return self.hammer:getCondition() > 0;
+    end
     return true;
+
+    -- TODO RJ: This is done in the ISBuildIsoEntity:walkTo
+    --local plSquare = self.character:getSquare();
+    --if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
+    --    if self.square:isSomethingTo(plSquare) then
+    --        if not (self:isReachableThroughWindowOrDoor(self.square) or self:isReachableThroughWindowOrDoor(plSquare) or luautils.isSquareAdjacentToSquare(plSquare, self.square)) then
+    --            self:stop()
+    --            return false;
+    --        end
+    --    end;
+    --else
+    --    self:stop();
+    --    return false;
+    --end;
+    -----
+    --if not self.item.noNeedHammer and self.hammer then
+	--	return self.hammer:getCondition() > 0;
+	--end
+    --return true;
 end
 
 function ISBuildAction:waitToStart()
 	if ISBuildMenu.cheat then return false end
 	self:faceLocation()
 	return self.character:shouldBeTurning()
+end
+
+function ISBuildAction:setOnComplete(_func, _target)
+    self.onCompleteFunc = _func;
+    self.onCompleteTarget = _target;
+end
+
+function ISBuildAction:setOnCancel(_func, _target)
+    self.onCancelFunc = _func;
+    self.onCancelTarget = _target;
 end
 
 function ISBuildAction:update()
@@ -81,10 +101,10 @@ function ISBuildAction:update()
                 end
             end
         end
-        if self.craftingBank then
+        if self.item.craftingBank then
             local playingCrafting = self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound)
             if not playingCrafting then
-                self.craftingSound = self.character:getEmitter():playSound(self.craftingBank);
+                self.craftingSound = self.character:getEmitter():playSound(self.item.craftingBank);
             end
             worldSoundRadius = 15
         end
@@ -97,6 +117,22 @@ function ISBuildAction:update()
     self.character:setMetabolicTarget(Metabolics.HeavyWork);
 
     self:faceLocation();
+
+    if isClient() then
+        if isActionDone(self.transactionId) then
+            self:forceComplete();
+        elseif isActionRejected(self.transactionId) then
+            self:forceStop();
+        end
+
+        if self.maxTime == -1 then
+            local duration = getActionDuration(self.transactionId)
+            if duration > 0 then
+                self.maxTime = duration
+                self.action:setTime(self.maxTime)
+            end
+        end
+    end
 end
 
 function ISBuildAction:start()
@@ -105,14 +141,14 @@ function ISBuildAction:start()
 		self.hammer = self.character:getPrimaryHandItem();
         self.hammerSound = 0
     end
-    if self.craftingBank then
+    if self.item.craftingBank then
         self.craftingSound = 0
 	end
 
 	self.soundTime = 0
 
 	self.item.ghostSprite = IsoSprite.new();
-	self.item.ghostSprite:LoadFramesNoDirPageSimple(self.spriteName);
+	self.item.ghostSprite:LoadSingleTexture(self.spriteName);
 	self.item.ghostSpriteX = self.x;
 	self.item.ghostSpriteY = self.y;
 	self.item.ghostSpriteZ = self.z;
@@ -120,6 +156,12 @@ function ISBuildAction:start()
 	self.item:onTimedActionStart(self)
 	
 --	self.character:reportEvent("EventCrafting");
+	if isClient() then
+		self.action:setWaitForFinished(true)
+	end
+
+	self.transactionId = createBuildAction(self.character, self.x, self.y, self.z, self.north, self.spriteName, self.item)
+	self.started = true
 end
 
 function ISBuildAction:stop()
@@ -134,10 +176,42 @@ function ISBuildAction:stop()
     if self.craftingSound and self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound) then
         self.character:stopOrTriggerSound(self.craftingSound);
     end
-    ISBaseTimedAction.stop(self);
+	removeAction(self.transactionId, true)
+	ISBaseTimedAction.stop(self);
+    
+    if self.onCompleteFunc then
+        self.onCompleteFunc(self.onCompleteTarget);
+    end
 end
 
+function ISBuildAction:forceComplete()
+    ISBaseTimedAction:forceComplete()
+    
+    if self.onCompleteFunc then
+        self.onCompleteFunc(self.onCompleteTarget);
+    end
+end
+
+function ISBuildAction:forceStop()
+    ISBaseTimedAction:forceStop()
+
+    if self.onCompleteFunc then
+        self.onCompleteFunc(self.onCompleteTarget);
+    end
+end
+
+function ISBuildAction:forceCancel()
+    ISBaseTimedAction:forceCancel()
+
+    if self.onCancelFunc then
+        self.onCancelFunc(self.onCancelTarget);
+    end
+end
+
+
 function ISBuildAction:perform()
+    removeAction(self.transactionId, false)
+
 	self.item.ghostSprite = nil;
     if self.sawSound and self.sawSound ~= 0 and self.character:getEmitter():isPlaying(self.sawSound) then
         self.character:getEmitter():stopSound(self.sawSound);
@@ -148,10 +222,16 @@ function ISBuildAction:perform()
     if self.craftingSound and self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound) then
         self.character:getEmitter():stopSound(self.craftingSound);
     end
+
+	if isClient() then
+	    ISBaseTimedAction.perform(self);
+		return
+	end
     -- reduce the condition of the hammer if it's a stone hammer
     local hammer = self.character:getPrimaryHandItem()
-    if hammer and hammer:getType() == "HammerStone" and ZombRand(hammer:getConditionLowerChance()) == 0 then
-        hammer:setCondition(hammer:getCondition() - 1)
+    if hammer and ( hammer:getType() == "HammerStone" or hammer:hasTag("Crude") ) and hammer:damageCheck(0,1,false) then
+--     if hammer and ( hammer:getType() == "HammerStone" or hammer:hasTag("Crude") ) and ZombRand(hammer:getConditionLowerChance()) == 0 then
+--         hammer:setCondition(hammer:getCondition() - 1)
         ISWorldObjectContextMenu.checkWeapon(self.character);
     end
 
@@ -166,6 +246,10 @@ function ISBuildAction:perform()
 
     -- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
+    
+    if self.onCompleteFunc then --
+        self.onCompleteFunc(self.onCompleteTarget);
+    end
 end
 
 function ISBuildAction:faceLocation()
@@ -191,16 +275,17 @@ function ISBuildAction:new(character, item, x, y, z, north, spriteName, time)
 	o.z = z;
 	o.north = north;
 	o.spriteName = spriteName;
-	o.stopOnWalk = true;
-	o.stopOnRun = true;
 	o.maxTime = time;
-    o.craftingBank = item.craftingBank;
 	if character:HasTrait("Handy") then
 		o.maxTime = time - 50;
     end
---    o.maxTime = 500;
     o.square = getCell():getGridSquare(x,y,z);
     o.doSaw = false;
     o.caloriesModifier = 8;
+    o.started = false;
+    o.transactionId = 0;
+    if isClient() then -- The client completes the transfer after receiving packet ActionPacket from the server
+        o.maxTime  = -1
+    end
 	return o;
 end

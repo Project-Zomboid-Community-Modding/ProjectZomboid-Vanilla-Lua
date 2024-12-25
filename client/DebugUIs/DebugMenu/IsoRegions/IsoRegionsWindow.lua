@@ -19,7 +19,7 @@ end
 
 function IsoRegionsWindow:initialise()
     ISCollapsableWindow.initialise(self)
-    self.title = "IsoRegions Debug"
+    self.title = getText("IGUI_DebugMenu_Dev_IsoRegions")
 end
 
 function IsoRegionsWindow:createChildren()
@@ -129,8 +129,8 @@ function IsoRegionsWindow:onTeleport(worldX, worldY)
     local player = getSpecificPlayer(0)
     player:setX(worldX)
     player:setY(worldY)
-    player:setLx(worldX)
-    player:setLy(worldY)
+    player:setLastX(worldX)
+    player:setLastY(worldY)
 end
 
 function IsoRegionsWindow:onSquareDetails(worldX, worldY)
@@ -180,12 +180,12 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
         --context:addOption("Spawn Now", cellX, zpopSpawnNow, cellY)
         local worldX = self.renderer:uiToWorldX(x)
         local worldY = self.renderer:uiToWorldY(y)
-        context:addOption("Teleport Here", self.parent, IsoRegionsWindow.onTeleport, worldX, worldY)
+        context:addOption(getText("IGUI_IsoRegions_TeleportHere"), self.parent, IsoRegionsWindow.onTeleport, worldX, worldY)
         if (not self.renderer:isEditingEnabled()) and self.renderer:hasChunkRegion(worldX, worldY) then
-            context:addOption("Square Details", self.parent, IsoRegionsWindow.onSquareDetails, worldX, worldY)
+            context:addOption(getText("IGUI_IsoRegions_SquareDetails"), self.parent, IsoRegionsWindow.onSquareDetails, worldX, worldY)
         end
         if self.renderer:isHasSelected() then
-            context:addOption("Unset selection", self.parent, IsoRegionsWindow.onUnsetSelect, worldX, worldY)
+            context:addOption(getText("IGUI_IsoRegions_UnsetSelection"), self.parent, IsoRegionsWindow.onUnsetSelect, worldX, worldY)
         end
 
         local subMenu = context:getNew(context)
@@ -196,7 +196,7 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
                 subMenu:setOptionChecked(option, debugOption:getValue())
             end
         end
-        local subMenuOption = context:addOption("Edit", nil, nil)
+        local subMenuOption = context:addOption(getText("IGUI_IsoRegions_Edit"), nil, nil)
         context:addSubMenu(subMenuOption, subMenu)
 
         local subMenu = context:getNew(context)
@@ -207,7 +207,7 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
                 subMenu:setOptionChecked(option, debugOption:getValue())
             end
         end
-        local subMenuOption = context:addOption("zLevel", nil, nil)
+        local subMenuOption = context:addOption(getText("IGUI_IsoRegions_zLevel"), nil, nil)
         context:addSubMenu(subMenuOption, subMenu)
 
         local subMenu = context:getNew(context)
@@ -218,15 +218,15 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
                 subMenu:setOptionChecked(option, debugOption:getValue())
             end
         end
-        local subMenuOption = context:addOption("Display", nil, nil)
+        local subMenuOption = context:addOption(getText("IGUI_IsoRegions_Display"), nil, nil)
         context:addSubMenu(subMenuOption, subMenu)
 
         local subMenu = context:getNew(context)
-        local subMenuOption = context:addOption("Other", nil, nil)
+        local subMenuOption = context:addOption(getText("IGUI_IsoRegions_Other"), nil, nil)
         if not isClient() then
-            local option = subMenu:addOption("Recalc player surrounding chunks", self.parent, IsoRegionsWindow.onRecalcChunks);
+            local option = subMenu:addOption(getText("IGUI_IsoRegions_RecalcPlayerSurroundChunks"), self.parent, IsoRegionsWindow.onRecalcChunks);
         end
-        local option = subMenu:addOption("Open logs", self.parent, IsoRegionsWindow.onOpenLogs);
+        local option = subMenu:addOption(getText("IGUI_IsoRegions_OpenLogs"), self.parent, IsoRegionsWindow.onOpenLogs);
         context:addSubMenu(subMenuOption, subMenu)
     end
     return true

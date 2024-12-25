@@ -13,15 +13,15 @@ local function predicateShovel(item)
 end
 
 local function predicateNotFull(item, type)
-	return (item:getUsedDelta() + item:getUseDelta() <= 1);
+	return (item:getCurrentUsesFloat() + item:getUseDelta() <= 1);
 end
 
 local function predicateTypeNotFull(item, type)
-	return (item:getFullType() == type) and (item:getUsedDelta() + item:getUseDelta() <= 1)
+	return (item:getFullType() == type) and (item:getCurrentUsesFloat() + item:getUseDelta() <= 1)
 end
 
 local function comparatorMostFull(item1, item2)
-	return item1:getUsedDelta() - item2:getUsedDelta()
+	return item1:getCurrentUsesFloat() - item2:getCurrentUsesFloat()
 end
 
 function ISShovelGroundCursor:create(x, y, z, north, sprite)
@@ -59,15 +59,11 @@ end
 
 function ISShovelGroundCursor:render(x, y, z, square)
 	local groundType,object = self:getDirtGravelSand(square)
-	if not ISShovelGroundCursor.floorSprite then
-		ISShovelGroundCursor.floorSprite = IsoSprite.new()
-		ISShovelGroundCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	ISShovelGroundCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISShovelGroundCursor.GetEmptyItemCounts(playerObj)
@@ -102,7 +98,7 @@ function ISShovelGroundCursor.GetDirtGravelSand(square)
 		local obj = square:getObjects():get(i-1)
 		if obj:hasModData() and obj:getModData().shovelled then
 			-- skip already-shovelled squares
-		elseif not isServer() and CFarmingSystem.instance:getLuaObjectOnSquare(square) then
+		elseif not isServer() and CFarmingSystem.instance and CFarmingSystem.instance:getLuaObjectOnSquare(square) then
 			-- skip dirt with farm plants
 		elseif obj:getSprite() and obj:getSprite():getName() then
 			local spriteName = obj:getSprite():getName()

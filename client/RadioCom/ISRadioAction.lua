@@ -15,6 +15,14 @@ function ISRadioAction:isValid()
     end
 end
 
+function ISRadioAction:start()
+    if self.character and self.device and self.deviceData and self.mode then
+        if self["start"..self.mode] then
+            self["start"..self.mode](self);
+        end
+    end
+end
+
 function ISRadioAction:update()
     if self.character and self.deviceData and self.deviceData:isIsoDevice() then
         self.character:faceThisObject(self.deviceData:getParent())
@@ -38,8 +46,12 @@ end
 
 function ISRadioAction:performToggleOnOff()
     if self:isValidToggleOnOff() then
-        if self.character then
-            self.character:playSound(self.deviceData:getIsTurnedOn() and "TelevisionOff" or "TelevisionOn")
+        if self.deviceData:getIsTelevision() then
+            self.deviceData:playSoundSend(self.deviceData:getIsTurnedOn() and "TelevisionOff" or "TelevisionOn", false)
+        elseif self.deviceData:isVehicleDevice() then
+            self.deviceData:playSoundSend("VehicleRadioButton", false)
+        else
+            self.deviceData:playSoundSend("RadioButton", false)
         end
         self.deviceData:setIsTurnedOn( not self.deviceData:getIsTurnedOn() );
     end
@@ -73,7 +85,23 @@ function ISRadioAction:isValidSetChannel()
     return self.deviceData:getIsTurnedOn() and self.deviceData:getPower()>0;
 end
 
+function ISRadioAction:startSetChannel()
+    if self.character ~= nil then
+        local sound = "TuneIn"
+        if self.deviceData:getIsTelevision() then sound = "TelevisionZap" end
+        if self.deviceData:isVehicleDevice() then sound = "VehicleRadioTuneIn" end
+        self.deviceData:stopOrTriggerSoundByName(sound)
+        self.deviceData:playSoundSend(sound, false)
+    end
+end
+
 function ISRadioAction:performSetChannel()
+    local sound = "TuneIn"
+    -- "TuneIn" and "VehicleRadioTuneIn" continue long past the end of the audio.
+    local sound = "TuneIn"
+    if self.deviceData:getIsTelevision() then sound = "TelevisionZap" end
+    if self.deviceData:isVehicleDevice() then sound = "VehicleRadioTuneIn" end
+    self.deviceData:stopOrTriggerSoundByName(sound)
     if self:isValidSetChannel() then
         self.deviceData:setChannel(self.secondaryItem);
     end
@@ -204,6 +232,7 @@ function ISRadioAction:new(mode, character, device, secondaryItem)
     o.stopOnWalk        = false;
     o.stopOnRun         = true;
     o.maxTime           = 30;
+    o.ignoreHandsWounds = true;
 
     return o;
 end

@@ -7,6 +7,10 @@ require "ISUI/ISPanel"
 
 IsoRegionLogWindow = ISPanel:derive("IsoRegionLogWindow");
 IsoRegionLogWindow.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function roundstring(_val)
     return tostring(ISDebugUtils.roundNum(_val,2));
@@ -34,12 +38,14 @@ end
 function IsoRegionLogWindow:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "IsoRegions Logs", UIFont.Medium, true)
+    ISDebugUtils.addLabel(self, {}, (self.width-getTextManager():MeasureStringX(self.font, "IsoRegions Logs"))/2, UI_BORDER_SPACING+1, "IsoRegions Logs", UIFont.Medium, true)
 
-    self.tableNamesList = ISScrollingListBox:new(10, 50, 1180, self.height - 100);
+    local yTop = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1
+    local yBottom = UI_BORDER_SPACING*2 + BUTTON_HGT + 1
+    self.tableNamesList = ISScrollingListBox:new(UI_BORDER_SPACING+1, yTop, self.width-(UI_BORDER_SPACING+1)*2, self.height-yTop-yBottom);
     self.tableNamesList:initialise();
     self.tableNamesList:instantiate();
-    self.tableNamesList.itemheight = 22;
+    self.tableNamesList.itemheight = BUTTON_HGT;
     self.tableNamesList.selected = 0;
     self.tableNamesList.joypadParent = self;
     self.tableNamesList.font = UIFont.NewSmall;
@@ -49,7 +55,8 @@ function IsoRegionLogWindow:createChildren()
     self.tableNamesList.target = self;
     self:addChild(self.tableNamesList);
 
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),IsoRegionLogWindow.onClickClose);
+    local btnWidth = 180
+    local y, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,self.height-BUTTON_HGT-UI_BORDER_SPACING-1, btnWidth, BUTTON_HGT, getText("IGUI_CraftUI_Close"),IsoRegionLogWindow.onClickClose);
     self:populateList();
 end
 
@@ -98,7 +105,7 @@ function IsoRegionLogWindow:drawTableNameList(y, item, alt)
 
     local c = item.item.col;
 
-    self:drawText( item.item.txt, 10, y + 2, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat(), a, self.font);
+    self:drawText( item.item.txt, 10, y + 3, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat(), a, self.font);
 
     return y + self.itemheight;
 end

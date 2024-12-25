@@ -9,6 +9,8 @@ ISAdmPanelClimate = ISDebugSubPanelBase:derive("ISAdmPanelClimate");
 
 local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISAdmPanelClimate:initialise
@@ -20,98 +22,98 @@ function ISAdmPanelClimate:createChildren()
 
     local clim = getClimateManager();
 
-    local x,y = 20,10;
+    local x,y = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1;
 
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_Adm_Weather_ClimateEnabled"), ticked = false });
     local obj;
 
     --y, obj = self:addTickBox("ClimEnabled",x,y,self.width-40,ISDebugUtils.FONT_HGT_SMALL,"climate enabled", tickOptions);
-    y, obj = ISDebugUtils.addLabel(self,"TickboxInfo",x,y+5,getText("IGUI_Adm_Weather_ClimateEnabledInfo"), UIFont.Small);
+    y, obj = ISDebugUtils.addLabel(self,"TickboxInfo",x,y,getText("IGUI_Adm_Weather_ClimateEnabledInfo"), UIFont.Small);
 
     local w = self.width-40;
     local colW = (w/3);
-    local col0_x, col1_x, col2_x = 20, 20+colW, 20+(colW*2);
+    local col0_x, col1_x, col2_x = UI_BORDER_SPACING, UI_BORDER_SPACING+colW, UI_BORDER_SPACING+(colW*2);
 
     self:initHorzBars(x,w);
     --self.horzBarX = x;
     --self.horzBarW = w;
 
-    local rowY = y+10;
+    local rowY = BUTTON_HGT+UI_BORDER_SPACING;
     local oTitle, oValue, oUi;
 
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Windspeed"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Wind",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Wind",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     --y, oTitle = self:addLabel("Wind",col0_x,rowY,"Windspeed");
     y, oValue = ISDebugUtils.addLabel(self,"WindVal",col2_x-20,rowY,"0 kph", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"WindSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oUi = ISDebugUtils.addSlider(self,"WindSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, clim:getMaxWindspeedKph(), 1, 1);
     oUi:setCurrentValue(20);
     self:addUI("Wind",oTitle,oValue,oUi);
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Clouds"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Clouds",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Clouds",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     --y, oTitle = self:addLabel("Clouds",col0_x,rowY,"Clouds");
-    y, oValue = ISDebugUtils.addLabel(self,"CloudsVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"CloudsSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oValue = ISDebugUtils.addLabel(self,"CloudsVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"CloudsSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 0.35, 0.01, 0.01);
     oUi:setCurrentValue(0);
     self:addUI("Clouds",oTitle,oValue,oUi);
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Fog"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Fog",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Fog",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     --y, oTitle = self:addLabel("Fog",col0_x,rowY,"Fog");
-    y, oValue = ISDebugUtils.addLabel(self,"FogVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"FogSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oValue = ISDebugUtils.addLabel(self,"FogVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"FogSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 1, 0.01, 0.01);
     oUi:setCurrentValue(0);
     self:addUI("Fog",oTitle,oValue,oUi);
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Precipitation"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Precip",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Precip",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     --y, oTitle = self:addLabel("Precip",col0_x,rowY,"Precipitation");
-    y, oValue = ISDebugUtils.addLabel(self,"PrecipVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"PrecipSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oValue = ISDebugUtils.addLabel(self,"PrecipVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"PrecipSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 1, 0.01, 0.01);
     oUi:setCurrentValue(0);
     self:addUI("Precip",oTitle,oValue,oUi);
 
-    rowY = y+5;
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_PrecipitationIsSnow"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"PrecipIsSnow",col2_x,rowY,colW-10,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"PrecipIsSnow",col2_x,rowY,colW-10,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     self:addUI("PrecipIsSnow",oTitle,nil,nil);
 
     self.tempSliderMod = 40;
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Temperature"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Temp",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Temp",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     --y, oTitle = self:addLabel("Temp",col0_x,rowY,"Temperature");
-    y, oValue = ISDebugUtils.addLabel(self,"TempVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"TempSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oValue = ISDebugUtils.addLabel(self,"TempVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"TempSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 80, 1, 1);
     oUi:setCurrentValue(0);
     self:addUI("Temp",oTitle,oValue,oUi);
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Darkness"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Darkness",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    y, oValue = ISDebugUtils.addLabel(self,"DarknessVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"DarknessSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Darkness",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oValue = ISDebugUtils.addLabel(self,"DarknessVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"DarknessSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 1, 0.01, 0.01);
     oUi:setCurrentValue(0);
@@ -119,12 +121,12 @@ function ISAdmPanelClimate:createChildren()
 
     ----------------------------------- EXTERIOR -----------------------------------
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Daylight"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Light",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    y, oValue = ISDebugUtils.addLabel(self,"LightValR_ext",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderR_ext",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Light",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oValue = ISDebugUtils.addLabel(self,"LightValR_ext",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderR_ext",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "R_exterior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -132,9 +134,9 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightR_ext",oTitle,oValue,oUi);
 
-    rowY = y+5;
-    y, oValue = ISDebugUtils.addLabel(self,"LightValG_ext",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderG_ext",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    y, oValue = ISDebugUtils.addLabel(self,"LightValG_ext",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderG_ext",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "G_exterior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -142,9 +144,9 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightG_ext",nil,oValue,oUi);
 
-    rowY = y+5;
-    y, oValue = ISDebugUtils.addLabel(self,"LightValB_ext",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderB_ext",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    y, oValue = ISDebugUtils.addLabel(self,"LightValB_ext",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderB_ext",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "B_exterior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -152,17 +154,17 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightB_ext",nil,oValue,oUi);
 
-    rowY = y+5;
-    self.LightColorPanel_ext = ISPanel:new(col2_x,rowY,colW-10,15);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    self.LightColorPanel_ext = ISPanel:new(col2_x,rowY,colW-10,BUTTON_HGT);
     self.LightColorPanel_ext:initialise();
     self.LightColorPanel_ext.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(self.LightColorPanel_ext);
 
     y = self.LightColorPanel_ext:getY() + self.LightColorPanel_ext:getHeight();
 
-    rowY = y+5;
-    y, oValue = ISDebugUtils.addLabel(self,"LightValA_ext",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_ext",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    y, oValue = ISDebugUtils.addLabel(self,"LightValA_ext",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_ext",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "A_exterior: "; --"Intensity: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -170,8 +172,8 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightA_ext",nil,oValue,oUi);
 
-    rowY = y+5;
-    self.LightColorPanelAlpha_ext = ISPanel:new(col2_x,rowY,colW-10,15);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    self.LightColorPanelAlpha_ext = ISPanel:new(col2_x,rowY,colW-10,BUTTON_HGT);
     self.LightColorPanelAlpha_ext:initialise();
     self.LightColorPanelAlpha_ext.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(self.LightColorPanelAlpha_ext);
@@ -180,9 +182,9 @@ function ISAdmPanelClimate:createChildren()
 
     ----------------------------------- INTERIOR -----------------------------------
 
-    rowY = y+5;
-    y, oValue = ISDebugUtils.addLabel(self,"LightValR_int",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderR_int",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    y, oValue = ISDebugUtils.addLabel(self,"LightValR_int",col2_x-20,rowY+2,"0", UIFont.Small, false);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderR_int",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "R_interior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -190,9 +192,9 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightR_int",oTitle,oValue,oUi);
 
-    rowY = y+5;
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     y, oValue = ISDebugUtils.addLabel(self,"LightValG_int",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderG_int",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderG_int",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "G_interior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -200,9 +202,9 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightG_int",nil,oValue,oUi);
 
-    rowY = y+5;
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     y, oValue = ISDebugUtils.addLabel(self,"LightValB_int",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderB_int",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderB_int",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "B_interior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -210,17 +212,17 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightB_int",nil,oValue,oUi);
 
-    rowY = y+5;
-    self.LightColorPanel_int = ISPanel:new(col2_x,rowY,colW-10,15);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    self.LightColorPanel_int = ISPanel:new(col2_x,rowY,colW-10,BUTTON_HGT);
     self.LightColorPanel_int:initialise();
     self.LightColorPanel_int.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(self.LightColorPanel_int);
 
     y = self.LightColorPanel_int:getY() + self.LightColorPanel_int:getHeight();
 
-    rowY = y+5;
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     y, oValue = ISDebugUtils.addLabel(self,"LightValA_int",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_int",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_int",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.pretext = "A_interior: "; --"Intensity: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
@@ -228,8 +230,8 @@ function ISAdmPanelClimate:createChildren()
     --oUi:setCurrentValue(0);
     self:addUI("LightA_int",nil,oValue,oUi);
 
-    rowY = y+5;
-    self.LightColorPanelAlpha_int = ISPanel:new(col2_x,rowY,colW-10,15);
+    rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
+    self.LightColorPanelAlpha_int = ISPanel:new(col2_x,rowY,colW-10,BUTTON_HGT);
     self.LightColorPanelAlpha_int:initialise();
     self.LightColorPanelAlpha_int.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(self.LightColorPanelAlpha_int);
@@ -238,19 +240,21 @@ function ISAdmPanelClimate:createChildren()
 
     ----------------------------------------------------------------------
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+BUTTON_HGT+UI_BORDER_SPACING)+UI_BORDER_SPACING;
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Desaturation"), ticked = false });
-    y, oTitle = ISDebugUtils.addTickBox(self,"Desaturation",col0_x,rowY,colW,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
+    y, oTitle = ISDebugUtils.addTickBox(self,"Desaturation",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
     y, oValue = ISDebugUtils.addLabel(self,"DesaturationVal",col2_x-20,rowY,"0", UIFont.Small, false);
-    y, oUi = ISDebugUtils.addSlider(self,"DesaturationSlider",col2_x,rowY,colW-10, 18,ISAdmPanelClimate.onSliderChange);
+    y, oUi = ISDebugUtils.addSlider(self,"DesaturationSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
     oUi:setValues(0, 1, 0.01, 0.01);
     oUi:setCurrentValue(0);
     self:addUI("Desaturation",oTitle,oValue,oUi);
 
 
-    y, obj = ISDebugUtils.addButton(self,"Apply",self.width-110,self.height-30,100,20,getText("IGUI_PlayerStats_ReloadOptions"), ISAdmPanelClimate.onClick);
+    y, obj = ISDebugUtils.addButton(self,"Apply",col2_x, y+UI_BORDER_SPACING, colW-10, BUTTON_HGT, getText("IGUI_PlayerStats_ReloadOptions"), ISAdmPanelClimate.onClick);
+
+    self:setScrollHeight(y+UI_BORDER_SPACING);
 end
 
 function ISAdmPanelClimate:addUI(_name, _tickbox, _label, _slider)

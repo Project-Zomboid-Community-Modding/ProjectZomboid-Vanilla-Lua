@@ -10,6 +10,8 @@ require "DebugUIS/DebugGlobalObjectState/DebugGlobalObjectState_Tools"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 DebugGlobalObjectStateUI = ISPanel:derive("DebugGlobalObjectStateUI")
 
@@ -68,81 +70,80 @@ function DebugGlobalObjectStateUI:ObjectList_OnMouseDoubleClick(item)
 	playerObj:setX(x + 0.5)
 	playerObj:setY(y + 0.5)
 	playerObj:setZ(z)
-	playerObj:setLx(x + 0.5)
-	playerObj:setLy(y + 0.5)
-	playerObj:setLz(z)
+	playerObj:setLastX(x + 0.5)
+	playerObj:setLastY(y + 0.5)
+	playerObj:setLastZ(z)
 	self.zLevelSlider:setCurrentValue(z)
 end
 
 -----
 
 function DebugGlobalObjectStateUI:createChildren()
-	self.zLevelSlider = ISSliderPanel:new(10, 10, 150, 20, self, self.onChangeZLevel)
+	local panelWidth = 200+(getCore():getOptionFontSizeReal()*50);
+	self.zLevelSlider = ISSliderPanel:new(UI_BORDER_SPACING, UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangeZLevel)
 	self.zLevelSlider:initialise()
 	self.zLevelSlider:setCurrentValue(self.gameState:fromLua0("getZ"), true)
 	self.zLevelSlider:setValues(0, 7, 1, 1, true)
 	self:addChild(self.zLevelSlider)
-	local top = self.zLevelSlider:getBottom() + 10
+	local top = self.zLevelSlider:getBottom() + UI_BORDER_SPACING
 
 	if not isClient() then
-		local width = 250
-		local height = FONT_HGT_MEDIUM + 3 * 2
-		local combo = ISComboBox:new(10, self.zLevelSlider:getBottom() + 10, width, height, self, self.onComboClientServer)
+		local combo = ISComboBox:new(UI_BORDER_SPACING, self.zLevelSlider:getBottom() + UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onComboClientServer)
 		combo:initialise()
 		combo:instantiate()
 		combo:setAnchorLeft(false)
 		self:addChild(combo)
 		combo:addOption("Client")
-		combo:addOption("Server")
+		combo: addOption("Server")
 		self.comboClientServer = combo
-		top = self.comboClientServer:getBottom() + 10
+		top = self.comboClientServer:getBottom() + UI_BORDER_SPACING
 	end
 
-	self.objectSections = ISSectionedPanel:new(10, top, 250, self.height - 10 - top)
+	self.objectSections = ISSectionedPanel:new(UI_BORDER_SPACING, top, panelWidth, self.height - UI_BORDER_SPACING - top)
 	self.objectSections.anchorBottom = true
 	self.objectSections.maintainHeight = false
 	self:addChild(self.objectSections)
 	self.objectSections:setScrollChildren(true)
 	self.objectSections:addScrollBars()
 
-	self.systemList = ISScrollingListBox:new(0, 0, 250, 100)
+	self.systemList = ISScrollingListBox:new(0, 0, panelWidth, 100)
 	self.systemList.state = self
 	self.systemList.doDrawItem = function(self, y, item, alt) return self.state.SystemList_doDrawItem(self, y, item, alt) end
-	self.systemList:setFont(UIFont.DebugConsole, 4)
+	self.systemList:setFont(UIFont.Small, 6)
 	self.systemList.itemheight = self.systemList.fontHgt + 2
 	self.systemList:setHeight(self.systemList.fontHgt * 15)
 	self.systemList.doRepaintStencil = true
-	self.objectSections:addSection(self.systemList, "Systems")
+	self.objectSections:addSection(self.systemList, getText("IGUI_GlobalObject_Systems"))
 
 	self:setSystemList()
 
-	self.objectList = ISScrollingListBox:new(0, 0, 250, 100)
+	self.objectList = ISScrollingListBox:new(0, 0, panelWidth, 100)
 	self.objectList.state = self
 	self.objectList.doDrawItem = function(self, y, item, alt) return self.state.ObjectList_doDrawItem(self, y, item, alt) end
 	self.objectList:setOnMouseDoubleClick(self, self.ObjectList_OnMouseDoubleClick)
-	self.objectList:setFont(UIFont.DebugConsole, 4)
+	self.objectList:setFont(UIFont.Small, 6)
 	self.objectList.itemheight = self.objectList.fontHgt + 2
 	self.objectList:setHeight(self.objectList.fontHgt * 15)
-	self.objectSections:addSection(self.objectList, "Global Objects")
+	self.objectSections:addSection(self.objectList, getText("IGUI_GlobalObject_GlobalObjects"))
 
-	self.propertiesPanel = DebugGlobalObjectState_PropertiesPanel:new(self.width - 250 - 10, 10, 250, self.height - 10 - 10)
+	self.propertiesPanel = DebugGlobalObjectState_PropertiesPanel:new(self.width - panelWidth - UI_BORDER_SPACING, UI_BORDER_SPACING, panelWidth, self.height - UI_BORDER_SPACING*2)
 	self.propertiesPanel.anchorBottom = true
 	self.propertiesPanel.maintainHeight = false
 	self:addChild(self.propertiesPanel)
 	self.propertiesPanel:setScrollChildren(true)
 	self.propertiesPanel:addScrollBars()
 
-	local toolHgt = 30
-	self.toolBar = ISPanel:new(self.width / 2 - 60 / 2, 10, 60, toolHgt)
+	local btnWidth = 60
+	self.toolBar = ISPanel:new((self.width-btnWidth)/2, UI_BORDER_SPACING, btnWidth, BUTTON_HGT)
 	self.toolBar:noBackground()
 	self:addChild(self.toolBar)
 	
-	local button3 = ISButton:new(0, 0, 60, toolHgt, "EXIT", self, self.onExit)
+	local button3 = ISButton:new(0, 0, btnWidth, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
 	self.toolBar:addChild(button3)
 	self.buttonExit = button3
 
 	self.toolBar:setWidth(button3:getRight())
-	self.toolBar:setX(self.width / 2 - self.toolBar.width / 2)
+	self.toolBar:setX((self.width-self.toolBar.width)/2)
 end
 
 function DebugGlobalObjectStateUI:onChangeZLevel(value, slider)

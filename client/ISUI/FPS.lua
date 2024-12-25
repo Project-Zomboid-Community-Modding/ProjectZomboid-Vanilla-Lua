@@ -6,7 +6,7 @@ ISFPS.start = false;
 ISFPS.init = false;
 
 function ISFPS.onKeyPressed(key)
-	if key == getCore():getKey("Display FPS") then
+	if getCore():isKey("Display FPS", key) then
 		if ISFPS.start then
 			ISFPS.start = false;
 			ISEquippedItem.text = nil;

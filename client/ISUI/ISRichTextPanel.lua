@@ -1,6 +1,7 @@
 require "ISUI/ISPanel"
 
 ISRichTextPanel = ISPanel:derive("ISRichTextPanel");
+local IMAGE_PAD = 5
 
 ISRichTextPanel.drawMargins = false
 
@@ -89,6 +90,18 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
 		self.rgb[self.currentLine].g = tonumber(rgb[2]);
 		self.rgb[self.currentLine].b = tonumber(rgb[3]);
         self.rgbCurrent = self.rgb[self.currentLine]
+    elseif string.find(command, "GHC") then
+        self.rgb[self.currentLine] = {};
+        self.rgb[self.currentLine].r = getCore():getGoodHighlitedColor():getR();
+        self.rgb[self.currentLine].g = getCore():getGoodHighlitedColor():getG();
+        self.rgb[self.currentLine].b = getCore():getGoodHighlitedColor():getB();
+        self.rgbCurrent = self.rgb[self.currentLine]
+    elseif string.find(command, "BHC") then
+        self.rgb[self.currentLine] = {};
+        self.rgb[self.currentLine].r = getCore():getBadHighlitedColor():getR();
+        self.rgb[self.currentLine].g = getCore():getBadHighlitedColor():getG();
+        self.rgb[self.currentLine].b = getCore():getBadHighlitedColor():getB();
+        self.rgbCurrent = self.rgb[self.currentLine]
     end
     if string.find(command, "RED") then
         self.rgb[self.currentLine] = {};
@@ -155,12 +168,12 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
         if self.images[self.imageCount] == nil then
             --print("Could not find texture");
         end
-        self.imageX[self.imageCount] = x+2;
-        self.imageY[self.imageCount] = y;
+        self.imageX[self.imageCount] = x+IMAGE_PAD;
+        self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2;
         self.imageW[self.imageCount] = w;
         self.imageH[self.imageCount] = h;
         self.imageCount = self.imageCount + 1;
-        x = x + w + 7;
+        x = x + w + IMAGE_PAD*2;
 --[[
         local newY = math.max(y + (h / 2) - 7, y)
 
@@ -207,7 +220,7 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
         if self.images[self.imageCount] == nil then
             --print("Could not find texture");
         end
-        local mx = (self.width - self.marginLeft - self.marginRight) / 2 - self.marginLeft;
+        local mx = (self.width - self.marginLeft - self.marginRight) / 2;
         self.imageX[self.imageCount] = mx - (w/2);
         self.imageY[self.imageCount] = y;
         self.imageW[self.imageCount] = w;
@@ -222,6 +235,95 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
         end
 
         y = y + (h / 2);
+    end
+
+    if string.find(command, "VIDEOCENTRE:") ~= nil then
+        local w = 0;
+        local h = 0;
+        local w2 = 384
+        local h2 = 216
+        local image = "";
+        if string.find(command, ",") ~= nil then
+            local vs = string.split(command, ",");
+
+            command = string.trim(vs[1]);
+            w = tonumber(string.trim(vs[2])); --video width
+            h = tonumber(string.trim(vs[3])); --video height
+            if vs[5] then --test to see if the display height has been defined
+                w2 = tonumber(string.trim(vs[4])) --display width
+                h2 = tonumber(string.trim(vs[5])) --display height
+            end
+            image = "media/videos/" .. string.trim(string.split(command, ":")[2]) .. ".png"
+        end
+
+        if Core.getInstance():getOptionDoVideoEffects() then
+            -- Play the video
+            self.videos[self.videoCount] = getVideo(string.sub(command, 13), w, h);
+
+            w = w2
+            h = h2
+            if(x + w >= self.width - (self.marginLeft + self.marginRight)) then
+                x = 0;
+                y = y + lineHeight;
+            end
+
+            if(lineImageHeight < (h / 2) + 8) then
+                lineImageHeight = (h / 2) + 16;
+            end
+
+            if self.videos[self.videoCount] == nil then
+                print("Could not find video");
+            end
+            local mx = (self.width - self.marginLeft - self.marginRight) / 2;
+            self.videoX[self.videoCount] = mx - (w/2);
+            self.videoY[self.videoCount] = y;
+            self.videoW[self.videoCount] = w;
+            self.videoH[self.videoCount] = h;
+            self.videoCount = self.videoCount + 1;
+            x = x + w + 7;
+
+            for c,v in ipairs(self.lines) do
+                if self.lineY[c] == y then
+                    self.lineY[c] = self.lineY[c] + (h / 2);
+                end
+            end
+
+            y = y + (h / 2);
+        else
+            -- Video Effects off, show the backup image
+            self.images[self.imageCount] = getTexture(image);
+
+            w = self.images[self.imageCount]:getWidth();
+            h = self.images[self.imageCount]:getHeight();
+
+            if(x + w >= self.width - (self.marginLeft + self.marginRight)) then
+                x = 0;
+                y = y +  lineHeight;
+            end
+
+            if(lineImageHeight < (h / 2) + 8) then
+                lineImageHeight = (h / 2) + 16;
+            end
+
+            if self.images[self.imageCount] == nil then
+                --print("Could not find texture");
+            end
+            local mx = (self.width - self.marginLeft - self.marginRight) / 2;
+            self.imageX[self.imageCount] = mx - (w/2);
+            self.imageY[self.imageCount] = y;
+            self.imageW[self.imageCount] = w;
+            self.imageH[self.imageCount] = h;
+            self.imageCount = self.imageCount + 1;
+            x = x + w + 7;
+
+            for c,v in ipairs(self.lines) do
+                if self.lineY[c] == y then
+                    self.lineY[c] = self.lineY[c] + (h / 2);
+                end
+            end
+
+            y = y + (h / 2);
+        end
     end
 
     if string.find(command, "INDENT:") then
@@ -244,17 +346,17 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
         end
         if(x + w >= self.width - (self.marginLeft + self.marginRight)) then
             x = 0
-            y = y +  lineHeight
+            y = y + lineHeight
         end
         if lineImageHeight < h + 0 then
             lineImageHeight = h + 0;
         end
-        self.imageX[self.imageCount] = x+2
-        self.imageY[self.imageCount] = y
+        self.imageX[self.imageCount] = x+IMAGE_PAD
+        self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2
         self.imageW[self.imageCount] = w
         self.imageH[self.imageCount] = h
         self.imageCount = self.imageCount + 1
-        x = x + w + 7
+        x = x + w + IMAGE_PAD*2
     end
 
     if string.find(command, "SETX:") then
@@ -325,6 +427,13 @@ function ISRichTextPanel:paginate()
 	self.lines = {}
 
 	self.keybinds = {}
+
+    self.videoCount = 1;
+	self.videos = {}
+	self.videoX = {}
+    self.videoY = {}
+    self.videoW = {}
+    self.videoH = {}
 
 	local bDone = false;
 	local leftText = self:replaceKeyNames(self.text) .. ' ';
@@ -494,6 +603,12 @@ function ISRichTextPanel:render()
     for c,v in ipairs(self.images) do
         self:drawTextureScaled(v, self.imageX[c] + self.marginLeft, self.imageY[c] + self.marginTop, self.imageW[c], self.imageH[c], self.contentTransparency, 1, 1, 1);
     end
+
+    for c,v in ipairs(self.videos) do
+        v:RenderFrame()
+        self:drawTextureScaled(v, self.videoX[c] + self.marginLeft, self.videoY[c] + self.marginTop, self.videoW[c], self.videoH[c], self.contentTransparency, 1, 1, 1);
+    end
+
     self.font = self.defaultFont
     local orient = "left";
 	local c = 1
@@ -601,6 +716,25 @@ function ISRichTextPanel:setMargins(left, top, right, bottom)
 	self.marginTop = top
 	self.marginRight = right
 	self.marginBottom = bottom
+end
+
+function ISRichTextPanel:doRightJoystickScrolling(joypadData, dx, dy)
+	dx = dx or 20
+	dy = dy or 20
+	local axisY = getJoypadAimingAxisY(joypadData.id)
+	if axisY > 0.75 then
+		self:setYScroll(self:getYScroll() - dy * UIManager.getMillisSinceLastRender() / 33.3)
+	end
+	if axisY < -0.75 then
+		self:setYScroll(self:getYScroll() + dy * UIManager.getMillisSinceLastRender() / 33.3)
+	end
+	local axisX = getJoypadAimingAxisX(joypadData.id)
+	if axisX > 0.75 then
+		self:setXScroll(self:getXScroll() - dx * UIManager.getMillisSinceLastRender() / 33.3)
+	end
+	if axisX < -0.75 then
+		self:setXScroll(self:getXScroll() + dx * UIManager.getMillisSinceLastRender() / 33.3)
+	end
 end
 
 --************************************************************************--

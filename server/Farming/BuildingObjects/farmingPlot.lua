@@ -16,7 +16,7 @@ function farmingPlot:create(x, y, z, north, sprite)
 	if self.handItem then
 		ISInventoryPaneContextMenu.equipWeapon(self.handItem, true, self.handItem:isTwoHandWeapon(), self.character:getPlayerNum())
 	end
-	ISTimedActionQueue.add(ISPlowAction:new(self.character, sq, self.handItem, 110));
+	ISTimedActionQueue.add(ISPlowAction:new(self.character, sq, self.handItem));
 end
 
 function farmingPlot:new(handItem, character)
@@ -39,23 +39,30 @@ function farmingPlot:isValid(square)
 			return false;
 		end
     end
-	if CFarmingSystem.instance:getLuaObjectOnSquare(square) then
-		return false
-	end
-	if not square:isFreeOrMidair(true, true) then return false end
-	-- farming plot have to be on natural floor (no road, concrete etc.)
-	for i = 0, square:getObjects():size() - 1 do
-		local item = square:getObjects():get(i);
-		-- IsoRaindrop and IsoRainSplash have no sprite/texture
-		if item:getTextureName() and (luautils.stringStarts(item:getTextureName(), "floors_exterior_natural") or
-				luautils.stringStarts(item:getTextureName(), "blends_natural_01")) then
-			return true;
-		end
-	end
---~ 	if result then
---~ 		result = square:getSpecialObjects():size() == 0;
---~ 	end
-	return false;
+    return ISFarmingMenu.canDigHereSquare(square)
+
+--     local plant = CFarmingSystem.instance:getLuaObjectOnSquare(square)
+--     if plant and plant.state ~= "plow" and not plant:isAlive() then plant = false end
+--     if plant then
+--         return false
+--     end
+-- -- 	if CFarmingSystem.instance:getLuaObjectOnSquare(square) then
+-- -- 		return false
+-- -- 	end
+-- 	if not square:isFreeOrMidair(true, true) then return false end
+-- 	-- farming plot have to be on natural floor (no road, concrete etc.)
+-- 	for i = 0, square:getObjects():size() - 1 do
+-- 		local item = square:getObjects():get(i);
+-- 		-- IsoRaindrop and IsoRainSplash have no sprite/texture
+-- 		if item:getTextureName() and (luautils.stringStarts(item:getTextureName(), "floors_exterior_natural") or
+-- 				luautils.stringStarts(item:getTextureName(), "blends_natural_01")) then
+-- 			return true;
+-- 		end
+-- 	end
+-- --~ 	if result then
+-- --~ 		result = square:getSpecialObjects():size() == 0;
+-- --~ 	end
+-- 	return false;
 end
 
 function farmingPlot:getAPrompt()

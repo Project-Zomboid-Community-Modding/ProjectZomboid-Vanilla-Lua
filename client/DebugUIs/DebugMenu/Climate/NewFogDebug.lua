@@ -6,6 +6,10 @@
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 NewFogDebug = ISDebugSubPanelBase:derive("NewFogDebug");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 function NewFogDebug:initialise()
     ISPanel.initialise(self);
@@ -26,94 +30,94 @@ function NewFogDebug:createChildren()
 
     local v, obj;
 
-    local x,y,w = 10,10,self.width-30;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH - 1;
 
     self:initHorzBars(x,w);
+    local barMod = UI_BORDER_SPACING;
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"Fog intensity", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_NewFog_Title"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    local barMod = 3;
     --print("w = "..tostring(w))
     v = clim:getClimateFloat(self.newFogID);
-    y, obj = self:addFloatOptionAuto(v:getName(),v,x,y,w)
+    y, obj = self:addFloatOptionAuto(getText("IGUI_ClimateOptions_FOG_INTENSITY"),v,x,y,w)
     --print(v:getName());
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("RenderOnlyOneRow",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_RenderOnlyOneRow"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("RenderDebugColors",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_RenderDebugColors"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("RenderCurrentLayerOnly",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_RenderCurrentLayerOnly"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("ColorR",x,y,w, 0,1, 0.05);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-    y, obj = self:addFloatOption("ColorG",x,y,w, 0,1, 0.05);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-    y, obj = self:addFloatOption("ColorB",x,y,w, 0,1, 0.05);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_ColorR"),x,y,w, 0,1, 0.05);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_ColorG"),x,y,w, 0,1, 0.05);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_ColorB"),x,y,w, 0,1, 0.05);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("HighQuality",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_HighQuality"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addBoolOption("EnableLockedEditing",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_EnableLockedEditing"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title2",x+(w/2),y,"Locked params:", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title2",x+(w/2),y,getText("IGUI_NewFog_LockedParamsTitle"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("BaseAlpha",x,y,w, 0,1, 0.01);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_BaseAlpha"),x,y,w, 0,1, 0.01);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("RenderXrow",x,y,w, 1,10, 1);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_RenderXRow"),x,y,w, 1,10, 1);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("RenderXrowFromCenter",x,y,w, 0,20, 1);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_RenderXRowFromCenter"),x,y,w, 0,20, 1);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("SecondLayerAlpha",x,y,w, 0,1, 0.05);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_SecondLayerAlpha"),x,y,w, 0,1, 0.05);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("TopAlphaHeight",x,y,w, 0.0,1.0, 0.01);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_TopAlphaHeight"),x,y,w, 0.0,1.0, 0.01);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("BottomAlphaHeight",x,y,w, 0.0,1.0, 0.01);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_BottomAlphaHeight"),x,y,w, 0.0,1.0, 0.01);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     --y, obj = self:addFloatOption("Octaves",x,y,w, 1,6, 1);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("CircleAlpha",x,y,w, 0,1, 0.01);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_CircleAlpha"),x,y,w, 0,1, 0.01);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("CircleRadius",x,y,w, 0,4, 0.01);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_CircleRadius"),x,y,w, 0,4, 0.01);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title3",x+(w/2),y,"Other debug:", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title3",x+(w/2),y,getText("IGUI_NewFog_OtherTitle"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    y, obj = self:addFloatOption("minXOffset",x,y,w, -20,20, 1);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-    y, obj = self:addFloatOption("maxXOffset",x,y,w, -20,20, 1);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-    y, obj = self:addFloatOption("maxYOffset",x,y,w, -20,20, 1);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
-    y, obj = self:addBoolOption("RenderEndOnly",x,y,w);
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_MinX"),x,y,w, -20,20, 1);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_MaxX"),x,y,w, -20,20, 1);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
+    y, obj = self:addFloatOption(getText("IGUI_NewFog_MaxY"),x,y,w, -20,20, 1);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
+    y, obj = self:addBoolOption(getText("IGUI_NewFog_RenderEndOnly"),x,y,w);
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+1);
 end
 
 function NewFogDebug:addFloatOption(_id,_x,_y,_w,_min,_max,_stepsize)
     local y,obj = ISDebugUtils.addLabel(self,_id,_x,_y,_id, UIFont.Small, true);
-    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, 18,NewFogDebug.onSliderChange);
+    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w-300)-20,_y,"0", UIFont.Small, false);
+    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w-300),_y,300, BUTTON_HGT,NewFogDebug.onSliderChange);
     obj3.valueLabel = obj2;
     obj3:setValues(_min or 0, _max or 1, _stepsize or 0.01, _stepsize or 0.01);
     obj3:setCurrentValue(0);
@@ -128,22 +132,22 @@ function NewFogDebug:addBoolOption(_id,_x,_y,_w)
     local y,obj = ISDebugUtils.addLabel(self,_id,_x,_y,_id, UIFont.Small, true);
 
     local tickOptions = {};
-    table.insert(tickOptions, { text = "Enabled", ticked = false });
-    local y2,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w/2),_y,_w/2,ISDebugUtils.FONT_HGT_SMALL,_id,tickOptions,NewFogDebug.onTickedValue);
+    table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
+    local y2,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w-300),_y,BUTTON_HGT,BUTTON_HGT,_id,tickOptions,NewFogDebug.onTickedValue);
     --obj2.changeOptionMethod = ClimateOptionsDebug.onTickedValue;
 
     self.bools[_id] = { title = obj, tickboxValue = obj2 };
     self.allOptions[_id] = self.bools[_id];
-    return y;
+    return y>y2 and y or y2;
 end
 
 function NewFogDebug:addFloatOptionAuto(_id,_float,_x,_y,_w)
     local tickOptions = {};
     table.insert(tickOptions, { text = _id, ticked = false });
 
-    local y, obj = ISDebugUtils.addTickBox(self,_id,_x,_y,(_w/2)-30,ISDebugUtils.FONT_HGT_SMALL,_id,tickOptions,NewFogDebug.onTicked);
-    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, 18,NewFogDebug.onSliderChange);
+    local y, obj = ISDebugUtils.addTickBox(self,_id,_x,_y,BUTTON_HGT,BUTTON_HGT,_id,tickOptions,NewFogDebug.onTicked);
+    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w-300)-20,_y,"0", UIFont.Small, false);
+    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w-300),_y,300, BUTTON_HGT,NewFogDebug.onSliderChange);
     obj3.valueLabel = obj2;
     obj3:setValues(_float:getMin(), _float:getMax(), 0.01, 0.01);
     obj3:setCurrentValue(0);
@@ -162,50 +166,50 @@ function NewFogDebug:prerender()
         o.slider:setCurrentValue(o.option:getAdminValue());
     end
     for k,o in pairs(self.floatOptions) do
-        if k=="BaseAlpha" then
+        if k==getText("IGUI_NewFog_BaseAlpha") then
             o.slider:setCurrentValue(ImprovedFog.getBaseAlpha());
-        elseif k=="RenderXrow" then
+        elseif k==getText("IGUI_NewFog_RenderXRow") then
             o.slider:setCurrentValue(ImprovedFog.getRenderEveryXRow());
-        elseif k=="RenderXrowFromCenter" then
+        elseif k==getText("IGUI_NewFog_RenderXRowFromCenter") then
             o.slider:setCurrentValue(ImprovedFog.getRenderXRowsFromCenter());
-        elseif k=="SecondLayerAlpha" then
+        elseif k==getText("IGUI_NewFog_SecondLayerAlpha") then
             o.slider:setCurrentValue(ImprovedFog.getSecondLayerAlpha());
-        elseif k=="TopAlphaHeight" then
+        elseif k==getText("IGUI_NewFog_TopAlphaHeight") then
             o.slider:setCurrentValue(ImprovedFog.getTopAlphaHeight());
-        elseif k=="BottomAlphaHeight" then
+        elseif k==getText("IGUI_NewFog_BottomAlphaHeight") then
             o.slider:setCurrentValue(ImprovedFog.getBottomAlphaHeight());
         elseif k=="Octaves" then
             o.slider:setCurrentValue(ImprovedFog.getOctaves());
-        elseif k=="CircleAlpha" then
+        elseif k==getText("IGUI_NewFog_CircleAlpha") then
             o.slider:setCurrentValue(ImprovedFog.getAlphaCircleAlpha());
-        elseif k=="CircleRadius" then
+        elseif k==getText("IGUI_NewFog_CircleRadius") then
             o.slider:setCurrentValue(ImprovedFog.getAlphaCircleRad());
-        elseif k=="ColorR" then
+        elseif k==getText("IGUI_NewFog_ColorR") then
             o.slider:setCurrentValue(ImprovedFog.getColorR());
-        elseif k=="ColorG" then
+        elseif k==getText("IGUI_NewFog_ColorG") then
             o.slider:setCurrentValue(ImprovedFog.getColorG());
-        elseif k=="ColorB" then
+        elseif k==getText("IGUI_NewFog_ColorB") then
             o.slider:setCurrentValue(ImprovedFog.getColorB());
-        elseif k=="minXOffset" then
+        elseif k==getText("IGUI_NewFog_MinX") then
             o.slider:setCurrentValue(ImprovedFog.getMinXOffset());
-        elseif k=="maxXOffset" then
+        elseif k==getText("IGUI_NewFog_MaxX") then
             o.slider:setCurrentValue(ImprovedFog.getMaxXOffset());
-        elseif k=="maxYOffset" then
+        elseif k==getText("IGUI_NewFog_MaxY") then
             o.slider:setCurrentValue(ImprovedFog.getMaxYOffset());
         end
     end
     for k,o in pairs(self.bools) do
-        if k=="RenderOnlyOneRow" then
+        if k==getText("IGUI_NewFog_RenderOnlyOneRow") then
             o.tickboxValue.selected[1] = ImprovedFog.isRenderOnlyOneRow();
-        elseif k=="RenderDebugColors" then
+        elseif k==getText("IGUI_NewFog_RenderDebugColors") then
             o.tickboxValue.selected[1] = ImprovedFog.isDrawDebugColors();
-        elseif k=="RenderCurrentLayerOnly" then
+        elseif k==getText("IGUI_NewFog_RenderCurrentLayerOnly") then
             o.tickboxValue.selected[1] = ImprovedFog.isRenderCurrentLayerOnly();
-        elseif k=="EnableLockedEditing" then
+        elseif k==getText("IGUI_NewFog_EnableLockedEditing") then
             o.tickboxValue.selected[1] = ImprovedFog.isEnableEditing();
-        elseif k=="HighQuality" then
+        elseif k==getText("IGUI_NewFog_HighQuality") then
             o.tickboxValue.selected[1] = ImprovedFog.isHighQuality();
-        elseif k=="RenderEndOnly" then
+        elseif k==getText("IGUI_NewFog_RenderEndOnly") then
             o.tickboxValue.selected[1] = ImprovedFog.isRenderEndOnly();
         end
     end
@@ -219,35 +223,35 @@ function NewFogDebug:onSliderChange(_newval, _slider)
         else
             s.label:setName(ISDebugUtils.printval(_newval,3));
         end
-        if _slider.customData=="BaseAlpha" then
+        if _slider.customData==getText("IGUI_NewFog_BaseAlpha") then
             ImprovedFog.setBaseAlpha(s.slider:getCurrentValue());
-        elseif _slider.customData=="RenderXrow" then
+        elseif _slider.customData==getText("IGUI_NewFog_RenderXRow") then
             ImprovedFog.setRenderEveryXRow(s.slider:getCurrentValue());
-        elseif _slider.customData=="RenderXrowFromCenter" then
+        elseif _slider.customData==getText("IGUI_NewFog_RenderXRowFromCenter") then
             ImprovedFog.setRenderXRowsFromCenter(s.slider:getCurrentValue());
-        elseif _slider.customData=="SecondLayerAlpha" then
+        elseif _slider.customData==getText("IGUI_NewFog_SecondLayerAlpha") then
             ImprovedFog.setSecondLayerAlpha(s.slider:getCurrentValue());
-        elseif _slider.customData=="TopAlphaHeight" then
+        elseif _slider.customData==getText("IGUI_NewFog_TopAlphaHeight") then
             ImprovedFog.setTopAlphaHeight(s.slider:getCurrentValue());
-        elseif _slider.customData=="BottomAlphaHeight" then
+        elseif _slider.customData==getText("IGUI_NewFog_BottomAlphaHeight") then
             ImprovedFog.setBottomAlphaHeight(s.slider:getCurrentValue());
         elseif _slider.customData=="Octaves" then
             ImprovedFog.setOctaves(s.slider:getCurrentValue());
-        elseif _slider.customData=="CircleAlpha" then
+        elseif _slider.customData==getText("IGUI_NewFog_CircleAlpha") then
             ImprovedFog.setAlphaCircleAlpha(s.slider:getCurrentValue());
-        elseif _slider.customData=="CircleRadius" then
+        elseif _slider.customData==getText("IGUI_NewFog_CircleRadius") then
             ImprovedFog.setAlphaCircleRad(s.slider:getCurrentValue());
-        elseif _slider.customData=="ColorR" then
+        elseif _slider.customData==getText("IGUI_NewFog_ColorR") then
             ImprovedFog.setColorR(s.slider:getCurrentValue());
-        elseif _slider.customData=="ColorG" then
+        elseif _slider.customData==getText("IGUI_NewFog_ColorG") then
             ImprovedFog.setColorG(s.slider:getCurrentValue());
-        elseif _slider.customData=="ColorB" then
+        elseif _slider.customData==getText("IGUI_NewFog_ColorB") then
             ImprovedFog.setColorB(s.slider:getCurrentValue());
-        elseif _slider.customData=="minXOffset" then
+        elseif _slider.customData==getText("IGUI_NewFog_MinX") then
             ImprovedFog.setMinXOffset(s.slider:getCurrentValue());
-        elseif _slider.customData=="maxXOffset" then
+        elseif _slider.customData==getText("IGUI_NewFog_MaxX") then
             ImprovedFog.setMaxXOffset(s.slider:getCurrentValue());
-        elseif _slider.customData=="maxYOffset" then
+        elseif _slider.customData==getText("IGUI_NewFog_MaxY") then
             ImprovedFog.setMaxYOffset(s.slider:getCurrentValue());
         end
         return;
@@ -293,17 +297,17 @@ function NewFogDebug:onTickedValue(_index, _selected, _arg1, _arg2, _tickbox)
     local s = self.allOptions[_tickbox.customData];
 
     if s then
-        if _tickbox.customData=="RenderOnlyOneRow" then
+        if _tickbox.customData==getText("IGUI_NewFog_RenderOnlyOneRow") then
             ImprovedFog.setRenderOnlyOneRow(not ImprovedFog.isRenderOnlyOneRow());
-        elseif _tickbox.customData=="RenderDebugColors" then
+        elseif _tickbox.customData==getText("IGUI_NewFog_RenderDebugColors") then
             ImprovedFog.setDrawDebugColors(not ImprovedFog.isDrawDebugColors());
-        elseif _tickbox.customData=="RenderCurrentLayerOnly" then
+        elseif _tickbox.customData==getText("IGUI_NewFog_RenderCurrentLayerOnly") then
             ImprovedFog.setRenderCurrentLayerOnly(not ImprovedFog.isRenderCurrentLayerOnly());
-        elseif _tickbox.customData=="EnableLockedEditing" then
+        elseif _tickbox.customData==getText("IGUI_NewFog_EnableLockedEditing") then
             ImprovedFog.setEnableEditing(not ImprovedFog.isEnableEditing());
-        elseif _tickbox.customData=="HighQuality" then
+        elseif _tickbox.customData==getText("IGUI_NewFog_HighQuality") then
             ImprovedFog.setHighQuality(not ImprovedFog.isHighQuality());
-        elseif _tickbox.customData=="RenderEndOnly" then
+        elseif _tickbox.customData==getText("IGUI_NewFog_RenderEndOnly") then
             ImprovedFog.setRenderEndOnly(not ImprovedFog.isRenderEndOnly());
         end
     end

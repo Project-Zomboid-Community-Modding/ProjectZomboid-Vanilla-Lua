@@ -4,18 +4,183 @@
 
 require "ISUI/ISCollapsableWindow"
 
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
+
 ISCraftingUI = ISCollapsableWindow:derive("ISCraftingUI");
 ISCraftingUI.instance = nil;
 ISCraftingUI.largeFontHeight = getTextManager():getFontHeight(UIFont.Large)
 ISCraftingUI.mediumFontHeight = getTextManager():getFontHeight(UIFont.Medium)
 ISCraftingUI.smallFontHeight = getTextManager():getFontHeight(UIFont.Small)
-ISCraftingUI.bottomInfoHeight = ISCraftingUI.smallFontHeight * 2
+ISCraftingUI.bottomInfoHeight = BUTTON_HGT
 ISCraftingUI.qwertyConfiguration = true;
 ISCraftingUI.bottomTextSpace = "     ";
 ISCraftingUI.leftCategory = Keyboard.KEY_LEFT;
 ISCraftingUI.rightCategory = Keyboard.KEY_RIGHT;
 ISCraftingUI.upArrow = Keyboard.KEY_UP;
 ISCraftingUI.downArrow = Keyboard.KEY_DOWN;
+
+-----
+
+ISCraftingIngredientIconPanel = ISPanel:derive("ISCraftingIngredientIconPanel")
+
+function ISCraftingIngredientIconPanel:render()
+	self:updateTooltip()
+	self.mouseOverIndex = -1
+	ISPanel.render(self)
+	local recipeListBox = self.craftingUI:getRecipeListBox()
+	if not recipeListBox.items[recipeListBox.selected] then return end
+	local selectedItem = recipeListBox.items[recipeListBox.selected].item
+    if not selectedItem.evolved or not selectedItem.baseItem then return end
+	local x,y = 0,0
+	local imgW = 20
+	local imgH = 20
+	local imgPadX = 4
+	local dyText = (imgH - ISCraftingUI.smallFontHeight) / 2
+	local offset = 15
+	local labelWidth = self.craftingUI.LabelDashWidth
+	local r,g,b = 1,1,1
+	local r2,g2,b2 = 1,1,1
+	if selectedItem.extraItems and #selectedItem.extraItems > 0 then
+		self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium)
+		y = y + ISCraftingUI.mediumFontHeight + 7
+		self:drawText(self.craftingUI.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small)
+		local newX = x + offset + labelWidth + imgPadX
+		local mouseOverIndex = self:getExtraItemIndex(self:getMouseX(), self:getMouseY())
+		self.mouseOverIndex = mouseOverIndex
+		if mouseOverIndex ~= -1 then
+			local ix = newX + (mouseOverIndex - 1) * 22
+			local iy = y
+			self:drawRectBorder(ix - 1, iy - 1, imgW + 2, imgH + 2, 1.0, 0.4, 0.4, 0.4)
+		end
+		for g,h in ipairs(selectedItem.extraItems) do
+			self:drawTextureScaledAspect(h:getNormalTexture(), newX, y, imgW, imgH, g2,r2,b2,g2)
+			newX = newX + 22
+		end
+		if self.craftingUI.character and self.craftingUI.character:isKnownPoison(selectedItem.baseItem) and self.craftingUI.PoisonTexture then
+			self:drawTexture(self.craftingUI.PoisonTexture, newX, y + (imgH - self.craftingUI.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
+		end
+		y = y + ISCraftingUI.mediumFontHeight + 7
+	elseif self.craftingUI.character and self.craftingUI.character:isKnownPoison(selectedItem.baseItem) and self.craftingUI.PoisonTexture then
+		self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium)
+		y = y + ISCraftingUI.mediumFontHeight + 7
+		self:drawText(self.craftingUI.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small)
+		local newX = x + offset + labelWidth + imgPadX
+		self:drawTexture(self.craftingUI.PoisonTexture, newX, y + (imgH - self.craftingUI.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
+		y = y + ISCraftingUI.smallFontHeight + 7
+	end
+	if y ~= self.height then
+		self:setHeight(y)
+	end
+	local width = self.craftingUI.width - self.x
+	if width ~= self.width then
+		self:setWidth(width)
+	end
+end
+
+function ISCraftingIngredientIconPanel:shouldBeVisible()
+	local recipeListBox = self.craftingUI:getRecipeListBox()
+	if not recipeListBox.items[recipeListBox.selected] then return false end
+	local selectedItem = recipeListBox.items[recipeListBox.selected].item
+	if not selectedItem.evolved or not selectedItem.baseItem then return false end
+	if selectedItem.extraItems and #selectedItem.extraItems > 0 then
+		return true
+	end
+	if self.craftingUI.character and self.craftingUI.character:isKnownPoison(selectedItem.baseItem) and self.craftingUI.PoisonTexture then
+		return true
+	end
+	return false
+end
+
+function ISCraftingIngredientIconPanel:getExtraItemIndex(mouseX, mouseY)
+	local recipeListBox = self.craftingUI:getRecipeListBox()
+	local selectedItem = recipeListBox.items[recipeListBox.selected].item
+	local x,y = 0,0
+	local imgW = 20
+	local imgH = 20
+	local imgPadX = 4
+	local offset = 15
+	local labelWidth = self.craftingUI.LabelDashWidth
+	y = y + ISCraftingUI.mediumFontHeight + 7
+	local newX = x + offset + labelWidth + imgPadX
+	if mouseX < newX or mouseX >= newX + 22 * #selectedItem.extraItems then return -1 end
+	if mouseY < y or mouseY >= y + imgH then return -1 end
+	return math.floor((mouseX - newX) / 22) + 1
+end
+
+function ISCraftingIngredientIconPanel:getExtraItem(index)
+	local recipeListBox = self.craftingUI:getRecipeListBox()
+	local selectedItem = recipeListBox.items[recipeListBox.selected].item
+	if (selectedItem.extraItems ~= nil) and (index >= 1) and (index <= #selectedItem.extraItems) then
+		return selectedItem.extraItems[index]
+	end
+--[[
+	local baseItem = selectedItem.baseItem
+	local count = 0
+	if instanceof(baseItem, "Food") and baseItem:haveExtraItems() then
+		for i=1,baseItem:getExtraItems():size() do
+			local extraType = baseItem:getExtraItems():get(i-1)
+			local extraItem = getItem(extraType)
+			if extraItem then
+				count = count + 1
+				if count == index then
+					return extraItem
+				end
+			end
+		end
+	end
+	if instanceof(baseItem, "Food") and baseItem:getSpices() then
+		for i=1,baseItem:getSpices():size() do
+		    local extraItem = getItem(baseItem:getSpices():get(i-1))
+			if extraItem then
+				count = count + 1
+				if count == index then
+					return extraItem
+				end
+			end
+		end
+	end
+]]--
+	return nil
+end
+
+function ISCraftingIngredientIconPanel:updateTooltip()
+	if self:isMouseOver() and self.mouseOverIndex ~= -1 then
+		-- Use the display name without the Cooked|Fresh|Rotten suffixes
+		local text = self:getExtraItem(self.mouseOverIndex):getDisplayName()
+		if not self.tooltipUI then
+			self.tooltipUI = ISToolTip:new()
+			self.tooltipUI:setOwner(self)
+			self.tooltipUI:setVisible(false)
+			self.tooltipUI:setAlwaysOnTop(true)
+		end
+		if not self.tooltipUI:getIsVisible() then
+			if string.contains(text, "\n") then
+				self.tooltipUI.maxLineWidth = 1000 -- don't wrap the lines
+			else
+				self.tooltipUI.maxLineWidth = 300
+			end
+			self.tooltipUI:addToUIManager()
+			self.tooltipUI:setVisible(true)
+		end
+		self.tooltipUI.description = text
+		self.tooltipUI:setDesiredPosition(getMouseX() - 3, self:getAbsoluteY() + self:getHeight() + 8)
+	else
+		if self.tooltipUI and self.tooltipUI:getIsVisible() then
+			self.tooltipUI:setVisible(false)
+			self.tooltipUI:removeFromUIManager()
+		end
+	end
+end
+
+function ISCraftingIngredientIconPanel:new(craftingUI)
+	local o = ISPanel.new(self, 0, 0, 100, 10)
+	o:noBackground()
+	o.craftingUI = craftingUI
+	return o
+end
+
+-----
 
 function ISCraftingUI:getRecipeListBox()
     return self.panel.activeView.view.recipes
@@ -127,9 +292,13 @@ function ISCraftingUI:refresh()
     self:refreshIngredientList()
 end
 
+function ISCraftingUI:isFluidSource(item, fluid, amount)
+    return item:hasComponent(ComponentType.FluidContainer) and item:getFluidContainer():contains(fluid) and (not item:getFluidContainer():isMixture()) and item:getFluidContainer():getAmount() >= amount
+end
+
 function ISCraftingUI:isWaterSource(item, count)
-    -- Fk'n rounding differences between Java and Lua broke simple getUsedDelta()/getUseDelta() here, so I added getDrainableUsesInt()
-    return instanceof(item, "DrainableComboItem") and item:isWaterSource() and item:getDrainableUsesInt() >= count
+    -- Fk'n rounding differences between Java and Lua broke simple getCurrentUsesFloat()/getUseDelta() here, so I added getDrainableUsesInt()
+    return instanceof(item, "DrainableComboItem") and item:isWaterSource() and item:getCurrentUses() >= count
 end
 
 function ISCraftingUI:transferItems()
@@ -164,12 +333,21 @@ function ISCraftingUI:getAvailableItemsType()
         end
         for x=0,items:size()-1 do
             local item = items:get(x)
+			local fluidType = nil;
+			local fluidTypeStr = nil;
+			if item:getFluidContainer() and (not item:getFluidContainer():isEmpty()) and (not item:getFluidContainer():isMixture()) then
+				fluidType = item:getFluidContainer():getPrimaryFluid();
+				fluidTypeStr = item:getFluidContainer():getPrimaryFluid():getFluidTypeString();
+			end
+
             if sourceItemTypes["Water"] and self:isWaterSource(item, source:getCount()) then
-                result["Water"] = (result["Water"] or 0) + item:getDrainableUsesInt()
+                result["Water"] = (result["Water"] or 0) + item:getCurrentUses();
+			elseif fluidType and sourceItemTypes["Fluid." .. fluidTypeStr] and self:isFluidSource(item, fluidType, source:getCount()) then
+					result["Fluid." .. fluidTypeStr] = (result["Fluid." .. fluidTypeStr] or 0) + item:getFluidContainer():getAmount();	
             elseif sourceItemTypes[item:getFullType()] then
                 local count = 1
                 if not source:isDestroy() and item:IsDrainable() then
-                    count = item:getDrainableUsesInt()
+                    count = item:getCurrentUses()
                 end
                 if not source:isDestroy() and instanceof(item, "Food") then
                     if source:getUse() > 0 then
@@ -208,7 +386,15 @@ function ISCraftingUI:getContainers()
         --        end
     end
     for i,v in ipairs(getPlayerLoot(self.playerNum).inventoryPane.inventoryPage.backpacks) do
-        self.containerList:add(v.inventory);
+        local parent = v.inventory:getParent()
+        if parent and instanceof(parent, "IsoThumpable") then
+            if not parent:isLockedToCharacter(getSpecificPlayer(self.playerNum)) then
+            --if not parent:isLockedByPadlock() or getSpecificPlayer(self.playerNum):getInventory():haveThisKeyId(parent:getKeyId()) then
+                self.containerList:add(v.inventory);
+            end
+        else
+            self.containerList:add(v.inventory);
+        end
     end
 end
 
@@ -237,21 +423,32 @@ function ISCraftingUI:drawNonEvolvedIngredient(y, item, alt)
 
     if item.item.multipleHeader then
         local r,g,b = 1,1,1
+		if item.item.color then
+			r,g,b = item.item.color:getRedFloat(), item.item.color:getGreenFloat(), item.item.color:getBlueFloat();
+		end
         if not item.item.available then
-            r,g,b = 0.54,0.54,0.54
+            r,g,b = r * 0.54, g * 0.54, b * 0.54;		
         end
         self:drawText(item.text, 12, y + 2, r, g, b, 1, self.font)
-        self:drawTexture(item.item.texture, 4, y + (item.height - item.item.texture:getHeight()) / 2 - 2, 1,1,1,1)
+        self:drawTexture(item.item.texture, 4, y + (item.height - item.item.texture:getHeight()) / 2 - 2, 1,r,g,b)
     else
         local r,g,b
         local r2,g2,b2,a2
         local typesAvailable = item.item.selectedItem.typesAvailable
-        if typesAvailable and (not typesAvailable[item.item.fullType] or typesAvailable[item.item.fullType] < item.item.count) then
-            r,g,b = 0.54,0.54,0.54;
-            r2,g2,b2,a2 = 1,1,1,0.3;
+        if typesAvailable and ((typesAvailable[item.item.fluidFullType] and typesAvailable[item.item.fluidFullType] < item.item.count) or (not typesAvailable[item.item.fluidFullType] and (not typesAvailable[item.item.fullType] or typesAvailable[item.item.fullType] < item.item.count))) then
+			if item.item.color then
+				r2,g2,b2,a2 = item.item.color:getRedFloat(),item.item.color:getGreenFloat(),item.item.color:getBlueFloat(),0.3;
+			else
+				r2,g2,b2,a2 = 1,1,1,0.3;
+			end
+			r,g,b = 0.54,0.54,0.54;
         else
+			if item.item.color then
+				r2,g2,b2,a2 = item.item.color:getRedFloat(),item.item.color:getGreenFloat(),item.item.color:getBlueFloat(),0.9;		
+			else
+	            r2,g2,b2,a2 = 1,1,1,0.9;		
+			end
             r,g,b = 1,1,1;
-            r2,g2,b2,a2 = 1,1,1,0.9;
         end
 
         local imgW = 20
@@ -335,12 +532,14 @@ function ISCraftingUI:refreshIngredientPanel()
             data.selectedItem = selectedItem
             data.name = item.name
             data.texture = item.texture
+			data.color = item.color
+			data.fluidFullType = item.fluidFullType
             data.fullType = item.fullType
             data.count = item.count
             data.recipe = selectedItem.recipe
             data.multiple = #source.items > 1
-            if selectedItem.typesAvailable and (not selectedItem.typesAvailable[item.fullType] or selectedItem.typesAvailable[item.fullType] < item.count) then
-                table.insert(unavailable, data)
+            if selectedItem.typesAvailable and (item.fluidFullType and (not selectedItem.typesAvailable[item.fluidFullType] or selectedItem.typesAvailable[item.fluidFullType] < item.count)) or (not item.fluidFullType and (not selectedItem.typesAvailable[item.fullType] or selectedItem.typesAvailable[item.fullType] < item.count)) then
+				table.insert(unavailable, data)
             else
                 table.insert(available, data)
             end
@@ -425,7 +624,7 @@ function ISCraftingUI:drawEvolvedIngredient(y, item, alt)
 
     if item.item.poison then
         if self.PoisonTexture then
-            local textW = getTextManager():MeasureStringX(self.font, item.text)
+            local textW =
             self:drawTexture(self.PoisonTexture, 6 + imgW + 4 + textW + 6, y + (self.itemheight - self.PoisonTexture:getHeight()) / 2, a, 1, 1, 1)
         end
     end
@@ -505,9 +704,10 @@ function ISCraftingUI:refreshIngredientList()
     -- check for every item category to add a "add random category" buttons in bottom of the ingredient list
     self.catList = {};
     for k,item in ipairs(available) do
-        self.ingredientListbox:addItem(item.name, item)
+        local newItem = self.ingredientListbox:addItem(item.name, item)
         local foodType = item.item:IsFood() and item.item:getFoodType()
         if foodType then
+            ISCraftingUI.addIngredientTooltip(newItem, item)
             if not self.catList[foodType] then self.catList[foodType] = {}; end
             table.insert(self.catList[foodType], item);
         end
@@ -525,6 +725,65 @@ function ISCraftingUI:refreshIngredientList()
         table.insert(self.catListButtons, button);
         y = y + 25;
     end
+end
+
+local function formatFoodValue(f)
+    return string.format("%+.2f", f)
+end
+
+ISCraftingUI.addIngredientTooltip = function(option, items)
+
+    local item = items.item;
+
+    local tooltipText = "";
+
+    -- Same format used in ISInventoryPaneContextMenu to create colored tooltips
+    local texts = {}
+    if item:getHungerChange() ~= 0.0 then
+        table.insert(texts, getText("Tooltip_food_Hunger"))
+        table.insert(texts, (-1 * math.floor(-1 * formatFoodValue(item:getHungerChange() * 100.0))))
+        table.insert(texts, true)
+
+        tooltipText = tooltipText .. getText("Tooltip_food_Hunger") .. ": ";
+        tooltipText = tooltipText .. (-1 * math.floor(-1 * formatFoodValue(item:getHungerChange() * 100.0))) .. "\n";
+    end
+    if item:getThirstChange() ~= 0.0 then
+        table.insert(texts, getText("Tooltip_food_Thirst"))
+        table.insert(texts, (-1 * math.floor(-1 * formatFoodValue(item:getThirstChange() * 100.0))))
+        table.insert(texts, item:getThirstChange() < 0)
+
+        tooltipText = tooltipText .. getText("Tooltip_food_Thirst") .. ": ";
+        tooltipText = tooltipText .. (-1 * math.floor(-1 * formatFoodValue(item:getThirstChange() * 100.0))) .. "\n";
+    end
+    if item:getUnhappyChange() ~= 0.0 then
+        table.insert(texts, getText("Tooltip_food_Unhappiness"))
+        table.insert(texts, (-1 * math.floor(-1 * formatFoodValue(item:getUnhappyChange() * 100.0))))
+        table.insert(texts, item:getUnhappyChange() < 0)
+
+        tooltipText = tooltipText .. getText("Tooltip_food_Unhappiness") .. ": ";
+        tooltipText = tooltipText .. (-1 * math.floor(-1 * formatFoodValue(item:getUnhappyChange() * 100.0)));
+    end
+
+    if #texts == 0 then return end
+    local font = ISToolTip.GetFont()
+    local maxLabelWidth = 0
+    for i=1,#texts,3 do
+        local label = texts[(i-1)+1]
+        maxLabelWidth = math.max(maxLabelWidth, getTextManager():MeasureStringX(font, label))
+    end
+    local tooltip = ISInventoryPaneContextMenu.addToolTip();
+    for i=1,#texts,3 do
+        local label = texts[(i-1)+1]
+        local value = texts[(i-1)+2]
+        local good = texts[(i-1)+3]
+        tooltip.description = string.format("%s <RGB:1,1,1> %s: <SETX:%d> <%s> %s <LINE> ", tooltip.description, label, maxLabelWidth + 10, good and "GREEN" or "RED", value)
+        tooltipText =  tooltip.description;
+    end
+
+    option.tooltip = tooltipText;
+
+    --return tooltip.description;
+
 end
 
 local function tableSize(table1)
@@ -549,6 +808,15 @@ local function areTablesDifferent(table1, table2)
     return false
 end
 
+function ISCraftingUI:prerender()
+	ISCollapsableWindow.prerender(self)
+	if self.isCollapsed then return end
+	self.ingredientIconPanel:setVisible(self.ingredientIconPanel:shouldBeVisible())
+	if self.drawJoypadFocus and not JoypadState.players[self.playerNum+1] then
+		self.drawJoypadFocus = false
+	end
+end
+
 function ISCraftingUI:render()
     ISCollapsableWindow.render(self);
     if self.isCollapsed then return end
@@ -560,13 +828,13 @@ function ISCraftingUI:render()
     self.javaObject:DrawTextureScaledColor(nil, 0, self:getHeight() - rh - ISCraftingUI.bottomInfoHeight, self:getWidth(), 1, self.borderColor.r, self.borderColor.g,self.borderColor.b,self.borderColor.a);
 
     local textWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CraftingUI_KnownRecipes", self.knownRecipes,self.totalRecipes))
-    self:drawText(getText("IGUI_CraftingUI_KnownRecipes", self.knownRecipes,self.totalRecipes), self.width - textWidth - 5, self.panel:getY() + self.panel.tabHeight + 8, 1,1,1,1, UIFont.Small);
+    self:drawText(getText("IGUI_CraftingUI_KnownRecipes", self.knownRecipes,self.totalRecipes), self.width - textWidth - UI_BORDER_SPACING - 1, self.panel:getY() + self.panel.tabHeight + UI_BORDER_SPACING+3, 1,1,1,1, UIFont.Small);
 
     local textY = self:getHeight() - rh - ISCraftingUI.bottomInfoHeight + (ISCraftingUI.bottomInfoHeight - ISCraftingUI.smallFontHeight) / 2
-    local buttonSize = 24
+    local buttonSize = 32
     local buttonSpace = 8
     local buttonY = self:getHeight() - rh - ISCraftingUI.bottomInfoHeight + (ISCraftingUI.bottomInfoHeight - buttonSize) / 2
-    local spacing = 32 
+    local spacing = 32
     if self.drawJoypadFocus and self.ingredientListbox:getIsVisible() then
         local width1 = buttonSize + buttonSpace + getTextManager():MeasureStringX(UIFont.Small, self.LabelAddIngredient)
         local width3 = buttonSize + buttonSpace + getTextManager():MeasureStringX(UIFont.Small, self.LabelFavorite)
@@ -625,14 +893,14 @@ function ISCraftingUI:render()
         self.keysRichText:render(noteX, noteY, self)
     end
 
-    local noteX = self:getWidth() / 3 + 10
-    local noteWidth = self.width - 10 - noteX
+    local noteX = self:getWidth() / (10/3) + UI_BORDER_SPACING + 1
+    local noteWidth = self.width - UI_BORDER_SPACING - noteX
     if noteWidth ~= self.noteRichText.width then
         self.noteRichText:setWidth(noteWidth)
         self.noteRichText.textDirty = true
     end
-    local noteY = self:getHeight() - rh - ISCraftingUI.bottomInfoHeight - self.noteRichText.height - 4
-    if noteY >= self.craftOneButton:getBottom() + 10 then
+    local noteY = self:getHeight() - rh - ISCraftingUI.bottomInfoHeight - self.noteRichText.height - UI_BORDER_SPACING
+    if noteY >= self.craftOneButton:getBottom() + UI_BORDER_SPACING then
         self.noteRichText:render(noteX, noteY, self)
     end
 
@@ -646,207 +914,18 @@ function ISCraftingUI:render()
         self.selectedRecipeItem = nil
         return
     end
-    
+
     -- draw recipes infos
-    local x = self:getWidth()/3 + 80;
-    local y = 110;
+    local x = self:getWidth() / (10/3) + UI_BORDER_SPACING + 1;
+    local y = self.panel:getY() + self.panel.tabHeight + BUTTON_HGT + UI_BORDER_SPACING*2;
     local selectedItem = recipeListBox.items[recipeListBox.selected].item;
-    if not selectedItem.evolved then
-        local now = getTimestampMs()
-        if not self.refreshTypesAvailableMS or (self.refreshTypesAvailableMS + 500 < now) then
-            self.refreshTypesAvailableMS = now
-            local typesAvailable = self:getAvailableItemsType();
-            self.needRefreshIngredientPanel = self.needRefreshIngredientPanel or areTablesDifferent(selectedItem.typesAvailable, typesAvailable);
-            selectedItem.typesAvailable = typesAvailable;
-        end
-        self:getContainers();
-        selectedItem.available = RecipeManager.IsRecipeValid(selectedItem.recipe, self.character, nil, self.containerList);
-        self.craftOneButton:setVisible(true);
-        self.craftAllButton:setVisible(true);
-        self.debugGiveIngredientsButton:setVisible(getDebug());
-    else
-        self.craftOneButton:setVisible(false);
-        self.craftAllButton:setVisible(false);
-        self.debugGiveIngredientsButton:setVisible(false);
-    end
-    -- render the right part, the craft information
-    self:drawRectBorder(x, y, 32 + 10, 32 + 10, 1.0, 1.0, 1.0, 1.0);
-    if selectedItem.texture then
-        if selectedItem.texture:getWidth() <= 32 and selectedItem.texture:getHeight() <= 32 then
-            local newX = (32 - selectedItem.texture:getWidthOrig()) / 2;
-            local newY = (32 - selectedItem.texture:getHeightOrig()) / 2;
-            self:drawTexture(selectedItem.texture,x+5 + newX,y+5 + newY,1,1,1,1);
-        else
-            self:drawTextureScaledAspect(selectedItem.texture,x+5,y+5,32,32,1,1,1,1);
-        end
-    end
-    self:drawText(selectedItem.recipe:getName() , x + 32 + 15, y, 1,1,1,1, UIFont.Large);
-    local name = selectedItem.evolved and selectedItem.resultName or selectedItem.itemName
-    self:drawText(name, x + 32 + 15, y + ISCraftingUI.largeFontHeight, 1,1,1,1, UIFont.Small);
-    y = y + math.max(45, ISCraftingUI.largeFontHeight + ISCraftingUI.smallFontHeight);
-    local imgW = 20;
-    local imgH = 20;
-    local imgPadX = 4;
-    local dyText = (imgH - ISCraftingUI.smallFontHeight) / 2;
-    if selectedItem.evolved and selectedItem.baseItem then
-        self:drawText(getText("IGUI_CraftUI_BaseItem"), x, y, 1,1,1,1, UIFont.Medium);
-        y = y + ISCraftingUI.mediumFontHeight;
-        local offset = 15;
-        local labelWidth = self.LabelDashWidth
-        local r,g,b = 1,1,1
-        local r2,g2,b2 = 1,1,1;
-        if not selectedItem.available then
-            r,g,b = 0.54,0.54,0.54
-            r2,g2,b2 = 1,0.3,0.3;
-        end
-        self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
-        self:drawTextureScaledAspect(selectedItem.baseItem:getTex(), x + offset + labelWidth + imgPadX, y, imgW, imgH, 1,r2,b2,g2);
-        self:drawText(selectedItem.baseItem:getDisplayName(), x + offset + labelWidth + imgPadX + imgW + imgPadX, y + dyText, r,g,b,1, UIFont.Small);
-        y = y + ISCraftingUI.smallFontHeight + 7;
 
-        if selectedItem.extraItems and #selectedItem.extraItems > 0 then
-            self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium);
-            y = y + ISCraftingUI.mediumFontHeight + 7;
-            self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
-            local newX = x + offset + labelWidth + imgPadX;
-            for g,h in ipairs(selectedItem.extraItems) do
-                self:drawTextureScaledAspect(h, newX, y, imgW, imgH, g2,r2,b2,g2);
-                newX = newX + 22;
-            end
-            if self.character and self.character:isKnownPoison(selectedItem.baseItem) and self.PoisonTexture then
-                self:drawTexture(self.PoisonTexture, newX, y + (imgH - self.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
-            end
-            y = y + ISCraftingUI.mediumFontHeight + 7;
-        elseif self.character and self.character:isKnownPoison(selectedItem.baseItem) and self.PoisonTexture then
-            self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium);
-            y = y + ISCraftingUI.mediumFontHeight + 7;
-            self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
-            local newX = x + offset + labelWidth + imgPadX;
-            self:drawTexture(self.PoisonTexture, newX, y + (imgH - self.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
-            y = y + ISCraftingUI.smallFontHeight + 7;
-        end
-    end
-    if not selectedItem.evolved then
-        self:drawText(getText("IGUI_CraftUI_RequiredItems"), x, y, 1,1,1,1, UIFont.Medium);
-    else
-        self:drawText(getText("IGUI_CraftUI_ItemsToAdd"), x, y, 1,1,1,1, UIFont.Medium);
-    end
-    y = y + ISCraftingUI.mediumFontHeight + 7;
-    if selectedItem.evolved then
-        self.ingredientListbox:setX(x + 15)
-        self.ingredientListbox:setY(y)
-        self.ingredientListbox:setHeight(self.ingredientListbox.itemheight * 8)
-        self.addIngredientButton:setX(self.ingredientListbox:getX());
-        self.addIngredientButton:setY(self.ingredientListbox:getY() + self.ingredientListbox:getHeight() + 10);
-        self.addIngredientButton:setVisible(true);
-        if selectedItem.available then
-            self.addIngredientButton.enable = true;
-        else
-            self.addIngredientButton.enable = false;
-        end
-        local item = self.ingredientListbox.items[self.ingredientListbox.selected]
-        if not item or not item.item.available then
-            self.addIngredientButton.enable = false;
-        else
-            self.addIngredientButton.enable = true;
-        end
-    else
-        self.ingredientPanel:setX(x + 15)
-        self.ingredientPanel:setY(y)
-        self.ingredientPanel:setHeight(self.ingredientListbox.itemheight * 8)
-        y = self.ingredientPanel:getBottom()
-    end
+    --[[
+        The rendering of selected item has been decoupled from the main render function
+        so that craft station UI can reuse the logic.
+    --]]
+    self:renderSelectedItem(x, y, selectedItem);
 
-    if selectedItem ~= self.selectedRecipeItem then
-        self:refreshIngredientPanel()
-        self:refreshIngredientList()
-        self.selectedRecipeItem = selectedItem
-    end
-    if selectedItem.evolved then
-        y = self.ingredientListbox:getBottom()
-    end
-
---    y = y + 10;
---    if selectedItem.multipleItems then
---        self.tickBox:setX(x);
---        self.tickBox:setY(y);
---        self.tickBox:setVisible(true);
---    else
---        self.tickBox:setVisible(false);
---    end
---    y = y + (#self.tickBox.options * 20);
---    y = y + 10;
-
-    y = y + 4;
-    if not selectedItem.evolved and (selectedItem.recipe:getRequiredSkillCount() > 0) then
-        self:drawText(getText("IGUI_CraftUI_RequiredSkills"), x, y, 1,1,1,1, UIFont.Medium);
-        y = y + ISCraftingUI.mediumFontHeight;
-        for i=1,selectedItem.recipe:getRequiredSkillCount() do
-            local skill = selectedItem.recipe:getRequiredSkill(i-1);
-            local perk = PerkFactory.getPerk(skill:getPerk());
-            local playerLevel = self.character and self.character:getPerkLevel(skill:getPerk()) or 0
-            local perkName = perk and perk:getName() or skill:getPerk():name()
-            local text = " - " .. perkName .. ": " .. tostring(playerLevel) .. " / " .. tostring(skill:getLevel());
-            local r,g,b = 1,1,1
-            if self.character and (playerLevel < skill:getLevel()) then
-                g = 0;
-                b = 0;
-            end
-            self:drawText(text, x + 15, y, r,g,b,1, UIFont.Small);
-            y = y + ISCraftingUI.smallFontHeight;
-        end
-        y = y + 4;
-    end
-    if not selectedItem.evolved and selectedItem.recipe:getNearItem() then
-        self:drawText(getText("IGUI_CraftUI_NearItem", selectedItem.recipe:getNearItem()), x, y, 1,1,1,1, UIFont.Medium);
-        y = y + ISCraftingUI.mediumFontHeight;
-    end
-    if not selectedItem.evolved then
-        self:drawText(getText("IGUI_CraftUI_RequiredTime", selectedItem.recipe:getTimeToMake()), x, y, 1,1,1,1, UIFont.Medium);
-        y = y + ISCraftingUI.mediumFontHeight;
-    end
-    if not selectedItem.evolved and selectedItem.recipe:getTooltip() then
-        y = y + 10
-        local tooltip = getText(selectedItem.recipe:getTooltip())
-        local numLines = 1
-        local p = string.find(tooltip, "\n")
-        while p do
-            numLines = numLines + 1
-            p = string.find(tooltip, "\n", p + 4)
-        end
-        self:drawText(tooltip, x, y, 1,1,1,1, UIFont.Small);
-        y = y + ISCraftingUI.smallFontHeight * numLines;
-    end
-    
-    if not selectedItem.evolved then
-        y = y + 10
-        self.craftOneButton:setX(x);
-        self.craftOneButton:setY(y);
-        self.craftOneButton.enable = selectedItem.available;
-
-        self.craftAllButton:setX(self.craftOneButton:getX() + 5 + self.craftOneButton:getWidth());
-        self.craftAllButton:setY(y);
-        self.craftAllButton.enable = selectedItem.available;
-        local title = getText("IGUI_CraftUI_ButtonCraftAll")
-        if self.craftAllButton.enable then
-            local count = RecipeManager.getNumberOfTimesRecipeCanBeDone(selectedItem.recipe, self.character, self.containerList, nil)
-            if count > 1 then
-                title = getText("IGUI_CraftUI_ButtonCraftAllCount", count)
-            elseif count == 1 then
-                self.craftAllButton.enable = false
-            end
-        end
-        if title ~= self.craftAllButton:getTitle() then
-            self.craftAllButton:setTitle(title)
-            self.craftAllButton:setWidthToTitle()
-        end
-
-        self.debugGiveIngredientsButton:setX(self.craftAllButton:getRight() + 5)
-        self.debugGiveIngredientsButton:setY(y);
-
-        y = y + self.craftAllButton:getHeight() + 10;
-    end
-    
     -- stop allowing crafting while driving
     self.craftOneButton.tooltip = nil;
     self.craftAllButton.tooltip = nil;
@@ -897,6 +976,235 @@ function ISCraftingUI:render()
     end
 end
 
+-- note: Logic of this function is reused by craft station UI.
+function ISCraftingUI:renderSelectedItem(x, y, selectedItem, _isWorkStation)
+    if not selectedItem.evolved then
+        local now = getTimestampMs()
+        if not self.refreshTypesAvailableMS or (self.refreshTypesAvailableMS + 500 < now) then
+            self.refreshTypesAvailableMS = now
+            local typesAvailable = self:getAvailableItemsType();
+            self.needRefreshIngredientPanel = self.needRefreshIngredientPanel or areTablesDifferent(selectedItem.typesAvailable, typesAvailable);
+            selectedItem.typesAvailable = typesAvailable;
+        end
+        self:getContainers();
+        selectedItem.available = RecipeManager.IsRecipeValid(selectedItem.recipe, self.character, nil, self.containerList);
+        self.craftOneButton:setVisible(true);
+        self.craftAllButton:setVisible(true);
+        self.debugGiveIngredientsButton:setVisible(getDebug());
+    else
+        self.craftOneButton:setVisible(false);
+        self.craftAllButton:setVisible(false);
+        self.debugGiveIngredientsButton:setVisible(false);
+    end
+    -- render the right part, the craft information
+    self:drawRectBorder(x, y, 32 + 10, 32 + 10, 1.0, 1.0, 1.0, 1.0);
+    if selectedItem.texture then
+        if selectedItem.texture:getWidth() <= 32 and selectedItem.texture:getHeight() <= 32 then
+            local newX = (32 - selectedItem.texture:getWidthOrig()) / 2;
+            local newY = (32 - selectedItem.texture:getHeightOrig()) / 2;
+            self:drawTexture(selectedItem.texture,x+5 + newX,y+5 + newY,1,1,1,1);
+        else
+            self:drawTextureScaledAspect(selectedItem.texture,x+5,y+5,32,32,1,1,1,1);
+        end
+    end
+    self:drawText(selectedItem.recipe:getName() , x + 42+UI_BORDER_SPACING, y, 1,1,1,1, UIFont.Large);
+    local name = selectedItem.evolved and selectedItem.resultName or selectedItem.itemName
+    self:drawText(name, x + 42+UI_BORDER_SPACING, y + ISCraftingUI.largeFontHeight, 1,1,1,1, UIFont.Small);
+    y = y + math.max(45, ISCraftingUI.largeFontHeight + ISCraftingUI.smallFontHeight);
+    local imgW = 20;
+    local imgH = 20;
+    local imgPadX = 4;
+    local dyText = (imgH - ISCraftingUI.smallFontHeight) / 2;
+    if selectedItem.evolved and selectedItem.baseItem then
+        self:drawText(getText("IGUI_CraftUI_BaseItem"), x, y, 1,1,1,1, UIFont.Medium);
+        y = y + ISCraftingUI.mediumFontHeight;
+        local offset = 7+UI_BORDER_SPACING;
+        local labelWidth = self.LabelDashWidth
+        local r,g,b = 1,1,1
+        local r2,g2,b2 = 1,1,1;
+        if not selectedItem.available then
+            r,g,b = 0.54,0.54,0.54
+            r2,g2,b2 = 1,0.3,0.3;
+        end
+        self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
+
+        self:drawTextureScaledAspect(selectedItem.baseItem:getNormalTexture(), x + offset + labelWidth + imgPadX, y, imgW, imgH, 1,r2,b2,g2);
+        self:drawText(selectedItem.baseItem:getDisplayName(), x + offset + labelWidth + imgPadX + imgW + imgPadX, y + dyText, r,g,b,1, UIFont.Small);
+
+        y = y + ISCraftingUI.smallFontHeight + UI_BORDER_SPACING;
+
+        if self.ingredientIconPanel:isVisible() then
+            if self.ingredientIconPanel.x ~= x then
+                self.ingredientIconPanel:setX(x)
+            end
+            if self.ingredientIconPanel.y ~= y then
+                self.ingredientIconPanel:setY(y)
+            end
+            y = self.ingredientIconPanel:getBottom()
+        end
+--[[
+        if selectedItem.extraItems and #selectedItem.extraItems > 0 then
+            self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium);
+            y = y + ISCraftingUI.mediumFontHeight + 7;
+            self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
+            local newX = x + offset + labelWidth + imgPadX;
+            for g,h in ipairs(selectedItem.extraItems) do
+                self:drawTextureScaledAspect(h, newX, y, imgW, imgH, g2,r2,b2,g2);
+                newX = newX + 22;
+            end
+            if self.character and self.character:isKnownPoison(selectedItem.baseItem) and self.PoisonTexture then
+                self:drawTexture(self.PoisonTexture, newX, y + (imgH - self.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
+            end
+            y = y + ISCraftingUI.mediumFontHeight + 7;
+        elseif self.character and self.character:isKnownPoison(selectedItem.baseItem) and self.PoisonTexture then
+            self:drawText(getText("IGUI_CraftUI_AlreadyContainsItems"), x, y, 1,1,1,1, UIFont.Medium);
+            y = y + ISCraftingUI.mediumFontHeight + 7;
+            self:drawText(self.LabelDash, x + offset, y + dyText, r,g,b,1, UIFont.Small);
+            local newX = x + offset + labelWidth + imgPadX;
+            self:drawTexture(self.PoisonTexture, newX, y + (imgH - self.PoisonTexture:getHeight()) / 2, 1,r2,g2,b2)
+            y = y + ISCraftingUI.smallFontHeight + 7;
+        end
+--]]
+    end
+    if not selectedItem.evolved then
+        self:drawText(getText("IGUI_CraftUI_RequiredItems"), x, y, 1,1,1,1, UIFont.Medium);
+    else
+        self:drawText(getText("IGUI_CraftUI_ItemsToAdd"), x, y, 1,1,1,1, UIFont.Medium);
+    end
+    y = y + ISCraftingUI.mediumFontHeight + UI_BORDER_SPACING;
+    if selectedItem.evolved then
+        self.ingredientListbox:setX(x)
+        self.ingredientListbox:setY(y)
+        self.ingredientListbox:setHeight(self.ingredientListbox.itemheight * 8)
+        self.addIngredientButton:setX(self.ingredientListbox:getX());
+        self.addIngredientButton:setY(self.ingredientListbox:getY() + self.ingredientListbox:getHeight() + 10);
+        self.addIngredientButton:setVisible(true);
+        if selectedItem.available then
+            self.addIngredientButton.enable = true;
+        else
+            self.addIngredientButton.enable = false;
+        end
+        local item = self.ingredientListbox.items[self.ingredientListbox.selected]
+        if not item or not item.item.available then
+            self.addIngredientButton.enable = false;
+        else
+            self.addIngredientButton.enable = true;
+        end
+    else
+        self.ingredientPanel:setX(x)
+        self.ingredientPanel:setY(y)
+        self.ingredientPanel:setHeight(self.ingredientListbox.itemheight * 8)
+        y = self.ingredientPanel:getBottom()
+    end
+
+    if selectedItem ~= self.selectedRecipeItem then
+        self:refreshIngredientPanel()
+        self:refreshIngredientList()
+        self.selectedRecipeItem = selectedItem
+    end
+    if selectedItem.evolved then
+        y = self.ingredientListbox:getBottom()
+    end
+
+--    y = y + 10;
+--    if selectedItem.multipleItems then
+--        self.tickBox:setX(x);
+--        self.tickBox:setY(y);
+--        self.tickBox:setVisible(true);
+--    else
+--        self.tickBox:setVisible(false);
+--    end
+--    y = y + (#self.tickBox.options * 20);
+--    y = y + 10;
+
+    y = y + 4;
+    if not selectedItem.evolved and (selectedItem.recipe:getRequiredSkillCount() > 0) then
+        self:drawText(getText("IGUI_CraftUI_RequiredSkills"), x, y, 1,1,1,1, UIFont.Medium);
+        y = y + ISCraftingUI.mediumFontHeight;
+        for i=1,selectedItem.recipe:getRequiredSkillCount() do
+            local skill = selectedItem.recipe:getRequiredSkill(i-1);
+            local perk = PerkFactory.getPerk(skill:getPerk());
+            local playerLevel = self.character and self.character:getPerkLevel(skill:getPerk()) or 0
+            local perkName = perk and perk:getName() or skill:getPerk():name()
+            local text = " - " .. perkName .. ": " .. tostring(playerLevel) .. " / " .. tostring(skill:getLevel());
+            local r,g,b = 1,1,1
+            if self.character and (playerLevel < skill:getLevel()) then
+                g = 0;
+                b = 0;
+            end
+            self:drawText(text, x + 15, y, r,g,b,1, UIFont.Small);
+            y = y + ISCraftingUI.smallFontHeight;
+        end
+        y = y + 4;
+    end
+    if not selectedItem.evolved and selectedItem.recipe:getRequiredNearObject() then
+        self:drawText(getText("IGUI_CraftUI_NearItem", selectedItem.recipe:getRequiredNearObject()), x, y, 1,1,1,1, UIFont.Medium);
+        y = y + ISCraftingUI.mediumFontHeight;
+    end
+    if not selectedItem.evolved then
+        if _isWorkStation then
+            if selectedItem.recipe:isRequiresWorkstation() then
+                local time = selectedItem.recipe:getTimeToMake();
+                time = time * selectedItem.recipe:getStationMultiplier();
+                local txt = getText("IGUI_CraftUI_RequiredTime", time).." (workstation)";
+                self:drawText(txt, x, y, 0.2,0.8,0.2,1, UIFont.Medium);
+            else
+                self:drawText(getText("IGUI_CraftUI_RequiredTime", selectedItem.recipe:getTimeToMake()), x, y, 1,1,1,1, UIFont.Medium);
+            end
+        else
+            if selectedItem.recipe:isRequiresWorkstation() then
+                local txt = getText("IGUI_CraftUI_RequiredTime", selectedItem.recipe:getTimeToMake()).." (no workstation)";
+                self:drawText(txt, x, y, 0.8,0.2,0.2,1, UIFont.Medium);
+            else
+                self:drawText(getText("IGUI_CraftUI_RequiredTime", selectedItem.recipe:getTimeToMake()), x, y, 1,1,1,1, UIFont.Medium);
+            end
+        end
+        --self:drawText(getText("IGUI_CraftUI_RequiredTime", selectedItem.recipe:getTimeToMake()), x, y, 1,1,1,1, UIFont.Medium);
+        y = y + ISCraftingUI.mediumFontHeight;
+    end
+    if not selectedItem.evolved and selectedItem.recipe:getTooltip() then
+        y = y + 10
+        local tooltip = getText(selectedItem.recipe:getTooltip())
+        local numLines = 1
+        local p = string.find(tooltip, "\n")
+        while p do
+            numLines = numLines + 1
+            p = string.find(tooltip, "\n", p + 4)
+        end
+        self:drawText(tooltip, x, y, 1,1,1,1, UIFont.Small);
+        y = y + ISCraftingUI.smallFontHeight * numLines;
+    end
+    
+    if not selectedItem.evolved then
+        y = y + 10
+        self.craftOneButton:setX(x);
+        self.craftOneButton:setY(y);
+        self.craftOneButton.enable = selectedItem.available;
+
+        self.craftAllButton:setX(self.craftOneButton:getX() + UI_BORDER_SPACING + self.craftOneButton:getWidth());
+        self.craftAllButton:setY(y);
+        self.craftAllButton.enable = selectedItem.available;
+        local title = getText("IGUI_CraftUI_ButtonCraftAll")
+        if self.craftAllButton.enable then
+            local count = RecipeManager.getNumberOfTimesRecipeCanBeDone(selectedItem.recipe, self.character, self.containerList, nil)
+            if count > 1 and not (selectedItem.recipe:getName() == "Purify Water" or selectedItem.recipe:isOnlyOne() )then
+                title = getText("IGUI_CraftUI_ButtonCraftAllCount", count)
+            elseif count == 1 or  (selectedItem.recipe:getName() == "Purify Water"  or selectedItem.recipe:isOnlyOne())then
+                self.craftAllButton.enable = false
+            end
+        end
+        if title ~= self.craftAllButton:getTitle() then
+            self.craftAllButton:setTitle(title)
+            self.craftAllButton:setWidthToTitle()
+        end
+
+        self.debugGiveIngredientsButton:setX(self.craftAllButton:getRight() + UI_BORDER_SPACING)
+        self.debugGiveIngredientsButton:setY(y);
+
+        y = y + self.craftAllButton:getHeight() + 10;
+    end
+end
+
 function ISCraftingUI:new (x, y, width, height, character)
     local o = {};
     if x == 0 and y == 0 then
@@ -904,8 +1212,7 @@ function ISCraftingUI:new (x, y, width, height, character)
        y = (getCore():getScreenHeight() / 2) - (height / 2);
     end
     o = ISCollapsableWindow:new(x, y, width, height);
-    o.minimumWidth = 800
-    o.minimumHeight = 600
+
     setmetatable(o, self);
     if getCore():getKey("Forward") ~= 44 then -- hack, seriously, need a way to detect qwert/azerty keyboard :(
         ISCraftingUI.qwertyConfiguration = false;
@@ -927,11 +1234,25 @@ function ISCraftingUI:new (x, y, width, height, character)
         getKeyName(ISCraftingUI.upArrow), getKeyName(ISCraftingUI.downArrow),
         getKeyName(ISCraftingUI.leftCategory), getKeyName(ISCraftingUI.rightCategory));
 
+    -- get the length of the longest recipe name
+    local allRecipes = getAllRecipes();
+    local recipeWidth = 0;
+    for i=0,allRecipes:size()-1 do
+        recipeWidth = math.max(recipeWidth, getTextManager():MeasureStringX(UIFont.Large, allRecipes:get(i):getName()))
+    end
+    -- add that length to the extra width that's guaranteed
+    local rightSide = UI_BORDER_SPACING*3 + 42 + recipeWidth + 2
+    -- the recipe list on the left side is 3/10 of the total width, so divide the right side width by 7, and multiply by 3 to get the left side width
+    local leftSide = (rightSide / 7) * 3
+    -- now take the max length between the above width, and the width of the text at the bottom of the window
+    o.minimumWidth = math.max(getTextManager():MeasureStringX(UIFont.Small, o.bottomInfoText1)+UI_BORDER_SPACING*2+2, leftSide+rightSide+1)
+    o:setWidth(o.minimumWidth)
+    o.minimumHeight = 600+(getCore():getOptionFontSizeReal()-1)*60
     o.title = getText("IGUI_CraftUI_Title");
     self.__index = self;
     o.character = character;
     o.playerNum = character and character:getPlayerNum() or -1
-    o:setResizable(true);
+    o:setResizable(false);
     o.lineH = 10;
     o.fgBar = {r=0, g=0.6, b=0, a=0.7 }
     o.craftInProgress = false;
@@ -956,6 +1277,7 @@ function ISCraftingUI:createChildren()
     local rh = self.resizable and self:resizeWidgetHeight() or 0
     self.panel = ISTabPanel:new(0, th, self.width, self.height-th-rh-ISCraftingUI.bottomInfoHeight);
     self.panel:initialise();
+    self.panel.tabPadX = UI_BORDER_SPACING;
     self.panel:setAnchorRight(true)
     self.panel:setAnchorBottom(true)
     self.panel.borderColor = { r = 0, g = 0, b = 0, a = 0};
@@ -988,22 +1310,22 @@ function ISCraftingUI:createChildren()
        table.insert(self.categories, cat1);
     end
 
-    self.craftOneButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50,25,getText("IGUI_CraftUI_ButtonCraftOne"),self, ISCraftingUI.craft);
+    self.craftOneButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50, BUTTON_HGT, getText("IGUI_CraftUI_ButtonCraftOne"), self, ISCraftingUI.craft);
     self.craftOneButton:initialise()
     self:addChild(self.craftOneButton);
 
-    self.craftAllButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50,25,getText("IGUI_CraftUI_ButtonCraftAll"),self, ISCraftingUI.craftAll);
+    self.craftAllButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50, BUTTON_HGT, getText("IGUI_CraftUI_ButtonCraftAll"), self, ISCraftingUI.craftAll);
     self.craftAllButton:initialise()
     self:addChild(self.craftAllButton);
 
-    self.debugGiveIngredientsButton = ISButton:new(0, 0, 50, 25, "DBG: Give Ingredients", self, ISCraftingUI.debugGiveIngredients);
+    self.debugGiveIngredientsButton = ISButton:new(0, 0, 50, BUTTON_HGT, "DBG: Give Ingredients", self, ISCraftingUI.debugGiveIngredients);
     self.debugGiveIngredientsButton:initialise();
     self:addChild(self.debugGiveIngredientsButton);
 
     self.taskLabel = ISLabel:new(4,5,19,"",1,1,1,1,UIFont.Small, true);
     self:addChild(self.taskLabel);
 
-    self.addIngredientButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50,25,getText("IGUI_CraftUI_ButtonAddIngredient"),self, ISCraftingUI.onAddIngredient);
+    self.addIngredientButton = ISButton:new(0, self.height-ISCraftingUI.bottomInfoHeight-20-15, 50,BUTTON_HGT, getText("IGUI_CraftUI_ButtonAddIngredient"), self, ISCraftingUI.onAddIngredient);
     self.addIngredientButton:initialise()
     self:addChild(self.addIngredientButton);
     self.addIngredientButton:setVisible(false);
@@ -1041,6 +1363,9 @@ function ISCraftingUI:createChildren()
     self:addChild(self.ingredientListbox);
     self.ingredientListbox.PoisonTexture = self.PoisonTexture
 
+	self.ingredientIconPanel = ISCraftingIngredientIconPanel:new(self)
+	self:addChild(self.ingredientIconPanel)
+
 	self.noteRichText = ISRichTextLayout:new(self.width)
 	self.noteRichText:setMargins(0, 0, 0, 0)
 	self.noteRichText:setText(getText("IGUI_CraftUI_Note"))
@@ -1067,6 +1392,7 @@ function ISCraftingUI:populateRecipesList()
         local newItem = {};
         local recipe = allRecipes:get(i);
         if not recipe:isHidden() and (not recipe:needToBeLearn() or (self.character and self.character:isRecipeKnown(recipe))) then
+
             if recipe:getCategory() then
                 newItem.category = recipe:getCategory();
             else
@@ -1090,9 +1416,9 @@ function ISCraftingUI:populateRecipesList()
             if newItem.favorite then
                 table.insert(self.recipesList[getText("IGUI_CraftCategory_Favorite")], newItem);
             end
-            local resultItem = self:GetItemInstance(recipe:getResult():getFullType());
+            local resultItem = getItem(recipe:getResult():getFullType());
             if resultItem then
-                newItem.texture = resultItem:getTex();
+                newItem.texture = resultItem:getNormalTexture();
                 newItem.itemName = resultItem:getDisplayName();
                 if recipe:getResult():getCount() > 1 then
                    newItem.itemName = (recipe:getResult():getCount() * resultItem:getCount()) .. " " .. newItem.itemName;
@@ -1106,24 +1432,28 @@ function ISCraftingUI:populateRecipesList()
                 for k=1,source:getItems():size() do
                     local sourceFullType = source:getItems():get(k-1)
                     local item = nil
-                    local itemName = nil
-                    if sourceFullType == "Water" then
-                        item = self:GetItemInstance("Base.WaterDrop");
+                    if luautils.stringStarts(sourceFullType, "Fluid.") then
+						-- Fluids don't have specific items, use the water drop item instead
+                        item = getItem("Base.WaterDrop");
                     elseif luautils.stringStarts(sourceFullType, "[") then
                         -- a Lua test function
-                        item = self:GetItemInstance("Base.WristWatch_Right_DigitalBlack");
+                        item = getItem("Base.WristWatch_Right_DigitalBlack");
                     else
-                        item = self:GetItemInstance(sourceFullType);
+                        item = getItem(sourceFullType);
                     end
                     if item then
                         local itemInList = {};
                         itemInList.count = source:getCount();
-                        itemInList.texture = item:getTex();
-                        if sourceFullType == "Water" then
-                            if itemInList.count == 1 then
-                                itemInList.name = getText("IGUI_CraftUI_CountOneUnit", getText("ContextMenu_WaterName"))
+                        itemInList.texture = item:getNormalTexture();
+                        if luautils.stringStarts(sourceFullType, "Fluid.") then
+							itemInList.fluidFullType = sourceFullType;
+							local fluidType = luautils.split(sourceFullType, ".")[2];
+							local fluid = Fluid.Get(fluidType);
+							itemInList.color = fluid:getColor(); --We need the fluid's color so we can display the water drop icon properly later
+                            if itemInList.count <= 1 then
+                                itemInList.name = getText("IGUI_CraftUI_CountOneLitre", getText("Fluid_Name_" .. fluidType), (math.floor(itemInList.count * 1000) / 1000))
                             else
-                                itemInList.name = getText("IGUI_CraftUI_CountUnits", getText("ContextMenu_WaterName"), itemInList.count)
+                                itemInList.name = getText("IGUI_CraftUI_CountLitres", getText("Fluid_Name_" .. fluidType), (math.floor(itemInList.count * 1000) / 1000))
                             end
                             if recipe:getHeat() < 0 then
                                 itemInList.name = getText("IGUI_FoodTemperatureNaming", getText("IGUI_Temp_Hot"), itemInList.name);
@@ -1132,7 +1462,7 @@ function ISCraftingUI:populateRecipesList()
                             end;
                         elseif source:getItems():size() > 1 then -- no units
                             itemInList.name = item:getDisplayName()
-                        elseif not source:isDestroy() and item:IsDrainable() then
+                        elseif not source:isDestroy() and item:getType() == "Drainable" then
                             if itemInList.count == 1 then
                                 itemInList.name = getText("IGUI_CraftUI_CountOneUnit", item:getDisplayName())
                             else
@@ -1155,7 +1485,7 @@ function ISCraftingUI:populateRecipesList()
                         else
                             itemInList.name = item:getDisplayName()
                         end
-                        itemInList.fullType = item:getFullType()
+                        itemInList.fullType = item:getFullName()
                         if sourceFullType == "Water" then
                             itemInList.fullType = "Water"
                         end
@@ -1189,31 +1519,31 @@ function ISCraftingUI:populateRecipesList()
                         if not doneRecipes[evo:getName() .. baseItem:getFullType()] then
                             doneRecipes[evo:getName() .. baseItem:getFullType()] = true;
                             doneItems = {};
-                            newRecipe.baseItem = baseItem;
-                            local resultItem = self:GetItemInstance(evo:getFullResultItem());
+                            newRecipe.baseItem = baseItem:getScriptItem();
+                            local resultItem = getItem(evo:getFullResultItem());
 							if resultItem then 
-								newRecipe.texture = resultItem:getTex(); 
+								newRecipe.texture = resultItem:getNormalTexture();
 								newRecipe.resultName = resultItem:getDisplayName();
 								newRecipe.items = {};
 								newRecipe.available = false;
 								newRecipe.itemName = evo:getName();
 								if baseItem:getType() ~= evo:getBaseItem() then
-									newRecipe.customRecipeName = getText("IGUI_CraftUI_FromBaseItem", baseItem:getDisplayName());
+									newRecipe.customRecipeName = getText("IGUI_CraftUI_FromBaseItem", baseItem:getScriptItem():getDisplayName());
 									-- add the textures of our extra items to display them
 									newRecipe.extraItems = {};
-									if baseItem:getExtraItems() then
+									if baseItem:haveExtraItems() then
 										for u=0,baseItem:getExtraItems():size()-1 do
-										   local extraItem = self:GetItemInstance(baseItem:getExtraItems():get(u));
+										   local extraItem = getItem(baseItem:getExtraItems():get(u));
 											if extraItem then
-												table.insert(newRecipe.extraItems, extraItem:getTex());
+												table.insert(newRecipe.extraItems, extraItem);
 											end
 										end
 									end
 									if instanceof(baseItem, "Food") and baseItem:getSpices() then
 										for u=0,baseItem:getSpices():size()-1 do
-										   local extraItem = self:GetItemInstance(baseItem:getSpices():get(u));
+										   local extraItem = getItem(baseItem:getSpices():get(u));
 											if extraItem then
-												table.insert(newRecipe.extraItems, extraItem:getTex());
+												table.insert(newRecipe.extraItems, extraItem);
 											end
 										end
 									end
@@ -1240,7 +1570,9 @@ function ISCraftingUI:populateRecipesList()
 									local modData = self.character:getModData();
 									newRecipe.favorite = modData[self:getFavoriteModDataString(evo)] or false;
 								end
-								table.insert(self.recipesList["Cooking"], newRecipe);
+								if self.recipesList["Cooking"] then
+									table.insert(self.recipesList["Cooking"], newRecipe);
+								end
 								table.insert(self.allRecipesList, newRecipe);
 								if newRecipe.favorite then
 									table.insert(self.recipesList[getText("IGUI_CraftCategory_Favorite")], newRecipe);
@@ -1255,51 +1587,58 @@ function ISCraftingUI:populateRecipesList()
 
     -- then we look for missing recipes
     local allRecipes = RecipeManager.getAllEvolvedRecipes();
+--     if not (self.recipesList["Cooking"]) then
+--         self.recipesList["Cooking"] = {}
+--     end
     for i=0, allRecipes:size()-1 do
         local evolvedRecipe = allRecipes:get(i);
         local found = false;
         if not evolvedRecipe:isHidden() then
-            for x,v in ipairs(self.recipesList["Cooking"]) do
-                if v.evolved and v.recipe == evolvedRecipe then -- check possible missing items
-                    local possibleItems = evolvedRecipe:getPossibleItems();
-                    for k=0, possibleItems:size() -1 do
-                        local possibleItem = possibleItems:get(k);
-                        local found2 = false;
-                        for g,h in ipairs(v.items) do
-                            if h.fullType == possibleItem:getFullType() then
-                                found2 = true;
-                                break;
+
+            if (self.recipesList["Cooking"]) then
+                for x,v in ipairs(self.recipesList["Cooking"]) do
+                    if v.evolved and v.recipe == evolvedRecipe then -- check possible missing items
+                        local possibleItems = evolvedRecipe:getPossibleItems();
+                        for k=0, possibleItems:size() -1 do
+                            local possibleItem = possibleItems:get(k);
+                            local found2 = false;
+                            for g,h in ipairs(v.items) do
+                                if h.fullType == possibleItem:getFullType() then
+                                    found2 = true;
+                                    break;
+                                end
+                            end
+                            if not found2 then
+                                local newItem = getItem(possibleItem:getFullType());
+                                itemInList.texture = newItem:getNormalTexture();
+                                itemInList.name = newItem:getDisplayName();
+                                itemInList.available = false;
+                                table.insert(v.items, itemInList);
+                                itemInList = {};
                             end
                         end
-                        if not found2 then
-                            local newItem = self:GetItemInstance(possibleItem:getFullType());
-                            itemInList.texture = newItem:getTex();
-                            itemInList.name = newItem:getDisplayName();
-                            itemInList.available = false;
-                            table.insert(v.items, itemInList);
-                            itemInList = {};
-                        end
+                        found = true;
                     end
-                    found = true;
                 end
             end
+
             if not found then -- recipe not in list, we add it with all the missing items
                 newRecipe = {};
-                local resultItem = self:GetItemInstance(evolvedRecipe:getFullResultItem());
+                local resultItem = getItem(evolvedRecipe:getFullResultItem());
                 if resultItem then
-                    newRecipe.texture = resultItem:getTex();
+                    newRecipe.texture = resultItem:getNormalTexture();
                     newRecipe.resultName = resultItem:getDisplayName();
                     newRecipe.items = {};
                     newRecipe.available = false;
                     newRecipe.itemName = evolvedRecipe:getName();
                     newRecipe.recipe = evolvedRecipe;
                     newRecipe.evolved = true;
-                    newRecipe.baseItem = self:GetItemInstance(evolvedRecipe:getModule():getName() .. "." .. evolvedRecipe:getBaseItem());
+                    newRecipe.baseItem = getItem(evolvedRecipe:getModule():getName() .. "." .. evolvedRecipe:getBaseItem());
                     local possibleItems = evolvedRecipe:getPossibleItems();
                     for k=0, possibleItems:size() -1 do
                             local possibleItem = possibleItems:get(k);
-                            local newItem = self:GetItemInstance(possibleItem:getFullType());
-                            itemInList.texture = newItem:getTex();
+                            local newItem = getItem(possibleItem:getFullType());
+                            itemInList.texture = newItem:getNormalTexture();
                             itemInList.name = newItem:getDisplayName();
                             itemInList.available = false;
                             table.insert(newRecipe.items, itemInList);
@@ -1309,9 +1648,11 @@ function ISCraftingUI:populateRecipesList()
                             local modData = self.character:getModData();
                             newRecipe.favorite = modData[self:getFavoriteModDataString(evolvedRecipe)] or false;
                     end
-                    table.insert(self.recipesList["Cooking"], newRecipe);
+                    if self.recipesList["Cooking"] then
+                        table.insert(self.recipesList["Cooking"], newRecipe);
+                    end
                     if newRecipe.favorite then
-                            table.insert(self.recipesList[getText("IGUI_CraftCategory_Favorite")], newRecipe);
+                       table.insert(self.recipesList[getText("IGUI_CraftCategory_Favorite")], newRecipe);
                     end
                 else
                     print('ISCraftingUI: no such result item '..tostring(evolvedRecipe:getFullResultItem()))
@@ -1378,14 +1719,16 @@ ISCraftingUI.onPressKey = function(key)
     if not MainScreen.instance or not MainScreen.instance.inGame or MainScreen.instance:getIsVisible() then
         return
     end
-    if key == getCore():getKey("Crafting UI") then
-        ISCraftingUI.toggleCraftingUI();
+    if getCore():isKey("Crafting UI", key) then
+        -- since old crafting is deprecated, we open the new crafting interface instead
+        ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
+--         ISCraftingUI.toggleCraftingUI();
     end
 end
 
 function ISCraftingUI:isKeyConsumed(key)
     return key == Keyboard.KEY_ESCAPE or
-            key == getCore():getKey("Crafting UI") or
+            getCore():isKey("Crafting UI", key) or
             key == ISCraftingUI.upArrow or
             key == ISCraftingUI.downArrow or
             key == ISCraftingUI.leftCategory or
@@ -1398,14 +1741,14 @@ end
 function ISCraftingUI:onKeyRelease(key)
     local ui = self
     if not ui.panel or not ui.panel.activeView then return; end
-    if key == getCore():getKey("Crafting UI") then
+    if getCore():isKey("Crafting UI", key) then
         ISCraftingUI.toggleCraftingUI();
         return;
     end
-    if key == Keyboard.KEY_ESCAPE then
-        ISCraftingUI.toggleCraftingUI();
-        return;
-    end
+--     if key == Keyboard.KEY_ESCAPE then
+--         ISCraftingUI.toggleCraftingUI();
+--         return;
+--     end
     local self = ui.panel.activeView.view.recipes;
     if key == ISCraftingUI.upArrow then
         self.selected = self.selected - 1;
@@ -1485,7 +1828,7 @@ end
 --[[
 -- just enable/disable the crafting UI
 ISCraftingUI.onKeyPressed = function (key)
-    if key == getCore():getKey("Crafting UI") then
+    if getCore():isKey("Crafting UI", key) then
         if not ISCraftingUI.instance then
             ISCraftingUI.instance = ISCraftingUI:new(0,0,800,600,getPlayer());
             ISCraftingUI.instance:initialise();
@@ -1542,22 +1885,27 @@ function ISCraftingUI:addItemInEvolvedRecipe(button)
             ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, button.item, button.item:getContainer(), self.character:getInventory(), nil));
             table.insert(returnToContainer, button.item)
         end
-        if not self.character:getInventory():contains(button.baseItem) then -- take the base item if it's not in our inventory
-            ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, button.baseItem, button.baseItem:getContainer(), self.character:getInventory(), nil));
-            table.insert(returnToContainer, button.baseItem)
+
+        local baseItem = button.baseItem
+        if not instanceof(baseItem, "InventoryItem") then
+            baseItem = self.character:getInventory():getItemFromType(button.baseItem:getFullName(), true, true);
         end
-        ISTimedActionQueue.add(ISAddItemInRecipe:new(self.character, button.recipe, button.baseItem, button.item, (70 - self.character:getPerkLevel(Perks.Cooking))));
+        if not self.character:getInventory():contains(baseItem) then -- take the base item if it's not in our inventory
+            ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, baseItem, baseItem:getContainer(), self.character:getInventory(), nil));
+            table.insert(returnToContainer, baseItem)
+        end
+        ISTimedActionQueue.add(ISAddItemInRecipe:new(self.character, button.recipe, baseItem, button.item));
         self.craftInProgress = true;
         ISCraftingUI.ReturnItemsToOriginalContainer(self.character, returnToContainer);
 --    end
     self:refresh();
 end
 
-function ISCraftingUI:craftAll()
-    self:craft(nil, true);
+function ISCraftingUI:craftAll(_isWorkStation)
+    self:craft(nil, true, _isWorkStation);
 end
 
-function ISCraftingUI:craft(button, all)
+function ISCraftingUI:craft(button, all, _isWorkStation)
     self.craftInProgress = false
     local recipeListBox = self:getRecipeListBox()
     local selectedItem = recipeListBox.items[recipeListBox.selected].item;
@@ -1592,7 +1940,11 @@ function ISCraftingUI:craft(button, all)
         end
     end
 
-    local action = ISCraftAction:new(self.character, itemsUsed[1], selectedItem.recipe:getTimeToMake(), selectedItem.recipe, container, self.containerList)
+    local time = selectedItem.recipe:getTimeToMake();
+    if _isWorkStation and selectedItem.recipe:isRequiresWorkstation() then
+        time = time * selectedItem.recipe:getStationMultiplier();
+    end
+    local action = ISCraftAction:new(self.character, itemsUsed[1], selectedItem.recipe, container, self.containerList)
     if all then
         action:setOnComplete(ISCraftingUI.onCraftComplete, self, action, selectedItem.recipe, container, self.containerList)
     else
@@ -1624,13 +1976,16 @@ function ISCraftingUI:onCraftComplete(completedAction, recipe, container, contai
             end
         end
     end
-    local action = ISCraftAction:new(self.character, items:get(0), recipe:getTimeToMake(), recipe, container, containers)
+    local action = ISCraftAction:new(self.character, items:get(0), recipe, container, containers)
     action:setOnComplete(ISCraftingUI.onCraftComplete, self, action, recipe, container, containers)
     ISTimedActionQueue.addAfter(previousAction, action)
     ISCraftingUI.ReturnItemsToOriginalContainer(self.character, returnToContainer)
 end
 
 function ISCraftingUI.ReturnItemsToOriginalContainer(playerObj, items)
+    -- as per Binky's input, disorganized characters don't automatically put stuff back
+    if playerObj:HasTrait("Disorganized") then return end
+
     for _,item in ipairs(items) do
         if item:getContainer() ~= playerObj:getInventory() then
             local action = ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), item:getContainer(), nil)
@@ -1638,19 +1993,6 @@ function ISCraftingUI.ReturnItemsToOriginalContainer(playerObj, items)
             ISTimedActionQueue.add(action)
         end
     end
-end
-
-function ISCraftingUI:GetItemInstance(type)
-    if not self.ItemInstances then self.ItemInstances = {} end
-    local item = self.ItemInstances[type]
-    if not item then
-        item = InventoryItemFactory.CreateItem(type)
-        if item then
-            self.ItemInstances[type] = item
-            self.ItemInstances[item:getFullType()] = item
-        end
-    end
-    return item
 end
 
 function ISCraftingUI:onGainJoypadFocus(joypadData)
@@ -1745,7 +2087,11 @@ function ISCraftingUI:debugGiveIngredients()
     options.NoDuplicateKeep = true
     RecipeUtils.CreateSourceItems(recipe, options, items)
     for _,item in ipairs(items) do
-        self.character:getInventory():AddItem(item)
+        if isClient() then
+            SendCommandToServer("/additem \"" .. self.character:getDisplayName() .. "\" \"" .. luautils.trim(item:getFullType()) .. "\"")
+        else
+            self.character:getInventory():AddItem(item)
+        end
     end
 end
 

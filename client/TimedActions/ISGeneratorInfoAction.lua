@@ -39,13 +39,8 @@ function ISGeneratorInfoAction:perform()
 end
 
 function ISGeneratorInfoAction:new(character, object)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
+	local o = ISBaseTimedAction.new(self, character)
 	o.maxTime = 0
-	o.stopOnWalk = true
-	o.stopOnRun = true
-	o.character = character
 	o.playerNum = character:getPlayerNum()
 	o.object = object
 	return o

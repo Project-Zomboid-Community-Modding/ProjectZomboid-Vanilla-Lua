@@ -8,6 +8,8 @@ ISFactionAddPlayerUI.messages = {};
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISFactionAddPlayerUI:initialise
@@ -17,14 +19,12 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 function ISFactionAddPlayerUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    local listY = 20 + FONT_HGT_MEDIUM + 20
-    self.playerList = ISScrollingListBox:new(10, listY, self.width - 20, (FONT_HGT_SMALL + 2 * 2) * 8);
+    local y = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1;
+    self.playerList = ISScrollingListBox:new(UI_BORDER_SPACING+1, y, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT * 8);
     self.playerList:initialise();
     self.playerList:instantiate();
-    self.playerList.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.playerList.itemheight = BUTTON_HGT;
     self.playerList.selected = 0;
     self.playerList.joypadParent = self;
     self.playerList.font = UIFont.NewSmall;
@@ -32,14 +32,14 @@ function ISFactionAddPlayerUI:initialise()
     self.playerList.drawBorder = true;
     self:addChild(self.playerList);
 
-    self.no = ISButton:new(10, self.playerList:getBottom() + 20, btnWid, btnHgt, getText("UI_Cancel"), self, ISFactionAddPlayerUI.onClick);
+    self.no = ISButton:new(self.playerList.x, self.playerList:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISFactionAddPlayerUI.onClick);
     self.no.internal = "CANCEL";
     self.no:initialise();
     self.no:instantiate();
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    self.addPlayer = ISButton:new(0, self.no.y, btnWid, btnHgt, getText("IGUI_SafehouseUI_AddPlayer"), self, ISFactionAddPlayerUI.onClick);
+    self.addPlayer = ISButton:new(0, self.no.y, btnWid, BUTTON_HGT, getText("IGUI_SafehouseUI_AddPlayer"), self, ISFactionAddPlayerUI.onClick);
     if self.changeOwnership then
         self.addPlayer.title = getText("IGUI_SafehouseUI_ChangeOwnership");
     end
@@ -52,7 +52,7 @@ function ISFactionAddPlayerUI:initialise()
     self:addChild(self.addPlayer);
     self.addPlayer.enable = false;
 
-    self:setHeight(self.addPlayer:getBottom() + 10)
+    self:setHeight(self.addPlayer:getBottom() + UI_BORDER_SPACING+1)
     
     scoreboardUpdate();
 end
@@ -123,13 +123,9 @@ function ISFactionAddPlayerUI:drawPlayers(y, item, alt)
 end
 
 function ISFactionAddPlayerUI:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_SafehouseUI_ConnectedPlayers"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_SafehouseUI_ConnectedPlayers")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 30;
+    self:drawText(getText("IGUI_SafehouseUI_ConnectedPlayers"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_SafehouseUI_ConnectedPlayers")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISFactionAddPlayerUI:onClick(button)
@@ -184,7 +180,7 @@ function ISFactionAddPlayerUI:new(x, y, width, height, faction, player)
     o.faction = faction;
     o.moveWithMouse = true;
     ISFactionAddPlayerUI.instance = o;
-    o.isOwner = faction:isOwner(player:getUsername()) or player:getAccessLevel() ~= "None";
+    o.isOwner = faction:isOwner(player:getUsername()) or player:getRole():haveCapability(Capability.FactionCheat);
     return o;
 end
 

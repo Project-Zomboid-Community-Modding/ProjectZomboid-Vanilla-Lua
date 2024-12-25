@@ -1,6 +1,7 @@
 require "ISUI/ISUIElement"
 
 ISLabel = ISUIElement:derive("ISLabel");
+local UI_BORDER_SPACING = 10
 
 
 --************************************************************************--
@@ -34,6 +35,32 @@ function ISLabel:setWidthToName(minWidth)
 	end
 end
 
+function ISLabel:getFontHeight()
+	return getTextManager():getFontHeight(self.font);
+end
+
+function ISLabel:setHeightToFont(minHeight)
+	local height = self:getFontHeight();
+	height = math.max(height, minHeight or 0)
+	if height ~= self.height then
+		self:setHeight(height);
+	end
+end
+
+function ISLabel:setHeightToName(minHeight)
+    local txt = self.name;
+    if self.translation then
+        txt = self.translation;
+    end
+    local height = getTextManager():MeasureFont(self.font);
+    local height2 = getTextManager():MeasureStringY(self.font, txt)
+    height = math.max(height, height2)
+    height = math.max(height, minHeight or 0)
+    if height ~= self.height then
+        self:setHeight(height);
+    end
+end
+
 function ISLabel:setColor(r,g,b)
 	self.r = r;
 	self.g = g;
@@ -55,14 +82,21 @@ function ISLabel:prerender()
 	local height2 = getTextManager():MeasureStringY(self.font, txt)
 	height = math.max(height, height2)
 
+    if self.textColor then
+        self.r = self.textColor.r;
+        self.g = self.textColor.g;
+        self.b = self.textColor.b;
+        self.a = self.textColor.a;
+    end
+
     if not self.center then
 	    self:drawText(txt, 0, (self.height/2)-(height/2), self.r, self.g, self.b, self.a, self.font);
     else
         self:drawTextCentre(txt, 0, (self.height/2)-(height/2), self.r, self.g, self.b, self.a, self.font);
     end
     if self.joypadFocused and self.joypadTexture then
-		local texY = self.height / 2 - 20 / 2
-        self:drawTextureScaled(self.joypadTexture,-28,texY,20,20,1,1,1,1);
+		local texY = self.height / 2 - 32 / 2
+        self:drawTextureScaled(self.joypadTexture,-32 - UI_BORDER_SPACING,texY,32,32,1,1,1,1);
     end
     self:updateTooltip()
 end
@@ -149,6 +183,9 @@ function ISLabel:new (x, y, height, name, r, g, b, a, font, bLeft)
 		o.x = o.x - o.width
 	end
 	o.height = height;
+    if o.height <= 0 then
+        o.height = o:getFontHeight();
+    end
     o.left = bLeft;
 	o.anchorLeft = true;
 	o.anchorRight = false;
@@ -164,5 +201,6 @@ function ISLabel:new (x, y, height, name, r, g, b, a, font, bLeft)
     o.center = false;
     o.joypadFocused = false;
     o.translation = nil;
+    o.textColor = nil; --it set to lua color table will override self r,g,b,a
 	return o
 end

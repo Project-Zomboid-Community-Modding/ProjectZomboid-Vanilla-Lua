@@ -114,8 +114,10 @@ function ISButtonPrompt:prerender()
             tex = self.movableIconPlace;
         elseif getCell():getDrag(self.player):getMoveableMode() == "rotate" then
             tex = self.movableIconRotate;
-         elseif getCell():getDrag(self.player):getMoveableMode() == "scrap" then
+        elseif getCell():getDrag(self.player):getMoveableMode() == "scrap" then
             tex = self.movableIconScrap;
+        elseif getCell():getDrag(self.player):getMoveableMode() == "repair" then
+            tex = self.moveableIconRepair;
        end
 
         if tex then
@@ -215,26 +217,27 @@ end
 
 function ISButtonPrompt:climbInWindow(window)
     local player = getSpecificPlayer(self.player);
-    if IsoWindowFrame.isWindowFrame(window) then
-        player:climbThroughWindowFrame(window);
-    else
-        player:climbThroughWindow(window);
-    end
+    player:triggerContextualAction("ClimbThroughWindow", window)
 end
 
 function ISButtonPrompt:openWindow(window)
     local player = getSpecificPlayer(self.player);
-    player:openWindow(window);
+    player:triggerContextualAction("OpenWindow", window)
 end
 
 function ISButtonPrompt:closeWindow(window)
     local player = getSpecificPlayer(self.player);
-    player:closeWindow(window);
+    player:triggerContextualAction("CloseWindow", window)
 end
 
 function ISButtonPrompt:openDoor(door)
     local player = getSpecificPlayer(self.player);
-    door:ToggleDoor(player);
+    player:triggerContextualAction("OpenDoor", door)
+end
+
+function ISButtonPrompt:closeDoor(door)
+    local player = getSpecificPlayer(self.player);
+    player:triggerContextualAction("CloseDoor", door)
 end
 
 function ISButtonPrompt:smashWindow(window)
@@ -312,6 +315,11 @@ end
 function ISButtonPrompt:stopAction()
     local playerObj = getSpecificPlayer(self.player)
     stopDoingActionThatCanBeCancelled(playerObj)
+end
+
+function ISButtonPrompt:dropCorpse()
+    local playerObj = getSpecificPlayer(self.player)
+    playerObj:setDoContinueGrapple(false)
 end
 
 function ISButtonPrompt:getBestAButtonAction(dir)
@@ -415,7 +423,7 @@ function ISButtonPrompt:testAButtonAction(dir)
     end
         
     if self.aPrompt == nil and square1:getRoom() then
-        if (SandboxVars.ElecShutModifier > -1 and getGameTime():getNightsSurvived() < SandboxVars.ElecShutModifier) or square1:haveElectricity() then
+        if (SandboxVars.ElecShutModifier > -1 and getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30 < SandboxVars.ElecShutModifier) or square1:haveElectricity() then
             -- Light switch on the player's square
             for i=1,square1:getObjects():size() do
                 local object = square1:getObjects():get(i-1)
@@ -446,7 +454,7 @@ function ISButtonPrompt:testAButtonAction(dir)
     end
 
     if self.aPrompt == nil and square1:getRoom() then
-        if (SandboxVars.ElecShutModifier > -1 and getGameTime():getNightsSurvived() < SandboxVars.ElecShutModifier) or square1:haveElectricity() then
+        if (SandboxVars.ElecShutModifier > -1 and getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30 < SandboxVars.ElecShutModifier) or square1:haveElectricity() then
             -- Stove on adjacent square
             for i=1,square2:getObjects():size() do
                 local object = square2:getObjects():get(i-1)
@@ -530,7 +538,7 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
         if obj:isDestroyed() then
             -- nothing
         elseif obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.openDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.closeDoor, obj)
         else
             self:setAPrompt(getText("ContextMenu_Open_door"), ISButtonPrompt.openDoor, obj)
         end
@@ -539,7 +547,7 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
 
     if instanceof(obj, "IsoThumpable") and obj:isDoor() then
         if obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.openDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.closeDoor, obj)
         else
             self:setAPrompt(getText("ContextMenu_Open_door"), ISButtonPrompt.openDoor, obj)
         end
@@ -597,6 +605,11 @@ function ISButtonPrompt:getBestBButtonAction(dir)
         end
         return
     end
+
+	if playerObj:isDraggingCorpse() then
+        self:setBPrompt(getText("ContextMenu_Drop_Corpse"), ISButtonPrompt.dropCorpse)
+        return
+	end
 
     if playerObj:isSprinting() then
         self:setBPrompt(getText("IGUI_StopSprint"), nil)
@@ -698,8 +711,8 @@ function ISButtonPrompt:testBButtonAction(dir)
         end
     end
 
-    if IsoWindowFrame.isWindowFrame(obj) then
-        if IsoWindowFrame.canClimbThrough(obj, playerObj) and not playerObj:isIgnoreContextKey() then
+    if instanceof(obj, "IsoWindowFrame") then
+        if obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
             self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
             return
         end
@@ -732,7 +745,7 @@ function ISButtonPrompt:doBButtonDoorOrWindowOrWindowFrame(dir, obj)
         return
     end
 
-    if IsoWindowFrame.isWindowFrame(obj) and IsoWindowFrame.canClimbThrough(obj, playerObj) and not playerObj:isIgnoreContextKey() then
+    if instanceof(obj, "IsoWindowFrame") and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
         self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
         return
     end
@@ -1140,6 +1153,8 @@ function ISButtonPrompt:new (player)
     o.movableIconPlace = getTexture("media/ui/Furniture_Place.png");
     o.movableIconRotate = getTexture("media/ui/Furniture_Rotate.png");
     o.movableIconScrap = getTexture("media/ui/Furniture_Disassemble.png");
+    o.moveableIconRepair = getTexture("media/ui/Furniture_On2.png");
+    o.moveableIconBuild = getTexture("media/ui/Build_Tool_Off.png");
  --   o:setAPrompt("Close window");
    -- o:setBPrompt("Climb through");
   --  o:setXPrompt("Interact");

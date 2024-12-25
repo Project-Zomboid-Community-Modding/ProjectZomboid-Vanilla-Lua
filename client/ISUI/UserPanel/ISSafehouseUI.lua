@@ -10,6 +10,8 @@ ISSafehouseUI.inviteDialogs = {}
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISSafehouseUI:initialise
@@ -19,55 +21,62 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 function ISSafehouseUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local btnHgt2 = FONT_HGT_SMALL
-    local padBottom = 10
 
-    self.no = ISButton:new(self:getWidth() - btnWid - 10, 0, btnWid, btnHgt, getText("UI_Ok"), self, ISSafehouseUI.onClick);
+    self.no = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1, 0, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISSafehouseUI.onClick);
     self.no.internal = "OK";
     self.no:initialise();
     self.no:instantiate();
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    local nameLbl = ISLabel:new(10, 20, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Title"), 1, 1, 1, 1, UIFont.Small, true)
+    local nameLbl = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("IGUI_SafehouseUI_Title"), 1, 1, 1, 1, UIFont.Small, true)
     nameLbl:initialise()
     nameLbl:instantiate()
     self:addChild(nameLbl)
 
-    self.title = ISLabel:new(nameLbl:getRight() + 8, nameLbl.y, FONT_HGT_SMALL, self.safehouse:getTitle(), 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.title = ISLabel:new(nameLbl:getRight() + UI_BORDER_SPACING, nameLbl.y, BUTTON_HGT, self.safehouse:getTitle(), 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
     self.title:initialise()
     self.title:instantiate()
     self:addChild(self.title)
 
-    self.changeTitle = ISButton:new(0, nameLbl.y, 70, btnHgt2, getText("IGUI_PlayerStats_Change"), self, ISSafehouseUI.onClick);
+    self.changeTitle = ISButton:new(UI_BORDER_SPACING+1, nameLbl.y, 70, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISSafehouseUI.onClick);
     self.changeTitle.internal = "CHANGETITLE";
     self.changeTitle:initialise();
     self.changeTitle:instantiate();
     self.changeTitle.borderColor = self.buttonBorderColor;
     self:addChild(self.changeTitle);
 
-    local ownerLbl = ISLabel:new(10, nameLbl:getBottom() + 10, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Owner"), 1, 1, 1, 1, UIFont.Small, true)
+    local ownerLbl = ISLabel:new(UI_BORDER_SPACING+1, nameLbl:getBottom() + UI_BORDER_SPACING, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Owner"), 1, 1, 1, 1, UIFont.Small, true)
     ownerLbl:initialise()
     ownerLbl:instantiate()
     self:addChild(ownerLbl)
 
-    self.owner = ISLabel:new(ownerLbl:getRight() + 8, ownerLbl.y, FONT_HGT_SMALL, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.owner = ISLabel:new(ownerLbl:getRight() + UI_BORDER_SPACING, ownerLbl.y, FONT_HGT_SMALL, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
     self.owner:initialise()
     self.owner:instantiate()
     self:addChild(self.owner)
 
-    local posLbl = ISLabel:new(10, ownerLbl:getBottom() + 7, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Pos"), 1, 1, 1, 1, UIFont.Small, true)
+    local posLbl = ISLabel:new(UI_BORDER_SPACING+1, ownerLbl:getBottom() + UI_BORDER_SPACING, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Pos"), 1, 1, 1, 1, UIFont.Small, true)
     posLbl:initialise()
     posLbl:instantiate()
     self:addChild(posLbl)
 
-    self.pos = ISLabel:new(posLbl:getRight() + 8, posLbl.y, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Pos2", self.safehouse:getX(), self.safehouse:getY()), 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.pos = ISLabel:new(posLbl:getRight() + UI_BORDER_SPACING, posLbl.y, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Pos2", self.safehouse:getX(), self.safehouse:getY()), 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
     self.pos:initialise()
     self.pos:instantiate()
     self:addChild(self.pos)
 
-    self.releaseSafehouse = ISButton:new(10, 0, 70, btnHgt, getText("IGUI_SafehouseUI_Release"), self, ISSafehouseUI.onClick);
+    local pointsLabel = ISLabel:new(UI_BORDER_SPACING+1, posLbl:getBottom() + UI_BORDER_SPACING, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_HitPoints"), 1, 1, 1, 1, UIFont.Small, true)
+    pointsLabel:initialise()
+    pointsLabel:instantiate()
+    self:addChild(pointsLabel)
+
+    self.points = ISLabel:new(pointsLabel:getRight() + UI_BORDER_SPACING, pointsLabel.y, FONT_HGT_SMALL, tostring(self.safehouse:getHitPoints()), 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.points:initialise()
+    self.points:instantiate()
+    self:addChild(self.points)
+
+    self.releaseSafehouse = ISButton:new(UI_BORDER_SPACING+1, 0, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_Release"), self, ISSafehouseUI.onClick);
     self.releaseSafehouse.internal = "RELEASE";
     self.releaseSafehouse:initialise();
     self.releaseSafehouse:instantiate();
@@ -76,7 +85,7 @@ function ISSafehouseUI:initialise()
     self.releaseSafehouse.parent = self;
     self.releaseSafehouse:setVisible(false);
 
-    self.changeOwnership = ISButton:new(0, ownerLbl.y, 70, btnHgt2, getText("IGUI_SafehouseUI_ChangeOwnership"), self, ISSafehouseUI.onClick);
+    self.changeOwnership = ISButton:new(0, ownerLbl.y, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_ChangeOwnership"), self, ISSafehouseUI.onClick);
     self.changeOwnership.internal = "CHANGEOWNERSHIP";
     self.changeOwnership:initialise();
     self.changeOwnership:instantiate();
@@ -85,22 +94,22 @@ function ISSafehouseUI:initialise()
     self.changeOwnership.parent = self;
     self.changeOwnership:setVisible(false);
 
-    local playersLbl = ISLabel:new(10, posLbl:getBottom() + 20, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Players"), 1, 1, 1, 1, UIFont.Small, true)
+    local playersLbl = ISLabel:new(UI_BORDER_SPACING+1, pointsLabel:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_SafehouseUI_Players"), 1, 1, 1, 1, UIFont.Small, true)
     playersLbl:initialise()
     playersLbl:instantiate()
     self:addChild(playersLbl)
 
-    self.refreshPlayerList = ISButton:new(playersLbl:getRight() + 20, playersLbl.y, 70, btnHgt2, getText("UI_servers_refresh"), self, ISSafehouseUI.onClick);
+    self.refreshPlayerList = ISButton:new(playersLbl:getRight() + UI_BORDER_SPACING, playersLbl.y, 70, BUTTON_HGT, getText("UI_servers_refresh"), self, ISSafehouseUI.onClick);
     self.refreshPlayerList.internal = "REFRESHLIST";
     self.refreshPlayerList:initialise();
     self.refreshPlayerList:instantiate();
     self.refreshPlayerList.borderColor = self.buttonBorderColor;
     self:addChild(self.refreshPlayerList);
 
-    self.playerList = ISScrollingListBox:new(10, playersLbl:getBottom(), self.width - 20, (FONT_HGT_SMALL + 2 * 2) * 8);
+    self.playerList = ISScrollingListBox:new(UI_BORDER_SPACING+1, playersLbl:getBottom()+UI_BORDER_SPACING, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT * 8);
     self.playerList:initialise();
     self.playerList:instantiate();
-    self.playerList.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.playerList.itemheight = BUTTON_HGT;
     self.playerList.selected = 0;
     self.playerList.joypadParent = self;
     self.playerList.font = UIFont.NewSmall;
@@ -108,7 +117,7 @@ function ISSafehouseUI:initialise()
     self.playerList.drawBorder = true;
     self:addChild(self.playerList);
 
-    self.removePlayer = ISButton:new(0, self.playerList.y + self.playerList.height + 5, 70, btnHgt2, getText("ContextMenu_Remove"), self, ISSafehouseUI.onClick);
+    self.removePlayer = ISButton:new(0, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("ContextMenu_Remove"), self, ISSafehouseUI.onClick);
     self.removePlayer.internal = "REMOVEPLAYER";
     self.removePlayer:initialise();
     self.removePlayer:instantiate();
@@ -119,7 +128,7 @@ function ISSafehouseUI:initialise()
     self.removePlayer.enable = false;
     self.removePlayer:setVisible(self:isOwner() or self:hasPrivilegedAccessLevel());
 
-    self.quitSafehouse = ISButton:new(0, self.playerList.y + self.playerList.height + 5, 70, btnHgt2, getText("IGUI_SafehouseUI_QuitSafehouse"), self, ISSafehouseUI.onClick);
+    self.quitSafehouse = ISButton:new(0, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_QuitSafehouse"), self, ISSafehouseUI.onClick);
     self.quitSafehouse.internal = "QUITSAFE";
     self.quitSafehouse:initialise();
     self.quitSafehouse:instantiate();
@@ -127,19 +136,19 @@ function ISSafehouseUI:initialise()
     self.quitSafehouse:setWidthToTitle(70)
     self.quitSafehouse:setX(self.playerList:getRight() - self.quitSafehouse.width)
     if self:hasPrivilegedAccessLevel() then
-        self.quitSafehouse:setY(self.removePlayer.y + btnHgt2 + 5)
+        self.quitSafehouse:setY(self.removePlayer.y + BUTTON_HGT + 5)
     end
     self:addChild(self.quitSafehouse);
     self.quitSafehouse:setVisible(not self:isOwner() and self.safehouse:getPlayers():contains(self.player:getUsername()));
 
-    self.addPlayer = ISButton:new(self.playerList.x, self.playerList.y + self.playerList.height + 5, 70, btnHgt2, getText("IGUI_SafehouseUI_AddPlayer"), self, ISSafehouseUI.onClick);
+    self.addPlayer = ISButton:new(self.playerList.x, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_AddPlayer"), self, ISSafehouseUI.onClick);
     self.addPlayer.internal = "ADDPLAYER";
     self.addPlayer:initialise();
     self.addPlayer:instantiate();
     self.addPlayer.borderColor = self.buttonBorderColor;
     self:addChild(self.addPlayer);
 
-    self.respawn = ISTickBox:new(10, self.addPlayer:getBottom() + 10, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SafehouseUI_Respawn")) + 20, 18, "", self, ISSafehouseUI.onClickRespawn);
+    self.respawn = ISTickBox:new(UI_BORDER_SPACING+1, self.addPlayer:getBottom() + UI_BORDER_SPACING, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SafehouseUI_Respawn")) + 20, 18, "", self, ISSafehouseUI.onClickRespawn);
     self.respawn:initialise();
     self.respawn:instantiate();
     self.respawn.selected[1] = self.safehouse:isRespawnInSafehouse(self.player:getUsername());
@@ -150,16 +159,16 @@ function ISSafehouseUI:initialise()
         self.respawn.enable = false;
     end
 
-    self.no:setY(self.respawn:getBottom() + 20)
-    self.releaseSafehouse:setY(self.respawn:getBottom() + 20)
-    self:setHeight(self.no:getBottom() + padBottom)
+    self.no:setY(self.respawn:getBottom() + UI_BORDER_SPACING)
+    self.releaseSafehouse:setY(self.respawn:getBottom() + UI_BORDER_SPACING)
+    self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)
 
     self:populateList();
 
 end
 
 function ISSafehouseUI:onClickRespawn(clickedOption, enabled)
-    self.safehouse:setRespawnInSafehouse(enabled, self.player:getUsername());
+    sendSafehouseChangeRespawn(self.safehouse, self.player:getUsername(), enabled)
 end
 
 function ISSafehouseUI:populateList()
@@ -228,7 +237,7 @@ function ISSafehouseUI:prerender()
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 --    self:drawText(self.safehouse:getTitle(), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, self.safehouse:getTitle()) / 2), z, 1,1,1,1, UIFont.Medium);
     self.title:setName(self.safehouse:getTitle())
-    self.changeTitle:setX(self.title:getRight() + 10)
+    self.changeTitle:setX(self.title:getRight() + UI_BORDER_SPACING)
     z = z + 30;
 --    self:drawText(getText("IGUI_SafehouseUI_Owner"), x, z, 1,1,1,1, UIFont.Small);
 --    self:drawText(self.safehouse:getOwner(), splitPoint, z, 1,1,1,1, UIFont.Small);
@@ -236,12 +245,12 @@ function ISSafehouseUI:prerender()
     if self:isOwner() or self:hasPrivilegedAccessLevel() then
         self.releaseSafehouse:setVisible(true);
         self.changeOwnership:setVisible(true);
-        self.changeOwnership:setX(self.owner:getRight() + 10);
+        self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING);
     end
     if self:hasPrivilegedAccessLevel() then
-        self.quitSafehouse:setY(self.removePlayer.y + FONT_HGT_SMALL + 5)
+        self.quitSafehouse:setY(self.removePlayer.y + FONT_HGT_SMALL + UI_BORDER_SPACING)
     else
-        self.quitSafehouse:setY(self.playerList.y + self.playerList.height + 5)
+        self.quitSafehouse:setY(self.playerList.y + self.playerList.height + UI_BORDER_SPACING)
     end
 --    self:drawText(getText("IGUI_SafehouseUI_Players"), x, self.playerList.y - FONT_HGT_SMALL, 1,1,1,1, UIFont.Small);
 end
@@ -323,38 +332,20 @@ end
 
 function ISSafehouseUI:onChangeTitle(button)
     if button.internal == "OK" then
-        button.parent.safehouse:setTitle(button.parent.entry:getText());
-        button.parent.safehouse:syncSafehouse();
+        sendSafehouseChangeTitle(button.parent.safehouse, button.parent.entry:getText())
     end
 end
 
 function ISSafehouseUI:onQuitSafehouse(button)
     if button.internal == "YES" then
-        if not getServerOptions():getBoolean("SafehouseAllowTrepass") then
-            if button.parent.ui.player:getX() >= button.parent.ui.safehouse:getX() - 1 and button.parent.ui.player:getX() < button.parent.ui.safehouse:getX2() + 1 and button.parent.ui.player:getY() >= button.parent.ui.safehouse:getY() - 1 and button.parent.ui.player:getY() < button.parent.ui.safehouse:getY2() + 1 then
-                button.parent.ui.safehouse:kickOutOfSafehouse(button.parent.ui.player);
-            end
-        end
-        button.parent.ui.safehouse:removePlayer(button.parent.ui.player:getUsername());
+        sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.player:getUsername(), true)
     end
     button.parent.ui:close();
 end
 
 function ISSafehouseUI:onRemovePlayerFromSafehouse(button, player)
     if button.internal == "YES" then
-        if not getServerOptions():getBoolean("SafehouseAllowTrepass") then
-            local players = getOnlinePlayers();
-            for i=1,players:size() do
-                local player = players:get(i-1)
-                if player:getUsername() == button.parent.ui.selectedPlayer then
-                    if player:getX() >= button.parent.ui.safehouse:getX() - 1 and player:getX() < button.parent.ui.safehouse:getX2() + 1 and player:getY() >= button.parent.ui.safehouse:getY() - 1 and player:getY() < button.parent.ui.safehouse:getY2() + 1 then
-                        button.parent.ui.safehouse:kickOutOfSafehouse(player);
-                        break;
-                    end
-                end
-            end
-        end
-        button.parent.ui.safehouse:removePlayer(button.parent.ui.selectedPlayer);
+        sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.selectedPlayer, true)
         button.parent.ui:populateList();
     end
 end
@@ -362,7 +353,7 @@ end
 function ISSafehouseUI:onReleaseSafehouse(button, player)
     if button.internal == "YES" then
         if button.parent.ui:isOwner() or button.parent.ui:hasPrivilegedAccessLevel() then
-            button.parent.ui.safehouse:removeSafeHouse(getPlayerFromUsername(button.parent.ui.safehouse:getOwner()));
+            sendSafehouseRelease(button.parent.ui.safehouse)
         end;
     end;
     button.parent.ui:close();
@@ -404,7 +395,7 @@ function ISSafehouseUI:isOwner()
 end
 
 function ISSafehouseUI:hasPrivilegedAccessLevel()
-    return self.player:getAccessLevel() == "Admin" or self.player:getAccessLevel() == "Moderator";
+    return self.player:getRole():haveCapability(Capability.CanSetupSafehouses);
 end
 
 function ISSafehouseUI.OnSafehousesChanged()
@@ -438,8 +429,7 @@ end
 function ISSafehouseUI:onAnswerSafehouseInvite(button)
     ISSafehouseUI.inviteDialogs[button.parent.host] = nil
     if button.internal == "YES" then
-        button.parent.safehouse:addPlayer(getPlayer():getUsername());
-        acceptSafehouseInvite(button.parent.safehouse, button.parent.host)
+        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer())
     end
 end
 

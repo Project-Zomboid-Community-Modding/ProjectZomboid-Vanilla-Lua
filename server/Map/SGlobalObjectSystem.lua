@@ -27,7 +27,7 @@ function SGlobalObjectSystem:new(name)
 	o.wantNoise = getDebug()
 	o:initSystem()
 	o:initLuaObjects()
-	o:noise('#objects='..system:getObjectCount())
+-- 	o:noise('#objects='..system:getObjectCount())
 	return o
 end
 
@@ -99,7 +99,7 @@ function SGlobalObjectSystem:removeLuaObject(luaObject)
 	luaObject:aboutToRemoveFromSystem()
 	self:removeLuaObjectOnClient(luaObject)
 	self.system:removeObject(luaObject.globalObject)
-	self:noise('#objects='..self.system:getObjectCount())
+-- 	self:noise('#objects='..self.system:getObjectCount())
 end
 
 function SGlobalObjectSystem:removeLuaObjectAt(x, y, z)
@@ -120,6 +120,10 @@ function SGlobalObjectSystem:removeLuaObjectOnClient(luaObject)
 	self.system:removeGlobalObjectOnClient(luaObject.globalObject)
 end
 
+function SGlobalObjectSystem:updateLuaObjectOnClient(luaObject)
+	self.system:updateGlobalObjectOnClient(luaObject.globalObject)
+end
+
 function SGlobalObjectSystem:getLuaObjectAt(x, y, z)
 	local globalObject = self.system:getObjectAt(x, y, z)
 	return globalObject and globalObject:getModData() or nil
@@ -136,14 +140,14 @@ function SGlobalObjectSystem:loadIsoObject(isoObject)
 	local square = isoObject:getSquare()
 	local luaObject = self:getLuaObjectOnSquare(square)
 	if luaObject then
-		self:noise('found isoObject with a luaObject '..luaObject.x..','..luaObject.y..','..luaObject.z)
+-- 		self:noise('found isoObject with a luaObject '..luaObject.x..','..luaObject.y..','..luaObject.z)
 		luaObject:stateToIsoObject(isoObject)
 	else
-		self:noise('found isoObject without a luaObject '..square:getX()..','..square:getY()..','..square:getZ())
+-- 		self:noise('found isoObject without a luaObject '..square:getX()..','..square:getY()..','..square:getZ())
 		local globalObject = self.system:newObject(square:getX(), square:getY(), square:getZ())
 		local luaObject = self:newLuaObject(globalObject)
 		luaObject:stateFromIsoObject(isoObject)
-		self:noise('#objects='..self.system:getObjectCount())
+-- 		self:noise('#objects='..self.system:getObjectCount())
 		self:newLuaObjectOnClient(luaObject)
 	end
 end
@@ -173,11 +177,24 @@ function SGlobalObjectSystem:OnObjectAboutToBeRemoved(isoObject)
 	self:removeLuaObject(luaObject)
 end
 
+function SGlobalObjectSystem:OnModDataChangeItself(isoObject)
+	if not isoObject or not isoObject:getSquare() then return end
+	self:noise('OnModDataChangeItself')
+	if not self:isValidIsoObject(isoObject) then return end
+	local square = isoObject:getSquare()
+	local luaObject = self:getLuaObjectOnSquare(square)
+	if luaObject then
+		luaObject:OnModDataChangeItself(isoObject)
+		--		self.system:updateGlobalObjectOnClient(luaObject.globalObject)
+	end
+end
+
 function SGlobalObjectSystem:OnIsoObjectChangedItself(isoObject)
 	-- A Java object changed it's state. Sync the global object.
 	-- For example, after a generator runs out of fuel and shuts itself off.
-	if not isoObject or not isoObject:getSquare() then return end
-	self:noise('OnIsoObjectChangedItself')
+	if not isoObject then return end
+	if not isoObject:getSquare() then return end
+--	self:noise('OnIsoObjectChangedItself')
 	if not self:isValidIsoObject(isoObject) then return end
 	local square = isoObject:getSquare()
 	local luaObject = self:getLuaObjectOnSquare(square)

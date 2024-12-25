@@ -6,6 +6,9 @@
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 ISAdmPanelWeather = ISDebugSubPanelBase:derive("ISAdmPanelWeather");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISAdmPanelWeather:initialise
@@ -15,7 +18,7 @@ ISAdmPanelWeather = ISDebugSubPanelBase:derive("ISAdmPanelWeather");
 function ISAdmPanelWeather:createChildren() --:initialise()
     ISPanel.createChildren(self); --initialise(self);
 
-    local x,y = 20,10;
+    local x,y = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1;
 
     local w = self.width-40;
 
@@ -24,18 +27,18 @@ function ISAdmPanelWeather:createChildren() --:initialise()
     local obj, rowY;
     local lbl;
 
-    y, obj = ISDebugUtils.addLabel(self,"CurrentWeather",x+(w/2),y+5,getText("Current weather"));
+    y, obj = ISDebugUtils.addLabel(self,"CurrentWeather",x+(w/2),y,getText("Current weather"));
     obj.center = true;
     self.lblCurrentWeather = obj;
 
-    rowY = ISDebugUtils.addHorzBar(self,y+5)+4;
+    rowY = ISDebugUtils.addHorzBar(self,y+UI_BORDER_SPACING)+1;
 
     self.bars = {};
     self.bar1 = {
         x = x,
-        y = rowY+5,
+        y = rowY+UI_BORDER_SPACING,
         w = w,
-        h = 20,
+        h = BUTTON_HGT,
         progress = 0.85,
         text = getText("IGUI_climate_total_progress"),
         back = {r=0.05, g=0.05, b=0.05, a=1},
@@ -47,9 +50,9 @@ function ISAdmPanelWeather:createChildren() --:initialise()
     rowY = self.bar1.y + self.bar1.h;
     self.bar2 = {
         x = x,
-        y = rowY+5,
+        y = rowY+UI_BORDER_SPACING,
         w = w,
-        h = 20,
+        h = BUTTON_HGT,
         progress = 0.3,
         text = getText("IGUI_climate_segment_progress"),
         back = {r=0.05, g=0.05, b=0.05, a=1},
@@ -60,32 +63,32 @@ function ISAdmPanelWeather:createChildren() --:initialise()
 
     rowY = self.bar2.y + self.bar2.h;
 
-    rowY, obj = ISDebugUtils.addButton(self,"StopWeather",x+100,rowY+5,w-200,20,getText("IGUI_climate_StopWeather"), ISAdmPanelWeather.onClick);
+    rowY, obj = ISDebugUtils.addButton(self,"StopWeather",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,getText("IGUI_climate_StopWeather"), ISAdmPanelWeather.onClick);
 
-    rowY = ISDebugUtils.addHorzBar(self,rowY+8)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+UI_BORDER_SPACING)+1;
 
-    rowY, lbl = ISDebugUtils.addLabel(self,"TriggerInfo",x+(w/2),rowY+5,getText("IGUI_climate_TriggerInfo"));
+    rowY, lbl = ISDebugUtils.addLabel(self,"TriggerInfo",x+(w/2),rowY+UI_BORDER_SPACING,getText("IGUI_climate_TriggerInfo"));
     lbl.center = true;
-    rowY, lbl = ISDebugUtils.addLabel(self,"DurationVal",x+(w/2),rowY+5,"0");
+    rowY, lbl = ISDebugUtils.addLabel(self,"DurationVal",x+(w/2),rowY+UI_BORDER_SPACING,"0");
     lbl.center = true;
-    rowY, obj = ISDebugUtils.addSlider(self,"DurationSlider",x+100,rowY+4,w-200, 18, ISAdmPanelWeather.onSliderChange);
+    rowY, obj = ISDebugUtils.addSlider(self,"DurationSlider",x+100,rowY+UI_BORDER_SPACING,w-200, 18, ISAdmPanelWeather.onSliderChange);
     obj.pretext = getText("IGUI_climate_TriggerPretext");
     obj.valueLabel = lbl;
     obj:setValues(4, 24*10, 1, 1);
     obj:setCurrentValue(0);
     self.sliderDurationSlider = obj;
 
-    rowY, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
-    rowY, obj = ISDebugUtils.addButton(self,"TriggerTropical",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerTropical"), ISAdmPanelWeather.onClick);
-    rowY, obj = ISDebugUtils.addButton(self,"TriggerBlizzard",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerBlizzard"), ISAdmPanelWeather.onClick);
+    rowY, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
+    rowY, obj = ISDebugUtils.addButton(self,"TriggerTropical",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,getText("IGUI_climate_TriggerTropical"), ISAdmPanelWeather.onClick);
+    rowY, obj = ISDebugUtils.addButton(self,"TriggerBlizzard",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,getText("IGUI_climate_TriggerBlizzard"), ISAdmPanelWeather.onClick);
 
-    rowY = ISDebugUtils.addHorzBar(self,rowY+8)+4;
+    rowY = ISDebugUtils.addHorzBar(self,rowY+UI_BORDER_SPACING)+1;
 
-    rowY, lbl = ISDebugUtils.addLabel(self,"CustomInfo",x+(w/2),rowY+5,getText("IGUI_climate_CustomInfo"));
+    rowY, lbl = ISDebugUtils.addLabel(self,"CustomInfo",x+(w/2),rowY+UI_BORDER_SPACING,getText("IGUI_climate_CustomInfo"));
     lbl.center = true;
-    rowY, lbl = ISDebugUtils.addLabel(self,"CustomStrVal",x+(w/2),rowY+5,"0");
+    rowY, lbl = ISDebugUtils.addLabel(self,"CustomStrVal",x+(w/2),rowY+UI_BORDER_SPACING,"0");
     lbl.center = true;
-    rowY, obj = ISDebugUtils.addSlider(self,"CustomStrSlider",x+100,rowY+4,w-200, 18, ISAdmPanelWeather.onSliderChange);
+    rowY, obj = ISDebugUtils.addSlider(self,"CustomStrSlider",x+100,rowY+UI_BORDER_SPACING,w-200, 18, ISAdmPanelWeather.onSliderChange);
     obj.pretext = getText("IGUI_climate_StrengthPretext");
     obj.valueLabel = lbl;
     obj:setValues(0.1, 1, 0.01, 0.01);
@@ -95,15 +98,16 @@ function ISAdmPanelWeather:createChildren() --:initialise()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_WarmFront"), ticked = true });
     table.insert(tickOptions, { text = getText("IGUI_climate_ColdFront"), ticked = false });
-    rowY, obj = ISDebugUtils.addTickBox(self,"FrontType",x+100,rowY+8,w-200,ISDebugUtils.FONT_HGT_SMALL,"tickbox", tickOptions, ISAdmPanelWeather.onTicked);
+    rowY, obj = ISDebugUtils.addTickBox(self,"FrontType",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,"tickbox", tickOptions, ISAdmPanelWeather.onTicked);
     self.tickBoxFrontType = obj;
     self.tickBoxFrontType.selected[1] = true;
 
-    rowY, obj = ISDebugUtils.addButton(self,"Generate",x+100,rowY+10,w-200,20,getText("IGUI_climate_Generate"), ISAdmPanelWeather.onClick);
-    rowY = ISDebugUtils.addHorzBar(self,rowY+8)+4;
+    rowY, obj = ISDebugUtils.addButton(self,"Generate",x+100,rowY+UI_BORDER_SPACING,w-200,BUTTON_HGT,getText("IGUI_climate_Generate"), ISAdmPanelWeather.onClick);
+    rowY = ISDebugUtils.addHorzBar(self,rowY+UI_BORDER_SPACING)+1;
 
     self.totalY = rowY;
     --y, obj = self:addButton("Apply",self.width-110,self.height-30,100,20,getText("IGUI_PlayerStats_ReloadOptions"));
+    self:setScrollHeight(rowY+UI_BORDER_SPACING+1);
 end
 
 function ISAdmPanelWeather:prerender()

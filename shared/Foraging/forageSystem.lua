@@ -7,10 +7,7 @@
 --
 -------------------------------------------------
 --]]---------------------------------------------
-if isServer() then return; end;  --temp block server from loading this module
--------------------------------------------------
--------------------------------------------------
-require "Foraging/forageDefinitions";
+--if isServer() then return; end;
 -------------------------------------------------
 -------------------------------------------------
 local table = table;
@@ -108,6 +105,8 @@ forageSystem = {
 		FullSuitHead    = 75,   --completely covers the head, face and eyes
 		FullHat		    = 75,   --completely covers the head, face and eyes
 		MaskFull	    = 50,   --covering the face and eyes but not head
+		SCBA    	    = 50,   --covering the face and eyes but not head
+		SCBAnotank	    = 50,   --covering the face and eyes but not head
 		MaskEyes	    = 20,   --just covering the face but with eye holes
 		Mask	        = 20,   --just covering the face but with eye holes
 		Eyes		    = 2.5,  --small debuff for wearing sunglasses
@@ -128,10 +127,153 @@ forageSystem = {
 
 	-- diminishing base XP returns per level for foraging items below skill level (percent)
 	levelXPModifier      = 5,
+
+	-- alternate sprites used for world items in search mode
+	worldSprites = {
+		dogbane = { "d_plants_1_64" },
+		wildPlants = {
+			{ "d_plants_1_11" }, { "d_plants_1_12" }, { "d_plants_1_13" },
+			{ "d_plants_1_14" }, { "d_plants_1_15" },
+		},
+		smallTrees = {
+			{ "media/textures/Foraging/worldSprites/smallTree_worldSprite.png" },
+			{ "media/textures/Foraging/worldSprites/smallTree2_worldSprite.png" },
+		},
+		berryBushes = {
+			{ "f_bushes_1_4", "f_bushes_1_68", "f_bushes_1_84" },
+			{ "f_bushes_1_4", "f_bushes_1_68", "f_bushes_1_88" },
+		},
+		bushes = {
+			{ "f_bushes_1_64" }, { "f_bushes_1_65" }, { "f_bushes_1_66" },
+		},
+		shrubs = {
+			{ "d_plants_1_19" }, { "d_plants_1_20" }, { "d_plants_1_21" },
+			{ "d_plants_1_22" }, { "d_plants_1_23" }, { "f_bushes_1_68" },
+			{ "f_bushes_1_77" }, { "f_bushes_1_78" },
+		},
+		vines = {
+			{ "d_plants_1_38" }, { "d_plants_1_49" }, { "d_plants_1_50" },
+		},
+	},
+
+	-- world sprite affinities used for forage definitions
+	spriteAffinities = {
+		genericPlants = {
+			"d_generic_1_17", "d_generic_1_18", "d_generic_1_19",
+			"d_generic_1_47", "d_generic_1_48", "d_generic_1_49",
+			"d_generic_1_50", "d_generic_1_51", "d_generic_1_52",
+			"d_generic_1_53", "d_generic_1_54", "d_generic_1_55",
+			"d_generic_1_80", "d_generic_1_81", "d_generic_1_82",
+			"d_generic_1_83", "d_generic_1_84",	"d_generic_1_85",
+			"d_generic_1_86", "d_generic_1_87",
+			"d_plants_1_0", "d_plants_1_1", "d_plants_1_2",
+			"d_plants_1_3",	"d_plants_1_4",	"d_plants_1_5",
+			"d_plants_1_6",	"d_plants_1_7",	"d_plants_1_8",
+			"d_plants_1_9",	"d_plants_1_10", "d_plants_1_11",
+			"d_plants_1_12", "d_plants_1_13", "d_plants_1_14",
+			"d_plants_1_15", "d_plants_1_16", "d_plants_1_17",
+			"d_plants_1_18", "d_plants_1_19", "d_plants_1_20",
+			"d_plants_1_21", "d_plants_1_22", "d_plants_1_23",
+			"d_plants_1_24", "d_plants_1_25", "d_plants_1_26",
+			"d_plants_1_27", "d_plants_1_28", "d_plants_1_29",
+			"d_plants_1_30", "d_plants_1_31", "d_plants_1_32",
+			"d_plants_1_33", "d_plants_1_34", "d_plants_1_35",
+			"d_plants_1_36", "d_plants_1_37", "d_plants_1_38",
+			"d_plants_1_39", "d_plants_1_40", "d_plants_1_41",
+			"d_plants_1_42", "d_plants_1_43", "d_plants_1_44",
+			"d_plants_1_45", "d_plants_1_46", "d_plants_1_47",
+			"d_plants_1_48", "d_plants_1_49", "d_plants_1_50",
+			"d_plants_1_51", "d_plants_1_52", "d_plants_1_53",
+			"d_plants_1_54", "d_plants_1_55", "d_plants_1_56",
+			"d_plants_1_57", "d_plants_1_58", "d_plants_1_59",
+			"d_plants_1_60", "d_plants_1_61", "d_plants_1_62",
+			"d_plants_1_63",
+		},
+		specialPlants = {
+			"d_generic_1_17", "d_generic_1_18", "d_generic_1_19",
+			"d_generic_1_47", "d_generic_1_48", "d_generic_1_49",
+			"d_generic_1_50", "d_generic_1_51", "d_generic_1_52",
+			"d_generic_1_53", "d_generic_1_54", "d_generic_1_55",
+			"d_generic_1_80", "d_generic_1_81", "d_generic_1_82",
+			"d_generic_1_83", "d_generic_1_84", "d_generic_1_85",
+			"d_generic_1_86", "d_generic_1_87",
+		},
+		firewood = {
+			"d_generic_1_8", "d_generic_1_9", "d_generic_1_10",
+			"d_generic_1_11", "d_generic_1_12", "d_generic_1_14",
+			"d_generic_1_15", "d_generic_1_31", "d_generic_1_44",
+			"d_generic_1_45",
+		},
+		trash = {
+			"d_trash_0", "d_trash_1", "d_trash_2",
+			"d_trash_3", "d_trash_4", "d_trash_5",
+			"d_trash_6", "d_trash_7", "d_trash_8",
+			"d_trash_9", "d_trash_10", "d_trash_11",
+			"d_trash_12", "d_trash_13", "d_trash_14",
+			"d_trash_15", "d_trash_16", "d_trash_17",
+			"d_trash_18", "d_trash_19", "d_trash_20",
+			"d_trash_21", "d_trash_22", "d_trash_23",
+			"d_trash_24", "d_trash_25", "trash_01_0",
+			"trash_01_1", "trash_01_2", "trash_01_3",
+			"trash_01_4", "trash_01_5", "trash_01_6",
+			"trash_01_7", "trash_01_8", "trash_01_9",
+			"trash_01_10", "trash_01_11", "trash_01_12",
+			"trash_01_16", "trash_01_17", "trash_01_18",
+			"trash_01_19", "trash_01_20", "trash_01_21",
+			"trash_01_22", "trash_01_23", "trash_01_24",
+			"trash_01_25", "trash_01_26", "trash_01_27",
+			"trash_01_28", "trash_01_29", "trash_01_30",
+			"trash_01_31", "trash_01_32", "trash_01_33",
+			"trash_01_34", "trash_01_35", "trash_01_36",
+			"trash_01_37", "trash_01_38", "trash_01_39",
+			"trash_01_40", "trash_01_41", "trash_01_42",
+			"trash_01_43", "trash_01_44", "trash_01_45",
+			"trash_01_46", "trash_01_47", "trash_01_48",
+			"trash_01_49", "trash_01_50", "trash_01_51",
+			"trash_01_52", "trash_01_53",
+		},
+		stones = {
+			"d_generic_1_13", "d_generic_1_22", "d_generic_1_23",
+			"d_generic_1_24", "d_generic_1_25", "d_generic_1_40",
+			"d_generic_1_41", "d_generic_1_42", "d_generic_1_43",
+			"floors_overlay_street_01_0", "floors_overlay_street_01_1", "floors_overlay_street_01_2",
+			"floors_overlay_street_01_3", "floors_overlay_street_01_4", "floors_overlay_street_01_5",
+			"floors_overlay_street_01_6", "floors_overlay_street_01_7", "floors_overlay_street_01_8",
+			"floors_overlay_street_01_9", "floors_overlay_street_01_10", "floors_overlay_street_01_11",
+			"floors_overlay_street_01_12", "floors_overlay_street_01_13", "floors_overlay_street_01_14",
+			"floors_overlay_street_01_15", "floors_overlay_street_01_16", "floors_overlay_street_01_17",
+			"floors_overlay_street_01_18", "floors_overlay_street_01_19", "floors_overlay_street_01_20",
+			"floors_overlay_street_01_21", "floors_overlay_street_01_22", "floors_overlay_street_01_23",
+			"floors_overlay_street_01_24", "floors_overlay_street_01_25", "floors_overlay_street_01_26",
+			"floors_overlay_street_01_27", "floors_overlay_street_01_28", "floors_overlay_street_01_29",
+			"floors_overlay_street_01_30", "floors_overlay_street_01_31", "floors_overlay_street_01_32",
+			"floors_overlay_street_01_33", "floors_overlay_street_01_34", "floors_overlay_street_01_35",
+			"floors_overlay_street_01_36", "floors_overlay_street_01_37", "floors_overlay_street_01_38",
+			"floors_overlay_street_01_39", "floors_overlay_street_01_40", "floors_overlay_street_01_41",
+			"floors_overlay_street_01_42", "floors_overlay_street_01_43", "floors_overlay_street_01_44",
+			"floors_overlay_street_01_45", "floors_overlay_street_01_46", "floors_overlay_street_01_47",
+			"floors_overlay_street_01_48", "floors_overlay_street_01_49", "floors_overlay_street_01_50",
+			"floors_overlay_street_01_51", "floors_overlay_street_01_52", "floors_overlay_street_01_53",
+			"floors_overlay_street_01_54", "floors_overlay_street_01_55", "floors_overlay_street_01_56",
+			"floors_overlay_street_01_57", "floors_overlay_street_01_58", "floors_overlay_street_01_59",
+			"floors_overlay_street_01_60", "floors_overlay_street_01_61", "floors_overlay_street_01_62",
+			"floors_overlay_street_01_63", "blends_streetoverlays_01_0", "blends_streetoverlays_01_1",
+			"blends_streetoverlays_01_2", "blends_streetoverlays_01_3", "blends_streetoverlays_01_4",
+			"blends_streetoverlays_01_5", "blends_streetoverlays_01_6", "blends_streetoverlays_01_7",
+			"blends_streetoverlays_01_8", "blends_streetoverlays_01_9", "blends_streetoverlays_01_10",
+			"blends_streetoverlays_01_11", "blends_streetoverlays_01_12", "blends_streetoverlays_01_13",
+			"blends_streetoverlays_01_14", "blends_streetoverlays_01_15", "blends_streetoverlays_01_16",
+			"blends_streetoverlays_01_17", "blends_streetoverlays_01_18", "blends_streetoverlays_01_19",
+			"blends_streetoverlays_01_20", "blends_streetoverlays_01_21", "blends_streetoverlays_01_22",
+			"blends_streetoverlays_01_23", "blends_streetoverlays_01_24", "blends_streetoverlays_01_25",
+			"blends_streetoverlays_01_26", "blends_streetoverlays_01_27", "blends_streetoverlays_01_28",
+			"blends_streetoverlays_01_29", "blends_streetoverlays_01_30", "blends_streetoverlays_01_31",
+		},
+	},
 };
 
 function forageSystem.integrityCheck()
-	print("[forageSystem][integrityCheck] checking all zoneData.");
+	log(DebugType.Foraging, "[forageSystem][integrityCheck] checking all zoneData.");
 	local zonesChecked = 0;
 	local zonesRemoved = 0;
 	local iconsChecked = 0;
@@ -147,21 +289,21 @@ function forageSystem.integrityCheck()
 		end;
 		if not forageSystem.zoneDefs[zoneData.name] then
 			removeZone = true;
-			print("[forageSystem][integrityCheck] zoneDef does not exist for " .. (zoneData.name or "[no type]"));
-			print("[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] zoneDef does not exist for " .. (zoneData.name or "[no type]"));
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
 		elseif not (x1 and x2 and y1 and y2) then
 			removeZone = true;
-			print("[forageSystem][integrityCheck] zoneDef does not have valid bounds " .. (zoneData.name or "[no type]"));
-			print("[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] zoneDef does not have valid bounds " .. (zoneData.name or "[no type]"));
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
 		elseif not (isInRect(x1, y1, wx1, wx2, wy1, wy2) and isInRect(x2, y2, wx1, wx2, wy1, wy2)) then
 			removeZone = true;
-			print("[forageSystem][integrityCheck] zone is outside the world boundary " .. (zoneData.name or "[no type]"));
-			print("[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] zone is outside the world boundary " .. (zoneData.name or "[no type]"));
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
 		end
 		if not removeZone and not forageSystem.checkMetaZone(zoneData) then
 			removeZone = true;
-			print("[forageSystem][integrityCheck] metagrid zone doesn't exist " .. (zoneData.name or "[no type]"));
-			print("[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] metagrid zone doesn't exist " .. (zoneData.name or "[no type]"));
+			log(DebugType.Foraging, "[forageSystem][integrityCheck] removing zone " .. zoneID .. ".");
 		end;
 		if not removeZone then
 			--ensure itemsLeft is within limits
@@ -171,17 +313,17 @@ function forageSystem.integrityCheck()
 			for iconID, iconData in pairs(zoneData.forageIcons) do
 				local removeIcon = false;
 				if not forageSystem.itemDefs[iconData.itemType] then removeIcon = true;
-					print("[forageSystem][integrityCheck] itemDef does not exist for " .. (iconData.itemType or "[no type]"));
-					print("[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] itemDef does not exist for " .. (iconData.itemType or "[no type]"));
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
 				elseif not forageSystem.catDefs[iconData.catName] then removeIcon = true;
-					print("[forageSystem][integrityCheck] catDef does not exist for " .. (iconData.catName or "[no category]"));
-					print("[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] catDef does not exist for " .. (iconData.catName or "[no category]"));
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
 				elseif not (iconData.x and iconData.y and iconData.z) then removeIcon = true;
-					print("[forageSystem][integrityCheck] icon has invalid or missing x/y/z location " .. iconID .. ".");
-					print("[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] icon has invalid or missing x/y/z location " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
 				elseif not isInRect(iconData.x, iconData.y, x1, x2,	y1, y2) then removeIcon = true;
-					print("[forageSystem][integrityCheck] icon is out of zone bounds " .. iconID .. ".");
-					print("[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] icon is out of zone bounds " .. iconID .. ".");
+					log(DebugType.Foraging, "[forageSystem][integrityCheck] removing icon " .. iconID .. ".");
 				end;
 				--
 				if removeIcon then
@@ -198,18 +340,35 @@ function forageSystem.integrityCheck()
 		end;
 		zonesChecked = zonesChecked + 1;
 	end;
-	print("[forageSystem][integrityCheck] checked integrity of " .. zonesChecked .. " zones.");
+	log(DebugType.Foraging, "[forageSystem][integrityCheck] checked integrity of " .. zonesChecked .. " zones.");
 	if zonesRemoved > 0 then
-		print("[forageSystem][integrityCheck] " .. zonesRemoved .. " zones failed integrity check and were removed.");
+		log(DebugType.Foraging, "[forageSystem][integrityCheck] " .. zonesRemoved .. " zones failed integrity check and were removed.");
 	else
-		print("[forageSystem][integrityCheck] all zones passed testing.");
+		log(DebugType.Foraging, "[forageSystem][integrityCheck] all zones passed testing.");
 	end;
-	print("[forageSystem][integrityCheck] checked integrity of " .. iconsChecked .. " icons.");
+	log(DebugType.Foraging, "[forageSystem][integrityCheck] checked integrity of " .. iconsChecked .. " icons.");
 	if iconsRemoved > 0 then
-		print("[forageSystem][integrityCheck] " .. iconsRemoved .. " icons failed integrity check and were removed.");
+		log(DebugType.Foraging, "[forageSystem][integrityCheck] " .. iconsRemoved .. " icons failed integrity check and were removed.");
 	else
-		print("[forageSystem][integrityCheck] all icons passed testing.");
+		log(DebugType.Foraging, "[forageSystem][integrityCheck] all icons passed testing.");
 	end;
+end
+
+function forageSystem.doItemDefCheck()
+	--print("=============");
+	--print("[forageSystem][doItemDefCheck] testing all items for missing forage definitions.");
+	--print("=============");
+	--local allItems = getAllItems();
+	--local itemFullName, itemExists;
+	--for item in iterList(allItems) do
+	--	if not item:getObsolete() and not item:isHidden() then
+	--		itemFullName = item:getFullName();
+	--		if forageSystem.itemDefs[itemFullName] == nil then
+	--			print(itemFullName);
+	--		end;
+	--	end;
+	--end;
+	--print("=============");
 end
 
 function forageSystem.init()
@@ -217,6 +376,7 @@ function forageSystem.init()
 	if forageSystem.isInitialised then return; end;
 	--
 	triggerEvent("preAddForageDefs", forageSystem);
+	forageSystem.setOptionValues();
 	--
 	triggerEvent("preAddSkillDefs", forageSystem);
 	forageSystem.populateSkillDefs();
@@ -244,6 +404,10 @@ function forageSystem.init()
 	--check integrity of forageData
 	forageSystem.integrityCheck();
 	--
+	if isDebugEnabled() then
+		forageSystem.doItemDefCheck();
+	end;
+	--
 	--forageSystem.statisticsDebug(); --debug spawn rates
 	--forageClient.clearData(); --debug clear forageData database
 	--forageClient.syncForageData();
@@ -261,6 +425,11 @@ function forageSystem.init()
 end
 
 Events.OnLoadedMapZones.Add(forageSystem.init);
+
+function forageSystem.setOptionValues()
+	--any needed sandbox and server option values should be initialised here
+	forageSystem.itemBlacklist = getSandboxOptions():getOptionByName("LootItemRemovalList"):getSplitCSVList();
+end
 
 --[[---------------------------------------------
 --
@@ -463,15 +632,15 @@ function forageSystem.createForageIcons(_zoneData, _recreate, _count)
 		if forageSystem.itemDefs[icon.itemType] then
 			table.insert(forageIcons, icon);
 		else
-			print("[forageSystem][createForageIcons] itemDef not defined for itemType, skipping " .. icon.itemType);
+			log(DebugType.Foraging, "[forageSystem][createForageIcons] itemDef not defined for itemType, skipping " .. icon.itemType);
 		end;
 	end;
 	if (not _zoneData) or (not _zoneData.name) or (not forageSystem.zoneDefs[_zoneData.name]) then
-		print("[forageSystem][createForageIcons] zoneDef not defined for zoneData type, skipping " .. _zoneData.name or "undefined");
+		log(DebugType.Foraging, "[forageSystem][createForageIcons] zoneDef not defined for zoneData type, skipping " .. _zoneData.name or "undefined");
 		return forageIcons;
 	end;
 	if (not forageSystem.lootTables[_zoneData.name]) then
-		print("[forageSystem][createForageIcons] a loot table is not generated for zoneData type, skipping " .. _zoneData.name);
+		log(DebugType.Foraging, "[forageSystem][createForageIcons] a loot table is not generated for zoneData type, skipping " .. _zoneData.name);
 		return forageIcons;
 	end;
 	--
@@ -587,21 +756,21 @@ function forageSystem.getZoneData(_forageZone, _zoneDef, _x, _y)
 			return zoneData;
 		else
 			if _zoneDef then
-				print("[forageSystem][getZoneData] zoneData will be initialised for ".. _forageZone:getType());
+				log(DebugType.Foraging, "[forageSystem][getZoneData] zoneData will be initialised for ".. _forageZone:getType());
 				return forageSystem.createZoneData(_forageZone, _zoneDef);
 			end;
 			if _x and _y then
 				local defZone, zoneDef = forageSystem.getDefinedZoneAt(_x, _y);
 				if (defZone and zoneDef) then
-					print("[forageSystem][getZoneData] zoneData will be initialised for ".. _forageZone:getType());
+					log(DebugType.Foraging, "[forageSystem][getZoneData] zoneData will be initialised for ".. _forageZone:getType());
 					return forageSystem.createZoneData(_forageZone, zoneDef);
 				end;
 			end;
 		end;
 	else
-		print("[forageSystem][getZoneData] tried to get zoneData for non scavenge zone: ".. _forageZone:getType());
+		log(DebugType.Foraging, "[forageSystem][getZoneData] tried to get zoneData for non scavenge zone: ".. _forageZone:getType());
 	end;
-	print("[forageSystem][getZoneData] zoneData not found, removing ".. _forageZone:getType());
+	log(DebugType.Foraging, "[forageSystem][getZoneData] zoneData not found, removing ".. _forageZone:getType());
 	return nil;
 end
 
@@ -680,7 +849,7 @@ function forageSystem.generateLootTable()
 		isNight = false,
 	};
 	--create the table structure
-	print("[forageSystem][generateLootTable] Begin generating loot tables");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Begin generating loot tables");
 	-- do final loot table for zone
 	local zoneLootTable = {};
 	for zoneName in pairs(zoneDefs) do
@@ -700,9 +869,9 @@ function forageSystem.generateLootTable()
 			end;
 		end;
 	end;
-	print("[forageSystem][generateLootTable] Finished generating loot table structure");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Finished generating loot table structure");
 	--
-	print("[forageSystem][generateLootTable] Begin populating loot table");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Begin populating loot table");
 	for itemType, itemDef in pairs(itemDefs) do
 		if isValidMonth(nil, itemDef, nil, month) then
 			monthBonus = getMonthBonus(itemDef, month);
@@ -718,20 +887,20 @@ function forageSystem.generateLootTable()
 										insert(zoneLootTable[zoneName][month][timeOfDay][weatherType][catName].items, itemType);
 									end;
 								else
-									print("[forageSystem][generateLootTable] no such category is defined "..catName..", ignoring for definition "..itemType);
+									log(DebugType.Foraging, "[forageSystem][generateLootTable] no such category is defined "..catName..", ignoring for definition "..itemType);
 								end;
 							end;
 						else
-							print("[forageSystem][generateLootTable] no such zone is defined "..zoneName..", ignoring for definition "..itemType);
+							log(DebugType.Foraging, "[forageSystem][generateLootTable] no such zone is defined "..zoneName..", ignoring for definition "..itemType);
 						end;
 					end;
 				end;
 			end;
 		end;
 	end;
-	print("[forageSystem][generateLootTable] Finished populating loot table");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Finished populating loot table");
 	--
-	print("[forageSystem][generateLootTable] Begin populating loot table categories");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Begin populating loot table categories");
 	for zoneName in pairs(zoneDefs) do
 		for catName, catDef in pairs(catDefs) do
 			catChance = (catDef.zoneChance[zoneName] or catDef.chance or 0);
@@ -748,10 +917,10 @@ function forageSystem.generateLootTable()
 			end;
 		end;
 	end;
-	print("[forageSystem][generateLootTable] Finished populating loot table categories");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Finished populating loot table categories");
 	--
 	forageSystem.lootTables = lootTables;
-	print("[forageSystem][generateLootTable] Finished generating loot tables");
+	log(DebugType.Foraging, "[forageSystem][generateLootTable] Finished generating loot tables");
 	--print("[forageSystem][generateLootTable] Finished populating loot tables, took "..(getTimestampMs() - timeStart).."ms");
 end
 
@@ -799,22 +968,29 @@ end
 function forageSystem.addItemDef(_itemDef)
 	if not (_itemDef and _itemDef.type) then return; end;
 	if forageSystem.isItemExist(nil, _itemDef) then
-		local def = forageSystem.importDef(_itemDef, forageDefaultDefs.defaultItemDef);
-		local defType = def.type;
-		--set itemSize before importing
-		if (not def.itemSize) then def.itemSize = forageSystem.getItemDefSize(def); end;
-		if not forageSystem.itemDefs[defType] then
-			--add definition
-			forageSystem.itemDefs[defType] = def;
-			return defType, true; -- defType is added
-		else
-			print("[forageSystem][addItemDef] item is already defined! ".._itemDef.type);
-			print("[forageSystem][addItemDef] using forageSystem.modifyItemDef to change a defined itemDef for ".._itemDef.type);
-			forageSystem.modifyItemDef(_itemDef);
+		if forageSystem.isItemScriptValid(nil, _itemDef) then
+			--ensuring any blacklisted items are not added in this step will also remove them from existing zoneData on load, this is handled by forageSystem.integrityCheck()
+			if (not forageSystem.itemBlacklist:contains(_itemDef.type)) then
+				local def = forageSystem.importDef(_itemDef, forageDefaultDefs.defaultItemDef);
+				local defType = def.type;
+				--set itemSize before importing
+				if (not def.itemSize) then def.itemSize = forageSystem.getItemDefSize(def); end;
+				if not forageSystem.itemDefs[defType] then
+					--add definition
+					forageSystem.itemDefs[defType] = def;
+					return defType, true; -- defType is added
+				else
+					log(DebugType.Foraging, "[forageSystem][addItemDef] item is already defined! ".._itemDef.type);
+					log(DebugType.Foraging, "[forageSystem][addItemDef] using forageSystem.modifyItemDef to change a defined itemDef for ".._itemDef.type);
+					forageSystem.modifyItemDef(_itemDef);
+				end;
+				return defType, false; -- defType was not added
+			else
+				log(DebugType.Foraging, "[forageSystem][addItemDef] item matches entry in LootItemRemovalList sandbox setting, skipping ".._itemDef.type);
+			end;
 		end;
-		return defType, false; -- defType was not added
 	else
-		print("[forageSystem][addItemDef] no such item, ignoring ".._itemDef.type);
+		log(DebugType.Foraging, "[forageSystem][addItemDef] no such item, ignoring ".._itemDef.type);
 	end;
 	return _itemDef.type, false; -- _itemDef.type could not be added
 end
@@ -843,7 +1019,7 @@ function forageSystem.removeItemDef(_itemDef)
 	if _itemDef and forageSystem.isItemExist(nil, _itemDef) then
 		forageSystem.itemDefs[_itemDef.type] = nil; --wipe the definition
 	else
-		print("[forageSystem][removeItemDef] no such item, ignoring "..((_itemDef and _itemDef.type) or "unknown type"));
+		log(DebugType.Foraging, "[forageSystem][removeItemDef] no such item, ignoring "..((_itemDef and _itemDef.type) or "unknown type"));
 	end;
 end
 
@@ -876,7 +1052,7 @@ function forageSystem.modifyItemDef(_itemDef)
 		forageSystem.removeItemDef(_itemDef);
 		forageSystem.addItemDef(_itemDef);
 	else
-		print("[forageSystem][modifyItemDef] no such item or itemDef, ignoring "..((_itemDef and _itemDef.type) or "unknown type"));
+		log(DebugType.Foraging, "[forageSystem][modifyItemDef] no such item or itemDef, ignoring "..((_itemDef and _itemDef.type) or "unknown type"));
 	end;
 end
 
@@ -899,8 +1075,8 @@ function forageSystem.populateScavengeDefs()
 				end;
 				def.categories = {tostring(categoryToUse)};
 				if not forageSystem.catDefs[categoryToUse] then
-					print("[forageSystem][populateScavengeDefs] no such category and did not find a match for " .. categoryName);
-					print("[forageSystem][populateScavengeDefs] adding a new category "..categoryToUse.." with the default definition for "..categoryName);
+					log(DebugType.Foraging, "[forageSystem][populateScavengeDefs] no such category and did not find a match for " .. categoryName);
+					log(DebugType.Foraging, "[forageSystem][populateScavengeDefs] adding a new category "..categoryToUse.." with the default definition for "..categoryName);
 					forageSystem.addCatDef({name = categoryToUse});
 				end;
 			end;
@@ -1021,15 +1197,20 @@ end
 function forageSystem.getRefillBonus(_zoneData)
 	local zoneDef = forageSystem.zoneDefs[_zoneData.name];
 	if not zoneDef then
-		print("[forageSystem][getRefillBonus] could not find a zoneDef for "..tostring(_zoneData.name));
-		print("[forageSystem][getRefillBonus] using bonus value of 0 for " .. tostring(_zoneData.name));
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] could not find a zoneDef for "..tostring(_zoneData.name));
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] using bonus value of 0 for " .. tostring(_zoneData.name));
 		return 0;
 	end;
 	--
 	local abundanceSetting = zoneDef.abundanceSetting or "NatureAbundance";
 	if not (forageSystem.abundanceSettings[abundanceSetting] and SandboxVars[abundanceSetting]) then
-		print("[forageSystem][getRefillBonus] could not find an abundance setting or invalid value for "..tostring(_zoneData.name));
-		print("[forageSystem][getRefillBonus] using bonus value of 0 for " .. tostring(_zoneData.name));
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] could not find an abundance setting or invalid value for "..tostring(_zoneData.name));
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] using bonus value of 0 for " .. tostring(_zoneData.name));
+		return 0;
+	end;
+	if not (forageSystem.abundanceSettings[abundanceSetting][SandboxVars[abundanceSetting]]) then
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] forageSystem could not find an abundance setting for " .. tostring(abundanceSetting));
+		log(DebugType.Foraging, "[forageSystem][getRefillBonus] using bonus value of 0 for " .. tostring(_zoneData.name));
 		return 0;
 	end;
 	--
@@ -1064,9 +1245,9 @@ function forageSystem.addZoneDef(_zoneDef, _overwrite)
 	if forageSystem.zoneDefs[def.name] then
 		if _overwrite then
 			forageSystem.zoneDefs[def.name] = def;
-			print("[forageSystem][addZoneDef] overwriting definition for "..def.name);
+			log(DebugType.Foraging, "[forageSystem][addZoneDef] overwriting definition for "..def.name);
 		else
-			print("[forageSystem][addZoneDef] definition for "..def.name.." exists, ignoring");
+			log(DebugType.Foraging, "[forageSystem][addZoneDef] definition for "..def.name.." exists, ignoring");
 		end;
 	else
 		forageSystem.zoneDefs[def.name] = def;
@@ -1084,7 +1265,7 @@ function forageSystem.populateZoneDefs(_zoneDefs)
 	forageSystem.zoneDefs = {};
 	--populate zones
 	for _, def in pairs(_zoneDefs or forageZones) do
-		print("[forageSystem][populateZoneDefs] Adding zoneDef: " .. def.name)
+		log(DebugType.Foraging, "[forageSystem][populateZoneDefs] Adding zoneDef: " .. def.name)
 		forageSystem.addZoneDef(def);
 	end;
 end;
@@ -1101,9 +1282,9 @@ function forageSystem.addCatDef(_catDef, _overwrite)
 	local categoryName = def.name;
 	if forageSystem.catDefs[categoryName] then
 		if _overwrite then
-			print("[forageSystem][addCatDef] overwriting definition for "..categoryName);
+			log(DebugType.Foraging, "[forageSystem][addCatDef] overwriting definition for "..categoryName);
 		else
-			print("[forageSystem][addCatDef] definition for "..categoryName.." exists, ignoring");
+			log(DebugType.Foraging, "[forageSystem][addCatDef] definition for "..categoryName.." exists, ignoring");
 			return;
 		end;
 	end;
@@ -1147,14 +1328,14 @@ function forageSystem.addSkillDef(_skillDef, _overwrite)
 	local skillName = def.name;
 	local skillType = def.type;
 	if (not forageSystem.skillDefs[skillType]) then
-		print("[forageSystem][addSkillDef] invalid type for definition, ignoring "..skillName .. " : " .. skillType);
+		log(DebugType.Foraging, "[forageSystem][addSkillDef] invalid type for definition, ignoring "..skillName .. " : " .. skillType);
 		return;
 	end
 	if forageSystem.skillDefs[skillType][skillName] then
 		if _overwrite then
-			print("[forageSystem][addSkillDef] overwriting definition for "..skillName);
+			log(DebugType.Foraging, "[forageSystem][addSkillDef] overwriting definition for "..skillName);
 		else
-			print("[forageSystem][addSkillDef] definition for "..skillName.." exists, ignoring");
+			log(DebugType.Foraging, "[forageSystem][addSkillDef] definition for "..skillName.." exists, ignoring");
 			return;
 		end;
 	end;
@@ -1213,17 +1394,21 @@ function forageSystem.addOrDropItems(_character, _inventory, _items, _discardIte
 	if (not _discardItems) then
 		for item in iterList(_items) do
 			inv:AddItem(item);
+			sendAddItemToContainer(inv, item);
 			if (inv:getCapacityWeight() > inv:getEffectiveCapacity(_character)) then
 				inv:Remove(item);
+				sendRemoveItemFromContainer(inv, item);
 				if inv == plInv then
 					_character:getCurrentSquare():AddWorldInventoryItem(item, 0.0, 0.0, 0.0);
 				else
 					plInv:AddItem(item);
+					sendAddItemToContainer(plInv, item);
 				end;
 			end;
 			if (plInv:getCapacityWeight() > plInv:getEffectiveCapacity(_character)) then
 				_character:getCurrentSquare():AddWorldInventoryItem(item, 0.0, 0.0, 0.0);
 				inv:Remove(item);
+				sendRemoveItemFromContainer(inv, item);
 			end;
 			triggerEvent("OnContainerUpdate");
 		end;
@@ -1346,9 +1531,8 @@ end
 
 function forageSystem.getHungerBonus(_character, _itemDef)
 	if not (_itemDef and _itemDef.type) then return 1; end;
-	local itemObj = InventoryItemFactory.CreateItem(_itemDef.type);
 	local hungerBonus = 0;
-	if itemObj and itemObj:IsFood() then
+	if getItem(_itemDef.type) and isItemFood(_itemDef.type) then
 		local hungerLevel = _character:getStats():getHunger();
 		hungerBonus = (forageSystem.hungerBonusMax * hungerLevel) / 100;
 	end;
@@ -1719,7 +1903,7 @@ end
 function forageSystem.hasNeededRecipes(_character, _itemDef)
 	local knownRecipes = 0;
 	for _, recipe in ipairs(_itemDef.recipes) do
-		if _character:isRecipeKnown(recipe) then
+		if _character:isRecipeActuallyKnown(recipe) then
 			knownRecipes = knownRecipes + 1;
 		end;
 	end;
@@ -1765,7 +1949,6 @@ function forageSystem.hasNeededPerks(_character, _itemDef, _zoneDef)
 	return (_itemDef and _itemDef.skill <= forageSystem.getPerkLevel(_character, _itemDef)) or false;
 end
 
-
 --[[--======== isItemExist ========--
 	@param _itemDef
 	@param _zoneDef - zoneDef
@@ -1776,6 +1959,36 @@ end
 function forageSystem.isItemExist(_character, _itemDef, _zoneDef)
 	local itemObj = (_itemDef and _itemDef.type) and ScriptManager.instance:FindItem(_itemDef.type);
 	return (itemObj and (not itemObj:getObsolete()) and true) or false;
+end
+
+--[[--======== isItemScriptValid ========--
+	@param _itemDef
+	@param _zoneDef - zoneDef
+
+	Returns true if an item script is valid for use as an item definition
+]]--
+
+function forageSystem.isItemScriptValid(_character, _itemDef, _zoneDef)
+	local isValid = false;
+	--
+	local scriptItem = (_itemDef and _itemDef.type) and ScriptManager.instance:FindItem(_itemDef.type);
+	--
+	if scriptItem then
+		if (not scriptItem:getObsolete()) then
+			local iconsForTexture = scriptItem:getIconsForTexture();
+			if (scriptItem:getIcon() ~= "None") or (iconsForTexture and (not iconsForTexture:isEmpty())) then
+				isValid = true;
+			else
+				log(DebugType.Foraging, "[forageSystem][isItemScriptValid] item script failed test [getIcon] or [getIconsForTexture], ignoring definition for ".._itemDef.type);
+			end;
+		else
+			log(DebugType.Foraging, "[forageSystem][isItemScriptValid] item failed test [getObsolete], ignoring definition for ".._itemDef.type);
+		end;
+	else
+		log(DebugType.Foraging, "[forageSystem][isItemScriptValid] could not find an item script, ignoring definition for ".._itemDef.type);
+	end;
+	--
+	return isValid;
 end
 
 --[[--======== isItemInZone ========--
@@ -1818,10 +2031,10 @@ function forageSystem.isForageable(_character, _itemDef, _zoneDef)
 					return false;
 				end;
 			else
-				print("[forageSystem][isForageable] could not find function forageSystem."..testFunc);
+				log(DebugType.Foraging, "[forageSystem][isForageable] could not find function forageSystem."..testFunc);
 			end;
 		else
-			print("[forageSystem][isForageable] not string or function "..type(testFunc));
+			log(DebugType.Foraging, "[forageSystem][isForageable] not string or function "..type(testFunc));
 			return false;
 		end;
 	end;
@@ -1842,9 +2055,12 @@ end
 	Awards the _character an (_amount) of the _itemDef defined xp value
 ]]--
 
+function forageSystem.itemFound(_character, _itemType, _amount)
+    local _itemDef = forageSystem.itemDefs[_itemType];
+	forageSystem.giveItemXP(_character, _itemDef, _amount);
+end
+
 function forageSystem.giveItemXP(_character, _itemDef, _amount)
-	local manager = ISSearchManager.getManager(_character);
-	if not manager then return; end;
 	local pfPerk, currentXP, gainedXP;
 	--
 	local xpAmount              = _itemDef.xp * (_amount or 1);
@@ -1858,12 +2074,7 @@ function forageSystem.giveItemXP(_character, _itemDef, _amount)
 		pfPerk = Perks.FromString(perk);
 		if pfPerk then
 			currentXP = _character:getXp():getXP(pfPerk);
-			_character:getXp():AddXP(pfPerk, xpAmount);
-			gainedXP = _character:getXp():getXP(pfPerk) - currentXP;
-			if gainedXP > 0 then
-				gainedXP = string.format("%.2f", gainedXP);
-				table.insert(manager.haloNotes, "[col=137,232,148]"..pfPerk:getName().." "..getText("Challenge_Challenge2_CurrentXp", gainedXP) .. "[/] [img=media/ui/ArrowUp.png]");
-			end;
+			addXp(_character, pfPerk, xpAmount);
 		end;
 	end;
 end
@@ -1895,3 +2106,181 @@ function forageSystem.doFatiguePenalty(_character, _amount)
 	_character:getStats():setFatigue(fatigueLevel);
 	return fatigueLevel;
 end
+
+function forageSystem.doGlassesCheck(_character, _skillDef, _bonusEffect)
+	if _bonusEffect == "visionBonus" then
+		local visualAids = {
+			["Base.Glasses_Normal"]     = true,
+			["Base.Glasses_Reading"]    = true,
+		};
+		local wornItem = _character:getWornItem("Eyes");
+		if wornItem and visualAids[wornItem:getFullType()] then
+			return false;
+		end;
+	end;
+	return true;
+end
+
+--[[---------------------------------------------
+--
+--[[--======== Spawn Functions ========--]]--
+--
+--]]---------------------------------------------
+
+function forageSystem.doPoisonItemSpawn(_character, _inventory, _itemDef, _items)
+	if _itemDef.poisonChance and _itemDef.poisonPowerMin and _itemDef.poisonPowerMax then
+		if _itemDef.poisonChance > 0 and _itemDef.poisonPowerMax > 0 then
+			local perkLevel = forageSystem.getPerkLevel(_character, _itemDef);
+			--increase poison chance by up to 30% for level 0
+			if ZombRand(100) < _itemDef.poisonChance + ((10 - perkLevel) * 3) then
+				for item in iterList(_items) do
+					item:setPoisonPower(ZombRand(_itemDef.poisonPowerMin, _itemDef.poisonPowerMax) + 1);
+					item:setPoisonDetectionLevel(_itemDef.poisonDetectionLevel or 0);
+					item:setUseForPoison(item:getHungChange());
+				end;
+			end;
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doRandomAgeSpawn(_character, _inventory, _itemDef, _items)
+	local perkLevel = forageSystem.getPerkLevel(_character, _itemDef);
+	for item in iterList(_items) do
+		--set random age based on perkLevel and random chance
+		local randomAge = 0;
+		if (ZombRand(10) + 1) <= perkLevel then
+			randomAge = ZombRandFloat(0.0, item:getOffAge() / 2);
+		elseif ZombRand(3) <= perkLevel then
+			randomAge = ZombRandFloat(0.0, item:getOffAge());
+		else
+			randomAge = ZombRandFloat(item:getOffAge(), item:getOffAgeMax());
+		end;
+		item:setAge(randomAge);
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doWorldAgeSpawn(_character, _inventory, _itemDef, _items)
+	local worldAge = getGameTime():getWorldAgeHours();
+	for item in iterList(_items) do
+		--set age based on world age
+		item:setAge(worldAge);
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doWildFoodSpawn(_character, _inventory, _itemDef, _items)
+	-- Randomize the size of the item
+	local perkLevel = forageSystem.getPerkLevel(_character, _itemDef);
+	for item in iterList(_items) do
+		item:setName(item:getDisplayName() .. " (" .. getText("UI_foraging_WildFood") .. ")");
+		--25 to 75 percent size
+		local sizeModifier = ((ZombRand(45) + 30) / 100);
+		--add up to 50% for perk level
+		sizeModifier = sizeModifier + ((ZombRand(perkLevel) + 1) / 5)
+		-- Set the item's stats depending on the random size
+		if item:getBaseHunger() <= -0.02 then
+			item:setBaseHunger(item:getBaseHunger() * sizeModifier);
+			item:setHungChange(item:getHungChange() * sizeModifier);
+			item:setCarbohydrates(item:getCarbohydrates() * sizeModifier);
+			item:setLipids(item:getLipids() * sizeModifier);
+			item:setProteins(item:getProteins() * sizeModifier);
+			item:setCalories(item:getCalories() * sizeModifier);
+			item:setUnhappyChange(item:getUnhappyChange() * sizeModifier);
+			--item:multiplyFoodValues(sizeModifier);
+			--item:setActualWeight(item:getActualWeight() * sizeModifier);
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doWildCropSpawn(_character, _inventory, _itemDef, _items)
+	local seedTable = {
+		["Base.Carrots"] = "Base.CarrotSeed",
+		["Base.Broccoli"] = "Base.BroccoliSeed",
+		["Base.RedRadish"] = "Base.RedRadishSeed",
+		["Base.Strewberrie"] = "Base.StrewberrieSeed",
+		["Base.Potato"] = "Base.PotatoSeed",
+		["Base.Tomato"] = "Base.TomatoSeed",
+		["Base.Cabbage"] = "Base.CabbageSeed",
+	};
+	--chance to generate a few seeds
+	if seedTable[_itemDef.type] then
+		local seedChance = 75;
+		if ZombRand(100) + 1 <= seedChance then
+			local seedAmount = ZombRand(20) + 1;
+			local seedItemType = seedTable[_itemDef.type];
+			for i = 1, seedAmount do
+				_items:add(instanceItem(seedItemType));
+			end;
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doJunkWeaponSpawn(_character, _inventory, _itemDef, _items)
+	for item in iterList(_items) do
+		local conditionMax = item:getConditionMax();
+		if conditionMax > 0 then
+			item:setCondition(ZombRand(conditionMax) + 1); -- Randomize the weapon condition
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doGenericItemSpawn(_character, _inventory, _itemDef, _items)
+	for item in iterList(_items) do
+		if item:IsDrainable() then
+			item:setUsedDelta(ZombRandFloat(0.0, 1.0)); -- Randomize the item uses remaining
+		end;
+		local conditionMax = item:getConditionMax();
+		if conditionMax > 0 then
+			item:setCondition(ZombRand(conditionMax) + 1); -- Randomize the weapon condition
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doClothingItemSpawn(_character, _inventory, _itemDef, _items)
+	for item in iterList(_items) do
+		if (not item:isCosmetic()) then
+			item:randomizeCondition(25, 75, 25, 33);
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.doDeadTrapAnimalSpawn(_character, _inventory, _itemDef, _items)
+	for item in iterList(_items) do
+		--search for trap animal definition
+		for _, trapDef in pairs(Animals) do
+			if trapDef.item == _itemDef.type then
+				-- Randomize the hunger reduction of the animal
+				local size = ZombRand(trapDef.minSize, trapDef.maxSize);
+				local typicalSize = item:getBaseHunger() * -100;
+				local statsModifier = size / typicalSize;
+				-- Set the animal's stats depending on the random size
+				item:setBaseHunger(item:getBaseHunger() * statsModifier);
+				item:setHungChange(item:getHungChange() * statsModifier);
+				item:setActualWeight(item:getActualWeight() * statsModifier);
+				item:setCarbohydrates(item:getCarbohydrates() * statsModifier);
+				item:setLipids(item:getLipids() * statsModifier);
+				item:setProteins(item:getProteins() * statsModifier);
+				item:setCalories(item:getCalories() * statsModifier);
+			end;
+		end;
+		--dead animals can only be in the range of barely fresh to rotted
+		if ZombRand(10) + 1 <= 3 then
+			--barely fresh to rotted
+			local freshLimit = item:getOffAge() - (item:getOffAge() / 4);
+			item:setAge(ZombRandFloat(freshLimit, item:getOffAgeMax()));
+		else
+			--stale to rotted
+			item:setAge(ZombRandFloat(item:getOffAge(), item:getOffAgeMax()));
+		end;
+	end;
+	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+Events.OnItemFound.Add(forageSystem.itemFound);

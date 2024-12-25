@@ -7,7 +7,10 @@ require "ISUI/ISPanelJoypad"
 
 ISCharacterInfo = ISPanelJoypad:derive("ISCharacterInfo");
 ISCharacterInfo.timerMultiplierAnim = 0;
-
+local UI_BORDER_SPACING = 10;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -21,6 +24,47 @@ end
 function ISCharacterInfo:createChildren()
 	self:setScrollChildren(true)
 	self:addScrollBars()
+
+	self.sorted = {}
+	self.nameToPerk = {}
+	self.buttonList = {}
+	self.collapse = {}
+	for k,v in pairs(self.perks) do
+		local parentPerk = PerkFactory.getPerk(k)
+		table.insert(self.sorted, parentPerk)
+		self.nameToPerk[parentPerk:getName()] = k
+	end
+
+	table.sort(self.sorted, function(a,b)
+		if a:isPassiv() then
+			local dbg = 1
+		end
+		if a:isPassiv() and not b:isPassiv() then
+			return true
+		end
+		if b:isPassiv() and not a:isPassiv() then
+			return false
+		end
+		return not string.sort(a:getName(), b:getName())
+	end)
+
+	for i,_ in ipairs(self.sorted) do
+		table.insert(self.collapse, false)
+		local collapseButton = ISButton:new(UI_BORDER_SPACING+1, 0, BUTTON_HGT, BUTTON_HGT, "", self, ISCharacterInfo.collapseSection);
+		collapseButton.internal = "COLLAPSE"..i
+		collapseButton:setImage(getTexture("media/ui/inventoryPanes/Button_TreeExpanded.png"))
+		table.insert(self.buttonList, collapseButton)
+		collapseButton:initialise();
+		self:addChild(collapseButton);
+	end
+
+	--for i,parentPerk in ipairs(self.sorted) do
+	--	local perkList = self.perks[parentPerk:getType()]
+	--	for ind, perk in ipairs(perkList) do
+	--
+	--	end
+	--end
+
 end
 
 function ISCharacterInfo:setVisible(visible)
@@ -41,9 +85,7 @@ function ISCharacterInfo:prerender()
 end
 
 function ISCharacterInfo:render()
-	local tabHeight = self.y
-	local maxHeight = getCore():getScreenHeight() - ISWindow.TitleBarHeight - tabHeight - 20
-	local y = 10
+	local y = UI_BORDER_SPACING
 
 	if self.lastLevelUpTime > 0 then
 		self.lastLevelUpTime = self.lastLevelUpTime - 0.0025
@@ -81,82 +123,73 @@ function ISCharacterInfo:render()
 		ISCharacterInfo.timerMultiplierAnim = 0;
 	end
 
-	local sorted = {}
-	local nameToPerk = {}
-	for k,v in pairs(self.perks) do
-		local parentPerk = PerkFactory.getPerk(k)
-		table.insert(sorted, parentPerk)
-		nameToPerk[parentPerk:getName()] = k
-	end
-
-	table.sort(sorted, function(a,b)
-		if a:isPassiv() then
-			local dbg = 1
-		end
-		if a:isPassiv() and not b:isPassiv() then
-			return true
-		end
-		if b:isPassiv() and not a:isPassiv() then
-			return false
-		end
-		return not string.sort(a:getName(), b:getName())
-	end)
-
-	local left = 0
+	local left = UI_BORDER_SPACING*2+BUTTON_HGT+1
 	local maxY = y
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-	local progressHgt = 18
-	local rowHgt = math.max(fontHgt, progressHgt + 2)
-	for _,parentPerk in ipairs(sorted) do
+	local fontOffset = (BUTTON_HGT-FONT_HGT_SMALL)/2
+	local rowHgt = BUTTON_HGT
+	for i,parentPerk in ipairs(self.sorted) do
 		local perkList = self.perks[parentPerk:getType()]
 		-- we first draw our parent name
-		self:drawText(parentPerk:getName(), left + 5, y, 1, 1, 1, 1, UIFont.Small);
-		self:drawTexture(self.SkillBarSeparator, left, y + fontHgt + 2, 1,1,1,1);
-		y = y + math.max(25, fontHgt);
+		self:drawText(parentPerk:getName(), left, y+fontOffset, 1, 1, 1, 1, UIFont.Small);
+		self.buttonList[i]:setY(y)
+		y = y + math.max(BUTTON_HGT);
 		-- then all the skills with their progress bar
-		for ind, perk in ipairs(perkList) do
-            local xpBoost = self.char:getXp():getPerkBoost(perk:getType());
-            local r = 1;
-            local g = 1;
-            local b = 1;
-            if xpBoost == 0 then
-                r = 0.54;
-                g = 0.54;
-                b = 0.54;
-            elseif xpBoost == 1 then
-                r = 0.8;
-                g = 0.8;
-                b = 0.8;
-            elseif xpBoost == 3 then
-                r = 1;
-                g = 0.83;
-                b = 0;
-            end
-			self:drawText(perk:getName(), left + 20, y, r, g, b, 1, UIFont.Small);
-			-- if we got a multiplier, we gonna anim that with ">, >>, >>>"
-            if self.char:getXp():getMultiplier(perk:getType()) > 0 then
-                self:drawTexture(self.disabledArrow, left + 20 + self.txtLen, y, 1, 1, 1, 1);
-                self:drawTexture(self.disabledArrow, left + 35 + self.txtLen, y, 1, 1, 1, 1);
-                self:drawTexture(self.disabledArrow, left + 50 +self.txtLen, y, 1, 1, 1, 1);
+		if not self.collapse[i] then
+			self:drawTexture(self.SkillBarSeparator, 0, y + UI_BORDER_SPACING, 1,1,1,1);
+			y = y + UI_BORDER_SPACING
+			for ind, perk in ipairs(perkList) do
+				local xpBoost = self.char:getXp():getPerkBoost(perk:getType());
+				local r = 1;
+				local g = 1;
+				local b = 1;
+				if xpBoost == 0 then
+					r = 0.54;
+					g = 0.54;
+					b = 0.54;
+				elseif xpBoost == 1 then
+					r = 0.8;
+					g = 0.8;
+					b = 0.8;
+				elseif xpBoost == 3 then
+					r = 1;
+					g = 0.83;
+					b = 0;
+				end
+				self:drawText(perk:getName(), left + UI_BORDER_SPACING*2, y+fontOffset, r, g, b, 1, UIFont.Small);
+				--todo add tooltips to the skill titles
+				-- if we got a multiplier, we gonna anim that with ">, >>, >>>"
+				if self.char:getXp():getMultiplier(perk:getType()) > 0 then
+					--for some reason, the experience boost arrows are offset in X and Y by +2 pixels. I have no explanation why. ~Fox
+					local arrowPixelOffset = 2
 
-                if ISCharacterInfo.animOffset > -1 then
-                    self:drawTexture(self.arrow, left + 20 + self.txtLen + ISCharacterInfo.animOffset, y, 1, 1, 1, 1);
-                end
-            end
-			if not self.progressBarLoaded then
-				local progressBar = ISSkillProgressBar:new(left + 20 + self.txtLen + 45, y + (rowHgt - progressHgt) / 2, 0, 0, self.playerNum, perk, self);
-				progressBar:initialise();
-				self:addChild(progressBar);
-				table.insert(self.progressBars, progressBar);
+					local arrowHeight = self.arrow:getHeight()
+					local arrowOffset = math.floor((BUTTON_HGT-arrowHeight)/2)-arrowPixelOffset
+					self:drawTexture(self.disabledArrow, UI_BORDER_SPACING+1-arrowPixelOffset, y+arrowOffset, 1, 1, 1, 1);
+					self:drawTexture(self.disabledArrow, UI_BORDER_SPACING+1+15-arrowPixelOffset, y+arrowOffset, 1, 1, 1, 1);
+					self:drawTexture(self.disabledArrow, UI_BORDER_SPACING+1+30-arrowPixelOffset, y+arrowOffset, 1, 1, 1, 1);
+
+					if ISCharacterInfo.animOffset > -1 then
+						self:drawTexture(self.arrow, UI_BORDER_SPACING+1 + ISCharacterInfo.animOffset - arrowPixelOffset, y+arrowOffset, 1, 1, 1, 1);
+					end
+				end
+				if not self.progressBarLoaded then
+					local skillPointSize = math.floor((FONT_HGT_SMALL + 6)/2)
+					local skillPointOffset = (BUTTON_HGT-skillPointSize)/2
+					local progressBar = ISSkillProgressBar:new(left + UI_BORDER_SPACING*3 + self.txtLen, y+skillPointOffset, 0, 0, self.playerNum, perk, self);
+					progressBar:initialise();
+
+					self:addChild(progressBar);
+					table.insert(self.progressBars, progressBar);
+				end
+				y = y + rowHgt;
 			end
-			y = y + rowHgt;
 		end
-		y = y + 10;
+		y = y + UI_BORDER_SPACING;
 		maxY = math.max(maxY, y)
 	end
+	y = y + 1;
 
 --~ 	self:drawText("Strong : " .. getPlayer():getPerkLevel(Perks.Strength), self.x + 8, y, 1, 1, 1, 1, UIFont.Small);
-	y = maxY + 10;
 --~ 	for i = 0, getPlayer():getTraits():size() - 1 do
 --~ 		local v = getPlayer():getTraits():get(i);
 --~ 		self:drawText("Trait : " .. v, self.x + 8, y, 1, 1, 1, 1, UIFont.Small);
@@ -164,8 +197,11 @@ function ISCharacterInfo:render()
 --~ 	end
 --~ 	self:drawText("Hauling : " .. getPlayer():getXp():getXP(Perks.Hauling), self.x + 8, y, 1, 1, 1, 1, UIFont.Small);
 
-    self:setWidthAndParentWidth(left + self.txtLen + 280);
-	self:setHeightAndParentHeight(math.min(y, maxHeight));
+	local skillPointSize = math.floor((FONT_HGT_SMALL + 6)/2)
+	local skillPointSpacing = getCore():getOptionFontSizeReal()
+
+	self:setWidthAndParentWidth(math.max(self.width, left + UI_BORDER_SPACING*4 + self.txtLen + skillPointSize*10 + skillPointSpacing*9 + SCROLL_BAR_WIDTH + 1));
+	self:setHeightAndParentHeight(math.min(y, 800));
 
 	self:setScrollHeight(y)
 
@@ -195,6 +231,21 @@ end
 function ISCharacterInfo:onMouseWheel(del)
 	self:setYScroll(self:getYScroll() - del * 30)
 	return true
+end
+
+function ISCharacterInfo:collapseSection(button)
+	local section
+	if string.contains(button.internal, "COLLAPSE") then
+		section = tonumber(string.sub(button.internal, 9))
+	end
+
+	self.collapse[section] = not self.collapse[section]
+	if self.collapse[section] then
+		self.buttonList[section]:setImage(getTexture("media/ui/inventoryPanes/Button_TreeCollapsed.png"))
+	else
+		self.buttonList[section]:setImage(getTexture("media/ui/inventoryPanes/Button_TreeExpanded.png"))
+	end
+	self.reloadSkillBar = true
 end
 
 function ISCharacterInfo:new (x, y, width, height, playerNum)
@@ -329,7 +380,7 @@ function ISCharacterInfo:onJoypadDirRight()
 end
 
 function ISCharacterInfo.onResolutionChange(oldw, oldh, neww, newh)
-	if getPlayer() == null then return end -- back in main menu
+	if getPlayer() == nil then return end -- back in main menu
 	for pn=0,getNumActivePlayers()-1 do
 		if getPlayerData(pn) then
 			local charInfo = getPlayerInfoPanel(pn).characterView

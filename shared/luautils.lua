@@ -46,6 +46,15 @@ function luautils.indexOf(table1, value)
 	return -1
 end
 
+function luautils.tableContains(table2, value)
+	for i,v in pairs(table2) do
+		if v == value then
+			return true
+		end
+	end
+	return false
+end
+
 -- get all the tile in the range of the startingGrid
 luautils.getNextTiles = function(cell, startingGrid, range)
 	local result = {};
@@ -70,10 +79,67 @@ luautils.getNextTiles = function(cell, startingGrid, range)
 	return result;
 end
 
-function luautils.walkAdj(playerObj, square, keepActions)
+function luautils.walk(playerObj, square, keepActions)
 	if not keepActions then
 		ISTimedActionQueue.clear(playerObj);
 	end
+--	if not AdjacentFreeTileFinder.isTileOrAdjacent(playerObj:getCurrentSquare(), square) then
+		-- Avoid walking to already near spot
+		local diffX = math.abs(square:getX() + 0.5 - playerObj:getX());
+		local diffY = math.abs(square:getY() + 0.5 - playerObj:getY());
+		if diffX <= 0.5 and diffY <= 0.5 then
+			return true;
+		end
+      	if square ~= nil then
+			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, square));
+			return true;
+		else
+			return  false;
+		end
+--	else
+--		return true;
+--	end
+end
+
+function luautils.walkAdj(playerObj, square, keepActions, excludeList)
+	if not keepActions then
+		ISTimedActionQueue.clear(playerObj);
+	end
+
+	-- check if already on an excluded tile
+	local onExcludedTile = false;
+	if excludeList then
+		for i, test in ipairs(excludeList) do
+			if playerObj:getX() == test:getX() and playerObj:getY() == test:getY() and playerObj:getZ() == test:getZ() then
+				onExcludedTile = true;
+			end
+		end
+	end
+	
+	--	if not AdjacentFreeTileFinder.isTileOrAdjacent(playerObj:getCurrentSquare(), square) then
+	-- Avoid walking to already near spot
+	if not onExcludedTile then
+		square = luautils.getCorrectSquareForWall(playerObj, square);
+		local diffX = math.abs(square:getX() + 0.5 - playerObj:getX());
+		local diffY = math.abs(square:getY() + 0.5 - playerObj:getY());
+		if diffX <= 1.6 and diffY <= 1.6 and playerObj:getSquare():canReachTo(square) then
+			return true;
+		end
+	end
+
+	local adjacent = AdjacentFreeTileFinder.Find(square, playerObj, excludeList);
+	if adjacent ~= nil then
+		ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+		return true;
+	else
+		return  false;
+	end
+	--	else
+	--		return true;
+	--	end
+end
+
+function luautils.walkAdjTest(playerObj, square)
 --	if not AdjacentFreeTileFinder.isTileOrAdjacent(playerObj:getCurrentSquare(), square) then
 		-- Avoid walking to already near spot
 		square = luautils.getCorrectSquareForWall(playerObj, square);
@@ -84,7 +150,7 @@ function luautils.walkAdj(playerObj, square, keepActions)
 		end
 		local adjacent = AdjacentFreeTileFinder.Find(square, playerObj);
 		if adjacent ~= nil then
-			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+-- 			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
 			return true;
 		else
 			return  false;
@@ -225,11 +291,12 @@ function luautils.haveToBeTransfered(player, item, dontWalk)
 	end
 end
 
-
+--[[ moved to env.lua
 function round(num, idp)
   local mult = 10^(idp or 0)
   return math.floor(num * mult + 0.5) / mult
 end
+--]]
 
 function luautils.round(num, idp)
     return round(num,idp);
@@ -376,10 +443,11 @@ function luautils.weaponLowerCondition(_weapon, _character, _replace, _chance)
     local chance = _chance or weapon:getConditionLowerChance();
 
     -- Random chance to damage the weapon based on the stats.
-    if ZombRand(chance) == 0 then
+    if weapon:damageCheck(0,1, false) then
+--     if ZombRand(chance) == 0 then
         local replace = _replace or true;
-        local condition = weapon:getCondition() - 1;
-        weapon:setCondition(condition);
+--         local condition = weapon:getCondition() - 1;
+--         weapon:setCondition(condition);
 
         -- If the weapon breaks unequip it and get a new one instead.
         if condition <= 0 and replace then
@@ -476,4 +544,48 @@ function luautils.isSquareAdjacentToSquare(_square1, _square2)
 		if square and (square == _square2) then return true; end;
 	end;
 	return false;
+end
+
+--counts all items in the root container
+--
+--@param _containerList - a table of container objects to check
+--@param _itemsNum - the total number of items
+--
+--@return the total number of items
+--
+--@author eris
+
+function luautils.countItemsRecursive(_containerList, _itemsNum)
+	local itemsNum = _itemsNum or 0;
+	if #_containerList > 0 then
+		local nextContainerList = {};
+		for i = 1, #_containerList do
+			local containerObj = _containerList[i];
+			local containerList = containerObj:getItemsFromCategory("Container");
+			for j = 0, containerList:size() - 1 do
+				table.insert(nextContainerList, containerList:get(j):getInventory());
+			end;
+			itemsNum = itemsNum + containerObj:getItems():size();
+		end;
+		return luautils.countItemsRecursive(nextContainerList, itemsNum);
+	else
+		return itemsNum;
+	end;
+end
+
+--finds the root container for an inventory
+--
+--@param _inventory - the inventory to check
+--
+--@return the root container
+--
+--@author eris
+
+function luautils.findRootInventory(_inventory)
+	local inventory = _inventory;
+	local containingItem = inventory:getContainingItem();
+	if containingItem and containingItem:getContainer() and containingItem:getContainer():getContainingItem() then
+		return luautils.findRootInventory(containingItem:getInventory());
+	end;
+	return inventory;
 end

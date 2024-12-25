@@ -10,7 +10,7 @@ SpeedControlsHandler.onKeyPressed = function(key)
 		return
 	end
 
-	if key == getCore():getKey("Pause") then
+	if getCore():isKey("Pause", key) then
 		if not MainScreen.instance.inGame or MainScreen.instance:getIsVisible() then
 			-- Default "Pause" is same as "Main Menu"
 		elseif key == Keyboard.KEY_ESCAPE and getCell() and getCell():getDrag(0) then
@@ -23,18 +23,21 @@ SpeedControlsHandler.onKeyPressed = function(key)
 			getGameTime():setMultiplier(SpeedControlsHandler.previousSpeed or 1);
 			SpeedControlsHandler.previousSpeed = nil;
 		end
-	elseif key == getCore():getKey("Normal Speed") then
+	elseif getCore():isKey("Normal Speed", key) then
 		setGameSpeed(1);
 		getGameTime():setMultiplier(1);
-	elseif key == getCore():getKey("Fast Forward x1") then
+	elseif getCore():isKey("Fast Forward x1", key) then
 		setGameSpeed(2);
 		getGameTime():setMultiplier(5);
-	elseif key == getCore():getKey("Fast Forward x2") then
+	elseif getCore():isKey("Fast Forward x2", key) then
 		setGameSpeed(3);
 		getGameTime():setMultiplier(20);
-	elseif key == getCore():getKey("Fast Forward x3") then
+	elseif getCore():isKey("Fast Forward x3", key) then
 		setGameSpeed(4);
 		getGameTime():setMultiplier(40);
+	elseif getCore():isKey("Step Forward",key) then
+	    stepForward();
+	    getGameTime():setMultiplier(1);
 	end
 end
 

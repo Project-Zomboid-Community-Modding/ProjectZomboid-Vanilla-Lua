@@ -22,6 +22,7 @@ function ISGeneralCheats:createChildren()
     self:addBoolOption("Moveable Cheat", ISMoveableDefinitions);
     self:addBoolOption("Mechanics Cheat", ISVehicleMechanics);
     self:addBoolOption("LootZed", ISLootZed);
+    self:addBoolOption("LootLog", ISLootLog);
 
     local barMod = 3;
     local y2, label;

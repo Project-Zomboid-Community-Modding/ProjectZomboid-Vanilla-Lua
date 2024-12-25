@@ -18,15 +18,18 @@ function ISNaturalFloor:create(x, y, z, north, sprite)
 	if spriteNames and #spriteNames > 0 then
 		self.javaObject:getModData().shovelledSprites = copyTable(spriteNames)
 	end
-	self.item:Use();
+	self.javaObject:transmitCompleteItemToClients()
+	self.item:UseAndSync()
 	-- bag is empty, we'll try to find another one
 	local playerInv = self.character:getInventory()
 	if not playerInv:containsRecursive(self.item) then
 		self.item = playerInv:getFirstTypeRecurse(self.item:getFullType())
 	end
-	-- refresh backpacks to show equipped empty dirt bags
-	getPlayerInventory(self.character:getPlayerNum()):refreshBackpacks();
-	getPlayerLoot(self.character:getPlayerNum()):refreshBackpacks();
+	if not isServer() then
+		-- refresh backpacks to show equipped empty dirt bags
+		getPlayerInventory(self.character:getPlayerNum()):refreshBackpacks();
+		getPlayerLoot(self.character:getPlayerNum()):refreshBackpacks();
+	end
 end
 
 function ISNaturalFloor:new(sprite, northSprite, item, character)
@@ -84,15 +87,11 @@ end
 function ISNaturalFloor:render(x, y, z, square)
 	ISBuildingObject.render(self, x, y, z, square)
 
-	if not ISNaturalFloor.floorSprite then
-		ISNaturalFloor.floorSprite = IsoSprite.new()
-		ISNaturalFloor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	ISNaturalFloor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISNaturalFloor:walkTo(x, y, z)

@@ -8,20 +8,20 @@ ISModsNagPanel = ISPanelJoypad:derive("ISModsNagPanel")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
+local BUTTON_PADDING = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
 
 function ISModsNagPanel:createChildren()
-	local btnWid = 100
-	local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-	local padY = 10
-
-	self.textureX = 10
-	self.textureY = 10 + FONT_HGT_TITLE + 10
+	self.textureX = UI_BORDER_SPACING
+	self.textureY = UI_BORDER_SPACING*2 + FONT_HGT_TITLE + 1
 	self.textureW = self.texture:getWidth()
 	self.textureH = self.texture:getHeight()
 
 	local x = self.textureX + self.textureW
 	local y = self.textureY
-	self.richText = ISRichTextPanel:new(x, y, self.width - x, self.height - padY - btnHgt - padY - y)
+	self.richText = ISRichTextPanel:new(x, y, self.width - x, self.height - UI_BORDER_SPACING*2 - BUTTON_HGT - y - 1)
 	self.richText.background = false
 	self.richText.autosetheight = false
 	self.richText.clip = true
@@ -32,7 +32,8 @@ function ISModsNagPanel:createChildren()
 	self.richText:setText(getText("UI_ModsNagPanel_Text"))
 	self.richText:paginate()
 
-	self.ok = ISButton:new((self:getWidth() / 2) - btnWid / 2, self:getHeight() - padY - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, self.onOK)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok"))
+	self.ok = ISButton:new((self:getWidth() - btnWidth) / 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_Ok"), self, self.onOK)
 	self.ok.anchorTop = false
 	self.ok.anchorBottom = true
 	self.ok:initialise()
@@ -43,7 +44,7 @@ end
 
 function ISModsNagPanel:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ModsNagPanel_Title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title);
+	self:drawTextCentre(getText("UI_ModsNagPanel_Title"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
 	self:drawTextureScaledAspect(self.texture, self.textureX, self.textureY, self.textureW, self.textureH, 1, 1, 1, 1)
 end
 

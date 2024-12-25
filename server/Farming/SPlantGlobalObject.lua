@@ -31,12 +31,17 @@ function SPlantGlobalObject.initModData(modData)
 	modData.mildewLvl = 0
 	modData.aphidLvl = 0
 	modData.fliesLvl = 0
+	modData.slugsLvl = 0
+	modData.hasWeeds = false
 	modData.waterLvl = 0
 	modData.waterNeeded = 0
 	modData.waterNeededMax = nil
 	modData.lastWaterHour = 0
 	modData.hasSeed = false
 	modData.hasVegetable = false
+	modData.cursed = false
+	modData.compost = false
+	modData.bonusYield = false
 	modData.health = SFarmingSystem.instance:getHealth()
 	modData.badCare = false
 	modData.exterior = true
@@ -68,10 +73,16 @@ function SPlantGlobalObject:stateToIsoObject(isoObject)
 	if tonumber(self.aphidLvl) then self.aphidLvl = math.min(self.aphidLvl, 100) end
 	if tonumber(self.fliesLvl) then self.fliesLvl = math.min(self.fliesLvl, 100) end
 	if tonumber(self.mildewLvl) then self.mildewLvl = math.min(self.mildewLvl, 100) end
+	if tonumber(self.slugsLvl) then self.slugsLvl = math.min(self.slugsLvl, 100) end
+-- 	if tonumber(self.weedLvl) then self.weedLvl = math.min(self.weedLvl, 100) end
 
 	if self.lastWaterHour and self.lastWaterHour > SFarmingSystem.instance.hoursElapsed then
 		if farming_vegetableconf.props[self.typeOfSeed] then
-			self.nextGrowing = SFarmingSystem.instance.hoursElapsed + farming_vegetableconf.props[self.typeOfSeed].timeToGrow
+			if getCore():getDebug() and getDebugOptions():getBoolean("Cheat.Farming.FastGrow") then
+				self.nextGrowing = SFarmingSystem.instance.hoursElapsed + 1
+			else
+				self.nextGrowing = SFarmingSystem.instance.hoursElapsed + farming_vegetableconf.props[self.typeOfSeed].timeToGrow
+			end
 		end
 		self.lastWaterHour = SFarmingSystem.instance.hoursElapsed
 		self:noise('reset lastWaterHour/nextGrowing on plant '..self.x..','..self.y)
@@ -123,7 +134,81 @@ function SPlantGlobalObject:setSpriteName(spriteName)
 end
 
 function SPlantGlobalObject:isAlive()
-	return self.state ~= "destroy" and self.state ~= "dry" and self.state ~= "rotten"
+	return self.state ~= "destroyed" and self.state ~= "dead" and self.state ~= "rotten" and self.state ~= "harvested"
+end
+
+function SPlantGlobalObject:hasVisibleFlies()
+	return self.fliesLvl > 30
+end
+
+function SPlantGlobalObject:isBadMonth()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+    if not self or self.typeOfSeed == nil then return end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	if not prop.badMonth then return false end
+    for i = 1, #prop.badMonth do
+        if getGameTime():getMonth()+1 == prop.badMonth[i] then
+            return true
+        end
+    end
+    return false
+end
+
+function SPlantGlobalObject:isBadMonthHardy()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+    if not self or self.typeOfSeed then return end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	return prop.badMonthHardyLevel and self.nbOfGrow >= prop.badMonthHardyLevel
+end
+
+function SPlantGlobalObject:isColdHardy()
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	return prop.coldHardy
+end
+
+function SPlantGlobalObject:isSowMonth()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+    if not self or self.typeOfSeed then return end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	if not prop.sowMonth then return false end
+    for i = 1, #prop.sowMonth do
+        if getGameTime():getMonth() == prop.sowMonth[i] then
+            return true
+        end
+    end
+    return false
+end
+
+function SPlantGlobalObject:isBestMonth()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+    if not self or self.typeOfSeed then return end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	if not prop.bestMonth then return false end
+    for i = 1, #prop.bestMonth do
+        if getGameTime():getMonth() == prop.bestMonth[i] then
+            return true
+        end
+    end
+    return false
+end
+
+function SPlantGlobalObject:isRiskMonth()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+    if not self or self.typeOfSeed then return end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop then return end
+	if not prop.riskMonth then return false end
+    for i = 1, #prop.riskMonth do
+        if getGameTime():getMonth() == prop.riskMonth[i] then
+            return true
+        end
+    end
+    return false
 end
 
 function SPlantGlobalObject:canHarvest()
@@ -148,100 +233,148 @@ end
 -- if the plant doesn't have mildew, maybe it will have it !
 -- base risk for mildew is 2%, but every pt of water below the required water lvl add 1% risk
 function SPlantGlobalObject:mildew()
-	local mildewNumber = 2
-	local waterBelow = self.waterNeeded - self.waterLvl
-	-- our plant is well watered
-	if(waterBelow <= 0) then
-		waterBelow = 0
-	end
-	mildewNumber = mildewNumber + waterBelow
-	if SandboxVars.PlantResilience == 1 then -- very high
-		mildewNumber = mildewNumber - 8;
-	elseif SandboxVars.PlantResilience == 2 then -- high
-		mildewNumber = mildewNumber - 4;
-	elseif SandboxVars.PlantResilience == 4 then -- low
-		mildewNumber = mildewNumber + 4;
-	elseif SandboxVars.PlantResilience == 5 then -- very low
-		mildewNumber = mildewNumber + 8;
-	end
-	if mildewNumber < 0 then
-		mildewNumber = 0;
-	end
-	-- random !
-	local mildewRisk = ZombRand(mildewNumber, 101)
-	-- you got mildew !
-	if(mildewRisk == 99) then
-		self.mildewLvl = 1
-	end
+--     local prop = farming_vegetableconf.props[self.typeOfSeed]
+    if self:defaultDiseaseCheck() and self.mildewLvl == 0 then self.mildewLvl = 1 end
+-- 	local mildewNumber = 2
+-- 	local waterBelow = self.waterNeeded - self.waterLvl
+-- 	-- our plant is well watered
+-- 	if(waterBelow <= 0) then
+-- 		waterBelow = 0
+-- 	end
+-- 	mildewNumber = mildewNumber + waterBelow
+-- 	if SandboxVars.PlantResilience == 1 then -- very high
+-- 		mildewNumber = mildewNumber - 8;
+-- 	elseif SandboxVars.PlantResilience == 2 then -- high
+-- 		mildewNumber = mildewNumber - 4;
+-- 	elseif SandboxVars.PlantResilience == 4 then -- low
+-- 		mildewNumber = mildewNumber + 4;
+-- 	elseif SandboxVars.PlantResilience == 5 then -- very low
+-- 		mildewNumber = mildewNumber + 8;
+-- 	end
+-- 	if mildewNumber < 0 then
+-- 		mildewNumber = 0;
+-- 	end
+-- 	-- random !
+-- 	-- plants take longer to grow + we want less disease jumping between plants to the chance was doubled.
+-- 	if ZombRand(200 - (mildewNumber * 2)) == 0 then
+-- 	-- if ZombRand(101 - mildewNumber) == 0 then
+-- 	-- you got mildew !
+-- 		self.mildewLvl = 1
+--     end
 end
 
 -- if the plant doesn't have aphid, maybe it will have it !
 -- base risk for aphid is 2%, but every pt of water below the required water lvl add 1% risk
 function SPlantGlobalObject:aphid()
-	local aphidNumber = 2
-	local waterBelow = self.waterNeeded - self.waterLvl
-	-- our plant is well watered
-	if(waterBelow <= 0) then
-		waterBelow = 0
-	end
-	aphidNumber = aphidNumber + waterBelow
-	if SandboxVars.PlantResilience == 1 then -- very high
-		aphidNumber = aphidNumber - 8;
-	elseif SandboxVars.PlantResilience == 2 then -- high
-		aphidNumber = aphidNumber - 4;
-	elseif SandboxVars.PlantResilience == 4 then -- low
-		aphidNumber = aphidNumber + 4;
-	elseif SandboxVars.PlantResilience == 5 then -- very low
-		aphidNumber = aphidNumber + 8;
-	end
-	if aphidNumber < 0 then
-		aphidNumber = 0;
-	end
-	-- random !
-	-- I have to set 101 to the max, don't know why but the zombRand never take the last digit (ex, between 5 and 10, you'll never have 10...)
-	local aphidRisk = ZombRand(aphidNumber, 101)
-	-- you got aphid !
-	if(aphidRisk == 99) then
-		self.aphidLvl = 1
-	end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if prop.aphidsBane or prop.aphidsProof then return end
+    if self:defaultDiseaseCheck() and self.aphidLvl == 0 and (getClimateManager():getSeasonName() ~= "Winter" or not self.exterior) and season.currentTemp > 10 then self.aphidLvl = 1 end
+-- 	local aphidNumber = 2
+-- 	local waterBelow = self.waterNeeded - self.waterLvl
+-- 	-- our plant is well watered
+-- 	if(waterBelow <= 0) then
+-- 		waterBelow = 0
+-- 	end
+-- 	aphidNumber = aphidNumber + waterBelow
+-- 	if SandboxVars.PlantResilience == 1 then -- very high
+-- 		aphidNumber = aphidNumber - 8;
+-- 	elseif SandboxVars.PlantResilience == 2 then -- high
+-- 		aphidNumber = aphidNumber - 4;
+-- 	elseif SandboxVars.PlantResilience == 4 then -- low
+-- 		aphidNumber = aphidNumber + 4;
+-- 	elseif SandboxVars.PlantResilience == 5 then -- very low
+-- 		aphidNumber = aphidNumber + 8;
+-- 	end
+-- 	if aphidNumber < 0 then
+-- 		aphidNumber = 0;
+-- 	end
+-- 	-- random !
+-- 	-- plants take longer to grow + we want less disease jumping between plants to the chance was doubled.
+-- 	if ZombRand(200 - (aphidNumber * 2)) == 0 then
+-- 	-- if ZombRand(101 - aphidNumber) == 0 then
+-- 	-- you got aphid !
+-- 		self.aphidLvl = 1
+--     end
 end
 
 -- if the plant doesn't have flies, maybe it will have it !
 -- base risk for flies is 2%, but every pt of water below the required water lvl add 1% risk
 function SPlantGlobalObject:flies()
-	local fliesNumber = 2
-	local waterBelow = self.waterNeeded - self.waterLvl
-	-- our plant is well watered
-	if(waterBelow <= 0) then
-		waterBelow = 0
-	end
-	fliesNumber = fliesNumber + waterBelow
-	if SandboxVars.PlantResilience == 1 then -- very high
-		fliesNumber = fliesNumber - 8;
-	elseif SandboxVars.PlantResilience == 2 then -- high
-		fliesNumber = fliesNumber - 4;
-	elseif SandboxVars.PlantResilience == 4 then -- low
-		fliesNumber = fliesNumber + 4;
-	elseif SandboxVars.PlantResilience == 5 then -- very low
-		fliesNumber = fliesNumber + 8;
-	end
-	if fliesNumber < 0 then
-		fliesNumber = 0;
-	end
-	-- random !
-	-- I have to set 101 to the max, don't know why but the zombRand never take the last digit (ex, between 5 and 10, you'll never have 10...)
-	local fliesRisk = ZombRand(fliesNumber, 101)
-	-- you got flies !
-	if(fliesRisk == 99) then
-		self.fliesLvl = 1
-	end
+    local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if prop.fliesBane or prop.fliesProof then return end
+    if self:defaultDiseaseCheck() and self.fliesLvl == 0 and (getClimateManager():getSeasonName() ~= "Winter" or not self.exterior) and season.currentTemp > 10 then self.fliesLvl = 1 end
+-- 	local fliesNumber = 2
+-- 	local waterBelow = self.waterNeeded - self.waterLvl
+-- 	-- our plant is well watered
+-- 	if(waterBelow <= 0) then
+-- 		waterBelow = 0
+-- 	end
+-- 	fliesNumber = fliesNumber + waterBelow
+-- 	if SandboxVars.PlantResilience == 1 then -- very high
+-- 		fliesNumber = fliesNumber - 8;
+-- 	elseif SandboxVars.PlantResilience == 2 then -- high
+-- 		fliesNumber = fliesNumber - 4;
+-- 	elseif SandboxVars.PlantResilience == 4 then -- low
+-- 		fliesNumber = fliesNumber + 4;
+-- 	elseif SandboxVars.PlantResilience == 5 then -- very low
+-- 		fliesNumber = fliesNumber + 8;
+-- 	end
+-- 	if fliesNumber < 0 then
+-- 		fliesNumber = 0;
+-- 	end
+-- 	-- random !
+-- 	-- plants take longer to grow + we want less disease jumping between plants to the chance was doubled.
+-- 	if ZombRand(200 - (fliesNumber * 2)) == 0 then
+-- 	-- 	if ZombRand(101 - fliesNumber) == 0 then
+-- 	-- you got flies !
+-- 		self.fliesLvl = 1
+--     end
 end
+
+function SPlantGlobalObject:slugs()
+    local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if prop.slugsBane or prop.slugsProof then return end
+    if self:defaultDiseaseCheck() and self.slugsLvl == 0 and (getClimateManager():getSeasonName() ~= "Winter" or not self.exterior) and season.currentTemp > 10 then self.slugsLvl = 1 end
+end
+
+function SPlantGlobalObject:defaultDiseaseCheck()
+   	local chance = 0
+   	local waterBelow = self.waterNeeded - self.waterLvl
+   	-- our plant is well watered
+   	if(waterBelow <= 0) then
+   		waterBelow = 0
+   	end
+   	chance = chance + waterBelow
+   	if SandboxVars.PlantResilience == 1 then -- very high
+   		chance = chance - 8;
+   	elseif SandboxVars.PlantResilience == 2 then -- high
+   		chance = chance - 4;
+   	elseif SandboxVars.PlantResilience == 4 then -- low
+   		chance = chance + 4;
+   	elseif SandboxVars.PlantResilience == 5 then -- very low
+   		chance = chance + 8;
+   	end
+   	if chance < 0 then
+   		chance = 0;
+   	end
+   	-- random !
+   	-- plants take longer to grow + we want less disease jumping between plants so the chance was reduced.
+   	-- but weeds and being cursed increase the chance!
+   	local roll = 200
+   	if self.bonusYield then roll = roll*2 end
+   	if self.hasWeeds then roll = roll/2 end
+   	if self.cursed then roll = roll/2 end
+    if ZombRand(roll) <= chance then
+        return true
+    end
+    return false;
+ end
 
 -- up the disease by a number, it's the double if your plant is not well watered
 function SPlantGlobalObject:upDisease()
+    local water = farming_vegetableconf.calcWater(self.waterNeeded, self.waterLvl)
 	-- mildew lvl up by 1 or 0.5 if your plant is well watered
-	if self.mildewLvl ~= nil and self.mildewLvl > 0 then
-		local water = farming_vegetableconf.calcWater(self.waterNeeded, self.waterLvl)
+	if self.mildewLvl ~= nil and self.mildewLvl > 0  then
 		if(water >= 0) then
 			self.mildewLvl = self.mildewLvl + 0.5
 		else
@@ -250,19 +383,40 @@ function SPlantGlobalObject:upDisease()
 		self.mildewLvl = math.min(self.mildewLvl, 100)
 	end
 	-- flies lvl up by 1 or 0.5 if your plant is well watered
-	if self.fliesLvl ~= nil and self.fliesLvl > 0 then
-		local water = farming_vegetableconf.calcWater(self.waterNeeded, self.waterLvl)
-		if(water >= 0) then
+	if self.fliesLvl ~= nil and self.fliesLvl > 0  then
+        local hasFlies = self:hasVisibleFlies()
+		if getClimateManager():getSeasonName() == "Winter" and self.exterior then
+            local hasFlies = self:hasVisibleFlies()
+			self.fliesLvl = self.fliesLvl - 2
+			if self.fliesLvl < 0 then
+				self.fliesLvl = 0
+			end
+	        if hasFlies and not self:hasVisibleFlies() and self:getSquare() then self:getSquare():setHasFlies(false) end
+		elseif(water >= 0) then
 			self.fliesLvl = self.fliesLvl + 0.5
+		    self.fliesLvl = math.min(self.fliesLvl, 100)
 		else
 			self.fliesLvl = self.fliesLvl + 1
+		    self.fliesLvl = math.min(self.fliesLvl, 100)
 		end
-		self.fliesLvl = math.min(self.fliesLvl, 100)
+	end
+	if self.slugsLvl ~= nil and self.slugsLvl > 0 then
+		if getClimateManager():getSeasonName() == "Winter" and self.exterior then
+			self.slugsLvl = self.slugsLvl - 2
+			if self.slugsLvl < 0 then
+				self.slugsLvl = 0
+			end
+		elseif(water >= 0) then
+			self.slugsLvl = self.slugsLvl + 0.5
+		    self.slugsLvl = math.min(self.slugsLvl, 100)
+		else
+			self.slugsLvl = self.slugsLvl + 1
+		    self.slugsLvl = math.min(self.slugsLvl, 100)
+		end
 	end
 	-- aphid is different than mildew, you'll have to deshydrate your plant to lower the aphid lvl
 	if self.aphidLvl ~= nil and self.aphidLvl > 0 then
-		local water = farming_vegetableconf.calcWater(self.waterNeeded, self.waterLvl)
-		if water == -1 or water == -2 then
+		if water == -1 or water == -2 or (getClimateManager():getSeasonName() == "Winter" and self.exterior) then
 			self.aphidLvl = self.aphidLvl - 2
 			if self.aphidLvl < 0 then
 				self.aphidLvl = 0
@@ -277,9 +431,11 @@ end
 -- lower by 1 the waterLvl of all our plant
 function SPlantGlobalObject:lowerWaterLvl(plant)
 	if self.waterLvl ~= nil then
+		local waterChange = 1
+		if self.hasWeeds then waterChange = waterChange * 2 end
 		-- flies make water dry more quickly, every 10 pts of flies, water lower by 1 more pts
 		local waterFliesChanger = math.floor(self.fliesLvl / 10)
-		self.waterLvl = self.waterLvl - 1 - waterFliesChanger
+		self.waterLvl = self.waterLvl - waterChange - waterFliesChanger
 		if self.waterLvl < 0 then
 			self.waterLvl = 0
 		end
@@ -287,12 +443,14 @@ function SPlantGlobalObject:lowerWaterLvl(plant)
 end
 
 -- if we add mildew spray
-function SPlantGlobalObject:cureMildew(mildewCureSource, uses)
+function SPlantGlobalObject:cureMildew(mildewCureSource, uses, skill)
+    if not skill then skill = 0 end
 	for i=1,uses do
 		if mildewCureSource then
 			mildewCureSource:Use()
 		end
-		self.mildewLvl = self.mildewLvl - 5
+		local kill = 10 + skill
+		self.mildewLvl = self.mildewLvl - kill
 		if self.mildewLvl < 0 then
 			self.mildewLvl = 0
 		end
@@ -301,14 +459,48 @@ function SPlantGlobalObject:cureMildew(mildewCureSource, uses)
 end
 
 -- if we add insecticide spray
-function SPlantGlobalObject:cureFlies(fliesCureSource, uses)
+function SPlantGlobalObject:cureFlies(fliesCureSource, uses, skill)
+    if not skill then skill = 0 end
+    local hasFlies = self:hasVisibleFlies()
 	for i=1,uses do
 		if fliesCureSource then
 			fliesCureSource:Use()
 		end
-		self.fliesLvl = self.fliesLvl - 5
+		local kill = 10 + skill
+		self.fliesLvl = self.fliesLvl - kill
 		if self.fliesLvl < 0 then
 			self.fliesLvl = 0
+		end
+	end
+	if hasFlies and not self:hasVisibleFlies() and self:getSquare() then self:getSquare():setHasFlies(false) end
+	self:saveData()
+end
+
+function SPlantGlobalObject:cureAphids(aphidsCureSource, uses, skill)
+    if not skill then skill = 0 end
+	for i=1,uses do
+		if aphidsCureSource then
+			aphidsCureSource:Use()
+		end
+		local kill = 10 + skill
+		self.aphidLvl = self.aphidLvl - kill
+		if self.aphidLvl < 0 then
+			self.aphidLvl = 0
+		end
+	end
+	self:saveData()
+end
+
+function SPlantGlobalObject:cureSlugs(slugsCureSource, uses, skill)
+    if not skill then skill = 0 end
+	for i=1,uses do
+		if slugsCureSource then
+			slugsCureSource:Use()
+		end
+		local kill = 10 + skill
+		self.slugsLvl = self.slugsLvl - kill
+		if self.slugsLvl < 0 then
+			self.slugsLvl = 0
 		end
 	end
 	self:saveData()
@@ -320,11 +512,11 @@ function SPlantGlobalObject:water(waterSource, uses)
 	for i=1,uses do
 		if self.waterLvl < 100 then
 			if waterSource then
-				if waterSource:getUsedDelta() > 0 then
+				if waterSource:getCurrentUsesFloat() > 0 then
 					waterSource:Use()
 				end
 			end
-			self.waterLvl = self.waterLvl + 5
+			self.waterLvl = self.waterLvl + 10
 			if self.waterLvl > 100 then
 				self.waterLvl = 100
 			end
@@ -336,24 +528,115 @@ function SPlantGlobalObject:water(waterSource, uses)
 end
 
 -- fertilize the plant, more than 4 doses and your plant die ! (no mercy !)
-function SPlantGlobalObject:fertilize(fertilizer)
+function SPlantGlobalObject:fertilize(args)
+    local skill = args.skill
 	if self.state ~= "plow" and self:isAlive() then
-		if self.fertilizer < 4  then
-			self.fertilizer = self.fertilizer + 1
-			self.nextGrowing = self.nextGrowing - 20
-			if self.nextGrowing < 1 then
-				self.nextGrowing = 1
-			end
-		else -- too much fertilizer and our plant die !
-			self:rottenThis()
+	    -- compost is different as it can't kill a plant
+	    if args.compost then
+-- 	        print("Skill " .. tostring(skill))
+	        self:compostPlant(skill)
+	        return
+	    end
+        self.fertilizer = self.fertilizer + 1
+		if self.fertilizer == 1  then
+		    self:fertilize2(skill)
+-- 		    -- there's no benefit to fertilizing in winter
+-- 		    if getClimateManager():getSeasonName() ~= "Winter" or getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then
+--                 -- increase the effect on time reduction as plants take longer to grow now
+--                 local growChange = 80
+--                 if self.hasWeeds then growChange = growChange/2 end
+--                 self.nextGrowing = self.nextGrowing - growChange
+--     -- 			self.nextGrowing = self.nextGrowing - 20
+--                 if self.nextGrowing < 1 then
+--                     self.nextGrowing = 1
+--                 end
+--                 local prop = farming_vegetableconf.props[self.typeOfSeed]
+--                 if (prop.harvestLevel and self.nbOfGrow < prop.harvestLevel) or not prop.harvestLevel  and not self.hasWeeds then
+--                     self.health = self.health + 25
+--                 end
+--                 -- fertilizer will boost the yield of a crop if applied at the start
+--                 if self.nbOfGrow <= 2 and not self.cursed and not self.hasWeeds then
+--                     self.bonusYield = true
+--                 end
+--             end
+		elseif  self.fertilizer == 2  then
+            self.health = self.health - 25
+		elseif self.fertilizer > 2  then -- too much fertilizer and our plant cursed !
+            self.cursed = true
+            self.health = self.health - 25
 		end
+        if self.health <= 0 then
+            self.health = 0
+            self:killThis()
+        end
 		self:saveData()
 	end
+end
+
+
+
+function SPlantGlobalObject:compostPlant(skill)
+    if not skill then skill = 0 end
+    -- if the plant is already fertilized, no benefits
+    if self.compost then return end
+    self.compost = true
+    self:fertilize2(skill)
+    self:saveData()
+    -- there's no benefit to fertilizing in winter
+--     if getClimateManager():getSeasonName() ~= "Winter" or getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then
+--         -- increase the effect on time reduction as plants take longer to grow now
+--         local growChange = 80
+--         if self.hasWeeds then growChange = growChange/2 end
+--         self.nextGrowing = self.nextGrowing - growChange
+-- -- 			self.nextGrowing = self.nextGrowing - 20
+--         if self.nextGrowing < 1 then
+--             self.nextGrowing = 1
+--         end
+--         local prop = farming_vegetableconf.props[self.typeOfSeed]
+--         if (prop.harvestLevel and self.nbOfGrow < prop.harvestLevel) or not prop.harvestLevel  and not self.hasWeeds then
+--             self.health = self.health + 25
+--         end
+--         -- fertilizer will boost the yield of a crop if applied at the start
+--         if self.nbOfGrow <= 2 and not self.cursed and not self.hasWeeds then
+--             self.bonusYield = true
+--         end
+--     end
+end
+
+function SPlantGlobalObject:fertilize2(skill)
+    if not skill then skill = 0 end
+    -- there's no benefit to fertilizing in winter
+    if getClimateManager():getSeasonName() ~= "Winter" or getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then
+        -- increase the effect on time reduction as plants take longer to grow now
+        local growChange = 40
+        if self.hasWeeds then growChange = growChange/2 end
+        self.nextGrowing = self.nextGrowing - growChange
+-- 			self.nextGrowing = self.nextGrowing - 20
+        if self.nextGrowing < 1 then
+            self.nextGrowing = 1
+        end
+        local prop = farming_vegetableconf.props[self.typeOfSeed]
+        if (prop.harvestLevel and self.nbOfGrow < prop.harvestLevel) or not prop.harvestLevel  and not self.hasWeeds then
+            self.health = self.health + 10
+        end
+        -- fertilizer can boost the yield of a crop if applied at the start
+
+        if self.nbOfGrow <= 3 and not self.cursed and not self.hasWeeds and ZombRand(20) < (9 + skill) then
+            self.bonusYield = true
+        end
+        if self.health > 100 then
+            self.health = 100
+        end
+    end
 end
 
 -- check the stat to make them ok (if water < 0 we set it to 0 for example)
 -- if health < 0 the plant is dead (dry)
 function SPlantGlobalObject:checkStat()
+    if not self:isAlive() then return end
+--     print("TEXT Y" .. tostring(self))
+--     print("TEXT X" .. tostring(self.state))
+--     print("TEXT Z" .. tostring(self.nbOfGrow))
 	if self.state ~= "plow" and self.nbOfGrow > 1 then
 		if self.waterLvl <= 0 then
 			self:dryThis()
@@ -361,7 +644,8 @@ function SPlantGlobalObject:checkStat()
 			self.waterLvl = 100
 		end
 		if self.health <= 0 then
-			self:dryThis()
+			self:killThis()
+-- 			self:dryThis()
 		end
 	end
 	if self.waterLvl < 0 then
@@ -374,37 +658,46 @@ function SPlantGlobalObject:checkStat()
 	end
 end
 
+function SPlantGlobalObject:killThis()
+	self.state = "dead"
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
+	self:setObjectName(farming_vegetableconf.getObjectName(self))
+	self:deadPlant()
+end
+
 -- make the plant dry (no more water !)
 function SPlantGlobalObject:dryThis()
-	if self.typeOfSeed == "Tomato" then
-		self:setSpriteName("vegetation_farming_01_6")
-	else
-		self:setSpriteName("vegetation_farming_01_5")
-	end
-	self.state = "dry"
+-- 	if self.typeOfSeed == "Tomato" then
+-- 		self:setSpriteName("vegetation_farming_01_6")
+-- 	else
+-- 		self:setSpriteName("vegetation_farming_01_5")
+-- 	end
+	self.state = "dead"
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
 	self:setObjectName(farming_vegetableconf.getObjectName(self))
 	self:deadPlant()
 end
 
 function SPlantGlobalObject:rottenThis()
-	local texture = nil
-	if self.typeOfSeed == "Carrots" then
-		texture = "vegetation_farming_01_13"
-	elseif self.typeOfSeed == "Broccoli" then
-		texture = "vegetation_farming_01_23"
-	elseif self.typeOfSeed == "Strawberry plant" then
-		texture = "vegetation_farming_01_63"
-	elseif self.typeOfSeed == "Radishes" then
-		texture = "vegetation_farming_01_39"
-	elseif self.typeOfSeed == "Tomato" then
-		texture = "vegetation_farming_01_71"
-	elseif self.typeOfSeed == "Potatoes" then
-		texture = "vegetation_farming_01_47"
-	elseif self.typeOfSeed == "Cabbages" then
-		texture = "vegetation_farming_01_31"
-	end
-	self:setSpriteName(texture)
+-- 	local texture = nil
+-- 	if self.typeOfSeed == "Carrots" then
+-- 		texture = "vegetation_farming_01_13"
+-- 	elseif self.typeOfSeed == "Broccoli" then
+-- 		texture = "vegetation_farming_01_23"
+-- 	elseif self.typeOfSeed == "Strawberryplant" then
+-- 		texture = "vegetation_farming_01_63"
+-- 	elseif self.typeOfSeed == "Radishes" then
+-- 		texture = "vegetation_farming_01_39"
+-- 	elseif self.typeOfSeed == "Tomato" then
+-- 		texture = "vegetation_farming_01_71"
+-- 	elseif self.typeOfSeed == "Potatoes" then
+-- 		texture = "vegetation_farming_01_47"
+-- 	elseif self.typeOfSeed == "Cabbages" then
+-- 		texture = "vegetation_farming_01_31"
+-- 	end
+-- 	self:setSpriteName(texture)
 	self.state = "rotten"
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
 	self:setObjectName(farming_vegetableconf.getObjectName(self))
 	self:deadPlant()
 end
@@ -412,18 +705,28 @@ end
 -- destroy the plant (someone walked on it :))
 function SPlantGlobalObject:destroyThis()
 	-- tomato has different smashed tile
-	if self.typeOfSeed == "Tomato" then
-		self:setSpriteName("vegetation_farming_01_14")
-	else
-		self:setSpriteName("vegetation_farming_01_13")
-	end
-	self.state = "destroy"
+-- 	if self.typeOfSeed == "Tomato" then
+-- 		self:setSpriteName("vegetation_farming_01_14")
+-- 	else
+-- 		self:setSpriteName("vegetation_farming_01_13")
+-- 	end
+	self.state = "destroyed"
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
 	self:setObjectName(farming_vegetableconf.getObjectName(self))
 	self:deadPlant()
-	self:saveData()
+-- 	self:saveData()
+end
+-- change the plant to a destroyed yet harvested state
+function SPlantGlobalObject:harvestThis()
+	self.state = "harvested"
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
+	self:setObjectName(farming_vegetableconf.getObjectName(self))
+	self:deadPlant()
+-- 	self:saveData()
 end
 
-function SPlantGlobalObject:seed(typeOfSeed)
+function SPlantGlobalObject:seed(typeOfSeed, skill)
+    if not skill then skill = 0 end
 	-- will set the first growing state for the type of seed
 	self.nbOfGrow = 0
 	self.state = "seeded"
@@ -432,17 +735,47 @@ function SPlantGlobalObject:seed(typeOfSeed)
 	self.lastWaterHour = SFarmingSystem.instance.hoursElapsed
 	self.waterNeeded = 0
 	SFarmingSystem.instance:growPlant(self, nil, true)
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == true then
+        if not self:isSowMonth() then self.cursed = true
+        elseif self:isRiskMonth() and ZombRand(20) < (11 - skill) then self.cursed = true
+        elseif self:isBestMonth() and ZombRand(20) < (9 + skill) then self.bonusYield = true
+        end
+    end
+    self:initHealth(skill)
+	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
 	self:saveData()
 end
 
+function SPlantGlobalObject:initHealth(skill)
+    local seasons = getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == true
+    if not skill then skill = 0 end
+    if seasons and self:isBestMonth() then
+		self.health = ZombRand(57, 64) + skill
+    elseif seasons and self.cursed then
+		self.health = ZombRand(37, 44) + skill
+    else
+        self.health =  SFarmingSystem.instance:getHealth() + skill
+    end
+end
+
 function SPlantGlobalObject:deadPlant()
+    if self:getSquare() and self:hasVisibleFlies() then self:getSquare():setHasFlies(false) end
 	self.nextGrowing = 0
 	self.waterLvl = 0
-	self.nbOfGrow = 0
+-- 	self.nbOfGrow = 0
 	self.mildewLvl = 0
 	self.aphidLvl = 0
 	self.fliesLvl = 0
+	self.slugsLvl = 0
+	self.hasWeeds = false
+	self.naturalLight = 1
 	self.health = 0
+	self.hasSeeds = false
+	self.hasVegetable = false
+	self.cursed = false
+	self.compost = false
+	self.bonusYield = false
+	self:saveData()
 end
 
 function SPlantGlobalObject:addIcon()
@@ -464,6 +797,10 @@ function SPlantGlobalObject:fromModData(modData)
 	self.mildewLvl = modData.mildewLvl
 	self.aphidLvl = modData.aphidLvl
 	self.fliesLvl = modData.fliesLvl
+	self.slugsLvl = modData.slugsLvl
+-- 	self.weedLvl = modData.weedLvl
+	self.hasWeeds = modData.hasWeeds == "true" or modData.hasWeeds == true
+	self.naturalLight = modData.naturalLight
 	self.waterLvl = modData.waterLvl
 	self.waterNeeded = modData.waterNeeded
 	self.waterNeededMax = modData.waterNeededMax
@@ -471,6 +808,9 @@ function SPlantGlobalObject:fromModData(modData)
 	self.nextGrowing = modData.nextGrowing
 	self.hasSeed = modData.hasSeed == "true" or modData.hasSeed == true
 	self.hasVegetable = modData.hasVegetable == "true" or modData.hasVegetable == true
+	self.cursed = modData.cursed == "true" or modData.cursed == true
+	self.compost = modData.compost == "true" or modData.compost == true
+	self.bonusYield = modData.bonusYield == "true" or modData.bonusYield == true
 	self.health = modData.health
 	self.badCare = modData.badCare == "true" or modData.badCare == true
 	self.exterior = modData.exterior == true or modData.exterior == nil
@@ -492,6 +832,9 @@ function SPlantGlobalObject:toModData(modData)
 	modData.mildewLvl = self.mildewLvl
 	modData.aphidLvl = self.aphidLvl
 	modData.fliesLvl = self.fliesLvl
+	modData.slugsLvl = self.slugsLvl
+	modData.naturalLight= self.naturalLight
+	modData.hasWeeds = self.hasWeeds
 	modData.waterLvl = self.waterLvl
 	modData.waterNeeded = self.waterNeeded
 	modData.waterNeededMax = self.waterNeededMax
@@ -499,6 +842,9 @@ function SPlantGlobalObject:toModData(modData)
 	modData.nextGrowing = self.nextGrowing
 	modData.hasSeed = self.hasSeed
 	modData.hasVegetable = self.hasVegetable
+	modData.cursed = self.cursed
+	modData.compost = self.compost
+	modData.bonusYield = self.bonusYield
 	modData.health = self.health
 	modData.badCare = self.badCare
 	modData.exterior = self.exterior
@@ -515,4 +861,3 @@ function SPlantGlobalObject:loadGridSquare()
 	if not isoObject then return end
 	self:loadIsoObject(isoObject)
 end
-

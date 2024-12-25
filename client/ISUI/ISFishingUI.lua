@@ -540,12 +540,12 @@ function ISFishingUI:doBagOptions()
 
     self.containerSelector:clear();
     -- First option is player's main inventory
-    self.containerSelector:addOptionWithData("Main Inventory", self.player:getInventory());
+    self.containerSelector:addOptionWithData(getText("IGUI_FishingUI_Inventory"), self.player:getInventory());
     -- Then we fill the ComboBox with the containers on player's inventory
     self.containers = self.player:getInventory():getItemsFromCategory("Container");
     for i=0, self.containers:size() - 1 do
         local bag = self.containers:get(i);
-        if (bag:getType() ~= "KeyRing") then
+        if (bag:getType() ~= "KeyRing" and not bag:hasTag("KeyRing")) then
             self.containerSelector:addOptionWithData(bag:getName(), bag);
         end
     end

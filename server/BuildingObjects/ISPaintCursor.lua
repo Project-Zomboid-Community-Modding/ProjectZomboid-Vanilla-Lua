@@ -58,7 +58,7 @@ function ISPaintCursor:create(x, y, z, north, sprite)
 			plaster = playerInv:getFirstTypeRecurse("BucketPlasterFull")
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, plaster)
 		end
-		ISTimedActionQueue.add(ISPlasterAction:new(playerObj, object, plaster, 100))
+		ISTimedActionQueue.add(ISPlasterAction:new(playerObj, object, plaster))
 	end
 end
 
@@ -80,7 +80,7 @@ function ISPaintCursor:_isDoorFrame(object)
 end
 
 function ISPaintCursor:rotateKey(key)
-	if key == getCore():getKey("Rotate building") then
+	if getCore():isKey("Rotate building", key) then
 		self.objectIndex = self.objectIndex + 1
 		local objects = self:getObjectList()
 		if self.objectIndex > #objects then
@@ -97,16 +97,11 @@ function ISPaintCursor:isValid(square)
 end
 
 function ISPaintCursor:render(x, y, z, square)
-	if not self.floorSprite then
-		self.floorSprite = IsoSprite.new()
-		self.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
-
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	self.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 
 	if self.currentSquare ~= square then
 		self.objectIndex = 1
@@ -132,7 +127,7 @@ function ISPaintCursor:render(x, y, z, square)
 					sign = sign + 8;
 				end
 				self.signSprite = IsoSprite.new()
-				self.signSprite:LoadFramesNoDirPageSimple("constructedobjects_signs_01_" .. sign)
+				self.signSprite:LoadSingleTexture("constructedobjects_signs_01_" .. sign)
 --			end
 			self.signSprite:RenderGhostTileColor(x, y, z, color.r, color.g, color.b, 1.0)
 		elseif self.action == "plaster" then
@@ -140,7 +135,7 @@ function ISPaintCursor:render(x, y, z, square)
 			local modData = object:getModData()
 			local spriteName = Painting[modData.wallType]["plasterTile" .. north]
 			self.plasterSprite = IsoSprite.new()
-			self.plasterSprite:LoadFramesNoDirPageSimple(spriteName)
+			self.plasterSprite:LoadSingleTexture(spriteName)
 			self.plasterSprite:RenderGhostTile(x, y, z)
 		else
 			local xOffset = 0

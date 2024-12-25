@@ -6,19 +6,23 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 
 RWMMicrophone = RWMPanel:derive("RWMMicrophone");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 function RWMMicrophone:initialise()
     ISPanel.initialise(self)
 end
 
 function RWMMicrophone:createChildren()
-    self.muteButton = ISButton:new(10, 5, self.width-20,18,getText("IGUI_RadioMuteMic"),self, RWMMicrophone.onMuteButton);
+    self.muteButton = ISButton:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.width-UI_BORDER_SPACING*2-2,BUTTON_HGT,getText("IGUI_RadioMuteMic"),self, RWMMicrophone.onMuteButton);
     self.muteButton:initialise();
     self.muteButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.muteButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
     self.muteButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
     self:addChild(self.muteButton);
 
-    self:setHeight(5+self.muteButton:getHeight()+5);
+    self:setHeight(UI_BORDER_SPACING*2+self.muteButton:getHeight()+2);
 end
 
 function RWMMicrophone:onMuteButton()

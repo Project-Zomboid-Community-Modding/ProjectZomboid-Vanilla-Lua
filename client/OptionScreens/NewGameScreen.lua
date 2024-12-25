@@ -12,6 +12,9 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
 
 -- -- -- -- --
 -- -- -- -- --
@@ -65,8 +68,8 @@ function MainPanel:render()
 end
 
 function MainPanel:renderActiveMods()
-    local x = 16
-    local xoffset = 20 
+    local x = UI_BORDER_SPACING+1
+    local xoffset = UI_BORDER_SPACING*2
     local y = self.activeModsY
     local activeMods = ActiveMods.getById("currentGame")
     if activeMods:getMods():isEmpty() then
@@ -199,7 +202,7 @@ function NewGameScreen:instantiate()
 end
 
 function NewGameScreen:create()
-    self.mainPanel = MainPanel:new(16, 48, self:getWidth() / 2, self:getHeight() - (48*2));
+    self.mainPanel = MainPanel:new(UI_BORDER_SPACING+1, self.startY, self:getWidth() / 2, self:getHeight() - self.startY - UI_BORDER_SPACING*2 - BUTTON_HGT - 1);
     self.mainPanel:initialise();
     self.mainPanel:instantiate();
     self.mainPanel:setAnchorRight(false);
@@ -214,11 +217,10 @@ function NewGameScreen:create()
     self.mainPanel.hscroll.doSetStencil = true
     self:addChild(self.mainPanel);
 
-    local y = 10;
-    local x = 16;
-    local xoffset = 20;
-    local xoffsetdifficulty = 170;
-    local gapY = 6
+    local y = 0;
+    local x = UI_BORDER_SPACING;
+    local xoffset = UI_BORDER_SPACING*2;
+    local gapY = UI_BORDER_SPACING
 
     local mediumFontHgt = FONT_HGT_MEDIUM + 4
     local largeFontHgt = FONT_HGT_LARGE + 6
@@ -262,7 +264,7 @@ function NewGameScreen:create()
     survivor.internal = "APOCALYPSE";
     survivor.mode = "Apocalypse";
     survivor.desc = getText("UI_NewGame_Apocalypse_desc");
-    survivor.thumb = "media/ui/spiffoSurvivor2.png"
+    survivor.thumb = "media/ui/playstyleIcons/survivor2.png"
     survivor:initialise();
     self.mainPanel:addChild(survivor);
     survivor.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -278,7 +280,7 @@ function NewGameScreen:create()
     fighter.internal = "SURVIVOR";
     fighter.mode = "Survivor";
     fighter.desc = getText("UI_NewGame_Survivor_desc");
-    fighter.thumb = "media/ui/spiffoBrawler.png"
+    fighter.thumb = "media/ui/playstyleIcons/brawler.png"
     fighter:initialise();
     self.mainPanel:addChild(fighter);
     fighter.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -293,7 +295,7 @@ function NewGameScreen:create()
     builder.internal = "BUILDER";
     builder.mode = "Builder";
     builder.desc = getText("UI_NewGame_Builder_desc");
-    builder.thumb = "media/ui/spiffoBuilder.png"
+    builder.thumb = "media/ui/playstyleIcons/builder.png"
     builder:initialise();
     self.mainPanel:addChild(builder);
     builder.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -308,7 +310,7 @@ function NewGameScreen:create()
     sandbox.internal = "SANDBOX";
     sandbox.mode = "Sandbox";
     sandbox.desc = getText("UI_NewGame_Sandbox_desc");
-    sandbox.thumb = "media/ui/spiffoPacking.png"
+    sandbox.thumb = "media/ui/playstyleIcons/sandbox.png"
     sandbox:initialise();
     self.mainPanel:addChild(sandbox);
     sandbox.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -431,7 +433,7 @@ function NewGameScreen:create()
 --    sandbox.internal = "SANDBOX";
 --    sandbox.mode = "Sandbox";
 --    sandbox.desc = getText("UI_NewGame_Sandbox_desc");
---    sandbox.thumb = "media/ui/spiffoPacking.png"
+--    sandbox.thumb = "media/ui/playstyleIcons/spiffoPacking.png"
 --    sandbox:initialise();
 --    self.mainPanel:addChild(sandbox);
 --    sandbox.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -447,6 +449,11 @@ function NewGameScreen:create()
     challenges:initialise();
     self.mainPanel:addChild(challenges);
     y = y + FONT_HGT_LARGE + 4;
+
+    local disabledLabel = ISLabel:new(x, y, FONT_HGT_MEDIUM, getText("UI_NewGame_ChallengesDisabled"), 0.6, 0.6, 0.6, 1, UIFont.NewSmall, true);
+    challenges:initialise();
+    self.mainPanel:addChild(disabledLabel);
+    y = y + FONT_HGT_MEDIUM + 4;
 
     local challenges = {}
     table.sort(LastStandChallenge, function(a,b) return a.name < b.name end)
@@ -467,9 +474,7 @@ function NewGameScreen:create()
     end
     y = y - gapY
 
-    local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-    local sep4 = HorizontalLine:new(x, y + 10, 1000)
+    local sep4 = HorizontalLine:new(x, y + UI_BORDER_SPACING, 1000)
     sep4:initialise()
     self.mainPanel:addChild(sep4)
     y = y + 10 + 2 + 10
@@ -481,7 +486,7 @@ function NewGameScreen:create()
 
     self.mainPanel.activeModsY = y
 
-    self.buttonMods = ISButton:new(x + xoffset, y, 150, buttonHgt, getText("UI_NewGame_ChooseMods"), self, NewGameScreen.onOptionMouseDown)
+    self.buttonMods = ISButton:new(x + xoffset, y, 150, BUTTON_HGT, getText("UI_NewGame_ChooseMods"), self, NewGameScreen.onOptionMouseDown)
     self.buttonMods.internal = "MODS";
     self.buttonMods:initialise();
     self.buttonMods:instantiate();
@@ -489,7 +494,7 @@ function NewGameScreen:create()
 
     y = self.buttonMods:getBottom()
 
-    self.mainPanel:setScrollHeight(y + 20);
+    self.mainPanel:setScrollHeight(y + UI_BORDER_SPACING);
 
     self.mainPanel.javaObject:BringToTop(self.mainPanel.vscroll.javaObject)
     self.mainPanel.javaObject:BringToTop(self.mainPanel.hscroll.javaObject)
@@ -504,7 +509,7 @@ function NewGameScreen:create()
             width = math.max(width, child:getRight())
         end
     end
-    self.mainPanel:setScrollWidth(width + 16);
+    self.mainPanel:setScrollWidth(width + UI_BORDER_SPACING);
     width = width + self.mainPanel.vscroll:getWidth() + 4
     self.mainPanelReqWidth = width
     width = math.min(width, (self.width / 2) + 90 - self.mainPanel.x)
@@ -528,7 +533,9 @@ function NewGameScreen:create()
     self.mainPanel:insertNewLineOfButtons(self.buttonMods)
 --    self.joypadIndex = 1
 
-    self.backButton = ISButton:new(16, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_back"), self, NewGameScreen.onOptionMouseDown);
+    local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+    local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+    self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, NewGameScreen.onOptionMouseDown);
 	self.backButton.internal = "BACK";
 	self.backButton:initialise();
 	self.backButton:instantiate();
@@ -539,45 +546,26 @@ function NewGameScreen:create()
 	self.backButton:setFont(UIFont.Small);
 	self.backButton:ignoreWidthChange();
 	self.backButton:ignoreHeightChange();
+    self.backButton:enableCancelColor()
 	self:addChild(self.backButton);
-	
---	self.vehiclesButton = ISTickBox:new(self.width - 286, self.height-30, 150, 25, "", self, NewGameScreen.onVehicleEnable);
---	self.vehiclesButton.internal = "VEHICLES";
---	self.vehiclesButton:initialise();
---	self.vehiclesButton:instantiate();
---	self.vehiclesButton:setAnchorLeft(false);
---	self.vehiclesButton:setAnchorRight(true);
---	self.vehiclesButton:setAnchorTop(false);
---	self.vehiclesButton:setAnchorBottom(true);
---	self.vehiclesButton.borderColor = {r=1, g=1, b=1, a=0.1};
 
---	self.vehiclesButton:setFont(UIFont.Medium);
---	self.vehiclesButton:ignoreWidthChange();
---	self.vehiclesButton:ignoreHeightChange();
---	self:addChild(self.vehiclesButton);
---	self.vehiclesButton:addOption(getText("UI_btn_experimentalVehicles"));
---	self.vehiclesButton:setSelected(1, getCore():isVehiclesEnable())
---	if not getCore():isVehiclesWarningShow() then
---		self.vehiclesButton.choicesColor = {r=1.0, g=0.3, b=0.2, a=1};
---	end
---	self:insertNewLineOfButtons(self.vehiclesButton)
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
+	self.nextButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, NewGameScreen.onOptionMouseDown);
+	self.nextButton.internal = "NEXT";
+	self.nextButton:initialise();
+	self.nextButton:instantiate();
+	self.nextButton:setAnchorLeft(false);
+	self.nextButton:setAnchorRight(true);
+	self.nextButton:setAnchorTop(false);
+	self.nextButton:setAnchorBottom(true);
+    self.nextButton:enableAcceptColor()
 
-	self.newButton = ISButton:new(self.width - 116, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_next"), self, NewGameScreen.onOptionMouseDown);
-	self.newButton.internal = "NEXT";
-	self.newButton:initialise();
-	self.newButton:instantiate();
-	self.newButton:setAnchorLeft(false);
-	self.newButton:setAnchorRight(true);
-	self.newButton:setAnchorTop(false);
-	self.newButton:setAnchorBottom(true);
-	self.newButton.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.nextButton:setFont(UIFont.Small);
+	self.nextButton:ignoreWidthChange();
+	self.nextButton:ignoreHeightChange();
+	self:addChild(self.nextButton);
 
-	self.newButton:setFont(UIFont.Small);
-	self.newButton:ignoreWidthChange();
-	self.newButton:ignoreHeightChange();
-	self:addChild(self.newButton);
-
-    self.richText = RichText:new(16, 10, 500,200);
+    self.richText = RichText:new(UI_BORDER_SPACING, 10, 500,200);
     self.richText:initialise();
     self.richText.autosetheight = false;
     self.richText.background = false;
@@ -708,30 +696,30 @@ function NewGameScreen:update()
         self.ISButtonB = nil
         self.mainPanel.ISButtonA = nil
         self.mainPanel.ISButtonB = nil
-        self.newButton:clearJoypadButton()
+        self.nextButton:clearJoypadButton()
         self.backButton:clearJoypadButton()
     elseif not self.ISButtonA and focusOnChild then
-        self:setISButtonForA(self.newButton)
+        self:setISButtonForA(self.nextButton)
         self:setISButtonForB(self.backButton)
-        self.mainPanel:setISButtonForA(self.newButton)
+        self.mainPanel:setISButtonForA(self.nextButton)
         self.mainPanel:setISButtonForB(self.backButton)
     end
 
     if self.ISButtonA and self.mainPanel.joyfocus and self.mainPanel:getJoypadFocus() == self.buttonMods then
         self.ISButtonA = nil
         self.mainPanel.ISButtonA = nil
-        self.newButton:clearJoypadButton()
+        self.nextButton:clearJoypadButton()
     end
 end
 
 function NewGameScreen:disableBtn()
-    self.newButton:setEnable(false);
-    self.newButton:setTooltip(nil);
+    self.nextButton:setEnable(false);
+    self.nextButton:setTooltip(nil);
     if self.selectedItem then
         if (self:needDifficulty() and self.selectedDifficulty) or not self:needDifficulty() then
-           self.newButton:setEnable(true);
+           self.nextButton:setEnable(true);
         else
-            self.newButton:setTooltip(getText("UI_NewGame_SelectDifficulty"))
+            self.nextButton:setTooltip(getText("UI_NewGame_SelectDifficulty"))
         end
     end
 end
@@ -768,17 +756,20 @@ function NewGameScreen:render()
     local selectedDifficulty = self.selectedDifficulty;
     if not selectedItem then return; end
 
-    local thumbHeight = 256;
-    local thumbY = self.startY + 8
+    local descRectWidth = self.width - self.mainPanel:getWidth() - UI_BORDER_SPACING*3 - 2
+    local descRectHeight = self.mainPanel:getHeight()
 
     local text = ""
     if selectedItem.thumb then
-        text = " <IMAGECENTRE:" .. selectedItem.thumb .. "> <LINE> "
+        local thumb = getTexture(selectedItem.thumb)
+        local thumbH = thumb:getHeight()
+        local thumbW = thumb:getWidth()
+        local targetThumbW = descRectWidth/2
+        local scaleFactor = math.min(targetThumbW / thumbW, 1)
+        text = "<IMAGECENTRE:" .. selectedItem.thumb .. ",".. thumbW*scaleFactor..",".. thumbH*scaleFactor .."><LINE> "
     end
-    local descRectWidth = self.width - 87 - (self.width/2 + 30)
-    local descRectHeight = self.mainPanel:getHeight()
 
-    self.richText:setX(self.width/2 + 100)
+    self.richText:setX(self.mainPanel:getRight() + UI_BORDER_SPACING)
     self.richText:setY(self.mainPanel:getY())
     self.richText:setWidth(descRectWidth)
     self.richText:setHeight(descRectHeight)
@@ -789,11 +780,11 @@ function NewGameScreen:render()
     end
     text = text .. " <H1> " .. name .. " <LINE> ";
     if selectedDifficulty then
-        text = text .. " <H1> " .. getText("UI_Difficulty") .. ": " .. selectedDifficulty.name .. " <LINE> <LINE> <H2> ";
+        text = text .. " <H1> " .. getText("UI_Difficulty") .. ": " .. selectedDifficulty.name .. " <LINE> <LINE>";
     else
-        text = text .. " <LINE> <H2> ";
+        text = text .. " <LINE>";
     end
-    text = text .. selectedItem.desc;
+    text = text .. " <H2><CENTRE> " .. selectedItem.desc;
     self.richText.text = text;
     self.richText:paginate();
     self:drawRectBorder( self.richText:getX(), self.richText:getY(), self.richText:getWidth(), self.richText:getHeight(), 0.3, 1, 1, 1);
@@ -802,7 +793,7 @@ end
 function NewGameScreen:prerender()
     NewGameScreen.instance = self
 	ISPanel.prerender(self);
-	self:drawTextCentre(getText("UI_NewGameScreen_title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title);
+	self:drawTextCentre(getText("UI_NewGameScreen_title"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
 end
 
 function NewGameScreen:onOptionMouseDown(button, x, y)
@@ -828,10 +819,11 @@ function NewGameScreen:onOptionMouseDown(button, x, y)
     end
     if button.internal == "MODS" then
         self:setVisible(false)
-        ModSelector.instance.isNewGame = true
+        ModSelector.instance:setNewGame()
         ModSelector.instance:setVisible(true, self.joyfocus)
-        ModSelector.instance:populateListBox(getModDirectoryTable())
+        ModSelector.instance:reloadMods()
         ModSelector.showNagPanel()
+        ModSelector.instance.returnToUI = NewGameScreen.instance
     end
 end
 
@@ -908,6 +900,10 @@ function NewGameScreen:clickPlay()
         MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getDefaultPreset());
     end
 
+    if self.selectedItem.mode ~= "Sandbox" then
+        getWorld():setPreset(self.selectedItem.mode)
+    end
+
     if self.selectedDifficulty then
         if self.selectedDifficulty.internal == "EASY" then
             MainScreen.instance:setEasyPreset();
@@ -921,6 +917,10 @@ function NewGameScreen:clickPlay()
         if self.selectedDifficulty.internal == "HARDCORE" then
             MainScreen.instance:setHardcorePreset();
         end
+    end
+
+    if self.selectedItem.mode then
+--         getWorld():setPreset(self.selectedItem.mode);
     end
     
     getWorld():setMap("DEFAULT")
@@ -965,7 +965,7 @@ end
 function NewGameScreen:onLoseJoypadFocus(joypadData)
     ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
     self.backButton:clearJoypadButton()
-    self.newButton:clearJoypadButton()
+    self.nextButton:clearJoypadButton()
 end
 
 function NewGameScreen:Label_setJoypadFocused(focused, joypadData)
@@ -1003,7 +1003,7 @@ end
 
 function NewGameScreen:onJoypadBeforeDeactivate(joypadData)
 	self.backButton:clearJoypadButton()
-	self.newButton:clearJoypadButton()
+	self.nextButton:clearJoypadButton()
 --	self:clearJoypadFocus()
 end
 
@@ -1025,7 +1025,7 @@ function NewGameScreen:new (x, y, width, height)
 	o.anchorBottom = false;
 	o.itemheightoverride = {}
 	o.selected = 1;
-    o.startY = 80;
+    o.startY = UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE;
 	NewGameScreen.instance = o;
 	return o
 end

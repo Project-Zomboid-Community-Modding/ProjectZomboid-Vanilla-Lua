@@ -97,6 +97,10 @@ function ISUI3DModel:setCharacter(character)
 	self.javaObject:setCharacter(character)
 end
 
+function ISUI3DModel:getCharacter()
+	return self.javaObject:getCharacter()
+end
+
 function ISUI3DModel:setSurvivorDesc(survivorDesc)
 	self.javaObject:setSurvivorDesc(survivorDesc)
 end
@@ -108,6 +112,26 @@ end
 -- AnimSet state: idle, sprint, etc
 function ISUI3DModel:setState(state)
 	self.javaObject:setState(state)
+end
+
+function ISUI3DModel:getState()
+	self.javaObject:getState()
+end
+
+function ISUI3DModel:setVariable(key, value)
+	self.javaObject:setVariable(key, value)
+end
+
+function ISUI3DModel:getVariable(key)
+	return self.javaObject:getVariable(key)
+end
+
+function ISUI3DModel:clearVariable(key)
+	self.javaObject:clearVariable(key)
+end
+
+function ISUI3DModel:clearVariables()
+	self.javaObject:clearVariables()
 end
 
 function ISUI3DModel:reportEvent(event)

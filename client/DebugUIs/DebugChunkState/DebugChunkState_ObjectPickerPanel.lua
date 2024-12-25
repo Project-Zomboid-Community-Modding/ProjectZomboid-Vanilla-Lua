@@ -4,7 +4,7 @@
 
 require "ISUI/ISPanel"
 
-local FONT_HGT_CONSOLE = getTextManager():getFontHeight(UIFont.DebugConsole)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 DebugChunkState_ObjectPickerPanel = ISPanel:derive("DebugChunkState_ObjectPickerPanel")
 local ObjectPickerPanel = DebugChunkState_ObjectPickerPanel
@@ -59,12 +59,12 @@ function ObjectPickerPanel:addLine(text, arg0, arg1, arg2, arg3, arg4)
 	if type(arg2) == "boolean" then arg2 = tostring(arg2) end
 	if type(arg3) == "boolean" then arg3 = tostring(arg3) end
 	if type(arg4) == "boolean" then arg4 = tostring(arg4) end
-	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.DebugConsole)
-	self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.Small)
+	self.addLineY = self.addLineY + FONT_HGT_SMALL
 end
 
 function ObjectPickerPanel:new(x, y, width, height, debugChunkState)
-	height = 4 + FONT_HGT_CONSOLE * 7 + 4
+	height = 4 + FONT_HGT_SMALL * 8 + 4
 	local o = ISPanel.new(self, x, y, width, height)
 	o.backgroundColor.a = 0.8
 	o.debugChunkState = debugChunkState

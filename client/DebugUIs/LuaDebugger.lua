@@ -2,6 +2,10 @@ require "ISUI/ISCollapsableWindow"
 
 LuaDebugger = ISCollapsableWindow:derive("LuaDebugger");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local DEBUG_TOOLSTRIP_HEIGHT = UI_BORDER_SPACING*2 + BUTTON_HGT
 
 function LuaDebugger:initialise()
 
@@ -30,7 +34,7 @@ end
 function LuaDebugger:prerender()
     local screenWidth = getCore():getScreenWidth();
     local screenHeight = getCore():getScreenHeight();
-    if self.width ~= screenWidth or self.height ~= screenHeight - 48 then
+    if self.width ~= screenWidth or self.height ~= screenHeight - DEBUG_TOOLSTRIP_HEIGHT then
         self:onResolutionChange(self.width, self.height, screenWidth, screenHeight)
     end
     ISCollapsableWindow.prerender(self)
@@ -40,7 +44,7 @@ function LuaDebugger:onResolutionChange(oldw, oldh, neww, newh)
     local screenWidth = getCore():getScreenWidth();
     local screenHeight = getCore():getScreenHeight();
     self:setWidth(screenWidth);
-    self:setHeight(screenHeight - 48);
+    self:setHeight(screenHeight - DEBUG_TOOLSTRIP_HEIGHT);
 
     local del = screenWidth / 1920;
     LuaFileBrowser.instance:setWidth(700 * del);
@@ -118,7 +122,7 @@ end
 
 DoLuaDebugger = function (f, line)
 
-    local panel2 = LuaDebugger:new(0, 48, getCore():getScreenWidth(), getCore():getScreenHeight()-48);
+    local panel2 = LuaDebugger:new(0, DEBUG_TOOLSTRIP_HEIGHT, getCore():getScreenWidth(), getCore():getScreenHeight()-DEBUG_TOOLSTRIP_HEIGHT);
     panel2:initialise();
     panel2:addToUIManager();
     LuaDebugger.instance = panel2;
@@ -134,7 +138,7 @@ DoLuaDebugger = function (f, line)
     panel2:initialise();
     panel2:addToUIManager();
 
-    panel2 = DebugToolstrip:new(0, 0, getCore():getScreenWidth(), 48)
+    panel2 = DebugToolstrip:new(0, 0, getCore():getScreenWidth(), DEBUG_TOOLSTRIP_HEIGHT)
     panel2:initialise();
     panel2:addToUIManager();
 

@@ -7,10 +7,13 @@ require "ISUI/ISPanel"
 
 PopupColorEdit = ISPanel:derive("PopupColorEdit");
 PopupColorEdit.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function PopupColorEdit.OnOpenPanel(_colorInfo,_parent,_ambient,_desat)
     if PopupColorEdit.instance==nil then
-        PopupColorEdit.instance = PopupColorEdit:new(100, 100, 400, 400, "ColorEdit")
+        PopupColorEdit.instance = PopupColorEdit:new(100, 100, 400+(getCore():getOptionFontSizeReal()*50), 400, "ColorEdit")
         PopupColorEdit.instance.baseAmbient = _ambient;
         PopupColorEdit.instance.baseDesat = _desat;
         PopupColorEdit.instance:initialise();
@@ -41,51 +44,50 @@ function PopupColorEdit:createChildren()
 
     local v, obj;
 
-    local x,y,w = 10,10,self.width-30;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-(UI_BORDER_SPACING+1)*2;
 
     ISDebugUtils.initHorzBars(self,x,w);
 
     self.floats = {};
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"Edit color", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_ClimateColorEdit_Title"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+
+    y = y + UI_BORDER_SPACING;
 
     y = self:addColorOption("edit_cols",nil,x,y,w);
 
-    local s = "The following options are for convenience only."
-    y, obj = ISDebugUtils.addLabel(self,"float_note1",x+(w/2),y,s, UIFont.Small);
+    y, obj = ISDebugUtils.addLabel(self,"float_note1",x+(w/2),y,getText("IGUI_ClimateColorEdit_Note1"), UIFont.Small);
     obj.center = true;
     y = y+2;
-    s = "They are not included in the configuration saves."
-    y, obj = ISDebugUtils.addLabel(self,"float_note1",x+(w/2),y,s, UIFont.Small);
+    y, obj = ISDebugUtils.addLabel(self,"float_note1",x+(w/2),y,getText("IGUI_ClimateColorEdit_Note2"), UIFont.Small);
     obj.center = true;
 
-    y = y+5;
+    y = y+UI_BORDER_SPACING;
 
     local clim = getClimateManager();
     v = clim:getClimateFloat(ClimateManager.FLOAT_AMBIENT);
-    y, obj = self:addFloatOption("AMBIENT",v,x,y,w);
-    y = y+3;
+    y, obj = self:addFloatOption(getText("IGUI_ClimateOptions_AMBIENT"),v,x,y,w);
+    y = y+UI_BORDER_SPACING;
 
     v = clim:getClimateFloat(ClimateManager.FLOAT_DESATURATION);
-    y, obj = self:addFloatOption("DESATURATION",v,x,y,w);
-    y = y+3;
+    y, obj = self:addFloatOption(getText("IGUI_ClimateOptions_DESATURATION"),v,x,y,w);
+    y = y+UI_BORDER_SPACING;
 
     v = clim:getClimateFloat(ClimateManager.FLOAT_NIGHT_STRENGTH);
-    y, obj = self:addFloatOption("NIGHT_STRENGTH",v,x,y,w);
-    y = y+3;
+    y, obj = self:addFloatOption(getText("IGUI_ClimateOptions_NIGHT_STRENGTH"),v,x,y,w);
+    y = y+UI_BORDER_SPACING;
 
     v = clim:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY);
-    y, obj = self:addFloatOption("FOG_INTENSITY",v,x,y,w);
+    y, obj = self:addFloatOption(getText("IGUI_ClimateOptions_FOG_INTENSITY"),v,x,y,w);
 
     for k,o in pairs(self.floats) do
         o.option:setEnableAdmin(true);
-        if o==self.floats["AMBIENT"] then
+        if o==self.floats[getText("IGUI_ClimateOptions_AMBIENT")] then
             local val = PopupColorEdit.instance.baseAmbient;
             o.option:setAdminValue(val or o.option:getFinalValue());
             o.slider:setCurrentValue(val or o.option:getFinalValue(), true);
-        elseif o==self.floats["DESATURATION"] then
+        elseif o==self.floats[getText("IGUI_ClimateOptions_DESATURATION")] then
             local val = PopupColorEdit.instance.baseDesat;
             o.option:setAdminValue(val or o.option:getFinalValue());
             o.slider:setCurrentValue(val or o.option:getFinalValue(), true);
@@ -95,21 +97,23 @@ function PopupColorEdit:createChildren()
         end
     end
 
-    y = y+15;
-    y,obj = ISDebugUtils.addButton(self, "apply", x, y, w, 16, "APPLY CHANGES", PopupColorEdit.onClick);
+    y = y+UI_BORDER_SPACING;
+    y,obj = ISDebugUtils.addButton(self, "apply", x, y, w, FONT_HGT_SMALL, getText("IGUI_DebugMenu_Apply"), PopupColorEdit.onClick);
+    obj:enableAcceptColor()
 
-    y = y+15;
-    y,obj = ISDebugUtils.addButton(self, "close", x, y, w, 16, "CLOSE", PopupColorEdit.onClick);
+    y = y+UI_BORDER_SPACING;
+    y,obj = ISDebugUtils.addButton(self, "close", x, y, w, FONT_HGT_SMALL, getText("IGUI_DebugMenu_Close"), PopupColorEdit.onClick);
+    obj:enableCancelColor()
 
 
-    self:setHeight(y+10);
+    self:setHeight(y+UI_BORDER_SPACING+1);
 end
 
 function PopupColorEdit:addFloatOption(_id,_float,_x,_y,_w)
     local y, obj = ISDebugUtils.addLabel(self,"title_".._id,_x,_y,_id, UIFont.Small);
 
-    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, 18,PopupColorEdit.onFloatSliderChange);
+    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-UI_BORDER_SPACING*2,_y,"0", UIFont.Small, false);
+    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, BUTTON_HGT,PopupColorEdit.onFloatSliderChange);
     obj3.valueLabel = obj2;
     obj3:setValues(_float:getMin(), _float:getMax(), 0.01, 0.01);
     obj3:setCurrentValue(0);
@@ -126,18 +130,18 @@ function PopupColorEdit:addColorOption(_id,_color,_x,_y,_w)
 
     local y3;
     y3, t.labelR_ext, t.sliderR_ext = self:addSlider(_id,_x,_y,_w);
-    t.sliderR_ext.pretext = "R_exterior: ";
+    t.sliderR_ext.pretext = getText("IGUI_ClimateOptions_ExR");
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelG_ext, t.sliderG_ext = self:addSlider(_id,_x,_y,_w);
-    t.sliderG_ext.pretext = "G_exterior: ";
+    t.sliderG_ext.pretext = getText("IGUI_ClimateOptions_ExG");
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelB_ext, t.sliderB_ext = self:addSlider(_id,_x,_y,_w);
-    t.sliderB_ext.pretext = "B_exterior: ";
+    t.sliderB_ext.pretext = getText("IGUI_ClimateOptions_ExB");
 
-    _y = y3+5;
-    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,15);
+    _y = y3+UI_BORDER_SPACING;
+    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,BUTTON_HGT);
     colorbox:initialise();
     colorbox.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(colorbox);
@@ -146,12 +150,12 @@ function PopupColorEdit:addColorOption(_id,_color,_x,_y,_w)
 
     t.colorbox = colorbox;
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelA_ext, t.sliderA_ext = self:addSlider(_id,_x,_y,_w);
-    t.sliderA_ext.pretext = "A_exterior: ";
+    t.sliderA_ext.pretext = getText("IGUI_ClimateOptions_ExA");
 
-    _y = y3+5;
-    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,15);
+    _y = y3+UI_BORDER_SPACING;
+    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,BUTTON_HGT);
     colorbox:initialise();
     colorbox.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(colorbox);
@@ -162,20 +166,20 @@ function PopupColorEdit:addColorOption(_id,_color,_x,_y,_w)
 
     ------------------------------------------------------------------------------
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelR_int, t.sliderR_int = self:addSlider(_id,_x,_y,_w);
-    t.sliderR_int.pretext = "R_interior: ";
+    t.sliderR_int.pretext = getText("IGUI_ClimateOptions_InR");
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelG_int, t.sliderG_int = self:addSlider(_id,_x,_y,_w);
-    t.sliderG_int.pretext = "G_interior: ";
+    t.sliderG_int.pretext = getText("IGUI_ClimateOptions_InG");
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelB_int, t.sliderB_int = self:addSlider(_id,_x,_y,_w);
-    t.sliderB_int.pretext = "B_interior: ";
+    t.sliderB_int.pretext = getText("IGUI_ClimateOptions_InB");
 
-    _y = y3+5;
-    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,15);
+    _y = y3+UI_BORDER_SPACING;
+    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,BUTTON_HGT);
     colorbox:initialise();
     colorbox.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(colorbox);
@@ -184,12 +188,12 @@ function PopupColorEdit:addColorOption(_id,_color,_x,_y,_w)
 
     t.colorbox_int = colorbox;
 
-    _y = y3+5;
+    _y = y3+UI_BORDER_SPACING;
     y3, t.labelA_int, t.sliderA_int = self:addSlider(_id,_x,_y,_w);
-    t.sliderA_int.pretext = "A_interior: ";
+    t.sliderA_int.pretext = getText("IGUI_ClimateOptions_InA");
 
-    _y = y3+5;
-    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,15);
+    _y = y3+UI_BORDER_SPACING;
+    local colorbox = ISPanel:new(_x+(_w/2),_y,_w/2,BUTTON_HGT);
     colorbox:initialise();
     colorbox.backgroundColor = {r=0.0,g=0.0,b=0.0,a=1.0};
     self:addChild(colorbox);
@@ -206,8 +210,8 @@ function PopupColorEdit:addColorOption(_id,_color,_x,_y,_w)
 end
 
 function PopupColorEdit:addSlider(_id,_x,_y,_w,_title)
-    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, 18,PopupColorEdit.onSliderChange);
+    local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w/2)-UI_BORDER_SPACING*2,_y,"0", UIFont.Small, false);
+    local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w/2),_y,_w/2, BUTTON_HGT,PopupColorEdit.onSliderChange);
     obj3.pretext = _title;
     obj3.valueLabel = obj2;
     obj3:setValues(0, 1, 0.01, 0.01);

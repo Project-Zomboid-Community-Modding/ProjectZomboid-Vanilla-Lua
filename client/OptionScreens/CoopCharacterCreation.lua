@@ -6,9 +6,16 @@ require "ISUI/ISPanelJoypad"
 
 CoopCharacterCreation = ISPanelJoypad:derive("CoopCharacterCreation")
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 function CoopCharacterCreation:initPlayer()
 	MainScreen.instance.desc:setForename(self.charCreationHeader.forenameEntry:getText());
 	MainScreen.instance.desc:setSurname(self.charCreationHeader.surnameEntry:getText());
+	MainScreen.instance.desc:setVoicePrefix(self.charCreationMain.instance:getVoicePrefix());
+	MainScreen.instance.desc:setVoiceType(self.charCreationMain.instance:getVoiceType());
+	MainScreen.instance.desc:setVoicePitch(self.charCreationMain.instance:getVoicePitch());
 end
 
 function CoopCharacterCreation:accept1()
@@ -25,18 +32,43 @@ function CoopCharacterCreation:accept1()
 		end
 		print(#spawn..' possible spawn points')
 		local randSpawnPoint = spawn[(ZombRand(#spawn) + 1)]
-		getWorld():setLuaSpawnCellX(randSpawnPoint.worldX)
-		getWorld():setLuaSpawnCellY(randSpawnPoint.worldY)
-		getWorld():setLuaPosX(randSpawnPoint.posX)
-		getWorld():setLuaPosY(randSpawnPoint.posY)
-		getWorld():setLuaPosZ(randSpawnPoint.posZ or 0)
+
+		if randSpawnPoint.position then
+			if randSpawnPoint.position == "center" then
+				local cellSizeInSquares = getCellSizeInSquares()
+				local cellX = ((getCellMaxX() - getCellMinX()) / 2) + getCellMinX();
+				local cellY = ((getCellMaxY() - getCellMinY()) / 2) + getCellMinY();
+				randSpawnPoint.posX = cellX * cellSizeInSquares + cellSizeInSquares / 2;
+				randSpawnPoint.posY = cellY * cellSizeInSquares + cellSizeInSquares / 2;
+				randSpawnPoint.posZ = 0;
+			else
+				error "Position is not valid. No spawn point has been set, canceling load"
+				return
+			end
+		end
+
+		if randSpawnPoint.worldX ~= nil then
+			-- This is the old format with 300x300 cell coordinates.
+			getWorld():setLuaPosX(randSpawnPoint.worldX * 300 + randSpawnPoint.posX)
+			getWorld():setLuaPosY(randSpawnPoint.worldY * 300 + randSpawnPoint.posY)
+			getWorld():setLuaPosZ(randSpawnPoint.posZ or 0)
+		else
+		-- This is the new format with square coordinates and no cell coordinates.
+			getWorld():setLuaPosX(randSpawnPoint.posX)
+			getWorld():setLuaPosY(randSpawnPoint.posY)
+			getWorld():setLuaPosZ(randSpawnPoint.posZ or 0)
+		end
 	elseif getCore():isChallenge() then
 		-- This shouldn't happen. See LastStandData.getSpawnRegion()
-		getWorld():setLuaSpawnCellX(globalChallenge.xcell);
-		getWorld():setLuaSpawnCellY(globalChallenge.ycell);
-		getWorld():setLuaPosX(globalChallenge.x);
-		getWorld():setLuaPosY(globalChallenge.y);
-		getWorld():setLuaPosZ(globalChallenge.z);
+		if globalChallenge.xcell ~= nil then
+			getWorld():setLuaPosX(globalChallenge.xcell * 300 + globalChallenge.x);
+			getWorld():setLuaPosY(globalChallenge.ycell * 300 + globalChallenge.y);
+			getWorld():setLuaPosZ(globalChallenge.z);
+		else
+			getWorld():setLuaPosX(globalChallenge.x);
+			getWorld():setLuaPosY(globalChallenge.y);
+			getWorld():setLuaPosZ(globalChallenge.z);
+		end
 	end
 	getWorld():setLuaPlayerDesc(MainScreen.instance.desc)
 	getWorld():getLuaTraits():clear()
@@ -133,9 +165,11 @@ function CoopCharacterCreation:createChildren()
 	self.coopUserName.backgroundColor = {r=0, g=0, b=0, a=0.8}
 	self.coopUserName.borderColor = {r=1, g=1, b=1, a=0.5}
 
-	local w = self.width * 0.5
-	if w < 768 then w = 768 end
-	self.mapSpawnSelect = CoopMapSpawnSelect:new((self.width - w) / 2, 48, w, self.height - 64 - 64)
+	local w,h = self:getWidth(), self:getHeight()
+	local w2, h2 = w*0.7, h*0.8 --try to keep these values the same as in MainScreen.lua
+	local x, y = (w-w2)/2, (h-h2)/2
+
+	self.mapSpawnSelect = CoopMapSpawnSelect:new(x, y, w2, h2)
 	self.mapSpawnSelect:initialise()
 	self.mapSpawnSelect:setVisible(false)
 	self.mapSpawnSelect:setAnchorRight(true)
@@ -145,25 +179,25 @@ function CoopCharacterCreation:createChildren()
 	self.mapSpawnSelect.backgroundColor = {r=0, g=0, b=0, a=0.8}
 	self.mapSpawnSelect.borderColor = {r=1, g=1, b=1, a=0.5}
 	
-	self.charCreationMain = CoopCharacterCreationMain:new(0, 0, self:getWidth(), self:getHeight())
+	self.charCreationMain = CoopCharacterCreationMain:new(x, y, w2, h2)
 	self.charCreationMain:initialise()
 	self.charCreationMain:setAnchorRight(true)
 	self.charCreationMain:setAnchorLeft(true)
 	self.charCreationMain:setAnchorBottom(true)
 	self.charCreationMain:setAnchorTop(true)
-	self.charCreationMain.backgroundColor = {r=0, g=0, b=0, a=0.0}
-	self.charCreationMain.borderColor = {r=1, g=1, b=1, a=0.0}
+	self.charCreationMain.backgroundColor = {r=0, g=0, b=0, a=0.8}
+	self.charCreationMain.borderColor = {r=1, g=1, b=1, a=0.5}
 
-	self.charCreationProfession = CoopCharacterCreationProfession:new(0, 0, self:getWidth(), self:getHeight())
+	self.charCreationProfession = CoopCharacterCreationProfession:new(x, y, w2, h2)
 	self.charCreationProfession:initialise()
 	self.charCreationProfession:setAnchorRight(true)
 	self.charCreationProfession:setAnchorLeft(true)
 	self.charCreationProfession:setAnchorBottom(true)
 	self.charCreationProfession:setAnchorTop(true)
-	self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.0}
-	self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.0}
+	self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.8}
+	self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.5}
 
-	self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 200)
+	self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 260+UI_BORDER_SPACING+BUTTON_HGT)
 	self.charCreationHeader:initialise()
 	self.charCreationHeader:setAnchorRight(true)
 	self.charCreationHeader:setAnchorLeft(true)

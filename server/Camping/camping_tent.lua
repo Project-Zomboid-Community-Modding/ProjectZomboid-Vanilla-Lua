@@ -192,17 +192,13 @@ local function OnClientCommand(module, command, player, args)
 	local argStr = ''
 	for k,v in pairs(args) do argStr = argStr..' '..k..'='..v end
 	noise('OnClientCommand '..module..' '..command..' '..argStr)
-	if command == 'addTent' then
-		local gs = getCell():getGridSquare(args.x, args.y, args.z)
-		if gs then
-			camping.addTent(gs, args.sprite)
-		end
-	elseif command == 'removeTent' then
+	if command == 'removeTent' then
 		local tent = camping.tentAt(args.x, args.y, args.z)
 		if tent then
 			camping.removeTent(tent)
-			local kit = InventoryItemFactory.CreateItem("camping.CampingTentKit")
-			player:sendObjectChange('addItem', { item = kit } )
+			local kit = instanceItem("Base.CampingTentKit2")
+			player:getInventory():AddItem(kit);
+			sendAddItemToContainer(player:getInventory(), kit);
 		end
 	end
 end

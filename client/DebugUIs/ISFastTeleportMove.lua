@@ -12,13 +12,13 @@ ISFastTeleportMove.moveXY = function(player, dx, dy)
 
     player:setX(x)
     player:setY(y)
-    player:setLx(x)
-    player:setLy(y)
+    player:setLastX(x)
+    player:setLastY(y)
 end
 
 ISFastTeleportMove.moveZ = function(player, dz)
     player:setZ(player:getZ()+dz)
-    player:setLz(player:getZ()+dz)
+    player:setLastZ(player:getZ()+dz)
     ISFastTeleportMove.currentZ = player:getZ()
     if ISFastTeleportMove.currentZ ~= 0 and not ISFastTeleportMove.isAdded then
         Events.OnTick.Add(ISFastTeleportMove.OnTick)
@@ -68,6 +68,6 @@ ISFastTeleportMove.OnTick = function()
     local player = getPlayer()
     if player ~= nil and ISFastTeleportMove.currentZ ~= 0 then
         player:setZ(ISFastTeleportMove.currentZ)
-        player:setLz(ISFastTeleportMove.currentZ)
+        player:setLastZ(ISFastTeleportMove.currentZ)
     end
 end

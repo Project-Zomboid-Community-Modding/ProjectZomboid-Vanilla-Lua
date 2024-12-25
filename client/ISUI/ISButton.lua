@@ -127,6 +127,9 @@ function ISButton:prerender()
 			fill.r * f + self.backgroundColor.r * (1 - f),
 			fill.g * f + self.backgroundColor.g * (1 - f),
 			fill.b * f + self.backgroundColor.b * (1 - f));
+		if self.textureBackground then
+			self:drawTextureScaled(self.textureBackground, 0, 0, self.width, self.height, 1-f, 1, 1, 1);
+		end
         self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     end
 	if self.joypadFocused then
@@ -156,6 +159,9 @@ function ISButton:prerender()
 			self.backgroundColorMouseOver.r * f + self.backgroundColor.r * (1 - f),
 			self.backgroundColorMouseOver.g * f + self.backgroundColor.g * (1 - f),
 			self.backgroundColorMouseOver.b * f + self.backgroundColor.b * (1 - f));
+		if self.textureBackground then
+			self:drawTextureScaled(self.textureBackground, 0, 0, self.width, self.height, f, 1, 1, 1);
+		end
 	end
 	self:updateTooltip()
 end
@@ -200,7 +206,7 @@ function ISButton:render()
 
             alpha = self.blinkImageAlpha;
         end
-        if self.forcedWidthImage and self.forcedHeightImage then
+		if self.forcedWidthImage and self.forcedHeightImage then
             self:drawTextureScaledAspect(self.image, (self.width / 2) - (self.forcedWidthImage / 2), (self.height / 2) - (self.forcedHeightImage / 2),self.forcedWidthImage,self.forcedHeightImage, alpha, self.textureColor.r, self.textureColor.g, self.textureColor.b);
         elseif self.image:getWidthOrig() <= self.width and self.image:getHeightOrig() <= self.height then
             self:drawTexture(self.image, (self.width / 2) - (self.image:getWidthOrig() / 2), (self.height / 2) - (self.image:getHeightOrig() / 2), alpha, self.textureColor.r, self.textureColor.g, self.textureColor.b);
@@ -208,24 +214,32 @@ function ISButton:render()
             self:drawTextureScaledAspect(self.image, 0, 0, self.width, self.height, alpha, self.textureColor.r, self.textureColor.g, self.textureColor.b);
         end
 	end
-	local textW = getTextManager():MeasureStringX(self.font, self.title)
-	local height = getTextManager():MeasureStringY(self.font, self.title)
+	local textW = 0;
+	local height = 0;
+	if(self.title~= "") then
+	 height = getTextManager():MeasureStringY(self.font, self.title)
+	 textW = getTextManager():MeasureStringX(self.font, self.title)
+	end
+
 	local x = self.width / 2 - textW / 2;
-	if self.isJoypad and self.joypadTexture then
+	if (self.isJoypad and self.joypadTexture) or self.iconTexture then
 		local texWH = self.joypadTextureWH
 		local texX = x - 5 - texWH
-		local texY = self.height / 2 - 20 / 2
+		local texY = self.height / 2 - 32 / 2
 		texX = math.max(5, texX)
 		x = texX + texWH + 5
-		self:drawTextureScaled(self.joypadTexture,texX,texY,texWH,texWH,1,1,1,1);
+		local tex = self.joypadTexture or self.iconTexture;
+		self:drawTextureScaled(tex,texX,texY,texWH,texWH,1,1,1,1);
 	end
-	if self.enable then
-		self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a, self.font);
-	elseif self.displayBackground and not self.isJoypad and self.joypadFocused then
-		self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, 0, 0, 0, 1, self.font);
-	else
-		self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, 0.3, 0.3, 0.3, 1, self.font);
-	end
+	if textW > 0 then
+        if self.enable then
+            self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a, self.font);
+        elseif self.displayBackground and not self.isJoypad and self.joypadFocused then
+            self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, 0, 0, 0, 1, self.font);
+        else
+            self:drawText(self.title, x, (self.height / 2) - (height/2) + self.yoffset, 0.3, 0.3, 0.3, 1, self.font);
+        end
+    end
 	if self.overlayText then
 		self:drawTextRight(self.overlayText, self.width, self.height - 10, 1, 1, 1, 0.5, UIFont.Small);
 	end
@@ -238,11 +252,6 @@ function ISButton:render()
         self:drawTexture(self.textureOverride, (self.width /2) - (self.textureOverride:getWidth() / 2), (self.height /2) - (self.textureOverride:getHeight() / 2), 1, 1, 1, 1);
     end
 
-    if false and self.mouseOver and self.tooltip then
-        self:drawRect(self:getMouseX() + 23, self:getMouseY() + 23, getTextManager():MeasureStringX(UIFont.Small, self.tooltip) + 24, 32+24, 0.7, 0.05, 0.05, 0.05);
-        self:drawRectBorder(self:getMouseX()  + 23, self:getMouseY() + 23, getTextManager():MeasureStringX(UIFont.Small, self.tooltip) + 24, 32+24, 0.5, 0.9, 0.9, 1);
-        self:drawText(self.tooltip, self:getMouseX()  + 23 + 12, self:getMouseY() + 23 + 12, 1,1,1,1);
-    end
 end
 
 function ISButton:setFont(font)
@@ -347,10 +356,35 @@ function ISButton:setTextureRGBA(r, g, b, a)
 	self.textureColor.a = a
 end
 
+function ISButton:enableAcceptColor()
+	local GHC = getCore():getGoodHighlitedColor()
+	local r, g, b = GHC:getR(), GHC:getG(), GHC:getB()
+	self:setBackgroundRGBA(r, g, b, 0.25)
+	self:setBackgroundColorMouseOverRGBA(r, g, b, 0.50)
+	self:setBorderRGBA(r, g, b, 1)
+end
+
+function ISButton:enableCancelColor()
+	local BHC = getCore():getBadHighlitedColor()
+	local r, g, b = BHC:getR(), BHC:getG(), BHC:getB()
+	self:setBackgroundRGBA(r, g, b, 0.25)
+	self:setBackgroundColorMouseOverRGBA(r, g, b, 0.50)
+	self:setBorderRGBA(r, g, b, 1)
+end
+
+function ISButton:toggleAcceptCancel(bEnabled)
+	if bEnabled then
+		self:enableAcceptColor()
+	else
+		self:enableCancelColor()
+	end
+end
+
 function ISButton:setEnable(bEnabled)
 	self.enable = bEnabled;
 	if not self.borderColorEnabled then
 		self.borderColorEnabled = { r = self.borderColor.r, g = self.borderColor.g, b = self.borderColor.b, a = self.borderColor.a }
+		self.backgroundColorEnabled = { r = self.backgroundColor.r, g = self.backgroundColor.g, b = self.backgroundColor.b, a = self.backgroundColor.a }
 	end
 	if bEnabled then
 		self:setTextureRGBA(1, 1, 1, 1)
@@ -359,9 +393,15 @@ function ISButton:setEnable(bEnabled)
 			self.borderColorEnabled.g,
 			self.borderColorEnabled.b,
 			self.borderColorEnabled.a)
+		self:setBackgroundRGBA(
+			self.backgroundColorEnabled.r,
+			self.backgroundColorEnabled.g,
+			self.backgroundColorEnabled.b,
+			self.backgroundColorEnabled.a)
 	else
 		self:setTextureRGBA(0.3, 0.3, 0.3, 1.0)
 		self:setBorderRGBA(0.7, 0.1, 0.1, 0.7)
+		self:setBackgroundRGBA(0, 0, 0, 1)
 	end
 end
 
@@ -375,11 +415,12 @@ end
 
 function ISButton:setWidthToTitle(minWidth, isJoypad)
 	local width = getTextManager():MeasureStringX(self.font, self.title) + 10
-	if isJoypad then
+	if isJoypad or self.iconTexture then
 		width = width + 5 + self.joypadTextureWH
 	end
 	width = math.max(width, minWidth or 0)
 	if width ~= self.width then
+		self.originalWidth = width;
 		self:setWidth(width)
 	end
 end
@@ -391,6 +432,15 @@ end
 
 function ISButton:setSound(which, soundName)
 	self.sounds[which] = soundName
+end
+
+function ISButton:calculateLayout(_preferredWidth, _preferredHeight)
+    local width = math.max(self.originalWidth or 0, _preferredWidth or 0);
+    local height = math.max(self.originalHeight or 0, _preferredHeight or 0);
+
+
+    self:setWidth(width);
+    self:setHeight(height);
 end
 
 --************************************************************************--
@@ -434,8 +484,11 @@ function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmouse
     o.allowMouseUpProcessing = allowMouseUpProcessing;
     o.yoffset = 0;
     o.fade = UITransition.new()
-    o.joypadTextureWH = 20
+    o.joypadTextureWH = 32
     o.sounds = {}
     o.sounds.activate = "UIActivateButton"
+	o.originalWidth = width;
+	o.originalHeight = height;
+	o.textureBackground = nil;
    return o
 end

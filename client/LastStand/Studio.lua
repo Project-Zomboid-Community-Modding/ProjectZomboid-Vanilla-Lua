@@ -33,7 +33,6 @@ Studio.OnInitWorld = function()
 --    SandboxVars.Temperature = 3;
 --    SandboxVars.Rain = 3;
 --    SandboxVars.ErosionSpeed = 5
---    SandboxVars.XpMultiplier = "1.0";
 --    SandboxVars.Farming = 3;
 --    SandboxVars.NatureAbundance = 5;
 --    SandboxVars.PlantResilience = 3;
@@ -48,7 +47,7 @@ Studio.OnInitWorld = function()
 --    SandboxVars.TimeSinceApo = 1;
 --    SandboxVars.DecayingCorpseHealthImpact = 1
 --
---    SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+--    SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
     SandboxVars.MultiHitZombies = false;
 --
 ----    Events.OnZombieUpdate.Add(Studio.OnZombieUpdate);
@@ -90,11 +89,9 @@ Studio.id = "Studio";
 Studio.image = "media/lua/client/LastStand/Studio.png";
 Studio.world = "challengemaps/Studio";
 Studio.gameMode = "Studio";
-Studio.xcell = 1;
-Studio.ycell = 1;
-Studio.x = 183;
-Studio.y = 118;
+Studio.x = 1 * 300 + 183;
+Studio.y = 1 * 300 + 118;
 Studio.z = 0;
 
-Events.OnChallengeQuery.Add(Studio.Add)
-Events.OnNewGame.Add(Studio.OnNewGame)
+--Events.OnChallengeQuery.Add(Studio.Add)
+--Events.OnNewGame.Add(Studio.OnNewGame)

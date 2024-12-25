@@ -15,7 +15,10 @@ require "defines"
 
 ISInventoryPage = ISPanel:derive("ISInventoryPage");
 
-ISInventoryPage.bagSoundDelay = 5
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
+ISInventoryPage.bagSoundDelay = 2
 ISInventoryPage.bagSoundTime = 0
 
 --************************************************************************--
@@ -46,12 +49,14 @@ function ISInventoryPage:createChildren()
     self.minimumWidth = 256 + self.buttonSize;
 
     local titleBarHeight = self:titleBarHeight()
-    local closeBtnSize = titleBarHeight
-    local lootButtonHeight = titleBarHeight
+    local buttonHeight = titleBarHeight-2 --minus the 1 pixel border, and icon buttons are square
+    local buttonOffset = 1 + (5-getCore():getOptionFontSizeReal())*2
+    local textButtonOffset = buttonOffset * 3
 
     self.render3DItemRot = 0;
 
-    local panel2 = ISInventoryPane:new(0, titleBarHeight, self.width-self.buttonSize, self.height-titleBarHeight-9, self.inventory, self.zoom);
+    local rh = BUTTON_HGT/2+1
+    local panel2 = ISInventoryPane:new(0, titleBarHeight, self.width-self.buttonSize, self.height-titleBarHeight-rh-1, self.inventory, self.zoom);
     panel2.anchorBottom = true;
 	panel2.anchorRight = true;
     panel2.player = self.player;
@@ -67,8 +72,8 @@ function ISInventoryPage:createChildren()
 	-- FIXME: It is wrong to have both self.transferAll and ISInventoryPage.transferAll (button and function with the same name).
 
     local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_invpage_Transfer_all"))
-    local weightWid = getTextManager():MeasureStringX(UIFont.Small, "99.99 / 99")
-    self.transferAll = ISButton:new(self.width - 3 - closeBtnSize - math.max(90, weightWid + 10) - textWid, 0, textWid, lootButtonHeight, getText("IGUI_invpage_Transfer_all"), self, ISInventoryPage.transferAll);
+    local weightWid = getTextManager():MeasureStringX(UIFont.Small, "9999.99 / 9999")
+    self.transferAll = ISButton:new(self.width - 1 - buttonHeight - buttonOffset - weightWid - textButtonOffset - textWid, 0, textWid, buttonHeight, getText("IGUI_invpage_Transfer_all"), self, ISInventoryPage.transferAll);
     self.transferAll:initialise();
     self.transferAll.borderColor.a = 0.0;
     self.transferAll.backgroundColor.a = 0.0;
@@ -77,7 +82,7 @@ function ISInventoryPage:createChildren()
     self.transferAll:setVisible(false);
 
     if not self.onCharacter then
-        self.lootAll = ISButton:new(3 + closeBtnSize * 2 + 1, 0, 50, lootButtonHeight, getText("IGUI_invpage_Loot_all"), self, ISInventoryPage.lootAll);
+        self.lootAll = ISButton:new(1 + (buttonHeight+buttonOffset)*2, 1, 50, buttonHeight, getText("IGUI_invpage_Loot_all"), self, ISInventoryPage.lootAll);
         self.lootAll:initialise();
         self.lootAll.borderColor.a = 0.0;
         self.lootAll.backgroundColor.a = 0.0;
@@ -85,7 +90,7 @@ function ISInventoryPage:createChildren()
         self:addChild(self.lootAll);
         self.lootAll:setVisible(false);
         
-        self.removeAll = ISButton:new(self.lootAll:getRight() + 16, 0, 50, lootButtonHeight, getText("IGUI_invpage_RemoveAll"), self, ISInventoryPage.removeAll);
+        self.removeAll = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("IGUI_invpage_RemoveAll"), self, ISInventoryPage.removeAll);
         self.removeAll:initialise();
         self.removeAll.borderColor.a = 0.0;
         self.removeAll.backgroundColor.a = 0.0;
@@ -93,7 +98,7 @@ function ISInventoryPage:createChildren()
         self:addChild(self.removeAll);
         self.removeAll:setVisible(false);
 
-        self.toggleStove = ISButton:new(self.lootAll:getRight() + 16, 0, 50, lootButtonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.toggleStove);
+        self.toggleStove = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.toggleStove);
         self.toggleStove:initialise();
         self.toggleStove.borderColor.a = 0.0;
         self.toggleStove.backgroundColor.a = 0.0;
@@ -110,15 +115,17 @@ function ISInventoryPage:createChildren()
 --	filter:addOption("Building");
 --	self:addChild(filter);
 
+    local rh = BUTTON_HGT/2+1
+
     -- Do corner x + y widget
-	local resizeWidget = ISResizeWidget:new(self.width-10, self.height-10, 10, 10, self);
+	local resizeWidget = ISResizeWidget:new(self.width-rh, self.height-rh, rh, rh, self);
 	resizeWidget:initialise();
 	self:addChild(resizeWidget);
 
 	self.resizeWidget = resizeWidget;
 
     -- Do bottom y widget
-    resizeWidget = ISResizeWidget:new(0, self.height-10, self.width-10, 10, self, true);
+    resizeWidget = ISResizeWidget:new(0, self.height-rh, self.width-rh, rh, self, true);
     resizeWidget.anchorLeft = true;
     resizeWidget.anchorRight = true;
     resizeWidget:initialise();
@@ -127,7 +134,7 @@ function ISInventoryPage:createChildren()
     self.resizeWidget2 = resizeWidget;
 
 
-    self.closeButton = ISButton:new(3, 0, closeBtnSize, closeBtnSize, "", self, ISInventoryPage.close);
+    self.closeButton = ISButton:new(1, 1, buttonHeight, buttonHeight, "", self, ISInventoryPage.close);
     self.closeButton:initialise();
     self.closeButton.borderColor.a = 0.0;
     self.closeButton.backgroundColor.a = 0;
@@ -138,7 +145,7 @@ function ISInventoryPage:createChildren()
         self.closeButton:setVisible(false)
     end
 
-    self.infoButton = ISButton:new(self.closeButton:getRight() + 1, 0, closeBtnSize, closeBtnSize, "", self, ISInventoryPage.onInfo);
+    self.infoButton = ISButton:new(1 + buttonHeight + buttonOffset, 1, buttonHeight, buttonHeight, "", self, ISInventoryPage.onInfo);
     self.infoButton:initialise();
     self.infoButton.borderColor.a = 0.0;
     self.infoButton.backgroundColor.a = 0.0;
@@ -148,7 +155,7 @@ function ISInventoryPage:createChildren()
     self.infoButton:setVisible(false);
 
     --  --print("adding pin button");
-    self.pinButton = ISButton:new(self.width - closeBtnSize - 3, 0, closeBtnSize, closeBtnSize, "", self, ISInventoryPage.setPinned);
+    self.pinButton = ISButton:new(self.width - 1 - buttonHeight, 1, buttonHeight, buttonHeight, "", self, ISInventoryPage.setPinned);
     self.pinButton.anchorRight = true;
     self.pinButton.anchorLeft = false;
   --  --print("initialising pin button");
@@ -164,7 +171,7 @@ function ISInventoryPage:createChildren()
     self.pinButton:setVisible(false);
 
    -- --print("adding collapse button");
-    self.collapseButton = ISButton:new(self.pinButton:getX(), 0, closeBtnSize, closeBtnSize, "", self, ISInventoryPage.collapse);
+    self.collapseButton = ISButton:new(self.pinButton:getX(), 1, buttonHeight, buttonHeight, "", self, ISInventoryPage.collapse);
     self.collapseButton.anchorRight = true;
     self.collapseButton.anchorLeft = false;
     self.collapseButton:initialise();
@@ -177,7 +184,8 @@ function ISInventoryPage:createChildren()
         self.collapseButton:setVisible(false);
     end
 	-- load the current weight of the container
-	self.totalWeight =  ISInventoryPage.loadWeight(self.inventory);
+	self.totalWeight	=	ISInventoryPage.loadWeight(self.inventory);
+	self.totalItems		=	0;
 
     self:refreshBackpacks();
 
@@ -208,8 +216,9 @@ local TurnOnOff = {
 			return object:isActivated()
 		end,
 		toggle = function(object)
-			local args = { x = object:getX(), y = object:getY(), z = object:getZ() }
-			sendClientCommand('clothingDryer', 'toggle', args)
+            if object:getSquare() and luautils.walkAdj(getPlayer(), object:getSquare()) then
+                ISTimedActionQueue.add(ISToggleClothingDryer:new(getPlayer(), object))
+            end
 		end
 	},
 	ClothingWasher = {
@@ -221,8 +230,9 @@ local TurnOnOff = {
 			return object:isActivated()
 		end,
 		toggle = function(object)
-			local args = { x = object:getX(), y = object:getY(), z = object:getZ() }
-			sendClientCommand('clothingWasher', 'toggle', args)
+            if object:getSquare() and luautils.walkAdj(getPlayer(), object:getSquare()) then
+                ISTimedActionQueue.add(ISToggleClothingWasher:new(getPlayer(), object))
+            end
 		end
 	},
 	CombinationWasherDryer = {
@@ -234,8 +244,9 @@ local TurnOnOff = {
 			return object:isActivated()
 		end,
 		toggle = function(object)
-			local args = { x = object:getX(), y = object:getY(), z = object:getZ() }
-			sendClientCommand('comboWasherDryer', 'toggle', args)
+            if object:getSquare() and luautils.walkAdj(getPlayer(), object:getSquare()) then
+                ISTimedActionQueue.add(ISToggleComboWasherDryer:new(getPlayer(), object))
+            end
 		end
 	},
 	Stove = {
@@ -246,7 +257,10 @@ local TurnOnOff = {
 			return object:Activated()
 		end,
 		toggle = function(object)
-			object:Toggle()
+            if object:getSquare() and luautils.walkAdj(getPlayer(), object:getSquare()) then
+                ISTimedActionQueue.add(ISToggleStoveAction:new(getPlayer(), object))
+            end
+			--object:Toggle()
 		end
 	}
 }
@@ -331,6 +345,7 @@ function ISInventoryPage:collapse()
     self.collapseButton:setVisible(false);
     self.pinButton:setVisible(true);
     self.pinButton:bringToTop();
+    self.inventoryPane:clearWorldObjectHighlights();
 end
 
 function ISInventoryPage:setPinned()
@@ -360,17 +375,19 @@ function ISInventoryPage:update()
         if self.coloredInv:getParent() then
             self.coloredInv:getParent():setHighlighted(false)
             self.coloredInv:getParent():setOutlineHighlight(false);
+            self.coloredInv:getParent():setOutlineHlAttached(false);
         end
         self.coloredInv = nil;
     end
 
     if not self.isCollapsed then
 --        print(self.inventory:getParent());
-        if self.inventory:getParent() and (instanceof(self.inventory:getParent(), "IsoObject") or instanceof(self.inventory:getParent(), "IsoDeadBody")) then
+        if self.inventory:getParent() and ((not instanceof(self.inventory:getParent(), "IsoPlayer")) or instanceof(self.inventory:getParent(), "IsoDeadBody")) then
             self.inventory:getParent():setHighlighted(true, false);
-			if getCore():getOptionDoContainerOutline() then
+			if getCore():getOptionDoContainerOutline() then -- TODO RJ: this make the player blink, not sure what was wanted here?
 				self.inventory:getParent():setOutlineHighlight(true);
-				self.inventory:getParent():setOutlineHighlightCol(1, 1, 1, 1);
+				self.inventory:getParent():setOutlineHlAttached(true);
+				self.inventory:getParent():setOutlineHighlightCol(getCore():getObjectHighlitedColor():getR(), getCore():getObjectHighlitedColor():getG(), getCore():getObjectHighlitedColor():getB(), 1);
 			end
             self.inventory:getParent():setHighlightColor(getCore():getObjectHighlitedColor());
 --             self.inventory:getParent():setHighlightColor(ColorInfo.new(0.3,0.3,0.3,1));
@@ -419,6 +436,8 @@ function ISInventoryPage:update()
             end
         end
     end
+
+	self.totalItems = luautils.countItemsRecursive({luautils.findRootInventory(self.inventoryPane.inventory)});
 
 	self:syncToggleStove()
 end
@@ -488,7 +507,7 @@ function ISInventoryPage:prerender()
         self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, titleBarHeight - 2, 1, 1, 1, 1);
     else
         if not self.blinkAlpha then self.blinkAlpha = 1; end
-        self:drawRect(2, 1, self:getWidth() - 4, 14, self.blinkAlpha, 1, 1, 1);
+        self:drawRect(1, 1, self:getWidth() - 2, titleBarHeight-2, self.blinkAlpha, 1, 1, 1);
 --        self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, 14, self.blinkAlpha, 1, 1, 1);
 
         if not self.blinkAlphaIncrease then
@@ -517,43 +536,105 @@ function ISInventoryPage:prerender()
 --~ 	end
 
     if self.title and self.onCharacter then
-        self:drawText(self.title, self.infoButton:getRight() + 1, 0, 1,1,1,1);
+        self:drawText(self.title, self.infoButton:getRight() + (5-getCore():getOptionFontSizeReal())*2, 0, 1,1,1,1);
     end
+
+	local weightLabel;
+    local buttonOffset = 1 + (5-getCore():getOptionFontSizeReal())*2
 
 	-- load the current weight of the container
 	self.totalWeight = ISInventoryPage.loadWeight(self.inventoryPane.inventory);
+	-- used handle characters being in seats
+	local occupied;
 
-    local roundedWeight = round(self.totalWeight, 2)
+	local roundedWeight = round(self.totalWeight, 2)
+
 	if self.capacity then
-		if self.inventoryPane.inventory == getSpecificPlayer(self.player):getInventory() then
+		local inventory = self.inventoryPane.inventory
+		local part = inventory:getVehiclePart()
+		if inventory == getSpecificPlayer(self.player):getInventory() then
 			self:drawTextRight(roundedWeight .. " / " .. getSpecificPlayer(self.player):getMaxWeight(), self.pinButton:getX(), 0, 1,1,1,1);
+		-- if a vehicle seat is occupied, display it's max maximum capacity at 25%/5 units
+		elseif part and part:getId():contains("Seat") and part:getVehicle():getCharacter(part:getContainerSeatNumber()) then
+			-- local part = inventory:getVehiclePart()
+			-- local seat = vehiclePart.getId().contains("Seat")
+			-- local occupied = part:getVehicle():getCharacter(part:getContainerSeatNumber())
+			self:drawTextRight(roundedWeight .. " / " .. (self.capacity/4), self.pinButton:getX()-buttonOffset, 0, 1,1,1,1);
+			occupied = true;
 		else
-			self:drawTextRight(roundedWeight .. " / " .. self.capacity, self.pinButton:getX(), 0, 1,1,1,1);
-		end
+			--display the item total and limit per container in MP
+			if isClient() then
+				local itemLimit = getServerOptions():getInteger("ItemNumbersLimitPerContainer");
+				local itemNumber = luautils.countItemsRecursive({luautils.findRootInventory(self.inventoryPane.inventory)});
+				if itemLimit > 0 then
+					weightLabel = roundedWeight .. " / " .. self.capacity .. " (" .. itemNumber .. " / " .. itemLimit .. ")";
+				else
+					weightLabel = roundedWeight .. " / " .. self.capacity;
+				end;
+			else
+				weightLabel = roundedWeight .. " / " .. self.capacity;
+			end;
+		end;
 	else
-		self:drawTextRight(roundedWeight .. "", self.width - 20, 0, 1,1,1,1);
-    end
-    
-	local weightWid = getTextManager():MeasureStringX(UIFont.Small, "99.99 / 99")
-	weightWid = math.max(90, weightWid + 10)
-    self.transferAll:setX(self.pinButton:getX() - weightWid - getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_invpage_Transfer_all")));
+		weightLabel = roundedWeight .. "";
+	end;
+
+	self:drawTextRight(weightLabel, self.pinButton:getX()-buttonOffset, 0, 1,1,1,1);
+
+    local weightWid = getTextManager():MeasureStringX(UIFont.Small, "9999.99 / 9999") + 30;
     if not self.onCharacter or self.width < 370 then
         self.transferAll:setVisible(false)
-    elseif not "Tutorial" == getCore():getGameMode() then
+    elseif "Tutorial" ~= getCore():getGameMode() then
         self.transferAll:setVisible(true)
     end
+
+    local buttonHeight = titleBarHeight-2
+    local textButtonOffset = buttonOffset * 3
+    local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_invpage_Transfer_all"))
+
+    self.transferAll:setX(self.width - 1 - buttonHeight - buttonOffset - weightWid - textButtonOffset - textWid)
     
     if self.title and not self.onCharacter then
         local fontHgt = getTextManager():getFontHeight(self.font)
-        self:drawTextRight(self.title, self.width - 20 - weightWid, (titleBarHeight - fontHgt) / 2, 1,1,1,1);
-    end
+		if occupied then
+			self:drawTextRight((self.title .. " " .. getText("IGUI_invpage_Occupied")), self.width - 20 - weightWid, (titleBarHeight - fontHgt) / 2, 1,1,1,1);
+		else
+			self:drawTextRight(self.title, self.width - 20 - weightWid, (titleBarHeight - fontHgt) / 2, 1,1,1,1);
+		end
+	end
 
     -- self:drawRectBorder(self:getWidth()-32, 15, 32, self:getHeight()-16-6, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:setStencilRect(0,0,self.width+1, height);
-    
+
+    local playerObj = getSpecificPlayer(self.player)
+    if playerObj and playerObj:isInvPageDirty() then
+        playerObj:setInvPageDirty(false);
+        ISInventoryPage.renderDirty = false;
+        ISInventoryPage.dirtyUI();
+    end
     if ISInventoryPage.renderDirty then
         ISInventoryPage.renderDirty = false;
         ISInventoryPage.dirtyUI();
+    end
+end
+
+function ISInventoryPage:drawTextRight(str, x, y, r, g, b, a, font)
+    if self.javaObject ~= nil and str ~= nil then
+        if font ~= nil then
+            self.javaObject:DrawTextRight(font, str, x, y, r, g, b, a);
+        else
+            self.javaObject:DrawTextRight(UIFont.Small, str, x, y, r, g, b, a);
+        end
+    end
+end
+
+function ISInventoryPage:drawText(str, x, y, r, g, b, a, font)
+    if self.javaObject ~= nil then
+        if font ~= nil then
+            self.javaObject:DrawText(font, str, x, y, r, g, b, a);
+        else
+            self.javaObject:DrawText(UIFont.Small, str, x, y, r, g, b, a);
+        end
     end
 end
 
@@ -564,6 +645,11 @@ function ISInventoryPage:close()
 		local playerObj = getSpecificPlayer(self.player)
 		playerObj:setBannedAttacking(false)
 	end
+    self.inventoryPane:clearWorldObjectHighlights();
+end
+
+function ISInventoryPage:onToggleVisible()
+    self.inventoryPane:clearWorldObjectHighlights();
 end
 
 function ISInventoryPage:onLoseJoypadFocus(joypadData)
@@ -786,6 +872,7 @@ end
 
 function ISInventoryPage:render()
 	local titleBarHeight = self:titleBarHeight()
+    local rh = BUTTON_HGT/2+2
     local height = self:getHeight();
     if self.isCollapsed then
         height = titleBarHeight
@@ -794,9 +881,9 @@ function ISInventoryPage:render()
     if not self.isCollapsed then
         self:drawRectBorder(self:getWidth()-self.buttonSize, titleBarHeight - 1, self.buttonSize, height-titleBarHeight-7, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         --self:drawRect(0, 0, self.width-32, self.height, 1, 1, 1, 1);
-        self:drawRectBorder(0, height-9, self:getWidth(), 9, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-        self:drawTextureScaled(self.statusbarbkg, 2,  height-7, self:getWidth() - 4, 6, 1, 1, 1, 1);
-        self:drawTexture(self.resizeimage, self:getWidth()-9, height-8, 1, 1, 1, 1);
+        self:drawRectBorder(0, height-rh, self:getWidth(), rh, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        self:drawTextureScaled(self.statusbarbkg, 1,  height-rh+1, self:getWidth() - 2, rh-2, 1, 1, 1, 1);
+        self:drawTextureScaled(self.resizeimage, self:getWidth()-rh+1, height-rh+1, rh-2, rh-2, 1, 1, 1, 1);
     end
 
     self:clearStencilRect();
@@ -858,17 +945,26 @@ function ISInventoryPage:selectContainer(button)
 	local playerObj = getSpecificPlayer(self.player)
 
     if button.inventory ~= self.inventoryPane.lastinventory then
+        local object = button.inventory and button.inventory:getParent() or nil
+        if instanceof(object, "IsoThumpable") and object:isLockedToCharacter(playerObj) then
+            return
+        end
         if button.inventory:getOpenSound() then
             if ISInventoryPage.bagSoundTime + ISInventoryPage.bagSoundDelay < getTimestamp() then
-                ISInventoryPage.bagSoundTime = getTimestamp()
-                getSpecificPlayer(self.player):getEmitter():playSound(button.inventory:getOpenSound())
+                local eventInstance = getSpecificPlayer(self.player):playSound(button.inventory:getOpenSound())
+                if eventInstance ~= 0 then
+                    ISInventoryPage.bagSoundTime = getTimestamp()
+                end
             end
         end
 
         if not button.inventory:getOpenSound() and self.inventoryPane.lastinventory:getCloseSound() then
             if ISInventoryPage.bagSoundTime + ISInventoryPage.bagSoundDelay < getTimestamp() then
                 ISInventoryPage.bagSoundTime = getTimestamp()
-                getSpecificPlayer(self.player):getEmitter():playSound(self.inventoryPane.lastinventory:getCloseSound())
+                local eventInstance = getSpecificPlayer(self.player):playSound(self.inventoryPane.lastinventory:getCloseSound())
+                if eventInstance ~= 0 then
+                    ISInventoryPage.bagSoundTime = getTimestamp()
+                end
             end
         end
     end
@@ -919,7 +1015,11 @@ function ISInventoryPage:selectButtonForContainer(container)
 	end
 	for index,containerButton in ipairs(self.backpacks) do
 		if containerButton.inventory == container then
-			local playerObj = getSpecificPlayer(self.player)
+            local playerObj = getSpecificPlayer(self.player)
+            local object = container and container:getParent() or nil
+            if instanceof(object, "IsoThumpable") and object:isLockedToCharacter(playerObj) then
+                return
+            end
 			if playerObj and playerObj:getJoypadBind() ~= -1 then
 				self.backpackChoice = index
 			end
@@ -956,8 +1056,7 @@ function ISInventoryPage:onMouseMove(dx, dy)
         end
     end
 
-    local panCameraKey = getCore():getKey("PanCamera")
-    if self.isCollapsed and panCameraKey ~= 0 and isKeyDown(panCameraKey) then
+    if self.isCollapsed and isKeyDown("PanCamera") then
         return
     end
 
@@ -1123,7 +1222,7 @@ end
 
 function ISInventoryPage:onBackpackMouseDown(button, x, y)
 	ISMouseDrag = {}
-	if not isKeyDown(getCore():getKey("Melee")) then
+	if not isKeyDown("Melee") then
 	    getSpecificPlayer(self.player):nullifyAiming();
     end
 end
@@ -1167,7 +1266,7 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
         local playerObj = getSpecificPlayer(page.player)
         if not instanceof(container:getParent(), "BaseVehicle") and not (container:getType() == "inventorymale" or container:getType() == "inventoryfemale") then
             context:addOption("Refill container", container, function(container, playerObj)
-                if container:getSourceGrid() and container:getSourceGrid():getRoom() and container:getSourceGrid():getRoom():getRoomDef() and container:getSourceGrid():getRoom():getRoomDef():getProceduralSpawnedContainer() then
+                if container:getSourceGrid() then
                     if isClient() then
                         local items = container:getItems()
                         local tItems = {}
@@ -1194,7 +1293,9 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
                         container:setExplored(true)
                         sendClientCommand(playerObj, 'object', 'updateOverlaySprite', args)
                     else
-                        container:getSourceGrid():getRoom():getRoomDef():getProceduralSpawnedContainer():clear()
+                        if container:getSourceGrid():getRoom() and container:getSourceGrid():getRoom():getRoomDef() and container:getSourceGrid():getRoom():getRoomDef():getProceduralSpawnedContainer() then
+                            container:getSourceGrid():getRoom():getRoomDef():getProceduralSpawnedContainer():clear()
+                        end
                         container:removeItemsFromProcessItems()
                         container:clear()
                         ItemPicker.fillContainer(container, playerObj)
@@ -1257,7 +1358,7 @@ function ISInventoryPage:addContainerButton(container, texture, name, tooltip)
 	end
 	button:setBackgroundRGBA(0.0, 0.0, 0.0, 0.0)
 	button:setBackgroundColorMouseOverRGBA(0.3, 0.3, 0.3, 1.0)
-	button:setBorderRGBA(0.7, 0.7, 0.7, 0.0)
+	button:setBorderRGBA(0.7, 0.7, 0.7, 0.35)
 	button:setTextureRGBA(1.0, 1.0, 1.0, 1.0)
 	button.textureOverride = nil
 	button.inventory = container
@@ -1295,6 +1396,9 @@ function ISInventoryPage:checkExplored(container, playerObj)
 		ItemPicker.fillContainer(container, playerObj)
 	end
 	container:setExplored(true)
+	if playerObj and playerObj:isLocalPlayer() then
+		playerObj:triggerMusicIntensityEvent("SearchNewContainer")
+	end
 end
 
 function ISInventoryPage.GetFloorContainer(playerNum)
@@ -1302,13 +1406,15 @@ function ISInventoryPage.GetFloorContainer(playerNum)
 		ISInventoryPage.floorContainer = {}
 	end
 	if ISInventoryPage.floorContainer[playerNum+1] == nil then
-		ISInventoryPage.floorContainer[playerNum+1] = ItemContainer.new("floor", nil, nil, 10, 10)
+		ISInventoryPage.floorContainer[playerNum+1] = ItemContainer.new("floor", nil, nil)
 		ISInventoryPage.floorContainer[playerNum+1]:setExplored(true)
 	end
 	return ISInventoryPage.floorContainer[playerNum+1]
 end
 
 function ISInventoryPage:refreshBackpacks()
+    ISHandCraftPanel.drawDirty = true;
+
 	self.buttonPool = self.buttonPool or {}
 	for i,v in ipairs(self.backpacks) do
 		self:removeChild(v)
@@ -1331,7 +1437,7 @@ function ISInventoryPage:refreshBackpacks()
 	triggerEvent("OnRefreshInventoryWindowContainers", self, "begin")
 
 	if self.onCharacter then
-		local name = getText("IGUI_InventoryName", playerObj:getDescriptor():getForename(), playerObj:getDescriptor():getSurname())
+		local name = getText("IGUI_InventoryTooltip")
 		containerButton = self:addContainerButton(playerObj:getInventory(), self.invbasic, name, nil)
 		containerButton.capacity = self.inventory:getMaxWeight()
 		if not self.capacity then
@@ -1340,7 +1446,7 @@ function ISInventoryPage:refreshBackpacks()
 		local it = playerObj:getInventory():getItems()
 		for i = 0, it:size()-1 do
 			local item = it:get(i)
-			if item:getCategory() == "Container" and playerObj:isEquipped(item) or item:getType() == "KeyRing" then
+			if item:getCategory() == "Container" and playerObj:isEquipped(item) or item:getType() == "KeyRing"  or item:hasTag( "KeyRing") then
 				-- found a container, so create a button for it...
 				containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), item:getName())
 				if(item:getVisual() and item:getClothingItem()) then
@@ -1353,10 +1459,52 @@ function ISInventoryPage:refreshBackpacks()
 		local vehicle = playerObj:getVehicle()
 		for partIndex=1,vehicle:getPartCount() do
 			local vehiclePart = vehicle:getPartByIndex(partIndex-1)
-			if vehiclePart:getItemContainer() and vehicle:canAccessContainer(partIndex-1, playerObj) then
+			if vehiclePart:getItemContainer() and vehicle:canAccessContainer(partIndex-1, playerObj) and vehiclePart:getId() ~= "TruckBed" then
 				local tooltip = getText("IGUI_VehiclePart" .. vehiclePart:getItemContainer():getType())
-				containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, nil)
+                -- changed to include tooltips outside of the player inventory because some people want it
+				containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, tooltip)
+-- 				containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, nil)
 				self:checkExplored(containerButton.inventory, playerObj)
+                -- check for bags in seats/trunks
+                if vehiclePart:getId() and vehiclePart:getId() ~= "GloveBox" then
+                    local it = vehiclePart:getItemContainer():getItems()
+                    for i = 0, it:size()-1 do
+                        local item = it:get(i)
+                        if item:getCategory() == "Container"  then
+                            -- found a container, so create a button for it...
+                            containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), item:getName())
+                            if(item:getVisual() and item:getClothingItem()) then
+                                local tint = item:getVisual():getTint(item:getClothingItem());
+                                containerButton:setTextureRGBA(tint:getRedFloat(), tint:getGreenFloat(), tint:getBlueFloat(), 1.0);
+                            end
+                        end
+                    end
+                end
+			end
+	    end
+		for partIndex=1,vehicle:getPartCount() do
+			local vehiclePart = vehicle:getPartByIndex(partIndex-1)
+			if vehiclePart:getItemContainer() and vehicle:canAccessContainer(partIndex-1, playerObj) and vehiclePart:getId() == "TruckBed" then
+				local tooltip = getText("IGUI_VehiclePart" .. vehiclePart:getItemContainer():getType())
+				-- changed to include tooltips outside of the player inventory because it matters to some people
+				containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, tooltip)
+-- 				containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, nil)
+				self:checkExplored(containerButton.inventory, playerObj)
+                -- check for bags in seats/trunks
+                if vehiclePart:getId() and vehiclePart:getId() ~= "GloveBox" then
+                    local it = vehiclePart:getItemContainer():getItems()
+                    for i = 0, it:size()-1 do
+                        local item = it:get(i)
+                        if item:getCategory() == "Container"  then
+                            -- found a container, so create a button for it...
+                            containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), item:getName())
+                            if(item:getVisual() and item:getClothingItem()) then
+                                local tint = item:getVisual():getTint(item:getClothingItem());
+                                containerButton:setTextureRGBA(tint:getRedFloat(), tint:getGreenFloat(), tint:getBlueFloat(), 1.0);
+                            end
+                        end
+                    end
+                end
 			end
 		end
 	else
@@ -1407,14 +1555,17 @@ function ISInventoryPage:refreshBackpacks()
 		for _,gs in ipairs(sqs) do
 			-- stop grabbing thru walls...
 			local currentSq = playerObj:getCurrentSquare()
-			if gs ~= currentSq and currentSq and currentSq:isBlockedTo(gs) then
+			--if gs ~= currentSq and currentSq and currentSq:isBlockedTo(gs) then
+            if gs ~= currentSq and currentSq and not currentSq:canReachTo(gs) then
 				gs = nil
 			end
 
-			-- don't show containers in safehouse if you're not allowed
-			if gs and isClient() and SafeHouse.isSafeHouse(gs, playerObj:getUsername(), true) and not getServerOptions():getBoolean("SafehouseAllowLoot") then
-				gs = nil
-			end
+            -- don't show containers in safehouse if you're not allowed
+            if gs then
+                if isClient() and not SafeHouse.isSafehouseAllowLoot(gs, playerObj) then
+                    gs = nil
+                end
+            end
 
 			if gs ~= nil then
 				local numButtons = #self.backpacks
@@ -1426,7 +1577,9 @@ function ISInventoryPage:refreshBackpacks()
 					floorContainer:AddItem(o:getItem())
 					if o:getItem() and o:getItem():getCategory() == "Container" then
 						local item = o:getItem()
-						containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), nil)
+                        -- changed to include tooltips outside of the player inventory because some people want it
+						containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), item:getName())
+-- 						containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), nil)
 						if item:getVisual() and item:getClothingItem() then
 							local tint = item:getVisual():getTint(item:getClothingItem());
 							containerButton:setTextureRGBA(tint:getRedFloat(), tint:getGreenFloat(), tint:getBlueFloat(), 1.0);
@@ -1438,8 +1591,20 @@ function ISInventoryPage:refreshBackpacks()
 				for i = 0, sobs:size()-1 do
 					local so = sobs:get(i)
 					if so:getContainer() ~= nil then
-						local title = getTextOrNull("IGUI_ContainerTitle_" .. so:getContainer():getType()) or ""
-						containerButton = self:addContainerButton(so:getContainer(), nil, title, nil)
+					    -- added console spam when there's a missing container name translation string
+					    if getTextOrNull("IGUI_ContainerTitle_" .. so:getContainer():getType()) == nil and isDebugEnabled() then
+					        print("Missing IGUI_ContainerTitle_ tranlastion string for " .. tostring(so:getContainer():getType()))
+					    end
+
+					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
+						local title = getTextOrNull("IGUI_ContainerTitle_" .. so:getContainer():getType()) or "!Needs IGUI_ContainerTitle defined for: " .. so:getContainer():getType()
+-- 						local title = getTextOrNull("IGUI_ContainerTitle_" .. so:getContainer():getType()) or ""
+                        -- changed to include tooltips outside of the player inventory because some people want it
+                        if instanceof(so, "IsoDeadBody") and so:isAnimal() then
+                            break;
+                        end
+						containerButton = self:addContainerButton(so:getContainer(), nil, title, title)
+-- 						containerButton = self:addContainerButton(so:getContainer(), nil, title, nil)
 						self:checkExplored(containerButton.inventory, playerObj)
 					end
 				end
@@ -1449,8 +1614,16 @@ function ISInventoryPage:refreshBackpacks()
 					local o = obs:get(i)
 					for containerIndex = 1,o:getContainerCount() do
 						local container = o:getContainerByIndex(containerIndex-1)
-						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or ""
-						containerButton = self:addContainerButton(container, nil, title, nil)
+						-- added console spam when a container type doesn't have a translation string defined
+					    if getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) == nil and isDebugEnabled() then
+					        print("Missing IGUI_ContainerTitle_ translation string for " .. tostring(container:getType()))
+					    end
+					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
+						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or "!Needs IGUI_ContainerTitle defined for: " .. container:getType()
+-- 						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or ""
+                        -- changed to include tooltips outside of the player inventory because some people want it
+						containerButton = self:addContainerButton(container, nil, title, title)
+-- 						containerButton = self:addContainerButton(container, nil, title, nil)
 						if instanceof(o, "IsoThumpable") and o:isLockedToCharacter(playerObj) then
 							containerButton.onclick = nil
 							containerButton.onmousedown = nil
@@ -1474,8 +1647,25 @@ function ISInventoryPage:refreshBackpacks()
 						local vehiclePart = vehicle:getPartByIndex(partIndex-1)
 						if vehiclePart:getItemContainer() and vehicle:canAccessContainer(partIndex-1, playerObj) then
 							local tooltip = getText("IGUI_VehiclePart" .. vehiclePart:getItemContainer():getType())
-							containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, nil)
+                            -- changed to include tooltips outside of the player inventory because some people want it
+							containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, tooltip)
+-- 							containerButton = self:addContainerButton(vehiclePart:getItemContainer(), nil, tooltip, nil)
 							self:checkExplored(containerButton.inventory, playerObj)
+							-- check for bags in seats/trunks
+                            if vehiclePart:getId() and vehiclePart:getId() ~= "GloveBox" then
+                                local it = vehiclePart:getItemContainer():getItems()
+                                for i = 0, it:size()-1 do
+                                    local item = it:get(i)
+                                    if item:getCategory() == "Container"  then
+                                        -- found a container, so create a button for it...
+                                        containerButton = self:addContainerButton(item:getInventory(), item:getTex(), item:getName(), item:getName())
+                                        if(item:getVisual() and item:getClothingItem()) then
+                                            local tint = item:getVisual():getTint(item:getClothingItem());
+                                            containerButton:setTextureRGBA(tint:getRedFloat(), tint:getGreenFloat(), tint:getBlueFloat(), 1.0);
+                                        end
+                                    end
+                                end
+                            end
 						end
 					end
 				end
@@ -1553,10 +1743,6 @@ function ISInventoryPage:refreshBackpacks()
 		end
 	end
 
-	if isClient() and (not self.isCollapsed) and (self.inventoryPane.inventory ~= self.inventoryPane.lastinventory) then
-		self.inventoryPane.inventory:requestSync()
-	end
-
 	self.inventoryPane:bringToTop()
 	self.resizeWidget2:bringToTop()
 	self.resizeWidget:bringToTop()
@@ -1614,13 +1800,13 @@ function ISInventoryPage:new (x, y, width, height, inventory, onCharacter, zoom)
 	o.inventory = inventory;
     o.onCharacter = onCharacter;
     o.titlebarbkg = getTexture("media/ui/Panel_TitleBar.png");
-    o.infoBtn = getTexture("media/ui/Panel_info_button.png");
     o.statusbarbkg = getTexture("media/ui/Panel_StatusBar.png");
-    o.resizeimage = getTexture("media/ui/Panel_StatusBar_Resize.png");
+    o.resizeimage = getTexture("media/ui/ResizeIcon.png");
     o.invbasic = getTexture("media/ui/Icon_InventoryBasic.png");
-    o.closebutton = getTexture("media/ui/Dialog_Titlebar_CloseIcon.png");
-    o.collapsebutton = getTexture("media/ui/Panel_Icon_Collapse.png");
-    o.pinbutton = getTexture("media/ui/Panel_Icon_Pin.png");
+    o.infoBtn = getTexture("media/ui/inventoryPanes/Button_Info.png");
+    o.closebutton = getTexture("media/ui/inventoryPanes/Button_Close.png");
+    o.collapsebutton = getTexture("media/ui/inventoryPanes/Button_Collapse.png");
+    o.pinbutton = getTexture("media/ui/inventoryPanes/Button_Pin.png");
 
     o.conDefault = getTexture("media/ui/Container_Shelf.png");
     o.highlightColors = {r=0.98,g=0.56,b=0.11};
@@ -1636,6 +1822,10 @@ function ISInventoryPage:new (x, y, width, height, inventory, onCharacter, zoom)
 	o.titleFontHgt = getTextManager():getFontHeight(o.titleFont)
 	local sizes = { 32, 40, 48 }
 	o.buttonSize = sizes[getCore():getOptionInventoryContainerSize()]
+
+    o.visibleTarget = o;
+    o.visibleFunction = ISInventoryPage.onToggleVisible;
+
    return o
 end
 
@@ -1646,80 +1836,6 @@ end
 function ISInventoryPage:onMouseOutButton(button,x,y)
 	self.mouseOverButton = nil;
 end
-
---[[
-function ISInventoryPage:canPutIn(doMain)
-    if not self.mouseOverButton or self.mouseOverButton.inventory == nil then
-        return false;
-    end
-    if self.mouseOverButton.inventory:getType() == "floor" then
-       return true;
-    end
-
-	-- if we're not over a container
-	if not self.mouseOverButton then
-		return true;
-	end
-	-- we count the total weight of our container
-	local totalWeight = ISInventoryPage.loadWeight(self.mouseOverButton.inventory);
---~ 	self.mouseOverButton.inventory:getWeight();
-	local inventoryItem = nil;
-	for i,v in ipairs(ISMouseDrag.dragging) do
-		if instanceof(v, "InventoryItem") then
-
-            if self.mouseOverButton.inventory == v:getContainer() then
-                return true;
-            end
-
-            if not self.mouseOverButton.inventory:isItemAllowed(v) then
-                return false;
-            end
-
-                -- you can't draw the container in himself
---~ 			print(self.mouseOverButton.inventory);
---~ 			print(v);
-
-			if not inventoryItem then
-				inventoryItem = v;
-				totalWeight = totalWeight + v:getActualWeight();
-			elseif inventoryItem ~= v then
-				totalWeight = totalWeight + v:getActualWeight();
-			end
---~ 			totalWeight = totalWeight + v:getActualWeight();
-		else
-			for i2,v2 in ipairs(v.items) do
---~ 				print("notinstanceitem");
---~ 				print(v2);
---~ 				print(self.mouseOverButton.inventory);
-				-- you can't draw the container in himself
-				if (self.mouseOverButton.inventory:isInside(v2)) then
-					return false;
-                end
-
-                if self.mouseOverButton.inventory == v2:getContainer() then
-                    return true;
-                end
-
-                if not self.mouseOverButton.inventory:isItemAllowed(v2) then
-                    return false;
-                end
-
-                -- first is a dummy
-				if not inventoryItem then
-					inventoryItem = v2;
-					totalWeight = totalWeight + v2:getActualWeight();
-				elseif inventoryItem ~= v2 then
-					totalWeight = totalWeight + v2:getActualWeight();
-				end
-			end
-		end
---~ 		print(#v.items .. " " .. totalWeight);
-	end
-
-		return true;
-
-end
---]]
 
 function ISInventoryPage:canPutIn()
     local playerObj = getSpecificPlayer(self.player)
@@ -1777,7 +1893,7 @@ function ISInventoryPage:SaveLayout(name, layout)
 end
 
 ISInventoryPage.onKeyPressed = function(key)
-	if key == getCore():getKey("Toggle Inventory") and getSpecificPlayer(0) and getGameSpeed() > 0 and getPlayerInventory(0) and getCore():getGameMode() ~= "Tutorial" then
+	if getCore():isKey("Toggle Inventory", key) and getSpecificPlayer(0) and getGameSpeed() > 0 and getPlayerInventory(0) and getCore():getGameMode() ~= "Tutorial" then
         getPlayerInventory(0):setVisible(not getPlayerInventory(0):getIsVisible());
         getPlayerLoot(0):setVisible(getPlayerInventory(0):getIsVisible());
     end
@@ -1847,7 +1963,7 @@ function ISInventoryPage:removeAll()
 end
 
 function ISInventoryPage:render3DItemPreview()
-    if isKeyDown(getCore():getKey("Rotate building")) then
+    if isKeyDown("Rotate building") then
         if not self.render3DItemRot then
             self.render3DItemRot = 0;
         end

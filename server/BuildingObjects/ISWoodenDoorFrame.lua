@@ -23,7 +23,7 @@ function ISWoodenDoorFrame:create(x, y, z, north, sprite)
 	-- add the item to the ground
     self.sq:AddSpecialObject(self.javaObject);
 	buildUtil.checkCorner(x,y,z,north, self.javaObject);
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 end
 
 function ISWoodenDoorFrame:new(sprite, northSprite, corner)

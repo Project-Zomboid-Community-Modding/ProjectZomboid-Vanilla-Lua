@@ -32,14 +32,14 @@ OpeningHours.OnInitWorld = function()
 	SandboxVars.StartTime = 1;
 	SandboxVars.WaterShutModifier = 14;
 	SandboxVars.ElecShutModifier = 14;
-	SandboxVars.FoodLoot = 5;
-	SandboxVars.WeaponLoot = 5;
-	SandboxVars.OtherLoot = 5;
+-- 	SandboxVars.FoodLoot = 5;
+-- 	SandboxVars.WeaponLoot = 5;
+-- 	SandboxVars.OtherLoot = 5;
+    SandboxVars.LootItemRemovalList = "";
 	SandboxVars.Temperature = 3;
 	SandboxVars.Rain = 3;
 	--    SandboxVars.erosion = 12
 	SandboxVars.ErosionSpeed = 1
-	SandboxVars.XpMultiplier = "1.0";
 	SandboxVars.Farming = 3;
 	SandboxVars.NatureAbundance = 5;
 	SandboxVars.PlantResilience = 3;
@@ -55,7 +55,12 @@ OpeningHours.OnInitWorld = function()
     SandboxVars.DecayingCorpseHealthImpact = 1
     SandboxVars.MultiHitZombies = false;
 
-	SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
+
+	SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
 	Events.OnGameStart.Add(OpeningHours.OnGameStart);
     Events.EveryDays.Add(OpeningHours.EveryDays);
@@ -232,10 +237,8 @@ OpeningHours.id = "OpeningHours";
 OpeningHours.image = "media/lua/client/LastStand/OpeningHours.png";
 OpeningHours.gameMode = "Opening Hours";
 OpeningHours.world = "Muldraugh, KY";
-OpeningHours.xcell = 46;
-OpeningHours.ycell = 19;
-OpeningHours.x = 115;
-OpeningHours.y = 48;
+OpeningHours.x = 46 * 300 + 115;
+OpeningHours.y = 19 * 300 + 48;
 OpeningHours.z = 0;
 OpeningHours.southSpawn = {x=13923,y=5919,x2=13960,y2=5919};
 OpeningHours.southSpawnX = 13942;

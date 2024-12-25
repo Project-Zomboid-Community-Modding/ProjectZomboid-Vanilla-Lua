@@ -13,6 +13,9 @@ LoadGameScreen = ISPanelJoypad:derive("LoadGameScreen");
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
 
 -- -- -- -- --
 -- -- -- -- --
@@ -21,11 +24,11 @@ local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
 local SaveInfoPanel = ISPanelJoypad:derive("LoadGameScreen_InfoPanel")
 
 function SaveInfoPanel:createChildren()
-    self.richText = ISRichTextPanel:new(0, 10, 200, 200)
+    self.richText = ISRichTextPanel:new(0, UI_BORDER_SPACING, 200, 200)
     self.richText:initialise()
     self.richText:instantiate()
     self.richText.background = false
-    self.richText.marginLeft = 10
+    self.richText.marginLeft = UI_BORDER_SPACING
     self.richText:setAnchorBottom(true)
     self.richText:setAnchorRight(true)
     self.richText:setVisible(false)
@@ -100,7 +103,7 @@ function SaveInfoPanel:setRichText()
 		text = text .. canNotLoadText .. " <TEXT> <RED> " .. getText("UI_worldscreen_SavefileCorrupt") .. " <RGB:1,1,1> <H2> <LINE> "
 --	elseif selectedItem.item.worldVersion == 175 then
 --		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileOld") .. " <LINE> " .. getText("UI_worldscreen_SavefileUseBeta41_50") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
-	elseif selectedItem.item.worldVersion <= 175 then
+	elseif selectedItem.item.worldVersion <= 200 then
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileOld") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
 	elseif selectedItem.item.worldVersion > IsoWorld.getWorldVersion() then
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileNewerThanGame") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
@@ -114,6 +117,7 @@ function SaveInfoPanel:prerender()
 	self:setStencilRect(0, 0, self.width, self.height)
 
 	local selectedItem = self.parent.listbox.items[self.parent.listbox.selected]
+	if selectedItem == nil then return end
 
 	local thumbHeight = 256
 	if selectedItem.thumb == nil and selectedItem.thumbMissing ~= true then
@@ -177,43 +181,42 @@ end
 local ConfigPanel = ISPanelJoypad:derive("LoadGameScreen_ConfigPanel")
 
 function ConfigPanel:createChildren()
-	local x = 20
-	local y = 20
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
+	local x = UI_BORDER_SPACING+1
+	local y = UI_BORDER_SPACING+1
 	local buttonWid = 200
 
 	local richText = self:createRichText(x, y, getText("UI_LoadGameScreen_ChooseModsText"))
 	y = richText:getBottom()
 
-	self.buttonMods = self:createButton(x, y, buttonWid, buttonHgt,
+	self.buttonMods = self:createButton(x, y, buttonWid, BUTTON_HGT,
 		getText("UI_LoadGameScreen_ButtonChooseMods"),
 		ConfigPanel.onChooseMods)
 	y = self.buttonMods:getBottom()
 
 	-----
 
-	richText = self:createRichText(x, y + 10, getText("UI_LoadGameScreen_ChoosePlayer1"))
+	richText = self:createRichText(x, y + UI_BORDER_SPACING, getText("UI_LoadGameScreen_ChoosePlayer1"))
 	y = richText:getBottom()
 
-	local comboHgt = math.max(buttonHgt, FONT_HGT_SMALL + 3 * 2)
-	local combo = ISComboBox:new(x, y, 200, comboHgt, self, self.onPlayerSelected)
+	local comboHgt = BUTTON_HGT
+	local combo = ISComboBox:new(x, y, buttonWid, comboHgt, self, self.onPlayerSelected)
 	self:addChild(combo)
 	combo.disabled = true
 	combo.selected = 1
 	self.comboPlayer1 = combo
 	y = self.comboPlayer1:getBottom()
 
-	self.buttonNewPlayer = ISButton:new(combo:getRight() + 10, combo.y, buttonWid, comboHgt, getText("UI_LoadGameScreen_ButtonNewPlayer"), self, ConfigPanel.onNewPlayer)
+	self.buttonNewPlayer = ISButton:new(combo:getRight() + UI_BORDER_SPACING, combo.y, buttonWid, comboHgt, getText("UI_LoadGameScreen_ButtonNewPlayer"), self, ConfigPanel.onNewPlayer)
 	self:addChild(self.buttonNewPlayer)
 	y = self.buttonNewPlayer:getBottom()
 
 	-----
 
 	if isDesktopOpenSupported() then
-		richText = self:createRichText(x, y + 10, getText("UI_LoadGameScreen_BrowseFilesText"))
+		richText = self:createRichText(x, y + UI_BORDER_SPACING, getText("UI_LoadGameScreen_BrowseFilesText"))
 		y = richText:getBottom()
 
-		self.buttonBrowse = self:createButton(x, y, buttonWid, buttonHgt,
+		self.buttonBrowse = self:createButton(x, y, buttonWid, BUTTON_HGT,
 			getText("UI_LoadGameScreen_ButtonBrowseFiles"),
 			ConfigPanel.onBrowseFiles)
 		y = self.buttonBrowse:getBottom()
@@ -221,14 +224,14 @@ function ConfigPanel:createChildren()
 
 	-----
 
-	richText = self:createRichText(x, y + 10, getText("UI_LoadGameScreen_RenameSavefileText"))
+	richText = self:createRichText(x, y + UI_BORDER_SPACING, getText("UI_LoadGameScreen_RenameSavefileText"))
 	y = richText:getBottom()
 
-	local entry = ISTextEntryBox:new("", x, y, 200, comboHgt)
+	local entry = ISTextEntryBox:new("", x, y, buttonWid, comboHgt)
 	self:addChild(entry)
 	self.renameSavefileEntry = entry
 
-	self.buttonRenameSavefile = ISButton:new(entry:getRight() + 10, entry.y, buttonWid, comboHgt, getText("UI_LoadGameScreen_ButtonRenameSavefile"), self, ConfigPanel.onRenameSavefile)
+	self.buttonRenameSavefile = ISButton:new(entry:getRight() + UI_BORDER_SPACING, entry.y, buttonWid, comboHgt, getText("UI_LoadGameScreen_ButtonRenameSavefile"), self, ConfigPanel.onRenameSavefile)
 	self:addChild(self.buttonRenameSavefile)
 
 	y = entry:getBottom()
@@ -236,14 +239,17 @@ function ConfigPanel:createChildren()
 	-----
 
 	if getDebug() then
-		local richText = self:createRichText(x, y + 10, "DEBUG: Delete selected files from this savefile.")
+		local richText = self:createRichText(x, y + UI_BORDER_SPACING, "DEBUG: Delete selected files from this savefile.")
 		y = richText:getBottom()
 
-		local comboHgt = math.max(buttonHgt, FONT_HGT_SMALL + 3 * 2)
-		local combo = ISComboBox:new(x, y, 200, comboHgt)
+		local comboHgt = BUTTON_HGT
+		local combo = ISComboBox:new(x, y, buttonWid, comboHgt)
 		self:addChild(combo)
+		combo:addOptionWithData("apop_x_y.bin", "DeleteAPopXYBin")
 		combo:addOptionWithData("chunkdata_x_y.bin", "DeleteChunkDataXYBin")
+		combo:addOptionWithData("entity_data.bin", "DeleteEntityDataBin")
 		combo:addOptionWithData("map_x_y.bin", "DeleteMapXYBin")
+		combo:addOptionWithData("map_basements.bin", "DeleteMapBasementsBin")
 		combo:addOptionWithData("map_meta.bin", "DeleteMapMetaBin")
 		combo:addOptionWithData("map_zone.bin", "DeleteMapZoneBin")
 		combo:addOptionWithData("map_t.bin", "DeleteMapTBin")
@@ -256,21 +262,21 @@ function ConfigPanel:createChildren()
 		combo.selected = 1
 		self.comboDeleteFiles = combo
 
-		button = ISButton:new(combo:getRight() + 10, combo.y, buttonWid, comboHgt, "DELETE", self, ConfigPanel.onDeleteFiles)
+		button = ISButton:new(combo:getRight() + UI_BORDER_SPACING, combo.y, buttonWid, comboHgt, "DELETE", self, ConfigPanel.onDeleteFiles)
 		self:addChild(button)
 		self.buttonDeleteFiles = button
 		y = button:getBottom()
 	end
 
 	self:setScrollChildren(true)
-	self:setScrollHeight(y + 20)
+	self:setScrollHeight(y + UI_BORDER_SPACING+1)
 
 	self:insertNewLineOfButtons(self.buttonMods)
 	self:insertNewLineOfButtons(self.comboPlayer1, self.buttonNewPlayer)
-	self:insertNewLineOfButtons(self.renameSavefileEntry, self.buttonRenameSavefile)
 	if self.buttonBrowse then
 		self:insertNewLineOfButtons(self.buttonBrowse)
 	end
+	self:insertNewLineOfButtons(self.renameSavefileEntry, self.buttonRenameSavefile)
 	if self.comboDeleteFiles then
 		self:insertNewLineOfButtons(self.comboDeleteFiles, self.buttonDeleteFiles)
 	end
@@ -280,12 +286,12 @@ function ConfigPanel:createChildren()
 end
 
 function ConfigPanel:createRichText(x, y, richText1)
-	local richText = ISRichTextPanel:new(0, y, self.width, 20)
+	local richText = ISRichTextPanel:new(0, y, self.width, BUTTON_HGT)
 	richText:initialise()
 	richText:instantiate()
 	richText:setAnchorRight(true)
 	richText.background = false
-	richText.marginLeft = 20
+	richText.marginLeft = UI_BORDER_SPACING*2+1
 	richText:setScrollWithParent(true)
 	self:addChild(richText)
 
@@ -337,9 +343,10 @@ function ConfigPanel:onChooseMods(button)
 	local selected = LoadGameScreen.instance.listbox.items[LoadGameScreen.instance.listbox.selected]
 	local folder = selected.text
 	ModSelector.instance:setExistingSavefile(folder)
-	ModSelector.instance:populateListBox(getModDirectoryTable())
 	ModSelector.instance:setVisible(true, self.parent.joyfocus)
+	ModSelector.instance:reloadMods()
 	ModSelector.showNagPanel()
+	ModSelector.instance.returnToUI = LoadGameScreen.instance
 end
 
 function ConfigPanel:validateSavefileName(text)
@@ -459,6 +466,7 @@ end
 
 function LoadGameScreen:setSaveGamesList()
 	self.listbox:clear();
+	self.listCache = {}
 	local dirs = getFullSaveDirectoryTable();
 	for i, k in ipairs(dirs) do
 		local newSave = {};
@@ -473,7 +481,9 @@ function LoadGameScreen:setSaveGamesList()
 		newSave.playerAlive = info.playerAlive
 		newSave.players = info.players
 		self.listbox:addItem(k, newSave);--{age = self:getWorldAge(k)});
+		self.listCache[k] = newSave
 	end
+	self.searchEntry:setText("")
 end
 
 function LoadGameScreen:hasChoices()
@@ -481,9 +491,19 @@ function LoadGameScreen:hasChoices()
 end
 
 function LoadGameScreen:create()
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
+	self.searchLabel = ISLabel:new(UI_BORDER_SPACING+1, self.startY, BUTTON_HGT, getText("UI_sandbox_searchEntryBoxWord") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
+	self:addChild(self.searchLabel)
 
-	self.listbox = ISScrollingListBox:new(16, self.startY, self.width / 2, self.height - 5 - buttonHgt - self.startY - 10);
+	self.searchEntry = ISTextEntryBox:new("", self.searchLabel:getRight() + UI_BORDER_SPACING, self.startY, self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1, BUTTON_HGT)
+	self.searchEntry.font = UIFont.Medium
+	self.searchEntry.onTextChange = LoadGameScreen.onSearchTextChange
+	self.searchEntry.setText = LoadGameScreen.searchSetText
+	self.searchEntry.onJoypadDown = self.onJoypadDownSearchEntry
+	self.searchEntry:initialise()
+	self.searchEntry:instantiate()
+	self:addChild(self.searchEntry)
+
+	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING+1, self.startY+UI_BORDER_SPACING+BUTTON_HGT, (self.width - UI_BORDER_SPACING*3 - 2) / 2, self.height - UI_BORDER_SPACING*3 - BUTTON_HGT*2 - self.startY - 1);
 	self.listbox:initialise();
 	self.listbox:instantiate();
 	self.listbox:setAnchorLeft(true);
@@ -499,6 +519,7 @@ function LoadGameScreen:create()
 	self.listbox.onLoseJoypadFocus = self.onLoseJoypadFocus_child
 	self.listbox.onJoypadBeforeDeactivate = self.onJoypadBeforeDeactivate_child
 	self.listbox.onJoypadDirRight = self.onJoypadDirRight_child
+	self.listbox.onJoypadDown = self.onJoypadDown_listbox
 	self:addChild(self.listbox);
 
 	self.configPanel = ConfigPanel:new(self.listbox.x, self.listbox.y, self.listbox.width, self.listbox.height)
@@ -515,8 +536,8 @@ function LoadGameScreen:create()
 	self:addChild(self.configPanel)
 	self.configPanel:setVisible(false)
 
-	local x = self.listbox:getRight() + 16
-	self.infoPanel = SaveInfoPanel:new(x, self.startY, self.width - 16 - x, self.listbox.height)
+	local x = self.listbox:getRight() + UI_BORDER_SPACING
+	self.infoPanel = SaveInfoPanel:new(x, self.listbox.y, self.width - UI_BORDER_SPACING - x - 1, self.listbox.height)
 	self.infoPanel.onGainJoypadFocus = self.onGainJoypadFocus_child
 	self.infoPanel.onJoypadDirLeft = self.onJoypadDirLeft_child
 	self.infoPanel:initialise()
@@ -528,7 +549,9 @@ function LoadGameScreen:create()
 	self.infoPanel:addScrollBars()
 	self:addChild(self.infoPanel)
 
-	self.backButton = ISButton:new(16, self.height - buttonHgt - 5, 100, buttonHgt, getText("UI_btn_back"), self, LoadGameScreen.onOptionMouseDown);
+	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - BUTTON_HGT - UI_BORDER_SPACING - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, LoadGameScreen.onOptionMouseDown);
 	self.backButton.internal = "BACK";
 	self.backButton:initialise();
 	self.backButton:instantiate();
@@ -536,12 +559,13 @@ function LoadGameScreen:create()
 	self.backButton:setAnchorTop(false);
 	self.backButton:setAnchorBottom(true);
 	self.backButton.borderColor = {r=1, g=1, b=1, a=0.1};
-	self.backButton:setFont(UIFont.Small);
 	self.backButton:ignoreWidthChange();
 	self.backButton:ignoreHeightChange();
+	self.backButton:enableCancelColor();
 	self:addChild(self.backButton);
 
-	self.playButton = ISButton:new(self.width - 116, self.height - buttonHgt - 5, 100, buttonHgt, getText("UI_btn_play"), self, LoadGameScreen.onOptionMouseDown);
+	btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_play"))
+	self.playButton = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_play"), self, LoadGameScreen.onOptionMouseDown);
 	self.playButton.internal = "PLAY";
 	self.playButton:initialise();
 	self.playButton:instantiate();
@@ -551,9 +575,11 @@ function LoadGameScreen:create()
 	self.playButton:setAnchorBottom(true);
 	self.playButton.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.playButton:setSound("activate", nil)
+	self.playButton:enableAcceptColor();
 	self:addChild(self.playButton);
 
-	self.configButton = ISButton:new(self.playButton.x - 110, self.height - buttonHgt - 5, 100, buttonHgt, getText("UI_LoadGameScreen_ButtonConfig"), self, LoadGameScreen.onOptionMouseDown);
+	btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_LoadGameScreen_ButtonConfig"))
+	self.configButton = ISButton:new(self.playButton.x - btnWidth - UI_BORDER_SPACING, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_LoadGameScreen_ButtonConfig"), self, LoadGameScreen.onOptionMouseDown);
 	self.configButton.internal = "CONFIG";
 	self.configButton:initialise();
 	self.configButton:instantiate();
@@ -564,7 +590,8 @@ function LoadGameScreen:create()
 	self.configButton.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.configButton);
 
-	self.deleteButton = ISButton:new(self.configButton.x - 110, self.height - buttonHgt - 5, 100, buttonHgt, getText("UI_btn_delete"), self, LoadGameScreen.onOptionMouseDown);
+	btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_delete"))
+	self.deleteButton = ISButton:new(self.configButton.x - btnWidth - UI_BORDER_SPACING, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_delete"), self, LoadGameScreen.onOptionMouseDown);
 	self.deleteButton.internal = "DELETE";
 	self.deleteButton:initialise();
 	self.deleteButton:instantiate();
@@ -576,13 +603,10 @@ function LoadGameScreen:create()
 	self.deleteButton:setFont(UIFont.Small);
 	self.deleteButton:ignoreWidthChange();
 	self.deleteButton:ignoreHeightChange();
+	self.deleteButton:enableCancelColor();
 	self:addChild(self.deleteButton);
 
-	self.playButton:setX(self.width - 16 - self.playButton.width)
-	self.configButton:setX(self.playButton.x - 10 - self.configButton.width)
-	self.deleteButton:setX(self.configButton.x - 10 - self.deleteButton.width)
-
-    self.richText = ISRichTextPanel:new(16, 10, 500,200);
+    self.richText = ISRichTextPanel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING, 500,200);
     self.richText:initialise();
     self.richText.background = false;
     self.richText:setAnchorBottom(true);
@@ -591,6 +615,30 @@ function LoadGameScreen:create()
     self:addChild(self.richText);
 
 	self:setVisible(false);
+end
+
+function LoadGameScreen:onSearchTextChange()
+	self = LoadGameScreen.instance
+	local text = string.lower(self.searchEntry:getInternalText())
+	self.listbox:clear()
+	for k, v in pairs(self.listCache) do
+		if text == "" or string.find(string.lower(v.saveName), text, 1, true) then
+			self.listbox:addItem(k, v)
+		end
+	end
+end
+
+function LoadGameScreen:searchSetText(str)
+	if not str then
+		str = "";
+	end
+	self.javaObject:SetText(str);
+	self.title = str;
+
+	if OnScreenKeyboard.IsVisible() then
+		self:onTextChange()
+		OnScreenKeyboard.instance.prevFocus = self.parent
+	end
 end
 
 function LoadGameScreen:drawMap(y, item, alt)
@@ -623,6 +671,7 @@ end
 function LoadGameScreen:render()
 	self.deleteButton:setVisible(false);
     self.playButton:setVisible(false);
+	self.configButton:setVisible(false)
     if self.listbox.items[self.listbox.selected] then
         self.playButton:setVisible(true);
         self.configButton:setVisible(true);
@@ -635,6 +684,10 @@ function LoadGameScreen:prerender()
 	ISPanel.prerender(self);
 
 	self:drawTextCentre(getText("UI_LoadGameScreen_title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title);
+
+	if self.listbox.joypadFocused then
+		self:drawTextureScaled(Joypad.Texture.LBumper, UI_BORDER_SPACING+1, self.searchLabel:getY()+(self.searchLabel.height-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1, 1, 1, 1)
+	end
 
 	self:disableBtn()
 end
@@ -757,13 +810,23 @@ function LoadGameScreen:onGainJoypadFocus(joypadData)
     if self.listbox:isVisible() then
 		joypadData.focus = self.listbox;
 		self.listbox.joypadFocused = true;
+		self.searchEntry:unfocus()
 	else
 		joypadData.focus = self.configPanel;
     end
+
+	self.searchLabel:setX(JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2+1)
+	self.searchEntry:setX(self.searchLabel:getRight() + UI_BORDER_SPACING)
+	self.searchEntry:setWidth(self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1)
+
     updateJoypadFocus(joypadData);
 end
 
 function LoadGameScreen:onJoypadBeforeDeactivate(joypadData)
+	self.searchLabel:setX(UI_BORDER_SPACING+1)
+	self.searchEntry:setX(self.searchLabel:getRight() + UI_BORDER_SPACING)
+	self.searchEntry:setWidth(self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1)
+
 	self.playButton:clearJoypadButton()
 	self.backButton:clearJoypadButton()
 	self.configButton:clearJoypadButton()
@@ -812,6 +875,27 @@ function LoadGameScreen:onJoypadDirRight_child(joypadData)
 	self.parent.listbox.joypadFocused = false
 	joypadData.focus = self.parent.infoPanel
 	updateJoypadFocus(joypadData)
+end
+
+function LoadGameScreen:onJoypadDown_listbox(button, joypadData)
+	if button == Joypad.LBumper then
+		self.joypadFocused = false
+		joypadData.focus = self.parent.searchEntry
+		updateJoypadFocus(joypadData)
+	else
+		ISScrollingListBox.onJoypadDown(self, button, joypadData)
+	end
+end
+
+function LoadGameScreen:onJoypadDownSearchEntry(button, joypadData)
+	ISTextEntryBox.onJoypadDown(self, button, joypadData)
+	if button == Joypad.BButton and self.joyfocus then
+		self.joypadFocused = false
+		self.joyfocus.focus = self.parent.listbox;
+		self.parent.listbox.joypadFocused = true;
+		updateJoypadFocus(self.joyfocus);
+		self:unfocus()
+	end
 end
 
 function LoadGameScreen:getChallenge(item)
@@ -863,13 +947,15 @@ function LoadGameScreen:disableBtn()
 			self.playButton:setEnable(false)
 		elseif worldVersion > IsoWorld.getWorldVersion() then
 			self.playButton:setEnable(false)
-		elseif worldVersion <= 175 then
+		elseif worldVersion <= 200 then
 			self.playButton:setEnable(false)
 		elseif not self:checkMapsAvailable(sel.item) then
 			self.playButton:setEnable(false)
 		else
 			self.playButton:setEnable(true)
 		end
+		self.configButton:setEnable(true)
+		self.deleteButton:setEnable(true)
 	else
 		self.playButton:setEnable(false)
 		self.configButton:setEnable(false)
@@ -890,11 +976,13 @@ function LoadGameScreen:onSavefileModsChanged(folder)
 end
 
 function LoadGameScreen:onResolutionChange(oldw, oldh, neww, newh)
-	self.listbox:setWidth(self.width / 2)
-	self.configPanel:setWidth(self.width / 2)
-	local x = self.listbox:getRight() + 16
+	self.listbox:setWidth((self.width - UI_BORDER_SPACING*3 - 2) / 2)
+	self.configPanel:setWidth(self.listbox.width)
+	local x = self.listbox:getRight() + UI_BORDER_SPACING
 	self.infoPanel:setX(x)
-	self.infoPanel:setWidth(self.width - 16 - x)
+	self.infoPanel:setWidth(self.width - UI_BORDER_SPACING - x)
+	self.searchEntry:setWidth(self.width - self.searchEntry.x - UI_BORDER_SPACING - 1)
+	self.searchEntry:setHeight(BUTTON_HGT)
 end
 
 function LoadGameScreen:new(x, y, width, height)
@@ -915,7 +1003,7 @@ function LoadGameScreen:new(x, y, width, height)
 	o.anchorBottom = false;
 	o.itemheightoverride = {}
 	o.selected = 1;
-    o.startY = 10 + FONT_HGT_TITLE + 10;
+    o.startY = UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE;
     o.deadTexture = getTexture("media/ui/Moodles/Moodle_Icon_Dead.png")
 	o.mapGroups = MapGroups.new()
 	LoadGameScreen.instance = o;

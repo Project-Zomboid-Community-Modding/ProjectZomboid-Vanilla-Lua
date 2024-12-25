@@ -2,6 +2,9 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
+local CELL_SIZE_SQUARES = getCellSizeInSquares()
+local CHUNK_SIZE_SQUARES = getChunkSizeInSquares()
+
 -- A resizable-rectangle control
 WorldMapEditorLocationControl = ISBaseObject:derive("WorldMapEditorLocationControl")
 
@@ -40,10 +43,10 @@ end
 
 function WorldMapEditorLocationControl:snap(xy)
 	if self.snapMode == "cell" then
-		return round(xy / 300) * 300
+		return round(xy / CELL_SIZE_SQUARES) * CELL_SIZE_SQUARES
 	end
 	if self.snapMode == "chunk" then
-		return round(xy / 10) * 10
+		return round(xy / CHUNK_SIZE_SQUARES) * CHUNK_SIZE_SQUARES
 	end
 	return round(xy)
 end

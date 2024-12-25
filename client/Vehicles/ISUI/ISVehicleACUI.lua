@@ -35,6 +35,7 @@ function ISVehicleACUI:createChildren()
 	self.tempKnob:instantiate();
 	self.tempKnob.onMouseUpFct = ISVehicleACUI.changeKnob;
 	self.tempKnob.target = self;
+	self.tempKnob.switchSound = "VehicleACSetTemperature";
 	self:addChild(self.tempKnob);
 		
 	self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("ContextMenu_Turn_On"), self, ISVehicleACUI.onClick);
@@ -44,6 +45,7 @@ function ISVehicleACUI:createChildren()
 	self.ok:initialise();
 	self.ok:instantiate();
 	self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.ok:setSound('activate', "VehicleACButton")
 	self:addChild(self.ok);
 	
 	self:addKnobValues();
@@ -57,7 +59,6 @@ function ISVehicleACUI:createChildren()
 end
 
 function ISVehicleACUI:changeKnob()
-	self.character:playSound("VehicleACSetTemperature")
 	sendClientCommand(self.character, 'vehicle', 'toggleHeater', { on = self.heater:getModData().active, temp = self.tempKnob:getValue() })
 end
 

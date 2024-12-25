@@ -43,16 +43,11 @@ function ISFarmingCursor:isValid(square)
 end
 
 function ISFarmingCursor:render(x, y, z, square)
-	if not self.floorSprite then
-		self.floorSprite = IsoSprite.new()
-		self.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
-
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	self.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISFarmingCursor:onJoypadPressButton(joypadIndex, joypadData, button)

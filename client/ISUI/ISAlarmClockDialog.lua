@@ -3,6 +3,8 @@ require "ISUI/ISPanelJoypad"
 ISAlarmClockDialog = ISPanelJoypad:derive("ISAlarmClockDialog");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISAlarmClockDialog:initialise
@@ -11,26 +13,23 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 function ISAlarmClockDialog:initialise()
     ISPanelJoypad.initialise(self);
-    local btnWid = getTextManager():MeasureStringX(UIFont.Small, "999")
-    local btnGap = 2
-    local buttonsY = 10 + FONT_HGT_SMALL + 10
-
-    local btnUpDownHgt = FONT_HGT_SMALL
-    local entryHgt = FONT_HGT_SMALL + 2 * 2
+    local btnWid = BUTTON_HGT --the buttons don't need that much space if they're only displaying 2 digits at most
+    local btnGap = UI_BORDER_SPACING
+    local buttonsY = FONT_HGT_SMALL + UI_BORDER_SPACING*2+1
     
-    self.button1p = ISButton:new((self:getWidth() / 2) - btnGap - btnWid, buttonsY, btnWid, btnUpDownHgt, "^", self, ISAlarmClockDialog.onClick);
+    self.button1p = ISButton:new(((self:getWidth() - btnGap)/2) - btnWid, buttonsY, btnWid, BUTTON_HGT, "^", self, ISAlarmClockDialog.onClick);
     self.button1p.internal = "HOURSPLUS";
     self.button1p:initialise();
     self.button1p:instantiate();
     self.button1p.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button1p);
 
-    self.hours = ISTextEntryBox:new("0", self:getWidth() / 2 - btnGap - btnWid, self.button1p:getBottom() + 2, btnWid, entryHgt);
+    self.hours = ISTextEntryBox:new("0", ((self:getWidth() - btnGap)/2) - btnWid, self.button1p:getBottom() + 2, btnWid, BUTTON_HGT);
     self.hours:initialise();
     self.hours:instantiate();
     self:addChild(self.hours);
 
-    self.button1m = ISButton:new(self:getWidth() / 2 - btnGap - btnWid, self.hours:getBottom() + 2, btnWid, btnUpDownHgt, "v", self, ISAlarmClockDialog.onClick);
+    self.button1m = ISButton:new(((self:getWidth() - btnGap)/2) - btnWid, self.hours:getBottom() + 2, btnWid, BUTTON_HGT, "v", self, ISAlarmClockDialog.onClick);
     self.button1m.internal = "HOURSMINUS";
     self.button1m:initialise();
     self.button1m:instantiate();
@@ -38,29 +37,26 @@ function ISAlarmClockDialog:initialise()
     self:addChild(self.button1m);
 
     --
-    self.button2p = ISButton:new(self:getWidth() / 2 + btnGap, buttonsY, btnWid, btnUpDownHgt, "^", self, ISAlarmClockDialog.onClick);
+    self.button2p = ISButton:new(((self:getWidth() + btnGap)/2), buttonsY, btnWid, BUTTON_HGT, "^", self, ISAlarmClockDialog.onClick);
     self.button2p.internal = "MINPLUS";
     self.button2p:initialise();
     self.button2p:instantiate();
     self.button2p.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button2p);
 
-    self.mins = ISTextEntryBox:new("0", self:getWidth() / 2 + btnGap, self.button2p:getBottom() + 2, btnWid, entryHgt);
+    self.mins = ISTextEntryBox:new("0", ((self:getWidth() + btnGap)/2), self.button2p:getBottom() + 2, btnWid, BUTTON_HGT);
     self.mins:initialise();
     self.mins:instantiate();
     self:addChild(self.mins);
 
-    self.button2m = ISButton:new(self:getWidth() / 2 + btnGap, self.mins:getBottom() + 2, btnWid, btnUpDownHgt,"v", self, ISAlarmClockDialog.onClick);
+    self.button2m = ISButton:new(((self:getWidth() + btnGap)/2), self.mins:getBottom() + 2, btnWid, BUTTON_HGT,"v", self, ISAlarmClockDialog.onClick);
     self.button2m.internal = "MINMINUS";
     self.button2m:initialise();
     self.button2m:instantiate();
     self.button2m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button2m);
 
-    local alarmHgt = FONT_HGT_SMALL + 4
-    local okHgt = alarmHgt
-
-    self.setAlarm = ISTickBox:new(0, self.button2m:getBottom() + 10, 20, alarmHgt, "", nil, nil)
+    self.setAlarm = ISTickBox:new(0, self.button2m:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", nil, nil)
     self.setAlarm:initialise()
     self:addChild(self.setAlarm)
     self.setAlarm:addOption(getText("UI_Alarm"))
@@ -68,14 +64,14 @@ function ISAlarmClockDialog:initialise()
     self.setAlarm:setX((self.width - self.setAlarm.width) / 2)
 
     --
-    self.ok = ISButton:new((self:getWidth() - 100) / 2, self.setAlarm:getBottom() + 10, 100, okHgt, getText("UI_Ok"), self, ISAlarmClockDialog.onClick);
+    self.ok = ISButton:new((self:getWidth() - 100) / 2, self.setAlarm:getBottom() + UI_BORDER_SPACING, 100, BUTTON_HGT, getText("UI_Ok"), self, ISAlarmClockDialog.onClick);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.ok);
 
-    self:setHeight(self.ok:getBottom() + 5)
+    self:setHeight(self.ok:getBottom() + UI_BORDER_SPACING+1)
 
     self.hours:setText(self.alarm:getHour() .. "");
     if self.alarm:getMinute() == 0 then
@@ -170,7 +166,7 @@ function ISAlarmClockDialog:prerender()
     self.backgroundColor.a = 0.8
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawTextCentre(getText("IGUI_SetAlarm"), self:getWidth()/2, 10, 1, 1, 1, 1, UIFont.Small);
+    self:drawTextCentre(getText("IGUI_SetAlarm"), self:getWidth()/2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Small);
 end
 
 --************************************************************************--

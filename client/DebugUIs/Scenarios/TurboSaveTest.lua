@@ -3,8 +3,9 @@ if debugScenarios == nil then
 end
 
 
-debugScenarios.DebugScenario = {
+debugScenarios.DebugScenarioTSave = {
     name = "Turbo Save Test",
+    world = "Muldraugh, KY",
     --forceLaunch = true, -- use this to force the launch of THIS scenario right after main menu was loaded, save more clicks! Don't do multiple scenarii with this options
     --      startLoc = {x=13538, y=5759, z=0 }, -- Mall
     --    startLoc = {x=10145, y=12763, z=0 }, -- lighting test

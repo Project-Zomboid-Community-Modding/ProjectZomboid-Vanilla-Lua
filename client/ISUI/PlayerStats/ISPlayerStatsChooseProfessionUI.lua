@@ -16,6 +16,8 @@ ISPlayerStatsChooseProfessionUI = ISPanel:derive("ISPlayerStatsChooseProfessionU
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -34,9 +36,7 @@ function ISPlayerStatsChooseProfessionUI:setVisible(visible)
 end
 
 function ISPlayerStatsChooseProfessionUI:render()
-    local z = 20;
-
-    self:drawText(getText("IGUI_PlayerStats_ChangeProfTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ChangeProfTitle")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_PlayerStats_ChangeProfTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ChangeProfTitle")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISPlayerStatsChooseProfessionUI:create()
@@ -46,32 +46,31 @@ function ISPlayerStatsChooseProfessionUI:create()
             table.insert(self.comboList, prof);
 --        end
     end
+    table.sort(self.comboList, function(a, b) return a:getName()<b:getName() end)
 
-    self.combo = ISComboBox:new(10, 20 + FONT_HGT_MEDIUM + 20, 160, FONT_HGT_SMALL + 3 * 2, nil,nil);
+    self.combo = ISComboBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT, nil,nil);
     self.combo:initialise();
     self:addChild(self.combo);
 
     self:populateComboList();
 
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    self.ok = ISButton:new((self:getWidth() / 2) - 100 - 5, self.combo:getBottom() + 20, btnWid, btnHgt, getText("UI_Ok"), self, ISPlayerStatsChooseProfessionUI.onOptionMouseDown);
+    self.ok = ISButton:new((self:getWidth() - UI_BORDER_SPACING) / 2 - btnWid, self.combo:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISPlayerStatsChooseProfessionUI.onOptionMouseDown);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.ok);
 
-    self.cancel = ISButton:new((self:getWidth() / 2) + 5, self.combo:getBottom() + 20, btnWid, btnHgt, getText("UI_Cancel"), self, ISPlayerStatsChooseProfessionUI.onOptionMouseDown);
+    self.cancel = ISButton:new((self:getWidth() + UI_BORDER_SPACING) / 2, self.combo:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISPlayerStatsChooseProfessionUI.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
     self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.cancel);
 
-    self:setHeight(self.ok:getBottom() + padBottom)
+    self:setHeight(self.ok:getBottom() + UI_BORDER_SPACING+1)
 end
 
 function ISPlayerStatsChooseProfessionUI:populateComboList()
@@ -85,7 +84,6 @@ function ISPlayerStatsChooseProfessionUI:populateComboList()
         tooltipMap[v:getLabel()] = v:getDescription();
     end
     self.combo:setToolTipMap(tooltipMap);
-    self.combo:setWidthToOptions()
 end
 
 function ISPlayerStatsChooseProfessionUI:onOptionMouseDown(button, x, y)

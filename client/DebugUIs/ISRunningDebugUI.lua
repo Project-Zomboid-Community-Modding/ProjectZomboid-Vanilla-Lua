@@ -6,9 +6,17 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+---FOX, FIX HEIGHT OF WINDOW
+
 require "ISUI/ISPanelJoypad"
 
 ISRunningDebugUI = ISCollapsableWindow:derive("ISRunningDebugUI");
+
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISRunningDebugUI:initialise
@@ -16,31 +24,37 @@ ISRunningDebugUI = ISCollapsableWindow:derive("ISRunningDebugUI");
 --************************************************************************--
 
 function ISRunningDebugUI:createChildren()
-	local btnWid = 100
-	local btnHgt = 25
-	local padBottom = 10
-	
+	local btnWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RunningDebug_TimerStart")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RunningDebug_TimerStop")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RunningDebug_RestoreEndurance"))
+	)
+
 	ISCollapsableWindow.createChildren(self)
+
+	local buttonY = self.height - BUTTON_HGT - UI_BORDER_SPACING - 1
 	
-	self.start = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Start timer", self, ISRunningDebugUI.startTrip);
+	self.start = ISButton:new(UI_BORDER_SPACING + 1, buttonY, btnWid, BUTTON_HGT, getText("IGUI_RunningDebug_TimerStart"), self, ISRunningDebugUI.startTrip);
 	self.start.internal = "START";
 	self.start.anchorTop = false
 	self.start.anchorBottom = true
 	self.start:initialise();
 	self.start:instantiate();
-	self.start.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.start:enableAcceptColor()
 	self:addChild(self.start);
 	
-	self.restoreEnd = ISButton:new(self:getWidth() - btnWid - 20, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Restore Endurance", self, ISRunningDebugUI.restoreEndurance);
+	self.restoreEnd = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, self.start.y, btnWid, BUTTON_HGT, getText("IGUI_RunningDebug_RestoreEndurance"), self, ISRunningDebugUI.restoreEndurance);
 	self.restoreEnd.internal = "RESTOREENDURANCE";
 	self.restoreEnd.anchorTop = false
 	self.restoreEnd.anchorBottom = true
+	self.restoreEnd.anchorLeft = false
+	self.restoreEnd.anchorRight = true
 	self.restoreEnd:initialise();
 	self.restoreEnd:instantiate();
 	self.restoreEnd.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.restoreEnd);
 	
-	self:setInfo("Click on start timer to start the trip, once you're done, click on stop timer. \n When you're done, you should click on restore endurance to start from scratch as endurance regen while time pass. \n \n The total current speed variable is updated only when running/sprinting, it could show wrong when idle/walking as it's not used.");
+	self:setInfo(getText("IGUI_RunningDebug_Info"));
 end
 
 function ISRunningDebugUI:restoreEndurance()
@@ -52,7 +66,7 @@ function ISRunningDebugUI:update()
 	
 	if self.startedTrip then
 		self.start.internal = "STOP";
-		self.start.title = "Stop timer";
+		self.start.title = getText("IGUI_RunningDebug_TimerStop");
 	end
 	
 	-- update variables
@@ -70,25 +84,26 @@ function ISRunningDebugUI:startTrip()
 		self.totalEndurance = 0;
 		self.startingEndurance = self.chr:getStats():getEndurance();
 		self.totalDistance = 0;
-		self.start.title = "Stop timer";
+		self.start.title = getText("IGUI_RunningDebug_TimerStop");
+		self.start:enableCancelColor()
 		self.totalDist = 0;
 		self.previousSq = self.chr:getSquare();
 	else -- stop
 		self.startedTrip = false;
 		self.stopTimer = Calendar.getInstance():getTimeInMillis();
-		self.start.title = "Start timer";
+		self.start.title = getText("IGUI_RunningDebug_TimerStart");
+		self.start:enableAcceptColor()
 	end
 end
 
 function ISRunningDebugUI:render()
 	ISCollapsableWindow.render(self);
-	
-	local startingListY = 20;
-	local y = 30;
-	local x = 10;
-	self:drawText("Roadtrip" , x, y, 1, 1, 1, 1, UIFont.Medium);
+
+	local y = self:titleBarHeight();
+	local x = UI_BORDER_SPACING+1;
+	self:drawText(getText("IGUI_RunningDebug_Roadtrip") , x, y, 1, 1, 1, 1, UIFont.Medium);
 	-- time
-	y = y + 30;
+	y = y + FONT_HGT_MEDIUM;
 	local sec = 0;
 	if self.stopTimer or self.startTimer then
 		local cal = Calendar.getInstance();
@@ -99,31 +114,32 @@ function ISRunningDebugUI:render()
 		end
 		sec = cal:get(Calendar.SECOND);
 		if sec < 10 then sec = "0" .. sec;  end
-		self:drawText("Real time: " .. cal:get(Calendar.MINUTE) .. ":" .. sec, x, y, 1, 1, 1, 1, UIFont.Small);
+		self:drawText(getText("IGUI_RunningDebug_RealTime")..": " .. cal:get(Calendar.MINUTE) .. ":" .. sec, x, y, 1, 1, 1, 1, UIFont.Small);
 	else
-		self:drawText("Real time: " .. sec, x, y, 1, 1, 1, 1, UIFont.Small);
+		self:drawText(getText("IGUI_RunningDebug_RealTime")..": " .. sec, x, y, 1, 1, 1, 1, UIFont.Small);
 	end
-	y = y + 20;
+	y = y + BUTTON_HGT;
 	-- endurance
-	self:drawText("Endurance Used: " .. round(self.totalEndurance, 4), x, y, 1, 1, 1, 1, UIFont.Small);
-	y = y + 20;
+	self:drawText(getText("IGUI_RunningDebug_EnduranceUsed")..": " .. round(self.totalEndurance, 4), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT;
 	-- distance
 	if self.startedTrip then
 		self.totalDist = self.totalDist + self.previousSq:DistToProper(self.chr:getSquare());
 		self.previousSq = self.chr:getSquare();
 	end
-	self:drawText("Total distance: ~" .. round(self.totalDist,2) .. " tiles", x, y, 1, 1, 1, 1, UIFont.Small);
-	y = y + 40;
+	self:drawText(getText("IGUI_RunningDebug_TotalDistance")..": ~" .. round(self.totalDist,2) .. " " .. getText("IGUI_RunningDebug_Tiles"), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT + UI_BORDER_SPACING;
 	-- variables
-	self:drawText("Running Variables ", x, y, 1, 1, 1, 1, UIFont.Medium);
-	y = y + 30;
-	self:drawText("Base speed: " .. round(self.chr:calculateBaseSpeed(), 2), x, y, 1, 1, 1, 1, UIFont.Small);
-	y = y + 20;
-	self:drawText("Clothing running mod speed: " .. round(self.chr:getRunSpeedModifier(), 2), x, y, 1, 1, 1, 1, UIFont.Small);
-	y = y + 20;
-	self:drawText("Injuries mod speed: " .. round(self.chr:getVariableFloat("WalkInjury", 0), 2), x, y, 1, 1, 1, 1, UIFont.Small);
-	y = y + 20;
-	self:drawText("Total current speed: " .. round(self.chr:getVariableFloat("WalkSpeed", 0), 2), x, y, 1, 1, 1, 1, UIFont.Small);
+	self:drawText(getText("IGUI_RunningDebug_Variables"), x, y, 1, 1, 1, 1, UIFont.Medium);
+	y = y + FONT_HGT_MEDIUM;
+	self:drawText(getText("IGUI_RunningDebug_BaseSpeed")..": " .. round(self.chr:calculateBaseSpeed(), 2), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT;
+	self:drawText(getText("IGUI_RunningDebug_Clothing")..": " .. round(self.chr:getRunSpeedModifier(), 2), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT;
+	self:drawText(getText("IGUI_RunningDebug_Injuries")..": " .. round(self.chr:getVariableFloat("WalkInjury", 0), 2), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT;
+	self:drawText(getText("IGUI_RunningDebug_TotalCurrentSpeed")..": " .. round(self.chr:getVariableFloat("WalkSpeed", 0), 2), x, y, 1, 1, 1, 1, UIFont.Small);
+	y = y + BUTTON_HGT;
 end
 
 --************************************************************************--
@@ -132,8 +148,8 @@ end
 --************************************************************************--
 function ISRunningDebugUI:new(x, y, character)
 	local o = {}
-	local width = 400;
-	local height = 350;
+	local width = 550;
+	local height = 550;
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
@@ -148,8 +164,10 @@ function ISRunningDebugUI:new(x, y, character)
 	end
 	o.width = width;
 	o.height = height;
+	o.title = getText("IGUI_DebugContext_RunningUI")
 	o.character = character;
 	o.chr = character;
+	o:setResizable(false);
 	o.moveWithMouse = true;
 	o.anchorLeft = true;
 	o.anchorRight = true;

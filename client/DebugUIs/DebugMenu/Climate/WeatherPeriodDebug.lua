@@ -10,6 +10,10 @@ WeatherPeriodDebug = ISCollapsableWindow:derive("WeatherPeriodDebug");
 WeatherPeriodDebug.instance = nil;
 WeatherPeriodDebug.shiftDown = 0;
 WeatherPeriodDebug.eventsAdded = false;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 
 --[[
 local enabled = true; --getDebug();
@@ -61,46 +65,44 @@ function WeatherPeriodDebug:createChildren()
     local th = self:titleBarHeight();
 
     local y = th;
-    local x = 25;
+    local originalx = UI_BORDER_SPACING+1+getTextManager():MeasureStringX(UIFont.Small, "1.00"); --largest piece of text on the left side of the window
+    local x = originalx;
 
-    self.buttonM1 = ISButton:new(x+5, y+5, 30,18,"M1",self, WeatherPeriodDebug.onButton);
+    self.buttonM1 = ISButton:new(x+UI_BORDER_SPACING, y+UI_BORDER_SPACING, 30, BUTTON_HGT,getText("IGUI_ClimatePlotter_Minute"),self, WeatherPeriodDebug.onButton);
     self.buttonM1:initialise();
-    self.buttonM1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
-    self.buttonM1.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-    self.buttonM1.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+    self.buttonM1:enableAcceptColor()
     self:addChild(self.buttonM1);
+    x = x+UI_BORDER_SPACING+self.buttonM1.width
 
-    self.buttonH1 = ISButton:new(x+40, y+5, 30,18,"H1",self, WeatherPeriodDebug.onButton);
+    self.buttonH1 = ISButton:new(x+UI_BORDER_SPACING, self.buttonM1.y, 30, self.buttonM1.height,getText("IGUI_ClimatePlotter_Hour"),self, WeatherPeriodDebug.onButton);
     self.buttonH1:initialise();
-    self.buttonH1.backgroundColor = {r=0, g=0, b=0, a=0.0};
-    self.buttonH1.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-    self.buttonH1.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+    self.buttonH1:enableCancelColor()
     self:addChild(self.buttonH1);
+    x = x+UI_BORDER_SPACING+self.buttonH1.width
 
-    self.buttonD1 = ISButton:new(x+75, y+5, 30,18,"D1",self, WeatherPeriodDebug.onButton);
+    self.buttonD1 = ISButton:new(x+UI_BORDER_SPACING, self.buttonM1.y, 30, self.buttonM1.height,getText("IGUI_ClimatePlotter_Day"),self, WeatherPeriodDebug.onButton);
     self.buttonD1:initialise();
-    self.buttonD1.backgroundColor = {r=0, g=0, b=0, a=0.0};
-    self.buttonD1.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-    self.buttonD1.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+    self.buttonD1:enableCancelColor()
     self:addChild(self.buttonD1);
+    x = originalx;
 
     y = self.buttonM1:getY() + self.buttonM1:getHeight();
 
-    self.historyM1 = ValuePlotter:new(x+5,y+5,600,200,600);
+    self.historyM1 = ValuePlotter:new(x+UI_BORDER_SPACING,y+UI_BORDER_SPACING,600,FONT_HGT_SMALL*5+UI_BORDER_SPACING*4,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
     --self.historyM1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50);
     self:addChild(self.historyM1);
     self.historyM1:setVisible(true);
 
-    self.historyH1 = ValuePlotter:new(x+5,y+5,600,200,600);
+    self.historyH1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyH1:initialise();
     self.historyH1:instantiate();
     --self.historyH1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
     self:addChild(self.historyH1);
     self.historyH1:setVisible(false);
 
-    self.historyD1 = ValuePlotter:new(x+5,y+5,600,200,600);
+    self.historyD1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyD1:initialise();
     self.historyD1:instantiate();
     --self.historyD1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
@@ -133,7 +135,7 @@ function WeatherPeriodDebug:createChildren()
 
     y = self.historyM1:getY() + self.historyM1:getHeight();
 
-    local tY = self.historyM1:getY()-12;
+    local tY = self.historyM1:getY();
     local tH = self.historyM1:getHeight();
     local tX = self.historyM1:getX();
     local tW = self.historyM1:getWidth();
@@ -144,50 +146,54 @@ function WeatherPeriodDebug:createChildren()
     self.chartLabelsRightTxt = {"1.00","0.75","0.50","0.25","0.00"};
     for i=1,5 do
         local id = i-1;
-        local lbl = ISLabel:new(tX-5, tY+((tH/4)*id), 16, self.chartLabelsLeftTxt[i], 1, 1, 1, 1.0, UIFont.Small, false);
+        local lbl = ISLabel:new(tX-UI_BORDER_SPACING, tY+((tH-FONT_HGT_SMALL)/4)*id, FONT_HGT_SMALL, self.chartLabelsLeftTxt[i], 1, 1, 1, 1.0, UIFont.Small, false);
         lbl:initialise();
         lbl:instantiate();
         self:addChild(lbl);
         table.insert(self.chartLabelsLeft,lbl);
 
-        local lbl2 = ISLabel:new(tX+tW+5, tY+((tH/4)*id), 16, self.chartLabelsRightTxt[i], 1, 1, 1, 1.0, UIFont.Small, true);
+        local lbl2 = ISLabel:new(tX+tW+UI_BORDER_SPACING, tY+((tH-FONT_HGT_SMALL)/4)*id, FONT_HGT_SMALL, self.chartLabelsRightTxt[i], 1, 1, 1, 1.0, UIFont.Small, true);
         lbl2:initialise();
         lbl2:instantiate();
         self:addChild(lbl2);
         table.insert(self.chartLabelsRight,lbl2);
     end
 
-    y=y+10;
+    y=y+UI_BORDER_SPACING;
     local cacheY, cacheX = y, x;
+    local toggleButtonWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimatePlotter_Toggle"))
 
-    y = self.historyM1:getY()-2;
-    x = self.historyM1:getX() + self.historyM1:getWidth() + 45;
+    y = th+BUTTON_HGT+UI_BORDER_SPACING; --self.historyM1:getY()-2;
+    x = self.historyM1:getX() + self.historyM1:getWidth() + getTextManager():MeasureStringX(UIFont.Small, "1.00") + UI_BORDER_SPACING;
+    local widest = 0;
     local vars = self.historyM1:getVars();
     for i=1,#vars do
-        local btn = ISButton:new(x+5, y+5, 45,18,"toggle",self, WeatherPeriodDebug.onButtonToggle);
+        local btn = ISButton:new(x+UI_BORDER_SPACING, y+UI_BORDER_SPACING, toggleButtonWidth, BUTTON_HGT,getText("IGUI_ClimatePlotter_Toggle"),self, WeatherPeriodDebug.onButtonToggle);
         btn:initialise();
-        btn.backgroundColor = vars[i].enabled and {r=0, g=0.8, b=0, a=1.0} or {r=0.0, g=0, b=0, a=0.0};
-        btn.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-        btn.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+        btn:enableCancelColor()
         btn.toggleVarID = i;
         btn.toggleVarName = vars[i].name;
         btn.toggleVal = vars[i].enabled;
         self:addChild(btn);
 
-        local pnl = ISPanel:new(x+10+45,y+5,18,18);
+        local pnl = ISPanel:new(x+UI_BORDER_SPACING*2+btn.width,y+UI_BORDER_SPACING,20,BUTTON_HGT);
         pnl:initialise();
         pnl.backgroundColor = vars[i].color;
         self:addChild(pnl);
 
-        local lbl = ISLabel:new(x+15+45+18, y+5, 16, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
+        local lbl = ISLabel:new(x+UI_BORDER_SPACING*3+pnl.width+btn.width, y+UI_BORDER_SPACING, BUTTON_HGT, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
         lbl:initialise();
         lbl:instantiate();
         self:addChild(lbl);
+        widest = math.max(widest, x+UI_BORDER_SPACING*4+pnl.width+btn.width+getTextManager():MeasureStringX(UIFont.Small, vars[i].name)+1)
 
         y = btn:getY() + btn:getHeight();
     end
+    x = widest;
 
-    y = y+10;
+    y = y+UI_BORDER_SPACING-1;
+    cacheY = cacheY+UI_BORDER_SPACING-1;
+    self:setWidth(x>cacheX and x or cacheX);
     self:setHeight(y>cacheY and y or cacheY);
 end
 
@@ -207,12 +213,12 @@ function WeatherPeriodDebug:initVariables()
         end
     end
 
-    self:addVarInfo("WeatherNoise","WeatherNoise",0,1,"getWeatherNoise");
-    self:addVarInfo("CurrentStrength","CurrentStrength",0,1,"getCurrentStrength");
-    self:addVarInfo("RainThreshold","RainThreshold",0,1,"getRainThreshold");
+    self:addVarInfo("WeatherNoise", getText("IGUI_WeatherPlotter_WeatherNoise"),0,1,"getWeatherNoise");
+    self:addVarInfo("CurrentStrength",getText("IGUI_WeatherPlotter_CurrentStrength"),0,1,"getCurrentStrength");
+    self:addVarInfo("RainThreshold",getText("IGUI_WeatherPlotter_RainThreshold"),0,1,"getRainThreshold");
     --self:addVarInfo("ThunderThreshold","ThunderThreshold",0,1,"getThunderThreshold");
     --self:addVarInfo("RumbleThreshold","RumbleThreshold",0,1,"getRumbleThreshold");
-    self:addVarInfo("PrecipitationFinal","PrecipitationFinal",0,1,"getPrecipitationFinal");
+    self:addVarInfo("PrecipitationFinal",getText("IGUI_WeatherPlotter_PrecipitationFinal"),0,1,"getPrecipitationFinal");
     --self:addVarInfo("","",0,1,"");
     --self:addVarInfo("","",0,1,"");
     --self:addVarInfo("","",-1,1,"");
@@ -346,29 +352,29 @@ function WeatherPeriodDebug.OnClimateTickDebug(mgr)
 end
 
 function WeatherPeriodDebug:onButton(_btn)
-    if _btn.title=="M1" then
+    if _btn.title==getText("IGUI_ClimatePlotter_Minute") then
         self.historyM1:setVisible(true);
-        self.buttonM1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+        self.buttonM1:enableAcceptColor();
         self.historyH1:setVisible(false);
-        self.buttonH1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonH1:enableCancelColor()
         self.historyD1:setVisible(false);
-        self.buttonD1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonD1:enableCancelColor()
     end
-    if _btn.title=="H1" then
+    if _btn.title==getText("IGUI_ClimatePlotter_Hour") then
         self.historyM1:setVisible(false);
-        self.buttonM1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonM1:enableCancelColor()
         self.historyH1:setVisible(true);
-        self.buttonH1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+        self.buttonH1:enableAcceptColor();
         self.historyD1:setVisible(false);
-        self.buttonD1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonD1:enableCancelColor()
     end
-    if _btn.title=="D1" then
+    if _btn.title==getText("IGUI_ClimatePlotter_Day") then
         self.historyM1:setVisible(false);
-        self.buttonM1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonM1:enableCancelColor()
         self.historyH1:setVisible(false);
-        self.buttonH1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonH1:enableCancelColor()
         self.historyD1:setVisible(true);
-        self.buttonD1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+        self.buttonD1:enableAcceptColor();
     end
 end
 
@@ -379,9 +385,9 @@ function WeatherPeriodDebug:onButtonToggle(_btn)
         self.historyH1:setVariableEnabled(_btn.toggleVarName,_btn.toggleVal);
         self.historyD1:setVariableEnabled(_btn.toggleVarName,_btn.toggleVal);
         if _btn.toggleVal then
-            _btn.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+            _btn:enableAcceptColor();
         else
-            _btn.backgroundColor = {r=0, g=0, b=0, a=0.0};
+            _btn:enableCancelColor()
         end
     end
 end
@@ -457,7 +463,7 @@ function WeatherPeriodDebug:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Debug Weather Period";
+    o.title = getText("IGUI_ClimDebuggers_WeatherPlot");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;

@@ -6,85 +6,85 @@ require "ISUI/ISPanelJoypad"
 
 ISBombTimerDialog = ISPanelJoypad:derive("ISBombTimerDialog")
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 function ISBombTimerDialog:initialise()
 	ISPanel.initialise(self)
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-
-	local buttonWid = getTextManager():MeasureStringX(UIFont.Small, "+10") + 3 + 3
+	local buttonWid = getTextManager():MeasureStringX(UIFont.Small, "+10") + UI_BORDER_SPACING
 	local spinWidth = getTextManager():MeasureStringX(UIFont.Small, "1000") * 2
-	local spinX = (self:getWidth() - spinWidth) / 2
-	local spinY = 50
-	local spinHeight = fontHgt + 4
 
-	self.button1m = ISButton:new(spinX - 3 - buttonWid - 3 - buttonWid - 3 - buttonWid, spinY, buttonWid, spinHeight, "-1", self, ISBombTimerDialog.onButton)
-	self.button1m.internal = "MINUS1"
-	self.button1m:initialise()
-	self.button1m:instantiate()
-	self.button1m.borderColor = {r=1, g=1, b=1, a=0.1}
-	self:addChild(self.button1m)
-
-	self.button5m = ISButton:new(spinX - 3 - buttonWid - 3 - buttonWid, spinY, buttonWid, spinHeight, "-5", self, ISBombTimerDialog.onButton)
-	self.button5m.internal = "MINUS5"
-	self.button5m:initialise()
-	self.button5m:instantiate()
-	self.button5m.borderColor = {r=1, g=1, b=1, a=0.1}
-	self:addChild(self.button5m)
-
-	self.button10m = ISButton:new(spinX - 3 - buttonWid, spinY, buttonWid, spinHeight, "-10", self, ISBombTimerDialog.onButton)
+	self.button10m = ISButton:new(UI_BORDER_SPACING + 1, UI_BORDER_SPACING*2+1 + FONT_HGT_SMALL, buttonWid, BUTTON_HGT, "-10", self, ISBombTimerDialog.onButton)
 	self.button10m.internal = "MINUS10"
 	self.button10m:initialise()
 	self.button10m:instantiate()
 	self.button10m.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button10m)
 
-	self.button1p = ISButton:new(spinX + spinWidth + 3, spinY, buttonWid, spinHeight, "+1", self, ISBombTimerDialog.onButton)
+	self.button5m = ISButton:new(self.button10m:getRight() + UI_BORDER_SPACING, self.button10m.y, buttonWid, BUTTON_HGT, "-5", self, ISBombTimerDialog.onButton)
+	self.button5m.internal = "MINUS5"
+	self.button5m:initialise()
+	self.button5m:instantiate()
+	self.button5m.borderColor = {r=1, g=1, b=1, a=0.1}
+	self:addChild(self.button5m)
+
+	self.button1m = ISButton:new(self.button5m:getRight() + UI_BORDER_SPACING, self.button10m.y, buttonWid, BUTTON_HGT, "-1", self, ISBombTimerDialog.onButton)
+	self.button1m.internal = "MINUS1"
+	self.button1m:initialise()
+	self.button1m:instantiate()
+	self.button1m.borderColor = {r=1, g=1, b=1, a=0.1}
+	self:addChild(self.button1m)
+
+	local textBox = ISTextEntryBox:new(tostring(self.time), self.button1m:getRight() + UI_BORDER_SPACING, self.button10m.y, spinWidth, BUTTON_HGT)
+	textBox:initialise()
+	textBox:instantiate()
+	textBox:setOnlyNumbers(true);
+	self:addChild(textBox)
+	self.textBox = textBox
+
+	self.button1p = ISButton:new(textBox:getRight() + UI_BORDER_SPACING, self.button10m.y, buttonWid, BUTTON_HGT, "+1", self, ISBombTimerDialog.onButton)
 	self.button1p.internal = "PLUS1"
 	self.button1p:initialise()
 	self.button1p:instantiate()
 	self.button1p.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button1p)
 
-	self.button5p = ISButton:new(spinX + spinWidth + 3 + buttonWid + 3, spinY, buttonWid, spinHeight, "+5", self, ISBombTimerDialog.onButton)
+	self.button5p = ISButton:new(self.button1p:getRight() + UI_BORDER_SPACING, self.button10m.y, buttonWid, BUTTON_HGT, "+5", self, ISBombTimerDialog.onButton)
 	self.button5p.internal = "PLUS5"
 	self.button5p:initialise()
 	self.button5p:instantiate()
 	self.button5p.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button5p)
 
-	self.button10p = ISButton:new(spinX + spinWidth + 3 + buttonWid + 3 + buttonWid + 3, spinY, buttonWid, spinHeight, "+10", self, ISBombTimerDialog.onButton)
+	self.button10p = ISButton:new(self.button5p:getRight() + UI_BORDER_SPACING, self.button10m.y, buttonWid, BUTTON_HGT, "+10", self, ISBombTimerDialog.onButton)
 	self.button10p.internal = "PLUS10"
 	self.button10p:initialise()
 	self.button10p:instantiate()
 	self.button10p.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button10p)
 
-	local textBox = ISTextEntryBox:new(tostring(self.time), spinX, spinY, spinWidth, spinHeight)
-	textBox:initialise()
-	textBox:instantiate()
-    textBox:setOnlyNumbers(true);
-	self:addChild(textBox)
-	self.textBox = textBox
+	local buttonWid = math.max(getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")), getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel"))) + UI_BORDER_SPACING*2
+	self:setWidth(self.button10p:getRight() + UI_BORDER_SPACING + 1)
 
-	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")) + 12
-	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")) + 12
-	local buttonHgt = fontHgt + 6
-
-	self.yes = ISButton:new((self:getWidth() / 2) - 5 - buttonWid1, textBox:getY() + textBox:getHeight() + 20, buttonWid1, buttonHgt, getText("UI_Ok"), self, ISBombTimerDialog.onButton)
+	self.yes = ISButton:new((self:getWidth() - UI_BORDER_SPACING)/2 - buttonWid, textBox:getBottom() + UI_BORDER_SPACING, buttonWid, BUTTON_HGT, getText("UI_Ok"), self, ISBombTimerDialog.onButton)
 	self.yes.internal = "OK"
 	self.yes:initialise()
 --	self.yes:instantiate()
-	self.yes.borderColor = {r=1, g=1, b=1, a=0.25}
+	self.yes:enableAcceptColor()
 	self:addChild(self.yes)
 
-	self.no = ISButton:new((self:getWidth() / 2) + 5, self.yes:getY(), buttonWid2, buttonHgt, getText("UI_Cancel"), self, ISBombTimerDialog.onButton)
+	self.no = ISButton:new(self.yes:getRight() + UI_BORDER_SPACING, self.yes:getY(), buttonWid, BUTTON_HGT, getText("UI_Cancel"), self, ISBombTimerDialog.onButton)
 	self.no.internal = "CANCEL"
 	self.no:initialise()
 --	self.no:instantiate()
-	self.no.borderColor = {r=1, g=1, b=1, a=0.25}
+	self.no:enableCancelColor()
 	self:addChild(self.no)
 
-	self:setHeight(self.yes:getY() + self.yes:getHeight() + 12)
+	self:setHeight(self.yes:getBottom() + UI_BORDER_SPACING + 1)
 
 	self:insertNewLineOfButtons(self.button1m, self.button5m, self.button10m, self.button1p, self.button5p, self.button10p)
 	self:insertNewLineOfButtons(self.yes, self.no)
@@ -130,7 +130,7 @@ end
 function ISBombTimerDialog:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-	self:drawTextCentre(self.prompt, self:getWidth() / 2, 20, 1, 1, 1, 1, UIFont.Small)
+	self:drawTextCentre(self.prompt, self:getWidth() / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Small)
 end
 
 function ISBombTimerDialog:onGainJoypadFocus(joypadData)

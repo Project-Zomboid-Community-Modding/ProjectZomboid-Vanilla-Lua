@@ -100,7 +100,7 @@ function DebugScenarios:launchScenario(scenario)
         selectedDebugScenario.setSandbox();
     end
     local worldName = ZombRand(100000)..ZombRand(100000)..ZombRand(100000)..ZombRand(100000);
-    getWorld():setWorld(worldName);
+    getWorld():setMap(scenario.world or "Muldraugh, KY");
     createWorld(worldName);
     GameWindow.doRenderEvent(false);
     Events.OnNewGame.Add(DebugScenarios.ongamestart);

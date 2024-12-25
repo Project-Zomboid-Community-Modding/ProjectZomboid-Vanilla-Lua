@@ -27,14 +27,20 @@ ISCarMechanicsOverlay.CarList["Base.PickUpVanLights"] = {imgPrefix = "truck_", x
 ISCarMechanicsOverlay.CarList["Base.PickUpVanLightsFire"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpVanLightsPolice"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpVan"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVan_Camo"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpVanMccoy"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruckLights"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruckLightsFire"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpTruckLightsAirport"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpTruckLightsAirportSecurity"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruck"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpTruck_Camo"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruckMccoy"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanOvoFarm"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanSpiffo"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanSeats"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanSeatsAirportShuttle"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanAmbulance"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanRadio"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.StepVan"] = {imgPrefix = "van_", x=10,y=0};
@@ -45,8 +51,94 @@ ISCarMechanicsOverlay.CarList["Base.Van_Transit"] = {imgPrefix = "van_", x=10,y=
 ISCarMechanicsOverlay.CarList["Base.VanRadio_3N"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.StepVan_Scarlet"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.StepVan_Heralds"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVanAirportCatering"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van_LectroMax"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van_KnoxDisti"] = {imgPrefix = "van_", x=10,y=0};
+-- new b42 cars
+ISCarMechanicsOverlay.CarList["Base.PickUpTruckJPLandscaping"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanBuilder"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanMetalworker"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanBrickingIt"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanPickUpVanCallowayLandscaping"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanHeltonMetalWorking"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanKimbleKonstruction"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanWeldingbyCamille"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanYingsWood"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanBrickingIt"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanLightsCarpenter"] = {imgPrefix = "truck_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.StepVan_Mechanic"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_CompleteRepairShop"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_HuangsLaundry"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_Jorgensen"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_LouisvilleMotorShop"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_RandisPlants"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_SouthEasternHosp"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_SouthEasternPaint"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_USL"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_Plonkies"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_Cit8"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_MarineBites"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_Zippee"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanBuilder"] = {imgPrefix = "van_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.VanCarpenter"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanGardener"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMechanic"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMetalworker"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanUtility"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanBeckmans"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanBrewsterHarbin"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanCoastToCoast"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanGardenGods"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanVanGreenes"] = {imgPrefix = "van_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.VanJohnMcCoy"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanJonesFabrication"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanKerrHomes"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanKnoxCom"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanKorshunovs"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanLouisvilleLandscaping"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMeltingPointMetal"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMetalheads"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMicheles"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanMobileMechanics"] = {imgPrefix = "van_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.VanMooreMechanics"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanPennSHam"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanPlattAuto"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanPluggedInElectrics"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.Van_VoltMojo"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.Van_BugWipers"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanRiversideFabrication"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanRosewoodworking"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanSchwabSheetMetal"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanTreyBaines"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanUncloggers"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanWPCarpentry"] = {imgPrefix = "van_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.VanDeerValley"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanKnobCreekGas"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanOldMill"] = {imgPrefix = "van_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.VanSeats_Prison"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_Mural"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_Creature"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_LadyDelighter"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_Space"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_Trippy"] = {imgPrefix = "van_", x=10,y=0};
+-- ISCarMechanicsOverlay.CarList["Base.VanSeats_Valkyrie"] = {imgPrefix = "van_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.CarLightsBulletinSheriff"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.CarLightsKST"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.CarLightsLouisvilleCounty"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.CarLightsMuldraughPolice"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.ModernCarLightsCityLouisvillePD"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.ModernCarLightsMeadeSheriff"] = {imgPrefix = "4door_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.ModernCarLightsWestPoint"] = {imgPrefix = "4door_", x=10,y=0};
+
+ISCarMechanicsOverlay.CarList["Base.PickUpVanLightsLouisvilleCounty"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.PickUpVanLightsStatePolice"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.StepVan_LouisvilleSWAT"] = {imgPrefix = "truck_", x=10,y=0};
 
 -- smashed cars just inherit their parent image
 ISCarMechanicsOverlay.CarList["Base.CarNormalSmashedFront"] = ISCarMechanicsOverlay.CarList["Base.CarNormal"];
@@ -292,14 +384,14 @@ for partName,partList in pairs(ISCarMechanicsOverlay.PartList) do
 end
 
 -- certain car have different parts placement
---ISCarMechanicsOverlay.CarList["Base.SUV"].PartList = {};
---ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindshieldRear"] = {multipleImg=true, img={"window_rear_windshield", "window_rear_left", "window_rear_right"}};
---ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindowRearLeft"] = {img="window_middle_left"};
---ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindowRearRight"] = {img="window_middle_right"};
---ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList = {};
---ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindshieldRear"] = {multipleImg=true, img={"window_rear_windshield", "window_rear_left", "window_rear_right"}};
---ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearLeft"] = {img="window_middle_left"};
---ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearRight"] = {img="window_middle_right"};
+ISCarMechanicsOverlay.CarList["Base.SUV"].PartList = {};
+ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindshieldRear"] = {multipleImg=true, img={"window_rear_windshield", "window_rear_left", "window_rear_right"}};
+ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindowRearLeft"] = {img="window_middle_left"};
+ISCarMechanicsOverlay.CarList["Base.SUV"].PartList["WindowRearRight"] = {img="window_middle_right"};
+ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList = {};
+ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindshieldRear"] = {multipleImg=true, img={"window_rear_windshield", "window_rear_left", "window_rear_right"}};
+ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearLeft"] = {img="window_middle_left"};
+ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearRight"] = {img="window_middle_right"};
 ISCarMechanicsOverlay.CarList["Base.CarStationWagon2"].PartList = ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList;
 
 

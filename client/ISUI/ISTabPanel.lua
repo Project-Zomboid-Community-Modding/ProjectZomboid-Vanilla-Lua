@@ -390,6 +390,7 @@ function ISTabPanel:onMouseUp(x, y)
 		ISTabPanel.yMouse = -1;
 		self.isDragging = false;
 		ISTabPanel.viewDragging = nil;
+--[[
 		-- when we click somewhere on our tab panel
 		-- first test, do we click on the tab height ?
 		if self:getMouseY() >= 0 and self:getMouseY() < self.tabHeight then
@@ -415,6 +416,7 @@ function ISTabPanel:onMouseUp(x, y)
 				end
 			end
 		end
+--]]
 	end
 end
 

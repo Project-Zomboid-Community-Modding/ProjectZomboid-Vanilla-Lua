@@ -11,10 +11,11 @@ ISCompost = ISBuildingObject:derive("ISCompost");
 function ISCompost:create(x, y, z, north, sprite)
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
-	self.javaObject = IsoCompost.new(cell, self.sq);
+	self.javaObject = IsoCompost.new(cell, self.sq, sprite);
 	buildUtil.consumeMaterial(self);
 	self.sq:AddSpecialObject(self.javaObject)
 	self.javaObject:syncCompost()
+	self.javaObject:setMovedThumpable(true)
 end
 
 function ISCompost:new(name, sprite)

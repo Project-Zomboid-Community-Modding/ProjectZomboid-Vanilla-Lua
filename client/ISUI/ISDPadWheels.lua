@@ -110,6 +110,7 @@ function ISDPadWheels.onToggleLight(playerObj, item)
 		ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, item, 50, false))
 	else
 		item:setActivated(not item:isActivated())
+		item:playActivateDeactivateSound()
 	end
 end
 

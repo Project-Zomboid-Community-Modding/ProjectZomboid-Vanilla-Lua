@@ -7,13 +7,18 @@ require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 local ID_START_CHOPPER = 1;
 local ID_END_CHOPPER = 2;
+local ID_STOP_WEATHER = 3;
 
 ISGameDebugPanel = ISDebugSubPanelBase:derive("ISGameDebugPanel");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISGameDebugPanel:initialise()
     ISPanel.initialise(self);
-    self:addButtonInfo("Get the choppah!", ID_START_CHOPPER);
-    self:addButtonInfo("Remove the choppah!", ID_END_CHOPPER);
+    self:addButtonInfo(getText("IGUI_GameDebugPanel_ChoppahAdd"), ID_START_CHOPPER);
+    self:addButtonInfo(getText("IGUI_GameDebugPanel_ChoppaRemove"), ID_END_CHOPPER);
+    self:addButtonInfo(getText("IGUI_GameDebugPanel_StopWeather"), ID_STOP_WEATHER);
 end
 
 function ISGameDebugPanel:addButtonInfo(_title, _command, _marginBot)
@@ -27,25 +32,26 @@ function ISGameDebugPanel:createChildren()
 
     local v, obj;
 
-    local x,y,w,margin = 10,10,self.width-30,5;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - 1;
 
     self:initHorzBars(x,w);
 
     self.sliderOptions = {};
+    local barMod = UI_BORDER_SPACING;
 
-    y, obj = ISDebugUtils.addLabel(self,"game_title",x+(w/2),y,"General Game Options", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"game_title",x+(w/2), y, getText("IGUI_GameDebugPanel_Title"), UIFont.Medium);
     obj.center = true;
+    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     local gt = getGameTime();
-    self:addSliderOption(gt,"GameSpeed", 0, 1000, 0.1, "getTrueMultiplier", "setMultiplier");
+    self:addSliderOption(gt,getText("IGUI_GameDebugPanel_GameSpeed"), 0, 1000, 0.1, "getTrueMultiplier", "setMultiplier");
 
-    local barMod = 3;
     local y2, label, value, slider;
     for k,v in ipairs(self.sliderOptions) do
         y2,label = ISDebugUtils.addLabel(self,v,x,y,v.title or v.var, UIFont.Small);
 
-        y2,value = ISDebugUtils.addLabel(self,v,x+(w/2)-20,y,"0", UIFont.Small, false);
-        y,slider = ISDebugUtils.addSlider(self,v,x+(w/2),y,w/2, 18, ISGameDebugPanel.onSliderChange);
+        y2,value = ISDebugUtils.addLabel(self,v,x+(w-300)-20,y,"0", UIFont.Small, false);
+        y,slider = ISDebugUtils.addSlider(self,v,x+(w-300),y,300, BUTTON_HGT, ISGameDebugPanel.onSliderChange);
         slider.valueLabel = value;
 
         v.label = label;
@@ -57,46 +63,41 @@ function ISGameDebugPanel:createChildren()
         --print(v.var.." = "..tostring(val))
         slider:setCurrentValue(val);
 
-        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
-    y = y+10;
-
-    local h = 20;
     --y, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
     if self.buttons then
         for k,v in ipairs(self.buttons)  do
-            y, obj = ISDebugUtils.addButton(self,v,x,y+margin,w,h,v.title,ISGameDebugPanel.onClick);
-            if v.marginBot and v.marginBot>0 then
-                y = y+v.marginBot;
-            end
+            y, obj = ISDebugUtils.addButton(self,v,x,y,w,BUTTON_HGT,v.title,ISGameDebugPanel.onClick);
+            y = y+UI_BORDER_SPACING
         end
     end
 
-    y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+    y = ISDebugUtils.addHorzBar(self,y)+barMod+1;
 
     self.boolOptions = {};
 
-    self:addBoolOption("Disable radio/tv broadcasting", "disable_broadcasting");
+    self:addBoolOption(getText("IGUI_GameDebugPanel_DisableRadioTV"), "disable_broadcasting");
     -- the following disables a media line being registered as having been listened to by player, allowing multiple replays for testing.
-    self:addBoolOption("Disable media line registering", "disable_media_line_registering");
+    self:addBoolOption(getText("IGUI_GameDebugPanel_DisableMediaLine"), "disable_media_line_registering");
 
     local tickbox;
     for k,v in ipairs(self.boolOptions) do
         y2,label = ISDebugUtils.addLabel(self,v,x,y,v.title, UIFont.Small);
 
         local tickOptions = {};
-        table.insert(tickOptions, { text = "Enabled", ticked = false });
-        y,tickbox = ISDebugUtils.addTickBox(self,v,x+(w/2),y,w/2,ISDebugUtils.FONT_HGT_SMALL,v.title,tickOptions,ISGameDebugPanel.onTicked);
+        table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
+        y,tickbox = ISDebugUtils.addTickBox(self,v,x+(w-300),y,300,BUTTON_HGT,v.title,tickOptions,ISGameDebugPanel.onTicked);
 
         v.label = label;
         v.tickbox = tickbox;
 
-        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+1);
 end
 
 function ISGameDebugPanel:onClick(_button)
@@ -106,6 +107,12 @@ function ISGameDebugPanel:onClick(_button)
             testHelicopter();
         elseif c==ID_END_CHOPPER then
             endHelicopter();
+        elseif c==ID_STOP_WEATHER then
+            if isClient() then
+                getClimateManager():transmitStopWeather();
+            else
+                getClimateManager():stopWeatherAndThunder()
+            end
         end
     end
 end

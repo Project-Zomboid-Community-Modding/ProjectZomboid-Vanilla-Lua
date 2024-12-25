@@ -28,7 +28,10 @@ function ISEnterVehicle:start()
 	self.vehicle:enter(self.seat, self.character)
 	self.vehicle:playPassengerSound(self.seat, "enter")
 	self.character:SetVariable("bEnteringVehicle", "true")
+	self.character:triggerMusicIntensityEvent("VehicleEnter")
 	self.started = true
+	local heavyItem = (self.character:getPrimaryHandItem() and self.character:getPrimaryHandItem():hasTag("HeavyItem")) or (self.character:getSecondaryHandItem() and self.character:getSecondaryHandItem():hasTag("HeavyItem"))
+    if heavyItem then forceDropHeavyItems(self.character) end
 end
 
 function ISEnterVehicle:stop()
@@ -70,6 +73,7 @@ function ISEnterVehicle:new(character, vehicle, seat)
 	o.seat = seat
 	o.maxTime = -1
 	o.started = false
+	o.ignoreHandsWounds = true;
 	return o
 end
 

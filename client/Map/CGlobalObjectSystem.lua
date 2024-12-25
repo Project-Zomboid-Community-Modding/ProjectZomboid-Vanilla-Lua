@@ -37,6 +37,7 @@ function CGlobalObjectSystem:initLuaObjects()
 end
 
 function CGlobalObjectSystem:getLuaObjectCount()
+    if not self or not self.system or not self.system:getObjectCount() then return false end
 	return self.system:getObjectCount()
 end
 
@@ -76,9 +77,9 @@ end
 
 function CGlobalObjectSystem:removeLuaObject(luaObject)
 	if not luaObject or (luaObject.luaSystem ~= self) then return end
-	self:noise('removing luaObject '..luaObject.x..','..luaObject.y..','..luaObject.z)
+-- 	self:noise('removing luaObject '..luaObject.x..','..luaObject.y..','..luaObject.z)
 	self.system:removeObject(luaObject.globalObject)
-	self:noise('#objects='..self.system:getObjectCount())
+-- 	self:noise('#objects='..self.system:getObjectCount())
 end
 
 function CGlobalObjectSystem:removeLuaObjectAt(x, y, z)
@@ -89,10 +90,10 @@ end
 function CGlobalObjectSystem:getLuaObjectAt(x, y, z)
 	local globalObject = self.system:getObjectAt(x, y, z)
 -- This used to be done in CGlobalObject:new()
-if globalObject then
-	local luaObject = globalObject:getModData()
-	luaObject:updateFromIsoObject()
-end
+	if globalObject then
+		local luaObject = globalObject:getModData()
+		luaObject:updateFromIsoObject()
+	end
 	return globalObject and globalObject:getModData() or nil
 end
 
@@ -103,7 +104,7 @@ end
 
 function CGlobalObjectSystem:OnLuaObjectUpdated(luaObject)
 	-- luaObject fields were updated with new values from the server
-	self:noise('OnLuaObjectUpdated')
+-- 	self:noise('OnLuaObjectUpdated')
 end
 
 function CGlobalObjectSystem:sendCommand(playerObj, command, args)

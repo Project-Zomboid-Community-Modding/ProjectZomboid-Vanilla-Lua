@@ -391,7 +391,7 @@ end
 -----
 
 function ISFirearmRadialMenu.checkKey(key)
-	if key ~= getCore():getKey("ReloadWeapon") then
+	if not getCore():isKey("ReloadWeapon", key) then
 		return false
 	end
 	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then

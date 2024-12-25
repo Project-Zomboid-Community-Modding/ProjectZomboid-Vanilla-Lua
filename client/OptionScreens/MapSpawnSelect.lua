@@ -8,6 +8,147 @@ MapSpawnSelect = ISPanelJoypad:derive("MapSpawnSelect")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
+local WORLD_MAP, WORLD_MAP_X, WORLD_MAP_Y, WORLD_MAP_H, WORLD_MAP_W, WORLD_MAP_SCALE
+local ZOOM_X, ZOOM_Y, ZOOM_SCALE
+
+-----
+
+MapSpawnSelectImage = ISUIElement:derive("MapSpawnSelectImage")
+
+function MapSpawnSelectImage:instantiate()
+	self.javaObject = UIWorldMap.new(self)
+	self.mapAPI = self.javaObject:getAPIv3()
+	self.mapAPI:setBoolean("ClampBaseZoomToPoint5", false)
+	self.mapAPI:setBoolean("DebugInfo", false)
+	self.mapAPI:setBoolean("ImagePyramid", true)
+	self.mapAPI:setBoolean("InfiniteZoom", true) -- // FIXME: needed at the moment
+	self.mapAPI:setBoolean("Isometric", false)
+	self.javaObject:setX(self.x)
+	self.javaObject:setY(self.y)
+	self.javaObject:setWidth(self.width)
+	self.javaObject:setHeight(self.height)
+	self.javaObject:setAnchorLeft(self.anchorLeft)
+	self.javaObject:setAnchorRight(self.anchorRight)
+	self.javaObject:setAnchorTop(self.anchorTop)
+	self.javaObject:setAnchorBottom(self.anchorBottom)
+	self:createChildren()
+end
+
+function MapSpawnSelectImage:prerender()
+	ISUIElement.prerender(self)
+	if self:getWidth() < 1 then -- size starts at zero
+		return
+	end
+	if not self.hasResetView and (self.mapAPI:getDataCount() > 0) and self.mapAPI:isDataLoaded() then
+		self.hasResetView = true
+		MapUtils.initDefaultStyleV1(self)
+		local styleAPI = self.javaObject:getAPIv1():getStyleAPI()
+		styleAPI:removeLayerById("forest")
+		MapUtils.overlayPaper(self)
+		self.mapAPI:setBoundsFromData()
+		self.mapAPI:resetView()
+	elseif self.pyramidFileName and not self.hasResetView then
+		self.hasResetView = true
+		self.mapAPI:setBoundsInSquares(0, 0, self.mapAPI:getImagePyramidWidthInSquares(self.pyramidFileName), self.mapAPI:getImagePyramidHeightInSquares(self.pyramidFileName))
+		self.mapAPI:resetView()
+	end
+	if self.hasResetView and not self.shownInitialLocation then
+		self.shownInitialLocation = true
+		local selectedItem = self.parent.listbox.items[self.parent.listbox.selected].item
+		if selectedItem.zoomS == 0 then
+
+		else
+			self.mapAPI:centerOn(selectedItem.zoomX, selectedItem.zoomY)
+			self.mapAPI:setZoom(selectedItem.zoomS)
+		end
+	end
+end
+
+function MapSpawnSelectImage:onMouseDown(x, y)
+	self.dragging = true
+	self.dragMoved = false
+	self.dragStartX = x
+	self.dragStartY = y
+	self.dragStartCX = self.mapAPI:getCenterWorldX()
+	self.dragStartCY = self.mapAPI:getCenterWorldY()
+	self.dragStartZoomF = self.mapAPI:getZoomF()
+	self.dragStartWorldX = self.mapAPI:uiToWorldX(x, y)
+	self.dragStartWorldY = self.mapAPI:uiToWorldY(x, y)
+	return true
+end
+
+function MapSpawnSelectImage:onMouseMove(dx, dy)
+	if self.dragging then
+		local mouseX = self:getMouseX()
+		local mouseY = self:getMouseY()
+		if not self.dragMoved and math.abs(mouseX - self.dragStartX) <= 4 and math.abs(mouseY - self.dragStartY) <= 4 then
+			return
+		end
+		self.dragMoved = true
+		local worldX = self.mapAPI:uiToWorldX(mouseX, mouseY, self.dragStartZoomF, self.dragStartCX, self.dragStartCY)
+		local worldY = self.mapAPI:uiToWorldY(mouseX, mouseY, self.dragStartZoomF, self.dragStartCX, self.dragStartCY)
+		self.mapAPI:centerOn(self.dragStartCX + self.dragStartWorldX - worldX, self.dragStartCY + self.dragStartWorldY - worldY)
+	end
+	return true
+end
+
+function MapSpawnSelectImage:onMouseMoveOutside(dx, dy)
+	return self:onMouseMove(dx, dy)
+end
+
+function MapSpawnSelectImage:onMouseUp(x, y)
+	self.dragging = false
+	return true
+end
+
+function MapSpawnSelectImage:onMouseUpOutside(x, y)
+	self.dragging = false
+	return true
+end
+
+function MapSpawnSelectImage:onMouseDoubleClick(x, y)
+	self.mapAPI:resetView()
+end
+
+function MapSpawnSelectImage:onMouseWheel(del)
+	self.mapAPI:zoomAt(self:getMouseX(), self:getMouseY(), del)
+	return true
+end
+
+function MapSpawnSelectImage:clear()
+	self.mapAPI:clearData()
+	self.mapAPI:clearImages()
+	self.pyramidFileName = nil
+	self.hasResetView = false
+	self.shownInitialLocation = false
+end
+
+function MapSpawnSelectImage:setImagePyramid(fileName)
+	self.mapAPI:addImagePyramid(fileName)
+	self.pyramidFileName = fileName
+	self.mapAPI:setBoolean("ImagePyramid", true)
+end
+
+function MapSpawnSelectImage:initMapData(directory)
+	MapUtils.initDirectoryMapData(self, directory)
+	self.mapAPI:setBoolean("ImagePyramid", false)
+end
+
+function MapSpawnSelectImage:hasSomethingToDisplay()
+	return self.mapAPI:getDataCount() + self.mapAPI:getImagesCount() > 0
+end
+
+function MapSpawnSelectImage:new(x, y, width, height)
+	local o = ISPanel.new(self, x, y, width, height) -- width=0 and height=0
+	return o
+end
+
+-----
 
 MapSpawnSelectListBox = ISScrollingListBox:derive("MapSpawnSelectListBox")
 
@@ -18,6 +159,11 @@ function MapSpawnSelectListBox:render()
 		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
 		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
 	end
+end
+
+function MapSpawnSelectListBox:onMouseDown(x, y)
+	ISScrollingListBox.onMouseDown(self, x, y)
+	self.parent.selectedMapIndex = nil
 end
 
 function MapSpawnSelectListBox:onJoypadDirUp(joypadData)
@@ -102,14 +248,10 @@ function MapSpawnSelect:getFixedSpawnRegion()
 	local y = tonumber(xyz[2])
 	local z = tonumber(xyz[3])
 	if x and y and z and (x ~= 0 or y ~= 0) then
-		local worldX = math.floor(x / 300)
-		local worldY = math.floor(y / 300)
-		local posX = x - worldX * 300
-		local posY = y - worldY * 300
 		return { {
 			name = getText("UI_mapspawn_ServerSpawnPoint"), points = {
 				unemployed = {
-					{ worldX = worldX, worldY = worldY, posX = posX, posY = posY, posZ = z },
+					{ posX = x, posY = y, posZ = z },
 				},
 			}
 		} }
@@ -132,14 +274,10 @@ function MapSpawnSelect:getSafehouseSpawnRegion()
 			x = safe:getX() + (safe:getH() / 2);
 			y = safe:getY() + (safe:getW() / 2);
 			z = 0;
-			local worldX = math.floor(x / 300)
-			local worldY = math.floor(y / 300)
-			local posX = x - worldX * 300
-			local posY = y - worldY * 300
 			return { {
 				name = getText("UI_mapspawn_Safehouse"), points = {
 					unemployed = {
-						{ worldX = worldX, worldY = worldY, posX = posX, posY = posY, posZ = z },
+						{ posX = x, posY = y, posZ = z },
 					},
 				}
 			} }
@@ -172,6 +310,13 @@ end
 
 function MapSpawnSelect:fillList()
 	self.listbox:clear()
+	WORLD_MAP = nil
+	self.mapPanel:clear()
+	local spawnSelectImagePyramid = nil
+
+	self.sortedList = {};
+	self.notSortedList = {};
+
 	local regions = self:getSpawnRegions()
 	if not regions then return end
 	for _,v in ipairs(regions) do
@@ -182,8 +327,18 @@ function MapSpawnSelect:fillList()
 			item.region = v;
 			item.dir = v.name;
 			item.desc = info.description or "NO DESCRIPTION";
-			item.worldimage = info.thumb;
-			self.listbox:addItem(item.name, item);
+			--item.worldimage = info.thumb;
+			if info.spawnSelectImagePyramid then
+				spawnSelectImagePyramid = info.spawnSelectImagePyramid -- only one is supported
+--			elseif info.worldmap then
+--				WORLD_MAP = info.worldmap
+			end
+			item.zoomX = info.zoomX
+			item.zoomY = info.zoomY
+			item.zoomS = info.zoomS
+			item.demoVideo = info.demoVideo
+			--self.listbox:addItem(item.name, item);
+			self:checkSorted(item);
 		else
 			local item = {}
 			item.name = v.name;
@@ -191,12 +346,77 @@ function MapSpawnSelect:fillList()
 			item.dir = "";
 			item.desc = "";
 			item.worldimage = nil;
-			self.listbox:addItem(item.name, item);
+			self:checkSorted(item);
+			--self.listbox:addItem(item.name, item);
 		end
 	end
-	self.listbox:sort()
+	--self.listbox:sort()
+	--self:sortList();
+	if #self.listbox.items > 1 then
+        local item = {}
+        item.name = getText("UI_mapspawn_random");
+        item.region = nil;
+        item.dir = "";
+        item.desc = "";
+        item.worldimage = nil;
+        --self.listbox:addItem(item.name, item);
+		table.insert(self.notSortedList, item);
+    end
+
+	if spawnSelectImagePyramid then
+		self.mapPanel:setImagePyramid(spawnSelectImagePyramid)
+	else
+		for _,v in ipairs(regions) do
+			local info = getMapInfo(v.name)
+			if info then
+				for _,dir in ipairs(info.lots) do
+					self.mapPanel:initMapData('media/maps/'..dir) -- FIXME: order of multiple maps matters
+				end
+			end
+		end
+	end
+
+	-- list has been sorted with MapsOrder
+	for i,v in ipairs(self.sortedList) do
+		self.listbox:addItem(v.name, v);
+	end
+
+	for i,v in ipairs(self.notSortedList) do
+		self.listbox:addItem(v.name, v);
+	end
 
 	self:hideOrShowSaveName()
+	self:recalculateMapSize()
+
+	self.mapPanel.shownInitialLocation = false
+end
+
+function MapSpawnSelect:checkSorted(item)
+
+	local found = false;
+	if IgnoredMap then
+		for i,mapName in ipairs(IgnoredMap) do
+			if mapName == item.name then
+				print("ignoring", item.name)
+				return;
+			end
+		end
+	end
+
+	if MapsOrder then
+		for i,mapName in ipairs(MapsOrder) do
+			if mapName == item.name then
+				table.insert(self.sortedList, i, item);
+				found = true;
+				break;
+			end
+		end
+	end
+
+	if not found then
+		table.insert(self.notSortedList, item)
+	end
+
 end
 
 function MapSpawnSelect:hideOrShowSaveName()
@@ -205,17 +425,17 @@ function MapSpawnSelect:hideOrShowSaveName()
 
 	-- When loading an existing save, don't display "Save Name" field
 	if MainScreen.instance.createWorld and not getCore():isChallenge() then
-		self.startY = 110
+		self.startY = UI_BORDER_SPACING*3+1 + FONT_HGT_TITLE + FONT_HGT_MEDIUM+6
 		self.textEntryLabel:setVisible(true)
 		self.textEntry:setVisible(true)
 	else
-		self.startY = 80
+		self.startY = UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE;
 		self.textEntryLabel:setVisible(false)
 		self.textEntry:setVisible(false)
 	end
 
 	self.listbox:setY(self.startY)
-	self.listbox:setHeight(self.height-30-30-self.startY)
+	self.listbox:setHeight((FONT_HGT_LARGE+6)*10)
 end
 
 function MapSpawnSelect:onOptionMouseDown(button, x, y)
@@ -253,9 +473,19 @@ function MapSpawnSelect:clickBack()
 end
 
 function MapSpawnSelect:clickNext()
+    if self.listbox.items[self.listbox.selected].item.name == getText("UI_mapspawn_random") then
+        local roll = ZombRand((#self.listbox.items - 1)) + 1
+--         print("Roll " .. tostring(roll))
+        self.listbox.selected = roll
+    end
+
 	self.selectedRegion = self.listbox.items[self.listbox.selected].item.region
+	setSpawnRegion(self.selectedRegion.name)
+	getCore():setSelectedMap(tostring(self.selectedRegion.name))
+     --print("self.selectedRegion.name" .. tostring(self.selectedRegion.name))
 	self:setVisible(false)
 	if MainScreen.instance.createWorld then
+		getWorld():setWorld(sanitizeWorldName(self.textEntry:getText()));
 		getWorld():setWorld(sanitizeWorldName(self.textEntry:getText()));
 	end
 	if getWorld():getGameMode() == "Sandbox" and not checkSaveFileExists("map_sand.bin") then
@@ -304,30 +534,138 @@ end
 
 function MapSpawnSelect:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_mapspawn_title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	
+	self:drawTextCentre(getText("UI_mapspawn_title"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+
 	local selectedItem = self.listbox.items[self.listbox.selected].item;
-	
-	local thumbHeight = 0;
-	local thumbPadY = 0;
-	if selectedItem.worldimage ~= nil then
-		thumbHeight = selectedItem.worldimage:getHeight();
-		thumbPadY = 10;
-		local BreakPoint = ((self.width/4)*3) - selectedItem.worldimage:getHeight()/2;
-		self:drawTexture(selectedItem.worldimage, BreakPoint, self.startY, 1, 1, 1, 1);
-		self:drawRectBorder( BreakPoint, self.startY, selectedItem.worldimage:getWidth(), selectedItem.worldimage:getHeight(), 0.3, 1, 1, 1);
-		--        self:drawTexture(item.worldimage, MapSelecter.padXY, y+MapSelecter.padXY, 1, 1, 1, 1);
+	local tempString = ""
+	if selectedItem.demoVideo then
+		local w = 1920
+		local h = 1080
+		local div = w/(self.richText:getWidth() - UI_BORDER_SPACING*2 - 2)
+		local w2 = w / div
+		local h2 = h / div
+		tempString = "<VIDEOCENTRE:".. selectedItem.demoVideo ..","..w..","..h..","..w2..","..h2..">\n"
 	end
-	local descRectWidth = self.width - 17 - (self.width/2 + 30)
-	local descRectHeight = self.height - 60 - (self.startY + thumbHeight + thumbPadY)
-	self.richText:setX(self.width/2 + 30)
-	self.richText:setY(self.startY + thumbHeight + thumbPadY)
-	self.richText:setWidth(descRectWidth)
-	self.richText:setHeight(descRectHeight)
-	self.richText:setVisible(true);
-	self.richText.text = selectedItem.desc or "";
+	self.richText.text = tempString .. (selectedItem.desc or "");
 	self.richText:paginate();
 	self:drawRectBorder( self.richText.x, self.richText.y, self.richText:getWidth(), self.richText:getHeight(), 0.3, 1, 1, 1);
+
+	if self.mapPanel:hasSomethingToDisplay() and self.mapPanel.shownInitialLocation then
+		if self.listbox.selected ~= self.selectedMapIndex then
+			self.selectedMapIndex = self.listbox.selected
+			self.mapPanel.mapAPI:transitionTo(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
+	--		self.mapPanel.mapAPI:centerOn(x, y)
+	--		self.mapPanel.mapAPI:setZoom(scale)
+		end
+		return
+	end
+
+	if WORLD_MAP ~= nil then --if no map exists for the current world, don't add a map panel
+		if selectedItem.zoomS == 0 then
+			self:zoomMap(WORLD_MAP:getWidth()/2, WORLD_MAP:getHeight()/2, 1)
+		else
+			self:zoomMap(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
+		end
+	end
+end
+
+function MapSpawnSelect:recalculateMapSize()
+	if WORLD_MAP ~= nil or self.mapPanel:hasSomethingToDisplay() then
+		---old code for matching exact size ratio of map
+		--local mapW = WORLD_MAP:getWidth() --width of map image
+		--local mapH = WORLD_MAP:getHeight() --height of map image
+		--local maxW = self.width - UI_BORDER_SPACING*3 - 2 - self.width/4 --max width for map
+		--local maxH = self.height - FONT_HGT_TITLE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2 --max height for map
+		--
+		--if maxH > mapH and maxW > mapW then
+		--	WORLD_MAP_SCALE = 1
+		--else
+		--	WORLD_MAP_SCALE = math.max(mapW/maxW, mapH/maxH) -- set the scale of the whole image here
+		--end
+		--
+		--ZOOM_SCALE = WORLD_MAP_SCALE
+		--
+		--WORLD_MAP_W = math.max(mapW/WORLD_MAP_SCALE, (self.width-UI_BORDER_SPACING*3-2)/2)
+		--WORLD_MAP_H = maxH
+		--WORLD_MAP_X = self.width - UI_BORDER_SPACING - WORLD_MAP_W
+		--WORLD_MAP_Y = FONT_HGT_TITLE + UI_BORDER_SPACING*2 + 1
+
+		WORLD_MAP_W = (self.width-UI_BORDER_SPACING*3-2)*0.75
+		WORLD_MAP_H = self.height - FONT_HGT_TITLE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2
+		WORLD_MAP_X = self.width - UI_BORDER_SPACING - WORLD_MAP_W
+		WORLD_MAP_Y = FONT_HGT_TITLE + UI_BORDER_SPACING*2 + 1
+	else
+		--no map found, set size to 0 and move off screen
+		WORLD_MAP_W = 0
+		WORLD_MAP_H = 0
+		WORLD_MAP_X = -500
+		WORLD_MAP_Y = -500
+	end
+
+	--set to nil. zoomMap() will then set the map to its initial position.
+	ZOOM_X = nil
+	ZOOM_Y = nil
+	ZOOM_SCALE = nil
+
+	self.mapPanel:setX(WORLD_MAP_X)
+	self.mapPanel:setY(WORLD_MAP_Y)
+	self.mapPanel:setWidth(WORLD_MAP_W)
+	self.mapPanel:setHeight(WORLD_MAP_H)
+
+	local isMap = (WORLD_MAP_W > 0) and 2 or 1 --if map exists, isMap = 2. this is used in multiplying UI_BORDER_SPACING below
+
+	self.listbox:setWidth(self.width - self.listbox.x - UI_BORDER_SPACING*isMap - WORLD_MAP_W - 1)
+	self.richText:setWidth(self.listbox.width)
+
+	if not MainScreen.instance.inGame then
+		self.textEntry:setWidth(self.listbox:getRight() - self.textEntry.x)
+	end
+end
+
+function MapSpawnSelect:zoomMap(x, y, scale)
+	--- this zoom function takes
+	---		the x and y coordinates of a central point in the map,
+	---		and a zoom factor, clamped between 1 and WORLD_MAP_SCALE.
+	---
+	--- it calculates the offset relative to the mapPanel position
+	---	and draws the map texture with the desired central point displayed
+	--- exactly in the middle of the mapPanel.
+	---
+	--- ~ Fox Chaotica
+
+	local lerpValue = 0.02 -- how fast the zoom takes to move to new location, between 0 and 1. lower numbers make the zoom take longer
+	local snapThreshold = 0.1 -- how close to the target location the zoom needs to be before the zoom snaps to position.
+
+	local fpsAdjust = (UIManager.getSecondsSinceLastRender() * 90) -- I assumed the original lerpValue was determined at 90 FPS
+	lerpValue = lerpValue * fpsAdjust
+
+	if ZOOM_X == nil then
+		--no coordinates or scale factor exist, set them now
+		ZOOM_X = x
+		ZOOM_Y = y
+		ZOOM_SCALE = scale
+	elseif math.abs(ZOOM_X - x) <= snapThreshold and math.abs(ZOOM_Y - y) <= snapThreshold and math.abs(ZOOM_SCALE - scale) <= snapThreshold then
+		--current coordinates are close enough to target coordinates, snap to position.
+		ZOOM_X = x
+		ZOOM_Y = y
+		ZOOM_SCALE = scale
+	else
+		--new coordinates supplied, interpolate between current position and target position.
+		ZOOM_X = (ZOOM_X * (1-lerpValue)) + (x*lerpValue)
+		ZOOM_Y = (ZOOM_Y * (1-lerpValue)) + (y*lerpValue)
+		ZOOM_SCALE = (ZOOM_SCALE * (1-lerpValue)) + (scale*lerpValue)
+	end
+
+	-- calculate scale factor based on the largest size possible for the entire map to display.
+	local scaleFactor = (WORLD_MAP_SCALE/math.min(math.max(ZOOM_SCALE, 1), WORLD_MAP_SCALE))
+	-- calculate X and Y offsets using scale factor.
+	local newX = -(ZOOM_X/scaleFactor) + WORLD_MAP_W/2
+	local newY = -(ZOOM_Y/scaleFactor) + WORLD_MAP_H/2
+
+	--set up scencil, draw texture, clear all parts of the texture not within the bounds of the stencil.
+	self:setStencilRect(WORLD_MAP_X+1, WORLD_MAP_Y+1, WORLD_MAP_W-2, WORLD_MAP_H-2)
+	self.mapPanel:drawTextureScaled(WORLD_MAP, newX, newY, (WORLD_MAP:getWidth()/scaleFactor), (WORLD_MAP:getHeight()/scaleFactor), 1, 1, 1, 1)
+	self:clearStencilRect()
 end
 
 function MapSpawnSelect:doDrawItem(y, item, alt)
@@ -379,19 +717,20 @@ function MapSpawnSelect:onJoypadDirDown_textEntry(joypadData)
 end
 
 function MapSpawnSelect:onResolutionChange(oldw, oldh, neww, newh)
-	self.listbox:setWidth(self.width / 2)
+	self:recalculateMapSize()
 end
 
 function MapSpawnSelect:create()
-	local padX = 16
-	local btnWid = 100
-	local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-	local btnPadY = 5
-	local titleHgt = 80
+	self.mapPanel = MapSpawnSelectImage:new(0, 0, 0, 0)
+	self.mapPanel:initialise();
+	self.mapPanel:instantiate();
+	self.mapPanel:setAnchorLeft(false);
+	self.mapPanel:setAnchorRight(true);
+	self:addChild(self.mapPanel)
 
 	if not MainScreen.instance.inGame then -- don't show savefile entry in splitscreen
-	
-	self.textEntryLabel = ISLabel:new(20, 48, 50, getText("UI_mapselecter_savename"), 1, 1, 1, 1, UIFont.Medium, true);
+
+	self.textEntryLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE, FONT_HGT_MEDIUM+6, getText("UI_mapselecter_savename"), 1, 1, 1, 1, UIFont.Medium, true);
 	self.textEntryLabel:initialise();
 	self.textEntryLabel:instantiate();
 	self.textEntryLabel:setAnchorLeft(true);
@@ -399,9 +738,9 @@ function MapSpawnSelect:create()
 	self.textEntryLabel:setAnchorTop(false);
 	self.textEntryLabel:setAnchorBottom(false);
 	self:addChild(self.textEntryLabel);
-	
-	local inset = 2
-	self.textEntry = ISTextEntryBox:new("", self.textEntryLabel:getRight() + 17, self.textEntryLabel.y + (self.textEntryLabel.height - (FONT_HGT_MEDIUM + inset * 2)) / 2, self.width-(self.textEntryLabel:getRight() + 17) - 16, 18);
+
+	local inset = 6
+	self.textEntry = ISTextEntryBox:new("", self.textEntryLabel:getRight() + UI_BORDER_SPACING, self.textEntryLabel.y + (self.textEntryLabel.height - (FONT_HGT_MEDIUM + inset)) / 2, self.width-(self.textEntryLabel:getRight() + UI_BORDER_SPACING) - UI_BORDER_SPACING-1, FONT_HGT_MEDIUM + inset);
 	self.textEntry.font = UIFont.Medium
 	self.textEntry:initialise();
 	self.textEntry:instantiate();
@@ -412,11 +751,11 @@ function MapSpawnSelect:create()
 	self.textEntry.onJoypadDown = self.onJoypadDown_textEntry
 	self.textEntry.onJoypadDirDown = self.onJoypadDirDown_textEntry
 	self:addChild(self.textEntry);
-	local sdf = SimpleDateFormat.new("dd-MM-yyyy_hh-mm-ss");
+	local sdf = SimpleDateFormat.new("yyyy-MM-dd_HH-mm-ss");
 	self.textEntry:setText(sdf:format(Calendar.getInstance():getTime()));
 
 	end -- not MainScreen.instance.inGame
-	
+
 --	self.listbox = ISScrollingListBox:new(padX, titleHgt, self.width-padX*2, self.height-btnPadY-btnHgt-24-titleHgt)
 --	self.listbox:initialise()
 --	self.listbox:setAnchorRight(true)
@@ -424,44 +763,46 @@ function MapSpawnSelect:create()
 --	self.listbox.doDrawItem = MapSpawnSelect.doDrawItem
 --	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
 --	self:addChild(self.listbox)
-	
-	self.listbox = MapSpawnSelectListBox:new(16, self.startY, self.width/2, self.height-30-30-self.startY);
+
+
+	self.listbox = MapSpawnSelectListBox:new(UI_BORDER_SPACING+1, self.startY, (self.width - UI_BORDER_SPACING*3 - 2) / 4, (FONT_HGT_LARGE+6)*10);
 	self.listbox:initialise();
 	self.listbox:instantiate();
 	self.listbox:setAnchorLeft(true);
 	self.listbox:setAnchorTop(true);
-	self.listbox:setAnchorBottom(true);
-	self.listbox.drawBorder = true;
 	self:addChild(self.listbox);
-	self.listbox.itemheight = 50;
+	self.listbox.itemheight = FONT_HGT_LARGE+6;
 	self.listbox.doDrawItem = MapSpawnSelect.doDrawItem
 	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
+	self.listbox.drawBorder = true;
 	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5};
-	
-	self.richText = MapSpawnSelectInfoPanel:new(16, 10, 500,200);
-	self.richText.marginRight = 20
+
+	self.richText = MapSpawnSelectInfoPanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, self.height - self.listbox:getBottom() - UI_BORDER_SPACING*3 - BUTTON_HGT - 1);
+	self.richText.marginRight = UI_BORDER_SPACING+1
+	self.richText.marginLeft = UI_BORDER_SPACING+1
 	self.richText.autosetheight = false;
 	self.richText.clip = true
 	self.richText:initialise();
-	self.richText.background = true;
+	self.richText:setAnchorLeft(true);
 	self.richText:setAnchorBottom(true);
-	self.richText:setAnchorRight(true);
-	self.richText:setVisible(false);
 	self.richText.backgroundColor  = {r=0, g=0, b=0, a=0.5};
 	self:addChild(self.richText);
 	self.richText:addScrollBars()
 
-	self.backButton = ISButton:new(padX, self.height - btnPadY - btnHgt, 100, btnHgt, getText("UI_btn_back"), self, MapSpawnSelect.onOptionMouseDown)
+	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, MapSpawnSelect.onOptionMouseDown)
 	self.backButton.internal = "BACK"
 	self.backButton:initialise()
 	self.backButton:instantiate()
 	self.backButton:setAnchorLeft(true)
 	self.backButton:setAnchorTop(false)
 	self.backButton:setAnchorBottom(true)
-	self.backButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.backButton:enableCancelColor()
 	self:addChild(self.backButton)
 
-	self.nextButton = ISButton:new(self.width - 116, self.height - btnPadY - btnHgt, 100, btnHgt, getText("UI_btn_next"), self, MapSpawnSelect.onOptionMouseDown)
+	btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
+	self.nextButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, MapSpawnSelect.onOptionMouseDown)
 	self.nextButton.internal = "NEXT"
 	self.nextButton:initialise()
 	self.nextButton:instantiate()
@@ -469,7 +810,7 @@ function MapSpawnSelect:create()
 	self.nextButton:setAnchorRight(true)
 	self.nextButton:setAnchorTop(false)
 	self.nextButton:setAnchorBottom(true)
-	self.nextButton:setEnable(true) -- sets the hard-coded border color
+	self.nextButton:enableAcceptColor()
 	self:addChild(self.nextButton)
 end
 
@@ -478,7 +819,7 @@ function MapSpawnSelect:new(x, y, width, height)
 	o.selectedRegion = nil
 	o.previousScreen = 'NewGameScreen'
 	o.addY = 0;
-	o.startY = MainScreen.instance.inGame and 80 or 110;
+	o.startY = MainScreen.instance.inGame and UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE or UI_BORDER_SPACING*3+1 + FONT_HGT_TITLE + FONT_HGT_MEDIUM+6;
 	MapSpawnSelect.instance = o
 	return o
 end

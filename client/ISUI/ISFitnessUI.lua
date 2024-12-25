@@ -10,6 +10,8 @@ ISFitnessUI.enduranceLevelTreshold = 2;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function noise(str)
 	if getDebug() then print(str) end
@@ -33,10 +35,8 @@ end
 function ISFitnessUI:initialise()
 	ISPanelJoypad.initialise(self);
 	local btnWid = 100
-	local btnHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
-	local padBottom = 10
 	
-	self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, ISFitnessUI.onClick);
+	self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - BUTTON_HGT - UI_BORDER_SPACING - 1, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISFitnessUI.onClick);
 	self.ok.internal = "OK";
 	self.ok.anchorTop = false
 	self.ok.anchorBottom = true
@@ -45,7 +45,7 @@ function ISFitnessUI:initialise()
 	self.ok.borderColor = self.buttonBorderColor;
 	self:addChild(self.ok);
 	
-	self.cancel = ISButton:new(self.ok:getRight() + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, ISFitnessUI.onClick);
+	self.cancel = ISButton:new(self.ok:getRight() + UI_BORDER_SPACING, self.ok.y, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISFitnessUI.onClick);
 	self.cancel.internal = "CANCEL";
 	self.cancel.anchorTop = false
 	self.cancel.anchorBottom = true
@@ -54,7 +54,7 @@ function ISFitnessUI:initialise()
 	self.cancel.borderColor = self.buttonBorderColor;
 	self:addChild(self.cancel);
 	
-	self.close = ISButton:new(self:getWidth() - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Close"), self, ISFitnessUI.onClick);
+	self.close = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, self.ok.y, btnWid, BUTTON_HGT, getText("UI_Close"), self, ISFitnessUI.onClick);
 	self.close.internal = "CLOSE";
 	self.close.anchorLeft = false
 	self.close.anchorRight = true
@@ -78,14 +78,14 @@ function ISFitnessUI:initialise()
 --	self:addChild(self.resetBtn);
 	
 	-- exercises type
-	self.exercises = ISRadioButtons:new(10, 50, 120, 20, self, ISFitnessUI.clickedExe)
+	self.exercises = ISRadioButtons:new(UI_BORDER_SPACING + 1, 50, 120, 20, self, ISFitnessUI.clickedExe)
 	self.exercises.choicesColor = {r=1, g=1, b=1, a=1}
 	self.exercises:initialise()
 	self.exercises.autoWidth = true;
 	self:addChild(self.exercises)
 	self:updateExercises();
 
-	self.barHgt = FONT_HGT_SMALL + 2 * 2
+	self.barHgt = BUTTON_HGT
 	self.barY = self.exercises:getBottom() + 10
 	local barBottom = self.barY + self.barHgt
 
@@ -95,7 +95,7 @@ function ISFitnessUI:initialise()
 	self.timeLbl:instantiate();
 	self:addChild(self.timeLbl)
 
-	self.exeTime = ISTextEntryBox:new("10", self.timeLbl.x, self.timeLbl.y + self.timeLbl:getHeight() + 7, 30, FONT_HGT_MEDIUM + 2 * 2)
+	self.exeTime = ISTextEntryBox:new("10", self.timeLbl.x, self.timeLbl.y + self.timeLbl:getHeight() + 7, BUTTON_HGT, BUTTON_HGT)
 	self.exeTime:initialise();
 	self.exeTime:instantiate();
 	self.exeTime.font = UIFont.Medium
@@ -104,19 +104,19 @@ function ISFitnessUI:initialise()
 	self:addChild(self.exeTime)
 
 	-- +/- buttons
-	self.plusBtn = ISButton:new(self.exeTime.x + self.exeTime:getWidth() + 5, self.exeTime.y, self.exeTime:getHeight(), self.exeTime:getHeight(), "+", self, self.onClickTime)
+	self.plusBtn = ISButton:new(self.exeTime.x + self.exeTime:getWidth() + UI_BORDER_SPACING, self.exeTime.y, BUTTON_HGT, BUTTON_HGT, "+", self, self.onClickTime)
 	self.plusBtn:initialise();
 	self.plusBtn:instantiate();
 	self.plusBtn.internal = "TIMEPLUS";
 	self:addChild(self.plusBtn)
 	
-	self.minusBtn = ISButton:new(self.plusBtn.x + self.plusBtn:getWidth() + 2, self.exeTime.y, self.exeTime:getHeight(), self.exeTime:getHeight(), "-", self, self.onClickTime)
+	self.minusBtn = ISButton:new(self.plusBtn.x + self.plusBtn:getWidth() + UI_BORDER_SPACING, self.exeTime.y, BUTTON_HGT, BUTTON_HGT, "-", self, self.onClickTime)
 	self.minusBtn:initialise();
 	self.minusBtn:instantiate();
 	self.minusBtn.internal = "TIMEMINUS";
 	self:addChild(self.minusBtn)
 
-	self:setHeight(self.minusBtn:getBottom() + 10 + btnHgt + padBottom)
+	self:setHeight(self.minusBtn:getBottom() + 10 + BUTTON_HGT + UI_BORDER_SPACING + 1)
 
 	-- tooltip of selected exercise
 	self.tooltipLbl = ISRichTextPanel:new(self.exercises.x + self.exercises:getWidth() + 10, self.exercises.y, self:getWidth() - (self.exercises.x + self.exercises:getWidth() + 20), 150);
@@ -207,10 +207,8 @@ function ISFitnessUI:addExerciseToList(type, data)
 	local text = data.name;
 	local enabled = true;
 	if data.item and not self.player:getInventory():contains(data.item, true) then
-		local option = self.exercises.options[index];
-		local item = InventoryItemFactory.CreateItem(data.item);
 		enabled = false;
-		text = text .. getText("IGUI_FitnessNeedItem", item:getDisplayName())
+		text = text .. getText("IGUI_FitnessNeedItem", getItemDisplayName(data.item))
 	end
 	self.exercises:addOption(text, type, nil, enabled);
 end
@@ -330,7 +328,8 @@ function ISFitnessUI:onClick(button)
 	if button.internal == "OK" then
 		local haveItem = self:equipItems();
 		if not haveItem then return; end
-		local action = ISFitnessAction:new(self.player, self.selectedExe, tonumber(self.exeTime:getInternalText()), self, self.exeData);
+		local action = ISFitnessAction:new(self.player, self.selectedExe, tonumber(self.exeTime:getInternalText()), self.exeData, self.exeData.type);
+		action.fitnessUI = self;
 		ISTimedActionQueue.add(action);
 	elseif button.internal == "CLOSE" then
 		self:setVisible(false);
@@ -390,7 +389,7 @@ function ISFitnessUI:new(x, y, width, height, player, clickedSquare)
 
 	local o = ISPanelJoypad.new(self, x, y, width, height);
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-	o.backgroundColor = {r=0, g=0, b=0, a=0.6};
+	o.backgroundColor = {r=0, g=0, b=0, a=0.9};
 	o.width = width;
 	o.titleY = 10
 	o.height = height;

@@ -21,10 +21,14 @@ Vehicles.elaspedMinutesForEngine = {};
 -- Jerry Cans are typically 20L, 10L, or 5L
 Vehicles.JerryCanLitres = 10
 
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
+
 function Vehicles.ContainerAccess.TruckBed(vehicle, part, chr)
 	if chr:getVehicle() then return false end
 	if not vehicle:isInArea(part:getArea(), chr) then return false end
-	local trunkDoor = vehicle:getPartById("TrunkDoor") or vehicle:getPartById("DoorRear")
+	local trunkDoor = vehicle:getPartById("TrunkDoor") or vehicle:getPartById("DoorRear") or vehicle:getPartById("TrunkDoorOpened")
 	if trunkDoor and trunkDoor:getDoor() then
 		if not trunkDoor:getInventoryItem() then return true end
 		if not trunkDoor:getDoor():isOpen() then return false end
@@ -39,17 +43,36 @@ function Vehicles.ContainerAccess.TruckBedOpen(vehicle, part, chr)
 	return true
 end
 
+function Vehicles.ContainerAccess.TruckBedOpenInside(vehicle, part, chr)
+	if chr:getVehicle() and chr:getVehicle() == vehicle then
+	    if vehicle:getMaxPassengers() > 2 then
+	        local seat = vehicle:getSeat(chr)
+			local areaId = vehicle:getPassengerArea(seat)
+			return areaId:contains("SeatRear")
+	    end
+	    return true
+	end
+	if not vehicle:isInArea(part:getArea(), chr) then return false end
+	local trunkDoor = vehicle:getPartById("TrunkDoor") or vehicle:getPartById("DoorRear")
+	if trunkDoor and trunkDoor:getDoor() then
+		if not trunkDoor:getInventoryItem() then return true end
+		if not trunkDoor:getDoor():isOpen() then return false end
+	end
+--	if part:getInventoryItem() and not chr:getInventory():haveThisKeyId(vehicle:getKeyId()) then return false end
+	return true
+end
+
 function Vehicles.ContainerAccess.Seat(vehicle, part, chr)
 	if not part:getInventoryItem() then return false; end
 	local seat = part:getContainerSeatNumber()
 	-- Can't put stuff on an occupied seat.
-	if seat ~= -1 and vehicle:getCharacter(seat) then
-		return false
-	end
+	-- if seat ~= -1 and vehicle:getCharacter(seat) then
+		-- return false
+	-- end
 	if chr:getVehicle() == vehicle then
 		-- Can the seated player reach the other seat?
-		return vehicle:canSwitchSeat(vehicle:getSeat(chr), seat) and
-				not vehicle:getCharacter(seat)
+		return vehicle:canSwitchSeat(vehicle:getSeat(chr), seat) or vehicle:getCharacter(seat) == chr
+		-- return vehicle:canSwitchSeat(vehicle:getSeat(chr), seat) and not vehicle:getCharacter(seat)
 	elseif chr:getVehicle() then
 		-- Can't reach seat from inside a different vehicle.
 		return false
@@ -152,6 +175,13 @@ function Vehicles.Create.Door(vehicle, part)
 	part:getDoor():setOpen(false);
 	part:getDoor():setLocked(locked);
 	part:getDoor():setLockBroken(ZombRand(1,100) < 5 ) -- 5%
+end
+
+function Vehicles.Create.TrunkDoorOpen(vehicle, part)
+	local item = VehicleUtils.createPartInventoryItem(part)
+	part:getDoor():setOpen(false)
+	part:getDoor():setLocked(false)
+	part:getDoor():setLockBroken(false)
 end
 
 function Vehicles.Create.TrunkDoor(vehicle, part)
@@ -399,6 +429,15 @@ function Vehicles.Update.EngineDoor(vehicle, part, elapsedMinutes)
 	
 end
 
+-- used to update animals after meta, it's a hack but doing so i don't have to recode a lot of meta stuff
+function Vehicles.Update.TrailerAnimalFood(vehicle, part, elapsedMinutes)
+	if elapsedMinutes >= 60 then
+		for i=0, vehicle:getAnimals():size()-1 do
+			vehicle:getAnimals():get(i):updateStatsAway(math.floor(elapsedMinutes / 60));
+		end
+	end
+end
+
 function Vehicles.Update.GasTank(vehicle, part, elapsedMinutes)
 	local invItem = part:getInventoryItem();
 	if not invItem then return; end
@@ -457,7 +496,7 @@ end
 
 function Vehicles.Update.Battery(vehicle, part, elapsedMinutes)
 	if part:getInventoryItem() then
-		local chargeOld = part:getInventoryItem():getUsedDelta()
+		local chargeOld = part:getInventoryItem():getCurrentUsesFloat()
 		local charge = chargeOld
 		-- Starting the engine drains the battery
 		local engineStarted = vehicle:isEngineRunning()
@@ -620,7 +659,10 @@ function Vehicles.Update.PassengerCompartment(vehicle, part, elapsedMinutes)
 	local pcData = pc:getModData()
 	if not pcData.windowtemperature then pcData.windowtemperature = 0.0; end
 	if not pcData.temperature then pcData.temperature = 0.0; end
-	if vehicle:windowsOpen() > 0 then
+	if vehicle:windowsOpen() > 0 and vehicle:getSquare():isInARoom() then
+		pcData.temperature = math.max(pcData.temperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, 0);
+		pcData.windowtemperature = math.max(pcData.windowtemperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, 0);
+	elseif vehicle:windowsOpen() > 0 then
 		pcData.temperature = math.max(pcData.temperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, -5);
 		pcData.windowtemperature = math.max(pcData.windowtemperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, 0);
 	else
@@ -726,7 +768,13 @@ function Vehicles.Update.Tire(vehicle, part, elapsedMinutes)
 		-- then because of condition
 		if part:getCondition() < 15 then
 			local condMod = (100 - part:getCondition())  / 350;
-			if part:getCondition() == 0 or ZombRandFloat(0, 100) < condMod then VehicleUtils.RemoveTire(part, true); end
+			if part:getCondition() == 0 or ZombRandFloat(0, 100) < condMod then
+				VehicleUtils.RemoveTire(part, true);
+				local driver = vehicle:getDriver()
+				if instanceof(driver, "IsoPlayer") and driver:isLocalPlayer() then
+					driver:triggerMusicIntensityEvent("VehicleTireExplode")
+				end
+			end
 		end
 	end
 end
@@ -792,7 +840,7 @@ function Vehicles.Use.EngineDoor(vehicle, part, character)
 			ui:close()
 		end
 		if not closed then
-			ISTimedActionQueue.add(ISCloseVehicleDoor:new(character, vehicle, part))
+			ISTimedActionQueue.add(ISOpenMechanicsUIAction:new(character, vehicle, part))
 		end
 	else
 		-- The hood is magically unlocked if any door/window is broken/open/uninstalled.
@@ -802,6 +850,15 @@ function Vehicles.Use.EngineDoor(vehicle, part, character)
 		end
 		ISTimedActionQueue.add(ISOpenVehicleDoor:new(character, vehicle, part))
 		ISTimedActionQueue.add(ISOpenMechanicsUIAction:new(character, vehicle, part))
+	end
+end
+
+function Vehicles.Use.TrunkDoorOpen(vehicle, part, character)
+	if not part:getInventoryItem() then return end
+	if part:getDoor():isOpen() then
+		ISTimedActionQueue.add(ISCloseVehicleDoor:new(character, vehicle, part))
+	else
+		ISTimedActionQueue.add(ISOpenVehicleDoor:new(character, vehicle, part))
 	end
 end
 
@@ -837,7 +894,7 @@ function Vehicles.InstallTest.Default(vehicle, part, chr)
 	if not keyvalues then return false end
 	if part:getInventoryItem() then return false end
 	if not part:getItemType() or part:getItemType():isEmpty() then return false end
-	local typeToItem = VehicleUtils.getItems(chr:getPlayerNum())
+	local typeToItem,tagToItem = VehicleUtils.getItems(chr:getPlayerNum())
 	if keyvalues.requireInstalled then
 		local split = keyvalues.requireInstalled:split(";");
 		for i,v in ipairs(split) do
@@ -849,7 +906,7 @@ function Vehicles.InstallTest.Default(vehicle, part, chr)
 --	if not VehicleUtils.testPerks(chr, keyvalues.skills) then return false end
 	if not VehicleUtils.testRecipes(chr, keyvalues.recipes) then return false end
 	if not VehicleUtils.testTraits(chr, keyvalues.traits) then return false end
-	if not VehicleUtils.testItems(chr, keyvalues.items, typeToItem) then return false end
+	if not VehicleUtils.testItems(chr, keyvalues.items, typeToItem, tagToItem) then return false end
 	-- if doing mechanics on this part require key but player doesn't have it, we'll check that door or windows aren't unlocked also
 	if VehicleUtils.RequiredKeyNotFound(part, chr) then
 		return false;
@@ -876,7 +933,7 @@ function Vehicles.UninstallTest.Default(vehicle, part, chr)
 	if not keyvalues then return false end
 	if not part:getInventoryItem() then return false end
 	if not part:getItemType() or part:getItemType():isEmpty() then return false end
-	local typeToItem = VehicleUtils.getItems(chr:getPlayerNum())
+	local typeToItem,tagToItem = VehicleUtils.getItems(chr:getPlayerNum())
 	if keyvalues.requireUninstalled and (vehicle:getPartById(keyvalues.requireUninstalled) and vehicle:getPartById(keyvalues.requireUninstalled):getInventoryItem()) then
 		return false;
 	end
@@ -885,7 +942,7 @@ function Vehicles.UninstallTest.Default(vehicle, part, chr)
 --	if not VehicleUtils.testPerks(chr, keyvalues.skills) then return false end
 	if not VehicleUtils.testRecipes(chr, keyvalues.recipes) then return false end
 	if not VehicleUtils.testTraits(chr, keyvalues.traits) then return false end
-	if not VehicleUtils.testItems(chr, keyvalues.items, typeToItem) then return false end
+	if not VehicleUtils.testItems(chr, keyvalues.items, typeToItem, tagToItem) then return false end
 	if keyvalues.requireEmpty and round(part:getContainerContentAmount(), 3) > 0 then return false end
 	local seatNumber = part:getContainerSeatNumber()
 	local seatOccupied = (seatNumber ~= -1) and vehicle:isSeatOccupied(seatNumber)
@@ -957,12 +1014,19 @@ end
 function VehicleUtils.getItems(playerNum)
 	local containers = VehicleUtils.getContainers(playerNum)
 	local typeToItem = {}
+	local tagToItem = {}
 	for _,container in ipairs(containers) do
 		for i=1,container:getItems():size() do
 			local item = container:getItems():get(i-1)
 			if item:getCondition() > 0 then
 				typeToItem[item:getFullType()] = typeToItem[item:getFullType()] or {}
 				table.insert(typeToItem[item:getFullType()], item)
+				local tags = item:getTags()
+				for j=1,tags:size() do
+					local tag = tags:get(j-1)
+					tagToItem[tag] = tagToItem[tag] or {}
+					table.insert(tagToItem[tag], item)
+				end
 				-- This isn't needed for Radios any longer.  There was a bug setting
 				-- the item type to Radio.worldSprite, but that no longer happens.
 				if instanceof(item, "Moveable") and item:getWorldSprite() then
@@ -975,7 +1039,7 @@ function VehicleUtils.getItems(playerNum)
 			end
 		end
 	end
-	return typeToItem
+	return typeToItem,tagToItem
 end
 
 function VehicleUtils.split(string, pattern)
@@ -1016,14 +1080,61 @@ function VehicleUtils.testRecipes(chr, recipes)
 	return true
 end
 
-function VehicleUtils.testItems(chr, items, typeToItem)
+function VehicleUtils.testItems(chr, items, typeToItem, tagToItem)
 	if not items then return true end
 	for _,item in pairs(items) do
-		if not typeToItem[item.type] then return false end
+		local hasItemWithType = false
+		local hasItemWithTag = false
+		if item.type ~= nil then
+			hasItemWithType = typeToItem[item.type] ~= nil
+		end
+		if (tagToItem ~= nil) and (item.tags ~= nil) then
+			local tags = item.tags:split(";")
+			for _,tag in ipairs(tags) do
+				hasItemWithTag = tagToItem[tag] ~= nil
+				if hasItemWithTag then
+					break
+				end
+			end
+		end
+		if not hasItemWithType and not hasItemWithTag then return false end
+		-- if item.count and not chr:getInventory():getFirstTagEvalRecurse(item.type, predicateNotBroken) then
 		if item.count then
 		end
 	end
 	return true
+end
+
+function VehicleUtils.getItemScripts(items)
+	if not items then return {} end
+	local result = {}
+	for _,item in pairs(items) do
+		local itemTable = { item=item, scripts={} }
+		table.insert(result, itemTable)
+		if item.type then
+			local scriptItem = getItem(item.type)
+			if scriptItem then
+				table.insert(itemTable.scripts, { script=scriptItem } )
+			else
+				table.insert(itemTable.scripts, { unknownType=item.type })
+			end
+		end
+		if item.tags then
+			local tags = item.tags:split(";")
+			for _,tag in ipairs(tags) do
+				local allItems = getScriptManager():getAllItemsWithTag(tag)
+				if (allItems ~= nil) and not allItems:isEmpty() then
+					for i=1,allItems:size() do
+						local scriptItem = allItems:get(i-1)
+						table.insert(itemTable.scripts, { script=scriptItem })
+					end
+				else
+					table.insert(itemTable.scripts, { unknownTag=tag })
+				end
+			end
+		end
+	end
+	return result
 end
 
 function VehicleUtils.createPartInventoryItem(part)
@@ -1052,7 +1163,7 @@ function VehicleUtils.createPartInventoryItem(part)
 				end
 			end
 
-			item = InventoryItemFactory.CreateItem(itemType);
+			item = instanceItem(itemType);
 			local conditionMultiply = 100/item:getConditionMax();
 			if part:getContainerCapacity() and part:getContainerCapacity() > 0 then
 				item:setMaxCapacity(part:getContainerCapacity());
@@ -1060,7 +1171,7 @@ function VehicleUtils.createPartInventoryItem(part)
 			item:setConditionMax(item:getConditionMax()*conditionMultiply);
 			item:setCondition(item:getCondition()*conditionMultiply);
 --		else
---			item = InventoryItemFactory.CreateItem(part:getItemType():get(0));
+--			item = instanceItem(part:getItemType():get(0));
 --		end
 --		if not item then return; end
 		part:setRandomCondition(item);
@@ -1083,17 +1194,17 @@ function VehicleUtils.createPartInventoryItem_Radio(part)
 			for i=0, part:getItemType():size() - 1 do
 				if ZombRand(100) > (100 - (100/part:getItemType():size())) or i == part:getItemType():size() - 1 then
 					itemType = part:getItemType():get(i);				
-					itemType = itemType:gsub("Radio.RadioMakeShift", "Radio.RadioBlack");
+					itemType = itemType:gsub("Base.RadioMakeShift", "Base.RadioBlack");
 					v:getChoosenParts():put(chosenKey, itemType);
 					break;
 				end
 			end
 		end
 		if v:getScript():getName():contains("Modern") or  v:getScript():getName():contains("Luxury") then				
-			itemType = itemType:gsub("Radio.RadioBlack", "Radio.RadioRed");
+			itemType = itemType:gsub("Base.RadioBlack", "Base.RadioRed");
 			v:getChoosenParts():put(chosenKey, itemType);
 		end
-		item = InventoryItemFactory.CreateItem(itemType);
+		item = instanceItem(itemType);
 		local conditionMultiply = 100/item:getConditionMax();
 		if part:getContainerCapacity() and part:getContainerCapacity() > 0 then
 			item:setMaxCapacity(part:getContainerCapacity());
@@ -1120,20 +1231,20 @@ function VehicleUtils.createPartInventoryItem_HAMRadio(part)
 			for i=0, part:getItemType():size() - 1 do
 				if ZombRand(100) > (100 - (100/part:getItemType():size())) or i == part:getItemType():size() - 1 then
 					itemType = part:getItemType():get(i);
-					itemType = itemType:gsub("Radio.HamRadioMakeShift", "Radio.HamRadio1");
+					itemType = itemType:gsub("Base.HamRadioMakeShift", "Base.HamRadio1");
 					v:getChoosenParts():put(chosenKey, itemType);
 					break;
 				end
 			end
 		end
 		if v:getScript():getName():contains("Police") then				
-			itemType = itemType:gsub("Radio.HamRadio1", "Radio.HamRadio2");	
+			itemType = itemType:gsub("Base.HamRadio1", "Base.HamRadio2");	
 			v:getChoosenParts():put(chosenKey, itemType);
 		else			
-			itemType = itemType:gsub("Radio.HamRadio2", "Radio.HamRadio1");
+			itemType = itemType:gsub("Base.HamRadio2", "Base.HamRadio1");
 			v:getChoosenParts():put(chosenKey, itemType);			
 		end
-		item = InventoryItemFactory.CreateItem(itemType);
+		item = instanceItem(itemType);
 		local conditionMultiply = 100/item:getConditionMax();
 		if part:getContainerCapacity() and part:getContainerCapacity() > 0 then
 			item:setMaxCapacity(part:getContainerCapacity());
@@ -1183,7 +1294,7 @@ function VehicleUtils.chargeBattery(vehicle, delta)
 	local battery = vehicle:getBattery()
 	if not battery then return end
 	if not battery:getInventoryItem() then return end
-	local chargeOld = battery:getInventoryItem():getUsedDelta()
+	local chargeOld = battery:getInventoryItem():getCurrentUsesFloat()
 	local charge = chargeOld
 	charge = math.max(charge + delta, 0.0)
 	charge = math.min(charge + delta, 1.0)

@@ -5,7 +5,7 @@
 require "ISUI/ISScrollingListBox"
 require "DebugUIs/DebugChunkState/ISSectionedPanel"
 
-local FONT_HGT_CONSOLE = getTextManager():getFontHeight(UIFont.DebugConsole)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 -----
 
@@ -51,7 +51,7 @@ function BasePropertiesPanel:postrender()
 end
 
 function BasePropertiesPanel:onMouseWheel(del)
-	self:setYScroll(self:getYScroll() - (del * FONT_HGT_CONSOLE * 2))
+	self:setYScroll(self:getYScroll() - (del * FONT_HGT_SMALL * 2))
     return true
 end
 
@@ -61,8 +61,8 @@ function BasePropertiesPanel:addLine(text, arg0, arg1, arg2, arg3, arg4)
 	if type(arg2) == "boolean" or type(arg2) == "table" or type(arg2) == "userdata" then arg2 = tostring(arg2) end
 	if type(arg3) == "boolean" or type(arg3) == "table" or type(arg3) == "userdata" then arg3 = tostring(arg3) end
 	if type(arg4) == "boolean" or type(arg4) == "table" or type(arg4) == "userdata" then arg4 = tostring(arg4) end
-	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.DebugConsole)
-	self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.Small)
+	self.addLineY = self.addLineY + FONT_HGT_SMALL
 end
 
 function BasePropertiesPanel:renderKeyValue(k, v)
@@ -184,16 +184,16 @@ local function deriveOPH(name)
 	return oph
 end
 
-local OPH_IsoGenerator = deriveOPH("IsoGenerator")
+local OPH_IsoGenerator = deriveOPH(getText("IGUI_GlobalObject_IsoGenerator")) --not sure if getText() will break this. if it does, revert to "IsoGenerator"
 function OPH_IsoGenerator:render1()
 	if not self.system then return end
 	local isoObject = self.system:getModData():getIsoObjectAt(self.objectPos.x, self.objectPos.y, self.objectPos.z)
 	if not isoObject then return end
-	self:addLine("Activated = %s", isoObject:isActivated())
-	self:addLine("Condition = %d", isoObject:getCondition())
-	self:addLine("Fuel = %.2f", isoObject:getFuel())
+	self:addLine(getText("IGUI_GlobalObject_Activated") .. ": %s", isoObject:isActivated())
+	self:addLine(getText("IGUI_GlobalObject_Condition") .. ": %d", isoObject:getCondition())
+	self:addLine(getText("IGUI_GlobalObject_Fuel") .. ": %.2f", isoObject:getFuel())
 
-	self:addLine("connected locations: %d", isoObject:getConnectedLocationCount())
+	self:addLine(getText("IGUI_GlobalObject_ConnectedLocations") .. ": %d", isoObject:getConnectedLocationCount())
 	self.addLineX = self.addLineX + 10
 	for i=1,isoObject:getConnectedLocationCount() do
 		local pos = isoObject:getConnectedLocation(i-1)
@@ -201,10 +201,10 @@ function OPH_IsoGenerator:render1()
 	end
 	self.addLineX = self.addLineX - 10
 
-	self:addLine("connected building:")
+	self:addLine(getText("IGUI_GlobalObject_ConnectedBuilding"))
 	self.addLineX = self.addLineX + 10
 	local cb = isoObject:getConnectedBuilding()
-	self:addLine("cellX=%d, cellY=%d, buildingID=%d", cb:getCellX(), cb:getCellY(), cb:getBuildingID())
+	self:addLine(getText("IGUI_GlobalObject_CellX") .. "=%d, " .. getText("IGUI_GlobalObject_CellY") .."=%d, " .. getText("IGUI_GlobalObject_BuildingID") .."=%d", cb:getCellX(), cb:getCellY(), cb:getBuildingID())
 	self.addLineX = self.addLineX - 10
 end
 
@@ -214,9 +214,9 @@ DebugGlobalObjectState_PropertiesPanel = ISSectionedPanel:derive("DebugGlobalObj
 local PropertiesPanel = DebugGlobalObjectState_PropertiesPanel
 
 function PropertiesPanel:createChildren()
-	self:addSection(SystemPanel:new(0, 0, self.width, 200, self.state), "System ModData")
-	self:addSection(GlobalObjectPanel:new(0, 0, self.width, 200, self.state), "GlobalObject ModData")
-	self:addSection(IsoObjectPanel:new(0, 0, self.width, 200, self.state), "IsoObject ModData")
+	self:addSection(SystemPanel:new(0, 0, self.width, 200, self.state), getText("IGUI_GlobalObject_SystemModData"))
+	self:addSection(GlobalObjectPanel:new(0, 0, self.width, 200, self.state), getText("IGUI_GlobalObject_GlobalObjects"))
+	self:addSection(IsoObjectPanel:new(0, 0, self.width, 200, self.state), getText("IGUI_GlobalObject_IsoObjectModData"))
 	for _,oph in ipairs(OPH) do
 		self:addSection(oph:new(0, 0, self.width, 50), oph.className)
 	end

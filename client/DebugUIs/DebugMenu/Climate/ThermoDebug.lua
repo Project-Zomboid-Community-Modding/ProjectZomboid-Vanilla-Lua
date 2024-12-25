@@ -7,6 +7,9 @@ ThermoDebug = {};
 
 ThermoDebug = ISCollapsableWindow:derive("ThermoDebug");
 ThermoDebug.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
 
 function ThermoDebug.OnOpenPanel()
     if ThermoDebug.instance==nil then
@@ -36,15 +39,16 @@ function ThermoDebug:createChildren()
 
     local th = self:titleBarHeight();
 
-    th = th+ 5;
+    th = th + UI_BORDER_SPACING+1;
 
-    local y,btn = ISDebugUtils.addButton(self, {}, 5, th, self.width-10, 20, "read values", ThermoDebug.onButton);
+    local y,btn = ISDebugUtils.addButton(self, {}, UI_BORDER_SPACING+1, th, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("IGUI_ThermoDebug_ReadValues"), ThermoDebug.onButton);
 
-    y = y+5;
+    y = y + UI_BORDER_SPACING;
 
-    self.setY = y;
+    --avoid using setY, as that breaks the window dragging
 
-    self.richtext = ISRichTextPanel:new(0, 0+y, self.width, self.height-(y+10));
+    self.richtext = ISRichTextPanel:new(0, y, self.width, self.height - th - UI_BORDER_SPACING*2 - 2 - BUTTON_HGT);
+    --height minus height of title bar, button, bottom bar, and 5px gaps above and below the button^
     self.richtext:initialise();
 
     self:addChild(self.richtext);
@@ -66,7 +70,7 @@ function ThermoDebug:onResize()
     ISUIElement.onResize(self);
     local th = self:titleBarHeight();
     self.richtext:setWidth(self.width);
-    self.richtext:setHeight(self.height-(self.setY+10));
+    self.richtext:setHeight(self.height - th - UI_BORDER_SPACING*2 - 2 - BUTTON_HGT);
 end
 
 function ThermoDebug:update()
@@ -90,30 +94,30 @@ function ThermoDebug:readThermos()
         local n = thermos:getNode(i);
 
         self:addTitle(n:getName());
-        self:addLine("upStream", n:hasUpstream());
-        self:addLine("downStream", n:hasDownstream());
-        self:addLine("distCore", n:getDistToCore());
-        self:addLine("skinSurfsace", n:getSkinSurface());
-        self:addLine("isCore", n:isCore());
-        self:addLine("insulation", n:getInsulation());
-        self:addLine("windResist", n:getWindresist());
-        self:addLine("celcius", n:getCelcius());
-        self:addLine("skinCelcius", n:getSkinCelcius());
-        self:addLine("heatDelta", n:getHeatDelta());
-        self:addLine("PRIMARY", n:getPrimaryDelta());
-        self:addLine("SECONDARY", n:getSecondaryDelta());
-        self:addLine("clothingWetness", n:getClothingWetness());
-        self:addLine("bodyWetness", n:getBodyWetness());
-        self:addLine("bodyResponse", n:getBodyResponse());
-        self:addLine("UI skinCelius", n:getSkinCelciusUI());
-        self:addLine("UI heatDelta", n:getHeatDeltaUI());
-        self:addLine("UI primary", n:getPrimaryDeltaUI());
-        self:addLine("UI secondary", n:getSecondaryDeltaUI());
-        self:addLine("UI insulation", n:getInsulationUI());
-        self:addLine("UI windresist", n:getWindresistUI());
-        self:addLine("UI clothingWetness", n:getClothingWetnessUI());
-        self:addLine("UI bodyWetness", n:getBodyWetnessUI());
-        self:addLine("UI bodyResponse", n:getBodyResponseUI());
+        self:addLine(getText("IGUI_ThermoDebug_UpStream"), n:hasUpstream());
+        self:addLine(getText("IGUI_ThermoDebug_DownStream"), n:hasDownstream());
+        self:addLine(getText("IGUI_ThermoDebug_DistCore"), n:getDistToCore());
+        self:addLine(getText("IGUI_ThermoDebug_SkinSurface"), n:getSkinSurface());
+        self:addLine(getText("IGUI_ThermoDebug_IsCore"), n:isCore());
+        self:addLine(getText("IGUI_ThermoDebug_Insulation"), n:getInsulation());
+        self:addLine(getText("IGUI_ThermoDebug_WindResist"), n:getWindresist());
+        self:addLine(getText("IGUI_ThermoDebug_Celcius"), n:getCelcius());
+        self:addLine(getText("IGUI_ThermoDebug_SkinCelcius"), n:getSkinCelcius());
+        self:addLine(getText("IGUI_ThermoDebug_HeatDelta"), n:getHeatDelta());
+        self:addLine(getText("IGUI_ThermoDebug_Primary"), n:getPrimaryDelta());
+        self:addLine(getText("IGUI_ThermoDebug_Secondary"), n:getSecondaryDelta());
+        self:addLine(getText("IGUI_ThermoDebug_ClothingWetness"), n:getClothingWetness());
+        self:addLine(getText("IGUI_ThermoDebug_BodyWetness"), n:getBodyWetness());
+        self:addLine(getText("IGUI_ThermoDebug_BodyResponse"), n:getBodyResponse());
+        self:addLine(getText("IGUI_ThermoDebug_UIskinCelius"), n:getSkinCelciusUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIHeatDelta"), n:getHeatDeltaUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIPrimary"), n:getPrimaryDeltaUI());
+        self:addLine(getText("IGUI_ThermoDebug_UISecondary"), n:getSecondaryDeltaUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIInsulation"), n:getInsulationUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIWindResist"), n:getWindresistUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIClothingWetness"), n:getClothingWetnessUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIBodyWetness"), n:getBodyWetnessUI());
+        self:addLine(getText("IGUI_ThermoDebug_UIBodyResponse"), n:getBodyResponseUI());
     end
 
     self.richtext.text = self.tmpTxt;
@@ -165,7 +169,7 @@ function ThermoDebug:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Thermoregulator debug";
+    o.title = getText("IGUI_ClimDebuggers_Thermoregulator");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;

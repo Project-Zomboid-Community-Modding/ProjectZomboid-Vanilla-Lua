@@ -6,6 +6,9 @@ ISItemsListViewer = ISPanel:derive("ISItemsListViewer");
 ISItemsListViewer.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISItemsListViewer:initialise
@@ -14,11 +17,9 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 function ISItemsListViewer:initialise()
     ISPanel.initialise(self);
-    local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
+    local btnWid = getTextManager():MeasureStringX(UIFont.Small, "Player 1")+50
 
-    self.playerSelect = ISComboBox:new(self.width - 10 - btnWid, 10, btnWid, btnHgt, self, self.onSelectPlayer)
+    self.playerSelect = ISComboBox:new(self.width - UI_BORDER_SPACING - btnWid - 1, UI_BORDER_SPACING + 1, btnWid, BUTTON_HGT, self, self.onSelectPlayer)
     self.playerSelect:initialise()
     self.playerSelect:addOption("Player 1")
     self.playerSelect:addOption("Player 2")
@@ -26,22 +27,22 @@ function ISItemsListViewer:initialise()
     self.playerSelect:addOption("Player 4")
     self:addChild(self.playerSelect)
 
-    local top = 50
-    self.panel = ISTabPanel:new(10, top, self.width - 10 * 2, self.height - padBottom - btnHgt - padBottom - top);
-    self.panel:initialise();
-    self.panel.borderColor = { r = 0, g = 0, b = 0, a = 0};
-    self.panel.target = self;
-    self.panel.equalTabWidth = false
-    self:addChild(self.panel);
-
-    self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISItemsListViewer.onClick);
+    self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISItemsListViewer.onClick);
     self.ok.internal = "CLOSE";
     self.ok.anchorTop = false
     self.ok.anchorBottom = true
     self.ok:initialise();
     self.ok:instantiate();
-    self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:enableCancelColor()
     self:addChild(self.ok);
+
+    local top = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM+1
+    self.panel = ISTabPanel:new(UI_BORDER_SPACING+1, top, self.width - (UI_BORDER_SPACING+1)*2, self.ok.y - UI_BORDER_SPACING - top);
+    self.panel:initialise();
+    self.panel.borderColor = { r = 0, g = 0, b = 0, a = 0};
+    self.panel.target = self;
+    self.panel.equalTabWidth = false
+    self:addChild(self.panel);
     
     self:initList();
 end
@@ -98,12 +99,9 @@ function ISItemsListViewer:initList()
 end
 
 function ISItemsListViewer:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_ItemList"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_ItemList")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_AdminPanel_ItemList"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_ItemList")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISItemsListViewer:onClick(button)
@@ -134,7 +132,7 @@ function ISItemsListViewer.OnOpenPanel()
         ISItemsListViewer.instance:setKeyboardFocus()
         return
     end
-    local modal = ISItemsListViewer:new(50, 200, 850, 650)
+    local modal = ISItemsListViewer:new(50, 200, 1150+(getCore():getOptionFontSizeReal()*50), 650+(getCore():getOptionFontSizeReal()*50))
     modal:initialise();
     modal:addToUIManager();
     modal.instance:setKeyboardFocus()

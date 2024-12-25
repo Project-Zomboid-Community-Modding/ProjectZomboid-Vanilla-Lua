@@ -200,7 +200,7 @@ function ISTradingUI:update()
 end
 
 function ISTradingUI:removeItem(item)
-    tradingUISendRemoveItem(self.player, self.otherPlayer, item.index);
+    tradingUISendRemoveItem(self.player, self.otherPlayer, item.item);
     self.yourOfferDatas:removeItemByIndex(item.index);
     ISTradingUI.instance.otherSealedOffer = false;
 end
@@ -389,17 +389,8 @@ function ISTradingUI:onClick(button)
 end
 
 function ISTradingUI:finalizeDeal()
-    local itemsToGive = {};
-    for i,v in ipairs(self.yourOfferDatas.items) do
-        table.insert(itemsToGive, v.item);
-    end
-    local itemsToReceive = {};
-    for i,v in ipairs(self.hisOfferDatas.items) do
-        table.insert(itemsToReceive, v.item);
-    end
     self:setVisible(false);
     self:removeFromUIManager();
-    ISTimedActionQueue.add(ISFinalizeDealAction:new(self.player, self.otherPlayer, itemsToGive, itemsToReceive, (#itemsToGive + #itemsToReceive)));
 end
 
 --************************************************************************--
@@ -483,9 +474,22 @@ ISTradingUI.OtherAddNewItem = function(player, item)
     end
 end
 
+function ISTradingUI:getIndexFromItemId(itemId)
+    local itemsToReceive = {};
+    for i,v in ipairs(self.hisOfferDatas.items) do
+        table.insert(itemsToReceive, v.item);
+        if v.item:getID() == itemId then
+            return i;
+        end
+    end
+    return -1;
+end
+
 -- other player removed an item from his offer
-ISTradingUI.RemoveItem = function(player, index)
+ISTradingUI.RemoveItem = function(player, itemId)
     if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
+        local index = ISTradingUI.instance:getIndexFromItemId(itemId);
+        if index == -1 then return; end
         local itemRemoved = ISTradingUI.instance.hisOfferDatas.items[index];
         ISTradingUI.instance.hisOfferDatas:removeItemByIndex(index);
         ISTradingUI.instance:setHistoryMessage(getText("IGUI_TradingUI_RemovedItem", player:getDisplayName(), itemRemoved.item:getName()), true, false, true);

@@ -2,6 +2,10 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
+local group = AttachedLocations.getGroup("Animal")
+group:getOrCreateLocation("head_hat"):setAttachmentName("head_hat")
+group:getOrCreateLocation("bowtie"):setAttachmentName("bowtie")
+
 local group = AttachedLocations.getGroup("Human")
 --group:getOrCreateLocation("Knife Belt Back"):setAttachmentName("knife_belt_back")
 --group:getOrCreateLocation("Knife Belt Front"):setAttachmentName("knife_belt_front")
@@ -40,6 +44,10 @@ group:getOrCreateLocation("Belt Right"):setAttachmentName("belt_right")
 group:getOrCreateLocation("Belt Left"):setAttachmentName("belt_left")
 group:getOrCreateLocation("Holster Right"):setAttachmentName("holster_right")
 group:getOrCreateLocation("Holster Left"):setAttachmentName("holster_left")
+-- group:getOrCreateLocation("Holster Shoulder"):setAttachmentName("holster_shoulder")
+-- group:getOrCreateLocation("Holster Ankle"):setAttachmentName("holster_ankle")
+group:getOrCreateLocation("Holster Shoulder"):setAttachmentName("ShoulderHolster")
+group:getOrCreateLocation("Holster Ankle"):setAttachmentName("AnkleHolster")
 group:getOrCreateLocation("Crowbar Back"):setAttachmentName("crowbar_back")
 group:getOrCreateLocation("Knife Left Leg"):setAttachmentName("knife_left_leg")
 group:getOrCreateLocation("Knife Right Leg"):setAttachmentName("knife_right_leg")
@@ -50,6 +58,15 @@ group:getOrCreateLocation("MeatCleaver in Back"):setAttachmentName("meatcleaver_
 group:getOrCreateLocation("JawStab"):setAttachmentName("knife_head")
 group:getOrCreateLocation("Stomach"):setAttachmentName("stomach")
 group:getOrCreateLocation("Knife in Back"):setAttachmentName("knife_in_back")
+--group:getOrCreateLocation("Knife Closed Left Leg"):setAttachmentName("belt_left_closed")
+--group:getOrCreateLocation("Knife Closed Right Leg"):setAttachmentName("belt_right_closed")
+group:getOrCreateLocation("Bedroll Bottom"):setAttachmentName("bedroll_bottom")
+group:getOrCreateLocation("Bedroll Bottom Big"):setAttachmentName("bedroll_bottom_big")
+group:getOrCreateLocation("Bedroll Bottom ALICE"):setAttachmentName("bedroll_bottom_alice")
+group:getOrCreateLocation("Webbing Right Knife"):setAttachmentName("webbing_right_knife")
+group:getOrCreateLocation("Webbing Left Knife"):setAttachmentName("webbing_left_knife")
+group:getOrCreateLocation("Webbing Right Walkie"):setAttachmentName("webbing_right_walkie")
+group:getOrCreateLocation("Webbing Left Walkie"):setAttachmentName("webbing_left_walkie")
 
 if getDebug() then
 	group:getOrCreateLocation("OnBack"):setAttachmentName("back")

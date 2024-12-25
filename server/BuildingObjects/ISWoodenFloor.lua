@@ -12,6 +12,7 @@ function ISWoodenFloor:create(x, y, z, north, sprite)
 	self.sq = getWorld():getCell():getGridSquare(x, y, z);
 	self.javaObject = self.sq:addFloor(sprite);
 	buildUtil.consumeMaterial(self);
+	self.javaObject:transmitCompleteItemToClients()
 
     for i=0,self.sq:getObjects():size()-1 do
         local object = self.sq:getObjects():get(i);
@@ -24,7 +25,7 @@ function ISWoodenFloor:create(x, y, z, north, sprite)
 
     self.sq:disableErosion();
     local args = { x = self.sq:getX(), y = self.sq:getY(), z = self.sq:getZ() }
-    sendClientCommand('erosion', 'disableForSquare', args)
+	sendServerCommand('erosion', 'disableForSquare', args)
 end
 
 function ISWoodenFloor:new(sprite, northSprite)
@@ -52,6 +53,10 @@ function ISWoodenFloor:isValid(square)
 		if (item:getTextureName() and luautils.stringStarts(item:getTextureName(), "vegetation_farming")) or
 				(item:getSpriteName() and luautils.stringStarts(item:getSpriteName(), "vegetation_farming")) then
 			return false;
+		end
+		if (item:getTextureName() and item:getTextureName() == self.sprite) or
+				(item:getSpriteName() and item:getSpriteName() == self.sprite) then
+			return false
 		end
 	end
 	return square:connectedWithFloor();

@@ -6,6 +6,8 @@ ISMiniScoreboardUI = ISPanel:derive("ISMiniScoreboardUI");
 ISMiniScoreboardUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISMiniScoreboardUI:initialise
@@ -14,23 +16,9 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 function ISMiniScoreboardUI:initialise()
     ISPanel.initialise(self);
-    local btnWid = 80
-    local btnHgt = FONT_HGT_SMALL + 2
+    local btnWid = 100
 
-    local y = 10 + FONT_HGT_SMALL + 10
-    self.playerList = ISScrollingListBox:new(10, y, self.width - 20, self.height - (5 + btnHgt + 5) - y);
-    self.playerList:initialise();
-    self.playerList:instantiate();
-    self.playerList.itemheight = FONT_HGT_SMALL + 2 * 2;
-    self.playerList.selected = 0;
-    self.playerList.joypadParent = self;
-    self.playerList.font = UIFont.NewSmall;
-    self.playerList.doDrawItem = self.drawPlayers;
-    self.playerList.drawBorder = true;
-    self.playerList.onRightMouseUp = ISMiniScoreboardUI.onRightMousePlayerList;
-    self:addChild(self.playerList);
-
-    self.no = ISButton:new(self.playerList.x + self.playerList.width - btnWid, self.playerList.y + self.playerList.height + 5, btnWid, btnHgt, getText("UI_btn_close"), self, ISMiniScoreboardUI.onClick);
+    self.no = ISButton:new(self.width - UI_BORDER_SPACING - btnWid - 1, self.height- UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_btn_close"), self, ISMiniScoreboardUI.onClick);
     self.no.internal = "CLOSE";
     self.no.anchorTop = false
     self.no.anchorBottom = true
@@ -38,6 +26,19 @@ function ISMiniScoreboardUI:initialise()
     self.no:instantiate();
     self.no.borderColor = {r=0.4, g=0.4, b=0.4, a=0.9};
     self:addChild(self.no);
+
+    local y = UI_BORDER_SPACING*2+1 + FONT_HGT_SMALL
+    self.playerList = ISScrollingListBox:new(UI_BORDER_SPACING+1, y, self.width - (UI_BORDER_SPACING+1)*2, self.no.y - y - UI_BORDER_SPACING - 1);
+    self.playerList:initialise();
+    self.playerList:instantiate();
+    self.playerList.itemheight = BUTTON_HGT;
+    self.playerList.selected = 0;
+    self.playerList.joypadParent = self;
+    self.playerList.font = UIFont.NewSmall;
+    self.playerList.doDrawItem = self.drawPlayers;
+    self.playerList.drawBorder = true;
+    self.playerList.onRightMouseUp = ISMiniScoreboardUI.onRightMousePlayerList;
+    self:addChild(self.playerList);
 
     scoreboardUpdate()
 end

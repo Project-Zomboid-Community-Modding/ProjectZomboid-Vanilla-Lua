@@ -8,6 +8,9 @@ ISMap = ISPanelJoypad:derive("ISMap");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 ISMapWrapper = ISCollapsableWindow:derive("ISMapWrapper");
 ISMapWrapper.__index = ISMapWrapper;
 
@@ -39,29 +42,40 @@ end
 
 function ISMap:createChildren()
     local symbolsWidth = ISWorldMapSymbols.RequiredWidth()
-    self.symbolsUI = ISWorldMapSymbols:new(self.width - 10 - symbolsWidth, 10, symbolsWidth, 200, self)
+    self.symbolsUI = ISWorldMapSymbols:new(self.width - UI_BORDER_SPACING - symbolsWidth - 1, UI_BORDER_SPACING, symbolsWidth, 200, self)
     self:addChild(self.symbolsUI)
     self.symbolsUI:setVisible(false)
 
-    local buttonHgt = FONT_HGT_SMALL + 6
-    local buttonPadBottom = 4
-    local buttonY = self.height - buttonPadBottom - buttonHgt
+    self.mapKey = ISWorldMapKey:new(UI_BORDER_SPACING, UI_BORDER_SPACING, 10, 200, self)
+    self:addChild(self.mapKey)
+    self.mapKey:setVisible(false)
 
-    self.ok = ISButton:new(10, buttonY, 100, buttonHgt, getText("UI_Close"), self, ISMap.onButtonClick);
+    local btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("UI_Close"))
+    self.ok = ISButton:new(UI_BORDER_SPACING+1, self.height - BUTTON_HGT - UI_BORDER_SPACING - 1, btnWidth, BUTTON_HGT, getText("UI_Close"), self, ISMap.onButtonClick);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.4};
     self:addChild(self.ok);
 
-    self.editSymbolsBtn = ISButton:new(self.ok:getRight() + 10, buttonY, 150, buttonHgt, getText("IGUI_Map_EditMarkings"), self, ISMap.onButtonClick);
+    btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Map_Key"))
+    self.showMapKey = ISButton:new(self.ok:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_Key"), self, ISMap.onButtonClick);
+    self.showMapKey.internal = "KEY";
+    self.showMapKey:initialise();
+    self.showMapKey:instantiate();
+    self.showMapKey.borderColor = {r=1, g=1, b=1, a=0.4};
+    self:addChild(self.showMapKey);
+
+    btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Map_EditMarkings"))
+    self.editSymbolsBtn = ISButton:new(self.showMapKey:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_EditMarkings"), self, ISMap.onButtonClick);
     self.editSymbolsBtn.internal = "SYMBOLS";
     self.editSymbolsBtn:initialise();
     self.editSymbolsBtn:instantiate();
     self.editSymbolsBtn.borderColor = {r=1, g=1, b=1, a=0.4};
     self:addChild(self.editSymbolsBtn);
 
-    self.scaleBtn = ISButton:new(self.editSymbolsBtn:getRight() + 10, buttonY, 50, buttonHgt, getText("IGUI_Map_Scale"), self, ISMap.onButtonClick);
+    btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Map_Scale"))
+    self.scaleBtn = ISButton:new(self.editSymbolsBtn:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_Scale"), self, ISMap.onButtonClick);
     self.scaleBtn.internal = "SCALE";
     self.scaleBtn:initialise();
     self.scaleBtn:instantiate();
@@ -69,7 +83,8 @@ function ISMap:createChildren()
     self:addChild(self.scaleBtn);
 
     -- Joypad only
-    self.placeSymbBtn = ISButton:new(self.editSymbolsBtn:getRight() + 10, buttonY, 150, buttonHgt, getText("IGUI_Map_PlaceSymbol"), self, ISMap.onButtonClick);
+    btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Map_PlaceSymbol"))
+    self.placeSymbBtn = ISButton:new(self.editSymbolsBtn:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_PlaceSymbol"), self, ISMap.onButtonClick);
     self.placeSymbBtn.internal = "PLACESYMBOL";
     self.placeSymbBtn:initialise();
     self.placeSymbBtn:instantiate();
@@ -132,6 +147,21 @@ function ISMap:onButtonClick(button)
             self.symbolsUI:setVisible(false)
         else
             self.symbolsUI:setVisible(true)
+        end
+    end
+    if button.internal == "KEY" then
+        if JoypadState.players[player+1] then
+            if self.mapKey:isVisible() then
+            else
+                self.mapKey:setVisible(true)
+            end
+            return
+        end
+        if self.mapKey:isVisible() then
+            self.mapKey:undisplay()
+            self.mapKey:setVisible(false)
+        else
+            self.mapKey:setVisible(true)
         end
     end
     if button.internal == "SCALE" then

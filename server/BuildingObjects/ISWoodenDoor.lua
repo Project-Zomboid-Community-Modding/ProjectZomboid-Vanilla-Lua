@@ -27,11 +27,12 @@ function ISWoodenDoor:create(x, y, z, north, sprite)
     self.sq:AddSpecialObject(self.javaObject);
     -- set the key id if we had one
     for _,item in ipairs(consumedItems) do
+		print(item:getType(), item:getKeyId())
 		if item:getType() == "Doorknob" and item:getKeyId() ~= -1 then
-			self.javaObject:setKeyId(item:getKeyId(), false)
+			self.javaObject:setKeyId(item:getKeyId())
 		end
     end
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 end
 
 function ISWoodenDoor:new(sprite, northSprite, openSprite, openNorthSprite)

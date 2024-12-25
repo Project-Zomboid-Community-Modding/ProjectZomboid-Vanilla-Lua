@@ -58,29 +58,39 @@ function ISFireplaceMenu.OnFillWorldObjectContextMenu(player, context, worldobje
 				petrol = petrol or vItem
 			elseif type == "PercedWood" then
 				percedWood = percedWood or vItem
-			elseif type == "TreeBranch" then
+			elseif type == "TreeBranch" or type == "TreeBranch2" then
 				branch = branch or vItem
-			elseif type == "WoodenStick" then
+			elseif type == "WoodenStick" or type == "WoodenStick2" then
 				stick = stick or vItem
 			end
 			if ISCampingMenu.isValidFuel(vItem) or ISCampingMenu.isValidTinder(vItem) then
 				if not itemCount[vItem:getName()] then
-					if campingFuelType[vItem:getType()] then
-						if campingFuelType[vItem:getType()] > 0 then
-							table.insert(fuelList, vItem)
-						end
-					elseif campingFuelCategory[vItem:getCategory()] then
-						table.insert(fuelList, vItem)
-					end
-					if campingLightFireType[vItem:getType()] then
-						if campingLightFireType[vItem:getType()] > 0 then
-							table.insert(lightWithList, vItem)
-							table.insert(fuelAmtList, campingLightFireType[vItem:getType()])
-						end
-					elseif campingLightFireCategory[vItem:getCategory()] then
-						table.insert(lightWithList, vItem)
-						table.insert(fuelAmtList, campingLightFireCategory[vItem:getCategory()])
-					end
+
+				    if ISCampingMenu.isValidFuel(vItem) then
+                        table.insert(fuelList, vItem)
+				    end
+				    if ISCampingMenu.isValidTinder(vItem) then
+                        table.insert(lightWithList, vItem)
+                        table.insert(fuelAmtList, ISCampingMenu.getFuelDurationForItem(vItem)/60*32)
+				    end
+
+
+-- 					if campingFuelType[vItem:getType()] then
+-- 						if campingFuelType[vItem:getType()] > 0 then
+-- 							table.insert(fuelList, vItem)
+-- 						end
+-- 					elseif campingFuelCategory[vItem:getCategory()] then
+-- 						table.insert(fuelList, vItem)
+-- 					end
+-- 					if campingLightFireType[vItem:getType()] then
+-- 						if campingLightFireType[vItem:getType()] > 0 then
+-- 							table.insert(lightWithList, vItem)
+-- 							table.insert(fuelAmtList, campingLightFireType[vItem:getType()])
+-- 						end
+-- 					elseif campingLightFireCategory[vItem:getCategory()] then
+-- 						table.insert(lightWithList, vItem)
+-- 						table.insert(fuelAmtList, campingLightFireCategory[vItem:getCategory()])
+-- 					end
 					itemCount[vItem:getName()] = 0
 				end
 				itemCount[vItem:getName()] = itemCount[vItem:getName()] + ISCampingMenu.getFuelItemUses(vItem)
@@ -91,7 +101,8 @@ function ISFireplaceMenu.OnFillWorldObjectContextMenu(player, context, worldobje
 	table.sort(startFireList, function(a,b) return not string.sort(a:getDisplayName(), b:getDisplayName()) end)
 
 	if test then return ISWorldObjectContextMenu.setTest() end
-	local option = context:addOption(getText("ContextMenu_FireplaceInfo"), worldobjects, ISFireplaceMenu.onDisplayInfo, player, fireplace)
+	local option = context:addOption(fireplace:getTileName() or getText("ContextMenu_Fireplace") .. " " .. getText("ContextMenu_Info"), worldobjects, ISFireplaceMenu.onDisplayInfo, player, fireplace)
+-- 	local option = context:addOption(getText("ContextMenu_FireplaceInfo"), worldobjects, ISFireplaceMenu.onDisplayInfo, player, fireplace)
 	if playerObj:DistToSquared(fireplace:getX() + 0.5, fireplace:getY() + 0.5) < 2 * 2 then
 		local fireState;
 		if fireplace:isLit() then
@@ -102,58 +113,67 @@ function ISFireplaceMenu.OnFillWorldObjectContextMenu(player, context, worldobje
 			fireState = getText("IGUI_Fireplace_Unlit")
 		end
 		option.toolTip = ISWorldObjectContextMenu:addToolTip()
-		option.toolTip:setName(getText("IGUI_Fireplace_Fireplace"))
+		option.toolTip:setName(fireplace:getTileName() or getText("IGUI_Fireplace_Fireplace"))
+-- 		option.toolTip:setName(getText("IGUI_Fireplace_Fireplace"))
 		option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(luautils.round(fireplace:getFuelAmount()))) .. " (" .. fireState .. ")"
+-- 		print("time " .. tostring(fireplace:getFuelAmount()))
 	end
-
+-- nerf for fire capacity
 	if #fuelList > 0 then
 		if test then return ISWorldObjectContextMenu.setTest() end
 		local fuelOption = context:addOption(campingText.addFuel, worldobjects, nil)
-		local subMenuFuel = ISContextMenu:getNew(context)
-		context:addSubMenu(fuelOption, subMenuFuel)
+		if fireplace:getFuelAmount() >= 360 then
+		    fuelOption.notAvailable = true;
+            local tooltip = ISWorldObjectContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_Fuel_Full");
+            fuelOption.toolTip = tooltip;
+		else
+            local subMenuFuel = ISContextMenu:getNew(context)
+            context:addSubMenu(fuelOption, subMenuFuel)
 
-		if #fuelList > 1 then
-			local numItems = 0
-			local duration = 0
-			for _,item in ipairs(fuelList) do
-				local count = itemCount[item:getName()]
-				duration = duration + (ISCampingMenu.getFuelDurationForItem(item) or 0.0) * count
-				numItems = numItems + count
-			end
-			if numItems > 1 then
-				local allOption = subMenuFuel:addActionsOption(getText("ContextMenu_AllWithCount", numItems), ISFireplaceMenu.onAddAllFuel, fireplace)
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(duration))
-				allOption.toolTip = tooltip
-			end
-		end
+            if #fuelList > 1 then
+                local numItems = 0
+                local duration = 0
+                for _,item in ipairs(fuelList) do
+                    local count = itemCount[item:getName()]
+                    duration = duration + (ISCampingMenu.getFuelDurationForItem(item) or 0.0) * count
+                    numItems = numItems + count
+                end
+                if numItems > 1 then
+                    local allOption = subMenuFuel:addActionsOption(getText("ContextMenu_AllWithCount", numItems), ISFireplaceMenu.onAddAllFuel, fireplace)
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(duration))
+                    allOption.toolTip = tooltip
+                end
+            end
 
-		table.sort(fuelList, function(a,b) return not string.sort(a:getName(), b:getName()) end)
-		for i,v in ipairs(fuelList) do
-			local label = v:getName()
-			local count = itemCount[v:getName()]
-			if count > 1 then
-				label = label..' ('..count..')'
-				local subMenu = context:getNew(subMenuFuel)
-				local subOption = subMenuFuel:addOption(label)
-				subMenuFuel:addSubMenu(subOption, subMenu)
+            table.sort(fuelList, function(a,b) return not string.sort(a:getName(), b:getName()) end)
+            for i,v in ipairs(fuelList) do
+                local label = v:getName()
+                local count = itemCount[v:getName()]
+                if count > 1 then
+                    label = label..' ('..count..')'
+                    local subMenu = context:getNew(subMenuFuel)
+                    local subOption = subMenuFuel:addOption(label)
+                    subMenuFuel:addSubMenu(subOption, subMenu)
 
-				local subOption1 = subMenu:addActionsOption(getText("ContextMenu_One"), ISFireplaceMenu.onAddFuel, fireplace, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
-				subOption1.toolTip = tooltip
+                    local subOption1 = subMenu:addActionsOption(getText("ContextMenu_One"), ISFireplaceMenu.onAddFuel, fireplace, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
+                    subOption1.toolTip = tooltip
 
-				local subOption2 = subMenu:addActionsOption(getText("ContextMenu_AllWithCount", count), ISFireplaceMenu.onAddMultipleFuel, fireplace, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v) * count))
-				subOption2.toolTip = tooltip
-			else
-				local subOption = subMenuFuel:addActionsOption(label, ISFireplaceMenu.onAddFuel, fireplace, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
-				subOption.toolTip = tooltip
-			end
-		end
+                    local subOption2 = subMenu:addActionsOption(getText("ContextMenu_AllWithCount", count), ISFireplaceMenu.onAddMultipleFuel, fireplace, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v) * count))
+                    subOption2.toolTip = tooltip
+                else
+                    local subOption = subMenuFuel:addActionsOption(label, ISFireplaceMenu.onAddFuel, fireplace, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
+                    subOption.toolTip = tooltip
+                end
+            end
+        end
 	end
 
 	-- Options for lighting a fire
@@ -249,7 +269,8 @@ function ISFireplaceMenu.onAddFuel(playerObj, fireplace, fuelType)
 		if playerObj:isEquipped(fuelItem) then
 			ISTimedActionQueue.add(ISUnequipAction:new(playerObj, fuelItem, 50));
 		end
-		ISTimedActionQueue.add(ISFireplaceAddFuel:new(playerObj, fireplace, fuelItem, fuelAmt, 100))
+        if (fireplace:getFuelAmount() + fuelAmt > 360) then return end
+		ISTimedActionQueue.add(ISFireplaceAddFuel:new(playerObj, fireplace, fuelItem, fuelAmt))
 	end
 end
 
@@ -265,7 +286,8 @@ local function addFuel(playerObj, fireplace, fuelItems)
 		local fuelAmt = ISCampingMenu.getFuelDurationForItem(fuelItem)
 		local uses = ISCampingMenu.getFuelItemUses(fuelItem)
 		for j=1,uses do
-			ISTimedActionQueue.add(ISFireplaceAddFuel:new(playerObj, fireplace, fuelItem, fuelAmt, 100))
+		    if (fireplace:getFuelAmount() + fuelAmt > 360) then return end
+			ISTimedActionQueue.add(ISFireplaceAddFuel:new(playerObj, fireplace, fuelItem, fuelAmt))
 		end
 	end
 end
@@ -305,7 +327,7 @@ function ISFireplaceMenu.onLightFromLiterature(playerObj, itemType, lighter, fir
 		if playerObj:isEquipped(fuelItem) then
 			ISTimedActionQueue.add(ISUnequipAction:new(playerObj, fuelItem, 50));
 		end
-		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(playerObj, fuelItem, lighter, fireplace, fuelAmt, 100))
+		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(playerObj, fuelItem, lighter, fireplace, fuelAmt))
 	end
 end
 
@@ -314,7 +336,7 @@ function ISFireplaceMenu.onLightFromPetrol(worldobjects, player, lighter, petrol
 	ISFireplaceMenu.toPlayerInventory(playerObj, lighter)
 	ISFireplaceMenu.toPlayerInventory(playerObj, petrol)
 	if luautils.walkAdj(playerObj, fireplace:getSquare(), true) then
-		ISTimedActionQueue.add(ISFireplaceLightFromPetrol:new(playerObj, fireplace, lighter, petrol, 20))
+		ISTimedActionQueue.add(ISFireplaceLightFromPetrol:new(playerObj, fireplace, lighter, petrol))
 	end
 end
 
@@ -323,14 +345,14 @@ function ISFireplaceMenu.onLightFromKindle(worldobjects, player, percedWood, sti
 	ISFireplaceMenu.toPlayerInventory(playerObj, percedWood)
 	ISFireplaceMenu.toPlayerInventory(playerObj, stickOrBranch)
 	if luautils.walkAdj(playerObj, fireplace:getSquare(), true) then
-		ISTimedActionQueue.add(ISFireplaceLightFromKindle:new(playerObj, percedWood, stickOrBranch, fireplace, 1500))
+		ISTimedActionQueue.add(ISFireplaceLightFromKindle:new(playerObj, percedWood, stickOrBranch, fireplace))
 	end
 end
 
 function ISFireplaceMenu.onExtinguish(worldobjects, player, fireplace)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, fireplace:getSquare()) then
-		ISTimedActionQueue.add(ISFireplaceExtinguish:new(playerObj, fireplace, 60))
+		ISTimedActionQueue.add(ISFireplaceExtinguish:new(playerObj, fireplace))
 	end
 end
 

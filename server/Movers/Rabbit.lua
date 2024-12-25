@@ -4,7 +4,7 @@ Rabbit = ISBaseMover:derive("Rabbit");
 
 function Rabbit:init()
     print("Initing rabbit");
-    self.sprite:LoadFramesNoDirPageSimple("Item_DeadRat");
+    self.sprite:LoadSingleTexture("Item_DeadRat");
 end
 
 function Rabbit:update()

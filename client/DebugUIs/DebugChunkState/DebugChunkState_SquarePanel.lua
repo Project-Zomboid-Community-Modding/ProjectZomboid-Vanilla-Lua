@@ -4,7 +4,8 @@
 
 require "DebugUIs/DebugChunkState/ISSectionedPanel"
 
-local FONT_HGT_CONSOLE = getTextManager():getFontHeight(UIFont.DebugConsole)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
 
 DebugChunkStateUI_SquarePropsHandler = ISPanel:derive("DebugChunkStateUI_SquarePropsHandler")
 local SquarePropsHandler = DebugChunkStateUI_SquarePropsHandler
@@ -45,8 +46,8 @@ function SquarePropsHandler:addLine(text, arg0, arg1, arg2, arg3, arg4)
 	if type(arg2) == "boolean" then arg2 = tostring(arg2) end
 	if type(arg3) == "boolean" then arg3 = tostring(arg3) end
 	if type(arg4) == "boolean" then arg4 = tostring(arg4) end
-	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.DebugConsole)
-	self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.Small)
+	self.addLineY = self.addLineY + FONT_HGT_SMALL
 end
 
 function SquarePropsHandler:new(x, y, width, height, gameState)
@@ -75,11 +76,12 @@ function SPH_misc:render1()
 	local pn = self.gameState:fromLua0("getPlayerIndex")
 
 	self:addLine("x,y,z = "..tostring(self.squareX)..", "..tostring(self.squareY)..", "..tostring(self.squareZ))
-	self:addLine("cell =" .. math.floor(self.squareX/300) .. ", " .. math.floor(self.squareY/300));
+	self:addLine(string.format("wx,wy = %d,%d", fastfloor(self.squareX / getChunkSizeInSquares()), fastfloor(self.squareY / getChunkSizeInSquares())))
+	self:addLine("cell =" .. math.floor(self.squareX/getCellSizeInSquares()) .. ", " .. math.floor(self.squareY/getCellSizeInSquares()));
 	if self.zones then
 		for i=1,self.zones:size() do
 			local zone = self.zones:get(i-1)
-			self:addLine("zone = %s / %s%s", zone:getName(), zone:getType(), (square ~= nil and zone == square:getZone()) and " *" or "")
+			self:addLine("zone = %s / %s%s", zone:getName() or "", zone:getType() or "", (square ~= nil and zone == square:getZone()) and " *" or "")
 		end
 	else
 		self:addLine("zone = nil")
@@ -126,6 +128,10 @@ function SPH_misc:render1()
 		if building then
 			self:addLine("roof-hide building = %d", building:getDef():getID())
 		end
+        local buildingDef = getWorld():getMetaGrid():getAssociatedBuildingAt(self.squareX, self.squareY)
+        if buildingDef then
+            self:addLine("associated building = %d", buildingDef:getID())
+        end
 		local light = getCell():getLightSourceAt(self.squareX, self.squareY, self.squareZ)
 		if light then
 			local building = light:getLocalToBuilding()
@@ -187,7 +193,7 @@ function SPH_properties:render1()
 		self:addLine("%s = %s", names:get(i-1), props:Val(names:get(i-1)))
 	end
 	if not names:isEmpty() then
-		self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+		self.addLineY = self.addLineY + FONT_HGT_SMALL
 	end
 	local flags = props:getFlagsList()
 	for i=1,flags:size() do
@@ -211,77 +217,89 @@ function SPH_matrix:render1()
 	local square = self.square
 	local pn = self.gameState:fromLua0("getPlayerIndex")
 
-	self.font = UIFont.DebugConsole
-	self.fontHgt = FONT_HGT_CONSOLE
+	self.font = UIFont.Small
+	self.fontHgt = FONT_HGT_SMALL
 
-	local side = 20
-	self:drawText("nav[]", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("reachable", self.addLineX + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
+	local gridSize = 60
+	local spacing = math.max(getTextManager():MeasureStringX(self.font, "reachable"), gridSize+UI_BORDER_SPACING)
+
+	self:drawText(getText("IGUI_ChunkState_Nav"), self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText(getText("IGUI_ChunkState_Reachable"), self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY, 1, 1, 1, 1, self.font)
 	self.addLineY = self.addLineY + self.fontHgt
 	self:draw9x9(self.addLineX, self.addLineY,
 		square:getAdjacentSquare(IsoDirections.NW), square:getAdjacentSquare(IsoDirections.N), square:getAdjacentSquare(IsoDirections.NE),
 		square:getAdjacentSquare(IsoDirections.W), false, square:getAdjacentSquare(IsoDirections.E),
 		square:getAdjacentSquare(IsoDirections.SW), square:getAdjacentSquare(IsoDirections.S), square:getAdjacentSquare(IsoDirections.SE))
 
-	self:draw9x9(self.addLineX + side * 3 + 30, self.addLineY,
+	self:draw9x9(self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY,
 		square:getAdjacentPathSquare(IsoDirections.NW), square:getAdjacentPathSquare(IsoDirections.N), square:getAdjacentPathSquare(IsoDirections.NE),
 		square:getAdjacentPathSquare(IsoDirections.W), false, square:getAdjacentPathSquare(IsoDirections.E),
 		square:getAdjacentPathSquare(IsoDirections.SW), square:getAdjacentPathSquare(IsoDirections.S), square:getAdjacentPathSquare(IsoDirections.SE))
-	self.addLineY = self.addLineY + side * 3
+	self.addLineY = self.addLineY + gridSize
 
-	self:drawText("collide", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("collide (below)", self.addLineX + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("collide (above)", self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText(getText("IGUI_ChunkState_Collision"), self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self.addLineY = self.addLineY + self.fontHgt
+
+	self:drawText("z-1", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z", self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z+1", self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY, 1, 1, 1, 1, self.font)
 	self.addLineY = self.addLineY + self.fontHgt
 	self:draw9x9(self.addLineX, self.addLineY,
-		square:getCollideMatrix(-1, -1, 0), square:getCollideMatrix(0, -1, 0), square:getCollideMatrix(1, -1, 0),
-		square:getCollideMatrix(-1, 0, 0), square:getCollideMatrix(0, 0, 0), square:getCollideMatrix(1, 0, 0),
-		square:getCollideMatrix(-1, 1, 0), square:getCollideMatrix(0, 1, 0), square:getCollideMatrix(1, 1, 0))
-	self:draw9x9(self.addLineX + side * 3 + 30, self.addLineY,
 		square:getCollideMatrix(-1, -1, -1), square:getCollideMatrix(0, -1, -1), square:getCollideMatrix(1, -1, -1),
 		square:getCollideMatrix(-1, 0, -1), square:getCollideMatrix(0, 0, -1), square:getCollideMatrix(1, 0, -1),
 		square:getCollideMatrix(-1, 1, -1), square:getCollideMatrix(0, 1, -1), square:getCollideMatrix(1, 1, -1))
-	self:draw9x9(self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY,
+	self:draw9x9(self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY,
+		square:getCollideMatrix(-1, -1, 0), square:getCollideMatrix(0, -1, 0), square:getCollideMatrix(1, -1, 0),
+		square:getCollideMatrix(-1, 0, 0), square:getCollideMatrix(0, 0, 0), square:getCollideMatrix(1, 0, 0),
+		square:getCollideMatrix(-1, 1, 0), square:getCollideMatrix(0, 1, 0), square:getCollideMatrix(1, 1, 0))
+	self:draw9x9(self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY,
 		square:getCollideMatrix(-1, -1, 1), square:getCollideMatrix(0, -1, 1), square:getCollideMatrix(1, -1, 1),
 		square:getCollideMatrix(-1, 0, 1), square:getCollideMatrix(0, 0, 1), square:getCollideMatrix(1, 0, 1),
 		square:getCollideMatrix(-1, 1, 1), square:getCollideMatrix(0, 1, 1), square:getCollideMatrix(1, 1, 1))
-	self.addLineY = self.addLineY + side * 3
+	self.addLineY = self.addLineY + gridSize
 
-	self:drawText("path", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("path (below)", self.addLineX + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("path (above)", self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText(getText("IGUI_ChunkState_Path"), self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self.addLineY = self.addLineY + self.fontHgt
+
+	self:drawText("z-1", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z", self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z+1", self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY, 1, 1, 1, 1, self.font)
 	self.addLineY = self.addLineY + self.fontHgt
 	self:draw9x9(self.addLineX, self.addLineY,
-		not square:getPathMatrix(-1, -1, 0), not square:getPathMatrix(0, -1, 0), not square:getPathMatrix(1, -1, 0),
-		not square:getPathMatrix(-1, 0, 0), not square:getPathMatrix(0, 0, 0), not square:getPathMatrix(1, 0, 0),
-		not square:getPathMatrix(-1, 1, 0), not square:getPathMatrix(0, 1, 0), not square:getPathMatrix(1, 1, 0))
-	self:draw9x9(self.addLineX + side * 3 + 30, self.addLineY,
 		not square:getPathMatrix(-1, -1, -1), not square:getPathMatrix(0, -1, -1), not square:getPathMatrix(1, -1, -1),
 		not square:getPathMatrix(-1, 0, -1), not square:getPathMatrix(0, 0, -1), not square:getPathMatrix(1, 0, -1),
 		not square:getPathMatrix(-1, 1, -1), not square:getPathMatrix(0, 1, -1), not square:getPathMatrix(1, 1, -1))
-	self:draw9x9(self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY,
+
+	self:draw9x9(self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY,
+		not square:getPathMatrix(-1, -1, 0), not square:getPathMatrix(0, -1, 0), not square:getPathMatrix(1, -1, 0),
+		not square:getPathMatrix(-1, 0, 0), not square:getPathMatrix(0, 0, 0), not square:getPathMatrix(1, 0, 0),
+		not square:getPathMatrix(-1, 1, 0), not square:getPathMatrix(0, 1, 0), not square:getPathMatrix(1, 1, 0))
+	self:draw9x9(self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY,
 		not square:getPathMatrix(-1, -1, 1), not square:getPathMatrix(0, -1, 1), not square:getPathMatrix(1, -1, 1),
 		not square:getPathMatrix(-1, 0, 1), not square:getPathMatrix(0, 0, 1), not square:getPathMatrix(1, 0, 1),
 		not square:getPathMatrix(-1, 1, 1), not square:getPathMatrix(0, 1, 1), not square:getPathMatrix(1, 1, 1))
-	self.addLineY = self.addLineY + side * 3
+	self.addLineY = self.addLineY + gridSize
 
-	self:drawText("vision", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("vision (below)", self.addLineX + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
-	self:drawText("vision (above)", self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText(getText("IGUI_ChunkState_Vision"), self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self.addLineY = self.addLineY + self.fontHgt
+
+	self:drawText("z-1", self.addLineX, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z", self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY, 1, 1, 1, 1, self.font)
+	self:drawText("z+1", self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY, 1, 1, 1, 1, self.font)
 	self.addLineY = self.addLineY + self.fontHgt
 	self:draw9x9(self.addLineX, self.addLineY,
-		not square:getVisionMatrix(-1, -1, 0), not square:getVisionMatrix(0, -1, 0), not square:getVisionMatrix(1, -1, 0),
-		not square:getVisionMatrix(-1, 0, 0), not square:getVisionMatrix(0, 0, 0), not square:getVisionMatrix(1, 0, 0),
-		not square:getVisionMatrix(-1, 1, 0), not square:getVisionMatrix(0, 1, 0), not square:getVisionMatrix(1, 1, 0))
-	self:draw9x9(self.addLineX + side * 3 + 30, self.addLineY,
 		not square:getVisionMatrix(-1, -1, -1), not square:getVisionMatrix(0, -1, -1), not square:getVisionMatrix(1, -1, -1),
 		not square:getVisionMatrix(-1, 0, -1), not square:getVisionMatrix(0, 0, -1), not square:getVisionMatrix(1, 0, -1),
 		not square:getVisionMatrix(-1, 1, -1), not square:getVisionMatrix(0, 1, -1), not square:getVisionMatrix(1, 1, -1))
-	self:draw9x9(self.addLineX + side * 3 + 30 + side * 3 + 30, self.addLineY,
+	self:draw9x9(self.addLineX + spacing +UI_BORDER_SPACING, self.addLineY,
+		not square:getVisionMatrix(-1, -1, 0), not square:getVisionMatrix(0, -1, 0), not square:getVisionMatrix(1, -1, 0),
+		not square:getVisionMatrix(-1, 0, 0), not square:getVisionMatrix(0, 0, 0), not square:getVisionMatrix(1, 0, 0),
+		not square:getVisionMatrix(-1, 1, 0), not square:getVisionMatrix(0, 1, 0), not square:getVisionMatrix(1, 1, 0))
+	self:draw9x9(self.addLineX + (spacing +UI_BORDER_SPACING)*2, self.addLineY,
 		not square:getVisionMatrix(-1, -1, 1), not square:getVisionMatrix(0, -1, 1), not square:getVisionMatrix(1, -1, 1),
 		not square:getVisionMatrix(-1, 0, 1), not square:getVisionMatrix(0, 0, 1), not square:getVisionMatrix(1, 0, 1),
 		not square:getVisionMatrix(-1, 1, 1), not square:getVisionMatrix(0, 1, 1), not square:getVisionMatrix(1, 1, 1))
-	self.addLineY = self.addLineY + side * 3
+	self.addLineY = self.addLineY + gridSize
 
 	self:setHeight(self.addLineY)
 end
@@ -314,10 +332,10 @@ DebugChunkStateUI_SquarePanel = ISSectionedPanel:derive("DebugChunkStateUI_Squar
 local SquarePanel = DebugChunkStateUI_SquarePanel
 
 function SquarePanel:createSections()
-	self:addSection(SPH_misc:new(0, 0, self.width, 50, self.debugChunkState.gameState), "details")
-	self:addSection(SPH_properties:new(0, 0, self.width, 50, self.debugChunkState.gameState), "properties")
-	self:addSection(SPH_modData:new(0, 0, self.width, 50, self.debugChunkState.gameState), "modData")
-	self:addSection(SPH_matrix:new(0, 0, self.width, 50, self.debugChunkState.gameState), "collide / path / vision")
+	self:addSection(SPH_misc:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_Details"))
+	self:addSection(SPH_properties:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_Properties"))
+	self:addSection(SPH_modData:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_ModData"))
+	self:addSection(SPH_matrix:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_CollidePathVision"))
 	for _,section in ipairs(self.sections) do
 		section.enabled = false
 	end
@@ -338,7 +356,7 @@ function SquarePanel:new(x, y, width, height, debugChunkState)
 	local o = ISSectionedPanel.new(self, x, y, width, height)
 	o.backgroundColor.a = 0.8
 	o.debugChunkState = debugChunkState
-	o.font = UIFont.DebugConsole
+	o.font = UIFont.Small
 	o.fontHgt = getTextManager():getFontHeight(o.font)
 	return o
 end

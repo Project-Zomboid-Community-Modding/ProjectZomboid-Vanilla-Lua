@@ -32,27 +32,9 @@ SurvivalGuideEntries.getEntryCount = function()
     return SurvivalGuideEntries.list:size();
 end
 
-SurvivalGuideEntries.addSurvivalGuideEntry(1);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(2);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(3);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(4);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(5);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(6);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(7);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(8);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(9);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(10);
-
-SurvivalGuideEntries.addSurvivalGuideEntry(11);
+for i = 1, 14 do --add new entries by changing this number
+    SurvivalGuideEntries.addSurvivalGuideEntry(i);
+end
 
 
 -- We don't it once it's boot 'cause we need some translation

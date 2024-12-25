@@ -6,6 +6,8 @@ ISPvpZonePanel = ISPanel:derive("ISPvpZonePanel");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISPvpZonePanel:initialise
@@ -15,15 +17,12 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 function ISPvpZonePanel:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local btnHgt2 = FONT_HGT_SMALL + 2 * 2
-    local padBottom = 10
 
-    local listY = 20 + FONT_HGT_MEDIUM + 20
-    self.nonPvpList = ISScrollingListBox:new(10, listY, self.width - 20, (FONT_HGT_SMALL + 2 * 2) * 16);
+    local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1
+    self.nonPvpList = ISScrollingListBox:new(UI_BORDER_SPACING+1, listY, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT * 16);
     self.nonPvpList:initialise();
     self.nonPvpList:instantiate();
-    self.nonPvpList.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.nonPvpList.itemheight = BUTTON_HGT;
     self.nonPvpList.selected = 0;
     self.nonPvpList.joypadParent = self;
     self.nonPvpList.font = UIFont.NewSmall;
@@ -31,7 +30,8 @@ function ISPvpZonePanel:initialise()
     self.nonPvpList.drawBorder = true;
     self:addChild(self.nonPvpList);
 
-    self.removeZone = ISButton:new(self.nonPvpList.x + self.nonPvpList.width - 70, self.nonPvpList.y + self.nonPvpList.height + 5, 70, btnHgt2, getText("ContextMenu_Remove"), self, ISPvpZonePanel.onClick);
+    self.removeZone = ISButton:new(self.nonPvpList.x + self.nonPvpList.width - btnWid, self.nonPvpList.y + self.nonPvpList.height + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("ContextMenu_Remove"), self, ISPvpZonePanel.onClick);
+    self.removeZone:setX(self.nonPvpList.x + self.nonPvpList.width - self.removeZone.width)
     self.removeZone.internal = "REMOVEZONE";
     self.removeZone:initialise();
     self.removeZone:instantiate();
@@ -39,7 +39,7 @@ function ISPvpZonePanel:initialise()
     self:addChild(self.removeZone);
     self.removeZone.enable = false;
 
-    self.teleportToZone = ISButton:new(self.nonPvpList.x + self.nonPvpList.width - 70, self.removeZone.y + btnHgt2 + 5, 70, btnHgt2, getText("IGUI_PvpZone_TeleportToZone"), self, ISPvpZonePanel.onClick);
+    self.teleportToZone = ISButton:new(self.nonPvpList.x + self.nonPvpList.width - 70, self.removeZone.y + BUTTON_HGT + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_PvpZone_TeleportToZone"), self, ISPvpZonePanel.onClick);
     self.teleportToZone:setX(self.nonPvpList.x + self.nonPvpList.width - self.teleportToZone.width)
     self.teleportToZone.internal = "TELEPORTTOZONE";
     self.teleportToZone:initialise();
@@ -48,28 +48,28 @@ function ISPvpZonePanel:initialise()
     self:addChild(self.teleportToZone);
     self.teleportToZone.enable = false;
 
-    self.addZone = ISButton:new(self.nonPvpList.x, self.nonPvpList.y + self.nonPvpList.height + 5, 70, btnHgt2, getText("IGUI_PvpZone_AddZone"), self, ISPvpZonePanel.onClick);
+    self.addZone = ISButton:new(self.nonPvpList.x, self.nonPvpList.y + self.nonPvpList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_PvpZone_AddZone"), self, ISPvpZonePanel.onClick);
     self.addZone.internal = "ADDZONE";
     self.addZone:initialise();
     self.addZone:instantiate();
     self.addZone.borderColor = self.buttonBorderColor;
     self:addChild(self.addZone);
 
-    self.seeZoneOnGround = ISButton:new(self.nonPvpList.x, self.addZone.y + btnHgt2 + 5, 70, btnHgt2, getText("IGUI_PvpZone_SeeZone"), self, ISPvpZonePanel.onClick);
+    self.seeZoneOnGround = ISButton:new(self.nonPvpList.x, self.addZone.y + BUTTON_HGT + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_PvpZone_SeeZone"), self, ISPvpZonePanel.onClick);
     self.seeZoneOnGround.internal = "SEEZONE";
     self.seeZoneOnGround:initialise();
     self.seeZoneOnGround:instantiate();
     self.seeZoneOnGround.borderColor = self.buttonBorderColor;
     self:addChild(self.seeZoneOnGround);
 
-    self.no = ISButton:new(self:getWidth() - btnWid - 10, self.seeZoneOnGround:getBottom() + 20, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISPvpZonePanel.onClick);
+    self.no = ISButton:new(self.nonPvpList.x + self.nonPvpList.width - btnWid, self.seeZoneOnGround:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISPvpZonePanel.onClick);
     self.no.internal = "OK";
     self.no:initialise();
     self.no:instantiate();
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    self:setHeight(self.no:getBottom() + padBottom)
+    self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)
 
     self:populateList();
 
@@ -105,12 +105,13 @@ function ISPvpZonePanel:render()
 end
 
 function ISPvpZonePanel:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_PvpZone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PvpZone_Title")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_PvpZone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PvpZone_Title")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
+
+    if not self.player:getRole():haveCapability(Capability.CanSetupNonPVPZone) then
+        self:close()
+    end
 end
 
 function ISPvpZonePanel:updateButtons()
@@ -145,7 +146,7 @@ function ISPvpZonePanel:onClick(button)
         modal.moveWithMouse = true;
     end
     if button.internal == "ADDZONE" then
-        local addPvpZone = ISAddNonPvpZoneUI:new(10,10, 400, 350, self.player);
+        local addPvpZone = ISAddNonPvpZoneUI:new(10,10, 300+(getCore():getOptionFontSizeReal()*50), FONT_HGT_MEDIUM+UI_BORDER_SPACING*8+BUTTON_HGT*6+2, self.player);
         addPvpZone:initialise()
         addPvpZone:addToUIManager()
         addPvpZone.parentUI = self;

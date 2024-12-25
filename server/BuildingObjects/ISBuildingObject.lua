@@ -51,7 +51,7 @@ end
 
 function ISBuildingObject:setSprite(sprite)
 	self.sprite = sprite;
-	self.choosenSprite = sprite;
+	self.chosenSprite = sprite;
 end
 
 function ISBuildingObject:setDragNilAfterPlace(nilAfter)
@@ -132,7 +132,8 @@ function DoTileBuilding(draggingItem, isRender, x, y, z, square)
 	-- get the sprite we have to display
 	if draggingItem.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() then
 		local mouseOverUI = isMouseOverUI();
-		if Mouse:isLeftDown() then
+		--if Mouse:isLeftDown() then
+		if GameKeyboard.isKeyDown("Attack/Click") then
 			if not draggingItem.isLeftDown then
 				draggingItem.clickedUI = mouseOverUI;
 				draggingItem.isLeftDown = true;
@@ -185,10 +186,10 @@ function ISBuildingObject:tryBuild(x, y, z)
 	local square = getCell():getGridSquare(x, y, z)
 	local playerObj = getSpecificPlayer(self.player)
 	local playerInv = playerObj:getInventory()
-	if ISBuildMenu.cheat or self:walkTo(x, y, z) or ((self.Type == "fishingNet") and (self:isValid(square, true))) then
-		if self.dragNilAfterPlace then
-			getCell():setDrag(nil, self.player)
-		end
+	
+	-- create build action, early, so we can call startCraftAction before walkTo
+	local buildAction = nil;
+	if not self.skipBuildAction then
 		-- if you give a custom maxTime, if not it's calculated with the carpentry level
 		local maxTime = (200 - (playerObj:getPerkLevel(Perks.Woodwork) * 5))
 		if self.maxTime then
@@ -197,24 +198,46 @@ function ISBuildingObject:tryBuild(x, y, z)
 		if playerObj:isTimedActionInstant() then
 			maxTime = 1
 		end
+		
+		-- Pass a copy of this object to ISBuildAction to avoid issues with changing this object
+		-- before the action completes, such as rotating it with the 'Rotate Building' key.
+		local selfCopy = copyTable(self)
+		setmetatable(selfCopy, getmetatable(self, true))
+		buildAction = ISBuildAction:new(playerObj, selfCopy, x, y, z, self.north, self:getSprite(), maxTime);
+	end
+		
+	if self.buildPanelLogic then
+		buildAction:setOnComplete(self.onActionComplete, self);
+		buildAction:setOnCancel(self.onActionComplete, self);
+		self.buildPanelLogic:startCraftAction(buildAction);
+	end
+	
+	if ISBuildMenu.cheat or self:walkTo(x, y, z) or ((self.Type == "fishingNet") and (self:isValid(square, true))) then
+		if self.dragNilAfterPlace then
+			getCell():setDrag(nil, self.player)
+		elseif self.blockAfterPlace then
+			self.blockBuild = true;
+		end
+
 		if self.skipBuildAction then
 			-- farmingPlot doesn't need another action
-			self:create(x, y, z, self.north, self:getSprite())
+			self:create(x, y, z, self.north, self:getSprite());
+			self:onActionComplete();
 		else
 			if not self.noNeedHammer and not ISBuildMenu.cheat then
 				local hammer = playerInv:getFirstTagEvalRecurse("Hammer", predicateNotBroken)
 				if hammer then
 					ISInventoryPaneContextMenu.equipWeapon(hammer, true, false, self.player)
 				end
-            end
-            if not ISBuildMenu.cheat then
-				if self.equipBothHandItem then
-					if luautils.haveToBeTransfered(playerObj, self.equipBothHandItem) then
-						ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, self.equipBothHandItem, self.equipBothHandItem:getContainer(), playerInv));
-					end
-					ISInventoryPaneContextMenu.equipWeapon(self.equipBothHandItem, true, true, self.player)
+			end
+			if self.equipBothHandItem then
+				if luautils.haveToBeTransfered(playerObj, self.equipBothHandItem) then
+					ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, self.equipBothHandItem, self.equipBothHandItem:getContainer(), playerInv));
 				end
-                if self.firstItem then
+				ISInventoryPaneContextMenu.equipWeapon(self.equipBothHandItem, true, true, self.player)
+			end
+			if not ISBuildMenu.cheat then
+				if self.firstItem then
 					local item = nil
 					if self.firstPredicate then
 						item = playerInv:getFirstTypeEvalArgRecurse(self.firstItem, self.firstPredicate, self.firstArg)
@@ -239,8 +262,8 @@ function ISBuildingObject:tryBuild(x, y, z)
 						end
 					end
 					ISInventoryPaneContextMenu.equipWeapon(item, true, false, self.player)
-                end
-                if self.secondItem then
+				end
+				if self.secondItem then
 					local item = playerInv:getItemFromType(self.secondItem, true, true)
 					if instanceof(item, "Clothing") then
 						if not item:isEquipped() then
@@ -249,16 +272,20 @@ function ISBuildingObject:tryBuild(x, y, z)
 					else
 						ISInventoryPaneContextMenu.equipWeapon(item, false, false, self.player)
 					end
-                end
-            end
+				end
+			end
 
-			-- Pass a copy of this object to ISBuildAction to avoid issues with changing this object
-			-- before the action completes, such as rotating it with the 'Rotate Building' key.
-			local selfCopy = copyTable(self)
-			setmetatable(selfCopy, getmetatable(self, true))
-
-			ISTimedActionQueue.add(ISBuildAction:new(playerObj, selfCopy, x, y, z, self.north, self:getSprite(), maxTime))
+			ISTimedActionQueue.add(buildAction)
 		end
+	else
+		print("ISBuildingObject -> tryBuild - cannot walkTo target")
+	end
+end
+
+function ISBuildingObject:onActionComplete()
+	if self.buildPanelLogic ~= nil then
+		print("ISBuildingObject -> onActionComplete - refresh BuildPanel")
+		self.buildPanelLogic:stopCraftAction();
 	end
 end
 
@@ -272,6 +299,17 @@ function ISBuildingObject:walkTo(x, y, z)
 	if self.isWallLike then
 		return luautils.walkAdjWall(playerObj, square, self.north)
 	end
+
+	-- We can build wooden floor through window or door
+	if self.Type == "ISWoodenFloor" and square and (square:Is(IsoFlagType.collideN) or square:Is(IsoFlagType.collideW)) then
+		if luautils.walkAdj(playerObj, square) then return true end
+		return luautils.walkAdjWall(playerObj, square, square:Is(IsoFlagType.collideN))
+	end
+	-- For walls on 2+ floor we can walk to them from both sides
+	if self.currentMoveProps then
+		return self.currentMoveProps:walkAdj(playerObj, square)
+	end
+
 	return luautils.walkAdj(playerObj, square)
 end
 
@@ -380,7 +418,7 @@ function ISBuildingObject:reset()
 	self.south = false;
 	self.east = false;
 	self.west = false;
-	self.choosenSprite = nil;
+	self.chosenSprite = nil;
 	self.dragNilAfterPlace = false;
 	self.xJoypad = -1;
 	self.yJoypad = -1;
@@ -414,31 +452,31 @@ function ISBuildingObject:getSprite()
 	self.south = false;
 	self.east = false;
 	self.west = false;
-	self.choosenSprite = self.sprite;
+	self.chosenSprite = self.sprite;
 	if self.nSprite == 1 then
 		self.west = true;
-		self.choosenSprite = self.sprite;
+		self.chosenSprite = self.sprite;
 	elseif self.nSprite == 2 then
 		self.north = true;
-		self.choosenSprite = self.northSprite;
+		self.chosenSprite = self.northSprite;
 	elseif self.nSprite == 3 then
 		if self.eastSprite then
-			self.choosenSprite = self.eastSprite;
+			self.chosenSprite = self.eastSprite;
 			self.east = true;
 		else
 			self.west = true;
-			self.choosenSprite = self.sprite;
+			self.chosenSprite = self.sprite;
 		end
 	elseif self.nSprite == 4 then
 		if self.southSprite then
 			self.south = true;
-			self.choosenSprite = self.southSprite;
+			self.chosenSprite = self.southSprite;
 		else
 			self.north = true;
-			self.choosenSprite = self.northSprite;
+			self.chosenSprite = self.northSprite;
 		end
 	end
-	return self.choosenSprite;
+	return self.chosenSprite;
 end
 
 function ISBuildingObject:isValid(square)
@@ -469,7 +507,7 @@ function ISBuildingObject:render(x, y, z, square)
 	if self.renderFloorHelper then
 		if not self.RENDER_SPRITE_FLOOR then
 			self.RENDER_SPRITE_FLOOR = IsoSprite.new()
-			self.RENDER_SPRITE_FLOOR:LoadFramesNoDirPageSimple('carpentry_02_56')
+			self.RENDER_SPRITE_FLOOR:LoadSingleTexture('carpentry_02_56')
 		end
 		self.RENDER_SPRITE_FLOOR:RenderGhostTile(x, y, z)
 	end
@@ -479,7 +517,7 @@ function ISBuildingObject:render(x, y, z, square)
 		self.RENDER_SPRITE = IsoSprite.new()
 	end
 	if self.RENDER_SPRITE_NAME ~= spriteName then
-		self.RENDER_SPRITE:LoadFramesNoDirPageSimple(spriteName)
+		self.RENDER_SPRITE:LoadSingleTexture(spriteName)
 		self.RENDER_SPRITE_NAME = spriteName
 	end
 
@@ -504,7 +542,7 @@ function ISBuildingObject:render(x, y, z, square)
 end
 
 function ISBuildingObject:rotateKey(key)
-	if key == getCore():getKey("Rotate building") then
+	if getCore():isKey("Rotate building", key) then
 		self.nSprite = self.nSprite + 1;
 		if self.nSprite > 4 then
 			self.nSprite = 1;
@@ -623,6 +661,24 @@ function ISBuildingObject:getRBPrompt()
     return getText("IGUI_Controller_RotateRight")
 end
 
+function ISBuildingObject:getFloorCursorSprite()
+	if not ISBuildingObject.floorCursorSprite then
+		local spriteName = (Core.getTileScale() == 2) and 'media/ui/FloorTileCursor2x.png' or 'media/ui/FloorTileCursor.png'
+		ISBuildingObject.floorCursorSprite = IsoSprite.new()
+		ISBuildingObject.floorCursorSprite:LoadSingleTexture(spriteName)
+	end
+	return ISBuildingObject.floorCursorSprite
+end
+
+function ISBuildingObject:update()
+
+end
+
+-- x,y,z,square are the same arguments passed to render()
+function ISBuildingObject:renderOpaqueObjectsInWorld(x, y, z, square)
+
+end
+
 function DoTileBuildingJoyPad(draggingItem, isRender, x, y, z)
     if draggingItem.xJoypad == -1 then
         draggingItem.xJoypad = x;
@@ -638,9 +694,24 @@ function DoTileBuildingJoyPad(draggingItem, isRender, x, y, z)
     DoTileBuilding(draggingItem, isRender, draggingItem.xJoypad, draggingItem.yJoypad, draggingItem.zJoypad, square);
 end
 
-Events.OnDoTileBuilding2.Add(DoTileBuilding);
+local function RenderOpaqueObjectsInWorld(playerIndex, x, y, z, square)
+	local bo = getCell():getDrag(playerIndex)
+	if bo == nil then return end
+	if not bo.renderOpaqueObjectsInWorld then return end
+	if JoypadState.players[playerIndex+1] then
+		if bo.xJoypad == -1 then
+			bo.xJoypad = x
+			bo.yJoypad = y
+		end
+		bo.zJoypad = z
+		square = getCell():getGridSquare(bo.xJoypad, bo.yJoypad, bo.zJoypad)
+		x,y = bo.xJoypad, bo.yJoypad
+	end
+	bo:renderOpaqueObjectsInWorld(x, y, z, square)
+end
 
+Events.OnDoTileBuilding2.Add(DoTileBuilding);
 Events.OnDoTileBuilding3.Add(DoTileBuildingJoyPad);
 Events.OnKeyPressed.Add(rotateKey);
-
 Events.OnDestroyIsoThumpable.Add(ISBuildingObject.onDestroy);
+Events.RenderOpaqueObjectsInWorld.Add(RenderOpaqueObjectsInWorld);

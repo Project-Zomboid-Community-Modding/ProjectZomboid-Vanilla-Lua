@@ -73,6 +73,7 @@ function ISKnob:onJoypadDirUp(joypadData)
     else
         self.selected = 1
     end
+    self:playSwitchSound()
     if self.onMouseUpFct and  self.lastValue ~= self.selected then
         self.onMouseUpFct(self.target, self);
         self.lastValue = self.selected;
@@ -85,6 +86,7 @@ function ISKnob:onJoypadDirDown(joypadData)
     else
         self.selected = #self.values
     end
+    self:playSwitchSound()
     if self.onMouseUpFct and  self.lastValue ~= self.selected then
         self.onMouseUpFct(self.target, self);
         self.lastValue = self.selected;
@@ -159,7 +161,10 @@ function ISKnob:onMouseMove(dx, dy)
 		-- Vehicle ac/heater goes from 270 to 0 to 90
 		local last = self.values[#self.values].angle
 		if degrees >= last + (360 - last) / 2 then
-			self.selected = 1
+			if self.selected ~= 1 then
+				self.selected = 1
+				self:playSwitchSound()
+			end
 			return
 		end
 		local prev = 0
@@ -167,12 +172,21 @@ function ISKnob:onMouseMove(dx, dy)
 			local cur = self.values[i].angle
 			local next = (i == #self.values) and 360 or self.values[i+1].angle
 			if (degrees >= prev + (cur - prev) / 2) and (degrees < cur + (next - cur) / 2) then
-				self.selected = i
+				if self.selected ~= i then
+					self.selected = i
+					self:playSwitchSound()
+				end
 				break
 			end
 			prev = cur
 		end
     end
+end
+
+function ISKnob:playSwitchSound()
+	if not self.switchSound then return end
+	if self.switchSound == "" then return end
+	getSoundManager():playUISound(self.switchSound)
 end
 
 --************************************************************************--
@@ -202,5 +216,6 @@ function ISKnob:new(x, y, tex, valuesBg, title, player)
 	o.joypadFocused = false
 	o.isKnob = true;
     o.tex = tex;
+    o.switchSound = nil;
     return o;
 end

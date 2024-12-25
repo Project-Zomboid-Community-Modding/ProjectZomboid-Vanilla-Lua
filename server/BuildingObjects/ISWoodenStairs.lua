@@ -79,16 +79,16 @@ function ISWoodenStairs:setInfo(square, level, north, sprite, luaobject)
 	-- the sound that will be played when our stairs will be broken
 	thumpable:setBreakSound("BreakObject");
 	thumpable:setModData(copyTable(self.modData))
-	thumpable:transmitCompleteItemToServer();
+	thumpable:transmitCompleteItemToClients();
 end
 
-function ISWoodenStairs:new(sprite1, sprite2, sprite3, northSprite1, northSprite2, northSprite3, pillar, pillarNorth)
+function ISWoodenStairs:new(sprite, sprite2, sprite3, northSprite, northSprite2, northSprite3, pillar, pillarNorth)
 	local o = {};
 	setmetatable(o, self);
 	self.__index = self;
 	o:init();
-	o:setSprite(sprite1);
-	o:setNorthSprite(northSprite1);
+	o:setSprite(sprite);
+	o:setNorthSprite(northSprite);
 	o.sprite2 = sprite2;
 	o.sprite3 = sprite3;
 	o.northSprite2 = northSprite2;
@@ -107,11 +107,11 @@ function ISWoodenStairs:render(x, y, z, square)
 	-- render the first part
 	local spriteName = self:getSprite()
 	local sprite = IsoSprite.new()
-	sprite:LoadFramesNoDirPageSimple(spriteName)
+	sprite:LoadSingleTexture(spriteName)
 
 	-- if the square is free and our item can be build
 	-- the ConnectedToStairs + north is used to check if the floor is connected to another stair sin the opposite direction (to avoid teleportation)
-	local spriteFree = ISBuildingObject.isValid(self, square) and z < 7 and not square:getModData()["ConnectedToStairs" .. tostring(not self.north)]
+	local spriteFree = ISBuildingObject.isValid(self, square) and z < getMaximumWorldLevel() and not square:getModData()["ConnectedToStairs" .. tostring(not self.north)]
 	local above = getCell():getGridSquare(x, y, z + 1)
 	if above and above:getFloor() then spriteFree = false end
 	if spriteFree then
@@ -121,7 +121,7 @@ function ISWoodenStairs:render(x, y, z, square)
 	end
 
 	-- render the other part of the stairs
-	if z >= 7 then
+	if z >= getMaximumWorldLevel() then
 		return;
 	end
 	-- name of our 2 sprites needed for the rest of the stairs
@@ -173,7 +173,7 @@ function ISWoodenStairs:render(x, y, z, square)
 
 	-- render our second stage of the stairs
 	local spriteA = IsoSprite.new();
-	spriteA:LoadFramesNoDirPageSimple(spriteAName);
+	spriteA:LoadSingleTexture(spriteAName);
 	if spriteAFree then
 		spriteA:RenderGhostTile(xa, ya, z);
 	else
@@ -181,7 +181,7 @@ function ISWoodenStairs:render(x, y, z, square)
 	end
 	-- render the next tile (last stage of the stairs)
 	local spriteB = IsoSprite.new();
-	spriteB:LoadFramesNoDirPageSimple(spriteBName);
+	spriteB:LoadSingleTexture(spriteBName);
 	if spriteBFree then
 		spriteB:RenderGhostTile(xb, yb, z);
 	else
@@ -190,7 +190,7 @@ function ISWoodenStairs:render(x, y, z, square)
 end
 
 function ISWoodenStairs:isValid(square)
-	if square:getZ() >= 7 then return false end
+	if square:getZ() >= getMaximumWorldLevel() then return false end
 	if not ISBuildingObject.isValid(self, square) then
 		return false
 	end

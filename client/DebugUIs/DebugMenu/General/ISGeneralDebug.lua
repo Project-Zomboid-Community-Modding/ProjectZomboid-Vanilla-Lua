@@ -1,15 +1,10 @@
---***********************************************************
---**                    THE INDIE STONE                    **
---**				  Author: turbotutone				   **
---***********************************************************
-
 require "DebugUIs/DebugMenu/Base/ISDebugPanelBase";
 
 ISGeneralDebug = ISDebugPanelBase:derive("ISGeneralDebug");
 ISGeneralDebug.instance = nil;
 
 function ISGeneralDebug.OnOpenPanel()
-    return ISDebugPanelBase.OnOpenPanel(ISGeneralDebug, 100, 100, 800, 600, "GENERAL DEBUGGERS");
+    return ISDebugPanelBase.OnOpenPanel(ISGeneralDebug, 100, 100, 800+(getCore():getOptionFontSizeReal()*100), 600, getText("IGUI_GeneralDebug_Title"));
 end
 
 function ISGeneralDebug:new(x, y, width, height, title)
@@ -23,10 +18,10 @@ end
 
 function ISGeneralDebug:initialise()
     ISPanel.initialise(self);
-    self:registerPanel("Game",ISGameDebugPanel);
-    self:registerPanel("Moodles and Body",ISStatsAndBody);
+    self:registerPanel(getText("IGUI_GeneralDebug_Game"),ISGameDebugPanel, true);
+    self:registerPanel(getText("IGUI_GeneralDebug_Body"),ISStatsAndBody);
     --self:registerPanel("General Cheats",ISGeneralCheats);
-    self:registerPanel("Blood", ISDebugBlood);
-    self:registerPanel("SearchMode", ISSearchMode);
+    self:registerPanel(getText("IGUI_GeneralDebug_Blood"), ISDebugBlood);
+    self:registerPanel(getText("IGUI_GeneralDebug_Search"), ISSearchMode);
 end
 

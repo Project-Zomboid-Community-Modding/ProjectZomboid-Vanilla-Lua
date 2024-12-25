@@ -10,9 +10,14 @@ ISVehicleMechanics = ISCollapsableWindow:derive("ISVehicleMechanics");
 ISVehicleMechanics.alphaOverlay = 1;
 ISVehicleMechanics.alphaOverlayInc = true;
 ISVehicleMechanics.tooltip = nil;
-ISVehicleMechanics.cheat = false;
-ISVehicleMechanics.ghs = "<RGB:" .. getCore():getGoodHighlitedColor():getR() .. "," .. getCore():getGoodHighlitedColor():getG() .. "," .. getCore():getGoodHighlitedColor():getB() .. ">"
-ISVehicleMechanics.bhs = "<RGB:" .. getCore():getBadHighlitedColor():getR() .. "," .. getCore():getBadHighlitedColor():getG() .. "," .. getCore():getBadHighlitedColor():getB() .. ">"
+-- disable mechanics cheat for non-debug
+ISVehicleMechanics.cheat = getDebug();
+ISVehicleMechanics.ghs = "<GHC>"
+ISVehicleMechanics.bhs = "<BHC>"
+
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -54,7 +59,7 @@ function ISVehicleMechanics:initParts()
 	for i=1,self.vehicle:getPartCount() do
 		local part = self.vehicle:getPartByIndex(i-1)
 		local category = part:getCategory() or "Other";
-		if category ~= "nodisplay" then
+		if category ~= "nodisplay" then -- and ( (not self.vehicle:getScriptName():contains("Smash")) or (self.vehicle:getScriptName():contains("Smash") and part:getId() ~= "GloveBox") ) then
 			if self.vehiclePart[category] then
 				currentCat = self.vehiclePart[category]
 			else
@@ -64,7 +69,6 @@ function ISVehicleMechanics:initParts()
 				currentCat.cat = category;
 				self.vehiclePart[category] = currentCat;
 			end
-			
 			local newPart = {};
 			newPart.name = getText("IGUI_VehiclePart" .. part:getId());
 			newPart.part = part;
@@ -220,7 +224,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 				local subMenuFix = ISContextMenu:getNew(self.context);
 				self.context:addSubMenu(fixOption, subMenuFix);
 				for i=0,fixingList:size()-1 do
-					ISInventoryPaneContextMenu.buildFixingMenu(part:getInventoryItem(), playerObj:getPlayerNum(), fixingList:get(i), fixOption, subMenuFix, part)
+					ISInventoryPaneContextMenu.buildFixingMenu(part:getInventoryItem(), playerObj:getPlayerNum(), fixingList:get(i), i, fixOption, subMenuFix, part)
 				end
 			end
 			
@@ -244,8 +248,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 					-- display all possible item that can be installed
 					for i=0,part:getItemType():size() - 1 do
 						local name = part:getItemType():get(i);
-						local item = InventoryItemFactory.CreateItem(name);
-						if item then name = item:getName(); end
+						if getItem(name) then name = getItemName(name); end
 						local itemOpt = subMenu:addOption(name, playerObj, nil);
 						self:doMenuTooltip(part, itemOpt, "install", part:getItemType():get(i));
 						if not typeToItem[part:getItemType():get(i)] then
@@ -284,19 +287,18 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 		if part:getContainerContentAmount() >= part:getContainerCapacity() + 5 then
 			option.notAvailable = true
 		end
-		local tirePump = InventoryItemFactory.CreateItem("Base.TirePump");
 		if not self.chr:getInventory():contains("TirePump", true) then
 			option.notAvailable = true
 			local tooltip = ISToolTip:new();
 			tooltip:initialise();
 			tooltip:setVisible(false);
-			tooltip.description = ISVehicleMechanics.bhs .. " " .. getText("Tooltip_craft_Needs") .. ": <LINE> " .. tirePump:getDisplayName() .. " 0/1";
+			tooltip.description = ISVehicleMechanics.bhs .. " " .. getText("Tooltip_craft_Needs") .. ": <LINE> " .. getItemDisplayName("Base.TirePump") .. " 0/1";
 			option.toolTip = tooltip;
 		else
 			local tooltip = ISToolTip:new();
 			tooltip:initialise();
 			tooltip:setVisible(false);
-			tooltip.description = ISVehicleMechanics.ghs .. getText("Tooltip_craft_Needs") .. ":  <LINE> " .. tirePump:getDisplayName() .. " 1/1";
+			tooltip.description = ISVehicleMechanics.ghs .. getText("Tooltip_craft_Needs") .. ":  <LINE> " .. getItemDisplayName("Base.TirePump") .. " 1/1";
 			option.toolTip = tooltip;
 		end
 		option = self.context:addOption(getText("IGUI_DeflateTire"), playerObj, ISVehiclePartMenu.onDeflateTire, part)
@@ -332,6 +334,17 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 			option.notAvailable = true;
 		end
 	end
+	
+	if part:getId() == "lightbar" then
+		if part:getCondition() < 100 and self.chr:getInventory():containsTag("Lightbar") and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():containsTag("Screwdriver") then
+			local option = self.context:addOption(getText("ContextMenu_Repair"), playerObj, ISVehicleMechanics.onRepairLightbar, part);
+			self:doMenuTooltip(part, option, "repairlightbar");
+		else
+			local option = self.context:addOption(getText("ContextMenu_Repair"), playerObj, ISVehicleMechanics.onRepairLightbar, part);
+			self:doMenuTooltip(part, option, "repairlightbar");
+			option.notAvailable = true;
+		end
+	end
 --[[
 	if ((part:getId() == "HeadlightLeft") or (part:getId() == "HeadlightRight")) and part:getInventoryItem() then
 		if part:getLight():canFocusingUp() and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getHeadlightConfigLevel() then
@@ -354,7 +367,8 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 		end
 	end
 --]]
-	if ISVehicleMechanics.cheat or playerObj:getAccessLevel() ~= "None" then
+	-- disable mechanics cheat for non-debug
+	if getDebug() and (ISVehicleMechanics.cheat or (isClient() and isAdmin())) then
 		if self.vehicle:getPartById("Engine") then
 			option = self.context:addOption("CHEAT: Get Key", playerObj, ISVehicleMechanics.onCheatGetKey, self.vehicle)
 			if self.vehicle:isHotwired() then
@@ -427,6 +441,18 @@ function ISVehicleMechanics.onRepairEngine(playerObj, part)
 	else
 		ISTimedActionQueue.add(ISRepairEngine:new(playerObj, part, item, time))
 	end
+end
+
+function ISVehicleMechanics.onRepairLightbar(playerObj, part)
+	if playerObj:getVehicle() then
+		ISVehicleMenu.onExit(playerObj)
+	end
+	
+	local item = playerObj:getInventory():getFirstTag("Lightbar");
+	ISVehiclePartMenu.toPlayerInventory(playerObj, item)
+	
+	--ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
+	ISTimedActionQueue.add(ISRepairLightbar:new(playerObj, part, item, 200))
 end
 
 function ISVehicleMechanics.onTakeEngineParts(playerObj, part)
@@ -588,6 +614,10 @@ end
 
 function ISVehicleMechanics.onCheatToggle(playerObj)
 	ISVehicleMechanics.cheat = not ISVehicleMechanics.cheat
+	playerObj:setMechanicsCheat(ISVehicleMechanics.cheat)
+	if isClient() then
+	    sendPlayerExtraInfo(playerObj)
+	end
 end
 
 function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
@@ -613,11 +643,10 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 		end
 		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
 		rgb = ISVehicleMechanics.ghs;
-		local item = InventoryItemFactory.CreateItem("Base.Wrench");
 		if not self.chr:getInventory():contains("Wrench") then
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. item:getDisplayName() .. " 0/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Wrench") .. " 0/1 <LINE>";
 		else
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. item:getDisplayName() .. " 1/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Wrench") .. " 1/1 <LINE>";
 		end
 
 		tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. " " .. getText("Tooltip_vehicle_TakeEnginePartsWarning");
@@ -634,31 +663,43 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 		end
 		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
 		rgb = ISVehicleMechanics.ghs;
-		local item = InventoryItemFactory.CreateItem("Base.Wrench");
 		if not self.chr:getInventory():contains("Wrench") then
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. item:getDisplayName() .. " 0/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Wrench") .. " 0/1 <LINE>";
 		else
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. item:getDisplayName() .. " 1/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Wrench") .. " 1/1 <LINE>";
 		end
-		local item = InventoryItemFactory.CreateItem("Base.EngineParts");
 		if not self.chr:getInventory():contains("EngineParts") then
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. item:getDisplayName() .. " 0/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.EngineParts") .. " 0/1 <LINE>";
 		else
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. item:getDisplayName() .. " <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.EngineParts") .. " <LINE>";
+		end
+	end
+	if lua == "repairlightbar" then
+		local rgb = ISVehicleMechanics.ghs;
+		local addedTxt = "";
+		if part:getCondition() >= 100 then
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. " " .. getText("Tooltip_Vehicle_EngineCondition", part:getCondition()) .. " <LINE>";
+		end
+		rgb = ISVehicleMechanics.ghs;
+		if self.chr:getPerkLevel(Perks.Mechanics) < part:getVehicle():getScript():getEngineRepairLevel() then
+			rgb = ISVehicleMechanics.bhs;
+		end
+		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
+		rgb = ISVehicleMechanics.ghs;
+		if not self.chr:getInventory():contains("Screwdriver") then
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Screwdriver") .. " 0/1 <LINE>";
+		else
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Screwdriver") .. " 1/1 <LINE>";
+		end
+		if not self.chr:getInventory():containsTag("Lightbar") then
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getText("IGUI_VehiclePartlightbar") .. " 0/1 <LINE>";
+		else
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getText("IGUI_VehiclePartlightbar") .. " 1/1 <LINE>";
 		end
 	end
 	if lua == "configheadlight" then
 		local rgb = ISVehicleMechanics.ghs;
 		tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. " " .. getText("IGUI_HeadlightFocusing") .. ": " .. part:getLight():getFocusing() .. " <LINE>";
-		--tooltip.description = tooltip.description .. " <RGB:1,0,0> Destination: " .. part:getLight():getDistanization() .. " <LINE>";
-		--tooltip.description = tooltip.description .. " <RGB:1,0,0> Intensity: " .. part:getLight():getIntensity() .. " <LINE>";
-		--rgb = ISVehicleMechanics.ghs;
-		--local item = InventoryItemFactory.CreateItem("Base.Spanner");
-		--if not self.chr:getInventory():contains("Spanner") then
-		--    tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. item:getDisplayName() .. " 0/1 <LINE>";
-		--else
-		--    tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. item:getDisplayName() .. " 1/1 <LINE>";
-		--end
 
 		if self.chr:getPerkLevel(Perks.Mechanics) < part:getVehicle():getScript():getHeadlightConfigLevel() then
 			rgb = ISVehicleMechanics.bhs;
@@ -674,37 +715,72 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 	if not keyvalues then return; end
 	--	if not part:getInventoryItem() then return; end
 	if not part:getItemType() then return; end
-	local typeToItem = VehicleUtils.getItems(self.playerNum);
+	local typeToItem,tagToItem = VehicleUtils.getItems(self.playerNum);
 	-- first do items required
 	if name then
-		local item = InventoryItemFactory.CreateItem(name);
 		if not typeToItem[name] then
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. item:getDisplayName() .. " 0/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName(name) .. " 0/1 <LINE>";
 		else
-			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. item:getDisplayName() .. " 1/1 <LINE>";
+			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName(name) .. " 1/1 <LINE>";
 		end
 	end
 	if keyvalues.items then
-		for i,v in pairs(keyvalues.items) do
-			local itemName = InventoryItemFactory.CreateItem(v.type);
-			if itemName then
-				itemName = itemName:getName();
+		local itemScripts = VehicleUtils.getItemScripts(keyvalues.items)
+		for _,itemTable in ipairs(itemScripts) do
+			local keep = "";
+			-- if itemTable.item.keep then keep = "Keep "; end
+			if #itemTable.scripts == 1 then
+				local thing = itemTable.scripts[1]
+				if thing.script then -- zombie.scripting.objects.Item
+					local itemName = getItemName(thing.script:getFullName())
+					if not typeToItem[thing.script:getFullName()] then
+						tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. keep .. itemName .. " 0/1 <LINE>";
+					else
+						tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. keep .. itemName .. " 1/1 <LINE>";
+					end
+				elseif thing.unknownType then
+					tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. keep .. thing.unknownType .. " 0/1 <LINE>";
+				elseif thing.unknownTag then
+					tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. keep .. thing.unknownTag .. " 0/1 <LINE>";
+				end
 			else
-				itemName = v.type;
+				tooltip.description = tooltip.description .. " " .. getText("IGUI_CraftUI_OneOf") .. " <LINE> "
+				for _,thing in ipairs(itemTable.scripts) do
+					if thing.script then -- zombie.scripting.objects.Item
+						local itemName = getItemName(thing.script:getFullName())
+						if not typeToItem[thing.script:getFullName()] then
+							tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. itemName .. " 0/1 <LINE> <INDENT:0> ";
+						else
+							tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.ghs .. itemName .. " 1/1 <LINE> <INDENT:0> ";
+						end
+					elseif thing.unknownType then
+						tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownType .. " 0/1 <LINE> <INDENT:0> ";
+					elseif thing.unknownTag then
+						tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownTag .. " 1/1 <LINE> <INDENT:0> ";
+					end
+				end
+			end
+--[[
+			local itemName = v.type;
+			if getItem(v.type) then
+				itemName = getItemName(v.type);
 			end
 			local keep = "";
-			--		if v.keep then keep = "Keep "; end
-			if not typeToItem[v.type] then
+			-- if v.keep then keep = "Keep "; end
+			if itemName == "Lug Wrench" or itemName == "LugWrench"  then itemName = getText("Tooltip_LugWrench") end
+			if itemName == "Wrench"  then itemName = getText("Tooltip_Wrench") end
+			if not typeToItem[v.type] and not self.chr:getInventory():getFirstTagEvalRecurse(v.type, predicateNotBroken) then
 				tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. keep .. itemName .. " 0/1 <LINE>";
 			else
 				tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. keep .. itemName .. " 1/1 <LINE>";
 			end
+--]]
 		end
 	end
 	-- recipes
 	if keyvalues.recipes and keyvalues.recipes ~= "" then
 		for _,recipe in ipairs(keyvalues.recipes:split(";")) do
-			if not self.chr:isRecipeKnown(recipe) then
+			if not self.chr:isRecipeActuallyKnown(recipe) then
 				tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. " " .. getText("Tooltip_vehicle_requireRecipe", getRecipeDisplayName(recipe)) .. " <LINE>";
 			else
 				tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. " " .. getText("Tooltip_vehicle_requireRecipe", getRecipeDisplayName(recipe)) .. " <LINE>";
@@ -780,7 +856,7 @@ function ISVehicleMechanics:doDrawItem(y, item, alt)
 			self:drawText(item.item.name, 20, y, self.parent.partRGB.r, self.parent.partRGB.g, self.parent.partRGB.b, self.parent.partRGB.a, UIFont.Small);
 			local charge = ""
 			if item.item.part:getId() == "Battery"  then
-				local amount = (math.floor(item.item.part:getInventoryItem():getUsedDelta() * 100))
+				local amount = (math.floor(item.item.part:getInventoryItem():getCurrentUsesFloat() * 100))
 				charge = ": " .. amount .. "% " .. getText("IGUI_invpanel_Remaining")
 				self:drawText(charge, getTextManager():MeasureStringX(UIFont.Small, item.item.name) + 20, y, self.parent.partRGB.r, self.parent.partRGB.g, self.parent.partRGB.b, self.parent.partRGB.a, UIFont.Small);
 			elseif item.item.part:getId() == "GasTank" then
@@ -818,8 +894,10 @@ function ISVehicleMechanics:renderCarOverlay()
 		end
 	end
 	self.hidetooltip = true;
-	if ISCarMechanicsOverlay.CarList[self.vehicle:getScriptName()] then
-		local props = ISCarMechanicsOverlay.CarList[self.vehicle:getScriptName()];
+	local overlayName = self.vehicle:getScriptName()
+	if self.vehicle:getScript():getCarMechanicsOverlay() then overlayName = self.vehicle:getScript():getCarMechanicsOverlay() end
+	if ISCarMechanicsOverlay.CarList[overlayName] then
+		local props = ISCarMechanicsOverlay.CarList[overlayName];
 		self:drawTextureScaledUniform(getTexture("media/ui/vehicles/mechanic overlay/" .. props.imgPrefix .. "base.png"), props.x, props.y, scale,1,1,1,1);
 		for i=1,self.vehicle:getPartCount() do
 			local part = self.vehicle:getPartByIndex(i-1)
@@ -827,7 +905,7 @@ function ISVehicleMechanics:renderCarOverlay()
 				local partProps = ISCarMechanicsOverlay.PartList[part:getId()];
 				local condRGB = self:getConditionRGB(part:getCondition());
 				if not part:getInventoryItem() and part:getTable("install")  then
-					condRGB = self:getConditionRGB(part:getCondition());
+					condRGB = self:getConditionRGB(0);
 				end
 				-- we can override certain texture that share same img (like rear windshield..)
 				if props.PartList and props.PartList[part:getId()] then
@@ -844,7 +922,7 @@ function ISVehicleMechanics:renderCarOverlay()
 						self:drawTextureScaledUniform(getTexture("media/ui/vehicles/mechanic overlay/" .. props.imgPrefix .. v .. ".png"), props.x, props.y, scale,alpha,condRGB.r,condRGB.g,condRGB.b);
 					end
 				end
-				if self:renderCarOverlayTooltip(partProps, part, ISCarMechanicsOverlay.CarList[self.vehicle:getScriptName()].imgPrefix) then
+				if self:renderCarOverlayTooltip(partProps, part, ISCarMechanicsOverlay.CarList[overlayName].imgPrefix) then
 					self.hidetooltip = false;
 				end
 			end
@@ -882,7 +960,9 @@ end
 function ISVehicleMechanics:isMouseOverPart(x, y, part)
 	if not self:isMouseOver() then return false end -- other windows in front
 	if not part then return false end
-	local props = ISCarMechanicsOverlay.CarList[self.vehicle:getScriptName()]
+	local overlayName = self.vehicle:getScriptName()
+	if self.vehicle:getScript():getCarMechanicsOverlay() then overlayName = self.vehicle:getScript():getCarMechanicsOverlay() end
+	local props = ISCarMechanicsOverlay.CarList[overlayName]
 	if not props then return end
 	local partProps = ISCarMechanicsOverlay.PartList[part:getId()]
 	if not partProps then return false end
@@ -930,7 +1010,8 @@ function ISVehicleMechanics:onRightMouseUp(x, y)
 	if part then
 		self:selectPart(part)
 		self:doPartContextMenu(part, x, y)
-	elseif ISVehicleMechanics.cheat or playerObj:getAccessLevel() ~= "None" then
+	-- disable mechanics cheat for non-debug
+	elseif getDebug() and (ISVehicleMechanics.cheat or (isClient() and isAdmin())) then
 		if UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then return; end
 		self.context = ISContextMenu.get(self.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
 		if self.vehicle:getScript() and self.vehicle:getScript():getWheelCount() > 0 then
@@ -996,7 +1077,7 @@ function ISVehicleMechanics:renderCarOverlayTooltip(partProps, part, carType)
 				self.tooltip.description = self.tooltip.description .. " <LINE> " .. text
 			elseif instanceof(inventoryItem, "DrainableComboItem") then
 				local text = "???"
-				text = getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getUsedDelta() * 100, 2) .. "%"
+				text = getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getCurrentUsesFloat() * 100, 2) .. "%"
 				self.tooltip.description = self.tooltip.description .. " <LINE> " .. text
 			end
 		end
@@ -1054,10 +1135,11 @@ function ISVehicleMechanics:render()
 	x = x + 5;
 	y = y + 5;
 	local debugLine = "";
-	if getCore():getDebug() then
+	if getCore():getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
 		debugLine = " (" .. self.vehicle:getScript():getName() .. " )";
 	end
-	local name = getText("IGUI_VehicleName" .. self.vehicle:getScript():getName());
+    local carName = self.vehicle:getScript():getCarModelName() or self.vehicle:getScript():getName()
+	local name = getText("IGUI_VehicleName" .. carName);
 	if string.match(self.vehicle:getScript():getName(), "Burnt") then
 		local unburnt = string.gsub(self.vehicle:getScript():getName(), "Burnt", "")
 		if getTextOrNull("IGUI_VehicleName" .. unburnt) then
@@ -1150,10 +1232,10 @@ function ISVehicleMechanics:renderPartDetail(part)
 		self:drawText(getText("IGUI_char_Weight") .. ": " .. round(part:getInventoryItem():getWeight(),0), x, y, 1, 1, 1, 1);
 		y = y + lineHgt;
 		if instanceof(inventoryItem, "DrainableComboItem") then
-			if round(inventoryItem:getUsedDelta() * 100, 2) < 5 then
-				self:drawText(getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getUsedDelta() * 100, 2) .. "%", x, y, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
+			if round(inventoryItem:getCurrentUsesFloat() * 100, 2) < 5 then
+				self:drawText(getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getCurrentUsesFloat() * 100, 2) .. "%", x, y, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
 			else
-				self:drawText(getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getUsedDelta() * 100, 2) .. "%", x, y, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
+				self:drawText(getText("IGUI_invpanel_Remaining") .. ": " .. round(inventoryItem:getCurrentUsesFloat() * 100, 2) .. "%", x, y, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
 			end
 			y = y + lineHgt;
 		end
@@ -1440,7 +1522,7 @@ end
 
 function ISVehicleMechanics:isKeyConsumed(key)
 	return key == Keyboard.KEY_ESCAPE or
-			key == getCore():getKey("VehicleMechanics")
+			getCore():isKey("VehicleMechanics", key)
 end
 
 function ISVehicleMechanics:onKeyRelease(key)
@@ -1451,33 +1533,16 @@ function ISVehicleMechanics:onKeyRelease(key)
 			self:close()
 		end
 	end
-	if key == getCore():getKey("VehicleMechanics") then
+	if getCore():isKey("VehicleMechanics", key) then
 		self:close();
 	end
 end
 
-ISVehicleMechanics.OnMechanicActionDone = function(chr, success, vehicleId, partId, itemId, installing)
-	if success and itemId ~= -1 then
-		local vehicle = getVehicleById(vehicleId);
-		if not vehicle then print('no such vehicle ' .. vehicleId); return; end
-		local part = vehicle:getPartById(partId);
-		if not part then print('no such part in vehicle ' .. partId); return; end
-		if installing then
-			chr:addMechanicsItem(itemId .. vehicle:getMechanicalID() .. "1", part, getGameTime():getCalender():getTimeInMillis());
-		else
-			chr:addMechanicsItem(itemId .. vehicle:getMechanicalID() .. "0", part, getGameTime():getCalender():getTimeInMillis());
-		end
-	end
-	
+ISVehicleMechanics.OnMechanicActionDone = function(chr, success)
 	local ui = getPlayerMechanicsUI(chr:getPlayerNum());
 	if ui and ui:isReallyVisible() then
 		if success then ui:startFlashGreen()
 		else ui:startFlashRed() end
-	end
-	
-	-- Give some exp if you fail
-	if not success then
-		chr:getXp():AddXP(Perks.Mechanics, 1);
 	end
 end
 

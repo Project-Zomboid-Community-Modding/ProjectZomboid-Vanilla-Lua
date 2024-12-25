@@ -7,6 +7,8 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 RWMChannelTV = RWMPanel:derive("RWMChannelTV");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
 
 function RWMChannelTV:initialise()
     ISPanel.initialise(self)
@@ -14,20 +16,21 @@ end
 
 function RWMChannelTV:createChildren()
     local y = 0;
-    self.comboBox = ISComboBox:new (10, 5, self.width-20, FONT_HGT_SMALL + 2 * 2, self, RWMChannelTV.comboChange)
+    self.comboBox = ISComboBox:new (UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.width-UI_BORDER_SPACING*2-2, BUTTON_HGT, self, RWMChannelTV.comboChange)
     self.comboBox:initialise();
     self:addChild(self.comboBox);
 
     y = self.comboBox:getY() + self.comboBox:getHeight();
 
-    self.tuneInButton = ISButton:new(10, y+5, self.width-20, FONT_HGT_SMALL + 1 * 2, getText("IGUI_RadioTuneIn"),self, RWMChannelTV.doTuneInButton);
+    self.tuneInButton = ISButton:new(UI_BORDER_SPACING+1, y+UI_BORDER_SPACING, self.width-UI_BORDER_SPACING*2-2, BUTTON_HGT, getText("IGUI_RadioTuneIn"),self, RWMChannelTV.doTuneInButton);
     self.tuneInButton:initialise();
     self.tuneInButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.tuneInButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
     self.tuneInButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+    self.tuneInButton:setSound("activate", nil)
     self:addChild(self.tuneInButton);
 
-    y = self.tuneInButton:getY() + self.tuneInButton:getHeight() + 5;
+    y = self.tuneInButton:getY() + self.tuneInButton:getHeight() + UI_BORDER_SPACING+1;
 
     self:setHeight( y );
 end
@@ -111,7 +114,7 @@ function RWMChannelTV:update()
     ISPanel.update(self);
 
     if self.comboBox and self.comboBox.expanded == true and self.lastModeExpanded == false then
-        local a,b = self.comboBox:getY()+self.comboBox:getHeight()+5, self.tuneInButton:getY()+self.tuneInButton:getHeight()+5;
+        local a,b = self.comboBox:getY()+self.comboBox:getHeight()+UI_BORDER_SPACING+1, self.tuneInButton:getY()+self.tuneInButton:getHeight()+UI_BORDER_SPACING+1;
         self:setHeight( a > b and a or b);
         --self:setHeight(self.comboBox:getY()+self.comboBox:getHeight()+5);
         --print("height: ",( a > b and a or b) );
@@ -122,7 +125,7 @@ function RWMChannelTV:update()
         end
         self.lastModeExpanded = true;
     elseif self.comboBox and self.comboBox.expanded == false and self.lastModeExpanded == true then
-        self:setHeight(self.tuneInButton:getY()+self.tuneInButton:getHeight()+5);
+        self:setHeight(self.tuneInButton:getY()+self.tuneInButton:getHeight()+UI_BORDER_SPACING+1);
         if self.parent then
             self.parent:calculateHeights();
         end

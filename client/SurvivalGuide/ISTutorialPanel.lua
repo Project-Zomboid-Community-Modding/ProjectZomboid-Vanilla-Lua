@@ -6,6 +6,8 @@ require "ISUI/ISScrollingListBox"
 ISTutorialPanel = ISCollapsableWindowJoypad:derive("ISTutorialPanel");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 -----
 
@@ -132,8 +134,8 @@ end
 ISSurvivalGuideRightPanel = ISPanelJoypad:derive("ISSurvivalGuideRightPanel")
 
 function ISSurvivalGuideRightPanel:createChildren()
-	local tickHgt = math.max(FONT_HGT_SMALL + 4, 20)
-	local richText = ISRichTextPanel:new(1, 1, self.width - 2, self.height - 2 - tickHgt - 10)
+	local tickHgt = BUTTON_HGT
+	local richText = ISRichTextPanel:new(1, 1, self.width - 2, self.height - 2 - tickHgt - UI_BORDER_SPACING*2)
 	richText:setAnchorBottom(true)
 	local scrollbarWidth = 13
 	richText.marginLeft, richText.marginRight, richText.marginTop, richText.marginBottom = 4,4+scrollbarWidth,4,4
@@ -144,7 +146,7 @@ function ISSurvivalGuideRightPanel:createChildren()
 	richText:addScrollBars();
 	self.richText = richText
 
-	local tickBox = ISTickBox:new(10, richText:getBottom() + 10, self.width - 10 * 2, tickHgt, "", self, self.onTickBox)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, richText:getBottom() + UI_BORDER_SPACING, self.width - UI_BORDER_SPACING * 2, tickHgt, "", self, self.onTickBox)
 	tickBox:setAnchorTop(false)
 	tickBox:setAnchorRight(true)
 	tickBox:setAnchorBottom(true)
@@ -231,16 +233,16 @@ end
 --************************************************************************--
 function ISTutorialPanel:createChildren()
 	ISCollapsableWindowJoypad.createChildren(self)
-
+	local scrollBarWidth = 13
 	local chapterWidth = 200
 	for i=1,SurvivalGuideEntries.list:size() do
 		local entry = SurvivalGuideEntries.getEntry(i-1)
 		local width = getTextManager():MeasureStringX(UIFont.Small, entry.title)
-		chapterWidth = math.max(chapterWidth, width + 6 * 2)
+		chapterWidth = math.max(chapterWidth, width + UI_BORDER_SPACING * 2 + scrollBarWidth)
 	end
 
-	local showGuideWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Tutorial_ShowGuide"))
-	local rightWidth = math.max(240, 10 + 16 + 4 + showGuideWidth + 10)
+	local showGuideWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Tutorial_ShowGuide")) + BUTTON_HGT + UI_BORDER_SPACING
+	local rightWidth = math.max(240, showGuideWidth + UI_BORDER_SPACING*2)
 
 	if chapterWidth + 500 + rightWidth > getCore():getScreenWidth() then
 		chapterWidth = 200
@@ -251,7 +253,7 @@ function ISTutorialPanel:createChildren()
 
 	local reloadBtnHgt = 0
 	if getDebug() then
-		reloadBtnHgt = FONT_HGT_SMALL + 3 * 2
+		reloadBtnHgt = BUTTON_HGT
 		local reloadBtn = ISButton:new(0, self.content.height - reloadBtnHgt, chapterWidth, reloadBtnHgt, "DBG: RELOAD", self, self.reload)
 		self.content:addChild(reloadBtn)
 	end

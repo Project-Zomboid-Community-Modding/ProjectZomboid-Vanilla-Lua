@@ -39,13 +39,8 @@ function ISCampingInfoAction:perform()
 end
 
 function ISCampingInfoAction:new(character, campfireObject, campfire)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
+	local o = ISBaseTimedAction.new(self, character)
 	o.maxTime = 0
-	o.stopOnWalk = true
-	o.stopOnRun = true
-	o.character = character
 	o.playerNum = character:getPlayerNum()
 	o.campfire = campfireObject
 	o.campfireTable = campfire

@@ -8,13 +8,13 @@ end
 
 function ISBuildCursorMouse:render(x, y, z, square)
 	self.sq = square;
-	if self.sprite or self.previousSprite then
-		if not self.sprite then
-			self.sprite = self.previousSprite;
+	if self.chosenSprite or self.previousSprite then
+		if not self.chosenSprite then
+			self.chosenSprite = self.previousSprite;
 		end
-		self.previousSprite = self.sprite;
+		self.previousSprite = self.chosenSprite;
 		ISBuildCursorMouse.spriteRender = IsoSprite.new()
-		ISBuildCursorMouse.spriteRender:LoadFramesNoDirPageSimple(self.sprite)
+		ISBuildCursorMouse.spriteRender:LoadSingleTexture(self.chosenSprite)
 		local r,g,b,a = 0.0,1.0,0.0,0.8
 		if not self:isValid(square) then
 			r = 1.0
@@ -51,7 +51,9 @@ function ISBuildCursorMouse:renderTooltip()
 		self.tooltip:addToUIManager()
 		self.tooltip.followMouse = not self.joyfocus
 		self.tooltip.maxLineWidth = 1000
+		self.tooltip:setTexture(self.chosenSprite)
 	else
+		self.tooltip:setName(self.tooltipName);
 		self.tooltip.description = self.tooltipTxt;
 	end
 end

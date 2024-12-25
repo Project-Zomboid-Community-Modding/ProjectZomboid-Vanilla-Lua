@@ -132,7 +132,6 @@ end
 
 function ISBodyPartPanel:createChildren()
     ISPanelJoypad.createChildren(self)
-    --instanceItem("item");
 end
 
 function ISBodyPartPanel:prerender()

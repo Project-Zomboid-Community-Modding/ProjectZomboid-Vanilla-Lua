@@ -10,17 +10,21 @@ require "ISUI/ISScrollingListBox"
 ISSpawnPointsEditor = ISCollapsableWindow:derive("ISSpawnPointsEditor")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISSpawnPointsEditor:createChildren()
 	ISCollapsableWindow.createChildren(self)
-	
+
 	local th = self:titleBarHeight()
-	local rh = self:resizeWidgetHeight()
 
-	local itemPadY = 3
-	local itemHgt = FONT_HGT_SMALL + itemPadY * 2
+	local itemPadY = (BUTTON_HGT-FONT_HGT_SMALL)/2
+	--local scrollBarWidth = 13
+	--local pointListWidth = getTextManager():MeasureStringX(UIFont.Small, "X: 00000, Y: 00000, Z: 000") + scrollBarWidth + 1
 
-	self.mapList = ISScrollingListBox:new(4, th + 4, 200, itemHgt * 4)
+	self.mapList = ISScrollingListBox:new(UI_BORDER_SPACING+1, th + UI_BORDER_SPACING, 300, self.height - th - UI_BORDER_SPACING*2 - 1)
 	self.mapList:initialise()
 	self.mapList:instantiate()
 	self.mapList.drawBorder = true
@@ -28,7 +32,7 @@ function ISSpawnPointsEditor:createChildren()
 	self.mapList:setOnMouseDownFunction(self, self.onMapSelected)
 	self:addChild(self.mapList)
 
-	self.professionList = ISScrollingListBox:new(4, self.mapList:getBottom() + 4, self.mapList:getWidth(), self.height - rh - 4 - self.mapList:getBottom() - 4)
+	self.professionList = ISScrollingListBox:new(self.mapList:getRight() + UI_BORDER_SPACING, self.mapList.y, self.mapList:getWidth(), self.mapList:getHeight())
 	self.professionList.anchorBottom = true
 	self.professionList:initialise()
 	self.professionList:instantiate()
@@ -37,7 +41,7 @@ function ISSpawnPointsEditor:createChildren()
 	self.professionList:setOnMouseDownFunction(self, self.onProfessionSelected)
 	self:addChild(self.professionList)
 
-	self.pointList = ISScrollingListBox:new(self.mapList:getRight() + 4, th + 4, self.width - 4 - self.mapList:getRight() - 4, self.height - rh - th - 4 * 2)
+	self.pointList = ISScrollingListBox:new(self.professionList:getRight() + UI_BORDER_SPACING, self.mapList.y, self.width - self.professionList:getRight() - UI_BORDER_SPACING*2 - 1, self.mapList:getHeight())
 	self.pointList.anchorBottom = true
 	self.pointList.anchorRight = true
 	self.pointList.doDrawItem = self.doDrawPointListItem
@@ -72,6 +76,9 @@ end
 
 function ISSpawnPointsEditor:doDrawPointListItem(y, item, alt)
 	local point = item.item.point
+	if point == nil then
+		return
+	end
 
 	local x = 10
 
@@ -82,10 +89,12 @@ function ISSpawnPointsEditor:doDrawPointListItem(y, item, alt)
 		self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 2, 0.25, 1.0, 1.0, 1.0)
 	end
 
-	local gx = point.worldX * 300 + point.posX + 0.5
-	local gy = point.worldY * 300 + point.posY + 0.5
+	-- This is the new format with square coordinates and no cell coordinates.
+
+	local gx = point.posX and point.posX + 0.5 or 0.5
+	local gy = point.posY and point.posY + 0.5 or 0.5
 	local gz = point.posZ or 0
-	local text = string.format("cell=%d,%d   pos=%d,%d,%d   square=%d,%d,%d", point.worldX, point.worldY, point.posX, point.posY, gz, gx, gy, gz)
+	local text = string.format("X: %d, Y: %d, Z: %d", gx, gy, gz)
 	self:drawText(text, x, y + (self.itemheight - self.fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
 
 	self:drawRect(0, y + item.height - 1, self.width, 1, 1.0, 0.5, 0.5, 0.5)
@@ -103,7 +112,7 @@ function ISSpawnPointsEditor:onMapSelected(directory)
 	local spawnPointTable = SpawnPoints()
 	for profession,points in pairs(spawnPointTable) do
 		for _,point in ipairs(points) do
-			point.posZ = point.posZ or 0
+			self:normalizePoint(point)
 		end
 		self.professionList:addItem(profession, { profession = profession, points = points })
 	end
@@ -129,16 +138,15 @@ end
 function ISSpawnPointsEditor:onPointDoubleClick(item)
 	local point = item.point
 	local playerObj = getSpecificPlayer(0)
-	local x = point.worldX * 300 + point.posX + 0.5
-	local y = point.worldY * 300 + point.posY + 0.5
-	local z = point.posZ or 0
-
+	local x = point.posX + 0.5
+	local y = point.posY + 0.5
+	local z = point.posZ
 	playerObj:setX(x)
 	playerObj:setY(y)
 	playerObj:setY(z)
-	playerObj:setLx(x)
-	playerObj:setLy(y)
-	playerObj:setLz(z)
+	playerObj:setLastX(x)
+	playerObj:setLastY(y)
+	playerObj:setLastZ(z)
 end
 
 function ISSpawnPointsEditor:PointList_onRightMouseUp(x, y)
@@ -146,25 +154,38 @@ function ISSpawnPointsEditor:PointList_onRightMouseUp(x, y)
 	local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
 
 	local subMenu = context:getNew(context)
-	subMenu:addOption("This Profession Only", self.parent, ISSpawnPointsEditor.onSetPointToPlayerPosition, false)
-	subMenu:addOption("All Professions", self.parent, ISSpawnPointsEditor.onSetPointToPlayerPosition, true)
-	local option = context:addOption("Change Selected Point To Player's Position", nil, nil)
+	subMenu:addOption(getText("IGUI_SpawnPointsEditor_ThisProfession"), self.parent, ISSpawnPointsEditor.onSetPointToPlayerPosition, false)
+	subMenu:addOption(getText("IGUI_SpawnPointsEditor_AllProfessions"), self.parent, ISSpawnPointsEditor.onSetPointToPlayerPosition, true)
+	local option = context:addOption(getText("IGUI_SpawnPointsEditor_ChangePoint"), nil, nil)
 	option.notAvailable = self:size() == 0
 	context:addSubMenu(option, subMenu)
 
 	subMenu = context:getNew(context)
-	subMenu:addOption("This Profession Only", self.parent, ISSpawnPointsEditor.onRemovePoint, false)
-	subMenu:addOption("All Professions", self.parent, ISSpawnPointsEditor.onRemovePoint, true)
-	option = context:addOption("Remove Selected Point", nil, nil)
+	subMenu:addOption(getText("IGUI_SpawnPointsEditor_ThisProfession"), self.parent, ISSpawnPointsEditor.onRemovePoint, false)
+	subMenu:addOption(getText("IGUI_SpawnPointsEditor_AllProfessions"), self.parent, ISSpawnPointsEditor.onRemovePoint, true)
+	option = context:addOption(getText("IGUI_SpawnPointsEditor_RemovePoint"), nil, nil)
 	option.notAvailable = self:size() == 0
 	context:addSubMenu(option, subMenu)
 
-	context:addOption("Copy All To Clipboard", self.parent, ISSpawnPointsEditor.onCopyToClipboard)
+	context:addOption(getText("IGUI_SpawnPointsEditor_CopyToClipboard"), self.parent, ISSpawnPointsEditor.onCopyToClipboard)
+end
+
+function ISSpawnPointsEditor:normalizePoint(point)
+	if point.worldX ~= nil then
+		-- This is the old format with 300x300 cell coordinates.
+		point.posX = point.worldX * 300 + point.posX
+		point.posY = point.worldY * 300 + point.posY
+		point.z = point.z or 0
+		return point
+	end
+	point.z = point.z or 0
+	return point
 end
 
 function ISSpawnPointsEditor:isSamePoint(point1, point2)
-	return (point1.worldX == point2.worldX) and (point1.worldY == point2.worldY) and
-		(point1.posX == point2.posX) and (point1.posY == point2.posY) and (point1.posZ == point2.posZ)
+	self:normalizePoint(point1)
+	self:normalizePoint(point2)
+	return (point1.posX == point2.posX) and (point1.posY == point2.posY) and (point1.posZ == point2.posZ)
 end
 
 function ISSpawnPointsEditor:onSetPointToPlayerPosition(allProfessions)
@@ -174,19 +195,15 @@ function ISSpawnPointsEditor:onSetPointToPlayerPosition(allProfessions)
 
 	local playerObj = getSpecificPlayer(0)
 	local point1 = {}
-	point1.worldX = math.floor(playerObj:getX() / 300)
-	point1.worldY = math.floor(playerObj:getY() / 300)
-	point1.posX = math.floor(playerObj:getX() % 300)
-	point1.posY = math.floor(playerObj:getY() % 300)
-	point1.posZ = math.floor(playerObj:getZ())
+	point1.posX = fastfloor(playerObj:getX())
+	point1.posY = fastfloor(playerObj:getY())
+	point1.posZ = fastfloor(playerObj:getZ())
 
 	if allProfessions then
 		for _,professionItem in ipairs(self.professionList.items) do
 			local points = professionItem.item.points
 			for _,point2 in ipairs(points) do
 				if self:isSamePoint(pointCopy, point2) then
-					point2.worldX = point1.worldX
-					point2.worldY = point1.worldY
 					point2.posX = point1.posX
 					point2.posY = point1.posY
 					point2.posZ = point1.posZ
@@ -197,8 +214,6 @@ function ISSpawnPointsEditor:onSetPointToPlayerPosition(allProfessions)
 	end
 
 	local point = item.item.point
-	point.worldX = point1.worldX
-	point.worldY = point1.worldY
 	point.posX = point1.posX
 	point.posY = point1.posY
 	point.posZ = point1.posZ
@@ -246,8 +261,8 @@ function ISSpawnPointsEditor:onCopyToClipboard()
 		local points = professionItem.item.points
 		text = text .. "  " .. profession .. " = {\n"
 		for j,point in ipairs(points) do
-			text = text .. string.format("    { worldX = %d, worldY = %d, posX = %d, posY = %d, posZ = %d }",
-				point.worldX, point.worldY, point.posX, point.posY, point.posZ)
+			text = text .. string.format("    { posX = %d, posY = %d, posZ = %d }",
+				point.posX, point.posY, point.posZ)
 			if j == #points then
 				text = text .. "\n"
 			else
@@ -269,7 +284,9 @@ function ISSpawnPointsEditor:close()
 end
 
 function ISSpawnPointsEditor:new()
-	local o = ISCollapsableWindow.new(self, 100, 100, 550, 400)
-	o.title = "Spawn Points"
+
+	local o = ISCollapsableWindow.new(self, 100, 100, 300 * 2 + getTextManager():MeasureStringX(UIFont.Small, "X: 00000, Y: 00000, Z: 000") + 12 + UI_BORDER_SPACING*4 + 2, 400)
+	o.title = getText("IGUI_DebugContext_SpawnPoints")
+	o:setResizable(false)
 	return o
 end

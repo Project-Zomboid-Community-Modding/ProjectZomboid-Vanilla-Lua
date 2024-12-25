@@ -6,6 +6,8 @@
 
 require "DebugUIs/DebugMenu/Statistic/StatisticChart"
 
+local UI_BORDER_SPACING = 10
+
 StatisticChartUpdatePeriod = StatisticChart:derive("StatisticChartUpdatePeriod");
 StatisticChartUpdatePeriod.instance = nil;
 StatisticChartUpdatePeriod.shiftDown = 0;
@@ -31,7 +33,7 @@ function StatisticChartUpdatePeriod.OnOpenPanel()
 
     StatisticChartUpdatePeriod.instance:addToUIManager();
     StatisticChartUpdatePeriod.instance:setVisible(true);
-	StatisticChartUpdatePeriod.instance.title = "Statistic Chart Update Period"
+	StatisticChartUpdatePeriod.instance.title = getText("IGUI_StatisticChart_UpdatePeriod")
     return StatisticChartUpdatePeriod.instance;
 end
 
@@ -45,14 +47,18 @@ Events.OnServerStatisticReceived.Add(StatisticChartUpdatePeriod.OnServerStatisti
 
 function StatisticChartUpdatePeriod:createChildren()
     StatisticChart.createChildren(self);
-	
-	local labelWidth = 250
+
+    local labelWidth = math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Min")..": "),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Max")..": "),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Average")..": ")
+    )
 	x = self.historyM1:getX()
 	y = self.historyM1:getY()+self.historyM1:getHeight()
-	y = y+8;
-    y = self:addLabelValue(x+5, y, labelWidth, "value","Min","Min:",0);
-	y = self:addLabelValue(x+5, y, labelWidth, "value","Max","Max:",0);
-	y = self:addLabelValue(x+5, y, labelWidth, "value","AVG","AVG:",0);
+    y = self:addLabelValue(x, y, labelWidth, "value","Min",getText("IGUI_DebugMenu_Min")..":",0);
+	y = self:addLabelValue(x, y, labelWidth, "value","Max",getText("IGUI_DebugMenu_Max")..":",0);
+	y = self:addLabelValue(x, y, labelWidth, "value","Avg",getText("IGUI_DebugMenu_Average")..":",0);
+    self:setHeight(y+UI_BORDER_SPACING)
 end
 
 function StatisticChartUpdatePeriod:updateValues()
@@ -68,7 +74,7 @@ end
 function StatisticChartUpdatePeriod:initVariables()
 	StatisticChart.initVariables(self);
 	
-	self:addVarInfo("Min","Min",-1,1000,"minUpdatePeriod");
-	self:addVarInfo("Max","Max",-1,1000,"maxUpdatePeriod");
-	self:addVarInfo("AVG","AVG",-1,1000,"avgUpdatePeriod");
+	self:addVarInfo("Min",getText("IGUI_DebugMenu_Min"),-1,1000,"minUpdatePeriod");
+	self:addVarInfo("Max",getText("IGUI_DebugMenu_Max"),-1,1000,"maxUpdatePeriod");
+	self:addVarInfo("Avg",getText("IGUI_DebugMenu_Average"),-1,1000,"avgUpdatePeriod");
 end

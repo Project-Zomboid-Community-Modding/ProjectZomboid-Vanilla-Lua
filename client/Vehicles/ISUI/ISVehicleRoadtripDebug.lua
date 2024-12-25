@@ -72,7 +72,7 @@ function ISVehicleRoadtripDebug:startRoadtrip()
 	end
 	
 	if self.vehicle:getPartById("Battery") and self.vehicle:getPartById("Battery"):getInventoryItem() then
-		self.initialBattery = self.vehicle:getPartById("Battery"):getInventoryItem():getUsedDelta();
+		self.initialBattery = self.vehicle:getPartById("Battery"):getInventoryItem():getCurrentUsesFloat();
 	else
 		self.initialBattery = 0;
 	end
@@ -117,9 +117,9 @@ function ISVehicleRoadtripDebug:render()
 		startingListY = startingListY + 30;
 		
 		if self.vehicle:getPartById("Battery") and self.vehicle:getPartById("Battery"):getInventoryItem() then
-			local chargeChange = round((self.vehicle:getPartById("Battery"):getInventoryItem():getUsedDelta() - self.initialBattery) * 100, 2);
+			local chargeChange = round((self.vehicle:getPartById("Battery"):getInventoryItem():getCurrentUsesFloat() - self.initialBattery) * 100, 2);
 			if chargeChange ~= 0 then
-				local batteryTxt = "Battery charge: " .. round(self.vehicle:getPartById("Battery"):getInventoryItem():getUsedDelta()*100, 2) .. "%";
+				local batteryTxt = "Battery charge: " .. round(self.vehicle:getPartById("Battery"):getInventoryItem():getCurrentUsesFloat()*100, 2) .. "%";
 				self:drawText(batteryTxt, x, y, 1, 1, 1, 1, UIFont.Small);
 				if chargeChange > 0 then
 					self:drawText(" (+" .. chargeChange .. "%)", x + getTextManager():MeasureStringX(UIFont.Small, batteryTxt), y, 0.2, 1, 0.2, 1, UIFont.Small);
@@ -127,7 +127,7 @@ function ISVehicleRoadtripDebug:render()
 					self:drawText(" (" .. chargeChange .. "%)", x + getTextManager():MeasureStringX(UIFont.Small, batteryTxt), y, 1, 0.2, 0.2, 1, UIFont.Small);
 				end
 			else
-				self:drawText("Battery charge: " .. round(self.vehicle:getPartById("Battery"):getInventoryItem():getUsedDelta()*100, 2) .. "%", x, y, 1, 1, 1, 1, UIFont.Small);
+				self:drawText("Battery charge: " .. round(self.vehicle:getPartById("Battery"):getInventoryItem():getCurrentUsesFloat()*100, 2) .. "%", x, y, 1, 1, 1, 1, UIFont.Small);
 			end
 			y = y + 20;
 			startingListY = startingListY + 20;

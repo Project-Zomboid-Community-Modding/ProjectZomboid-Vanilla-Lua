@@ -6,6 +6,19 @@
 require "ISUI/ISPanel"
 
 ISSkillProgressBar = ISPanel:derive("ISSkillProgressBar");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local SKILL_POINT_HGT = math.floor((FONT_HGT_SMALL + 6)/2)
+local SKILL_POINT_SPACING = getCore():getOptionFontSizeReal()
+
+--Good Highlight Color for newly acquired skills
+local GHCr = getCore():getGoodHighlitedColor():getR()
+local GHCg = getCore():getGoodHighlitedColor():getG()
+local GHCb = getCore():getGoodHighlitedColor():getB()
+
+--Target Color for already acquired skills
+local TARr = 1
+local TARg = 0.89
+local TARb = 0.38
 
 ISSkillProgressBar.alpha = 0.0;
 ISSkillProgressBar.upAlpha = true;
@@ -31,7 +44,7 @@ end
 -- when you click on an available skill
 function ISSkillProgressBar:onMouseUp(x, y)
 	-- our selected lvl
-	local lvlSelected = math.floor(self:getMouseX()/20);
+	local lvlSelected = math.floor(self:getMouseX()/(SKILL_POINT_HGT+SKILL_POINT_SPACING));
 	-- if you have skill pts and the skill is ready to evolve and if you clicked on the right lvl
 	if self.xp >= self.xpForLvl and self.level == lvlSelected and not self.perk:isPassiv() then
 		self.char:LevelPerk(self.perk:getType());
@@ -67,6 +80,11 @@ function ISSkillProgressBar:updateTooltip(lvlSelected)
 	else
 		self.message = self.message .. " <LINE> " .. xpSystemText.locked;
     end
+	self.message = self.message .. " <LINE><LINE> " .. getText("IGUI_perks_"..self.perk:getName().."_Description")
+	local failtext = "IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1
+	if getText("IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1) ~= failtext then
+		self.message = self.message .. " <LINE><LINE> " .. getText("IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1)
+	end
     local xpBoost = self.char:getXp():getPerkBoost(self.perk:getType());
     local percentage = nil;
     if xpBoost == 1 then
@@ -89,7 +107,7 @@ function ISSkillProgressBar:onMouseMove(dx, dy)
 	end
 	-- display the tooltip
 	-- first we get the square the mouse is on
-	local lvlSelected = math.floor(self:getMouseX()/20);
+	local lvlSelected = math.floor(self:getMouseX()/(SKILL_POINT_HGT+SKILL_POINT_SPACING));
 	if lvlSelected > 9 then
 		return;
 	end
@@ -133,11 +151,23 @@ function ISSkillProgressBar:renderPerkRect()
 --~ 		self:drawRect(x, y, 19, 19, 1.0, 1.0, 1.0, 1.0);
 		if self.parent.lastLeveledUpPerk == self.perk then
 			--this fades over time to return to the original colour
-			self:drawTexture(self.UnlockedSkill, x, y, 1,1-self.parent.lastLevelUpTime,1,1-self.parent.lastLevelUpTime);
+
+			local lastLevelUpTime = self.parent.lastLevelUpTime
+			local OneMinus = 1-lastLevelUpTime
+			local lerpR = TARr*OneMinus + GHCr*lastLevelUpTime
+			local lerpG = TARg*OneMinus + GHCg*lastLevelUpTime
+			local lerpB = TARb*OneMinus + GHCb*lastLevelUpTime
+
+
+			--a * (1-t) + b * t
+
+			self:drawTextureScaled(self.SkillUnitFilled, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,lerpR,lerpG,lerpB);
+			self:drawTextureScaled(self.SkillUnitBorder, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,lerpR,lerpG,lerpB);
 		else
-			self:drawTexture(self.UnlockedSkill, x, y, 1,1,1,1);
+			self:drawTextureScaled(self.SkillUnitFilled, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,TARr,TARg,TARb);
+			self:drawTextureScaled(self.SkillUnitBorder, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,TARr,TARg,TARb);
 		end
-		x = x + 20;
+		x = x + SKILL_POINT_HGT+SKILL_POINT_SPACING;
 	end
 	-- the most important square : the one in progress !
 	-- for this one we got multiple choice :
@@ -148,7 +178,7 @@ function ISSkillProgressBar:renderPerkRect()
 	if self.level < 10 then
 		-- we gonna fill with light grey our rect, depending on the progress of our lvl (50% xp mean a rect filled at 50%)
 		-- this width correspond to 1% xp progress
-		local sliceWidth = 18 / 100;
+		local sliceWidth = (SKILL_POINT_HGT) / 100;
 		-- our progress into the current lvl in %
 		local percentProgress = (self.xp / self.xpForLvl) * 100;
 		if percentProgress < 0 then percentProgress = 0 end
@@ -156,23 +186,23 @@ function ISSkillProgressBar:renderPerkRect()
 		-- our border, a bit darker than the filled rect or if the skill is rdy to unlock it's a white border
 		if percentProgress == 100 then
 			if self.perk:isPassiv() then
-				self:drawTexture(self.UnlockedSkill, x, y, 1,1,1,1);
+				self:drawTextureScaled(self.SkillUnitFilled, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,TARr,TARg,TARb);
 			else -- the skill is ready to be trained but no skill pts available, we set up just a white border
-					self:drawTexture(self.ProgressSkill, x, y, 1,1,1,1);
-				self:drawTexture(self.SkillBtnEmptWhitey, x, y, 1,1,1,1);
+					self:drawTextureScaled(self.SkillUnitFilled, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1,TARr,TARg,TARb);
+				self:drawTextureScaled(self.SkillUnitBorder, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1, 1, 1, 1);
 			end
 		else -- skill is in progress, we set up a grey rect and fill it depending on the skill progress
-			self:drawTexture(self.SkillBtnEmpty, x, y, 1,1,1,1);
-			self:drawTextureScaled(self.ProgressSkill, x, y, sliceWidth * percentProgress, 18, 1,1,1,1);
+			self:drawTextureScaled(self.SkillUnitBorder, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1, 0.4, 0.4, 0.4);
+			self:drawTextureScaled(self.SkillUnitFilled, x, y, sliceWidth * percentProgress, SKILL_POINT_HGT, 1,0.4,0.4,0.4);
 		end
-		x = x + 20;
+		x = x + SKILL_POINT_HGT+SKILL_POINT_SPACING;
 	end
 
 	-- our last square : the no available ones, this is just an empty dark grey rect
 	for i=self.level + 1, 9 do
 --~ 		self:drawRect(x, y, 19, 19, 0.5, 0.41, 0.41, 0.41);
-		self:drawTexture(self.SkillBtnEmpty, x, y, 1,1,1,1);
-		x = x + 20;
+		self:drawTextureScaled(self.SkillUnitBorder, x, y, SKILL_POINT_HGT, SKILL_POINT_HGT, 1, 0.2, 0.2, 0.2);
+		x = x + SKILL_POINT_HGT+SKILL_POINT_SPACING;
 	end
 end
 
@@ -194,7 +224,7 @@ end
 
 function ISSkillProgressBar:new (x, y, width, height, playerNum, perk, parent)
 	local o = {};
-	o = ISPanel:new(x, y, 200, 19);
+	o = ISPanel:new(x, y, (SKILL_POINT_HGT+SKILL_POINT_SPACING)*10, SKILL_POINT_HGT);
 	setmetatable(o, self);
 	self.__index = self;
 	o.playerNum = playerNum
@@ -209,12 +239,12 @@ function ISSkillProgressBar:new (x, y, width, height, playerNum, perk, parent)
 	o.level = o.char:getPerkLevel(perk:getType());
 	-- how much xp we need for the next lvl
 	o.xpForLvl = ISSkillProgressBar.getXpForLvl(perk, o.level);
-	o.UnlockedSkill = getTexture("media/ui/XpSystemUI/UnlockedSkill.png")
-	o.AddSkillBtn = getTexture("media/ui/XpSystemUI/AddSkillBtn.png")
-	o.SkillBtnEmptyBig = getTexture("media/ui/XpSystemUI/SkillBtnEmptyBig.png")
-	o.ProgressSkill = getTexture("media/ui/XpSystemUI/ProgressSkill.png")
-	o.SkillBtnEmpty = getTexture("media/ui/XpSystemUI/SkillBtnEmpty.png")
-	o.SkillBtnEmptWhitey = getTexture("media/ui/XpSystemUI/SkillBtnEmptWhitey.png")
+	o.SkillUnitFilled = getTexture("media/ui/SkillPanel/SkillUnit_Fill.png")
+	o.SkillUnitBorder = getTexture("media/ui/SkillPanel/SkillUnit_Border.png")
+	--o.AddSkillBtn = getTexture("media/ui/XpSystemUI/AddSkillBtn.png")
+	--o.SkillBtnEmptyBig = getTexture("media/ui/XpSystemUI/SkillBtnEmptyBig.png")
+	--o.ProgressSkill = getTexture("media/ui/XpSystemUI/ProgressSkill.png")
+	--o.SkillBtnEmptWhitey = getTexture("media/ui/XpSystemUI/SkillBtnEmptWhitey.png")
 	return o;
 end
 

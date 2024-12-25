@@ -8,6 +8,7 @@ ISCharacterProtection = ISPanelJoypad:derive("ISCharacterProtection");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
 
 function ISCharacterProtection:initialise()
 	ISPanelJoypad.initialise(self);
@@ -24,11 +25,12 @@ function ISCharacterProtection:createChildren()
 		{ val = 100, color = Color.new(getCore():getGoodHighlitedColor():getR(),getCore():getGoodHighlitedColor():getG(),getCore():getGoodHighlitedColor():getB(),1)},
     }
 
-    local y = 8;
-    self.bpPanelX = 0;
-    self.bpPanelY = y;
-    self.bpAnchorX = 123;
-    self.bpAnchorY = 50;
+    local y = UI_BORDER_SPACING+1;
+	local x = UI_BORDER_SPACING+1;
+    self.bpPanelX = self.bodyOutline:getWidth()-123+2 + x;
+    self.bpPanelY = self.bodyOutline:getHeight()-302+2 + y;
+    --self.bpAnchorX = 123; < these aren't even used
+    --self.bpAnchorY = 50;
     self.bodyPartPanel = ISBodyPartPanel:new(self.char, self.bpPanelX, self.bpPanelY, self, nil);
     self.bodyPartPanel.maxValue = 100;
     self.bodyPartPanel.canSelect = false;
@@ -59,18 +61,18 @@ function ISCharacterProtection:render()
 	local biteWidth = getTextManager():MeasureStringX(UIFont.Small, labelBite);
 	local scratchWidth = getTextManager():MeasureStringX(UIFont.Small, labelScratch);
 	
-	local xOffset = 0;
-	local yOffset = 8;
+	local xOffset = UI_BORDER_SPACING+1;
+	local yOffset = UI_BORDER_SPACING+1;
 	local yText = yOffset;
-	local partX = 150;
-	local biteX = partX + self.maxLabelWidth + 20;
-	local scratchX = biteX + biteWidth + 20;
+	local partX = self.bodyOutline:getWidth()+xOffset+UI_BORDER_SPACING;
+	local biteX = partX + self.maxLabelWidth + UI_BORDER_SPACING;
+	local scratchX = biteX + biteWidth + UI_BORDER_SPACING;
 	--self:drawTexture(self.bodyOutline, xOffset, yOffset, 1, 1, 1, 1);
 	
 	self:drawText(labelPart, partX, yText, 1, 1, 1, 1, UIFont.Small);
 	self:drawText(labelBite, biteX, yText, 1, 1, 1, 1, UIFont.Small);
 	self:drawText(labelScratch, scratchX, yText, 1, 1, 1, 1, UIFont.Small);
-	yText = yText + FONT_HGT_SMALL + 5;
+	yText = yText + FONT_HGT_SMALL + 6;
 
 	-- draw each part as overlay
 	for i=0, BodyPartType.ToIndex(BodyPartType.MAX) do
@@ -115,10 +117,10 @@ function ISCharacterProtection:render()
 		end
 	end
 
-	local width = math.max(self.width, scratchX + scratchWidth + 20);
-	self:setWidthAndParentWidth(width);
+	local width = math.max(self.width, scratchX + scratchWidth + UI_BORDER_SPACING+1);
+	self:setWidthAndParentWidth(math.max(self.width, width));
 
-	local height = math.max(self.height, yText + 20);
+	local height = math.max(self.height, yText + UI_BORDER_SPACING+1);
 	self:setHeightAndParentHeight(height);
 end
 
@@ -230,5 +232,5 @@ function ISCharacterProtection:new(x, y, width, height, playerNum)
 		o.sex = "male";
 	end
 	o.bodyOutline = getTexture("media/ui/defense/" .. o.sex .. "_base.png")
-   return o;
+	return o;
 end

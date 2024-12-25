@@ -857,9 +857,9 @@ end
 
 function Page5:onMouseDownLegal(x, y)
 	if isSteamOverlayEnabled() then
-		activateSteamOverlayToWebPage("http://steamcommunity.com/sharedfiles/workshoplegalagreement")
+		activateSteamOverlayToWebPage("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
 	else
-		openUrl("http://steamcommunity.com/sharedfiles/workshoplegalagreement")
+		openUrl("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
 	end
 end
 
@@ -1483,7 +1483,7 @@ function TagsList:doDrawItem(y, item, alt)
 	end
 	self:drawRectBorder(self.leftMargin, y + boxDY, self.boxSize, self.boxSize, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 	if self.checked[item.text] then
-		self:drawTexture(self.tickTexture, self.leftMargin + 3, y + boxDY + 2, 1, 1, 1, 1)
+		self:drawTextureScaled(self.tickTexture, self.leftMargin + 3, y + boxDY + 2, 16, 16, 1, 1, 1, 1)
 	end
 	self:drawText(item.text, self.leftMargin + self.boxSize + self.textGap, y, 1, 1, 1, 1, self.font)
 	return y + item.height
@@ -1579,7 +1579,7 @@ function TagsList:new(x, y, width, height)
 	o.leftMargin = 5
 	o.boxSize = 16
 	o.textGap = 4
-	o.tickTexture = getTexture("Quest_Succeed")
+	o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png")
 	o.enabled = true
 	return o
 end

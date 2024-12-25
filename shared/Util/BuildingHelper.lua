@@ -67,3 +67,20 @@ BuildingHelper.getFreeTileFromBuilding = function(building)
 
 
 end
+
+BuildingHelper.getShovelAnim = function(item)
+	if not item then
+		return CharacterActionAnims.Dig
+	end
+	if item:getDigType() == "Trowel" or item:getType() == "HandShovel" or item:getType() == "HandFork" or item:getType() == "EntrenchingTool" then
+		return CharacterActionAnims.DigTrowel
+	elseif item:getDigType() == "Hoe" or item:getType() == "GardenHoe" then
+		return CharacterActionAnims.DigHoe
+	elseif item:getDigType() == "PickAxe" or item:getType() == "PickAxe" then
+		return CharacterActionAnims.DigPickAxe
+	elseif item:getDigType() == "Shovel" then
+		return CharacterActionAnims.DigShovel
+	else
+		return CharacterActionAnims.DigShovel
+	end
+end

@@ -70,13 +70,8 @@ function ISOpenContainerTimedAction:perform()
 end
 
 function ISOpenContainerTimedAction:new (character, container, time, x, y)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o.character = character;
+    local o = ISBaseTimedAction.new(self, character)
     o.container = container;
-    o.stopOnWalk = true;
-    o.stopOnRun = true;
     o.maxTime = time;
     o.x = x;
     o.y = y;

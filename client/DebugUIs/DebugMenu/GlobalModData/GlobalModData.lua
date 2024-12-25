@@ -7,6 +7,10 @@ require "ISUI/ISPanel"
 
 GlobalModDataDebug = ISPanel:derive("GlobalModDataDebug");
 GlobalModDataDebug.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function roundstring(_val)
     return tostring(ISDebugUtils.roundNum(_val,2));
@@ -14,7 +18,7 @@ end
 
 function GlobalModDataDebug.OnOpenPanel()
     if GlobalModDataDebug.instance==nil then
-        GlobalModDataDebug.instance = GlobalModDataDebug:new (100, 100, 840, 600, "Global ModData Debugger");
+        GlobalModDataDebug.instance = GlobalModDataDebug:new (100, 100, 800+(getCore():getOptionFontSizeReal()*100), 600, getText("IGUI_DebugMenu_Dev_GlobalModData"));
         GlobalModDataDebug.instance:initialise();
         GlobalModDataDebug.instance:instantiate();
     end
@@ -34,12 +38,14 @@ end
 function GlobalModDataDebug:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "Global ModData Debugger", UIFont.Medium, true)
+    ISDebugUtils.addLabel(self, {}, (self.width-getTextManager():MeasureStringX(self.font, getText("IGUI_DebugMenu_Dev_GlobalModData")))/2, UI_BORDER_SPACING+1, getText("IGUI_DebugMenu_Dev_GlobalModData"), UIFont.Medium, true)
 
-    self.tableNamesList = ISScrollingListBox:new(10, 50, 200, self.height - 100);
+    local yTop = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1
+    local yBottom = UI_BORDER_SPACING*2 + BUTTON_HGT + 1
+    self.tableNamesList = ISScrollingListBox:new(UI_BORDER_SPACING+1, yTop, 200, self.height - yTop - yBottom);
     self.tableNamesList:initialise();
     self.tableNamesList:instantiate();
-    self.tableNamesList.itemheight = 22;
+    self.tableNamesList.itemheight = BUTTON_HGT;
     self.tableNamesList.selected = 0;
     self.tableNamesList.joypadParent = self;
     self.tableNamesList.font = UIFont.NewSmall;
@@ -49,7 +55,7 @@ function GlobalModDataDebug:createChildren()
     self.tableNamesList.target = self;
     self:addChild(self.tableNamesList);
 
-    self.infoList = ISScrollingListBox:new(220, 50, 600, self.height - 100);
+    self.infoList = ISScrollingListBox:new(self.tableNamesList:getRight() + UI_BORDER_SPACING, self.tableNamesList.y, self.width - UI_BORDER_SPACING*3 - 2 - self.tableNamesList.width, self.tableNamesList.height);
     self.infoList:initialise();
     self.infoList:instantiate();
     self.infoList.itemheight = 22;
@@ -60,8 +66,11 @@ function GlobalModDataDebug:createChildren()
     self.infoList.drawBorder = true;
     self:addChild(self.infoList);
 
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),GlobalModDataDebug.onClickClose);
-    y, obj = ISDebugUtils.addButton(self,"refresh",self.width-400,self.height-40,180,20,"Refresh",GlobalModDataDebug.onClickRefresh);
+    local btnWidth = 180
+    local y, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,self.height-BUTTON_HGT-UI_BORDER_SPACING-1, btnWidth, BUTTON_HGT, getText("IGUI_DebugMenu_Close"), GlobalModDataDebug.onClickClose);
+    obj:enableCancelColor()
+    y, obj = ISDebugUtils.addButton(self,"refresh",self.width-(btnWidth+UI_BORDER_SPACING)*2-1,self.height-BUTTON_HGT-UI_BORDER_SPACING-1, btnWidth, BUTTON_HGT, getText("IGUI_DebugMenu_Refresh"), GlobalModDataDebug.onClickRefresh);
+    obj:enableAcceptColor()
 
     self:populateList();
 end

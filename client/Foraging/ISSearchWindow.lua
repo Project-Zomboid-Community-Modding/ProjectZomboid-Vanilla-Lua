@@ -15,6 +15,9 @@ require "Foraging/ISZoneDisplay";
 ISSearchWindow = ISCollapsableWindow:derive("ISSearchWindow");
 ISSearchWindow.players          = {};
 ISSearchWindow.showDebug        = false;
+
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
 -------------------------------------------------
 -------------------------------------------------
 function ISSearchWindow:update()
@@ -209,13 +212,12 @@ function ISSearchWindow:initialise()
 	self:addChild(self.zoneDisplay);
 	--
 	local labelText = getText("UI_search_mode_focus");
-	local h = getTextManager():getFontHeight(UIFont.Small) + 3 * 2;
 	local w = getTextManager():MeasureStringX(UIFont.Small, labelText);
-	local label = ISLabel:new(0 + w + 2, self.zoneDisplay:getBottom() + 2, h, labelText, 1, 1, 1, 1, UIFont.Small);
+	local label = ISLabel:new(UI_BORDER_SPACING + w + 1, self.zoneDisplay:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, labelText, 1, 1, 1, 1, UIFont.Small);
 	label:initialise();
 	self:addChild(label);
 	--
-	self.searchFocus = ISComboBox:new(0 + w + 10, self.zoneDisplay:getBottom() + 2, 300 - w - 10, 20, nil, nil);
+	self.searchFocus = ISComboBox:new(UI_BORDER_SPACING*2 + w + 1, self.zoneDisplay:getBottom() + UI_BORDER_SPACING, self.width - w - UI_BORDER_SPACING*3 - 2, BUTTON_HGT, nil, nil);
 	self.searchFocus:initialise();
 	self.searchFocus.selected	= 1;
 	self:updateSearchFocusCategories();
@@ -223,13 +225,13 @@ function ISSearchWindow:initialise()
 	self.searchFocus.target		= self;
 	self:addChild(self.searchFocus);
 	--
-	self.toggleSearchMode = ISButton:new(0, self.zoneDisplay:getBottom() + 2 + 20, 300, 20, getText("UI_enable_search_mode"), self.manager, ISSearchManager.toggleSearchMode);
+	self.toggleSearchMode = ISButton:new(UI_BORDER_SPACING + 1, self.searchFocus:getBottom() + UI_BORDER_SPACING, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("UI_enable_search_mode"), self.manager, ISSearchManager.toggleSearchMode);
 	self:addChild(self.toggleSearchMode);
 	--
 	self:addToUIManager();
 	self:setVisible(false);
 	self:update();
-	self:setHeight(self.toggleSearchMode:getBottom());
+	self:setHeight(self.toggleSearchMode:getBottom()+UI_BORDER_SPACING+1);
 	self:bringToTop();
 	--
 	self:setInfo(getText("SurvivalGuide_entrie11moreinfo"));
@@ -240,13 +242,13 @@ end
 -------------------------------------------------
 -------------------------------------------------
 function ISSearchWindow:new(_manager)
-	local o = ISCollapsableWindow:new(0, 0, 300, 0);
+	local o = ISCollapsableWindow:new(0, 0, 400, 0);
 	setmetatable(o, self);
 	self.__index = self;
 	--
 	o.x                 	= 120;
 	o.y                 	= 300;
-	o.width             	= 300;
+	o.width             	= 420;
 	o.height            	= 170;
 	--
 	o.joypadMoveSpeed   	= 20;
@@ -256,7 +258,7 @@ function ISSearchWindow:new(_manager)
 	o.showBackground    	= true;
 	o.showBorder        	= true;
 	o.backgroundColor   	= {r=0, g=0, b=0, a=1};
-	o.borderColor       	= {r=0.4, g=0.4, b=0.4, a=0};
+	o.borderColor       	= {r=0.4, g=0.4, b=0.4, a=1};
 	--
 	o.manager           	= _manager;
 	o.character         	= _manager.character;
@@ -331,13 +333,15 @@ Events.OnPlayerDeath.Add(ISSearchWindow.destroyUI);
 function ISSearchWindow.OnFillWorldObjectContextMenu(_player, _context)
 	local character = getSpecificPlayer(_player);
 	local searchWindow = ISSearchWindow.players[character];
-	if searchWindow then
-		if (not searchWindow:getIsVisible()) then
-			_context:addOption(getText("UI_investigate_area_window_show"), character, ISSearchWindow.toggleWindow);
-		else
-			_context:addOption(getText("UI_investigate_area_window_hide"), character, ISSearchWindow.toggleWindow);
-		end;
-	end;
+	if SafeHouse.isSafehouseAllowLoot(character:getSquare(), character) then
+		if searchWindow then
+			if not searchWindow:getIsVisible() then
+				_context:addOption(getText("UI_investigate_area_window_show"), character, ISSearchWindow.toggleWindow);
+			else
+				_context:addOption(getText("UI_investigate_area_window_hide"), character, ISSearchWindow.toggleWindow);
+			end
+		end
+	end
 end
 
 Events.OnFillWorldObjectContextMenu.Add(ISSearchWindow.OnFillWorldObjectContextMenu);

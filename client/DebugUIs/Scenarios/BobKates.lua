@@ -5,24 +5,28 @@ end
 
 debugScenarios.BobKateHouse = {
     name = "Bob Kate House Start",
-  --startLoc = {x=10745, y=9412, z=0 },
-    startLoc = {x=10745, y=9412, z=0 },
+    world = "MuldraughPOT",
+    --startLoc = {x=12025, y=2592, z=0 },
+    startLoc = {x=12367, y=1952, z=0 },
+     --  startLoc = {x=12289, y=1244, z=0 },
+    --   startLoc = {x=12007, y=2051, z=0 },
+
     setSandbox = function()
-        SandboxVars.Zombies = 1;
+        SandboxVars.Zombies = 5;
         SandboxVars.Distribution = 1;
         SandboxVars.DayLength = 3;
         SandboxVars.StartMonth = 12;
         SandboxVars.StartTime = 2;
-        SandboxVars.WaterShutModifier = -1;
-        SandboxVars.ElecShutModifier = -1;
-        SandboxVars.FoodLoot = 1;
-        SandboxVars.WeaponLoot = 1;
-        SandboxVars.OtherLoot = 1;
+        SandboxVars.WaterShutModifier = 110;
+        SandboxVars.ElecShutModifier = 110;
+--         SandboxVars.FoodLoot = 1;
+--         SandboxVars.WeaponLoot = 1;
+--         SandboxVars.OtherLoot = 1;
+        SandboxVars.LootItemRemovalList = "";
         SandboxVars.Temperature = 3;
         SandboxVars.Rain = 3;
         --    SandboxVars.erosion = 12
         SandboxVars.ErosionSpeed = 1
-        SandboxVars.XpMultiplier = "1.0";
         SandboxVars.Farming = 3;
         SandboxVars.NatureAbundance = 5;
         SandboxVars.PlantResilience = 3;
@@ -35,11 +39,19 @@ debugScenarios.BobKateHouse = {
         SandboxVars.LootRespawn = 1;
         SandboxVars.StatsDecrease = 3;
         SandboxVars.StarterKit = false;
-        SandboxVars.TimeSinceApo = 13;
+        SandboxVars.TimeSinceApo = 0;
+
+        SandboxVars.MultiplierConfig = {
+            XPMultiplierGlobal = 1,
+            XPMultiplierGlobalToggle = true,
+        }
 
 
     end,
     onStart = function()
+        getPlayer():getInventory():AddItem("Base.Shovel");
+        local item = getPlayer():getInventory():AddItem("Base.Torch");
+
 
     end
 }

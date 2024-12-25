@@ -46,7 +46,7 @@ local function newMapObject(x, y, z, spriteName)
 end
 
 local function newInventoryItem(type)
-	local item = InventoryItemFactory.CreateItem(type)
+	local item = instanceItem(type)
 	PLAYER_INV:AddItem(item)
 	return item
 end
@@ -114,15 +114,13 @@ Tests.activate_car_battery_charger = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.CarBatteryCharger")
+		local item = instanceItem("Base.CarBatteryCharger")
 		local object = IsoCarBatteryCharger.new(item, getCell(), square)
 		square:AddSpecialObject(object)
-		item = InventoryItemFactory.CreateItem("Base.CarBattery1")
+		item = instanceItem("Base.CarBattery1")
 		object:setBattery(item)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISActivateCarBatteryChargerAction:new(PLAYER_OBJ, object, true, DURATION))
-	end,
-	validate = function(self)
+		ISTimedActionQueue.add(ISActivateCarBatteryChargerAction:new(PLAYER_OBJ, object, true))
 	end
 }
 
@@ -130,14 +128,12 @@ Tests.activate_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		object:setConnected(true)
 		object:setFuel(100)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISActivateGenerator:new(PLAYER_NUM, object, true, DURATION))
-	end,
-	validate = function(self)
+		ISTimedActionQueue.add(ISActivateGenerator:new(PLAYER_OBJ, object, true))
 	end
 }
 
@@ -145,15 +141,13 @@ Tests.fix_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		object:setCondition(50)
 		newInventoryItem("ElectronicsScrap")
 		PLAYER_OBJ:setPerkLevelDebug(PerksElectronics, 4)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISFixGenerator:new(PLAYER_OBJ, object, DURATION))
-	end,
-	validate = function(self)
+		ISTimedActionQueue.add(ISFixGenerator:new(PLAYER_OBJ, object))
 	end
 }
 
@@ -163,7 +157,7 @@ Tests.bbq_remove_propane_tank = {
 		removeAllButFloor(square)
 		local bbq = newBBQPropane(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQRemovePropaneTank:new(PLAYER_OBJ, bbq, DURATION))
+		ISTimedActionQueue.add(ISBBQRemovePropaneTank:new(PLAYER_OBJ, bbq))
 	end
 }
 
@@ -175,7 +169,7 @@ Tests.bbq_insert_propane_tank_ground = {
 		local square2 = getSquareDelta(3, 2, 0)
 		local tankItem = square2:AddWorldInventoryItem(bbq:removePropaneTank(), 0.5, 0.5, 0)
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square2))
-		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(PLAYER_OBJ, bbq, tankItem:getWorldItem(), DURATION))
+		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(PLAYER_OBJ, bbq, tankItem:getWorldItem()))
 	end
 }
 
@@ -188,7 +182,7 @@ Tests.bbq_insert_propane_tank_inventory = {
 		local tankItem = bbq:removePropaneTank()
 		PLAYER_OBJ:getInventory():AddItem(tankItem)
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square2))
-		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(PLAYER_OBJ, bbq, tankItem, DURATION))
+		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(PLAYER_OBJ, bbq, tankItem))
 	end
 }
 
@@ -198,7 +192,7 @@ Tests.bbq_turn_on = {
 		removeAllButFloor(square)
 		local bbq = newBBQPropane(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQToggle:new(PLAYER_OBJ, bbq, DURATION))
+		ISTimedActionQueue.add(ISBBQToggle:new(PLAYER_OBJ, bbq))
 	end
 }
 
@@ -209,7 +203,7 @@ Tests.bbq_turn_off = {
 		local bbq = newBBQPropane(x, y, z)
 		bbq:turnOn()
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQToggle:new(PLAYER_OBJ, bbq, DURATION))
+		ISTimedActionQueue.add(ISBBQToggle:new(PLAYER_OBJ, bbq))
 	end
 }
 
@@ -221,7 +215,7 @@ Tests.bbq_add_charcoal = {
 		local item = newInventoryItem("Base.Charcoal")
 		local fuelAmt = 30 -- campingFuelType[item:getType()] * 60
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQAddFuel:new(PLAYER_OBJ, bbq, item, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISBBQAddFuel:new(PLAYER_OBJ, bbq, item, fuelAmt))
 	end
 }
 
@@ -233,7 +227,7 @@ Tests.bbq_add_book = {
 		local item = newInventoryItem("Base.Book")
 		local fuelAmt = campingFuelCategory[item:getCategory()] * 60
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQAddFuel:new(PLAYER_OBJ, bbq, item, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISBBQAddFuel:new(PLAYER_OBJ, bbq, item, fuelAmt))
 	end
 }
 
@@ -245,7 +239,23 @@ Tests.bbq_light_book_lighter = {
 		local book = newInventoryItem("Base.Book")
 		local lighter = newInventoryItem("Base.Lighter")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQLightFromLiterature:new(PLAYER_OBJ, book, lighter, bbq, DURATION))
+		ISTimedActionQueue.add(ISBBQLightFromLiterature:new(PLAYER_OBJ, book, lighter, bbq))
+	end
+}
+
+Tests.bbq_light_kindle_lighter = {
+	run = function(self)
+		local square,x,y,z = getSquareDelta(2, 2, 0)
+		removeAllButFloor(square)
+		local bbq = newBBQCharcoal(x, y, z)
+		local plank = newInventoryItem("Base.PercedWood")
+		local stick = newInventoryItem("Base.WoodenStick")
+		newInventoryItem("Base.WoodenStick")
+		newInventoryItem("Base.WoodenStick")
+		newInventoryItem("Base.WoodenStick")
+		newInventoryItem("Base.WoodenStick")
+		luautils.walkAdj(PLAYER_OBJ, square)
+		ISTimedActionQueue.add(ISBBQLightFromKindle:new(PLAYER_OBJ, plank, stick, bbq))
 	end
 }
 
@@ -258,7 +268,7 @@ Tests.bbq_light_gas_lighter = {
 		local petrol = newInventoryItem("Base.PetrolCan")
 		local lighter = newInventoryItem("Base.Lighter")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBBQLightFromPetrol:new(PLAYER_OBJ, bbq, lighter, petrol, DURATION))
+		ISTimedActionQueue.add(ISBBQLightFromPetrol:new(PLAYER_OBJ, bbq, lighter, petrol))
 	end
 }
 
@@ -266,11 +276,11 @@ Tests.grab_corpse = {
 	run = function(self)
 		local square,x,y,z = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local corpseItem = InventoryItemFactory.CreateItem("Base.CorpseMale")
+		local corpseItem = instanceItem("Base.CorpseMale")
 		square:AddWorldInventoryItem(corpseItem, 0.5, 0.5, 0)
 		local corpse = square:getStaticMovingObjects():get(0)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISGrabCorpseAction:new(PLAYER_OBJ, corpse, DURATION))
+		ISTimedActionQueue.add(ISGrabCorpseAction:new(PLAYER_OBJ, corpse))
 	end
 }
 
@@ -278,13 +288,13 @@ Tests.burn_corpse = {
 	run = function(self)
 		local square,x,y,z = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local corpseItem = InventoryItemFactory.CreateItem("Base.CorpseMale")
+		local corpseItem = instanceItem("Base.CorpseMale")
 		square:AddWorldInventoryItem(corpseItem, 0.5, 0.5, 0)
 		local corpse = square:getStaticMovingObjects():get(0)
 		newPrimaryItem("Base.Lighter")
 		newSecondaryItem("Base.PetrolCan")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBurnCorpseAction:new(PLAYER_OBJ, corpse, DURATION))
+		ISTimedActionQueue.add(ISBurnCorpseAction:new(PLAYER_OBJ, corpse))
 	end
 }
 
@@ -294,7 +304,7 @@ Tests.place_pipebomb = {
 		removeAllButFloor(square)
 		local item = newInventoryItem("Base.PipeBombRemote")
 --		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISPlaceTrap:new(PLAYER_OBJ, item, DURATION))
+		ISTimedActionQueue.add(ISPlaceTrap:new(PLAYER_OBJ, item))
 	end
 }
 
@@ -302,12 +312,12 @@ Tests.take_pipebomb = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.PipeBombRemote")
+		local item = instanceItem("Base.PipeBombRemote")
 		local trap = IsoTrap.new(item, getCell(), square)
 		square:AddTileObject(trap)
 		luautils.walkAdj(PLAYER_OBJ, square)
 --		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISTakeTrap:new(PLAYER_OBJ, trap, DURATION))
+		ISTimedActionQueue.add(ISTakeTrap:new(PLAYER_OBJ, trap))
 	end
 }
 
@@ -315,12 +325,10 @@ Tests.connect_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISPlugGenerator:new(PLAYER_NUM, object, true, DURATION))
-	end,
-	validate = function(self)
+		ISTimedActionQueue.add(ISPlugGenerator:new(PLAYER_OBJ, object, true))
 	end
 }
 
@@ -328,13 +336,11 @@ Tests.disconnect_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		object:setConnected(true)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISPlugGenerator:new(PLAYER_NUM, object, false, DURATION))
-	end,
-	validate = function(self)
+		ISTimedActionQueue.add(ISPlugGenerator:new(PLAYER_OBJ, object, false))
 	end
 }
 
@@ -342,11 +348,11 @@ Tests.add_fuel_to_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		local petrol = newInventoryItem("Base.PetrolCan")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISAddFuel:new(PLAYER_NUM, object, petrol, DURATION))
+		ISTimedActionQueue.add(ISAddFuel:new(PLAYER_OBJ, object, petrol, DURATION))
 	end
 }
 
@@ -354,12 +360,13 @@ Tests.take_generator = {
 	run = function(self)
 		local square = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.Generator")
+		local item = instanceItem("Base.Generator")
 		local object = IsoGenerator.new(item, getCell(), square)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISTakeGenerator:new(PLAYER_NUM, object, DURATION))
+		ISTimedActionQueue.add(ISTakeGenerator:new(PLAYER_OBJ, object))
 	end,
 	validate = function(self)
+		return PLAYER_OBJ:getInventory():getNumberOfItem("Base.Generator") > 0
 	end
 }
 
@@ -384,7 +391,7 @@ Tests.add_sheet_to_window = {
 		local window = newWindow(x, y, z)
 		local sheet = newInventoryItem("Base.Sheet")
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISAddSheetAction:new(PLAYER_OBJ, window, DURATION))
+		ISTimedActionQueue.add(ISAddSheetAction:new(PLAYER_OBJ, window))
 	end
 }
 
@@ -397,7 +404,7 @@ Tests.remove_sheet_from_window = {
 		local sheet = newInventoryItem("Base.Sheet")
 		window:addSheet(PLAYER_OBJ)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISRemoveSheetAction:new(PLAYER_OBJ, window:HasCurtains(), DURATION))
+		ISTimedActionQueue.add(ISRemoveSheetAction:new(PLAYER_OBJ, window:HasCurtains()))
 	end
 }
 
@@ -409,7 +416,7 @@ Tests.remove_broken_glass = {
 		local window = newWindow(x, y, z)
 		window:setSmashed(true)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISRemoveBrokenGlass:new(PLAYER_OBJ, window, DURATION))
+		ISTimedActionQueue.add(ISRemoveBrokenGlass:new(PLAYER_OBJ, window))
 	end
 }
 
@@ -421,7 +428,7 @@ Tests.close_door = {
 		local door = newDoor(x, y, z)
 		door:ToggleDoor(PLAYER_OBJ)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, door)
-		ISTimedActionQueue.add(ISOpenCloseDoor:new(PLAYER_OBJ, door, 0))
+		ISTimedActionQueue.add(ISOpenCloseDoor:new(PLAYER_OBJ, door))
 	end
 }
 
@@ -432,7 +439,7 @@ Tests.open_door = {
 		newDoorFrame(x, y, z)
 		local door = newDoor(x, y, z)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, door)
-		ISTimedActionQueue.add(ISOpenCloseDoor:new(PLAYER_OBJ, door, 0))
+		ISTimedActionQueue.add(ISOpenCloseDoor:new(PLAYER_OBJ, door))
 	end
 }
 
@@ -444,7 +451,7 @@ Tests.close_curtain_on_closed_door = {
 		local door = newDoor(x, y, z)
 		door:addSheet(true, nil)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, door)
-		ISTimedActionQueue.add(ISOpenCloseCurtain:new(PLAYER_OBJ, door, 0))
+		ISTimedActionQueue.add(ISOpenCloseCurtain:new(PLAYER_OBJ, door))
 	end
 }
 
@@ -457,7 +464,7 @@ Tests.close_curtain_on_open_door = {
 		door:ToggleDoor(PLAYER_OBJ)
 		door:addSheet(false, nil)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, door)
-		ISTimedActionQueue.add(ISOpenCloseCurtain:new(PLAYER_OBJ, door, 0))
+		ISTimedActionQueue.add(ISOpenCloseCurtain:new(PLAYER_OBJ, door))
 	end
 }
 
@@ -469,7 +476,7 @@ Tests.close_window = {
 		local window = newWindow(x, y, z)
 		window:ToggleWindow(PLAYER_OBJ)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISOpenCloseWindow:new(PLAYER_OBJ, window, 0))
+		ISTimedActionQueue.add(ISOpenCloseWindow:new(PLAYER_OBJ, window))
 	end
 }
 
@@ -480,7 +487,7 @@ Tests.open_window = {
 		newWindowFrame(x, y, z)
 		local window = newWindow(x, y, z)
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISOpenCloseWindow:new(PLAYER_OBJ, window, 0))
+		ISTimedActionQueue.add(ISOpenCloseWindow:new(PLAYER_OBJ, window))
 	end
 }
 
@@ -495,7 +502,7 @@ Tests.barricade_window_plank = {
 		local nails = newInventoryItem("Base.Nails")
 		local nails = newInventoryItem("Base.Nails")
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISBarricadeAction:new(PLAYER_OBJ, window, false, false, DURATION))
+		ISTimedActionQueue.add(ISBarricadeAction:new(PLAYER_OBJ, window, false, false))
 	end
 }
 
@@ -508,7 +515,7 @@ Tests.barricade_window_metal = {
 		local blowTorch = newPrimaryItem("Base.BlowTorch")
 		local metalSheet = newSecondaryItem("Base.SheetMetal")
 		luautils.walkAdjWindowOrDoor(PLAYER_OBJ, square, window)
-		ISTimedActionQueue.add(ISBarricadeAction:new(PLAYER_OBJ, window, true, false, DURATION))
+		ISTimedActionQueue.add(ISBarricadeAction:new(PLAYER_OBJ, window, true, false))
 	end
 }
 
@@ -544,13 +551,13 @@ Tests.connect_battery_to_charger = {
 	run = function(self)
 		local square,x,y,z = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
-		local item = InventoryItemFactory.CreateItem("Base.CarBatteryCharger")
+		local item = instanceItem("Base.CarBatteryCharger")
 		local object = IsoCarBatteryCharger.new(item, getCell(), square)
 		square:AddSpecialObject(object)
 
 		item = newInventoryItem("Base.CarBattery1")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISConnectCarBatteryToChargerAction:new(PLAYER_OBJ, object, item, DURATION))
+		ISTimedActionQueue.add(ISConnectCarBatteryToChargerAction:new(PLAYER_OBJ, object, item))
 	end
 }
 
@@ -558,7 +565,7 @@ Tests.place_battery_charger = {
 	run = function(self)
 		removeAllButFloor(PLAYER_SQR)
 		local item = newInventoryItem("Base.CarBatteryCharger")
-		ISTimedActionQueue.add(ISPlaceCarBatteryChargerAction:new(PLAYER_OBJ, item, DURATION))
+		ISTimedActionQueue.add(ISPlaceCarBatteryChargerAction:new(PLAYER_OBJ, item))
 	end
 }
 
@@ -570,7 +577,7 @@ Tests.clean_blood_dishcloth = {
 		newPrimaryItem("Base.DishCloth")
 		newSecondaryItem("Base.Bleach")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISCleanBlood:new(PLAYER_OBJ, square, DURATION))
+		ISTimedActionQueue.add(ISCleanBlood:new(PLAYER_OBJ, square, nil))
 	end
 }
 
@@ -582,7 +589,7 @@ Tests.clean_blood_mop = {
 		newPrimaryItem("Base.Mop")
 		newSecondaryItem("Base.Bleach")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISCleanBlood:new(PLAYER_OBJ, square, DURATION))
+		ISTimedActionQueue.add(ISCleanBlood:new(PLAYER_OBJ, square, nil))
 	end
 }
 
@@ -593,7 +600,7 @@ Tests.clear_ashes = {
 		local ashes = newObject(x, y, z, "floors_burnt_01_1", "")
 		newPrimaryItem("Base.Shovel")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISClearAshes:new(PLAYER_OBJ, ashes, DURATION))
+		ISTimedActionQueue.add(ISClearAshes:new(PLAYER_OBJ, ashes))
 	end
 }
 
@@ -715,7 +722,7 @@ Tests.bury_corpse = {
 		local grave = square2:getObjects():get(1)
 		newPrimaryItem("Base.CorpseMale")
 		luautils.walkAdj(PLAYER_OBJ, square2)
-		ISTimedActionQueue.add(ISBuryCorpse:new(PLAYER_NUM, grave, DURATION, shovel))
+		ISTimedActionQueue.add(ISBuryCorpse:new(PLAYER_OBJ, grave, shovel))
 	end
 }
 
@@ -733,7 +740,7 @@ Tests.fill_grave = {
 		bo:create(x, y, z, false, bo.sprite)
 		local grave = square2:getObjects():get(1)
 		luautils.walkAdj(PLAYER_OBJ, square2)
-		ISTimedActionQueue.add(ISFillGrave:new(PLAYER_NUM, grave, DURATION, shovel))
+		ISTimedActionQueue.add(ISFillGrave:new(PLAYER_OBJ, grave, shovel))
 	end
 }
 
@@ -838,13 +845,13 @@ Tests.get_compost = {
 		compost:setCompost(100)
 		local sandbag = newPrimaryItem("Base.EmptySandbag")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISGetCompost:new(PLAYER_OBJ, compost, sandbag, DURATION))
+		ISTimedActionQueue.add(ISGetCompost:new(PLAYER_OBJ, compost, sandbag))
 	end
 }
 
 Tests.place_campfire = {
 	run = function(self)
-		newInventoryItem("camping.CampfireKit")
+		newInventoryItem("Base.CampfireKit")
 		local bo = campingCampfire:new(PLAYER_OBJ)
 		bo.player = PLAYER_NUM
 		local square,x,y,z = getSquareDelta(2, 2, 0)
@@ -875,7 +882,7 @@ Tests.campfire_add_book = {
 		local item = newInventoryItem("Base.Book")
 		local fuelAmt = campingFuelCategory[item:getCategory()] * 60
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISAddFuelAction:new(PLAYER_OBJ, campfire, item, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISAddFuelAction:new(PLAYER_OBJ, campfire, item, fuelAmt))
 	end
 }
 
@@ -886,10 +893,11 @@ Tests.campfire_light_book_lighter = {
 		SCampfireSystem.instance:addCampfire(square)
 		local campfire = CCampfireSystem.instance:getLuaObjectAt(x, y, z)
 		local book = newInventoryItem("Base.Book")
-		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
+		local fuelAmt = ISCampingMenu.getFuelDurationForItem(book)
+-- 		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
 		local lighter = newInventoryItem("Base.Lighter")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISLightFromLiterature:new(PLAYER_OBJ, book, lighter, campfire, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISLightFromLiterature:new(PLAYER_OBJ, book, lighter, campfire, fuelAmt))
 	end
 }
 
@@ -922,7 +930,7 @@ Tests.campfire_light_notched = {
 		newInventoryItem("Base.WoodenStick")
 		luautils.walkAdj(PLAYER_OBJ, square)
 		-- FIXME: this might fail if the WoodenStick breaks
-		ISTimedActionQueue.add(ISLightFromKindle:new(PLAYER_OBJ, plank, stick, campfire, 1500))
+		ISTimedActionQueue.add(ISLightFromKindle:new(PLAYER_OBJ, plank, stick, campfire))
 	end
 }
 
@@ -935,7 +943,7 @@ Tests.fireplace_add_book = {
 		local item = newInventoryItem("Base.Book")
 		local fuelAmt = campingFuelCategory[item:getCategory()] * 60
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISFireplaceAddFuel:new(PLAYER_OBJ, fireplace, item, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISFireplaceAddFuel:new(PLAYER_OBJ, fireplace, item, fuelAmt))
 	end
 }
 
@@ -949,7 +957,7 @@ Tests.fireplace_light_book_lighter = {
 		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
 		local lighter = newInventoryItem("Base.Lighter")
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(PLAYER_OBJ, book, lighter, fireplace, fuelAmt, DURATION))
+		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(PLAYER_OBJ, book, lighter, fireplace, fuelAmt))
 	end
 }
 
@@ -963,7 +971,7 @@ Tests.fireplace_light_gas_lighter = {
 		local petrol = newInventoryItem("Base.PetrolCan")
 		local lighter = newInventoryItem("Base.Lighter")
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISFireplaceLightFromPetrol:new(PLAYER_OBJ, fireplace, lighter, petrol, DURATION))
+		ISTimedActionQueue.add(ISFireplaceLightFromPetrol:new(PLAYER_OBJ, fireplace, lighter, petrol))
 	end
 }
 
@@ -978,7 +986,7 @@ Tests.fireplace_light_notched = {
 		local stick = newInventoryItem("Base.WoodenStick")
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
 		-- FIXME: this might fail if the WoodenStick breaks
-		ISTimedActionQueue.add(ISFireplaceLightFromKindle:new(PLAYER_OBJ, plank, stick, fireplace, 1500))
+		ISTimedActionQueue.add(ISFireplaceLightFromKindle:new(PLAYER_OBJ, plank, stick, fireplace))
 	end
 }
 
@@ -991,32 +999,7 @@ Tests.fireplace_extinguish = {
 		fireplace:setFuelAmount(60)
 		fireplace:setLit(true)
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISFireplaceExtinguish:new(PLAYER_OBJ, fireplace, DURATION))
-	end
-}
-
-Tests.place_tent = {
-	run = function(self)
-		newInventoryItem("camping.CampingTentKit")
-		local bo = campingTent:new(PLAYER_OBJ, camping.tentSprites.tarp)
-		bo.player = PLAYER_NUM
-		local square,x,y,z = getSquareDelta(2, 2, 0)
-		removeAllButFloor(square)
-		removeAllButFloorAt(x, y - 1, z)
-		bo.build = true
-		bo.canBeBuild = bo:isValid(square, bo.north)
-		bo:tryBuild(x, y, z)
-	end
-}
-
-Tests.remove_tent = {
-	run = function(self)
-		local square,x,y,z = getSquareDelta(2, 2, 0)
-		removeAllButFloor(square)
-		removeAllButFloorAt(x, y - 1, z)
-		local tent = camping.addTent(square, "camping_01_0")
-		luautils.walkAdj(PLAYER_OBJ, tent:getSquare())
-		ISTimedActionQueue.add(ISRemoveTentAction:new(PLAYER_OBJ, tent, DURATION))
+		ISTimedActionQueue.add(ISFireplaceExtinguish:new(PLAYER_OBJ, fireplace))
 	end
 }
 
@@ -1043,7 +1026,7 @@ Tests.remove_trap = {
 		bo:create(x, y, z, false, bo.sprite)
 		local luaObject = CTrapSystem.instance:getLuaObjectAt(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISRemoveTrapAction:new(PLAYER_OBJ, luaObject, DURATION))
+		ISTimedActionQueue.add(ISRemoveTrapAction:new(PLAYER_OBJ, luaObject))
 	end
 }
 
@@ -1058,7 +1041,7 @@ Tests.add_bait_to_trap = {
 		local luaObject = CTrapSystem.instance:getLuaObjectAt(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
 		item = newInventoryItem("Base.Carrots")
-		ISTimedActionQueue.add(ISAddBaitAction:new(PLAYER_OBJ, item, luaObject, DURATION))
+		ISTimedActionQueue.add(ISAddBaitAction:new(PLAYER_OBJ, item, luaObject))
 	end
 }
 
@@ -1074,7 +1057,7 @@ Tests.remove_animal_from_trap = {
 		sysObject:setAnimal(Animals[1])
 		local clientObject = CTrapSystem.instance:getLuaObjectAt(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISCheckTrapAction:new(PLAYER_OBJ, clientObject, DURATION))
+		ISTimedActionQueue.add(ISCheckTrapAction:new(PLAYER_OBJ, clientObject))
 	end
 }
 
@@ -1090,13 +1073,13 @@ Tests.remove_bait_from_trap = {
 		sysObject:addBait("Base.Carrots", 0.0, PLAYER_OBJ)
 		local clientObject = CTrapSystem.instance:getLuaObjectAt(x, y, z)
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISRemoveBaitAction:new(PLAYER_OBJ, clientObject, DURATION))
+		ISTimedActionQueue.add(ISRemoveBaitAction:new(PLAYER_OBJ, clientObject))
 	end
 }
 
 Tests.farming_plow = {
 	run = function(self)
-		local item = newInventoryItem("farming.HandShovel")
+		local item = newInventoryItem("Base.HandShovel")
 		local bo = farmingPlot:new(item, PLAYER_OBJ)
 		bo.player = PLAYER_NUM
 		local square,x,y,z = getSquareDelta(2, 2, 0)
@@ -1115,15 +1098,15 @@ Tests.farming_seed = {
 		square:getFloor():setSprite(getSprite("blends_natural_01_21"))
 		SFarmingSystem.instance:plow(square)
 		local plant = CFarmingSystem.instance:getLuaObjectAt(x, y, z)
-		local item = newInventoryItem("farming.HandShovel")
+		local item = newInventoryItem("Base.HandShovel")
 		local nbOfSeed = farming_vegetableconf.props["Tomato"].seedsRequired
 		local seeds = {}
 		for i=1,nbOfSeed do
-			table.insert(seeds, newInventoryItem("farming.TomatoSeed"))
+			table.insert(seeds, newInventoryItem("Base.TomatoSeed"))
 		end
 		local typeOfSeed = "Tomato"
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISSeedAction:new(PLAYER_OBJ, seeds, nbOfSeed, typeOfSeed, plant, DURATION))
+		ISTimedActionQueue.add(ISSeedActionNew:new(PLAYER_OBJ, seeds, nbOfSeed, typeOfSeed, plant))
 	end
 }
 
@@ -1149,7 +1132,7 @@ Tests.farming_water = {
 		SFarmingSystem.instance:plow(square)
 		SFarmingSystem.instance:getLuaObjectAt(x, y, z):seed("Tomato")
 		local plant = CFarmingSystem.instance:getLuaObjectAt(x, y, z)
-		local wateringCan = newInventoryItem("farming.WateredCanFull")
+		local wateringCan = newInventoryItem("Base.WateredCanFull")
 		luautils.walkAdj(PLAYER_OBJ, square)
 		ISTimedActionQueue.add(ISWaterPlantAction:new(PLAYER_OBJ, wateringCan, 10, square, DURATION))
 	end
@@ -1188,7 +1171,7 @@ Tests.farming_cure_flies = {
 		serverLuaObj.fliesLvl = 5
 		serverLuaObj:saveData()
 		local plant = CFarmingSystem.instance:getLuaObjectAt(x, y, z)
-		local cure = newInventoryItem("farming.GardeningSprayCigarettes")
+		local cure = newInventoryItem("Base.GardeningSprayCigarettes")
 		luautils.walkAdj(PLAYER_OBJ, square)
 		ISTimedActionQueue.add(ISCureFliesAction:new(PLAYER_OBJ, cure, 5, plant, DURATION))
 	end
@@ -1203,7 +1186,7 @@ Tests.farming_remove = {
 		local serverLuaObj = SFarmingSystem.instance:getLuaObjectAt(x, y, z)
 		serverLuaObj:seed("Tomato")
 		local plant = CFarmingSystem.instance:getLuaObjectAt(x, y, z)
-		local shovel = newPrimaryItem("farming.Shovel")
+		local shovel = newPrimaryItem("Base.Shovel")
 		luautils.walkAdj(PLAYER_OBJ, square)
 		ISTimedActionQueue.add(ISShovelAction:new(PLAYER_OBJ, shovel, plant, DURATION))
 	end
@@ -1226,7 +1209,7 @@ Tests.fishing_spear = {
 		local square,x,y,z = getSquareDelta(2, 2, 0)
 		removeAllButFloor(square)
 --		square:getFloor():setSprite(getSprite("blends_natural_02_0"))
-		local rod = newPrimaryItem("Base.WoodenLance")
+		local rod = newPrimaryItem("Base.SpearCrafted")
 		local lure = nil
 		luautils.walkAdj(PLAYER_OBJ, square)
 		ISTimedActionQueue.add(ISFishingAction:new(PLAYER_OBJ, square:getFloor(), rod, lure))
@@ -1264,12 +1247,17 @@ local function RunTest(name)
 	wasBuildMenuCheat = ISBuildMenu.cheat
 	ISBuildMenu.cheat = false
 
+	UnitTestsTimedActionsPanel.onStartTest(name)
+
 	Tests[name]:run()
 end
 
 local function PostValidate(name)
 	if Tests[name].validate then
 		local msg = Tests[name]:validate()
+		if not msg then
+			UnitTestsTimedActionsPanel.onFail()
+		end
 	end
 
 	ISBuildMenu.cheat = wasBuildMenuCheat
@@ -1294,12 +1282,13 @@ local function OnTick()
 		if PLAYER_OBJ and PLAYER_OBJ:getCurrentSquare() ~= PLAYER_SQR_ORIG then
 			PLAYER_OBJ:setX(PLAYER_SQR_ORIG:getX() + 0.5)
 			PLAYER_OBJ:setY(PLAYER_SQR_ORIG:getY() + 0.5)
-			PLAYER_OBJ:setLx(PLAYER_OBJ:getX())
-			PLAYER_OBJ:setLy(PLAYER_OBJ:getY())
+			PLAYER_OBJ:setLastX(PLAYER_OBJ:getX())
+			PLAYER_OBJ:setLastY(PLAYER_OBJ:getY())
 			PLAYER_OBJ:setCurrent(PLAYER_SQR_ORIG)
 		end
 		if #testsToRun == 0 then
 			PLAYER_OBJ = nil
+			UnitTestsTimedActionsPanel.onSuccess()
 			return
 		end
 		local testName = testsToRun[1]
@@ -1334,4 +1323,8 @@ end
 
 TimedActionTests.stop = function()
 	table.wipe(testsToRun)
+end
+
+TimedActionTests.getTests = function()
+    return Tests
 end

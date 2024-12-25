@@ -71,20 +71,20 @@ YouHaveOneDay.OnInitWorld = function()
     SandboxVars.StartTime = 2;
     SandboxVars.WaterShutModifier = 7;
     SandboxVars.ElecShutModifier = 7;
-    SandboxVars.FoodLoot = 6;
-    SandboxVars.CannedFoodLoot = 6;
-    SandboxVars.RangedWeaponLoot = 6;
-    SandboxVars.AmmoLoot = 6;
-    SandboxVars.SurvivalGearsLoot = 6;
-    SandboxVars.MechanicsLoot = 6;
-    SandboxVars.LiteratureLoot = 6;
-    SandboxVars.MedicalLoot = 6;
-    SandboxVars.WeaponLoot = 6;
-    SandboxVars.OtherLoot = 6;
+--     SandboxVars.FoodLoot = 6;
+--     SandboxVars.CannedFoodLoot = 6;
+--     SandboxVars.RangedWeaponLoot = 6;
+--     SandboxVars.AmmoLoot = 6;
+--     SandboxVars.SurvivalGearsLoot = 6;
+--     SandboxVars.MechanicsLoot = 6;
+--     SandboxVars.LiteratureLoot = 6;
+--     SandboxVars.MedicalLoot = 6;
+--     SandboxVars.WeaponLoot = 6;
+--     SandboxVars.OtherLoot = 6;
+    SandboxVars.LootItemRemovalList = "";
     SandboxVars.Temperature = 3;
     SandboxVars.Rain = 3;
     SandboxVars.ErosionSpeed = 5
-    SandboxVars.XpMultiplier = "1.0";
     SandboxVars.Farming = 3;
     SandboxVars.NatureAbundance = 5;
     SandboxVars.PlantResilience = 3;
@@ -100,7 +100,12 @@ YouHaveOneDay.OnInitWorld = function()
     SandboxVars.DecayingCorpseHealthImpact = 1
     SandboxVars.MultiHitZombies = false;
 
-    SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
+
+    SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
 --    Events.OnZombieUpdate.Add(YouHaveOneDay.OnZombieUpdate);
     Events.OnGameStart.Add(YouHaveOneDay.OnGameStart);
@@ -118,8 +123,6 @@ YouHaveOneDay.id = "YouHaveOneDay";
 YouHaveOneDay.image = "media/lua/client/LastStand/YouHaveOneDay.png";
 YouHaveOneDay.world = "challengemaps/KnoxCounty";
 YouHaveOneDay.gameMode = "You Have One Day";
-YouHaveOneDay.xcell = 0;
-YouHaveOneDay.ycell = 0;
 YouHaveOneDay.x = 41;
 YouHaveOneDay.y = 22;
 YouHaveOneDay.z = 1;
@@ -135,4 +138,4 @@ YouHaveOneDay.hordeWoodCamp = {x=123,y=276};
 YouHaveOneDay.hordeGasStation = {x=128,y=145};
 YouHaveOneDay.hordes = {YouHaveOneDay.hordePark, YouHaveOneDay.hordeFlat, YouHaveOneDay.hordeWood, YouHaveOneDay.hordeDiner, YouHaveOneDay.hordeTownArea, YouHaveOneDay.hordeOffice, YouHaveOneDay.hordeWoodCamp, YouHaveOneDay.hordeGasStation};
 
-Events.OnChallengeQuery.Add(YouHaveOneDay.Add)
+--Events.OnChallengeQuery.Add(YouHaveOneDay.Add)

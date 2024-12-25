@@ -35,12 +35,7 @@ function ISClimbSheetRopeAction:perform()
 end
 
 function ISClimbSheetRopeAction:new(character, down)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	o.character = character
-	o.stopOnWalk = true
-	o.stopOnRun = true
+	local o = ISBaseTimedAction.new(self, character)
 	o.maxTime = 0
 	-- custom fields
 	o.down = down

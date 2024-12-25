@@ -26,21 +26,22 @@ function ISReadWorldMap:stop()
 end
 
 function ISReadWorldMap:perform()
-	ISWorldMap.ShowWorldMap(self.playerNum)
+	ISWorldMap.ShowWorldMap(self.playerNum, self.centerX, self.centerY, self.zoom)
 
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
 
-function ISReadWorldMap:new(character)
+function ISReadWorldMap:new(character, centerX, centerY, zoom)
 	local o = ISBaseTimedAction.new(self, character)
-	o.stopOnWalk = true
-	o.stopOnRun = true
 	o.maxTime = 50
 	if character:isTimedActionInstant() then
 		o.maxTime = 1
 	end
 	o.playerNum = character:getPlayerNum()
+	o.centerX = centerX
+	o.centerY = centerY
+	o.zoom = zoom
 	return o
 end
 

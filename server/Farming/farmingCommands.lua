@@ -17,7 +17,7 @@ end
 function Commands.cureFlies(player, args)
 	local plant = getPlantAt(args.x, args.y, args.z)
 	if plant and plant.fliesLvl > 0 then
-		plant:cureFlies(nil, args.uses)
+		plant:cureFlies(nil, args.uses, args.skill)
 	elseif not plant then
 		noise('no plant found at '..args.x..','..args.y..','..args.z)
 	end
@@ -26,7 +26,25 @@ end
 function Commands.cureMildew(player, args)
 	local plant = getPlantAt(args.x, args.y, args.z)
 	if plant and plant.mildewLvl > 0 then
-		plant:cureMildew(nil, args.uses)
+		plant:cureMildew(nil, args.uses, args.skill)
+	elseif not plant then
+		noise('no plant found at '..args.x..','..args.y..','..args.z)
+	end
+end
+
+function Commands.cureAphids(player, args)
+	local plant = getPlantAt(args.x, args.y, args.z)
+	if plant and plant.aphidLvl > 0 then
+		plant:cureAphids(nil, args.uses, args.skill)
+	elseif not plant then
+		noise('no plant found at '..args.x..','..args.y..','..args.z)
+	end
+end
+
+function Commands.cureSlugs(player, args)
+	local plant = getPlantAt(args.x, args.y, args.z)
+	if plant and plant.slugsLvl > 0 then
+		plant:cureSlugs(nil, args.uses, args.skill)
 	elseif not plant then
 		noise('no plant found at '..args.x..','..args.y..','..args.z)
 	end
@@ -35,7 +53,7 @@ end
 function Commands.fertilize(player, args)
 	local plant = getPlantAt(args.x, args.y, args.z)
 	if plant then
-		plant:fertilize(nil)
+		plant:fertilize(args)
 	else
 		noise('no plant found at '..args.x..','..args.y..','..args.z)
 	end
@@ -75,7 +93,7 @@ end
 function Commands.seed(player, args)
 	local plant = getPlantAt(args.x, args.y, args.z)
 	if plant and plant.state == "plow" then
-		plant:seed(args.typeOfSeed)
+		plant:seed(args.typeOfSeed, args.skill)
 	elseif not plant then
 		noise('no plant found at '..args.x..','..args.y..','..args.z)
 	else
@@ -92,13 +110,33 @@ function Commands.water(player, args)
 	end
 end
 
+function Commands.kill(player, args)
+	local plant = getPlantAt(args.x, args.y, args.z)
+	if plant then
+		plant:killThis()
+	else
+		noise('no plant found at '..args.x..','..args.y..','..args.z)
+	end
+end
+
+function Commands.destroy(player, args)
+	local plant = getPlantAt(args.x, args.y, args.z)
+	if plant then
+		plant:destroyThis()
+	else
+		noise('no plant found at '..args.x..','..args.y..','..args.z)
+	end
+end
+
 function Commands.cheat(player, args)
 	local plant = getPlantAt(args.x, args.y, args.z)
 	if plant then
+        local hasFlies = plant:hasVisibleFlies()
 		plant[args.var] = plant[args.var] + args.count
 		if plant[args.var] < 0 then plant[args.var] = 0 end
 		if plant[args.var] > 100 then plant[args.var] = 100 end
 		plant:saveData()
+	    if hasFlies and not plant:hasVisibleFlies() and plant:getSquare() then plant:getSquare():setHasFlies(false) end
 	else
 		noise('no plant found at '..args.x..','..args.y..','..args.z)
 	end

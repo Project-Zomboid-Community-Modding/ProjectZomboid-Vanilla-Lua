@@ -62,7 +62,8 @@ function ISGeneratorInfoWindow.getRichText(object, displayStats)
 		for i=0,items:size()-1 do
 			text = text .. "   " .. items:get(i) .. " <LINE> ";
 		end
-		text = text .. getText("IGUI_Total") .. ": " .. luautils.round(object:getTotalPowerUsing(), 2) .. " L/h <LINE> ";
+		text = text .. getText("IGUI_Generator_TypeGas") .. " (0.02 L/h) <LINE> "
+		text = text .. getText("IGUI_Total") .. ": " .. luautils.round(object:getTotalPowerUsing(), 3) .. " L/h <LINE> ";
 	end
 	if square and not square:isOutside() and square:getBuilding() then
 		text = text .. " <LINE> <RED> " .. getText("IGUI_Generator_IsToxic")

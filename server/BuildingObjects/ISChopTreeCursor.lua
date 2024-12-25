@@ -14,17 +14,12 @@ function ISChopTreeCursor:isValid(square)
 end
 
 function ISChopTreeCursor:render(x, y, z, square)
-	if not ISChopTreeCursor.floorSprite then
-		ISChopTreeCursor.floorSprite = IsoSprite.new()
-		ISChopTreeCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
-
 	local hc = getCore():getBadHighlitedColor()
 	if self:isValid(square) then
 		hc = getCore():getGoodHighlitedColor()
 		square:getTree():setHighlighted(true)
 	end
-	ISChopTreeCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 	IsoTree.setChopTreeCursorLocation(self.player, x, y, z)
 end
 

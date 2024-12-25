@@ -1,8 +1,27 @@
 require "Tutorial/TutorialStep"
 
 local FLOOR_HIGHLIGHT_COLOR = ColorInfo.new(0,1,0,1.0);
-local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(0,1,0,1);
+local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(),1);
 
+-- for storing player specified keybinds when we need to unbind something
+local keybind_storage = {}
+local altkeybind_storage = {}
+-- any keybinding can be stored & unbound/disabled when needed, and then restored later with restoreKeyBinds(key1, key2, ...)
+-- usage: storeKeyBinds("Toggle Skill Panel", "Toggle Health Panel", "Toggle Info Panel", "Toggle Clothing Protection Panel")
+local storeKeyBinds = function(...)
+    for _, key in pairs({...}) do
+        keybind_storage[key] = getCore():getKey(key)
+        altkeybind_storage[key] = getCore():getAltKey(key)
+        getCore():addKeyBinding(key, 0)
+        getCore():addAltKeyBinding(key, 0)
+    end
+end
+local restoreKeyBinds = function(...)
+    for _, key in pairs({...}) do
+        getCore():addKeyBinding(key, keybind_storage[key] or getCore():getKey(key))
+        getCore():addAltKeyBinding(key, altkeybind_storage[key] or getCore():getAltKey(key))
+    end
+end
 TutorialTests = {}
 TutorialTests.klight_x = 160;
 TutorialTests.klight_y = 156;
@@ -79,9 +98,9 @@ TutorialTests.ZoomedIn = function()
     ISBackButtonWheel.disableZoomIn = false;
     local complete = false;
     if JoypadState.players[1] then
-        complete = getCore():getZoom(0) == 1;
+        complete = getCore():getZoom(0) <= 1;
     else
-        complete = getCore():getZoom(0) == getCore():getMinZoom();
+        complete = getCore():getZoom(0) <= getCore():getMinZoom();
     end
     if complete then
         ISBackButtonWheel.disableZoomOut = true;
@@ -93,7 +112,8 @@ end
 
 TutorialTests.ZoomedOut = function()
     ISBackButtonWheel.disableZoomOut = false;
-    local complete = getCore():getZoom(0) == getCore():getMaxZoom();
+    local maxZoom = getCore():getScreenWidth() > 2560 and getCore():getMaxZoom() * (2560 / getCore():getScreenWidth()) or getCore():getMaxZoom()
+    local complete = getCore():getZoom(0) >= maxZoom;
     if JoypadState.players[1] then
         complete = TutorialTests.currentZoom ~= getCore():getZoom(0);
     end
@@ -157,8 +177,8 @@ TutorialTests.NotSkillsPage = function()
         Tutorial1.disableMsgFocus = true;
         setJoypadFocus(0, focus)
     end
-    ISCharacterInfoWindow.instance.closeButton:setVisible(true);
     if ISCharacterInfoWindow.instance then
+        ISCharacterInfoWindow.instance.closeButton:setVisible(true);
         ISCharacterInfoWindow.instance.closeButton.blinkImage = true;
     end
     if not ISCharacterInfoWindow.instance or not ISCharacterInfoWindow.instance:isReallyVisible() then
@@ -169,6 +189,7 @@ TutorialTests.NotSkillsPage = function()
         if JoypadState.players[1] then
             setJoypadFocus(0, nil);
         end
+        restoreKeyBinds("Toggle Skill Panel", "Toggle Health Panel", "Toggle Info Panel", "Toggle Clothing Protection Panel")
         return true;
     end
     return false;
@@ -176,7 +197,7 @@ end
 
 TutorialTests.LookedAround = function()
     JoypadState.disableMovement = false;
-    if getPlayer(0):getDir() == IsoDirections.W then return true; end
+    if getPlayer():getDir() == IsoDirections.W then return true; end
     return false;
 end
 
@@ -186,6 +207,7 @@ function WelcomeStep:new () local o = {} setmetatable(o, self)    self.__index =
 
 function WelcomeStep:begin()
     getPlayer():setAllowRun(false);
+    getPlayer():setAllowSprint(false);
     ISEquippedItem.instance.healthBtn:setVisible(false);
     local klightSquare = getCell():getGridSquare(TutorialTests.klight_x, TutorialTests.klight_y, 0);
     local llightSquare = getCell():getGridSquare(TutorialTests.llight_x, TutorialTests.llight_y, 0);
@@ -196,30 +218,31 @@ function WelcomeStep:begin()
     getPlayer():setAuthorizeMeleeAction(false);
     getPlayer():setIgnoreInputsForDirection(true);
     getPlayer():setIgnoreContextKey(true);
+    storeKeyBinds("Toggle Skill Panel", "Toggle Health Panel", "Toggle Info Panel", "Toggle Clothing Protection Panel")
 
     self:addMessage(getText("IGUI_Tutorial1_Welcome1"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2, 500, 160, true);
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_Welcome3Joypad"), getCore():getScreenWidth()/2, 400, 500, 500, false, TutorialTests.PlayerInfoOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome4"), 870, 460, 410, 170, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome5Joypad"), 870, 300, 290, 90, false, TutorialTests.SkillsPage);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome6"), 870, 300, 340, 120, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome7"), 870, 300, 310, 210, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome8Joypad"), 870, 300, 300, 100, false, TutorialTests.NotSkillsPage);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome9Joypad"), 300, 620, 420, 100, false, TutorialTests.LookedAround);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome3Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 500, false, TutorialTests.PlayerInfoOpen);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome4"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 410, 170, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome5Joypad"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 290, 90, false, TutorialTests.SkillsPage);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome6"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 340, 120, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome7"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 600, 210, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome8Joypad"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 500, 100, false, TutorialTests.NotSkillsPage);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome9Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 100, false, TutorialTests.LookedAround);
     else
-        self:addMessage(getText("IGUI_Tutorial1_Welcome2",string.lower(getKeyName(getCore():getKey("Zoom in"))),string.lower(getKeyName(getCore():getKey("Zoom out")))), 300, 620, 420, 150, false, TutorialTests.ZoomedOut);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome2bis"), 300, 620, 420, 80, false, TutorialTests.ZoomedIn);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome3"), 250, 100, 300, 130, false, TutorialTests.HealthOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome4"), 670, 460, 410, 170, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome5"), 650, 300, 290, 90, false, TutorialTests.SkillsPage);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome6"), 660, 290, 340, 120, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome7"), 580, 450, 310, 210, true);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome8"), 580, 420, 300, 100, false, TutorialTests.NotSkillsPage);
-        self:addMessage(getText("IGUI_Tutorial1_Welcome9"), 300, 620, 420, 100, false, TutorialTests.LookedAround);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome2",string.lower(getKeyName(getCore():getKey("Zoom in"))),string.lower(getKeyName(getCore():getKey("Zoom out")))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 150, false, TutorialTests.ZoomedOut);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome2bis"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 80, false, TutorialTests.ZoomedIn);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome3"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 130, false, TutorialTests.HealthOpen);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome4"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 410, 170, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome5"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 290, 90, false, TutorialTests.SkillsPage);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome6"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 340, 120, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome7"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 600, 210, true);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome8"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/4, 500, 100, false, TutorialTests.NotSkillsPage);
+        self:addMessage(getText("IGUI_Tutorial1_Welcome9"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 500, 100, false, TutorialTests.LookedAround);
     end
 
-    self:addMessage(getText("IGUI_Tutorial1_Welcome10"), 300, 620, 420, 160, true);
+    self:addMessage(getText("IGUI_Tutorial1_Welcome10"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 500, 160, true);
 
     self:doMessage();
 end
@@ -256,6 +279,7 @@ WalkToAdjacent.z = 0;
 
 function WalkToAdjacent:begin()
     getPlayer():setAllowRun(false);
+    getPlayer():setAllowSprint(false);
     if not WelcomeStep.finished and getCore():getDebug() then
         JoypadState.disableControllerPrompt = true;
         JoypadState.disableMovement = false;
@@ -268,13 +292,13 @@ function WalkToAdjacent:begin()
     TutorialTests.addMarker(getSquare(WalkToAdjacent.otherRoomInLocX, WalkToAdjacent.otherRoomInLocY, 0), 2);
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_WalkTo1Joypad"),  300, 620, 420, 130, false, WalkToAdjacent.inLoc);
-        self:addMessage(getText("IGUI_Tutorial1_WalkTo2Joypad"),  300, 620, 420, 130, false, WalkToAdjacent.strafed);
+        self:addMessage(getText("IGUI_Tutorial1_WalkTo1Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.75, 500, 130, false, WalkToAdjacent.inLoc);
+        self:addMessage(getText("IGUI_Tutorial1_WalkTo2Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.75, 500, 130, false, WalkToAdjacent.strafed);
     else
-        self:addMessage(getText("IGUI_Tutorial1_WalkTo1", Tutorial1.moveKeys),  300, 620, 420, 130, false, WalkToAdjacent.inLoc);
-        self:addMessage(getText("IGUI_Tutorial1_WalkTo2", Tutorial1.moveKeys),  300, 620, 420, 130, false, WalkToAdjacent.strafed);
+        self:addMessage(getText("IGUI_Tutorial1_WalkTo1", Tutorial1.moveKeys), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.75, 600, 130, false, WalkToAdjacent.inLoc);
+        self:addMessage(getText("IGUI_Tutorial1_WalkTo2", Tutorial1.moveKeys), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.75, 600, 130, false, WalkToAdjacent.strafed);
     end
-    self:addMessage(getText("IGUI_Tutorial1_WalkTo3"),  300, 620, 420, 130, false, WalkToAdjacent.inLoc2);
+    self:addMessage(getText("IGUI_Tutorial1_WalkTo3"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 500, 130, false, WalkToAdjacent.inLoc2);
 
     local shiftKey = getKeyName(getCore():getKey("Run"))
     
@@ -371,7 +395,8 @@ function InventoryLootingStep:begin()
                 local mouse = c:AddItem("Base.DeadMouse");
                 mouse:setAge(17);
                 Tutorial1.DeadMouse = mouse;
-                c:AddItem("Base.WaterBottleEmpty");
+                c:AddItem("Base.EmptyJar");
+                c:AddItem("Base.Dung_Mouse");
                 InventoryLootingStep.container = o
                 getPlayerLoot(0).inventoryPane.highlightItem = "DeadMouse";
                 break;
@@ -385,14 +410,14 @@ function InventoryLootingStep:begin()
     if JoypadState.players[1] then
         JoypadState.disableYInventory = false;
         JoypadState.disableControllerPrompt = false;
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot1Joypad"),  math.min(700, sw / 2), 120, 520, 80, false, InventoryLootingStep.openInventoryJoypad);
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot2Joypad"),  math.min(700, sw / 2 + 420 / 2), math.min(420, sh / 2 - 200), 420, 100, false, InventoryLootingStep.focusCorrectPanel);
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot3Joypad"),  math.min(700, sw / 2 + 420 / 2), math.min(420, sh / 2 - 200), 420, 100, false, InventoryLootingStep.haveItem);
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot4Joypad"),  math.min(700, sw / 2 + 420 / 2), math.min(420, sh / 2 - 200), 420, 100, false, InventoryLootingStep.haveWater);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot1Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 80, false, InventoryLootingStep.openInventoryJoypad);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot2Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 100, false, InventoryLootingStep.focusCorrectPanel);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot3Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 100, false, InventoryLootingStep.haveItem);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot4Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 100, false, InventoryLootingStep.haveWater);
     else
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot1"),  700, 120, 520, 80, false, InventoryLootingStep.focusLootingPanel);
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot2"),  700, 420, 420, 100, false, InventoryLootingStep.haveItem);
-        self:addMessage(getText("IGUI_Tutorial1_InvLoot3"),  700, 420, 420, 90, false, InventoryLootingStep.haveWater);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot1"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 80, false, InventoryLootingStep.focusLootingPanel);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot2"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 100, false, InventoryLootingStep.haveItem);
+        self:addMessage(getText("IGUI_Tutorial1_InvLoot3"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 90, false, InventoryLootingStep.haveWater);
         getPlayerInventory(0):setVisible(true);
         getPlayerLoot(0):setVisible(true);
         getPlayerLoot(0).blink = true;
@@ -458,8 +483,8 @@ end
 
 function InventoryLootingStep:haveWater()
     getPlayer():faceThisObject(Tutorial1.DeadMouseContainer);
-    getPlayerLoot(0).inventoryPane.highlightItem = "WaterBottleEmpty";
-    if getPlayer():getInventory():contains("WaterBottleEmpty") then
+    getPlayerLoot(0).inventoryPane.highlightItem = "EmptyJar";
+    if getPlayer():getInventory():contains("EmptyJar") then
         getPlayerLoot(0).inventoryPane.highlightItem = "";
         getPlayerLoot(0).inventoryPane.selected = {};
         getPlayer():setIgnoreInputsForDirection(false);
@@ -492,7 +517,7 @@ function InventoryUseStep:begin()
         getPlayer():setAuthorizeMeleeAction(false);
         getPlayer():setIgnoreInputsForDirection(false);
         Tutorial1.DeadMouse = getPlayer():getInventory():AddItem("Base.DeadMouse");
-        getPlayer():getInventory():AddItem("Base.WaterBottleEmpty");
+        getPlayer():getInventory():AddItem("Base.EmptyJar");
         if not JoypadState.players[1] then
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
@@ -509,21 +534,21 @@ function InventoryUseStep:begin()
         JoypadState.disableYInventory = false;
         JoypadState.disableControllerPrompt = false;
         JoypadState.disableInvInteraction = false;
-        self:addMessage(getText("IGUI_Tutorial1_InvUse1Joypad"),  getCore():getScreenWidth() - 430, 160, 420, 130, false, InventoryUseStep.selectInventory);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse1BisJoypad"),  getCore():getScreenWidth() - 430, 160, 420, 130, false, InventoryUseStep.eat);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse2Joypad"),  getCore():getScreenWidth() - 430, 160, 260, 80, true);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse2BisJoypad"),  300, 520, 320, 130, false, InventoryUseStep.fillBottle);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse3Joypad"),  300, 520, 470, 110, false, InventoryUseStep.InLocJoypad);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse3BisJoypad"),  300, 520, 470, 110, false, InventoryLootingStep.openInventoryJoypad);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse4Joypad"),  math.min(300, sw / 2 - (450 - 320 / 2)), 520, 320, 130, false, InventoryUseStep.seeWeapon);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse5Joypad"),  math.min(500, sw / 2 - (450 - 320 / 2)), 450, 320, 100, false, InventoryUseStep.lootWeapon);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse1Joypad"), getCore():getScreenWidth() - 600, 160, 420, 130, false, InventoryUseStep.selectInventory);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse1BisJoypad"), getCore():getScreenWidth() - 600, 160, 420, 130, false, InventoryUseStep.eat);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse2Joypad"), getCore():getScreenWidth() - 600, 160, 260, 80, true);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse2BisJoypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 500, 130, false, InventoryUseStep.fillBottle);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse3Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 470, 110, false, InventoryUseStep.InLocJoypad);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse3BisJoypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 470, 110, false, InventoryLootingStep.openInventoryJoypad);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse4Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 130, false, InventoryUseStep.seeWeapon);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse5Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 100, false, InventoryUseStep.lootWeapon);
     else
-        self:addMessage(getText("IGUI_Tutorial1_InvUse1"),  getCore():getScreenWidth() - 430, 160, 420, 130, false, InventoryUseStep.eat);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse2"),  getCore():getScreenWidth() - 430, 160, 260, 80, true);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse2Bis"),  300, 520, 320, 130, false, InventoryUseStep.fillBottle);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse3"),  300, 520, 470, 110, false, InventoryUseStep.focusLootingPanel);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse4"),  300, 520, 320, 130, false, InventoryUseStep.seeWeapon);
-        self:addMessage(getText("IGUI_Tutorial1_InvUse5"),  500, 450, 320, 100, false, InventoryUseStep.lootWeapon);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse1"), getCore():getScreenWidth() - 600, 160, 500, 130, false, InventoryUseStep.eat);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse2"), getCore():getScreenWidth() - 600, getCore():getScreenHeight()/6, 260, 80, true);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse2Bis"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 500, 130, false, InventoryUseStep.fillBottle);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse3"), getCore():getScreenWidth()/2, getCore():getScreenHeight()*0.66, 470, 110, false, InventoryUseStep.focusLootingPanel);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse4"), getCore():getScreenWidth()*0.4, getCore():getScreenHeight()/5, 500, 130, false, InventoryUseStep.seeWeapon);
+        self:addMessage(getText("IGUI_Tutorial1_InvUse5"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 420, 100, false, InventoryUseStep.lootWeapon);
     end
 
     getPlayer():getStats():setHunger(0.2);
@@ -621,8 +646,8 @@ function InventoryUseStep:fillBottle()
     getCore():setBlinkingMoodle(nil);
     Tutorial1.contextMenuFillBottle = true;
     ISInventoryPaneContextMenu.blinkOption = nil;
-    local emptybottle = getPlayer():getInventory():FindAndReturn("WaterBottleEmpty") or getPlayer():getInventory():FindAndReturn("WaterBottleFull");
-    if emptybottle then
+    local emptybottle = getPlayer():getInventory():FindAndReturn("EmptyJar");
+    if emptybottle and emptybottle:getFluidContainer() and emptybottle:getFluidContainer():isEmpty() then
         ISWorldObjectContextMenu.blinkOption = getText("ContextMenu_Fill") .. emptybottle:getName();
     end
     if not InventoryUseStep.sink then
@@ -638,9 +663,8 @@ function InventoryUseStep:fillBottle()
         end
     end
 
-
-    local bottle = getPlayer():getInventory():FindAndReturn("WaterBottleFull");
-    if bottle and bottle:getUsedDelta() == 1 then
+	print("TUTORIAL BOTTLE ISSUE: " .. tostring(emptybottle))
+    if emptybottle and emptybottle:getFluidContainer() and not emptybottle:getFluidContainer():isEmpty() then
         InventoryUseStep.lastInventory = getPlayerLoot(0).inventoryPane.inventory;
         Tutorial1.contextMenuFillBottle = false;
         TutorialTests.RemoveMarkers();
@@ -667,7 +691,7 @@ function InventoryUseStep:fillBottle()
 end
 
 function InventoryUseStep.spawnPan()
-    local pan = InventoryItemFactory.CreateItem("Base.Pan");
+    local pan = instanceItem("Base.Pan");
     pan:setMinDamage(0.1);
     pan:setMaxDamage(0.1);
     pan:setCondition(3);
@@ -770,22 +794,22 @@ function FightStep:begin()
     FightStep:spawnMom();
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_Fight1"),  300, 500, 520, 110, false, FightStep.WalkToWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight2Joypad"),  300, 520, 520, 100, false, FightStep.OpenWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight3Joypad"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 250, 520, 85, false, FightStep.ClimbThroughWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight4Joypad"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 120, false, FightStep.IsAiming);
-        self:addMessage(getText("IGUI_Tutorial1_Fight5Joypad"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 90, false, FightStep.HitZombie);
-        self:addMessage(getText("IGUI_Tutorial1_Fight7Joypad"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.KillZombie);
-        self:addMessage(getText("IGUI_Tutorial1_Fight8NewJoypad"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.LootKnife);
+        self:addMessage(getText("IGUI_Tutorial1_Fight1"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 520, 110, false, FightStep.WalkToWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight2Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 520, 100, false, FightStep.OpenWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight3Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 250, 520, 85, false, FightStep.ClimbThroughWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight4Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 120, false, FightStep.IsAiming);
+        self:addMessage(getText("IGUI_Tutorial1_Fight5Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 90, false, FightStep.HitZombie);
+        self:addMessage(getText("IGUI_Tutorial1_Fight7Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.KillZombie);
+        self:addMessage(getText("IGUI_Tutorial1_Fight8NewJoypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.LootKnife);
     else
-        self:addMessage(getText("IGUI_Tutorial1_Fight1"),  300, 500, 520, 110, false, FightStep.WalkToWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight2", getKeyName(getCore():getKey("Interact"))),  300, 520, 520, 100, false, FightStep.OpenWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight3", getKeyName(getCore():getKey("Interact"))),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 250, 520, 85, false, FightStep.ClimbThroughWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Fight4"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 120, false, FightStep.IsAiming);
-        self:addMessage(getText("IGUI_Tutorial1_Fight5", Tutorial1.moveKeys),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 90, false, FightStep.HitZombie);
-        self:addMessage(getText("IGUI_Tutorial1_Fight7", getKeyName(getCore():getKey("Melee"))),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, true);
-        self:addMessage(getText("IGUI_Tutorial1_Fight7B"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.KillZombie);
-        self:addMessage(getText("IGUI_Tutorial1_Fight8New"),  getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.LootKnife);
+        self:addMessage(getText("IGUI_Tutorial1_Fight1"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 110, false, FightStep.WalkToWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight2", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 520, 100, false, FightStep.OpenWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight3", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 250, 520, 85, false, FightStep.ClimbThroughWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Fight4"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 120, false, FightStep.IsAiming);
+        self:addMessage(getText("IGUI_Tutorial1_Fight5", Tutorial1.moveKeys), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 90, false, FightStep.HitZombie);
+        self:addMessage(getText("IGUI_Tutorial1_Fight7", getKeyName(getCore():getKey("Melee"))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, true);
+        self:addMessage(getText("IGUI_Tutorial1_Fight7B"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.KillZombie);
+        self:addMessage(getText("IGUI_Tutorial1_Fight8New"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/2 + 350, 520, 100, false, FightStep.LootKnife);
     end
 
     local sq = getCell():getGridSquare(FightStep.windowX, FightStep.windowY, 0);
@@ -824,7 +848,7 @@ function FightStep:spawnMom()
     local immutableColor = ImmutableColor.new(0.805, 0.750, 0.850, 1)
     FightStep.momzombie:getVisual():setHairColor(immutableColor)
     FightStep.momzombie:getVisual():setSkinTextureIndex(2);
-    local knife = InventoryItemFactory.CreateItem("Base.HuntingKnife");
+    local knife = instanceItem("Base.HuntingKnife");
     FightStep.momzombie:setAttachedItem("Knife in Back", knife);
     FightStep.momzombie:resetModelNextFrame();
     
@@ -872,7 +896,11 @@ function FightStep:ClimbThroughWindow()
     end
     if not FightStep.wasOpen and FightStep.window:IsOpen() then
         FightStep.wasOpen = true;
-        TutorialMessage.instance.richtext.text = getText("IGUI_Tutorial1_Fight3", getKeyName(getCore():getKey("Interact")));
+        if JoypadState.players[1] then
+            TutorialMessage.instance.richtext.text = getText("IGUI_Tutorial1_Fight3Joypad");
+        else
+            TutorialMessage.instance.richtext.text = getText("IGUI_Tutorial1_Fight3", getKeyName(getCore():getKey("Interact")));
+        end
         TutorialMessage.instance.richtext:paginate();
     end
     if getPlayer():getCurrentState():equals(ClimbThroughWindowState.instance()) then
@@ -1101,23 +1129,23 @@ function SneakStep:begin()
     TutorialTests.highlight(FightStep.lockedDoor2, 0.2);
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_Sneak1Joypad"),  300, 500, 320, 250, false, SneakStep.GoThroughDoor);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak1BisJoypad"),  300, 500, 520, 110, false, SneakStep.Sneak);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak2"),  getCore():getScreenWidth() - 400, 150, 520, 110, false, SneakStep.SneakingGate);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak3Joypad"), getCore():getScreenWidth() - 400, 400, 520, 110, false, SneakStep.OpenGate);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak4Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.DadDead);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak5Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.EquippedBag);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak6Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.CheckBag);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak7Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.EquipShotgun);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak1Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 320, 250, false, SneakStep.GoThroughDoor);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak1BisJoypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.Sneak);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak2"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.SneakingGate);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak3Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.OpenGate);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak4Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.DadDead);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak5Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 110, false, SneakStep.EquippedBag);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak6Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 110, false, SneakStep.CheckBag);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak7Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 520, 110, false, SneakStep.EquipShotgun);
     else
-        self:addMessage(getText("IGUI_Tutorial1_Sneak1", getKeyName(getCore():getKey("Interact"))),  300, 500, 320, 250, false, SneakStep.GoThroughDoor);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak1Bis", getKeyName(getCore():getKey("Crouch"))),  300, 500, 520, 110, false, SneakStep.Sneak);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak2"),  getCore():getScreenWidth() - 400, 200, 520, 110, false, SneakStep.SneakingGate);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak3", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth() - 400, 400, 520, 110, false, SneakStep.OpenGate);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak4"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.DadDead);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak5"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.EquippedBag);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak6"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.CheckBag);
-        self:addMessage(getText("IGUI_Tutorial1_Sneak7"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.EquipShotgun);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak1", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 320, 250, false, SneakStep.GoThroughDoor);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak1Bis", getKeyName(getCore():getKey("Crouch"))), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.Sneak);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak2"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.SneakingGate);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak3", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.OpenGate);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak4"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 520, 110, false, SneakStep.DadDead);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak5"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/4, 520, 110, false, SneakStep.EquippedBag);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak6"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/4, 520, 110, false, SneakStep.CheckBag);
+        self:addMessage(getText("IGUI_Tutorial1_Sneak7"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/4, 520, 110, false, SneakStep.EquipShotgun);
     end
     self:doMessage();
 end
@@ -1214,8 +1242,9 @@ function SneakStep:SneakingGate()
                 TutorialMessage.instance.richtext.text = getText("IGUI_Tutorial1_Sneak2Bis", getKeyName(getCore():getKey("Crouch")));
             end
             TutorialMessage.instance.richtext:paginate();
-            TutorialMessage.instance:setX(300 - getCore():getScreenWidth()/2);
-            TutorialMessage.instance:setY(80 + getCore():getScreenHeight()/2);
+
+            TutorialMessage.instance:setX((getCore():getScreenWidth()-TutorialMessage.instance.width)/2);
+            TutorialMessage.instance:setY((getCore():getScreenHeight()-TutorialMessage.instance.height)*0.75);
         end
     elseif getPlayer():isSneaking() then
         SneakStep.wasSneaking = true;
@@ -1258,8 +1287,8 @@ function SneakStep.OnSwingAtDad(owner, weapon, zed, dmg)
                 TutorialMessage.instance.richtext.text = getText("IGUI_Tutorial1_Sneak4Bis");
             end
             TutorialMessage.instance.richtext:paginate();
-            TutorialMessage.instance:setX(20 - getCore():getScreenWidth()/2);
-            TutorialMessage.instance:setY(80 + getCore():getScreenHeight()/2);
+            TutorialMessage.instance:setX((getCore():getScreenWidth()-TutorialMessage.instance.width)/2);
+            TutorialMessage.instance:setY((getCore():getScreenHeight()-TutorialMessage.instance.height)*0.75);
         end
     end
 end
@@ -1376,7 +1405,7 @@ function SneakStep:EquipShotgun()
 end
 
 function SneakStep.spawnShotgun()
-    local shotgun = InventoryItemFactory.CreateItem("Base.Shotgun");
+    local shotgun = instanceItem("Base.Shotgun");
     shotgun:setCurrentAmmoCount(6);
     shotgun:setRoundChambered(true);
     shotgun:setMinDamage(1);
@@ -1413,7 +1442,7 @@ function BandageStep:begin()
     if getCore():getDebug() and not SneakStep.finished then
         getPlayer():setAuthorizeMeleeAction(false);
         getPlayer():setIgnoreInputsForDirection(false);
-        local bag = InventoryItemFactory.CreateItem("Base.Bag_ALICEpack");
+        local bag = instanceItem("Base.Bag_ALICEpack");
         SneakStep.bag = bag;
         local shotgun = SneakStep.spawnShotgun();
         getPlayer():getInventory():AddItem(shotgun);
@@ -1467,23 +1496,23 @@ function BandageStep:begin()
     TutorialTests.addHoming(getSquare(173, 149, 0));
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_Bandage1Joypad"),  100, 150 + getCore():getScreenHeight()/2, 420, 110, false, BandageStep.Vault);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage2Joypad"), 400, 200, 420, 110, false, BandageStep.ThroughWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage3Joypad"), 300, getCore():getScreenHeight() - 200, 500, 110, false, TutorialTests.PlayerInfoOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage4Joypad"), 300, 300 + getCore():getScreenHeight()/2, 420, 110, false, BandageStep.BandageYourself);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth() - 600, math.max(getCore():getScreenHeight() - 400, getCore():getScreenHeight() / 2 + 150), 320, 110, false, BandageStep.CheckWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage6Joypad"), getCore():getScreenWidth() - 500, math.max(getCore():getScreenHeight() - 500, getCore():getScreenHeight() / 2 + 150), 320, 110, false, BandageStep.OpenCurtain);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage7"), 300, getCore():getScreenHeight() - 200, 420, 110, true);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage8"), 300, getCore():getScreenHeight() - 200, 420, 110, false, BandageStep.ThroughDoor);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage1Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.Vault);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage2Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 550, 110, false, BandageStep.ThroughWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage3Joypad"), getCore():getScreenWidth()/3, getCore():getScreenHeight()/2, 500, 110, false, TutorialTests.PlayerInfoOpen);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage4Joypad"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/3, 500, 110, false, BandageStep.BandageYourself);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 320, 110, false, BandageStep.CheckWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage6Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.OpenCurtain);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage7"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 110, true);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage8"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.ThroughDoor);
     else
-        self:addMessage(getText("IGUI_Tutorial1_Bandage1", getKeyName(getCore():getKey("Run")), Tutorial1.moveKeys),  100, 150 + getCore():getScreenHeight()/2, 420, 110, false, BandageStep.Vault);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage2", getKeyName(getCore():getKey("Interact"))), 400, 200, 420, 110, false, BandageStep.ThroughWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage3", getKeyName(getCore():getKey("Toggle Health Panel"))), 300, getCore():getScreenHeight() - 200, 500, 110, false, BandageStep.HealthOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage4"), 300, 300 + getCore():getScreenHeight()/2, 420, 110, false, BandageStep.BandageYourself);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth() - 600, getCore():getScreenHeight() - 400, 320, 110, false, BandageStep.CheckWindow);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage6"), getCore():getScreenWidth() - 500, getCore():getScreenHeight() - 500, 320, 110, false, BandageStep.OpenCurtain);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage7"), 300, getCore():getScreenHeight() - 200, 420, 110, true);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage8"), 300, getCore():getScreenHeight() - 200, 420, 110, false, BandageStep.ThroughDoor);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage1", getKeyName(getCore():getKey("Run")), Tutorial1.moveKeys), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.Vault);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage2", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 550, 110, false, BandageStep.ThroughWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage3", getKeyName(getCore():getKey("Toggle Health Panel"))), getCore():getScreenWidth()/3, getCore():getScreenHeight()/2, 500, 110, false, BandageStep.HealthOpen);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage4"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/3, 500, 110, false, BandageStep.BandageYourself);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 320, 110, false, BandageStep.CheckWindow);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage6"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.OpenCurtain);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage7"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 110, true);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage8"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.ThroughDoor);
     end
     
     self:doMessage();
@@ -1708,7 +1737,7 @@ function BandageStep.BandageYourself()
     end
     getPlayer():setIgnoreInputsForDirection(true);
     getPlayer():setSneaking(false);
-    if getPlayer():getBodyDamage():getBodyPart(BodyPartType.Hand_L):getBandageLife() > 0 then
+    if getPlayer():getBodyDamage():getBodyPart(BodyPartType.Hand_L):getBandageLife() > 0 or not getPlayer():getBodyDamage():getBodyPart(BodyPartType.Hand_L):scratched() then
         getSoundManager():PlayWorldSoundImpl("MaleZombieAttack", false, getPlayer():getX() + 2, getPlayer():getY() + 1, 0, 0, 20, 1, false);
     
         BandageStep.sqDoor = getSquare(176, 153, 0);
@@ -1828,7 +1857,7 @@ function ShotgunStep:begin()
     if getCore():getDebug() and not BandageStep.finished then
         getPlayer():setAuthorizeMeleeAction(false);
         getPlayer():setIgnoreInputsForDirection(false);
-        local bag = InventoryItemFactory.CreateItem("Base.Bag_ALICEpack");
+        local bag = instanceItem("Base.Bag_ALICEpack");
         SneakStep.bag = bag;
         local shotgun = SneakStep.spawnShotgun();
         getPlayer():getInventory():AddItem(shotgun);
@@ -1878,21 +1907,21 @@ function ShotgunStep:begin()
     end
     
     if JoypadState.players[1] then
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun1Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.OnSquare);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun1bJoypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.ClimbedFence);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun2Joypad"),  getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Aiming);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun3Joypad"):gsub("GHCR", getCore():getGoodHighlitedColor():getR()):gsub("GHCG", getCore():getGoodHighlitedColor():getG()):gsub("GHCB", getCore():getGoodHighlitedColor():getB()),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BrothersDead);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun4Joypad"),  getCore():getScreenWidth()/2, 300 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BackOverFence);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun5Joypad"),  getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Sprinted);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun6Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, true);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun7Joypad"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.isPlayedDeadJoypad);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun8Joypad"),  getCore():getScreenWidth()/2, 50 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.TheEnd);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun1Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.OnSquare);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun1bJoypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.ClimbedFence);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun2Joypad"), getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Aiming);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun3Joypad"):gsub("GHCR", getCore():getGoodHighlitedColor():getR()):gsub("GHCG", getCore():getGoodHighlitedColor():getG()):gsub("GHCB", getCore():getGoodHighlitedColor():getB()), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BrothersDead);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun4Joypad"), getCore():getScreenWidth()/2, 300 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BackOverFence);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun5Joypad"), getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Sprinted);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun6Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, true);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun7Joypad"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.isPlayedDeadJoypad);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun8Joypad"), getCore():getScreenWidth()/2, 50 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.TheEnd);
     else
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun1", getKeyName(getCore():getKey("Crouch"))),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.OnSquare);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun1b", getKeyName(getCore():getKey("Interact"))),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.ClimbedFence);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun2"),  getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Aiming);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun3"):gsub("GHCR", getCore():getGoodHighlitedColor():getR()):gsub("GHCG", getCore():getGoodHighlitedColor():getG()):gsub("GHCB", getCore():getGoodHighlitedColor():getB()),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BrothersDead);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun4", getKeyName(getCore():getKey("Interact"))),  getCore():getScreenWidth()/2, 300 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BackOverFence);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun1", getKeyName(getCore():getKey("Crouch"))), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.OnSquare);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun1b", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.ClimbedFence);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun2"), getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Aiming);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun3"):gsub("GHCR", getCore():getGoodHighlitedColor():getR()):gsub("GHCG", getCore():getGoodHighlitedColor():getG()):gsub("GHCB", getCore():getGoodHighlitedColor():getB()), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BrothersDead);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun4", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, 300 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.BackOverFence);
         local sprintText = getText("IGUI_Tutorial1_Shotgun5", Tutorial1.moveKeys, getKeyName(getCore():getKey("Sprint")))
         if getCore():getKey("Sprint") == 0 then
             if getCore():isOptiondblTapJogToSprint() then
@@ -1901,10 +1930,14 @@ function ShotgunStep:begin()
                 -- impossible to sprint
             end
         end
-        self:addMessage(sprintText,  getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Sprinted);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun6", getKeyName(getCore():getKey("Shout"))),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Shout);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun7"),  getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.isPlayedDead);
-        self:addMessage(getText("IGUI_Tutorial1_Shotgun8", getKeyName(getCore():getKey("Toggle Survival Guide"))),  getCore():getScreenWidth()/2, 50 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.TheEnd);
+        -- if shout is unbound, we need to temp rebind it to Q during this step, and unbind it at ShotgunStep.TheEnd
+        self:addMessage(sprintText, getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Sprinted);
+        -- if shout is unbound, we need to use its default Q here so we dont screw the text for IGUI_Tutorial1_Shotgun6
+        -- since the previous step hasnt actually happened yet
+        local shoutkey = getCore():getKey("Shout") > 0 and getCore():getKey("Shout") or Keyboard.KEY_Q
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun6", getKeyName(shoutkey)), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Shout);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun7"), getCore():getScreenWidth()/2, 250 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.isPlayedDead);
+        self:addMessage(getText("IGUI_Tutorial1_Shotgun8", getKeyName(getCore():getKey("Toggle Survival Guide"))), getCore():getScreenWidth()/2, 50 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.TheEnd);
     end
     self:doMessage();
 end
@@ -1981,7 +2014,7 @@ function ShotgunStep.Sprinted()
     getPlayer():setIgnoreContextKey(true);
     getPlayer():setAllowSprint(true);
     getPlayer():setIgnoreInputsForDirection(false);
-    local complete = getPlayer():isSprinting();
+    local complete = getPlayer():isSprinting() or getPlayer():isRunning();
     if complete then
         ShotgunStep.hassprintedTimer = ShotgunStep.hassprintedTimer + 1;
     end
@@ -2000,6 +2033,10 @@ function ShotgunStep.Sprinted()
         getPlayer():setIgnoreContextKey(false);
         TutorialTests.RemoveMarkers();
         getPlayer():setIgnoreInputsForDirection(true);
+        if getCore():getKey("Shout") == 0 then -- shout is unbound. temp rebind it to Q
+            ShotgunStep.forcedShoutBinding = true
+            getCore():addKeyBinding("Shout", Keyboard.KEY_Q)
+        end
     end
 
     return onSQ;
@@ -2092,6 +2129,9 @@ function ShotgunStep:Shout()
     getPlayer():setIgnoreInputsForDirection(true);
     local complete = getPlayer():isSpeaking() or ShotgunStep.forceSpawnHorde;
     if complete then
+        if ShotgunStep.forcedShoutBinding then -- unbind our forced shout
+            getCore():addKeyBinding("Shout", 0)
+        end
         spawnHorde(200, 141, 210, 165, 0, 100);
         spawnHorde(176, 190, 202, 202, 0, 100);
         spawnHorde(169, 130, 195, 115, 0, 100);

@@ -9,7 +9,7 @@ ClimateControlDebug.instance = nil;
 
 
 function ClimateControlDebug.OnOpenPanel()
-    return ISDebugPanelBase.OnOpenPanel(ClimateControlDebug, 100, 100, 800, 600, "CLIMATE CONTROL");
+    return ISDebugPanelBase.OnOpenPanel(ClimateControlDebug, 100, 100, 800+(getCore():getOptionFontSizeReal()*100), 600, getText("IGUI_ClimateControl_Title"));
 end
 
 function ClimateControlDebug:new(x, y, width, height, title)
@@ -24,11 +24,11 @@ end
 
 function ClimateControlDebug:initialise()
     ISPanel.initialise(self);
-    self:registerPanel("Climate",ClimateOptionsDebug);
-    self:registerPanel("New fog", NewFogDebug);
-    self:registerPanel("Colors",ClimateColorsDebug);
-    self:registerPanel("Weather",ISAdmPanelWeather);
-    self:registerPanel("Puddles", PuddlesControl);
-    self:registerPanel("Other debuggers",ClimDebuggersPanel);
+    self:registerPanel(getText("IGUI_ClimateControl_Climate"),ClimateOptionsDebug);
+    self:registerPanel(getText("IGUI_ClimateControl_NewFog"), NewFogDebug);
+    self:registerPanel(getText("IGUI_ClimateControl_Colors"),ClimateColorsDebug);
+    self:registerPanel(getText("IGUI_ClimateControl_Weather"),ISAdmPanelWeather);
+    self:registerPanel(getText("IGUI_ClimateControl_Puddles"), PuddlesControl);
+    self:registerPanel(getText("IGUI_ClimateControl_Other"),ClimDebuggersPanel);
 end
 

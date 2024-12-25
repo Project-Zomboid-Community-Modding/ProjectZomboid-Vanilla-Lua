@@ -37,7 +37,7 @@ function ISSafehouseAddPlayerUI:initialise()
     self.no.internal = "CANCEL";
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     self.addPlayer = ISButton:new(0, self.no.y, btnWid, btnHgt, getText("IGUI_SafehouseUI_AddPlayer"), self, ISSafehouseAddPlayerUI.onClick);
@@ -47,7 +47,7 @@ function ISSafehouseAddPlayerUI:initialise()
     self.addPlayer.internal = "ADDPLAYER";
     self.addPlayer:initialise();
     self.addPlayer:instantiate();
-    self.addPlayer.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.addPlayer:enableAcceptColor()
     self.addPlayer:setWidthToTitle(btnWid)
     self.addPlayer:setX(self.playerList:getRight() - self.addPlayer.width)
     self:addChild(self.addPlayer);
@@ -137,11 +137,7 @@ function ISSafehouseAddPlayerUI:onClick(button)
             modal:addToUIManager()
             sendSafehouseInvite(self.safehouse, self.player, self.selectedPlayer);
         else
-            self.safehouse:setOwner(self.selectedPlayer);
-            self.safehouse:syncSafehouse();
-            if self.player:getX() >= self.safehouse:getX() - 1 and self. player:getX() < self.safehouse:getX2() + 1 and self.player:getY() >= self.safehouse:getY() - 1 and self.player:getY() < self.safehouse:getY2() + 1 then
-                self.safehouse:kickOutOfSafehouse(self.player);
-            end
+            sendSafehouseChangeOwner(self.safehouse, self.selectedPlayer)
             self.safehouseUI:populateList();
             self:setVisible(false);
             self:removeFromUIManager();
@@ -176,7 +172,7 @@ function ISSafehouseAddPlayerUI:new(x, y, width, height, safehouse, player)
     o.moveWithMouse = true;
     o.scoreboard = nil
     ISSafehouseAddPlayerUI.instance = o;
-    o.isOwner = safehouse:isOwner(player) or player:getAccessLevel() ~= "None";
+    o.isOwner = safehouse:isOwner(player) or player:getRole():haveCapability(Capability.CanSetupSafehouses);
     return o;
 end
 

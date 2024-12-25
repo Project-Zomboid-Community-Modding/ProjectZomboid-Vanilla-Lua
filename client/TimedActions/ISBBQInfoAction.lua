@@ -44,13 +44,8 @@ function ISBBQInfoAction:perform()
 end
 
 function ISBBQInfoAction:new(character, bbq)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
+	local o = ISBaseTimedAction.new(self, character)
 	o.maxTime = 0
-	o.stopOnWalk = true
-	o.stopOnRun = true
-	o.character = character
 	o.playerNum = character:getPlayerNum()
 	o.bbq = bbq
 	return o

@@ -122,23 +122,26 @@ BaseGameCharacterDetails.DoTraits = function()
 	handy:addXPBoost(Perks.Maintenance, 1)
 	handy:addXPBoost(Perks.Woodwork, 1)
 
+	local isMP = (isClient() or isServer());
+	
 	--    TraitFactory.addTrait("Patient", getText("UI_trait_patient"), 4, getText("UI_trait_patientdesc"), false);
  --   TraitFactory.addTrait("ShortTemper", getText("UI_trait_shorttemper"), -4, getText("UI_trait_shorttemperdesc"), false);
   --  TraitFactory.addTrait("Brooding", getText("UI_trait_brooding"), -2, getText("UI_trait_broodingdesc"), false);
     TraitFactory.addTrait("SpeedDemon", getText("UI_trait_SpeedDemon"), 1, getText("UI_trait_SpeedDemonDesc"), false);
 	TraitFactory.addTrait("SundayDriver", getText("UI_trait_SundayDriver"), -1, getText("UI_trait_SundayDriverDesc"), false);
+	TraitFactory.addTrait("PoorPassenger", getText("UI_trait_PoorPassenger"), -1, getText("UI_trait_PoorPassengerDesc"), false, not isMP);
     TraitFactory.addTrait("Brave", getText("UI_trait_brave"), 4, getText("UI_trait_bravedesc"), false);
     TraitFactory.addTrait("Cowardly", getText("UI_trait_cowardly"), -2, getText("UI_trait_cowardlydesc"), false);
     TraitFactory.addTrait("Clumsy", getText("UI_trait_clumsy"), -2, getText("UI_trait_clumsydesc"), false);
     TraitFactory.addTrait("Graceful", getText("UI_trait_graceful"), 4, getText("UI_trait_gracefuldesc"), false);
-  --  TraitFactory.addTrait("Hypercondriac", getText("UI_trait_hypochon"), -2, getText("UI_trait_hypochondesc"), false);
+  --  TraitFactory.addTrait("Hypercondriac", getText("UI_trait_hypochon"), -4, getText("UI_trait_hypochondesc"), false);
     TraitFactory.addTrait("ShortSighted", getText("UI_trait_shortsigh"), -2, getText("UI_trait_shortsighdesc"), false);
 	TraitFactory.addTrait("HardOfHearing", getText("UI_trait_hardhear"), -4, getText("UI_trait_hardheardesc"), false);
 	TraitFactory.addTrait("Deaf", getText("UI_trait_deaf"), -12, getText("UI_trait_deafdesc"), false);
     TraitFactory.addTrait("KeenHearing", getText("UI_trait_keenhearing"), 6, getText("UI_trait_keenhearingdesc"), false);
-    TraitFactory.addTrait("EagleEyed", getText("UI_trait_eagleeyed"), 6, getText("UI_trait_eagleeyeddesc"), false);
+    TraitFactory.addTrait("EagleEyed", getText("UI_trait_eagleeyed"), 4, getText("UI_trait_eagleeyeddesc"), false);
     TraitFactory.addTrait("HeartyAppitite", getText("UI_trait_heartyappetite"), -4, getText("UI_trait_heartyappetitedesc"), false);
-    TraitFactory.addTrait("LightEater", getText("UI_trait_lighteater"), 4, getText("UI_trait_lighteaterdesc"), false);
+    TraitFactory.addTrait("LightEater", getText("UI_trait_lighteater"), 2, getText("UI_trait_lighteaterdesc"), false);
     TraitFactory.addTrait("ThickSkinned", getText("UI_trait_thickskinned"), 8, getText("UI_trait_thickskinneddesc"), false);
     local unfit = TraitFactory.addTrait("Unfit", getText("UI_trait_unfit"), -10, getText("UI_trait_unfitdesc"), false);
     unfit:addXPBoost(Perks.Fitness, -4)
@@ -150,14 +153,18 @@ BaseGameCharacterDetails.DoTraits = function()
     ath:addXPBoost(Perks.Fitness, 4)
     TraitFactory.addTrait("Nutritionist", getText("UI_trait_nutritionist"), 4, getText("UI_trait_nutritionistdesc"), false);
     TraitFactory.addTrait("Nutritionist2", getText("UI_trait_nutritionist"), 0, getText("UI_trait_nutritionistdesc"), true);
+	local weightgain = TraitFactory.addTrait("Weight Gain", getText("UI_trait_weightgain"), -2, getText("UI_trait_weightgaindesc"), false);
+	weightgain:addFreeTrait("Overweight");
+	local weightloss = TraitFactory.addTrait("Weight Loss", getText("UI_trait_weightloss"), -2, getText("UI_trait_weightlossdesc"), false);
+	weightloss:addFreeTrait("Underweight");
 	TraitFactory.addTrait("Emaciated", getText("UI_trait_emaciated"), -10, getText("UI_trait_emaciateddesc"), true);
-	local veryUnderweight = TraitFactory.addTrait("Very Underweight", getText("UI_trait_veryunderweight"), -10, getText("UI_trait_veryunderweightdesc"), false);
+	local veryUnderweight = TraitFactory.addTrait("Very Underweight", getText("UI_trait_veryunderweight"), 0, getText("UI_trait_veryunderweightdesc"), true);
 	veryUnderweight:addXPBoost(Perks.Fitness, -2)
-	local underweight = TraitFactory.addTrait("Underweight", getText("UI_trait_underweight"), -6, getText("UI_trait_underweightdesc"), false);
+	local underweight = TraitFactory.addTrait("Underweight", getText("UI_trait_underweight"), 0, getText("UI_trait_underweightdesc"), true);
 	underweight:addXPBoost(Perks.Fitness, -1)
-	local overweight = TraitFactory.addTrait("Overweight", getText("UI_trait_overweight"), -6, getText("UI_trait_overweightdesc"), false);
+	local overweight = TraitFactory.addTrait("Overweight", getText("UI_trait_overweight"), 0, getText("UI_trait_overweightdesc"), true);
 	overweight:addXPBoost(Perks.Fitness, -1)
-    local obese = TraitFactory.addTrait("Obese", getText("UI_trait_obese"), -10, getText("UI_trait_obesedesc"), false);
+    local obese = TraitFactory.addTrait("Obese", getText("UI_trait_obese"), 0, getText("UI_trait_obesedesc"), true);
 	obese:addXPBoost(Perks.Fitness, -2)
     local strong = TraitFactory.addTrait("Strong", getText("UI_trait_strong"), 10, getText("UI_trait_strongdesc"), false);
     strong:addXPBoost(Perks.Strength, 4)
@@ -173,8 +180,8 @@ BaseGameCharacterDetails.DoTraits = function()
    -- TraitFactory.addTrait("HeavyDrinker", getText("UI_trait_harddrink"), 3, getText("UI_trait_harddrinkdesc"), false);
     TraitFactory.addTrait("Agoraphobic", getText("UI_trait_agoraphobic"), -4, getText("UI_trait_agoraphobicdesc"), false);
     TraitFactory.addTrait("Claustophobic", getText("UI_trait_claustro"), -4, getText("UI_trait_claustrodesc"), false);
-    TraitFactory.addTrait("Lucky", getText("UI_trait_lucky"), 4, getText("UI_trait_luckydesc"), false, true);
-    TraitFactory.addTrait("Unlucky", getText("UI_trait_unlucky"), -4, getText("UI_trait_unluckydesc"), false, true);
+    -- TraitFactory.addTrait("Lucky", getText("UI_trait_lucky"), 4, getText("UI_trait_luckydesc"), false, true);
+    -- TraitFactory.addTrait("Unlucky", getText("UI_trait_unlucky"), -4, getText("UI_trait_unluckydesc"), false, true);
     TraitFactory.addTrait("Marksman", getText("UI_trait_marksman"), 0, getText("UI_trait_marksmandesc"), true);
     TraitFactory.addTrait("NightOwl", getText("UI_trait_nightowl"), 0, getText("UI_trait_nightowldesc"), true);
    -- TraitFactory.addTrait("GiftOfTheGab", getText("UI_trait_giftgab"), 0, getText("UI_trait_giftgabdesc"), true);
@@ -186,12 +193,12 @@ BaseGameCharacterDetails.DoTraits = function()
 	TraitFactory.addTrait("FastHealer", getText("UI_trait_FastHealer"), 6, getText("UI_trait_FastHealerDesc"), false);
 	TraitFactory.addTrait("FastLearner", getText("UI_trait_FastLearner"), 6, getText("UI_trait_FastLearnerDesc"), false);
 	TraitFactory.addTrait("FastReader", getText("UI_trait_FastReader"), 2, getText("UI_trait_FastReaderDesc"), false);
-	TraitFactory.addTrait("AdrenalineJunkie", getText("UI_trait_AdrenalineJunkie"), 8, getText("UI_trait_AdrenalineJunkieDesc"), false);
+	TraitFactory.addTrait("AdrenalineJunkie", getText("UI_trait_AdrenalineJunkie"), 4, getText("UI_trait_AdrenalineJunkieDesc"), false);
 	TraitFactory.addTrait("Inconspicuous", getText("UI_trait_Inconspicuous"), 4, getText("UI_trait_InconspicuousDesc"), false);
-	TraitFactory.addTrait("NeedsLessSleep", getText("UI_trait_LessSleep"), 2, getText("UI_trait_LessSleepDesc"), false, not sleepOK);
+	TraitFactory.addTrait("NeedsLessSleep", getText("UI_trait_LessSleep"), 2, getText("UI_trait_LessSleepDesc"), false, sleepOK);
 	TraitFactory.addTrait("NightVision", getText("UI_trait_NightVision"), 2, getText("UI_trait_NightVisionDesc"), false);
-	TraitFactory.addTrait("Organized", getText("UI_trait_Packmule"), 6, getText("UI_trait_PackmuleDesc"), false);
-	TraitFactory.addTrait("LowThirst", getText("UI_trait_LowThirst"), 6, getText("UI_trait_LowThirstDesc"), false);
+	TraitFactory.addTrait("Organized", getText("UI_trait_Packmule"), 4, getText("UI_trait_PackmuleDesc"), false);
+	TraitFactory.addTrait("LowThirst", getText("UI_trait_LowThirst"), 2, getText("UI_trait_LowThirstDesc"), false);
 	TraitFactory.addTrait("Burglar", getText("UI_prof_Burglar"), 0, getText("UI_trait_BurglarDesc"), true);
 
 	--TraitFactory.addTrait("Injured", "Injured", -4, getText("UI_trait_outdoorsmandesc"), false);
@@ -204,31 +211,113 @@ BaseGameCharacterDetails.DoTraits = function()
 
 	local fisher = TraitFactory.addTrait("Fishing", getText("UI_trait_Fishing"), 4, getText("UI_trait_FishingDesc"), false);
 	fisher:addXPBoost(Perks.Fishing, 1)
-    fisher:getFreeRecipes():add("Make Fishing Rod");
-    fisher:getFreeRecipes():add("Fix Fishing Rod");
+    fisher:getFreeRecipes():add("MakeFishingRod");
+    fisher:getFreeRecipes():add("FixFishingRod");
+    fisher:getFreeRecipes():add("MakeChum");
 
-	local gardener = TraitFactory.addTrait("Gardener", getText("UI_trait_Gardener"), 4, getText("UI_trait_GardenerDesc"), false);
+	local gardener = TraitFactory.addTrait("Gardener", getText("UI_trait_Gardener"), 2, getText("UI_trait_GardenerDesc"), false);
     gardener:addXPBoost(Perks.Farming, 1)
-    gardener:getFreeRecipes():add("Make Mildew Cure");
-    gardener:getFreeRecipes():add("Make Flies Cure");
+    gardener:getFreeRecipes():add("MakeFliesCureFromCigarettes");
+    gardener:getFreeRecipes():add("MakeFliesCureFromLooseTobacco");
+    gardener:getFreeRecipes():add("MakeFliesCureFromChewingTobacco");
+    gardener:getFreeRecipes():add("MakeMildewCure");
+    gardener:getFreeRecipes():add("MakeAphidsCure");
+--     gardener:getFreeRecipes():add("Make Slug Trap");
+    gardener:getFreeRecipes():add("MakeScarecrow");
+
+    gardener:getFreeRecipes():add("Carrot Growing Season");
+    gardener:getFreeRecipes():add("Broccoli Growing Season");
+    gardener:getFreeRecipes():add("Radish Growing Season");
+    gardener:getFreeRecipes():add("Strawberry Growing Season");
+    gardener:getFreeRecipes():add("Tomato Growing Season");
+    gardener:getFreeRecipes():add("Potato Growing Season");
+    gardener:getFreeRecipes():add("Cabbage Growing Season");
+
+    gardener:getFreeRecipes():add("Corn Growing Season");
+    gardener:getFreeRecipes():add("Kale Growing Season");
+    gardener:getFreeRecipes():add("Sweet Potato Growing Season");
+    gardener:getFreeRecipes():add("Green Pea Growing Season");
+    gardener:getFreeRecipes():add("Onion Growing Season");
+    gardener:getFreeRecipes():add("Garlic Growing Season");
+    gardener:getFreeRecipes():add("Soybean Growing Season");
+
+    gardener:getFreeRecipes():add("Basil Growing Season");
+    gardener:getFreeRecipes():add("Chives Growing Season");
+    gardener:getFreeRecipes():add("Cilantro Growing Season");
+    gardener:getFreeRecipes():add("Oregano Growing Season");
+    gardener:getFreeRecipes():add("Parsley Growing Season");
+    gardener:getFreeRecipes():add("Sage Growing Season");
+    gardener:getFreeRecipes():add("Rosemary Growing Season");
+    gardener:getFreeRecipes():add("Thyme Growing Season");
+
+    gardener:getFreeRecipes():add("Hops Growing Season");
+    gardener:getFreeRecipes():add("Sugar Beet Growing Season");
+
+    gardener:getFreeRecipes():add("Bell Pepper Growing Season");
+    gardener:getFreeRecipes():add("Cauliflower Growing Season");
+    gardener:getFreeRecipes():add("Cucumber Growing Season");
+    gardener:getFreeRecipes():add("Habanero Growing Season");
+    gardener:getFreeRecipes():add("Jalapeno Growing Season");
+    gardener:getFreeRecipes():add("Leek Growing Season");
+    gardener:getFreeRecipes():add("Lettuce Growing Season");
+    gardener:getFreeRecipes():add("Pumpkin Growing Season");
+    gardener:getFreeRecipes():add("Spinach Growing Season");
+    gardener:getFreeRecipes():add("Sunflower Growing Season");
+    gardener:getFreeRecipes():add("Turnip Growing Season");
+    gardener:getFreeRecipes():add("Watermelon Growing Season");
+    gardener:getFreeRecipes():add("Zucchini Growing Season");
+
+    gardener:getFreeRecipes():add("Chamomile Growing Season");
+    gardener:getFreeRecipes():add("Lemongrass Growing Season");
+    gardener:getFreeRecipes():add("Marigold Growing Season");
+    gardener:getFreeRecipes():add("Mint Growing Season");
+
+    gardener:getFreeRecipes():add("Black Sage Growing Season");
+    gardener:getFreeRecipes():add("Broadleaf Plantain Growing Season");
+    gardener:getFreeRecipes():add("Comfrey Growing Season");
+    gardener:getFreeRecipes():add("Common Mallow Growing Season");
+    gardener:getFreeRecipes():add("Wild Garlic Growing Season");
+
+    gardener:getFreeRecipes():add("Rose Growing Season");
+    gardener:getFreeRecipes():add("Poppy Growing Season");
+    gardener:getFreeRecipes():add("Lavender Growing Season");
+
+    gardener:getFreeRecipes():add("MakeJarofTomatoes");
+    gardener:getFreeRecipes():add("MakeJarofCarrots");
+    gardener:getFreeRecipes():add("MakeJarofPotatoes");
+    gardener:getFreeRecipes():add("MakeJarofEggplant");
+    gardener:getFreeRecipes():add("MakeJarofLeeks");
+    gardener:getFreeRecipes():add("MakeJarofRedRadishes");
+    gardener:getFreeRecipes():add("MakeJarofBellPeppers");
+    gardener:getFreeRecipes():add("MakeJarofCabbage");
+    gardener:getFreeRecipes():add("MakeJarofBroccoli");
 
 	local jogger = TraitFactory.addTrait("Jogger", getText("UI_trait_Jogger"), 4, getText("UI_trait_JoggerDesc"), false);
 	jogger:addXPBoost(Perks.Sprinting, 1)
 
-	TraitFactory.addTrait("SlowHealer", getText("UI_trait_SlowHealer"), -6, getText("UI_trait_SlowHealerDesc"), false);
+	TraitFactory.addTrait("SlowHealer", getText("UI_trait_SlowHealer"), -3, getText("UI_trait_SlowHealerDesc"), false);
 	TraitFactory.addTrait("SlowLearner", getText("UI_trait_SlowLearner"), -6, getText("UI_trait_SlowLearnerDesc"), false);
 	TraitFactory.addTrait("SlowReader", getText("UI_trait_SlowReader"), -2, getText("UI_trait_SlowReaderDesc"), false);
-	TraitFactory.addTrait("NeedsMoreSleep", getText("UI_trait_MoreSleep"), -4, getText("UI_trait_MoreSleepDesc"), false, not sleepOK);
+	TraitFactory.addTrait("NeedsMoreSleep", getText("UI_trait_MoreSleep"), -4, getText("UI_trait_MoreSleepDesc"), false, sleepOK);
 	TraitFactory.addTrait("Conspicuous", getText("UI_trait_Conspicuous"), -4, getText("UI_trait_ConspicuousDesc"), false);
-	TraitFactory.addTrait("Disorganized", getText("UI_trait_Disorganized"), -4, getText("UI_trait_DisorganizedDesc"), false);
-	TraitFactory.addTrait("HighThirst", getText("UI_trait_HighThirst"), -6, getText("UI_trait_HighThirstDesc"), false);
+	TraitFactory.addTrait("Disorganized", getText("UI_trait_Disorganized"), -6, getText("UI_trait_DisorganizedDesc"), false);
+	TraitFactory.addTrait("HighThirst", getText("UI_trait_HighThirst"), -1, getText("UI_trait_HighThirstDesc"), false);
 	TraitFactory.addTrait("Illiterate", getText("UI_trait_Illiterate"), -8, getText("UI_trait_IlliterateDesc"), false);
-	TraitFactory.addTrait("Insomniac", getText("UI_trait_Insomniac"), -6, getText("UI_trait_InsomniacDesc"), false, not sleepOK);
+	TraitFactory.addTrait("Insomniac", getText("UI_trait_Insomniac"), -6, getText("UI_trait_InsomniacDesc"), false, sleepOK);
 	TraitFactory.addTrait("Pacifist", getText("UI_trait_Pacifist"), -4, getText("UI_trait_PacifistDesc"), false);
 	TraitFactory.addTrait("Thinskinned", getText("UI_trait_ThinSkinned"), -8, getText("UI_trait_ThinSkinnedDesc"), false);
-    TraitFactory.addTrait("Smoker", getText("UI_trait_Smoker"), -4, getText("UI_trait_SmokerDesc"), false);
+    TraitFactory.addTrait("Smoker", getText("UI_trait_Smoker"), -2, getText("UI_trait_SmokerDesc"), false);
 	local tailoring = TraitFactory.addTrait("Tailor", getText("UI_trait_Tailor"), 4, getText("UI_trait_TailorDesc"), false);
 	tailoring:addXPBoost(Perks.Tailoring, 1)
+    tailoring:getFreeRecipes():add("KnitBalaclavaFace");
+    tailoring:getFreeRecipes():add("KnitBalaclavaFull");
+    tailoring:getFreeRecipes():add("KnitBeany");
+    tailoring:getFreeRecipes():add("KnitDoily");
+    tailoring:getFreeRecipes():add("KnitLegwarmers");
+    tailoring:getFreeRecipes():add("KnitScarf");
+    tailoring:getFreeRecipes():add("KnitSocks");
+    tailoring:getFreeRecipes():add("KnitSweaterVest");
+    tailoring:getFreeRecipes():add("KnitWoolyHat");
 
 	TraitFactory.addTrait("Dextrous", getText("UI_trait_Dexterous"), 2, getText("UI_trait_DexterousDesc"), false);
 	TraitFactory.addTrait("AllThumbs", getText("UI_trait_AllThumbs"), -2, getText("UI_trait_AllThumbsDesc"), false);
@@ -238,11 +327,12 @@ BaseGameCharacterDetails.DoTraits = function()
     TraitFactory.addTrait("IronGut", getText("UI_trait_IronGut"), 3, getText("UI_trait_IronGutDesc"), false);
     TraitFactory.addTrait("Hemophobic", getText("UI_trait_Hemophobic"), -5, getText("UI_trait_HemophobicDesc"), false);
     TraitFactory.addTrait("Asthmatic", getText("UI_trait_Asthmatic"), -5, getText("UI_trait_AsthmaticDesc"), false);
---    local blacksmith = TraitFactory.addTrait("Blacksmith", getText("UI_trait_Blacksmith"), 6, getText("UI_trait_BlacksmithDesc"), false);
---    blacksmith:addXPBoost(Perks.Blacksmith, 1)
+   local blacksmith = TraitFactory.addTrait("Blacksmith", getText("UI_trait_Blacksmith"), 6, getText("UI_trait_BlacksmithDesc"), false);
+   blacksmith:addXPBoost(Perks.Blacksmith, 2)
+	blacksmith:addXPBoost(Perks.Maintenance, 1)
 --    blacksmith:addXPBoost(Perks.Melting, 1)
---    doMetalWorkerRecipes(blacksmith);
---    TraitFactory.addTrait("Blacksmith2", getText("UI_trait_Blacksmith"), 0, getText("UI_trait_BlacksmithDesc"), true);
+   doMetalWorkerRecipes(blacksmith);
+   TraitFactory.addTrait("Blacksmith2", getText("UI_trait_Blacksmith"), 0, getText("UI_trait_BlacksmithDesc"), true);
 
 --    local metalworker = TraitFactory.addTrait("Metalworker", getText("UI_trait_Metalworker"), 6, getText("UI_trait_MetalworkerDesc"), false);
 --    metalworker:addXPBoost(Perks.MetalWelding, 2)
@@ -254,30 +344,100 @@ BaseGameCharacterDetails.DoTraits = function()
 --    metalworker:getFreeRecipes():add("Make Metal Sheet");
 --    TraitFactory.addTrait("Metalworker2", getText("UI_trait_Metalworker"), 0, getText("UI_trait_MetalworkerDesc"), true);
 
-    local cook = TraitFactory.addTrait("Cook", getText("UI_trait_Cook"), 6, getText("UI_trait_CookDesc"), false);
+    local cook = TraitFactory.addTrait("Cook", getText("UI_trait_Cook"), 3, getText("UI_trait_CookDesc"), false);
     cook:addXPBoost(Perks.Cooking, 2)
-    cook:getFreeRecipes():add("Make Cake Batter");
-    cook:getFreeRecipes():add("Make Pie Dough");
-    cook:getFreeRecipes():add("Make Bread Dough");
-    cook:getFreeRecipes():add("Make Biscuits");
-    cook:getFreeRecipes():add("Make Cookie Dough");
-    cook:getFreeRecipes():add("Make Chocolate Chip Cookie Dough");
-    cook:getFreeRecipes():add("Make Oatmeal Cookie Dough");
-    cook:getFreeRecipes():add("Make Shortbread Cookie Dough");
-    cook:getFreeRecipes():add("Make Sugar Cookie Dough");
-    cook:getFreeRecipes():add("Make Pizza");
+    cook:getFreeRecipes():add("MakeCakeBatter");
+    cook:getFreeRecipes():add("MakePieDough");
+    cook:getFreeRecipes():add("MakeBreadDough");
+    cook:getFreeRecipes():add("MakeBaguetteDough");
+    cook:getFreeRecipes():add("MakeBiscuits");
+    cook:getFreeRecipes():add("MakeCookieDough");
+    cook:getFreeRecipes():add("MakeChocolateChipCookieDough");
+    cook:getFreeRecipes():add("MakeOatmealCookieDough");
+    cook:getFreeRecipes():add("MakeShortbreadCookieDough");
+    cook:getFreeRecipes():add("MakeSugarCookieDough");
+    cook:getFreeRecipes():add("MakePizza");
+    cook:getFreeRecipes():add("MakeFriedOnionRings");
+    cook:getFreeRecipes():add("MakeFriedShrimp");
+    cook:getFreeRecipes():add("MakeCabbageRolls");
+
+    cook:getFreeRecipes():add("MakeJarofTomatoes");
+    cook:getFreeRecipes():add("MakeJarofCarrots");
+    cook:getFreeRecipes():add("MakeJarofPotatoes");
+    cook:getFreeRecipes():add("MakeJarofEggplant");
+    cook:getFreeRecipes():add("MakeJarofLeeks");
+    cook:getFreeRecipes():add("MakeJarofRedRadishes");
+    cook:getFreeRecipes():add("MakeJarofBellPeppers");
+    cook:getFreeRecipes():add("MakeJarofCabbage");
+    cook:getFreeRecipes():add("MakeJarofBroccoli");
+
+
     TraitFactory.addTrait("Cook2", getText("UI_trait_Cook"), 0, getText("UI_trait_Cook2Desc"), true);
 
-    local herbalist = TraitFactory.addTrait("Herbalist", getText("UI_trait_Herbalist"), 6, getText("UI_trait_HerbalistDesc"), false);
+    local herbalist = TraitFactory.addTrait("Herbalist", getText("UI_trait_Herbalist"), 4, getText("UI_trait_HerbalistDesc"), false);
+    herbalist:addXPBoost(Perks.PlantScavenging, 1)
     herbalist:getFreeRecipes():add("Herbalist");
+    herbalist:getFreeRecipes():add("MakePlantainPoultice");
+    herbalist:getFreeRecipes():add("MakeComfreyPoultice");
+    herbalist:getFreeRecipes():add("MakeWildGarlicPoultice");
+
+    herbalist:getFreeRecipes():add("Black Sage Growing Season");
+    herbalist:getFreeRecipes():add("Broadleaf Plantain Growing Season");
+    herbalist:getFreeRecipes():add("Comfrey Growing Season");
+    herbalist:getFreeRecipes():add("Common Mallow Growing Season");
+    herbalist:getFreeRecipes():add("Wild Garlic Growing Season");
+
+    local wilderness = TraitFactory.addTrait("WildernessKnowledge", getText("UI_trait_WildernessKnowledge"), 8, getText("UI_trait_WildernessKnowledgeDesc"), false);
+    -- increased the point cost, as it's now a general suite of wilderness survival skills
+--     local herbalist = TraitFactory.addTrait("Herbalist", getText("UI_trait_Herbalist"), 4, getText("UI_trait_HerbalistDesc"), false);
+    wilderness:addXPBoost(Perks.PlantScavenging, 1)
+    wilderness:addXPBoost(Perks.FlintKnapping, 1)
+	wilderness:addXPBoost(Perks.Maintenance, 1)
+    wilderness:addXPBoost(Perks.Carving, 1)
+    wilderness:getFreeRecipes():add("Herbalist");
+    wilderness:getFreeRecipes():add("MakeStoneBlade");
+    wilderness:getFreeRecipes():add("MakeLongStoneBlade");
+    wilderness:getFreeRecipes():add("MakeStoneBladeScythe");
+    wilderness:getFreeRecipes():add("FireHardenSpear");
+    wilderness:getFreeRecipes():add("MakeCrudeWhetstone");
+    wilderness:getFreeRecipes():add("MakePlantainPoultice");
+    wilderness:getFreeRecipes():add("MakeComfreyPoultice");
+    wilderness:getFreeRecipes():add("MakeWildGarlicPoultice");
+
+    wilderness:getFreeRecipes():add("Black Sage Growing Season");
+    wilderness:getFreeRecipes():add("Broadleaf Plantain Growing Season");
+    wilderness:getFreeRecipes():add("Comfrey Growing Season");
+    wilderness:getFreeRecipes():add("Common Mallow Growing Season");
+    wilderness:getFreeRecipes():add("Wild Garlic Growing Season");
+
+    wilderness:getFreeRecipes():add("BindSpear");
+    wilderness:getFreeRecipes():add("WireSpear");
+    wilderness:getFreeRecipes():add("SharpenBone");
+    wilderness:getFreeRecipes():add("MakeBoneFishingHook");
+    wilderness:getFreeRecipes():add("MakeBoneSewingNeedle");
+    wilderness:getFreeRecipes():add("MakeBoneAwl");
+    wilderness:getFreeRecipes():add("MakeStoneAwl");
+    wilderness:getFreeRecipes():add("MakeStoneChisel");
+    wilderness:getFreeRecipes():add("MakeStoneDrill");
+    wilderness:getFreeRecipes():add("MakeLargeStoneAxeHead");
+    wilderness:getFreeRecipes():add("MakeStoneMaulHead");
+
+    wilderness:getFreeRecipes():add("MakeBoneClub");
+    wilderness:getFreeRecipes():add("MakeBoneHatchetHead");
+    wilderness:getFreeRecipes():add("MakeJawboneAxe");
+    wilderness:getFreeRecipes():add("MakeFishingRod");
+    wilderness:getFreeRecipes():add("MakeSnareTrap");
 
 	local barfighter = TraitFactory.addTrait("Brawler", getText("UI_trait_BarFighter"), 6, getText("UI_trait_BarFighterDesc"), false);
-
 	barfighter:addXPBoost(Perks.Axe, 1)
 	barfighter:addXPBoost(Perks.Blunt, 1)
+	barfighter:getFreeRecipes():add("BarbedWireWeapon");
+	barfighter:getFreeRecipes():add("CanReinforceLongWeapon");
+	barfighter:getFreeRecipes():add("CanReinforceShortWeapon");
+	barfighter:getFreeRecipes():add("CanReinforceWeapon");
+	barfighter:getFreeRecipes():add("SheetMetalWeapon");
 
     local formerscout = TraitFactory.addTrait("Formerscout", getText("UI_trait_Scout"), 6, getText("UI_trait_ScoutDesc"), false);
-
     formerscout:addXPBoost(Perks.Doctor, 1)
     formerscout:addXPBoost(Perks.PlantScavenging, 1)
 
@@ -286,42 +446,46 @@ BaseGameCharacterDetails.DoTraits = function()
 --	football:addXPBoost(Perks.Sprinting, 1)
 
 	local baseball = TraitFactory.addTrait("BaseballPlayer", getText("UI_trait_PlaysBaseball"), 4, getText("UI_trait_PlaysBaseballDesc"), false);
-
 	baseball:addXPBoost(Perks.Blunt, 1)
 
 	local backpacker = TraitFactory.addTrait("Hiker", getText("UI_trait_Hiker"), 6, getText("UI_trait_HikerDesc"), false);
-
 	backpacker:addXPBoost(Perks.PlantScavenging, 1)
 	backpacker:addXPBoost(Perks.Trapping, 1)
-    backpacker:getFreeRecipes():add("Make Stick Trap");
-    backpacker:getFreeRecipes():add("Make Snare Trap");
-    backpacker:getFreeRecipes():add("Make Wooden Box Trap");
+    backpacker:getFreeRecipes():add("MakeStickTrap");
+    backpacker:getFreeRecipes():add("MakeSnareTrap");
+    backpacker:getFreeRecipes():add("MakeWoodenBoxTrap");
 
 	local hunter = TraitFactory.addTrait("Hunter", getText("UI_trait_Hunter"), 8, getText("UI_trait_HunterDesc"), false);
-
 	hunter:addXPBoost(Perks.Aiming, 1)
 	hunter:addXPBoost(Perks.Trapping, 1)
 	hunter:addXPBoost(Perks.Sneak, 1)
 	hunter:addXPBoost(Perks.SmallBlade, 1)
-    hunter:getFreeRecipes():add("Make Stick Trap");
-    hunter:getFreeRecipes():add("Make Snare Trap");
-    hunter:getFreeRecipes():add("Make Wooden Box Trap");
-    hunter:getFreeRecipes():add("Make Trap Box");
-    hunter:getFreeRecipes():add("Make Cage Trap");
+    hunter:getFreeRecipes():add("MakeStickTrap");
+    hunter:getFreeRecipes():add("MakeSnareTrap");
+    hunter:getFreeRecipes():add("MakeWoodenBoxTrap");
+    hunter:getFreeRecipes():add("MakeTrapBox");
+    hunter:getFreeRecipes():add("MakeCageTrap");
 
 	local gym = TraitFactory.addTrait("Gymnast", getText("UI_trait_Gymnast"), 5, getText("UI_trait_GymnastDesc"), false);
-
 	gym:addXPBoost(Perks.Lightfoot, 1)
 	gym:addXPBoost(Perks.Nimble, 1)
 	
-	local carenthusiast = TraitFactory.addTrait("Mechanics", getText("UI_trait_Mechanics"), 5, getText("UI_trait_MechanicsDesc"), false);
+	local carenthusiast = TraitFactory.addTrait("Mechanics", getText("UI_trait_Mechanics"), 3, getText("UI_trait_MechanicsDesc"), false);
 	carenthusiast:addXPBoost(Perks.Mechanics, 1);
 	carenthusiast:getFreeRecipes():add("Basic Mechanics");
 	carenthusiast:getFreeRecipes():add("Intermediate Mechanics");
 	TraitFactory.addTrait("Mechanics2", getText("UI_trait_Mechanics"), 0, getText("UI_trait_Mechanics2Desc"), true);
+
+	local whittler = TraitFactory.addTrait("Whittler", getText("UI_trait_Whittler"), 2, getText("UI_trait_WhittlerDesc"), false);
+	whittler:addXPBoost(Perks.Carving, 2)
+    whittler:getFreeRecipes():add("SharpenBone");
+    whittler:getFreeRecipes():add("MakeBoneFishingHook");
+    whittler:getFreeRecipes():add("MakeBoneSewingNeedle");
+
+	--TraitFactory.addTrait("Dismantler", getText("UI_trait_Dismantler"), 2, getText("UI_trait_DismantlerDesc"), false);
 	
 	
-	--    TraitFactory.setMutualExclusive("Blacksmith", "Blacksmith2");
+	   TraitFactory.setMutualExclusive("Blacksmith", "Blacksmith2");
 --    TraitFactory.setMutualExclusive("Metalworker", "Metalworker2");
 	TraitFactory.setMutualExclusive("SpeedDemon", "SundayDriver");
 	TraitFactory.setMutualExclusive("Dextrous", "AllThumbs");
@@ -346,6 +510,7 @@ BaseGameCharacterDetails.DoTraits = function()
 	TraitFactory.setMutualExclusive("Stout", "Feeble");
 	TraitFactory.setMutualExclusive("Strong", "Feeble");
     TraitFactory.setMutualExclusive("Strong", "Stout");
+	TraitFactory.setMutualExclusive("Weight Gain", "Weight Loss");
     TraitFactory.setMutualExclusive("Overweight", "Obese");
     TraitFactory.setMutualExclusive("Overweight", "Underweight");
     TraitFactory.setMutualExclusive("Very Underweight", "Underweight");
@@ -363,6 +528,7 @@ BaseGameCharacterDetails.DoTraits = function()
     TraitFactory.setMutualExclusive("Athletic", "Out of Shape");
     TraitFactory.setMutualExclusive("Athletic", "Unfit");
     TraitFactory.setMutualExclusive("Athletic", "Very Underweight");
+    TraitFactory.setMutualExclusive("Athletic", "Smoker");
     TraitFactory.setMutualExclusive("Fit", "Out of Shape");
     TraitFactory.setMutualExclusive("Fit", "Unfit");
     TraitFactory.setMutualExclusive("Fit", "Overweight");
@@ -377,7 +543,7 @@ BaseGameCharacterDetails.DoTraits = function()
     TraitFactory.setMutualExclusive("Brave", "Agoraphobic");
     TraitFactory.setMutualExclusive("Brave", "Claustophobic");
     TraitFactory.setMutualExclusive("ShortSighted", "EagleEyed");
-    TraitFactory.setMutualExclusive("Lucky", "Unlucky");
+    --TraitFactory.setMutualExclusive("Lucky", "Unlucky");
     TraitFactory.setMutualExclusive("Deaf", "HardOfHearing");
     TraitFactory.setMutualExclusive("Deaf", "KeenHearing");
     TraitFactory.setMutualExclusive("Desensitized", "Hemophobic");
@@ -391,6 +557,8 @@ BaseGameCharacterDetails.DoTraits = function()
     TraitFactory.setMutualExclusive("Desensitized", "Claustophobic");
     TraitFactory.setMutualExclusive("Desensitized", "AdrenalineJunkie");
     TraitFactory.setMutualExclusive("IronGut", "WeakStomach");
+
+    TraitFactory.setMutualExclusive("Herbalist", "WildernessKnowledge");
 
     TraitFactory.sortList();
 
@@ -467,11 +635,11 @@ BaseGameCharacterDetails.DoProfessions = function()
 	parkranger:addXPBoost(Perks.Axe, 1)
 	parkranger:addXPBoost(Perks.PlantScavenging, 2)
 	parkranger:addXPBoost(Perks.Woodwork, 1)
-    parkranger:getFreeRecipes():add("Make Stick Trap");
-    parkranger:getFreeRecipes():add("Make Snare Trap");
-    parkranger:getFreeRecipes():add("Make Wooden Box Trap");
-    parkranger:getFreeRecipes():add("Make Trap Box");
-    parkranger:getFreeRecipes():add("Make Cage Trap");
+    parkranger:getFreeRecipes():add("MakeStickTrap");
+    parkranger:getFreeRecipes():add("MakeSnareTrap");
+    parkranger:getFreeRecipes():add("MakeWoodenBoxTrap");
+    parkranger:getFreeRecipes():add("MakeTrapBox");
+    parkranger:getFreeRecipes():add("MakeCageTrap");
 
 
     local constructionworker = ProfessionFactory.addProfession("constructionworker", getText("UI_prof_constructionworker"), "profession_constructionworker2", -2);
@@ -485,49 +653,161 @@ BaseGameCharacterDetails.DoProfessions = function()
 	securityguard:addXPBoost(Perks.Lightfoot, 1)
 	securityguard:addFreeTrait("NightOwl");
 
-	local carpenter = ProfessionFactory.addProfession("carpenter", getText("UI_prof_Carpenter"), "profession_hammer2", 2);
+    -- adjusted the point value as carving was added
+	local carpenter = ProfessionFactory.addProfession("carpenter", getText("UI_prof_Carpenter"), "profession_hammer2", 1);
+-- 	local carpenter = ProfessionFactory.addProfession("carpenter", getText("UI_prof_Carpenter"), "profession_hammer2", 2);
 	carpenter:addXPBoost(Perks.Woodwork, 3)
+    carpenter:addXPBoost(Perks.Carving, 1)
 	carpenter:addXPBoost(Perks.SmallBlunt, 1)
+	-- added 1 level in the Carving skill, which is new in b42
+    carpenter:addXPBoost(Perks.Carving, 1)
 
 	local burglar = ProfessionFactory.addProfession("burglar", getText("UI_prof_Burglar"), "profession_burglar2", -6);
 	burglar:addXPBoost(Perks.Nimble, 2)
 	burglar:addXPBoost(Perks.Sneak, 2)
 	burglar:addXPBoost(Perks.Lightfoot, 2)
 	burglar:addFreeTrait("Burglar");
+    burglar:getFreeRecipes():add("MakeForearmMagazineArmor");
+    burglar:getFreeRecipes():add("MakeThighMagazineArmor");
+    burglar:getFreeRecipes():add("MakeShinMagazineArmor");
+    burglar:getFreeRecipes():add("MakeBodyMagazineArmor");
+    burglar:getFreeRecipes():add("MakeGlassShiv");
+    burglar:getFreeRecipes():add("MakeShiv");
+    burglar:getFreeRecipes():add("MakeToothbrushShiv");
+    burglar:getFreeRecipes():add("CopyBuildingKey");
+    burglar:getFreeRecipes():add("MakeHollowBook");
+    burglar:getFreeRecipes():add("MakeForearmBulletproofVestArmor");
+    burglar:getFreeRecipes():add("MakeShinBulletproofVestArmor");
+    burglar:getFreeRecipes():add("MakeThighBulletproofVestArmor");
+    burglar:getFreeRecipes():add("Hemp Growing Season");
 
 	local chef = ProfessionFactory.addProfession("chef", getText("UI_prof_Chef"), "profession_chef2", -4);
 	chef:addXPBoost(Perks.Cooking, 3)
 	chef:addXPBoost(Perks.Maintenance, 1)
 	chef:addXPBoost(Perks.SmallBlade, 1)
-    chef:getFreeRecipes():add("Make Cake Batter");
-    chef:getFreeRecipes():add("Make Pie Dough");
-    chef:getFreeRecipes():add("Make Bread Dough");
-    chef:getFreeRecipes():add("Make Biscuits");
-    chef:getFreeRecipes():add("Make Chocolate Cookie Dough");
-    chef:getFreeRecipes():add("Make Chocolate Chip Cookie Dough");
-    chef:getFreeRecipes():add("Make Oatmeal Cookie Dough");
-    chef:getFreeRecipes():add("Make Shortbread Cookie Dough");
-    chef:getFreeRecipes():add("Make Sugar Cookie Dough");
-    chef:getFreeRecipes():add("Make Pizza");
+    chef:getFreeRecipes():add("MakeCakeBatter");
+    chef:getFreeRecipes():add("MakePieDough");
+    chef:getFreeRecipes():add("MakeBreadDough");
+    chef:getFreeRecipes():add("MakeBaguetteDough");
+    chef:getFreeRecipes():add("MakeBiscuits");
+    chef:getFreeRecipes():add("MakeChocolateCookieDough");
+    chef:getFreeRecipes():add("MakeChocolateChipCookieDough");
+    chef:getFreeRecipes():add("MakeOatmealCookieDough");
+    chef:getFreeRecipes():add("MakeShortbreadCookieDough");
+    chef:getFreeRecipes():add("MakeSugarCookieDough");
+    chef:getFreeRecipes():add("MakePizza");
+    chef:getFreeRecipes():add("MakeFriedOnionRings");
+    chef:getFreeRecipes():add("MakeFriedShrimp");
+    chef:getFreeRecipes():add("MakeSushi");
+    chef:getFreeRecipes():add("MakeOnigiri");
+    chef:getFreeRecipes():add("MakeMaki");
+    chef:getFreeRecipes():add("MakeCabbageRolls");
+	chef:getFreeRecipes():add("PrepareMuffins");
     chef:addFreeTrait("Cook2");
+
+    chef:getFreeRecipes():add("MakeJarofTomatoes");
+    chef:getFreeRecipes():add("MakeJarofCarrots");
+    chef:getFreeRecipes():add("MakeJarofPotatoes");
+    chef:getFreeRecipes():add("MakeJarofEggplant");
+    chef:getFreeRecipes():add("MakeJarofLeeks");
+    chef:getFreeRecipes():add("MakeJarofRedRadishes");
+    chef:getFreeRecipes():add("MakeJarofBellPeppers");
+    chef:getFreeRecipes():add("MakeJarofCabbage");
+    chef:getFreeRecipes():add("MakeJarofBroccoli");
 
 	local repairman = ProfessionFactory.addProfession("repairman", getText("UI_prof_Repairman"), "profession_repairman2", -4);
 	repairman:addXPBoost(Perks.Woodwork, 1)
 	repairman:addXPBoost(Perks.Maintenance, 2)
 	repairman:addXPBoost(Perks.SmallBlunt, 1);
 
+    local rancher = ProfessionFactory.addProfession("rancher", getText("UI_prof_rancher"), "profession_rancher", -2);
+    rancher:addXPBoost(Perks.Farming, 1)
+    rancher:addXPBoost(Perks.Husbandry, 3)
+    rancher:addXPBoost(Perks.Butchering, 3)
+
 	local farmer = ProfessionFactory.addProfession("farmer", getText("UI_prof_Farmer"), "profession_farmer2", 2);
 	farmer:addXPBoost(Perks.Farming, 3)
-    farmer:getFreeRecipes():add("Make Mildew Cure");
-    farmer:getFreeRecipes():add("Make Flies Cure");
+    farmer:getFreeRecipes():add("MakeMildewCure");
+--     farmer:getFreeRecipes():add("MakeFliesCure");
+    farmer:getFreeRecipes():add("MakeFliesCureFromCigarettes");
+    farmer:getFreeRecipes():add("MakeFliesCureFromLooseTobacco");
+    farmer:getFreeRecipes():add("MakeFliesCureFromChewingTobacco");
+    farmer:getFreeRecipes():add("MakeAphidsCure");
+    farmer:getFreeRecipes():add("MakeSlugTrap");
+    farmer:getFreeRecipes():add("MakeScarecrow");
+    farmer:getFreeRecipes():add("MakeBarbedWire");
+
+    farmer:getFreeRecipes():add("Carrot Growing Season");
+    farmer:getFreeRecipes():add("Broccoli Growing Season");
+    farmer:getFreeRecipes():add("Radish Growing Season");
+    farmer:getFreeRecipes():add("Strawberry Growing Season");
+    farmer:getFreeRecipes():add("Tomato Growing Season");
+    farmer:getFreeRecipes():add("Potato Growing Season");
+    farmer:getFreeRecipes():add("Cabbage Growing Season");
+
+    farmer:getFreeRecipes():add("Corn Growing Season");
+    farmer:getFreeRecipes():add("Kale Growing Season");
+    farmer:getFreeRecipes():add("Sweet Potato Growing Season");
+    farmer:getFreeRecipes():add("Green Pea Growing Season");
+    farmer:getFreeRecipes():add("Onion Growing Season");
+    farmer:getFreeRecipes():add("Garlic Growing Season");
+    farmer:getFreeRecipes():add("Soybean Growing Season");
+    farmer:getFreeRecipes():add("Wheat Growing Season");
+
+    farmer:getFreeRecipes():add("Basil Growing Season");
+    farmer:getFreeRecipes():add("Chives Growing Season");
+    farmer:getFreeRecipes():add("Cilantro Growing Season");
+    farmer:getFreeRecipes():add("Oregano Growing Season");
+    farmer:getFreeRecipes():add("Parsley Growing Season");
+    farmer:getFreeRecipes():add("Sage Growing Season");
+    farmer:getFreeRecipes():add("Rosemary Growing Season");
+    farmer:getFreeRecipes():add("Thyme Growing Season");
+
+    farmer:getFreeRecipes():add("Barley Growing Season");
+    farmer:getFreeRecipes():add("Flax Growing Season");
+--     farmer:getFreeRecipes():add("Hemp Growing Season"); -- it's illegal in Kentucky in 1993 so Nope! Leaving the commented out code to flag this.
+    farmer:getFreeRecipes():add("Hops Growing Season");
+    farmer:getFreeRecipes():add("Rye Growing Season");
+    farmer:getFreeRecipes():add("Sugar Beet Growing Season");
+    farmer:getFreeRecipes():add("Tobacco Growing Season");
+
+    farmer:getFreeRecipes():add("Bell Pepper Growing Season");
+    farmer:getFreeRecipes():add("Cauliflower Growing Season");
+    farmer:getFreeRecipes():add("Cucumber Growing Season");
+    farmer:getFreeRecipes():add("Habanero Growing Season");
+    farmer:getFreeRecipes():add("Jalapeno Growing Season");
+    farmer:getFreeRecipes():add("Leek Growing Season");
+    farmer:getFreeRecipes():add("Lettuce Growing Season");
+    farmer:getFreeRecipes():add("Pumpkin Growing Season");
+    farmer:getFreeRecipes():add("Spinach Growing Season");
+    farmer:getFreeRecipes():add("Sunflower Growing Season");
+    farmer:getFreeRecipes():add("Turnip Growing Season");
+    farmer:getFreeRecipes():add("Watermelon Growing Season");
+    farmer:getFreeRecipes():add("Zucchini Growing Season");
+
+    farmer:getFreeRecipes():add("Chamomile Growing Season");
+    farmer:getFreeRecipes():add("Lemongrass Growing Season");
+    farmer:getFreeRecipes():add("Marigold Growing Season");
+    farmer:getFreeRecipes():add("Mint Growing Season");
+
+    farmer:getFreeRecipes():add("MakeJarofTomatoes");
+    farmer:getFreeRecipes():add("MakeJarofCarrots");
+    farmer:getFreeRecipes():add("MakeJarofPotatoes");
+    farmer:getFreeRecipes():add("MakeJarofEggplant");
+    farmer:getFreeRecipes():add("MakeJarofLeeks");
+    farmer:getFreeRecipes():add("MakeJarofRedRadishes");
+    farmer:getFreeRecipes():add("MakeJarofBellPeppers");
+    farmer:getFreeRecipes():add("MakeJarofCabbage");
+    farmer:getFreeRecipes():add("MakeJarofBroccoli");
 
 	local fisherman = ProfessionFactory.addProfession("fisherman", getText("UI_prof_Fisherman"), "profession_fisher2", -2);
 	fisherman:addXPBoost(Perks.Fishing, 3)
 	fisherman:addXPBoost(Perks.PlantScavenging, 1)
-    fisherman:getFreeRecipes():add("Make Fishing Rod");
-    fisherman:getFreeRecipes():add("Fix Fishing Rod");
-    fisherman:getFreeRecipes():add("Get Wire Back");
-    fisherman:getFreeRecipes():add("Make Fishing Net");
+    fisherman:getFreeRecipes():add("MakeFishingRod");
+    fisherman:getFreeRecipes():add("FixFishingRod");
+    fisherman:getFreeRecipes():add("GetWireBack");
+    fisherman:getFreeRecipes():add("MakeFishingNet");
+    fisherman:getFreeRecipes():add("MakeChum");
 
 	local doctor = ProfessionFactory.addProfession("doctor", getText("UI_prof_Doctor"), "profession_doctor2", 2);
 	doctor:addXPBoost(Perks.Doctor, 3)
@@ -561,23 +841,37 @@ BaseGameCharacterDetails.DoProfessions = function()
     local electrician = ProfessionFactory.addProfession("electrician", getText("UI_prof_Electrician"), "profession_electrician", -4);
     electrician:addXPBoost(Perks.Electricity, 3)
     electrician:getFreeRecipes():add("Generator");
-    electrician:getFreeRecipes():add("Make Remote Controller V1");
-    electrician:getFreeRecipes():add("Make Remote Controller V2");
-    electrician:getFreeRecipes():add("Make Remote Controller V3");
-    electrician:getFreeRecipes():add("Make Remote Trigger");
-    electrician:getFreeRecipes():add("Make Timer");
-    electrician:getFreeRecipes():add("Craft Makeshift Radio");
-    electrician:getFreeRecipes():add("Craft Makeshift HAM Radio");
-    electrician:getFreeRecipes():add("Craft Makeshift Walkie Talkie");
+    electrician:getFreeRecipes():add("MakeRemoteControllerV1");
+    electrician:getFreeRecipes():add("MakeRemoteControllerV2");
+    electrician:getFreeRecipes():add("MakeRemoteControllerV3");
+    electrician:getFreeRecipes():add("MakeRemoteTrigger");
+    electrician:getFreeRecipes():add("MakeTimer");
+    electrician:getFreeRecipes():add("CraftMakeshiftRadio");
+    electrician:getFreeRecipes():add("CraftMakeshiftHAMRadio");
+    electrician:getFreeRecipes():add("CraftMakeshiftWalkieTalkie");
+    electrician:getFreeRecipes():add("MakeImprovisedFlashlight");
+    electrician:getFreeRecipes():add("MakeImprovisedLantern");
 
     local engineer = ProfessionFactory.addProfession("engineer", getText("UI_prof_Engineer"), "profession_engineer", -4);
+    -- TODO: add recipes for appropriate workstations (blower forge, charcoal burner barrel, etc)
     engineer:addXPBoost(Perks.Electricity, 1);
     engineer:addXPBoost(Perks.Woodwork, 1);
-    engineer:getFreeRecipes():add("Make Aerosol bomb");
-    engineer:getFreeRecipes():add("Make Flame bomb");
-    engineer:getFreeRecipes():add("Make Pipe bomb");
-    engineer:getFreeRecipes():add("Make Noise generator");
-    engineer:getFreeRecipes():add("Make Smoke Bomb");
+    engineer:getFreeRecipes():add("MakeAerosolbomb");
+    engineer:getFreeRecipes():add("MakeFlamebomb");
+    engineer:getFreeRecipes():add("MakePipebomb");
+    engineer:getFreeRecipes():add("MakeNoisegenerator");
+    engineer:getFreeRecipes():add("MakeSmokeBomb");
+    engineer:getFreeRecipes():add("MakeFirecracker");
+    engineer:getFreeRecipes():add("MakeCraftedGasMaskFilter");
+    engineer:getFreeRecipes():add("MakeImprovisedGasMask");
+    engineer:getFreeRecipes():add("RechargeGasMaskFilter");
+    engineer:getFreeRecipes():add("RechargeRespiratorFilters");
+    engineer:getFreeRecipes():add("RechargeFilters");
+    engineer:getFreeRecipes():add("MakeImprovisedFlashlight");
+    engineer:getFreeRecipes():add("MakeImprovisedLantern");
+    -- all things considered they should know how to
+    engineer:getFreeRecipes():add("Generator");
+
 
     local metalworker = ProfessionFactory.addProfession("metalworker", getText("UI_prof_MetalWorker"), "profession_metalworker", -6);
     metalworker:addXPBoost(Perks.MetalWelding, 3);
@@ -593,12 +887,19 @@ BaseGameCharacterDetails.DoProfessions = function()
 --    metalworker:addFreeTrait("Metalworker2");
 --    metalworker:addFreeTrait("Blacksmith2");
 --    doMetalWorkerRecipes(metalworker);
+    metalworker:getFreeRecipes():add("MakeScrapMetalHelmet");
+    metalworker:getFreeRecipes():add("MakeScrapMetalShoulderArmor");
+    metalworker:getFreeRecipes():add("MakeScrapMetalThighArmor");
+    metalworker:getFreeRecipes():add("MakeScrapMetalBodyArmor");
+    metalworker:getFreeRecipes():add("SpikeArmorWelding");
 
---    local smither = ProfessionFactory.addProfession("smither", getText("UI_prof_Smither"), "profession_smither", -6);
+   local smither = ProfessionFactory.addProfession("smither", getText("UI_prof_Smither"), "profession_smither", -6);
+   smither:addXPBoost(Perks.Blacksmith, 4);
+	smither:addXPBoost(Perks.Maintenance, 1)
 --    smither:addXPBoost(Perks.Blacksmith, 3);
 --    smither:addXPBoost(Perks.Melting, 2);
---    smither:addFreeTrait("Blacksmith2");
---    doMetalWorkerRecipes(smither);
+   smither:addFreeTrait("Blacksmith2");
+   doMetalWorkerRecipes(smither);
 	
 	local mechanics = ProfessionFactory.addProfession("mechanics", getText("UI_prof_Mechanics"), "profession_mechanic", -4);
 	mechanics:addXPBoost(Perks.Mechanics, 3);
@@ -3369,7 +3670,7 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Maples");
     SurvivorFactory.addSurname("Giordano");
     SurvivorFactory.addSurname("Alderman");
-    SurvivorFactory.addSurname("|Valdes");
+    SurvivorFactory.addSurname("Valdes");
     SurvivorFactory.addSurname("Polanco");
     SurvivorFactory.addSurname("Pappas");
     SurvivorFactory.addSurname("Lively");
@@ -6820,16 +7121,19 @@ BaseGameCharacterDetails.DoHairColor = function()
 	SurvivorDesc.addHairColor(ColorInfo.new(159/255,108/255,43/255, 1)) -- light brown
 	SurvivorDesc.addHairColor(ColorInfo.new(156/255,130/255,86/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(152/255,112/255,76/255,1));
+
 	SurvivorDesc.addHairColor(ColorInfo.new(146/255,121/255,89/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(111/255,87/255,60/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(86/255,67/255,45/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(88/255,53/255,34/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(56/255,41/255,27/255,1));
+
 	SurvivorDesc.addHairColor(ColorInfo.new(52/255,49/255,48/255,1));
 	SurvivorDesc.addHairColor(ColorInfo.new(27/255,23/255,22/255,1)); -- black
 	SurvivorDesc.addHairColor(ColorInfo.new(124/255,120/255,112/255,1)); -- grey
 	SurvivorDesc.addHairColor(ColorInfo.new(166/255,158/255,128/255,1)); -- yellowish/grey
 	SurvivorDesc.addHairColor(ColorInfo.new(188/255,177/255,157/255,1)); -- yellowish/grey2
+
 	SurvivorDesc.addHairColor(ColorInfo.new(166/255,164/255,159/255,1)); -- white
 	SurvivorDesc.addHairColor(ColorInfo.new(190/255,133/255,103/255,1)); -- reddish blonde
 	SurvivorDesc.addHairColor(ColorInfo.new(166/255,93/255,63/255,1)); -- orange
@@ -6845,46 +7149,122 @@ BaseGameCharacterDetails.DoHairColor = function()
 end
 
 doMetalWorkerRecipes = function (metalworker)
-    metalworker:getFreeRecipes():add("Make Fork");
-    metalworker:getFreeRecipes():add("Make Spoon");
-    metalworker:getFreeRecipes():add("Make Cooking Pot");
-    metalworker:getFreeRecipes():add("Make Roasting Pan");
-    metalworker:getFreeRecipes():add("Make Saucepan");
-    metalworker:getFreeRecipes():add("Make Baking Tray");
-    metalworker:getFreeRecipes():add("Make Baking Pan");
-    metalworker:getFreeRecipes():add("Make Pan");
-    metalworker:getFreeRecipes():add("Make Letter Opener");
-    metalworker:getFreeRecipes():add("Make Nails");
-    metalworker:getFreeRecipes():add("Make Paperclips");
-    metalworker:getFreeRecipes():add("Make Scissors");
-    metalworker:getFreeRecipes():add("Make Door Knob");
-    metalworker:getFreeRecipes():add("Make Hinge");
-    metalworker:getFreeRecipes():add("Make Butter Knife");
-    metalworker:getFreeRecipes():add("Make Ball Peen Hammer");
-    metalworker:getFreeRecipes():add("Make Tongs");
-    metalworker:getFreeRecipes():add("Make Hammer");
-    metalworker:getFreeRecipes():add("Make Sheet Metal");
-    metalworker:getFreeRecipes():add("Make Suture Needle Holder");
-    metalworker:getFreeRecipes():add("Make Tweezers");
-    metalworker:getFreeRecipes():add("Make Suture Needle");
-    metalworker:getFreeRecipes():add("Make Metal Drum");
-    metalworker:getFreeRecipes():add("Make Kitchen Knife");
-    metalworker:getFreeRecipes():add("Make Saw");
-    metalworker:getFreeRecipes():add("Make Hunting Knife");
-    metalworker:getFreeRecipes():add("Make 9mm Bullets Mold");
-    metalworker:getFreeRecipes():add("Make 308 Bullets Mold");
-    metalworker:getFreeRecipes():add("Make 223 Bullets Mold");
-    metalworker:getFreeRecipes():add("Make Shotgun Shells Mold");
-    metalworker:getFreeRecipes():add("Make 9mm Bullets");
-    metalworker:getFreeRecipes():add("Make Shotgun Shells");
-    metalworker:getFreeRecipes():add("Make 308 Bullets");
-    metalworker:getFreeRecipes():add("Make 223 Bullets");
-    metalworker:getFreeRecipes():add("Make Crowbar");
-    metalworker:getFreeRecipes():add("Make Golfclub");
-    metalworker:getFreeRecipes():add("Make Axe");
-    metalworker:getFreeRecipes():add("Make Sledgehammer");
-    metalworker:getFreeRecipes():add("Make Shovel");
-    metalworker:getFreeRecipes():add("Make Hand Shovel");
+
+    metalworker:getFreeRecipes():add("Construct Advanced Forge");
+    metalworker:getFreeRecipes():add("Construct Blast Furnace");
+    metalworker:getFreeRecipes():add("Construct Charcoal Burner");
+    metalworker:getFreeRecipes():add("Construct Charcoal Pit");
+    metalworker:getFreeRecipes():add("Construct Dome Kiln");
+    metalworker:getFreeRecipes():add("Construct Forge");
+    metalworker:getFreeRecipes():add("Construct Makeshift Electric Blower Forge");
+    metalworker:getFreeRecipes():add("Construct Smelting Furnace");
+    metalworker:getFreeRecipes():add("Construct Primitive Forge");
+    metalworker:getFreeRecipes():add("Construct Primitive Furnace");
+    metalworker:getFreeRecipes():add("Extract Workable Iron From Bloom");
+    metalworker:getFreeRecipes():add("Extract Workable Iron from Ingot");
+
+    metalworker:getFreeRecipes():add("ForgeBakingPan");
+    metalworker:getFreeRecipes():add("ForgeBakingTray");
+    metalworker:getFreeRecipes():add("ForgeBucket");
+    metalworker:getFreeRecipes():add("ForgeBallPeenHammerHead");
+    metalworker:getFreeRecipes():add("ForgeClawhammerHead");
+    metalworker:getFreeRecipes():add("ForgeCookingPot");
+    metalworker:getFreeRecipes():add("ForgeCorkscrew");
+    metalworker:getFreeRecipes():add("ForgeCrowbar");
+    metalworker:getFreeRecipes():add("ForgeCrudeShortswordBlade");
+    metalworker:getFreeRecipes():add("ForgeCrudeSwordBlade");
+    metalworker:getFreeRecipes():add("ForgeDoorKnob");
+    metalworker:getFreeRecipes():add("ForgeFineButterKnives");
+    metalworker:getFreeRecipes():add("ForgeFineForks");
+--     metalworker:getFreeRecipes():add("Forge Fine Scissors");
+    metalworker:getFreeRecipes():add("ForgeFineSpoons");
+    metalworker:getFreeRecipes():add("ForgeFishingHooks");
+    metalworker:getFreeRecipes():add("ForgeForceps");
+    metalworker:getFreeRecipes():add("ForgeForks");
+    metalworker:getFreeRecipes():add("ForgeFryingPan");
+    metalworker:getFreeRecipes():add("ForgeGardeningHoeHead");
+    metalworker:getFreeRecipes():add("ForgeGardeningTrowel");
+    metalworker:getFreeRecipes():add("ForgeHandScytheHead");
+    metalworker:getFreeRecipes():add("ForgeHinge");
+    metalworker:getFreeRecipes():add("ForgeHuntingKnifeBlade");
+    metalworker:getFreeRecipes():add("ForgeKettle");
+    metalworker:getFreeRecipes():add("ForgeKitchenKnifeBlade");
+    metalworker:getFreeRecipes():add("ForgeLargeKnifeBlade");
+    metalworker:getFreeRecipes():add("ForgeMacheteBlade");
+    metalworker:getFreeRecipes():add("ForgeMasonsChisel");
+    metalworker:getFreeRecipes():add("ForgeMasonsTrowel");
+    metalworker:getFreeRecipes():add("ForgeMeatCleaver");
+    metalworker:getFreeRecipes():add("ForgeMetalworkingChisel");
+    metalworker:getFreeRecipes():add("ForgeMetalworkingPliers");
+    metalworker:getFreeRecipes():add("ForgeMetalworkingPunch");
+    metalworker:getFreeRecipes():add("ForgeNails");
+    metalworker:getFreeRecipes():add("ForgeNeedle");
+    metalworker:getFreeRecipes():add("ForgePickAxeHead");
+    metalworker:getFreeRecipes():add("ForgeRailroadSpikeKnife");
+    metalworker:getFreeRecipes():add("ForgeRoastingPan");
+    metalworker:getFreeRecipes():add("ForgeSaucepan");
+    metalworker:getFreeRecipes():add("ForgeSaw");
+    metalworker:getFreeRecipes():add("ForgeScissors");
+    metalworker:getFreeRecipes():add("ForgeScytheHead");
+    metalworker:getFreeRecipes():add("ForgeShovel");
+    metalworker:getFreeRecipes():add("ForgeSheepShears");
+    metalworker:getFreeRecipes():add("ForgeSledgehammerHead");
+    metalworker:getFreeRecipes():add("ForgeSmallArmorPlate");
+    metalworker:getFreeRecipes():add("ForgeSmal Knife");
+    metalworker:getFreeRecipes():add("ForgeSmallSteelSheet");
+    metalworker:getFreeRecipes():add("ForgeSmithingHammerHead");
+    metalworker:getFreeRecipes():add("ForgeSpoons");
+    metalworker:getFreeRecipes():add("ForgeSteelSheet");
+    metalworker:getFreeRecipes():add("ForgeStraightRazor");
+    metalworker:getFreeRecipes():add("ForgeSwordBlade");
+    metalworker:getFreeRecipes():add("ForgeTongs");
+    metalworker:getFreeRecipes():add("ForgeTweezers");
+    metalworker:getFreeRecipes():add("ForgeWoodAxeHead");
+--     metalworker:getFreeRecipes():add("Forge Workable Iron from Bar Stock");
+    metalworker:getFreeRecipes():add("MakeCrudeWhetstone");
+    metalworker:getFreeRecipes():add("MakeMetalDrum");
+
+
+--     metalworker:getFreeRecipes():add("Make Fork");
+--     metalworker:getFreeRecipes():add("Make Spoon");
+--     metalworker:getFreeRecipes():add("Make Cooking Pot");
+--     metalworker:getFreeRecipes():add("Make Roasting Pan");
+--     metalworker:getFreeRecipes():add("Make Saucepan");
+--     metalworker:getFreeRecipes():add("Make Baking Tray");
+--     metalworker:getFreeRecipes():add("Make Baking Pan");
+--     metalworker:getFreeRecipes():add("Make Pan");
+--     metalworker:getFreeRecipes():add("Make Letter Opener");
+--     metalworker:getFreeRecipes():add("Make Nails");
+--     metalworker:getFreeRecipes():add("Make Paperclips");
+--     metalworker:getFreeRecipes():add("Make Scissors");
+--     metalworker:getFreeRecipes():add("Make Door Knob");
+--     metalworker:getFreeRecipes():add("Make Hinge");
+--     metalworker:getFreeRecipes():add("Make Butter Knife");
+--     metalworker:getFreeRecipes():add("Make Ball Peen Hammer");
+--     metalworker:getFreeRecipes():add("Make Tongs");
+--     metalworker:getFreeRecipes():add("Make Hammer");
+--     metalworker:getFreeRecipes():add("Make Sheet Metal");
+--     metalworker:getFreeRecipes():add("Make Suture Needle Holder");
+--     metalworker:getFreeRecipes():add("Make Tweezers");
+--     metalworker:getFreeRecipes():add("Make Suture Needle");
+--     metalworker:getFreeRecipes():add("Make Metal Drum");
+--     metalworker:getFreeRecipes():add("Make Kitchen Knife");
+--     metalworker:getFreeRecipes():add("Make Saw");
+--     metalworker:getFreeRecipes():add("Make Hunting Knife");
+--     metalworker:getFreeRecipes():add("Make 9mm Bullets Mold");
+--     metalworker:getFreeRecipes():add("Make 308 Bullets Mold");
+--     metalworker:getFreeRecipes():add("Make 223 Bullets Mold");
+--     metalworker:getFreeRecipes():add("Make Shotgun Shells Mold");
+--     metalworker:getFreeRecipes():add("Make 9mm Bullets");
+--     metalworker:getFreeRecipes():add("Make Shotgun Shells");
+--     metalworker:getFreeRecipes():add("Make 308 Bullets");
+--     metalworker:getFreeRecipes():add("Make 223 Bullets");
+--     metalworker:getFreeRecipes():add("Make Crowbar");
+--     metalworker:getFreeRecipes():add("Make Golfclub");
+--     metalworker:getFreeRecipes():add("Make Axe");
+--     metalworker:getFreeRecipes():add("Make Sledgehammer");
+--     metalworker:getFreeRecipes():add("Make Shovel");
+--     metalworker:getFreeRecipes():add("Make Hand Shovel");
 end
 
 --Events.OnCharacterCreateStats.Add(BaseGameCharacterDetails.CreateCharacterStats);

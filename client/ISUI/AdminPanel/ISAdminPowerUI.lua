@@ -11,6 +11,9 @@ ISAdminPowerUI.cheatTooltips = {}
 ISAdminPowerUI.cheatTooltips["Fast Move"] = "Fast move:\nMove - arrow keys\nFloor Up/Down - PageUp/PageDown keys"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISAdminPowerUI:initialise
@@ -20,10 +23,8 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 function ISAdminPowerUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_RadioSave"), self, ISAdminPowerUI.onClick);
+    self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RadioSave"), self, ISAdminPowerUI.onClick);
     self.ok.internal = "SAVE";
     self.ok.anchorTop = false
     self.ok.anchorBottom = true
@@ -32,15 +33,15 @@ function ISAdminPowerUI:initialise()
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.ok);
     
-    self.tickBox = ISTickBox:new(30, 50, 100, FONT_HGT_SMALL + 5, "Admin Powers", self, self.onTicked)
+    self.tickBox = ISTickBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1, 100, BUTTON_HGT, "Admin Powers", self, self.onTicked)
     self.tickBox.backgroundColor.a = 1
-    self.tickBox.background = true
+    self.tickBox.background = false
     self.tickBox.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBox.leftMargin = 2
     self.tickBox:setFont(UIFont.Small)
     self:addChild(self.tickBox);
 
-    self.richText = ISRichTextLayout:new(self.width - 30 * 2)
+    self.richText = ISRichTextLayout:new(self.width-(UI_BORDER_SPACING+1)*2)
     self.richText.marginLeft = 0
     self.richText.marginTop = 0
     self.richText.marginRight = 0
@@ -50,82 +51,122 @@ function ISAdminPowerUI:initialise()
     self.richText:paginate()
 
     self:addAdminPowerOptions()
+
 end
 
 function ISAdminPowerUI:addAdminPowerOptions()
     self.setFunction = {}
-    self:addOption("Invisible", self.player:isInvisible(), function(self, selected)
-        self.player:setInvisible(selected);
-    end);
-    self:addOption("God mode", self.player:isGodMod(), function(self, selected)
-        self.player:setGodMod(selected);
-    end);
-    self:addOption("Ghost mode", self.player:isGhostMode(), function(self, selected)
-        self.player:setGhostMode(selected);
-    end);
-    self:addOption("No Clip", self.player:isNoClip(), function(self, selected)
-        self.player:setNoClip(selected);
-    end);
-    self:addOption("Timed Action Instant", self.player:isTimedActionInstantCheat(), function(self, selected)
-        self.player:setTimedActionInstantCheat(selected);
-    end);
-    self:addOption("Unlimited Carry", self.player:isUnlimitedCarry(), function(self, selected)
-        self.player:setUnlimitedCarry(selected);
-    end);
-    self:addOption("Unlimited Endurance", self.player:isUnlimitedEndurance(), function(self, selected)
-        self.player:setUnlimitedEndurance(selected);
-    end);
-    self:addOption("Fast Move", ISFastTeleportMove.cheat, function(self, selected)
-        ISFastTeleportMove.cheat = selected
-    end);
-    self:addOption(getText("IGUI_AdminPanel_BuildCheat"), ISBuildMenu.cheat, function(self, selected)
-        ISBuildMenu.cheat = selected;
-        self.player:setBuildCheat(selected);
-    end);
-    self:addOption(getText("IGUI_AdminPanel_FarmingCheat"), ISFarmingMenu.cheat, function(self, selected)
-        ISFarmingMenu.cheat = selected;
-        self.player:setFarmingCheat(selected);
-    end);
-    self:addOption(getText("IGUI_AdminPanel_HealthCheat"), ISHealthPanel.cheat, function(self, selected)
-        ISHealthPanel.cheat = selected;
-        self.player:setHealthCheat(selected);
-    end);
-    self:addOption(getText("IGUI_AdminPanel_MechanicsCheat"), ISVehicleMechanics.cheat, function(self, selected)
-        ISVehicleMechanics.cheat = selected;
-        self.player:setMechanicsCheat(selected);
-    end);
-    self:addOption(getText("IGUI_AdminPanel_MoveableCheat"), ISMoveableDefinitions.cheat, function(self, selected)
-        ISMoveableDefinitions.cheat = selected;
-        self.player:setMovablesCheat(selected);
-    end);
+    if self.player:getRole():haveCapability(Capability.ToggleInvisibleHimself) then
+        self:addOption("Invisible", self.player:isInvisible(), function(self, selected)
+            self.player:setInvisible(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.ToggleGodModHimself) then
+        self:addOption("God mode", self.player:isGodMod(), function(self, selected)
+            self.player:setGodMod(selected);
+        end);
+    end
+--     if self.player:getRole():haveCapability(Capability.ToggleGodModHimself) then
+--         self:addOption("Ghost mode", self.player:isGhostMode(), function(self, selected)
+--             self.player:setGhostMode(selected);
+--         end);
+--     end
+    if self.player:getRole():haveCapability(Capability.ToggleNoclipHimself) then
+        self:addOption("No Clip", self.player:isNoClip(), function(self, selected)
+            self.player:setNoClip(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseTimedActionInstantCheat) then
+        self:addOption("Timed Action Instant", self.player:isTimedActionInstantCheat(), function(self, selected)
+            self.player:setTimedActionInstantCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.ToggleUnlimitedCarry) then
+        self:addOption("Unlimited Carry", self.player:isUnlimitedCarry(), function(self, selected)
+            self.player:setUnlimitedCarry(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.ToggleUnlimitedEndurance) then
+        self:addOption("Unlimited Endurance", self.player:isUnlimitedEndurance(), function(self, selected)
+            self.player:setUnlimitedEndurance(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseFastMoveCheat) then
+        self:addOption("Fast Move", ISFastTeleportMove.cheat, function(self, selected)
+            ISFastTeleportMove.cheat = selected;
+            self.player:setFastMoveCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseBuildCheat) then
+        self:addOption(getText("IGUI_AdminPanel_BuildCheat"), ISBuildMenu.cheat, function(self, selected)
+            ISBuildMenu.cheat = selected;
+            self.player:setBuildCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseFarmingCheat) then
+        self:addOption(getText("IGUI_AdminPanel_FarmingCheat"), ISFarmingMenu.cheat, function(self, selected)
+            ISFarmingMenu.cheat = selected;
+            self.player:setFarmingCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseFishingCheat) then
+        self:addOption(getText("IGUI_AdminPanel_FishingCheat"), self.player:isFishingCheat(), function(self, selected)
+            self.player:setFishingCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseHealthCheat) then
+        self:addOption(getText("IGUI_AdminPanel_HealthCheat"), ISHealthPanel.cheat, function(self, selected)
+            ISHealthPanel.cheat = selected;
+            self.player:setHealthCheat(selected);
+        end);
+    end
+    -- disable mechanics cheat for non-debug
+    if getDebug() and self.player:getRole():haveCapability(Capability.UseMechanicsCheat) then
+        self:addOption(getText("IGUI_AdminPanel_MechanicsCheat"), ISVehicleMechanics.cheat, function(self, selected)
+            ISVehicleMechanics.cheat = selected;
+            self.player:setMechanicsCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.CarryAndMovablesCheat) then
+        self:addOption(getText("IGUI_AdminPanel_MoveableCheat"), ISMoveableDefinitions.cheat, function(self, selected)
+            ISMoveableDefinitions.cheat = selected;
+            self.player:setMovablesCheat(selected);
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.CanSeeAll) then
+        self:addOption(getText("IGUI_AdminPanel_CanSeeAll"), self.player:isCanSeeAll(), function(self, selected)
+            self.player:setCanSeeAll(selected)
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.CanHearAll) then
+        self:addOption(getText("IGUI_AdminPanel_CanHearAll"), self.player:isCanHearAll(), function(self, selected)
+            self.player:setCanHearAll(selected)
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.ManipulateZombie) then
+        self:addOption(getText("IGUI_AdminPanel_ZombiesDontAttack"), self.player:isZombiesDontAttack(), function(self, selected)
+            self.player:setZombiesDontAttack(selected)
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.GetStatistic) then
+        self:addOption(getText("IGUI_AdminPanel_ShowMPInfos"), self.player:isShowMPInfos(), function(self, selected)
+            self.player:setShowMPInfos(selected)
+        end);
+    end
+    if self.player:getRole():haveCapability(Capability.UseBrushToolManager) then
+        self:addOption("Brush tool", BrushToolManager.cheat, function(self, selected)
+            BrushToolManager.cheat = selected;
+            self.player:setCanUseBrushTool(selected)
+        end);
+    end
 
-    self:addOption(getText("IGUI_AdminPanel_CanSeeAll"), self.player:isCanSeeAll(), function(self, selected)
-        self.player:setCanSeeAll(selected)
-    end);
-	self:addOption(getText("IGUI_AdminPanel_NetworkTeleportEnabled"), self.player:isNetworkTeleportEnabled(), function(self, selected)
-        self.player:setNetworkTeleportEnabled(selected)
-    end);
-
-    self:addOption(getText("IGUI_AdminPanel_CanHearAll"), self.player:isCanHearAll(), function(self, selected)
-        self.player:setCanHearAll(selected)
-    end);
-
-    self:addOption(getText("IGUI_AdminPanel_ZombiesDontAttack"), self.player:isZombiesDontAttack(), function(self, selected)
-        self.player:setZombiesDontAttack(selected)
-    end);
-
-    self:addOption(getText("IGUI_AdminPanel_ShowMPInfos"), self.player:isShowMPInfos(), function(self, selected)
-        self.player:setShowMPInfos(selected)
-    end);
-
-    self:addOption("Brush tool", BrushToolManager.cheat, function(self, selected)
-        BrushToolManager.cheat = selected
-    end);
+    --for some reason, sorting A-Z makes the options appear Z-A, so i reversed the sorting.
+    --sort should be done for every table inside the tickBox
+    --table.sort(self.tickBox.options, function(a, b) return string.sort(b, a) end)
 
     self.tickBox:setWidthToFit()
 
-    self:setHeight(self.tickBox:getBottom() + 40 +
-        self.richText:getHeight() + 20 + self.ok:getHeight() + 10)
+    self:setHeight(self.tickBox:getBottom() + self.richText:getHeight() + self.ok:getHeight() + UI_BORDER_SPACING*3+1)
 end
 
 function ISAdminPowerUI:addOption(text, selected, setFunction)
@@ -167,14 +208,11 @@ function ISAdminPowerUI:render()
 end
 
 function ISAdminPowerUI:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_AdminPower"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_AdminPower")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_AdminPanel_AdminPower"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_AdminPower")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
-    self.richText:render(30, self.ok.y - 20 - self.richText:getHeight(), self)
+    self.richText:render(UI_BORDER_SPACING+1, self.ok.y - UI_BORDER_SPACING - self.richText:getHeight(), self)
 end
 
 function ISAdminPowerUI:onClick(button)
@@ -183,14 +221,6 @@ function ISAdminPowerUI:onClick(button)
             for i=1,#self.tickBox.options do
                 self.setFunction[i](self, self.tickBox:isSelected(i))
             end
-            self.player:setShowAdminTag(false);
-            for i,v in pairs(self.tickBox.selected) do
-                if self.tickBox.selected[i] then
-                    self.player:setShowAdminTag(true);
-                    break;
-                end
-            end
-
             sendPlayerExtraInfo(self.player)
         end
     
@@ -204,7 +234,12 @@ ISAdminPowerUI.onGameStart = function()
     ISFarmingMenu.cheat = getPlayer():isFarmingCheat();
     ISHealthPanel.cheat = getPlayer():isHealthCheat();
     ISMoveableDefinitions.cheat = getPlayer():isMovablesCheat();
-    ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
+    BrushToolManager.cheat = getPlayer():isCanUseBrushTool();
+    ISFastTeleportMove.cheat = getPlayer():isFastMoveCheat();
+    -- disable mechanics cheat for non-debug
+    if getDebug() then
+        ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
+    end
 end
 
 --************************************************************************--
@@ -229,3 +264,4 @@ function ISAdminPowerUI:new(x, y, width, height, player)
 end
 
 Events.OnGameStart.Add(ISAdminPowerUI.onGameStart)
+Events.RefreshCheats.Add(ISAdminPowerUI.onGameStart)

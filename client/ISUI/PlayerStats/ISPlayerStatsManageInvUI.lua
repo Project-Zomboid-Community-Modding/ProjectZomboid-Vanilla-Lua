@@ -17,6 +17,23 @@ ISPlayerStatsManageInvUI.messages = {};
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
+function ISPlayerStatsManageInvUI.OnOpenPanel()
+	if ISPlayerStatsManageInvUI.instance == nil then
+		ISPlayerStatsManageInvUI:new(100, 100, 800, 800, getPlayer():getOnlineID(), getPlayer():getUsername())
+		ISPlayerStatsManageInvUI.instance:initialise()
+		ISPlayerStatsManageInvUI.instance:instantiate()
+	end
+	ISPlayerStatsManageInvUI.instance:addToUIManager()
+	ISPlayerStatsManageInvUI.instance:setVisible(true)
+	return ISPlayerStatsManageInvUI.instance;
+end
+
+function ISPlayerStatsManageInvUI.Close()
+	ISPlayerStatsManageInvUI.instance:setVisible(false)
+	ISPlayerStatsManageInvUI.instance:removeFromUIManager()
+	ISPlayerStatsManageInvUI.instance = nil
+end
+
 --************************************************************************--
 --** ISPlayerStatsManageInvUI:initialise
 --**
@@ -28,7 +45,7 @@ function ISPlayerStatsManageInvUI:initialise()
     local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
 	local btnHgt2 = 18
 	local padBottom = 10
-	
+
 	self.no = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, ISPlayerStatsManageInvUI.onClick);
 	self.no.internal = "CANCEL";
 	self.no.anchorTop = false
@@ -37,7 +54,7 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.no:instantiate();
 	self.no.borderColor = self.borderColor;
 	self:addChild(self.no);
-	
+
 	self.removeBtn = ISButton:new(self:getWidth() - 100 - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Remove Item", self, ISPlayerStatsManageInvUI.onClick);
 	self.removeBtn.internal = "REMOVE";
 	self.removeBtn.anchorTop = false
@@ -48,7 +65,10 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.removeBtn:setWidthToTitle(100)
 	self.removeBtn:setX(self.width - self.removeBtn.width - 10)
 	self:addChild(self.removeBtn);
-	
+	if self.playerID == -1 then
+		self.removeBtn:setVisible(false)
+	end
+
 	self.getItemBtn = ISButton:new(0, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Get Item", self, ISPlayerStatsManageInvUI.onClick);
 	self.getItemBtn.internal = "GETITEM";
 	self.getItemBtn.anchorTop = false
@@ -59,6 +79,12 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.getItemBtn:setWidthToTitle(100)
 	self.getItemBtn:setX(self.removeBtn.x - self.getItemBtn.width - 10)
 	self:addChild(self.getItemBtn);
+	if self.playerUsername == getPlayer():getUsername() then
+		self.getItemBtn:setVisible(false);
+	end
+	if self.playerID == -1 then
+		self.getItemBtn:setVisible(false)
+	end
 
 	self.addItemBtn = ISButton:new(0, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Add Item", self, ISPlayerStatsManageInvUI.onClick);
 	self.addItemBtn.internal = "ADDITEM";
@@ -70,6 +96,12 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.addItemBtn:setWidthToTitle(100)
 	self.addItemBtn:setX(self.getItemBtn.x - self.addItemBtn.width - 10)
 	self:addChild(self.addItemBtn);
+	if self.playerUsername == getPlayer():getUsername() then
+		self.addItemBtn:setVisible(false);
+	end
+	if self.playerID == -1 then
+		self.addItemBtn:setVisible(false)
+	end
 
 	self.refreshBtn = ISButton:new(0, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Refresh", self, ISPlayerStatsManageInvUI.onClick);
 	self.refreshBtn.internal = "REFRESH";
@@ -81,6 +113,9 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.refreshBtn:setWidthToTitle(100)
 	self.refreshBtn:setX(self.addItemBtn.x - self.refreshBtn.width - 10)
 	self:addChild(self.refreshBtn);
+	if self.playerID == -1 then
+		self.refreshBtn:setVisible(false)
+	end
 
 	self.datas = ISScrollingListBox:new(10, 70, self.width - 20, self.height - 120);
 	self.datas:initialise();
@@ -96,13 +131,13 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.datas:addColumn("Type", 360);
 	self.datas:addColumn("Variables", 440);
 	self:addChild(self.datas);
-	
+
 --	self:populateList();
 	self:requestDatas();
 end
 
 function ISPlayerStatsManageInvUI:requestDatas()
-	sendRequestInventory(self.player);
+	sendRequestInventory(tonumber(self.playerID), tostring(self.playerUsername));
 end
 
 function ISPlayerStatsManageInvUI.ReceiveItems(itemtable)
@@ -112,16 +147,16 @@ function ISPlayerStatsManageInvUI.ReceiveItems(itemtable)
 	local weapons = {};
 	-- sort items, first basic items, then weapons
 	for i,v in pairs(itemtable) do
-		local item = InventoryItemFactory.CreateItem(v.fullType);
+		local item = getItem(tostring(v.fullType));
 		if item then
-			v.tex = item:getTex();
-			v.name = item:getName();
+			v.tex = getItemTex(v.fullType);
+			v.name = getItemName(v.fullType);
 			if v.cat == getText("IGUI_ItemCat_Drainable") then
 				v.cat = "Drainable"
 			else
 				v.cat = getText("IGUI_ItemCat_" .. v.cat);
 			end
-			v.maxCondition = item:getConditionMax()
+			v.maxCondition = getItemConditionMax(v.fullType)
 			if v.cat == getText("IGUI_ItemCat_Weapon") and not v.inInv and v.parrentId == -1 then
 				table.insert(weapons, v);
 			else
@@ -210,27 +245,26 @@ function ISPlayerStatsManageInvUI:prerender()
 	local z = 10;
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawText(getText("IGUI_PlayerStats_ManageInventory", self.player:getUsername()), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ManageInventory", self.player:getUsername())) / 2), z, 1,1,1,1, UIFont.Medium);
+	self:drawText(getText("IGUI_PlayerStats_ManageInventory", self.playerUsername), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ManageInventory", playerUsername)) / 2), z, 1,1,1,1, UIFont.Medium);
 	local weightString = "Weight: " .. self.capacityWeight .. "/" .. self.maxWeight
 	self:drawText(weightString, self.width - getTextManager():MeasureStringX(UIFont.Small, weightString) - 20, 20, 1,1,1,1, UIFont.Small)
 end
 
 function ISPlayerStatsManageInvUI:onClick(button)
 	if button.internal == "CANCEL" then
-		self:setVisible(false);
-		self:removeFromUIManager();
+		ISPlayerStatsManageInvUI.Close()
 	end
 	if self.selectedItem then
 		if button.internal == "REMOVE" then
-			InvMngRemoveItem(self.selectedItem.item.itemId, self.player);
+			InvMngRemoveItem(self.selectedItem.item.itemId, self.playerID, self.playerUsername);
 			--self:removeSelectedItem();
 			self:requestDatas();
 		end
 		if button.internal == "GETITEM" then
 			if tonumber(self.selectedItem.item.count) > 1 then
-				InvMngGetItem(0, self.selectedItem.item.fullType, self.player);
+				InvMngGetItem(0, self.selectedItem.item.fullType, self.playerID, self.playerUsername);
 			else
-				InvMngGetItem(self.selectedItem.item.itemId, nil, self.player);
+				InvMngGetItem(self.selectedItem.item.itemId, nil, self.playerID, self.playerUsername);
 			end
 			--self:removeSelectedItem();
 			self:requestDatas();
@@ -258,7 +292,7 @@ end
 function ISPlayerStatsManageInvUI:onAddItem(button)
 	if button.internal == "OK" then
 		if button.parent.entry:getText() and button.parent.entry:getText() ~= "" then
-			SendCommandToServer("/additem \"" .. self.player:getDisplayName() .. "\" \"" .. luautils.trim(button.parent.entry:getText()) .. "\"")
+			SendCommandToServer("/additem \"" .. self.playerUsername .. "\" \"" .. luautils.trim(button.parent.entry:getText()) .. "\"")
 			self:requestDatas();
 		end
 	end
@@ -268,7 +302,7 @@ end
 --** ISPlayerStatsManageInvUI:new
 --**
 --************************************************************************--
-function ISPlayerStatsManageInvUI:new(x, y, width, height, player)
+function ISPlayerStatsManageInvUI:new(x, y, width, height, playerID, playerUsername)
 	local o = {}
 	x = getCore():getScreenWidth() / 2 - (width / 2);
 	y = getCore():getScreenHeight() / 2 - (height / 2);
@@ -280,7 +314,8 @@ function ISPlayerStatsManageInvUI:new(x, y, width, height, player)
 	o.listHeaderColor = {r=0.4, g=0.4, b=0.4, a=0.3};
 	o.width = width;
 	o.height = height;
-	o.player = player;
+	o.playerID = playerID;
+	o.playerUsername = playerUsername;
 	o.selectedItem = nil;
 	o.moveWithMouse = true;
 	o.equippedIcon = getTexture("media/ui/icon.png");

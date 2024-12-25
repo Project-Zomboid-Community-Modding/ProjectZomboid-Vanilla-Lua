@@ -12,7 +12,7 @@ local function predicateLightSource(item)
 end
 
 local function comparatorDrainableUsesInt(item1, item2)
-    return item1:getDrainableUsesInt() - item2:getDrainableUsesInt()
+    return item1:getCurrentUses() - item2:getCurrentUses()
 end
 
 function ISLightSourceRadialMenu:center()
@@ -106,6 +106,24 @@ function ISLightSourceRadialMenu:fillMenuForItem(menu, item)
 		return
 	end
 
+	if item:getFullType() == "Base.Lantern_Hurricane" then
+		local recipe = getScriptManager():getRecipe("Light Hurricane Lantern")
+		if not recipe then return end
+		local numberOfTimes = RecipeManager.getNumberOfTimesRecipeCanBeDone(recipe, playerObj, containerList, item)
+		if numberOfTimes == 0 then return end
+		menu:addSlice(item:getDisplayName() .. "\n" .. recipe:getName(), getTexture("media/ui/vehicles/vehicle_lightsON.png"), ISLightSourceRadialMenu.onLightCandle, self, item)
+		return
+	end
+
+	if item:getFullType() == "Base.Lantern_HurricaneLit" then
+		local recipe = getScriptManager():getRecipe("Extinguish Hurricane Lantern")
+		if not recipe then return end
+		local numberOfTimes = RecipeManager.getNumberOfTimesRecipeCanBeDone(recipe, playerObj, containerList, item)
+		if numberOfTimes == 0 then return end
+		menu:addSlice(item:getDisplayName() .. "\n" .. recipe:getName(), getTexture("media/ui/vehicles/vehicle_lightsOFF.png"), ISLightSourceRadialMenu.onExtinguishCandle, self, item)
+		return
+	end
+
 	local recipe = self:getInsertBatteryRecipe(item, containerList)
 	if recipe then
 		menu:addSlice(item:getDisplayName() .. "\n" .. recipe:getName(), getTexture("media/ui/LightSourceRadial_InsertBattery.png"), ISLightSourceRadialMenu.onInsertBattery, self, item)
@@ -141,6 +159,9 @@ function ISLightSourceRadialMenu:fillMenu()
 		local accept = true
 		if hasType[fullType] then
 			if (fullType == "Base.Candle") or (fullType == "Base.CandleLit") then
+				-- Remove duplicate Candle and CandleLit
+				accept = false
+			elseif (fullType == "Base.Lantern_Hurricane") or (fullType == "Base.Lantern_HurricaneLit") then
 				-- Remove duplicate Candle and CandleLit
 				accept = false
 			else
@@ -203,8 +224,11 @@ function ISLightSourceRadialMenu:onEquipLight(item, primary)
 	else
 		ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
 		ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, item, 50, primary, false));
+		if not item:isActivated() then
+			item:setActivated(true)
+			item:playActivateDeactivateSound()
+		end;
 	end
-	if not item:isActivated() then item:setActivated(true) end;
 end
 
 function ISLightSourceRadialMenu:onInsertBattery(item)
@@ -226,6 +250,7 @@ end
 function ISLightSourceRadialMenu:onToggle(item)
 	if item:canBeActivated() then
 		item:setActivated(not item:isActivated())
+		item:playActivateDeactivateSound()
 	end
 end
 
@@ -259,7 +284,7 @@ STATE[3] = {}
 STATE[4] = {}
 
 function ISLightSourceRadialMenu.checkKey(key)
-	if key ~= getCore():getKey("Equip/Turn On/Off Light Source") then
+	if not getCore():isKey("Equip/Turn On/Off Light Source", key) then
 		return false
 	end
 	if isGamePaused() then

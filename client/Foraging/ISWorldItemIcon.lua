@@ -14,18 +14,15 @@ ISWorldItemIcon = ISBaseIcon:derive("ISWorldItemIcon");
 -------------------------------------------------
 -------------------------------------------------
 function ISWorldItemIcon:onRightMouseUp()
-	if self.iconClass and self.iconClass == "stashObject" then return false; end;
 	return self:doContextMenu();
 end;
 
 function ISWorldItemIcon:onRightMouseDown()
-	if self.iconClass and self.iconClass == "stashObject" then return false; end;
 	return (self:getIsSeen() and self:getAlpha() > 0);
 end;
 -------------------------------------------------
 -------------------------------------------------
 function ISWorldItemIcon:doPickup(_x, _y, _contextOption, _targetContainer, _items)
-	if self.iconClass and self.iconClass == "stashObject" then return; end;
 	if _contextOption then _contextOption:hideAndChildren(); end;
 	self:getGridSquare();
 	if not self.square then return; end;
@@ -55,7 +52,6 @@ end
 
 function ISWorldItemIcon:isValid()
 	if self:isInRangeOfPlayer(40) then
-		if self.iconClass == "stashObject" then return true; end;
 		if self.iconClass == "worldObject" then
 			if self.itemObj and self.itemObj:getWorldItem() then
 				return true;
@@ -105,7 +101,7 @@ function ISWorldItemIcon:new(_manager, _icon)
 	self.__index = self;
 	o.onClickContext = ISWorldItemIcon.doPickup;
 	o.onMouseDoubleClick = ISWorldItemIcon.doPickup;
-	o.iconClass = nil;
+	o.iconClass = "worldObject";
 	o.isValidSquare = true;
 	o.itemObjTable = _icon.itemObjTable;
 	o.container = _icon.itemObj:getContainer();

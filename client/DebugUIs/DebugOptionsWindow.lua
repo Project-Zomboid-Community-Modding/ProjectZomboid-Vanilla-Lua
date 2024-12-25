@@ -9,6 +9,8 @@ require "ISUI/ISTickBox"
 DebugOptionsWindow = ISCollapsableWindow:derive("DebugOptionsWindow")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 -----
 
@@ -111,17 +113,18 @@ function DebugOptionsWindow:onCategorySelected(category)
 	local options = self.categoryMap[category]
 	local x = self.categoryList:getRight() + 10
 	local y = self.categoryList.y + 5
-	local rowHgt = FONT_HGT_SMALL + 2 * 2
+	local rowHgt = 0
 	for _,option in ipairs(options) do
-		local tickBox = TickBox:new(x, y, 100, 100, "", self, self.onTickBox, option)
+		local tickBox = TickBox:new(x, y, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
 		tickBox:initialise()
 		tickBox:addOption(option:getName(), option)
 		tickBox:setSelected(1, option:getValue())
 		tickBox:setWidthToFit()
 		self:addChild(tickBox)
-		y = y + rowHgt
+		rowHgt = tickBox.itemHgt
+		y = y + rowHgt + UI_BORDER_SPACING
 		table.insert(self.tickBoxes, tickBox)
-		if y + rowHgt > self.height then
+		if y + rowHgt + UI_BORDER_SPACING > self.height then
 			local width,height = self:calcTickBoxBounds()
 			x = width + 20
 			y = self.categoryList.y + 5

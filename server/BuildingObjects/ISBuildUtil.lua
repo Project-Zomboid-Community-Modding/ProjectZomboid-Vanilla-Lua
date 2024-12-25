@@ -3,18 +3,22 @@
 --***********************************************************
 
 buildUtil = {};
+buildUtil.cheat = false or getDebug(); -- we need this? we already have "ISBuildMenu.cheat"
 
 -- if a thumpable item already placed on this tile, we cannot place another
 buildUtil.canBePlace = function(ISItem, square)
 	if not square then
 		return false
 	end
-	if square:getZ() >= 8 then
+	if square:getZ() >= 32 then
 		return false;
 	end
 	if isClient() and SafeHouse.isSafeHouse(square, getSpecificPlayer(ISItem.player):getUsername(), true) then
 		return false;
 	end
+	if isServer() and SafeHouse.isSafeHouse(square, ISItem.player:getUsername(), true) then
+        return false;
+    end
 	for i = 0, square:getObjects():size() - 1 do
 		local item = square:getObjects():get(i);
 		if (item:getSprite() and ((item:getSprite():getProperties():Is(IsoFlagType.collideN) and ISItem.north) or
@@ -40,7 +44,10 @@ buildUtil.getWoodHealth = function(ISItem)
 	if not ISItem or not ISItem.player then
 		return 100;
 	end
-	local playerObj = getSpecificPlayer(ISItem.player)
+    local playerObj = ISItem.player
+    if not isServer() then
+        playerObj = getSpecificPlayer(ISItem.player)
+    end
 	local health = (playerObj:getPerkLevel(Perks.Woodwork) * 50);
 	if playerObj:HasTrait("Handy") then
 		health = health + 100;
@@ -51,7 +58,7 @@ end
 -- check if a corner has to be added
 -- if you place a wall to make a corner for example, there is still a hole where you can walk, so your fort will not be zombie proof
 -- here we gonna check if, when you add a wall, we need to add a corner
-function buildUtil.checkCorner(x,y,z,north, thumpable, item)
+function buildUtil.checkCorner(x, y, z, north, thumpable, item)
 	local found = false;
 	local xoffset = 1;
 	local yoffset = -1;
@@ -83,20 +90,23 @@ end
 
 -- add the needed corner so there will be no hole in your fort
 function buildUtil.addCorner(x,y,z, thumpable, item)
-	if thumpable.corner ~= nil then
+	if item.corner ~= nil then
 		local sq = getCell():getGridSquare(x, y, z);
-		local corner = IsoThumpable.new(getCell(), sq, thumpable.corner, false, nil);
+		local corner = IsoThumpable.new(getCell(), sq, item.corner, false, nil);
 		corner:setCorner(true);
 		corner:setCanBarricade(false);
 		sq:AddSpecialObject(corner);
 		sq:RecalcAllWithNeighbours(true);
-		corner:transmitCompleteItemToServer();
+		corner:transmitCompleteItemToClients();
 	end
 end
 
 function buildUtil.addWoodXp(ISItem)
-	local playerObj = getSpecificPlayer(ISItem.player)
-	playerObj:getXp():AddXP(Perks.Woodwork, 3);
+    local playerObj = ISItem.player
+    if not isServer() then
+        playerObj = getSpecificPlayer(ISItem.player)
+    end
+	addXp(playerObj, Perks.Woodwork, 3)
 end
 
 function buildUtil.predicateMaterial(item)
@@ -104,9 +114,9 @@ function buildUtil.predicateMaterial(item)
 end
 
 function buildUtil.useDrainable(item, uses)
-	local count = math.min(uses, item:getDrainableUsesInt())
+	local count = math.min(uses, item:getCurrentUses())
 	for i=1,count do
-		item:Use()
+		item:UseAndSync()
 	end
 	return count
 end
@@ -116,10 +126,13 @@ end
 -- those need: stuff are used when you dismantle the item too
 function buildUtil.consumeMaterial(ISItem)
 	if not ISItem or not ISItem.player then return {}; end
-	if ISBuildMenu.cheat then
+	if not isServer() and ISBuildMenu.cheat then
 		return {};
 	end
-	local playerObj = getSpecificPlayer(ISItem.player)
+	local playerObj = ISItem.player
+	if not isServer() then
+	    playerObj = getSpecificPlayer(ISItem.player)
+	end
 	local playerInv = playerObj:getInventory()
 	local modData = ISItem.modData;
 	local removedFromGround = false
@@ -135,8 +148,10 @@ function buildUtil.consumeMaterial(ISItem)
 				playerObj:removeFromHands(item)
 				if item:getContainer() then
 					item:getContainer():Remove(item);
+					sendRemoveItemFromContainer(item:getContainer(), item);
 				else
 					playerInv:Remove(item)
+					sendRemoveItemFromContainer(playerInv, item);
 				end
 				itemCount = itemCount - 1
 				table.insert(consumedItems, item)
@@ -167,8 +182,10 @@ function buildUtil.consumeMaterial(ISItem)
 					playerObj:removeFromHands(item)
 					if item:getContainer() then
 						item:getContainer():Remove(item);
+						sendRemoveItemFromContainer(item:getContainer(), item);
 					else
 						playerInv:Remove(item)
+						sendRemoveItemFromContainer(playerInv, item);
 					end
 					itemCount = itemCount - 1
 					table.insert(consumedItems, item)
@@ -186,7 +203,7 @@ function buildUtil.consumeMaterial(ISItem)
 			local items = playerInv:getAllTypeRecurse(itemFullType)
 			for i=1,items:size() do
 				local item = items:get(i-1)
-				if item:getDrainableUsesInt() > 0 then
+				if item:getCurrentUses() > 0 then
 					remaining = remaining - buildUtil.useDrainable(item, remaining)
 					table.insert(consumedItems, item)
 					if remaining <= 0 then
@@ -199,7 +216,7 @@ function buildUtil.consumeMaterial(ISItem)
 				local items = groundItems[itemFullType]
 				if items then
 					for _,item in ipairs(items) do
-						if item:getDrainableUsesInt() > 0 then
+						if item:getCurrentUses() > 0 then
 							remaining = remaining - buildUtil.useDrainable(item, remaining)
 							table.insert(consumedItems, item)
 							removedFromGround = true
@@ -214,7 +231,7 @@ function buildUtil.consumeMaterial(ISItem)
 		if luautils.stringStarts(index, "xp:") then
 			local skill = luautils.split(index, ":")[2];
 			local xp = tonumber(value);
-			playerObj:getXp():AddXP(Perks.FromString(skill), xp);
+			addXp(playerObj, Perks.FromString(skill), xp)
 		end
 	end
 	if removedFromGround then ISInventoryPage.dirtyUI() end
@@ -223,10 +240,13 @@ end
 
 function buildUtil.openNailsBox(ISItem)
 	if not ISItem or not ISItem.player then return {}; end
-	if ISBuildMenu.cheat then
+	if not isServer() and ISBuildMenu.cheat then
 		return {};
 	end
-	local playerObj = getSpecificPlayer(ISItem.player)
+	local playerObj = ISItem.player
+    if not isServer() then
+        playerObj = getSpecificPlayer(ISItem.player)
+    end
 	local consumedItems = {}
 	local playerInv = playerObj:getInventory()
 	local itemFullType = "Base.NailsBox"
@@ -236,9 +256,11 @@ function buildUtil.openNailsBox(ISItem)
 		local item = items:get(i-1)
 		playerObj:removeFromHands(item)
 		if item:getContainer() then
+			sendRemoveItemFromContainer(item:getContainer(), item);
 			item:getContainer():Remove(item);
 		else
 			playerInv:Remove(item)
+			sendRemoveItemFromContainer(playerInv, item);
 		end
 		itemCount = itemCount - 1
 		table.insert(consumedItems, item)
@@ -262,10 +284,17 @@ function buildUtil.openNailsBox(ISItem)
 		end
 	end
 	for i=1,#consumedItems do
-		local nail = InventoryItemFactory.CreateItem("Base.Nails")
-		playerObj:getInventory():AddItems(nail, 20) -- 20x5=100
+		local items = playerObj:getInventory():AddItems("Base.Nails", 20) -- 20x5=100
+		sendAddItemsToContainer(playerObj:getInventory(), items);
 	end
-	if removedFromGround then ISInventoryPage.dirtyUI() end
+
+	if removedFromGround then
+		if isServer() then
+			sendServerCommand(self.character, 'ui', 'dirtyUI', { });
+		else
+			ISInventoryPage.dirtyUI();
+		end
+	end
 end
 
 function buildUtil.removeFromGround(square)
@@ -279,6 +308,9 @@ end
 
 function buildUtil.getMaterialOnGround(squareToCheck)
 	local result = {}
+	if not squareToCheck then
+		return result
+	end
 	for x=squareToCheck:getX()-1,squareToCheck:getX()+1 do
 		for y=squareToCheck:getY()-1,squareToCheck:getY()+1 do
 			local square = getCell():getGridSquare(x,y,squareToCheck:getZ())
@@ -315,7 +347,7 @@ function buildUtil.getMaterialOnGroundUses(itemMap)
 		if instanceof(item, "DrainableComboItem") then
 			local uses = 0
 			for _,item in ipairs(items) do
-				uses = uses + item:getDrainableUsesInt()
+				uses = uses + item:getCurrentUses()
 			end
 			result[type] = uses
 		end
@@ -343,6 +375,9 @@ function buildUtil.setInfo(javaObject, ISItem)
 	javaObject:setCanBePlastered(ISItem.canBePlastered);
 	javaObject:setIsHoppable(ISItem.hoppable);
 	javaObject:setModData(copyTable(ISItem.modData));
+	if ISItem.isStairs then
+		javaObject:setIsStairs(ISItem.isStairs);
+	end
     javaObject:setIsThumpable(ISItem.isThumpable);
 	if ISItem.isCorner then
 		javaObject:setCorner(ISItem.isCorner);
@@ -458,7 +493,7 @@ local function countAdjacentStairs(x, y, z)
 	return count
 end
 
-function buildUtil.getStairObjects(object)
+function buildUtil.getStairObjects(object, skipFloor)
 	local objects = {}
 	local x, y, z = object:getX(), object:getY(), object:getZ()
 	if object:getType() == IsoObjectType.stairsTW then
@@ -488,7 +523,7 @@ function buildUtil.getStairObjects(object)
 	end
 	-- Also destroy the floor at the top of the stairs if it isn't adjacent to another floor tile.
 	-- Don't destroy the floor if it is adjacent to another staircase.
-	if #objects > 0 then
+	if #objects > 0 and (not skipFloor) then
 		for i=1,#objects do
 			local floor = nil
 			x, y, z = objects[i]:getX(), objects[i]:getY(), objects[i]:getZ()

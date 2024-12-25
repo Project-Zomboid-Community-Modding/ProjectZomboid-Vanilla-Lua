@@ -164,7 +164,7 @@ end
 
 function ISVolumeBar:render()
     ISPanel.render(self);
-    local cellwidth = (self:getWidth() / self.volumeSteps);
+    local cellwidth = (self:getWidth()+self.innerMargin) / self.volumeSteps;
     for i = 0, self.volumeSteps-1 do
         local c = self.elBackgroundColor;
         local c2 = self.elBorderColor;
@@ -192,8 +192,8 @@ function ISVolumeBar:render()
         end
 
         local hhalf = self:getHeight()/2;
-        self:drawRect((i*cellwidth)+self.innerMargin, hhalf-(hhalf/2), cellwidth-self.innerMargin, hhalf, c.a, c.r, c.g, c.b);
-        self:drawRectBorder((i*cellwidth)+self.innerMargin, hhalf-(hhalf/2), cellwidth-self.innerMargin, hhalf, c2.a, c2.r, c2.g, c2.b);
+        self:drawRect((i*cellwidth), hhalf-(hhalf/2), cellwidth-self.innerMargin, hhalf, c2.a, c2.r, c2.g, c2.b);
+        self:drawRect((i*cellwidth)+1, hhalf-(hhalf/2)+1, cellwidth-self.innerMargin-2, hhalf-2, c.a, c.r, c.g, c.b);
     end
 end
 

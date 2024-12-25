@@ -1,18 +1,19 @@
-require "ISUI/ISPanel"
-require "ISUI/ISButton"
-require "ISUI/ISInventoryPane"
-require "ISUI/ISResizeWidget"
-require "ISUI/ISMouseDrag"
+require "ISUI/ISPanelJoypad"
 
-require "defines"
-
-SandboxOptionsScreen = ISPanelJoypad:derive("SandboxOptionsScreen");
+SandboxOptionsScreen = ISPanelJoypad:derive("SandboxOptionsScreen")
 local SandboxOptionsScreenListBox = ISScrollingListBox:derive("SandboxOptionsScreenListBox")
 local SandboxOptionsScreenPanel = ISPanelJoypad:derive("SandboxOptionsScreenPanel")
 local SandboxOptionsScreenPresetPanel = ISPanelJoypad:derive("SandboxOptionsScreenPresetPanel")
-local SandboxOptionsScreenGroupBox = SandboxOptionsScreenPanel:derive("SandboxOptionsScreenGroupBox")
+local SandboxAdvancedControl = ISPanel:derive("SandboxAdvancedControl")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_TITLE = getTextManager():getFontFromEnum(UIFont.Title):getLineHeight()
+local FONT_HGT_MEDIUM = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local ENTRY_HGT = FONT_HGT_MEDIUM + 6
+local JOYPAD_TEX_SIZE = 32
+local CONTROL_WIDTH = 150 +((getCore():getOptionFontSizeReal()-1)*50)
 
 function SandboxOptionsScreenListBox:doDrawItem(y, item, alt)
     self:drawRectBorder(0, y, self:getWidth(), self.itemheight - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
@@ -27,9 +28,14 @@ function SandboxOptionsScreenListBox:doDrawItem(y, item, alt)
         self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 4, 0.95, 0.05, 0.05, 0.05);
     end
 
-    local dx = 16
+    local dx = UI_BORDER_SPACING
     local dy = (self.itemheight - getTextManager():getFontFromEnum(self.font):getLineHeight()) / 2
-    self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+    if item.searchFound then
+        self:drawText(item.text, dx, y + dy, 0.0, 0.9, 0.0, 0.9, self.font)
+    else
+        self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+    end
+
 
     return y + item.height
 end
@@ -41,6 +47,9 @@ end
 function SandboxOptionsScreenListBox:onJoypadDown(button, joypadData)
     if button == Joypad.BButton then
         joypadData.focus = self.parent
+        updateJoypadFocus(joypadData)
+    elseif button == Joypad.YButton then
+        joypadData.focus = self.parent.searchEntry
         updateJoypadFocus(joypadData)
     end
 end
@@ -56,8 +65,18 @@ function SandboxOptionsScreenListBox:onJoypadDirRight(joypadData)
 end
 
 -- -- -- -- --
--- -- -- -- --
--- -- -- -- --
+
+local _multiplers = {"Aiming", "Axe", "Blacksmith", "Blunt", "Butchering", "Carving", "Cooking", "Doctor", "Electricity", "Farming", "Fishing", "Fitness", "FlintKnapping", "Husbandry", "Lightfoot", "LongBlade", "Maintenance", "Masonry", "Mechanics", "MetalWelding", "Nimble", "PlantScavenging", "Pottery", "Reloading", "SmallBlade", "SmallBlunt", "Sneak", "Spear", "Sprinting", "Strength", "Tailoring", "Tracking", "Trapping", "Woodwork"}
+local multiplers = {}
+for _, v in ipairs(_multiplers) do
+    multiplers["MultiplierConfig." .. v] = true
+end
+
+local _maps = {"AllowMiniMap", "MapAllKnown"}
+local maps = {}
+for _, v in ipairs(_maps) do
+    maps["Map." .. v] = true
+end
 
 function SandboxOptionsScreenPanel:prerender()
     self:doRightJoystickScrolling(20, 20)
@@ -71,9 +90,33 @@ function SandboxOptionsScreenPanel:prerender()
         local control = self.controls[settingName]
         if label and control then
             label:setColor(1, 1, 1)
+
             local option = nonDefaultOptions:getOptionByName(settingName)
             if option and (option:getValue() ~= option:getDefaultValue()) then
                 label:setColor(1, 1, 0)
+            end
+
+            if
+                (maps[settingName] and not self.controls["Map.AllowWorldMap"]:isSelected(1)) or
+                (multiplers[settingName] and self.controls["MultiplierConfig.GlobalToggle"]:isSelected(1)) or
+                (settingName == "MultiplierConfig.Global" and not self.controls["MultiplierConfig.GlobalToggle"]:isSelected(1))
+            then
+                label:setColor(0.4, 0.4, 0.4)
+                if control.Type == "ISTextEntryBox" then
+                    control:getJavaObject():setTextColor(ColorInfo.new(0.4, 0.4, 0.4, 1)) --grey out specific options
+                end
+            elseif maps[settingName] or multiplers[settingName] or settingName == "MultiplierConfig.Global" then
+                if control.Type == "ISTextEntryBox" then
+                    control:getJavaObject():setTextColor(ColorInfo.new(1, 1, 1, 1)) --ungrey specific options
+                end
+            end
+
+            if label.searchFound then
+                label:setColor(0, 1, 0)
+            end
+
+            if control:isMouseOver() then
+                self:drawRect(label:getX() - UI_BORDER_SPACING, label:getY(), (control:getX() + control:getWidth()) * 2 - self.width + UI_BORDER_SPACING, label:getHeight(), 0.3, 0.5, 0.5, 0.5)
             end
         end
         if control and control.Type == "ISTextEntryBox" then
@@ -136,6 +179,65 @@ function SandboxOptionsScreenPanel:onMouseWheel(del)
     end
 end
 
+function SandboxOptionsScreenPanel:onJoypadDirUp(joypadData)
+    local children = self:getVisibleChildren(self.joypadIndexY)
+    local child = children[self.joypadIndex]
+    if child and child.isCombobox and child.expanded then
+        child:onJoypadDirUp(joypadData)
+    elseif child and (child.Type == "SandboxAdvancedControl") and child.combo:isVisible() and child.combo.expanded then
+        child:onJoypadDirUp(joypadData)
+    elseif child and child.isRadioButtons and child.joypadIndex > 1 then
+        child:onJoypadDirUp(joypadData)
+    elseif child and child.isTickBox and child.joypadIndex > 1 then
+        child:onJoypadDirUp(joypadData)
+    elseif child and child.isKnob then
+        child:onJoypadDirUp(joypadData)
+    else
+        if (#self.joypadButtonsY > 0) and (self.joypadIndexY > 1) and (self.joypadIndexY <= #self.joypadButtonsY) then
+            child:setJoypadFocused(false, joypadData);
+            self.joypadIndexY = self.joypadIndexY - 1;
+            self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
+            children = self:getVisibleChildren(self.joypadIndexY)
+            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
+            if self.joypadIndex > #children then
+                self.joypadIndex = #children;
+            end
+            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        end
+    end
+    self:ensureVisible()
+end
+
+
+function SandboxOptionsScreenPanel:onJoypadDirDown(joypadData)
+    local children = self:getVisibleChildren(self.joypadIndexY)
+    local child = children[self.joypadIndex]
+    if child and child.isCombobox and child.expanded then
+        child:onJoypadDirDown(joypadData)
+    elseif child and (child.Type == "SandboxAdvancedControl") and child.combo:isVisible() and child.combo.expanded then
+        child:onJoypadDirDown(joypadData)
+    elseif child and child.isRadioButtons and child.joypadIndex < #child.options then
+        child:onJoypadDirDown(joypadData)
+    elseif child and child.isTickBox and child.joypadIndex < #child.options then
+        child:onJoypadDirDown(joypadData)
+    elseif child and child.isKnob then
+        child:onJoypadDirDown(joypadData)
+    else
+        if (#self.joypadButtonsY > 0) and (self.joypadIndexY < #self.joypadButtonsY) then
+            child:setJoypadFocused(false, joypadData);
+            self.joypadIndexY = self.joypadIndexY + 1;
+            self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
+            children = self:getVisibleChildren(self.joypadIndexY)
+            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
+            if self.joypadIndex > #children then
+                self.joypadIndex = #children;
+            end
+            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        end
+    end
+    self:ensureVisible()
+end
+
 function SandboxOptionsScreenPanel:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     if self.joypadButtons[self.joypadIndex] then
@@ -152,7 +254,16 @@ function SandboxOptionsScreenPanel:onJoypadDown(button, joypadData)
     if button == Joypad.BButton and not self:isFocusOnControl() then
         joypadData.focus = self.parent
         updateJoypadFocus(joypadData)
+    elseif button == Joypad.YButton then
+        joypadData.focus = self.parent.searchEntry
+        updateJoypadFocus(joypadData)
     else
+        local children = self:getVisibleChildren(self.joypadIndexY)
+        local child = children[self.joypadIndex]
+        if button == Joypad.AButton and child and (child.Type == "SandboxAdvancedControl") then
+            child:onJoypadDown(button, joypadData);
+        end
+
         ISPanelJoypad.onJoypadDown(self, button, joypadData)
     end
 end
@@ -172,139 +283,119 @@ function SandboxOptionsScreenPanel:onJoypadDirRight(joypadData)
 end
 
 -- -- -- -- --
--- -- -- -- --
--- -- -- -- --
 
-function SandboxOptionsScreenGroupBox:new(x, y, width, height, tickBoxLabel)
-	local o = ISPanelJoypad:new(x, y, width, height)
-	setmetatable(o, self)
-	self.__index = self
-	o.tickBoxLabel = tickBoxLabel
-	o.settings = nil
-	return o
+function SandboxAdvancedControl:createChildren()
+    self.entry = ISTextEntryBox:new(self.setting.text, 0, 0, CONTROL_WIDTH, ENTRY_HGT)
+    self.entry.font = UIFont.Medium
+    self.entry.tooltip = self.tooltip
+    self.entry:initialise()
+    self.entry:instantiate()
+    self.entry:setOnlyNumbers(self.setting.onlyNumbers or false)
+    self.entry:setVisible(false)
+    self:addChild(self.entry)
+
+    self.combo = ISComboBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, self, self.onComboBoxSelected, self, self.setting)
+    if self.tooltip then
+        self.combo.tooltip = { defaultTooltip = self.tooltip }
+    end
+    self.combo:initialise()
+    for index, value in ipairs(self.setting.advancedCombo.values) do
+        self.combo:addOption(getText(value.name))
+        if index == self.setting.advancedCombo.default then
+            self.combo.selected = index
+        end
+    end
+    -- TODO: talk to Aitereon to find what this does?
+    self.combo:addOption(getText("Sandbox_Custom"))
+    self:addChild(self.combo)
 end
 
-function SandboxOptionsScreenGroupBox:createChildren()
-	local tickBox = ISTickBox:new(20, 4, 100, entryHgt, "", self, self.onTicked)
-	tickBox.backgroundColor.a = 1
-	tickBox.background = true
-	tickBox.choicesColor = {r=1, g=1, b=1, a=1}
-	tickBox.leftMargin = 2
-	tickBox:setFont(UIFont.Medium)
-	tickBox:addOption(self.tickBoxLabel)
-	tickBox:setWidthToFit()
-	tickBox.selected[1] = true
-	self.tickBox = tickBox
-
-	local scrollBarWidth = 17
-	local cover = ISPanel:new(13, tickBox:getBottom(), self:getWidth() - 13 * 2 - scrollBarWidth, self:getHeight() - 13 - tickBox:getBottom())
-	cover.borderColor.a = 0
-	cover:setAnchorRight(true)
-	cover:setAnchorBottom(true)
-	cover:initialise()
-	cover:instantiate()
-	cover.javaObject:setConsumeMouseEvents(true)
-	self.cover = cover
-
-	local groupY = tickBox:getY() + tickBox:getHeight() / 2
-	local contents = SandboxOptionsScreenPanel:new(12, groupY, self:getWidth() - 12 * 2, self:getHeight() - 12 - groupY)
-	contents.borderColor.a = 0.6
-	contents:setAnchorRight(true)
-	contents:setAnchorBottom(true)
-	contents.settingNames = {}
-	contents.isGroupBoxContentsPanel = true
-	contents._instance = self._instance
-	self.contents = contents
-
-	self:addChild(contents)
-	self:addChild(cover)
-	self:addChild(tickBox)
-end
-
-function SandboxOptionsScreenGroupBox:prerender()
-	self.contents.joyfocus = self.joyfocus
-	self.contents:doRightJoystickScrolling(20, 20)
-	self.contents.joyfocus = nil
-	ISPanelJoypad.prerender(self)
-end
-
-function SandboxOptionsScreenGroupBox:onTicked(index, selected)
-	if selected then
-		local options = self.settings
-		for _,settingName in ipairs(self.settingNames) do
-			local option = options:getOptionByName(settingName)
-			local control = self.controls[settingName]
-			if control.Type == "ISComboBox" then
-				control.selected = option:getDefaultValue()
-			elseif control.Type == "ISTickBox" then
-				control.selected[1] = option:getDefaultValue()
-			else
-				error "unhandled control type"
-			end
-		end
-		self.cover:setVisible(true)
-	else
-		self.cover:setVisible(false)
-	end
-	self:setJoypadButtons()
-end
-
-function SandboxOptionsScreenGroupBox:settingsToUI(settings)
-	self.settings = settings
-	local options = settings
-	local allDefault = true
-	for _,settingName in ipairs(self.settingNames) do
-		local option = options:getOptionByName(settingName)
-		local control = self.controls[settingName]
-		if control.Type == "ISComboBox" then
-			if control.selected ~= option:getDefaultValue() then
-				allDefault = false
-				break
-			end
-		elseif control.Type == "ISTickBox" then
-			if control.selected[1] ~= option:getDefaultValue() then
-				allDefault = false
-				break
-			end
-		else
-			error "unhandled control type"
-		end
-	end
-	self.cover:setVisible(allDefault)
-	self.tickBox.selected[1] = allDefault
-	self:setJoypadButtons()
-end
-
-function SandboxOptionsScreenGroupBox:setJoypadButtons()
-	if self.joypadIndexY > 1 then
-		self:clearJoypadFocus(self.joyfocus)
-	end
-	self.joypadButtonsY = {}
-	self:insertNewLineOfButtons(self.tickBox)
-	if not self.tickBox.selected[1] then
-		for _,control in pairs(self.controls) do
-			self:insertNewLineOfButtons(control)
-		end
-	end
-	self.joypadIndex = 1
-	self.joypadIndexY = 1
-	self.joypadButtons = self.joypadButtonsY[1]
-end
-
-function SandboxOptionsScreenGroupBox:ensureVisible()
-    if not self.joyfocus then return end
-    local child = self.joypadButtons[self.joypadIndex]
-    if not child or child == self.tickBox then return end
-    local y = child:getY()
-    if y - 40 < 0 - self.contents:getYScroll() then
-        self.contents:setYScroll(0 - y + 40)
-    elseif y + child:getHeight() + 40 > 0 - self.contents:getYScroll() + self.contents:getHeight() then
-        self.contents:setYScroll(0 - (y + child:getHeight() + 40 - self.contents:getHeight()))
+function SandboxAdvancedControl:onComboBoxSelected(combo, control, setting)
+    if combo.selected ~= #combo.options then
+        control.entry:setText(tostring(setting.advancedCombo.values[combo.selected].text))
+    end
+    if setting.name == "ZombieConfig.PopulationMultiplier" and combo.selected ~= #combo.options then
+        self.parent.parent.controls["Zombies"].selected = combo.selected
     end
 end
 
--- -- -- -- --
--- -- -- -- --
+function SandboxAdvancedControl:advancedCheckboxChanged(bool)
+    self.combo:setVisible(not bool)
+    self.entry:setVisible(bool)
+
+    if self.combo:isVisible() then
+        self.combo.selected = #self.combo.options
+        for index, v in ipairs(self.setting.advancedCombo.values) do
+            if tostring(v.text) == self.entry:getInternalText() then
+                self.combo.selected = index
+            end
+        end
+    end
+end
+
+function SandboxAdvancedControl:getText()
+    return self.entry:getText()
+end
+
+function SandboxAdvancedControl:setJoypadFocused(focused)
+    if self.combo:isVisible() then
+        self.combo.joypadFocused = focused
+    else
+        self.entry.joypadFocused = focused
+    end
+end
+
+function SandboxAdvancedControl:onJoypadDown(button, joypadData)
+    if self.combo:isVisible() then
+        if button == Joypad.AButton then
+            self.combo:forceClick();
+            return;
+        end
+        if button == Joypad.BButton and self.combo.expanded then
+            self.combo.expanded = false;
+            self.combo:hidePopup();
+            return;
+        end
+    else
+        self.entry:onJoypadDown(button, joypadData)
+    end
+end
+
+function SandboxAdvancedControl:onJoypadDirUp(joypadData)
+    if self.combo:isVisible() then
+        self.combo:onJoypadDirUp(joypadData)
+    else
+        self.entry:onJoypadDirUp(joypadData)
+    end
+end
+
+function SandboxAdvancedControl:onJoypadDirDown(joypadData)
+    if self.combo:isVisible() then
+        self.combo:onJoypadDirDown(joypadData)
+    else
+        self.entry:onJoypadDirDown(joypadData)
+    end
+end
+
+function SandboxAdvancedControl:setText(value)
+    self.entry:setText(value)
+    self.combo.selected = #self.combo.options
+    for index, v in ipairs(self.setting.advancedCombo.values) do
+        if tostring(v.text) == value then
+            self.combo.selected = index
+        end
+    end
+end
+
+function SandboxAdvancedControl:new(x, y, width, height, setting, tooltip)
+    local o = ISUIElement:new(x, y, width, height)
+    setmetatable(o, self)
+    self.__index = self
+    o.setting = setting
+    o.tooltip = tooltip
+    return o
+end
+
 -- -- -- -- --
 
 function SandboxOptionsScreenPresetPanel:onGainJoypadFocus(joypadData)
@@ -322,6 +413,9 @@ end
 function SandboxOptionsScreenPresetPanel:onJoypadDown(button, joypadData)
     if button == Joypad.BButton and not self:isFocusOnControl() then
         joypadData.focus = self.parent
+        updateJoypadFocus(joypadData)
+    elseif button == Joypad.YButton then
+        joypadData.focus = self.parent.searchEntry
         updateJoypadFocus(joypadData)
     else
         ISPanelJoypad.onJoypadDown(self, button, joypadData)
@@ -348,76 +442,50 @@ end
 
 function SandboxOptionsScreenPresetPanel:onJoypadDirRight(joypadData)
     if self.joypadIndex == #self.joypadButtons then
-        joypadData.focus = self.parent
+        joypadData.focus = self.parent.advancedCheckBox
         updateJoypadFocus(joypadData)
+        self.parent.advancedCheckBox:setJoypadFocused(true, joypadData)
         return
     end
     ISPanelJoypad.onJoypadDirRight(self, joypadData)
 end
 
+
+
 -- -- -- -- --
--- -- -- -- --
--- -- -- -- --
-
-
-function SandboxOptionsScreen:initialise()
-    ISPanelJoypad.initialise(self);
-end
-
-
---************************************************************************--
---** ISPanel:instantiate
---**
---************************************************************************--
-function SandboxOptionsScreen:instantiate()
-
-    --self:initialise();
-    self.javaObject = UIElement.new(self);
-    self.javaObject:setX(self.x);
-    self.javaObject:setY(self.y);
-    self.javaObject:setHeight(self.height);
-    self.javaObject:setWidth(self.width);
-    self.javaObject:setAnchorLeft(self.anchorLeft);
-    self.javaObject:setAnchorRight(self.anchorRight);
-    self.javaObject:setAnchorTop(self.anchorTop);
-    self.javaObject:setAnchorBottom(self.anchorBottom);
-end
 
 function SandboxOptionsScreen:syncStartDay()
-	local year = getSandboxOptions():getFirstYear()
-	local month = self.controls.StartMonth.selected
-	if self.selectedYear == year and self.selectedMonth == month then return end
-	self.selectedYear = year
-	self.selectedMonth = month
-	
-	local lastDay = getGameTime():daysInMonth(year, month - 1)
-	local t = {}
-	for i=1,lastDay do table.insert(t, tostring(i)) end
-	self.controls.StartDay.options = t
-	if self.controls.StartDay.selected > lastDay then
+    local year = getSandboxOptions():getFirstYear()
+    local month = self.controls.StartMonth.selected
+    if self.selectedYear == year and self.selectedMonth == month then return end
+    self.selectedYear = year
+    self.selectedMonth = month
+
+    local lastDay = getGameTime():daysInMonth(year, month - 1)
+    local t = {}
+    for i=1,lastDay do table.insert(t, tostring(i)) end
+    self.controls.StartDay.options = t
+    if self.controls.StartDay.selected > lastDay then
         self.controls.StartDay.selected = lastDay
-	end
+    end
 end
 
 function SandboxOptionsScreen:create()
-
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-    self.backButton = ISButton:new(16, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_back"), self, self.onOptionMouseDown);
+    local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+    local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+    self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, self.onOptionMouseDown);
     self.backButton.internal = "BACK";
     self.backButton:initialise();
     self.backButton:instantiate();
     self.backButton:setAnchorLeft(true);
+    self.backButton:setAnchorRight(false);
     self.backButton:setAnchorTop(false);
     self.backButton:setAnchorBottom(true);
-    self.backButton.borderColor = {r=1, g=1, b=1, a=0.1};
-
-    self.backButton:setFont(UIFont.Small);
-    self.backButton:ignoreWidthChange();
-    self.backButton:ignoreHeightChange();
+    self.backButton:enableCancelColor()
     self:addChild(self.backButton);
 
-    self.playButton = ISButton:new(self.width - 116, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_next"), self, self.onOptionMouseDown);
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
+    self.playButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, self.onOptionMouseDown);
     self.playButton.internal = "PLAY";
     self.playButton:initialise();
     self.playButton:instantiate();
@@ -425,10 +493,10 @@ function SandboxOptionsScreen:create()
     self.playButton:setAnchorRight(true);
     self.playButton:setAnchorTop(false);
     self.playButton:setAnchorBottom(true);
-    self.playButton:setEnable(true); -- sets the hard-coded border color
+    self.playButton:enableAcceptColor()
     self:addChild(self.playButton);
 
-    self.presetPanel = SandboxOptionsScreenPresetPanel:new(0, self.height - 5 - buttonHgt, 100, buttonHgt)
+    self.presetPanel = SandboxOptionsScreenPresetPanel:new(0, self.backButton.y, 100, BUTTON_HGT)
     self.presetPanel:noBackground()
     self.presetPanel:setAnchorTop(false)
     self.presetPanel:setAnchorBottom(true)
@@ -439,48 +507,105 @@ function SandboxOptionsScreen:create()
     label:initialise();
     self.presetPanel:addChild(label);
 
-    self.presetList = ISComboBox:new(labelX + getTextManager():MeasureStringX(UIFont.Medium, label:getName()) + 20, 0, 200, buttonHgt, self, self.onPresetChange);
+    self.presetList = ISComboBox:new(labelX + getTextManager():MeasureStringX(UIFont.Medium, label:getName()) + UI_BORDER_SPACING*2, 0, CONTROL_WIDTH, BUTTON_HGT, self, self.onPresetChange);
     self.presetList:initialise();
     self.presetPanel:addChild(self.presetList);
 
-	local buttonHgt2 = math.max(20, FONT_HGT_SMALL + 3 * 2)
-
-    self.savePresetButton = ISButton:new(self.presetList.x + self.presetList.width + 10, 0, 50, buttonHgt2, getText("Sandbox_SaveButton"), self, self.onOptionMouseDown);
+    self.savePresetButton = ISButton:new(self.presetList.x + self.presetList.width + UI_BORDER_SPACING, 0, 50, BUTTON_HGT, getText("Sandbox_SaveButton"), self, self.onOptionMouseDown);
     self.savePresetButton.internal = "SAVEPRESET";
     self.savePresetButton:initialise();
     self.savePresetButton:instantiate();
     self.savePresetButton:setFont(UIFont.Small);
     self.savePresetButton:ignoreWidthChange();
     self.savePresetButton:ignoreHeightChange();
+    self.savePresetButton:enableAcceptColor()
     self.presetPanel:addChild(self.savePresetButton);
 
-    self.deletePresetButton = ISButton:new(self.savePresetButton:getRight() + 10, 0, 50, buttonHgt2, getText("UI_characreation_BuildDel"), self, self.onOptionMouseDown)
+    self.deletePresetButton = ISButton:new(self.savePresetButton:getRight() + UI_BORDER_SPACING, 0, 50, BUTTON_HGT, getText("UI_characreation_BuildDel"), self, self.onOptionMouseDown)
     self.deletePresetButton.internal = "DELETEPRESET"
     self.deletePresetButton:initialise()
     self.deletePresetButton:setFont(UIFont.Small)
     self.deletePresetButton:ignoreWidthChange()
     self.deletePresetButton:ignoreHeightChange()
+    self.deletePresetButton:enableCancelColor()
     self.presetPanel:addChild(self.deletePresetButton)
 
-    self.presetPanel:setWidth(self.deletePresetButton:getRight())
+    self.advancedCheckBox = ISTickBox:new(self.deletePresetButton:getRight() + UI_BORDER_SPACING, 0, BUTTON_HGT, BUTTON_HGT, "", self, self.changeAdvancedMode)
+    self.advancedCheckBox:addOption("Advanced")
+    self.advancedCheckBox.selected[1] = false
+    self.advancedCheckBox.onJoypadDirRight = function(_self, joypadData)
+        joypadData.focus = _self.parent.parent
+        updateJoypadFocus(joypadData)
+        _self:setJoypadFocused(false)
+    end
+    self.advancedCheckBox.onJoypadDirUp = function(_self, joypadData)
+        joypadData.focus = _self.parent.parent
+        updateJoypadFocus(joypadData)
+        _self:setJoypadFocused(false)
+    end
+    self.advancedCheckBox.onJoypadDirLeft = function(_self, joypadData)
+        joypadData.focus = _self.parent
+        updateJoypadFocus(joypadData)
+        _self:setJoypadFocused(false)
+    end
+    self.advancedCheckBox.onJoypadDown = function(_self, button, joypadData)
+        if button == Joypad.AButton then
+            _self.joypadIndex = 1
+            _self:forceClick()
+        end
+        if button == Joypad.YButton then
+            joypadData.focus = _self.parent.parent.searchEntry
+            updateJoypadFocus(joypadData)
+            _self:setJoypadFocused(false)
+        end
+    end
+    self.presetPanel:addChild(self.advancedCheckBox)
+
     if getDebug() then
-        self.devPresetButton = ISButton:new(self.deletePresetButton:getRight() + 10, 0, 50, buttonHgt2, "*DEV*", self, self.onOptionMouseDown)
+        self.devPresetButton = ISButton:new(self.deletePresetButton:getRight() + UI_BORDER_SPACING, 0, 50, BUTTON_HGT, "*DEV*", self, self.onOptionMouseDown)
         self.devPresetButton.internal = "DEVPRESET"
         self.devPresetButton:initialise()
         self.devPresetButton:setFont(UIFont.Small)
         self.devPresetButton:ignoreWidthChange()
         self.devPresetButton:ignoreHeightChange()
         self.presetPanel:addChild(self.devPresetButton)
-        self.presetPanel:setWidth(self.devPresetButton:getRight())
-   end
+        self.advancedCheckBox:setX(self.devPresetButton:getRight()+UI_BORDER_SPACING)
+    end
+    self.presetPanel:setWidth(self.advancedCheckBox:getRight()+getTextManager():MeasureStringX(UIFont.Small, "Advanced"))
     self.presetPanel:setX(self.width / 2 - self.presetPanel:getWidth() / 2)
 
     self.presetPanel:insertNewLineOfButtons(self.presetList, self.savePresetButton, self.deletePresetButton, self.devPresetButton)
     self.presetPanel.joypadIndex = 1
     self.presetPanel.joypadIndexY = 1
 
-    local titleHgt = getTextManager():getFontFromEnum(UIFont.Title):getLineHeight()
-    self.listbox = SandboxOptionsScreenListBox:new(24, 10 + titleHgt + 10, 300, self.height - 50 - 10 - titleHgt - 10)
+    self.searchEntry = ISTextEntryBox:new("", UI_BORDER_SPACING+1, UI_BORDER_SPACING*2 + FONT_HGT_TITLE + 1, self.width - (UI_BORDER_SPACING+1)*2, ENTRY_HGT)
+    self.searchEntry.font = UIFont.Medium
+    self.searchEntry.onTextChange = function() self:doSearch() end
+    self.searchEntry.setText = function(_self, str)
+        if not str then
+            str = "";
+        end
+        _self.javaObject:SetText(str);
+        _self.title = str;
+
+        if OnScreenKeyboard.IsVisible() then
+            _self:onTextChange()
+        end
+    end
+    self.searchEntry.prerender = self.searchPrerender
+    self.searchEntry.onJoypadDown = function(_self, button, joypadData)
+        if button == Joypad.BButton then
+            joypadData.focus = _self.parent
+            updateJoypadFocus(joypadData)
+        else
+            ISTextEntryBox.onJoypadDown(_self, button, joypadData)
+        end
+    end
+    self.searchEntry:initialise()
+    self.searchEntry:instantiate()
+    self:addChild(self.searchEntry)
+
+    self.listbox = SandboxOptionsScreenListBox:new(UI_BORDER_SPACING+1, self.searchEntry:getBottom()+UI_BORDER_SPACING, 300, self.height - self.searchEntry:getBottom() - UI_BORDER_SPACING*3-1 - BUTTON_HGT)
     self.listbox:initialise()
     self.listbox:setAnchorLeft(true)
     self.listbox:setAnchorRight(false)
@@ -492,8 +617,15 @@ function SandboxOptionsScreen:create()
     self:addChild(self.listbox)
 
     self.controls = {}
-    self.groupBox = {}
     local SettingsTable = ServerSettingsScreen.getSandboxSettingsTable()
+    local listboxWidth = 0
+
+    --set listbox width
+    for _,page in ipairs(SettingsTable) do
+        listboxWidth = math.max(getTextManager():MeasureStringX(UIFont.Large, page.name), listboxWidth)
+    end
+    self.listbox:setWidth(listboxWidth + UI_BORDER_SPACING*2)
+
     for _,page in ipairs(SettingsTable) do
         local item = {}
         item.page = page
@@ -501,11 +633,10 @@ function SandboxOptionsScreen:create()
         self.listbox:addItem(page.name, item)
     end
 
-    self.defaultPreset = self:getDefaultPreset();
     self:setVisible(false);
     self:loadPresets();
     for i,preset in ipairs(self.presets) do
-        if preset.name == self.defaultPreset.name then
+        if preset.name == "Apocalypse" then
             self.presetList.selected = i
             break
         end
@@ -515,16 +646,40 @@ function SandboxOptionsScreen:create()
     self:onMouseDownListbox(self.listbox.items[1].item)
 end
 
-function SandboxOptionsScreen:createPanel(page)
-    local panel
-    if page.groupBox then
-        panel = SandboxOptionsScreenGroupBox:new(self.listbox:getRight() + 24, self.listbox:getY(),
-            self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight(),
-            getText("Sandbox_" .. page.groupBox))
-        self.groupBox[page.groupBox] = panel
-    else
-        panel = SandboxOptionsScreenPanel:new(self.listbox:getRight() + 24, self.listbox:getY(), self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight())
+function SandboxOptionsScreen.searchPrerender(self)
+    ISTextEntryBox.prerender(self)
+    if not self.javaObject:isFocused() and self:getInternalText() == "" then
+        self:drawText(getText("UI_sandbox_searchEntryBoxWord"), 2, 2, 0.9, 0.9, 0.9, 0.5, UIFont.Medium)
     end
+end
+
+function SandboxOptionsScreen:changeAdvancedMode(_, bool)
+    for _, control in pairs(self.controls) do
+        if control.Type == "SandboxAdvancedControl" then
+            control:advancedCheckboxChanged(bool)
+        end
+    end
+end
+
+function SandboxOptionsScreen:doSearch()
+    local searchWord = string.lower(self.searchEntry:getInternalText())
+    for i, item in ipairs(self.listbox.items) do
+        item.searchFound = false
+        for name, label in pairs(item.item.panel.labels) do
+            if searchWord ~= "" and string.find(string.lower(label:getName()), searchWord) then
+                label.searchFound = true
+                item.searchFound = true
+                self:onMouseDownListbox(item.item)
+                self.listbox.selected = i
+            else
+                label.searchFound = false
+            end
+        end
+    end
+end
+
+function SandboxOptionsScreen:createPanel(page)
+    local panel = SandboxOptionsScreenPanel:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox:getY(), self.width - self.listbox:getRight() - UI_BORDER_SPACING*2-1, self.listbox:getHeight())
     panel._instance = self
     panel:initialise()
     panel:instantiate()
@@ -533,12 +688,14 @@ function SandboxOptionsScreen:createPanel(page)
     panel.settingNames = {}
     panel.labels = {}
     panel.controls = {}
+    panel.titles = {}
 
-    local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-    local entryHgt = fontHgt + 2 * 2
+    local largeFontHgt = getTextManager():getFontFromEnum(UIFont.Large):getLineHeight()
+    local entryLargeHgt = largeFontHgt + 6
 
     local labels = {}
     local controls = {}
+    local titles = {}
     for _,setting in ipairs(page.settings) do
         local settingName = setting.translatedName
         local tooltip = setting.tooltip
@@ -546,32 +703,36 @@ function SandboxOptionsScreen:createPanel(page)
             tooltip = tooltip:gsub("\\n", "\n")
             tooltip = tooltip:gsub("\\\"", "\"")
         end
-        local label = nil
-        local control = nil
-        if not getDebug() and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier") then
-            -- ignore
-        elseif setting.type == "checkbox" then
-            label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISTickBox:new(0, 0, 100, entryHgt, "", nil, nil)
+        local label
+        local control
+        if setting.type == "checkbox" then
+            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+            control = ISTickBox:new(0, 0, ENTRY_HGT, ENTRY_HGT, "", self, self.onTickBoxSelected, setting.name)
             control:addOption("")
             control.selected[1] = setting.default
             if setting.tooltip then
-                control.tooltip = setting.tooltip
+                control.tooltip = tooltip
             end
         elseif setting.type == "entry" or setting.type == "string" then
             if getDebug() and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier") then
-                settingName = "*DEV* " .. setting.name
+                settingName = "*DEBUG* " .. setting.name
             end
-            label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISTextEntryBox:new(setting.text, 0, 0, 300, entryHgt)
-            control.font = UIFont.Medium
-            control.tooltip = tooltip
-            control:initialise()
-            control:instantiate()
-            control:setOnlyNumbers(setting.onlyNumbers or false)
+            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+            if setting.advancedCombo then
+                control = SandboxAdvancedControl:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, setting, tooltip)
+                control:initialise()
+                control:instantiate()
+            else
+                control = ISTextEntryBox:new(setting.text, 0, 0, CONTROL_WIDTH, ENTRY_HGT)
+                control.font = UIFont.Medium
+                control.tooltip = tooltip
+                control:initialise()
+                control:instantiate()
+                control:setOnlyNumbers(setting.onlyNumbers or false)
+            end
         elseif setting.type == "enum" then
-            label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISComboBox:new(0, 0, 200, entryHgt, self, self.onComboBoxSelected, setting.name)
+            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+            control = ISComboBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, self, self.onComboBoxSelected, setting.name)
             if tooltip then
                 control.tooltip = { defaultTooltip = tooltip }
             end
@@ -583,8 +744,8 @@ function SandboxOptionsScreen:createPanel(page)
                 end
             end
         elseif setting.type == "spinbox" then
-            label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISSpinBox:new(0, 0, 200, entryHgt, nil, nil)
+            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+            control = ISSpinBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, nil, nil)
             control:initialise()
             control:instantiate()
             if setting.name == "StartYear" then
@@ -594,15 +755,6 @@ function SandboxOptionsScreen:createPanel(page)
                 end
             elseif setting.name == "StartDay" then
             end
-        elseif setting.type == "text" then
-            label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISTextEntryBox:new(setting.text, 0, 0, 300, 4 + fontHgt * 4 + 4)
-            control.font = UIFont.Medium
-            control:initialise()
-            control:instantiate()
-            control:setMultipleLine(true)
-            control:setMaxLines(64)
-            control:addScrollBars()
         end
         if label and control then
             label.tooltip = tooltip
@@ -612,43 +764,61 @@ function SandboxOptionsScreen:createPanel(page)
             table.insert(panel.settingNames, setting.name)
             panel.labels[setting.name] = label
             panel.controls[setting.name] = control
+
+            if setting.title then
+                titles[#labels] = { title = getText("Sandbox_Title_" .. setting.title) }
+            end
         else
---			error "no label or control"
+            error "no label or control"
         end
     end
+
     local labelWidth = 0
     for _,label in ipairs(labels) do
         labelWidth = math.max(labelWidth, label:getWidth())
     end
-    local x = 24
-    local y = 12
+    --if labelWidth + CONTROL_WIDTH > panel.width - 13 - UI_BORDER_SPACING then
+    --    CONTROL_WIDTH = panel.width - labelWidth - 13 - UI_BORDER_SPACING*2
+    --end
+    local xOffset = (panel.width - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
+    local y = 11
+
     local addControlsTo = panel
-    if page.groupBox then
-        addControlsTo = panel.contents
-        y = math.max(12, panel.tickBox.height / 2)
-    end
     addControlsTo:setScrollChildren(true)
     addControlsTo:addScrollBars()
-    addControlsTo.vscroll.doSetStencil = true
+    addControlsTo.vscroll.doSetStencil = false
+
     for i=1,#labels do
+        if titles[i] then
+            local title = ISLabel:new(0, 0, entryLargeHgt, titles[i].title, 1, 1, 1, 1, UIFont.Large)
+            table.insert(panel.titles, title)
+            addControlsTo:addChild(title)
+            title:setX((panel:getWidth()-title:getWidth())/2)
+            title:setY(y + UI_BORDER_SPACING*2)
+
+            y = y + entryLargeHgt + 22
+            titles[i].yShift = y
+        end
+
         local label = labels[i]
         addControlsTo:addChild(label)
-        label:setX(x + labelWidth - label:getWidth())
+        label:setX(xOffset)
         label:setY(y)
-        y = y + math.max(label:getHeight(), controls[i]:getHeight()) + 6;
-    end
-    y = 12
-    if page.groupBox then
-        y = math.max(12, panel.tickBox.height / 2)
-    end
+        y = y + math.max(label:getHeight(), controls[i]:getHeight()) + UI_BORDER_SPACING;
+        end
+    y = 11
     for i=1,#controls do
+        if titles[i] then
+            y = titles[i].yShift
+        end
+
         local label = labels[i]
         local control = controls[i]
         addControlsTo:addChild(control)
-        control:setX(x + labelWidth + 16)
+        control:setX(panel:getWidth() - xOffset - control:getWidth())
         control:setY(y)
-        y = y + math.max(label:getHeight(), control:getHeight()) + 6
-        if control.isCombobox or control.isTickBox or (control.Type == "ISTextEntryBox") then
+        y = y + math.max(label:getHeight(), control:getHeight()) + UI_BORDER_SPACING
+        if control.isCombobox or control.isTickBox or (control.Type == "ISTextEntryBox") or (control.Type == "SandboxAdvancedControl") then
             panel:insertNewLineOfButtons(control)
         end
         addControlsTo:setScrollHeight(y)
@@ -661,70 +831,123 @@ function SandboxOptionsScreen:createPanel(page)
     return panel
 end
 
+function SandboxOptionsScreen:onTickBoxSelected(_, value, optionName)
+    if optionName == "ZombieMigrate" then
+        if value then
+            self.controls["ZombieConfig.RedistributeHours"]:setText("12.0")
+        else
+            self.controls["ZombieConfig.RedistributeHours"]:setText("0.0")
+        end
+    end
+end
+
+function SandboxOptionsScreen:onComboBoxSelected(combo, optionName)
+    if optionName == "Zombies" then
+        local Zombies = combo.selected
+        local popMult = ZombiePopulationMultiplierTable
+        self.controls["ZombieConfig.PopulationMultiplier"]:setText(popMult[Zombies])
+    end
+    if optionName == "ZombieRespawn" then
+        local respawn = combo.selected
+        local respawnHours = { "16.0", "72.0", "216.0", "0.0" }
+        self.controls["ZombieConfig.RespawnHours"]:setText(respawnHours[respawn])
+        local respawnUnseenHours = { "6.0", "16.0", "48.0", "0.0" }
+        self.controls["ZombieConfig.RespawnUnseenHours"]:setText(respawnUnseenHours[respawn])
+        local respawnMultipler = { "0.5", "0.1", "0.05", "0.0" }
+        self.controls["ZombieConfig.RespawnMultiplier"]:setText(respawnMultipler[respawn])
+    end
+end
+
 function SandboxOptionsScreen:settingsToUI(options)
-	for i=1,options:getNumOptions() do
-		local option = options:getOptionByIndex(i-1)
-		local control = self.controls[option:getName()]
-		if control then
-			if option:getType() == "boolean" then
-				control.selected[1] = option:getValue()
-			elseif option:getType() == "double" then
-				control:setText(option:getValueAsString())
-			elseif option:getType() == "enum" then
-				control.selected = option:getValue()
-			elseif option:getType() == "integer" then
-				control:setText(option:getValueAsString())
-			elseif option:getType() == "string" then
-				control:setText(option:getValue())
-			elseif option:getType() == "text" then
-				control:setText(option:getValue())
-			end
-		end
-	end
-	for _,groupBox in pairs(self.groupBox) do
-		groupBox:settingsToUI(options)
-	end
+    for i=1,options:getNumOptions() do
+        local option = options:getOptionByIndex(i-1)
+        local control = self.controls[option:getName()]
+        if control then
+            if option:getType() == "boolean" then
+                control.selected[1] = option:getValue()
+            elseif option:getType() == "double" then
+                control:setText(option:getValueAsString())
+            elseif option:getType() == "enum" then
+                control.selected = option:getValue()
+            elseif option:getType() == "integer" then
+                control:setText(option:getValueAsString())
+            elseif option:getType() == "string" then
+                control:setText(option:getValue())
+            elseif option:getType() == "text" then
+                control:setText(option:getValue())
+            end
+        end
+    end
 end
 
 function SandboxOptionsScreen:settingsFromUI(options)
-	for i=1,options:getNumOptions() do
-		local option = options:getOptionByIndex(i-1)
-		local control = self.controls[option:getName()]
-		if control then
-			if option:getType() == "boolean" then
-				option:setValue(control.selected[1] == true)
-			elseif option:getType() == "double" then
-				option:parse(control:getText())
-			elseif option:getType() == "enum" then
-				option:setValue(control.selected)
-			elseif option:getType() == "integer" then
-				option:parse(control:getText())
-			elseif option:getType() == "string" then
-				option:setValue(control:getText())
-			elseif option:getType() == "text" then
-				option:setValue(control:getText())
-			end
-		end
-	end
+    for i=1,options:getNumOptions() do
+        local option = options:getOptionByIndex(i-1)
+        local control = self.controls[option:getName()]
+        if control then
+            if option:getType() == "boolean" then
+                option:setValue(control.selected[1] == true)
+            elseif option:getType() == "double" then
+                option:parse(control:getText())
+            elseif option:getType() == "enum" then
+                option:setValue(control.selected)
+            elseif option:getType() == "integer" then
+                option:parse(control:getText())
+            elseif option:getType() == "string" then
+                option:setValue(control:getText())
+            elseif option:getType() == "text" then
+                option:setValue(control:getText())
+            end
+        end
+    end
 end
-        
+
 function SandboxOptionsScreen:onMouseDownListbox(item)
-	if item.page then
-		if self.currentPanel then
-			self:removeChild(self.currentPanel)
-			self.currentPanel = nil
-		end
-		if item.panel then
-			self:addChild(item.panel)
-			item.panel:setWidth(self.width - 24 - self.listbox:getRight() - 24)
-			item.panel:setHeight(self.listbox:getHeight())
-			self.currentPanel = item.panel
-		end
-	end
+    if item.page then
+        if self.currentPanel then
+            self:removeChild(self.currentPanel)
+            self.currentPanel = nil
+        end
+        if item.panel then
+            self:addChild(item.panel)
+            item.panel:setWidth(self.width - self.listbox:getRight() - UI_BORDER_SPACING*2-1)
+            item.panel:setHeight(self.listbox:getHeight())
+            self.currentPanel = item.panel
+            self:onPanelChange()
+        end
+    end
 end
 
 function SandboxOptionsScreen:onResolutionChange(oldw, oldh, neww, newh)
-    self.presetPanel:setX(self.width / 2 - self.presetPanel:getWidth() / 2)
+    if self.currentPanel then
+    self.presetPanel:setX((self.width - self.presetPanel:getWidth()) / 2)
+        self:onPanelChange()
+    end
+    self.searchEntry:setWidth(self.width - (UI_BORDER_SPACING+1)*2)
+end
+
+function SandboxOptionsScreen:onPanelChange()
+    local labelWidth = 0
+    self.currentPanel:setWidth(self.width - self.listbox:getRight() - UI_BORDER_SPACING*2 - 1)
+    local panelWidth = self.currentPanel.width
+    local name
+
+    for i=1,#self.currentPanel.settingNames do
+        name = self.currentPanel.settingNames[i]
+        labelWidth = math.max(labelWidth, self.currentPanel.labels[name].width)
+    end
+
+    local xOffset = (panelWidth - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
+
+    for i=1,#self.currentPanel.settingNames do
+        name = self.currentPanel.settingNames[i]
+        self.currentPanel.labels[name]:setX(xOffset)
+        self.currentPanel.controls[name]:setX(panelWidth - xOffset - self.currentPanel.controls[name].width)
+    end
+
+    for i=1,#self.currentPanel.titles do
+        self.currentPanel.titles[i]:setX((panelWidth-self.currentPanel.titles[i].width)/2)
+    end
 end
 
 function SandboxOptionsScreen:onPresetChange()
@@ -734,53 +957,37 @@ function SandboxOptionsScreen:onPresetChange()
     end
 end
 
-function SandboxOptionsScreen:getDefaultPreset()
-    if self.defaultPreset then
-        return self.defaultPreset
-    end
-    local newPreset = {};
-    newPreset.name = "Apocalypse";
-    newPreset.options = SandboxOptions:new()
-    return newPreset;
-end
+function SandboxOptionsScreen:addPresetToList(fileName, text, userDefined)
+    self.presetList:addOption(text)
 
-local function copyPreset(orig)
-    local copy = {}
-    copy.name = orig.name
-    copy.options = orig.options:newCopy()
-    return copy
+    local newPreset = {}
+    newPreset.name = fileName
+    newPreset.options = SandboxOptions.new()
+    if userDefined then
+        newPreset.options:loadPresetFile(newPreset.name)
+    else
+        newPreset.options:loadGameFile(newPreset.name)
+    end
+    table.insert(self.presets, newPreset)
 end
 
 function SandboxOptionsScreen:loadPresets()
     self.presetList.options = {};
     self.presets = {};
 
-    self.presetList:addOption(getText("UI_NewGame_Apocalypse"));
-    table.insert(self.presets, copyPreset(self:getApocalypsePreset()));
-    self.presetList:addOption(getText("UI_NewGame_Survivor"));
-    table.insert(self.presets, copyPreset(self:getSurvivorPreset()));
-    self.presetList:addOption(getText("UI_NewGame_Builder"));
-    table.insert(self.presets, copyPreset(self:getBuilderPreset()));
-
-    self.presetList:addOption(getText("UI_NewGame_InitialInfection"));
-    table.insert(self.presets, copyPreset(self:getBeginnerPreset()));
-    self.presetList:addOption(getText("UI_NewGame_OneWeekLater"));
-    table.insert(self.presets, copyPreset(self:getNormalPreset()));
-    self.presetList:addOption(getText("UI_NewGame_Survival"));
-    table.insert(self.presets, copyPreset(self:getSurvivalPreset()));
-    self.presetList:addOption(getText("UI_NewGame_SixMonths"));
-    table.insert(self.presets, copyPreset(self:getHardPreset()));
+    self:addPresetToList("Apocalypse", getText("UI_NewGame_Apocalypse"), false)
+    self:addPresetToList("Survivor", getText("UI_NewGame_Survivor"), false)
+    self:addPresetToList("Builder", getText("UI_NewGame_Builder"), false)
+    self:addPresetToList("Beginner", getText("UI_NewGame_InitialInfection"), false)
+    self:addPresetToList("FirstWeek", getText("UI_NewGame_OneWeekLater"), false)
+    self:addPresetToList("Survival", getText("UI_NewGame_Survival"), false)
+    self:addPresetToList("SixMonthsLater", getText("UI_NewGame_SixMonths"), false)
 
     local presets = getSandboxPresets();
     if presets then
         for i=1,presets:size() do
-            local newPreset = {}
-            newPreset.name = presets:get(i-1)
-            newPreset.userDefined = true
-            newPreset.options = SandboxOptions:new()
-            newPreset.options:loadPresetFile(newPreset.name)
-            table.insert(self.presets, newPreset)
-            self.presetList:addOption(newPreset.name);
+            local fileName = presets:get(i-1)
+            self:addPresetToList(fileName, fileName, true)
         end
     end
 
@@ -790,10 +997,11 @@ function SandboxOptionsScreen:loadPresets()
     self:onPresetChange()
 end
 
+
 function SandboxOptionsScreen:getNormalPreset()
     local newPreset = {};
     newPreset.name = "FirstWeek";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -801,7 +1009,7 @@ end
 function SandboxOptionsScreen:getSurvivalPreset()
     local newPreset = {};
     newPreset.name = "Survival";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -809,7 +1017,7 @@ end
 function SandboxOptionsScreen:getHardPreset()
     local newPreset = {};
     newPreset.name = "SixMonthsLater";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -817,7 +1025,7 @@ end
 function SandboxOptionsScreen:getBeginnerPreset()
     local newPreset = {};
     newPreset.name = "Beginner";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -825,7 +1033,7 @@ end
 function SandboxOptionsScreen:getApocalypsePreset()
     local newPreset = {};
     newPreset.name = "Apocalypse";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -833,7 +1041,7 @@ end
 function SandboxOptionsScreen:getSurvivorPreset()
     local newPreset = {};
     newPreset.name = "Survivor";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
@@ -841,49 +1049,18 @@ end
 function SandboxOptionsScreen:getBuilderPreset()
     local newPreset = {};
     newPreset.name = "Builder";
-    newPreset.options = SandboxOptions:new()
+    newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;
 end
 
-function SandboxOptionsScreen:subPanelPreRender()
-    self:setStencilRect(0,0,self:getWidth(),self:getHeight());
-
-    ISPanel.prerender(self);
-end
-
-function SandboxOptionsScreen:subPanelRender()
-    ISPanel.render(self);
-    self:clearStencilRect();
-end
-
 function SandboxOptionsScreen:prerender()
-SandboxOptionsScreen.instance = self
---[[
-    if self.properTickbox.selected[1] == true then
-        self.speed.selected = 2;
-        self.strength.selected = 2;
-        self.tough.selected = 2;
-        self.decomp.selected = 1;
-        self.trans.selected = 1;
-        self.reanim.selected = 3;
-        self.zombtime.selected = 5;
-        self.sight.selected = 2;
-        self.memory.selected = 2;
-        self.doors.selected = 2;
-        self.hearing.selected = 2;
-        self.zombDisPanel:setVisible(true);
-        self.zombPanel.background = false
-    else
-        self.zombDisPanel:setVisible(false);
-        self.zombPanel.background = true
-    end
---]]
+    SandboxOptionsScreen.instance = self
+
     self:syncStartDay()
 
---    self.zombDisPanel:bringToTop();
     ISPanelJoypad.prerender(self);
-    self:drawTextCentre(getText("UI_optionscreen_SandboxOptions"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title);
+    self:drawTextCentre(getText("UI_optionscreen_SandboxOptions"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
 
     local deleteOK = false
     if self.presets[self.presetList.selected] then
@@ -914,6 +1091,9 @@ function SandboxOptionsScreen:render()
         self:drawRectBorder(ui:getX() - 4, ui:getY() - 4, ui:getWidth() + 4 + 3, ui:getHeight() + 4 + 3, 0.4, 0.2, 1.0, 1.0)
         self:drawRectBorder(ui:getX() - 3, ui:getY() - 3, ui:getWidth() + 3 + 2, ui:getHeight() + 4 + 2, 0.4, 0.2, 1.0, 1.0)
     end
+    if self.searchEntry.isJoypad then
+        self:drawTextureScaled(Joypad.Texture.YButton, self.width - UI_BORDER_SPACING-JOYPAD_TEX_SIZE, self.searchEntry:getY() + (self.searchEntry.height-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1, 1, 1, 1)
+    end
 end
 
 function SandboxOptionsScreen:setSandboxVars()
@@ -943,6 +1123,8 @@ function SandboxOptionsScreen:onOptionMouseDown(button, x, y)
         MainScreen.instance.charCreationProfession.previousScreen = "SandboxOptionsScreen"
         MainScreen.instance.charCreationProfession:setVisible(true, self.joyfocus);
         self:setSandboxVars();
+        local preset = self.presets[self.presetList.selected].name or "Apocalypse"
+        getWorld():setPreset(preset);
     end
     if button.internal == "SAVEPRESET" then
         local name = "New"
@@ -974,7 +1156,7 @@ function SandboxOptionsScreen:onOptionMouseDown(button, x, y)
             local screenW = getCore():getScreenWidth()
             local screenH = getCore():getScreenHeight()
             local modal = ISModalDialog:new((screenW - 230) / 2, (screenH - 120) / 2, 230, 120,
-                "Overwrite media/lua/shared/Sandbox/" .. preset.name .. ".lua?", true, self, self.onSaveDeveloperPreset);
+                    "Overwrite media/lua/shared/Sandbox/" .. preset.name .. ".lua?", true, self, self.onSaveDeveloperPreset);
             modal.backgroundColor.a = 0.9
             modal:initialise()
             modal:setCapture(true)
@@ -999,7 +1181,7 @@ function SandboxOptionsScreen:onSavePreset(button, joypadData)
         local name = button.parent.entry:getText()
         if SandboxOptions.isValidPresetName(name) then
             modal:destroy()
-            local options = SandboxOptions:new()
+            local options = SandboxOptions.new()
             self:settingsFromUI(options)
             options:savePresetFile(name)
             self:loadPresets()
@@ -1041,7 +1223,7 @@ function SandboxOptionsScreen:deletePresetStep2(button, joypadData)
         updateJoypadFocus(joypadData)
     end
     if button.internal == "NO" then return end
-    
+
     local preset = self.presets[self.presetList.selected]
     if preset and preset.userDefined then
         deleteSandboxPreset(preset.name)
@@ -1067,90 +1249,6 @@ function SandboxOptionsScreen:onSaveDeveloperPreset(button, joypadData)
     end
 end
 
-function SandboxOptionsScreen:onComboBoxSelected(combo, optionName)
-    if optionName == "Zombies" then
-        local Zombies = combo.selected
-        local popMult = { "4.0", "3.0", "2.0", "1.0", "0.35", "0.0" }
-        self.controls["ZombieConfig.PopulationMultiplier"]:setText(popMult[Zombies])
-    end
-end
-
-function SandboxOptionsScreen:onGroupBox(index, selected, groupBoxName)
-	local groupBox = self.groupBox[groupBoxName]
-	local options = getSandboxOptions()
-	if selected then
-		for _,settingName in ipairs(groupBox.panel.settingNames) do
-			local option = options:getOptionByName(settingName)
-			local control = groupBox.panel.controls[settingName]
-			if control.Type == "ISComboBox" then
-				control.selected = option:getDefaultValue()
-			elseif control.Type == "ISTickBox" then
-				control.selected[1] = option:getDefaultValue()
-			else
-				error "unhandled control type"
-			end
-		end
-		groupBox.cover:setVisible(true)
-	else
-		groupBox.cover:setVisible(false)
-	end
-end
-
-SandboxOptionsScreen.load = function()
-	SandboxVars.Temperature = getSandboxOptions():getTemperatureModifier();
-	SandboxVars.Rain = getSandboxOptions():getRainModifier();
-	SandboxVars.WaterShutModifier = getSandboxOptions():getWaterShutModifier();
-	SandboxVars.ElecShutModifier = getSandboxOptions():getElecShutModifier();
-	SandboxVars.FoodLoot = getSandboxOptions():getFoodLootModifier();
-	if SandboxVars.FoodLoot == 1 then
-		ZomboidGlobals.FoodLootModifier = 0.0 -- none
-	elseif SandboxVars.FoodLoot == 2 then
-		ZomboidGlobals.FoodLootModifier = 0.05 -- incredibly rare
-	elseif SandboxVars.FoodLoot == 3 then
-		ZomboidGlobals.FoodLootModifier = 0.2 -- extremely rare
-	elseif SandboxVars.FoodLoot == 4 then
-		ZomboidGlobals.FoodLootModifier = 0.6 -- rare
-	elseif SandboxVars.FoodLoot == 5 then
-		ZomboidGlobals.FoodLootModifier = 1.0 -- normal
-	elseif SandboxVars.FoodLoot == 6 then
-		ZomboidGlobals.FoodLootModifier = 2.0 -- common
-	elseif SandboxVars.FoodLoot == 7 then
-		ZomboidGlobals.FoodLootModifier = 3.0 -- abundant
-    end
-    SandboxVars.WeaponLoot = getSandboxOptions():getWeaponLootModifier();
-	if SandboxVars.WeaponLoot == 1 then
-		ZomboidGlobals.WeaponLootModifier = 0.0 -- none
-	elseif SandboxVars.WeaponLoot == 2 then
-		ZomboidGlobals.WeaponLootModifier = 0.05 -- incredibly rare
-    elseif SandboxVars.WeaponLoot == 3 then
-        ZomboidGlobals.WeaponLootModifier = 0.2 -- extremely rare
-    elseif SandboxVars.WeaponLoot == 4 then
-        ZomboidGlobals.WeaponLootModifier = 0.6 -- rare
-    elseif SandboxVars.WeaponLoot == 5 then
-        ZomboidGlobals.WeaponLootModifier = 1.0 -- normal
-    elseif SandboxVars.WeaponLoot == 6 then
-        ZomboidGlobals.WeaponLootModifier = 2.0 -- common
-    elseif SandboxVars.WeaponLoot == 7 then
-        ZomboidGlobals.WeaponLootModifier = 3.0 -- abundant
-    end
-    SandboxVars.OtherLoot = getSandboxOptions():getOtherLootModifier();
-	if SandboxVars.OtherLoot == 1 then
-		ZomboidGlobals.OtherLootModifier = 0.0 -- none
-	elseif SandboxVars.OtherLoot == 2 then
-		ZomboidGlobals.OtherLootModifier = 0.05 -- incredibly rare
-    elseif SandboxVars.OtherLoot == 3 then
-        ZomboidGlobals.OtherLootModifier = 0.2 -- extremely rare
-    elseif SandboxVars.OtherLoot == 4 then
-        ZomboidGlobals.OtherLootModifier = 0.6 -- rare
-    elseif SandboxVars.OtherLoot == 5 then
-        ZomboidGlobals.OtherLootModifier = 1.0 -- normal
-    elseif SandboxVars.OtherLoot == 6 then
-        ZomboidGlobals.OtherLootModifier = 2.0 -- common
-    elseif SandboxVars.OtherLoot == 7 then
-        ZomboidGlobals.OtherLootModifier = 3.0 -- abundant
-    end
-end
-
 function SandboxOptionsScreen:setVisible(visible, joypadData)
     ISPanelJoypad.setVisible(self, visible, joypadData)
     if not visible then
@@ -1168,6 +1266,8 @@ function SandboxOptionsScreen:onGainJoypadFocus(joypadData)
         joypadData.focus = self.listbox
         updateJoypadFocus(joypadData)
     end
+    self.searchEntry:setWidth(self.width - UI_BORDER_SPACING*3 - JOYPAD_TEX_SIZE - 1)
+    self.searchEntry.isJoypad = true
 end
 
 function SandboxOptionsScreen:onLoseJoypadFocus(joypadData)
@@ -1183,8 +1283,9 @@ function SandboxOptionsScreen:onJoypadDirUp(joypadData)
 end
 
 function SandboxOptionsScreen:onJoypadDirLeft(joypadData)
-    joypadData.focus = self.presetPanel
+    joypadData.focus = self.advancedCheckBox
     updateJoypadFocus(joypadData)
+    self.advancedCheckBox:setJoypadFocused(true, joypadData)
 end
 
 function SandboxOptionsScreen:onJoypadDirRight(joypadData)
@@ -1192,25 +1293,26 @@ function SandboxOptionsScreen:onJoypadDirRight(joypadData)
     updateJoypadFocus(joypadData)
 end
 
-function SandboxOptionsScreen:new(x, y, width, height)
-    local o = {}
-    o = ISPanelJoypad:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
-    o.x = x;
-    o.y = y;
-    o.backgroundColor = {r=0, g=0, b=0, a=0.5};
-    o.borderColor = {r=1, g=1, b=1, a=0.2};
-    o.width = width;
-    o.height = height;
-    o.anchorLeft = true;
-    o.anchorRight = false;
-    o.anchorTop = true;
-    o.anchorBottom = false;
-    o.addY = 0;
-    o.nonDefaultOptions = SandboxOptions:new();
-    SandboxOptionsScreen.instance = o;
-    return o
+function SandboxOptionsScreen:onJoypadDown(button, joypadData)
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
+    if button == Joypad.YButton then
+        joypadData.focus = self.searchEntry
+        updateJoypadFocus(joypadData)
+    end
 end
 
---Events.OnGameStart.Add(SandboxOptionsScreen.load);
+function SandboxOptionsScreen:new(x, y, width, height)
+    local o = {}
+    o = ISPanelJoypad:new(x, y, width, height)
+    setmetatable(o, self)
+    self.__index = self
+    o.x = x
+    o.y = y
+    o.backgroundColor = {r=0, g=0, b=0, a=0.8};
+    o.borderColor = {r=1, g=1, b=1, a=0.2};
+    o.width = width
+    o.height = height
+    o.nonDefaultOptions = SandboxOptions.new()
+    SandboxOptionsScreen.instance = o
+    return o
+end

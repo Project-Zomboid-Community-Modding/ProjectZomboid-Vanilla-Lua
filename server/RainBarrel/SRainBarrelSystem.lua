@@ -30,7 +30,8 @@ function SRainBarrelSystem:newLuaObject(globalObject)
 end
 
 function SRainBarrelSystem:isValidIsoObject(isoObject)
-	return instanceof(isoObject, "IsoThumpable") and isoObject:getName() == "Rain Collector Barrel"
+	return false;
+	--return instanceof(isoObject, "IsoThumpable") and isoObject:getProperties() and (isoObject:getProperties():Val("CustomName") == "Rain Collector Barrel")
 end
 
 function SRainBarrelSystem:convertOldModData()
@@ -39,7 +40,7 @@ function SRainBarrelSystem:convertOldModData()
 	
 	-- Global rainbarrel data was never saved anywhere.
 	-- Rainbarrels wouldn't update unless they had been loaded in a session.
---	local modData = GameTime:getInstance():getModData()
+--	local modData = GameTime.getInstance():getModData()
 end
 
 function SRainBarrelSystem:checkRain()

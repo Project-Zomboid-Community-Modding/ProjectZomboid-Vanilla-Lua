@@ -6,6 +6,10 @@
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 ClimateColorsDebug = ISDebugSubPanelBase:derive("ClimateColorsDebug");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 function ClimateColorsDebug:initialise()
     ISPanel.initialise(self);
@@ -21,51 +25,48 @@ function ClimateColorsDebug:createChildren()
 
     local v, obj;
 
-    local x,y,w = 10,10,self.width-30;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH - 1;
 
     self:initHorzBars(x,w);
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"Climate Colors", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_ClimateColors_Title"), UIFont.Medium);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+UI_BORDER_SPACING)+UI_BORDER_SPACING+1;
 
     local c = clim:getColNightNoMoon();
-    y = self:addColorInfo(x, y, w, c, "night_no_moon");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_night_no_moon"));
     c = clim:getColNightMoon();
-    y = self:addColorInfo(x, y, w, c, "night_moon");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_night_moon"));
     c = clim:getColFog();
-    y = self:addColorInfo(x, y, w, c, "fog");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_fog"));
     c = clim:getColFogLegacy();
-    y = self:addColorInfo(x, y, w, c, "fog_legacy");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_fog_legacy"));
     c = clim:getColFogNew();
-    y = self:addColorInfo(x, y, w, c, "fog_new");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_fog_new"));
     c = clim:getFogTintStorm();
-    y = self:addColorInfo(x, y, w, c, "fog_tint_storm");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_fog_tint_storm"));
     c = clim:getFogTintTropical();
-    y = self:addColorInfo(x, y, w, c, "fog_tint_tropical");
-
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_fog_tint_tropical"));
 
     local wp = clim:getWeatherPeriod();
 
     c = wp:getCloudColorReddish();
-    y = self:addColorInfo(x, y, w, c, "weather_reddish");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_reddish"));
     c = wp:getCloudColorGreenish();
-    y = self:addColorInfo(x, y, w, c, "weather_greenish");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_greenish"));
     c = wp:getCloudColorBlueish();
-    y = self:addColorInfo(x, y, w, c, "weather_blueish");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_blueish"));
     c = wp:getCloudColorPurplish();
-    y = self:addColorInfo(x, y, w, c, "weather_purplish");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_purplish"));
     c = wp:getCloudColorTropical();
-    y = self:addColorInfo(x, y, w, c, "weather_tropical");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_tropical"));
     c = wp:getCloudColorBlizzard();
-    y = self:addColorInfo(x, y, w, c, "weather_blizzard");
+    y = self:addColorInfo(x, y, w, c, getText("IGUI_ClimateColors_weather_blizzard"));
 
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
 
-    local segment_txt = {"dawn","day","dusk"};
-    local season_txt = {"summer","fall","winter","spring"};
-    local temp_txt = {"bright","normal","cloudy"};
+    local segment_txt = {getText("IGUI_ClimateColors_segment_dawn"), getText("IGUI_ClimateColors_segment_day"), getText("IGUI_ClimateColors_segment_dusk")};
+    local season_txt = {getText("IGUI_ClimateColors_season_summer"), getText("IGUI_ClimateColors_season_fall"), getText("IGUI_ClimateColors_season_winter"), getText("IGUI_ClimateColors_season_spring")};
+    local temp_txt = {getText("IGUI_ClimateColors_temp_bright"), getText("IGUI_ClimateColors_temp_normal"), getText("IGUI_ClimateColors_temp_cloudy")};
     local name = "";
     for segment = 1,3 do
         local y2,obj2 = ISDebugUtils.addLabel(self,segment_txt[segment],x+(w/2),y,segment_txt[segment], UIFont.Medium, true);
@@ -74,22 +75,21 @@ function ClimateColorsDebug:createChildren()
         for season = 1,4 do
             for temp = 1,3 do
                 if temp==1 or temp==3 or (temp==2 and segment==3) then
-                    name = segment_txt[segment].."_"..season_txt[season].."_"..temp_txt[temp];
+                    name = segment_txt[segment]..", "..season_txt[season]..", "..temp_txt[temp];
                     c = clim:getSeasonColor(segment-1, temp-1, season-1);
                     y = self:addColorInfo(x, y, w, c, name, segment, temp, season);
                 end
             end
         end
-        y = ISDebugUtils.addHorzBar(self,y+5)+5;
     end
 
-    y,obj = ISDebugUtils.addLabel(self,{},x+(w/2),y,"Save", UIFont.Medium, true);
+    y,obj = ISDebugUtils.addLabel(self,{},x+(w/2),y,getText("IGUI_DebugMenu_Save"), UIFont.Medium, true);
     obj.center = true;
 
-    y = y+5;
-    y,obj = ISDebugUtils.addButton(self, { id = "save" }, x, y, w, 16, "WRITE COLOR CONFIG FILE TO USER DIR", ClimateColorsDebug.onButtonWriteConfig);
+    y = y+UI_BORDER_SPACING;
+    y,obj = ISDebugUtils.addButton(self, { id = "save" }, x, y, w, BUTTON_HGT, getText("IGUI_ClimateColors_save"), ClimateColorsDebug.onButtonWriteConfig);
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+UI_BORDER_SPACING+1);
 end
 
 function ClimateColorsDebug:addColorInfo(_x, _y, _w, _col, _name, _daySegment, _temp, _season)
@@ -106,39 +106,43 @@ function ClimateColorsDebug:addColorInfo(_x, _y, _w, _col, _name, _daySegment, _
 end
 
 function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
-    local y2,obj2 = ISDebugUtils.addLabel(self,_info,_x,_y,_info.name, UIFont.Small, true);
+    local offset = (BUTTON_HGT - FONT_HGT_SMALL)/2
+    local barMod = UI_BORDER_SPACING;
+
+    local y2,obj2 = ISDebugUtils.addLabel(self,_info,_x,_y+offset,_info.name, UIFont.Small, true);
     --obj2.center = true;
 
+    local boxH = BUTTON_HGT;
     local ce = _info.colorInfo:getExterior();
     local ci = _info.colorInfo:getInterior();
-    _y = y2+5;
-    _y = ISDebugUtils.addHorzBar(self,_y+3)+3;
+    _y = y2+offset;
+    _y = ISDebugUtils.addHorzBar(self,_y+barMod)+barMod+1;
 
-    local boxW = math.max(50, getTextManager():MeasureStringX(UIFont.Small, "EDIT") + 10);
-    local curX = _x+5;
-    local colorbox = ISPanel:new(curX,_y,boxW,15);
+    local boxW = math.max(50, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimateColors_Edit")) + UI_BORDER_SPACING);
+    local curX = _x;
+    local colorbox = ISPanel:new(curX,_y,(boxW),boxH);
     colorbox:initialise();
     colorbox.backgroundColor = {r=ce:getRedFloat(),g=ce:getGreenFloat(),b=ce:getBlueFloat(),a=1.0};
     self:addChild(colorbox);
     _info.colorbox_ext = colorbox;
 
-    curX = curX+boxW+5;
-    colorbox = ISPanel:new(curX,_y,boxW,15);
+    curX = curX+(boxW)+UI_BORDER_SPACING;
+    colorbox = ISPanel:new(curX,_y,(boxW),boxH);
     colorbox:initialise();
     colorbox.backgroundColor = {r=ce:getAlphaFloat(),g=ce:getAlphaFloat(),b=ce:getAlphaFloat(),a=1.0};
     self:addChild(colorbox);
     _info.colorboxAlpha_ext = colorbox;
 
-    curX = curX+boxW+5;
-    local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "EDIT", ClimateColorsDebug.onButtonClick);
+    curX = curX+(boxW)+UI_BORDER_SPACING;
+    local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, boxH*2+UI_BORDER_SPACING, getText("IGUI_ClimateColors_Edit"), ClimateColorsDebug.onButtonClick);
     _info.buttonEdit_ext = obj3;
 
     --curX = curX+boxW+5;
     --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "APPLY", ClimateColorsDebug.onButtonClick);
     --_info.buttonApply_ext = obj3;
 
-    curX = curX+boxW+5;
-    local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,"exterior", UIFont.Small, true);
+    curX = curX+boxW+UI_BORDER_SPACING;
+    local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,getText("IGUI_ClimateColors_Ex"), UIFont.Small, true);
     _info.text_ext = obj2;
 
     local r = tostring(ISDebugUtils.roundNum(ce:getRedFloat(),2));
@@ -149,32 +153,32 @@ function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
     local y2,obj2 = ISDebugUtils.addLabel(self,_info,_x+_w,_y,str, UIFont.Small, false);
     _info.textColVal_ext = obj2;
 
-    _y = math.max(colorbox:getBottom(), y2) + 3;
+    _y = math.max(colorbox:getBottom(), y2) + UI_BORDER_SPACING;
     -------------------------------------------------------------------------------------
-    local curX = _x+5;
-    local colorbox = ISPanel:new(curX,_y,boxW,15);
+    local curX = _x;
+    local colorbox = ISPanel:new(curX,_y,(boxW),boxH);
     colorbox:initialise();
     colorbox.backgroundColor = {r=ci:getRedFloat(),g=ci:getGreenFloat(),b=ci:getBlueFloat(),a=1.0};
     self:addChild(colorbox);
     _info.colorbox_int = colorbox;
 
-    curX = curX+boxW+5;
-    colorbox = ISPanel:new(curX,_y,boxW,15);
+    curX = curX+(boxW)+UI_BORDER_SPACING;
+    colorbox = ISPanel:new(curX,_y,(boxW),boxH);
     colorbox:initialise();
     colorbox.backgroundColor = {r=ci:getAlphaFloat(),g=ci:getAlphaFloat(),b=ci:getAlphaFloat(),a=1.0};
     self:addChild(colorbox);
     _info.colorboxAlpha_int = colorbox;
 
-    curX = curX+boxW+5;
-    local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "EDIT", ClimateColorsDebug.onButtonClick);
+    curX = curX+boxW+UI_BORDER_SPACING;
+    --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, boxH, "EDIT", ClimateColorsDebug.onButtonClick);
     _info.buttonEdit_int = obj3;
 
     --curX = curX+boxW+5;
     --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "APPLY", ClimateColorsDebug.onButtonClick);
     --_info.buttonApply_int = obj3;
 
-    curX = curX+boxW+5;
-    local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,"interior", UIFont.Small, true);
+    curX = curX+boxW+UI_BORDER_SPACING;
+    local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,getText("IGUI_ClimateColors_In"), UIFont.Small, true);
     _info.text_int = obj2;
 
     local r = tostring(ISDebugUtils.roundNum(ci:getRedFloat(),2));
@@ -187,7 +191,7 @@ function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
 
     _y = math.max(colorbox:getBottom(), y2);
 
-    _y = ISDebugUtils.addHorzBar(self,_y+3)+3;
+    _y = ISDebugUtils.addHorzBar(self,_y+barMod)+barMod+1;
     return _y;
 end
 

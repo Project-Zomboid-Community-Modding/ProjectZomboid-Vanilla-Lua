@@ -92,9 +92,9 @@ function ISAdminMessage:onClick(button)
         getPlayer():setX(self.px);
         getPlayer():setY(self.py);
         getPlayer():setZ(self.pz);
-        getPlayer():setLx(self.px);
-        getPlayer():setLy(self.py);
-        getPlayer():setLz(self.pz);
+        getPlayer():setLastX(self.px);
+        getPlayer():setLastY(self.py);
+        getPlayer():setLastZ(self.pz);
     end
 end
 

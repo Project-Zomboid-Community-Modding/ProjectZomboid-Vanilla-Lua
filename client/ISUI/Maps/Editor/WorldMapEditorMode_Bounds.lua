@@ -6,6 +6,11 @@ require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
+local CELL_SIZE_SQUARES = getCellSizeInSquares()
+local CHUNK_SIZE_SQUARES = getChunkSizeInSquares()
 
 WorldMapEditorMode_Bounds = WorldMapEditorMode:derive("WorldMapEditorMode_Bounds")
 
@@ -14,34 +19,39 @@ WorldMapEditorMode_Bounds = WorldMapEditorMode:derive("WorldMapEditorMode_Bounds
 local function DXY() return 1 end
 
 function WorldMapEditorMode_Bounds:createChildren()
-	local buttonHgt = FONT_HGT_MEDIUM + 8
 
-	local label = ISLabel:new(10, 80, FONT_HGT_MEDIUM, "x,y,x,y", 1, 1, 1, 1.0, UIFont.Medium, true)
+	local label = ISLabel:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, FONT_HGT_MEDIUM, "x, y, x, y", 1, 1, 1, 1.0, UIFont.Medium, true)
 	label:setColor(0, 0, 0)
 	self:addChild(label)
 	self.labelBounds = label
 
-	local button = ISButton:new(10, label:getBottom() + 10, 80, buttonHgt, "DRAW NEW BOUNDS", self, self.onDrawBounds)
+	local buttonPadding = UI_BORDER_SPACING*2
+	local button = ISButton:new(UI_BORDER_SPACING, label:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_DrawNewBounds"), self, self.onDrawBounds)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "RESET", self, self.onReset)
+	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_Reset"), self, self.onReset)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
 	self.snapButtons = {}
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "SNAP TO CELL", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapCell"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "cell"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.cell = button
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "SNAP TO CHUNK", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapChunk"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "chunk"
 --	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.chunk = button
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "SNAP TO SQUARE", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapSquare"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "square"
 	button.textColor.a = 0.5
 	self:addChild(button)
@@ -49,7 +59,7 @@ function WorldMapEditorMode_Bounds:createChildren()
 end
 
 function WorldMapEditorMode_Bounds:render()
-	self.labelBounds:setName(string.format("%d,%d,%d,%d", self.resizer.x1, self.resizer.y1, self.resizer.x2 - DXY(), self.resizer.y2 - DXY()))
+	self.labelBounds:setName(string.format("%d, %d, %d, %d", self.resizer.x1, self.resizer.y1, self.resizer.x2 - DXY(), self.resizer.y2 - DXY()))
 	self.resizer:render()
 
 	if self.mode == "StartDrawingBounds" then
@@ -195,10 +205,10 @@ end
 
 function WorldMapEditorMode_Bounds:snap(xy)
 	if self.snapMode == "cell" then
-		return round(xy / 300) * 300
+		return round(xy / CELL_SIZE_SQUARES) * CELL_SIZE_SQUARES
 	end
 	if self.snapMode == "chunk" then
-		return round(xy / 10) * 10
+		return round(xy / CHUNK_SIZE_SQUARES) * CHUNK_SIZE_SQUARES
 	end
 	return round(xy)
 end

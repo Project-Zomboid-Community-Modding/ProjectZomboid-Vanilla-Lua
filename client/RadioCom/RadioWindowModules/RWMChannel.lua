@@ -7,6 +7,8 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 RWMChannel = RWMPanel:derive("RWMChannel");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
 
 function RWMChannel:initialise()
     ISPanel.initialise(self)
@@ -18,23 +20,22 @@ function RWMChannel:createChildren()
     self:addChild(self.editPresetPanel);
 
     local y = 0;
-    self.comboBox = ISComboBox:new (10, 5, self.width-20, FONT_HGT_SMALL + 2 * 2, self, RWMChannel.comboChange)
+    self.comboBox = ISComboBox:new (UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.width-UI_BORDER_SPACING*2-2, BUTTON_HGT, self, RWMChannel.comboChange)
     self.comboBox:initialise();
     self:addChild(self.comboBox);
 
     y = self.comboBox:getY() + self.comboBox:getHeight();
 
-    local btnHgt = FONT_HGT_SMALL + 1 * 2
-
-    self.tuneInButton = ISButton:new(10, y+5, (self.width-30)/2,btnHgt,getText("IGUI_RadioTuneIn"),self, RWMChannel.doTuneInButton);
+    self.tuneInButton = ISButton:new(UI_BORDER_SPACING+1, y+UI_BORDER_SPACING, (self.width-UI_BORDER_SPACING*3-2)/2,BUTTON_HGT,getText("IGUI_RadioTuneIn"),self, RWMChannel.doTuneInButton);
     self.tuneInButton:initialise();
     self.tuneInButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.tuneInButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
     self.tuneInButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+    self.tuneInButton:setSound("activate", nil)
     self:addChild(self.tuneInButton);
 
     local x = self.tuneInButton:getX() + self.tuneInButton:getWidth();
-    self.addPresetButton = ISButton:new(x+10, y+5, (self.width-30)/2,btnHgt,getText("IGUI_RadioAddPreset"),self, RWMChannel.doAddPresetButton);
+    self.addPresetButton = ISButton:new(x+UI_BORDER_SPACING, y+UI_BORDER_SPACING, (self.width-UI_BORDER_SPACING*3-2)/2,BUTTON_HGT,getText("IGUI_RadioAddPreset"),self, RWMChannel.doAddPresetButton);
     self.addPresetButton:initialise();
     self.addPresetButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.addPresetButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
@@ -43,7 +44,7 @@ function RWMChannel:createChildren()
 
     y = self.tuneInButton:getY() + self.tuneInButton:getHeight();
 
-    self.editPresetButton = ISButton:new(10, y+5, (self.width-30)/2,btnHgt,getText("IGUI_RadioEditPreset"),self, RWMChannel.doEditPresetButton);
+    self.editPresetButton = ISButton:new(UI_BORDER_SPACING+1, y+UI_BORDER_SPACING, (self.width-UI_BORDER_SPACING*3-2)/2,BUTTON_HGT,getText("IGUI_RadioEditPreset"),self, RWMChannel.doEditPresetButton);
     self.editPresetButton:initialise();
     self.editPresetButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.editPresetButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
@@ -52,7 +53,7 @@ function RWMChannel:createChildren()
 
     x = self.editPresetButton:getX() + self.editPresetButton:getWidth();
 
-    self.deletePresetButton = ISButton:new(x+10, y+5, (self.width-30)/2,btnHgt,getText("IGUI_RadioRemovePreset"),self, RWMChannel.doDeletePresetButton);
+    self.deletePresetButton = ISButton:new(x+UI_BORDER_SPACING, y+UI_BORDER_SPACING, (self.width-UI_BORDER_SPACING*3-2)/2,BUTTON_HGT,getText("IGUI_RadioRemovePreset"),self, RWMChannel.doDeletePresetButton);
     self.deletePresetButton:initialise();
     self.deletePresetButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.deletePresetButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
@@ -75,7 +76,7 @@ function RWMChannel:setPanelMode(_edit, _ignoreParent)
     if _edit then
         self:setHeight( self.editPresetPanel:getHeight()); --a > b and a or b);
     else
-        self:setHeight(self.editPresetButton:getY()+self.editPresetButton:getHeight()+5);
+        self:setHeight(self.editPresetButton:getY()+self.editPresetButton:getHeight()+UI_BORDER_SPACING+1);
     end
 
     if self.parent and (not _ignoreParent) then
@@ -225,7 +226,7 @@ function RWMChannel:update()
     ISPanel.update(self);
 
     if self.comboBox and self.comboBox.expanded == true and self.lastModeExpanded == false then
-        local a,b = self.comboBox:getY()+self.comboBox:getHeight()+5, self.editPresetButton:getY()+self.editPresetButton:getHeight()+5;
+        local a,b = self.comboBox:getY()+self.comboBox:getHeight()+UI_BORDER_SPACING+1, self.editPresetButton:getY()+self.editPresetButton:getHeight()+UI_BORDER_SPACING+1;
         self:setHeight( a > b and a or b);
         --self:setHeight(self.comboBox:getY()+self.comboBox:getHeight()+5);
         if self.parent then

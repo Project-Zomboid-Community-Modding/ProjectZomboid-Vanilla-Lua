@@ -6,6 +6,8 @@
 
 require "DebugUIs/DebugMenu/Statistic/StatisticChart"
 
+local UI_BORDER_SPACING = 10
+
 StatisticChartDiskOperations = StatisticChart:derive("StatisticChartDiskOperations");
 StatisticChartDiskOperations.instance = nil;
 StatisticChartDiskOperations.shiftDown = 0;
@@ -30,7 +32,7 @@ function StatisticChartDiskOperations.OnOpenPanel()
     end
     StatisticChartDiskOperations.instance:addToUIManager();
     StatisticChartDiskOperations.instance:setVisible(true);
-	StatisticChartDiskOperations.instance.title = "Statistic Chart Disk Operations"
+	StatisticChartDiskOperations.instance.title = getText("IGUI_StatisticChart_DiskOperations")
     return StatisticChartDiskOperations.instance;
 end
 
@@ -44,20 +46,23 @@ Events.OnServerStatisticReceived.Add(StatisticChartDiskOperations.OnServerStatis
 
 function StatisticChartDiskOperations:createChildren()
     StatisticChart.createChildren(self);
-	
-	local labelWidth = 250
+
+    local labelWidth = math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Load")..": "),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Save")..": ")
+    )
 	x = self.historyM1:getX()
 	y = self.historyM1:getY()+self.historyM1:getHeight()
-	y = y+8;
-    y = self:addLabelValue(x+5, y, labelWidth, "value","load","load:",0);
-	y = self:addLabelValue(x+5, y, labelWidth, "value","save","save:",0);
+    y = self:addLabelValue(x, y, labelWidth, "value","load",getText("IGUI_DebugMenu_Load")..":",0);
+	y = self:addLabelValue(x, y, labelWidth, "value","save",getText("IGUI_DebugMenu_Save")..":",0);
+    self:setHeight(y+UI_BORDER_SPACING)
 end
 
 function StatisticChartDiskOperations:initVariables()
 	StatisticChart.initVariables(self);
 	
-	self:addVarInfo("load","load",-1,100,"loadCellFromDisk");
-	self:addVarInfo("save","save",-1,100,"saveCellToDisk");
+	self:addVarInfo("load",getText("IGUI_DebugMenu_Load"),-1,100,"loadCellFromDisk");
+	self:addVarInfo("save",getText("IGUI_DebugMenu_Save"),-1,100,"saveCellToDisk");
 end
 
 function StatisticChartDiskOperations:updateValues()

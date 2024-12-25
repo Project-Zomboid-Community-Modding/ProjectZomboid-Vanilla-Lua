@@ -69,6 +69,51 @@ function ConnectToServer:create()
 	self.connectLabel.center = true
 	self:addChild(self.connectLabel)
 
+	self.googleAuthPopup = ISPanel:new(self.width / 2 - 100, self.connectLabel:getBottom()+25, 200, 200);
+    self.googleAuthPopup.internal = "googleAuthPopup";
+    self.googleAuthPopup:initialise();
+    self.googleAuthPopup:instantiate();
+    self.googleAuthPopup.choicesColor = {r=1, g=1, b=1, a=1}
+    self.googleAuthPopup:setAnchorLeft(false);
+    self.googleAuthPopup:setAnchorRight(true);
+    self.googleAuthPopup:setAnchorTop(true);
+    self.googleAuthPopup:setAnchorBottom(false);
+    self.googleAuthPopup.alwaysOnTop = true;
+    self.googleAuthPopup:setVisible(true);
+    self:addChild(self.googleAuthPopup);
+
+    self.googleAuthEntry = ISTextEntryBox:new("", self.googleAuthPopup:getWidth() / 2, self.googleAuthPopup:getHeight() - buttonHgt * 4, 100, buttonHgt);
+    self.googleAuthEntry:initialise();
+    self.googleAuthEntry:instantiate();
+    self.googleAuthEntry:setAnchorLeft(false);
+    self.googleAuthEntry:setAnchorRight(true);
+    self.googleAuthEntry:setAnchorTop(true);
+    self.googleAuthEntry:setAnchorBottom(false);
+    self.googleAuthEntry:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthEntry:getWidth()/2);
+    self.googleAuthPopup:addChild(self.googleAuthEntry);
+
+    self.googleAuthLabel = ISLabel:new(self.googleAuthPopup:getWidth() / 2, self.googleAuthPopup:getHeight() - buttonHgt * 6, FONT_HGT_MEDIUM, getText("UI_ConnectToServer_GoogleAuth_Request"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.googleAuthLabel:initialise();
+    self.googleAuthLabel:instantiate();
+    self.googleAuthLabel:setAnchorLeft(false);
+    self.googleAuthLabel:setAnchorRight(true);
+    self.googleAuthLabel:setAnchorTop(true);
+    self.googleAuthLabel:setAnchorBottom(false);
+    self.googleAuthLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthLabel:getWidth()/2);
+    self.googleAuthPopup:addChild(self.googleAuthLabel);
+
+    self.googleAuthButton = ISButton:new(self.googleAuthPopup:getWidth()/2, self.googleAuthPopup:getHeight()-buttonHgt*2, 100, buttonHgt, getText("UI_ConnectToServer_GoogleAuth_Send"), self, self.onSendButton);
+    self.googleAuthButton:initialise();
+    self.googleAuthButton:instantiate();
+    self.googleAuthButton:setAnchorLeft(false);
+    self.googleAuthButton:setAnchorRight(true);
+    self.googleAuthButton:setAnchorTop(false);
+    self.googleAuthButton:setAnchorBottom(true);
+    self.googleAuthButton:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthButton:getWidth()/2);
+    self.googleAuthPopup:addChild(self.googleAuthButton);
+
+    self.googleAuthPopup:setVisible(false);
+
 	self.richText = ISRichTextPanel:new(0, self.connectLabel:getBottom() + 150, self.width * 4 / 5, FONT_HGT_MEDIUM * 4)
 	self.richText:initialise()
 	self.richText:instantiate()
@@ -98,6 +143,9 @@ function ConnectToServer:create()
 end
 
 function ConnectToServer:prerender()
+    if self.loadingBackground then
+        self:drawTextureScaledAspect3(self.loadingBackground, -(self.width/0.7 - self.width)/2, -(self.height/0.8 - self.height)/2, self.width/0.7, self.height/0.8, 1, 1, 1, 1) -- 0.7 and 0.8 are ui scaling from the MainScreen.lua
+    end
 	ISPanelJoypad.prerender(self)
 	ConnectToServer.instance = self
 end
@@ -144,12 +192,23 @@ function ConnectToServer:onResize(width, height)
 	self.backBtn:setX(width / 2 - self.backBtn.width / 2)
 end
 
+function ConnectToServer:onSendButton()
+    sendGoogleAuth(self.userName:getName(), self.googleAuthEntry:getText())
+    self.googleAuthPopup:setVisible(false);
+    self.googleAuthEntry:setText("");
+    self.richText:setY(self.connectLabel:getBottom() + 150);
+end
+
 function ConnectToServer:onBackButton()
 	if self.connecting or isClient() then
 		self.connecting = false
 		backToSinglePlayer()
 	end
+	self.googleAuthPopup:setVisible(false);
+    self.googleAuthEntry:setText("");
+    self.richText:setY(self.connectLabel:getBottom() + 150);
 	self:setVisible(false)
+	self.loadingBackground = nil
 	if self.isCoop then
 		local joypadData = JoypadState.getMainMenuJoypad()
 		if joypadData then
@@ -161,7 +220,7 @@ function ConnectToServer:onBackButton()
 	end
 end
 
-function ConnectToServer:connect(previousScreen, serverName, userName, password, IP, localIP, port, serverPassword, useSteamRelay)
+function ConnectToServer:connect(previousScreen, serverName, userName, password, IP, localIP, port, serverPassword, useSteamRelay, doHash, authType)
 	previousScreen:setVisible(false)
 	self:setVisible(true, JoypadState.getMainMenuJoypad())
 	self.previousScreen = previousScreen
@@ -185,7 +244,7 @@ function ConnectToServer:connect(previousScreen, serverName, userName, password,
 	self.connecting = true
 	self.isCoop = false
 	self:onResize(self.width, self.height)
-	serverConnect(userName, password, IP, localIP, port, serverPassword, serverName, useSteamRelay)
+	serverConnect(userName, password, IP, localIP, port, serverPassword, serverName, useSteamRelay, doHash, authType, "")
 end
 
 function ConnectToServer:connectCoop(previousScreen, serverSteamID)
@@ -214,7 +273,7 @@ function ConnectToServer:onGainJoypadFocus(joypadData)
 end
 
 function ConnectToServer:OnConnected()
-	if not SystemDisabler.getAllowDebugConnections() and getDebug() and not isAdmin() and not isCoopHost() and
+	if SystemDisabler.getKickInDebug() and getDebug() and not isAdmin() and not isCoopHost() and
 			not SystemDisabler.getOverrideServerConnectDebugCheck() then
 		forceDisconnect()
 		return
@@ -252,8 +311,16 @@ function ConnectToServer:OnConnected()
 	end
 end
 
+function ConnectToServer:OnGoogleAuthRequest()
+    self.googleAuthPopup:setVisible(true);
+    self.richText:setY(self.googleAuthPopup:getBottom() + 50);
+end
+
 function ConnectToServer:OnConnectFailed(message, detail)
 	-- Other screens have Events.OnConnectFailed callbacks too
+	self.googleAuthPopup:setVisible(false);
+    self.googleAuthEntry:setText("");
+    self.richText:setY(self.connectLabel:getBottom() + 150);
 	if not self:getIsVisible() then return end
 
 	if message == "ServerWorkshopItemsCancelled" then
@@ -328,10 +395,15 @@ local function OnConnectFailed(message, detail)
 	ConnectToServer.instance:OnConnectFailed(message, detail)
 end
 
+local function OnGoogleAuthRequest()
+	ConnectToServer.instance:OnGoogleAuthRequest()
+end
+
 local function OnConnectionStateChanged(state, message, arg)
 	ConnectToServer.instance:OnConnectionStateChanged(state, message, arg)
 end
 
+Events.OnGoogleAuthRequest.Add(OnGoogleAuthRequest)
 Events.OnConnected.Add(OnConnected)
 Events.OnConnectFailed.Add(OnConnectFailed)
 Events.OnDisconnect.Add(OnConnectFailed)

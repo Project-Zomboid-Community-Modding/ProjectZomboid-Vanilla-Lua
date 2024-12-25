@@ -8,7 +8,7 @@ require "RainBarrel/BuildingObjects/RainCollectorBarrel"
 
 local function noise(message) SRainBarrelSystem.instance:noise(message) end
 
-local function CreateBarrel(sq, spriteName, health, waterAmount, waterMax)
+local function CreateBarrel(sq, spriteName, health)
 	local modData = {}
 	modData["need:Base.Plank"] = "4"
 	modData["need:Base.Nails"] = "4"
@@ -39,49 +39,66 @@ local function CreateBarrel(sq, spriteName, health, waterAmount, waterMax)
 	javaObject:setBreakSound("BreakObject")
 	javaObject:setSpecialTooltip(true)
 
-	javaObject:setWaterAmount(waterAmount)
-	javaObject:setTaintedWater(waterAmount > 0 and sq:isOutside())
+	--javaObject:setWaterAmount(waterAmount)
+	--javaObject:setTaintedWater(waterAmount > 0 and sq:isOutside())
 
 	return javaObject
 end
 
-local function ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+local function ReplaceExistingObject(isoObject, health, spriteName)
+	--local sq = isoObject:getSquare()
+	----noise('replacing isoObject at '..sq:getX()..','..sq:getY()..','..sq:getZ())
+	--local javaObject = CreateBarrel(sq, isoObject:getSprite():getName(), health, waterAmount, waterMax)
+	--local index = isoObject:getObjectIndex()
+	--sq:transmitRemoveItemFromSquare(isoObject)
+	--sq:AddSpecialObject(javaObject, index)
+	--javaObject:transmitCompleteItemToClients()
+	--return javaObject
+
 	local sq = isoObject:getSquare()
-	noise('replacing isoObject at '..sq:getX()..','..sq:getY()..','..sq:getZ())
-	local javaObject = CreateBarrel(sq, isoObject:getSprite():getName(), health, waterAmount, waterMax)
+	--noise('replacing isoObject at '..sq:getX()..','..sq:getY()..','..sq:getZ())
+	local javaObject = CreateBarrel(sq, spriteName, health)
 	local index = isoObject:getObjectIndex()
 	sq:transmitRemoveItemFromSquare(isoObject)
+	local info = SpriteConfigManager.getObjectInfoFromSprite(spriteName);
+	if info and info:getScript() and info:getScript():getParent() then
+		local gameEntityScript = info:getScript():getParent();
+		local isFirstTimeCreated = true;
+		GameEntityFactory.CreateIsoObjectEntity(javaObject, gameEntityScript, isFirstTimeCreated);
+	end
 	sq:AddSpecialObject(javaObject, index)
 	javaObject:transmitCompleteItemToClients()
-	return javaObject
 end
 
 local function NewLargeEmpty(isoObject)
 	local health = 200 + 5 * 50 -- Level 5 carpentry.  TODO: Randomize?
-	local waterAmount = ZombRand(0, RainCollectorBarrel.largeWaterMax * 0.75)
-	local waterMax = RainCollectorBarrel.largeWaterMax
-	ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	--local waterAmount = ZombRand(0, RainCollectorBarrel.largeWaterMax * 0.75)
+	--local waterMax = RainCollectorBarrel.largeWaterMax
+	ReplaceExistingObject(isoObject, health,"carpentry_02_122")
 end
 
 local function NewLargeFull(isoObject)
 	local health = 200 + 5 * 50 -- Level 5 carpentry.  TODO: Randomize?
-	local waterAmount = ZombRand(RainCollectorBarrel.largeWaterMax * 0.75, RainCollectorBarrel.largeWaterMax)
-	local waterMax = RainCollectorBarrel.largeWaterMax
-	ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	--local waterAmount = ZombRand(RainCollectorBarrel.largeWaterMax * 0.75, RainCollectorBarrel.largeWaterMax)
+	--local waterMax = RainCollectorBarrel.largeWaterMax
+	--ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	ReplaceExistingObject(isoObject, health,"carpentry_02_122")
 end
 
 local function NewSmallEmpty(isoObject)
 	local health = 200 + 5 * 50 -- Level 5 carpentry.  TODO: Randomize?
-	local waterAmount = ZombRand(0, RainCollectorBarrel.smallWaterMax * 0.75)
-	local waterMax = RainCollectorBarrel.smallWaterMax
-	ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	--local waterAmount = ZombRand(0, RainCollectorBarrel.smallWaterMax * 0.75)
+	--local waterMax = RainCollectorBarrel.smallWaterMax
+	--ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	ReplaceExistingObject(isoObject, health,"carpentry_02_54")
 end
 
 local function NewSmallFull(isoObject)
 	local health = 200 + 5 * 50 -- Level 5 carpentry.  TODO: Randomize?
-	local waterAmount = ZombRand(RainCollectorBarrel.smallWaterMax * 0.75, RainCollectorBarrel.smallWaterMax)
-	local waterMax = RainCollectorBarrel.smallWaterMax
-	ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	--local waterAmount = ZombRand(RainCollectorBarrel.smallWaterMax * 0.75, RainCollectorBarrel.smallWaterMax)
+	--local waterMax = RainCollectorBarrel.smallWaterMax
+	--ReplaceExistingObject(isoObject, health, waterAmount, waterMax)
+	ReplaceExistingObject(isoObject, health,"carpentry_02_54")
 end
 
 local PRIORITY = 5
@@ -130,8 +147,8 @@ local function LoadSmallFull(isoObject)
 	LoadObject(isoObject, health, waterAmount, waterMax)
 end
 
-MapObjects.OnLoadWithSprite("carpentry_02_52", LoadLargeEmpty, PRIORITY)
-MapObjects.OnLoadWithSprite("carpentry_02_53", LoadLargeFull, PRIORITY)
-MapObjects.OnLoadWithSprite("carpentry_02_54", LoadSmallEmpty, PRIORITY)
-MapObjects.OnLoadWithSprite("carpentry_02_55", LoadSmallFull, PRIORITY)
+--MapObjects.OnLoadWithSprite("carpentry_02_52", LoadLargeEmpty, PRIORITY)
+--MapObjects.OnLoadWithSprite("carpentry_02_53", LoadLargeFull, PRIORITY)
+--MapObjects.OnLoadWithSprite("carpentry_02_54", LoadSmallEmpty, PRIORITY)
+--MapObjects.OnLoadWithSprite("carpentry_02_55", LoadSmallFull, PRIORITY)
 

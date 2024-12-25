@@ -8,6 +8,7 @@ require "TimedActions/ISEatFoodAction"
 
 ISScrollingListBox = ISPanelJoypad:derive("ISScrollingListBox");
 ISScrollingListBox.joypadListIndex = 1;
+ISScrollingListBox.stopPrerender = false;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
@@ -134,6 +135,10 @@ end
 function ISScrollingListBox:onMouseMove(dx, dy)
 	if self:isMouseOverScrollBar() then return end
 	self.mouseoverselected = self:rowAt(self:getMouseX(), self:getMouseY())
+
+	if self.onItemMouseHover then
+		self:onItemMouseHover(self.items[self.mouseoverselected])
+	end
 end
 
 function ISScrollingListBox:onMouseMoveOutside(x, y)
@@ -279,6 +284,11 @@ function ISScrollingListBox:onMouseWheel(del)
 	else
 		self:setYScroll(self:getYScroll() - (del*18));
 	end
+
+	if self.onScrolled then
+		self:onScrolled()
+	end
+	
     return true;
 end
 
@@ -422,6 +432,10 @@ function ISScrollingListBox:prerender()
 		 end
 		 v.index = i;
 		 local y2 = self:doDrawItem(y, v, alt);
+		if self.stopPrerender then
+		    self.stopPrerender = false;
+		    return;
+		 end
 		 self.listHeight = y2;
 		 v.height = y2 - y
 		 y = y2
@@ -446,8 +460,8 @@ function ISScrollingListBox:prerender()
 	
 	if #self.columns > 0 then
 --		print(self:getScrollHeight())
-		self:drawRectBorderStatic(0, 0 - self.itemheight, self.width, self.itemheight - 1, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-		self:drawRectStatic(0, 0 - self.itemheight - 1, self.width, self.itemheight-2,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
+		self:drawRectBorderStatic(0, 0 - self.itemheight, self.width, self.itemheight, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+		self:drawRectStatic(0, 0 - self.itemheight, self.width, self.itemheight,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
 		local dyText = (self.itemheight - FONT_HGT_SMALL) / 2
 		for i,v in ipairs(self.columns) do
 			self:drawRectStatic(v.size, 0 - self.itemheight, 1, self.itemheight + math.min(self.height, self.itemheight * #self.items - 1), 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
@@ -459,6 +473,9 @@ function ISScrollingListBox:prerender()
 end
 
 function ISScrollingListBox:onMouseDoubleClick(x, y)
+	if self:isMouseOverScrollBar() then
+		return self.vscroll:onMouseDoubleClick(x - self.vscroll.x, y + self:getYScroll() - self.vscroll.y)
+	end
 	if self.onmousedblclick and self.items[self.selected] ~= nil then
 		self.onmousedblclick(self.target, self.items[self.selected].item);
 	end
@@ -537,7 +554,7 @@ function ISScrollingListBox:ensureVisible(index)
 	end
 --	print('y='..y..' top='..self:getYScroll()..' bottom='..(self:getYScroll() + self.height))
 	if not self.smoothScrollTargetY then self.smoothScrollY = self:getYScroll() end
-	if y < 0-self:getYScroll() then
+	if y <= 0-self:getYScroll() then
 		self.smoothScrollTargetY = 0 - y
 	elseif y + height > 0 - self:getYScroll() + self.height then
 		self.smoothScrollTargetY = 0 - (y + height - self.height)

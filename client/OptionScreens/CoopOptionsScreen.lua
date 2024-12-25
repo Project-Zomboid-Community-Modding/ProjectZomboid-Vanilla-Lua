@@ -11,6 +11,14 @@ CoopOptionsScreen = ISPanelJoypad:derive("CoopOptionsScreen");
 CoopOptionsScreenPanel = ISPanelJoypad:derive("CoopOptionsScreenPanel")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
+local PROGRESS_BAR_STEP = 1/13
+local PROGRESS_BAR_WORKSHOP_WEIGHT = 1/4
+local PROGRESS_BAR_SPEED = 0.0003;
 
 CoopConnection = {
     username = "admin",
@@ -27,7 +35,8 @@ function CoopOptionsScreenPanel:onGainJoypadFocus(joypadData)
 	if self.parent.accountNameEntry:isVisible() then
 		self:insertNewLineOfButtons(self.parent.accountNameEntry)
 	end
-	self:insertNewLineOfButtons(self.parent.settingsComboBox, self.parent.settingsButton)
+	self:insertNewLineOfButtons(self.parent.settingsComboBox)
+    self:insertNewLineOfButtons(self.parent.settingsButton)
 	self:insertNewLineOfButtons(self.parent.memoryComboBox)
 	self:insertNewLineOfButtons(self.parent.softResetButton)
 	self:insertNewLineOfButtons(self.parent.deleteWorldButton)
@@ -94,6 +103,7 @@ function CoopOptionsScreen:new(x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
+    o.startY = UI_BORDER_SPACING + 1 + FONT_HGT_TITLE + 30 + FONT_HGT_LARGE + 10;
     o.itemheightoverride = {}
     o.selected = 1;
     CoopOptionsScreen.instance = o;
@@ -123,7 +133,7 @@ function basicButtonSetup(button, internal, anchors)
 end
 
 function CoopOptionsScreen:create()
-    local panel = CoopOptionsScreenPanel:new(0, 128, self.width, self.height)
+    local panel = CoopOptionsScreenPanel:new(0, self.startY, self.width, self.height)
     panel.anchorRight = true
     panel.anchorBottom = true
     panel.borderColor.a = 0
@@ -131,14 +141,20 @@ function CoopOptionsScreen:create()
     self:addChild(panel)
     self.panel = panel
 
-    local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-    local entryHgt = fontHgt + 2 * 2
-    local labelRight = 250
-    local label = ISLabel:new(labelRight, 0, entryHgt, getText("UI_coopscreen_account_name"), 1, 1, 1, 1, UIFont.Medium, false)
+    local btnWidth = UI_BORDER_SPACING*2 + math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_edit_settings")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_softreset")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_delete_world")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_delete_player"))
+    )
+
+    local labelRight = (self.width-UI_BORDER_SPACING)/2
+    local label = ISLabel:new(labelRight, 0, BUTTON_HGT, getText("UI_coopscreen_account_name"), 1, 1, 1, 1, UIFont.Medium, false)
     self.panel:addChild(label)
 
-    local entry = ISTextEntryBox:new("admin", label:getRight() + 8, label:getY(), 300, entryHgt)
+    local entry = ISTextEntryBox:new("admin", label:getRight() + UI_BORDER_SPACING, label:getY(), btnWidth, BUTTON_HGT)
     entry.font = UIFont.Medium
+    entry.onTextChange = CoopOptionsScreen.onUsernameChanged
     self.panel:addChild(entry)
     self.accountNameEntry = entry
 
@@ -147,23 +163,21 @@ function CoopOptionsScreen:create()
         entry:setVisible(false)
     end
 
-    label = ISLabel:new(labelRight, entry:getBottom() + 16, entryHgt, getText("UI_coopscreen_server_name"), 1, 1, 1, 1, UIFont.Medium, false)
+    label = ISLabel:new(labelRight, entry:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("UI_coopscreen_server_name"), 1, 1, 1, 1, UIFont.Medium, false)
     self.panel:addChild(label)
 
-    local comboBox = ISComboBox:new(label:getRight() + 8, label:getY(), 200, entryHgt, self, self.onSettingsSelected)
+    local comboBox = ISComboBox:new(labelRight + UI_BORDER_SPACING, label:getY(), btnWidth, BUTTON_HGT, self, self.onSettingsSelected)
     self.panel:addChild(comboBox)
     self.settingsComboBox = comboBox
 
-    local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-    self.settingsButton = ISButton:new(comboBox:getRight() + 16, comboBox:getY(), 100, buttonHgt, getText("UI_coopscreen_edit_settings"), self, self.onEditSettings)
+    self.settingsButton = ISButton:new(labelRight + UI_BORDER_SPACING, comboBox:getBottom()+UI_BORDER_SPACING, btnWidth, BUTTON_HGT, getText("UI_coopscreen_edit_settings"), self, self.onEditSettings)
     self.panel:addChild(self.settingsButton)
 
 
-    label = ISLabel:new(labelRight, comboBox:getBottom() + 16, entryHgt, getText("UI_coopscreen_server_memory"), 1, 1, 1, 1, UIFont.Medium, false)
+    label = ISLabel:new(labelRight, self.settingsButton:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("UI_coopscreen_server_memory"), 1, 1, 1, 1, UIFont.Medium, false)
     self.panel:addChild(label)
 
-    local spinBox = ISComboBox:new(label:getRight() + 8, label:getY(), 200, entryHgt, self, self.onMemorySelected)
+    local spinBox = ISComboBox:new(labelRight + UI_BORDER_SPACING, label:getY(), btnWidth, BUTTON_HGT, self, self.onMemorySelected)
     self.panel:addChild(spinBox)
     self.memoryToIndex = {}
     local max = is64bit() and 62 or 3
@@ -174,26 +188,33 @@ function CoopOptionsScreen:create()
     end
     self.memoryComboBox = spinBox
 
-
-    self.softResetButton = ISButton:new(labelRight + 8, self.memoryComboBox:getBottom() + 16, 200, buttonHgt, getText("UI_coopscreen_softreset"), self, CoopOptionsScreen.onSoftReset);
+    self.softResetButton = ISButton:new(labelRight + UI_BORDER_SPACING, self.memoryComboBox:getBottom() + UI_BORDER_SPACING, btnWidth, BUTTON_HGT, getText("UI_coopscreen_softreset"), self, CoopOptionsScreen.onSoftReset);
     self.panel:addChild(self.softResetButton)
 
-    self.deleteWorldButton = ISButton:new(labelRight + 8, self.softResetButton:getBottom() + 16, 200, buttonHgt, getText("UI_coopscreen_delete_world"), self, CoopOptionsScreen.onDeleteWorld);
+    self.deleteWorldButton = ISButton:new(labelRight + UI_BORDER_SPACING, self.softResetButton:getBottom() + UI_BORDER_SPACING, btnWidth, BUTTON_HGT, getText("UI_coopscreen_delete_world"), self, CoopOptionsScreen.onDeleteWorld);
     self.panel:addChild(self.deleteWorldButton)
 
-    self.deletePlayerButton = ISButton:new(labelRight + 8, self.deleteWorldButton:getBottom() + 16, 200, buttonHgt, getText("UI_coopscreen_delete_player"), self, CoopOptionsScreen.onDeletePlayer);
+    self.deletePlayerButton = ISButton:new(labelRight + UI_BORDER_SPACING, self.deleteWorldButton:getBottom() + UI_BORDER_SPACING, btnWidth, BUTTON_HGT, getText("UI_coopscreen_delete_player"), self, CoopOptionsScreen.onDeletePlayer);
     self.panel:addChild(self.deletePlayerButton)
+    self.checkPlayer = false
 
-    self.backButton = ISButton:new(16, self.height - 16 - buttonHgt, 100, buttonHgt, getText("UI_btn_back"), self, CoopOptionsScreen.onBackButtonDown);
+    local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+    self.backButton = ISButton:new(UI_BORDER_SPACING + 1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, CoopOptionsScreen.onBackButtonDown);
     basicButtonSetup(self.backButton, "BACK", { left = true, top = false, bottom = true} );
+    self.backButton:enableCancelColor()
     self:addChild(self.backButton);
 
-    self.startButton = ISButton:new(self.width - 116, self.height - 16 - buttonHgt, 100, buttonHgt, getText("UI_coopscreen_btn_start"), self, CoopOptionsScreen.onStartButtonDown);
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_btn_start"))
+    self.startButton = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_coopscreen_btn_start"), self, CoopOptionsScreen.onStartButtonDown);
     basicButtonSetup(self.startButton, "START", { left = false, top = false, right = true, bottom = true } );
+    self.startButton:enableAcceptColor()
     self:addChild(self.startButton);
 
-    self.abortButton = ISButton:new(self.width - 116 - 100 - 16, self.height - 16 - buttonHgt, 100, buttonHgt, getText("UI_coopscreen_btn_abort"), self, CoopOptionsScreen.onAbortButtonDown);
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_coopscreen_btn_abort"))
+    self.abortButton = ISButton:new(self.startButton.x - btnWidth - UI_BORDER_SPACING, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_coopscreen_btn_abort"), self, CoopOptionsScreen.onAbortButtonDown);
     basicButtonSetup(self.abortButton, "ABORT", { left = false, top = false, right = true, bottom = true } );
+    self.abortButton:enableCancelColor()
     self.abortButton:setEnable(false);
     self:addChild(self.abortButton);
 
@@ -207,6 +228,21 @@ function CoopOptionsScreen:create()
 
     self:setVisible(false);
 
+    self.statusTextY = UI_BORDER_SPACING + 1 + FONT_HGT_TITLE + 30
+
+    self.serverProgressBar = ISProgressBar:new (20, self.statusTextY+FONT_HGT_LARGE+10, self.width-40, 25, "", UIFont.Small);
+    self.serverProgressBar.progressColor = namedColorToTable("ProgressYellow"); --{r=1.0, g=0.95, b=0.4, a=1};
+    self.serverProgressBar.progressTexture = self.horzTexture;
+    self.serverProgressBar.forceIt = true;
+    self.serverProgressBar:initialise();
+    self.serverProgressBar:instantiate();
+    self:addChild(self.serverProgressBar);
+    self.serverProgressBar:setProgress(0);
+    self.serverProgressBar:setVisible(false);
+
+    self.progress = 0;
+    self.nextProgress = 0;
+    self.workshopCount = 0;
     self.serverStatus = "";
     self.uiStatus = "idle";
 
@@ -228,17 +264,24 @@ function CoopOptionsScreen:render()
 end
 
 function CoopOptionsScreen:prerender()
+    if self.checkPlayer then
+        self.checkPlayer = false
+        self:checkPlayerExists()
+    end
     ISPanel.prerender(self);
-
-    self:drawTextCentre(getText("UI_coopscreen_title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Large);
-    self:drawTextCentre(self.serverStatus, self.width / 2, 50, 1, 1, 1, 1, UIFont.Large);
+    if self.progress < self.nextProgress then
+        self.progress = self.progress + PROGRESS_BAR_SPEED
+        self.serverProgressBar:setProgress(CoopOptionsScreen.instance.progress)
+    end
+    self:drawTextCentre(getText("UI_coopscreen_title"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
+    self:drawTextCentre(self.serverStatus, self.width / 2, self.statusTextY, 1, 1, 1, 1, UIFont.Large);
 
     if self.softresetProgress then
         local barWidth = 300
         local barHeight = 24
         local done = barWidth * self.softresetProgress
-        self:drawRect((self.width - barWidth) / 2, 50 + 32, done, barHeight, 1.0, 0.5, 0.5, 0.5)
-        self:drawRectBorder((self.width - barWidth) / 2, 50 + 32, barWidth, barHeight, 1.0, 0.9, 0.9, 0.9)
+        self:drawRect((self.width - barWidth) / 2, self.serverProgressBar:getBottom() + 32, done, barHeight, 1.0, 0.5, 0.5, 0.5)
+        self:drawRectBorder((self.width - barWidth) / 2, self.serverProgressBar:getBottom() + 32, barWidth, barHeight, 1.0, 0.9, 0.9, 0.9)
     end
 
     self.panel:setVisible(self.uiStatus == "idle")
@@ -402,7 +445,9 @@ function CoopOptionsScreen:onDeleteWorldStep2(button, joypadData)
     if button.internal == "NO" then return end
     local folder = self:getServerSaveFolder(CoopConnection.servername)
     print('deleting coop server folder ' .. folder)
-    deleteSave(folder)
+    if folder then
+        deleteSave(folder)
+    end
     self:checkWorldExists()
     self:checkWorldVersion()
 end
@@ -410,8 +455,7 @@ end
 function CoopOptionsScreen:onDeletePlayer()
     local screenW = getCore():getScreenWidth()
     local screenH = getCore():getScreenHeight()
-    local folder = getAbsoluteSaveFolderName(self:getPlayerSaveFolder()):gsub("\\", "\\\\")
-    local label = getText("UI_coopscreen_delete_player_prompt", folder)
+    local label = getText("UI_coopscreen_delete_player_prompt", self.accountNameEntry:getText())
     local modal = ISModalDialog:new(0, 0, 1, 1, label, true, self, self.onDeletePlayerStep2)
     modal:setX((screenW - modal.width) / 2)
     modal:setY((screenH - modal.height) / 2)
@@ -434,9 +478,12 @@ function CoopOptionsScreen:onDeletePlayerStep2(button, joypadData)
         updateJoypadFocus(joypadData)
     end
     if button.internal == "NO" then return end
+    print('deleting coop player ' .. self.accountNameEntry:getText())
     local folder = self:getPlayerSaveFolder(CoopConnection.servername)
-    print('deleting coop player folder ' .. folder)
-    deleteSave(folder)
+    deletePlayerFromDatabase(self:getServerSaveFolder(CoopConnection.servername), self.accountNameEntry:getText(),CoopConnection.servername)
+    if folder then
+        deleteSave(folder)
+    end
     self:checkPlayerExists()
 end
 
@@ -454,6 +501,9 @@ end
 
 function CoopOptionsScreen:onStartButtonDown(button, x, y)
     self:saveOptions()
+    if getSteamModeActive() then
+        steamReleaseInternetServersRequest() -- Needed due to PublicServerList:create()
+    end
     CoopConnection.username = self.accountNameEntry:getText()
 
     if getServerSettingsManager():isValidNewName(CoopConnection.servername) then
@@ -492,6 +542,10 @@ function CoopOptionsScreen:onStartButtonDown(button, x, y)
         end
         CoopServer:launch(CoopConnection.servername, CoopConnection.username, CoopConnection.memory);
     end
+    self.serverProgressBar:setVisible(true);
+    self.serverProgressBar:setProgress(0);
+    self.nextProgress = 0;
+    self.progress = 0;
     self.serverStatus = getText("UI_ServerStatus_Launching");
     self.uiStatus = "launching";
     self.startButton:setEnable(false);
@@ -511,9 +565,12 @@ function CoopOptionsScreen:checkWorldExists()
     self.deleteWorldButton:setEnable(worldExists)
 end
 
+function CoopOptionsScreen:onUsernameChanged()
+    CoopOptionsScreen.instance.checkPlayer = true;
+end
+
 function CoopOptionsScreen:checkPlayerExists()
-    local folder = self:getPlayerSaveFolder()
-    self.deletePlayerButton:setEnable(checkSaveFolderExists(folder))
+    self.deletePlayerButton:setEnable(checkPlayerExistsInDatabase(self:getServerSaveFolder(CoopConnection.servername), self.accountNameEntry:getText(), CoopConnection.servername))
 end
 
 function CoopOptionsScreen:checkWorldVersion()
@@ -548,6 +605,20 @@ function CoopOptionsScreen:loadOptions()
     end
 end
 
+function CoopOptionsScreen:onResolutionChange(oldw, oldh, neww, newh)
+    local right = (self.width+UI_BORDER_SPACING)/2
+    local left = (self.width-UI_BORDER_SPACING)/2
+    local children = self.panel:getChildren()
+
+    for _, i in pairs(children) do
+        if i.name ~= nil then
+            i:setX(left-i.width)
+        else
+            i:setX(right)
+        end
+    end
+end
+
 function CoopOptionsScreen:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     self:setISButtonForA(self.startButton)
@@ -576,8 +647,26 @@ function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
      -- print(tag);
      -- print(payload);
     if tag == "status" and CoopOptionsScreen.instance ~= nil then
-        local payloadXln = luautils.stringStarts(payload, "UI_ServerStatus") and getText(payload) or payload
-        CoopOptionsScreen.instance.serverStatus = payloadXln;
+        local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Count")," ")[1];
+        if luautils.stringStarts(payload, itemsCountTemplate) then
+            CoopOptionsScreen.instance.workshopCount = tonumber(luautils.split(payload," ")[2]);
+        else
+            local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Progress")," ")[1];
+
+            local payloadXln = luautils.stringStarts(payload, "UI_ServerStatus") and getText(payload) or payload
+            CoopOptionsScreen.instance.serverStatus = payloadXln;
+            if luautils.stringStarts(payload, "UI_ServerStatus_Terminated") then
+                CoopOptionsScreen.instance.serverProgressBar:setVisible(false);
+                CoopOptionsScreen.instance.serverProgressBar:setProgress(0);
+                CoopOptionsScreen.instance.nextProgress = 0;
+            else
+                if luautils.stringStarts(payload, itemsCountTemplate) then
+                    CoopOptionsScreen.instance.nextProgress = CoopOptionsScreen.instance.nextProgress + ((PROGRESS_BAR_WORKSHOP_WEIGHT) / CoopOptionsScreen.instance.workshopCount);
+                else
+                    CoopOptionsScreen.instance.nextProgress = CoopOptionsScreen.instance.nextProgress + (PROGRESS_BAR_STEP);
+                end
+            end
+        end
     end
  
     if tag == "status" and payload == "UI_ServerStatus_Started" then
@@ -590,7 +679,8 @@ function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
         else
             local serverAddress = CoopServer:getAddress();
             local serverPort = tostring(CoopServer:getPort());
-            serverConnect(CoopConnection.username, CoopServer:getAdminPassword(), serverAddress, serverAddress, serverPort, CoopConnection.serverPassword, CoopConnection.servername, false)
+			--Set auth method as password only (1st method)
+            serverConnect(CoopConnection.username, CoopServer:getAdminPassword(), serverAddress, serverAddress, serverPort, CoopConnection.serverPassword, CoopConnection.servername, false, true, 1, "")
         end
     end
 
@@ -604,6 +694,9 @@ function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
         CoopOptionsScreen.instance.startButton:setEnable(true);
         CoopOptionsScreen.instance.abortButton:setEnable(false);
         CoopOptionsScreen.instance.backButton:setEnable(true);
+        CoopOptionsScreen.instance.serverProgressBar:setVisible(false);
+        CoopOptionsScreen.instance.serverProgressBar:setProgress(0);
+        CoopOptionsScreen.instance.nextProgress = 0;
         CoopOptionsScreen.instance.serverStatus = getText("UI_coopscreen_server_stopped", CoopServer:getTerminationReason())
         CoopOptionsScreen.instance.softresetProgress = nil
     end

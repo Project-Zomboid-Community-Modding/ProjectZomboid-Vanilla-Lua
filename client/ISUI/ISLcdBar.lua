@@ -6,8 +6,8 @@ require "ISUI/ISPanel"
 
 ISLcdBar = ISPanel:derive("ISLcdBar");
 
-ISLcdBar.charW = 8;
-ISLcdBar.charH = 12;
+ISLcdBar.charW = getCore():getOptionFontSizeReal() >= 4 and 21 or 14;
+ISLcdBar.charH = getCore():getOptionFontSizeReal() >= 4 and 27 or 18;
 ISLcdBar.indexes = " !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\\]^_";
 ISLcdBar.unsupported = { "CH", "CN", "JP", "KO", "RU", "TH", "UA"};
 ISLcdBar.special = {"[","%","("} --these characters need a '%' appended in string.find
@@ -190,8 +190,8 @@ function ISLcdBar:new (x, y, charWidth)
     o.ledTextColor = { r=0, g=0, b=0, a=1 };
     o.lcdwidth = charWidth;
     o.isOn = true;
-    o.lcdfont = getTexture("media/ui/LCD_Display/LCDfont.png");
-    o.lcdback = getTexture("media/ui/LCD_Display/LCDfont_background_greyscale.png");
+    o.lcdfont = getCore():getOptionFontSizeReal() >= 4 and getTexture("media/ui/LCD_Display/LCD_Font_Large.png") or getTexture("media/ui/LCD_Display/LCD_Font_Small.png");
+    o.lcdback = getCore():getOptionFontSizeReal() >= 4 and getTexture("media/ui/LCD_Display/LCD_Background_Large.png") or getTexture("media/ui/LCD_Display/LCD_Background_Small.png");
     o.pos = 0;
     o.posCounter = 0;
     o.doScroll = false;

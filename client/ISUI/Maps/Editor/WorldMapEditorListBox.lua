@@ -5,35 +5,32 @@
 require 'ISUI/ISScrollingListBox'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 -- A listbox with Add, Remove, Move Up and Move Down buttons
 
 WorldMapEditorListBox = ISPanel:derive("WorldMapEditorListBox")
 
 function WorldMapEditorListBox:createChildren()
-	local buttonWid = FONT_HGT_MEDIUM + 8
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-
-	local PADY = 4
 	local ROWS = 6
-	self.listbox = ISScrollingListBox:new(0, 0, self.width, (FONT_HGT_SMALL + PADY * 2) * ROWS)
-	self.listbox:setFont(UIFont.Small, PADY)
+	self.listbox = ISScrollingListBox:new(0, 0, self.width, BUTTON_HGT * ROWS)
+	self.listbox:setFont(UIFont.Small,  (BUTTON_HGT-FONT_HGT_SMALL)/2)
 	self:addChild(self.listbox)
 
-	local button = ISButton:new(0, self.listbox:getBottom() + 10, buttonWid, buttonHgt, "+", self, self.onAddItem)
+	local button = ISButton:new(0, self.listbox:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "+", self, self.onAddItem)
 	self:addChild(button)
 	self.buttonAdd = button
 
-	button = ISButton:new(button:getRight() + 10, button.y, buttonWid, buttonHgt, "-", self, self.onRemoveItem)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, button.y, BUTTON_HGT, BUTTON_HGT, "-", self, self.onRemoveItem)
 	self:addChild(button)
 	self.buttonRemove = button
 
-	button = ISButton:new(button:getRight() + 10, button.y, buttonWid, buttonHgt, "/\\", self, self.onMoveUp)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, button.y, BUTTON_HGT, BUTTON_HGT, "^", self, self.onMoveUp)
 	self:addChild(button)
 	self.buttonMoveUp = button
 
-	button = ISButton:new(button:getRight() + 10, button.y, buttonWid, buttonHgt, "\\/", self, self.onMoveDown)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, button.y, BUTTON_HGT, BUTTON_HGT, "v", self, self.onMoveDown)
 	self:addChild(button)
 	self.buttonMoveDown = button
 

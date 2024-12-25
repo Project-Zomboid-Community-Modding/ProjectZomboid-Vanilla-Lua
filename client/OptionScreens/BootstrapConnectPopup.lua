@@ -2,7 +2,7 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
-require 'ISUI/ISPanelJoypad.lua'
+require 'ISUI/ISPanelJoypad'
 
 BootstrapConnectPopup = ISPanelJoypad:derive("BootstrapConnectPopup")
 

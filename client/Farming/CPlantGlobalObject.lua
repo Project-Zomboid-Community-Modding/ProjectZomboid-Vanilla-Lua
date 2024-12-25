@@ -16,7 +16,18 @@ function CPlantGlobalObject:getObject()
 end
 
 function CPlantGlobalObject:isAlive()
-	return self.state ~= "destroy" and self.state ~= "dry" and self.state ~= "rotten"
+	return self.state ~= "destroyed" and self.state ~= "dead" and self.state ~= "rotten" and self.state ~= "harvested"
+end
+
+function CPlantGlobalObject:isBadMonth()
+    if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
+	local prop = farming_vegetableconf.props[self.typeOfSeed]
+	if not prop.badMonth then return false end
+    for i = 1, #props.badMonth do
+        if getGameTime():getMonth() == tos.props.badMonth[i] then
+            return true
+        end
+    end
 end
 
 function CPlantGlobalObject:canHarvest()

@@ -34,7 +34,7 @@ function ISRadioOption:render()
 			self:drawRect(0, y-2, self.width, 16, 0.02, 1.0, 1.0, 1.0);
 		end
 		if self.selected == c then
-			self:drawTexture(self.tickTexture, 15, y, 1, 1, 1, 1);
+			self:drawTexture(self.tickTexture, 15, y, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
 		end
 		self:drawText(v, 16+15, y,  self.choicesColor.r, self.choicesColor.g, self.choicesColor.b, self.choicesColor.a);
 		y = y + 16;
@@ -100,7 +100,7 @@ function ISRadioOption:new (x, y, width, height, name, changeOptionTarget, chang
 	o.y = y;
 	o.width = width;
 	o.height = height;
-	o.tickTexture = getTexture("media/ui/Quest_Succeed.png");
+	o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png");
 	o.borderColor = {r=1, g=1, b=1, a=0.2};
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.choicesColor = {r=0.7, g=0.7, b=0.7, a=1};

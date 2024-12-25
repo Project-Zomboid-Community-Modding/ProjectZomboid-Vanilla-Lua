@@ -39,6 +39,10 @@ function SGlobalObject:getSquare()
 	return getCell():getGridSquare(self.x, self.y, self.z)
 end
 
+function SGlobalObject:updateOnClient()
+	self.luaSystem:updateLuaObjectOnClient(self)
+end
+
 function SGlobalObject:removeIsoObject()
 	local square = self:getSquare()
 	local isoObject = self:getIsoObject()
@@ -53,6 +57,11 @@ end
 function SGlobalObject:OnIsoObjectChangedItself(isoObject)
 	-- A Java object changed it's state. Sync the global object.
 	-- For example, after a generator runs out of fuel and shuts itself off.
+end
+
+function SGlobalObject:OnModDataChangeItself(isoObject)
+	-- A lua object changed it's state. sync the java object.
+	-- ex: when we load our animal we update its hunger, we gonna update only the lua object in case the java object is not loaded yet
 end
 
 function SGlobalObject:new(luaSystem, globalObject)

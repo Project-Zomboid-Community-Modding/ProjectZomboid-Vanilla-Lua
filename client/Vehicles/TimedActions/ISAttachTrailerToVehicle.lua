@@ -24,13 +24,16 @@ end
 
 function ISAttachTrailerToVehicle:start()
 	self:setActionAnim("VehicleTrailer")
+	self.sound = self.character:getEmitter():playSound("VehicleTowAttach")
 end
 
 function ISAttachTrailerToVehicle:stop()
+	self:stopSound()
 	ISBaseTimedAction.stop(self)
 end
 
 function ISAttachTrailerToVehicle:perform()
+	self:stopSound()
 	local square = self.vehicleA:getCurrentSquare()
 	local vehicleB = ISVehicleTrailerUtils.getTowableVehicleNear(square, self.vehicleA, self.attachmentA, self.attachmentB)
 	if vehicleB == self.vehicleB then
@@ -41,10 +44,14 @@ function ISAttachTrailerToVehicle:perform()
 	ISBaseTimedAction.perform(self)
 end
 
+function ISAttachTrailerToVehicle:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound);
+	end
+end
+
 function ISAttachTrailerToVehicle:new(character, vehicleA, vehicleB, attachmentA, attachmentB)
 	local o = ISBaseTimedAction.new(self, character)
-	o.stopOnWalk = true
-	o.stopOnRun = true
 	o.maxTime = 100
 	o.vehicleA = vehicleA
 	o.vehicleB = vehicleB

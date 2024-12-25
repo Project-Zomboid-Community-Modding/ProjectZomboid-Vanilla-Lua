@@ -46,7 +46,7 @@ local function testLoadObject(x, y, z, spriteName)
 end
 
 local function expectNotNull(object)
-	if object == null then error "object was null" end
+	if object == nil then error "object was null" end
 end
 
 local function expectIsoObjectClass(isoObject, className)
@@ -237,6 +237,8 @@ function MapObjectTestFarming()
 end
 
 function MapObjectTestRainBarrel()
+	-- RJ Not needed anymore, all will be done via the entities
+	if true then return; end
 	local x,y,z = getPlayer():getX(),getPlayer():getY(),getPlayer():getZ()
 	local square = getCell():getGridSquare(x, y, z)
 

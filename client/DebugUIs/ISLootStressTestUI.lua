@@ -9,73 +9,94 @@ require "ISUI/ISPanelJoypad"
 
 ISLootStreetTestUI = ISCollapsableWindow:derive("ISLootStreetTestUI");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
+
+local TICK_BOX_LABEL_WIDTH = UI_BORDER_SPACING*3 + 1 + BUTTON_HGT + math.max(
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootOther")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootFood")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootCannedFood")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootWeapon")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootRangedWeapon")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootAmmo")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootLiterature")),
+		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootMedical"))
+)
+
 --************************************************************************--
 --** ISLootStreetTestUI:initialise
 --**
 --************************************************************************--
 
 function ISLootStreetTestUI:createChildren()
-	local btnWid = 100
-	local btnHgt = 25
-	local padBottom = self:resizeWidgetHeight() + 10
-	
+	local y = self:titleBarHeight() + UI_BORDER_SPACING+1
+	local padBottom = self:resizeWidgetHeight() + UI_BORDER_SPACING-1
+
 	ISCollapsableWindow.createChildren(self)
-	
-	self.town = ISComboBox:new(10, 60, 100, 20)
+
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, "Muldraugh"),
+			getTextManager():MeasureStringX(UIFont.Small, "WestPoint"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_LootStressTest_HouseS")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_LootStressTest_HouseM")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_LootStressTest_HouseL"))
+	)
+
+	self.town = ISComboBox:new(UI_BORDER_SPACING+1, y, buttonWid, BUTTON_HGT)
 	self.town.font = UIFont.Small
 	self.town:initialise()
 	self.town:instantiate()
 	self:addChild(self.town)
-	
+
 	self.town:addOption("Muldraugh")
 	self.town:addOption("Westpoint")
---	self.town:addOption("Rosewood")
+	--	self.town:addOption("Rosewood")
 
-	self.houseType = ISComboBox:new(self.town.x + self.town.width + 10, self.town.y, 100, 20)
+	self.houseType = ISComboBox:new(self.town:getRight() + UI_BORDER_SPACING, self.town.y, buttonWid, BUTTON_HGT)
 	self.houseType.font = UIFont.Small
 	self.houseType:initialise()
 	self.houseType:instantiate()
 	self:addChild(self.houseType)
 
-	self.houseType:addOption("Small House")
-	self.houseType:addOption("Medium House")
-	self.houseType:addOption("Big House")
-	
-	self.houseNbr = ISTextEntryBox:new("1", self.houseType.x + self.houseType.width + 10, self.houseType.y, 50, 20);
+	self.houseType:addOption(getText("IGUI_LootStressTest_HouseS"))
+	self.houseType:addOption(getText("IGUI_LootStressTest_HouseM"))
+	self.houseType:addOption(getText("IGUI_LootStressTest_HouseL"))
+
+	self.houseNbr = ISTextEntryBox:new("1", self.houseType:getRight() + UI_BORDER_SPACING, self.houseType.y, 50, BUTTON_HGT);
 	self.houseNbr:initialise();
 	self.houseNbr:instantiate();
 	self.houseNbr:setOnlyNumbers(true);
 	self:addChild(self.houseNbr);
-	
-	self.onlyjunk = ISTickBox:new(self.houseNbr.x + self.houseNbr.width + 10, self.town.y, 100, 300, "Only Junk")
+
+	self.onlyjunk = ISTickBox:new(self.houseNbr:getRight() + UI_BORDER_SPACING, self.town.y, 100, BUTTON_HGT, getText("IGUI_LootStressTest_OnlyJunk"))
 	self.onlyjunk:initialise()
-	self.onlyjunk:addOption("Only Junk", "onlyjunk")
+	self.onlyjunk:addOption(getText("IGUI_LootStressTest_OnlyJunk"), "onlyjunk")
 	self:addChild(self.onlyjunk);
-	
-	self.lootType = ISTickBox:new(self.width - 200 + 20, self.town.y, 100, 300, "Loot Type:")
-	self.lootType.anchorLeft = false
-	self.lootType.anchorRight = true
+
+	self.lootType = ISTickBox:new(UI_BORDER_SPACING+1, self.town.y + BUTTON_HGT + UI_BORDER_SPACING, 100, BUTTON_HGT, "")
+	--self.lootType.anchorLeft = false
+	--self.lootType.anchorRight = true
 	self.lootType:initialise()
-	self.lootType:addOption("Other", "other")
-	self.lootType:setSelected(1, true);
-	self.lootType:addOption("Food", "food")
-	self.lootType:setSelected(2, true);
-	self.lootType:addOption("CannedFood", "cannedfood")
-	self.lootType:setSelected(3, true);
-	self.lootType:addOption("Melee Weapons", "meleeweapon")
-	self.lootType:setSelected(4, true);
-	self.lootType:addOption("Ranged Weapons", "rangedweapon")
-	self.lootType:setSelected(5, true);
-	self.lootType:addOption("Ammo", "ammo")
-	self.lootType:setSelected(6, true);
-	self.lootType:addOption("Literature", "literature")
-	self.lootType:setSelected(7, true);
-	self.lootType:addOption("Medical", "medical")
-	self.lootType:setSelected(8, true);
+	self.lootType:addOption(getText("Sandbox_LootOther"), "other")
+	self.lootType:addOption(getText("Sandbox_LootFood"), "food")
+	self.lootType:addOption(getText("Sandbox_LootCannedFood"), "cannedfood")
+	self.lootType:addOption(getText("Sandbox_LootWeapon"), "meleeweapon")
+	self.lootType:addOption(getText("Sandbox_LootRangedWeapon"), "rangedweapon")
+	self.lootType:addOption(getText("Sandbox_LootAmmo"), "ammo")
+	self.lootType:addOption(getText("Sandbox_LootLiterature"), "literature")
+	self.lootType:addOption(getText("Sandbox_LootMedical"), "medical")
+
+	for i=1,8 do
+		self.lootType:setSelected(i, true);
+	end
+
 	self.lootType:setWidthToFit()
 	self:addChild(self.lootType)
 
-	self.richtext = ISRichTextPanel:new(10, 100, self.width - 200, self.height - 150);
+	self.richtext = ISRichTextPanel:new(TICK_BOX_LABEL_WIDTH, self.lootType.y, self.width - TICK_BOX_LABEL_WIDTH - UI_BORDER_SPACING-1, self.height - BUTTON_HGT - UI_BORDER_SPACING - padBottom - 1 - self.lootType.y);
+	self.richtext.anchorLeft = true
 	self.richtext.anchorRight = true
 	self.richtext.anchorBottom = true
 	self.richtext:initialise();
@@ -84,26 +105,30 @@ function ISLootStreetTestUI:createChildren()
 	self.richtext.background = false;
 	self:addChild(self.richtext);
 	self.richtext:addScrollBars();
-	
+
 	self.richtext.text = "";
 	self.richtext:paginate();
 
-	self.start = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Generate Loot", self, ISLootStreetTestUI.startGenerate);
+	local bottomButtonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, "IGUI_LootStressTest_Title"),
+			getTextManager():MeasureStringX(UIFont.Small, "IGUI_DebugMenu_Close")
+	)
+
+	self.start = ISButton:new(UI_BORDER_SPACING, self:getHeight() - padBottom - BUTTON_HGT - 1, bottomButtonWid, BUTTON_HGT, getText("IGUI_LootStressTest_Title"), self, ISLootStreetTestUI.startGenerate);
 	self.start.anchorTop = false
 	self.start.anchorBottom = true
 	self.start:initialise();
 	self.start:instantiate();
-	self.start.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.start);
-	
-	self.close = ISButton:new(self:getWidth() - btnWid - 20, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Close", self, ISLootStreetTestUI.close);
+
+	self.close = ISButton:new(self:getWidth() - bottomButtonWid - UI_BORDER_SPACING - 1, self.start:getY(), bottomButtonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Close"), self, ISLootStreetTestUI.close);
 	self.close.anchorLeft = false
 	self.close.anchorRight = true
 	self.close.anchorTop = false
 	self.close.anchorBottom = true
 	self.close:initialise();
 	self.close:instantiate();
-	self.close.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.close:enableCancelColor()
 	self:addChild(self.close);
 end
 
@@ -118,15 +143,15 @@ function ISLootStreetTestUI:startGenerate()
 	self.totalList["food"] = {};
 	self.totalList["meleeweapon"] = {};
 	self.totalList["rangedweapon"] = {};
-	
+
 	for i=1, tonumber(self.houseNbr:getInternalText()) do
 		self:generateBuilding();
 	end
-	
+
 	self:doRichTextList(self.kitchenContainer, "Kitchen");
 	self:doRichTextList(self.bathroomContainer, "Bathroom");
 	self:doRichTextList(self.bedroomContainer, "Bedroom");
-	
+
 	if self.houseType.selected == 3 then
 		self:doRichTextList(self.shedContainer, "Shed");
 	end
@@ -220,7 +245,7 @@ function ISLootStreetTestUI:itemValidForList(item)
 	elseif type == "Medical" and self.lootType:isSelected(8) then
 		return true;
 	end
-		
+
 	return false;
 end
 
@@ -291,27 +316,25 @@ end
 function ISLootStreetTestUI:render()
 	ISCollapsableWindow.render(self);
 
-	self:drawTextCentre("Generate Loot" , self.width / 2, 20, 1, 1, 1, 1, UIFont.Medium);
-	
 	local txt = "Kitchen: Counter x";
 	if self.houseType.selected == 1 then
 		txt = txt .. "3";
 	elseif self.houseType.selected == 2 then
 		txt = txt .. "4";
-		txt = txt .. " Shelves x1";
+		txt = txt .. ", Shelves x1";
 	else
 		txt = txt .. "4";
-		txt = txt .. " Shelves x2";
+		txt = txt .. ", Shelves x2";
 	end
-	
-	txt = txt .. "; Bathroom: Counter x";
+
+	txt = txt .. ";\nBathroom: Counter x";
 	if self.houseType.selected == 1 then
 		txt = txt .. "1";
 	else
 		txt = txt .. "2";
 	end
-	
-	txt = txt .. "; Bedroom: Wardrobe x";
+
+	txt = txt .. ";\nBedroom: Wardrobe x";
 	if self.houseType.selected == 1 then
 		txt = txt .. "2 (Redneck)";
 	elseif self.houseType.selected == 2 then
@@ -321,9 +344,9 @@ function ISLootStreetTestUI:render()
 	end
 
 	if self.houseType.selected == 3 then
-		txt = txt .. " Shed: Counter x2";
+		txt = txt .. "\nShed: Counter x2";
 	end
-	self:drawText(txt, self.town.x, self.town.y + self.town.height + 10, 1,1,1,1, UIFont.Small);
+	self:drawText(txt, TICK_BOX_LABEL_WIDTH, self.town.y + self.town.height + 10, 1,1,1,1, UIFont.Small);
 end
 
 --************************************************************************--
@@ -333,7 +356,7 @@ end
 function ISLootStreetTestUI:new(x, y, character)
 	local o = {}
 	local width = 1000;
-	local height = getCore():getScreenHeight() - 100;
+	local height = 800;
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
@@ -348,6 +371,7 @@ function ISLootStreetTestUI:new(x, y, character)
 	end
 	o.width = width;
 	o.height = height;
+	o.title = "Generate Loot"
 	o.character = character;
 	o.chr = character;
 	o.moveWithMouse = true;

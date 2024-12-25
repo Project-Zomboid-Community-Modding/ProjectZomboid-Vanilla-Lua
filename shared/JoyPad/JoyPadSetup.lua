@@ -28,24 +28,30 @@ Joypad.DPadRight = 101
 Joypad.DPadUp = 102
 Joypad.DPadDown = 103
 
+local textureType = getCore():getOptionControllerButtonStyle() == 1 and "XBOX" or "PS4"
+
 Joypad.Texture = {}
-Joypad.Texture.AButton = getTexture("media/ui/xbox/XBOX_A.png")
-Joypad.Texture.BButton = getTexture("media/ui/xbox/XBOX_B.png")
-Joypad.Texture.XButton = getTexture("media/ui/xbox/XBOX_X.png")
-Joypad.Texture.YButton = getTexture("media/ui/xbox/XBOX_Y.png")
-Joypad.Texture.LBumper = getTexture("media/ui/xbox/xbox_lb.png")
-Joypad.Texture.RBumper = getTexture("media/ui/xbox/xbox_rb.png")
-Joypad.Texture.DPadLeft = getTexture("media/ui/xbox/XBOX_dpad_left.png")
-Joypad.Texture.DPadRight = getTexture("media/ui/xbox/XBOX_dpad_right.png")
-Joypad.Texture.DPadUp = getTexture("media/ui/xbox/XBOX_dpad_up.png")
-Joypad.Texture.DPadDown = getTexture("media/ui/xbox/XBOX_dpad_down.png")
-Joypad.Texture.DPad = getTexture("media/ui/xbox/XBOX_dpad.png")
-Joypad.Texture.LStick = getTexture("media/ui/leftstick.png")
-Joypad.Texture.RStick = getTexture("media/ui/rightstick.png")
-Joypad.Texture.LTrigger = getTexture("media/ui/xbox/xbox_lefttrigger.png")
-Joypad.Texture.RTrigger = getTexture("media/ui/xbox/xbox_righttrigger.png")
-Joypad.Texture.Menu = getTexture("media/ui/xbox/XBOX_Menu.png")
-Joypad.Texture.View = getTexture("media/ui/xbox/XBOX_View.png")
+Joypad.Texture.AButton = getTexture("media/ui/controller/".. textureType .. "_A.png")
+Joypad.Texture.BButton = getTexture("media/ui/controller/".. textureType .. "_B.png")
+Joypad.Texture.XButton = getTexture("media/ui/controller/".. textureType .. "_X.png")
+Joypad.Texture.YButton = getTexture("media/ui/controller/".. textureType .. "_Y.png")
+Joypad.Texture.LBumper = getTexture("media/ui/controller/".. textureType .. "_LB.png")
+Joypad.Texture.RBumper = getTexture("media/ui/controller/".. textureType .. "_RB.png")
+Joypad.Texture.DPadLeft = getTexture("media/ui/controller/".. textureType .. "_DPad_Left.png")
+Joypad.Texture.DPadRight = getTexture("media/ui/controller/".. textureType .. "_DPad_Right.png")
+Joypad.Texture.DPadUp = getTexture("media/ui/controller/".. textureType .. "_DPad_Up.png")
+Joypad.Texture.DPadDown = getTexture("media/ui/controller/".. textureType .. "_DPad_Down.png")
+Joypad.Texture.DPad = getTexture("media/ui/controller/".. textureType .. "_DPad.png")
+Joypad.Texture.LStick = getTexture("media/ui/controller/".. textureType .. "_AnalogueL.png")
+Joypad.Texture.LStickUD = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_UD.png")
+Joypad.Texture.LStickLR = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_LR.png")
+Joypad.Texture.RStick = getTexture("media/ui/controller/".. textureType .. "_AnalogueR.png")
+Joypad.Texture.RStickUD = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_UD.png")
+Joypad.Texture.RStickLR = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_LR.png")
+Joypad.Texture.LTrigger = getTexture("media/ui/controller/".. textureType .. "_LeftTrigger.png")
+Joypad.Texture.RTrigger = getTexture("media/ui/controller/".. textureType .. "_RightTrigger.png")
+Joypad.Texture.Menu = getTexture("media/ui/controller/".. textureType .. "_Menu.png")
+Joypad.Texture.View = getTexture("media/ui/controller/".. textureType .. "_View.png")
 Joypad.Texture.Back = Joypad.Texture.View
 Joypad.Texture.Start = Joypad.Texture.Menu
 
@@ -812,6 +818,13 @@ function onJoypadActivate(id)
     if controller.joypad ~= nil then return end
 
     noise("activate %d", id)
+
+    if isPlaystationController(id) then
+        if getCore():getOptionControllerButtonStyle() ~= 2 then
+            getCore():setOptionControllerButtonStyle(2)
+            getCore():ResetLua("default", "gamepadStyleChange")
+        end
+    end
     
     if MainScreen.instance and MainScreenInstance.inGame then
         local numPlayers = getNumActivePlayers() + 1

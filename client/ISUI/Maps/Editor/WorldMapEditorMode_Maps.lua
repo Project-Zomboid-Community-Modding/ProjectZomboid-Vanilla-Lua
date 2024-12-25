@@ -5,19 +5,20 @@
 require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditorMode_Maps = WorldMapEditorMode:derive("WorldMapEditorMode_Maps")
 
 -----
 
 function WorldMapEditorMode_Maps:createChildren()
-	self.listbox = ISScrollingListBox:new(10, 80, 400, 200)
-	self.listbox:setFont(UIFont.Small, 4)
+	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, 400, 200)
+	self.listbox:setFont(UIFont.Small, 6)
 	self:addChild(self.listbox)
 
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-	local button = ISButton:new(10, self.listbox:getBottom() + 10, 80, buttonHgt, "LOAD", self, self.onLoadMap)
+	local button = ISButton:new(UI_BORDER_SPACING, self.listbox:getBottom() + UI_BORDER_SPACING, UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(self.font, getText("IGUI_DebugMenu_Load")), BUTTON_HGT, getText("IGUI_DebugMenu_Load"), self, self.onLoadMap)
+	button:setWidth(UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 end
 

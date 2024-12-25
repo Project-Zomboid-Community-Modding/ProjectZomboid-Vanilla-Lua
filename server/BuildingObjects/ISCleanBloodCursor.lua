@@ -14,15 +14,11 @@ function ISCleanBloodCursor:isValid(square)
 end
 
 function ISCleanBloodCursor:render(x, y, z, square)
-	if not ISCleanBloodCursor.floorSprite then
-		ISCleanBloodCursor.floorSprite = IsoSprite.new()
-		ISCleanBloodCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	ISCleanBloodCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISCleanBloodCursor:new(sprite, northSprite, character)

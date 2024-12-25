@@ -9,6 +9,10 @@ ISRadioWindow = ISCollapsableWindow:derive("ISRadioWindow");
 ISRadioWindow.instances = {};
 ISRadioWindow.instancesIso = {};
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 function ISRadioWindow.activate( _player, _deviceObject )
     local playerNum = _player:getPlayerNum();
 
@@ -26,7 +30,7 @@ function ISRadioWindow.activate( _player, _deviceObject )
         radioWindow = instances[ playerNum ];
         --radioWindow:initialise();
     else
-        radioWindow = ISRadioWindow:new (100, 100, 300, 500, _player);
+        radioWindow = ISRadioWindow:new (100, 100, 250+(getCore():getOptionFontSizeReal()*50), 500, _player);
         radioWindow:initialise();
         radioWindow:instantiate();
         ISLayoutManager.enableLog = true;
@@ -53,6 +57,48 @@ function ISRadioWindow.activate( _player, _deviceObject )
         setJoypadFocus(playerNum, radioWindow);
     end
     return radioWindow;
+end
+
+function ISRadioWindow.isActive( _player, _deviceObject )
+    local playerNum = _player:getPlayerNum();
+
+    local radioWindow, instances;
+    _player:setVariable("ExerciseStarted", false);
+    _player:setVariable("ExerciseEnded", true);
+    local _isIso = not instanceof(_deviceObject, "Radio")
+    if _isIso then
+        instances = ISRadioWindow.instancesIso;
+    else
+        instances = ISRadioWindow.instances;
+    end
+
+    if instances[ playerNum ] then
+        radioWindow = instances[ playerNum ];
+        radioWindow:readFromObject( _player, _deviceObject );
+        return radioWindow:isVisible()
+    end
+
+    return false
+end
+
+function ISRadioWindow.closeIfActive( _player, _deviceObject )
+    local playerNum = _player:getPlayerNum();
+
+    local radioWindow, instances;
+    _player:setVariable("ExerciseStarted", false);
+    _player:setVariable("ExerciseEnded", true);
+    local _isIso = not instanceof(_deviceObject, "Radio")
+    if _isIso then
+        instances = ISRadioWindow.instancesIso;
+    else
+        instances = ISRadioWindow.instances;
+    end
+
+    if instances[ playerNum ] then
+        radioWindow = instances[ playerNum ];
+        radioWindow:readFromObject( _player, _deviceObject );
+        radioWindow:close()
+    end
 end
 
 function ISRadioWindow:initialise()
@@ -109,7 +155,7 @@ function ISRadioWindow:update()
 
         if self.deviceType and self.device and self.player and self.deviceData then		
             if self.deviceType=="InventoryItem" then -- incase of inventory item check if player has it in a hand
-                if self.player:getPrimaryHandItem() == self.device or self.player:getSecondaryHandItem() == self.device then
+                if self.player:getPrimaryHandItem() == self.device or self.player:getSecondaryHandItem() == self.device  or self.player:getClothingItem_Back() == self.device then
                     return;
                 end
             elseif self.deviceType == "IsoObject" or self.deviceType == "VehiclePart" then -- incase of isoobject check distance.

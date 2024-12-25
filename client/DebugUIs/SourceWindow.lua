@@ -27,6 +27,7 @@ end
 function SourceWindow:reloadFile()
 
     reloadLuaFile(self.filename);
+    triggerEvent("OnSourceWindowFileReload");
     local y = self.sourceView:getYScroll();
     self:fill();
     self.sourceView:setYScroll(y);

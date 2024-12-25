@@ -16,6 +16,8 @@ ISPlayerStatsChooseTraitUI = ISPanel:derive("ISPlayerStatsChooseTraitUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -34,9 +36,7 @@ function ISPlayerStatsChooseTraitUI:setVisible(visible)
 end
 
 function ISPlayerStatsChooseTraitUI:render()
-    local z = 20;
-
-    self:drawText(getText("IGUI_PlayerStats_AddTraitTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_AddTraitTitle")) / 2), z, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_PlayerStats_AddTraitTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_AddTraitTitle")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISPlayerStatsChooseTraitUI:create()
@@ -51,12 +51,12 @@ function ISPlayerStatsChooseTraitUI:create()
         end
     end
 
-    self.combo = ISComboBox:new(10, 70, 100, FONT_HGT_SMALL + 3 * 2, nil,nil);
+    self.combo = ISComboBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT, nil,nil);
     self.combo:initialise();
     self.goodTrait = {};
     self:addChild(self.combo);
 
-    self.traitsSelector = ISTickBox:new(10, self.combo.y + self.combo.height + 5, 100, 18, "", self, ISPlayerStatsChooseTraitUI.onChangeList);
+    self.traitsSelector = ISTickBox:new(self.combo.x, self.combo.y + self.combo.height + UI_BORDER_SPACING, 100, BUTTON_HGT, "", self, ISPlayerStatsChooseTraitUI.onChangeList);
     self.traitsSelector:initialise();
     self.traitsSelector:instantiate();
     self.traitsSelector:setAnchorLeft(true);
@@ -70,24 +70,22 @@ function ISPlayerStatsChooseTraitUI:create()
     self:populateComboList();
 
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    self.ok = ISButton:new((self:getWidth() / 2) - 100 - 5, self.traitsSelector:getBottom() + padBottom, btnWid, btnHgt, getText("UI_Ok"), self, ISPlayerStatsChooseTraitUI.onOptionMouseDown);
+    self.ok = ISButton:new((self:getWidth() - UI_BORDER_SPACING) / 2 - btnWid, self.traitsSelector:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISPlayerStatsChooseTraitUI.onOptionMouseDown);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.ok);
 
-    self.cancel = ISButton:new((self:getWidth() / 2) + 5, self.ok:getY(), btnWid, btnHgt, getText("UI_Cancel"), self, ISPlayerStatsChooseTraitUI.onOptionMouseDown);
+    self.cancel = ISButton:new((self:getWidth() + UI_BORDER_SPACING) / 2, self.ok:getY(), btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISPlayerStatsChooseTraitUI.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
     self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.cancel);
 
-    self:setHeight(self.cancel:getBottom() + padBottom)
+    self:setHeight(self.cancel:getBottom() + UI_BORDER_SPACING+1)
 end
 
 
@@ -115,7 +113,6 @@ function ISPlayerStatsChooseTraitUI:populateComboList()
         local hc = getCore():getBadHighlitedColor()
         self.combo.textColor = {r=hc:getR(), g=hc:getG(), b=hc:getB(),a=0.9};
     end
-    self.combo:setWidthToOptions()
 end
 
 function ISPlayerStatsChooseTraitUI:onOptionMouseDown(button, x, y)

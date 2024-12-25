@@ -5,42 +5,48 @@
 require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditorMode_Stashes = WorldMapEditorMode:derive("WorldMapEditorMode_Stashes")
 
 -----
 
 function WorldMapEditorMode_Stashes:createChildren()
-	self.listbox = ISScrollingListBox:new(10, 80, 400, 200)
-	self.listbox:setFont(UIFont.Small, 4)
+	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, 400, 200)
+	self.listbox:setFont(UIFont.Small, 6)
 	self:addChild(self.listbox)
 
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-	local button = ISButton:new(10, self.listbox:getBottom() + 10, 80, buttonHgt, "LOAD", self, function(self) self:onLoadStash() end)
+	local button = ISButton:new(UI_BORDER_SPACING, self.listbox:getBottom() + UI_BORDER_SPACING, UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(self.font, getText("IGUI_DebugMenu_Load")), BUTTON_HGT, getText("IGUI_DebugMenu_Load"), self, function(self) self:onLoadStash() end)
+	button:setWidth(UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
+	local maxLabelWidth = UI_BORDER_SPACING*2+1+math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_WorldMapEditor_BuildingX")..":"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_WorldMapEditor_BuildingY")..":")
+	)
 
-	local label = ISLabel:new(button.x, button:getBottom() + 10, entryHgt, "buildingX:", 0, 0, 0, 1, UIFont.Small, true)
+	local label = ISLabel:new(button.x, button:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_BuildingX")..":", 0, 0, 0, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.buildingXEntry = ISTextEntryBox:new("", label:getRight() + 10, label.y, 100, entryHgt)
+	self.buildingXEntry = ISTextEntryBox:new("", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.buildingXEntry.onCommandEntered = function(entry) self:onBuildingXEntered() end
 	self:addChild(self.buildingXEntry)
 	self.buildingXEntry:setOnlyNumbers(true)
 
-	label = ISLabel:new(label.x, label:getBottom() + 10, entryHgt, "buildingY:", 0, 0, 0, 1, UIFont.Small, true)
+	label = ISLabel:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_BuildingY")..":", 0, 0, 0, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.buildingYEntry = ISTextEntryBox:new("", label:getRight() + 10, label.y, 100, entryHgt)
+	self.buildingYEntry = ISTextEntryBox:new("", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.buildingYEntry.onCommandEntered = function(entry) self:onBuildingYEntered() end
 	self:addChild(self.buildingYEntry)
 	self.buildingYEntry:setOnlyNumbers(true)
 
-	local height = entryHgt + 10 + entryHgt
-	button = ISButton:new(self.buildingXEntry:getRight() + 20, self.buildingXEntry.y + (height - buttonHgt) / 2, 80, buttonHgt, "PLACE", self, function(self) self:onBuildingSet() end)
+	local height = UI_BORDER_SPACING+BUTTON_HGT*2
+	button = ISButton:new(UI_BORDER_SPACING, self.buildingYEntry:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_Place"), self, function(self) self:onBuildingSet() end)
+	button:setWidth(UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
-	button = ISButton:new(button:getRight() + 10, button.y, 80, buttonHgt, "CLEAR", self, function(self) self:onBuildingClear() end)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, button.y, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_Clear"), self, function(self) self:onBuildingClear() end)
+	button:setWidth(UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 end
 
@@ -200,8 +206,12 @@ function WorldMapEditorMode_Stashes:onLoadStash()
 	local stash1 = item.item
 	local scriptItem = getScriptManager():FindItem(stash1.item)
 	if not scriptItem then return end
-	if not LootMaps.Init[scriptItem:getMapID()] then return end
-	self.editor.mapItem:setMapID(scriptItem:getMapID())
+	local mapID = scriptItem:getMapID()
+	if LootMaps.Init[stash1.name] then
+		mapID = stash1.name
+	end
+	if not LootMaps.Init[mapID] then return end
+	self.editor.mapItem:setMapID(mapID)
 	LootMaps.callLua("Init", self.mapUI)
 	if stash1.annotations then
 		for _,annotation in ipairs(stash1.annotations) do

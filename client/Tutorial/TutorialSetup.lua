@@ -4,8 +4,6 @@ TutorialData.choosenChallenge = {};
 function preLoadTutorialInit()
     if getCore():getGameMode() == "Tutorial" then
         globalTutorial = TutorialData.chosenTutorial;
-        getWorld():setLuaSpawnCellX(globalTutorial.xcell);
-        getWorld():setLuaSpawnCellY(globalTutorial.ycell);
         getWorld():setLuaPosX(globalTutorial.x);
         getWorld():setLuaPosY(globalTutorial.y);
         getWorld():setLuaPosZ(0);

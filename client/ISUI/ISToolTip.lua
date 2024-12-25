@@ -29,6 +29,10 @@ function ISToolTip:setTexture(textureName)
 	self.texture = getTexture(textureName);
 end
 
+function ISToolTip:setTextureDirectly(texture)
+	self.texture = texture;
+end
+
 function ISToolTip:onMouseDown(x, y)
 	return false
 end
@@ -135,15 +139,15 @@ function ISToolTip:doLayout()
 	local nameWidth = 0
 	local nameHeight = 0
 	if self.name then
-		nameWidth = getTextManager():MeasureStringX(UIFont.Medium, self.name) + 50
+		nameWidth = getTextManager():MeasureStringX(UIFont.Medium, self.name) + self.nameMarginX
 		nameHeight = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 		textureY = 35
 		textY = 25
 	end
 
-	textWidth, textHeight = self:layoutContents(textX, textY, math.max(220, nameWidth))
+	textWidth, textHeight = self:layoutContents(textX, textY, math.max(self.defaultMyWidth, nameWidth))
 
-	local myWidth = 220
+	local myWidth = self.defaultMyWidth;
 	local myHeight = math.max(nameHeight, math.max(textureY + textureHeight, textY + textHeight))
 
 	if myWidth < textX + textWidth then
@@ -367,6 +371,8 @@ function ISToolTip:new()
    o.descriptionPanel.borderColor = {r=1, g=1, b=1, a=0.1};
    o.owner = nil
    o.followMouse = true
+	o.nameMarginX = 50;
+	o.defaultMyWidth = 220;
    return o;
 end
 

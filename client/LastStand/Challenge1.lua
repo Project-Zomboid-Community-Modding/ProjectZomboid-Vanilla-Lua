@@ -146,9 +146,6 @@ Challenge1.SpawnZombies = function(count)
 			if e == 2 then x = ZombRand(Challenge1.zombieSpawnsRect.x, Challenge1.zombieSpawnsRect.x2); y = Challenge1.zombieSpawnsRect.y2; end
 			if e == 3 then y = ZombRand(Challenge1.zombieSpawnsRect.y, Challenge1.zombieSpawnsRect.y2); end
 
-			x = x + (Challenge1.xcell * 300);
-			y = y + (Challenge1.ycell * 300);
-
 			-- Implementation detail: VirtualZombieManager will remove any virtual zombies that are too close the the player.
 			local dist = IsoUtils.DistanceManhatten(x, y, player:getX(), player:getY())
 			if dist > getCell():getWidthInTiles() / 3 + 2 then
@@ -239,8 +236,6 @@ end
 Challenge1.id = "Challenge1";
 Challenge1.image = "media/lua/client/LastStand/Challenge1.png";
 Challenge1.world = "challengemaps/Challenge1";
-Challenge1.xcell = 0;
-Challenge1.ycell = 0;
 Challenge1.x = 153;
 Challenge1.y = 158;
 Challenge1.z = 0;
@@ -253,4 +248,4 @@ Challenge1.alphaTxt = 0;
 Challenge1.waveTime = 0;
 Challenge1.lastWaveTime = 0;
 Challenge1.zombieSpawnsRect = { x = 114, y = 119, x2 = 192, y2 = 200 }
-Events.OnChallengeQuery.Add(Challenge1.Add)
+--Events.OnChallengeQuery.Add(Challenge1.Add)

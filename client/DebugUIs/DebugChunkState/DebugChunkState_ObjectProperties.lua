@@ -5,7 +5,7 @@
 require "ISUI/ISScrollingListBox"
 require "DebugUIs/DebugChunkState/ISSectionedPanel"
 
-local FONT_HGT_CONSOLE = getTextManager():getFontHeight(UIFont.DebugConsole)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 DebugChunkStateUI_ObjPropsHandler = ISPanel:derive("DebugChunkStateUI_ObjPropsHandler")
 local ObjPropsHandler = DebugChunkStateUI_ObjPropsHandler
@@ -22,6 +22,7 @@ end
 function ObjPropsHandler:prerender()
 	self.addLineX = 4
 	self.addLineY = 0
+	table.wipe(self.highlightAreas)
 end
 
 function ObjPropsHandler:render()
@@ -35,6 +36,10 @@ end
 function ObjPropsHandler:postrender()
 	self:setHeight(self.addLineY)
 	self.parent:calculateHeights()
+	local area = self:getHighlightAreaUnderMouse()
+	if area then
+		self:drawRect(0, area.y1, self.width, area.y2 - area.y1, 0.4, 0.4, 0.4, 0.4)
+	end
 end
 
 function ObjPropsHandler:addLine(text, arg0, arg1, arg2, arg3, arg4)
@@ -43,14 +48,34 @@ function ObjPropsHandler:addLine(text, arg0, arg1, arg2, arg3, arg4)
 	if type(arg2) == "boolean" or type(arg2) == "table" then arg2 = tostring(arg2) end
 	if type(arg3) == "boolean" or type(arg3) == "table" then arg3 = tostring(arg3) end
 	if type(arg4) == "boolean" or type(arg4) == "table" then arg4 = tostring(arg4) end
-	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.DebugConsole)
-	self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.Small)
+	self.addLineY = self.addLineY + FONT_HGT_SMALL
+end
+
+function ObjPropsHandler:startHighlightArea(userData)
+	table.insert(self.highlightAreas, { y1 = self.addLineY, userData = userData })
+end
+
+function ObjPropsHandler:endHighlightArea()
+	self.highlightAreas[#self.highlightAreas].y2 = self.addLineY
+end
+
+function ObjPropsHandler:getHighlightAreaUnderMouse()
+	if not self:isMouseOver() then return nil end
+	local mouseY = self:getMouseY()
+	for index,area in ipairs(self.highlightAreas) do
+		if mouseY >= area.y1 and mouseY < area.y2 then
+			return area
+		end
+	end
+	return nil
 end
 
 function ObjPropsHandler:new(x, y, width, height, gameState)
 	local o = ISPanel.new(self, x, y, width, height)
 	o.gameState = gameState
 	o.object = nil
+	o.highlightAreas = {}
 	return o
 end
 
@@ -64,6 +89,7 @@ end
 function OPH_render:render1()
 	local obj = self.object
 	local pn = self:playerIndex()
+	self:startHighlightArea(obj:getSprite())
 	if obj:getSprite() then
 		self:addLine("sprite.name = %s", obj:getSprite():getName() or "")
 		self:addLine("sprite.type = %s", obj:getSprite():getType():toString())
@@ -73,6 +99,7 @@ function OPH_render:render1()
 	self:addLine("alpha = %.3f", obj:getAlpha(pn))
 	self:addLine("targetAlpha = %.3f", obj:getTargetAlpha(pn))
 	self:addLine("renderYOffset = %d", obj:getRenderYOffset())
+	self:endHighlightArea()
 end
 
 local OPH_overlaySprite = ObjPropsHandler:derive("DebugChunkStateUI_OPH_overlaySprite")
@@ -83,6 +110,7 @@ end
 function OPH_overlaySprite:render1()
 	local obj = self.object
 	if obj:getOverlaySprite() then
+		self:startHighlightArea(obj:getOverlaySprite())
 		self:addLine("sprite.name = %s", obj:getOverlaySprite():getName() or "")
 		self:addLine("sprite.type = %s", obj:getOverlaySprite():getType():toString())
 		self:addLine("sprite.ID = %d", obj:getOverlaySprite():getID())
@@ -90,6 +118,7 @@ function OPH_overlaySprite:render1()
 		if color then
 			self:addLine("rgba = %.3f,%.3f,%.3f,%.3f", color:getR(), color:getG(), color:getB(), color:getA())
 		end
+		self:endHighlightArea()
 	end
 end
 
@@ -105,6 +134,7 @@ function OPH_AttachedAnimSprite:render1()
 		for i=1,sprites:size() do
 			local inst = sprites:get(i-1)
 			local sprite = inst:getParentSprite()
+			self:startHighlightArea(sprite)
 			self:addLine("attached[%d]", i - 1)
 			self:addLine("    name = %s", sprite:getName())
 			self:addLine("    type = %s", sprite:getType():toString())
@@ -113,6 +143,7 @@ function OPH_AttachedAnimSprite:render1()
 			self:addLine("    alpha = %.3f", inst:getAlpha())
 			self:addLine("    bCopyTargetAlpha = %s", inst:isCopyTargetAlpha())
 			self:addLine("    bMultiplyObjectAlpha = %s", inst:isMultiplyObjectAlpha())
+			self:endHighlightArea()
 		end
 	end
 end
@@ -151,7 +182,7 @@ function OPH_SpriteProperties:render1()
 		self:addLine("%s = %s", names:get(i-1), props:Val(names:get(i-1)))
 	end
 	if not names:isEmpty() then
-		self.addLineY = self.addLineY + FONT_HGT_CONSOLE
+		self.addLineY = self.addLineY + FONT_HGT_SMALL
 	end
 	local flags = props:getFlagsList()
 	for i=1,flags:size() do
@@ -190,7 +221,13 @@ end
 local OPH_IsoPlayer = deriveOPH("IsoPlayer")
 function OPH_IsoPlayer:render1()
 	local obj = self.object
-	self:addLine("state = %s", obj:getCurrentState() and obj:getCurrentState():getClass():getSimpleName() or "none")
+	if obj:getCurrentState() == nil then
+		self:addLine("state = none")
+	else
+		local ss1 = string.split(tostring(obj:getCurrentState()), "\\.")
+		local ss2 = string.split(ss1[#ss1], "@")
+		self:addLine("state = %s", ss2[1])
+	end
 end
 
 local OPH_IsoThumpable = deriveOPH("IsoThumpable")
@@ -212,11 +249,10 @@ function OPH_IsoZombie:render1()
 	local obj = self.object
 	if obj:getCurrentState() == nil then
 		self:addLine("state = none")
-	elseif instanceof(obj:getCurrentState(), "State") then
-		self:addLine("state = %s", obj:getCurrentState():getClass():getSimpleName())
 	else
-		-- setExposed() not called for this state
-		self:addLine("state = %s", tostring(obj:getCurrentState()))
+		local ss1 = string.split(tostring(obj:getCurrentState()), "\\.")
+		local ss2 = string.split(ss1[#ss1], "@")
+		self:addLine("state = %s", ss2[1])
 	end
 	self:addLine("dir = %s", obj:getDir():toString())
 end
@@ -230,11 +266,11 @@ function ObjPropsPanel:createChildren()
 	for _,oph in ipairs(OPH) do
 		self:addSection(oph:new(0, 0, self.width, 50, self.debugChunkState.gameState), oph.className)
 	end
-	self:addSection(OPH_render:new(0, 0, self.width, 50, self.debugChunkState.gameState), "rendering")
-	self:addSection(OPH_overlaySprite:new(0, 0, self.width, 50, self.debugChunkState.gameState), "overlaySprite")
-	self:addSection(OPH_AttachedAnimSprite:new(0, 0, self.width, 50, self.debugChunkState.gameState), "AttachedAnimSprite")
-	self:addSection(OPH_ModData:new(0, 0, self.width, 50, self.debugChunkState.gameState), "modData")
-	self:addSection(OPH_SpriteProperties:new(0, 0, self.width, 50, self.debugChunkState.gameState), "sprite.properties")
+	self:addSection(OPH_render:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_Rendering"))
+	self:addSection(OPH_overlaySprite:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_OverlaySprite"))
+	self:addSection(OPH_AttachedAnimSprite:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_AttachedAnimSprite"))
+	self:addSection(OPH_ModData:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_ModData"))
+	self:addSection(OPH_SpriteProperties:new(0, 0, self.width, 50, self.debugChunkState.gameState), getText("IGUI_ChunkState_SpriteProperties"))
 	for _,section in ipairs(self.sections) do
 		section.enabled = false
 	end
@@ -248,6 +284,20 @@ function ObjPropsPanel:setObject(object)
 
 	for _,section in ipairs(self.sections) do
 		section.enabled = section.panel:setObject(object)
+	end
+end
+
+function ObjPropsPanel:render()
+	ISSectionedPanel.render(self)
+	for _,section in ipairs(self.sections) do
+		local area = section.panel:getHighlightAreaUnderMouse()
+		if area then
+			local spritePopupPanel = DebugChunkState_UI.spritePopupPanel
+			spritePopupPanel.sprite = area.userData
+			spritePopupPanel:setX(DebugChunkState_UI.objectSections:getRight())
+			spritePopupPanel:setY(section.panel:getAbsoluteY() + section.panel:getYScroll() + area.y1)
+			break
+		end
 	end
 end
 

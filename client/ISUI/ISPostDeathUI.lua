@@ -5,12 +5,21 @@
 ISPostDeathUI = ISPanelJoypad:derive("ISPostDeathUI")
 ISPostDeathUI.instance = {}
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
 
 function ISPostDeathUI:createChildren()
-	local buttonWid = 250
-	local buttonHgt = 40
-	local buttonGapY = 12
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Respawn")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Exit")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Quit"))
+	)
+
+	local buttonHgt = BUTTON_HGT
+	local buttonGapY = UI_BORDER_SPACING
 	local buttonX = 0
 	local buttonY = 0
 	local totalHgt = (buttonHgt * 3) + (buttonGapY * 2)
@@ -131,12 +140,14 @@ end
 
 function ISPostDeathUI:onExit()
 	if MainScreen.instance:isReallyVisible() then return end
+	setGameSpeed(1)
 	self:removeFromUIManager()
 	getCore():exitToMenu()
 end
 
 function ISPostDeathUI:onRespawn()
 	if MainScreen.instance:isReallyVisible() then return end
+	setGameSpeed(1)
 	self:setVisible(false)
 	local joypadData = JoypadState.players[self.playerIndex+1]
 	if joypadData then

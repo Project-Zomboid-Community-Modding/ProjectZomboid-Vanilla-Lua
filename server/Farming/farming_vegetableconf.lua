@@ -24,25 +24,41 @@ end
 
 -- return the number of vegtable you gain with your xp
 -- every 10 points over 50 health you plant have = 1 more vegetable
-function getVegetablesNumber(min, max, minAutorized, maxAutorized, plant)
+function getVegetablesNumber(min, max, minAutorized, maxAutorized, plant, skill)
+
+-- new version
+-- plant.getVegetablesNumber(skill)
+
+
+    if not skill then skill = 0 end
 	local healthModifier = math.floor((plant.health - 50) /10);
-	if healthModifier < 0 then
-		healthModifier = 0;
-    end
+	local aphidModifier = math.floor(plant.aphidLvl/10);
+	local slugModifier = math.floor(plant.slugsLvl/10);
+	local pestModifier = aphidModifier + slugModifier
+-- 	if healthModifier < 0 then
+-- 		healthModifier = 0;
+--     end
+-- 	if healthModifier >= 0 then
+-- 		healthModifier = healthModifier + plant.fertilizer;
+--     end
 
-    local vegModifier = 0;
-    if SandboxVars.PlantAbundance == 1 then -- very poor
-        vegModifier = -4;
-    elseif SandboxVars.PlantAbundance == 2 then -- poor
-        vegModifier = -2;
-    elseif SandboxVars.PlantAbundance == 4 then -- abundant
-        vegModifier = 3;
-    elseif SandboxVars.PlantAbundance == 5 then -- very abundant
-        vegModifier = 5;
+    local vegModifier = 0 -- + plant.fertilizer;
+    if plant.bonusYield and not plant.cursed then
+        vegModifier = vegModifier + 1
     end
+--     if SandboxVars.PlantAbundance == 1 then -- very poor
+--         vegModifier = -4;
+--     elseif SandboxVars.PlantAbundance == 2 then -- poor
+--         vegModifier = -2;
+--     elseif SandboxVars.PlantAbundance == 4 then -- abundant
+--         vegModifier = 3;
+--     elseif SandboxVars.PlantAbundance == 5 then -- very abundant
+--         vegModifier = 5;
+--     end
 
-	local minV = min + healthModifier + vegModifier;
-	local maxV = max + healthModifier + vegModifier;
+
+	local minV = min + healthModifier;
+	local maxV = max + healthModifier;
 	if minV > (minAutorized + vegModifier) then
 		minV = minAutorized + vegModifier;
 	end
@@ -51,36 +67,73 @@ function getVegetablesNumber(min, max, minAutorized, maxAutorized, plant)
 	end
 	-- I have to add 1 to the maxV, don't know why but the zombRand never take the last digit (ex, between 5 and 10, you'll never have 10...)
 	local nbOfVegetable = ZombRand(minV, maxV + 1);
-	-- every 10 pts of aphid lower by 1 the vegetable you'll get
-	local aphidModifier = math.floor(plant.aphidLvl/10);
-	nbOfVegetable = nbOfVegetable - aphidModifier;
+    if plant.bonusYield and not plant.cursed then
+        nbOfVegetable = math.max( nbOfVegetable, ZombRand(minV, maxV + 1) )
+    end
+-- 	-- every 10 pts of aphid lower by 1 the vegetable you'll get
+-- 	-- every 10 pts of slug lower by 1 the vegetable you'll get
+	nbOfVegetable = nbOfVegetable - pestModifier;
+
+    if ZombRand(10) < skill then nbOfVegetable = nbOfVegetable + skill end
+--     if plant.bonusYield then
+--         numberOfVeg = math.floor(nbOfVegetable * 1.25)
+--     end
+
+	local sandboxYield = getSandboxOptions():getOptionByName("FarmingAmountNew"):getValue()
+	numberOfVeg = math.floor(nbOfVegetable * sandboxYield)
+	if nbOfVegetable < 1 then nbOfVegetable = 1 end
 	return nbOfVegetable;
 end
 
+function randomGrowthOffset()
+    return ZombRand(25)-12
+end
 
 function calcNextGrowing(nextGrowing, nextTime)
 	if nextGrowing then
 		return nextGrowing;
 	end
-    if SandboxVars.Farming == 1 then -- very fast
-        nextTime = nextTime / 3;
-    end
-    if SandboxVars.Farming == 2 then -- fast
-        nextTime = nextTime / 1.5;
-    end
-    if SandboxVars.Farming == 4 then -- slow
-        nextTime = nextTime * 1.5;
-    end
-    if SandboxVars.Farming == 5 then -- very slow
-        nextTime = nextTime * 3;
-    end
+	nextTime = nextTime * calcNextTimeFactor()
+--     if SandboxVars.Farming == 1 then -- very fast
+--         nextTime = nextTime / 3;
+--     end
+--     if SandboxVars.Farming == 2 then -- fast
+--         nextTime = nextTime / 1.5;
+--     end
+--     if SandboxVars.Farming == 4 then -- slow
+--         nextTime = nextTime * 1.5;
+--     end
+--     if SandboxVars.Farming == 5 then -- very slow
+--         nextTime = nextTime * 3;
+--     end
+	nextTime = nextTime + randomGrowthOffset()
+	if nextTime <= 0 then nextTime = 1 end
 	return SFarmingSystem.instance.hoursElapsed + nextTime;
 end
 
-function growNext(planting, typeOfTile, nameOfTile, nextGrowing, howManyTime)
+function calcNextTimeFactor()
+	local nextTime = 1
+	local sandboxTime = getSandboxOptions():getOptionByName("FarmingSpeedNew"):getValue()
+	nextTime = nextTime / sandboxTime
+-- 	if nextTime < 1 then nextTime = 1 end
+--     if SandboxVars.Farming == 1 then -- very fast
+--         nextTime = nextTime / 3;
+--     end
+--     if SandboxVars.Farming == 2 then -- fast
+--         nextTime = nextTime / 1.5;
+--     end
+--     if SandboxVars.Farming == 4 then -- slow
+--         nextTime = nextTime * 1.5;
+--     end
+--     if SandboxVars.Farming == 5 then -- very slow
+--         nextTime = nextTime * 3;
+--     end
+	return nextTime;
+end
+
+function growNext(planting, nameOfTile, nextGrowing, howManyTime)
 	planting.nextGrowing = calcNextGrowing(nextGrowing, howManyTime)
 	planting:setObjectName(nameOfTile)
-	planting:setSpriteName(typeOfTile)
 	return planting
 end
 
@@ -122,347 +175,171 @@ farming_vegetableconf.calcDisease = function(diseaseLvl)
 	return 0;
 end
 
+farming_vegetableconf.getObjectPhase = function(plant)
+    local prop = farming_vegetableconf.props[plant.typeOfSeed]
+    if plant.hasSeed then
+        return getText("Farming_In_bloom");
+--         return getText("Farming_Seed_bearing");
+    elseif plant.hasVegetable then
+        return getText("Farming_Ready_to_harvest");
+    elseif plant.nbOfGrow and plant.nbOfGrow == prop.harvestLevel then
+        return getText("Farming_Harvest_Soon");
+    elseif plant.nbOfGrow and plant.nbOfGrow <= 2 then
+        return getText("Farming_Seedling");
+    else
+        return getText("Farming_Young");
+    end
+    return false
+end
 
 -- get the object name depending on his current phase
 farming_vegetableconf.getObjectName = function(plant)
-	if plant.state == "plow" then return getText("Farming_Plowed_Land") end
-	if plant.state == "destroy" then return getText("Farming_Destroyed") .. " " .. getText("Farming_" .. plant.typeOfSeed) end
-	if plant.state == "dry" then return getText("Farming_Receding") .. " " .. getText("Farming_" .. plant.typeOfSeed) end
-	if plant.state == "rotten" then return getText("Farming_Rotten") .. " " .. getText("Farming_" .. plant.typeOfSeed) end
-	if plant.nbOfGrow <= 1 then
-		return getText("Farming_Seedling") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-	elseif plant.nbOfGrow <= 4 then
-		return getText("Farming_Young") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-	elseif plant.nbOfGrow == 5 then
-        if plant.typeOfSeed == "Tomato" then
-            return getText("Farming_Young") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-        end
-		if plant.typeOfSeed == "Strawberry plant" or plant.typeOfSeed == "Potatoes" then
-			return getText("Farming_In_bloom") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-		else
-			return getText("Farming_Ready_for_Harvest") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-		end
-	elseif plant.nbOfGrow == 6 then
-		return getText("Farming_Seed-bearing") .. " " .. getText("Farming_" ..plant.typeOfSeed);
-	end
-	return "Mystery Plant"
+
+--     local prop = farming_vegetableconf.props[plant.typeOfSeed]
+
+	if plant.state == "plow" then return getText("Farming_Plowed_Land")
+	elseif plant.state == "destroyed" then return getText("Farming_Destroyed") .. " " .. getText("Farming_" .. plant.typeOfSeed)
+	elseif plant.state == "dead" then return getText("Farming_Dead") .. " " .. getText("Farming_" .. plant.typeOfSeed)
+	elseif plant.state == "rotten" then return getText("Farming_Rotten") .. " " .. getText("Farming_" .. plant.typeOfSeed)
+	elseif plant.state == "harvested" then return getText("Farming_Harvested") .. " " .. getText("Farming_" .. plant.typeOfSeed) end
+    return farming_vegetableconf.getObjectPhase(plant) .. " " .. getText("Farming_" ..plant.typeOfSeed);
+
+--     if plant.hasSeed then
+--         return getText("Farming_Seed_bearing");
+--     elseif plant.hasVegetable then
+--         return getText("Farming_Ready_to_harvest");
+--     elseif plant.nbOfGrow == prop.harvestLevel - 1 then
+--         return getText("Farming_Harvest_Soon");
+--     elseif plant.nbOfGrow <= 2 then
+--         return getText("Farming_Seedling");
+--     else
+--         return getText("Farming_Young");
+--     end
+
+
+
+--     if plant:isAlive() then
+--     if plant.hasSeed then
+--         return getText("Farming_Seed-bearing") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+--     elseif plant.hasVegetable then
+--         return getText("Farming_Ready_for_Harvest") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+--     elseif plant.nbOfGrow <= 1 then
+--         return getText("Farming_Seedling") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+--     else
+--         return getText("Farming_Young") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+--     end
+--     end
+
+-- 	if plant.nbOfGrow <= 1 then
+-- 		return getText("Farming_Seedling") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+-- 	elseif plant.nbOfGrow <= 4 then
+-- 		return getText("Farming_Young") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+-- 	elseif plant.nbOfGrow == 5 then
+--         if plant.typeOfSeed == "Tomato" then
+--             return getText("Farming_Young") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+--         end
+-- 		if plant.typeOfSeed == "Strawberryplant" or plant.typeOfSeed == "Potatoes" then
+-- 			return getText("Farming_In_bloom") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+-- 		else
+-- 			return getText("Farming_Ready_for_Harvest") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+-- 		end
+-- 	elseif plant.nbOfGrow == 6 then
+-- 		return getText("Farming_Seed-bearing") .. " " .. getText("Farming_" ..plant.typeOfSeed);
+-- 	end
+-- 	return "Mystery Plant"
 end
 
 farming_vegetableconf.getSpriteName = function(plant)
+	local prop = farming_vegetableconf.props[plant.typeOfSeed]
+    local nbOfGrow = plant.nbOfGrow
 	if plant.state == "plow" then return "vegetation_farming_01_1" end
-	if plant.nbOfGrow <= 0 then
-		return farming_vegetableconf.sprite[plant.typeOfSeed][1]
-	elseif plant.nbOfGrow <= 4 then
-		return farming_vegetableconf.sprite[plant.typeOfSeed][1 + plant.nbOfGrow]
-	elseif plant.nbOfGrow == 5 then
-		return farming_vegetableconf.sprite[plant.typeOfSeed][6]
-	elseif plant.nbOfGrow == 6 then
-		return farming_vegetableconf.sprite[plant.typeOfSeed][7]
-	else -- rotten
-		return farming_vegetableconf.sprite[plant.typeOfSeed][8]
-	end
+    local spriteType = "sprite"
+    local health = math.min(plant.health, plant.waterLvl)
+    local disease = math.max(plant.mildewLvl, plant.aphidLvl)
+    local disease = math.max(disease, plant.slugsLvl)
+    if plant.state == "destroyed" or plant.state == "harvested" then
+        spriteType = "trampledSprite"
+--     elseif plant.state == "rotten"  and stage > 6  then
+--         spriteType = "sprite"
+--         nbOfGrow = nbOfGrow + 1
+    elseif plant.state == "dead" or plant.state == "rotten" then
+        spriteType = "deadSprite"
+    elseif health < 25 or disease >= 30 then
+        spriteType = "dyingSprite"
+    elseif health < 50 or disease >= 10 or plant.fertilizer > 1 then
+        spriteType = "unhealthySprite"
+    end
+    if farming_vegetableconf[spriteType] and farming_vegetableconf[spriteType][plant.typeOfSeed] and farming_vegetableconf[spriteType][plant.typeOfSeed][nbOfGrow]  then
+        return farming_vegetableconf[spriteType][plant.typeOfSeed][nbOfGrow]
+    end
 end
 
--- Carrots
--- Need 12 seeds
--- Need 80 water at phase 1, minimum 70 at 2, then between 35 and 65
--- Grow in 17 days (68h per phase)
-farming_vegetableconf.growCarrots = function(planting, nextGrowing, updateNbOfGrow)
+farming_vegetableconf.grow = function(planting, nextGrowing, updateNbOfGrow)
 	local nbOfGrow = planting.nbOfGrow;
 	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
 	local waterMax = farming_vegetableconf.calcWater(planting.waterLvl, planting.waterNeededMax);
 	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if nbOfGrow == 0 then -- young
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-		planting.waterNeeded = 70;
-	elseif (nbOfGrow <= 4) then -- young
+	local prop = farming_vegetableconf.props[planting.typeOfSeed]
+	local name = farming_vegetableconf.getObjectName(planting)
+
+    if planting.fertilizer >= 1 then
+        planting.fertilizer = planting.fertilizer - 1
+    end
+    planting.compost = false
+	local cheat = getCore():getDebug() and getDebugOptions():getBoolean("Cheat.Farming.FastGrow")
+	if (nbOfGrow > prop.fullGrown) then -- rotten
+        planting:rottenThis()
+	elseif (nbOfGrow == prop.fullGrown) then -- mature with seed
+		if(water >= 0 and waterMax >= 0 and diseaseLvl >= 0) then
+		    local rotTime = prop.rotTime or math.floor(prop.timeToGrow/2)
+			planting.nextGrowing = calcNextGrowing(nextGrowing, rotTime);
+			planting:setObjectName(name)
+-- 			planting.hasVegetable = true;
+			planting.hasSeed = true;
+		else
+			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
+		end
+	elseif (nbOfGrow == prop.mature) then -- mature
+		if(water >= 0 and waterMax >= 0 and diseaseLvl >= 0) then
+			if cheat then
+				planting.nextGrowing = calcNextGrowing(nextGrowing, 1);
+			else
+				planting.nextGrowing = calcNextGrowing(nextGrowing, prop.timeToGrow + water + waterMax + diseaseLvl);
+			end
+		else
+			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
+		end
+	elseif (nbOfGrow > 0) then -- young
 		if water >= 0 and waterMax >= 0 and diseaseLvl >= 0 then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-			planting.waterNeededMax = farming_vegetableconf.props[planting.typeOfSeed].waterLvlMax;
+			if cheat then
+				planting = growNext(planting, farming_vegetableconf.getObjectName(planting), nextGrowing, 1);
+			else
+				planting = growNext(planting, farming_vegetableconf.getObjectName(planting), nextGrowing, prop.timeToGrow + water + waterMax + diseaseLvl);
+			end
+
+			planting.waterNeeded = prop.waterLvl;
+			if prop.waterLvlMax then
+			    planting.waterNeededMax = prop.waterLvlMax;
+			end
 		else
 			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
 		end
-	elseif (nbOfGrow == 5) then -- mature
-		if(water >= 0 and waterMax >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
+	elseif nbOfGrow == 0 then -- young
+		if cheat then
+			planting = growNext(planting, farming_vegetableconf.getObjectName(planting), nextGrowing, 1);
 		else
-			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
+			planting = growNext(planting, farming_vegetableconf.getObjectName(planting), nextGrowing, prop.timeToGrow + water + waterMax + diseaseLvl);
 		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and waterMax >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 248);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
 
--- Broccoli
--- need 6 seeds
--- need to have more than 70 water lvl
--- need 4 weeks (112 hours per phase)
-farming_vegetableconf.growBroccoli = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if (nbOfGrow == 0) then -- young
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = 70;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- mature
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 248);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
-
--- Radishes
--- Need 6 seeds
--- Need water lvl between 45 and 75
--- Need 2 weeks (56h per phase)
-farming_vegetableconf.growRedRadish = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local waterMax = farming_vegetableconf.calcWater(planting.waterLvl, planting.waterNeededMax);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if(nbOfGrow == 0) then -- young
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-		planting.waterNeeded = 70;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and waterMax >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-			planting.waterNeededMax = farming_vegetableconf.props[planting.typeOfSeed].waterLvlMax;
-		else
-			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- mature
-		if(water >= 0 and waterMax >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + waterMax + diseaseLvl);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-		else
-			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and waterMax >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 224);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, waterMax, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
-
--- Strawberry
--- Need 12 seeds
--- Need water lvl over 85
--- need 3 weeks to grow (84h per phase)
--- On harvest, don't disapear but go again on phase 2
-farming_vegetableconf.growStrewberries = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if(nbOfGrow == 0) then -- young
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		planting.waterNeeded = 85;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- bloom
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 236);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
-
--- Tomatos
--- Need 4 seeds and 4 sticks
--- Need water lvl over 75
--- Need 17 days weeks (68h per phase)
-farming_vegetableconf.growTomato = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if(nbOfGrow == 0) then -- young
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing,farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		planting.waterNeeded = 80;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- bloom (don't have vegetable)
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 248);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
-
--- Potatos
--- Need 4 seeds
--- Water lvl over 65
--- Need 3 weeks (84h per phase)
-farming_vegetableconf.growPotato = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if(nbOfGrow == 0) then -- young
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		planting.waterNeeded = 70;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-			planting.waterNeededMax = farming_vegetableconf.props[planting.typeOfSeed].waterLvlMax;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- mature
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 48);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
-	return planting;
-end
-
--- Cabbage
--- Need 9 seeds
--- Water lvl over 85
--- Need 4 weeks to grow (112h per phase)
-farming_vegetableconf.growCabbage = function(planting, nextGrowing, updateNbOfGrow)
-	local nbOfGrow = planting.nbOfGrow;
-	local water = farming_vegetableconf.calcWater(planting.waterNeeded, planting.waterLvl);
-	local diseaseLvl = farming_vegetableconf.calcDisease(planting.mildewLvl);
-	if(nbOfGrow <= 0) then -- young
-		nbOfGrow = 0;
-		planting.nbOfGrow = 0;
-		planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-		planting.waterNeeded = 80;
-	elseif (nbOfGrow <= 4) then -- young
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting = growNext(planting, farming_vegetableconf.getSpriteName(planting), farming_vegetableconf.getObjectName(planting), nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting.waterNeeded = farming_vegetableconf.props[planting.typeOfSeed].waterLvl;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 5) then -- mature
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, farming_vegetableconf.props[planting.typeOfSeed].timeToGrow + water + diseaseLvl);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (nbOfGrow == 6) then -- mature with seed
-		if(water >= 0 and diseaseLvl >= 0) then
-			planting.nextGrowing = calcNextGrowing(nextGrowing, 48);
-			planting:setObjectName(farming_vegetableconf.getObjectName(planting))
-			planting:setSpriteName(farming_vegetableconf.getSpriteName(planting))
-			planting.hasVegetable = true;
-			planting.hasSeed = true;
-		else
-			badPlant(water, nil, diseaseLvl, planting, nextGrowing, updateNbOfGrow);
-		end
-	elseif (planting.state ~= "rotten") then -- rotten
-		planting:rottenThis()
-	end
+        planting.waterNeeded = prop.waterNeeded
+    end
+    if planting:isAlive() then
+        if (prop.harvestLevel and nbOfGrow >= prop.harvestLevel)
+         or (not prop.harvestLevel and nbOfGrow >= prop.harvestLeve) then
+            planting:setObjectName(name)
+            planting.hasVegetable = true;
+         end
+    end
 	return planting;
 end
 
@@ -480,198 +357,57 @@ function badPlant(water, waterMax, diseaseLvl, plant, nextGrowing, updateNbOfGro
     end
 
     if diseaseLvl == -2 then -- our plant is dead if disease > 60
-        plant:dryThis();
+        plant:killThis();
         return;
+    end
+
+    if updateNbOfGrow then
+        plant.nbOfGrow = plant.nbOfGrow -1;
     end
 
 	if water == -1 or waterMax == -1 or diseaseLvl == -1 then-- we report our growing
 		plant.nextGrowing = calcNextGrowing(nextGrowing, 30);
-		if updateNbOfGrow then
-			plant.nbOfGrow = plant.nbOfGrow -1;
-        end
         return;
     end
 
     plant.nextGrowing = calcNextGrowing(nextGrowing, 50);
-    plant.health = plant.health - 4;
-    if updateNbOfGrow then
-        plant.nbOfGrow = plant.nbOfGrow -1;
-    end
+
+    local badMultiplier = 1
+    -- if a plant is "cursed" ( 50% is planted in a risky month) then the odds are stacked against it
+    if plant.cursed then badMultiplier = badMultiplier * 2 end
+    if plant.hasWeeds then badMultiplier = badMultiplier * 2 end
+    -- plants with insufficient natural light will have the badMultiplier increased
+    if plant.naturalLight then badMultiplier = badMultiplier / plant.naturalLight end
+
+    plant.health = plant.health - (4 * badMultiplier);
 end
 
-farming_vegetableconf.icons = {}
-farming_vegetableconf.icons["Carrots"] = "Item_Carrots";
-farming_vegetableconf.icons["Broccoli"] = "Item_Broccoli";
-farming_vegetableconf.icons["Radishes"] = "Item_TZ_LRRadish";
-farming_vegetableconf.icons["Strawberry plant"] = "Item_TZ_Strewberry";
-farming_vegetableconf.icons["Tomato"] = "Item_TZ_Tomato";
-farming_vegetableconf.icons["Potatoes"] = "Item_TZ_Potato";
-farming_vegetableconf.icons["Cabbages"] = "Item_TZ_CabbageLettuce";
-
 farming_vegetableconf.props = {};
--- Carrots (12 to 16 weeks to grow)
-farming_vegetableconf.props["Carrots"] = {};
-farming_vegetableconf.props["Carrots"].seedsRequired = 12;
-farming_vegetableconf.props["Carrots"].texture = "vegetation_farming_01_38";
-farming_vegetableconf.props["Carrots"].waterLvl = 35;
-farming_vegetableconf.props["Carrots"].waterLvlMax = 85;
-farming_vegetableconf.props["Carrots"].timeToGrow = ZombRand(50,55);
-farming_vegetableconf.props["Carrots"].minVeg = 3;
-farming_vegetableconf.props["Carrots"].maxVeg = 6;
-farming_vegetableconf.props["Carrots"].minVegAutorized = 10;
-farming_vegetableconf.props["Carrots"].maxVegAutorized = 15;
-farming_vegetableconf.props["Carrots"].vegetableName = "Base.Carrots";
-farming_vegetableconf.props["Carrots"].seedName = "farming.CarrotSeed";
-farming_vegetableconf.props["Carrots"].seedPerVeg = 3;
---~ -- Broccoli (20 to 24 weeks to grow)
-farming_vegetableconf.props["Broccoli"] = {};
-farming_vegetableconf.props["Broccoli"].waterLvl = 70;
-farming_vegetableconf.props["Broccoli"].seedsRequired = 6;
-farming_vegetableconf.props["Broccoli"].texture = "vegetation_farming_01_30";
-farming_vegetableconf.props["Broccoli"].timeToGrow = ZombRand(103, 117);
-farming_vegetableconf.props["Broccoli"].minVeg = 2;
-farming_vegetableconf.props["Broccoli"].maxVeg = 4;
-farming_vegetableconf.props["Broccoli"].minVegAutorized = 6;
-farming_vegetableconf.props["Broccoli"].maxVegAutorized = 8;
-farming_vegetableconf.props["Broccoli"].vegetableName = "Base.Broccoli";
-farming_vegetableconf.props["Broccoli"].seedName = "farming.BroccoliSeed";
-farming_vegetableconf.props["Broccoli"].seedPerVeg = 3;
--- Radishes (6 to 8 weeks to grow)
-farming_vegetableconf.props["Radishes"] = {};
-farming_vegetableconf.props["Radishes"].seedsRequired = 6;
-farming_vegetableconf.props["Radishes"].texture = "vegetation_farming_01_54";
-farming_vegetableconf.props["Radishes"].waterLvl = 45;
-farming_vegetableconf.props["Radishes"].waterLvlMax = 85;
-farming_vegetableconf.props["Radishes"].timeToGrow = ZombRand(56, 62);
-farming_vegetableconf.props["Radishes"].minVeg = 4;
-farming_vegetableconf.props["Radishes"].maxVeg = 9;
-farming_vegetableconf.props["Radishes"].minVegAutorized = 11;
-farming_vegetableconf.props["Radishes"].maxVegAutorized = 15;
-farming_vegetableconf.props["Radishes"].vegetableName = "farming.RedRadish";
-farming_vegetableconf.props["Radishes"].seedName = "farming.RedRadishSeed";
-farming_vegetableconf.props["Radishes"].seedPerVeg = 4;
--- Strawberry (24 to 28 weeks to grow)
-farming_vegetableconf.props["Strawberry plant"] = {};
-farming_vegetableconf.props["Strawberry plant"].seedsRequired = 12;
-farming_vegetableconf.props["Strawberry plant"].texture = "vegetation_farming_01_62";
-farming_vegetableconf.props["Strawberry plant"].waterLvl = 85;
-farming_vegetableconf.props["Strawberry plant"].timeToGrow = ZombRand(103, 131);
-farming_vegetableconf.props["Strawberry plant"].minVeg = 4;
-farming_vegetableconf.props["Strawberry plant"].maxVeg = 6;
-farming_vegetableconf.props["Strawberry plant"].minVegAutorized = 8;
-farming_vegetableconf.props["Strawberry plant"].maxVegAutorized = 14;
-farming_vegetableconf.props["Strawberry plant"].vegetableName = "farming.Strewberrie";
-farming_vegetableconf.props["Strawberry plant"].seedName = "farming.StrewberrieSeed";
-farming_vegetableconf.props["Strawberry plant"].seedPerVeg = 3;
--- Tomatos (16 to 20 weeks to grow)
-farming_vegetableconf.props["Tomato"] = {};
-farming_vegetableconf.props["Tomato"].seedsRequired = 4;
-farming_vegetableconf.props["Tomato"].texture = "vegetation_farming_01_70";
-farming_vegetableconf.props["Tomato"].waterLvl = 75;
-farming_vegetableconf.props["Tomato"].timeToGrow = ZombRand(89, 103);
-farming_vegetableconf.props["Tomato"].minVeg = 4;
-farming_vegetableconf.props["Tomato"].maxVeg = 5;
-farming_vegetableconf.props["Tomato"].minVegAutorized = 6;
-farming_vegetableconf.props["Tomato"].maxVegAutorized = 10;
-farming_vegetableconf.props["Tomato"].vegetableName = "farming.Tomato";
-farming_vegetableconf.props["Tomato"].seedName = "farming.TomatoSeed";
-farming_vegetableconf.props["Tomato"].seedPerVeg = 2;
--- Potatos (16 to 20 weeks to grow)
-farming_vegetableconf.props["Potatoes"] = {};
-farming_vegetableconf.props["Potatoes"].seedsRequired = 4;
-farming_vegetableconf.props["Potatoes"].texture = "vegetation_farming_01_46";
-farming_vegetableconf.props["Potatoes"].waterLvl = 65;
-farming_vegetableconf.props["Potatoes"].timeToGrow = ZombRand(89, 103);
-farming_vegetableconf.props["Potatoes"].minVeg = 3;
-farming_vegetableconf.props["Potatoes"].maxVeg = 4;
-farming_vegetableconf.props["Potatoes"].minVegAutorized = 5;
-farming_vegetableconf.props["Potatoes"].maxVegAutorized = 9;
-farming_vegetableconf.props["Potatoes"].vegetableName = "farming.Potato";
-farming_vegetableconf.props["Potatoes"].seedName = "farming.PotatoSeed";
-farming_vegetableconf.props["Potatoes"].seedPerVeg = 3;
--- Cabbage Lettuce (6 to 8 weeks to grow)
-farming_vegetableconf.props["Cabbages"] = {};
-farming_vegetableconf.props["Cabbages"].seedsRequired = 9;
-farming_vegetableconf.props["Cabbages"].texture = "vegetation_farming_01_21";
-farming_vegetableconf.props["Cabbages"].waterLvl = 85;
-farming_vegetableconf.props["Cabbages"].timeToGrow = ZombRand(46, 52);
-farming_vegetableconf.props["Cabbages"].vegetableName = "farming.Cabbage";
-farming_vegetableconf.props["Cabbages"].seedName = "farming.CabbageSeed";
-farming_vegetableconf.props["Cabbages"].seedPerVeg = 3;
-farming_vegetableconf.props["Cabbages"].minVeg = 4;
-farming_vegetableconf.props["Cabbages"].maxVeg = 6;
-farming_vegetableconf.props["Cabbages"].minVegAutorized = 9;
-farming_vegetableconf.props["Cabbages"].maxVegAutorized = 11;
 
 farming_vegetableconf.sprite = {}
-farming_vegetableconf.sprite["Carrots"] = {
-"vegetation_farming_01_32",
-"vegetation_farming_01_33",
-"vegetation_farming_01_34",
-"vegetation_farming_01_35",
-"vegetation_farming_01_36",
-"vegetation_farming_01_37",
-"vegetation_farming_01_38",
-"vegetation_farming_01_39"
-}
-farming_vegetableconf.sprite["Broccoli"] = {
-"vegetation_farming_01_24",
-"vegetation_farming_01_25",
-"vegetation_farming_01_26",
-"vegetation_farming_01_27",
-"vegetation_farming_01_28",
-"vegetation_farming_01_30",
-"vegetation_farming_01_29",
-"vegetation_farming_01_31"
-}
-farming_vegetableconf.sprite["Radishes"] = {
-"vegetation_farming_01_48",
-"vegetation_farming_01_49",
-"vegetation_farming_01_50",
-"vegetation_farming_01_51",
-"vegetation_farming_01_52",
-"vegetation_farming_01_54",
-"vegetation_farming_01_53",
-"vegetation_farming_01_55"
-}
-farming_vegetableconf.sprite["Strawberry plant"] = {
-"vegetation_farming_01_56",
-"vegetation_farming_01_57",
-"vegetation_farming_01_58",
-"vegetation_farming_01_59",
-"vegetation_farming_01_60",
-"vegetation_farming_01_61",
-"vegetation_farming_01_62",
-"vegetation_farming_01_63"
-}
-farming_vegetableconf.sprite["Tomato"] = {
-"vegetation_farming_01_64",
-"vegetation_farming_01_65",
-"vegetation_farming_01_66",
-"vegetation_farming_01_67",
-"vegetation_farming_01_68",
-"vegetation_farming_01_69",
-"vegetation_farming_01_70",
-"vegetation_farming_01_71"
-}
-farming_vegetableconf.sprite["Potatoes"] = {
-"vegetation_farming_01_40",
-"vegetation_farming_01_41",
-"vegetation_farming_01_42",
-"vegetation_farming_01_43",
-"vegetation_farming_01_44",
-"vegetation_farming_01_46",
-"vegetation_farming_01_45",
-"vegetation_farming_01_47"
-}
-farming_vegetableconf.sprite["Cabbages"] = {
-"vegetation_farming_01_16",
-"vegetation_farming_01_17",
-"vegetation_farming_01_18",
-"vegetation_farming_01_19",
-"vegetation_farming_01_20",
-"vegetation_farming_01_22",
-"vegetation_farming_01_21",
-"vegetation_farming_01_23"
-}
+farming_vegetableconf.unhealthySprite = {}
+farming_vegetableconf.dyingSprite = {}
+farming_vegetableconf.deadSprite = {}
+farming_vegetableconf.trampledSprite = {}
 
+-- function ISGameLoadingUI.OnMovingObjectCrop(object)
+--     print("2 - Zombie destroy crop " .. tostring(object))
+--     local square = object:getSquare()
+--     print("square " .. tostring(square))
+--     if not square then return end
+--     local plant = CFarmingSystem.instance:getLuaObjectOnSquare(square)
+--     print("plant " .. tostring(plant))
+--     if not plant then return end
+-- 	if plant.state == "plow" or plant.state == "destroyed" or plant.state == "harvested" then return end
+--     print("3 - Zombie destroy crop")
+--
+--     if (instanceof(object, "IsoZombie") and ZombRand(10) == 0) or (instanceof(object, "BaseVehicle") and not object:notKillCrops()) then
+--
+--     print("4 - Zombie destroy crop")
+--         -- too bad ! :)
+--         square:playSound("RemovePlant")
+--         plant:destroyThis()
+--         return
+--     end
+-- end
+-- Events.OnMovingObjectCrop.Add(ISGameLoadingUI.OnMovingObjectCrop)

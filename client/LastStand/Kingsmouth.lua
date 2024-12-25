@@ -40,7 +40,6 @@ Kingsmouth.OnInitWorld = function()
 --    SandboxVars.Temperature = 3;
 --    SandboxVars.Rain = 3;
 --    SandboxVars.ErosionSpeed = 5
---    SandboxVars.XpMultiplier = "1.0";
 --    SandboxVars.Farming = 3;
 --    SandboxVars.NatureAbundance = 5;
 --    SandboxVars.PlantResilience = 3;
@@ -56,7 +55,7 @@ Kingsmouth.OnInitWorld = function()
 --    SandboxVars.DecayingCorpseHealthImpact = 1
     SandboxVars.MultiHitZombies = false;
 --
---    SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+--    SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
 ----    Events.OnZombieUpdate.Add(Kingsmouth.OnZombieUpdate);
 --    Events.OnGameStart.Add(Kingsmouth.OnGameStart);
@@ -78,14 +77,14 @@ function Kingsmouth.getSpawnRegion()
         {
             name = "Kingsmouth Region 1/2", points = {
                 unemployed = {
-                    { worldX = c.xcell, worldY = c.ycell, posX = c.x, posY = c.y, posZ = c.z },
+                    { posX = c.x, posY = c.y, posZ = c.z },
                 },
             }
         },
         {
             name = "Kingsmouth Region 2/2", points = {
                 unemployed = {
-                    { worldX = 101, worldY = 102, posX = 202, posY = 280, posZ = 1 },
+                    { posX = (101 * 300 + 202), posY = (102 * 300 + 280), posZ = 1 },
                 },
             }
         }
@@ -101,8 +100,8 @@ function Kingsmouth.getSpawnRegion()
         {
             name = "Kingsmouth Region 1/1", points = {
                 unemployed = {
-                    { worldX = c.xcell, worldY = c.ycell, posX = c.x, posY = c.y, posZ = c.z },
-                    { worldX = 101, worldY = 102, posX = 202, posY = 280, posZ = 1 },
+                    { posX = c.x, posY = c.y, posZ = c.z },
+                    { posX = (101 * 300 + 202), posY = (102 * 300 + 280), posZ = 1 },
                 }
             }
         }
@@ -114,10 +113,8 @@ Kingsmouth.id = "Kingsmouth";
 Kingsmouth.image = "media/lua/client/LastStand/Kingsmouth.png";
 Kingsmouth.world = "challengemaps/Kingsmouth";
 Kingsmouth.gameMode = "Kingsmouth";
-Kingsmouth.xcell = 100;
-Kingsmouth.ycell = 101;
-Kingsmouth.x = 265;
-Kingsmouth.y = 248;
+Kingsmouth.x = 100 * 300 + 265;
+Kingsmouth.y = 101 * 300 + 248;
 Kingsmouth.z = 0;
 
-Events.OnChallengeQuery.Add(Kingsmouth.Add)
+--Events.OnChallengeQuery.Add(Kingsmouth.Add)

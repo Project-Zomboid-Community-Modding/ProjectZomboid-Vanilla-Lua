@@ -6,6 +6,9 @@
 require "RadioCom/RadioWindowModules/RWMPanel"
 
 RWMSignal = RWMPanel:derive("RWMSignal");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
 
 function RWMSignal:initialise()
     ISPanel.initialise(self)
@@ -13,21 +16,21 @@ end
 
 function RWMSignal:createChildren()
 
-    self.sineWaveDisplay = ISSineWaveDisplay:new (10, 4, self:getWidth()-20, 24);
+    self.sineWaveDisplay = ISSineWaveDisplay:new (UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self:getWidth()-UI_BORDER_SPACING*2-2, BUTTON_HGT);
     self.sineWaveDisplay:initialise();
     self:addChild(self.sineWaveDisplay);
     self:setDefaultWave();
 
-    local yoffset = self.sineWaveDisplay:getY()+self.sineWaveDisplay:getHeight()+5;
+    local yoffset = self.sineWaveDisplay:getY()+self.sineWaveDisplay:getHeight()+UI_BORDER_SPACING+1;
     if self.addTestButton then
-        self.testButton = ISButton:new(10, yoffset, self:getWidth()-20,18,"Test incoming signal",self, RWMSignal.doSignal);
+        self.testButton = ISButton:new(UI_BORDER_SPACING+1, yoffset, self:getWidth()-UI_BORDER_SPACING*2-2,BUTTON_HGT,"Test incoming signal",self, RWMSignal.doSignal);
         self.testButton:initialise();
         self.testButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
         self.testButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
         self.testButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
         self:addChild(self.testButton);
 
-        yoffset = yoffset+self.testButton:getHeight()+4;
+        yoffset = yoffset+self.testButton:getHeight()+UI_BORDER_SPACING+1;
     end
 
     self:setHeight(yoffset);

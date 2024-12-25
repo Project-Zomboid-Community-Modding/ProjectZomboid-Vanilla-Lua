@@ -94,7 +94,7 @@ AdminContextMenu.onTeleportUI = function(playerObj)
 end
 
 AdminContextMenu.onRemoveItemTool = function(playerObj)
-    local ui = ISRemoveItemTool:new(0, 0, 320, 150, playerObj);
+    local ui = ISRemoveItemTool:new(0, 0, playerObj);
     ui:initialise();
     ui:addToUIManager();
 end
@@ -145,7 +145,13 @@ function AdminContextMenu.OnGetDoorKey(worldobjects, door, player)
         object:setKeyId(keyID)
     end
 
-    getSpecificPlayer(player):getInventory():AddItem("Base.Key1"):setKeyId(keyID)
+    if isClient() then
+        SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
+    else
+        local item = instanceItem("Base.Key1")
+        item:setKeyId(keyID)
+        getSpecificPlayer(player):getInventory():AddItem(item);
+    end
 end
 
 function AdminContextMenu.OnDoorLock(worldobjects, door)

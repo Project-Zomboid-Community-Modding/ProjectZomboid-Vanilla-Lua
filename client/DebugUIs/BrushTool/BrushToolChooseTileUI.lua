@@ -10,6 +10,7 @@ function BrushToolTilePickerList:render()
 
     local tileWidth = 64
     local tileHeight = 128
+    local scale = tileWidth / 128
     local maxRow = 1
     for r = 1, 256 do
         for c = 1, 8 do
@@ -20,7 +21,9 @@ function BrushToolTilePickerList:render()
 
             local texture = getTexture(tileName)
             if texture then
-                self:drawTextureScaledAspect(texture, (c - 1) * tileWidth, (r - 1) * tileHeight, tileWidth, tileHeight, 1.0, 1.0, 1.0, 1.0)
+                self:drawTextureScaled(texture, (c - 1) * tileWidth + texture:getOffsetX() * scale,
+                    (r - 1) * tileHeight + texture:getOffsetY() * scale,
+                    texture:getWidth() * scale, texture:getHeight() * scale, 1.0, 1.0, 1.0, 1.0)
                 maxRow = r
             end
         end

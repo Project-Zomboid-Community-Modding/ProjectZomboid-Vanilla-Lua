@@ -6,8 +6,9 @@
 
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
-local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function roundNum(num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
@@ -42,25 +43,25 @@ function PuddlesControl:createChildren()
 
     local v, obj;
 
-    local x,y,w = 10,10,self.width-30;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - 1;
 
     self.horzBarX = x;
     self.horzBarW = w;
+    local barMod = UI_BORDER_SPACING;
 
-    y, obj = self:addLabel("float_title",x+(w/2),y,"Puddles floats", UIFont.Medium);
+    y, obj = self:addLabel("float_title",x+(w/2),y,getText("IGUI_PuddlesControl_Title"), UIFont.Medium);
     obj.center = true;
-    y = self:addHorzBar(y+5)+5;
+    y = self:addHorzBar(y+barMod)+barMod+1;
 
-    local barMod = 3;
     --print("w = "..tostring(w))
     for i=0,puddles:getFloatMax()-1 do
         v = puddles:getPuddlesFloat(i);
         y, obj = self:addFloatOption(v:getName(),v,x,y,w)
         print(v:getName());
-        y = self:addHorzBar(y+barMod)+barMod;
+        y = self:addHorzBar(y+barMod)+barMod+1;
     end
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+1);
 end
 
 
@@ -68,9 +69,9 @@ function PuddlesControl:addFloatOption(_id,_float,_x,_y,_w)
     local tickOptions = {};
     table.insert(tickOptions, { text = _id, ticked = false });
 
-    local y, obj = self:addTickBox(_id,_x,_y,(_w/2)-30,FONT_HGT_SMALL,_id,tickOptions);
-    local y2,obj2 = self:addLabel(_id,_x+(_w/2)-20,_y,"0", UIFont.Small, false);
-    local y3, obj3 = self:addSlider(_id,_x+(_w/2),_y,_w/2, 18);
+    local y, obj = self:addTickBox(_id,_x,_y,(_w-300)-30,BUTTON_HGT,_id,tickOptions);
+    local y2,obj2 = self:addLabel(_id,_x+(_w-300)-20,_y,"0", UIFont.Small, false);
+    local y3, obj3 = self:addSlider(_id,_x+(_w-300),_y,300, BUTTON_HGT);
     obj3.valueLabel = obj2;
     obj3:setValues(_float:getMin(), _float:getMax(), 0.01, 0.01);
     obj3:setCurrentValue(0);

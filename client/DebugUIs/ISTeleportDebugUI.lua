@@ -6,6 +6,9 @@ ISTeleportDebugUI = ISPanelJoypad:derive("ISTeleportDebugUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISTeleportDebugUI:initialise
@@ -14,70 +17,70 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISTeleportDebugUI:initialise()
 	ISPanelJoypad.initialise(self);
-	
-	local fontHgt = FONT_HGT_SMALL
-	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, "Ok") + 12
-	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, "Cancel") + 12
-	local buttonWid = math.max(math.max(buttonWid1, buttonWid2), 100)
-	local buttonHgt = math.max(fontHgt + 6, 25)
-	local padBottom = 10
-	
-	self.yes = ISButton:new((self:getWidth() / 2)  - 5 - buttonWid, self:getHeight() - padBottom - buttonHgt, buttonWid, buttonHgt, getText("UI_Ok"), self, ISTeleportDebugUI.onClick);
-	self.yes.internal = "OK";
-	self.yes:initialise();
-	self.yes:instantiate();
-	self.yes.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.yes);
-	
-	self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - buttonHgt, buttonWid, buttonHgt, getText("UI_Close"), self, ISTeleportDebugUI.onClick);
-	self.no.internal = "CANCEL";
-	self.no:initialise();
-	self.no:instantiate();
-	self.no.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.no);
-	
-	self.fontHgt = FONT_HGT_MEDIUM
-	local inset = 2
-	local height = inset + self.fontHgt * self.numLines + inset
-	local y = 55
 
-	local label = ISLabel:new((self:getWidth() / 3) - 15, y, height, "X:", 1, 1, 1, 1, UIFont.Small)
+	local th = self:titleBarHeight()
+	local y = th + UI_BORDER_SPACING*2+FONT_HGT_LARGE+1
+
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("UI_Close"))
+	)
+
+	local label = ISLabel:new((self:getWidth() / 3) - 15, y, BUTTON_HGT, "X:", 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self:addChild(label)
 
-	self.entryX = ISTextEntryBox:new(round(self.player:getX(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, height);
-	self.entryX.font = UIFont.Medium
+	self.entryX = ISTextEntryBox:new(round(self.player:getX(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, BUTTON_HGT);
+	self.entryX.font = UIFont.Small
 	self.entryX:initialise();
 	self.entryX:instantiate();
 	self.entryX:setOnlyNumbers(true);
 	self:addChild(self.entryX);
 
-	y = y + height + 10
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	local label = ISLabel:new((self:getWidth() / 3) - 15, y, height, "Y:", 1, 1, 1, 1, UIFont.Small)
+	local label = ISLabel:new((self:getWidth() / 3) - 15, y, BUTTON_HGT, "Y:", 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self:addChild(label)
 	
-	self.entryY = ISTextEntryBox:new(round(self.player:getY(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, height);
-	self.entryY.font = UIFont.Medium
+	self.entryY = ISTextEntryBox:new(round(self.player:getY(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, BUTTON_HGT);
+	self.entryY.font = UIFont.Small
 	self.entryY:initialise();
 	self.entryY:instantiate();
 	self.entryY:setOnlyNumbers(true);
 	self:addChild(self.entryY);
 
-	y = y + height + 10
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	local label = ISLabel:new((self:getWidth() / 3) - 15, y, height, "Z:", 1, 1, 1, 1, UIFont.Small)
+	local label = ISLabel:new((self:getWidth() / 3) - 15, y, BUTTON_HGT, "Z:", 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self:addChild(label)
 
-	self.entryZ = ISTextEntryBox:new(round(self.player:getZ(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, height);
-	self.entryZ.font = UIFont.Medium
-	self.entryZ.tooltip = "Governs the floor level you are on. Default 0 (Ground floor)"
+	self.entryZ = ISTextEntryBox:new(round(self.player:getZ(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, BUTTON_HGT);
+	self.entryZ.font = UIFont.Small
+	self.entryZ.tooltip = getText("IGUI_GameStats_Teleport_ZTooltip")
 	self.entryZ:initialise();
 	self.entryZ:instantiate();
 	self.entryZ:setOnlyNumbers(true);
 	self:addChild(self.entryZ);
+
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
+
+	self.yes = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid, BUTTON_HGT, getText("UI_Ok"), self, ISTeleportDebugUI.onClick);
+	self.yes.internal = "OK";
+	self.yes:initialise();
+	self.yes:instantiate();
+	self.yes:enableAcceptColor()
+	self:addChild(self.yes);
+
+	self.no = ISButton:new((self:getWidth()+UI_BORDER_SPACING)/2, y, buttonWid, BUTTON_HGT, getText("UI_Close"), self, ISTeleportDebugUI.onClick);
+	self.no.internal = "CANCEL";
+	self.no:initialise();
+	self.no:instantiate();
+	self.no:enableCancelColor()
+	self:addChild(self.no);
+
+	self:setHeight(self.no:getBottom()+UI_BORDER_SPACING+1)
 end
 
 function ISTeleportDebugUI:destroy()
@@ -113,7 +116,7 @@ function ISTeleportDebugUI:prerender()
 	
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	
-	self:drawTextCentre("Teleport", self:getWidth() / 2, 20, 1, 1, 1, 1, UIFont.NewLarge);
+	self:drawTextCentre(getText("IGUI_GameStats_Teleport"), self:getWidth() / 2, UI_BORDER_SPACING+th+1, 1, 1, 1, 1, UIFont.NewLarge);
 	
 	self:updateButtons();
 end

@@ -10,7 +10,9 @@ ISFactionUI.inviteDialogs = {}
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISFactionUI:initialise
@@ -20,45 +22,30 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 function ISFactionUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local btnHgt2 = FONT_HGT_SMALL
-    local padBottom = 10
+    local y = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1;
+    self:setWidth(getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_ShowTag")) + UI_BORDER_SPACING*3 + BUTTON_HGT)
 
-    local ownerLbl = ISLabel:new(10, 20 + FONT_HGT_MEDIUM + 20, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Owner"), 1, 1, 1, 1, UIFont.Small, true)
-    ownerLbl:initialise()
-    ownerLbl:instantiate()
-    self:addChild(ownerLbl)
-
-    self.owner = ISLabel:new(ownerLbl:getRight() + 8, ownerLbl.y, FONT_HGT_SMALL, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
-    self.owner:initialise()
-    self.owner:instantiate()
-    self:addChild(self.owner)
-
-    self.no = ISButton:new(self:getWidth() - btnWid - 10, 0, btnWid, btnHgt, getText("UI_Ok"), self, ISFactionUI.onClick);
-    self.no.internal = "OK";
-    self.no:initialise();
-    self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
-    self:addChild(self.no);
-
-    self.changeTitle = ISButton:new(0, self.owner.y, 70, btnHgt2, getText("IGUI_PlayerStats_Change"), self, ISFactionUI.onClick);
+    --change title
+    self.changeTitle = ISButton:new(0, UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISFactionUI.onClick);
     self.changeTitle.internal = "CHANGETITLE";
     self.changeTitle:initialise();
     self.changeTitle:instantiate();
     self.changeTitle.borderColor = self.buttonBorderColor;
-    self.changeTitle:setVisible(false);
+    self.changeTitle:setVisible(true);
     self:addChild(self.changeTitle);
 
-    self.releaseFaction = ISButton:new(10, 0, 70, btnHgt, getText("IGUI_FactionUI_Remove"), self, ISFactionUI.onClick);
-    self.releaseFaction.internal = "REMOVE";
-    self.releaseFaction:initialise();
-    self.releaseFaction:instantiate();
-    self.releaseFaction.borderColor = self.buttonBorderColor;
-    self:addChild(self.releaseFaction);
-    self.releaseFaction.parent = self;
-    self.releaseFaction:setVisible(false);
+    --owner
+    local ownerLbl = ISLabel:new(UI_BORDER_SPACING+1, y, BUTTON_HGT, getText("IGUI_SafehouseUI_Owner"), 1, 1, 1, 1, UIFont.Small, true)
+    ownerLbl:initialise()
+    ownerLbl:instantiate()
+    self:addChild(ownerLbl)
 
-    self.changeOwnership = ISButton:new(0, ownerLbl.y, 70, btnHgt2, getText("IGUI_SafehouseUI_ChangeOwnership"), self, ISFactionUI.onClick);
+    self.owner = ISLabel:new(ownerLbl:getRight() + UI_BORDER_SPACING, ownerLbl.y, BUTTON_HGT, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.owner:initialise()
+    self.owner:instantiate()
+    self:addChild(self.owner)
+
+    self.changeOwnership = ISButton:new(0, ownerLbl.y, btnWid, BUTTON_HGT, getText("IGUI_SafehouseUI_ChangeOwnership"), self, ISFactionUI.onClick);
     self.changeOwnership.internal = "CHANGEOWNERSHIP";
     self.changeOwnership:initialise();
     self.changeOwnership:instantiate();
@@ -67,17 +54,18 @@ function ISFactionUI:initialise()
     self.changeOwnership.parent = self;
     self.changeOwnership:setVisible(false);
 
-    local tagLbl = ISLabel:new(10, ownerLbl:getBottom() + 10, FONT_HGT_SMALL, getText("IGUI_FactionUI_Tag"), 1, 1, 1, 1, UIFont.Small, true)
+    --tag
+    local tagLbl = ISLabel:new(ownerLbl.x, ownerLbl:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_FactionUI_Tag"), 1, 1, 1, 1, UIFont.Small, true)
     tagLbl:initialise()
     tagLbl:instantiate()
     self:addChild(tagLbl)
 
-    self.tag = ISLabel:new(tagLbl:getRight() + 8, tagLbl.y, FONT_HGT_SMALL, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
+    self.tag = ISLabel:new(tagLbl:getRight() + 8, tagLbl.y, BUTTON_HGT, "", 0.6, 0.6, 0.8, 1.0, UIFont.Small, true)
     self.tag:initialise()
     self.tag:instantiate()
     self:addChild(self.tag)
 
-    self.changeTag = ISButton:new(0, tagLbl.y, 70, btnHgt2, getText("IGUI_PlayerStats_Change"), self, ISFactionUI.onClick);
+    self.changeTag = ISButton:new(0, tagLbl.y, 70, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISFactionUI.onClick);
     self.changeTag.internal = "CHANGETAG";
     self.changeTag:initialise();
     self.changeTag:instantiate();
@@ -86,8 +74,7 @@ function ISFactionUI:initialise()
     self.changeTag.parent = self;
     self.changeTag:setVisible(false);
 
-    self.tagColor = ISButton:new(0, tagLbl.y, btnHgt2, btnHgt2, "", self, ISFactionUI.onTagColor);
---    self.tagColor.internal = color;
+    self.tagColor = ISButton:new(0, tagLbl.y, BUTTON_HGT, BUTTON_HGT, "", self, ISFactionUI.onTagColor);
     self.tagColor:initialise();
     self.tagColor.backgroundColor = {r = self.faction:getTagColor():getR(), g = self.faction:getTagColor():getG(), b = self.faction:getTagColor():getB(), a = 1};
     self:addChild(self.tagColor);
@@ -100,16 +87,18 @@ function ISFactionUI:initialise()
     self.colorPicker.resetFocusTo = self
     self.colorPicker:setInitialColor(self.faction:getTagColor());
 
-    local playersLbl = ISLabel:new(10, tagLbl:getBottom() + 20, FONT_HGT_SMALL, getText("IGUI_SafehouseUI_Players"), 1, 1, 1, 1, UIFont.Small, true)
+    --allowed players
+
+    local playersLbl = ISLabel:new(ownerLbl.x, tagLbl:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_SafehouseUI_Players"), 1, 1, 1, 1, UIFont.Small, true)
     playersLbl:initialise()
     playersLbl:instantiate()
     self:addChild(playersLbl)
 
-    self.playerList = ISScrollingListBox:new(10, playersLbl:getBottom(), self.width - 20, (FONT_HGT_SMALL + 2 * 2) * 8);
+    self.playerList = ISScrollingListBox:new(ownerLbl.x, playersLbl:getBottom(), self.width - (UI_BORDER_SPACING+1)*2, (BUTTON_HGT) * 8);
     self.playerList:initialise();
     self.playerList:instantiate();
     self.playerList:setAnchorRight(true)
-    self.playerList.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.playerList.itemheight = BUTTON_HGT;
     self.playerList.selected = 0;
     self.playerList.joypadParent = self;
     self.playerList.font = UIFont.NewSmall;
@@ -117,7 +106,14 @@ function ISFactionUI:initialise()
     self.playerList.drawBorder = true;
     self:addChild(self.playerList);
 
-    self.removePlayer = ISButton:new(0, self.playerList.y + self.playerList.height + 5, 70, btnHgt2, getText("ContextMenu_Remove"), self, ISFactionUI.onClick);
+    self.addPlayer = ISButton:new(self.playerList.x, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_AddPlayer"), self, ISFactionUI.onClick);
+    self.addPlayer.internal = "ADDPLAYER";
+    self.addPlayer:initialise();
+    self.addPlayer:instantiate();
+    self.addPlayer.borderColor = self.buttonBorderColor;
+    self:addChild(self.addPlayer);
+
+    self.removePlayer = ISButton:new(0, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("ContextMenu_Remove"), self, ISFactionUI.onClick);
     self.removePlayer.internal = "REMOVEPLAYER";
     self.removePlayer:initialise();
     self.removePlayer:instantiate();
@@ -127,10 +123,12 @@ function ISFactionUI:initialise()
     self:addChild(self.removePlayer);
     self.removePlayer.enable = false;
     if not self.isOwner and not self.isAdmin then
---        self.removePlayer:setVisible(false);
+        --        self.removePlayer:setVisible(false);
     end
 
-    self.showTag = ISTickBox:new(10, self.removePlayer:getBottom() + 20, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_ShowTag")) + 20, 18, "", self, ISFactionUI.onClickShowTag);
+    --tick boxes
+
+    self.showTag = ISTickBox:new(ownerLbl.x, self.removePlayer:getBottom() + UI_BORDER_SPACING, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_ShowTag")) + 20, BUTTON_HGT, "", self, ISFactionUI.onClickShowTag);
     self.showTag:initialise();
     self.showTag:instantiate();
     self.showTag.selected[1] = self.player:isShowTag();
@@ -138,7 +136,7 @@ function ISFactionUI:initialise()
     self:addChild(self.showTag);
     self.showTag.factionUI = self;
 
-    self.factionPvp = ISTickBox:new(10, self.showTag.y + self.showTag.height + 5, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_FactionPvp")) + 20, 18, "", self, ISFactionUI.onClickFactionPvp);
+    self.factionPvp = ISTickBox:new(ownerLbl.x, self.showTag.y + self.showTag.height + UI_BORDER_SPACING, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_FactionPvp")) + 20, BUTTON_HGT, "", self, ISFactionUI.onClickFactionPvp);
     self.factionPvp:initialise();
     self.factionPvp:instantiate();
     self.factionPvp.selected[1] = self.player:isFactionPvp();
@@ -147,7 +145,18 @@ function ISFactionUI:initialise()
     self.factionPvp.factionUI = self;
     self.factionPvp.tooltip = getText("IGUI_FactionUI_FactionPvpTooltip");
 
-    self.quitFaction = ISButton:new(self.releaseFaction:getRight() + 10, 0, 70, btnHgt, getText("IGUI_SafehouseUI_QuitFaction"), self, ISFactionUI.onClick);
+    --bottom buttons
+
+    self.releaseFaction = ISButton:new(ownerLbl.x, 0, 70, BUTTON_HGT, getText("IGUI_FactionUI_Remove"), self, ISFactionUI.onClick);
+    self.releaseFaction.internal = "REMOVE";
+    self.releaseFaction:initialise();
+    self.releaseFaction:instantiate();
+    self.releaseFaction.borderColor = self.buttonBorderColor;
+    self:addChild(self.releaseFaction);
+    self.releaseFaction.parent = self;
+    self.releaseFaction:setVisible(false);
+
+    self.quitFaction = ISButton:new(ownerLbl.x, 0, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_QuitFaction"), self, ISFactionUI.onClick);
     self.quitFaction.internal = "QUITFACTION";
     self.quitFaction:initialise();
     self.quitFaction:instantiate();
@@ -157,17 +166,19 @@ function ISFactionUI:initialise()
         self.quitFaction:setVisible(false);
     end
 
-    self.addPlayer = ISButton:new(self.playerList.x, self.playerList.y + self.playerList.height + 5, 70, btnHgt2, getText("IGUI_SafehouseUI_AddPlayer"), self, ISFactionUI.onClick);
-    self.addPlayer.internal = "ADDPLAYER";
-    self.addPlayer:initialise();
-    self.addPlayer:instantiate();
-    self.addPlayer.borderColor = self.buttonBorderColor;
-    self:addChild(self.addPlayer);
+    self.no = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, 0, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISFactionUI.onClick);
+    self.no.internal = "OK";
+    self.no:initialise();
+    self.no:instantiate();
+    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self:addChild(self.no);
 
-    self.no:setY(self.factionPvp:getBottom() + 20)
+    --final placement of bottom buttons
+
+    self.no:setY(self.factionPvp:getBottom() + UI_BORDER_SPACING)
     self.releaseFaction:setY(self.no.y)
     self.quitFaction:setY(self.no.y)
-    self:setHeight(self.no:getBottom() + padBottom)
+    self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)
 
     self:populateList();
 
@@ -248,15 +259,11 @@ function ISFactionUI:render()
 end
 
 function ISFactionUI:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(self.faction:getName(), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName()) / 2), z, 1,1,1,1, UIFont.Medium);
-    self.changeTitle:setY(z);
+    self:drawText(self.faction:getName(), (self.width - getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName())) / 2, UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
+    self.changeTitle:setY(UI_BORDER_SPACING);
     self.changeTitle:setX(self.width/2 + ((getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName()) / 2) + 10))
-    z = z + FONT_HGT_MEDIUM + 20;
 --    self:drawText(getText("IGUI_SafehouseUI_Owner"), x, z, 1,1,1,1, UIFont.Small);
 --    local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SafehouseUI_Owner"))
 --    self:drawText(self.faction:getOwner(), x + textWid + 8, z, 1,1,1,1, UIFont.Small);
@@ -267,19 +274,18 @@ function ISFactionUI:prerender()
 --        self.releaseFaction:setX(self.owner:getRight() + 8)
 --        self.releaseFaction:setY(z);
         self.changeOwnership:setVisible(true);
-        self.changeOwnership:setX(self.owner:getRight() + 8)
+        self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING)
 --        self.changeOwnership:setY(z);
     end
-    z = z + FONT_HGT_SMALL + 8;
     if self.isOwner or self.isAdmin or self.faction:getTag() then
 --        self:drawText(getText("IGUI_FactionUI_Tag"), x, z, 1,1,1,1, UIFont.Small);
 --        self:drawText(self.faction:getTag(), splitPoint, z, 1,1,1,1, UIFont.Small);
         self.tag:setName(self.faction:getTag() or "")
         if self.isOwner or self.isAdmin then
             self.changeTag:setVisible(true);
-            self.changeTag:setX(self.tag:getRight() + 8);
+            self.changeTag:setX(self.tag:getRight() + UI_BORDER_SPACING);
 --            self.changeTag:setY(z);
-            self.tagColor:setX(self.changeTag:getRight() + 8)
+            self.tagColor:setX(self.changeTag:getRight() + UI_BORDER_SPACING)
 --            self.tagColor:setY(z);
             self.tagColor:setVisible(true);
         end
@@ -293,7 +299,7 @@ function ISFactionUI:updateButtons()
         self.changeOwnership:setVisible(false);
         self.removePlayer.enable = false;
         self.addPlayer.enable = false;
-        self.changeTitle.enable = false;
+        self.changeTitle.enable = true;
     else
 	    self.releaseFaction:setVisible(true);
         self.changeOwnership:setVisible(true);
@@ -339,13 +345,13 @@ function ISFactionUI:onClick(button)
         self.addPlayerUI = factionUI;
     end
     if button.internal == "CHANGETITLE" then
-        local modal = ISTextBox:new(self.x + 200, 200, 280, 180, getText("IGUI_SafehouseUI_ChangeTitle"), self.faction:getName(), nil, ISFactionUI.onChangeTitle);
+        local modal = ISTextBox:new(self.x + 200, 200, 300, 180, getText("IGUI_SafehouseUI_ChangeTitle"), self.faction:getName(), nil, ISFactionUI.onChangeTitle);
         modal.faction = self.faction;
         modal:initialise();
         modal:addToUIManager();
     end
     if button.internal == "CHANGETAG" then
-        local modal = ISCreateFactionTagUI:new(self.x + 200, 200, 280, 180, self.player, self.faction);
+        local modal = ISCreateFactionTagUI:new(self.x + 200, 200, 300, 180, self.player, self.faction);
         modal:initialise();
         modal:addToUIManager();
     end
@@ -420,7 +426,7 @@ function ISFactionUI:new(x, y, width, height, faction, player)
     ISFactionUI.instance = o;
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5};
     o.isOwner = faction:isOwner(player:getUsername())
-    o.isAdmin = player:getAccessLevel() ~= "None"
+    o.isAdmin = player:getRole():haveCapability(Capability.FactionCheat)
     return o;
 end
 

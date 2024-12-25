@@ -8,6 +8,7 @@ require "ISUI/ISLayoutManager"
 
 ISCharacterInfoWindow = ISCollapsableWindow:derive("ISCharacterInfoWindow");
 ISCharacterInfoWindow.view = {};
+local UI_BORDER_SPACING = 10
 
 function ISCharacterInfoWindow:initialise()
 	ISCollapsableWindow.initialise(self);
@@ -106,36 +107,48 @@ end
 
 function ISCharacterInfoWindow:createChildren()
 	ISCollapsableWindow.createChildren(self);
+
+	--this is a nasty way to do this, but as far as i know, there's no way to get the total length of all the tabs before they've been added
+	local tabTotalWidth =
+			getTextManager():MeasureStringX(UIFont.Small, xpSystemText.info) +
+			getTextManager():MeasureStringX(UIFont.Small, xpSystemText.skills) +
+			getTextManager():MeasureStringX(UIFont.Small, xpSystemText.health) +
+			getTextManager():MeasureStringX(UIFont.Small, xpSystemText.protection) +
+			getTextManager():MeasureStringX(UIFont.Small, xpSystemText.clothingIns) +
+			UI_BORDER_SPACING * 5 + 6
+
 	local th = self:titleBarHeight()
 	local rh = self:resizeWidgetHeight()
-	self.panel = ISTabPanel:new(0, th, self.width, self.height-th-rh);
+	self.panel = ISTabPanel:new(0, th, math.max(self.width, tabTotalWidth), self.height-th-rh);
 	self.panel:initialise();
-    self.panel.tabPadX = 15;
+    self.panel.tabPadX = UI_BORDER_SPACING;
     self.panel.equalTabWidth = false;
 --~ 	self.panel.allowDraggingTab = false;
 	self:addChild(self.panel);
 	self.panel:setOnTabTornOff(self, ISCharacterInfoWindow.onTabTornOff)
 
-	self.charScreen = ISCharacterScreen:new(0, 8, 420, 250, self.playerNum);
+
+
+	self.charScreen = ISCharacterScreen:new(0, 8, tabTotalWidth, 250, self.playerNum);
 	self.charScreen:initialise()
 	self.panel:addView(xpSystemText.info, self.charScreen)
 
-	self.characterView = ISCharacterInfo:new(0, 8, self.width, self.height-8, self.playerNum);
+	self.characterView = ISCharacterInfo:new(0, 8, tabTotalWidth, self.height-8, self.playerNum);
 	self.characterView:initialise()
     self.characterView.infoText = getTextOrNull("UI_SkillPanel");
 	self.panel:addView(xpSystemText.skills, self.characterView)
 
-	self.healthView = ISHealthPanel:new(getSpecificPlayer(self.playerNum), 0, 8, self.width, self.height-8)
+	self.healthView = ISHealthPanel:new(getSpecificPlayer(self.playerNum), 0, 8, tabTotalWidth, self.height-8)
 	self.healthView:initialise()
     self.healthView.infoText = getTextOrNull("UI_HealthPanel");
 	self.panel:addView(xpSystemText.health, self.healthView)
 	
-	self.protectionView = ISCharacterProtection:new(0, 8, self.width, self.height-8, self.playerNum)
+	self.protectionView = ISCharacterProtection:new(0, 8, tabTotalWidth, self.height-8, self.playerNum)
 	self.protectionView:initialise()
 	self.protectionView.infoText = getTextOrNull("UI_ProtectionPanel");
 	self.panel:addView(xpSystemText.protection, self.protectionView)
 
-    self.clothingView = ISClothingInsPanel:new(getSpecificPlayer(self.playerNum), 0, 8, self.width, self.height-8)
+    self.clothingView = ISClothingInsPanel:new(getSpecificPlayer(self.playerNum), 0, 8, tabTotalWidth+200, self.height-8)
     self.clothingView:initialise()
     self.clothingView.infoText = getTextOrNull("UI_ClothingInsPanel");
     self.panel:addView(xpSystemText.clothingIns, self.clothingView)
@@ -267,7 +280,7 @@ function ISCharacterInfoWindow:RestoreLayout(name, layout)
         newWindow:setTitle(xpSystemText.clothingIns);
         self:onTabTornOff(self.clothingView, newWindow)
     end
-	if floating.porotection then
+	if floating.protection then
 		self.panel:removeView(self.protectionView)
 		local newWindow = ISCollapsableWindow:new(0, 0, self.protectionView:getWidth(), self.protectionView:getHeight());
 		newWindow:initialise();

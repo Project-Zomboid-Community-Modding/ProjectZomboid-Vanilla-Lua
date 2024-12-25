@@ -17,7 +17,7 @@ function ISExtinguishCursor:create(x, y, z, north, sprite)
 	local squares = self:getSquares(x, y, z)
 	ISWorldObjectContextMenu.equip2(playerObj, playerObj:getPrimaryHandItem(), self.extinguisher, true);
 	local usesPerSquare = FireFighting.getExtinguisherUses(self.extinguisher)
-	ISTimedActionQueue.add(ISPutOutFire:new(playerObj, squares, self.extinguisher, usesPerSquare, 50));
+	ISTimedActionQueue.add(ISPutOutFire:new(playerObj, squares, self.extinguisher, usesPerSquare));
 end
 
 function ISExtinguishCursor:walkTo(x, y, z)
@@ -95,7 +95,7 @@ function ISExtinguishCursor:render(x, y, z, square)
 	--[[
 	if not self.floorSprite then
 		self.floorSprite = IsoSprite.new()
-		self.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
+		self.floorSprite:LoadSingleTexture('media/ui/FloorTileCursor.png')
 	end
 	--]]
 	local squares = self:getSquares(x, y, z)

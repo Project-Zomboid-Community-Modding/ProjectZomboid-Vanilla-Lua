@@ -6,6 +6,8 @@ require "ISUI/ISPanel"
 
 ISMoveablesIconToolTip = ISPanel:derive("ISMoveablesIconToolTip");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+
 function ISMoveablesIconToolTip:initialise()
     ISPanel.initialise(self)
 end
@@ -32,6 +34,7 @@ end
 
 
 function ISMoveablesIconToolTip:new (x, y, width, height, marginOffset)
+    height = math.max(height, FONT_HGT_SMALL * 2)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -48,6 +51,6 @@ function ISMoveablesIconToolTip:new (x, y, width, height, marginOffset)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
+    o.fontheight = FONT_HGT_SMALL;
     return o
 end

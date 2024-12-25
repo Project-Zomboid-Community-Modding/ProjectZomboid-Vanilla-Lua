@@ -9,7 +9,7 @@ local PRIORITY = 5
 local function ReplaceExistingObject(object, compost)
 	local cell = getWorld():getCell()
 	local square = object:getSquare()
-	local javaObject = IsoCompost.new(cell, square)
+	local javaObject = IsoCompost.new(cell, square, object:getSprite())
 	javaObject:setCompost(compost)
 
 	local index = object:getObjectIndex()

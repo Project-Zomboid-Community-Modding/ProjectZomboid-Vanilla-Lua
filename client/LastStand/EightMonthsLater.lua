@@ -10,14 +10,14 @@ EightMonthsLater.PreloadInit = function()
     SandboxVars.StartTime = 2;
     SandboxVars.WaterShutModifier = -1;
     SandboxVars.ElecShutModifier = -1;
-    SandboxVars.FoodLoot = 1;
-    SandboxVars.WeaponLoot = 1;
-    SandboxVars.OtherLoot = 1;
+--     SandboxVars.FoodLoot = 1;
+--     SandboxVars.WeaponLoot = 1;
+--     SandboxVars.OtherLoot = 1;
+    SandboxVars.LootItemRemovalList = "";
     SandboxVars.Temperature = 3;
     SandboxVars.Rain = 3;
     --    SandboxVars.erosion = 12
     SandboxVars.ErosionSpeed = 1
-    SandboxVars.XpMultiplier = "1.0";
     SandboxVars.Farming = 3;
     SandboxVars.NatureAbundance = 5;
     SandboxVars.PlantResilience = 3;
@@ -32,6 +32,11 @@ EightMonthsLater.PreloadInit = function()
     SandboxVars.StarterKit = false;
     SandboxVars.TimeSinceApo = 13;
     SandboxVars.MultiHitZombies = false;
+
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
     
 end
 
@@ -85,10 +90,8 @@ EightMonthsLater.completionText = "Survive a week to unlock the next challenge."
 EightMonthsLater.image = "media/lua/client/LastStand/EightMonthsLater.png";
 EightMonthsLater.gameMode = "One Year Later";
 EightMonthsLater.world = "Muldraugh, KY";
-EightMonthsLater.xcell = 36;
-EightMonthsLater.ycell = 31;
-EightMonthsLater.x = 21;
-EightMonthsLater.y = 111;
+EightMonthsLater.x = 36 * 300 + 21;
+EightMonthsLater.y = 31 * 300 + 111;
 EightMonthsLater.z = 0;
 EightMonthsLater.hourOfDay = 7;
 Events.OnChallengeQuery.Add(EightMonthsLater.Add)

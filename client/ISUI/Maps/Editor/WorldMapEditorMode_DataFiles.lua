@@ -5,20 +5,20 @@
 require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditorMode_DataFiles = WorldMapEditorMode:derive("WorldMapEditorMode_DataFiles")
 
 function WorldMapEditorMode_DataFiles:createChildren()
-	self.listbox = WorldMapEditorListBox:new(10, 80, 400, 200, self.onListboxButton, self)
+	self.listbox = WorldMapEditorListBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, 400, 200, self.onListboxButton, self)
 	self:addChild(self.listbox)
 
-    local entryHgt = FONT_HGT_SMALL + 2 * 2
-	self.fileNameEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox:getBottom() + 10, self.listbox.width, entryHgt)
+    local entryHgt = BUTTON_HGT
+	self.fileNameEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, entryHgt)
 	self.fileNameEntry.onCommandEntered = function(entry) self:onFileNameEntered() end
 	self:addChild(self.fileNameEntry)
-
-	local buttonHgt = FONT_HGT_MEDIUM + 8
 end
 
 function WorldMapEditorMode_DataFiles:undisplay()

@@ -4,7 +4,7 @@ ZombiePopulationWindow = ISCollapsableWindow:derive("ZombiePopulationWindow")
 
 function ZombiePopulationWindow:initialise()
 	ISCollapsableWindow.initialise(self)
-	self.title = "Zombie Population"
+	self.title = getText("IGUI_DebugMenu_Dev_Population")
 end
 
 function ZombiePopulationWindow:createChildren()
@@ -99,8 +99,8 @@ function ZombiePopulationWindow:onTeleport(worldX, worldY)
 	local player = getSpecificPlayer(0)
 	player:setX(worldX)
 	player:setY(worldY)
-	player:setLx(worldX)
-	player:setLy(worldY)
+	player:setLastX(worldX)
+	player:setLastY(worldY)
 end
 
 function ZombiePopulationWindow:onChangeOption(option)
@@ -112,18 +112,18 @@ function ZombiePopulationWindow:onMapRightMouseUp(x, y)
 	self.panning = false
 	if not self.mouseMoved then
 		local playerNum = 0
-		local cellX = self.renderer:uiToWorldX(x) / 300
-		local cellY = self.renderer:uiToWorldY(y) / 300
+		local cellX = self.renderer:uiToWorldX(x) / getCellSizeInSquares()
+		local cellY = self.renderer:uiToWorldY(y) / getCellSizeInSquares()
 		cellX = math.floor(cellX)
 		cellY = math.floor(cellY)
 		local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
-		context:addOption("Clear Zombies", cellX, zpopClearZombies, cellY)
-		context:addOption("Spawn Time To Zero", cellX, zpopSpawnTimeToZero, cellY)
-		context:addOption("Spawn Now", cellX, zpopSpawnNow, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_ClearZombies"), cellX, zpopClearZombies, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_SetTimeZero"), cellX, zpopSpawnTimeToZero, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_SpawnNow"), cellX, zpopSpawnNow, cellY)
 		local worldX = self.renderer:uiToWorldX(x)
 		local worldY = self.renderer:uiToWorldY(y)
-		context:addOption("World Sound (100)", self.parent, ZombiePopulationWindow.onAddWorldSound, worldX, worldY)
-		context:addOption("Teleport Here", self.parent, ZombiePopulationWindow.onTeleport, worldX, worldY)
+		context:addOption(getText("IGUI_ZombiePopulation_WorldSound"), self.parent, ZombiePopulationWindow.onAddWorldSound, worldX, worldY)
+		context:addOption(getText("IGUI_ZombiePopulation_TeleportHere"), self.parent, ZombiePopulationWindow.onTeleport, worldX, worldY)
 
 		local subMenu = context:getNew(context)
 		for i=1,self.renderer:getOptionCount() do
@@ -133,7 +133,7 @@ function ZombiePopulationWindow:onMapRightMouseUp(x, y)
 				subMenu:setOptionChecked(option, debugOption:getValue())
 			end
 		end
-		local subMenuOption = context:addOption("Display", nil, nil)
+		local subMenuOption = context:addOption(getText("IGUI_ZombiePopulation_Display"), nil, nil)
 		context:addSubMenu(subMenuOption, subMenu)
 	end
 	return true

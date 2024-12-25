@@ -22,7 +22,7 @@ function ISForageIcon:onClickDiscard(_x, _y, _contextOption)
 	local targetSquare = getCell():getGridSquare(self.xCoord, self.yCoord, self.zCoord);
 	if not targetSquare then return; end;
 	--
-	ISTimedActionQueue.add(ISForageAction:new(self, self.character:getInventory(), true));
+	ISTimedActionQueue.add(ISForageAction:new(self.character, self.iconID, self.character:getInventory(), true, self.itemType));
 end
 
 function ISForageIcon:doForage(_x, _y, _contextOption, _targetContainer)
@@ -34,7 +34,7 @@ function ISForageIcon:doForage(_x, _y, _contextOption, _targetContainer)
 	local targetContainer = _targetContainer or getPlayerInventory(self.player).inventory or self.character:getInventory();
 	if targetContainer:isItemAllowed(self.itemObj) then
 		if targetContainer and targetSquare and luautils.walkAdj(self.character, targetSquare) then
-			ISTimedActionQueue.add(ISForageAction:new(self, targetContainer, false));
+			ISTimedActionQueue.add(ISForageAction:new(self.character, self.iconID, targetContainer, false, self.itemType));
 		end;
 	end;
 end
@@ -80,7 +80,7 @@ function ISForageIcon:getNewCategoryItem(_catDef, _zoneData)
 			self.render3DTexture			= self.itemDef.render3DTexture;
 			self.isMover					= self.itemDef.isMover or false;
 			self.icon.itemType				= self.itemType;
-			self.itemObj					= InventoryItemFactory.CreateItem(self.icon.itemType);
+			self.itemObj					= instanceItem(self.icon.itemType);
 			self.itemTexture				= self.itemObj:getTexture();
 			self:initialise();
 			ISSearchManager.iconItems[self.iconID] = nil;
@@ -169,7 +169,7 @@ function ISForageIcon:new(_manager, _forageIcon, _zoneData)
 	local o = {};
 	o = ISBaseIcon:new(_manager, _forageIcon, _zoneData);
 	setmetatable(o, self)
-	self.__index = self;
+	self.__index				= self;
 	o.zoneData					= _zoneData;
 	o.zoneDef					= forageSystem.zoneDefs[_zoneData.name];
 	o.catDef					= forageSystem.catDefs[_forageIcon.catName];
@@ -185,7 +185,12 @@ function ISForageIcon:new(_manager, _forageIcon, _zoneData)
 	o.identified				= false;
 	o.canMoveVertical			= true;
 	o.iconClass					= "forageIcon";
-	o.canRollForSearchFocus		= _forageIcon.canRollForSearchFocus or true;
+	if type(_forageIcon.canRollForSearchFocus) == "boolean" then
+		o.canRollForSearchFocus				= _forageIcon.canRollForSearchFocus;
+	else
+		o.canRollForSearchFocus				= true;
+		_forageIcon.canRollForSearchFocus	= true;
+	end;
 	o:initialise();
 	return o;
 end

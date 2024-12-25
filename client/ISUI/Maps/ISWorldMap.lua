@@ -5,16 +5,23 @@
 require "ISUI/ISPanelJoypad"
 require "ISUI/Maps/ISMap"
 require "ISUI/Maps/ISWorldMapSymbols"
+require "ISUI/Maps/ISWorldMapKey"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 -----
 
 WorldMapOptions = ISCollapsableWindowJoypad:derive("WorldMapOptions")
 
 function WorldMapOptions:onTickBox(index, selected, option)
+	if option:getName() == "ColorblindPatterns" then
+		getCore():setOptionColorblindPatterns(selected)
+		return
+	end
 	option:setValue(selected)
 end
 
@@ -23,8 +30,7 @@ function WorldMapOptions:onCommandEntered(entry, option)
 end
 
 function WorldMapOptions:createChildren()
-	local fontHgt = FONT_HGT_SMALL
-	local entryHgt = fontHgt + 2 * 2
+	local entryHgt = BUTTON_HGT
 
 	local x = 12
 	local y = self:titleBarHeight() + 6
@@ -251,19 +257,22 @@ end
 
 function ISWorldMap:createChildren()
     local symbolsWidth = ISWorldMapSymbols.RequiredWidth()
-	self.symbolsUI = ISWorldMapSymbols:new(self.width - 20 - symbolsWidth, 20, symbolsWidth, self.height - 40 * 2, self)
+	self.symbolsUI = ISWorldMapSymbols:new(self.width - UI_BORDER_SPACING - symbolsWidth, UI_BORDER_SPACING, symbolsWidth, self.height - 40 * 2, self)
 	self.symbolsUI:initialise()
 	self.symbolsUI:setAnchorLeft(false)
 	self.symbolsUI:setAnchorRight(true)
 	self:addChild(self.symbolsUI)
 
-	local btnSize = self.texViewIsometric and self.texViewIsometric:getWidth() or 48
-	local btnCount = 6
-	if getDebug() then
-		btnCount = btnCount + 1
-	end
+	self.keyUI = ISWorldMapKey:new(UI_BORDER_SPACING, UI_BORDER_SPACING, 10, 200, self)
+	self.keyUI:initialise()
+	self.keyUI:setAnchorLeft(true)
+	self.keyUI:setAnchorRight(false)
+	self.keyUI:setIso(self.isometric)
+	self:addChild(self.keyUI)
 
-	self.buttonPanel = ISWorldMapButtonPanel:new(self.width - 20 - (btnSize * btnCount + 20 * (btnCount - 1)), self.height - 20 - btnSize, btnSize * btnCount + 20 * (btnCount - 1), btnSize)
+	local btnSize = self.texViewIsometric and self.texViewIsometric:getWidth() or 48
+
+	self.buttonPanel = ISWorldMapButtonPanel:new(self.width - 200, self.height - UI_BORDER_SPACING - btnSize, 200, btnSize)
 	self.buttonPanel.anchorLeft = false
 	self.buttonPanel.anchorRight = true
 	self.buttonPanel.anchorTop = false
@@ -272,41 +281,61 @@ function ISWorldMap:createChildren()
 
 	local buttons = {}
 
-	self.closeBtn = ISButton:new(self.buttonPanel.width - btnSize, 0, btnSize, btnSize, "X", self, self.close)
-	self.buttonPanel:addChild(self.closeBtn)
-	table.insert(buttons, 1, self.closeBtn)
+	self.optionBtn = ISButton:new(0, 0, btnSize, btnSize, getText("UI_mainscreen_option"), self, self.onChangeOptions)
+	self.buttonPanel:addChild(self.optionBtn)
+	table.insert(buttons, self.optionBtn)
 
-	self.forgetBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "?", self, function(self, button) self:onForget(button) end)
-	self.buttonPanel:addChild(self.forgetBtn)
-	table.insert(buttons, 1, self.forgetBtn)
+	self.zoomInButton = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "+", self, self.onZoomInButton)
+	self.buttonPanel:addChild(self.zoomInButton)
+	table.insert(buttons, self.zoomInButton)
 
-	self.symbolsBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "S", self, self.onToggleSymbols)
-	self.buttonPanel:addChild(self.symbolsBtn)
-	table.insert(buttons, 1, self.symbolsBtn)
-
-	self.centerBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "C", self, self.onCenterOnPlayer)
-	self.buttonPanel:addChild(self.centerBtn)
-	table.insert(buttons, 1, self.centerBtn)
-
-	self.perspectiveBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "", self, self.onChangePerspective)
-	self.perspectiveBtn:setImage(self.isometric and self.texViewIsometric or self.texViewOrthographic)
-	self.buttonPanel:addChild(self.perspectiveBtn)
-	table.insert(buttons, 1, self.perspectiveBtn)
+	self.zoomOutButton = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "-", self, self.onZoomOutButton)
+	self.buttonPanel:addChild(self.zoomOutButton)
+	table.insert(buttons, self.zoomOutButton)
 
 	if getDebug() then
-		self.pyramidBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "", self, self.onTogglePyramid)
+		self.pyramidBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self, self.onTogglePyramid)
 		self.pyramidBtn:setImage(self.texViewPyramid)
 		self.buttonPanel:addChild(self.pyramidBtn)
-		table.insert(buttons, 1, self.pyramidBtn)
+		table.insert(buttons, self.pyramidBtn)
 	end
 
-	self.optionBtn = ISButton:new(buttons[1].x - 20 - btnSize, 0, btnSize, btnSize, "OPT", self, self.onChangeOptions)
-	self.buttonPanel:addChild(self.optionBtn)
-	table.insert(buttons, 1, self.optionBtn)
+	self.perspectiveBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self, self.onChangePerspective)
+	self.perspectiveBtn:setImage(self.isometric and self.texViewIsometric or self.texViewOrthographic)
+	self.buttonPanel:addChild(self.perspectiveBtn)
+	table.insert(buttons, self.perspectiveBtn)
+
+	self.centerBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "C", self, self.onCenterOnPlayer)
+	self.buttonPanel:addChild(self.centerBtn)
+	table.insert(buttons, self.centerBtn)
+
+	self.symbolsBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "S", self, self.onToggleSymbols)
+	self.buttonPanel:addChild(self.symbolsBtn)
+	table.insert(buttons, self.symbolsBtn)
+
+	self.forgetBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "?", self, function(self, button) self:onForget(button) end)
+	self.buttonPanel:addChild(self.forgetBtn)
+	table.insert(buttons, self.forgetBtn)
+
+	self.closeBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, getText("UI_btn_close"), self, self.close)
+	self.buttonPanel:addChild(self.closeBtn)
+	table.insert(buttons, self.closeBtn)
+
+	self.buttonPanel:shrinkWrap(0, 0, nil)
+	self.buttonPanel:setX(self.width - UI_BORDER_SPACING - self.buttonPanel.width)
 
 	self.buttonPanel:insertNewListOfButtons(buttons)
 	self.buttonPanel.joypadIndex = 1
 	self.buttonPanel.joypadIndexY = 1
+end
+
+function ISWorldMap:prerender()
+	ISPanelJoypad.prerender(self)
+	self.symbolsUI:prerenderMap()
+	if self.mapAPI:getBoolean("ColorblindPatterns") ~= getCore():getOptionColorblindPatterns() then
+		MapUtils.initDefaultStyleV1(self)
+		MapUtils.overlayPaper(self)
+	end
 end
 
 function ISWorldMap:render()
@@ -322,6 +351,7 @@ function ISWorldMap:render()
 
 	self.isometric = self.mapAPI:getBoolean("Isometric")
 	self.perspectiveBtn:setImage(self.isometric and self.texViewIsometric or self.texViewOrthographic)
+	self.keyUI:setIso(self.isometric)
 
 	self:updateJoypad()
 
@@ -333,26 +363,33 @@ function ISWorldMap:render()
 		local joypadTexture = Joypad.Texture.YButton
 		self:drawTexture(joypadTexture, self.buttonPanel.x - 16 - joypadTexture:getWidth(), self.buttonPanel.y + (self.buttonPanel.height - joypadTexture:getHeight()) / 2, 1, 1, 1, 1)
 
-		self:renderJoypadPrompt(Joypad.Texture.XButton, getText("IGUI_Map_EditMarkings"), 16, self.height - 16 - 32)
+		self.joypadPromptHgt = math.max(32, FONT_HGT_LARGE)
+		self:renderJoypadPrompt(Joypad.Texture.XButton, getText("IGUI_Map_EditMarkings"), 16, self.height - 16 - self.joypadPromptHgt)
 
 		if self.symbolsUI.currentTool then
-			self:renderJoypadPrompt(Joypad.Texture.BButton, getText("UI_Cancel"), self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - 32 - 10 - 32)
+			self:renderJoypadPrompt(Joypad.Texture.BButton, getText("UI_Cancel"), self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt - 10 - self.joypadPromptHgt)
 			local text = self.symbolsUI:getJoypadAButtonText()
 			if text then
-				self:renderJoypadPrompt(Joypad.Texture.AButton, text, self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - 32)
+				self:renderJoypadPrompt(Joypad.Texture.AButton, text, self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt)
 			end
 		end
 
-		self:renderJoypadPrompt(Joypad.Texture.LTrigger, getText("IGUI_Map_ZoomOut"), 16, 16)
-		self:renderJoypadPrompt(Joypad.Texture.RTrigger, getText("IGUI_Map_ZoomIn"), 16, 16 + 48)
+		self:renderJoypadPrompt(Joypad.Texture.LTrigger, getText("IGUI_Map_ZoomOut"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
+		self:renderJoypadPrompt(Joypad.Texture.RTrigger, getText("IGUI_Map_ZoomIn"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
 	end
+
+    -- change to make the chat window visible when the map is open
+    if isClient() then
+        ISChat.chat:setVisible(true);
+        ISChat.chat:bringToTop()
+    end
 
 	ISPanelJoypad.render(self)
 end
 
 function ISWorldMap:renderJoypadPrompt(texture, text, x, y)
 	if not texture then return end
-	local h = 32
+	local h = self.joypadPromptHgt
 	self:drawTexture(texture, x, y + (h - texture:getHeight()) / 2, 1, 1, 1, 1)
 	self:drawText(text, x + texture:getWidth() + 10, y + (h - FONT_HGT_LARGE) / 2, 0, 0, 0, 1, UIFont.Large)
 end
@@ -461,6 +498,42 @@ function ISWorldMap:onRightMouseUp(x, y)
 		option = context:addOption("Teleport Here", self, self.onTeleport, worldX, worldY)
 	end
 
+	local animalChunk = getAnimalChunk(worldX, worldY);
+	if animalChunk then
+		local added = false;
+		local animalOption = context:addOption("Virtual Animals");
+		local subMenuAnimals = ISContextMenu:getNew(context);
+		context:addSubMenu(animalOption, subMenuAnimals);
+		if not animalChunk:getVirtualAnimals():isEmpty() then
+			local virtualAnimal = animalChunk:getVirtualAnimals():get(0); -- RJ: TODO need list of animals possibly here
+			added = true;
+			option = subMenuAnimals:addOption("Force animals to rest", self, function(self) virtualAnimal:forceRest() end)
+			option = subMenuAnimals:addOption("Force animals to eat", self, function(self) virtualAnimal:forceEat() end)
+
+			local tracksOption = context:addOption("Add Tracks");
+			local subMenuTracks = ISContextMenu:getNew(context);
+			context:addSubMenu(tracksOption, subMenuTracks);
+			option = subMenuTracks:addOption("Footsteps", self, function(self) animalChunk:addTracksStr(virtualAnimal, "footstep") end)
+			option = subMenuTracks:addOption("Poop", self, function(self) animalChunk:addTracksStr(virtualAnimal, "poop") end)
+			option = subMenuTracks:addOption("Broken Twigs", self, function(self) animalChunk:addTracksStr(virtualAnimal, "brokentwigs") end)
+			option = subMenuTracks:addOption("Fur", self, function(self) animalChunk:addTracksStr(virtualAnimal, "fur") end)
+			option = subMenuTracks:addOption("Grazing Area", self, function(self) animalChunk:addTracksStr(virtualAnimal, "herbgraze") end)
+			if virtualAnimal:isEating() then
+				option = subMenuAnimals:addOption("Force animals to stop eating", self, function(self) virtualAnimal:forceStopEat() end)
+			end
+			if virtualAnimal:isSleeping() then
+				option = subMenuAnimals:addOption("Force animals to wake up", self, function(self) virtualAnimal:forceWakeUp() end)
+			end
+		end
+		if not animalChunk:getAnimalsTracks():isEmpty() then
+			added = true;
+			option = subMenuAnimals:addOption("Remove tracks", self, function(self) animalChunk:deleteTracks() end)
+		end
+		if not added then
+			context:removeLastOption();
+		end
+	end
+
 	return true
 end
 
@@ -499,6 +572,18 @@ function ISWorldMap:onToggleSymbols()
 	else
 		self.symbolsUI:setVisible(true)
 	end
+	if self.symbolsUI:isVisible() ~= self.keyUI:isVisible() then
+		self:onToggleLegend()
+	end
+end
+
+function ISWorldMap:onToggleLegend()
+	if self.keyUI:isVisible() then
+		self.keyUI:undisplay()
+		self.keyUI:setVisible(false)
+	else
+		self.keyUI:setVisible(true)
+	end
 end
 
 function ISWorldMap:onChangePerspective()
@@ -521,6 +606,14 @@ function ISWorldMap:onTogglePyramid()
 		self.mapAPI:setBoolean("ImagePyramid", true)
 		self.mapAPI:setBoolean("Features", false)
 	end
+end
+
+function ISWorldMap:onZoomInButton()
+	self.mapAPI:zoomAt(self.width / 2, self.height / 2, -2)
+end
+
+function ISWorldMap:onZoomOutButton()
+	self.mapAPI:zoomAt(self.width / 2, self.height / 2, 2)
 end
 
 function ISWorldMap:onChangeOptions(button)
@@ -549,8 +642,8 @@ function ISWorldMap:onTeleport(worldX, worldY)
 	playerObj:setX(worldX)
 	playerObj:setY(worldY)
 	playerObj:setZ(0.0)
-	playerObj:setLx(worldX)
-	playerObj:setLy(worldY)
+	playerObj:setLastX(worldX)
+	playerObj:setLastY(worldY)
 end
 
 function ISWorldMap:setHideUnvisitedAreas(hide)
@@ -619,7 +712,7 @@ function ISWorldMap:close()
 end
 
 function ISWorldMap:isKeyConsumed(key)
-	if key == Keyboard.KEY_ESCAPE or key == getCore():getKey("Toggle UI") then return true end
+	if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then return true end
 	if key == Keyboard.KEY_C then return true end
 	if key == Keyboard.KEY_S then return true end
 	return false
@@ -632,17 +725,19 @@ function ISWorldMap:onKeyPress(key)
 end
 
 function ISWorldMap:onKeyRelease(key)
-	if self.symbolsUI:onKeyRelease(key) then
-		return
-	end
-	if key == Keyboard.KEY_ESCAPE or key == getCore():getKey("Toggle UI") then
-		self:close()
-	end
-	if key == Keyboard.KEY_C then
-		self:onCenterOnPlayer()
-	end
-	if key == Keyboard.KEY_S then
-		self:onToggleSymbols()
+	if self:isVisible() then
+		if self.symbolsUI:onKeyRelease(key) then
+			return
+		end
+		if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then
+			self:close()
+		end
+		if key == Keyboard.KEY_C then
+			self:onCenterOnPlayer()
+		end
+		if key == Keyboard.KEY_S then
+			self:onToggleSymbols()
+		end
 	end
 --[[
 	if key == Keyboard.KEY_X then
@@ -768,6 +863,7 @@ function ISWorldMap:onJoypadDown(button, joypadData)
 		self:close()
 	end
 	if button == Joypad.XButton then
+		self.symbolsUI:onKeyRelease(Keyboard.KEY_ESCAPE)
 		if self.symbolsUI:isVisible() then
 			setJoypadFocus(joypadData.player, self.symbolsUI)
 		else
@@ -809,6 +905,7 @@ function ISWorldMap:restoreSettings()
 		self.mapAPI:setBoolean("Features", false)
 	end
 	self.symbolsUI:setVisible(showSymbolsUI)
+	self.keyUI:setVisible(showSymbolsUI)
 end
 
 function ISWorldMap:initDataAndStyle()
@@ -857,7 +954,11 @@ function ISWorldMap.IsAllowed()
 	return SandboxVars.Map and (SandboxVars.Map.AllowWorldMap == true) or false
 end
 
-function ISWorldMap.ShowWorldMap(playerNum)
+function ISWorldMap.NeedsLight()
+	return SandboxVars.Map and (SandboxVars.Map.MapNeedsLight == true) or false
+end
+
+function ISWorldMap.ShowWorldMap(playerNum, centerX, centerY, zoom)
 	if not ISWorldMap.IsAllowed() then
 		return
 	end
@@ -883,9 +984,15 @@ function ISWorldMap.ShowWorldMap(playerNum)
 		ISWorldMap_instance.mapAPI:resetView()
 		if ISWorldMap_instance.character then
 			ISWorldMap_instance.mapAPI:centerOn(ISWorldMap_instance.character:getX(), ISWorldMap_instance.character:getY())
-			ISWorldMap_instance.mapAPI:setZoom(18.0)
+			ISWorldMap_instance.mapAPI:setZoom(zoom and zoom or 18.0)
 		end
 		ISWorldMap_instance:restoreSettings()
+
+		if centerX and centerY then
+			ISWorldMap_instance.mapAPI:centerOn(centerX, centerY)
+			ISWorldMap_instance.mapAPI:setZoom(zoom and zoom or 18.0)
+		end
+
 		ISWorldMap_instance:addToUIManager()
 		ISWorldMap_instance.getJoypadFocus = true
 		for i=1,getNumActivePlayers() do
@@ -901,6 +1008,10 @@ function ISWorldMap.ShowWorldMap(playerNum)
 	ISWorldMap_instance.symbolsUI.character = getSpecificPlayer(playerNum)
 	ISWorldMap_instance.symbolsUI.playerNum = playerNum
 	ISWorldMap_instance.symbolsUI:checkInventory()
+	if centerX and centerY then
+		ISWorldMap_instance.mapAPI:centerOn(centerX, centerY)
+		ISWorldMap_instance.mapAPI:setZoom(zoom and zoom or 18.0)
+	end
 	ISWorldMap_instance:setVisible(true)
 	ISWorldMap_instance:addToUIManager()
 	ISWorldMap_instance.getJoypadFocus = true
@@ -927,6 +1038,22 @@ function ISWorldMap.ToggleWorldMap(playerNum)
 	if not ISWorldMap.IsAllowed() then
 		return
 	end
+	local playerObj = getSpecificPlayer(playerNum)
+	-- an additional close map check is before the light level check so players can close maps when it's dark
+	-- the map should just automatically close when it's sufficiently dark, but that would be reported as a bug and also be hated
+    if ISWorldMap_instance and ISWorldMap_instance:isVisible() then
+          ISWorldMap.HideWorldMap(playerNum)
+          return
+    end
+    -- check for light if the map needing light sandbox setting is enabled
+	if ISWorldMap and ISWorldMap.NeedsLight() and playerObj and playerObj:tooDarkToRead() and not (isAdmin() or getCore():getDebug()) then
+		-- kludge to allow for vehicle interior lights
+		if not (playerObj:getVehicle() and playerObj:getVehicle():getBatteryCharge() > 0) then 
+			HaloTextHelper.addBadText(playerObj, getText("ContextMenu_TooDark"));
+-- 			HaloTextHelper.addText(playerObj, getText("ContextMenu_TooDark"), getCore():getGoodHighlitedColor());
+			return
+		end
+	end
 
 	-- Forbid showing the map when a splitscreen player has died.
 	if ISPostDeathUI and ISPostDeathUI.instance and #ISPostDeathUI.instance > 0 then
@@ -936,7 +1063,7 @@ function ISWorldMap.ToggleWorldMap(playerNum)
 	if ISWorldMap_instance and ISWorldMap_instance:isVisible() then
 		ISWorldMap.HideWorldMap(playerNum)
 	else
-		local playerObj = getSpecificPlayer(playerNum)
+		-- local playerObj = getSpecificPlayer(playerNum)
 		if playerObj then
 			ISTimedActionQueue.clear(playerObj)
 			ISTimedActionQueue.add(ISReadWorldMap:new(playerObj))
@@ -950,7 +1077,7 @@ end
 local KEYSTATE = {}
 
 function ISWorldMap.checkKey(key)
-	if key ~= getCore():getKey("Map") then
+	if not getCore():isKey("Map", key) then
 		return false
 	end
 	if not ISWorldMap.IsAllowed() then
@@ -961,7 +1088,7 @@ function ISWorldMap.checkKey(key)
 	end
 	if MainScreen.instance and not MainScreen.instance.inGame then
 		-- For debugging the map in the main menu without starting a game.
-		return getDebug()
+		return false -- getDebug()
 	end
 	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then
 		return false
@@ -970,6 +1097,13 @@ function ISWorldMap.checkKey(key)
 	if not playerObj or playerObj:isDead() then
 		return false
 	end
+	-- -- check for light if the map needing light sandbox setting is enabled	
+	-- if ISWorldMap.NeedsLight() and playerObj:getSquare():getLightLevel(playerObj:getPlayerNum()) < 0.43 then
+		-- -- kludge to allow for vehicle interior lights
+		-- if not (playerObj:getVehicle() and playerObj:getVehicle():getBatteryCharge() > 0) then 
+			-- return false
+		-- end
+	-- end
 --[[
 	local queue = ISTimedActionQueue.queues[playerObj]
 	if queue and #queue.queue > 0 then

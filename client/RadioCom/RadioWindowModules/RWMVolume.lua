@@ -7,25 +7,29 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 
 RWMVolume = RWMPanel:derive("RWMVolume");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 function RWMVolume:initialise()
     ISPanel.initialise(self)
 end
 
 function RWMVolume:createChildren()
-    self:setHeight(self.innerHeight+self.marginTop+self.marginBottom);
+    self:setHeight(UI_BORDER_SPACING*2 + BUTTON_HGT + 2);
 
-    self.speakerButton = ISSpeakerButton:new (self.marginLeft+2, self.marginTop+2, 20, 20, RWMVolume.onSpeakerButton, self);
+    self.speakerButton = ISSpeakerButton:new (UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, RWMVolume.onSpeakerButton, self);
     self.speakerButton:initialise();
     self:addChild(self.speakerButton);
 
-    local xoffset = self.marginLeft + self.marginRight + 10 + self.textureSize;
-    local remWidth = self:getWidth() - xoffset - 10;
+    local xoffset = UI_BORDER_SPACING*2 + BUTTON_HGT + 1;
+    local remWidth = self:getWidth() - xoffset - UI_BORDER_SPACING-1;
 
-    self.volumeBar = ISVolumeBar:new(xoffset, self.marginTop, remWidth, self.innerHeight, RWMVolume.onVolumeChange, self);
+    self.volumeBar = ISVolumeBar:new(xoffset, UI_BORDER_SPACING+1, remWidth, BUTTON_HGT, RWMVolume.onVolumeChange, self);
     self.volumeBar:initialise();
     self:addChild(self.volumeBar);
 
-    self.itemDropBox = ISItemDropBox:new (0, self.marginTop, self.innerHeight, self.innerHeight, false, self, RWMVolume.addHeadphone, RWMVolume.removeHeadphone, RWMVolume.verifyItem, nil );
+    self.itemDropBox = ISItemDropBox:new (self.width - BUTTON_HGT - UI_BORDER_SPACING - 1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, false, self, RWMVolume.addHeadphone, RWMVolume.removeHeadphone, RWMVolume.verifyItem, nil );
     self.itemDropBox:initialise();
     self.itemDropBox:setBackDropTex( getTexture("Item_Headphones"), 0.4, 1,1,1 );
     self.itemDropBox:setDoBackDropTex( true );
@@ -38,12 +42,10 @@ end
 function RWMVolume:toggleHeaphoneSupport(enable)
     if self.hasEnabledHeadphones ~= enable then
         if not enable then
-            self.volumeBar:setWidth(self.volumeBar:getWidth() + self.itemDropBox:getWidth() + 10);
+            self.volumeBar:setWidth(self.width - BUTTON_HGT - UI_BORDER_SPACING*3 - 2);
             self:removeChild(self.itemDropBox);
         else
-            local x = self.volumeBar:getX() + (self.volumeBar:getWidth()-self.itemDropBox:getWidth());
-            self.itemDropBox:setX(x);
-            self.volumeBar:setWidth(self.volumeBar:getWidth() - (self.itemDropBox:getWidth() + 10));
+            self.volumeBar:setWidth(self.width - BUTTON_HGT*2 - UI_BORDER_SPACING*4 - 2);
             self:addChild(self.itemDropBox);
         end
     end
@@ -255,15 +257,8 @@ function RWMVolume:new (x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
-    o.textureSize = 16;
     o.isMute = false;
     o.volume = 6;
-    o.marginLeft = 4;
-    o.marginRight = 4;
-    o.marginTop = 4;
-    o.marginBottom = 4;
-    o.innerHeight = 24;
     o.headphonesTex = getTexture("Item_Headphones");
     o.earbudsTex = getTexture("Item_Earbuds");
     return o

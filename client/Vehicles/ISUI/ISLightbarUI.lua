@@ -26,6 +26,7 @@ function ISLightbarUI:createChildren()
 	self.btn_sndStandby:instantiate();
 	self.btn_sndStandby.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.btn_sndStandby:setImage(self.texEngine);
+	self.btn_sndStandby:setSound('activate', "VehicleSetSiren")
 	self:addChild(self.btn_sndStandby);
 	
 	self.btn_sndYelp = ISButton:new(120, 50, 50, 50, "", self, ISLightbarUI.onOptionMouseDown);
@@ -35,6 +36,7 @@ function ISLightbarUI:createChildren()
 	self.btn_sndYelp:instantiate();
 	self.btn_sndYelp.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.btn_sndYelp:setImage(self.texEngine);
+	self.btn_sndYelp:setSound('activate', "VehicleSetSiren")
 	self:addChild(self.btn_sndYelp);
 	
 	self.btn_sndWall = ISButton:new(50, 160, 50, 50, "", self, ISLightbarUI.onOptionMouseDown);
@@ -44,6 +46,7 @@ function ISLightbarUI:createChildren()
 	self.btn_sndWall:instantiate();
 	self.btn_sndWall.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.btn_sndWall:setImage(self.texEngine);
+	self.btn_sndWall:setSound('activate', "VehicleSetSiren")
 	self:addChild(self.btn_sndWall);
 	
 	self.btn_sndAlarm = ISButton:new(120, 160, 50, 50, "", self, ISLightbarUI.onOptionMouseDown);
@@ -53,6 +56,7 @@ function ISLightbarUI:createChildren()
 	self.btn_sndAlarm:instantiate();
 	self.btn_sndAlarm.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.btn_sndAlarm:setImage(self.texEngine);
+	self.btn_sndAlarm:setSound('activate', "VehicleSetSiren")
 	self:addChild(self.btn_sndAlarm);
 	
 	self.lightsKnob = ISKnob:new(210,30,getTexture("media/ui/Knobs/KnobDial.png"), getTexture("media/ui/Knobs/KnobBGLightbarSiren.png"), "", self.character);
@@ -60,6 +64,7 @@ function ISLightbarUI:createChildren()
     self.lightsKnob:instantiate();
     self.lightsKnob.onMouseUpFct = ISLightbarUI.ChangeKnob;
     self.lightsKnob.target = self;
+	self.lightsKnob.switchSound = "VehicleSetLights";
     self:addChild(self.lightsKnob);
 	
 	self:addKnobValues();
@@ -152,6 +157,7 @@ function ISLightbarUI:onOptionMouseDown(button, x, y)
 end
 
 function ISLightbarUI:setLightbarSirenMode(mode)
+	
 	sendClientCommand(self.playerObj, 'vehicle', 'setLightbarSirenMode', {mode=mode})
 end
 

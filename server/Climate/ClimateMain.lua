@@ -14,15 +14,15 @@ local SUMMER,FALL,WINTER,SPRING = 0,1,2,3;
 function ClimateMain.onClimateManagerInit(_clim)
     local c;
     c = _clim:getColNightNoMoon();
-    c:setExterior(0.25,0.25,0.7,0.8);
+    c:setExterior(0.25,0.25,0.25,0.8);
     c:setInterior(0.06,0.06,0.35,0.4);
 
     c = _clim:getColNightMoon();
-    c:setExterior(0.33,0.33,1.0,0.8);
+    c:setExterior(0.33,0.33,0.33,0.8);
     c:setInterior(0.12,0.13,0.4,0.4);
 
     c = _clim:getColFog();
-    c:setExterior(0.2,0.2,0.4,0.8);
+    c:setExterior(0.2,0.2,0.2,0.8);
     c:setInterior(0.1,0.1,0.5,0.5);
 
     c = _clim:getColFogLegacy();

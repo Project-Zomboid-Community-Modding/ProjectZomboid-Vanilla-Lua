@@ -2,6 +2,9 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
+local CELL_SIZE_SQUARES = getCellSizeInSquares()
+local CHUNK_SIZE_SQUARES = getChunkSizeInSquares()
+
 -- A resizable-rectangle control
 WorldMapEditorResizer = ISBaseObject:derive("WorldMapEditorResizer")
 
@@ -145,15 +148,15 @@ end
 
 function WorldMapEditorResizer:snap(xy)
 	if self.snapMode == "cell" then
-		return round(xy / 300) * 300
+		return round(xy / CELL_SIZE_SQUARES) * CELL_SIZE_SQUARES
 	end
 	if self.snapMode == "chunk" then
-		return round(xy / 10) * 10
+		return round(xy / CHUNK_SIZE_SQUARES) * CHUNK_SIZE_SQUARES
 	end
 	return round(xy)
 end
 
-function WorldMapEditorResizer:render()
+function WorldMapEditorResizer:render(r, g, b, a)
 	local worldX1 = self.x1
 	local worldY1 = self.y1
 	local worldX2 = self.x2
@@ -167,10 +170,14 @@ function WorldMapEditorResizer:render()
 	local uiX4 = self.mapAPI:worldToUIX(worldX1, worldY2)
 	local uiY4 = self.mapAPI:worldToUIY(worldX1, worldY2)
 	local THICK = 3
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, uiX2 - uiX1 + THICK * 2, THICK, 1, 0, 0, 0)
-	self.mapUI:drawRect(uiX2, uiY2 - THICK, THICK, uiY3 - uiY2 + THICK * 2, 1, 0, 0, 0)
-	self.mapUI:drawRect(uiX4 - THICK, uiY4, uiX3 - uiX4 + THICK * 2, THICK, 1, 0, 0, 0)
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, THICK, uiY4 - uiY1 + THICK * 2, 1, 0, 0, 0)
+	r = r or 0.0
+	g = g or 0.0
+	b = b or 0.0
+	a = a or 1.0
+	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, uiX2 - uiX1 + THICK * 2, THICK, a, r, g, b)
+	self.mapUI:drawRect(uiX2, uiY2 - THICK, THICK, uiY3 - uiY2 + THICK * 2, a, r, g, b)
+	self.mapUI:drawRect(uiX4 - THICK, uiY4, uiX3 - uiX4 + THICK * 2, THICK, a, r, g, b)
+	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, THICK, uiY4 - uiY1 + THICK * 2, a, r, g, b)
 
 	if self.resizing then return end
 

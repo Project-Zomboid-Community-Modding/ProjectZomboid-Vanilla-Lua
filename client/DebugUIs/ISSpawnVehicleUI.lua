@@ -1,61 +1,68 @@
 ISSpawnVehicleUI = ISPanelJoypad:derive("ISSpawnVehicleUI");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 function ISSpawnVehicleUI:initialise()
 	ISPanelJoypad.initialise(self);
 
-	local y=60
+	local th = self:titleBarHeight()
+	local y = th + UI_BORDER_SPACING*2+FONT_HGT_LARGE+1
 
-	self.vehicleComboBox = ISComboBox:new(10, y, 180, 20)
+	self.vehicleComboBox = ISComboBox:new(UI_BORDER_SPACING+1, y, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT)
 	self.vehicleComboBox:initialise()
 	self.vehicleComboBox:setEditable(true)
 	self:addChild(self.vehicleComboBox)
 
-	y=y+40
+	y = y + UI_BORDER_SPACING + BUTTON_HGT
 
-	self.boolOptions = ISTickBox:new(10, y, 200, 20, "", self, self.onSelectOption);
+	self.boolOptions = ISTickBox:new(UI_BORDER_SPACING+1, y, 200, BUTTON_HGT, "", self, self.onSelectOption);
 	self.boolOptions:initialise()
 	self:addChild(self.boolOptions)
-	self.boolOptions:addOption("Real names");
-	self.boolOptions.selected[1] = false
-	self.boolOptions:addOption("Normal cars");
+	self.boolOptions:addOption(getText("IGUI_SpawnVehicle_RealNames"));
+	self.boolOptions:addOption(getText("IGUI_SpawnVehicle_Normal"));
 	self.boolOptions.selected[2] = true
-	self.boolOptions:addOption("Burnt cars");
-	self.boolOptions.selected[3] = false
-	self.boolOptions:addOption("Smashed cars");
-	self.boolOptions.selected[4] = false
+	self.boolOptions:addOption(getText("IGUI_SpawnVehicle_Burnt"));
+	self.boolOptions:addOption(getText("IGUI_SpawnVehicle_Smashed"));
+	self.boolOptions.autoWidth = true;
+	self.boolOptions:setX((self:getWidth()-self.boolOptions:getWidth())/2 - UI_BORDER_SPACING)
 
-	y=y+80
+	self:setHeight(self.boolOptions:getBottom() + BUTTON_HGT*2 + UI_BORDER_SPACING*3 + 1)
 
-	self.spawn = ISButton:new(10, self.height-35, 80, 25, "Spawn", self, ISSpawnVehicleUI.onClick);
-	self.spawn.anchorTop = false
-	self.spawn.anchorBottom = true
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StashDebug_Spawn")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnVehicle_GetKey")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Close")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnVehicle_Repair"))
+	)
+
+	local x = (self.width - buttonWid*2 - UI_BORDER_SPACING)/2
+
+	self.spawn = ISButton:new(x, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, buttonWid, BUTTON_HGT, getText("IGUI_StashDebug_Spawn"), self, ISSpawnVehicleUI.onClick);
 	self.spawn.internal = "SPAWN";
 	self.spawn:initialise();
 	self.spawn:instantiate();
-	self.spawn.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.spawn:enableAcceptColor()
 	self:addChild(self.spawn);
 
-	self.close = ISButton:new(110, self.height-35, 80, 25, "Close", self, ISSpawnVehicleUI.onClick);
-	self.close.anchorTop = false
-	self.close.anchorBottom = true
+	self.close = ISButton:new(self.spawn:getRight() + UI_BORDER_SPACING, self.spawn.y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Close"), self, ISSpawnVehicleUI.onClick);
 	self.close.internal = "CLOSE";
 	self.close:initialise();
 	self.close:instantiate();
-	self.close.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.close:enableCancelColor()
 	self:addChild(self.close);
 
-	self.getKey = ISButton:new(10, self.spawn:getY() - 5 - 25, 80, 25, "Get key", self, ISSpawnVehicleUI.onClick);
-	self.getKey.anchorTop = false
-	self.getKey.anchorBottom = true
+	self.getKey = ISButton:new(self.spawn.x, self.spawn:getY()-UI_BORDER_SPACING-BUTTON_HGT, buttonWid, BUTTON_HGT, getText("IGUI_SpawnVehicle_GetKey"), self, ISSpawnVehicleUI.onClick);
 	self.getKey.internal = "GETKEY";
 	self.getKey:initialise();
 	self.getKey:instantiate();
 	self.getKey.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.getKey);
 
-	self.repair = ISButton:new(110, self.close:getY() - 5 - 25, 80, 25, "Repair", self, ISSpawnVehicleUI.onClick);
-	self.repair.anchorTop = false
-	self.repair.anchorBottom = true
+	self.repair = ISButton:new(self.getKey:getRight() + UI_BORDER_SPACING, self.getKey:getY(), buttonWid, BUTTON_HGT, getText("IGUI_SpawnVehicle_Repair"), self, ISSpawnVehicleUI.onClick);
 	self.repair.internal = "REPAIR";
 	self.repair:initialise();
 	self.repair:instantiate();
@@ -135,7 +142,8 @@ function ISSpawnVehicleUI:onClick(button)
 				local command = string.format("/addvehicle %s", tostring(self:getVehicle()))
 				SendCommandToServer(command)
 			else
-				addVehicle(tostring(self:getVehicle()))
+				--addVehicle(tostring(self:getVehicle()))
+				addVehicle(tostring(self:getVehicle()), self.player:getX(), self.player:getY(), self.player:getZ())
 			end
 		elseif button.internal == "GETKEY" then
 			if self.vehicle ~= nil then
@@ -165,7 +173,7 @@ function ISSpawnVehicleUI:prerender()
 	
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	
-	self:drawTextCentre("Spawn Vehicle", self:getWidth() / 2, 20, 1, 1, 1, 1, UIFont.NewLarge);
+	self:drawTextCentre(getText("IGUI_DebugContext_SpawnVehicle"), self:getWidth() / 2, UI_BORDER_SPACING+th+1, 1, 1, 1, 1, UIFont.NewLarge);
 end
 
 function ISSpawnVehicleUI:render()
@@ -221,26 +229,27 @@ end
 
 function ISSpawnVehicleUI:new(x, y, width, height, player)
 	local o = {}
-	o = ISPanelJoypad:new(x, y, width, height);
+	o = ISPanelJoypad:new(x, y, 500, 500);
 	setmetatable(o, self)
 	self.__index = self
+	o.width = 500;
+	o.height = 500;
+
 	if y == 0 then
-		o.y = o:getMouseY() - (height / 2)
+		o.y = o:getMouseY() - (o.height / 2)
 		o:setY(o.y)
 	end
 	if x == 0 then
-		o.x = o:getMouseX() - (width / 2)
+		o.x = o:getMouseX() - (o.width / 2)
 		o:setX(o.x)
 	end
 	o.name = nil;
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-	o.width = width;
 	local txtWidth = getTextManager():MeasureStringX(UIFont.Small, text) + 10;
-	if width < txtWidth then
+	if o.width < txtWidth then
 		o.width = txtWidth;
 	end
-	o.height = height;
 	o.anchorLeft = true;
 	o.anchorRight = true;
 	o.anchorTop = true;

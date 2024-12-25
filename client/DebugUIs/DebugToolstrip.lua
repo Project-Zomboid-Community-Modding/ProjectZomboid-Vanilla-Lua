@@ -1,6 +1,8 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 DebugToolstrip = ISPanel:derive("DebugToolstrip");
 
@@ -19,6 +21,7 @@ end
 function DebugToolstrip:onDebugLog()
     self.debugLogWindow = DebugLogSettings:new(self.debugLog:getX(), self.debugLog:getBottom(), 300, 400)
     self.debugLogWindow:initialise()
+    self.debugLogWindow:setVisible(true)
     self.debugLogWindow:addToUIManager()
 end
 
@@ -58,41 +61,41 @@ end
 
 function DebugToolstrip:createChildren()
     local x = 24;
-    self.mapView = ISButton:new(x, 12, 48, 28, "Map", self, DebugToolstrip.onMapClick);
+    self.mapView = ISButton:new(x, 12, 48, BUTTON_HGT, "Map", self, DebugToolstrip.onMapClick);
     self.mapView:initialise();
     self:addChild(self.mapView);
 
-    self.debugOptions = ISButton:new(self.mapView:getRight() + 24, 12, 48, 28, "Options", self, DebugToolstrip.onOptionsClick)
+    self.debugOptions = ISButton:new(self.mapView:getRight() + 24, UI_BORDER_SPACING, 48, BUTTON_HGT, "Options", self, DebugToolstrip.onOptionsClick)
     self.debugOptions:initialise()
     self:addChild(self.debugOptions)
 
-    self.debugLog = ISButton:new(self.debugOptions:getRight() + 24, 12, 48, 28, "DebugLog", self, DebugToolstrip.onDebugLog)
+    self.debugLog = ISButton:new(self.debugOptions:getRight() + 24, UI_BORDER_SPACING, 48, BUTTON_HGT, "DebugLog", self, DebugToolstrip.onDebugLog)
     self.debugLog:initialise()
     self:addChild(self.debugLog)
 
-    self.errors = ISButton:new(self.debugLog:getRight() + 24, 12, 48, 28, "Errors", self, DebugToolstrip.onShowErrors)
+    self.errors = ISButton:new(self.debugLog:getRight() + 24, UI_BORDER_SPACING, 48, BUTTON_HGT, "Errors", self, DebugToolstrip.onShowErrors)
     self.errors:initialise()
     self:addChild(self.errors)
 
-    local tickBox = ISTickBox:new(self.errors:getRight() + 24, 12, 150, FONT_HGT_SMALL, "", self, DebugToolstrip.onToggleBreak)
+    local tickBox = ISTickBox:new(self.errors:getRight() + 24, UI_BORDER_SPACING, 150, BUTTON_HGT, "", self, DebugToolstrip.onToggleBreak)
     self:addChild(tickBox)
     tickBox:addOption("Break On Error", nil)
     tickBox:setWidthToFit()
     self.showDebuggerOnError = tickBox
 
-    self.buttonStepInto = ISButton:new(tickBox:getRight() + 24, 12, 28, 28, "", self, DebugToolstrip.onButtonStepInto)
+    self.buttonStepInto = ISButton:new(tickBox:getRight() + 24, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", self, DebugToolstrip.onButtonStepInto)
     self.buttonStepInto:setImage(getTexture("media/ui/debug/DebuggerStepInto.png"))
-    self.buttonStepInto:forceImageSize(28, 28)
+    self.buttonStepInto:forceImageSize(BUTTON_HGT, BUTTON_HGT)
     self:addChild(self.buttonStepInto)
 
-    self.buttonStepOver = ISButton:new(self.buttonStepInto:getRight() + 20, 12, 28, 28, "", self, DebugToolstrip.onButtonStepOver)
+    self.buttonStepOver = ISButton:new(self.buttonStepInto:getRight() + 20, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", self, DebugToolstrip.onButtonStepOver)
     self.buttonStepOver:setImage(getTexture("media/ui/debug/DebuggerStepOver.png"))
-    self.buttonStepOver:forceImageSize(28, 28)
+    self.buttonStepOver:forceImageSize(BUTTON_HGT, BUTTON_HGT)
     self:addChild(self.buttonStepOver)
 
-    self.buttonResume = ISButton:new(self.buttonStepOver:getRight() + 20, 12, 28, 28, "", self, DebugToolstrip.onButtonResume)
+    self.buttonResume = ISButton:new(self.buttonStepOver:getRight() + 20, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", self, DebugToolstrip.onButtonResume)
     self.buttonResume:setImage(getTexture("media/ui/debug/DebuggerResume.png"))
-    self.buttonResume:forceImageSize(28, 28)
+    self.buttonResume:forceImageSize(BUTTON_HGT, BUTTON_HGT)
     self:addChild(self.buttonResume)
 end
 

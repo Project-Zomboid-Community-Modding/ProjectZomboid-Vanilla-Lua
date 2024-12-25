@@ -160,6 +160,8 @@ function ISSliderPanel:setDoButtons( _b )
 end
 
 function ISSliderPanel:setCurrentValue( _v, _ignoreOnChange )
+    if self.disabled then return end
+
     local stepmod = 1/self.stepValue;
     _v = self:round(_v*stepmod,0) / stepmod;
     if _v < self.minValue then _v = self.minValue; end
@@ -198,6 +200,22 @@ function ISSliderPanel:deactivateToolTip()
     end
 end
 
+function ISSliderPanel:setJoypadFocused(focused)
+    self.joypadFocused = focused
+    if focused then
+        self.sliderBarColor = {r=0.3, g=0.3, b=0.5, a=1.0};
+    else
+        self.sliderBarColor = {r=0.2, g=0.2, b=0.2, a=1.0};
+    end
+end
+
+function ISSliderPanel:onJoypadDirRight()
+    self:setCurrentValue( self.currentValue + self.stepValue );
+end
+
+function ISSliderPanel:onJoypadDirLeft()
+    self:setCurrentValue( self.currentValue - self.stepValue );
+end
 
 function ISSliderPanel:new (x, y, width, height, target, onValueChange, customPaginate)
     local o = ISPanel:new(x, y, width, height);
@@ -243,6 +261,8 @@ function ISSliderPanel:new (x, y, width, height, target, onValueChange, customPa
     o.toolTipText = getText("UI_Radio_IncreaseStepSize")
     o.isSliderPanel = true;
     --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
+    o.disabled = false
+    o.isSlider = true
     return o
 end
 

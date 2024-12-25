@@ -6,6 +6,8 @@ ISTextBox = ISPanelJoypad:derive("ISTextBox");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISTextBox:initialise
@@ -15,31 +17,15 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 function ISTextBox:initialise()
     ISPanelJoypad.initialise(self);
 
-	local fontHgt = FONT_HGT_SMALL
-	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, "Ok") + 12
-	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, "Cancel") + 12
-	local buttonWid = math.max(math.max(buttonWid1, buttonWid2), 100)
-	local buttonHgt = math.max(fontHgt + 6, 25)
-	local padBottom = 10
-
-    self.yes = ISButton:new((self:getWidth() / 2)  - 5 - buttonWid, self:getHeight() - padBottom - buttonHgt, buttonWid, buttonHgt, getText("UI_Ok"), self, ISTextBox.onClick);
-    self.yes.internal = "OK";
-    self.yes:initialise();
-    self.yes:instantiate();
-    self.yes.borderColor = {r=1, g=1, b=1, a=0.1};
-    self:addChild(self.yes);
-
-    self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - buttonHgt, buttonWid, buttonHgt, getText("UI_Cancel"), self, ISTextBox.onClick);
-    self.no.internal = "CANCEL";
-    self.no:initialise();
-    self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
-    self:addChild(self.no);
+	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")) + 12
+	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")) + 12
+	local buttonWid = math.max(buttonWid1, buttonWid2, 100)
+    self:setWidth(math.max((buttonWid*2+UI_BORDER_SPACING*3+2)*2, self.width))
 
     self.fontHgt = FONT_HGT_MEDIUM
     local inset = 2
     local height = inset + self.fontHgt * self.numLines + inset
-    self.entry = ISTextEntryBox:new(self.defaultEntryText, self:getWidth() / 2 - ((self:getWidth() - 40) / 2), (self:getHeight() - height) / 2, self:getWidth() - 40, height);
+    self.entry = ISTextEntryBox:new(self.defaultEntryText, self:getWidth() / 2 - ((self:getWidth() - 40) / 2), self:getHeight() / 2, self:getWidth() - 40, height);
     self.entry.font = UIFont.Medium
     self.entry:initialise();
     self.entry:instantiate();
@@ -63,6 +49,22 @@ function ISTextBox:initialise()
     self.colorPicker:setVisible(false);
     self.colorPicker.otherFct = true;
     self.colorPicker.parent = self;
+
+    self.yes = ISButton:new((self:getWidth() - UI_BORDER_SPACING) / 2 - buttonWid, self.entry.y + height + UI_BORDER_SPACING, buttonWid, BUTTON_HGT, getText("UI_Ok"), self, ISTextBox.onClick);
+    self.yes.internal = "OK";
+    self.yes:initialise();
+    self.yes:instantiate();
+    self.yes:enableAcceptColor()
+    self:addChild(self.yes);
+
+    self.no = ISButton:new((self:getWidth() + UI_BORDER_SPACING) / 2, self.yes.y, buttonWid, BUTTON_HGT, getText("UI_Cancel"), self, ISTextBox.onClick);
+    self.no.internal = "CANCEL";
+    self.no:initialise();
+    self.no:instantiate();
+    self.no:enableCancelColor()
+    self:addChild(self.no);
+
+    self:setHeight(self.yes:getBottom() + UI_BORDER_SPACING + 1)
 end
 
 function ISTextBox:onColorPicker(button)
@@ -147,7 +149,7 @@ function ISTextBox:onClick(button)
 end
 
 function ISTextBox:titleBarHeight()
-	return 16
+	return BUTTON_HGT
 end
 
 function ISTextBox:prerender()
@@ -161,12 +163,10 @@ function ISTextBox:prerender()
 
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-	self:drawTextCentre(self.text, self:getWidth() / 2, self.entry:getY() - 8 - fontHgt, 1, 1, 1, 1, UIFont.Small);
+	self:drawTextCentre(self.text, self:getWidth() / 2, 3, 1, 1, 1, 1, UIFont.Small);
 
     if self.showError then
-        local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-        self:drawTextCentre(self.errorMsg, self:getWidth() / 2, self.entry:getY() + 50 - fontHgt, 1, 0, 0, 1, UIFont.Small);
+        self:drawTextCentre(self.errorMsg, self:getWidth() / 2, self.entry:getY() + 50 - FONT_HGT_SMALL, 1, 0, 0, 1, UIFont.Small);
     end
 
     self:updateButtons();
@@ -357,7 +357,7 @@ end
 
 function ISTextBox:close()
 	ISPanelJoypad.close(self)
-	if JoypadState.players[self.player+1] then
+	if self.player ~= nil and JoypadState.players[self.player+1] then
 		setJoypadFocus(self.player, nil)
 	end
 end

@@ -7,6 +7,10 @@ require "ISUI/ISPanel"
 
 RadioScriptDebugger = ISPanel:derive("RadioScriptDebugger");
 RadioScriptDebugger.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function roundstring(_val)
     return tostring(ISDebugUtils.roundNum(_val,2));
@@ -14,7 +18,7 @@ end
 
 function RadioScriptDebugger.OnOpenPanel(_radioChannel)
     if RadioScriptDebugger.instance==nil then
-        RadioScriptDebugger.instance = RadioScriptDebugger:new (100, 100, 1000, 600, "Channel script debugger");
+        RadioScriptDebugger.instance = RadioScriptDebugger:new (100, 100, 1000+(getCore():getOptionFontSizeReal()*150), 600, getText("IGUI_ZomboidRadio_ChannelScriptDebugger"));
         RadioScriptDebugger.instance.channel = _radioChannel;
         RadioScriptDebugger.instance:initialise();
         RadioScriptDebugger.instance:instantiate();
@@ -38,12 +42,13 @@ end
 function RadioScriptDebugger:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "Channel script debugger - "..tostring(self.channel:GetName()), UIFont.Medium, true)
+    ISDebugUtils.addLabel(self, {}, UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, getText("IGUI_ZomboidRadio_ChannelScriptDebugger").." - "..tostring(self.channel:GetName()), UIFont.Medium, true)
+    local top = FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1
 
-    self.infoList = ISScrollingListBox:new(10, 50, 280, self.height - 100);
+    self.infoList = ISScrollingListBox:new(UI_BORDER_SPACING+1, top, 280+(getCore():getOptionFontSizeReal()*50), self.height-top-UI_BORDER_SPACING*2-BUTTON_HGT-1);
     self.infoList:initialise();
     self.infoList:instantiate();
-    self.infoList.itemheight = 22;
+    self.infoList.itemheight = BUTTON_HGT;
     self.infoList.selected = 0;
     self.infoList.joypadParent = self;
     self.infoList.font = UIFont.NewSmall;
@@ -51,10 +56,10 @@ function RadioScriptDebugger:createChildren()
     self.infoList.drawBorder = true;
     self:addChild(self.infoList);
 
-    self.channelsList = ISScrollingListBox:new(300, 50, 170, self.height - 100);
+    self.channelsList = ISScrollingListBox:new(self.infoList:getRight()+UI_BORDER_SPACING, self.infoList.y, 170+(getCore():getOptionFontSizeReal()*10), self.infoList.height);
     self.channelsList:initialise();
     self.channelsList:instantiate();
-    self.channelsList.itemheight = 22;
+    self.channelsList.itemheight = BUTTON_HGT;
     self.channelsList.selected = 0;
     self.channelsList.joypadParent = self;
     self.channelsList.font = UIFont.NewSmall;
@@ -64,10 +69,10 @@ function RadioScriptDebugger:createChildren()
     self.channelsList.target = self;
     self:addChild(self.channelsList);
 
-    self.broadcastList = ISScrollingListBox:new(480, 50, 510, self.height - 100);
+    self.broadcastList = ISScrollingListBox:new(self.channelsList:getRight()+UI_BORDER_SPACING, self.infoList.y, self.width - self.channelsList:getRight()-UI_BORDER_SPACING*2-1, self.infoList.height);
     self.broadcastList:initialise();
     self.broadcastList:instantiate();
-    self.broadcastList.itemheight = 22;
+    self.broadcastList.itemheight = BUTTON_HGT;
     self.broadcastList.selected = 0;
     self.broadcastList.joypadParent = self;
     self.broadcastList.font = UIFont.NewSmall;
@@ -87,7 +92,9 @@ function RadioScriptDebugger:createChildren()
     self.infoList.drawBorder = true;
     self:addChild(self.infoList);
     --]]
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),RadioScriptDebugger.onClickClose);
+    local btnY, btnWidth = self.broadcastList:getBottom() + UI_BORDER_SPACING, 180
+    local y, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Close"),RadioScriptDebugger.onClickClose);
+    obj:enableCancelColor()
 
     self:populateInfoList(self.channel);
     self:populateList();
@@ -142,21 +149,21 @@ function RadioScriptDebugger:populateInfoList(_radioChannel)
 
         if script then
             self.infoList:addItem(_radioChannel:GetName(), nil);
-            self.infoList:addItem("Name: "..tostring(script:GetName()), nil);
-            self.infoList:addItem("GUID: "..tostring(script:GetGUID()), nil);
-            self.infoList:addItem("Startday stamp: "..tostring(script:getStartDayStamp()), nil);
-            self.infoList:addItem("Startday: "..tostring(script:getStartDay()), nil);
-            self.infoList:addItem("Loop min: "..tostring(script:getLoopMin()), nil);
-            self.infoList:addItem("Loop max: "..tostring(script:getLoopMax()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_Name")..": "..tostring(script:GetName()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_GUID")..": "..tostring(script:GetGUID()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_StartDayStamp")..": "..tostring(script:getStartDayStamp()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_StartDay")..": "..tostring(script:getStartDay()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_LoopMin")..": "..tostring(script:getLoopMin()), nil);
+            self.infoList:addItem(getText("IGUI_ZomboidRadio_LoopMax")..": "..tostring(script:getLoopMax()), nil);
 
-            self.infoList:addItem("--- EXIT OPTIONS ---", nil);
             local exits = script:getExitOptions();
 
             for i=0, exits:size()-1 do
                 local exit = exits:get(i);
-                self.infoList:addItem("Scriptname: "..tostring(exit:getScriptname()), nil);
-                self.infoList:addItem("Change: "..tostring(exit:getChance()), nil);
-                self.infoList:addItem("Start delay: "..tostring(exit:getStartDelay()), nil);
+                self.infoList:addItem(getText("IGUI_ZomboidRadio_ExitOptions"), nil);
+                self.infoList:addItem(getText("IGUI_ZomboidRadio_ScriptName")..": "..tostring(exit:getScriptname()), nil);
+                self.infoList:addItem(getText("IGUI_DebugMenu_Change")..": "..tostring(exit:getChance()), nil);
+                self.infoList:addItem(getText("IGUI_ZomboidRadio_StartDelay")..": "..tostring(exit:getStartDelay()), nil);
                 self.infoList:addItem("-------------------", nil);
             end
         end

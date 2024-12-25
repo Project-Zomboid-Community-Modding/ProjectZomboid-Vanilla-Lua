@@ -89,11 +89,6 @@ Challenge2.SpawnZombies = function(count)
 		if e == 2 then x2 = x + 1; end -- west edge
 		if e == 3 then x = x2 - 1; end -- east edge
 
-		x = x + (Challenge2.xcell * 300);
-		x2 = x2 + (Challenge2.xcell * 300);
-		y = y + (Challenge2.ycell * 300);
-		y2 = y2 + (Challenge2.ycell * 300);
-
 		createHordeInAreaTo(x, y, x2 - x, y2 - y, player:getX(), player:getY(), 1);
     end
 end
@@ -298,7 +293,7 @@ end
 
 Challenge2.onKeyPressed = function(key)
 	if Core.isLastStand() then
---~ 		if key == getCore():getKey("Equip/Unequip Handweapon") then
+--~ 		if getCore():isKey("Equip/Unequip Handweapon", key) then
 --~ 			if Challenge2.zombiesSpawned > 0 then
 --~ 				Challenge2.onZombieDead();
 --~ 			end
@@ -330,8 +325,6 @@ end
 Challenge2.id = "Challenge2";
 Challenge2.image = "media/lua/client/LastStand/Challenge2.png";
 Challenge2.world = "challengemaps/Challenge1";
-Challenge2.xcell = 0;
-Challenge2.ycell = 0;
 Challenge2.x = 153;
 Challenge2.y = 158;
 Challenge2.z = 0;

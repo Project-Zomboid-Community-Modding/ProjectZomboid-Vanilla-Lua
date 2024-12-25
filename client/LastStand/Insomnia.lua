@@ -39,10 +39,10 @@ function injectInsomnia()
     Insomnia.OnPlayerUpdate = function(player)
         player:getStats():setFatigue(0);
         if getPlayer():getModData()["IsNight"] == 0 then
-            gameTime = GameTime:getInstance();
+            gameTime = GameTime.getInstance();
             gameTime:setViewDist(1);
         else
-            gameTime = GameTime:getInstance();
+            gameTime = GameTime.getInstance();
             gameTime:setViewDist(75);
         end
 
@@ -237,10 +237,8 @@ InsomniaChallenge.completionText = "Survive the night to unlock the next challen
 InsomniaChallenge.image = "media/lua/client/LastStand/InsomniaChallenge.png";
 InsomniaChallenge.gameMode = "Insomnia";
 InsomniaChallenge.world = "Muldraugh, KY";
-InsomniaChallenge.xcell = 35;
-InsomniaChallenge.ycell = 33;
-InsomniaChallenge.x = 277;
-InsomniaChallenge.y = 271;
+InsomniaChallenge.x = 35 * 300 + 277;
+InsomniaChallenge.y = 33 * 300 + 271;
 InsomniaChallenge.z = 0;
 InsomniaChallenge.hourOfDay = 7;
 Events.OnChallengeQuery.Add(InsomniaChallenge.Add)

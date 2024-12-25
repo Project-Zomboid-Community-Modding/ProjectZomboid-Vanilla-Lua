@@ -23,13 +23,13 @@ debugScenarios.Trailer1Scenario = {
 		SandboxVars.ElecShutModifier = 30;
 		SandboxVars.WaterShut = 2;
 		SandboxVars.ElecShut = 2;
-		SandboxVars.FoodLoot = 2;
-		SandboxVars.WeaponLoot = 2;
-		SandboxVars.OtherLoot = 2;
+-- 		SandboxVars.FoodLoot = 2;
+-- 		SandboxVars.WeaponLoot = 2;
+-- 		SandboxVars.OtherLoot = 2;
+        SandboxVars.LootItemRemovalList = "";
 		SandboxVars.Temperature = 3;
 		SandboxVars.Rain = 3;
 		SandboxVars.ErosionSpeed = 3;
-		SandboxVars.XpMultiplier = 1.0;
 		SandboxVars.StatsDecrease = 3;
 		SandboxVars.NatureAbundance = 3;
 		SandboxVars.Alarm = 1;
@@ -53,6 +53,11 @@ debugScenarios.Trailer1Scenario = {
 		SandboxVars.RecentlySurvivorVehicles = 2;
 		SandboxVars.SurvivorHouseChance = 1;
 		SandboxVars.VehicleStoryChance = 1;
+
+		SandboxVars.MultiplierConfig = {
+			XPMultiplierGlobal = 1,
+			XPMultiplierGlobalToggle = true,
+		}
 		
 		SandboxVars.ZombieLore = {
 			Speed = 2,

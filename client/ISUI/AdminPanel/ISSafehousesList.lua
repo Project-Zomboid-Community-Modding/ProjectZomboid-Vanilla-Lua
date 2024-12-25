@@ -7,6 +7,8 @@ ISSafehousesList.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISSafehousesList:initialise
@@ -16,10 +18,8 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 function ISSafehousesList:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    self.no = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISSafehousesList.onClick);
+    self.no = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISSafehousesList.onClick);
     self.no.internal = "CANCEL";
     self.no.anchorTop = false
     self.no.anchorBottom = true
@@ -28,11 +28,11 @@ function ISSafehousesList:initialise()
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    local listY = 20 + FONT_HGT_MEDIUM + 20
-    self.datas = ISScrollingListBox:new(10, listY, self.width - 20, self.height - padBottom - btnHgt - padBottom - listY);
+    local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1
+    self.datas = ISScrollingListBox:new(UI_BORDER_SPACING+1, listY, self.width - (UI_BORDER_SPACING+1)*2, self.height - UI_BORDER_SPACING*2 - BUTTON_HGT - listY - 1);
     self.datas:initialise();
     self.datas:instantiate();
-    self.datas.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.datas.itemheight = BUTTON_HGT;
     self.datas.selected = 0;
     self.datas.joypadParent = self;
     self.datas.font = UIFont.NewSmall;
@@ -40,7 +40,7 @@ function ISSafehousesList:initialise()
     self.datas.drawBorder = true;
     self:addChild(self.datas);
 
-    self.teleportBtn = ISButton:new(self:getWidth() - btnWid - 10,  self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PlayerStats_Teleport"), self, ISSafehousesList.onClick);
+    self.teleportBtn = ISButton:new(self:getWidth() - btnWid - 10,  self.no.y, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_Teleport"), self, ISSafehousesList.onClick);
     self.teleportBtn.internal = "TELEPORT";
     self.teleportBtn.anchorTop = false
     self.teleportBtn.anchorBottom = true
@@ -49,8 +49,9 @@ function ISSafehousesList:initialise()
     self.teleportBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.teleportBtn);
     self.teleportBtn.enable = false;
+    self.teleportBtn:setX(self.width - self.teleportBtn.width - UI_BORDER_SPACING - 1)
 
-    self.viewBtn = ISButton:new(self.teleportBtn.x - self.teleportBtn.width - 10,  self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PlayerStats_View"), self, ISSafehousesList.onClick);
+    self.viewBtn = ISButton:new(self.teleportBtn.x - self.teleportBtn.width - UI_BORDER_SPACING,  self.no.y, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_View"), self, ISSafehousesList.onClick);
     self.viewBtn.internal = "VIEW";
     self.viewBtn.anchorTop = false
     self.viewBtn.anchorBottom = true
@@ -59,6 +60,7 @@ function ISSafehousesList:initialise()
     self.viewBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.viewBtn);
     self.viewBtn.enable = false;
+    self.viewBtn:setX(self.teleportBtn.x - self.viewBtn.width - UI_BORDER_SPACING)
 
     self:populateList();
 
@@ -91,13 +93,9 @@ function ISSafehousesList:drawDatas(y, item, alt)
 end
 
 function ISSafehousesList:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_SeeSafehouses"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeSafehouses")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 30;
+    self:drawText(getText("IGUI_AdminPanel_SeeSafehouses"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeSafehouses")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISSafehousesList:onClick(button)
@@ -108,9 +106,9 @@ function ISSafehousesList:onClick(button)
         self.player:setX(self.selectedSafehouse:getX());
         self.player:setY(self.selectedSafehouse:getY());
         self.player:setZ(0);
-        self.player:setLx(self.selectedSafehouse:getX());
-        self.player:setLy(self.selectedSafehouse:getY());
-        self.player:setLz(0);
+        self.player:setLastX(self.selectedSafehouse:getX());
+        self.player:setLastY(self.selectedSafehouse:getY());
+        self.player:setLastZ(0);
     end
     if button.internal == "VIEW" then
         local safehouseUI = ISSafehouseUI:new(getCore():getScreenWidth() / 2 - 250,getCore():getScreenHeight() / 2 - 225, 500, 450, self.selectedSafehouse, self.player);

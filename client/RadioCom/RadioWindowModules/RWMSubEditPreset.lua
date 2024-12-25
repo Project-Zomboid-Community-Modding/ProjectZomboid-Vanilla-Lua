@@ -6,6 +6,10 @@ require "ISUI/ISPanel"
 
 RWMSubEditPreset = ISPanel:derive("RWMSubEditPreset");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+
 function RWMSubEditPreset:initialise()
     ISPanel.initialise(self)
 end
@@ -13,18 +17,18 @@ end
 function RWMSubEditPreset:createChildren()
     self.lineSplit = getTextManager():MeasureStringX(UIFont.Small, "1000.0 MHz");
 
-    self.entryName = ISTextEntryBox:new("", 0, 5, self.width, 18);
+    self.entryName = ISTextEntryBox:new("", 0, UI_BORDER_SPACING+1, self.width, BUTTON_HGT);
     self.entryName:initialise();
     self.entryName:instantiate();
     self.entryName:setText("");
     self:addChild(self.entryName);
 
-    self.frequencySlider = ISSliderPanel:new(0, 5, self.width/4, 18, self, RWMSubEditPreset.onSliderChange );
+    self.frequencySlider = ISSliderPanel:new(0, UI_BORDER_SPACING, self.width/4, BUTTON_HGT, self, RWMSubEditPreset.onSliderChange );
     self.frequencySlider:initialise();
     self.frequencySlider:instantiate();
     self:addChild(self.frequencySlider);
 
-    self.saveButton = ISButton:new(0, 0, self.width,18,getText("IGUI_RadioSave"),self, RWMSubEditPreset.doSaveButton);
+    self.saveButton = ISButton:new(0, 0, self.width, BUTTON_HGT, getText("IGUI_RadioSave"),self, RWMSubEditPreset.doSaveButton);
     self.saveButton:initialise();
     self.saveButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.saveButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
@@ -82,7 +86,7 @@ function RWMSubEditPreset:calcLinePairs()
             self.lineSplit = line.textLen;
         end
     end
-    self.lineSplit = self.lineSplit + 10;
+    self.lineSplit = self.lineSplit + UI_BORDER_SPACING;
 
     for i=1,#self.linePairs do
         local line = self.linePairs[i];
@@ -90,12 +94,12 @@ function RWMSubEditPreset:calcLinePairs()
         if line and line.ui then
             if line.text then
                 line.ui:setX(self.lineSplit+self.linePadding);
-                line.ui:setY(self.linePadding+(ii*(self.linePadding+self.lineHeight)));
-                line.ui:setWidth(self.width - self.lineSplit - self.linePadding - 10);
+                line.ui:setY(self.linePadding+(ii*(self.linePadding+self.lineHeight))+1);
+                line.ui:setWidth(self.width - self.lineSplit - self.linePadding - UI_BORDER_SPACING-1);
                 line.ui:setHeight(self.lineHeight);
             else
                 line.ui:setX(self.width/4);
-                line.ui:setY(self.linePadding+(ii*(self.linePadding+self.lineHeight)));
+                line.ui:setY(self.linePadding+(ii*(self.linePadding+self.lineHeight))+1);
                 line.ui:setWidth(self.width/2);
                 line.ui:setHeight(self.lineHeight);
             end
@@ -104,7 +108,7 @@ function RWMSubEditPreset:calcLinePairs()
             end
         end
     end
-    self:setHeight( self.linePadding+(#self.linePairs*(self.linePadding+self.lineHeight)) );
+    self:setHeight( self.linePadding+(#self.linePairs*(self.linePadding+self.lineHeight)) +2);
 end
 
 function RWMSubEditPreset:render()
@@ -173,8 +177,8 @@ function RWMSubEditPreset:new (x, y, width, height, target, onSave)
     o.anchorBottom = false;
     o.linePairs = {};
     o.lineSplit = width/2;
-    o.linePadding = 5;
-    o.lineHeight = 18;
+    o.linePadding = UI_BORDER_SPACING;
+    o.lineHeight = BUTTON_HGT;
     o.target = target;
     o.onSave = onSave;
     o.joypadSteps = {0.2,2,5,25};

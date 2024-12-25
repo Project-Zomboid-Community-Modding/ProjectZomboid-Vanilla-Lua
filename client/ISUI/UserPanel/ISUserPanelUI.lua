@@ -16,7 +16,8 @@ ISUserPanelUI = ISPanel:derive("ISUserPanelUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -28,54 +29,45 @@ function ISUserPanelUI:initialise()
     self:create();
 end
 
-
 function ISUserPanelUI:setVisible(visible)
     --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
 function ISUserPanelUI:render()
-    local z = 20;
-
-    self:drawText(getText("UI_mainscreen_userpanel"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("UI_mainscreen_userpanel")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 30;
-
+    self:drawText(getText("UI_mainscreen_userpanel"), (self.width - getTextManager():MeasureStringX(UIFont.Medium, getText("UI_mainscreen_userpanel"))) / 2, UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
     self:updateButtons();
-
 end
 
 function ISUserPanelUI:create()
-    local btnWid = 150
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
+    local btnWid = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_UserPanel_ShowConnectionInfo")) + BUTTON_HGT
+    local y = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1;
 
-    local y = 70;
-
-    self.factionBtn = ISButton:new(10, y, btnWid, btnHgt, getText("UI_userpanel_factionpanel"), self, ISUserPanelUI.onOptionMouseDown);
+    self.factionBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, BUTTON_HGT, getText("UI_userpanel_factionpanel"), self, ISUserPanelUI.onOptionMouseDown);
     self.factionBtn.internal = "FACTIONPANEL";
     self.factionBtn:initialise();
     self.factionBtn:instantiate();
     self.factionBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.factionBtn);
-    y = y + btnHgt + 5;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
     if SafeHouse.hasSafehouse(self.player) then
-        self.safehouseBtn = ISButton:new(10, y, btnWid, btnHgt, getText("IGUI_SafehouseUI_Safehouse"), self, ISUserPanelUI.onOptionMouseDown);
+        self.safehouseBtn = ISButton:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("IGUI_SafehouseUI_Safehouse"), self, ISUserPanelUI.onOptionMouseDown);
         self.safehouseBtn.internal = "SAFEHOUSEPANEL";
         self.safehouseBtn:initialise();
         self.safehouseBtn:instantiate();
         self.safehouseBtn.borderColor = self.buttonBorderColor;
         self:addChild(self.safehouseBtn);
-        y = y + btnHgt + 5;
+        y = y + BUTTON_HGT + UI_BORDER_SPACING;
     end
 
-    self.ticketsBtn = ISButton:new(10, y, btnWid, btnHgt, getText("UI_userpanel_tickets"), self, ISUserPanelUI.onOptionMouseDown);
+    self.ticketsBtn = ISButton:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("UI_userpanel_tickets"), self, ISUserPanelUI.onOptionMouseDown);
     self.ticketsBtn.internal = "TICKETS";
     self.ticketsBtn:initialise();
     self.ticketsBtn:instantiate();
     self.ticketsBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.ticketsBtn);
-    y = y + btnHgt + 5;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
     if not Faction.isAlreadyInFaction(self.player) then
         self.factionBtn.title = getText("IGUI_FactionUI_CreateFaction");
@@ -86,39 +78,30 @@ function ISUserPanelUI:create()
         self.factionBtn:setWidthToTitle(self.factionBtn.width)
     end
     
-    self.serverOptionBtn = ISButton:new(10, y, btnWid, btnHgt, getText("IGUI_AdminPanel_SeeServerOptions"), self, ISUserPanelUI.onOptionMouseDown);
+    self.serverOptionBtn = ISButton:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeServerOptions"), self, ISUserPanelUI.onOptionMouseDown);
     self.serverOptionBtn.internal = "SERVEROPTIONS";
     self.serverOptionBtn:initialise();
     self.serverOptionBtn:instantiate();
     self.serverOptionBtn.borderColor = self.buttonBorderColor;
+    self.serverOptionBtn:setEnable(getPlayer():getRole():haveCapability(Capability.SeePublicServerOptions))
     self:addChild(self.serverOptionBtn);
-    y = y + btnHgt + 5;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    y = 70;
-
-    self.showConnectionInfo = ISTickBox:new(10 + btnWid + 20, y, btnWid, btnHgt, getText("IGUI_UserPanel_ShowConnectionInfo"), self, ISUserPanelUI.onShowConnectionInfo);
+    self.showConnectionInfo = ISTickBox:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("IGUI_UserPanel_ShowConnectionInfo"), self, ISUserPanelUI.onShowConnectionInfo);
     self.showConnectionInfo:initialise();
     self.showConnectionInfo:instantiate();
     self.showConnectionInfo.selected[1] = isShowConnectionInfo();
     self.showConnectionInfo:addOption(getText("IGUI_UserPanel_ShowConnectionInfo"));
     self:addChild(self.showConnectionInfo);
-    y = y + btnHgt + 5;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    self.showServerInfo = ISTickBox:new(10 + btnWid + 20, y, btnWid, btnHgt, getText("IGUI_UserPanel_ShowServerInfo"), self, ISUserPanelUI.onShowServerInfo);
+    self.showServerInfo = ISTickBox:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("IGUI_UserPanel_ShowServerInfo"), self, ISUserPanelUI.onShowServerInfo);
     self.showServerInfo:initialise();
     self.showServerInfo:instantiate();
     self.showServerInfo.selected[1] = isShowServerInfo();
     self.showServerInfo:addOption(getText("IGUI_UserPanel_ShowServerInfo"));
     self:addChild(self.showServerInfo);
-    y = y + btnHgt + 5;
-
-    self.showPingInfo = ISTickBox:new(10 + btnWid + 20, y, btnWid, btnHgt, getText("IGUI_UserPanel_ShowPingInfo"), self, ISUserPanelUI.onShowPingInfo);
-    self.showPingInfo:initialise();
-    self.showPingInfo:instantiate();
-    self.showPingInfo.selected[1] = isShowPingInfo();
-    self.showPingInfo:addOption(getText("IGUI_UserPanel_ShowPingInfo"));
-    self:addChild(self.showPingInfo);
-    y = y + btnHgt + 5;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
     local width = 0
     for _,child in pairs(self:getChildren()) do
@@ -128,14 +111,16 @@ function ISUserPanelUI:create()
         child:setWidth(width)
     end
 
-    self:setWidth(10 + width + 20 + width + 10)
+    self:setWidth(UI_BORDER_SPACING*2 + 2 + btnWid)
 
-    self.cancel = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_btn_close"), self, ISUserPanelUI.onOptionMouseDown);
+    self.cancel = ISButton:new(self.factionBtn.x, y, btnWid, BUTTON_HGT, getText("UI_btn_close"), self, ISUserPanelUI.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
     self.cancel.borderColor = self.buttonBorderColor;
     self:addChild(self.cancel);
+
+    self:setHeight(self.cancel.y + BUTTON_HGT + UI_BORDER_SPACING + 1)
 end
 
 function ISUserPanelUI:onShowConnectionInfo(option, enabled)
@@ -144,10 +129,6 @@ end
 
 function ISUserPanelUI:onShowServerInfo(option, enabled)
     setShowServerInfo(enabled);
-end
-
-function ISUserPanelUI:onShowPingInfo(option, enabled)
-    setShowPingInfo(enabled);
 end
 
 function ISUserPanelUI:updateButtons()
@@ -182,7 +163,7 @@ function ISUserPanelUI:onOptionMouseDown(button, x, y)
             modal:initialise();
             modal:addToUIManager();
         else
-            local modal = ISCreateFactionUI:new(self.x + 100, self.y + 100, 350, 250, self.player)
+            local modal = ISCreateFactionUI:new(self.x + 100, self.y + 100, 450, 250, self.player)
             modal:initialise();
             modal:addToUIManager();
         end
@@ -199,7 +180,7 @@ function ISUserPanelUI:onOptionMouseDown(button, x, y)
         if ISServerOptions.instance then
             ISServerOptions.instance:close()
         end
-        local ui = ISServerOptions:new(50,50,600,600, self.player)
+        local ui = ISServerOptions:new(50,50,800,800, self.player)
         ui:initialise();
         ui:addToUIManager();
     end

@@ -1,7 +1,7 @@
 require "ISUI/ISPanel"
 
 ISTickBox = ISPanel:derive("ISTickBox");
-
+local UI_BORDER_SPACING = 10
 --************************************************************************--
 --** ISRadioOption:initialise
 --**
@@ -77,29 +77,31 @@ end
 function ISTickBox:render()
 	local y = 0;
 	local c = 1;
-	local totalHgt = #self.options * self.itemHgt
+	local totalHgt = #self.options * (self.itemHgt + UI_BORDER_SPACING) - UI_BORDER_SPACING
 	y = y + (self.height - totalHgt) / 2
 	local textDY = (self.itemHgt - self.fontHgt) / 2
-	local boxDY = (self.itemHgt - self.boxSize) / 2
+	local boxDY = 0
 	self._textColor = self._textColor or { r = 1, g = 1, b = 1, a = 1 }
     for i,v in ipairs(self.options) do
 		local disabled = false;
 		if self.disabledOptions[v] then
 			disabled = true;
 		end
-		if self:isMouseOver() and (self.mouseOverOption == c) and not self.disabledOptions[self.optionsIndex[self.mouseOverOption]] then
+		if self:isMouseOver() and (self.mouseOverOption == c) and self.enable and not self.disabledOptions[self.optionsIndex[self.mouseOverOption]] then
             self:drawRect(self.leftMargin, y+boxDY, self.boxSize, self.boxSize, 1.0, 0.3, 0.3, 0.3);
 		else
 			self:drawRectBorder(self.leftMargin, y+boxDY, self.boxSize, self.boxSize, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         end
 
         if self.joypadFocused and self.joypadIndex == c then
-            self:drawRectBorder(self.leftMargin - 2, y+boxDY - 2, self.width + 2, self.boxSize + 4, 1.0, 0.6, 0.6, 0.6);
+            self:drawRectBorder(self.leftMargin - 2, y+boxDY - 2, self.width + 4, self.boxSize + 4, 1.0, 0.6, 0.6, 0.6);
             self:drawRect(self.leftMargin, y+boxDY, self.boxSize, self.boxSize, 1.0, 0.3, 0.3, 0.3);
         end
 
+
+
       	if self.selected[c] == true then
-			self:drawTexture(self.tickTexture, self.leftMargin + 3, y+boxDY+2, 1, 1, 1, 1);
+			self:drawTextureScaled(self.tickTexture, self.leftMargin + 2, y+boxDY+2, self.boxSize-4, self.boxSize-4, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
 		end
 
 		local textColor = self._textColor
@@ -115,12 +117,12 @@ function ISTickBox:render()
                 imgH = imgH / (32/self.textures[i]:getHeight());
             end
 
-            self:drawTextureScaled(self.textures[i], self.leftMargin + self.boxSize + self.textGap, y+boxDY, imgW,imgH, 1, 1, 1, 1);
+            self:drawTextureScaled(self.textures[i], self.leftMargin + self.boxSize + self.textGap, y+boxDY, self.boxSize-4,self.boxSize-4, 1, 1, 1, 1);
 			self:drawText(v, self.leftMargin + self.boxSize + self.textGap + 25, y+textDY, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 		else
 			self:drawText(v, self.leftMargin + self.boxSize + self.textGap, y+textDY, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
         end
-		y = y + self.itemHgt;
+		y = y + self.itemHgt + UI_BORDER_SPACING;
 		c = c + 1;
     end
 
@@ -154,7 +156,7 @@ end
 
 function ISTickBox:getTextColor(index, color)
 	local text = self.optionsIndex[index]
-	if self.disabledOptions[text] then
+	if not self.enable or self.disabledOptions[text] then
 		color.r = 0.5
 		color.g = 0.5
 		color.b = 0.5
@@ -172,6 +174,11 @@ end
 --**
 --************************************************************************--
 function ISTickBox:onMouseUp(x, y)
+	local clickedOption = self.clickedOption
+	self.clickedOption = nil
+	if not clickedOption or (clickedOption ~= self.mouseOverOption) then
+		return false
+	end
 	if self.enable and self.mouseOverOption ~= nil and self.mouseOverOption > 0 and self.mouseOverOption < self.optionCount then
 		if self.disabledOptions[self.optionsIndex[self.mouseOverOption]] then
 			return;
@@ -193,8 +200,13 @@ function ISTickBox:onMouseUp(x, y)
 
 	return false;
 end
-function ISTickBox:onMouseDown(x, y)
 
+function ISTickBox:onMouseUpOutside(x, y)
+	self.mouseDownOverOption = nil
+end
+
+function ISTickBox:onMouseDown(x, y)
+	self.clickedOption = self.mouseOverOption
 	return false;
 end
 
@@ -206,12 +218,15 @@ function ISTickBox:onMouseMove(dx, dy)
 	local x = self:getMouseX();
 	local y = self:getMouseY();
 	if x >= 0 and y >= 0 and x<=self.width and y <= self.height then
-		local totalHgt = #self.options * self.itemHgt
-		y = y - (self.height - totalHgt) / 2
-		y = y / self.itemHgt;
-		y = math.floor(y + 1);
-		self.mouseOverOption = y;
---        print(self.mouseOverOption);
+		--local totalHgt = #self.options * (self.itemHgt + UI_BORDER_SPACING)
+		if math.fmod(y, self.itemHgt+UI_BORDER_SPACING) >= self.itemHgt then
+			self.mouseOverOption = 0;
+		else
+			--y = y - (self.height - totalHgt) / 2
+			y = y / (self.itemHgt+UI_BORDER_SPACING);
+			y = math.floor(y + 1);
+			self.mouseOverOption = y;
+		end
 	else
 		self.mouseOverOption = 0;
     end
@@ -248,7 +263,7 @@ function ISTickBox:addOption(name, data, texture)
 	self.optionData[self.optionCount] = data;
 	self.optionsIndex[self.optionCount] =  name;
 	self.optionCount = self.optionCount + 1;
-	self:setHeight(#self.options * self.itemHgt);
+	self:setHeight(#self.options * (self.itemHgt + UI_BORDER_SPACING) - UI_BORDER_SPACING);
 	if self.autoWidth then
 		local w = self.leftMargin + self.boxSize + self.textGap + getTextManager():MeasureStringX(self.font, name)
 		if texture then
@@ -298,7 +313,7 @@ function ISTickBox:new (x, y, width, height, name, changeOptionTarget, changeOpt
 	o.y = y;
 	o.width = width;
 	o.height = height;
-	o.tickTexture = getTexture("Quest_Succeed");
+	o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png");
 	o.borderColor = {r=1, g=1, b=1, a=0.2};
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.choicesColor = {r=0.7, g=0.7, b=0.7, a=1};
@@ -312,12 +327,12 @@ function ISTickBox:new (x, y, width, height, name, changeOptionTarget, changeOpt
 	o.optionData = {}
 	o.selected = {}
 	o.leftMargin = 0;
-	o.boxSize = 16
-	o.textGap = 4;
+	o.boxSize = height
+	o.textGap = UI_BORDER_SPACING;
     o.textures = {};
 	o.font = UIFont.Small
     o.fontHgt = getTextManager():getFontHeight(o.font)
-	o.itemGap = 4
+	o.itemGap = 0;
 	o.itemHgt = math.max(o.boxSize, o.fontHgt) + o.itemGap
     o.isTickBox = true;
     o.tooltip = nil;

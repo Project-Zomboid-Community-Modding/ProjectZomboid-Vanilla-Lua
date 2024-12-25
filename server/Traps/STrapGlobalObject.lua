@@ -17,6 +17,7 @@ function STrapGlobalObject:initNew()
     self.trapType = ""
     self.trapBait = ""
     self.trapBaitDay = 0
+    self.animalAliveHour = 0; -- every hour if there's an animal in the trap we inc that number, this way if i spawn an alive animal he might be damaged if he spent too much time in the trap
     self.lastUpdate = 0
     self.baitAmountMulti = 0
     self.animal = {}
@@ -105,6 +106,12 @@ function STrapGlobalObject:calculTrap(square)
     -- already something inside this trap
     if not self.animal.type then
         self:checkDestroy(square);
+    else
+        if self.animalAliveHour then
+            self.animalAliveHour = self.animalAliveHour + 1;
+        else
+            self.animalAliveHour = 1;
+        end
     end
 end
 
@@ -164,11 +171,12 @@ function STrapGlobalObject:removeBait(character)
     if self.bait then
 --        print("remove bait");
 --        if character then -- give the player his item
---            local bait = InventoryItemFactory.CreateItem(self.bait)
+--            local bait = instanceItem(self.bait)
 --            bait:setAge(self.trapBaitDay);
 --            bait:multiplyFoodValues(-0.05 / bait:getBaseHunger())
 --            if isServer() then
---                character:sendObjectChange('addItem', { item = bait })
+--                character:getInventory():AddItem(bait);
+--                sendAddItemToContainer(character:getInventory(), bait);
 --            else
 --                character:getInventory():AddItem(bait)
 --            end
@@ -180,10 +188,82 @@ function STrapGlobalObject:removeBait(character)
     end
 end
 
+function STrapGlobalObject:addAliveAnimal(character)
+    local animalStr = self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)];
+    local breed  = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)];
+
+    --print("alive animal", animalStr)
+    --print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);
+
+    local animal = IsoAnimal.new(getCell(), character:getX(),character:getY(),character:getZ(), animalStr, breed);
+    if not animal then
+        return;
+    end
+
+    local xp = ZombRand(10, 20);
+
+    -- give xp only if you are the one who placed this trap);
+    if self.player == character:getUsername() then
+        if isServer() then
+            character:sendObjectChange('addXp', { perk = Perks.Trapping:index(), xp = xp })
+        else
+            character:getXp():AddXP(Perks.Trapping, xp);
+        end
+    end
+
+    animal:setWild(false);
+    -- rand some passed hour, simulate animal has been in the wild
+    self.animalAliveHour = ZombRand(self.animalAliveHour, self.animalAliveHour + 15);
+    for i=0, self.animalAliveHour -1 do
+        animal:getData():updateHungerAndThirst(true);
+        animal:getData():updateHealth();
+    end
+
+    animal:randomizeAge();
+
+    if animal:isDead() then
+        self.animal.canBeAlive = false;
+        return self:removeAnimal(character);
+    end
+
+    animal:addToWorld();
+
+--     local invItem = InventoryItemFactory.CreateItem("Base.Animal");
+    local invItem = instanceItem("Base.Animal")
+
+    invItem:setAnimal(animal);
+
+    forceDropHeavyItems(character)
+    character:getInventory():AddItem(invItem);
+    sendAddItemToContainer(character:getInventory(), invItem);
+
+    character:setPrimaryHandItem(nil);
+    character:setSecondaryHandItem(nil);
+
+    character:setPrimaryHandItem(invItem);
+    character:setSecondaryHandItem(invItem);
+
+    animal:removeFromWorld();
+    animal:removeFromSquare();
+    animal:setSquare(nil);
+
+    self.animalHour = 0;
+    self.animal = {};
+    -- change the sprite of the item
+    local trapObject = self:getIsoObject();
+    if trapObject then
+        trapObject:setSprite(self.openSprite);
+        trapObject:transmitUpdatedSpriteToClients()
+        self:toObject(trapObject, true)
+    end
+end
+
 function STrapGlobalObject:removeAnimal(character)
     if character then
---        print("remove animal");
-        local item = InventoryItemFactory.CreateItem(self.animal.item)
+        if self.animal.canBeAlive then
+            return self:addAliveAnimal(character);
+        end
+        local item = instanceItem(self.animal.item)
         -- Randomize the hunger reduction of the animal
         local size = ZombRand(self.animal.minSize, self.animal.maxSize);
         local xp = size / 3;
@@ -192,11 +272,7 @@ function STrapGlobalObject:removeAnimal(character)
         end
         -- give xp only if you are the one who placed this trap);
         if self.player == character:getUsername() then
-            if isServer() then
-                character:sendObjectChange('addXp', { perk = Perks.Trapping:index(), xp = xp })
-            else
-                character:getXp():AddXP(Perks.Trapping, xp);
-            end
+            addXp(character, Perks.Trapping, xp);
         end
 
         local typicalSize  = item:getBaseHunger() * -100;
@@ -217,7 +293,8 @@ function STrapGlobalObject:removeAnimal(character)
         item:setCalories(item:getCalories() * statsModifier);
 
         if isServer() then
-            character:sendObjectChange('addItem', { item = item })
+            character:getInventory():AddItem(item);
+            sendAddItemToContainer(character:getInventory(), item);
         else
             character:getInventory():AddItem(item)
         end
@@ -235,6 +312,7 @@ end
 
 -- check if an animal is caught (every hour)
 function STrapGlobalObject:checkForAnimal(square)
+    --print("check for animal")
     -- you won't find an animal if a player is near the trap, so we check the trap only if it's streamed
     if square then
         -- (note turbo) if square~=nil do a check to see if theres any hoppables near the trap, this is an exploit to make traps invincible to zombie damage.
@@ -251,12 +329,11 @@ function STrapGlobalObject:checkForAnimal(square)
     end
     -- first, get which animal we'll attract
     local animalsList = {};
-    for i,v in ipairs(Animals) do
+    for i,v in ipairs(TrapAnimals) do
         -- check if at this hour we can get this animal
         local timesOk = self:checkTime(v);
 --        local timesOk = true;
-        if v.traps[self.trapType] and
-                v.baits[self.bait] and ZombRand(100) < (v.traps[self.trapType] + v.baits[self.bait] + (self.trappingSkill * 1.5)) and
+        if v.traps[self.trapType] and (v.baits[self.bait] and ZombRand(100) < (v.traps[self.trapType] + v.baits[self.bait] + (self.trappingSkill * 1.5))) and
                 timesOk and v.zone[self.zone] and ZombRand(100) < (v.zone[self.zone] + (self.trappingSkill * 1.5)) then -- this animal can be caught by this trap and we have the correct bait for it
             -- now check if the bait is still fresh
             if self:checkBaitFreshness() then
@@ -270,7 +347,6 @@ function STrapGlobalObject:checkForAnimal(square)
         local int = ZombRand(#animalsList) + 1;
         local testAnimal = animalsList[int];
         if testAnimal then
---            print("get animal : " .. testAnimal.type .. " in zone " .. self.zone);
             self:noise('trapped '..testAnimal.type..' '..self.x..','..self.y..','..self.z)
             self:setAnimal(testAnimal)
         end
@@ -333,11 +409,12 @@ function STrapGlobalObject:fromModData(modData)
         self.bait = self.trapBait
     end
     self.trapBaitDay = modData["trapBaitDay"];
+    self.animalAliveHour = modData["animalAliveHour"];
     self.lastUpdate = modData["lastUpdate"];
     self.baitAmountMulti = modData["baitAmountMulti"];
     self.animal = {}
     local animalType = modData["animal"];
-    for i,v in ipairs(Animals) do
+    for i,v in ipairs(TrapAnimals) do
         if v.type == animalType then
             self.animal = v;
         end
@@ -355,6 +432,7 @@ function STrapGlobalObject:toModData(modData)
     modData["trapType"] = self.trapType;
     modData["trapBait"] = self.trapBait or "";
     modData["trapBaitDay"] = self.trapBaitDay;
+    modData["animalAliveHour"] = self.animalAliveHour;
     modData["lastUpdate"] = self.lastUpdate;
     modData["baitAmountMulti"] = self.baitAmountMulti;
     modData["animal"] = self.animal and self.animal.type or nil;
@@ -368,9 +446,7 @@ function STrapGlobalObject:toModData(modData)
 end
 
 function STrapGlobalObject:checkBaitFreshness()
-    local baitItem = InventoryItemFactory.CreateItem(self.bait);
-    baitItem:setAge(self.trapBaitDay);
-    return baitItem:isFresh();
+    return isItemFresh(self.bait, self.trapBaitDay);
 end
 
 function STrapGlobalObject:checkTime(animal)
@@ -387,6 +463,7 @@ function STrapGlobalObject:reinitModData(square)
     square:getModData()["trapType"] = nil;
     square:getModData()["trapBait"] = nil;
     square:getModData()["trapBaitDay"] = nil;
+    square:getModData()["animalAliveHour"] = nil;
     square:getModData()["lastUpdate"] = nil;
     square:getModData()["baitAmountMulti"] = nil;
     square:getModData()["animal"] = nil;

@@ -17,6 +17,7 @@ addMode(ISMoveableCursor.modes.tags,"pickup", ISMoveableCursor.modes.titles, get
 addMode(ISMoveableCursor.modes.tags,"place", ISMoveableCursor.modes.titles, getText("IGUI_Place"));
 addMode(ISMoveableCursor.modes.tags,"rotate", ISMoveableCursor.modes.titles, getText("IGUI_Rotate"));
 addMode(ISMoveableCursor.modes.tags,"scrap", ISMoveableCursor.modes.titles, getText("IGUI_Scrap"));
+addMode(ISMoveableCursor.modes.tags,"repair", ISMoveableCursor.modes.titles, getText("IGUI_Repair"));
 ISMoveableCursor.cursors = {};
 ISMoveableCursor.mode = {}; --nil; --"pickup";
 ISMoveableCursor.cacheMode = {}; --nil;
@@ -24,6 +25,10 @@ ISMoveableCursor.cacheMode = {}; --nil;
 ISMoveableCursor.normalColor = { r=0.5, g=0.5, b=0.5 };
 ISMoveableCursor.validColor = { r=0.5, g=1, b=0.5 };
 ISMoveableCursor.invalidColor = { r=1, g=0, b=0 };
+
+function ISMoveableCursor:deactivate()
+    ISMoveableCursor.cacheMode[self.player] = nil;
+end
 
 --[[
 function ISMoveableCursor.exitCursorKey( _key )
@@ -39,9 +44,9 @@ function ISMoveableCursor.exitCursorKey( _key )
         if not _key then
             disable = true;
         else
-            if getCore():getKey("Run") == _key then
+            if getCore():isKey("Run", _key) then
                 disable = true;
-            elseif getCore():getKey("Interact") == _key then
+            elseif getCore():isKey("Interact", _key) then
                 disable = true;
             end
         end
@@ -80,6 +85,7 @@ function ISMoveableCursor.changeModeKey( _key, _playerNum, _joyPadTriggered )
             menu:addSlice(getText("IGUI_Place"), getTexture("media/ui/Furniture_Place.png"), ISMoveableCursor.setMoveableMode, getCell():getDrag(playerID), "place")
             menu:addSlice(getText("IGUI_Rotate"), getTexture("media/ui/Furniture_Rotate.png"), ISMoveableCursor.setMoveableMode, getCell():getDrag(playerID), "rotate")
             menu:addSlice(getText("IGUI_Scrap"), getTexture("media/ui/Furniture_Disassemble.png"), ISMoveableCursor.setMoveableMode, getCell():getDrag(playerID), "scrap")
+            menu:addSlice(getText("IGUI_Repair"), getTexture("media/ui/Furniture_On2.png"), ISMoveableCursor.setMoveableMode, getCell():getDrag(playerID), "repair")
             menu:setX(getPlayerScreenLeft(playerID) + getPlayerScreenWidth(playerID) / 2 - menu:getWidth() / 2)
             menu:setY(getPlayerScreenTop(playerID) + getPlayerScreenHeight(playerID) / 2 - menu:getHeight() / 2)
             menu:addToUIManager()
@@ -89,7 +95,7 @@ function ISMoveableCursor.changeModeKey( _key, _playerNum, _joyPadTriggered )
         end
         return
     end
-    if _key == getCore():getKey("Toggle mode") or _joyPadTriggered then
+    if getCore():isKey("Toggle mode", _key) or _joyPadTriggered then
         local playerID = _playerNum or 0;
         for k,v in ipairs(ISMoveableCursor.modes.tags) do
             if v == ISMoveableCursor.mode[playerID] then
@@ -158,12 +164,17 @@ function ISMoveableCursor:setMoveableMode( _mode )
                     elseif ISMoveableCursor.mode[self.player] == "scrap" then
                         infoPanel:setHeaderText( getText("IGUI_Scrap"), UIFont.Medium );
                         infoPanel:setFooterText( "'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
+                    elseif ISMoveableCursor.mode[self.player] == "repair" then
+                        infoPanel:setHeaderText( getText("IGUI_Repair"), UIFont.Medium );
+                        infoPanel:setFooterText( "'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
                     end
 
                     ISMoveableCursor.cacheMode[self.player] = ISMoveableCursor.mode[self.player];
                     self.objectIndex = -1;
                     self.objectListCache = nil;
                     self.cacheObject = nil;
+
+                    getSoundManager():playUISound("UIObjectMenuEnter")
                 end
             end
         end
@@ -171,6 +182,12 @@ function ISMoveableCursor:setMoveableMode( _mode )
 end
 
 function ISMoveableCursor:create(_x, _y, _z, _north, _sprite)
+    local square = getCell():getGridSquare(_x, _y, _z);
+    if square ~= null then
+        if not self:isValid(square) then
+            return
+        end
+    end
     if self.canCreate and self.currentMoveProps and self.origSpriteName then
         if self.currentMoveProps then
             if ISMoveableDefinitions.cheat or self.currentMoveProps:walkToAndEquip( self.character, self.currentSquare, ISMoveableCursor.mode[self.player] ) then
@@ -182,7 +199,21 @@ function ISMoveableCursor:create(_x, _y, _z, _north, _sprite)
                         end
                     end
                 end
-                ISTimedActionQueue.add(ISMoveablesAction:new(self.character, self.currentSquare, self.currentMoveProps, ISMoveableCursor.mode[self.player], self.origSpriteName, self ));
+                local mode = ISMoveableCursor.mode[self.player]
+                local object = nil
+                local sprInstance = nil
+                local direction = self.currentMoveProps:getFaceDirectionFromSpriteName( self.currentMoveProps.sprite:getName())
+                local item = nil
+                if mode == "place" then
+                    item = self.currentMoveProps:findInInventory( self.character, self.origSpriteName );
+                end
+                if mode == "rotate" then
+                    object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.origSpriteName );
+                end
+                if (mode == "pickup") or (mode == "scrap") or (mode == "repair") then
+                    object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.currentMoveProps.spriteName );
+                end
+                ISTimedActionQueue.add(ISMoveablesAction:new(self.character, self.currentSquare, mode, self.origSpriteName, object, direction, item, self ));
             end
         end
     end
@@ -213,7 +244,7 @@ function ISMoveableCursor:setInfoPanel( _square, _object, _moveProps, _customTex
             infoPanel:setBodyText( _moveProps:getInfoPanelDescription( _square, _object, self.character, ISMoveableCursor.mode[self.player] ), UIFont.Small );
         end
         local mode = ISMoveableCursor.mode[self.player]
-        local square = (mode == "pickup" or mode == "scrap") and _square
+        local square = (mode == "pickup" or mode == "scrap" or mode == "repair") and _square
         infoPanel:setTexture( _customTexture or _moveProps.spriteName, self.canCreate, square, self.yOffset );
         infoPanel:setSquare(_square);
         infoPanel:setDrag(getCell():getDrag(self.player));
@@ -283,9 +314,9 @@ function ISMoveableCursor:render( _x, _y, _z, _square )
             end
         end
     else
-        if self.floorSprite then
-            --self.floorSprite:RenderGhostTileColor(_x, _y, _z, color.r, color.g, color.b, 0.5);
-            self.floorSprite:RenderGhostTileColor(_x, _y, _z, 0.75, 1, 0.75, 0.25);
+        if self:getFloorCursorSprite() then
+            --self:getFloorCursorSprite():RenderGhostTileColor(_x, _y, _z, color.r, color.g, color.b, 0.5);
+            self:getFloorCursorSprite():RenderGhostTileColor(_x, _y, _z, 0.75, 1, 0.75, 0.25);
         end
         if self.objectSprite then
             if self.currentMoveProps and self.currentMoveProps:canRotateDirection() then
@@ -314,11 +345,6 @@ function ISMoveableCursor:render( _x, _y, _z, _square )
 end
 
 function ISMoveableCursor:isValid( _square )
-    if not self.floorSprite then
-        self.floorSprite = IsoSprite.new();
-        self.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png');
-    end
-
     self.currentMoveProps   = nil;
     self.origMoveProps      = nil;
     self.canCreate          = nil;
@@ -376,6 +402,8 @@ function ISMoveableCursor:isValid( _square )
                     self.origSpriteName     = moveProps.spriteName;
                     --self.cursorFacing = nil;
                     self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.isWallLike = moveProps.type == "Window"
+                    self.nSprite = moveProps.spriteProps:Is(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, object, moveProps );
                     return true;
                 end
@@ -389,6 +417,11 @@ function ISMoveableCursor:isValid( _square )
             if self.objectIndex > #objects or self.objectIndex < 1 then self.objectIndex = 1 end
             if self.objectIndex >= 1 and self.objectIndex <= #objects then
                 local item = objects[self.objectIndex].object;
+                local playerObj = getSpecificPlayer(self.player)
+                item = playerObj:getInventory():getItemById(item:getID())
+                if item == nil then
+                    return false
+                end
                 local moveProps = objects[self.objectIndex].moveProps;
                 self.origMoveProps = moveProps;
                 local origName = moveProps.spriteName;
@@ -419,7 +452,10 @@ function ISMoveableCursor:isValid( _square )
                     self.origSpriteName         = origName;
                     --self.cursorFacing = nil;
                     self.yOffset                = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPlaceMoveable function
+                    self.isWallLike = moveProps.type == "Window"
+                    self.nSprite = moveProps.spriteProps:Is(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, item, moveProps );
+
                     return true;
                 end
 
@@ -497,6 +533,29 @@ function ISMoveableCursor:isValid( _square )
                 end
             end
         end
+    elseif ISMoveableCursor.mode[self.player] == "repair" then
+        local objects = self.objectListCache or self:getRepairObjectList();
+        self.objectListCache = objects;
+        if #objects > 0 then
+            if self.objectIndex > #objects or self.objectIndex < 1 then self.objectIndex = 1 end
+            if self.objectIndex >= 1 and self.objectIndex <= #objects then
+                local object = objects[self.objectIndex].object;
+                local moveProps = objects[self.objectIndex].moveProps;
+
+                if moveProps and moveProps.sprite then
+                    self.currentMoveProps   = moveProps;
+                    self.origMoveProps      = moveProps;
+                    self.canCreate          = moveProps:canRepairObject ( self.character ).canRepair;
+                    self.colorMod           = ISMoveableCursor.normalColor;
+                    self.objectSprite       = nil;
+                    self.origSpriteName     = moveProps.spriteName;
+                    self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.isWallLike         = moveProps.type == "Window"
+                    self:setInfoPanel( _square, object, moveProps );
+                    return true;
+                end
+            end
+        end
     end
 
     self:setInfoPanel( _square, nil, nil );
@@ -510,7 +569,7 @@ function ISMoveableCursor:rotateKey(key, _joypadTriggered)
         self.cursorFacing = nil
         self.joypadFacing = nil
     end
-    if (key == getCore():getKey("Rotate building") or _joypadTriggered) and not self.cursorFacing then --disable key when rotating with mouse
+    if (getCore():isKey("Rotate building", key) or _joypadTriggered) and not self.cursorFacing then --disable key when rotating with mouse
         if ISMoveableCursor.mode[self.player] == "rotate" and not self.canCreate then
             --return;
         end
@@ -529,6 +588,7 @@ function ISMoveableCursor:rotateKey(key, _joypadTriggered)
                 if self.joypadFacing > 4 then
                     self.joypadFacing = 1
                 end
+                getSoundManager():playUISound("UIObjectMenuObjectRotateOutline")
             end
         end
     end
@@ -553,11 +613,12 @@ function ISMoveableCursor:rotateWhilePlacing()
         if not self.cursorFacing then
             self.cursorFacing = rotateObject.moveProps:getFaceIndex()
         end
-        self.cursorFacing = (self.cursorFacing or 0) + 1
+        self:setCursorFacing((self.cursorFacing or 0) + 1)
         if self.cursorFacing > 4 then
             self.cursorFacing = 1
         end
     end
+	getSoundManager():playUISound("UIObjectMenuObjectRotateOutline")
 end
 
 function ISMoveableCursor:getDirectionFromItem(item)
@@ -579,21 +640,27 @@ function ISMoveableCursor:rotateMouse(x, y)
         local dify = y - self.currentSquare:getY();
         -- west
         if difx < 0 and math.abs(difx) > math.abs(dify) then
-            self.cursorFacing = 2;-- "W";
+            self:setCursorFacing(2);-- "W";
         end
         -- east
         if difx > 0 and math.abs(difx) > math.abs(dify) then
-            self.cursorFacing = 4; --"E";
+            self:setCursorFacing(4); --"E";
         end
         -- north
         if dify < 0 and math.abs(difx) < math.abs(dify) then
-            self.cursorFacing = 1; --"N";
+            self:setCursorFacing(1); --"N";
         end
         -- south
         if dify > 0 and math.abs(difx) < math.abs(dify) then
-            self.cursorFacing = 3; --"S";
+            self:setCursorFacing(3); --"S";
         end
     end
+end
+
+function ISMoveableCursor:setCursorFacing(facing)
+	if facing == self.cursorFacing then return end
+	self.cursorFacing = facing
+	getSoundManager():playUISound("UIObjectMenuObjectRotateOutline")
 end
 
 function ISMoveableCursor:setJoypadFocus( _window )
@@ -678,12 +745,14 @@ function ISMoveableCursor:getInventoryObjectList()
     return objects;
 end
 
-function ISMoveableCursor:shouldAddObject(_obj)
-    --if we cannot see the square, only show for doors and windows
+function ISMoveableCursor:shouldAddObject(_obj, moveProps)
+    --if we cannot see the square, only show for doors and windows + walls
     if (not self.canSeeCurrentSquare) then
         --check if directly adjacent to square (avoid xray effect/picking up/breaking objects through blocked doors)
-        if luautils.isSquareAdjacentToSquare(self.currentSquare, self.character:getSquare()) then
-            if instanceof(_obj, "IsoDoor") or instanceof(_obj, "IsoWindow") then
+        if luautils.isSquareAdjacentToSquare(self.currentSquare, self.character:getSquare()) or (self.currentSquare:Is(IsoFlagType.collideN) or self.currentSquare:Is(IsoFlagType.collideW)) then
+            local props = moveProps.sprite:getProperties()
+            if instanceof(_obj, "IsoDoor") or instanceof(_obj, "IsoWindow") or props and (props:Is("WallN") or props:Is("WallW") or
+                    props:Is("DoorWallN") or props:Is("DoorWallW") or props:Is("WallNW")) then
                 return true;
             end;
         end;
@@ -708,7 +777,7 @@ function ISMoveableCursor:getObjectList()
             end--]]
 
             if add then
-                if self:shouldAddObject(obj) then
+                if self:shouldAddObject(obj, moveProps) then
                     table.insert(objects, { object = obj, moveProps = moveProps, isWall = false });
                 end;
             end;
@@ -722,7 +791,7 @@ function ISMoveableCursor:getObjectList()
                             local sprite = sprList:get(i):getParentSprite();
                             local moveProps2 = ISMoveableSpriteProps.new( sprite );
                             if moveProps2.isMoveable and moveProps2.type == "WallOverlay" then
-                                if self:shouldAddObject(obj) then
+                                if self:shouldAddObject(obj, moveProps2) then
                                     table.insert(objects, { object = obj, moveProps = moveProps2, isWall = true });
                                 end;
                             end;
@@ -744,11 +813,49 @@ function ISMoveableCursor:getScrapObjectList()
         local moveProps = ISMoveableSpriteProps.fromObject(obj);
         if moveProps and moveProps.canScrap then
             if moveProps.material and ISMoveableDefinitions:getInstance().isScrapDefinitionValid( moveProps.material ) then
-                if self:shouldAddObject(obj) then
+                if self:shouldAddObject(obj, moveProps) then
                     table.insert(objects, { object = obj, moveProps = moveProps });
                 end;
             elseif moveProps.scrapThumpable then
-                if self:shouldAddObject(obj) then
+                if self:shouldAddObject(obj, moveProps) then
+                    table.insert(objects, { object = obj, moveProps = moveProps });
+                end;
+            end;
+        end;
+    end;
+    return objects;
+end
+
+function ISMoveableCursor:getRepairObjectList()
+    local square = self.currentSquare;
+    local objects = {};
+    if not square then return objects end
+    for i = square:getObjects():size(),1,-1 do
+        local obj = square:getObjects():get(i-1);
+        --if we can't get the health, it's definitely not fixable!
+        if obj.getHealth then
+            local moveProps = ISMoveableSpriteProps.fromObjectForRepair(obj);
+            if moveProps and moveProps.canScrap then
+                --print(moveProps.material or "no material detected")
+
+                local validMaterial = false;
+                if moveProps.material and moveProps.material ~= "Undefined" then
+                    validMaterial = ISMoveableDefinitions:getInstance().isRepairDefinitionValid( moveProps.material );
+                end
+                if validMaterial and moveProps.material2 and moveProps.material2 ~= "Undefined" then
+                    validMaterial = ISMoveableDefinitions:getInstance().isRepairDefinitionValid( moveProps.material2 );
+                end
+                if validMaterial and moveProps.material3 and moveProps.material3 ~= "Undefined" then
+                    validMaterial = ISMoveableDefinitions:getInstance().isRepairDefinitionValid( moveProps.material3 );
+                end
+
+                if validMaterial then
+                    if self:shouldAddObject(obj, moveProps) then
+                        table.insert(objects, { object = obj, moveProps = moveProps });
+                    end;
+                end;
+            elseif moveProps and moveProps.scrapThumpable then
+                if self:shouldAddObject(obj, moveProps) then
                     table.insert(objects, { object = obj, moveProps = moveProps });
                 end;
             end;
@@ -809,7 +916,6 @@ function ISMoveableCursor:getAPrompt()
         elseif ISMoveableCursor.mode[self.player] == "place" then
             if self.objectListCache and #self.objectListCache >= 1 then
 				return getText("IGUI_PlaceObject");
-				
             end
         elseif ISMoveableCursor.mode[self.player] == "rotate" then
             if self.objectListCache then
@@ -818,6 +924,10 @@ function ISMoveableCursor:getAPrompt()
         elseif ISMoveableCursor.mode[self.player] == "scrap" then
             if self.objectListCache and #self.objectListCache >= 1 then
                 return getText("IGUI_Scrap");
+            end
+        elseif ISMoveableCursor.mode[self.player] == "repair" then
+            if self.objectListCache and #self.objectListCache >= 1 then
+                return getText("IGUI_Repair");
             end
         end
     end
@@ -855,6 +965,10 @@ function ISMoveableCursor:getRBPrompt()
             return getText("IGUI_CycleRotation");
         end
     elseif ISMoveableCursor.mode[self.player] == "scrap" then
+        if self.objectListCache and #self.objectListCache > 1 then
+            return getText("IGUI_CycleObject");
+        end
+    elseif ISMoveableCursor.mode[self.player] == "repair" then
         if self.objectListCache and #self.objectListCache > 1 then
             return getText("IGUI_CycleObject");
         end

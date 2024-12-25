@@ -23,7 +23,9 @@ end
 
 -- Failed to access the trailer on either side.
 function ISVehicleTrailerUtils.onTrailerPathFail(playerObj)
-	playerObj:Say(getText("IGUI_PlayerText_NoWayToTrailer"));
+	-- playerObj:Say(getText("IGUI_PlayerText_NoWayToTrailer"));
+	HaloTextHelper.addBadText(playerObj, getText("IGUI_PlayerText_NoWayToTrailer"));
+-- 	HaloTextHelper.addText(playerObj, getText("IGUI_PlayerText_NoWayToTrailer"), getCore():getGoodHighlitedColor());
 end
 
 function ISVehicleTrailerUtils.walkToTrailer(playerObj, vehicle, attachment, nextAction)

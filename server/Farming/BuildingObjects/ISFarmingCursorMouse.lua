@@ -7,16 +7,12 @@ function ISFarmingCursorMouse:create(x, y, z, north, sprite)
 end
 
 function ISFarmingCursorMouse:render(x, y, z, square)
-	if not ISFarmingCursorMouse.floorSprite then
-		ISFarmingCursorMouse.floorSprite = IsoSprite.new()
-		ISFarmingCursorMouse.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
 	self.sq = square;
-	ISFarmingCursorMouse.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 	
 	self:renderTooltip();
 end

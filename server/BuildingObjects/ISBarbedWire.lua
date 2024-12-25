@@ -16,7 +16,7 @@ function ISBarbedWire:create(x, y, z, north, sprite)
 	self.javaObject:setBreakSound("BreakObject")
 	self.sq:AddSpecialObject(self.javaObject, self:getObjectIndex(self.sq))
 	self.sq:RecalcAllWithNeighbours(true)
-	self.javaObject:transmitCompleteItemToServer()
+	self.javaObject:transmitCompleteItemToClients()
 end
 
 function ISBarbedWire:onTimedActionStart(action)

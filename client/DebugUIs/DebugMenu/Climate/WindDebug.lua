@@ -9,10 +9,13 @@ require "ISUI/ISCollapsableWindow"
 WindDebug = ISCollapsableWindow:derive("WindDebug");
 WindDebug.instance = nil;
 WindDebug.shiftDown = 0;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function WindDebug.OnOpenPanel()
     if WindDebug.instance==nil then
-        WindDebug.instance = WindDebug:new (100, 100, 900, 300, getPlayer());
+        WindDebug.instance = WindDebug:new (100, 100, 900, 100, getPlayer());
         WindDebug.instance:initialise();
         WindDebug.instance:instantiate();
     end
@@ -35,18 +38,9 @@ function WindDebug:createChildren()
     local th = self:titleBarHeight();
 
     local y = th;
-    local x = 25;
+    local x = UI_BORDER_SPACING+1+getTextManager():MeasureStringX(UIFont.Small, "-1.0");
 
-    self.buttonM1 = ISButton:new(x+5, y+5, 30,18,"M1",self, WindDebug.onButton);
-    self.buttonM1:initialise();
-    self.buttonM1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
-    self.buttonM1.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-    self.buttonM1.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
-    self:addChild(self.buttonM1);
-
-    y = self.buttonM1:getY() + self.buttonM1:getHeight();
-
-    self.historyM1 = ValuePlotter:new(x+5,y+5,600,200,600);
+    self.historyM1 = ValuePlotter:new(x+UI_BORDER_SPACING,y+UI_BORDER_SPACING,600,FONT_HGT_SMALL*5+UI_BORDER_SPACING*4,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
     --self.historyM1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50);
@@ -56,8 +50,6 @@ function WindDebug:createChildren()
 
     self.charts = {};
     table.insert(self.charts, self.historyM1);
-    table.insert(self.charts, self.historyH1);
-    table.insert(self.charts, self.historyD1);
     local vinfo;
     for i=1, #self.charts do
         for j=1, #self.varInfo do
@@ -80,7 +72,7 @@ function WindDebug:createChildren()
 
     y = self.historyM1:getY() + self.historyM1:getHeight();
 
-    local tY = self.historyM1:getY()-12;
+    local tY = self.historyM1:getY();
     local tH = self.historyM1:getHeight();
     local tX = self.historyM1:getX();
     local tW = self.historyM1:getWidth();
@@ -91,50 +83,54 @@ function WindDebug:createChildren()
     self.chartLabelsRightTxt = {"50 C","25 C","0 C","-25 C","-50 C"};
     for i=1,5 do
         local id = i-1;
-        local lbl = ISLabel:new(tX-5, tY+((tH/4)*id), 16, self.chartLabelsLeftTxt[i], 1, 1, 1, 1.0, UIFont.Small, false);
+        local lbl = ISLabel:new(tX-UI_BORDER_SPACING, tY+((tH-FONT_HGT_SMALL)/4)*id, FONT_HGT_SMALL, self.chartLabelsLeftTxt[i], 1, 1, 1, 1.0, UIFont.Small, false);
         lbl:initialise();
         lbl:instantiate();
         self:addChild(lbl);
         table.insert(self.chartLabelsLeft,lbl);
 
-        local lbl2 = ISLabel:new(tX+tW+5, tY+((tH/4)*id), 16, self.chartLabelsRightTxt[i], 1, 1, 1, 1.0, UIFont.Small, true);
+        local lbl2 = ISLabel:new(tX+tW+UI_BORDER_SPACING, tY+((tH-FONT_HGT_SMALL)/4)*id, FONT_HGT_SMALL, self.chartLabelsRightTxt[i], 1, 1, 1, 1.0, UIFont.Small, true);
         lbl2:initialise();
         lbl2:instantiate();
         self:addChild(lbl2);
         table.insert(self.chartLabelsRight,lbl2);
     end
 
-    y=y+10;
+    y=y+UI_BORDER_SPACING;
     local cacheY, cacheX = y, x;
+    local toggleButtonWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimatePlotter_Toggle"))
 
-    y = th+2; --self.historyM1:getY()-2;
-    x = self.historyM1:getX() + self.historyM1:getWidth() + 45;
+    y = th; --self.historyM1:getY()-2;
+    x = self.historyM1:getX() + self.historyM1:getWidth() + getTextManager():MeasureStringX(UIFont.Small, "-50 C") + UI_BORDER_SPACING;
+    local widest = 0;
     local vars = self.historyM1:getVars();
     for i=1,#vars do
-        local btn = ISButton:new(x+5, y+5, 45,18,"toggle",self, WindDebug.onButtonToggle);
+        local btn = ISButton:new(x+UI_BORDER_SPACING, y+UI_BORDER_SPACING, toggleButtonWidth, BUTTON_HGT,getText("IGUI_ClimatePlotter_Toggle"),self, WindDebug.onButtonToggle);
         btn:initialise();
-        btn.backgroundColor = vars[i].enabled and {r=0, g=0.8, b=0, a=1.0} or {r=0.0, g=0, b=0, a=0.0};
-        btn.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-        btn.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+        btn:enableCancelColor()
         btn.toggleVarID = i;
         btn.toggleVarName = vars[i].name;
         btn.toggleVal = vars[i].enabled;
         self:addChild(btn);
 
-        local pnl = ISPanel:new(x+10+45,y+5,18,18);
+        local pnl = ISPanel:new(x+UI_BORDER_SPACING*2+btn.width,y+UI_BORDER_SPACING,20,BUTTON_HGT);
         pnl:initialise();
         pnl.backgroundColor = vars[i].color;
         self:addChild(pnl);
 
-        local lbl = ISLabel:new(x+15+45+18, y+5, 16, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
+        local lbl = ISLabel:new(x+UI_BORDER_SPACING*3+pnl.width+btn.width, y+UI_BORDER_SPACING, BUTTON_HGT, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
         lbl:initialise();
         lbl:instantiate();
         self:addChild(lbl);
+        widest = math.max(widest, x+UI_BORDER_SPACING*4+pnl.width+btn.width+getTextManager():MeasureStringX(UIFont.Small, vars[i].name)+1)
 
         y = btn:getY() + btn:getHeight();
     end
+    x = widest;
 
-    y = y+10;
+    y = y+UI_BORDER_SPACING-1;
+    cacheY = cacheY+UI_BORDER_SPACING-1;
+    self:setWidth(x>cacheX and x or cacheX);
     self:setHeight(y>cacheY and y or cacheY);
 end
 
@@ -155,9 +151,9 @@ function WindDebug:initVariables()
     end
 
     --self:addVarInfo("","",-1,1,"");
-    self:addVarInfo("windNoiseBase","WindNoiseBase",-1,1,"getDayLightStrength");
-    self:addVarInfo("windNoiseFinal","WindNoiseFinal",-1,1,"getDayLightStrength");
-    self:addVarInfo("windTickFinal","WindTickFinal",-1,1,"getDayLightStrength");
+    self:addVarInfo("windNoiseBase",getText("IGUI_WindTick_WindNoiseBase"),-1,1,"getDayLightStrength");
+    self:addVarInfo("windNoiseFinal",getText("IGUI_WindTick_WindNoiseFinal"),-1,1,"getDayLightStrength");
+    self:addVarInfo("windTickFinal",getText("IGUI_WindTick_WindTickFinal"),-1,1,"getDayLightStrength");
 end
 
 function WindDebug:addColor(_r,_g,_b)
@@ -180,11 +176,11 @@ end
 function WindDebug:onButton(_btn)
     if _btn.title=="M1" then
         self.historyM1:setVisible(true);
-        self.buttonM1.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+        self.buttonM1:enableAcceptColor()
         self.historyH1:setVisible(false);
-        self.buttonH1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonH1:enableCancelColor()
         self.historyD1:setVisible(false);
-        self.buttonD1.backgroundColor = {r=0, g=0, b=0, a=0.0};
+        self.buttonD1:enableCancelColor()
     end
 end
 
@@ -193,9 +189,9 @@ function WindDebug:onButtonToggle(_btn)
         _btn.toggleVal = not _btn.toggleVal;
         self.historyM1:setVariableEnabled(_btn.toggleVarName,_btn.toggleVal);
         if _btn.toggleVal then
-            _btn.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+            _btn:enableAcceptColor()
         else
-            _btn.backgroundColor = {r=0, g=0, b=0, a=0.0};
+            _btn:enableCancelColor()
         end
     end
 end
@@ -274,7 +270,7 @@ function WindDebug:new (x, y, width, height, player)
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.backgroundColor = {r=0, g=0, b=0, a=0.25};
+    o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.greyCol = { r=0.4,g=0.4,b=0.4,a=1};
     o.width = width;
     o.height = height;
@@ -285,7 +281,7 @@ function WindDebug:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Debug Wind Tick";
+    o.title = getText("IGUI_ClimDebuggers_WindTickDebug");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;

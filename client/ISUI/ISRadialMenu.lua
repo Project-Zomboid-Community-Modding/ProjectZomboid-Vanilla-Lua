@@ -34,6 +34,10 @@ function ISRadialMenu:onMouseDownOutside(x, y)
 	self:undisplay()
 end
 
+function ISRadialMenu:isEmpty()
+	return #self.slices == 0
+end
+
 function ISRadialMenu:clear()
 	self.slices = {}
 	if self.javaObject then
@@ -115,6 +119,10 @@ function ISRadialMenu:onJoypadButtonReleased(button, joypadData)
 end
 
 function ISRadialMenu:undisplay()
+	if self.sounds.undisplay then
+		getSoundManager():playUISound(self.sounds.undisplay)
+		self.sounds.undisplay = nil
+	end
 	self:removeFromUIManager()
 	if self.joyfocus then
 		self.joyfocus.focus = nil
@@ -128,6 +136,7 @@ function ISRadialMenu:new(x, y, innerRadius, outerRadius, playerNum)
 	o.playerNum = playerNum
 	o.slices = {}
 	o:setForceCursorVisible(playerNum == 0)
+	o.sounds = {}
 	return o
 end
 

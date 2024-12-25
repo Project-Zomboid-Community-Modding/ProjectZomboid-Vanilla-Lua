@@ -8,47 +8,68 @@ require "ISUI/ISPanelJoypad"
 
 ISAttachedItemsUI = ISCollapsableWindow:derive("ISAttachedItemsUI");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 --************************************************************************--
 --** ISAttachedItemsUI:initialise
 --**
 --************************************************************************--
 
 function ISAttachedItemsUI:createChildren()
-	local btnWid = 100
-	local btnHgt = 25
 	local padBottom = 20
+	local x = UI_BORDER_SPACING + 1
 	
 	ISCollapsableWindow.createChildren(self)
-	
-	self.datas = ISScrollingListBox:new(10, 50, self.width - 20, self.height - 170);
+
+	local columnWidthItem = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_AttachedItems_Item"))
+	local columnWidthLocation = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_AttachedItems_Location"))
+
+	local btnWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Add")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Remove")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_AttachedItems_ZombieAdd")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_AttachedItems_ZombieRemove"))
+	)
+
+	local targetWidth = math.max(
+			self.width, --original width
+			columnWidthItem + columnWidthLocation + UI_BORDER_SPACING*6+5, --column name width
+			btnWid * 2 + UI_BORDER_SPACING*3 + 2 --bottom button width
+	)
+
+	self.datas = ISScrollingListBox:new(x, self:titleBarHeight() + BUTTON_HGT + UI_BORDER_SPACING, targetWidth - x*2, self.height - 170);
 	self.datas:initialise();
 	self.datas:instantiate();
-	self.datas.itemheight = 22;
+	self.datas.itemheight = BUTTON_HGT;
 	self.datas.selected = 0;
 	self.datas.joypadParent = self;
 	self.datas.font = UIFont.NewSmall;
 	self.datas.doDrawItem = self.drawDatas;
 	self.datas.drawBorder = true;
 	self:addChild(self.datas);
-	self.datas:addColumn("Item", 0);
-	self.datas:addColumn("Location", 200);
+	self.datas:addColumn(getText("IGUI_AttachedItems_Item"), 0);
+	self.datas:addColumn(getText("IGUI_AttachedItems_Location"), math.max(200, columnWidthItem + UI_BORDER_SPACING*2));
 
 	self:populateList();
 	
-	self.itemTypeLabel = ISLabel:new(10, self.datas.y + self.datas.height + 5, 10, "Item Type" ,1,1,1,1,UIFont.Small, true);
+	self.itemTypeLabel = ISLabel:new(x, self.datas:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_AttachedItems_ItemType") ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.itemTypeLabel);
 
-	self.itemType = ISTextEntryBox:new("", 80, self.datas.y + self.datas.height + 5, 200, 10);
+	self.itemType = ISTextEntryBox:new("", self.itemTypeLabel:getRight() + UI_BORDER_SPACING, self.itemTypeLabel.y, 200, BUTTON_HGT);
 	self.itemType:initialise();
 	self.itemType:instantiate();
 	self.itemType:setText("Base.");
 	self.itemType:setClearButton(true);
 	self:addChild(self.itemType);
 	
-	self.locationLabel = ISLabel:new(10, self.datas.y + self.datas.height + 30, 10, "Location" ,1,1,1,1,UIFont.Small, true);
+	self.locationLabel = ISLabel:new(x, self.itemType:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_AttachedItems_Location") ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.locationLabel);
 
-	self.location = ISComboBox:new(80, self.datas.y + self.datas.height + 25, 200, 20)
+	self.location = ISComboBox:new(self.locationLabel:getRight() + UI_BORDER_SPACING, self.locationLabel.y, 200, BUTTON_HGT)
 	self.location.font = UIFont.Small
 	self.location:initialise()
 	self.location:instantiate()
@@ -59,37 +80,46 @@ function ISAttachedItemsUI:createChildren()
 		self.location:addOption(self.chr:getAttachedItems():getGroup():getLocationByIndex(i):getId())
 	end
 
-	self.add = ISButton:new(10, self:getHeight() - padBottom - btnHgt - 22, btnWid, btnHgt, "Add", self, ISAttachedItemsUI.onAddOnChar);
-	self.add.anchorTop = false
-	self.add.anchorBottom = true
-	self.add:initialise();
-	self.add:instantiate();
-	self.add.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.add);
-	
-	self.onzombie = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Add to Zombies", self, ISAttachedItemsUI.onAddZombie);
+	self.onzombie = ISButton:new(x, self:getHeight() - BUTTON_HGT - x, btnWid, BUTTON_HGT, getText("IGUI_AttachedItems_ZombieAdd"), self, ISAttachedItemsUI.onAddZombie);
 	self.onzombie.anchorTop = false
 	self.onzombie.anchorBottom = true
 	self.onzombie:initialise();
 	self.onzombie:instantiate();
-	self.onzombie.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.onzombie:enableAcceptColor()
 	self:addChild(self.onzombie);
-	
-	self.remove = ISButton:new(self.add.x + btnWid + 5, self.add.y, btnWid, btnHgt, "Remove", self, ISAttachedItemsUI.onRemove);
-	self.remove.anchorTop = false
-	self.remove.anchorBottom = true
-	self.remove:initialise();
-	self.remove:instantiate();
-	self.remove.borderColor = {r=1, g=1, b=1, a=0.1};
-	self:addChild(self.remove);
-	
-	self.removeZombie = ISButton:new(self.add.x + btnWid + 5, self.onzombie.y, btnWid, btnHgt, "Remove on Zed", self, ISAttachedItemsUI.onRemoveZombie);
+
+	self.removeZombie = ISButton:new(self.width - x - btnWid, self.onzombie.y, btnWid, BUTTON_HGT,  getText("IGUI_AttachedItems_ZombieRemove"), self, ISAttachedItemsUI.onRemoveZombie);
 	self.removeZombie.anchorTop = false
 	self.removeZombie.anchorBottom = true
+	self.removeZombie.anchorLeft = false
+	self.removeZombie.anchorRight = true
 	self.removeZombie:initialise();
 	self.removeZombie:instantiate();
-	self.removeZombie.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.removeZombie:enableCancelColor()
 	self:addChild(self.removeZombie);
+
+	self.add = ISButton:new(self.onzombie.x, self.onzombie.y - UI_BORDER_SPACING - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_DebugMenu_Add"), self, ISAttachedItemsUI.onAddOnChar);
+	self.add.anchorTop = false
+	self.add.anchorBottom = true
+	self.add:initialise();
+	self.add:instantiate();
+	self.add:enableAcceptColor()
+	self:addChild(self.add);
+
+	self.remove = ISButton:new(self.removeZombie.x, self.add.y, btnWid, BUTTON_HGT, getText("IGUI_DebugMenu_Remove"), self, ISAttachedItemsUI.onRemove);
+	self.remove.anchorTop = false
+	self.remove.anchorBottom = true
+	self.remove.anchorLeft = false
+	self.remove.anchorRight = true
+	self.remove:initialise();
+	self.remove:instantiate();
+	self.remove:enableCancelColor()
+	self:addChild(self.remove);
+
+	self:setWidth(math.max(self.width, targetWidth))
+	self:setHeight(math.max(self.height, self.location:getBottom() + UI_BORDER_SPACING * 3 + BUTTON_HGT*2 + 1))
+	
+
 	
 --
 --	self.restoreEnd = ISButton:new(self:getWidth() - btnWid - 20, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Restore Endurance", self, ISAttachedItemsUI.restoreEndurance);
@@ -109,7 +139,7 @@ function ISAttachedItemsUI:onAddOnChar()
 end
 
 function ISAttachedItemsUI:onAdd(char)
-	local item = InventoryItemFactory.CreateItem(self.itemType:getInternalText())
+	local item = instanceItem(self.itemType:getInternalText())
 	if not item then
 		local modal = ISModalDialog:new(0,0, 250, 150, "Item " .. self.itemType:getInternalText() .. " doesn't exist", false);
 		modal:initialise()
@@ -195,14 +225,14 @@ end
 
 function ISAttachedItemsUI:update()
 	ISCollapsableWindow.update(self);
-	self.remove.enable = false;
-	self.add.enable = false;
+	self.remove:setEnable(false)
+	self.add:setEnable(false)
 
 	if self.datas.selected > 0 then
-		self.remove.enable = true;
+		self.remove:setEnable(true)
 	end
 	if self.itemType:getText() and self.itemType:getText() ~= "" then
-		self.add.enable = true;
+		self.add:setEnable(true)
 	end
 --	print(self.datas.selected)
 end
@@ -238,9 +268,11 @@ function ISAttachedItemsUI:new(x, y, character)
 	end
 	o.width = width;
 	o.height = height;
+	o.title = getText("IGUI_DebugContext_AttachedItems")
 	o.character = character;
 	o.chr = character;
 	o.moveWithMouse = true;
+	o:setResizable(false);
 	o.anchorLeft = true;
 	o.anchorRight = true;
 	o.anchorTop = true;

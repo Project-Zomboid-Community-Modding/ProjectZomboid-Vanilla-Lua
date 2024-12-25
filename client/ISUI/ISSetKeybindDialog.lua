@@ -4,43 +4,48 @@
 
 ISSetKeybindDialog = ISPanel:derive("ISSetKeybindDialog")
 
-function ISSetKeybindDialog:createChildren()
-	local btnWid = 200
-	local btnHgt = 40
-	local pad = 10
-	local buttonsHgt = btnHgt * 3 + pad * 2
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local LABEL_HGT = FONT_HGT_MEDIUM + 6
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
+function ISSetKeybindDialog:createChildren()
+	local btnWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("UI_optionscreen_KeybindClear")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("UI_optionscreen_KeybindDefault")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel"))
+	)
+
 	local actionName = getText("UI_optionscreen_binding_" .. self.keybindName):trim()
+	if self.isModBind then actionName = getText(self.keybindName) end
 	local text = getText("UI_optionscreen_pressKeyToBind", actionName)
-	local label = ISLabel:new(self.width / 2, 20, fontHgt, text:gsub("\\n", "\n"):gsub("\\\"", "\""), 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(0,UI_BORDER_SPACING+1, LABEL_HGT*2, text:gsub("\\n", "\n"):gsub("\\\"", "\""), 1, 1, 1, 1, UIFont.Medium, true)
 	label.center = true
 	label:initialise()
 	self:addChild(label)
 
-	local labelBottom = label:getY() + fontHgt * 2
-	local btnY = labelBottom + (self.height - labelBottom - buttonsHgt) / 2
-	
-	self.clear = ISButton:new((self:getWidth() - btnWid) / 2, btnY,
-		btnWid, btnHgt, getText("UI_optionscreen_KeybindClear"), self, self.onClear)
-	self.clear:initialise()
-	self.clear:instantiate()
-	self.clear.borderColor = {r=1, g=1, b=1, a=0.1}
-	self:addChild(self.clear)
+	self:setWidth(label:getWidth()+UI_BORDER_SPACING*2)
+	label:setX(self.width / 2)
+	self:setX((getCore():getScreenWidth() - self.width)/2)
 
-	self.default = ISButton:new((self:getWidth() - btnWid) / 2, self.clear:getBottom() + pad,
-		btnWid, btnHgt, getText("UI_optionscreen_KeybindDefault"), self, self.onDefault)
-	self.default:initialise()
-	self.default:instantiate()
-	self.default.borderColor = {r=1, g=1, b=1, a=0.1}
-	self:addChild(self.default)
-
-	self.cancel = ISButton:new((self:getWidth() - btnWid) / 2, self.default:getBottom() + pad,
-		btnWid, btnHgt, getText("UI_Cancel"), self, self.onCancel)
+	self.cancel = ISButton:new((self:getWidth() - btnWid) / 2, self.height - BUTTON_HGT - UI_BORDER_SPACING - 1,	btnWid, BUTTON_HGT, getText("UI_Cancel"), self, self.onCancel)
 	self.cancel:initialise()
 	self.cancel:instantiate()
 	self.cancel.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.cancel)
+
+	self.default = ISButton:new((self:getWidth() - btnWid) / 2, self.cancel.y - BUTTON_HGT - UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_optionscreen_KeybindDefault"), self, self.onDefault)
+	self.default:initialise()
+	self.default:instantiate()
+	self.default.borderColor = {r=1, g=1, b=1, a=0.1}
+	self:addChild(self.default)
+	
+	self.clear = ISButton:new((self:getWidth() - btnWid) / 2, self.default.y - BUTTON_HGT - UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_optionscreen_KeybindClear"), self, self.onClear)
+	self.clear:initialise()
+	self.clear:instantiate()
+	self.clear.borderColor = {r=1, g=1, b=1, a=0.1}
+	self:addChild(self.clear)
 end
 
 function ISSetKeybindDialog:destroy()
@@ -56,14 +61,27 @@ function ISSetKeybindDialog:onCancel()
 end
 
 function ISSetKeybindDialog:onDefault()
-	for i,v in ipairs(keyBinding) do
-		if v.value == self.keybindName then
-			if v.key == 0 then -- no default keybind
-				self:onClear()
-			else
-				MainOptions.keyPressHandler(v.key)
+	if self.isModBind then
+		for i, v in ipairs(MainOptions.keyText) do
+			if not v.value and (v.txt:getName() == getText(self.keybindName)) then
+				if v.defaultKeyCode == 0 then -- no default keybind
+					self:onClear()
+				else
+					MainOptions.keyPressHandler(v.defaultKeyCode)
+				end
+				break
 			end
-			break
+		end
+	else
+		for i,v in ipairs(keyBinding) do
+			if v.value == self.keybindName then
+				if v.key == 0 then -- no default keybind
+					self:onClear()
+				else
+					MainOptions.keyPressHandler(v.key)
+				end
+				break
+			end
 		end
 	end
 end
@@ -85,21 +103,28 @@ function ISSetKeybindDialog:isKeyConsumed(key)
 	return true
 end
 
+-- Extra mouse events, all buttons and not consumed by UIElements.
+function ISSetKeybindDialog:onMouseButtonDown(btn)
+	MainOptions.keyPressHandler(Mouse.BTN_OFFSET + btn)
+end
+
 function ISSetKeybindDialog:onKeyRelease(key)
 	MainOptions.keyPressHandler(key)
 end
 
-function ISSetKeybindDialog:new(keybindName)
+function ISSetKeybindDialog:new(keybindName, isModBind)
 	local width = 500
-	local height = 300
+	local height = LABEL_HGT*2+BUTTON_HGT*3+UI_BORDER_SPACING*5+2
 	local x = (getCore():getScreenWidth() - width) / 2
 	local y = (getCore():getScreenHeight() - height) / 2
 	local o = ISPanel:new(x, y, width, height)
-	o.backgroundColor.a = 0.9
+	o.backgroundColor.a = 0.8
 	setmetatable(o, self)
 	self.__index = self
 	o.keybindName = keybindName
+	o.isModBind = isModBind
 	o:setWantKeyEvents(true)
+	o:setWantExtraMouseEvents(true) -- required to detect all mouse button clicks in a non-consumed way.
 	return o
 end
 

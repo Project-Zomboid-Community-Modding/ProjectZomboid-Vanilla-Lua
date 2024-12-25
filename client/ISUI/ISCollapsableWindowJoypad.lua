@@ -31,12 +31,12 @@ function ISCollapsableWindowJoypad:new (x, y, width, height)
 	o.widgetTextureColor = {r = 1, g = 1, b = 1, a = 1};
 	o.titlebarbkg = getTexture("media/ui/Panel_TitleBar.png");
 	o.statusbarbkg = getTexture("media/ui/Panel_StatusBar.png");
-	o.resizeimage = getTexture("media/ui/Panel_StatusBar_Resize.png");
+	o.resizeimage = getTexture("media/ui/ResizeIcon.png");
 	o.invbasic = getTexture("media/ui/Icon_InventoryBasic.png");
-	o.closeButtonTexture = getTexture("media/ui/Dialog_Titlebar_CloseIcon.png");
-	o.collapseButtonTexture = getTexture("media/ui/Panel_Icon_Collapse.png");
-	o.pinButtonTexture = getTexture("media/ui/Panel_Icon_Pin.png");
-    o.infoBtn = getTexture("media/ui/Panel_info_button.png");
+	o.closeButtonTexture = getTexture("media/ui/inventoryPanes/Button_Close.png");
+	o.collapseButtonTexture = getTexture("media/ui/inventoryPanes/Button_Collapse.png");
+	o.pinButtonTexture = getTexture("media/ui/inventoryPanes/Button_Pin.png");
+    o.infoBtn = getTexture("media/ui/inventoryPanes/Button_Info.png");
 	o.pin = true;
 	o.isCollapsed = false;
 	o.collapseCounter = 0;

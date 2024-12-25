@@ -6,8 +6,8 @@ require "ISUI/ISCollapsableWindow"
 
 ISGarmentUI = ISCollapsableWindow:derive("ISGarmentUI");
 ISGarmentUI.windows = {}
-ISGarmentUI.ghs = " <RGB:" .. getCore():getGoodHighlitedColor():getR() .. "," .. getCore():getGoodHighlitedColor():getG() .. "," .. getCore():getGoodHighlitedColor():getB() .. "> "
-ISGarmentUI.bhs = " <RGB:" .. getCore():getBadHighlitedColor():getR() .. "," .. getCore():getBadHighlitedColor():getG() .. "," .. getCore():getBadHighlitedColor():getB() .. "> "
+ISGarmentUI.ghs = "<GHC>"
+ISGarmentUI.bhs = "<BHC>"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -276,13 +276,30 @@ function ISGarmentUI:doDrawItem(y, item, alt)
 		y = y + FONT_HGT_SMALL;
 		self:drawText("- " .. getText("IGUI_TypeOfPatch", patch:getFabricTypeName()), 10, y, gr,gg,gb, 1, UIFont.Small)
 	end
-	
+
+	local x = 10
+    local fgBar = {r=0.5, g=0.5, b=0.5, a=0.5}
+	local garmentUI = self.parent
+	local bodyPartAction = garmentUI.bodyPartAction and garmentUI.bodyPartAction[part] or nil
+	if bodyPartAction then
+		y = y + FONT_HGT_SMALL
+		self:drawProgressBar(x, y, self.width - 10 - x, FONT_HGT_SMALL, bodyPartAction.delta, fgBar)
+		self:drawText(bodyPartAction.jobType, x + 4, y, 0.8, 0.8, 0.8, 1, UIFont.Small)
+	else
+		local actionQueue = ISTimedActionQueue.getTimedActionQueue(garmentUI.chr)
+		if actionQueue and actionQueue.queue and garmentUI.actionToBodyPart and (garmentUI.actionToBodyPart[actionQueue.queue[1]] == part) then
+			y = y + FONT_HGT_SMALL
+			self:drawProgressBar(x, y, self.width - 10 - x, FONT_HGT_SMALL, actionQueue.queue[1]:getJobDelta(), fgBar)
+			self:drawText(actionQueue.queue[1].jobType or "???", x + 4, y, 0.8, 0.8, 0.8, 1, UIFont.Small) -- jobType is a hack for CraftingUI and ISHealthPanel also
+		end
+	end
+
 	return y + FONT_HGT_SMALL;
 end
 
 function ISGarmentUI:render()
 	-- TODO: HELPING DEBUG TO REMOVE!
---				self.listbox.doDrawItem = ISGarmentUI.doDrawItem;
+				self.listbox.doDrawItem = ISGarmentUI.doDrawItem;
 --				self.listbox.onRightMouseUp = ISGarmentUI.onBodyPartListRightMouseUp
 
 	ISCollapsableWindow.render(self)
@@ -339,6 +356,43 @@ function ISGarmentUI:drawBar(x, y, width, height, percent, highGood)
 	self:drawProgressBar(x, y, width, height, percent, tempColor)
 end
 
+function ISGarmentUI.setBodyPartActionForPlayer(playerObj, bodyPart, action, jobType, args)
+	if not playerObj or playerObj:isDead() then return end
+	if not playerObj:isLocalPlayer() then return end
+	local garmentUI = ISGarmentUI.windows[playerObj:getPlayerNum()]
+	if not garmentUI then return end
+	if args then
+		args.jobType = jobType
+		args.delta = action:getJobDelta()
+	end
+	garmentUI:setBodyPartAction(bodyPart, args)
+end
+
+function ISGarmentUI:setBodyPartAction(bodyPart, args)
+	self.bodyPartAction = self.bodyPartAction or {}
+	self.bodyPartAction[bodyPart] = args
+end
+
+function ISGarmentUI.setOtherActionForPlayer(playerObj, bodyPart, action)
+	if not playerObj or playerObj:isDead() then return end
+	if not playerObj:isLocalPlayer() then return end
+	local garmentUI = ISGarmentUI.windows[playerObj:getPlayerNum()]
+	if not garmentUI then return end
+	garmentUI:setBodyPartForAction(action, bodyPart)
+end
+
+function ISGarmentUI.setBodyPartForLastAction(playerObj, bodyPart)
+	if not playerObj or playerObj:isDead() then return end
+	if not playerObj:isLocalPlayer() then return end
+	local actionQueue = ISTimedActionQueue.getTimedActionQueue(playerObj)
+	if not actionQueue or not actionQueue.queue or (#actionQueue.queue == 0) then return end
+	ISGarmentUI.setOtherActionForPlayer(playerObj, bodyPart, actionQueue.queue[#actionQueue.queue])
+end
+
+function ISGarmentUI:setBodyPartForAction(action, bodyPart)
+	self.actionToBodyPart = self.actionToBodyPart or {}
+	self.actionToBodyPart[action] = bodyPart
+end
 
 function ISGarmentUI:close()
 	ISGarmentUI.windows[self.playerNum] = nil;
@@ -370,6 +424,7 @@ function ISGarmentUI:create()
 	self:addTextures("UpperArm_R", "_upper-right-arm", "_upper_right_arm");
 	self:addTextures("Torso_Upper", "_chest", "_chest");
 	self:addTextures("Torso_Lower", "_abdomen", "_abdomen");
+	self:addTextures("Back", "_abdomen", "_abdomen");
 	self:addTextures("Head", "_head", "_head");
 	self:addTextures("Neck", "_neck", "_neck");
 	self:addTextures("Groin", "_groin", "_groin");
@@ -378,6 +433,7 @@ function ISGarmentUI:create()
 	self:addTextures("LowerLeg_L", "_left-calf", "_left_calf");
 	self:addTextures("LowerLeg_R", "_right-calf", "_right_calf");
 	self:addTextures("Foot_L", "_left-foot", "_left_foot");
+	self:addTextures("Foot_R", "_right-foot", "_right_foot");
 	self:addTextures("Foot_R", "_right-foot", "_right_foot");
 end
 

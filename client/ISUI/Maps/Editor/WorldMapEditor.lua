@@ -7,7 +7,8 @@ require('ISUI/Maps/Editor/WorldMapEditorMode')
 require('ISUI/Maps/Editor/WorldMapEditorResizer')
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditor = ISUIElement:derive("WorldMapEditor")
 
@@ -33,8 +34,6 @@ function WorldMapEditor:instantiate()
 end
 
 function WorldMapEditor:createChildren()
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-
 	for _,mode in ipairs({'DataFiles', 'Bounds', 'Style', 'Annotations', 'Maps', 'Stashes'}) do
 		self.mode[mode] = _G["WorldMapEditorMode_" .. mode]:new(self)
 		self:addChild(self.mode[mode])
@@ -43,46 +42,55 @@ function WorldMapEditor:createChildren()
 
 	self.modeButton = {}
 
-	local button = ISButton:new(10, 10, 100, buttonHgt, "DATA FILES", self, self.onSwitchMode)
+	local buttonPadding = UI_BORDER_SPACING*2
+	local button = ISButton:new(UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_DataFiles"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "DataFiles"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.DataFiles = button
 
-	button = ISButton:new(button:getRight() + 10, 10, 100, buttonHgt, "BOUNDS", self, self.onSwitchMode)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Bounds"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "Bounds"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Bounds = button
 
-	button = ISButton:new(button:getRight() + 10, 10, 100, buttonHgt, "STYLE", self, self.onSwitchMode)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Style"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "Style"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Style = button
 
-	button = ISButton:new(button:getRight() + 10, 10, 100, buttonHgt, "ANNOTATIONS", self, self.onSwitchMode)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Annotations"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "Annotations"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Annotations = button
 
-	button = ISButton:new(button:getRight() + 10, 10, 100, buttonHgt, "MAPS", self, self.onSwitchMode)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Maps"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "Maps"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Maps = button
 
-	button = ISButton:new(button:getRight() + 10, 10, 100, buttonHgt, "STASHES", self, self.onSwitchMode)
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Stashes"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.mode = "Stashes"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Stashes = button
-	
-	button = ISButton:new(10, self.height - 10 - buttonHgt, 80, buttonHgt, "EXIT", self, self.onExit)
+
+	button = ISButton:new(UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - BUTTON_HGT, 10, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
-	
-	button = ISButton:new(button:getRight() + 100, self.height - 10 - buttonHgt, 80, buttonHgt, "LUA TO CLIPBOARD", self, self.onGenerateLuaScript)
+
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - BUTTON_HGT, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_LuaToClipboard"), self, self.onGenerateLuaScript)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
 	self:onSwitchMode(self.modeButton.DataFiles)
@@ -105,7 +113,7 @@ function WorldMapEditor:render()
 	local y = self:getMouseY()
 	local worldX = self.mapAPI:uiToWorldX(x, y)
 	local worldY = self.mapAPI:uiToWorldY(x, y)
-	self:drawTextCentre(string.format("ZOOM : %.2f     POSITION : %d,%d", self.mapAPI:getZoomF(), worldX, worldY), self.width / 2, self.height - FONT_HGT_SMALL - 10, 0, 0, 0, 1, UIFont.Small)
+	self:drawTextCentre(string.format(getText("IGUI_WorldMapEditor_Zoom") .. ": %.2f     " .. getText("IGUI_WorldMapEditor_Position") .. ": %d,%d", self.mapAPI:getZoomF(), worldX, worldY), self.width / 2, self.height - FONT_HGT_SMALL - 10, 0, 0, 0, 1, UIFont.Small)
 end
 
 function WorldMapEditor:onMouseDown(x, y)
@@ -244,7 +252,7 @@ function WorldMapEditor:new(x, y, width, height, javaObject)
 	o:setAnchorRight(true)
 	o:setAnchorBottom(true)
 	o.state = javaObject
-	o.mapItem = InventoryItemFactory.CreateItem("Base.Map")
+	o.mapItem = instanceItem("Base.Map")
 	o.bounds = nil
 	o.mode = {}
 	javaObject:setTable(o)

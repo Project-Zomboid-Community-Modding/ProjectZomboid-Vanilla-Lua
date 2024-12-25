@@ -26,9 +26,8 @@ function ISWoodenWall:create(x, y, z, north, sprite)
 	-- add the item to the ground
     self.sq:AddSpecialObject(self.javaObject, self:getObjectIndex());
     self.sq:RecalcAllWithNeighbours(true);
- 	buildUtil.checkCorner(x,y,z,north,self, self.javaObject);
---	buildUtil.addWoodXp(self);
-	self.javaObject:transmitCompleteItemToServer();
+ 	buildUtil.checkCorner(x, y, z, north,self, self.javaObject);
+	self.javaObject:transmitCompleteItemToClients();
 end
 
 function ISWoodenWall:checkCorner(x,y,z,north)
@@ -56,7 +55,7 @@ function ISWoodenWall:addCorner(x,y,z, north)
 	corner:setCorner(true);
 	corner:setCanBarricade(false);
 	sq:AddSpecialObject(corner);
-	corner:transmitCompleteItemToServer();
+	corner:transmitCompleteItemToClients();
 end
 
 function ISWoodenWall:onTimedActionStart(action)

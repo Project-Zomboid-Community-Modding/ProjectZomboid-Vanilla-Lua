@@ -2,7 +2,6 @@ require "ISBaseObject"
 require "ISUI/ISBackButtonWheel"
 require "ISUI/ISInventoryPage"
 require "ISUI/ISLayoutManager"
-require "ISUI/ISSafetyUI"
 
 ISPlayerDataObject = ISBaseObject:derive("ISPlayerDataObject");
 
@@ -24,8 +23,6 @@ function ISPlayerDataObject:createInventoryInterface()
     if isMouse then
 	    print("player ".. self.id .. " is mouse");
         zoom = 1.34;
-    else
-        register = false;
     end
 
 zoom = 1.34
@@ -133,18 +130,6 @@ zoom = 1.34
     self.backButtonWheel:setAlwaysOnTop(true)
     self.backButtonWheel:addToUIManager()
 
-    if isClient() then
-        local x2, y2 = x + 15, y + self.equipped:getHeight() + 20;
-        --if not getServerOptions():getBoolean("SafetySystem") then
-        --    x2, y2 = x + w - 200, y + h - 100;
-        --end
-        self.safetyUI = ISSafetyUI:new(x2, y2, self.id);
-        self.safetyUI:initialise();
-        self.safetyUI:addToUIManager();
-        self.safetyUI:setVisible(true);
-        self.equipped:backMost()
-    end
-    
     if getCore():getGameMode() ~= "Tutorial" then
         self.playerHotbar = ISHotbar:new(playerObj)
         self.playerHotbar:initialise();
@@ -152,8 +137,9 @@ zoom = 1.34
         self.playerHotbar:setVisible(isMouse);
     end
 
-    self.craftingUI = ISCraftingUI:new(0, 0, 800, 600, playerObj)
+    self.craftingUI = ISCraftingUI:new(0, 0, 800+(getCore():getOptionFontSizeReal()-1)*100, 600+(getCore():getOptionFontSizeReal()-1)*60, playerObj)
     self.craftingUI:initialise();
+    self.craftingUI.minimumWidth =
     self.craftingUI:addToUIManager();
     self.craftingUI:setVisible(false);
     self.craftingUI:setEnabled(false)
@@ -168,6 +154,12 @@ zoom = 1.34
     self.vehicleDashboard:initialise()
     self.vehicleDashboard:instantiate()
 
+    self.zoneUI = ISDesignationZonePanel:new(50,50, 600, 800, playerObj);
+    self.zoneUI:initialise();
+    self.zoneUI:addToUIManager();
+    self.zoneUI:setVisible(false);
+    playerObj:setSeeDesignationZone(false);
+
     -- Redisplay the dashboard after a splitscreen player is added.
     if playerObj:getVehicle() and playerObj:getVehicle():isDriver(playerObj) then
         self.vehicleDashboard:setVehicle(playerObj:getVehicle())
@@ -179,6 +171,10 @@ zoom = 1.34
 
     self.radialMenu = ISRadialMenu:new(0, 0, 100, 200, self.id)
     self.radialMenu:initialise()
+
+    self.sleepingUI = ISSleepingUI:new(self.id)
+    self.sleepingUI:initialise()
+    self.sleepingUI:setVisible(false)
 
     if register then
     ISLayoutManager.RegisterWindow('inventory'..self.id, ISInventoryPage, self.playerInventory) 
@@ -295,6 +291,10 @@ function ISPlayerDataObject:onResolutionChange(oldw, oldh, neww, newh)
         self.characterInfo:setX(x + 70)
         self.characterInfo:setY(y + 20)
     end
+
+    if self.sleepingUI then
+        self.sleepingUI:onResolutionChange()
+    end
 end
 
 function ISPlayerDataObject:revertToKeyboardAndMouse()
@@ -324,10 +324,10 @@ function ISPlayerDataObject:new (id)
 end
 
 ISPlayerDataObject.onKeyPressed = function(key)
-    if key == getCore():getKey("Zoom in") then
+    if getCore():isKey("Zoom in", key) then
         screenZoomIn();
     end
-    if key == getCore():getKey("Zoom out") then
+    if getCore():isKey("Zoom out", key) then
         screenZoomOut();
     end
 end

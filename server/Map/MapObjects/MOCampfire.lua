@@ -9,7 +9,7 @@ local function noise(message) SCampfireSystem.instance:noise(message) end
 local function removeExistingLuaObject(square)
 	local luaObject = SCampfireSystem.instance:getLuaObjectOnSquare(square)
 	if luaObject then
-		noise('removing luaObject at same location as newly-loaded isoObject')
+-- 		noise('removing luaObject at same location as newly-loaded isoObject')
 		SCampfireSystem.instance:removeLuaObject(luaObject)
 	end
 end
@@ -68,7 +68,7 @@ local function LoadCampfire(isoObject, fuelAmount)
 	end
 
 	if "Campfire" ~= isoObject:getName() then
-		noise('set object name')
+-- 		noise('set object name')
 		isoObject:setName("Campfire")
 		if isServer() then
 			isoObject:sendObjectChange("name")

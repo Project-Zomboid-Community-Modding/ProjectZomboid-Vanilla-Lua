@@ -4,14 +4,14 @@
 
 require "ISUI/ISPanel"
 
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 DebugChunkState_VehicleStoryPanel = ISPanel:derive("DebugChunkState_VehicleStoryPanel")
 local VehicleStoryPanel = DebugChunkState_VehicleStoryPanel
 
 function VehicleStoryPanel:createChildren()
-	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
-	local combo = ISComboBox:new(0, 0, self.width, comboHeight, self, self.onChangeStory)
+	local combo = ISComboBox:new(0, 0, self.width, BUTTON_HGT, self, self.onChangeStory)
 	self:addChild(combo)
 	self.combo = combo
 
@@ -41,8 +41,7 @@ function VehicleStoryPanel:onChangeStory()
 end
 
 function VehicleStoryPanel:new(x, y, width, height, debugChunkState)
-	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
-	height = comboHeight
+	height = BUTTON_HGT
 	local o = ISPanel.new(self, x, y, width, height)
 	o.backgroundColor.a = 0.8
 	o.debugChunkState = debugChunkState

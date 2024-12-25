@@ -3,13 +3,14 @@
 --**				  Author: turbotutone				   **
 --***********************************************************
 
-
 require "ISUI/ISCollapsableWindow"
 
 PlayerClimateDebug = ISCollapsableWindow:derive("PlayerClimateDebug");
 PlayerClimateDebug.instance = nil;
 PlayerClimateDebug.shiftDown = 0;
 PlayerClimateDebug.eventsAdded = false;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
 
 --[[
 local enabled = true; --getDebug();
@@ -35,7 +36,7 @@ function PlayerClimateDebug.OnOpenPanel()
     PlayerClimateDebug.cm = getClimateManager();
 
     if PlayerClimateDebug.instance==nil then
-        PlayerClimateDebug.instance = PlayerClimateDebug:new (100, 100, 400, 600, getPlayer());
+        PlayerClimateDebug.instance = PlayerClimateDebug:new (100, 100, 400+(getCore():getOptionFontSizeReal()*50), 600, getPlayer());
         PlayerClimateDebug.instance:initialise();
         PlayerClimateDebug.instance:instantiate();
     end
@@ -59,12 +60,30 @@ end
 
 function PlayerClimateDebug:createChildren()
     ISCollapsableWindow.createChildren(self);
-
+    self.panel = ISPanel:new(0, self:titleBarHeight(), self.width, self.height-self:titleBarHeight()-self:resizeWidgetHeight())
+    self.panel.prerender = function(self)
+        self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
+        ISPanel.prerender(self)
+    end
+    self.panel.render = function(self)
+        ISPanel.render(self)
+        self:clearStencilRect()
+    end
+    self.panel.onMouseWheel = function(self, del)
+        if self:getScrollHeight() > 0 then
+            self:setYScroll(self:getYScroll() - (del * 40))
+            return true
+        end
+        return false
+    end
+    self.panel:initialise()
+    self.panel:instantiate()
+    self.panel:noBackground()
+    self.panel:setScrollChildren(true)
+    self:addChild(self.panel)
     self:initVariables();
 
-    local th = self:titleBarHeight();
-
-    local y, lbl = th, nil;
+    local y, lbl = 0, nil;
 
     self.labels = {};
     self.tempColor = {r=1.0,g=1.0,b=1.0,a=1.0};
@@ -171,18 +190,16 @@ function PlayerClimateDebug:createChildren()
     --y = self:addLabel(y,"tit_Extra","EXTRA","");
     --y, lbl = self:addLabelValue(y,"value","clothInvert","Clothing invert val:",0,nil,"");
 
-    y = y+8;
-
     for k,v in ipairs(self.vars) do
         if v.isValue then
             y, lbl = self:addLabelValue(y,"value",v.variable,v.title,v.defaultVal,v.color,v.postfix);
         else
-            y = y+8;
+            y = y+10;
             y, lbl = self:addLabel(y,v.variable,v.title,"");
         end
     end
-
-    self:setHeight(y+self:resizeWidgetHeight()+4);
+    self.panel:addScrollBars();
+    self.panel:setScrollHeight(y+10);
 end
 
 function PlayerClimateDebug:initVariables()
@@ -193,61 +210,61 @@ function PlayerClimateDebug:initVariables()
     local climate = getClimateManager();
 
     self.vars = {};
-    self:registerVariable("title_main","MAIN",false);
-    self:registerVariable("getMetabolicTarget", "MetabolicTarget:", true, thermos, 0, nil, nil);
-    self:registerVariable("getMetabolicRate", "Base MetabolicRate:", true, thermos, 0, nil, nil);
-    self:registerVariable("getMetabolicRateReal", "Real MetabolicRate:", true, thermos, 0, nil, nil);
-    self:registerVariable("getDbg_totalHeatRaw", "Body HeatIO raw:", true, thermos, 0, nil, nil);
-    self:registerVariable("getDbg_totalHeat", "Body HeatIO:", true, thermos, 0, nil, nil);
-    self:registerVariable("getBodyHeatDelta", "Body heat delta:", true, thermos, 0, nil, nil);
-    self:registerVariable("getSetPoint", "Core setpoint:", true, thermos, 0, nil, nil);
-    self:registerVariable("getCoreHeatDelta", "Core heat delta:", true, thermos, 0, nil, nil);
-    self:registerVariable("getCoreRateOfChange", "Core rate of change:", true, thermos, 0, nil, nil);
-    self:registerVariable("getCoreCelcius", "Core celcius:", true, thermos, 0, nil, nil);
-    self:registerVariable("getDbg_primTotal", "Prim total:", true, thermos, 0, nil, nil);
-    self:registerVariable("getDbg_secTotal", "Sec total:", true, thermos, 0, nil, nil);
+    self:registerVariable("title_main",getText("IGUI_PlayerClimate_MainTitle"),false);
+    self:registerVariable("getMetabolicTarget", getText("IGUI_PlayerClimate_MetabolicTarget") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getMetabolicRate", getText("IGUI_PlayerClimate_BaseMetabolic") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getMetabolicRateReal", getText("IGUI_PlayerClimate_RealMetabolic") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getDbg_totalHeatRaw", getText("IGUI_PlayerClimate_BodyHeatIORaw") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getDbg_totalHeat", getText("IGUI_PlayerClimate_BodyHeatIO") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getBodyHeatDelta", getText("IGUI_PlayerClimate_BodyHeatDelta") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getSetPoint", getText("IGUI_PlayerClimate_CoreSetpoint") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getCoreHeatDelta", getText("IGUI_PlayerClimate_CoreHeatDelta") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getCoreRateOfChange", getText("IGUI_PlayerClimate_CoreROC") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getCoreCelcius", getText("IGUI_PlayerClimate_CoreC") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getDbg_primTotal", getText("IGUI_PlayerClimate_PrimTotal") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getDbg_secTotal", getText("IGUI_PlayerClimate_SecTotal") ..":", true, thermos, 0, nil, nil);
 
-    self:registerVariable("title_resources","BODY RESOURCES",false);
-    self:registerVariable("getEnergy", "Energy:", true, thermos, 0, nil, nil);
-    self:registerVariable("getEnergyMultiplier", "Energy drain multiplier:", true, thermos, 0, nil, nil);
-    self:registerVariable("getBodyFluids", "Fluids:", true, thermos, 0, nil, nil);
-    self:registerVariable("getFluidsMultiplier", "Fluids drain multiplier:", true, thermos, 0, nil, nil);
+    self:registerVariable("title_resources",getText("IGUI_PlayerClimate_BodyResourcesTitle"),false);
+    self:registerVariable("getEnergy", getText("IGUI_PlayerClimate_Energy") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getEnergyMultiplier", getText("IGUI_PlayerClimate_EnergyDrainMulti") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getBodyFluids", getText("IGUI_PlayerClimate_Fluids") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getFluidsMultiplier", getText("IGUI_PlayerClimate_FluidDrainMulti") ..":", true, thermos, 0, nil, nil);
 
-    self:registerVariable("title_other","OTHER",false);
-    self:registerVariable("getCatchAColdDelta", "Catch-Cold-Delta:", true, thermos, 0, nil, nil);
-    self:registerVariable("getTimedActionTimeModifier", "TimedAction mod:", true, thermos, 0, nil, nil);
-    self:registerVariable("getThermalDamage", "Thermal damage:", true, thermos, 0, nil, nil);
+    self:registerVariable("title_other",getText("IGUI_PlayerClimate_OtherTitle"),false);
+    self:registerVariable("getCatchAColdDelta", getText("IGUI_PlayerClimate_CatchColdDelta") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getTimedActionTimeModifier", getText("IGUI_PlayerClimate_TimedActionMod") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getThermalDamage", getText("IGUI_PlayerClimate_ThermalDamage") ..":", true, thermos, 0, nil, nil);
 
-    self:registerVariable("title_climate","CLIMATE",false);
-    self:registerVariable("getTemperatureAir", "Base air temp:", true, thermos, 0, nil, nil);
-    self:registerVariable("getTemperatureAirAndWind", "Air and Wind temp:", true, thermos, 0, nil, nil);
-    self:registerVariable("getHumidity", "Humidity:", true, climate, 0, nil, nil);
+    self:registerVariable("title_climate",getText("IGUI_PlayerClimate_ClimateTitle"),false);
+    self:registerVariable("getTemperatureAir", getText("IGUI_PlayerClimate_BaseAirTemp") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getTemperatureAirAndWind", getText("IGUI_PlayerClimate_AirWindTemp") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getHumidity", getText("IGUI_ClimateOptions_HUMIDITY") ..":", true, climate, 0, nil, nil);
 
-    self:registerVariable("title_modifiers","MULTIPLIER",false);
-    self:registerVariable("getSimulationMultiplier", "Simulation X:", true, thermos, 0, nil, nil);
-    self:registerVariable("getDefaultMultiplier", "Default:", true, thermos, 0, nil, nil);
-    self:registerVariable("getMetabolicRateIncMultiplier", "MetabolicRateInc:", true, thermos, 0, nil, nil);
-    self:registerVariable("getMetabolicRateDecMultiplier", "MetabolicRateDec:", true, thermos, 0, nil, nil);
-    self:registerVariable("getBodyHeatMultiplier", "BodyHeat:", true, thermos, 0, nil, nil);
-    self:registerVariable("getCoreHeatExpandMultiplier", "CoreHeatExpand:", true, thermos, 0, nil, nil);
-    self:registerVariable("getCoreHeatContractMultiplier", "CoreHeatContract:", true, thermos, 0, nil, nil);
-    self:registerVariable("getSkinCelciusMultiplier", "SkinCelcius:", true, thermos, 0, nil, nil);
+    self:registerVariable("title_modifiers",getText("IGUI_PlayerClimate_MultiplierTitle"),false);
+    self:registerVariable("getSimulationMultiplier", getText("IGUI_PlayerClimate_SimulationMulti") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getDefaultMultiplier", getText("IGUI_PlayerClimate_Default") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getMetabolicRateIncMultiplier", getText("IGUI_PlayerClimate_MetabolicInc") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getMetabolicRateDecMultiplier", getText("IGUI_PlayerClimate_MetabolicDec") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getBodyHeatMultiplier", getText("IGUI_PlayerClimate_BodyHeat") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getCoreHeatExpandMultiplier", getText("IGUI_PlayerClimate_CoreHeatExpand") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getCoreHeatContractMultiplier", getText("IGUI_PlayerClimate_CoreHeatContract") ..":", true, thermos, 0, nil, nil);
+    self:registerVariable("getSkinCelciusMultiplier", getText("IGUI_PlayerClimate_SkinC") ..":", true, thermos, 0, nil, nil);
 
-    self:registerVariable("title_stats","STATS",false);
-    self:registerVariable("getHunger", "Hunger:", true, stats, 0, nil, nil);
-    self:registerVariable("getThirst", "Thirst:", true, stats, 0, nil, nil);
-    self:registerVariable("getFatigue", "Fatigue:", true, stats, 0, nil, nil);
-    self:registerVariable("getFitness", "Fitness:", true, stats, 0, nil, nil);
-    self:registerVariable("getDrunkenness", "Drunk:", true, stats, 0, nil, nil);
-    self:registerVariable("getSickness", "Sickness:", true, stats, 0, nil, nil);
+    self:registerVariable("title_stats",getText("IGUI_PlayerClimate_StatsTitle"),false);
+    self:registerVariable("getHunger", getText("IGUI_StatsAndBody_Hunger") ..":", true, stats, 0, nil, nil);
+    self:registerVariable("getThirst", getText("IGUI_StatsAndBody_Thirst") ..":", true, stats, 0, nil, nil);
+    self:registerVariable("getFatigue", getText("IGUI_StatsAndBody_Fatigue") ..":", true, stats, 0, nil, nil);
+    self:registerVariable("getFitness", getText("IGUI_StatsAndBody_Fitness") ..":", true, stats, 0, nil, nil);
+    self:registerVariable("getDrunkenness", getText("IGUI_StatsAndBody_Drunkenness") ..":", true, stats, 0, nil, nil);
+    self:registerVariable("getSickness", getText("IGUI_StatsAndBody_Sickness") ..":", true, stats, 0, nil, nil);
 
-    self:registerVariable("title_body","BODY",false);
-    self:registerVariable("getWetness", "Wetness:", true, body, 0, nil, nil);
-    self:registerVariable("getColdStrength", "Cold-Strength:", true, body, 0, nil, nil);
-    self:registerVariable("getCatchACold", "Catch-a-Cold:", true, body, 0, nil, nil);
+    self:registerVariable("title_body",getText("IGUI_PlayerClimate_BodyTitle"),false);
+    self:registerVariable("getWetness", getText("IGUI_StatsAndBody_Wetness") ..":", true, body, 0, nil, nil);
+    self:registerVariable("getColdStrength", getText("IGUI_StatsAndBody_ColdStrength") ..":", true, body, 0, nil, nil);
+    self:registerVariable("getCatchACold", getText("IGUI_PlayerClimate_CatchCold") ..":", true, body, 0, nil, nil);
 
-    self:registerVariable("title_nutrition","NUTRITION",false);
-    self:registerVariable("getWeight", "Weight:", true, nutrition, 0, nil, nil);
+    self:registerVariable("title_nutrition",getText("IGUI_PlayerClimate_NutritionTitle"),false);
+    self:registerVariable("getWeight", getText("IGUI_PlayerClimate_Weight") ..":", true, nutrition, 0, nil, nil);
 end
 
 function PlayerClimateDebug:registerVariable(_variable,_title,_isValue, _javaInstance, _defaultVal,_color,_postfix)
@@ -369,10 +386,10 @@ end
 function PlayerClimateDebug:addLabel(_curY, _labelID, _title)
     if not self.labels[_labelID] then
         local label = {};
-        label.titleLabel = ISLabel:new(2, _curY, 16, _title, 1, 1, 1, 1.0, UIFont.Small, true);
+        label.titleLabel = ISLabel:new(self.width/2-(getTextManager():MeasureStringX(UIFont.Small, _title)/2), _curY, FONT_HGT_SMALL, _title, 1, 1, 1, 1.0, UIFont.Small, true);
         label.titleLabel:initialise();
         label.titleLabel:instantiate();
-        self:addChild(label.titleLabel);
+        self.panel:addChild(label.titleLabel);
 
         self.labels[_labelID] = label;
 
@@ -390,10 +407,10 @@ function PlayerClimateDebug:addLabelValue(_curY, _type, _labelID, _title, _defau
     end
     if not self.labels[_labelID] then
         local label = {};
-        label.titleLabel = ISLabel:new(2, _curY, 16, _title, 1, 1, 1, 1.0, UIFont.Small, true);
+        label.titleLabel = ISLabel:new(UI_BORDER_SPACING+1, _curY, FONT_HGT_SMALL, _title, 1, 1, 1, 1.0, UIFont.Small, true);
         label.titleLabel:initialise();
         label.titleLabel:instantiate();
-        self:addChild(label.titleLabel);
+        self.panel:addChild(label.titleLabel);
 
         if not _col then
             _col = self.colWhite;
@@ -402,22 +419,22 @@ function PlayerClimateDebug:addLabelValue(_curY, _type, _labelID, _title, _defau
         end
 
         if _type=="value" then
-            label.valueLabel = ISLabel:new(self.width-(self.width/2), _curY, 16, tostring(_defaultVal), _col.r, _col.g, _col.b, 1.0, UIFont.Small, true);
+            label.valueLabel = ISLabel:new(self.width-(self.width/3), _curY, FONT_HGT_SMALL, tostring(_defaultVal), _col.r, _col.g, _col.b, 1.0, UIFont.Small, true);
             label.valueLabel:initialise();
             label.valueLabel:instantiate();
-            self:addChild(label.valueLabel);
+            self.panel:addChild(label.valueLabel);
         elseif _type=="color" then
             label.valueLabel = ISPanel:new(self.width-(self.width/2), _curY+4, (self.width/3)-4, 10);
             label.valueLabel:initialise();
             label.valueLabel.backgroundColor = _defaultVal or {r=1.0,g=1.0,b=1.0,a=1.0};
-            self:addChild(label.valueLabel);
+            self.panel:addChild(label.valueLabel);
         end
 
         if _extension then
-            label.extLabel = ISLabel:new(self.width-(self.width/3), _curY, 16, tostring(_extension), 1, 1, 1, 1.0, UIFont.Small, true);
+            label.extLabel = ISLabel:new(self.width-(self.width/3), _curY, FONT_HGT_SMALL, tostring(_extension), 1, 1, 1, 1.0, UIFont.Small, true);
             label.extLabel:initialise();
             label.extLabel:instantiate();
-            self:addChild(label.extLabel);
+            self.panel:addChild(label.extLabel);
         end
 
         self.labels[_labelID] = label;
@@ -442,10 +459,11 @@ function PlayerClimateDebug:getValueLabel(_labelID)
     end
 end
 
-
 function PlayerClimateDebug:onResize()
     ISUIElement.onResize(self);
     local th = self:titleBarHeight();
+    self.panel:setWidth(self.width);
+    self.panel:setHeight(self.height-(th+10))
     --self.richtext:setWidth(self.width);
     --self.richtext:setHeight(self.height-(th+10));
 end
@@ -610,7 +628,7 @@ function PlayerClimateDebug:new (x, y, width, height, player)
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.backgroundColor = {r=0, g=0, b=0, a=0.5};
+    o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.width = width;
     o.height = height;
     o.anchorLeft = true;
@@ -620,7 +638,7 @@ function PlayerClimateDebug:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Climate player";
+    o.title = getText("IGUI_ClimDebuggers_PlayerTemp");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
@@ -641,5 +659,6 @@ if enabled then
     Events.OnKeyKeepPressed.Add(PlayerClimateDebug.OnKeepKeyDown);
     --Events.OnObjectLeftMouseButtonUp.Add(PlayerClimateDebug.onMouseButtonUp);
 end--]]
+
 
 

@@ -42,6 +42,36 @@ ZomboidGlobals = {
     PoisonLevelDecrease = 0.0010,
     PoisonHealthReduction = 0.0465,
     FoodSicknessDecrease = 0.0015,
+	
+	BurnCorpsePetrolAmount = 0.1,
+	CleanBloodBleachAmount = 0.25,
+	CleanGraffitiPetrolAmount = 1.25,
+	LightFromPetrolAmount = 0.1,
 }
 
+ZombiePopulationMultiplier = {}
+ZombiePopulationMultiplier.Insane = "2.5"
+ZombiePopulationMultiplier.VeryHigh = "1.6"
+ZombiePopulationMultiplier.High = "1.2"
+ZombiePopulationMultiplier.Normal = "0.65"
+ZombiePopulationMultiplier.Low = "0.15"
+ZombiePopulationMultiplier.None = "0.0"
+
+ZombiePopulationMultiplierTable = { "2.5", "1.6", "1.2", "0.65", "0.15", "0.0" }
+
+ZombiePopulationStartMultiplier = {}
+ZombiePopulationStartMultiplier.Insane = "4.0"
+ZombiePopulationStartMultiplier.VeryHigh = "2.0"
+ZombiePopulationStartMultiplier.High = "1.5"
+ZombiePopulationStartMultiplier.Normal = "1.0"
+ZombiePopulationStartMultiplier.Low = "0.5"
+ZombiePopulationStartMultiplier.None = "0.0"
+
+ZombiePopulationPeakMultiplier = {}
+ZombiePopulationPeakMultiplier.Insane = "4.0"
+ZombiePopulationPeakMultiplier.VeryHigh = "2.0"
+ZombiePopulationPeakMultiplier.High = "1.5"
+ZombiePopulationPeakMultiplier.Normal = "1.0"
+ZombiePopulationPeakMultiplier.Low = "0.5"
+ZombiePopulationPeakMultiplier.None = "0.0"
 

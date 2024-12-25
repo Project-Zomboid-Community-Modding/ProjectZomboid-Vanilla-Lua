@@ -13,6 +13,12 @@ require "ISUI/ISLayoutManager"
 -------------------------------------------------
 ISAddSafeZoneUI = ISPanel:derive("ISAddSafeZoneUI");
 ISAddSafeZoneUI.instance = nil;
+
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 -------------------------------------------------
 -------------------------------------------------
 function ISAddSafeZoneUI:highlightZone(_x1, _x2, _y1, _y2, _fullHighlight)
@@ -20,6 +26,8 @@ function ISAddSafeZoneUI:highlightZone(_x1, _x2, _y1, _y2, _fullHighlight)
 	local g = (self.notIntersecting and 1) or 0;
 	local b = (self.notIntersecting and 1) or 0;
 	local a = 0.9;
+	addAreaHighlight(_x1, _y1, _x2, _y2, 0, r, g, b, a)
+--[[
 	if _fullHighlight then
 		for xVal = _x1, _x2 do
 			for yVal = _y1, _y2 do
@@ -75,16 +83,12 @@ function ISAddSafeZoneUI:highlightZone(_x1, _x2, _y1, _y2, _fullHighlight)
 			end;
 		end;
 	end;
+--]]
 end
 -------------------------------------------------
 -------------------------------------------------
 local function setSafehouseData(_title, _owner, _x, _y, _w, _h)
-	local playerObj = getSpecificPlayer(0);
-	local safeObj = SafeHouse.addSafeHouse(_x, _y, _w, _h, _owner, false);
-	safeObj:setTitle(_title);
-	safeObj:setOwner(_owner);
-	safeObj:updateSafehouse(playerObj);
-	safeObj:syncSafehouse();
+	sendSafezoneClaim(_owner, _x, _y, _w, _h, _title)
 end
 -------------------------------------------------
 -------------------------------------------------
@@ -103,46 +107,41 @@ function ISAddSafeZoneUI:checkIfIntersectingAnotherZone()
 end
 -------------------------------------------------
 -------------------------------------------------
-function ISAddSafeZoneUI:checkIfAdmin()
-	if self.character:getAccessLevel() ~= "Admin" then self:close(); end;
-end
-
 function ISAddSafeZoneUI:updateButtons()
 	self.ok.enable = self.size > 1
 					and string.trim(self.ownerEntry:getInternalText()) ~= ""
 					and string.trim(self.titleEntry:getInternalText()) ~= ""
-					and self.notIntersecting
-					and self.character:getAccessLevel() == "Admin";
+					and self.notIntersecting;
 end
 
 function ISAddSafeZoneUI:prerender()
-	local z = 10;
-	local splitPoint = self.width / 2;
-	local x = 10;
+	local splitPoint = UI_BORDER_SPACING*2 + 1 + math.max(getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PvpZone_StartingPoint")), getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PvpZone_CurrentPoint")))
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawText(getText("IGUI_Safezone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Safezone_Title")) / 2), z, 1,1,1,1, UIFont.Medium);
+	self:drawText(getText("IGUI_Safezone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Safezone_Title")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
-	z = z + 30;
-	self:drawText(getText("IGUI_SafehouseUI_Title"), x, z,1,1,1,1,UIFont.Small);
-	self.titleEntry:setY(z + 3);
+	local z = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1;
+	self:drawText(getText("IGUI_SafehouseUI_Title"), UI_BORDER_SPACING+1, z+3,1,1,1,1,UIFont.Small);
+	self.titleEntry:setY(z);
 	self.titleEntry:setX(splitPoint);
-	self.titleEntry:setWidth(splitPoint - 10);
+	self.titleEntry:setWidth(self.width - splitPoint - UI_BORDER_SPACING - 1);
+	self.titleEntry:setHeight(BUTTON_HGT)
+	z = z + UI_BORDER_SPACING + BUTTON_HGT;
 
-	z = z + 30;
-	self:drawText(getText("IGUI_SafehouseUI_Owner"), x, z,1,1,1,1,UIFont.Small);
-	self.ownerEntry:setY(z + 3);
+	self:drawText(getText("IGUI_SafehouseUI_Owner"), UI_BORDER_SPACING+1, z+3,1,1,1,1,UIFont.Small);
+	self.ownerEntry:setY(z);
 	self.ownerEntry:setX(splitPoint);
-	self.ownerEntry:setWidth(splitPoint - 10);
+	self.ownerEntry:setWidth(self.width - splitPoint - UI_BORDER_SPACING - 1);
+	self.ownerEntry:setHeight(BUTTON_HGT)
+	z = z + UI_BORDER_SPACING + BUTTON_HGT;
 
-	z = z + 30;
-	self:drawText(getText("IGUI_PvpZone_StartingPoint"), x, z,1,1,1,1,UIFont.Small);
-	self:drawText(math.floor(self.X1) .. " x " .. math.floor(self.Y1), splitPoint, z,1,1,1,1,UIFont.Small);
-	z = z + 30;
+	self:drawText(getText("IGUI_PvpZone_StartingPoint"), UI_BORDER_SPACING+1, z+3,1,1,1,1,UIFont.Small);
+	self:drawText(math.floor(self.X2) .. " x " .. math.floor(self.Y2), splitPoint, z+3,1,1,1,1,UIFont.Small);
+	z = z + UI_BORDER_SPACING + BUTTON_HGT;
 
-	self:drawText(getText("IGUI_PvpZone_CurrentPoint"), x, z,1,1,1,1,UIFont.Small);
-	self:drawText(math.floor(self.character:getX()) .. " x " .. math.floor(self.character:getY()), splitPoint, z, 1,1,1,1, UIFont.Small);
-	z = z + 30;
+	self:drawText(getText("IGUI_PvpZone_CurrentPoint"), UI_BORDER_SPACING+1, z+3,1,1,1,1,UIFont.Small);
+	self:drawText(math.floor(self.character:getX()) .. " x " .. math.floor(self.character:getY()), splitPoint, z+3, 1,1,1,1, UIFont.Small);
+	z = z + UI_BORDER_SPACING + BUTTON_HGT;
 
 	local startingX = math.floor(self.startingX);
 	local startingY = math.floor(self.startingY);
@@ -165,38 +164,32 @@ function ISAddSafeZoneUI:prerender()
 	self.zonewidth = math.abs(startingX - endX);
 	self.zoneheight = math.abs(startingY - endY);
 
-	self:drawText(getText("IGUI_PvpZone_CurrentZoneSize"), x, z,1,1,1,1,UIFont.Small);
+	self:drawText(getText("IGUI_PvpZone_CurrentZoneSize"), UI_BORDER_SPACING+1, z+3,1,1,1,1,UIFont.Small);
 	self.size = math.floor(self.zonewidth * self.zoneheight);
-	self:drawText(self.size .. "", splitPoint, z,1,1,1,1,UIFont.Small);
-	z = z + 30;
-
-	self:drawText("X1: " .. self.X1 .. "     Y1: " .. self.Y1, splitPoint, z, 1,1,1,1, UIFont.Small);
-	z = z + 30;
-	self:drawText("X2: " .. self.X2 .. "     Y2: " .. self.Y2, splitPoint, z, 1,1,1,1, UIFont.Small);
-	z = z + 30;
+	self:drawText(self.size .. "", splitPoint, z+3,1,1,1,1,UIFont.Small);
 
 	self:highlightZone(startingX, endX, startingY, endY, self.fullHighlight)
 
 	self.X1, self.Y1 = startingX, startingY;
 	self.X2, self.Y2 = endX, endY;
 
+	self:setHeight(z+UI_BORDER_SPACING*4 + BUTTON_HGT*4+1)
+
 	self:checkIfIntersectingAnotherZone();
 	self:updateButtons();
-	self:checkIfAdmin();
+
+	if not self.character:getRole():haveCapability(Capability.CanSetupSafezones) then
+		self:close()
+	end
 end
 
 function ISAddSafeZoneUI:initialise()
 	ISPanel.initialise(self);
-	if self.character:getAccessLevel() ~= "Admin" then self:close(); return; end;
 
 	local btnWid = 100
-	local btnHgt = 25
-	local btnHgt2 = 18
-	local padBottom = 10
+	local padBottom = UI_BORDER_SPACING+1
 
-	--btnWid = getTextManager():MeasureStringX(UIFont.Medium, getText("UI_Cancel")) + 20;
-	btnWid = 100;
-	self.cancel = ISButton:new(self:getWidth() - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, ISAddSafeZoneUI.onClick);
+	self.cancel = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISAddSafeZoneUI.onClick);
 	self.cancel.internal = "CANCEL";
 	self.cancel.anchorTop = false
 	self.cancel.anchorBottom = true
@@ -205,9 +198,7 @@ function ISAddSafeZoneUI:initialise()
 	self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.cancel);
 
-	--btnWid = getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PvpZone_AddZone")) + 20;
-	btnWid = 100;
-	self.ok = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PvpZone_AddZone"), self, ISAddSafeZoneUI.onClick);
+	self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_PvpZone_AddZone"), self, ISAddSafeZoneUI.onClick);
 	self.ok.internal = "OK";
 	self.ok.anchorTop = false
 	self.ok.anchorBottom = true
@@ -216,8 +207,7 @@ function ISAddSafeZoneUI:initialise()
 	self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.ok);
 
-	btnWid = getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PvpZone_RedefineStartingPoint")) + 20;
-	self.startingPoint = ISButton:new((self.width/2) - (btnWid/2), self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PvpZone_RedefineStartingPoint"), self, ISAddSafeZoneUI.onClick);
+	self.startingPoint = ISButton:new(UI_BORDER_SPACING+1, self.ok.y - BUTTON_HGT - UI_BORDER_SPACING, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("IGUI_PvpZone_RedefineStartingPoint"), self, ISAddSafeZoneUI.onClick);
 	self.startingPoint.internal = "STARTINGPOINT";
 	self.startingPoint.anchorTop = false
 	self.startingPoint.anchorBottom = true
@@ -226,17 +216,17 @@ function ISAddSafeZoneUI:initialise()
 	self.startingPoint.borderColor = {r=1, g=1, b=1, a=0.1};
 	self:addChild(self.startingPoint);
 
-	self.titleEntry = ISTextEntryBox:new("Safezone #" .. SafeHouse.getSafehouseList():size() + 1, 10, 10, 200, 18);
+	self.titleEntry = ISTextEntryBox:new("Safezone #" .. SafeHouse.getSafehouseList():size() + 1, UI_BORDER_SPACING+1, 10, 200, 18);
 	self.titleEntry:initialise();
 	self.titleEntry:instantiate();
 	self:addChild(self.titleEntry);
 
-	self.ownerEntry = ISTextEntryBox:new(self.character:getUsername(), 10, 10, 200, 18);
+	self.ownerEntry = ISTextEntryBox:new(self.character:getUsername(), UI_BORDER_SPACING+1, 10, 200, 18);
 	self.ownerEntry:initialise();
 	self.ownerEntry:instantiate();
 	self:addChild(self.ownerEntry);
 
-	self.claimOptions = ISTickBox:new(10, 270, 20, 18, "", self, ISAddSafeZoneUI.onClickClaimOptions);
+	self.claimOptions = ISTickBox:new(UI_BORDER_SPACING+1, 1 + UI_BORDER_SPACING*7 + FONT_HGT_MEDIUM + BUTTON_HGT*5, 20, BUTTON_HGT, "", self, ISAddSafeZoneUI.onClickClaimOptions);
 	self.claimOptions:initialise();
 	self.claimOptions:instantiate();
 	self.claimOptions.selected[1] = false;

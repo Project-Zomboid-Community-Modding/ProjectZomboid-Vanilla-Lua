@@ -9,48 +9,51 @@
 -------------------------------------------------
 local zdImage = ISPanel:derive("zdImage");
 ISZoneDisplay = ISPanel:derive("ISZoneDisplay");
+local UI_BORDER_SPACING = 10
 -------------------------------------------------
 -------------------------------------------------
 local zdTex = {
-	eyeconOn			= getTexture("media/textures/Foraging/eyeconOn_Shade.png"),
+	eyeconOn			= getTexture("media/ui/foraging/eyeconOn.png"),
 	--
-	infoBtn				= getTexture("media/textures/Foraging/question_mark.png"),
-	prevBtn				= getTexture("media/ui/sGuidePrevBtn.png"),
-	nextBtn				= getTexture("media/ui/sGuideNextBtn.png"),
-	closeBtn			= getTexture("media/ui/sGuideCloseBtn.png"),
+	infoBtn				= getTexture("media/ui/foraging/questionMark.png"),
+	prevBtn				= getTexture("media/ui/inventoryPanes/Button_GuideP.png"),
+	nextBtn				= getTexture("media/ui/inventoryPanes/Button_GuideN.png"),
 	--
-	frame = {
-		stars			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_stars.png"),
-		clouds			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_clouds.png"),
-		fog1			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_fog1.png"),
-		fog2			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_fog2.png"),
-		fog3			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_fog3.png"),
-		frame			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_frame.png"),
+	celestial = {
+		stars			= getTexture("media/ui/foraging/Stars.png"),
+	},
+	solar = {
+		sun				= getTexture("media/ui/foraging/Sun.png"),
+		moon			= getTexture("media/ui/foraging/Moon0.png"),
 	},
 	moons = {
-		moon0			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon0.png"),
-		moon1			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon1.png"),
-		moon2			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon2.png"),
-		moon3			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon3.png"),
-		moon4			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon4.png"),
-		moon5			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon5.png"),
-		moon6			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon6.png"),
-		moon7			= getTexture("media/textures/Foraging/ISZoneDisplay/moon/zd_moon7.png"),
+		moon0			= getTexture("media/ui/foraging/Moon0.png"),
+		moon1			= getTexture("media/ui/foraging/Moon1.png"),
+		moon2			= getTexture("media/ui/foraging/Moon2.png"),
+		moon3			= getTexture("media/ui/foraging/Moon3.png"),
+		moon4			= getTexture("media/ui/foraging/Moon4.png"),
+		moon5			= getTexture("media/ui/foraging/Moon5.png"),
+		moon6			= getTexture("media/ui/foraging/Moon6.png"),
+		moon7			= getTexture("media/ui/foraging/Moon7.png"),
 	},
-	world = {
-		sun				= getTexture("media/textures/Foraging/ISZoneDisplay/zd_sun.png"),
-		moon			= getTexture("media/textures/Foraging/ISZoneDisplay/zd_moon.png"),
+	sky = {
+		clouds			= getTexture("media/ui/foraging/Clouds.png"),
 	},
-	zone = {
-		Forest          = getTexture("media/textures/Foraging/ISZoneDisplay/zones/Forest.png"),
-		DeepForest      = getTexture("media/textures/Foraging/ISZoneDisplay/zones/DeepForest.png"),
-		Farm            = getTexture("media/textures/Foraging/ISZoneDisplay/zones/Farm.png"),
-		FarmLand        = getTexture("media/textures/Foraging/ISZoneDisplay/zones/FarmLand.png"),
-		Nav             = getTexture("media/textures/Foraging/ISZoneDisplay/zones/Nav.png"),
-		TownZone        = getTexture("media/textures/Foraging/ISZoneDisplay/zones/TownZone.png"),
-		TrailerPark     = getTexture("media/textures/Foraging/ISZoneDisplay/zones/TrailerPark.png"),
-		Unknown         = getTexture("media/textures/Foraging/ISZoneDisplay/zones/Unknown.png"),
-		Vegitation      = getTexture("media/textures/Foraging/ISZoneDisplay/zones/Vegitation.png"),
+	zones = {
+		Forest          = getTexture("media/ui/foraging/ZoneForest.png"),
+		DeepForest      = getTexture("media/ui/foraging/ZoneDeepForest.png"),
+		Farm            = getTexture("media/ui/foraging/ZoneFarm.png"),
+		FarmLand        = getTexture("media/ui/foraging/ZoneFarmLand.png"),
+		Nav             = getTexture("media/ui/foraging/ZoneNav.png"),
+		TownZone        = getTexture("media/ui/foraging/ZoneTown.png"),
+		TrailerPark     = getTexture("media/ui/foraging/ZoneTrailerPark.png"),
+		Unknown         = getTexture("media/ui/foraging/ZoneUnknown.png"),
+		Vegitation      = getTexture("media/ui/foraging/ZoneVegetation.png"),
+	},
+	fog = {
+		fog1			= getTexture("media/ui/foraging/Fog1.png"),
+		fog2			= getTexture("media/ui/foraging/Fog2.png"),
+		fog3			= getTexture("media/ui/foraging/Fog3.png"),
 	},
 };
 -------------------------------------------------
@@ -167,6 +170,11 @@ local sin, antiPi = math.sin, 0-math.pi;
 function ISZoneDisplay:toggleTips()
 	self.tipPanel:setVisible(not self.tipPanel:getIsVisible());
 	self:showTip(ISZoneDisplay.tips[self.currentTip]);
+
+	--turn the question mark black again if tips are turned off
+	if self.tipPanel:getIsVisible() == false then
+		self.infoBtn:setTextureRGBA(1, 1, 1, 1);
+	end
 end
 
 function ISZoneDisplay:showNextTip()
@@ -205,12 +213,11 @@ function ISZoneDisplay:showTip(_tip, _force)
 		" <CENTRE> " ..
 		"<H1> " ..
 		_tip.title ..
+		" <LINE> " ..
 		" <TEXT> " ..
-		" <LINE> " ..
-		" <LINE> " ..
 		" <CENTRE> " ..
 		" <SIZE:small> " ..
-		_tip.text
+		getText("IGUI_SearchMode_Tip_Hover")
 	);
 	--
 	self.tipPanel:paginate();
@@ -676,34 +683,11 @@ function ISZoneDisplay:updateData()
 -------------------------------------------------
 function ISZoneDisplay:initialise()
 	ISPanel.initialise(self);
-	for imageName, imageTex in pairs(zdTex.zone) do
-		self[imageName] = zdImage:new(self,0, 0, self.width, self.height, imageTex);
-		self[imageName]:initialise();
-		self[imageName]:setAlpha(0);
-		self[imageName]:setAlphaTarget(0);
-		self:addChild(self[imageName]);
-		self.zdImages[imageName] = self[imageName];
-		self.fadeElements[imageName] = self[imageName];
-	end;
-	for imageName, imageTex in pairs(zdTex.world) do
-		self[imageName] = zdImage:new(self,0, 0, 24, 24, imageTex);
-		self[imageName]:initialise();
-		self[imageName]:setAlpha(0);
-		self[imageName]:setAlphaTarget(0);
-		self:addChild(self[imageName]);
-		self.zdImages[imageName] = self[imageName];
-	end;
-	for imageName, imageTex in pairs(zdTex.frame) do
-		self[imageName] = zdImage:new(self,0, 0, self.width, self.height, imageTex);
-		self[imageName]:initialise();
-		self[imageName]:setAlpha(0);
-		self[imageName]:setAlphaTarget(0);
-		self:addChild(self[imageName]);
-		self.zdImages[imageName] = self[imageName];
-	end;
-	self.frame:setAlpha(1);
-	self.frame:setAlphaTarget(1);
-	self.frame:setColor(0.4, 0.4, 0.4);
+	self:initialiseImages(zdTex.celestial, self.width, self.height, true)
+	self:initialiseImages(zdTex.solar, 35, 35, false)
+	self:initialiseImages(zdTex.sky, self.width, self.height, true)
+	self:initialiseImages(zdTex.zones, self.width, self.height, true)
+	self:initialiseImages(zdTex.fog, self.width, self.height, false)
 	--
 	self.tipPanel = ISRichTextPanel:new(0, 0, self.width, self.height);
 	self.tipPanel:initialise();
@@ -716,51 +700,63 @@ function ISZoneDisplay:initialise()
 	self.tipPanel.clip = true;
 	self:addChild(self.tipPanel);
 	--
-	self.prevBtn = ISButton:new(0, self:getHeight() - 20, 20, 20, "", self, self.showPrevTip);
+	self.prevBtn = ISButton:new(UI_BORDER_SPACING, (self:getHeight()-20) / 2, 20, 20, "", self, self.showPrevTip);
 	self.prevBtn:initialise();
 	self.prevBtn:setImage(zdTex.prevBtn);
 	self.tipPanel:addChild(self.prevBtn);
 	--
-	self.nextBtn = ISButton:new(self:getWidth() - 20, self:getHeight() - 20, 20, 20, "", self, self.showNextTip);
+	self.nextBtn = ISButton:new(self:getWidth() - 20 - UI_BORDER_SPACING, (self:getHeight()-20) / 2, 20, 20, "", self, self.showNextTip);
 	self.nextBtn:initialise();
 	self.nextBtn:setImage(zdTex.nextBtn);
 	self.tipPanel:addChild(self.nextBtn);
 	--
 	local infoWidth = zdTex.infoBtn:getWidth() / 2;
 	local infoHeight = zdTex.infoBtn:getHeight() / 2;
-	self.infoBtn = ISButton:new(7, 10, infoWidth, infoHeight, "", self, self.toggleTips);
+	self.infoBtn = ISButton:new(UI_BORDER_SPACING, self.height-UI_BORDER_SPACING-infoHeight, infoWidth, infoHeight, "", self, self.toggleTips);
 	self.infoBtn.displayBackground = false;
 	self.infoBtn:setImage(zdTex.infoBtn);
-	self.infoBtn:setTextureRGBA(0, 0, 0, 1);
+	self.infoBtn:setTextureRGBA(1, 1, 1, 1);
 	self:addChild(self.infoBtn);
 	self.tipPanel:addChild(self.infoBtn);
 	--
 	local eyeWidth = zdTex.eyeconOn:getWidth() / 2;
 	local eyeHeight = zdTex.eyeconOn:getHeight() / 2;
-	self.visionBonuses = zdImage:new(self, self.width - eyeWidth - 7, 10, eyeWidth, eyeHeight, zdTex.eyeconOn);
-	self.visionBonuses:setAlpha(0.7);
-	self.visionBonuses:setAlphaTarget(0.7);
+	self.visionBonuses = zdImage:new(self, self.width - eyeWidth - UI_BORDER_SPACING, self.infoBtn.y, eyeWidth, eyeHeight, zdTex.eyeconOn);
 	self:addChild(self.visionBonuses);
 	self.zdImages.visionBonuses = self.visionBonuses;
 	--
 	self.canSeeSky = self:canSeeOutside();
+end
+
+function ISZoneDisplay:initialiseImages(imageTable, width, height, fade)
+	for imageName, imageTex in pairs(imageTable) do
+		self[imageName] = zdImage:new(self,0, 0, width, height, imageTex);
+		self[imageName]:initialise();
+		self[imageName]:setAlpha(0);
+		self[imageName]:setAlphaTarget(0);
+		self:addChild(self[imageName]);
+		self.zdImages[imageName] = self[imageName];
+		if fade then
+			self.fadeElements[imageName] = self[imageName];
+		end
+	end;
 end
 -------------------------------------------------
 -------------------------------------------------
 function ISZoneDisplay:close()    self:setVisible(false); self:removeFromUIManager();     end;
 
 function ISZoneDisplay:new(_parent)
-	local yPos			= _parent and _parent:titleBarHeight() + 2 or 20;
+	local yPos			= _parent and _parent:titleBarHeight() or 20;
 	--
 	local o				= ISPanel:new(0, yPos, 100, 40);
 	setmetatable(o, self);
 	self.__index		= self;
 	--
 
-	o.x					= 0;
+	o.x					= 1;
 	o.y					= yPos;
-	o.width				= 300;
-	o.height			= 120;
+	o.width				= 418
+	o.height			= 100;
 	o.moveWithMouse		= false;
 
 	o.showBackground	= true;

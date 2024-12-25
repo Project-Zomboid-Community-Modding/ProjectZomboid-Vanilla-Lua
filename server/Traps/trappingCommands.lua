@@ -28,8 +28,9 @@ end
 function Commands.remove(player, args)
 	local trap = getTrapAt(args.x, args.y, args.z)
 	if trap then
-		local item = InventoryItemFactory.CreateItem(trap.trapType)
-		player:sendObjectChange('addItem', { item = item })
+		local item = instanceItem(trap.trapType)
+		player:getInventory():AddItem(item);
+		sendAddItemToContainer(player:getInventory(), item);
 		trap:removeBait(player)
 		trap:removeIsoObject()
 	else
@@ -54,6 +55,15 @@ function Commands.addBait(player, args)
 	local trap = getTrapAt(args.x, args.y, args.z)
 	if trap then
 		trap:addBait(args.bait, args.age, args.baitAmountMulti, player)
+	else
+		noise('no trap found at '..args.x..','..args.y..','..args.z)
+	end
+end
+
+function Commands.addAnimalDebug(player, args)
+	local trap = getTrapAt(args.x, args.y, args.z)
+	if trap then
+		trap:setAnimal(args.animal)
 	else
 		noise('no trap found at '..args.x..','..args.y..','..args.z)
 	end

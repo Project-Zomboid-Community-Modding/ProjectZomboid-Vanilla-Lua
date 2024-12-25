@@ -17,14 +17,7 @@ function preLoadLastStandInit()
 
         globalChallenge = LastStandData.chosenChallenge;
         globalChallenge.OnInitWorld();
---[[
-        print("setting last stand spawn point");
-        getWorld():setLuaSpawnCellX(globalChallenge.xcell);
-        getWorld():setLuaSpawnCellY(globalChallenge.ycell);
-        getWorld():setLuaPosX(globalChallenge.x);
-        getWorld():setLuaPosY(globalChallenge.y);
-        getWorld():setLuaPosZ(globalChallenge.z);
---]]
+
         Events.OnGameStart.Add(doLastStandInit);
         Events.OnPostUIDraw.Add(doLastStandDraw);
         Events.OnCreatePlayer.Add(doLastStandCreatePlayer);
@@ -179,10 +172,20 @@ function LastStandData.getSpawnRegion()
     if c.getSpawnRegion then
         return c.getSpawnRegion()
     end
+    if c.xcell ~= nil then
+        -- This is the old format with 300x300 cell coordinates.
+        return { {
+            name = c.name, points = {
+                unemployed = {
+                    { worldX = c.xcell, worldY = c.ycell, posX = c.x, posY = c.y, posZ = c.z },
+                }
+            }
+        } }
+    end
     return { {
         name = c.name, points = {
             unemployed = {
-                { worldX = c.xcell, worldY = c.ycell, posX = c.x, posY = c.y, posZ = c.z },
+                { posX = c.x, posY = c.y, posZ = c.z },
             }
         }
     } }

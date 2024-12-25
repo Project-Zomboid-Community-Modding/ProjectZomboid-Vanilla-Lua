@@ -84,7 +84,7 @@ function ISContextMenu:onMouseUp(x, y)
 		--print("calling option : " .. self.options[self.mouseOver].name);
 		-- we call the function if we have one
 		local option = self.options[self.mouseOver]
-		if option ~= nil and option.onSelect ~= nil and not option.notAvailable then
+		if option ~= nil and option.onSelect ~= nil and not option.notAvailable and not option.isDisabled then
             ISContextMenu.globalPlayerContext = self.player;
 			self:closeAll()
 			option.onSelect(option.target, option.param1, option.param2, option.param3, option.param4, option.param5, option.param6, option.param7, option.param8, option.param9, option.param10);
@@ -194,6 +194,10 @@ function ISContextMenu:onJoypadDirRight()
 end
 
 function ISContextMenu:hideSelf()
+	if displayCursorReminder ~= nil then
+		getCore():setDisplayCursor(displayCursorReminder);
+	end
+	displayCursorReminder = nil;
     self:setVisible(false)
     self.visibleCheck = false
     self.forceVisible = false
@@ -249,7 +253,7 @@ function ISContextMenu:onJoypadDown(button)
                 else
                     setJoypadFocus(self.player, subMenu)
                 end
-            elseif option ~= nil and option.onSelect ~= nil and not option.notAvailable then
+            elseif option ~= nil and option.onSelect ~= nil and not option.notAvailable and not option.isDisabled then
                 ISContextMenu.globalPlayerContext = self.player;
                 self:closeAll();
                 option.onSelect(option.target, option.param1, option.param2, option.param3, option.param4, option.param5, option.param6, option.param7, option.param8, option.param9, option.param10);
@@ -307,6 +311,10 @@ end
 --**
 --************************************************************************--
 function ISContextMenu:prerender()
+	if displayCursorReminder == nil then
+		displayCursorReminder = getCore():isDisplayCursor();
+		getCore():setDisplayCursor(true);
+	end
 	if self:isEmpty() then
 		self:setX(100000); -- cheap hack for now ��
 		return;
@@ -368,11 +376,23 @@ function ISContextMenu:render()
 			-- off the bottom
 			offBottom = true
 		elseif self.mouseOver == c then
-			if k.notAvailable then
+			if k.isDisabled then
+				self:drawRect(0, y, self.width, self.itemHgt, 0.1, 0.05, 0.05, 0.05);
+				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
+				if k.color ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
+				elseif k.iconTexture ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
+				end
+				self:drawText(k.name, textForIconShift, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
+				if k.subOption ~= nil then
+					self:drawTextRight(">", self.width - 4, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
+				end
+			elseif k.notAvailable then
 				self:drawRect(0, y, self.width, self.itemHgt, 0.1, 0.05, 0.05, 0.05);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
 				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 0.8)
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
 				end
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
                 if k.subOption ~= nil then
@@ -381,8 +401,10 @@ function ISContextMenu:render()
 			else
 				self:drawRect(0, y, self.width, self.itemHgt, 0.8, 0.5, 0.5, 0.5);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
-				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 0.8)
+				if k.color ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
+				elseif k.iconTexture ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1)
 				end
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 1, 1, 1, self.font);
 			end
@@ -426,9 +448,20 @@ function ISContextMenu:render()
 			end
 			self.currentOptionRect = { x = self.x, y = self.y + y + self:getYScroll(), width = 100, height = self.itemHgt }
 		else
-			if k.notAvailable then
+			if k.isDisabled then
+				if k.color ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
+				elseif k.iconTexture ~= nil then
+				self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
+				end
+				self:drawText(k.name, textForIconShift, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
+
+				if k.subOption ~= nil then
+				self:drawTextRight(">", self.width - 4, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
+				end
+			elseif k.notAvailable then
 				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 0.8)
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
 				end
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
 
@@ -458,8 +491,10 @@ function ISContextMenu:render()
 
                     self:drawRect(0, y, self.width, self.itemHgt, self.blinkAlpha, 1, 1, 1);
                 end
-				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 0.8)
+				if k.color ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
+				elseif k.iconTexture ~= nil then
+					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
 				end
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.8, 0.8, 0.9, self.font);
 
@@ -472,7 +507,7 @@ function ISContextMenu:render()
 			end
 		end
 		if k.checkMark then
-			self:drawTexture(self.tickTexture, (17 - self.tickTexture:getWidthOrig()) / 2, y + (self.itemHgt - self.tickTexture:getHeightOrig()) / 2, 1, 1, 1, 1)
+			self:drawTextureScaledAspect(self.tickTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB())
 		end
 		if k.isDefaultOption and self.options[i+1] and not self.options[i+1].isDefaultOption then
 			self:drawRect(0, y + self.itemHgt - 1, self.width, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
@@ -506,7 +541,7 @@ function ISContextMenu:render()
 --~ 		self:drawText(displayText, self:getMouseX(), self:getMouseY(), 1, 1, 1, 1, UIFont.Normal);
 	end
 
-	local ww = highestWid + 24 + 40;
+	local ww = textForIconShift + highestWid + 24 + getTextManager():MeasureStringX(self.font, ">") + 4;
 	if(ww<100) then
 		ww = 100;
 	end
@@ -555,7 +590,11 @@ function ISContextMenu:calcWidth()
 			maxWidth = w
 		end
 	end
-	return math.max(maxWidth + 24 + 40, 100)
+	local iconSize = self.itemHgt - 12
+	local iconShiftX = 2
+	local iconShiftY = 6
+	local textForIconShift = iconSize + iconShiftX*2 + 2
+	return math.max(textForIconShift + maxWidth + 24 + getTextManager():MeasureStringX(self.font, ">") + 4, 100)
 end
 
 function ISContextMenu:isOptionSingleMenu()
@@ -807,6 +846,7 @@ function ISContextMenu:addOption(name, target, onSelect, param1, param2, param3,
 	end
 	local option = self:allocOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10);
 	option.iconTexture = nil
+	option.color = nil;
 	self.options[self.numOptions] = option;
 	self.numOptions = self.numOptions + 1;
 	self:calcHeight()
@@ -822,9 +862,18 @@ function ISContextMenu:getOptionFromName(name)
 	end
 end
 
+function ISContextMenu:addColorBoxOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
+	local option = self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10);
+	option.iconTexture = Texture.getWhite();
+	option.color = {r=1,g=1,b=1};
+	return option;
+end
+
 function ISContextMenu:addDebugOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	local option = self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10);
-	option.iconTexture = getTexture("media/ui/BugIcon.png");
+	option.iconTexture = getTexture("media/textures/Item_Insect_Aphid.png");
+-- 	option.iconTexture = getTexture("media/ui/BugIcon.png");
+	option.color = nil;
 	return option;
 end
 
@@ -952,6 +1001,25 @@ function ISContextMenu:removeOptionByName(optName)
 	self:calcHeight()
 end
 
+function ISContextMenu:addGetUpOption(text, target, onSelect, p2, p3, p4, p5, p6, p7, p8, p9, p10, ...)
+	if select("#", ...) > 0 then
+		error("only 9 additional arguments are supported")
+	end
+	-- Any of these may be nil, so we can't take advantage of "..." syntax :-(
+	return self:addOption(text, self, self.onGetUpAndThen, onSelect, target, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+end
+
+function ISContextMenu:onGetUpAndThen(onSelect, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, ...)
+	local nArgs = select("#", ...)
+	if nArgs > 0 then
+		error("only 10 additional arguments are supported,")
+	end
+	local playerObj = getSpecificPlayer(self.player)
+	local action = ISWaitWhileGettingUp:new(playerObj)
+	action:setOnComplete(onSelect, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+	ISTimedActionQueue.add(action)
+end
+
 function ISContextMenu:getMenuOptionNames()
 	local result = {}
 	for i, v in ipairs(self.options) do
@@ -1051,7 +1119,7 @@ function ISContextMenu:new (x, y, width, height, zoom)
     o.scrollIndicatorHgt = 14
     o.arrowUp = getTexture("media/ui/ArrowUp.png")
     o.arrowDown = getTexture("media/ui/ArrowDown.png")
-	o.tickTexture = getTexture("Quest_Succeed")
+	o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png")
 
 	return o
 end

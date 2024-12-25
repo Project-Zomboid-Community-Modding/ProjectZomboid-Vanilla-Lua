@@ -13,7 +13,9 @@ function ISMedicalCheckAction.getHealthWindowForPlayer(playerObj)
 end
 
 function ISMedicalCheckAction:isValid()
-	return self.character:getAccessLevel() ~= "None" or (self.otherPlayerX == self.otherPlayer:getX() and self.otherPlayerY == self.otherPlayer:getY());
+	return (isMultiplayer() and self.character:getRole():haveCapability(Capability.CanMedicalCheat)) or
+            (self.otherPlayerX == self.otherPlayer:getX() and self.otherPlayerY == self.otherPlayer:getY()) or
+            (not self.character:isDriving() and ISHealthPanel.IsCharactersInSameCar(self.character, self.otherPlayer));
 end
 
 function ISMedicalCheckAction:waitToStart()
@@ -83,15 +85,10 @@ function ISMedicalCheckAction:perform()
 end
 
 function ISMedicalCheckAction:new(character, otherPlayer)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	o.character = character;
+    local o = ISBaseTimedAction.new(self, character)
 	o.otherPlayer = otherPlayer;
     o.otherPlayerX = otherPlayer:getX();
     o.otherPlayerY = otherPlayer:getY();
-    o.stopOnWalk = true;
-	o.stopOnRun = true;
 	o.maxTime = 150 - (character:getPerkLevel(Perks.Doctor) * 2.5);
     o.forceProgressBar = true;
     if character:isTimedActionInstant() then

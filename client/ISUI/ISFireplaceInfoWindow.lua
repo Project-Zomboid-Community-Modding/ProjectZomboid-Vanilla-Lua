@@ -50,7 +50,8 @@ function ISFireplaceInfoWindow:setObject(fireplace)
 	else
 		fireState = getText("IGUI_Fireplace_Unlit")
 	end
-	self.panel:setName(getText("IGUI_Fireplace_Fireplace"))
+	self.panel:setName(fireplace:getTileName() or getText("IGUI_Fireplace_Fireplace"))
+-- 	self.panel:setName(getText("IGUI_Fireplace_Fireplace"))
 	self.spriteName = fireplace:getTextureName()
 	self.fuelAmount = fireplace:getFuelAmount()
 	self.isLit = fireplace:isLit()

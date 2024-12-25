@@ -61,13 +61,14 @@ function doSurvivalGuide()
     -- only happens on single player so no splitscreen support required.
     if SurvivalGuideManager.instance == nil then
         SurvivalGuideManager.instance = SurvivalGuideManager:new();
+		SurvivalGuideManager.instance:update();
     end
-
-    SurvivalGuideManager.instance:update();
 
     if (getCore():getGameMode() == "Tutorial" and SurvivalGuideManager.blockSurvivalGuide) or (isDemo() and ISDemoPopup.instance ~= nil) then
         SurvivalGuideManager.instance.panel:setVisible(false);
-    end
+    elseif getCore():getOptionShowSurvivalGuide() then
+		SurvivalGuideManager.instance.panel:setVisible(true);
+	end
 
 	if SurvivalGuideManager.instance.panel:isVisible() then
 		local joypadData = JoypadState.players[1]
@@ -85,7 +86,7 @@ end
 
 
 SurvivalGuideManager.onKeyPressed = function(key)
-	if key == getCore():getKey("Toggle Survival Guide") and not SurvivalGuideManager.blockSurvivalGuide then
+	if getCore():isKey("Toggle Survival Guide", key) and not SurvivalGuideManager.blockSurvivalGuide then
 		if SurvivalGuideManager.instance == nil then
 			Events.OnTick.Add(doSurvivalGuide);
 		else
@@ -121,8 +122,12 @@ SurvivalGuideManager.OnGameStart = function()
 	end
 --]]
 end
-
-Events.OnGameStart.Add(SurvivalGuideManager.OnGameStart)
+SurvivalGuideManager.OnCreatePlayer = function()
+	-- ensure respawning players get the survival guide if they haven't disabled it
+	Events.OnTick.Add(doSurvivalGuide);
+end
+--Events.OnGameStart.Add(SurvivalGuideManager.OnGameStart)
+Events.OnCreatePlayer.Add(SurvivalGuideManager.OnCreatePlayer)
 --Events.OnEnterVehicle.Add(SurvivalGuideManager.onEnterVehicle);
 Events.OnKeyPressed.Add(SurvivalGuideManager.onKeyPressed);
 --Events.OnNewGame.Add(SurvivalGuideManager.OnNewGame);

@@ -1,9 +1,360 @@
 require "ISUI/ISPanelJoypad"
 
+local FONT = UIFont.NewSmall
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local TEXT_OFFSET = (BUTTON_HGT - FONT_HGT_SMALL)/2
+
+local SCROLLBAR = 13
+
 ISStatisticsUI = ISCollapsableWindow:derive("ISStatisticsUI");
+ISStatisticsPanel = ISPanel:derive("ISStatisticsPanel");
+
+local function getWorldAge()
+    local h = math.floor(getGameTime():getWorldAgeHours())
+    local days = math.floor(h / 24)
+    local hours = h - days * 24
+    return days .. "Days " .. hours .. "H"
+end
+
+function ISStatisticsPanel:prerender()
+    self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
+    ISPanel.prerender(self)
+end
+
+function ISStatisticsPanel:onMouseWheel(del)
+    if self:getScrollHeight() > 0 then
+        self:setYScroll(self:getYScroll() - (del * 40))
+        return true
+    end
+    return false
+end
+
+function ISStatisticsPanel:render()
+    ISPanel.render(self)
+    self:renderStatistics()
+    self:clearStencilRect()
+end
+
+function ISStatisticsPanel:renderStatistics()
+    local statisticsData = getMPStatistics()
+
+    --base measurements
+    local width = self.width - SCROLLBAR;
+    local y = TEXT_OFFSET;
+    local entries = 0;
+
+    --colours
+    local hR, hG, hB, hA = 1, 0.75, 0.5, 1;
+    local dR, dG, dB, dA= 1, 1, 0.8, 1;
+    local lR, lG, lB, lA = 0.9, 0.9, 0.9, 0.3;
+    local bA = 0.08
+
+    --column offsets
+    local lC = width/2 - UI_BORDER_SPACING;
+    local cC = width - (width/4) - UI_BORDER_SPACING;
+    local sC = width - UI_BORDER_SPACING;
+
+    --CPU
+    if ISStatisticsUI.instance.showCPU then
+        entries = 3 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("CPU", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Cores :", lC, statisticsData.clientCPUCores, cC, statisticsData.serverCPUCores, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Load (%) :", lC, statisticsData.clientCPULoad, cC, statisticsData.serverCPULoad, sC, y, dR, dG, dB, dA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --MEMORY
+    if ISStatisticsUI.instance.showMemory then
+        entries = 5 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Memory", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Free (MB) :", lC, statisticsData.clientMemFree, cC, statisticsData.serverMemFree, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Used (MB) :", lC, statisticsData.clientMemUsed, cC, statisticsData.serverMemUsed, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Total (MB) :", lC, statisticsData.clientMemTotal, cC, statisticsData.serverMemTotal, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Max (MB) :", lC, statisticsData.clientMemMax, cC, statisticsData.serverMemMax, sC, y, dR, dG, dB, dA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --FPS
+    if ISStatisticsUI.instance.showFPS then
+        entries = 3 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("FPS", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Main :", lC, statisticsData.clientFPS, cC, statisticsData.serverFPS, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Networking :", lC, "", cC, statisticsData.serverNetworkingFPS, sC, y, dR, dG, dB, dA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --NETWORK
+    if ISStatisticsUI.instance.showNetwork then
+        entries = 5 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Network", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("RX (KB) :", lC, statisticsData.clientRX, cC, statisticsData.serverRX, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("TX (KB) :", lC, statisticsData.clientTX, cC, statisticsData.serverTX, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Resent (KB) :", lC, statisticsData.clientResent, cC, statisticsData.serverResent, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Loss (%) :", lC, statisticsData.clientLoss, cC, statisticsData.serverLoss, sC, y, dR, dG, dB, dA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --VOIP
+    if ISStatisticsUI.instance.showVOIP then
+        entries = 4 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("VOIP", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("RX (KB) :", lC, statisticsData.clientVOIPRX, cC, statisticsData.serverVOIPRX, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("TX (KB) :", lC, statisticsData.clientVOIPTX, cC, statisticsData.serverVOIPTX, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Source :", lC, statisticsData.clientVOIPSource, cC, statisticsData.clientVOIPFreq, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --PING
+    if ISStatisticsUI.instance.showPing then
+        entries = 4 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        y = self:drawRow("Ping", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Last :", lC, "", cC, statisticsData.clientLastPing, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Average :", lC, "", cC, statisticsData.clientAvgPing, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Minimum :", lC, "", cC, statisticsData.clientMinPing, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --PACKET PING
+    if ISStatisticsUI.instance.showPing then
+        entries = 6 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        y = self:drawRow("Packet Ping", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Last :", lC, "", cC, statisticsData.serverPingLast, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Average :", lC, "", cC, statisticsData.serverPingAvg, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Loss :", lC, "", cC, statisticsData.serverPingLoss, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Maximum :", lC, "", cC, statisticsData.serverPingMax, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Minimum :", lC, "", cC, statisticsData.serverPingMin, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --TIME
+    if ISStatisticsUI.instance.showTime then
+        entries = 4 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        y = self:drawRow("Time", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Client :", lC, "", cC, statisticsData.clientTime, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Server :", lC, "", cC, statisticsData.serverTime, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("World :", lC, "", cC, getWorldAge(), sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --PLAYERS
+    if ISStatisticsUI.instance.showPlayers then
+        entries = 2 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Players", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Connected :", lC, statisticsData.clientPlayers, cC, statisticsData.serverPlayers, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --ZOMBIES
+    if ISStatisticsUI.instance.showZombies then
+        entries = 8 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Zombies", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Total :", lC, statisticsData.clientZombiesTotal, cC, statisticsData.serverZombiesTotal, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Loaded :", lC, statisticsData.clientZombiesLoaded, cC, statisticsData.serverZombiesLoaded, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Simulated :", lC, statisticsData.clientZombiesSimulated, cC, statisticsData.serverZombiesSimulated, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Culled :", lC, statisticsData.clientZombiesCulled, cC, statisticsData.serverZombiesCulled, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Authorized :", lC, statisticsData.clientZombiesAuthorized, cC, statisticsData.serverZombiesAuthorized, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Unauthorized :", lC, statisticsData.clientZombiesUnauthorized, cC, statisticsData.serverZombiesUnauthorized, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Reusable :", lC, statisticsData.clientZombiesReusable, cC, statisticsData.serverZombiesReusable, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --CHUNKS
+    if ISStatisticsUI.instance.showChunks then
+        entries = 9 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Chunks", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Relevant :", lC, statisticsData.clientRelevantChunks, cC, statisticsData.serverRelevantChunks, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Stored :", lC, statisticsData.clientStoredChunks, cC, statisticsData.serverStoredChunks, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Waiting :", lC, "", cC, statisticsData.serverWaitingRequests, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Sent :", lC, statisticsData.clientSentRequests, cC, "", sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Requested1 :", lC, statisticsData.requested1, cC, "", sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Requested2 :", lC, statisticsData.requested2, cC, "", sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Pending1 :", lC, statisticsData.pending1, cC, "", sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Pending2 :", lC, statisticsData.pending2, cC, "", sC, y, dR, dG, dB, dA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --VERSION
+    if ISStatisticsUI.instance.showVersion then
+        entries = 1 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Version", lC, statisticsData.clientRevision, cC, statisticsData.serverRevision, sC, y, hR, hG, hB, hA, false)
+        y = y + UI_BORDER_SPACING
+    end
+
+    self:setScrollHeight(y)
+end
+
+function ISStatisticsPanel:drawRow(l, lC, c, cC, s, sC, y, r, g, b, a, background)
+    if background then
+        self:drawRect(0, y-TEXT_OFFSET, self.width-SCROLLBAR, BUTTON_HGT, 0.08, 0.9, 0.9, 0.9);
+    end
+    self:drawTextRight(l, lC, y, r, g, b, a, FONT);
+    self:drawTextRight(c, cC, y, r, g, b, a, FONT);
+    self:drawTextRight(s, sC, y, r, g, b, a, FONT);
+    y = y + BUTTON_HGT;
+    return y
+end
+
+function ISStatisticsPanel:new(x, y, width, height)
+    local o = ISPanel.new(self, x, y, width, height)
+    return o
+end
+
+-----
+
+function ISStatisticsUI:onTickedLeft(index, selected)
+    if index == 1 then
+        self.showCPU = selected
+    end
+    if index == 2 then
+        self.showMemory = selected
+    end
+    if index == 3 then
+        self.showFPS = selected
+    end
+    if index == 4 then
+        self.showNetwork = selected
+    end
+end
+
+function ISStatisticsUI:onTickedCenter(index, selected)
+    if index == 1 then
+        self.showVOIP = selected
+    end
+    if index == 2 then
+        self.showPing = selected
+    end
+    if index == 3 then
+        self.showTime = selected
+    end
+    if index == 4 then
+        self.showVersion = selected
+    end
+end
+
+function ISStatisticsUI:onTickedRight(index, selected)
+    if index == 1 then
+        self.showPlayers = selected
+    end
+    if index == 2 then
+        self.showAnimals = selected
+    end
+    if index == 3 then
+        self.showZombies = selected
+    end
+    if index == 4 then
+        self.showChunks = selected
+    end
+end
 
 function ISStatisticsUI:createChildren()
     ISCollapsableWindow.createChildren(self)
+
+    local y = self:titleBarHeight() + UI_BORDER_SPACING
+    local tickBoxWidth = 70
+    local width = self.width - SCROLLBAR;
+
+    self.tickBoxLeft = ISTickBox:new(UI_BORDER_SPACING + 10, y, tickBoxWidth, BUTTON_HGT, "Settings left", self, self.onTickedLeft)
+    self.tickBoxLeft.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxLeft:setFont(UIFont.NewSmall)
+    self:addChild(self.tickBoxLeft)
+
+    self.tickBoxCenter = ISTickBox:new(width/2 - tickBoxWidth/2 + 10, y, tickBoxWidth, BUTTON_HGT, "Settings center", self, self.onTickedCenter)
+    self.tickBoxCenter.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxCenter:setFont(UIFont.NewSmall)
+    self:addChild(self.tickBoxCenter)
+
+    self.tickBoxRight = ISTickBox:new(width - tickBoxWidth - 10, y, tickBoxWidth, BUTTON_HGT, "Settings right", self, self.onTickedRight)
+    self.tickBoxRight.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxRight:setFont(UIFont.NewSmall)
+    self:addChild(self.tickBoxRight)
+
+    local n
+
+    n = self.tickBoxLeft:addOption("CPU")
+    self.tickBoxLeft:setSelected(n, self.showCPU)
+
+    n = self.tickBoxLeft:addOption("Memory")
+    self.tickBoxLeft:setSelected(n, self.showMemory)
+
+    n = self.tickBoxLeft:addOption("FPS")
+    self.tickBoxLeft:setSelected(n, self.showFPS)
+
+    n = self.tickBoxLeft:addOption("Network")
+    self.tickBoxLeft:setSelected(n, self.showNetwork)
+
+    n = self.tickBoxCenter:addOption("VOIP")
+    self.tickBoxCenter:setSelected(n, self.showVOIP)
+
+    n = self.tickBoxCenter:addOption("Ping")
+    self.tickBoxCenter:setSelected(n, self.showPing)
+
+    n = self.tickBoxCenter:addOption("Time")
+    self.tickBoxCenter:setSelected(n, self.showTime)
+
+    n = self.tickBoxCenter:addOption("Version")
+    self.tickBoxCenter:setSelected(n, self.showVersion)
+
+    n = self.tickBoxRight:addOption("Players")
+    self.tickBoxRight:setSelected(n, self.showPlayers)
+
+    n = self.tickBoxRight:addOption("Animals")
+    self.tickBoxRight:setSelected(n, self.showAnimals)
+
+    n = self.tickBoxRight:addOption("Zombies")
+    self.tickBoxRight:setSelected(n, self.showZombies)
+
+    n = self.tickBoxRight:addOption("Chhunks")
+    self.tickBoxRight:setSelected(n, self.showChunks)
+
+    y = y + BUTTON_HGT * 4 + UI_BORDER_SPACING * 2
+
+    self.panel = ISStatisticsPanel:new(0, self:titleBarHeight() + y, self.width, self.height-self:titleBarHeight()-self:resizeWidgetHeight()-y)
+    self.panel.anchorBottom = true
+    self.panel.anchorRight = true
+    self.panel.playerNum = self.playerNum
+    self.panel.player = self.player
+    self.panel:initialise()
+    self.panel:instantiate()
+    --    self.panel:noBackground()
+    self.panel.backgroundColor.a = 0
+    self.panel:setScrollChildren(true)
+    self:addChild(self.panel)
+
+    self.panel:addScrollBars()
 end
 
 function ISStatisticsUI:close()
@@ -22,336 +373,14 @@ function ISStatisticsUI:initialise()
     self.title = getText("IGUI_AdminPanel_HeaderShowStatistics")
 end
 
-local function getWorldAge()
-    local h = math.floor(getGameTime():getWorldAgeHours())
-    local days = math.floor(h / 24)
-    local hours = h - days * 24
-    return days .. "Days " .. hours .. "H"
-end
-
 function ISStatisticsUI:render()
-
     ISCollapsableWindow.render(self);
-
-    if not self.isCollapsed then
-
-        local statisticsData = getMPStatistics()
-
-        local padding = 20
-        local text_width = 80
-        local field_width = 60
-        local highlight_height = 20
-
-        local a = 0.90
-
-        local tr = 1
-        local tg = 1
-        local tb = 0.8
-
-        local tar = 1
-        local tag = 1
-        local tab = 0.8
-
-        local hr = 1
-        local hg = 0.75
-        local hb = 0.5
-
-        local la = 0.08
-        local lah = 0.3
-        local lr = 0.9
-        local lg = 0.9
-        local lb = 0.9
-
-        local line_lenght = text_width+field_width*2+padding*2
-
-        local startX = padding
-        local startY = padding*0.75
-
-        posX = startX+padding
-        posY = startY+padding/2
-
-        self:drawTextRight("Client", posX+text_width+field_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        self:drawTextRight("Server", posX+text_width+field_width*2, posY, hr, hg, hb, a, UIFont.NewMedium);
-
-        self:drawTextRight("CPU", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Cores : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientCPUCores, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverCPUCores, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Load (%) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientCPULoad, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverCPULoad, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Memory", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Free (MB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientMemFree, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverMemFree, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Used (MB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientMemUsed, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverMemUsed, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Total (MB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientMemTotal, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverMemTotal, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Max (MB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientMemMax, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverMemMax, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("FPS", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Main : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientFPS, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverFPS, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Networking : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverNetworkingFPS, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Network", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("RX (KB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientRX, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverRX, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("TX (KB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientTX, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverTX, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Resent (KB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientResent, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverResent, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Loss (%) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientLoss, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverLoss, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("VOIP", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("RX (KB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientVOIPRX, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverVOIPRX, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("TX (KB) : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientVOIPTX, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverVOIPTX, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Source : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientVOIPSource, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientVOIPFreq, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Ping", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Last : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientLastPing, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Average : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientAvgPing, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Minimum : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientMinPing, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Packet Ping", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Last : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPingLast, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Average : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPingAvg, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Loss : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPingLoss, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Maximum : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPingMax, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Minimum : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPingMin, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Time", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Client : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientTime, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Server : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverTime, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, la, lr, lg, lb);
-        self:drawTextRight("World : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(getWorldAge(), posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawRect(self.width/2, 30, 1, self.height-padding*2, lah, lr, lg, lb);
-
-        local startX = self.width/2+1
-        local startY = padding*0.75
-
-        posX = self.width/2+padding*2
-        posY = startY+padding/2
-
-        self:drawTextRight("Client", posX+text_width+field_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        self:drawTextRight("Server", posX+text_width+field_width*2, posY, hr, hg, hb, a, UIFont.NewMedium);
-
-        self:drawTextRight("Players", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Connected : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientPlayers, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverPlayers, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Zombies", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Total : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesTotal, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesTotal, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Loaded : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesLoaded, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesLoaded, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Simulated : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesSimulated, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesSimulated, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Culled : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesCulled, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesCulled, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Authorized : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesAuthorized, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesAuthorized, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Unauthorized : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesUnauthorized, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesUnauthorized, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Reusable : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientZombiesReusable, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverZombiesReusable, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Chunks", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("Relevant : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientRelevantChunks, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverRelevantChunks, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Stored : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientStoredChunks, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverStoredChunks, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Waiting : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverWaitingRequests, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Sent : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.clientSentRequests, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Requested1 : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.requested1, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Requested2 : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.requested2, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Pending1 : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.pending1, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Pending2 : ", posX+text_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.pending2, posX+text_width+field_width, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Version", posX+text_width, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight(statisticsData.clientRevision, posX+field_width*1.5, posY, tr, tg, tb, a, UIFont.NewMedium);
-        self:drawTextRight(statisticsData.serverRevision, posX+text_width+field_width*2, posY, tr, tg, tb, a, UIFont.NewMedium);
-        posY=posY+padding
-
-        self:drawTextRight("Admin Power / Debug Options", posX+text_width+field_width*2, posY, hr, hg, hb, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, 1, lah, lr, lg, lb);
-        self:drawTextRight("GodMode :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isGodMod()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("Invisible :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isInvisible()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("Invincible :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isInvincible()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("NoClip :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isNoClip()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("IsSeeEveryone :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isSeeEveryone()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("CanSeeEveryone :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isCanSeeAll()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("CanHearEveryone :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isCanHearAll()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("ZombiesDontAttack :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isZombiesDontAttack()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawTextRight("NetworkTeleport :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:isNetworkTeleportEnabled()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-        self:drawRect(startX, posY, line_lenght, highlight_height, la, lr, lg, lb);
-        self:drawTextRight("OwnershipEachUpdate :", posX+text_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        self:drawTextRight(tostring(self.player:zombiesSwitchOwnershipEachUpdate()), posX+text_width+field_width*2, posY, tar, tag, tab, a, UIFont.NewMedium);
-        posY=posY+padding
-
-    end
 end
 
 function ISStatisticsUI:new(x, y, player)
-    local o = {}
-    local width = 520
-    local height = 720
-    o = ISCollapsableWindow:new(x, y, width, height)
-    setmetatable(o, self)
-    self.__index = self
+    local width = 280
+    local height = 810
+    local o = ISCollapsableWindow.new(self, x, y, width, height)
     o.playerNum = player:getPlayerNum()
     if y == 0 then
         o.y = getPlayerScreenTop(o.playerNum)+(getPlayerScreenHeight(o.playerNum)-height)/2
@@ -369,7 +398,21 @@ function ISStatisticsUI:new(x, y, player)
     o.anchorRight = true
     o.anchorTop = true
     o.anchorBottom = true
-    o.resizable = false
+    o.resizable = true
+
+    o.showCPU = true
+    o.showMemory = true
+    o.showFPS = true
+    o.showNetwork = true
+    o.showVOIP = false
+    o.showPing = false
+    o.showTime = false
+    o.showVersion = true
+    o.showPlayers = true
+    o.showAnimals = true
+    o.showZombies = true
+    o.showChunks = false
+
     player:setShowMPInfos(true)
     ISStatisticsUI.instance = o
     return o;

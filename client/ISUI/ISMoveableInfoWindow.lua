@@ -18,7 +18,7 @@ function ISMoveableInfoWindow.setDisplayPosition(_position)
 end
 
 function ISMoveableInfoWindow.moveablePanelModeKey( _key )
-    if _key == getCore():getKey("Toggle Moveable Panel Mode") then
+    if getCore():isKey("Toggle Moveable Panel Mode", _key) then
         for k,v in ipairs(displayPositions) do
             if v == ISMoveableInfoWindow.displayPosition then
                 local next = k+1;
@@ -70,8 +70,8 @@ function ISMoveableInfoWindow:prerender()
 
     local isCursor = false;
     if (ISMoveableInfoWindow.displayPosition == "cursor" or ISMoveableInfoWindow.displayPosition == "norender") and self.square then
-        self:setX(isoToScreenX(self.playerNum, self.square:getX(), self.square:getY(), self.square:getZ())+33);
-        self:setY(isoToScreenY(self.playerNum, self.square:getX(), self.square:getY(), self.square:getZ())+33);
+        self:setX(isoToScreenX(self.playerNum, self.square:getX() + 1, self.square:getY(), self.square:getZ()));
+        self:setY(isoToScreenY(self.playerNum, self.square:getX(), self.square:getY(), self.square:getZ()));
         isCursor = true;
     elseif ISMoveableInfoWindow.displayPosition == "left" then
         self:setX(5);

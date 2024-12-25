@@ -33,7 +33,7 @@ function ISInventoryMenuElements.ContextRadio()
                     self.invMenu.context:addOption(getText("IGUI_DeviceOptions"), self.invMenu, self.openPanel, _obj );
                 end
             else
-                if self.invMenu.player:getPrimaryHandItem() == _item or self.invMenu.player:getSecondaryHandItem() == _item then
+                if self.invMenu.player:getPrimaryHandItem() == _item or self.invMenu.player:getSecondaryHandItem() == _item  or self.invMenu.player:getClothingItem_Back() == _item then
                     self.invMenu.context:addOption(getText("IGUI_DeviceOptions"), self.invMenu, self.openPanel, _item );
                 end
             end

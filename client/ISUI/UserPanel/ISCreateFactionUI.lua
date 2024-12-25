@@ -9,7 +9,9 @@ ISCreateFactionUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISCreateFactionUI:initialise
@@ -18,55 +20,45 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 
 function ISCreateFactionUI:initialise()
     ISPanel.initialise(self);
-    local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
+    local btnWid = 150
+    local y = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1;
 
-    local nameLbl = ISLabel:new(10, 20 + FONT_HGT_MEDIUM + 20, FONT_HGT_SMALL + 2 * 2, getText("IGUI_FactionUI_FactionName"), 1, 1, 1, 1, UIFont.Small, true)
+    local nameLbl = ISLabel:new(UI_BORDER_SPACING+1, y, BUTTON_HGT, getText("IGUI_FactionUI_FactionName"), 1, 1, 1, 1, UIFont.Small, true)
     nameLbl:initialise()
     nameLbl:instantiate()
     self:addChild(nameLbl)
 
-    self.entry = ISTextEntryBox:new("", nameLbl:getRight() + 8, nameLbl.y, 150, FONT_HGT_SMALL + 2 * 2);
+    self.entry = ISTextEntryBox:new("", nameLbl:getRight() + UI_BORDER_SPACING, nameLbl.y, self.width - nameLbl:getRight() - UI_BORDER_SPACING*2 - 1, BUTTON_HGT);
     self.entry.font = UIFont.Small;
     self.entry:initialise();
     self.entry:instantiate();
     self:addChild(self.entry);
 
-    self.no = ISButton:new(self:getWidth() - btnWid - 10, self.entry:getBottom() + 20, btnWid, btnHgt, getText("UI_Cancel"), self, ISCreateFactionUI.onClick);
+    self.no = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, self.entry:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISCreateFactionUI.onClick);
     self.no.internal = "CANCEL";
     self.no:initialise();
     self.no:instantiate();
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    self.ok = ISButton:new(10, self.no.y, btnWid, btnHgt, getText("UI_Ok"), self, ISCreateFactionUI.onClick);
+    self.ok = ISButton:new(UI_BORDER_SPACING+1, self.no.y, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISCreateFactionUI.onClick);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.ok);
 
-    self:setHeight(self.no:getBottom() + padBottom)
+    self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)
 end
-
 
 function ISCreateFactionUI:render()
     self:updateButtons();
 end
 
 function ISCreateFactionUI:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_FactionUI_CreateFaction"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_FactionUI_CreateFaction")) / 2), z, 1,1,1,1, UIFont.Medium);
-
---    z = z + FONT_HGT_MEDIUM + 10;
---    self:drawText(getText("IGUI_FactionUI_FactionName"), 10, z + 2, 1,1,1,1, UIFont.Small);
---    self.entry:setY(z)
---    self.entry:setX(getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_FactionName")) + 15);
+    self:drawText(getText("IGUI_FactionUI_CreateFaction"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_FactionUI_CreateFaction")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISCreateFactionUI:updateButtons()

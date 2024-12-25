@@ -10,12 +10,12 @@ ClothingSelectionDefinitions.default = {
 		-- this is the bodyLocation (defined in BodyLocations.lua)
 		Hat = {
 			chance = 10,
-			items = {"Base.Hat_BaseballCap", "Base.Hat_BucketHat", "Base.Hat_GolfHat", "Base.Hat_Fedora", "Base.Hat_Visor_WhiteTINT", },
+			items = {"Base.Hat_BaseballCap", "Base.Hat_BaseballCapTINT", "Base.Hat_BucketHat", "Base.Hat_GolfHat", "Base.Hat_Fedora", "Base.Hat_Visor_WhiteTINT", },
 		},
 		
 		Eyes = {
 			chance = 10,
-			items = {"Base.Glasses_Normal", "Base.Glasses_Reading"},
+			items = {"Base.Glasses_Cosmetic_Normal", "Base.Glasses_Reading"},
 		},
 		
 		TankTop = {
@@ -65,17 +65,22 @@ ClothingSelectionDefinitions.default = {
 		Shoes = {
 			items = {"Base.Shoes_Random", "Base.Shoes_TrainerTINT", "Base.Shoes_Strapped"},
 		},
+
+		Necklace = {
+			chance = 0,
+			items = {"Base.Necklace_Crucifix"},
+		},
 	},
 	
 	Male = {
 		Hat = {
 			chance = 10,
-			items = {"Base.Hat_BaseballCap", "Base.Hat_BucketHat", "Base.Hat_GolfHat", "Base.Hat_Fedora", "Base.Hat_Visor_WhiteTINT", },
+			items = {"Base.Hat_BaseballCap", "Base.Hat_BaseballCapTINT", "Base.Hat_BucketHat", "Base.Hat_GolfHat", "Base.Hat_Fedora", "Base.Hat_Visor_WhiteTINT", },
 		},
 		
 		Eyes = {
 			chance = 10,
-			items = {"Base.Glasses_Normal", "Base.Glasses_Reading"},
+			items = {"Base.Glasses_Cosmetic_Normal", "Base.Glasses_Reading"},
 		},
 		
 		TankTop = {
@@ -113,11 +118,21 @@ ClothingSelectionDefinitions.default = {
 		Shoes = {
 			items = {"Base.Shoes_Random", "Base.Shoes_TrainerTINT"},
 		},
+
+		Necklace = {
+			chance = 0,
+			items = {"Base.Necklace_Crucifix"},
+		},
 	}
 }
 
 ClothingSelectionDefinitions.fireofficer = {
 	Female = {
+		Hat = {
+			chance = 10,
+			items = {"Base.Hat_BaseballCap_FireDept"},
+		},
+
 		Tshirt = {
 			items = {"Base.Tshirt_Profession_FiremanBlue", "Base.Tshirt_Profession_FiremanRed", "Base.Tshirt_Profession_FiremanRed02", "Base.Tshirt_Profession_FiremanWhite"},
 		},
@@ -146,7 +161,7 @@ ClothingSelectionDefinitions.policeofficer = {
 	
 		Hat = {
 			chance = 10,
-			items = {"Base.Hat_Police",},
+			items = {"Base.Hat_Police", "Base.Hat_BaseballCap_Police"},
 		},
 		
 		Eyes = {
@@ -453,7 +468,7 @@ ClothingSelectionDefinitions.doctor = {
 
 		Hat = {
 			chance = 5,
-			items = {"Base.Hat_SurgicalMask_Blue", "Base.Hat_SurgicalMask_Green", },
+			items = {"Base.Hat_SurgicalMask", },
 		},
 		
 		Shirt = {
@@ -516,12 +531,12 @@ ClothingSelectionDefinitions.nurse = {
 	Female = {
 		Hat = {
 			chance = 10,
-			items = {"Hat_SurgicalCap_Blue", "Base.Hat_SurgicalCap_Green" },
+			items = {"Hat_SurgicalCap" },
 		},
 		
 		Mask = {
 			chance = 5,
-			items = {"Base.Hat_SurgicalMask_Blue", "Base.Hat_SurgicalMask_Green", },
+			items = {"Base.Hat_SurgicalMask", },
 		},
 		
 		Shirt = {
@@ -601,7 +616,7 @@ ClothingSelectionDefinitions.fitnessInstructor = {
 		},
 		
 		Pants = {
-			items = {"Base.Shorts_LongSport", "Base.Shorts_ShortSport", },
+			items = {"Base.Shorts_LongSport", "Base.Shorts_ShortSport", "Base.Trousers_Sport", },
 		},
 		
 		Shoes = {

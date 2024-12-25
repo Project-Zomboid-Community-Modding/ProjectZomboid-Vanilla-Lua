@@ -69,6 +69,45 @@ function ISUIElement:setAnchorRight(bAnchor)
 end
 
 --************************************************************************--
+--** ISUIElement:setAnchorUDLR
+--**
+--************************************************************************--
+function ISUIElement:setAnchorsTBLR(bAnchorT, bAnchorB, bAnchorL, bAnchorR)
+	if bAnchorT ~= nil then
+		self:setAnchorTop(bAnchorT)
+	end
+
+	if bAnchorB ~= nil then
+		self:setAnchorBottom(bAnchorB)
+	end
+
+	if bAnchorL ~= nil then
+		self:setAnchorLeft(bAnchorL)
+	end
+
+	if bAnchorR ~= nil then
+		self:setAnchorRight(bAnchorR)
+	end
+end
+
+--************************************************************************--
+--** ISUIElement:setAnchors
+--**
+--************************************************************************--
+function ISUIElement:setAnchors(bAnchor)
+	self.anchorLeft = bAnchor;
+	self.anchorRight = bAnchor;
+	self.anchorTop = bAnchor;
+	self.anchorBottom = bAnchor;
+	if self.javaObject ~= nil then
+		self.javaObject:setAnchorLeft(bAnchor);
+		self.javaObject:setAnchorRight(bAnchor);
+		self.javaObject:setAnchorTop(bAnchor);
+		self.javaObject:setAnchorBottom(bAnchor);
+	end
+end
+
+--************************************************************************--
 --** ISUIElement:getKeepOnScreen
 --**
 --************************************************************************--
@@ -353,6 +392,13 @@ function ISUIElement:isMouseOver()
 	return self.javaObject:isMouseOver();
 end
 
+function ISUIElement:isPointOver(screenX, screenY)
+	if self.javaObject == nil then
+		self:instantiate();
+	end
+	return self.javaObject:isPointOver(screenX, screenY);
+end
+
 function ISUIElement:suspendStencil()
 	if self.javaObject == nil then
 		self:instantiate();
@@ -603,14 +649,10 @@ function ISUIElement:isVisible()
 end
 
 function ISUIElement:isReallyVisible()
-	if not self:getIsVisible() then return false end
---	if not UIManager.getUI():contains(self.javaObject) then return false end
-	if self:getParent() then
-		local parentJavaObject = self:getParent():getJavaObject()
-		if parentJavaObject and not parentJavaObject:getControls():contains(self:getJavaObject()) then return false end
-		return self:getParent():isReallyVisible()
+	if self.javaObject == nil then
+		self:instantiate();
 	end
-	return UIManager.getUI():contains(self.javaObject)
+	return self.javaObject:isReallyVisible();
 end
 
 function ISUIElement:onJoypadDown(button)
@@ -649,6 +691,7 @@ function ISUIElement:instantiate()
 	self.javaObject:setAnchorTop(self.anchorTop);
 	self.javaObject:setAnchorBottom(self.anchorBottom);
 	self.javaObject:setWantKeyEvents(self.wantKeyEvents or false);
+	self.javaObject:setWantExtraMouseEvents(self.wantExtraMouseEvents or false);
 	self.javaObject:setForceCursorVisible(self.forceCursorVisible or false);
 	self:createChildren();
 end
@@ -661,6 +704,18 @@ function ISUIElement:drawTextureAllPoint(texture, tlx, tly, trx, try, brx, bry, 
     if self.javaObject ~= nil then
         self.javaObject:DrawTexture(texture, tlx, tly, trx, try, brx, bry, blx, bly, r,g,b,a);
     end
+end
+
+function ISUIElement:StartOutline(tex, outlineThickness, r, g, b, a)
+	if self.javaObject ~= nil then
+		self.javaObject:StartOutline(tex, outlineThickness, r, g, b, a);
+	end
+end
+
+function ISUIElement:EndOutline()
+	if self.javaObject ~= nil then
+		self.javaObject:EndOutline();
+	end
 end
 
 --************************************************************************--
@@ -724,6 +779,21 @@ function ISUIElement:drawTextureScaledAspect2(texture, x, y, w, h, a, r, g, b)
 end
 
 --************************************************************************--
+--** ISUIElement:drawTextureScaledAspect2
+--**
+--************************************************************************--
+function ISUIElement:drawTextureScaledAspect3(texture, x, y, w, h, a, r, g, b)
+	if self.javaObject ~= nil then
+
+		if r==nil then
+			self.javaObject:DrawTextureScaledAspect3(texture, x, y, w, h, 1, 1, 1, a);
+		else
+			self.javaObject:DrawTextureScaledAspect3(texture, x, y, w, h, r, g, b, a);
+		end
+	end
+end
+
+--************************************************************************--
 --** ISUIElement:drawTexture
 --**
 --************************************************************************--
@@ -734,6 +804,19 @@ function ISUIElement:drawTexture(texture, x, y, a, r, g, b)
 		else
 			self.javaObject:DrawTextureColor(texture, x, y, r, g, b, a);
 		end
+	end
+end
+
+--************************************************************************--
+--** ISUIElement:drawTextureTiled
+--**
+--************************************************************************--
+function ISUIElement:drawTextureTiled(texture, x, y, w, h, r, g, b, a)
+	if self.javaObject ~= nil then
+		if not r then
+			r,g,b,a = 1,1,1,1
+		end
+		self.javaObject:DrawTextureTiled(texture, x, y, w, h, r, g, b, a);
 	end
 end
 
@@ -760,6 +843,19 @@ function ISUIElement:drawTextureTiledY(texture, x, y, w, h, r, g, b, a)
 			r,g,b,a = 1,1,1,1
 		end
 		self.javaObject:DrawTextureTiledY(texture, x, y, w, h, r, g, b, a);
+	end
+end
+
+--************************************************************************--
+--** ISUIElement:drawTextureTiledYOffset
+--**
+--************************************************************************--
+function ISUIElement:drawTextureTiledYOffset(texture, x, y, w, h, r, g, b, a)
+	if self.javaObject ~= nil then
+		if not r then
+			r,g,b,a = 1,1,1,1
+		end
+		self.javaObject:DrawTextureTiledYOffset(texture, x, y, w, h, r, g, b, a);
 	end
 end
 
@@ -803,12 +899,36 @@ function ISUIElement:drawTextureStatic(texture, x, y, a, r, g, b)
 end
 
 --************************************************************************--
+--** ISUIElement:drawDrawItemIcon
+--**
+--************************************************************************--
+function ISUIElement:drawItemIcon(item, x, y, a, w, h)
+	if self.javaObject ~= nil then
+
+		self.javaObject:DrawItemIcon(item, x, y, a, w, h);
+	end
+end
+
+--************************************************************************--
+--** ISUIElement:drawDrawItemIcon
+--**
+--************************************************************************--
+function ISUIElement:drawScriptItemIcon(scriptItem, x, y, a, w, h)
+	if self.javaObject ~= nil then
+
+		self.javaObject:DrawScriptItemIcon(scriptItem, x, y, a, w, h);
+	end
+end
+
+--************************************************************************--
 --** ISUIElement:drawRect
 --**
 --************************************************************************--
 function ISUIElement:drawRect( x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+		if self.isCollapsed then
+			return;
+		end
 		self.javaObject:DrawTextureScaledColor(nil,x, y, w, h, r, g, b, a);
 
 	end
@@ -898,6 +1018,9 @@ end
 --************************************************************************--
 function ISUIElement:drawTextCentre(str, x, y, r, g, b, a, font)
 	if self.javaObject ~= nil then
+		if self.isCollapsed then
+			return;
+		end
 		if font ~= nil then
 			self.javaObject:DrawTextCentre(font, str, x, y, r, g, b, a);
 		else
@@ -912,6 +1035,9 @@ end
 --************************************************************************--
 function ISUIElement:drawText(str, x, y, r, g, b, a, font)
 	if self.javaObject ~= nil then
+		if self.isCollapsed then
+			return;
+		end
 		if font ~= nil then
 			self.javaObject:DrawText(font, str, x, y, r, g, b, a);
 		else
@@ -927,6 +1053,9 @@ end
 function ISUIElement:drawTextRight(str, x, y, r, g, b, a, font)
 
 	if self.javaObject ~= nil and str ~= nil then
+		if self.isCollapsed then
+			return;
+		end
 		if font ~= nil then
 			self.javaObject:DrawTextRight(font, str, x, y, r, g, b, a);
 		else
@@ -1447,7 +1576,8 @@ end
 function ISUIElement:wrapInCollapsableWindow(title, resizable, subClass)
 
 	local titleBarHeight = ISCollapsableWindow.TitleBarHeight()
-	local resizeWidgetHeight = (resizable == nil or resizable == true) and 8 or 0
+	local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
+	local resizeWidgetHeight = (resizable == nil or resizable == true) and (BUTTON_HGT/2)+1 or 0
 	subClass = subClass or ISCollapsableWindow
 	local o = subClass:new(self.x, self.y, self.width, self.height + titleBarHeight + resizeWidgetHeight);
 	o.title = title;
@@ -1525,6 +1655,15 @@ function ISUIElement:setWantKeyEvents(want)
 	end
 end
 
+function ISUIElement:setWantExtraMouseEvents(want)
+	if self.javaObject == nil then
+		self.wantExtraMouseEvents = want
+	else
+		self.wantExtraMouseEvents = nil
+		self.javaObject:setWantExtraMouseEvents(want)
+	end
+end
+
 function ISUIElement:setForceCursorVisible(force)
 	if self.javaObject == nil then
 		self.forceCursorVisible = force
@@ -1532,6 +1671,20 @@ function ISUIElement:setForceCursorVisible(force)
 		self.forceCursorVisible = nil
 		self.javaObject:setForceCursorVisible(force)
 	end
+end
+
+function ISUIElement:shrinkWrap(padRight, padBottom, predicate)
+	local xMax = 0
+	local yMax = 0
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if (not predicate) or predicate(child) then
+			xMax = math.max(xMax, child:getRight())
+			yMax = math.max(yMax, child:getBottom())
+		end
+	end
+	self:setWidth(xMax + padRight)
+	self:setHeight(yMax + padBottom)
 end
 
 --************************************************************************--
@@ -1546,8 +1699,15 @@ function ISUIElement:new (x, y, width, height)
    local maxY = getCore():getScreenHeight();
    local maxX = getCore():getScreenWidth();
 
-   o.x = math.max(0, math.min(x, maxX - width));
-   o.y = math.max(0, math.min(y, maxY - height));
+	-- The following is required to make Xui work:
+	x = x or 0;
+	y = y or 0;
+	width = width or 0;
+	height = height or 0;
+	-- end Xui fix.
+
+   o.x = x -- math.max(0, math.min(x, maxX - width));
+   o.y = y -- math.max(0, math.min(y, maxY - height));
    o.width = width;
    o.height = height;
    o.anchorLeft = true;

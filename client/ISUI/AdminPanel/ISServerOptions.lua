@@ -17,6 +17,9 @@ ISServerOptions = ISPanel:derive("ISServerOptions");
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 --************************************************************************--
 --** ISPanel:initialise
 --**
@@ -34,12 +37,8 @@ function ISServerOptions:setVisible(visible)
 end
 
 function ISServerOptions:render()
-    local z = 20;
-
-    self:drawText(getText("IGUI_PlayerStats_ServerOptionTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ServerOptionTitle")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 30;
-
-    self:drawText(getText("IGUI_DbViewer_Filters"), self.datas.x, self.datas.y + self.datas.height + 6, 1,1,1,1, UIFont.Small);
+    self:drawText(getText("IGUI_PlayerStats_ServerOptionTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ServerOptionTitle")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
+    self:drawText(getText("IGUI_DbViewer_Filters"), self.datas.x, self.datas.y + self.datas.height + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
 end
 
 function ISServerOptions:onMouseMove(dx, dy)
@@ -49,12 +48,11 @@ function ISServerOptions:onMouseMove(dx, dy)
     local y = self:getMouseY();
     self.changeBtn:setVisible(false)
 
-    if self.player:getAccessLevel() == "Admin" and not self.modifying and x >= self.datas:getX() + 35 and x <= self.datas:getX() + (self.datas:getWidth() - 40) and y >= self.datas:getY() and y <= self.datas:getY() + self.datas:getHeight() then
+    if self.player:getRole():haveCapability(Capability.ChangeAndReloadServerOptions) and not self.modifying and x >= self.datas:getX() and x <= self.datas:getX() + (self.datas:getWidth() - 40) and y >= self.datas:getY() and y <= self.datas:getY() + self.datas:getHeight() then
         y = self.datas:rowAt(self.datas:getMouseX(), self.datas:getMouseY())
         if self.datas.items[y] then
             self.changeBtn:setVisible(true);
             self.changeBtn:setY(self.datas.y + self.datas:topOfItem(y) + self.datas:getYScroll());
-            self.changeBtn:setX(self:getMouseX() - (self.changeBtn.width/2))
             local option = self.datas.items[y].item
             local tooltipText = option:getTooltip()
             if not tooltipText then self:hideTooltip(); return; end
@@ -89,15 +87,13 @@ function ISServerOptions:hideTooltip()
 end
 
 function ISServerOptions:create()
-    local btnWid = 150
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
-
-    local y = 70;
-    self.datas = ISScrollingListBox:new(10, y, self.width - 20, self.height - 160);
+    local btnWid = 100
+    local padBottom = UI_BORDER_SPACING + 1
+    local y = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1;
+    self.datas = ISScrollingListBox:new(UI_BORDER_SPACING + 1, y, self.width - (UI_BORDER_SPACING+1)*2, self.height - y - UI_BORDER_SPACING*3 - BUTTON_HGT*2 - 1);
     self.datas:initialise();
     self.datas:instantiate();
-    self.datas.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.datas.itemheight = BUTTON_HGT;
     self.datas.selected = 0;
     self.datas.joypadParent = self;
     self.datas.font = UIFont.NewSmall;
@@ -107,8 +103,7 @@ function ISServerOptions:create()
     self:addChild(self.datas);
 
     local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DbViewer_Filters"))
-    local entryHgt = FONT_HGT_SMALL + 2 * 2
-    self.filterEntry = ISTextEntryBox:new("", self.datas.x + textWid + 6, self.datas.y + self.datas.height + 6, 200, entryHgt);
+    self.filterEntry = ISTextEntryBox:new("", self.datas.x + textWid + UI_BORDER_SPACING, self.datas.y + self.datas.height + UI_BORDER_SPACING, 200, BUTTON_HGT);
     self.filterEntry:initialise();
     self.filterEntry:instantiate();
     self.filterEntry:setText("");
@@ -116,10 +111,7 @@ function ISServerOptions:create()
     self.filterEntry:setClearButton(true)
     self.filterEntry.onTextChange = ISServerOptions.populateList;
 
-    y = y + 30;
-
-    local btnHgt2 = FONT_HGT_SMALL + 2 * 2
-    self.changeBtn = ISButton:new(self.width - 100, 0, 50, btnHgt2, getText("IGUI_PlayerStats_Change"), self, ISServerOptions.onOptionMouseDown);
+    self.changeBtn = ISButton:new(self.width - btnWid - padBottom - 13, 0, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_Change"), self, ISServerOptions.onOptionMouseDown);
     self.changeBtn.internal = "CHANGE";
     self.changeBtn:initialise();
     self.changeBtn:instantiate();
@@ -127,7 +119,7 @@ function ISServerOptions:create()
     self.changeBtn:setVisible(false);
     self:addChild(self.changeBtn);
 
-    self.saveBtn = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PlayerStats_ReloadOptions"), self, ISServerOptions.onOptionMouseDown);
+    self.saveBtn = ISButton:new(self.datas.x, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_ReloadOptions"), self, ISServerOptions.onOptionMouseDown);
     self.saveBtn.internal = "RELOAD";
     self.saveBtn.tooltip = getText("IGUI_PlayerStats_ReloadOptionsTooltip");
     self.saveBtn:initialise();
@@ -136,14 +128,14 @@ function ISServerOptions:create()
     self.saveBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.saveBtn);
 
-    self.cancel = ISButton:new(self:getWidth() - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISServerOptions.onOptionMouseDown);
+    self.cancel = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISServerOptions.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
     self.cancel.borderColor = self.buttonBorderColor;
     self:addChild(self.cancel);
-    
-    if self.player:getAccessLevel() ~= "Admin" then
+
+    if not self.player:getRole():haveCapability(Capability.ChangeAndReloadServerOptions) then
         self.changeBtn:setVisible(false);
         self.saveBtn:setVisible(false);
     end
@@ -183,8 +175,23 @@ function ISServerOptions:drawDatas(y, item, alt)
 
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-    self:drawText(item.item:getName(), 10, y + 2, 1, 1, 1, a, self.font);
-    self:drawText(item.item:getValueAsString(), self.width / 2, y + 2, 1, 1, 1, a, self.font);
+    self:drawText(item.item:getName(), UI_BORDER_SPACING, y + 3, 1, 1, 1, a, self.font);
+
+    local labelWidth = getTextManager():MeasureStringX(self.font, item.item:getName())
+
+    local dataString = item.item:getValueAsString()
+    if instanceof(item.item, "EnumConfigOption") then
+        dataString = item.item:getValueTranslationByIndex(item.item:getValue())
+    end
+
+    local dataWidth = getTextManager():MeasureStringX(self.font, dataString)
+
+    if labelWidth + dataWidth > self.width - UI_BORDER_SPACING*3 then
+        self:drawText(dataString, labelWidth + UI_BORDER_SPACING*3, y+3, 1, 1, 1, a, self.font);
+    else
+        self:drawTextRight(dataString, self.width - 13 - UI_BORDER_SPACING, y+3, 1, 1, 1, a, self.font);
+    end
+
 
     return y + self.itemheight;
 end
@@ -206,10 +213,10 @@ end
 function ISServerOptions:onOptionMouseDown(button, x, y)
     if button.internal == "CHANGE" then
         local y = self:getMouseY() + (-self.datas:getYScroll());
-        y = y - 70;
+        y = y - (FONT_HGT_MEDIUM + UI_BORDER_SPACING*2 + 1);
         y = y / self.datas.itemheight;
         y = math.floor(y + 1);
-        local modal = ISServerOptionsChange:new(self:getMouseX() - 30, self:getMouseY() - 30, 600, 250, self, ISServerOptions.onServerOptionChange, self.datas.items[y].item)
+        local modal = ISServerOptionsChange:new(self:getMouseX() - 30, self:getMouseY() - 30, self.width, 100, self, ISServerOptions.onServerOptionChange, self.datas.items[y].item)
         modal:initialise();
         modal:addToUIManager();
         self.modifying = true;

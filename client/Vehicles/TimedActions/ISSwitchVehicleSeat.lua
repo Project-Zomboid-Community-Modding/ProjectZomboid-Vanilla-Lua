@@ -8,6 +8,7 @@ ISSwitchVehicleSeat = ISBaseTimedAction:derive("ISSwitchVehicleSeat")
 
 function ISSwitchVehicleSeat:isValid()
 	local vehicle = self.character:getVehicle()
+	print(vehicle, vehicle:getSeat(self.character), vehicle:isSeatOccupied(self.seatTo), self.seatFrom, self.character:getVehicle():getSeat(self.character))
 	return vehicle ~= nil and
 		vehicle:getSeat(self.character) ~= -1 and
 		not vehicle:isSeatOccupied(self.seatTo) and
@@ -68,15 +69,17 @@ function ISSwitchVehicleSeat:perform()
 	ISBaseTimedAction.perform(self)
 end
 
-function ISSwitchVehicleSeat:new(character, seatTo)
+function ISSwitchVehicleSeat:new(character, seatTo, seatFrom)
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 	o.character = character
 	o.seatTo = seatTo
 	local veh = character:getVehicle()
-	if veh ~= nil then
+	if seatFrom == nil and veh ~= nil then
 		o.seatFrom = veh:getSeat(character)
+	else
+		o.seatFrom = seatFrom
 	end
 	o.maxTime = -1
 	return o

@@ -17,6 +17,7 @@ ISEmptyGraves = ISBuildingObject:derive("ISEmptyGraves");
 --**
 --************************************************************************--
 function ISEmptyGraves:create(x, y, z, north, sprite)
+    print("GRAVES CREATES")
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self:setInfo(self.sq, north, sprite, cell, "sprite1");
@@ -30,6 +31,11 @@ function ISEmptyGraves:create(x, y, z, north, sprite)
 	
 	local spriteAName = north and self.northSprite2 or self.sprite2
 	self:setInfo(squareA, north, spriteAName, cell, "sprite2");
+    if self.character:getPrimaryHandItem() then
+        local skill = self.character:getPerkLevel(Perks.Strength)
+        local strain = (1 - (skill * 0.05)) * getGameTime():getMultiplier() * 50
+        self.character:addCombatMuscleStrain(self.character:getPrimaryHandItem(), 1, strain)
+    end
 end
 
 function ISEmptyGraves:walkTo(x, y, z)
@@ -52,8 +58,9 @@ function ISEmptyGraves:setInfo(square, north, sprite, cell, spriteType)
 		end
 	end
 	square:disableErosion();
+
 	local args = { x = square:getX(), y = square:getY(), z = square:getZ() }
-	sendClientCommand('erosion', 'disableForSquare', args)
+	sendServerCommand('erosion', 'disableForSquare', args)
 	
 	self.javaObject = IsoThumpable.new(cell, square, sprite, north, self);
 	square:RecalcAllWithNeighbours(true);
@@ -64,23 +71,22 @@ function ISEmptyGraves:setInfo(square, north, sprite, cell, spriteType)
 	self.javaObject:getModData()["corpses"] = 0;
 	self.javaObject:getModData()["filled"] = false;
 	square:AddSpecialObject(self.javaObject);
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 end
 
-function ISEmptyGraves:new(sprite1, sprite2, northSprite1, northSprite2, shovel)
-	local o = {};
-	setmetatable(o, self);
-	self.__index = self;
+function ISEmptyGraves:new(sprite, sprite2, northSprite, northSprite2, equipBothHandItem)
+    print("GRAVES NEW")
+	local o = ISBaseTimedAction.new(self, character)
 	o:init();
-	o:setSprite(sprite1);
-	o:setNorthSprite(northSprite1);
+	o:setSprite(sprite);
+	o:setNorthSprite(northSprite);
 	o.sprite2 = sprite2;
 	o.northSprite2 = northSprite2;
 	o.noNeedHammer = true;
 	o.ignoreNorth = true;
-	o.equipBothHandItem = shovel;
+	o.equipBothHandItem = equipBothHandItem;
 	o.maxTime = 150;
-	o.actionAnim = ISFarmingMenu.getShovelAnim(shovel);
+	o.actionAnim = BuildingHelper.getShovelAnim(equipBothHandItem);
 	o.craftingBank = "Shoveling";
 	return o;
 end
@@ -94,7 +100,7 @@ function ISEmptyGraves:render(x, y, z, square)
 	-- render the first part
 	local spriteName = self:getSprite()
 	local sprite = IsoSprite.new()
-	sprite:LoadFramesNoDirPageSimple(spriteName)
+	sprite:LoadSingleTexture(spriteName)
 	
 	local floor = square:getFloor();
 	if not floor then
@@ -138,7 +144,7 @@ function ISEmptyGraves:render(x, y, z, square)
 	spriteAFree = spriteAFree and ISEmptyGraves.shovelledFloorCanDig(squareA);
 	-- render our second stage of the graves
 	local spriteA = IsoSprite.new();
-	spriteA:LoadFramesNoDirPageSimple(spriteAName);
+	spriteA:LoadSingleTexture(spriteAName);
 	if spriteAFree and z==0 then
 		spriteA:RenderGhostTile(xa, ya, z);
 	else

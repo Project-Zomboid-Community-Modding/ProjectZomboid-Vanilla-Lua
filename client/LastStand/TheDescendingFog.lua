@@ -42,21 +42,21 @@ TheDescendingFog.OnInitWorld = function()
     SandboxVars.StartTime = 2;
     SandboxVars.WaterShutModifier = 7;
     SandboxVars.ElecShutModifier = 7;
-    SandboxVars.FoodLoot = 3;
-    SandboxVars.CannedFoodLoot = 3;
-    SandboxVars.RangedWeaponLoot = 3;
-    SandboxVars.AmmoLoot = 3;
-    SandboxVars.SurvivalGearsLoot = 3;
-    SandboxVars.MechanicsLoot = 3;
-    SandboxVars.LiteratureLoot = 3;
-    SandboxVars.MedicalLoot = 3;
-    SandboxVars.WeaponLoot = 3;
-    SandboxVars.OtherLoot = 3;
+--     SandboxVars.FoodLoot = 3;
+--     SandboxVars.CannedFoodLoot = 3;
+--     SandboxVars.RangedWeaponLoot = 3;
+--     SandboxVars.AmmoLoot = 3;
+--     SandboxVars.SurvivalGearsLoot = 3;
+--     SandboxVars.MechanicsLoot = 3;
+--     SandboxVars.LiteratureLoot = 3;
+--     SandboxVars.MedicalLoot = 3;
+--     SandboxVars.WeaponLoot = 3;
+--     SandboxVars.OtherLoot = 3;
+    SandboxVars.LootItemRemovalList = "";
     SandboxVars.Temperature = 3;
     SandboxVars.Rain = 3;
     --	    SandboxVars.erosion = 12
     SandboxVars.ErosionSpeed = 1
-    SandboxVars.XpMultiplier = "1.0";
     SandboxVars.Farming = 3;
     SandboxVars.NatureAbundance = 5;
     SandboxVars.PlantResilience = 3;
@@ -71,7 +71,12 @@ TheDescendingFog.OnInitWorld = function()
     SandboxVars.TimeSinceApo = 1;
     SandboxVars.MultiHitZombies = false;
 
-    SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
+
+    SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
     Events.OnGameStart.Add(TheDescendingFog.OnGameStart);
     --Events.EveryDays.Add(TheDescendingFog.EveryDays);
@@ -98,22 +103,20 @@ TheDescendingFog.id = "TheDescendingFog";
 TheDescendingFog.image = "media/lua/client/LastStand/TheDescendingFog.png";
 TheDescendingFog.gameMode = "The Descending Fog";
 TheDescendingFog.world = "Muldraugh, KY";
-TheDescendingFog.xcell = 36;
-TheDescendingFog.ycell = 31;
-TheDescendingFog.x = 21;
-TheDescendingFog.y = 111;
+TheDescendingFog.x = 36 * 300 + 21;
+TheDescendingFog.y = 31 * 300 + 111;
 TheDescendingFog.z = 0;
 
 TheDescendingFog.spawns = {
-    {xcell=11+25, ycell=9+25, x=62, y=47}, -- Medium house2
-    {xcell=11+25, ycell=8+25, x=116, y=232}, -- little house2
-    {xcell=11+25, ycell=8+25, x=3, y=173}, -- little house2
-    {xcell=11+25, ycell=8+25, x=118, y=229}, -- little house2
-    {xcell=11+25, ycell=6+25, x=142, y=72},
-    {xcell=11+25, ycell=6+25, x=151, y=190},
+    {x = 10862, y = 10247, z = 0}, -- Medium house2
+    {x = 10916, y = 10132, z = 0}, -- little house2
+    {x = 10803, y = 10073, z = 0}, -- little house2
+    {x = 10918, y = 10129, z = 0}, -- little house2
+    {x = 10942, y = 9372, z = 0},
+    {x = 10951, y = 9490, z = 0},
 }
 
 TheDescendingFog.hourOfDay = 7;
 
-Events.OnChallengeQuery.Add(TheDescendingFog.Add)
+--Events.OnChallengeQuery.Add(TheDescendingFog.Add)
 

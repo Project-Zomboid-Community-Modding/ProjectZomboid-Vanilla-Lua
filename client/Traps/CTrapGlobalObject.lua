@@ -24,7 +24,7 @@ function CTrapGlobalObject:fromModData(modData)
 
 	self.animal = {}
 	local animalType = modData["animal"]
-	for i,v in ipairs(Animals) do
+	for i,v in ipairs(TrapAnimals) do
 		if v.type == animalType then
 			self.animal = v
 		end

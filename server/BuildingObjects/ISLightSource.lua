@@ -26,6 +26,7 @@ function ISLightSource:create(x, y, z, north, sprite)
     elseif self.north then
         offsetY = -self.offsetY;
     end
+
     local baseItem = self.character:getInventory():getFirstTypeRecurse(self.baseItem)
     if not baseItem then
         local itemsOnGround = buildUtil.getMaterialOnGround(self.sq)
@@ -46,10 +47,10 @@ function ISLightSource:create(x, y, z, north, sprite)
 	self.javaObject:setBreakSound("BreakObject");
 	-- add the item to the ground
     self.sq:AddSpecialObject(self.javaObject);
-	self.javaObject:transmitCompleteItemToServer()
+	self.javaObject:transmitCompleteItemToClients()
 end
 
-function ISLightSource:new(sprite, northSprite, player)
+function ISLightSource:new(sprite, northSprite, character)
 	local o = {};
 	setmetatable(o, self);
 	self.__index = self;
@@ -58,9 +59,12 @@ function ISLightSource:new(sprite, northSprite, player)
 	o:setNorthSprite(northSprite);
 	o.canBarricade = false;
 	o.dismantable = true;
-    o.character = player;
+    o.character = character;
     o.name = "Lamp on Pillar"
     o.blockAllTheSquare = true;
+	o.fuel = "Base.Battery";
+	o.baseItem = "Base.Torch";
+	o.radius = 10;
 	return o;
 end
 

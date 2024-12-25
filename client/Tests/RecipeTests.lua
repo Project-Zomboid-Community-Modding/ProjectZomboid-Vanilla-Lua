@@ -1,19 +1,19 @@
 local function CreateSourceItem1(recipe, source, sourceFullType)
 	local item = nil
 	if sourceFullType == "Water" then
-		item = InventoryItemFactory.CreateItem("Base.WaterBottleFull")
+		item = instanceItem("Base.WaterBottle")
 		item:setUsedDelta(item:getUseDelta()) -- a single use
 	elseif source:isDestroy() then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 	elseif getScriptManager():isDrainableItemType(sourceFullType) then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 		item:setUsedDelta(item:getUseDelta()) -- a single use
 	elseif source:getUse() > 0 then
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 		if not instanceof(item, "Food") then error(sourceFullType..' is not food') end
 		item:setHungChange(-source:getUse() / 100)
 	else
-		item = InventoryItemFactory.CreateItem(sourceFullType)
+		item = instanceItem(sourceFullType)
 	end
 	if recipe:getOriginalname() == "Insert Battery into Flashlight" and sourceFullType == "Base.Torch" then
 		item:setUsedDelta(0.0)
@@ -56,7 +56,7 @@ local function CreateSourceItem2(recipe, source, sourceFullType)
 	if sourceFullType == "Water" then
 		for i=1,source:getCount() do
 			item = addToInv(CreateSourceItem1(recipe, source, sourceFullType))
-			table.insert(itemText, '  '..sourceFullType.. ' uses='..item:getDrainableUsesInt()..'/'..source:getCount())
+			table.insert(itemText, '  '..sourceFullType.. ' uses='..item:getCurrentUses()..'/'..source:getCount())
 		end
 	elseif source:isDestroy() then
 		for i=1,source:getCount() do
@@ -65,7 +65,7 @@ local function CreateSourceItem2(recipe, source, sourceFullType)
 		end
 	elseif getScriptManager():isDrainableItemType(sourceFullType) then
 		item = addToInv(CreateSourceItem1(recipe, source, sourceFullType))
-		table.insert(itemText, '  '..sourceFullType.. ' uses='..item:getDrainableUsesInt()..'/'..source:getCount())
+		table.insert(itemText, '  '..sourceFullType.. ' uses='..item:getCurrentUses()..'/'..source:getCount())
 	elseif source:getUse() > 0 then
 		item = addToInv(CreateSourceItem1(recipe, source, sourceFullType))
 		table.insert(itemText, '  '..sourceFullType..' '..math.floor(-item:getHungerChange()*100)..'/'..source:getUse())
@@ -106,7 +106,7 @@ local function SetupContainers()
 	playerObj:setPrimaryHandItem(nil)
 	playerObj:setSecondaryHandItem(nil)
 	-- FIXME: clear all loot-window containers
-	bag = InventoryItemFactory.CreateItem('Base.Bag_BigHikingBag')
+	bag = instanceItem('Base.Bag_BigHikingBag')
 	playerObj:getInventory():AddItem(bag)
 	playerObj:setClothingItem_Back(bag)
 	getPlayerInventory(playerObj:getPlayerNum()):refreshBackpacks()
@@ -242,7 +242,7 @@ end
 
 local function ShouldSkipRecipe(recipe)
 	if recipe == nil then return true end
-	if recipe:getNearItem() and recipe:getNearItem() ~= "" then return true end
+	if recipe:getRequiredNearObject() and recipe:getRequiredNearObject() ~= "" then return true end
 	return false
 end
 

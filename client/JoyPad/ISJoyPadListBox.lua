@@ -13,7 +13,9 @@ function ISJoypadListBox:fill()
 	for i=1,getMaxActivePlayers() do
 		local playerObj = getSpecificPlayer(i-1)
 		if JoypadState.players[i] == nil and playerObj and playerObj:isAlive() then
-			listBox:addItem(getText("IGUI_Controller_TakeOverPlayer", i), { cmd = "takeover", playerNum = i-1 })
+			if not getRemotePlayModeActive() then
+				listBox:addItem(getText("IGUI_Controller_TakeOverPlayer", i), { cmd = "takeover", playerNum = i-1 })
+			end
 		end
 	end
 	if not isDemo() then
@@ -114,7 +116,7 @@ function ISJoypadListBox:cmdAddSaved(player)
 	if isClient() then
 		local x = (getCore():getScreenWidth() - 260) / 2
 		local y = (getCore():getScreenHeight() - 120) / 2
-		local username = player:getModData().username or ("Player" .. joypadData.player)
+		local username = player:getModData().username or ("Player" .. tostring(joypadData.player))
 		local modal = ISTextBox:new(x, y, 260, 120, getText("UI_servers_username"), username, self, ISJoypadListBox.getUserNameCallback, joypadData.player, player)
 		modal:initialise()
 		modal:addToUIManager()

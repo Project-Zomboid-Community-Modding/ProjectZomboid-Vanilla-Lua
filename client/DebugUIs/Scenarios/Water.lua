@@ -35,7 +35,6 @@ debugScenarios.Water = {
 --        SandboxVars.Rain = 3;
 --        --    SandboxVars.erosion = 12
 --        SandboxVars.ErosionSpeed = 1
---        SandboxVars.XpMultiplier = "1.0";
 --        SandboxVars.Farming = 3;z
 --        SandboxVars.NatureAbundance = 5;
 --        SandboxVars.PlantResilience = 3;

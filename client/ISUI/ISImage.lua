@@ -45,9 +45,23 @@ end
 --**
 --************************************************************************--
 function ISImage:prerender()
+	if self.doBorder then
+		local c = self.borderColor;
+		self:drawRectBorder(0, 0, self.width, self.height, c.a, c.r, c.g, c.b);
+	end
 	if self.texture then
-		if self.scaledWidth and self.scaledHeight then
-			self:drawTextureScaled(self.texture, 0, 0, self.scaledWidth, self.scaledHeight,  self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+		if (self.scaledWidth and self.scaledHeight) or self.autoScale then
+			local w,h = self.scaledWidth, self.scaledHeight;
+			if self.autoScale then
+				w = self:getWidth();
+				h = self:getHeight();
+			end
+			if self.noAspect then
+				self:drawTextureScaled(self.texture, 0, 0, w, h,  self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+			else
+				--NOTE: changed (default draw) from drawTextureScaled originally to drawTextureScaledAspect
+				self:drawTextureScaledAspect(self.texture, 0, 0, w, h,  self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+			end
 		else
 			self:drawTexture(self.texture, 0, 0, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 		end
@@ -116,5 +130,8 @@ function ISImage:new (x, y, width, height, texture)
 	o.anchorTop = true;
 	o.anchorBottom = false;
 	o.font = UIFont.Small
+	o.autoScale = false;
+	o.doBorder = false;
+	o.noAspect = false;
 	return o
 end

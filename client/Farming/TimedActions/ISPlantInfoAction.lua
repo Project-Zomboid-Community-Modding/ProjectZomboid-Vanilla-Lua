@@ -14,7 +14,7 @@ end
 
 function ISPlantInfoAction:waitToStart()
 	self.character:faceThisObject(self.plant:getIsoObject())
-	return self.character:shouldBeTurning()
+	return  self.character:isTurning() or self.character:shouldBeTurning()
 end
 
 function ISPlantInfoAction:update()
@@ -54,14 +54,9 @@ function ISPlantInfoAction:perform()
 end
 
 function ISPlantInfoAction:new(character, plant)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	o.character = character;
+	local o = ISBaseTimedAction.new(self, character)
 	o.playerNum = character:getPlayerNum()
     o.plant = plant;
 	o.maxTime = 0;
-	o.stopOnWalk = true;
-	o.stopOnRun = true;
 	return o;
 end

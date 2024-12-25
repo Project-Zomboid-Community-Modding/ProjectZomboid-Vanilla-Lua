@@ -9,7 +9,7 @@ ISAdminWeather = ISDebugPanelBase:derive("ISAdminWeather");
 ISAdminWeather.instance = nil;
 
 function ISAdminWeather.OnOpenPanel()
-    return ISDebugPanelBase.OnOpenPanel(ISAdminWeather, 100, 100, 800, 600, getText("IGUI_Adm_Weather_ClimateControl"));
+    return ISDebugPanelBase.OnOpenPanel(ISAdminWeather, 100, 100, 800+(getCore():getOptionFontSizeReal()*70), 600, getText("IGUI_Adm_Weather_ClimateControl"));
 end
 
 function ISAdminWeather:new(x, y, width, height, title)

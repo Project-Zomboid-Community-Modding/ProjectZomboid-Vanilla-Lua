@@ -3,7 +3,7 @@ require "ISUI/ISPanelJoypad"
 ISHealthPanel = ISPanelJoypad:derive("ISHealthPanel");
 ISHealthPanel.cheat = false or getDebug();
 
-local PAD_BOTTOM = 8
+local UI_BORDER_SPACING = 10
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 -----
@@ -46,7 +46,7 @@ function ISNewHealthPanel:onClick(button)
 end
 
 function ISNewHealthPanel:new(x, y, character)
-    local o = ISUIElement:new(x, y, 123, 123)
+    local o = ISUIElement:new(x, y, 123, 302) --match texture height and width
     setmetatable(o, self)
     self.__index = self
     o.character = character
@@ -130,13 +130,13 @@ function ISHealthPanel:initialise()
 end
 
 function ISHealthPanel:createChildren()
-    self.healthPanel = ISNewHealthPanel:new(0, 8, self.character)
+    self.healthPanel = ISNewHealthPanel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.character)
     self.healthPanel:initialise()
     self.healthPanel:instantiate()
     self.healthPanel:setVisible(true)
     self:addChild(self.healthPanel)
     
-    self.listbox = ISHealthBodyPartListBox:new(180 - 15, 59, self.width - (180 - 15), self.height);
+    self.listbox = ISHealthBodyPartListBox:new(self.healthPanel:getRight()+UI_BORDER_SPACING, 0, self.width - (self.healthPanel:getRight()+UI_BORDER_SPACING), self.height);
     self.listbox:initialise();
     self.listbox:instantiate();
     self.listbox:setAnchorLeft(true);
@@ -149,7 +149,7 @@ function ISHealthPanel:createChildren()
     self.listbox.drawText = ISHealthPanel.drawText;
     self:addChild(self.listbox)
 
-    self.bodyPartPanel = ISHealthBodyPartPanel:new(self.character, 0, 8);
+    self.bodyPartPanel = ISHealthBodyPartPanel:new(self.character, UI_BORDER_SPACING+1-5, UI_BORDER_SPACING+1-9);
     self.bodyPartPanel:initialise();
     self.bodyPartPanel:setAlphas(0.0, 1.0, 0.5, 0.0, 0.0)
 --    self.bodyPartPanel:setEnableSelectLines( true, self.bpAnchorX, self.bpAnchorY );
@@ -158,7 +158,7 @@ function ISHealthPanel:createChildren()
 --    self.bodyPartPanel:setColorScheme(self.colorScheme);
     self:addChild(self.bodyPartPanel);
     
-    self.fitness = ISButton:new(self.healthPanel.x + 165, self.healthPanel.y, 100, 20, getText("ContextMenu_Fitness"), self, ISNewHealthPanel.onClick);
+    self.fitness = ISButton:new(self.listbox.x, UI_BORDER_SPACING+1, 100, FONT_HGT_SMALL+6, getText("ContextMenu_Fitness"), self, ISNewHealthPanel.onClick);
     self.fitness.internal = "FITNESS";
     self.fitness.anchorTop = false
     self.fitness.anchorBottom = true
@@ -175,11 +175,8 @@ function ISHealthPanel:createChildren()
 end
 
 function ISHealthPanel:setVisible(visible)
-    --    self.parent:setVisible(visible);
-    --    self.doctorLevel = self.character:getPerkLevel(Perks.Doctor);
     self.otherPlayer = nil;
     self.javaObject:setVisible(visible);
---    ISHealthPanel.cheat = self.character:getAccessLevel() ~= "None";
 end
 
 function ISHealthBodyPartListBox:onRightMouseUp(x, y)
@@ -205,6 +202,11 @@ function ISHealthPanel:toPlayerInventory(playerObj, item, bodyPart)
 end
 
 ISHealthPanel.onCheatCurrentPlayer = function(bodyPart, action, player)
+    if isClient() then
+        local args = { bodyPartIndex = BodyPartType.ToIndex(bodyPart:getType()), action = action, id = player:getOnlineID() }
+        sendClientCommand(player, "player", "onHealthCheatCurrentPlayer", args)
+        return;
+    end
     if action == "bleeding" then
         bodyPart:setBleedingTime((bodyPart:getBleedingTime() > 0) and 0 or 10)
     end
@@ -351,7 +353,12 @@ ISHealthPanel.onCheat = function(bodyPart, action, player, otherPlayer)
 end
 
 ISHealthPanel.onCheatItem = function(itemType, playerObj)
-    playerObj:getInventory():AddItem(itemType)
+    if isClient() then
+        SendCommandToServer("/additem \"" .. playerObj:getDisplayName() .. "\" \"" .. luautils.trim(itemType) .. "\"")
+    else
+        local item = instanceItem(itemType)
+        playerObj:getInventory():AddItem(item);
+    end
 end
 
 function ISHealthPanel:update()
@@ -364,7 +371,9 @@ function ISHealthPanel:update()
             self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
             return
         end
-        if self:getDoctor():getAccessLevel() == "None" and (math.abs(self.otherPlayer:getX() - self.otherPlayerX) > 0.5 or
+        if (not self:getDoctor():getRole():haveCapability(Capability.CanMedicalCheat)) and
+                (not ISHealthPanel.IsCharactersInSameCar(self:getDoctor(), self:getPatient())) and
+                (math.abs(self.otherPlayer:getX() - self.otherPlayerX) > 0.5 or
                 math.abs(self.otherPlayer:getY() - self.otherPlayerY) > 0.5 or
                 math.abs(self.character:getX() - self.characterX) > 0.5 or
                 math.abs(self.character:getY() - self.characterY) > 0.5) then
@@ -392,18 +401,19 @@ function ISHealthPanel:update()
 			self.blockingAlpha = math.max(0.0, self.blockingAlpha - 0.05)
 		end
     end
-    if self:getIsVisible() then
+    if self:isReallyVisible() then
         self:updateBodyPartList()
         if self.textRight and self.listbox.textRight then
             local width = math.max(self.textRight, self.listbox.x + self.listbox.textRight)
             if width > 0 then
                 width = math.max(width, self.healthPanel:getRight())
-                self:setWidthAndParentWidth(width + 20);
+                self:setWidthAndParentWidth(width + UI_BORDER_SPACING+1);
             end
         end
-        self:setHeightAndParentHeight(math.max(self.healthPanel:getBottom(), self.allTextHeight or 0) + FONT_HGT_SMALL + PAD_BOTTOM * 2);
+        self:setHeightAndParentHeight(math.max(self.healthPanel:getBottom(), self.allTextHeight or 0) + FONT_HGT_SMALL + UI_BORDER_SPACING * 2);
 --        self.healthPanel:setX(self:getAbsoluteX());
 --        self.healthPanel:setY(self:getAbsoluteY() + 8);
+        MusicIntensityConfig.getInstance():checkHealthPanelVisible(self.otherPlayer or self.character)
     else
         self.textRight = 0
         self.listbox.textRight = 0
@@ -432,27 +442,27 @@ function ISHealthPanel:render()
     
     self.fitness:setY(y);
 
-    y = y + 30;
+    y = y + UI_BORDER_SPACING + FONT_HGT_SMALL+6;
 
-    self:drawText(getText("IGUI_health_Overall_Body_Status"), self.healthPanel.x + 165, y, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
+    self:drawText(getText("IGUI_health_Overall_Body_Status"), self.healthPanel:getRight()+UI_BORDER_SPACING, y, 1.0, 1.0, 1.0, 1.0, UIFont.Small)
     y = y + fontHgt
 
     local InjuryRedTextTint = (100 - self:getPatient():getBodyDamage():getHealth()) / 100
     InjuryRedTextTint = math.max(InjuryRedTextTint, 0.2)
     local str = self.healthPanel.javaObject:getDamageStatusString()
-    self:drawText(str, self.healthPanel.x + 165, y, 1.0, 1.0 - InjuryRedTextTint, 1.0 - InjuryRedTextTint, 1.0, UIFont.Small)
+    self:drawText(str, self.healthPanel:getRight()+UI_BORDER_SPACING, y, 1.0, 1.0 - InjuryRedTextTint, 1.0 - InjuryRedTextTint, 1.0, UIFont.Small)
     y = y + fontHgt
 
-    local x = 180;
+    local x = self.healthPanel:getRight()+UI_BORDER_SPACING;
     local fgBar = {r=0.5, g=0.5, b=0.5, a=0.5}
 
     local doctor = self.otherPlayer or self.character
 
     if doctor:getJoypadBind() ~= -1 then
-        self:drawTextureScaled(self.abutton, 8, self.height - PAD_BOTTOM - fontHgt, fontHgt, fontHgt, 1.0, 1.0, 1.0, 1.0);
-        self:drawText(getText("IGUI_health_JoypadTreatment"), 8 + fontHgt + 2, self.height - PAD_BOTTOM - fontHgt, 1, 1, 1, 1, UIFont.Small);
+        self:drawTextureScaled(self.abutton, UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - fontHgt, fontHgt, fontHgt, 1.0, 1.0, 1.0, 1.0);
+        self:drawText(getText("IGUI_health_JoypadTreatment"), UI_BORDER_SPACING + fontHgt + 2, self.height - UI_BORDER_SPACING - fontHgt, 1, 1, 1, 1, UIFont.Small);
     else
-        self:drawText(getText("IGUI_health_RightClickTreatement"), 8, self.height - PAD_BOTTOM - fontHgt, 1, 1, 1, 1, UIFont.Small);
+        self:drawText(getText("IGUI_health_RightClickTreatement"), UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - fontHgt, 1, 1, 1, 1, UIFont.Small);
     end
 
     -- for each damaged body part, we gonna display the body part name + the damage type
@@ -461,20 +471,20 @@ function ISHealthPanel:render()
         painLevel = self:getPatient():getBodyDamageRemote():getRemotePainLevel()
     end
     if (self.doctorLevel > 4 or self.character == getPlayer() or ISHealthPanel.cheat) and painLevel > 0 then
-        self:drawText(getText("Moodles_pain_lvl" .. painLevel), x - 15, y, 1, 1, 1, 1, UIFont.Small);
+        self:drawText(getText("Moodles_pain_lvl" .. painLevel), x, y, 1, 1, 1, 1, UIFont.Small);
         y = y + fontHgt;
    end
     if self.cheat and self.character:getBodyDamage():getFakeInfectionLevel() > 0 then
-        self:drawText("Fake infection level " .. self.character:getBodyDamage():getFakeInfectionLevel(), x - 15, y, 1, 1, 1, 1, UIFont.Small);
+        self:drawText("Fake infection level " .. self.character:getBodyDamage():getFakeInfectionLevel(), x, y, 1, 1, 1, 1, UIFont.Small);
         y = y + fontHgt;
     end
     if self.cheat and self.character:getReduceInfectionPower() > 0 then
-        self:drawText("Antibiotic level " .. self.character:getReduceInfectionPower(), x - 15, y, 1, 1, 1, 1, UIFont.Small);
+        self:drawText("Antibiotic level " .. self.character:getReduceInfectionPower(), x, y, 1, 1, 1, 1, UIFont.Small);
         y = y + fontHgt;
     end
 
     local listItemsHeight = self.listbox:getScrollHeight()
-    local myHeight = y + listItemsHeight + fontHgt + PAD_BOTTOM * 2
+    local myHeight = y + listItemsHeight + fontHgt + UI_BORDER_SPACING * 2
     local myY = self:getY()
     local parent = self.parent
     while parent and parent.parent do
@@ -485,9 +495,9 @@ function ISHealthPanel:render()
         myHeight = getCore():getScreenHeight() - myY
     end
     self.listbox:setY(y)
-    self.listbox:setHeight(myHeight - (fontHgt + PAD_BOTTOM * 2) - y)
+    self.listbox:setHeight(myHeight - (fontHgt + UI_BORDER_SPACING * 2) - y)
     self.listbox.vscroll:setHeight(self.listbox:getHeight())
-    self.allTextHeight = myHeight - (fontHgt + PAD_BOTTOM * 2)
+    self.allTextHeight = myHeight - (fontHgt + UI_BORDER_SPACING * 2)
 	
 	if self.blockingMessage then
         self:drawRect(0, 0, self.width, self.height, 0.9*self.blockingAlpha, 0, 0, 0);
@@ -512,7 +522,7 @@ function ISHealthPanel:getDamagedParts()
     for i=1,bodyParts:size() do
         local bodyPart = bodyParts:get(i-1)
         local bodyPartAction = self.bodyPartAction and self.bodyPartAction[bodyPart]
-        if ISHealthPanel.cheat or bodyPart:HasInjury() or bodyPart:bandaged() or bodyPart:stitched() or bodyPart:getSplintFactor() > 0 or bodyPart:getAdditionalPain() > 10 or bodyPart:getStiffness() > 5 then
+        if ISHealthPanel.cheat or bodyPart:HasInjury() or bodyPart:bandaged() or bodyPart:stitched() or bodyPart:getSplintFactor() > 0 or bodyPart:getAdditionalPain() > 10 or bodyPart:getStiffness() > 5  or (isDebug and bodyPart:getStiffness() > 0) then
             table.insert(result, bodyPart)
         end
     end
@@ -691,14 +701,35 @@ function ISHealthBodyPartListBox:doDrawItem(y, item, alt)
             y = y + fontHgt;
         end
     end
-    if bodyPart:getStiffness() > 5 then
-        self:drawText("- " .. getText("IGUI_health_Stiffness"), x, y, 1, 0.58, 0, 1, UIFont.Small);
+--     if bodyPart:getStiffness() > 5 or (isDebug and bodyPart:getStiffness() > 0) then
+    local showStiffness = false;
+    local minorStiffness = false;
+    local showDebugStiffness = false;
+    if bodyPart:getStiffness() >= 5 then showStiffness = true
+    elseif isDebugEnabled() and bodyPart:getStiffness() > 0 and ISHealthPanel.cheat then showDebugStiffness = true end
+    if showStiffness and bodyPart:getStiffness() < 20 then minorStiffness = true end
+
+    if minorStiffness then
+        self:drawText("- " .. getText("IGUI_health_MinorStiffness"), x, y, 1, 0.58, 0, 1, UIFont.Small);
         y = y + fontHgt;
         if ISHealthPanel.cheat then
-            self:drawText("     - exercise fatigue " .. round(bodyPart:getStiffness(),2), x, y, 0.89, 0.28, 0.28, 1, UIFont.Small);
+--             self:drawText("- " .. getText("(Debug - HAS NO EFFECT ON THE PLAYER!)"), x, y, 1, 0.58, 0, 1, UIFont.Small);
+            self:drawText("- " .. getText("(Debug - HAS NO EFFECT ON THE PLAYER!)") .. round(bodyPart:getStiffness(),2) .. "/100", x, y, 1, 0.58, 0, 1, UIFont.Small);
+--             self:drawText("- " .. getText("(Debug) ") .. round(bodyPart:getStiffness(),2) .. "/100", x, y, 1, 0.58, 0, 1, UIFont.Small);
             y = y + fontHgt;
         end
+    elseif showStiffness then
+        self:drawText("- " .. getText("IGUI_health_Stiffness"), x, y, 0.89, 0.28, 0.28, 1, UIFont.Small);
+        y = y + fontHgt;
+        if ISHealthPanel.cheat then
+            self:drawText("- " .. getText("(Debug) ") .. round(bodyPart:getStiffness(),2) .. "/100", x, y, 0.89, 0.28, 0.28, 1, UIFont.Small);
+            y = y + fontHgt;
+        end
+    elseif  showDebugStiffness then
+        self:drawText("- " .. getText("IGUI_health_DebugInvisibleStiffness") .. round(bodyPart:getStiffness(),2) .. "/100", x, y, 0.89, 0.89, 0.28, 1, UIFont.Small);
+        y = y + fontHgt;
     end
+
     if bodyPart:bleeding() then
         self:drawText("- " .. getText("IGUI_health_Bleeding"),x, y, 0.89, 0.28, 0.28, 1, UIFont.Small);
         y = y + fontHgt;
@@ -855,13 +886,18 @@ end
 -- This is used by various timed action isValid() functions to check that the patient
 -- has not moved away from the doctor.
 function ISHealthPanel.DidPatientMove(doctor, patient, patientX, patientY)
-    if doctor == patient then return false end
+    -- Driving in a moving vehicle is not ok
+    if doctor == patient then return patient:isDriving() end
 	if patient:getX() == patientX and patient:getY() == patientY then return false end
-	-- Driving in a moving vehicle is not ok
-	if patient:isDriving() then return true end
+    -- Driver in a moving vehicle is not ok
+    if doctor:isDriving() then return true end
 	-- Driver in a stopped vehicle or passenger in moving vehicle are both ok
 	if patient:getVehicle() then return false end
 	return true
+end
+
+function ISHealthPanel.IsCharactersInSameCar(doctor, patient)
+    return doctor:isSeatedInVehicle() and patient:isSeatedInVehicle() and doctor:getVehicle() == patient:getVehicle()
 end
 
 function ISHealthPanel:onGainJoypadFocus(joypadData)
@@ -1284,7 +1320,7 @@ function HDisinfect:new(panel, bodyPart)
 end
 
 function HDisinfect:checkItem(item)
-    if item:getAlcoholPower() > 0 then
+    if (item:hasComponent(ComponentType.FluidContainer) and item:getFluidContainer():getProperties():getAlcohol() >= 0.4 and (item:getFluidContainer():getAmount() > 0.15)) or (instanceof(item, "DrainableComboItem") and item:getAlcoholPower() == 4.0) then
         self:addItem(self.items.ITEMS, item)
     end
 end
@@ -1337,7 +1373,7 @@ function HStitch:checkItem(item)
     if item:getType() == "Needle" or item:hasTag("SewingNeedle") then
         self:addItem(self.items.ITEMS, item)
     end
-    if item:getType() == "Thread" and item:getUsedDelta() >= 0 then
+    if item:getType() == "Thread" and item:getCurrentUsesFloat() >= 0 then
         self:addItem(self.items.ITEMS, item)
     end
     if item:getType() == "SutureNeedle" then
@@ -1516,7 +1552,7 @@ function HSplint:checkItem(item)
     if item:getType() == "Splint" then
         self:addItem(self.items.splint, item)
     end
-    if item:getType() == "Plank" or item:getType() == "TreeBranch" or item:getType() == "WoodenStick" then
+    if item:getType() == "Plank" or item:getType() == "TreeBranch2" or item:getType() == "WoodenStick2"  or item:getType() == "TreeBranch" or item:getType() == "WoodenStick" then
         self:addItem(self.items.plank, item)
     end
     if item:getType() == "RippedSheets" then
@@ -1801,7 +1837,7 @@ function ISHealthPanel:doBodyPartContextMenu(bodyPart, x, y)
         local cheatSpawnItemSubMenu = cheatSubMenu:getNew(cheatSubMenu)
         cheatSubMenu:addSubMenu(option, cheatSpawnItemSubMenu)
 
-        local types = { "Base.Bandage", "Base.Bandaid", "Base.RippedSheets", "Base.Disinfectant", "Base.Needle", "Base.Thread", "Base.SutureNeedle", "Base.Tweezers", "Base.SutureNeedleHolder", "Base.Splint", "Base.TreeBranch", "Base.WoodenStick", "Base.PlantainCataplasm", "Base.WildGarlicCataplasm", "Base.ComfreyCataplasm" }
+        local types = { "Base.Bandage", "Base.Bandaid", "Base.RippedSheets", "Base.Disinfectant", "Base.Needle", "Base.Thread", "Base.SutureNeedle", "Base.Tweezers", "Base.SutureNeedleHolder", "Base.Splint", "Base.TreeBranch2", "Base.WoodenStick2", "Base.PlantainCataplasm", "Base.WildGarlicCataplasm", "Base.ComfreyCataplasm" }
         for _,type in ipairs(types) do
             local scriptItem = getScriptManager():FindItem(type)
             local name = scriptItem and scriptItem:getDisplayName() or type
@@ -1836,7 +1872,7 @@ function ISHealthPanel:doBodyPartContextMenu(bodyPart, x, y)
         cheatPartChangeSubMenu:addOption("Toggle Scratched", bodyPart, ISHealthPanel.onCheat, "scratched", self.character, self.otherPlayer);
         cheatPartChangeSubMenu:addOption("Toggle Laceration", bodyPart, ISHealthPanel.onCheat, "cut", self.character, self.otherPlayer);
         cheatPartChangeSubMenu:addOption("Toggle Bite", bodyPart, ISHealthPanel.onCheat, "bite", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Exercise Fatique", bodyPart, ISHealthPanel.onCheat, "fatique", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption("Toggle Muscle Strain", bodyPart, ISHealthPanel.onCheat, "fatique", self.character, self.otherPlayer);
         cheatPartChangeSubMenu:addOption("Health Full", bodyPart, ISHealthPanel.onCheat, "healthFull", self.character, self.otherPlayer);
 
         --- Health Full (Body) ---

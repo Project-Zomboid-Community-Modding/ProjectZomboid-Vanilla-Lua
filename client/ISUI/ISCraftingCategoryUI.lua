@@ -6,6 +6,8 @@ ISCraftingCategoryUI = ISPanelJoypad:derive("ISCraftingCategoryUI");
 ISCraftingCategoryUI.instance = nil;
 ISCraftingCategoryUI.SMALL_FONT_HGT = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
 ISCraftingCategoryUI.MEDIUM_FONT_HGT = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
 
 function ISCraftingCategoryUI:initialise()
     ISPanelJoypad.initialise(self);
@@ -24,9 +26,8 @@ function ISCraftingCategoryUI:update()
         self:syncAllFilters();
     end
 
-    self.filterAll:setX(self.width / 3 - self.filterAll.width)
-    self.filterEntry:setWidth(self.filterAll.x - 5 - self.filterEntry.x)
-    self.recipes:setWidth(self.width / 3)
+    self.filterAll:setX(self.filterEntry.x + self.filterEntry.width + UI_BORDER_SPACING)
+    self.recipes:setWidth(self.width / (10/3) - UI_BORDER_SPACING)
 end
 
 function ISCraftingCategoryUI:prerender()
@@ -84,7 +85,9 @@ function ISCraftingCategoryUI:syncAllFilters()
     end
 end
 
-function ISCraftingCategoryUI:drawRecipesMap(y, item, alt)
+-- _drawBasic is used by craft station UI to reuse the rendering logic but skip some unneeded stuff
+-- when adding stuff to this function check how it works out in the craft station UI and where applies use the _drawBasic check to hide it there
+function ISCraftingCategoryUI:drawRecipesMap(y, item, alt, _drawBasic)
     local baseItemDY = 0
     if item.item.customRecipeName then
         baseItemDY = self.SMALL_FONT_HGT
@@ -124,22 +127,24 @@ function ISCraftingCategoryUI:drawRecipesMap(y, item, alt)
         self:drawText(name, texWidth + 20, y + 2 + self.MEDIUM_FONT_HGT + baseItemDY + (32 - self.SMALL_FONT_HGT) / 2 - 2, 1, 1, 1, a, UIFont.Small);
     end
 
-    local categoryUI = self.parent
-    local favoriteStar = nil
-    local favoriteAlpha = a
-    if item.index == self.mouseoverselected and not self:isMouseOverScrollBar() then
-        if self:getMouseX() >= categoryUI:getFavoriteX() then
-            favoriteStar = item.item.favorite and categoryUI.favCheckedTex or categoryUI.favNotCheckedTex
-            favoriteAlpha = 0.9
-        else
-            favoriteStar = item.item.favorite and categoryUI.favoriteStar or categoryUI.favNotCheckedTex
-            favoriteAlpha = item.item.favorite and a or 0.3
+    if not _drawBasic then
+        local categoryUI = self.parent
+        local favoriteStar = nil
+        local favoriteAlpha = a
+        if item.index == self.mouseoverselected and not self:isMouseOverScrollBar() then
+            if self:getMouseX() >= categoryUI:getFavoriteX() then
+                favoriteStar = item.item.favorite and categoryUI.favCheckedTex or categoryUI.favNotCheckedTex
+                favoriteAlpha = 0.9
+            else
+                favoriteStar = item.item.favorite and categoryUI.favoriteStar or categoryUI.favNotCheckedTex
+                favoriteAlpha = item.item.favorite and a or 0.3
+            end
+        elseif item.item.favorite then
+            favoriteStar = categoryUI.favoriteStar
         end
-    elseif item.item.favorite then
-        favoriteStar = categoryUI.favoriteStar
-    end
-    if favoriteStar then
-        self:drawTexture(favoriteStar, categoryUI:getFavoriteX() + categoryUI.favPadX, y + (item.height / 2 - favoriteStar:getHeight() / 2), favoriteAlpha,1,1,1);
+        if favoriteStar then
+            self:drawTexture(favoriteStar, categoryUI:getFavoriteX() + categoryUI.favPadX, y + (item.height / 2 - favoriteStar:getHeight() / 2), favoriteAlpha,1,1,1);
+        end
     end
 
     return y + item.height;
@@ -166,10 +171,7 @@ function ISCraftingCategoryUI:onMouseDown_Recipes(x, y)
 end
 
 function ISCraftingCategoryUI:create()
-    local fontHgtSmall = self.SMALL_FONT_HGT
-    local entryHgt = fontHgtSmall + 2 * 2
-
-    self.recipes = ISScrollingListBox:new(1, entryHgt + 25, self.width / 3, self.height - (entryHgt + 25));
+    self.recipes = ISScrollingListBox:new(UI_BORDER_SPACING + 1, BUTTON_HGT + UI_BORDER_SPACING*2, self.width / (10/3) - UI_BORDER_SPACING, self.height - (BUTTON_HGT + UI_BORDER_SPACING*3+1));
     self.recipes:initialise();
     self.recipes:instantiate();
     self.recipes:setAnchorRight(false) -- resize in update()
@@ -188,19 +190,20 @@ function ISCraftingCategoryUI:create()
     self.recipes.MEDIUM_FONT_HGT = self.MEDIUM_FONT_HGT
 
 
-    self.filterLabel = ISLabel:new(4, 2, entryHgt, getText("IGUI_CraftUI_Name_Filter"),1,1,1,1,UIFont.Small, true);
+    self.filterLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_CraftUI_Name_Filter"),1,1,1,1,UIFont.Small, true);
     self:addChild(self.filterLabel);
 
-    local width = ((self.width/3) - getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CraftUI_Name_Filter"))) - 98;
-    self.filterEntry = ISTextEntryBox:new("", getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CraftUI_Name_Filter")) + 9, 2, width, fontHgtSmall);
+    local width = 200;
+    self.filterEntry = ISTextEntryBox:new("", self.filterLabel.x +  self.filterLabel.width + UI_BORDER_SPACING, self.filterLabel.y, width, BUTTON_HGT);
     self.filterEntry:initialise();
     self.filterEntry:instantiate();
     self.filterEntry:setText("");
     self.filterEntry:setClearButton(true);
     self:addChild(self.filterEntry);
     self.lastText = self.filterEntry:getInternalText();
-    
-    self.filterAll = ISTickBox:new(self.filterEntry.x + self.filterEntry.width + 5, 2, 20, entryHgt, "", self, self.onFilterAll)
+
+    --for some reason, this needs offsetting by 1 on the y direction to make the text line up correctly
+    self.filterAll = ISTickBox:new(self.filterEntry.x + self.filterEntry.width + UI_BORDER_SPACING, self.filterLabel.y, BUTTON_HGT, BUTTON_HGT, "", self, self.onFilterAll)
     self.filterAll:initialise()
     self.filterAll:addOption(getText("IGUI_FilterAll"));
     self.filterAll:setWidthToFit()

@@ -4,16 +4,20 @@
 
 ISVehiclePartMenu = {}
 
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
+
 local function predicatePetrol(item)
-	return (item:hasTag("Petrol") or item:getType() == "PetrolCan") and item:getUsedDelta() > 0
+	return item:getFluidContainer() and item:getFluidContainer():contains(Fluid.Petrol)
 end
 
 local function predicateEmptyPetrol(item)
-	return item:hasTag("EmptyPetrol") or item:getType() == "EmptyPetrolCan"
+	return item:getFluidContainer() and item:getFluidContainer():isEmpty()
 end
 
 local function predicatePetrolNotFull(item)
-	return (item:hasTag("Petrol") or item:getType() == "PetrolCan") and item:getUsedDelta() < 1 
+	return item:getFluidContainer() and item:getFluidContainer():contains(Fluid.Petrol) and item:getFluidContainer():getFreeCapacity() > 0
 end
 
 function ISVehiclePartMenu.getNearbyFuelPump(vehicle)
@@ -27,6 +31,9 @@ function ISVehiclePartMenu.getNearbyFuelPump(vehicle)
 		for dx=-2,2 do
 			-- TODO: check line-of-sight between 2 squares
 			local square2 = getCell():getGridSquare(square:getX() + dx, square:getY() + dy, square:getZ())
+			if not square2 or not square2:getObjects() then
+				return nil;
+			end
 			for i=0, square2:getObjects():size()-1 do
 				local obj = square2:getObjects():get(i);
 				if obj:getPipedFuelAmount() > 0 then
@@ -47,15 +54,12 @@ function ISVehiclePartMenu.getGasCanNotEmpty(playerObj, typeToItem)
 	if inv:containsEvalRecurse(predicatePetrol) then
 		local allPetrol = inv:getAllEvalRecurse(predicatePetrol)
 		local gasCan = nil
-		-- local usedDelta = 1.1
-		local drainableUses = - 1
+		local amount = - 1
         for j=1,allPetrol:size() do
             local item = allPetrol:get(j-1)
-			-- if item:getUsedDelta() > 0 and item:getUsedDelta() < usedDelta then
-			if item:getUsedDelta() > 0 and ( drainableUses == -1 or ( item:getDrainableUsesInt() > drainableUses ) ) then
+			if item:getFluidContainer():getAmount() > 0 and ( item:getFluidContainer():getAmount() > amount ) then
 				gasCan = item
-				-- usedDelta = gasCan:getUsedDelta()
-				drainableUses = gasCan:getDrainableUsesInt()
+				amount = gasCan:getFluidContainer():getAmount();
 			end
 		end
 		if gasCan then return gasCan end
@@ -64,7 +68,7 @@ function ISVehiclePartMenu.getGasCanNotEmpty(playerObj, typeToItem)
 end
 
 function ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem)
-	-- Prefer an equipped EmptyPetrolCan/PetrolCan, then the fullest PetrolCan, then any EmptyPetrolCan.
+	-- Prefer an equipped PetrolCanEmpty/PetrolCan, then the fullest PetrolCan, then any PetrolCanEmpty.
 	local equipped = playerObj:getPrimaryHandItem()
 	if equipped and predicatePetrolNotFull(equipped) then
 		return equipped
@@ -77,14 +81,12 @@ function ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem)
 		local allPetrol = inv:getAllEvalRecurse(predicatePetrolNotFull)
 		local gasCan = nil
 		-- local usedDelta = -1
-		local drainableUses = -1
+		local amount = -1
 		for j=1,allPetrol:size() do
 			local item = allPetrol:get(j-1)
-			-- if item:getUsedDelta() > usedDelta then
-			if item:getDrainableUsesInt() > drainableUses then
+			if item:getFluidContainer():getAmount() > amount then
 				gasCan = item
-				-- usedDelta = gasCan:getUsedDelta()
-				drainableUses = gasCan:getDrainableUsesInt()
+				amount = gasCan:getFluidContainer():getAmount();
 			end
 		end
 		if gasCan then return gasCan end
@@ -102,29 +104,52 @@ function ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 	end
 end
 
+function ISVehiclePartMenu.toPlayerInventoryTag(playerObj, tag)
+	local item = playerObj:getInventory():getFirstTagEvalRecurse(tag, predicateNotBroken)
+	if item and item:getContainer() and item:getContainer() ~= playerObj:getInventory() then
+		local action = ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory())
+		ISTimedActionQueue.add(action)
+	end
+end
+
 function ISVehiclePartMenu.transferRequiredItems(playerObj, part, tbl)
-	if tbl and tbl.items then
-		local typeToItem = VehicleUtils.getItems(playerObj:getPlayerNum())
-		for _,item in pairs(tbl.items) do
+	if not tbl or not tbl.items then return end
+	local typeToItem,tagToItem = VehicleUtils.getItems(playerObj:getPlayerNum())
+	local itemScripts = VehicleUtils.getItemScripts(tbl.items)
+	for _,itemTable in ipairs(itemScripts) do
+		local count = 0
+		for _,thing in ipairs(itemTable.scripts) do
+			local fullType = thing.script:getFullName()
 			-- FIXME: handle drainables
-			for i=1,tonumber(item.count) do
-				ISVehiclePartMenu.toPlayerInventory(playerObj, typeToItem[item.type][i])
+			if typeToItem[fullType] ~= nil and #typeToItem[fullType] > 0 then
+				local invItem = table.remove(typeToItem[fullType], 1)
+				 ISVehiclePartMenu.toPlayerInventory(playerObj, invItem)
+				 count = count + 1
+			end
+			if count >= tonumber(itemTable.item.count) then
+				break
 			end
 		end
 	end
 end
 
 function ISVehiclePartMenu.equipRequiredItems(playerObj, part, tbl)
-	if tbl and tbl.items then
-		for _,item in pairs(tbl.items) do
-			local module,type = VehicleUtils.split(item.type, "\\.")
-			type = type or item.type -- in case item.type has no '.'
-			if item.equip == "primary" then
-				ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), type, true)
-			elseif item.equip == "secondary" then
-				ISWorldObjectContextMenu.equip(playerObj, playerObj:getSecondaryHandItem(), type, false)
-			elseif item.equip == "both" then
-				ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), type, false, true)
+	if not tbl or not tbl.items then return end
+	local typeToItem,tagToItem = VehicleUtils.getItems(playerObj:getPlayerNum())
+	local itemScripts = VehicleUtils.getItemScripts(tbl.items)
+	for _,itemTable in ipairs(itemScripts) do
+		local item = itemTable.item
+		for _,thing in ipairs(itemTable.scripts) do
+			local type = thing.script:getFullName()
+			if typeToItem[type] then
+				if item.equip == "primary" then
+					ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), typeToItem[type][1], true)
+				elseif item.equip == "secondary" then
+					ISWorldObjectContextMenu.equip(playerObj, playerObj:getSecondaryHandItem(), typeToItem[type][1], false)
+				elseif item.equip == "both" then
+					ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), typeToItem[type][1], false, true)
+				end
+				break
 			end
 		end
 	end
@@ -161,10 +186,10 @@ function ISVehiclePartMenu.onInstallPart(playerObj, part, item)
 	local time = tonumber(keyvalues.time) or 50
 	if engineCover and not ISVehicleMechanics.cheat then
 		ISTimedActionQueue.add(ISOpenVehicleDoor:new(playerObj, part:getVehicle(), engineCover))
-		ISTimedActionQueue.add(ISInstallVehiclePart:new(playerObj, part, item, time))
+		ISTimedActionQueue.add(ISInstallVehiclePart:new(playerObj, part, item, time - (playerObj:getPerkLevel(Perks.Mechanics) * (time/15))))
 		ISTimedActionQueue.add(ISCloseVehicleDoor:new(playerObj, part:getVehicle(), engineCover))
 	else
-		ISTimedActionQueue.add(ISInstallVehiclePart:new(playerObj, part, item, time))
+		ISTimedActionQueue.add(ISInstallVehiclePart:new(playerObj, part, item, time - (playerObj:getPerkLevel(Perks.Mechanics) * (time/15))))
 	end
 end
 
@@ -212,13 +237,15 @@ function ISVehiclePartMenu.onPumpGasoline(playerObj, part)
 			local action = ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea())
 			action:setOnFail(ISVehiclePartMenu.onPumpGasolinePathFail, playerObj)
 			ISTimedActionQueue.add(action)
-			ISTimedActionQueue.add(ISRefuelFromGasPump:new(playerObj, part, fuelStation, 100))
+			ISTimedActionQueue.add(ISRefuelFromGasPump:new(playerObj, part, fuelStation))
 		end
 	end
 end
 
 function ISVehiclePartMenu.onPumpGasolinePathFail(playerObj)
-	playerObj:Say(getText("IGUI_PlayerText_NoWayToFuelTankInlet"));
+	-- playerObj:Say(getText("IGUI_PlayerText_NoWayToFuelTankInlet"));
+	HaloTextHelper.addBadText(playerObj, getText("IGUI_PlayerText_NoWayToFuelTankInlet"));
+-- 	HaloTextHelper.addText(playerObj, getText("IGUI_PlayerText_NoWayToFuelTankInlet"), getCore():getGoodHighlitedColor());
 end
 
 function ISVehiclePartMenu.onAddGasoline(playerObj, part)
@@ -231,7 +258,7 @@ function ISVehiclePartMenu.onAddGasoline(playerObj, part)
 		ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 		ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
 		ISInventoryPaneContextMenu.equipWeapon(item, true, false, playerObj:getPlayerNum())
-		ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, item, 50))
+		ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, item))
 	end
 end
 
@@ -239,16 +266,15 @@ function ISVehiclePartMenu.onTakeGasoline(playerObj, part)
 	if playerObj:getVehicle() then
 		ISVehicleMenu.onExit(playerObj)
 	end
-	local typeToItem = VehicleUtils.getItems(playerObj:getPlayerNum()) --BleachEmpty
-	-- kludge to get the biggest empty vanilla containers first
-	local item = playerObj:getInventory():getFirstTypeRecurse("Base.EmptyPetrolCan") or playerObj:getInventory():getFirstTypeRecurse("Base.BleachEmpty")	
-	--if not item then item = ISVehiclePartMenu.getGasCanNotEmpty(playerObj, typeToItem) or ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem) end	
-	if not item then item = ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem) end
-	if item then
+	local typeToItem,tagToItem = VehicleUtils.getItems(playerObj:getPlayerNum())
+	local item = ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem)
+	local hose = tagToItem["SiphonGas"] and tagToItem["SiphonGas"][1]
+	if item and hose then
 		ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 		ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
 		ISInventoryPaneContextMenu.equipWeapon(item, false, false, playerObj:getPlayerNum())
-		ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, item, 50))
+		ISInventoryPaneContextMenu.equipWeapon(hose, true, false, playerObj:getPlayerNum())
+		ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, item))
 	end
 end
 
@@ -268,8 +294,7 @@ function ISVehiclePartMenu.onInflateTire(playerObj, part)
 	if round(part:getContainerContentAmount(), 2) < part:getContainerCapacity() then
 		psiTarget = part:getContainerCapacity()
 	end
-	local maxTime = math.ceil(psiTarget - part:getContainerContentAmount()) * 100
-	ISTimedActionQueue.add(ISInflateTire:new(playerObj, part, pump, psiTarget, maxTime))
+	ISTimedActionQueue.add(ISInflateTire:new(playerObj, part, pump, psiTarget))
 end
 
 function ISVehiclePartMenu.onDeflateTire(playerObj, part)
@@ -278,7 +303,7 @@ function ISVehiclePartMenu.onDeflateTire(playerObj, part)
 	end
 	-- TODO: choose desired tire pressure (underinflated - recommended - max)
 	ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
-	ISTimedActionQueue.add(ISDeflateTire:new(playerObj, part, 0, (part:getContainerContentAmount() - 0) * 50))
+	ISTimedActionQueue.add(ISDeflateTire:new(playerObj, part, 0))
 end
 
 function ISVehiclePartMenu.onDeviceOptions(playerObj, part)
@@ -323,14 +348,14 @@ function ISVehiclePartMenu.onOpenCloseWindow(playerObj, part, open)
 			ISVehicleMenu.onExit(playerObj)
 		end
 	end
-	ISTimedActionQueue.add(ISOpenCloseVehicleWindow:new(playerObj, part, open, 50))
+	ISTimedActionQueue.add(ISOpenCloseVehicleWindow:new(playerObj, part, open))
 end
 
 
 function ISVehiclePartMenu.onLockDoors(playerObj, vehicle, lock)
 --	if playerObj:getInventory():haveThisKeyId(vehicle:getKeyId()) or vehicle:isEngineRunning() then
 	if playerObj:getVehicle() == vehicle then
-		ISTimedActionQueue.add(ISLockDoors:new(playerObj, vehicle, lock, 10))
+		ISTimedActionQueue.add(ISLockDoors:new(playerObj, vehicle, lock))
 	end
 end
 
@@ -344,23 +369,25 @@ function ISVehiclePartMenu.onSmashWindow(playerObj, part, open)
 		ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
 	end
 
-	ISTimedActionQueue.add(ISSmashVehicleWindow:new(playerObj, part))
+	ISTimedActionQueue.add(ISSmashWindow:new(playerObj, part:getWindow(), part));
+	--playerObj:smashCarWindow(part)
 end
 
 ISVehiclePartMenu.doSiphonFuelMenu = function(playerObj, part, context)
 	local source = part:getVehicle()
 	local playerNum = playerObj:getPlayerNum()
 	local playerInv = playerObj:getInventory()
+	local hose = playerObj:getInventory():getFirstTagRecurse("SiphonGas")
 	local allContainers = {}
 	local allContainerTypes = {}
 	local allContainersOfType = {}
 	local pourInto = playerInv:getAllEvalRecurse(function(item)
-		-- our item can store fue, but doesn't have fuel right now
-		if item:hasTag("EmptyPetrol") and not item:isBroken() then
+		-- our item can store fuel, but doesn't have fuel right now
+		if item:getFluidContainer() and item:getFluidContainer():isEmpty() then
 			return true
 		end
 		-- or our item can store fuel and is not full
-		if item:hasTag("Petrol") and not item:isBroken() and instanceof(item, "DrainableComboItem") and item:getUsedDelta() < 1 then
+		if item:getFluidContainer() and item:getFluidContainer():contains(Fluid.Petrol) and item:getFluidContainer():getFreeCapacity() > 0 then
 			return true
 		end
 		return false
@@ -369,6 +396,13 @@ ISVehiclePartMenu.doSiphonFuelMenu = function(playerObj, part, context)
 		return
 	end
 	local fillOption = context:addOption(getText("ContextMenu_VehicleSiphonGas"), worldobjects, nil);
+	if not hose then
+		fillOption.notAvailable = true;
+		local tooltip = ISInventoryPaneContextMenu.addToolTip();
+		tooltip.description = getText("ContextMenu_VehicleNeedHose");
+		fillOption.toolTip = tooltip;	
+		return false
+	end
 	if not source:getSquare() or not AdjacentFreeTileFinder.Find(source:getSquare(), playerObj) then
 		fillOption.notAvailable = true;
 		--if the player can reach the tile, populate the submenu, otherwise don't bother
@@ -414,12 +448,10 @@ ISVehiclePartMenu.doSiphonFuelMenu = function(playerObj, part, context)
 			end
 		else
 			containerOption = containerMenu:addOption(destItem:getName(), worldobjects, ISVehiclePartMenu.onTakeFuelNew, part, nil, destItem, playerNum);
-			if instanceof(destItem, "DrainableComboItem") then
+			if destItem:getFluidContainer() then
 				local t = ISWorldObjectContextMenu.addToolTip()
 				t.maxLineWidth = 512
-				local unitsPerCan = math.floor(1 / destItem:getUseDelta() + 0.001)
-				local JerryCanLitres = Vehicles.JerryCanLitres * (unitsPerCan / 8)
-				t.description = getText("ContextMenu_FuelCapacity") .. string.format("%s / %s", round(destItem:getUsedDelta() * JerryCanLitres, 3), round(JerryCanLitres, 3))
+				t.description = getText("ContextMenu_FuelCapacity") .. string.format("%s / %s", (math.floor(destItem:getFluidContainer():getFreeCapacity() * 1000) / 1000), (math.floor(destItem:getFluidContainer():getCapacity() * 1000) / 1000))
 				containerOption.toolTip = t
 			end
 		end
@@ -440,7 +472,7 @@ ISVehiclePartMenu.onTakeFuelNew = function(worldobjects, part, fuelContainerList
 		if item and part:getContainerContentAmount() > 0 then
 			ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 			ISInventoryPaneContextMenu.equipWeapon(item, false, false, playerObj:getPlayerNum())
-			ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, item, 50))
+			ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, item))
 		end
 	end
 end
@@ -454,7 +486,7 @@ ISVehiclePartMenu.doAddFuelMenu = function(playerObj, part, context)
 	local allContainersOfType = {}
 	local pourOut = playerInv:getAllEvalRecurse(function(item)
 		-- or our item can store fuel and is not empty
-		if item:hasTag("Petrol") and not item:isBroken() and instanceof(item, "DrainableComboItem") and item:getUsedDelta() > 0 then
+		if item:getFluidContainer() and item:getFluidContainer():contains(Fluid.Petrol) then
 			return true
 		end
 		return false
@@ -508,12 +540,10 @@ ISVehiclePartMenu.doAddFuelMenu = function(playerObj, part, context)
 			end
 		else
 			containerOption = containerMenu:addOption(destItem:getName(), worldobjects, ISVehiclePartMenu.onAddFuelNew, part, nil, destItem, playerNum);
-			if instanceof(destItem, "DrainableComboItem") then
+			if destItem:getFluidContainer() then
 				local t = ISWorldObjectContextMenu.addToolTip()
 				t.maxLineWidth = 512
-				local unitsPerCan = math.floor(1 / destItem:getUseDelta() + 0.001)
-				local JerryCanLitres = Vehicles.JerryCanLitres * (unitsPerCan / 8)
-				t.description = getText("ContextMenu_FuelCapacity") .. string.format("%s / %s", round(destItem:getUsedDelta() * JerryCanLitres, 3), round(JerryCanLitres, 3))
+				t.description = getText("ContextMenu_FuelCapacity") .. string.format("%s / %s", destItem:getFluidContainer():getFreeCapacity(), destItem:getFluidContainer():getCapacity())
 				containerOption.toolTip = t
 			end
 		end
@@ -534,7 +564,7 @@ ISVehiclePartMenu.onAddFuelNew = function(worldobjects, part, fuelContainerList,
 		if item and part:getContainerContentAmount() < part:getContainerCapacity() then
 			ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 			ISInventoryPaneContextMenu.equipWeapon(item, true, false, playerObj:getPlayerNum())
-			ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, item, 50))			
+			ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, item))
 		end
 	end
 end

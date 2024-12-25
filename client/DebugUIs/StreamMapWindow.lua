@@ -34,8 +34,12 @@ function StreamMapWindow:fillInfo()
         local ob = self.selectedSquare:getObjects();
 
         for i=0, ob:size() - 1 do
-            local o =ob:get(i);
-            self.objectView:addItem(o:getTile(), o);
+            local o = ob:get(i);
+            local text = (o:getSprite() and o:getSprite():getName()) or o:getSpriteName()
+            if text == nil or text == "" then
+                text = o:getClass():getSimpleName()
+            end
+            self.objectView:addItem(text, o);
         end
         ob = self.selectedSquare:getMovingObjects();
 
@@ -65,7 +69,7 @@ function StreamMapWindow:onMapMouseDown(x, y)
     x = translatePointXInOverheadMapToWorld(x, self.javaObject,self.parent.zoom, self.parent.xpos);
     y = translatePointYInOverheadMapToWorld(y, self.javaObject,self.parent.zoom, self.parent.ypos);
 
-    local sq = cell:getGridSquare(x, y, 0);
+    local sq = cell:getGridSquare(x, y, self.parent.level);
 
     self.parent.selectedSquare = sq;
     self.parent:fillInfo();
@@ -157,11 +161,11 @@ end
 function StreamMapWindow:renderTex()
     local x = translatePointXInOverheadMapToWorld(self:getMouseX(), self.javaObject, self.parent.zoom, self.parent.xpos)
     local y = translatePointYInOverheadMapToWorld(self:getMouseY(), self.javaObject, self.parent.zoom, self.parent.ypos)
-    self.parent.title = "Map Debugger " .. round(x,0) .. ":" .. round(y,0);
+    self.parent.title = string.format("Map Debugger %d,%d,%d", x, y, self.parent.level);
     
     self:setStencilRect(0,0,self:getWidth(), self:getHeight());
 
-    drawOverheadMap(self.javaObject,self.parent.zoom, self.parent.xpos, self.parent.ypos);
+    drawOverheadMap(self.javaObject, self.parent.level, self.parent.zoom, self.parent.xpos, self.parent.ypos);
 
     if self.parent.selectedSquare ~= nil then
         local x = translatePointXInOverheadMapToWindow(self.parent.selectedSquare:getX(), self.javaObject,self.parent.zoom, self.parent.xpos);
@@ -186,8 +190,15 @@ function StreamMapWindow:renderTex()
         local p = getSpecificPlayer(0)
         p:setX(x + 0.5)
         p:setY(y + 0.5)
-        p:setLx(p:getX())
-        p:setLy(p:getY())
+        p:setLastX(p:getX())
+        p:setLastY(p:getY())
+    end
+
+    if isKeyPressed(Keyboard.KEY_NEXT) then
+        self.parent.level = self.parent.level - 1
+    end
+    if isKeyPressed(Keyboard.KEY_PRIOR) then
+        self.parent.level = self.parent.level + 1
     end
 end
 
@@ -203,6 +214,7 @@ function StreamMapWindow:new (x, y, width, height)
     o.xpos = getSpecificPlayer(0):getX();
     o.ypos =  getSpecificPlayer(0):getY();
     o.zoom = 1;
+    o.level = 0;
     return o
 end
 

@@ -5,8 +5,8 @@
 require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditorMode_Annotations = WorldMapEditorMode:derive("WorldMapEditorMode_Annotations")
 
@@ -14,7 +14,7 @@ WorldMapEditorMode_Annotations = WorldMapEditorMode:derive("WorldMapEditorMode_A
 
 function WorldMapEditorMode_Annotations:createChildren()
 	local symbolsWidth = ISWorldMapSymbols.RequiredWidth()
-	self.symbolsUI = ISWorldMapSymbols:new(10, 80, symbolsWidth, 200, self.editor)
+	self.symbolsUI = ISWorldMapSymbols:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, symbolsWidth, 200, self.editor)
 	self.symbolsUI.showTranslationOption = true
 	self:addChild(self.symbolsUI)
 end
@@ -72,6 +72,7 @@ end
 
 function WorldMapEditorMode_Annotations:prerender()
 	ISPanel.prerender(self)
+	self.symbolsUI:prerenderMap()
 end
 
 function WorldMapEditorMode_Annotations:render()

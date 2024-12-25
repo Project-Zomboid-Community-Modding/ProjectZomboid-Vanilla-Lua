@@ -13,6 +13,9 @@ require "defines"
 MainScreen = ISPanelJoypad:derive("MainScreen");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
+local JOYPAD_TEX_SIZE = 32
 
 function MainScreen:initialise()
 	ISPanel.initialise(self);
@@ -38,6 +41,9 @@ function MainScreen:setBottomPanelVisible(visible)
     end
     if self.parent and self.parent.modListDetail then
         self.parent.modListDetail:setVisible(visible)
+    end
+    if self.parent and self.parent.termsOfService then
+        self.parent.termsOfService:setVisible(visible)
     end
 end
 
@@ -79,16 +85,16 @@ function MainScreen:instantiate()
     if not self.inGame and not isDemo() then
 
 
-        self.joinServer = ServerList:new(0, 0, self.width, self.height);
+        self.serverList = ServerList:new(0, 0, self.width, self.height);
 
-        self.joinServer:initialise();
-        self.joinServer:setVisible(false);
-        self.joinServer:setAnchorRight(true);
-        self.joinServer:setAnchorLeft(true);
-        self.joinServer:setAnchorBottom(true);
-        self.joinServer:setAnchorTop(true);
-        self.joinServer.backgroundColor = {r=0, g=0, b=0, a=0.8};
-        self.joinServer.borderColor = {r=1, g=1, b=1, a=0.5};
+        self.serverList:initialise();
+        self.serverList:setVisible(false);
+        self.serverList:setAnchorRight(true);
+        self.serverList:setAnchorLeft(true);
+        self.serverList:setAnchorBottom(true);
+        self.serverList:setAnchorTop(true);
+        self.serverList.backgroundColor = {r=0, g=0, b=0, a=0.8};
+        self.serverList.borderColor = {r=1, g=1, b=1, a=0.5};
 
         self.bootstrapConnectPopup = BootstrapConnectPopup:new(0, 0, self.width, self.height);
         self.bootstrapConnectPopup:initialise();
@@ -120,6 +126,16 @@ function MainScreen:instantiate()
         self.serverConnectPopup.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.serverConnectPopup.borderColor = {r=1, g=1, b=1, a=0.5};
 
+        self.multiplayer = MultiplayerScreen:new(0, 0, self.width, self.height);
+
+        self.multiplayer:initialise();
+        self.multiplayer:setVisible(false);
+        self.multiplayer:setAnchorRight(true);
+        self.multiplayer:setAnchorLeft(true);
+        self.multiplayer:setAnchorBottom(true);
+        self.multiplayer:setAnchorTop(true);
+        self.multiplayer.backgroundColor = {r=0, g=0, b=0, a=0.8};
+        self.multiplayer.borderColor = {r=1, g=1, b=1, a=0.5};
 
         self.joinPublicServer = PublicServerList:new(0, 0, self.width, self.height);
 
@@ -236,6 +252,7 @@ function MainScreen:instantiate()
         self.worldSelect:setAnchorLeft(true);
         self.worldSelect:setAnchorBottom(true);
         self.worldSelect:setAnchorTop(true);
+
         self.worldSelect.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.worldSelect.borderColor = {r=1, g=1, b=1, a=0.5};
 
@@ -246,6 +263,7 @@ function MainScreen:instantiate()
         self.mapSpawnSelect:setAnchorLeft(true);
         self.mapSpawnSelect:setAnchorBottom(true);
         self.mapSpawnSelect:setAnchorTop(true);
+
         self.mapSpawnSelect.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.mapSpawnSelect.borderColor = {r=1, g=1, b=1, a=0.5};
 
@@ -270,8 +288,8 @@ function MainScreen:instantiate()
         self.charCreationMain:setAnchorBottom(true);
         self.charCreationMain:setAnchorTop(true);
 
-        self.charCreationMain.backgroundColor = {r=0, g=0, b=0, a=0.0};
-        self.charCreationMain.borderColor = {r=1, g=1, b=1, a=0.0};
+        self.charCreationMain.backgroundColor = {r=0, g=0, b=0, a=0.8};
+        self.charCreationMain.borderColor = {r=1, g=1, b=1, a=0.5};
 
         self.charCreationProfession = CharacterCreationProfession:new(0, 0, self:getWidth(), self:getHeight());
 
@@ -282,10 +300,10 @@ function MainScreen:instantiate()
         self.charCreationProfession:setAnchorBottom(true);
         self.charCreationProfession:setAnchorTop(true);
 
-        self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.0};
-        self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.0};
+        self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.8};
+        self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.5};
 
-        self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 200);
+        self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 260+UI_BORDER_SPACING+BUTTON_HGT);
         self.charCreationHeader:initialise();
         self.charCreationHeader:setVisible(true);
         self.charCreationHeader:setAnchorRight(true);
@@ -294,20 +312,17 @@ function MainScreen:instantiate()
         self.charCreationHeader:setAnchorTop(true);
 
         self.charCreationHeader.backgroundColor = {r=0, g=0, b=0, a=0.0};
-        self.charCreationHeader.borderColor = {r=1, g=1, b=1, a=0.0};
+        self.charCreationHeader.borderColor = {r=1, g=1, b=1, a=0};
 
 		self.lastStandPlayerSelect = LastStandPlayerSelect:new(0, 0, self.width, self.height);
-
         self.lastStandPlayerSelect:initialise();
         self.lastStandPlayerSelect:setVisible(false);
         self.lastStandPlayerSelect:setAnchorRight(true);
         self.lastStandPlayerSelect:setAnchorLeft(true);
         self.lastStandPlayerSelect:setAnchorBottom(true);
         self.lastStandPlayerSelect:setAnchorTop(true);
-
         self.lastStandPlayerSelect.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.lastStandPlayerSelect.borderColor = {r=1, g=1, b=1, a=0.5};
-
 
         self.serverSettingsScreen = ServerSettingsScreen:new(0, 0, self.width, self.height);
         self.serverSettingsScreen:initialise();
@@ -336,10 +351,11 @@ function MainScreen:instantiate()
         self:addChild(self.worldSelect);
         self:addChild(self.mapSpawnSelect);
         self:addChild(self.modSelect);
-        self:addChild(self.joinServer);
+        self:addChild(self.serverList);
         self:addChild(self.bootstrapConnectPopup);
         self:addChild(self.connectToServer);
         self:addChild(self.serverConnectPopup);
+        self:addChild(self.multiplayer);
         if isPublicServerListAllowed() then
             self:addChild(self.joinPublicServer);
         end
@@ -362,150 +378,56 @@ function MainScreen:instantiate()
 	self:setWidth(w);
 	self:setHeight(h);
 	self:recalcSize();
-	if w > 1024 then
-		self.mainOptions:shrinkX(0.7);
-		self.mainOptions:shrinkY(0.8);
-    else
-		self.mainOptions:shrinkX(0.95);
-		self.mainOptions:shrinkY(0.95);
-    end
-    self.mainOptions:ignoreWidthChange();
-    self.mainOptions:ignoreHeightChange();
+    local uis = {
+        { self.scoreboard, 0.6, 0.7 },
+        { self.serverList, 0.7, 0.8 },
+        { self.multiplayer, 1.0, 1.0 },
+        { self.joinPublicServer, 0.7, 0.8 },
+        { self.connectToServer, 0.7, 0.8 },
+        { self.onlineCoopScreen, 0.5, 0.6 },
+        { self.soloScreen, 0.7, 0.8 },
+        { self.loadScreen, 0.7, 0.8 },
+        { self.sandOptions, 0.7, 0.8 },
+        { self.worldSelect, 0.7, 0.8 },
+        { self.mapSpawnSelect, 1, 1 },
+        { self.charCreationProfession, 0.7, 0.8 },
+        { self.charCreationMain, 0.7, 0.8 },
+        { self.inviteFriends, 0.7, 0.8 },
+        { self.modSelect, 0.9, 0.9 },
+        { self.lastStandPlayerSelect, 0.9, 0.9 },
+        { self.mainOptions, 0.7, 0.8 },
+        { self.workshopSubmit, 0.9, 0.9 },
+        { self.serverWorkshopItem, 0.9, 0.9 },
+        { self.serverSettingsScreen, 0.5, 0.8 },
+    }
 
-	local scaleX = 0.6
-	local scaleY = 0.7
-	if self.width <= 1024 then
-		scaleX = 0.95
-		scaleY = 0.95
-	end
-
-    if self.inGame then
-        if isClient() then
-            self.scoreboard:shrinkX(scaleX);
-            self.scoreboard:shrinkY(scaleY);
-            self.scoreboard:ignoreWidthChange();
-            self.scoreboard:ignoreHeightChange();
-
-            self.inviteFriends:shrinkX(scaleX);
-            self.inviteFriends:shrinkY(scaleY);
-            self.inviteFriends:ignoreWidthChange();
-            self.inviteFriends:ignoreHeightChange();
-
+    for _,ui in ipairs(uis) do
+        if ui[1] and ui[1].javaObject and instanceof(ui[1].javaObject, 'UIElement') then
+            local width = w * ui[2]
+            local height = h * ui[3]
+            if w <= 1024 then
+                width = w * 0.95
+                height = h * 0.95
+            end
+            ui[1]:setWidth(width)
+            ui[1]:setHeight(height)
+            ui[1]:setX((w - width) / 2)
+            ui[1]:setY((h - height) / 2)
+            ui[1]:recalcSize()
         end
-    elseif not isDemo() then
-		scaleX = 0.7
-		scaleY = 0.8
-		if self.width <= 1024 then
-			scaleX = 0.95
-			scaleY = 0.95
-		end
-		
-        self.joinServer:shrinkX(scaleX);
-        self.joinServer:shrinkY(scaleY);
-        self.joinServer:ignoreWidthChange();
-        self.joinServer:ignoreHeightChange();
-
-        self.bootstrapConnectPopup:shrinkX(scaleX);
-        self.bootstrapConnectPopup:shrinkY(scaleY);
-        self.bootstrapConnectPopup:ignoreWidthChange();
-        self.bootstrapConnectPopup:ignoreHeightChange();
-
-        self.connectToServer:shrinkX(scaleX);
-        self.connectToServer:shrinkY(scaleY);
-        self.connectToServer:ignoreWidthChange();
-        self.connectToServer:ignoreHeightChange();
-
-        self.serverConnectPopup:shrinkX(scaleX);
-        self.serverConnectPopup:shrinkY(scaleY);
-        self.serverConnectPopup:ignoreWidthChange();
-        self.serverConnectPopup:ignoreHeightChange();
-
-        self.joinPublicServer:shrinkX(scaleX);
-        self.joinPublicServer:shrinkY(scaleY);
-        self.joinPublicServer:ignoreWidthChange();
-        self.joinPublicServer:ignoreHeightChange();
-
-        self.soloScreen:shrinkX(scaleX);
-        self.soloScreen:shrinkY(scaleY);
-        self.soloScreen:ignoreWidthChange();
-        self.soloScreen:ignoreHeightChange();
-
-        self.loadScreen:shrinkX(scaleX);
-        self.loadScreen:shrinkY(scaleY);
-        self.loadScreen:ignoreWidthChange();
-        self.loadScreen:ignoreHeightChange();
-
-        self.onlineCoopScreen:shrinkX(scaleX);
-        self.onlineCoopScreen:shrinkY(scaleY);
-        self.onlineCoopScreen:ignoreWidthChange();
-        self.onlineCoopScreen:ignoreHeightChange();
-
-        self.worldSelect:shrinkX(scaleX);
-        self.worldSelect:shrinkY(scaleY);
-        self.worldSelect:ignoreWidthChange();
-        self.worldSelect:ignoreHeightChange();
-
-        self.mapSpawnSelect:shrinkX(scaleX);
-        self.mapSpawnSelect:shrinkY(scaleY);
-        self.mapSpawnSelect:ignoreWidthChange();
-        self.mapSpawnSelect:ignoreHeightChange();
-
-		scaleX = 0.8
-		scaleY = 0.8
-		if self.width <= 1024 then
-			scaleX = 0.95
-			scaleY = 0.95
-		end
-		
-        self.sandOptions:shrinkX(scaleX);
-        self.sandOptions:shrinkY(scaleY);
-        self.sandOptions:ignoreWidthChange();
-        self.sandOptions:ignoreHeightChange();
-
-		scaleX = 0.9
-		scaleY = 0.9
-		if self.width <= 1024 then
-			scaleX = 0.95
-			scaleY = 0.95
-		end
-
-        self.modSelect:shrinkX(scaleX);
-        self.modSelect:shrinkY(scaleY);
-        self.modSelect:ignoreWidthChange();
-        self.modSelect:ignoreHeightChange();
-
-		self.lastStandPlayerSelect:shrinkX(scaleX);
-        self.lastStandPlayerSelect:shrinkY(scaleY);
-        self.lastStandPlayerSelect:ignoreWidthChange();
-        self.lastStandPlayerSelect:ignoreHeightChange();
-
-        if self.workshopSubmit then
-            self.workshopSubmit:shrinkX(scaleX)
-            self.workshopSubmit:shrinkY(scaleY)
-            self.workshopSubmit:ignoreWidthChange()
-            self.workshopSubmit:ignoreHeightChange()
-        end
-        if self.serverWorkshopItem then
-            self.serverWorkshopItem:shrinkX(scaleX)
-            self.serverWorkshopItem:shrinkY(scaleY)
-            self.serverWorkshopItem:ignoreWidthChange()
-            self.serverWorkshopItem:ignoreHeightChange()
-        end
-        
-        self.serverSettingsScreen:shrinkX(scaleX)
-        self.serverSettingsScreen:shrinkY(scaleY)
-        self.serverSettingsScreen:ignoreWidthChange()
-        self.serverSettingsScreen:ignoreHeightChange()
-
-		deleteAllGameModeSaves("LastStand");
-		deleteAllGameModeSaves("Tutorial");
-
     end
 
     local labelHgt = getTextManager():getFontHeight(UIFont.Large) + 8 * 2
     local labelX = 0
     local labelY = 0
     local labelSeparator = 16
+
+    local btnWidth = UI_BORDER_SPACING*2 + math.max(
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_Details")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_NewGame_Mods")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_TermsOfService_MainMenu")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_ResetLua"))
+    )
 
     if not self.inGame then
 
@@ -531,16 +453,15 @@ function MainScreen:instantiate()
         self.debOption:setVisible(true);
 
         if getDebug() then
-            self.resetLua = ISButton:new(self.width - 40 - 90, self.height - FONT_HGT_SMALL - 45, 90, FONT_HGT_SMALL + 1 * 2, "Reset Lua" , self, function() getCore():ResetLua("default", "Force") end);
+            self.resetLua = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING*4, self.height - BUTTON_HGT, btnWidth, BUTTON_HGT, getText("UI_ResetLua") , self, function() getCore():ResetLua("default", "Force") end);
             self.resetLua:initialise();
-            self.resetLua.borderColor = {r=0.19607843137, g=0.61568627451, b=0.65882352941, a=0.8};
-            self.resetLua.textColor = {r=0.19607843137, g=0.61568627451, b=0.65882352941, a=0.8};
+            self.resetLua.borderColor = {r=0.2, g=0.8, b=1, a=1};
+            self.resetLua.textColor = {r=0.2, g=0.8, b=1, a=1};
             self:addChild(self.resetLua);
             self.resetLua:setAnchorLeft(false)
             self.resetLua:setAnchorTop(false)
             self.resetLua:setAnchorRight(true)
             self.resetLua:setAnchorBottom(true)
-            self.resetLua:setX(self.width - 40 - self.resetLua.width)
         end
 
         if isDemo() then
@@ -599,22 +520,22 @@ function MainScreen:instantiate()
             self.bottomPanel:addChild(self.survivalOption);
             self.survivalOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
             labelY = labelY + labelHgt
-
-            self.onlineOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_online2"), 1, 1, 1, 1, UIFont.Large, true);
-            self.onlineOption.internal = "JOINSERVER";
-            self.onlineOption:initialise();
-            self.bottomPanel:addChild(self.onlineOption);
-            self.onlineOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            self.onlineOption:setVisible(true)
-            labelY = labelY + labelHgt
-
-            self.onlineCoopOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_coop"), 1, 1, 1, 1, UIFont.Large, true);
-            self.onlineCoopOption.internal = "COOP";
-            self.onlineCoopOption:initialise();
-            self.bottomPanel:addChild(self.onlineCoopOption);
-            self.onlineCoopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            self.onlineCoopOption:setVisible(true)
-            labelY = labelY + labelHgt
+            --
+            --self.onlineOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_multiplayer"), 1, 1, 1, 1, UIFont.Large, true);
+            --self.onlineOption.internal = "MULTIPLAYER";
+            --self.onlineOption:initialise();
+            --self.bottomPanel:addChild(self.onlineOption);
+            --self.onlineOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            --self.onlineOption:setVisible(true)
+            --labelY = labelY + labelHgt
+            --
+            --self.onlineCoopOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_coop"), 1, 1, 1, 1, UIFont.Large, true);
+            --self.onlineCoopOption.internal = "COOP";
+            --self.onlineCoopOption:initialise();
+            --self.bottomPanel:addChild(self.onlineCoopOption);
+            --self.onlineCoopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            --self.onlineCoopOption:setVisible(true)
+            --labelY = labelY + labelHgt
 
             labelY = labelY + labelSeparator
 
@@ -736,12 +657,12 @@ function MainScreen:instantiate()
         end
     end
     self.bottomPanel:setX(logoX + math.max(0, logoWidth - maxWidth) / 2)
+    print(logoX + math.max(0, logoWidth - maxWidth) / 2)
 --    self.bottomPanel:setX(logoX)
     self.bottomPanel:setWidth(maxWidth)
     self.bottomPanel:setHeight(labelY)
 
-    local buttonHgt = FONT_HGT_SMALL + 1 * 2
-    self.versionDetail = ISButton:new(self.width - 40 - 60, self.height - FONT_HGT_SMALL - 20, 60, buttonHgt, getText("UI_Details") , self, MainScreen.onClickVersionDetail);
+    self.versionDetail = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING*4, self.height - FONT_HGT_SMALL - UI_BORDER_SPACING*4, btnWidth, BUTTON_HGT, getText("UI_Details") , self, MainScreen.onClickVersionDetail);
     self.versionDetail:initialise();
     self.versionDetail.borderColor = {r=1, g=1, b=1, a=0.7};
     self.versionDetail.textColor =  {r=1, g=1, b=1, a=0.7};
@@ -751,10 +672,9 @@ function MainScreen:instantiate()
     self.versionDetail:setAnchorRight(true)
     self.versionDetail:setAnchorBottom(true)
     self.versionDetail.internal = "VERSIONDETAIL";
-    self.versionDetail:setX(self.width - 40 - self.versionDetail.width)
 
     if self.inGame then
-        self.modListDetail = ISButton:new(self.width - 40 - 60, self.versionDetail.y - 10 - buttonHgt, 60, buttonHgt, getText("UI_NewGame_Mods") , self, MainScreen.onClickModList);
+        self.modListDetail = ISButton:new(self.versionDetail.x, self.versionDetail.y - UI_BORDER_SPACING - BUTTON_HGT, btnWidth, BUTTON_HGT, getText("UI_NewGame_Mods") , self, MainScreen.onClickModList);
         self.modListDetail:initialise();
         self.modListDetail.borderColor = {r=1, g=1, b=1, a=0.7};
         self.modListDetail.textColor =  {r=1, g=1, b=1, a=0.7};
@@ -764,13 +684,12 @@ function MainScreen:instantiate()
         self.modListDetail:setAnchorRight(true)
         self.modListDetail:setAnchorBottom(true)
         self.modListDetail.internal = "MODLISTDETAIL";
-        self.modListDetail:setX(self.width - 40 - self.modListDetail.width)
     end
 
     if not self.inGame then
         local termsY = self.modListDetail and self.modListDetail.y or self.versionDetail.y
-        termsY = termsY - 10 - buttonHgt
-        self.termsOfService = ISButton:new(self.width - 40 - 60, termsY, 60, buttonHgt, getText("UI_TermsOfService_MainMenu"), self, MainScreen.onClickTermsOfService);
+        termsY = termsY - UI_BORDER_SPACING - BUTTON_HGT
+        self.termsOfService = ISButton:new(self.versionDetail.x, termsY, btnWidth, BUTTON_HGT, getText("UI_TermsOfService_MainMenu"), self, MainScreen.onClickTermsOfService);
         self.termsOfService:initialise();
         self.termsOfService.borderColor = {r=1, g=1, b=1, a=0.7};
         self.termsOfService.textColor =  {r=1, g=1, b=1, a=0.7};
@@ -779,9 +698,8 @@ function MainScreen:instantiate()
         self.termsOfService:setAnchorRight(true)
         self.termsOfService:setAnchorBottom(true)
         self:addChild(self.termsOfService);
-        self.termsOfService:setX(self.width - 40 - self.termsOfService.width)
         if self.resetLua then
-            self.resetLua:setY(self.termsOfService.y - 10 - self.resetLua.height)
+            self.resetLua:setY(self.termsOfService.y - UI_BORDER_SPACING - self.resetLua.height)
         end
     end
 
@@ -825,8 +743,9 @@ function MainScreen:instantiate()
         self.soloScreen:create();
         self.loadScreen:create();
         self.onlineCoopScreen:create();
-        self.joinServer:create();
+        self.serverList:create();
         self.joinPublicServer:create();
+        self.multiplayer:create();
         self.bootstrapConnectPopup:create();
         self.connectToServer:create();
         self.serverConnectPopup:create();
@@ -848,7 +767,8 @@ function MainScreen:instantiate()
 --        end
 
         if not getCore():isAnimPopupDone() and not (getDebug() and getDebugOptions():getBoolean("UI.DisableWelcomeMessage")) then
-            self.animPopup = ISModalRichText:new(getCore():getScreenWidth()/2-350,getCore():getScreenHeight()/2-300,700,600, getText("UI_News_Anim3"), false);
+            local windowSize = 600+(getCore():getOptionFontSizeReal()*100);
+            self.animPopup = ISModalRichText:new((getCore():getScreenWidth()-windowSize)/2,getCore():getScreenHeight()/2-300,windowSize,600, getText("UI_News_Anim3"), false);
             self.animPopup:initialise();
             self.animPopup.backgroundColor = {r=0, g=0, b=0, a=0.9};
             self.animPopup.alwaysOnTop = true;
@@ -948,7 +868,18 @@ function MainScreen:prerender()
 
 	ISPanel.prerender(self);
     if(self.inGame) then
+        if isClient() then
+            self.scoreOption:setEnabled(getPlayer():getRole():haveCapability(Capability.SeePlayersConnected))
+            self.scoreOption:setVisible(getPlayer():getRole():haveCapability(Capability.SeePlayersConnected))
+        end
         self:drawRect(0, 0, self.width, self.height, 0.5, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+        if isQuitCooldown() then
+            self.exitOption:setColor(0.5, 0.5, 0.5)
+            self.quitToDesktop:setColor(0.5, 0.5, 0.5)
+        else
+            self.exitOption:setColor(1, 1, 1)
+            self.quitToDesktop:setColor(1, 1, 1)
+        end
     end
     if self.delay > 0 then
         if self.firstFrame then
@@ -1046,7 +977,7 @@ function MainScreen:prerender()
             end
         end
         self.bottomPanel:setWidth(maxWidth)
-        self.bottomPanel:setX(x + (w - self.bottomPanel:getWidth()) / 2)
+        self.bottomPanel:setX(math.max(UI_BORDER_SPACING*2 + JOYPAD_TEX_SIZE + 1, x + (w - self.bottomPanel:getWidth()) / 2))
         self.bottomPanel:setY(x + h + 50 * (sw / 1920))
 	end
 
@@ -1237,6 +1168,20 @@ function MainScreen.checkMapsAvailable(mapName, activeMods, mapAvailable)
     return count == #mapNames
 end
 
+function MainScreen.getMissingMods(activeMods)
+    local result = {}
+    for i=1,activeMods:getMods():size() do
+        local modID = activeMods:getMods():get(i-1)
+        local modInfo = getModInfoByID(modID)
+        if modInfo == nil then
+            table.insert(result, modID)
+        elseif not modInfo:isAvailable() then
+            table.insert(result, modID)
+        end
+    end
+    return result
+end
+
 function MainScreen.checkSaveFile()
     local saveInfo = getSaveInfo(getWorld():getWorld())
     if not saveInfo.gameMode then
@@ -1246,7 +1191,7 @@ function MainScreen.checkSaveFile()
         if not gameMode then gameMode = getWorld():getGameMode() end
         text = text .. getText("IGUI_Gametime_GameMode", gameMode) .. " <LINE> <H2> "
         text = text .. " <TEXT> <RED> " .. getText("UI_mainscreen_SavefileNotFound") .. " <RGB:1,1,1> <LINE> "
-        MainScreen.displayCheckSavefileModal(text)
+        MainScreen.displayCheckSavefileModal(text, true, saveInfo.activeMods)
         return
     end
     local worldVersion = tonumber(saveInfo.worldVersion)
@@ -1256,12 +1201,15 @@ function MainScreen.checkSaveFile()
 
     local versionText = " <LINE> <LINE> " .. getText("UI_worldscreen_SavefileVersion", worldVersion or '???', IsoWorld.getWorldVersion())
 
+    local fatal = true
     if not worldVersion or not saveInfo.mapName then
         worldVersion = worldVersion or '???'
         saveInfo.mapName = saveInfo.mapName or '???'
         errorMsg = getText("UI_mainscreen_SavefileNotFound")
     elseif not MainScreen.checkMapsAvailable(saveInfo.mapName, saveInfo.activeMods, mapAvailable) then
-        errorMsg = getText("UI_worldscreen_MapNotFound")
+        errorMsg, fatal = getText("UI_worldscreen_MapNotFound"), false
+    elseif #MainScreen.getMissingMods(saveInfo.activeMods) > 0 then
+        errorMsg, fatal = getText("UI_worldscreen_ModNotFound"), false
     elseif worldVersion == 0 then
         errorMsg = getText("UI_worldscreen_SavefileCorrupt")
 --    elseif worldVersion == 175 then
@@ -1317,16 +1265,16 @@ function MainScreen.checkSaveFile()
 
         text = text .. getText("UI_WorldVersion") .. worldVersion .. " <LINE> "
         text = text .. " <TEXT> <RED> " .. errorMsg .. " <RGB:1,1,1> <LINE> "
-        MainScreen.displayCheckSavefileModal(text)
+        MainScreen.displayCheckSavefileModal(text, fatal, activeMods)
         return false
     end
     return true
 end
 
-function MainScreen.displayCheckSavefileModal(text)
+function MainScreen.displayCheckSavefileModal(text, fatal)
     local width = 450
     local modal = ISModalRichText:new(getCore():getScreenWidth() / 2 - 450 / 2,
-        getCore():getScreenHeight() / 2 - 60, 450, 120, text, false,
+        getCore():getScreenHeight() / 2 - 60, 450, 120, text, not fatal,
         nil, MainScreen.onCheckSavefileModalClick)
     modal:initialise()
     modal:addToUIManager()
@@ -1350,7 +1298,16 @@ function MainScreen.resetLuaIfNeeded()
     end
 end
 
-function MainScreen.onCheckSavefileModalClick(button)
+function MainScreen.onCheckSavefileModalClick(model, button)
+    if button.internal == "YES" then
+        local saveInfo = getSaveInfo(getWorld():getWorld())
+        local currentMods = ActiveMods.getById("currentGame")
+        currentMods:checkMissingMods()
+        currentMods:checkMissingMaps()
+        manipulateSavefile(saveInfo.saveDir, "WriteModsDotTxt")
+        MainScreen.continueLatestSaveAux(true)
+        return
+    end
     -- Reset mods to the default if the savefile's mods aren't the default ones.
     MainScreen.resetLuaIfNeeded()
 
@@ -1363,7 +1320,6 @@ function MainScreen.onCheckSavefileModalClick(button)
 end
 
 function MainScreen.continueLatestSaveAux(fromResetLua)
-
     local defaultMods = ActiveMods.getById("default")
     local currentMods = ActiveMods.getById("currentGame")
     local saveInfo = getSaveInfo(getWorld():getWorld())
@@ -1373,7 +1329,6 @@ function MainScreen.continueLatestSaveAux(fromResetLua)
         -- An old savefile without mods.txt. Use the default mods.
         currentMods:copyFrom(defaultMods)
     end
-
     if not MainScreen.checkSaveFile() then
         return
     end
@@ -1558,7 +1513,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     if MainScreen.instance.tutorialButton then return end
     if MainScreen.instance.checkSavefileModal then return end
 
-    if (item.internal == "JOINSERVER" or item.internal == "CHALLENGE" or item.internal == "SANDBOX" or item.internal == "BEGINNER" or item.internal == "APOCALYPSE" or item.internal == "SOLO") and not MainScreen.checkTutorial(item) then
+    if (item.internal == "MULTIPLAYER" or item.internal == "SERVERLIST" or item.internal == "CHALLENGE" or item.internal == "SANDBOX" or item.internal == "BEGINNER" or item.internal == "APOCALYPSE" or item.internal == "SOLO") and not MainScreen.checkTutorial(item) then
         return;
     end
 
@@ -1570,6 +1525,10 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     local joypadData = JoypadState.getMainMenuJoypad()
 
     if item.internal == "EXIT" then
+        if isQuitCooldown() then
+            print("EXITDEBUG: pvp quit cooldown")
+            return
+        end
         print("EXITDEBUG: onMenuItemMouseDownMainMenu 2")
 --        if MainScreen.instance.inGame then
 --            saveGame();
@@ -1586,6 +1545,10 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         print("EXITDEBUG: onMenuItemMouseDownMainMenu 3")
     end
     if item.internal == "QUIT_TO_DESKTOP" then
+        if isQuitCooldown() then
+            print("EXITDEBUG: pvp quit cooldown")
+            return
+        end
         print("EXITDEBUG: onMenuItemMouseDownMainMenu 4")
         MainScreen:quitToDesktopFunc()
         return
@@ -1596,22 +1559,29 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         return
     end
 
-    if item.internal == "JOINSERVER" then
+    if item.internal == "MULTIPLAYER" then
         MainScreen.instance.bottomPanel:setVisible(false);
-        MainScreen.instance.joinServer:pingServers(true);
-        MainScreen.instance.joinServer:setVisible(true, joypadData);
+        MainScreen.instance.multiplayer:setVisible(true, joypadData);
+    end
+    if item.internal == "SERVERLIST" then
+        MainScreen.instance.bottomPanel:setVisible(false);
+        MainScreen.instance.serverList:pingServers(true);
+        MainScreen.instance.serverList:setVisible(true, joypadData);
+        if ActiveMods.requiresResetLua(ActiveMods.getById("nomods")) then
+            getCore():ResetLua("nomods", "joinServer")
+        end
     end
     if item.internal == "COOP" then
         MainScreen.instance.bottomPanel:setVisible(false);
         MainScreen.instance.onlineCoopScreen:aboutToShow()
         MainScreen.instance.onlineCoopScreen:setVisible(true, joypadData);
     end
-	
     if item.internal == "SCOREBOARD" then
-        MainScreen.instance.scoreboard:setVisible(true, joypadData);
-        scoreboardUpdate()
+        if getPlayer():getRole():haveCapability(Capability.SeePlayersConnected) then
+            MainScreen.instance.scoreboard:setVisible(true, joypadData);
+            scoreboardUpdate()
+        end
     end
-
     if item.internal == "OPTIONS" then
         MainScreen.instance.mainOptions:toUI()
         MainScreen.instance.mainOptions:setVisible(true, joypadData);
@@ -1626,10 +1596,11 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         MainScreen.instance.loadScreen:setVisible(true, joypadData);
     end
     if item.internal == "MODS" then
-        MainScreen.instance.modSelect.isNewGame = false
+        MainScreen.instance.modSelect.model.isNewGame = false
         MainScreen.instance.modSelect:setVisible(true, joypadData);
-        MainScreen.instance.modSelect:populateListBox(getModDirectoryTable());
+        MainScreen.instance.modSelect.model:reloadMods()
         ModSelector.showNagPanel()
+        ModSelector.instance.returnToUI = MainScreen.instance
     end
     if item.internal == "ADMINPANEL" then
         print("EXITDEBUG: onMenuItemMouseDownMainMenu 5")
@@ -1648,7 +1619,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         if ISUserPanelUI.instance then
             ISUserPanelUI.instance:close()
         end
-        local modal = ISUserPanelUI:new(200, 200, 350, 250, getPlayer())
+        local modal = ISUserPanelUI:new(200, 200, 400, 250, getPlayer())
         modal:initialise();
         modal:addToUIManager();
         print("EXITDEBUG: onMenuItemMouseDownMainMenu 8")
@@ -1758,15 +1729,39 @@ function MainScreen:onClickVersionDetail()
         self.infoRichText:setVisible(not self.infoRichText:isVisible());
         self.infoRichText:bringToTop();
     end
+    local player = 0
+    if player and JoypadState.players[player+1] then
+        self.infoRichText.prevFocus = JoypadState.players[player+1].focus
+        setJoypadFocus(player, self.infoRichText)
+    else
+        local joypadData = JoypadState.getMainMenuJoypad()
+        if joypadData then
+            self.infoRichText.prevFocus = joypadData.focus
+            joypadData.focus = self.infoRichText
+            updateJoypadFocus(joypadData)
+        end
+    end
 end
 
 function MainScreen:onClickTermsOfService(button)
     local width = 600
     local height = 200
+    local player = 0
     local modal = ISTermsOfServiceUI:new(self.width / 2 - width / 2, self.height / 2 - height / 2, width, height)
     modal:initialise()
     modal:addToUIManager()
     modal:setAlwaysOnTop(true)
+    if player and JoypadState.players[player+1] then
+        modal.prevFocus = JoypadState.players[player+1].focus
+        setJoypadFocus(player, modal)
+    else
+        local joypadData = JoypadState.getMainMenuJoypad()
+        if joypadData then
+            modal.prevFocus = joypadData.focus
+            joypadData.focus = modal
+            updateJoypadFocus(joypadData)
+        end
+    end
     self.termsOfServiceDialog = modal
 end
 
@@ -1841,31 +1836,44 @@ function MainScreen:setBeginnerPreset()
 end
 
 function MainScreen:setEasyPreset()
-    SandboxVars.XpMultiplier = "2.0";
     SandboxVars.StatsDecrease = 5;
     SandboxVars.EndRegen = 5;
     SandboxVars.InjurySeverity = 1;
     SandboxVars.CarGasConsumption = 0.7;
+
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 2,
+        XPMultiplierGlobalToggle = true,
+    }
 --    SandboxVars.Nutrition = false;
 end
 
 function MainScreen:setNormalPreset()
-    SandboxVars.XpMultiplier = "1.5";
     SandboxVars.StatsDecrease = 4;
     SandboxVars.EndRegen = 4;
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1.5,
+        XPMultiplierGlobalToggle = true,
+    }
 --    SandboxVars.Nutrition = false;
 end
 
 function MainScreen:setHardPreset()
-    SandboxVars.XpMultiplier = "1.2";
     SandboxVars.InjurySeverity = 3;
     SandboxVars.CarGasConsumption = 1.2;
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1.2,
+        XPMultiplierGlobalToggle = true,
+    }
 end
 
 function MainScreen:setHardcorePreset()
-    SandboxVars.XpMultiplier = 1.0;
     SandboxVars.InjurySeverity = 3;
     SandboxVars.CarGasConsumption = 1.2;
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
 end
 
 function MainScreen:onEnterFromGame()
@@ -1886,33 +1894,35 @@ function MainScreen:onReturnToGame()
 	end
 end
 
-function MainScreen:addCredit(title, name)
-    self.credits:add({title = title, name = name});
+function MainScreen:addCredit(credit, number)
+    if number == 0 then --for the Formosa Interactive title
+        self.credits:add({title = getText("UI_credits_header_" .. credit), name = ""});
+    end
+    for i = 1, number do
+        self.credits:add({title = getText("UI_credits_header_" .. credit), name = getText("UI_credits_" .. credit .. i)});
+    end
 end
 
 function MainScreen:doArtCredits()
-    self:addCredit("ART", "Andy Hodgetts");
-    self:addCredit("ART", "Marina Siu-Chong");
-    self:addCredit("ART AND ANIMATION", "Martin Greenall");
+    self:addCredit("Art", 4);
+    self:addCredit("ArtAndAnimation", 1);
 end
 function MainScreen:doCodeCredits()
-    self:addCredit("CODE", "Chris Simpson");
-    self:addCredit("CODE", "Romain Dron");
-    self:addCredit("CODE", "Tim Baker");
-    self:addCredit("CODE", "Kees Bekkema");
-    self:addCredit("CODE", "Zac Congo");
+    self:addCredit("Code", 12);
 end
 function MainScreen:doWritingCredits()
-    self:addCredit("WRITTEN BY", "Will Porter");
+    self:addCredit("WrittenBy", 2);
 end
 function MainScreen:doScriptingCredits()
-    self:addCredit("MAPPING", "Jamie 'Xeonyx' Magnuson");
-    self:addCredit("MAPPING", "Ayrton Orio");
-    self:addCredit("MAPPING", "Paul Ring");
+    self:addCredit("Mapping", 2);
+    self:addCredit("AdditionalMapping", 2);
 end
+
 function MainScreen:doCredits()
     local r = ZombRand(5);
-    self:addCredit("MUSIC", "Zach Beever");
+
+    self:addCredit("Music", 1);
+
     if r == 0 then
         self:doArtCredits();
         self:doCodeCredits();
@@ -1943,153 +1953,59 @@ function MainScreen:doCredits()
         self:doScriptingCredits();
         self:doArtCredits();
     end
-    self:addCredit("DESIGN", "The Team");
-    self:addCredit("TOOLS", "Audio engine : FMOD Studio by Firelight Technologies");
-    self:addCredit("TOOLS", "Tim Baker");
-    self:addCredit("TOOLS", "Andy Hodgetts");
-    self:addCredit("LEAD SOUND DESIGNER", "Byron Bullock");
-    self:addCredit("TECHNICAL SOUND DESIGNER", "Michael Klier");
-    self:addCredit("SOUND DESIGNER", "Matteo Lupieri");
-    self:addCredit("JUNIOR SOUND DESIGNER", "Thomas De Deyn");
-    self:addCredit("JUNIOR SOUND DESIGNER", "Lorenzo Piani");
-    self:addCredit("INTERACTIVE MUSIC COMPOSER", "Armin Hass");
-    self:addCredit("ADDITIONAL ART", "Mark Wright");
-    self:addCredit("ADDITIONAL ART", "Ayrton Orio");
-    self:addCredit("ADDITIONAL WRITING", "Patrick Brennan");
-    self:addCredit("ADDITIONAL CODE", "General Arcade");
-    self:addCredit("ADDITIONAL CODE", "BitBaboon");
-    self:addCredit("ADDITIONAL CODE", "The Eccentric Ape");
-    self:addCredit("ADDITIONAL CODE", "Connall 'Connall' Lindsay");
-    self:addCredit("ADDITIONAL CODE", "Chris Wood");
-    self:addCredit("ADDITIONAL CODE", "Mark Rowley");
-    self:addCredit("ADDITIONAL CODE", "Steve Sharp");
-    self:addCredit("ADDITIONAL CODE", "eris");
-    self:addCredit("ADDITIONAL CODE", "Alexander 'Aiteron' Blinov");
-    self:addCredit("ADDITIONAL CODE", "Nick Cowen");
-    self:addCredit("ADDITIONAL CODE", "Casey-Jo Kenny");
-    self:addCredit("ADDITIONAL CODE", "Aitor García de la Cruz");
-    self:addCredit("ADDITIONAL CODE", "Fox Chaotica");
-    self:addCredit("ADDITIONAL CODE", "Jesse Burland-Lokko");
-    self:addCredit("ADDITIONAL CODE", "Sam Spawton");
-    self:addCredit("ADDITIONAL CODE", "Caspian Prince");
-    self:addCredit("LOOT ARTISTE", "Norm 'Baph' Vezina");
-    self:addCredit("CONTRIBUTOR", "Connall 'Connall' Lindsay");
-    self:addCredit("CONTRIBUTOR", "Drake 'Rathlord' Barron");
-    self:addCredit("CONTRIBUTOR", "Kieran 'Stormy' Rafferty");
-    self:addCredit("CONTRIBUTOR", "Christian 'Thuztor' Walber");
-    self:addCredit("CONTRIBUTOR", "Adric 'AdricTheGreat' Hartin");
-    self:addCredit("CONTRIBUTOR", "Benjamin 'blindCoder' Schieder");
-    self:addCredit("GENERAL ARCADE", "Yuri Yakovlev");
-    self:addCredit("GENERAL ARCADE", "Andrei Topilin");
-    self:addCredit("GENERAL ARCADE", "Serge Shubin");
-    self:addCredit("GENERAL ARCADE", "Gennadii Potapov");
-    self:addCredit("GENERAL ARCADE", "Stanislav Vlasko");
-    self:addCredit("GENERAL ARCADE", "Konstantine Martynenko");
-    self:addCredit("GENERAL ARCADE", "Mikhail Gudim");
-    self:addCredit("GENERAL ARCADE", "Oleg Cherkunov");
-    self:addCredit("GENERAL ARCADE", "Aleksandr Ivko");
-    self:addCredit("SYS ADMIN", "Johnathon Tinsley");
-    self:addCredit("OPERATIONS MANAGER", "Jake 'EnigmaGrey' Snow");
-    self:addCredit("LEAD QA", "Sasha 'Pandorea' Mihailova");
-    self:addCredit("QA", "Yana 'Spiffo' Marszalkowska-Duncan");
-    self:addCredit("COMMUNITY MANAGER", "Martin 'nasKo' Nehrdich");
-    self:addCredit("TECH SUPPORT", "Richard 'Beard' Caban");
-    self:addCredit("ONLINE MAP COORDINATOR", "Benjamin 'blindCoder' Schieder");
-    self:addCredit("HEAD RACCOON", "Spiffo");
-    self:addCredit("DEDICATED TO THE MEMORY OF...", "Romuald Dron");
-    self:addCredit("SPECIAL INFECTED", "Drake 'Rathlord' Barron");
-    self:addCredit("SPECIAL INFECTED", "Bill 'wait what?' Redpath");
-    self:addCredit("SPECIAL INFECTED", "Daniel 'MadDan' H");
-    self:addCredit("SPECIAL INFECTED", "Kevin 'Vaileasys' Banks");
-    self:addCredit("SPECIAL INFECTED", "Zargo");
-    self:addCredit("SPECIAL INFECTED", "Dmitry 'Oneline' Borovsky");
-    self:addCredit("SPECIAL INFECTED", "Kevin 'KPK' P. King");
-    self:addCredit("SPECIAL INFECTED", "Soul Filcher");
-    self:addCredit("SPECIAL INFECTED", "Kim 'ZonaryQuasar' Metzger");
-    self:addCredit("SPECIAL INFECTED", "LeonKiel");
-    self:addCredit("SPECIAL INFECTED", "Alice 'ALL14' Bonneau");
-    self:addCredit("SPECIAL INFECTED", "Leo 'Drunkonlife' Dimilo");
-    self:addCredit("SPECIAL INFECTED", "Daniel 'Clerkius' Sobhi");
-    self:addCredit("SPECIAL INFECTED", "Amy 'Amz' Young");
-    self:addCredit("SPECIAL INFECTED", "Cromulent Archer");
-    self:addCredit("SPECIAL INFECTED", "The Commander");
-    self:addCredit("SPECIAL INFECTED", "Yana Marszalkowska Duncan");
-    self:addCredit("SPECIAL INFECTED", "Planetalgol");
-    self:addCredit("SPECIAL INFECTED", "Benjamin 'Bejasc' James");
-    self:addCredit("SPECIAL INFECTED", "ambiguousamphibian");
-    self:addCredit("SPECIAL INFECTED", "Christian 'Snake' Jorge");
-    self:addCredit("SPECIAL INFECTED", "Filibuster Rhymes");
-    self:addCredit("SPECIAL INFECTED", "ditoseadio");
-    self:addCredit("SPECIAL INFECTED", "Paul 'mendonca' Wright.");
-    self:addCredit("SPECIAL INFECTED", "Peter 'rdsqc22' LoVerso");
-    self:addCredit("SPECIAL INFECTED", "Dr_Cox1911");
-    self:addCredit("SPECIAL INFECTED", "Mark.exe");
-    self:addCredit("SPECIAL INFECTED", "Rekkie");
-    self:addCredit("SPECIAL INFECTED", "Clément 'deprav' Giraudeau");
-    self:addCredit("SPECIAL INFECTED", "François 'FlashFire' Desforges");
-    self:addCredit("SPECIAL INFECTED", "Edward 'Zargo' Smallwood");
-    self:addCredit("SPECIAL INFECTED", "Rasmus 'LennyLeak' Nielsen");
-    self:addCredit("SPECIAL INFECTED", "RoboMat");
-    self:addCredit("SPECIAL INFECTED", "MiddleAgedBob");
-    self:addCredit("SPECIAL INFECTED", "Charlie 'ToastedFishSandwich' Sloan");
-    self:addCredit("SPECIAL INFECTED", "Bear 'Markofbear' Granander");
-    self:addCredit("SPECIAL INFECTED", "titopei");
-    self:addCredit("SPECIAL INFECTED", "Jacob 'Freeplayo7' Haley");
-    self:addCredit("SPECIAL INFECTED", "Antti 'harakka' Riikonen");
-    self:addCredit("SPECIAL INFECTED", "Marcus 'dThunder' Hill");
-    self:addCredit("SPECIAL INFECTED", "Christopher 'Augur' Green");
-    self:addCredit("SPECIAL INFECTED", "Louis 'Keepbro' Keep");
-    self:addCredit("SPECIAL INFECTED", "Steve 'syefye' Young");
-    self:addCredit("SPECIAL INFECTED", "Paul 'Dr Gonzo' McAloon");
-    self:addCredit("SPECIAL INFECTED", "Connall 'Connall' Lindsay");
-    self:addCredit("SPECIAL INFECTED", "Leo Ivanov");
-    self:addCredit("SPECIAL INFECTED", "Mark 'EreWeGo' Sanders");
-    self:addCredit("SPECIAL INFECTED", "Marc 'The Pleasure' Tookey");
-    self:addCredit("SPECIAL INFECTED", "Henry Patterson");
-    self:addCredit("SPECIAL INFECTED", "RoyaleWithCheese");
-    self:addCredit("SPECIAL INFECTED", "Anonymous");
-    self:addCredit("SPECIAL THANKS TO", "The PZ Community");
-    self:addCredit("SPECIAL THANKS TO", "Brat Pen");
-    self:addCredit("SPECIAL THANKS TO", "Mathas");
-    self:addCredit("SPECIAL THANKS TO", "Jas Purewal");
-    self:addCredit("SPECIAL THANKS TO", "Graeme Struthers");
-    self:addCredit("SPECIAL THANKS TO", "Dean Trotman");
-    self:addCredit("SPECIAL THANKS TO", "Matt Schillaci");
-    self:addCredit("SPECIAL THANKS TO", "Redwire");
-    self:addCredit("SPECIAL THANKS TO", "Klean");
-    self:addCredit("SPECIAL THANKS TO", "MrAtomicDuck");
-    self:addCredit("SPECIAL THANKS TO", "Pr1vateLime");
-    self:addCredit("SPECIAL THANKS TO", "NJ Apostol");
-    self:addCredit("SPECIAL THANKS TO", "Elspeth Edmonds");
-    self:addCredit("SPECIAL THANKS TO", "Josh Henning");
-    self:addCredit("SPECIAL THANKS TO", "Trailer Farm");
-    self:addCredit("SPECIAL THANKS TO", "BobHeckling");
-    self:addCredit("SPECIAL THANKS TO", "Paul Soares Jr");
-    self:addCredit("SPECIAL THANKS TO", "MayaTutors");
-    self:addCredit("SPECIAL THANKS TO", "Eckyman");
-    self:addCredit("SPECIAL THANKS TO", "Twiggy");
-    self:addCredit("SPECIAL THANKS TO", "Robbaz");
-    self:addCredit("SPECIAL THANKS TO", "SaudiGamer");
-    self:addCredit("SPECIAL THANKS TO", "Kiwon");
-    self:addCredit("SPECIAL THANKS TO", "Phill Cameron");
-    self:addCredit("SPECIAL THANKS TO", "Emily Richardson");
-    self:addCredit("SPECIAL THANKS TO", "Tom Porter");
-    self:addCredit("SPECIAL THANKS TO", "Dean 'Rocket' Hall");
-    self:addCredit("SPECIAL THANKS TO", "Shannon Z Killer");
-    self:addCredit("SPECIAL THANKS TO", "Sacriel");
-    self:addCredit("SPECIAL THANKS TO", "Notch");
-    self:addCredit("SPECIAL THANKS TO", "Brian Hicks");
-    self:addCredit("SPECIAL THANKS TO", "Scott Reismanis");
-    self:addCredit("SPECIAL THANKS TO", "Chet Faliszek");
-    self:addCredit("SPECIAL THANKS TO", "Tim Buckley");
-    self:addCredit("SPECIAL THANKS TO", "Olivia White");
-    self:addCredit("SPECIAL THANKS TO", "Jaime Byrne");
-    self:addCredit("SPECIAL THANKS TO", "Angela Bateman");
-    self:addCredit("SPECIAL THANKS TO", "Cally");
-    self:addCredit("SPECIAL THANKS TO", "Chief");
-    self:addCredit("SPECIAL THANKS TO", "Boxer");
-    self:addCredit("SPECIAL THANKS TO", "Alan Carter");
-    self:addCredit("SPECIAL THANKS TO", "The guy outside the pub");
+
+    self:addCredit("Design", 1);
+    self:addCredit("Tools", 2);
+    self:addCredit("AdditionalArt", 4);
+
+    self:addCredit("AdditionalCode", 14);
+
+    self:addCredit("LootArtiste", 1);
+    self:addCredit("Contributor", 6);
+
+    self:addCredit("Titles", 1);
+    self:addCredit("SysAdmin", 1);
+    self:addCredit("SysAdminSupport", 1);
+    self:addCredit("OperationsManager", 1);
+    self:addCredit("SeniorProducer", 1);
+    self:addCredit("LeadQa", 1);
+    self:addCredit("Qa", 1);
+    self:addCredit("Videography", 1);
+    self:addCredit("CommunityManager", 1);
+    self:addCredit("TechSupport", 1);
+    self:addCredit("Hr", 1);
+    self:addCredit("Accounts", 1);
+    self:addCredit("OnlineMapCoordinator", 1);
+    self:addCredit("Wiki", 6);
+
+    self:addCredit("HeadRaccoon", 1);
+    self:addCredit("Localization", 1);
+
+    self:addCredit("VertexBreak", 10);
+
+    self:addCredit("GeneralArcade", 2);
+
+    self:addCredit("TheTeaDivision", 7);
+
+    self:addCredit("FormosaInteractive", 0);
+    self:addCredit("SoundSupervisor", 1);
+    self:addCredit("TechnicalSoundDesigner", 1);
+    self:addCredit("LeadSoundDesigner", 1);
+    self:addCredit("SoundDesigner", 5);
+    self:addCredit("AssociateSoundDesigner", 2);
+    self:addCredit("FormosaSeniorProducer", 1);
+    self:addCredit("Producer", 1);
+    self:addCredit("InteractiveMusicComposer", 2);
+
+    self:addCredit("DedicatedToTheMemoryOf", 2);
+
+    self:addCredit("SpecialInfected", 63);
+
+    self:addCredit("SpecialThanksTo", 45);
+
+    self:addCredit("AudioEngine", 1);
+    self:addCredit("UsesBinkVideo", 1);
+
 end
 
 function MainScreen:new (inGame)
@@ -2152,20 +2068,19 @@ function stopDoingActionThatCanBeCancelled(playerObj)
 end
 
 local function StartPressCancelActionKey(key)
-	if key ~= getCore():getKey("CancelAction") then return end
+	if not getCore():isKey("CancelAction", key) then return end
 	if not MainScreen.instance or not MainScreen.instance.inGame then return end
 	if MainScreen.instance:getIsVisible() then return end
 	if getCell() and getCell():getDrag(0) then return end
 	local playerObj = getSpecificPlayer(0)
 	if isPlayerDoingActionThatCanBeCancelled(playerObj) then
 		stopDoingActionThatCanBeCancelled(playerObj)
-		GameKeyboard.eatKeyPress(getCore():getKey("CancelAction"))
+		GameKeyboard.eatKeyPress(key)
 	end
 end
 
 ToggleEscapeMenu = function (key)
-	local mainMenuKey = getCore():getKey("Main Menu")
-	if (key == mainMenuKey) or (mainMenuKey == 0 and key == Keyboard.KEY_ESCAPE) then
+	if (getCore():isKey("Main Menu", key)) or (getCore():getKey("Main Menu") == 0 and key == Keyboard.KEY_ESCAPE) then
         print("EXITDEBUG: ToggleEscapeMenu 1")
 		if getCell() and getCell():getDrag(0) then -- if we press escape we first try to remove the dragged item (carpentry for exemple)
             print("EXITDEBUG: ToggleEscapeMenu 2 (getCell.getDrag("..tostring(getCell():getDrag(0)).."))")
@@ -2183,6 +2098,7 @@ ToggleEscapeMenu = function (key)
 
 			if MainScreen.instance:isVisible() then
                 print("EXITDEBUG: ToggleEscapeMenu 5")
+				getSoundManager():playUISound("UIPauseMenuEnter")
 				if MainScreen.instance.mainOptions:isVisible() then
 					MainScreen.instance.mainOptions:toUI()
 				end
@@ -2197,6 +2113,7 @@ ToggleEscapeMenu = function (key)
 				end
 				MainScreen.instance:onEnterFromGame()
 			else
+				getSoundManager():playUISound("UIPauseMenuExit")
                 if MainScreen.instance.infoModList then
                     MainScreen.instance.infoModList:destroy()
                     MainScreen.instance.infoModList = nil
@@ -2227,7 +2144,6 @@ LoadMainScreenPanelIngame = function ()
 end
 
 LoadMainScreenPanelInt = function (ingame)
-
     local panel2 = MainScreen:new(ingame);
     panel2:initialise();
     panel2:addToUIManager();
@@ -2310,8 +2226,8 @@ function MainScreen:onGainJoypadFocus(joypadData)
 		{ self.loadOption },
         { self.tutorialOption },
 		{ self.survivalOption },
-		{ self.onlineOption },
-		{ self.onlineCoopOption },
+		--{ self.onlineOption },
+		--{ self.onlineCoopOption },
 		{ self.returnOption },
 		{ self.scoreOption },
 --		{ self.adminPanel },
@@ -2350,6 +2266,10 @@ function MainScreen:onGainJoypadFocus(joypadData)
             end
         end
     end
+    if self.joyfocus and not isIngameState() then
+        self.versionDetail:setJoypadButton(Joypad.Texture.XButton)
+        self.termsOfService:setJoypadButton(Joypad.Texture.YButton)
+    end
 end
 
 function MainScreen:onLoseJoypadFocus(joypadData)
@@ -2360,6 +2280,11 @@ end
 function MainScreen:onJoypadDown(button, joypadData)
     if button == Joypad.AButton and self.joypadButtonsY[self.joypadIndex] then
         MainScreen.onMenuItemMouseDownMainMenu(self.joypadButtons[self.joypadIndex], 0,0);
+    end
+    if button == Joypad.XButton then
+        self.versionDetail:forceClick();
+    elseif button == Joypad.YButton then
+        self.termsOfService:forceClick();
     end
 end
 
@@ -2377,8 +2302,12 @@ function MainScreen.onResetLua(reason)
 	local self = MainScreen.instance
 	if reason == "joinServer" then
 		self.bottomPanel:setVisible(false);
-		self.joinServer:pingServers(true)
-		self.joinServer:setVisible(true)
+		self.serverList:pingServers(true)
+		self.serverList:setVisible(true)
+        if DebugScenarios.instance ~= nil then
+            MainScreen.instance:removeChild(DebugScenarios.instance)
+            DebugScenarios.instance = nil
+	    end
 	end
 	if reason == "continueSave" then
 		if DebugScenarios.instance ~= nil then
@@ -2405,22 +2334,26 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 	self:recalcSize()
 
 	local uis = {
-		{ self.scoreboard, 0.6, 0.7 },
-		{ self.joinServer, 0.7, 0.8 },
+        { self.scoreboard, 0.6, 0.7 },
+        { self.serverList, 0.7, 0.8 },
+        { self.multiplayer, 1.0, 1.0 },
         { self.joinPublicServer, 0.7, 0.8 },
-        { self.onlineCoopScreen, 0.7, 0.8 },
+        { self.connectToServer, 0.7, 0.8 },
+        { self.onlineCoopScreen, 0.5, 0.6 },
         { self.soloScreen, 0.7, 0.8 },
         { self.loadScreen, 0.7, 0.8 },
-		{ self.sandOptions, 0.8, 0.8 },
-		{ self.worldSelect, 0.7, 0.8 },
-		{ self.mapSpawnSelect, 0.7, 0.8 },
+        { self.sandOptions, 0.6, 0.8 },
+        { self.worldSelect, 0.7, 0.8 },
+        { self.mapSpawnSelect, 1, 1 },
+        { self.charCreationProfession, 0.7, 0.8 },
+        { self.charCreationMain, 0.7, 0.8 },
         { self.inviteFriends, 0.7, 0.8 },
-		{ self.modSelect, 0.9, 0.9 },
-		{ self.lastStandPlayerSelect, 0.9, 0.9 },
-		{ self.mainOptions, 0.7, 0.8 },
-		{ self.workshopSubmit, 0.9, 0.9 },
-		{ self.serverWorkshopItem, 0.9, 0.9 },
-		{ self.serverSettingsScreen, 0.9, 0.9 },
+        { self.modSelect, 0.9, 0.9 },
+        { self.lastStandPlayerSelect, 0.9, 0.9 },
+        { self.mainOptions, 0.7, 0.8 },
+        { self.workshopSubmit, 0.9, 0.9 },
+        { self.serverWorkshopItem, 0.9, 0.9 },
+        { self.serverSettingsScreen, 0.5, 0.8 },
 	}
 
 	for _,ui in ipairs(uis) do
@@ -2469,8 +2402,17 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 	if self.serverSettingsScreen then
 		self.serverSettingsScreen:onResolutionChange(oldw, oldh, neww, newh)
 	end
+    if self.serverList then
+        self.serverList:onResolutionChange(oldw, oldh, neww, newh)
+    end
     if self.joinPublicServer then
 		self.joinPublicServer:onResolutionChange(oldw, oldh, neww, newh)
+    end
+    if self.multiplayer then
+        self.multiplayer:onResolutionChange(oldw, oldh, neww, newh)
+    end
+    if self.onlineCoopScreen then
+        self.onlineCoopScreen:onResolutionChange(oldw, oldh, neww, newh)
     end
 	if DebugScenarios.instance ~= nil then
 		DebugScenarios.instance:onResolutionChange(oldw, oldh, neww, newh)
@@ -2530,7 +2472,8 @@ function MainScreen:getAllUIs()
 	return {
 		self.animPopup,
 		self.scoreboard,
-		self.joinServer,
+		self.serverList,
+		self.multiplayer,
 		self.joinPublicServer,
 		self.onlineCoopScreen,
 		self.soloScreen,

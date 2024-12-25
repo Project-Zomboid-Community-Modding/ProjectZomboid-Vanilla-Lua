@@ -1,12 +1,9 @@
---***********************************************************
---**                    ROBERT JOHNSON                     **
---***********************************************************
-
 require "ISUI/ISPanelJoypad"
 
 ISTilesPickerDebugUI = ISCollapsableWindow:derive("ISTilesPickerDebugUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
 
 -----
 
@@ -17,8 +14,8 @@ function ISTilesPickerTilesList:render()
 
 	self:setStencilRect(0, 0, self.width - self.vscroll.width, self.height)
 
-	local xIndent = 10
-	local yIndent = 10
+	local xIndent = UI_BORDER_SPACING+1
+	local yIndent = UI_BORDER_SPACING+1
 	local texW = 64
 	local texH = 128
 
@@ -209,12 +206,12 @@ function ISTilesPickerDebugUI:close()
 end
 
 --************************************************************************--
---** ISSpawnHordeUI:new
+--** ISTilesPickerDebugUI:new
 --**
 --************************************************************************--
 function ISTilesPickerDebugUI:new(x, y, character, square)
 	local o = {}
-	local width = 800;
+	local width = 1123;
 	local height = math.min(1250, getCore():getScreenHeight() - 40);
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self)
@@ -231,6 +228,7 @@ function ISTilesPickerDebugUI:new(x, y, character, square)
 	o.width = width;
 	o.height = height;
 	o.chr = character;
+	o.title = getText("IGUI_DebugContext_TilePicker")
 	o.moveWithMouse = true;
 	o.anchorLeft = true;
 	o.anchorRight = true;

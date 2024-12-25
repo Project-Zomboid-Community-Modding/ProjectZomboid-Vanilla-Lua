@@ -7,6 +7,10 @@ require "ISUI/ISPanel"
 
 ZomboidRadioDebug = ISPanel:derive("ZomboidRadioDebug");
 ZomboidRadioDebug.instance = nil;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local function roundstring(_val)
     return tostring(ISDebugUtils.roundNum(_val,2));
@@ -17,7 +21,7 @@ function ZomboidRadioDebug.OnOpenPanel()
         return;
     end
     if ZomboidRadioDebug.instance==nil then
-        ZomboidRadioDebug.instance = ZomboidRadioDebug:new (100, 100, 1000, 600, "Zomboid radio debugger");
+        ZomboidRadioDebug.instance = ZomboidRadioDebug:new (100, 100, 1000+(getCore():getOptionFontSizeReal()*150), 600, getText("IGUI_ZomboidRadio_Title"));
         ZomboidRadioDebug.instance:initialise();
         ZomboidRadioDebug.instance:instantiate();
     end
@@ -38,12 +42,13 @@ end
 function ZomboidRadioDebug:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "Zomboid radio debugger", UIFont.Medium, true)
+    ISDebugUtils.addLabel(self, {}, UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, getText("IGUI_ZomboidRadio_Title"), UIFont.Medium, true)
+    local top = FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1
 
-    self.channelsList = ISScrollingListBox:new(10, 50, 150, self.height - 100);
+    self.channelsList = ISScrollingListBox:new(UI_BORDER_SPACING+1, top, 150+(getCore():getOptionFontSizeReal()*50), self.height-top-UI_BORDER_SPACING*2-BUTTON_HGT-1);
     self.channelsList:initialise();
     self.channelsList:instantiate();
-    self.channelsList.itemheight = 22;
+    self.channelsList.itemheight = BUTTON_HGT;
     self.channelsList.selected = 0;
     self.channelsList.joypadParent = self;
     self.channelsList.font = UIFont.NewSmall;
@@ -53,10 +58,10 @@ function ZomboidRadioDebug:createChildren()
     self.channelsList.target = self;
     self:addChild(self.channelsList);
 
-    self.infoList = ISScrollingListBox:new(170, 50, 300, self.height - 100);
+    self.infoList = ISScrollingListBox:new(self.channelsList:getRight()+UI_BORDER_SPACING, self.channelsList.y, 300+(getCore():getOptionFontSizeReal()*10), self.channelsList.height);
     self.infoList:initialise();
     self.infoList:instantiate();
-    self.infoList.itemheight = 22;
+    self.infoList.itemheight = BUTTON_HGT;
     self.infoList.selected = 0;
     self.infoList.joypadParent = self;
     self.infoList.font = UIFont.NewSmall;
@@ -64,10 +69,10 @@ function ZomboidRadioDebug:createChildren()
     self.infoList.drawBorder = true;
     self:addChild(self.infoList);
 
-    self.broadcastList = ISScrollingListBox:new(480, 50, 510, self.height - 100);
+    self.broadcastList = ISScrollingListBox:new(self.infoList:getRight()+UI_BORDER_SPACING, self.channelsList.y, self.width - self.infoList:getRight()-UI_BORDER_SPACING*2-1, self.channelsList.height);
     self.broadcastList:initialise();
     self.broadcastList:instantiate();
-    self.broadcastList.itemheight = 22;
+    self.broadcastList.itemheight = BUTTON_HGT;
     self.broadcastList.selected = 0;
     self.broadcastList.joypadParent = self;
     self.broadcastList.font = UIFont.NewSmall;
@@ -88,11 +93,11 @@ function ZomboidRadioDebug:createChildren()
     self:addChild(self.infoList);
     --]]
 
-    local y, obj = ISDebugUtils.addButton(self,"script",170,self.height-40,300,20,"View channel script",ZomboidRadioDebug.onViewScript);
-
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),ZomboidRadioDebug.onClickClose);
-
-    local y, obj = ISDebugUtils.addButton(self,"refresh",self.width-400,self.height-40,180,20,"Refresh",ZomboidRadioDebug.onClickRefresh);
+    local btnY, btnWidth = self.broadcastList:getBottom() + UI_BORDER_SPACING, 180
+    _, obj = ISDebugUtils.addButton(self,"script",self.infoList.x,btnY,self.infoList.width,BUTTON_HGT,getText("IGUI_ZomboidRadio_ViewChannelScript"),ZomboidRadioDebug.onViewScript);
+    _, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Close"),ZomboidRadioDebug.onClickClose);
+    obj:enableCancelColor()
+    _, obj = ISDebugUtils.addButton(self,"refresh",obj.x-btnWidth-UI_BORDER_SPACING,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Refresh"),ZomboidRadioDebug.onClickRefresh);
 
     self:populateList();
 end
@@ -163,16 +168,15 @@ function ZomboidRadioDebug:populateInfoList(_radioChannel)
 
     self.currentChannel = _radioChannel;
     self.infoList:addItem(_radioChannel:GetName(), nil);
-    self.infoList:addItem("GUID: "..tostring(_radioChannel:getGUID()), nil);
-    self.infoList:addItem("frequency: "..tostring(_radioChannel:GetFrequency()), nil);
-    self.infoList:addItem("isTv: "..tostring(_radioChannel:IsTv()), nil);
-    self.infoList:addItem("Category: "..tostring(_radioChannel:GetCategory()), nil);
-    self.infoList:addItem("Plr listening: "..tostring(_radioChannel:GetPlayerIsListening()), nil);
-    self.infoList:addItem("Has active script: "..tostring(_radioChannel:getCurrentScript()~=nil), nil);
-    self.infoList:addItem("Has active broadcast: "..tostring(_radioChannel:getAiringBroadcast()~=nil), nil);
-    self.infoList:addItem("Current scriptloop: "..tostring(_radioChannel:getCurrentScriptLoop()), nil);
-    self.infoList:addItem("Max loops: "..tostring(_radioChannel:getCurrentScriptMaxLoops()), nil);
-    --GetPlayerIsListening()
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_GUID")..": "..tostring(_radioChannel:getGUID()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_Frequency")..": "..tostring(_radioChannel:GetFrequency()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_IsTV")..": "..tostring(_radioChannel:IsTv()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_Category")..": "..tostring(_radioChannel:GetCategory()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_PlayerListening")..": "..tostring(_radioChannel:GetPlayerIsListening()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_HasActiveScript")..": "..tostring(_radioChannel:getCurrentScript()~=nil), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_HasActiveBroadcast")..": "..tostring(_radioChannel:getAiringBroadcast()~=nil), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_CurrentScriptLoop")..": "..tostring(_radioChannel:getCurrentScriptLoop()), nil);
+    self.infoList:addItem(getText("IGUI_ZomboidRadio_MaxLoops")..": "..tostring(_radioChannel:getCurrentScriptMaxLoops()), nil);
 end
 
 function ZomboidRadioDebug:drawInfoList(y, item, alt)
@@ -207,7 +211,6 @@ function ZomboidRadioDebug:populateBroadcastList(_radioChannel)
             self.broadcastList:addItem(lines:get(i):getText(), lines:get(i));
         end
     end
-    --GetPlayerIsListening()
 end
 
 function ZomboidRadioDebug:drawBroadcastList(y, item, alt)

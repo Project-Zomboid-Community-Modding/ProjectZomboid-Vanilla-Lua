@@ -8,6 +8,10 @@ require "ISUI/ISPanel"
 ISDebugPanelBase = ISPanel:derive("ISDebugPanelBase");
 --ISDebugPanelBase.instance = nil;
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 
 function ISDebugPanelBase.OnOpenPanel(_class,_x, _y, _w, _h, _title)
     if _class.instance==nil then
@@ -27,41 +31,57 @@ function ISDebugPanelBase:initialise()
     ISPanel.initialise(self);
 end
 
-function ISDebugPanelBase:registerPanel(_buttonTitle, _panelClass)
+function ISDebugPanelBase:registerPanel(_buttonTitle, _panelClass, _ignoreSorting)
     self.panelInfo = self.panelInfo or {};
 
     table.insert(self.panelInfo, {
         buttonTitle = _buttonTitle,
         panelClass = _panelClass,
+        ignoreSorting = _ignoreSorting;
     });
+    --table.sort(self.panelInfo, function(a, b) return string.sort(b.buttonTitle, a.buttonTitle) end)
 end
 
 function ISDebugPanelBase:createChildren()
     ISPanel.createChildren(self);
 
-    local x,y = 20,10;
+    local panelInfo = self.panelInfo;
+    self.panelInfo = {};
+    for k,v in ipairs(panelInfo) do
+        if v.ignoreSorting then
+            table.insert(self.panelInfo, v);
+        end
+    end
+    table.sort(panelInfo, function(a, b) return string.sort(b.buttonTitle, a.buttonTitle) end)
+    for k,v in ipairs(panelInfo) do
+        if not v.ignoreSorting then
+            table.insert(self.panelInfo, v);
+        end
+    end
 
-    --local tX = self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, self.panelTitle) / 2)
-    local y, obj = ISDebugUtils.addLabel(self, self.panelTitle, self.width/2, y, self.panelTitle, UIFont.Medium, true);
+    local y, obj = ISDebugUtils.addLabel(self, self.panelTitle, self.width/2, UI_BORDER_SPACING+1, self.panelTitle, UIFont.Medium, true);
     obj.center = true;
-    local headerY = y + 10;
+    local headerY = y + UI_BORDER_SPACING;
 
-    local x,y = 10, headerY;
-    local w,h = 180, 20;
-    local margin = 10;
+    local buttonX,buttonY = UI_BORDER_SPACING+1, headerY;
+    local buttonW = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CraftUI_Close"));
+
+    for k,v in ipairs(self.panelInfo) do
+        buttonW = math.max(UI_BORDER_SPACING * 2 + getTextManager():MeasureStringX(UIFont.Small, v.buttonTitle), buttonW)
+    end
 
     local obj;
 
     for k,v in ipairs(self.panelInfo) do
-        y, obj = ISDebugUtils.addButton(self,v.buttonTitle,x,y,w,h,v.buttonTitle,ISDebugPanelBase.onClick);
+        buttonY, obj = ISDebugUtils.addButton(self,v.buttonTitle,buttonX,buttonY,buttonW,BUTTON_HGT,v.buttonTitle,ISDebugPanelBase.onClick);
         v.button = obj;
-        y = y+margin;
+        buttonY = buttonY+UI_BORDER_SPACING;
     end
 
-    local y, obj = ISDebugUtils.addButton(self,"close",x,y+margin,w,h,getText("IGUI_CraftUI_Close"),ISDebugPanelBase.onClick);
-
-    x,y = 200, headerY;
-    w,h = self.width-210, self.height-headerY-10;
+    local buttonY, obj = ISDebugUtils.addButton(self,"close", buttonX, self.height - BUTTON_HGT - UI_BORDER_SPACING-1, buttonW, BUTTON_HGT,getText("IGUI_DebugMenu_Close"),ISDebugPanelBase.onClick);
+    obj:enableCancelColor()
+    local x,y = buttonX+buttonW + UI_BORDER_SPACING, headerY;
+    local w,h = self.width-buttonX-buttonW - UI_BORDER_SPACING*2 - 1, self.height-headerY-UI_BORDER_SPACING-1;
 
     self.panels = {};
 

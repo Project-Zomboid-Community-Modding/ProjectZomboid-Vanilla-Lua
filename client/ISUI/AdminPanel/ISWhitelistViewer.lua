@@ -8,6 +8,9 @@ ISWhitelistViewer = ISPanel:derive("ISWhitelistViewer");
 ISWhitelistViewer.bottomInfoHeight = 40;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISWhitelistViewer:initialise()
     ISPanel.initialise(self);
@@ -16,8 +19,8 @@ end
 
 function ISWhitelistViewer:render()
     ISPanel.render(self);
-    local z = 10;
-    self:drawText(getText("IGUI_DbViewer_DbViewer"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_DbViewer_DbViewer")) / 2), z, 1,1,1,1, UIFont.Medium);
+
+    self:drawText(getText("IGUI_DbViewer_DbViewer"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_DbViewer_DbViewer")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
     if self.activeView then
         if self.activeView.loading then
@@ -51,10 +54,9 @@ function ISWhitelistViewer:createChildren()
     ISPanel.createChildren(self);
 
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
+    local panelY = UI_BORDER_SPACING*2+FONT_HGT_MEDIUM+1
 
-    self.panel = ISTabPanel:new(1, 50, self.width - 2, self.height - 50 - 1);
+    self.panel = ISTabPanel:new(UI_BORDER_SPACING+1, panelY, self.width - (UI_BORDER_SPACING+1)*2, self.height - panelY);
     self.panel:initialise();
     self.panel.borderColor = { r = 0, g = 0, b = 0, a = 0};
     self.panel.onActivateView = ISWhitelistViewer.onActivateView;
@@ -62,21 +64,21 @@ function ISWhitelistViewer:createChildren()
 --    self.panel:setEqualTabWidth(false)
     self:addChild(self.panel);
 
-    self.close = ISButton:new(self:getWidth() - 100 - 10, self:getHeight() - btnHgt - padBottom, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISWhitelistViewer.onOptionMouseDown);
+    self.close = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1, self.panel.y + self.panel.height + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISWhitelistViewer.onOptionMouseDown);
     self.close.internal = "CLOSE";
     self.close:initialise();
     self.close:instantiate();
     self.close.borderColor = self.buttonBorderColor;
     self:addChild(self.close);
 
-    self.refreshBtn = ISButton:new(self:getWidth() - 200 - 15, self:getHeight() - btnHgt - padBottom, btnWid, btnHgt, getText("IGUI_DbViewer_Refresh"), self, ISWhitelistViewer.onOptionMouseDown);
+    self.refreshBtn = ISButton:new(self.close.x - btnWid - UI_BORDER_SPACING, self.close.y, btnWid, BUTTON_HGT, getText("IGUI_DbViewer_Refresh"), self, ISWhitelistViewer.onOptionMouseDown);
     self.refreshBtn.internal = "REFRESH";
     self.refreshBtn:initialise();
     self.refreshBtn:instantiate();
     self.refreshBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.refreshBtn);
 
-    self.modify = ISButton:new(10, self:getHeight() - btnHgt - padBottom, btnWid, btnHgt, getText("IGUI_DbViewer_Modify"), self, ISWhitelistViewer.onOptionMouseDown);
+    self.modify = ISButton:new(UI_BORDER_SPACING+1, self.close.y, btnWid, BUTTON_HGT, getText("IGUI_DbViewer_Modify"), self, ISWhitelistViewer.onOptionMouseDown);
     self.modify.internal = "MODIFY";
     self.modify:initialise();
     self.modify:instantiate();
@@ -84,13 +86,15 @@ function ISWhitelistViewer:createChildren()
     self.modify.borderColor = self.buttonBorderColor;
     self:addChild(self.modify);
 
-    self.delete = ISButton:new(15 + btnWid, self:getHeight() - btnHgt - padBottom, btnWid, btnHgt, getText("IGUI_DbViewer_Delete"), self, ISWhitelistViewer.onOptionMouseDown);
+    self.delete = ISButton:new(self.modify.x + btnWid + UI_BORDER_SPACING, self.close.y, btnWid, BUTTON_HGT, getText("IGUI_DbViewer_Delete"), self, ISWhitelistViewer.onOptionMouseDown);
     self.delete.internal = "DELETE";
     self.delete:initialise();
     self.delete:instantiate();
     self.delete.borderColor = self.buttonBorderColor;
     self.delete.enable = false;
     self:addChild(self.delete);
+
+    self:setHeight(self.close:getBottom() + UI_BORDER_SPACING+1)
 end
 
 function ISWhitelistViewer:onOptionMouseDown(button, x, y)
@@ -145,7 +149,7 @@ end
 function ISWhitelistViewer:refresh()
     for i,l in pairs(self.schema) do
 --        print("doing ", i)
-        local cat1 = ISWhitelistTable:new(0, 0, self.panel.width, self.panel.height - self.panel.tabHeight, i);
+        local cat1 = ISWhitelistTable:new(0, 0, self.panel.width, self.panel.height, i);
         cat1.columns = l;
         cat1:initialise();
         self.panel:addView(i, cat1);

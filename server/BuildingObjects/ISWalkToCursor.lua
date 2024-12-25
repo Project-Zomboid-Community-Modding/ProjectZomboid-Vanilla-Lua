@@ -16,16 +16,11 @@ function ISWalkToCursor:isValid(square)
 end
 
 function ISWalkToCursor:render(x, y, z, square)
-	if not ISWalkToCursor.floorSprite then
-		ISWalkToCursor.floorSprite = IsoSprite.new()
-		ISWalkToCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
-
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then
 		hc = getCore():getBadHighlitedColor()
 	end
-	ISWalkToCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISWalkToCursor:new(sprite, northSprite, character)
@@ -41,4 +36,3 @@ function ISWalkToCursor:new(sprite, northSprite, character)
 	o.skipBuildAction = true
 	return o
 end
-

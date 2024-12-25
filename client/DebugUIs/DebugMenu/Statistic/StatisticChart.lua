@@ -11,6 +11,10 @@ StatisticChart.instance = nil;
 StatisticChart.shiftDown = 0;
 StatisticChart.eventsAdded = false;
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 
 -- function StatisticChart.OnOpenPanel()
     -- if StatisticChart.instance==nil then
@@ -38,10 +42,10 @@ function StatisticChart:createChildren()
     self:initVariables();
     local th = self:titleBarHeight();
 
-    local y = th;
-    local x = 25;
+    local y = th+UI_BORDER_SPACING;
+    local x = UI_BORDER_SPACING+1;
 
-    self.historyM1 = ValuePlotter:new(x+5,y+5,600,300,600);
+    self.historyM1 = ValuePlotter:new(x,y,600,300,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
     self:addChild(self.historyM1);
@@ -63,31 +67,29 @@ function StatisticChart:createChildren()
     y=y+10;
     local cacheY, cacheX = y, x;
 
-    y = self.historyM1:getY()-2;
-    x = self.historyM1:getX() + self.historyM1:getWidth() + 45;
+    y = self.historyM1:getY();
+    x = self.historyM1:getX() + self.historyM1:getWidth();
     local vars = self.historyM1:getVars();
     for i=1,#vars do
-        local btn = ISButton:new(x+5, y+5, 45,18,"toggle",self, StatisticChart.onButtonToggle);
+        local btn = ISButton:new(x+UI_BORDER_SPACING, y, UI_BORDER_SPACING*2+getTextManager():MeasureStringX(self.font, getText("IGUI_ClimatePlotter_Toggle")), BUTTON_HGT,getText("IGUI_ClimatePlotter_Toggle"),self, StatisticChart.onButtonToggle);
         btn:initialise();
-        btn.backgroundColor = vars[i].enabled and {r=0, g=0.8, b=0, a=1.0} or {r=0.0, g=0, b=0, a=0.0};
-        btn.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
-        btn.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
+        btn:enableCancelColor()
         btn.toggleVarID = i;
         btn.toggleVarName = vars[i].name;
         btn.toggleVal = vars[i].enabled;
         self:addChild(btn);
 
-        local pnl = ISPanel:new(x+10+45,y+5,18,18);
+        local pnl = ISPanel:new(btn:getRight() + UI_BORDER_SPACING, y, BUTTON_HGT, BUTTON_HGT);
         pnl:initialise();
         pnl.backgroundColor = vars[i].color;
         self:addChild(pnl);
 
-        local lbl = ISLabel:new(x+15+45+18, y+5, 16, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
+        local lbl = ISLabel:new(pnl:getRight() + UI_BORDER_SPACING, y, BUTTON_HGT, vars[i].name, 1, 1, 1, 1.0, UIFont.Small, true);
         lbl:initialise();
         lbl:instantiate();
         self:addChild(lbl);
 
-        y = btn:getY() + btn:getHeight();
+        y = btn:getY() + btn:getHeight() + UI_BORDER_SPACING;
     end
 	
 end
@@ -95,7 +97,7 @@ end
 function StatisticChart:addLabel(_curX, _curY, _labelID, _title)
     if not self.labels[_labelID] then
         local label = {};
-        label.titleLabel = ISLabel:new(_curX, _curY, 16, _title, 1, 1, 1, 1.0, UIFont.Small, true);
+        label.titleLabel = ISLabel:new(_curX, _curY, BUTTON_HGT, _title, 1, 1, 1, 1.0, UIFont.Small, true);
         label.titleLabel:initialise();
         label.titleLabel:instantiate();
         self:addChild(label.titleLabel);
@@ -112,13 +114,13 @@ end
 function StatisticChart:addLabelValue(_curX, _curY, _width, _type, _labelID, _title, _defaultVal)
     if not self.labels[_labelID] then
         local label = {};
-        label.titleLabel = ISLabel:new(_curX, _curY, 16, _title, 1, 1, 1, 1.0, UIFont.Small, true);
+        label.titleLabel = ISLabel:new(_curX, _curY, BUTTON_HGT, _title, 1, 1, 1, 1.0, UIFont.Small, true);
         label.titleLabel:initialise();
         label.titleLabel:instantiate();
         self:addChild(label.titleLabel);
 
         if _type=="value" then
-            label.valueLabel = ISLabel:new(_curX + 2.0*_width/3.0, _curY, 16, tostring(_defaultVal), 1, 1, 1, 1.0, UIFont.Small, true);
+            label.valueLabel = ISLabel:new(_curX + _width, _curY, BUTTON_HGT, tostring(_defaultVal), 1, 1, 1, 1.0, UIFont.Small, true);
             label.valueLabel:initialise();
             label.valueLabel:instantiate();
             self:addChild(label.valueLabel);
@@ -230,9 +232,9 @@ function StatisticChart:onButtonToggle(_btn)
         _btn.toggleVal = not _btn.toggleVal;
         self.historyM1:setVariableEnabled(_btn.toggleVarName,_btn.toggleVal);
         if _btn.toggleVal then
-            _btn.backgroundColor = {r=0, g=0.8, b=0, a=1.0};
+            _btn:enableAcceptColor()
         else
-            _btn.backgroundColor = {r=0, g=0, b=0, a=0.0};
+            _btn:enableCancelColor()
         end
     end
 end
@@ -310,7 +312,7 @@ function StatisticChart:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Statistic chart";
+    o.title = getText("IGUI_StatisticChart_Title");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;

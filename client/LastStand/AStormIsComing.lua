@@ -42,21 +42,21 @@ AStormIsComing.OnInitWorld = function()
     SandboxVars.StartTime = 2;
     SandboxVars.WaterShutModifier = 7;
     SandboxVars.ElecShutModifier = 7;
-    SandboxVars.FoodLoot = 3;
-    SandboxVars.CannedFoodLoot = 3;
-    SandboxVars.RangedWeaponLoot = 3;
-    SandboxVars.AmmoLoot = 3;
-    SandboxVars.SurvivalGearsLoot = 3;
-    SandboxVars.MechanicsLoot = 3;
-    SandboxVars.LiteratureLoot = 3;
-    SandboxVars.MedicalLoot = 3;
-    SandboxVars.WeaponLoot = 3;
-    SandboxVars.OtherLoot = 3;
+--     SandboxVars.FoodLoot = 3;
+--     SandboxVars.CannedFoodLoot = 3;
+--     SandboxVars.RangedWeaponLoot = 3;
+--     SandboxVars.AmmoLoot = 3;
+--     SandboxVars.SurvivalGearsLoot = 3;
+--     SandboxVars.MechanicsLoot = 3;
+--     SandboxVars.LiteratureLoot = 3;
+--     SandboxVars.MedicalLoot = 3;
+--     SandboxVars.WeaponLoot = 3;
+--     SandboxVars.OtherLoot = 3;
+    SandboxVars.LootItemRemovalList = "";
     SandboxVars.Temperature = 3;
     SandboxVars.Rain = 3;
     --	    SandboxVars.erosion = 12
     SandboxVars.ErosionSpeed = 1
-    SandboxVars.XpMultiplier = "1.0";
     SandboxVars.Farming = 3;
     SandboxVars.NatureAbundance = 5;
     SandboxVars.PlantResilience = 3;
@@ -71,7 +71,12 @@ AStormIsComing.OnInitWorld = function()
     SandboxVars.TimeSinceApo = 1;
     SandboxVars.MultiHitZombies = false;
 
-    SandboxVars.ZombieConfig.PopulationMultiplier = 4.0
+    SandboxVars.MultiplierConfig = {
+        XPMultiplierGlobal = 1,
+        XPMultiplierGlobalToggle = true,
+    }
+
+    SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
     Events.OnGameStart.Add(AStormIsComing.OnGameStart);
     --Events.EveryDays.Add(AStormIsComing.EveryDays);
@@ -98,24 +103,22 @@ AStormIsComing.id = "AStormIsComing";
 AStormIsComing.image = "media/lua/client/LastStand/AStormIsComing.png";
 AStormIsComing.gameMode = "A Storm is Coming";
 AStormIsComing.world = "Muldraugh, KY";
-AStormIsComing.xcell = 36;
-AStormIsComing.ycell = 31;
-AStormIsComing.x = 21;
-AStormIsComing.y = 111;
+AStormIsComing.x = 36 * 300 + 21;
+AStormIsComing.y = 31 * 300 + 111;
 AStormIsComing.z = 0;
 
 AStormIsComing.spawns = {
-    {xcell=11+25, ycell=9+25, x=62, y=47}, -- Medium house2
-    {xcell=11+25, ycell=8+25, x=116, y=232}, -- little house2
-    {xcell=11+25, ycell=8+25, x=3, y=173}, -- little house2
-    {xcell=11+25, ycell=8+25, x=118, y=229}, -- little house2
-    {xcell=11+25, ycell=6+25, x=142, y=72},
-    {xcell=11+25, ycell=6+25, x=151, y=190},
+    {x = 10862, y = 10247, z = 0}, -- Medium house2
+    {x = 10916, y = 10132, z = 0}, -- little house2
+    {x = 10803, y = 10073, z = 0}, -- little house2
+    {x = 10918, y = 10129, z = 0}, -- little house2
+    {x = 10942, y = 9372, z = 0},
+    {x = 10951, y = 9490, z = 0},
 }
 
 AStormIsComing.hourOfDay = 7;
 
-Events.OnChallengeQuery.Add(AStormIsComing.Add)
+--Events.OnChallengeQuery.Add(AStormIsComing.Add)
 
 
 

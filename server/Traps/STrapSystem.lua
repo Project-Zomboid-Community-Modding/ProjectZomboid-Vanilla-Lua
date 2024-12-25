@@ -36,7 +36,7 @@ function STrapSystem:convertOldModData()
 	-- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it.
 	if self.system:loadedWorldVersion() ~= -1 then return end
 	
-	local modData = GameTime:getInstance():getModData()
+	local modData = GameTime.getInstance():getModData()
 	if not modData.trapping or not modData.trapping.traps then return end
 	self:noise('converting old-style GameTime modData')
 	for _,trap in pairs(modData.trapping.traps) do

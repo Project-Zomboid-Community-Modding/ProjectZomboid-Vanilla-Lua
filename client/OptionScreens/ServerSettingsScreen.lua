@@ -32,6 +32,16 @@ local ServerSettingsScreenWorkshopListBox = ServerSettingsScreenBaseListBox:deri
 local SandboxPresetPanel = MultiColumnPanelJoypad:derive("SandboxPresetPanel")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local LABEL_HGT = FONT_HGT_MEDIUM + 6
+local JOYPAD_TEX_SIZE = 32
+local TITLE_PADDING = UI_BORDER_SPACING*2 + FONT_HGT_TITLE + 1
+local PADDING_X = UI_BORDER_SPACING + 1
+local BUTTON_PADDING = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+local CONTROL_WIDTH = 200+((getCore():getOptionFontSizeReal()-1)*50)
 
 local function getTooltipText(name)
 	local tooltip = getTextOrNull(name)
@@ -335,7 +345,7 @@ function ServerSettingsScreenGroupBox:onTicked(index, selected)
 				control.selected = option:getDefaultValue()
 			elseif control.Type == "ISTickBox" then
 				control.selected[1] = option:getDefaultValue()
-			else
+		    elseif settingName ~= "ZombieLore.SprinterPercentage" then
 				error "unhandled control type"
 			end
 		end
@@ -364,7 +374,9 @@ function ServerSettingsScreenGroupBox:settingsToUI(settings, category)
 				allDefault = false
 				break
 			end
-		else
+		elseif settingName ~= "ZombieLore.SprinterPercentage" then
+		    print("Option " .. tostring(option))
+		    print("Name " .. tostring(settingName))
 			error "unhandled control type"
 		end
 	end
@@ -408,17 +420,15 @@ end
 SpawnRegionsNameFilePanel = ISPanelJoypad:derive("SpawnRegionsNameFilePanel")
 
 function SpawnRegionsNameFilePanel:createChildren()
-	local label1 = 'name'
-	local label2 = 'file'
-	local label1Wid = getTextManager():MeasureStringX(UIFont.Medium, label1)
-	local label2Wid = getTextManager():MeasureStringX(UIFont.Medium, label2)
-	local fontHgt = getTextManager():getFontHeight(UIFont.Medium)
-	local entryX = 8 + math.max(label1Wid, label2Wid) + 8
-	local entryY = 4
-	local entryWid = self.width - 8 - entryX
-	local entryHgt = 2 + fontHgt + 2
+	local entryX = PADDING_X + UI_BORDER_SPACING + math.max(
+			getTextManager():MeasureStringX(UIFont.Medium, 'name'),
+			getTextManager():MeasureStringX(UIFont.Medium, 'file')
+	)
+	local entryY = PADDING_X
+	local entryWid = self.width - PADDING_X - entryX
+	local entryHgt = LABEL_HGT
 
-	local label = ISLabel:new(8, 4, entryHgt, "name", 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(PADDING_X, PADDING_X, entryHgt, "name", 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
 	
 	self.entryName = ISTextEntryBox:new('', entryX, entryY, entryWid, entryHgt)
@@ -426,10 +436,10 @@ function SpawnRegionsNameFilePanel:createChildren()
 	self.entryName.onCommandEntered = function(entry) self:onNameEntered() end
 	self:addChild(self.entryName)
 
-	label = ISLabel:new(8, self.entryName:getBottom() + 4, entryHgt, "file", 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(PADDING_X, self.entryName:getBottom() + UI_BORDER_SPACING, entryHgt, "file", 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
 
-	self.entryFile = ISTextEntryBox:new('', entryX, self.entryName:getBottom() + 4, entryWid, entryHgt)
+	self.entryFile = ISTextEntryBox:new('', entryX, self.entryName:getBottom() + UI_BORDER_SPACING, entryWid, entryHgt)
 	self.entryFile.font = UIFont.Medium
 	self.entryFile.onCommandEntered = function(entry) self:onFileEntered() end
 	self:addChild(self.entryFile)
@@ -515,10 +525,7 @@ function SpawnRegionsNameFilePanel:onJoypadDownInParent(button, joypadData)
 end
 
 function SpawnRegionsNameFilePanel:new(x, y, width)
-	local fontHgt = getTextManager():getFontHeight(UIFont.Medium)
-	local entryHgt = 2 + fontHgt + 2
-	local height = 4 + entryHgt + 4 + entryHgt + 4
-	local o = ISPanelJoypad.new(self, x, y, width, height)
+	local o = ISPanelJoypad.new(self, x, y, width, LABEL_HGT*2+UI_BORDER_SPACING*3+2)
 	return o
 end
 
@@ -527,38 +534,38 @@ end
 -- -- -- -- --
 
 function SpawnRegionsPanel:createChildren()
-	local buttonWid = 200
-	local buttonX = self.width - 24 - buttonWid
-	local buttonY = 24
-	local buttonHgt = 40
-	local buttonGapY = 10
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonAddRegion")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonRemoveRegion")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonEditRegion"))
+	)
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local entryHgt = fontHgt + 2 * 2
+	local buttonX = self.width - PADDING_X - buttonWid
+	local buttonY = PADDING_X
 	
-	self.listbox = SpawnRegionsListBox:new(24, 24, self.width - buttonWid - 24 * 3, self.height - 24 * 3 - 40)
+	self.listbox = SpawnRegionsListBox:new(PADDING_X, PADDING_X, buttonX - UI_BORDER_SPACING*2 - 1, self.height - 24 * 3 - 40)
 	self.listbox:initialise()
 	self.listbox:instantiate()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(true)
 	self.listbox:setAnchorTop(true)
 	self.listbox:setAnchorBottom(true)
-	self.listbox:setFont("Medium", 4)
-	self.listbox.itemheight = 4 + entryHgt + 4 + entryHgt + 4
+	self.listbox:setFont("Medium", 6)
+	self.listbox.itemheight = UI_BORDER_SPACING*3 + LABEL_HGT*2 + 2
 	self.listbox.drawBorder = true
 	self.listbox:setScrollChildren(true)
 	self:addChild(self.listbox)
 	self.listbox:createChildren()
 
 	-- name + file entries displayed when using a controller
-	self.nameFilePanel = SpawnRegionsNameFilePanel:new(self.listbox.x, self.listbox:getBottom() + 16, self.listbox.width)
+	self.nameFilePanel = SpawnRegionsNameFilePanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width)
 	self:addChild(self.nameFilePanel)
 
-	local label = ISLabel:new(24, self.listbox:getBottom() + 16, entryHgt, "SpawnPoint", 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(PADDING_X, self.height-PADDING_X-BUTTON_HGT, BUTTON_HGT, "SpawnPoint", 1, 1, 1, 1, UIFont.Medium, true)
 	label:setAnchorTop(false)
 	label:setAnchorBottom(true)
 	self:addChild(label)
-	local entry = ISTextEntryBox:new("", label:getRight() + 8, label:getY(), 300, entryHgt)
+	local entry = ISTextEntryBox:new("", label:getRight() + UI_BORDER_SPACING, label:getY()-2, 300, BUTTON_HGT)
 	entry:setAnchorTop(false)
 	entry:setAnchorBottom(true)
 	entry.font = UIFont.Medium
@@ -568,7 +575,7 @@ function SpawnRegionsPanel:createChildren()
 	self:addChild(entry)
 	self.entry = entry
 
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonAddRegion"), self, self.onButtonAddRegion)
+	local button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonAddRegion"), self, self.onButtonAddRegion)
 	button:initialise()
 	button:setAnchorLeft(false)
 	button:setAnchorTop(false)
@@ -579,8 +586,8 @@ function SpawnRegionsPanel:createChildren()
 	self:addChild(button)
 	self.buttonAdd = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonRemoveRegion"), self, self.onButtonRemoveRegion)
+	buttonY = buttonY + BUTTON_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonRemoveRegion"), self, self.onButtonRemoveRegion)
 	button:initialise()
 	button:setAnchorLeft(false)
 	button:setAnchorTop(false)
@@ -591,8 +598,8 @@ function SpawnRegionsPanel:createChildren()
 	self:addChild(button)
 	self.buttonRemove = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonEditRegion"), self, self.onButtonEditRegion)
+	buttonY = buttonY + BUTTON_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonEditRegion"), self, self.onButtonEditRegion)
 	button:initialise()
 	button:setAnchorLeft(false)
 	button:setAnchorTop(false)
@@ -658,12 +665,12 @@ function SpawnRegionsPanel:prerender()
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if joypadData and joypadData.controller and joypadData.controller.connected then
 		self.nameFilePanel:setVisible(true)
-		self.nameFilePanel:setY(self.entry.y - 16 - self.nameFilePanel.height)
-		self.listbox:setHeight(self.nameFilePanel.y - 16 - self.listbox.y)
+		self.nameFilePanel:setY(self.entry.y - UI_BORDER_SPACING - self.nameFilePanel.height)
+		self.listbox:setHeight(self.nameFilePanel.y - UI_BORDER_SPACING - self.listbox.y)
 		self.listbox.vscroll:setHeight(self.listbox.height)
 	else
 		self.nameFilePanel:setVisible(false)
-		self.listbox:setHeight(self.entry.y - 16 - self.listbox.y)
+		self.listbox:setHeight(self.entry.y - UI_BORDER_SPACING - self.listbox.y)
 		self.listbox.vscroll:setHeight(self.listbox.height)
 	end
 end
@@ -763,6 +770,10 @@ function SpawnRegionsPanel:onJoypadDirRight(joypadData)
 	end
 end
 
+function SpawnRegionsPanel:onResolutionChange()
+	self.listbox:setWidth(self.buttonAdd.x - UI_BORDER_SPACING*2 - 1)
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -819,11 +830,16 @@ end
 
 function ServerSettingsScreenModsPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	
-	local label = ISLabel:new(24, 24, fontHgt, getText("UI_ServerSettings_ListOfMods"), 1, 1, 1, 1, UIFont.Medium, true)
+
+	local label = ISLabel:new(0, UI_BORDER_SPACING+1, fontHgt, getText("UI_ServerSettings_ListOfMods"), 1, 1, 1, 1, UIFont.Medium, true)
+	label:setX((self.width-label.width)/2)
 	self:addChild(label)
 
-	self.listbox = ServerSettingsScreenModsListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 2, 400), self.height - 24 * 2)
+	local buttonWid = getTextManager():MeasureStringX(UIFont.Medium, getText("UI_LoadGameScreen_ButtonChooseMods")) + UI_BORDER_SPACING*2
+	local listboxWid = math.min(self.width - 24 * 2, 500)
+	local listboxX = (self.width-(buttonWid + listboxWid + UI_BORDER_SPACING))/2
+
+	self.listbox = ServerSettingsScreenModsListBox:new(listboxX, label:getBottom() + UI_BORDER_SPACING, listboxWid, self.height - 24 * 2)
 	self.listbox:initialise()
 	self.listbox:instantiate()
 	self.listbox:setAnchorLeft(true)
@@ -837,12 +853,7 @@ function ServerSettingsScreenModsPanel:createChildren()
 	self.listbox.vscroll:setHeight(self.listbox.height)
 	self:addChild(self.listbox)
 
-	local buttonX = self.listbox:getRight() + 24
-	local buttonY = self.listbox:getY()
-	local buttonWid = 200
-	local buttonHgt = 40
-
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonRemove"), self, self.onButtonRemove)
+	local button = ISButton:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox.y, buttonWid, BUTTON_HGT, getText("UI_LoadGameScreen_ButtonChooseMods"), self, self.onButtonChoose)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -851,11 +862,12 @@ function ServerSettingsScreenModsPanel:createChildren()
 	button.borderColor = {r=1, g=1, b=1, a=0.2}
 	button:setFont(UIFont.Medium)
 	self:addChild(button)
-	self.buttonRemove = button
+	self.button = button
 
-	label = ISLabel:new(self.listbox:getX(), self.listbox:getBottom() + 12, fontHgt, getText("UI_ServerSettings_AddInstalledMod"), 1, 1, 1, 1, UIFont.Medium, true)
-	self:addChild(label)
+	--label = ISLabel:new(self.listbox:getX(), self.listbox:getBottom() + 12, fontHgt, getText("UI_ServerSettings_AddInstalledMod"), 1, 1, 1, 1, UIFont.Medium, true)
+	--self:addChild(label)
 
+	--[[
 	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + 4, self.listbox:getWidth(), fontHgt + 4, self, self.onAddInstalledMod)
 	comboBox:setToolTipMap({ defaultTooltip = getTooltipText("UI_ServerSettings_AddInstalledMod_tooltip") })
 	self:addChild(comboBox)
@@ -869,15 +881,15 @@ function ServerSettingsScreenModsPanel:createChildren()
 	entry.tooltip = getTooltipText("UI_ServerSettings_AddOtherMod_tooltip")
 	entry.onCommandEntered = self.onAddOtherMod
 	self:addChild(entry)
-
-	self:addJoypadColumn( { self.listbox, self.comboBox, entry } )
-	self:addJoypadColumn( { self.buttonRemove } )
+]]
+	--self:addJoypadColumn( { self.listbox, self.comboBox, entry } )
+	self:addJoypadColumn( { button } )
 	self:setJoypadColumn(1)
 end
 
 function ServerSettingsScreenModsPanel:prerender()
 	MultiColumnPanelJoypad.prerender(self)
-	self.buttonRemove:setEnable(self.listbox.items[self.listbox.selected] ~= nil)
+	--self.buttonRemove:setEnable(self.listbox.items[self.listbox.selected] ~= nil)
 end
 
 function ServerSettingsScreenModsPanel:setSettings(settings)
@@ -920,98 +932,18 @@ function ServerSettingsScreenModsPanel:addModToList(modID)
 	end
 end
 
-function ServerSettingsScreenModsPanel:onButtonRemove()
-	self:onRemoveMod(self.listbox.selected)
-end
-
-function ServerSettingsScreenModsPanel:onAddInstalledMod()
-	local modInfo = self.comboBox.options[self.comboBox.selected].data
-	if self:findModInList(modInfo:getId()) then return end
-	self:addModToList(modInfo:getId())
-	self.listbox.selected = #self.listbox.items
-	self.listbox:ensureVisible(self.listbox.selected)
-	local modsString = self:modListToString()
-	self.pageEdit:notify("addedMod", modInfo:getId(), modsString)
-end
-
-function ServerSettingsScreenModsPanel:onAddOtherMod()
-	local modID = self:getText()
-	if modID == "" or string.contains(modID, ";") then
-		return
-	end
-	if self.parent:findModInList(modID) then return end
-	self.parent:addModToList(modID)
-	self.parent.listbox.selected = #self.parent.listbox.items
-	self.parent.listbox:ensureVisible(self.parent.listbox.selected)
-	self.javaObject:SetText("")
-	local modsString = self.parent:modListToString()
-	self.parent.pageEdit:notify("addedMod", modID, modsString)
-end
-
-function ServerSettingsScreenModsPanel:onRemoveMod(index)
-	local modID = self.listbox.items[index].item.modID
-	self.listbox:removeItemByIndex(index)
-	local modsString = self:modListToString()
-	self.pageEdit:notify("removedMod", modID, modsString)
-end
-
-function ServerSettingsScreenModsPanel:findModInList(modID)
-	for i,item in ipairs(self.listbox.items) do
-		if item.item.modID == modID then
-			return i
-		end
-	end
-	return nil
-end
-
-function ServerSettingsScreenModsPanel:notify(message, arg1, arg2, arg3, arg4)
-	if message == "addedWorkshopItem" then
-		local workshopID = arg1
-		local mods = getSteamWorkshopItemMods(workshopID)
-		if mods then
-			for i=1,mods:size() do
-				local modID = mods:get(i-1):getId()
-				if not self:findModInList(modID) then
-					self:addModToList(modID)
-					self.listbox.selected = #self.listbox.items
-					self.listbox:ensureVisible(self.listbox.selected)
-					self.pageEdit:notify("addedMod", modID, self:modListToString())
-				end
-			end
-		end
-	end
-	if message == "removedWorkshopItem" then
-		local workshopID = arg1
-		local mods = getSteamWorkshopItemMods(workshopID)
-		if mods then
-			for i=1,mods:size() do
-				local modID = mods:get(i-1):getId()
-				local removed = false
-				local index = self:findModInList(modID)
-				while index do
-					self:onRemoveMod(index)
-					index = self:findModInList(modID)
-				end
-				if removed then
-					self.pageEdit:notify("removedMod", modID, self:modListToString())
-				end
-			end
-		end
-	end
-end
-
 function ServerSettingsScreenModsPanel:aboutToShowStartScreen()
-	self.comboBox.options = {}
+	--self.comboBox.options = {}
 	self.modInfoByID = {}
 	local modDirectories = getModDirectoryTable()
 	for index,dirName in ipairs(modDirectories) do
 		local modInfo = getModInfo(dirName)
 		if modInfo then
-			self.comboBox:addOptionWithData(modInfo:getName(), modInfo)
+			--self.comboBox:addOptionWithData(modInfo:getName(), modInfo)
 			self.modInfoByID[modInfo:getId()] = modInfo
 		end
 	end
-	table.sort(self.comboBox.options, function(a,b) return not string.sort(a.text, b.text) end)
+	--table.sort(self.comboBox.options, function(a,b) return not string.sort(a.text, b.text) end)
 end
 
 function ServerSettingsScreenModsPanel:onGainJoypadFocus(joypadData)
@@ -1064,6 +996,17 @@ function ServerSettingsScreenModsPanel:onJoypadDirRight(joypadData)
 	end
 end
 
+function ServerSettingsScreenModsPanel:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child.name ~= nil then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+	self.listbox:setX((self.width-(self.listbox.width + self.button.width + UI_BORDER_SPACING))/2)
+	self.button:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -1086,39 +1029,20 @@ function ServerSettingsScreenModsListBox:doDrawItem(y, item, alt)
 	
 	local dy = (self.itemheight - getTextManager():getFontFromEnum(self.font):getLineHeight()) / 2
 	self:drawText(item.text, 8, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
-	if item.item.modInfo then
-		local x = 8 + getTextManager():MeasureStringX(self.font, item.text) + 8
-		dy = (self.itemheight - smallFontHgt) / 2
-		self:drawText("[" .. item.item.modInfo:getId() .. "]", x, y + dy, 0.6, 0.6, 0.6, 0.9, UIFont.Small)
-	end
 
-	if not self.disableRemove and self.mouseoverselected == item.index and not self:isMouseOverScrollBar() then
-		local textRemove = getText("UI_btn_remove")
-		local textRemoveWid = getTextManager():MeasureStringX(UIFont.Small, textRemove)
-		local buttonWid = 8 + textRemoveWid + 8
-		local buttonHgt = smallFontHgt + 4
-		local scrollBarWid = self:isVScrollBarVisible() and 13 or 0
-		local buttonX = self.width - 4 - scrollBarWid - buttonWid
-		local buttonY = y + (item.height - buttonHgt) / 2
-		local isMouseOverButton = (self:getMouseX() > buttonX - 8)
-		if isMouseOverButton then
-			self:drawRect(buttonX, buttonY, buttonWid, buttonHgt, 1, 0.85, 0, 0)
-			self.mouseOverButtonIndex = item.index
-		else
-			self:drawRect(buttonX, buttonY, buttonWid, buttonHgt, 1, 0.50, 0.50, 0.50)
-		end
-		self:drawTextCentre(textRemove, buttonX +  buttonWid / 2, y + (item.height - smallFontHgt) / 2 , 0, 0, 0, 1)
+	local x = 8 + getTextManager():MeasureStringX(self.font, item.text) + 8
+	dy = (self.itemheight - smallFontHgt) / 2
+	if item.item.modInfo then
+		self:drawText("[" .. item.item.modInfo:getId() .. "]", x, y + dy, 0.6, 0.6, 0.6, 0.9, UIFont.Small)
+	else
+		self:drawText("[" .. getText("UI_modselector_UnknownMod") .. "]", x, y + dy, 0.6, 0.6, 0.6, 0.9, UIFont.Small)
 	end
 
 	return y + item.height
 end
 
 function ServerSettingsScreenModsListBox:onMouseDown(x, y)
-	if self.mouseOverButtonIndex then
-		self.parent:onRemoveMod(self.mouseOverButtonIndex)
-	else
-		ISScrollingListBox.onMouseDown(self, x, y)
-	end
+	ISScrollingListBox.onMouseDown(self, x, y)
 end
 
 -- -- -- -- --
@@ -1128,14 +1052,19 @@ end
 function ServerSettingsScreenMapsPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	
-	local label = ISLabel:new(24, 24, fontHgt, getText("UI_ServerSettings_ListOfMaps"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(24, UI_BORDER_SPACING+1, fontHgt, getText("UI_ServerSettings_ListOfMaps"), 1, 1, 1, 1, UIFont.Medium, true)
+	label:setX((self.width-label.width)/2)
 	self:addChild(label)
 
-	local buttonWid = 200
-	local buttonHgt = 40
-	local buttonGapY = 10
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonMoveUp")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonMoveDown")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonRemove"))
+	)
+	local listboxWid = math.min(self.width - 24 * 3 - buttonWid, 400)
+	local listboxX = (self.width-(buttonWid + listboxWid + UI_BORDER_SPACING))/2
 
-	self.listbox = ServerSettingsScreenMapsListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 3 - buttonWid, 400), self.height - 24 * 2)
+	self.listbox = ServerSettingsScreenMapsListBox:new(listboxX, label:getBottom() + UI_BORDER_SPACING, listboxWid, self.height - 24 * 2)
 	self.listbox:initialise()
 	self.listbox:instantiate()
 	self.listbox:setAnchorLeft(true)
@@ -1149,10 +1078,10 @@ function ServerSettingsScreenMapsPanel:createChildren()
 	self.listbox.vscroll:setHeight(self.listbox.height)
 	self:addChild(self.listbox)
 
-	local buttonX = self.listbox:getRight() + 24
+	local buttonX = self.listbox:getRight() + UI_BORDER_SPACING
 	local buttonY = self.listbox:getY()
 
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonMoveUp"), self, self.onButtonMoveUp)
+	local button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonMoveUp"), self, self.onButtonMoveUp)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -1164,8 +1093,8 @@ function ServerSettingsScreenMapsPanel:createChildren()
 	self:addChild(button)
 	self.buttonMoveUp = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonMoveDown"), self, self.onButtonMoveDown)
+	buttonY = buttonY + BUTTON_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonMoveDown"), self, self.onButtonMoveDown)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -1176,8 +1105,8 @@ function ServerSettingsScreenMapsPanel:createChildren()
 	self:addChild(button)
 	self.buttonMoveDown = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonRemove"), self, self.onButtonRemove)
+	buttonY = buttonY + BUTTON_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonRemove"), self, self.onButtonRemove)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -1188,22 +1117,23 @@ function ServerSettingsScreenMapsPanel:createChildren()
 	self:addChild(button)
 	self.buttonRemove = button
 
-	label = ISLabel:new(self.listbox:getX(), self.listbox:getBottom() + 12, fontHgt, getText("UI_ServerSettings_AddInstalledMap"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.listbox:getX(), self.listbox:getBottom() + UI_BORDER_SPACING*2, fontHgt, getText("UI_ServerSettings_AddInstalledMap"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
 
-	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + 4, self.listbox:getWidth(), fontHgt + 4, self, self.onAddInstalledMap)
+	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + UI_BORDER_SPACING, self.listbox:getWidth(), fontHgt + 4, self, self.onAddInstalledMap)
 	comboBox:setToolTipMap({ defaultTooltip = getText("UI_ServerSettings_AddInstalledMap_tooltip") })
 	self:addChild(comboBox)
 	self.comboBox = comboBox
 
-	label = ISLabel:new(self.listbox:getX(), comboBox:getBottom() + 12, 20, getText("UI_ServerSettings_AddOtherMap"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.listbox:getX(), comboBox:getBottom() + UI_BORDER_SPACING*2, 20, getText("UI_ServerSettings_AddOtherMap"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
 	
-	local entry = ISTextEntryBox:new("", self.listbox:getX(), label:getBottom() + 4, self.listbox:getWidth(), fontHgt + 4)
+	local entry = ISTextEntryBox:new("", self.listbox:getX(), label:getBottom() + UI_BORDER_SPACING, self.listbox:getWidth(), fontHgt + 4)
 	entry.font = UIFont.Medium
 	entry.tooltip = getTooltipText("UI_ServerSettings_AddOtherMap_tooltip")
 	entry.onCommandEntered = self.onAddOtherMap
 	self:addChild(entry)
+	self.entry = entry
 
 	self:addJoypadColumn( { self.listbox, self.comboBox, entry } )
 	self:addJoypadColumn( { self.buttonMoveUp, self.buttonMoveDown, self.buttonRemove } )
@@ -1419,6 +1349,27 @@ function ServerSettingsScreenMapsPanel:onJoypadDirRight(joypadData)
 	end
 end
 
+function ServerSettingsScreenMapsPanel:onResolutionChange()
+
+	self.listbox:setX((self.width-(self.listbox.width + self.buttonMoveUp.width + UI_BORDER_SPACING))/2)
+	self.buttonMoveUp:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.buttonMoveDown:setX(self.buttonMoveUp.x)
+	self.buttonRemove:setX(self.buttonMoveUp.x)
+	self.comboBox:setX(self.listbox.x)
+	self.entry:setX(self.listbox.x)
+
+	local children = self:getChildren()
+	for i,child in pairs(children) do
+		if child.name ~= nil then
+			if child.y <= UI_BORDER_SPACING+1 then
+				child:setX((self.width-child.width)/2)
+			else
+				child:setX(self.listbox.x)
+			end
+		end
+	end
+
+end
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -1489,7 +1440,7 @@ end
 function ServerSettingsScreenWorkshopPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	
-	local label = ISLabel:new(24, 24, fontHgt, getText("UI_ServerSettings_ListOfWorkshopItems"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(24, UI_BORDER_SPACING+1, fontHgt, getText("UI_ServerSettings_ListOfWorkshopItems"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
 
 	self.listbox = ServerSettingsScreenWorkshopListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 2, 400), self.height - 24 * 2)
@@ -1713,6 +1664,10 @@ function ServerSettingsScreenWorkshopPanel:onJoypadDirRight(joypadData)
 	end
 end
 
+function ServerSettingsScreenWorkshopPanel:onResolutionChange()
+	--todo add code to reposition items in this panel on resizing the game window
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -1827,9 +1782,9 @@ function SpawnRegionsListBox:render()
 end
 
 function SpawnRegionsListBox:doDrawItem(y, item, alt)
-	self:drawRectBorder(0, y, self:getWidth(), item.height - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
+	self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 	if self.selected == item.index then
-		self:drawRect(0, y, self:getWidth(), item.height - 1, 0.3, 0.7, 0.35, 0.15)
+		self:drawRect(0, y, self:getWidth(), item.height, 0.3, 0.7, 0.35, 0.15)
 	end
 
 	local label1 = 'name'
@@ -1837,18 +1792,18 @@ function SpawnRegionsListBox:doDrawItem(y, item, alt)
 	local label1Wid = getTextManager():MeasureStringX(self.font, label1)
 	local label2Wid = getTextManager():MeasureStringX(self.font, label2)
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local entryInset = 2
-	local entryHgt = entryInset + fontHgt + entryInset
+	local entryInset = 3
+	local entryHgt = LABEL_HGT
 
-	self:drawText(label1, 8, y + 4 + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
-	self:drawText(label2, 8, y + 4 + entryHgt + 4 + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
+	self:drawText(label1, PADDING_X, y + 1 + UI_BORDER_SPACING + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
+	self:drawText(label2, PADDING_X, y + 1 + UI_BORDER_SPACING*2 + entryHgt  + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
 	if self.currentItem ~= item.index then
-		local x = 8 + math.max(label1Wid, label2Wid) + 8 + entryInset
-		self:drawText(item.item.name, x, y + 4 + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
-		self:drawText(item.item.file, x, y + 4 + entryHgt + 4 + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
+		local x = PADDING_X + math.max(label1Wid, label2Wid) + UI_BORDER_SPACING + entryInset
+		self:drawText(item.item.name, x, y + 1 + UI_BORDER_SPACING + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
+		self:drawText(item.item.file, x, y + 1 + UI_BORDER_SPACING*2 + entryHgt + (entryHgt - fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, self.font)
 	end
 
-	item.height = 4 + entryHgt + 4 + entryHgt + 4
+	item.height = UI_BORDER_SPACING*3 + entryHgt*2 + 2
 	return y + item.height
 end
 
@@ -1857,11 +1812,10 @@ function SpawnRegionsListBox:positionEntries()
 	local label2 = 'file'
 	local label1Wid = getTextManager():MeasureStringX(self.font, label1)
 	local label2Wid = getTextManager():MeasureStringX(self.font, label2)
-	local fontHgt = getTextManager():getFontFromEnum(self.font):getLineHeight()
-	local entryHgt = 2 + fontHgt + 2
+	local entryHgt = LABEL_HGT
 
-	local x = 8 + math.max(label1Wid, label2Wid) + 8
-	local y = 4 + (self.selected - 1) * (4 + entryHgt + 4 + entryHgt + 4)
+	local x = PADDING_X + math.max(label1Wid, label2Wid) + UI_BORDER_SPACING
+	local y = 1 + UI_BORDER_SPACING + (self.selected - 1) * (UI_BORDER_SPACING*3 + entryHgt*2 + 2)
 
 	local scrollBarWidth = self:isVScrollBarVisible() and self.vscroll:getWidth() or 0
 	
@@ -1869,13 +1823,13 @@ function SpawnRegionsListBox:positionEntries()
 	
 	self.entryName:setX(x)
 	self.entryName:setY(y)
-	self.entryName:setWidth(self.width - scrollBarWidth - 8 - x)
+	self.entryName:setWidth(self.width - scrollBarWidth - UI_BORDER_SPACING - x - 1)
 	self.entryName:setHeight(entryHgt)
 	self.entryName:setText(item.name)
 	
 	self.entryFile:setX(x)
-	self.entryFile:setY(y + entryHgt + 4)
-	self.entryFile:setWidth(self.width - scrollBarWidth - 8 - x)
+	self.entryFile:setY(y + entryHgt + UI_BORDER_SPACING)
+	self.entryFile:setWidth(self.width - scrollBarWidth - UI_BORDER_SPACING - x - 1)
 	self.entryFile:setHeight(entryHgt)
 	self.entryFile:setText(item.file)
 
@@ -1889,11 +1843,15 @@ end
 
 function SandboxPresetPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	
-	local label = ISLabel:new(24, 24, fontHgt, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(24, UI_BORDER_SPACING+1, fontHgt, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Medium, true)
+	label:setX((self.width-label.width)/2)
 	self:addChild(label)
 
-	self.listbox = ServerSettingsScreenModsListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 2, 400), self.height - 24 * 2)
+	local buttonWid = getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonApplyPreset")) + UI_BORDER_SPACING*2
+	local listboxWid = math.min(self.width - 24 * 2, 400)
+	local listboxX = (self.width-(buttonWid + listboxWid + UI_BORDER_SPACING))/2
+
+	self.listbox = ServerSettingsScreenModsListBox:new(listboxX, label:getBottom() + UI_BORDER_SPACING, listboxWid, self.height - 24 * 2)
 	self.listbox:initialise()
 	self.listbox:instantiate()
 	self.listbox:setAnchorLeft(true)
@@ -1908,12 +1866,7 @@ function SandboxPresetPanel:createChildren()
 	self.listbox.disableRemove = true
 	self:addChild(self.listbox)
 
-	local buttonX = self.listbox:getRight() + 24
-	local buttonY = self.listbox:getY()
-	local buttonWid = 200
-	local buttonHgt = 40
-
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonApplyPreset"), self, self.onButtonApplyPreset)
+	local button = ISButton:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox:getY(), buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonApplyPreset"), self, self.onButtonApplyPreset)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2026,6 +1979,17 @@ function SandboxPresetPanel:onJoypadDirRight(joypadData)
 	end
 end
 
+function SandboxPresetPanel:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child.name ~= nil then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+	self.listbox:setX((self.width-(self.listbox.width + self.buttonApplyPreset.width + UI_BORDER_SPACING))/2)
+	self.buttonApplyPreset:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -2040,14 +2004,20 @@ function Page1:new(x, y, width, height)
 end
 
 function Page1:create()
-	local padX = 96
-	local listY = 128
-
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, math.min(96, listY - labelHgt - 4), labelHgt, getText("UI_ServerSettings_ListOfSettings", getServerSettingsManager():getSettingsFolder()), 1, 1, 1, 1, UIFont.Medium, true)
+	local listY = TITLE_PADDING+LABEL_HGT
+	local label1 = ISLabel:new(PADDING_X, listY - LABEL_HGT, LABEL_HGT, getText("UI_ServerSettings_ListOfSettings", getServerSettingsManager():getSettingsFolder()), 1, 1, 1, 1, UIFont.Medium, true)
+	label1:setX((self.width-label1.width)/2)
 	self:addChild(label1)
 
-	self.listbox = ISScrollingListBox:new(padX, listY, 350, self.height - listY - 96)
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonNew")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonEdit")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonDuplicate")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonRename")),
+			getTextManager():MeasureStringX(UIFont.Medium, getText("UI_ServerSettings_ButtonDelete"))
+	)
+
+	self.listbox = ISScrollingListBox:new((self.width - UI_BORDER_SPACING)/2-buttonWid, listY, buttonWid, self.height - listY - UI_BORDER_SPACING*2 - BUTTON_HGT - 1)
 	self.listbox:initialise()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(false)
@@ -2060,13 +2030,10 @@ function Page1:create()
 	self.listbox.onJoypadDirRight = self.onJoypadDirRight_ListBox
 	self:addChild(self.listbox)
 
-	local buttonX = self.listbox:getRight() + 32
+	local buttonX = self.listbox:getRight() + UI_BORDER_SPACING
 	local buttonY = self.listbox:getY()
-	local buttonHgt = 48
-	local buttonWid = 400
-	local buttonGapY = 24
 
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonNew"), self, self.onButtonNew)
+	local button = ISButton:new(buttonX, buttonY, buttonWid, LABEL_HGT, getText("UI_ServerSettings_ButtonNew"), self, self.onButtonNew)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2076,8 +2043,8 @@ function Page1:create()
 	self:addChild(button)
 	self.buttonNew = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonEdit"), self, self.onButtonEdit)
+	buttonY = buttonY + LABEL_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, LABEL_HGT, getText("UI_ServerSettings_ButtonEdit"), self, self.onButtonEdit)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2087,8 +2054,8 @@ function Page1:create()
 	self:addChild(button)
 	self.buttonEdit = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonDuplicate"), self, self.onButtonDuplicate)
+	buttonY = buttonY + LABEL_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, LABEL_HGT, getText("UI_ServerSettings_ButtonDuplicate"), self, self.onButtonDuplicate)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2098,8 +2065,8 @@ function Page1:create()
 	self:addChild(button)
 	self.buttonDuplicate = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonRename"), self, self.onButtonRename)
+	buttonY = buttonY + LABEL_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, LABEL_HGT, getText("UI_ServerSettings_ButtonRename"), self, self.onButtonRename)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2109,8 +2076,8 @@ function Page1:create()
 	self:addChild(button)
 	self.buttonRename = button
 
-	buttonY = buttonY + buttonHgt + buttonGapY
-	button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonDelete"), self, self.onButtonDelete)
+	buttonY = buttonY + LABEL_HGT + UI_BORDER_SPACING
+	button = ISButton:new(buttonX, buttonY, buttonWid, LABEL_HGT, getText("UI_ServerSettings_ButtonDelete"), self, self.onButtonDelete)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -2128,15 +2095,14 @@ function Page1:create()
 	self.joypadIndex = 1
 	self.joypadIndexY = 1
 
-	buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.backButton = ISButton:new(16, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_back"), self, self.onButtonBack)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT-1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, self.onButtonBack)
 	self.backButton.internal = "BACK"
 	self.backButton:initialise()
 	self.backButton:setAnchorLeft(true)
 	self.backButton:setAnchorTop(false)
 	self.backButton:setAnchorBottom(true)
-	self.backButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.backButton:enableCancelColor()
 	self:addChild(self.backButton)
 end
 
@@ -2150,8 +2116,8 @@ end
 
 function Page1:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title1"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page1", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title1"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page1", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 	self:updateWhenVisible()
 end
 
@@ -2198,10 +2164,10 @@ end
 
 function Page1:onButtonEdit()
 	self:setVisible(false)
-	self.parent.pageEdit.settings = self.listbox.items[self.listbox.selected].item
-	self.parent.pageEdit.settings:loadFiles()
-	self.parent.pageEdit:aboutToShow()
-	self.parent.pageEdit:setVisible(true, JoypadState.getMainMenuJoypad())
+	self.parent.pageEdit.chooseModsWindow.settings = self.listbox.items[self.listbox.selected].item
+	self.parent.pageEdit.chooseModsWindow.settings:loadFiles()
+	self.parent.pageEdit.chooseModsWindow:aboutToShow()
+	self.parent.pageEdit.chooseModsWindow:setVisible(true, JoypadState.getMainMenuJoypad())
 end
 
 function Page1:onButtonDuplicate()
@@ -2275,6 +2241,21 @@ function Page1:onJoypadBeforeDeactivate(joypadData)
 	self.parent:onJoypadBeforeDeactivate(joypadData)
 end
 
+function Page1:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child.name ~= nil then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+	self.listbox:setX((self.width - UI_BORDER_SPACING)/2-self.listbox.width)
+	self.buttonNew:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.buttonEdit:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.buttonDuplicate:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.buttonRename:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.buttonDelete:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -2289,10 +2270,8 @@ function Page2:new(x, y, width, height)
 end
 
 function Page2:create()
-	local padX = 96
-
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, 96, labelHgt, getText("UI_ServerSettings_LabelNewName"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label1 = ISLabel:new(PADDING_X, 96, LABEL_HGT, getText("UI_ServerSettings_LabelNewName"), 1, 1, 1, 1, UIFont.Medium, true)
+	label1:setX((self.width-label1.width)/2)
 	self:addChild(label1)
 
 	local entryWid = 400
@@ -2302,33 +2281,35 @@ function Page2:create()
 	self.entry.font = UIFont.Medium
 	self.entry:initialise()
 	self.entry:instantiate()
+	self.entry:setX((self.width-entryWid)/2)
 	self:addChild(self.entry)
 
-	local label2 = ISLabel:new(padX, self.entry:getBottom() + 48, labelHgt, getText("UI_ServerSettings_LabelNewFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label2 = ISLabel:new(PADDING_X, self.entry:getBottom() + 48, LABEL_HGT, getText("UI_ServerSettings_LabelNewFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	label2:setX((self.width-label2.width)/2)
 	self:addChild(label2)
-	self.newFilesX = padX + 32
 	self.newFilesY = label2:getBottom() + 4
 
 	self:insertNewLineOfButtons(self.entry)
 	self.joypadIndex = 1
 	self.joypadIndexY = 1
 
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.backButton = ISButton:new(self.width / 2 - 15 - 100, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_back"), self, self.onButtonBack)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, self.onButtonBack)
 	self.backButton:initialise()
 	self.backButton:setAnchorLeft(true)
 	self.backButton:setAnchorTop(false)
 	self.backButton:setAnchorBottom(true)
-	self.backButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.backButton:enableCancelColor()
 	self:addChild(self.backButton)
 
-	self.nextButton = ISButton:new(self.width / 2 + 15, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_next"), self, self.onButtonNext)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
+	self.nextButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, self.onButtonNext)
 	self.nextButton:initialise()
-	self.nextButton:setAnchorLeft(true)
+	self.nextButton:setAnchorLeft(false)
+	self.nextButton:setAnchorRight(true)
 	self.nextButton:setAnchorTop(false)
 	self.nextButton:setAnchorBottom(true)
-	self.nextButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.nextButton:enableAcceptColor()
 	self:addChild(self.nextButton)
 end
 
@@ -2362,17 +2343,21 @@ end
 
 function Page2:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title2"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page2", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title2"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page2", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 
 	local prefix = getServerSettingsManager():getNameInSettingsFolder(self.entry:getText())
 	local suffixes = getServerSettingsManager():getSuffixes()
+	local prefixLength = getTextManager():MeasureStringX(UIFont.Medium, prefix)
+	local suffixLength = 0
+	for i=1,suffixes:size() do
+		suffixLength = math.max(getTextManager():MeasureStringX(UIFont.Medium, suffixes:get(i-1)),  suffixLength)
+	end
 	local y = self.newFilesY
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	for i=1,suffixes:size() do
 		if suffixes:get(i-1) ~= "_zombies.ini" then
-			self:drawText(prefix .. suffixes:get(i-1), self.newFilesX, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
+			self:drawText(prefix .. suffixes:get(i-1), (self.width-prefixLength-suffixLength)/2, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
 		end
 	end
 
@@ -2471,15 +2456,25 @@ function Page2:onButtonNext()
 	else
 		self:setVisible(false)
 		DefaultServerSettings:setDefaultsFromSingleplayer(settings)
-		self.parent.pageEdit.settings = settings
-		self.parent.pageEdit:aboutToShow()
-		self.parent.pageEdit:setVisible(true, JoypadState.getMainMenuJoypad())
+
+		self.parent.pageEdit.chooseModsWindow.settings = settings
+		self.parent.pageEdit.chooseModsWindow:aboutToShow()
+		self.parent.pageEdit.chooseModsWindow:setVisible(true, JoypadState.getMainMenuJoypad())
 	end
 end
 
 function Page2:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
 	self:setJoypadFocus(self.entry)
+end
+
+function Page2:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child ~= self.backButton and child ~= self.nextButton then
+			child:setX((self.width-child.width)/2)
+		end
+	end
 end
 
 -- -- -- -- --
@@ -2501,16 +2496,13 @@ end
 local SettingsTable
 
 function Page3:create()
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Title):getLineHeight()
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.listbox = ISScrollingListBox:new(24, labelHgt + 24, 300, self.height - 60 - labelHgt - 24)
+	self.listbox = ISScrollingListBox:new(PADDING_X, TITLE_PADDING, 300, self.height - TITLE_PADDING - UI_BORDER_SPACING*2 - BUTTON_HGT - 1)
 	self.listbox:initialise()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(false)
 	self.listbox:setAnchorTop(true)
 	self.listbox:setAnchorBottom(true)
-	self.listbox:setFont("Medium", 4)
+	self.listbox:setFont("Medium", 6)
 	self.listbox.drawBorder = true
 	self.listbox.doDrawItem = self.doDrawItem
 	self.listbox:setOnMouseDownFunction(self, self.onMouseDownListBox)
@@ -2519,7 +2511,7 @@ function Page3:create()
 	self:addChild(self.listbox)
 
 	local tooltipHgt = FONT_HGT_SMALL * 4
-	self.tooltipPanel = ISRichTextPanel:new(self.listbox:getRight() + 24, self.listbox:getBottom() - tooltipHgt, self.width - 24 - self.listbox:getRight() - 24, tooltipHgt)
+	self.tooltipPanel = ISRichTextPanel:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox:getBottom() - tooltipHgt, self.width - self.listbox:getRight() - UI_BORDER_SPACING*2 - 1, tooltipHgt)
 	self.tooltipPanel:setAnchorTop(false)
 	self.tooltipPanel:setAnchorBottom(true)
 	self.tooltipPanel:setMargins(0, 0, 0, 0)
@@ -2548,20 +2540,23 @@ function Page3:create()
 		end
 	end
 
-	self.buttonCancel = ISButton:new(self.width / 2 - 15 - 100, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
 	self.buttonCancel:initialise()
 	self.buttonCancel:setAnchorLeft(true)
 	self.buttonCancel:setAnchorTop(false)
 	self.buttonCancel:setAnchorBottom(true)
-	self.buttonCancel.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonCancel:enableCancelColor()
 	self:addChild(self.buttonCancel)
 
-	self.buttonAccept = ISButton:new(self.width / 2 + 15, self.height - 5 - buttonHgt, 100, buttonHgt, getText("UI_btn_save"), self, self.onButtonSave)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_save"))
+	self.buttonAccept = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_save"), self, self.onButtonSave)
 	self.buttonAccept:initialise()
-	self.buttonAccept:setAnchorLeft(true)
+	self.buttonAccept:setAnchorLeft(false)
+	self.buttonAccept:setAnchorRight(true)
 	self.buttonAccept:setAnchorTop(false)
 	self.buttonAccept:setAnchorBottom(true)
-	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonAccept:enableAcceptColor()
 	self:addChild(self.buttonAccept)
 
 	self.listbox.selected = 2
@@ -2569,8 +2564,13 @@ function Page3:create()
 end
 
 function Page3:createPanel(category, page)
+	local panelX = self.listbox:getRight() + UI_BORDER_SPACING
+	local panelY = self.listbox:getY()
+	local panelW = self.width - self.listbox:getRight() - UI_BORDER_SPACING*2 - 1
+	local panelH = self.listbox:getHeight()
+
 	if page.customui then
-		local panel = page.customui:new(self.listbox:getRight() + 24, self.listbox:getY(), self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight() - self.tooltipPanel.height)
+		local panel = page.customui:new(panelX, panelY, panelW, panelH)
 		panel:initialise()
 		panel:instantiate()
 		panel:setAnchorRight(true)
@@ -2581,12 +2581,11 @@ function Page3:createPanel(category, page)
 
 	local panel
 	if page.groupBox then
-		panel = ServerSettingsScreenGroupBox:new(self.listbox:getRight() + 24, self.listbox:getY(),
-			self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight(),
+		panel = ServerSettingsScreenGroupBox:new(panelX, panelY, panelW, panelH,
 			getText("Sandbox_" .. page.groupBox), category.name)
 		self.groupBox[category.name][page.groupBox] = panel
 	else
-		panel = ServerSettingsScreenPanel:new(self.listbox:getRight() + 24, self.listbox:getY(), self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight() - self.tooltipPanel.height)
+		panel = ServerSettingsScreenPanel:new(panelX, panelY, panelW, panelH)
 		panel.category = category.name
 	end
 	panel._instance = self
@@ -2597,12 +2596,14 @@ function Page3:createPanel(category, page)
 	panel.settingNames = {}
 	panel.labels = {}
 	panel.controls = {}
+	panel.titles = {}
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local entryHgt = fontHgt + 2 * 2
+	local largeFontHgt = getTextManager():getFontFromEnum(UIFont.Large):getLineHeight()
+	local entryLargeHgt = largeFontHgt + 6
 
 	local labels = {}
 	local controls = {}
+	local titles = {}
 	for _,setting in ipairs(page.settings) do
 		local settingName = setting.translatedName
 		local tooltip = setting.tooltip
@@ -2614,25 +2615,25 @@ function Page3:createPanel(category, page)
 		local control = nil
 		if setting.name == "WaterShut" or setting.name == "ElecShut" then
 			-- ignore
-		elseif setting.singlePlayerOnly then
+-- 		elseif setting.singlePlayerOnly then
 		    -- ignore
 		elseif setting.type == "checkbox" then
-			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-			control = ISTickBox:new(0, 0, 100, entryHgt, "", nil, nil)
+			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+			control = ISTickBox:new(0, 0, LABEL_HGT, LABEL_HGT, "", self, self.onTickBoxSelected, category.name, setting.name)
 			control:addOption("")
 			control.selected[1] = setting.default
 			control.tooltip = tooltip
 		elseif setting.type == "entry" or setting.type == "string" then
-			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-			control = ISTextEntryBox:new(setting.text, 0, 0, 300, entryHgt)
+			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+			control = ISTextEntryBox:new(setting.text, 0, 0, CONTROL_WIDTH, LABEL_HGT)
 			control.font = UIFont.Medium
 			control.tooltip = tooltip
 			control:initialise()
 			control:instantiate()
 			control:setOnlyNumbers(setting.onlyNumbers or false)
 		elseif setting.type == "enum" then
-			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-			control = ISComboBox:new(0, 0, 200, entryHgt, self, self.onComboBoxSelected, category.name, setting.name)
+			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+			control = ISComboBox:new(0, 0, CONTROL_WIDTH, LABEL_HGT, self, self.onComboBoxSelected, category.name, setting.name)
 			if tooltip then
 				control.tooltip = { defaultTooltip = tooltip }
 			end
@@ -2644,8 +2645,8 @@ function Page3:createPanel(category, page)
 				end
 			end
 		elseif setting.type == "spinbox" then
-			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-			control = ISSpinBox:new(0, 0, 200, entryHgt, nil, nil)
+			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+			control = ISSpinBox:new(0, 0, CONTROL_WIDTH, LABEL_HGT, nil, nil)
 			control:initialise()
 			control:instantiate()
 			if setting.name == "StartYear" then
@@ -2656,8 +2657,8 @@ function Page3:createPanel(category, page)
 			elseif setting.name == "StartDay" then
 			end
 		elseif setting.type == "text" then
-			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Medium)
-			control = ISTextEntryBox:new(setting.text, 0, 0, 300, 4 + fontHgt * 4 + 4)
+			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+			control = ISTextEntryBox:new(setting.text, 0, 0, CONTROL_WIDTH, 4 + FONT_HGT_MEDIUM * 4 + 4)
 			control.font = UIFont.Medium
 			control:initialise()
 			control:instantiate()
@@ -2673,42 +2674,64 @@ function Page3:createPanel(category, page)
 			table.insert(panel.settingNames, setting.name)
 			panel.labels[setting.name] = label
 			panel.controls[setting.name] = control
+
+			if setting.title then
+				titles[#labels] = { title = getText("Sandbox_Title_" .. setting.title) }
+			end
 		else
---			error "no label or control"
+-- 			error "no label or control"
 		end
 	end
+
 	local labelWidth = 0
 	for _,label in ipairs(labels) do
 		labelWidth = math.max(labelWidth, label:getWidth())
 	end
-	local x = 24
-	local y = 12
+	local xOffset = (panel.width - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
+	local y = 11
+
 	local addControlsTo = panel
 	if page.groupBox then
 		addControlsTo = panel.contents
-		y = math.max(12, panel.tickBox.height / 2)
+		y = math.max(UI_BORDER_SPACING, panel.tickBox.height / 2)
 	end
 	addControlsTo:setScrollChildren(true)
 	addControlsTo:addScrollBars()
 	addControlsTo.vscroll.doSetStencil = true
+
 	for i=1,#labels do
+		if titles[i] then
+			local title = ISLabel:new(0, 0, entryLargeHgt, titles[i].title, 1, 1, 1, 1, UIFont.Large)
+			table.insert(panel.titles, title)
+			addControlsTo:addChild(title)
+			title:setX((panel:getWidth()-title:getWidth())/2)
+			title:setY(y + UI_BORDER_SPACING*2)
+
+			y = y + entryLargeHgt + 22
+			titles[i].yShift = y
+		end
+
 		local label = labels[i]
 		addControlsTo:addChild(label)
-		label:setX(x + labelWidth - label:getWidth())
+		label:setX(xOffset)
 		label:setY(y)
-		y = y + math.max(label:getHeight(), controls[i]:getHeight()) + 6;
+		y = y + math.max(label:getHeight(), controls[i]:getHeight()) + UI_BORDER_SPACING;
 	end
-	y = 12
+	y = 11
 	if page.groupBox then
-		y = math.max(12, panel.tickBox.height / 2)
+		y = math.max(UI_BORDER_SPACING, panel.tickBox.height / 2)
 	end
 	for i=1,#controls do
+		if titles[i] then
+			y = titles[i].yShift
+		end
+
 		local label = labels[i]
 		local control = controls[i]
 		addControlsTo:addChild(control)
-		control:setX(x + labelWidth + 16)
+		control:setX(panel:getWidth() - xOffset - control:getWidth())
 		control:setY(y)
-		y = y + math.max(label:getHeight(), control:getHeight()) + 6;
+		y = y + math.max(label:getHeight(), control:getHeight()) + UI_BORDER_SPACING;
 		if control.isCombobox or control.isTickBox or (control.Type == "ISTextEntryBox") then
 			panel:insertNewLineOfButtons(control)
 		end
@@ -2750,7 +2773,6 @@ function Page3:onMouseDownListBox(item)
 		end
 		if item.panel then
 			self:addChild(item.panel)
-			item.panel:setWidth(self.width - 24 - self.listbox:getRight() - 24)
 			if self.tooltipPanel:isVisible() then
 				item.panel:setHeight(self.listbox:getHeight() - self.tooltipPanel:getHeight())
 			else
@@ -2762,17 +2784,68 @@ function Page3:onMouseDownListBox(item)
 				joypadData.focus = self.listbox
 				self.listbox:setJoypadFocused(true, joypadData)
 			end
+			self:onPanelChange()
 		end
 	end
 end
 
+function Page3:onPanelChange()
+	local labelWidth = 0
+	self.currentPanel:setWidth(self.width - self.listbox:getRight() - UI_BORDER_SPACING*2 - 1)
+	local panelWidth = self.currentPanel.width
+	local name
+
+	if self.currentPanel.settingNames then
+		for i=1,#self.currentPanel.settingNames do
+			name = self.currentPanel.settingNames[i]
+			labelWidth = math.max(labelWidth, self.currentPanel.labels[name].width)
+		end
+
+		local xOffset = (panelWidth - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
+
+		for i=1,#self.currentPanel.settingNames do
+			name = self.currentPanel.settingNames[i]
+			self.currentPanel.labels[name]:setX(xOffset)
+			self.currentPanel.controls[name]:setX(panelWidth - xOffset - self.currentPanel.controls[name].width)
+		end
+
+		for i=1,#self.currentPanel.titles do
+			self.currentPanel.titles[i]:setX((panelWidth-self.currentPanel.titles[i].width)/2)
+		end
+	end
+
+	for _,panel in ipairs(self.customui) do
+		panel:onResolutionChange()
+	end
+end
+
 function Page3:onComboBoxSelected(combo, categoryName, optionName)
+	print(categoryName, optionName)
     if optionName == "Zombies" then
         local Zombies = combo.selected
-        --local popMult = { "4.0", "2.0", "1.0", "0.35", "0.0" } -- this older verson was missing a category
-        local popMult = { "4.0", "3.0", "2.0", "1.0", "0.35", "0.0" }
+        local popMult = ZombiePopulationMultiplierTable
         self.controls[categoryName]["ZombieConfig.PopulationMultiplier"]:setText(popMult[Zombies])
     end
+	if optionName == "ZombieRespawn" then
+		local respawn = combo.selected
+		local respawnHours = { "16.0", "72.0", "216.0", "0.0" }
+		self.controls[categoryName]["ZombieConfig.RespawnHours"]:setText(respawnHours[respawn])
+		local respawnUnseenHours = { "6.0", "16.0", "48.0", "0.0" }
+		self.controls[categoryName]["ZombieConfig.RespawnUnseenHours"]:setText(respawnUnseenHours[respawn])
+		local respawnMultipler = { "0.5", "0.1", "0.05", "0.0" }
+		self.controls[categoryName]["ZombieConfig.RespawnMultiplier"]:setText(respawnMultipler[respawn])
+	end
+end
+
+function Page3:onTickBoxSelected(_, value, categoryName, optionName)
+	print(categoryName, optionName)
+	if optionName == "ZombieMigrate" then
+		if value then
+			self.controls[categoryName]["ZombieConfig.RedistributeHours"]:setText("12.0")
+		else
+			self.controls[categoryName]["ZombieConfig.RedistributeHours"]:setText("0.0")
+		end
+	end
 end
 
 function Page3:syncStartDay()
@@ -2847,8 +2920,8 @@ end
 
 function Page3:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title3", self.settings:getName()), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page3", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title3", self.settings:getName()), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page3", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 	self:updateWhenVisible()
 end
 
@@ -2946,6 +3019,11 @@ end
 function Page3:onButtonCancel()
 	self:setVisible(false)
 	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
+
+	local activeMods = ActiveMods.getById("default")
+	if ActiveMods.requiresResetLua(activeMods) then
+		getCore():ResetLua("default", "ServerSettingsReturnToDefault")
+	end
 end
 
 function Page3:onButtonSave()
@@ -2955,6 +3033,11 @@ function Page3:onButtonSave()
 	self.parent.initialSelectedSettings = self.settings:getName()
 	self.parent.pageStart:aboutToShow()
 	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
+
+	local activeMods = ActiveMods.getById("default")
+	if ActiveMods.requiresResetLua(activeMods) then
+		getCore():ResetLua("default", "ServerSettingsReturnToDefault")
+	end
 end
 
 function Page3:onGainJoypadFocus(joypadData)
@@ -2992,10 +3075,10 @@ function Page3:onJoypadDirRight_ListBox(joypadData)
 end
 
 -- -- -- -- --
--- -- -- -- --
--- -- -- -- --
 
-function Page5:new(x, y, width, height)
+Page3.ChooseModsWindow = ISPanelJoypad:derive("Page3.ChooseModsWindow")
+
+function Page3.ChooseModsWindow:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
 	self.__index = self
@@ -3004,142 +3087,168 @@ function Page5:new(x, y, width, height)
 	return o
 end
 
-function Page5:create()
-	local padX = 96
+function Page3.ChooseModsWindow:create()
 
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, 96, labelHgt, getText("UI_ServerSettings_LabelRename"), 1, 1, 1, 1, UIFont.Medium, true)
-	self:addChild(label1)
+	self.listbox = ServerSettingsScreenModsListBox:new(self.width/4, FONT_HGT_TITLE+UI_BORDER_SPACING*2+1, self.width/2, self.height - FONT_HGT_TITLE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2)
+	self.listbox:initialise()
+	self.listbox:instantiate()
+	self.listbox:setAnchorLeft(true)
+	self.listbox:setAnchorRight(false)
+	self.listbox:setAnchorTop(true)
+	self.listbox:setAnchorBottom(false)
+	self.listbox:setFont("Medium", 4)
+	self.listbox.drawBorder = true
+	self.listbox:ignoreHeightChange()
+	self.listbox.vscroll:setHeight(self.listbox.height)
+	self:addChild(self.listbox)
 
-	local entryWid = 400
-	local entryHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight() + 2 * 2
-
-	self.entry = ISTextEntryBox:new("xyz", label1:getX(), label1:getBottom() + 2, entryWid, entryHgt)
-	self.entry.font = UIFont.Medium
-	self.entry:initialise()
-	self.entry:instantiate()
-	self:addChild(self.entry)
-
-	self:insertNewLineOfButtons(self.entry)
-
-	local label2 = ISLabel:new(padX, self.entry:getBottom() + 48, labelHgt, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
-	self:addChild(label2)
-	self.newFilesX = padX + 32
-	self.newFilesY = label2:getBottom() + 4
-
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.buttonCancel = ISButton:new(self.width / 2 - 15 - 100, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(PADDING_X, self.height - PADDING_X - BUTTON_HGT, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
 	self.buttonCancel:initialise()
 	self.buttonCancel:setAnchorLeft(true)
 	self.buttonCancel:setAnchorTop(false)
 	self.buttonCancel:setAnchorBottom(true)
-	self.buttonCancel.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonCancel:enableCancelColor()
 	self:addChild(self.buttonCancel)
 
-	self.buttonAccept = ISButton:new(self.width / 2 + 15, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_rename"), self, self.onButtonAccept)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_NewGame_ChooseMods"))
+	self.buttonMods = ISButton:new((self.width - btnWidth)/2, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_NewGame_ChooseMods"), self, self.onButtonMods)
+	self.buttonMods:initialise()
+	self.buttonMods:setAnchorLeft(true)
+	self.buttonMods:setAnchorTop(false)
+	self.buttonMods:setAnchorBottom(true)
+	self.buttonMods.borderColor = {r=1, g=1, b=1, a=0.1}
+	self:addChild(self.buttonMods)
+
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
+	self.buttonAccept = ISButton:new(self.width - PADDING_X - btnWidth, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, self.onButtonNext)
 	self.buttonAccept:initialise()
 	self.buttonAccept:setAnchorLeft(true)
 	self.buttonAccept:setAnchorTop(false)
 	self.buttonAccept:setAnchorBottom(true)
-	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonAccept:enableAcceptColor()
 	self:addChild(self.buttonAccept)
-end
 
-function Page5:updateWhenVisible()
-	local newName = self.entry:getText()
-	if self.checkName ~= newName then
-		self.checkName = newName
-		local nameValid = newName ~= self.settings:getName() and getServerSettingsManager():isValidNewName(newName)
-		if nameValid then
-			self.entry.borderColor.a = 1
-			self.entry.borderColor.g = 0.4
-			self.entry.borderColor.b = 0.4
-		else
-			self.entry.borderColor.a = 0.9
-			self.entry.borderColor.g = 0.0
-			self.entry.borderColor.b = 0.0
-		end
-		self.buttonAccept:setEnable(nameValid)
-	end
-
-	if self.ISButtonA and (not self.joyfocus or self.entry.joypadFocused) then
-		self.ISButtonA = nil
-		self.ISButtonB = nil
-		self.buttonAccept:clearJoypadButton()
-		self.buttonCancel:clearJoypadButton()
-	elseif not self.ISButtonA and self.joyfocus and not self.entry.joypadFocused then
-		self:setISButtonForA(self.buttonAccept)
-		self:setISButtonForB(self.buttonCancel)
-	end
-end
-
-function Page5:render()
-	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title5", self.settings:getName()), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page5", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
-
-	local oldName = self.settings:getName()
-	local prefix = getServerSettingsManager():getNameInSettingsFolder(oldName)
-	local suffixes = getServerSettingsManager():getSuffixes()
-	local y = self.newFilesY
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local maxWid = 0
-	for i=1,suffixes:size() do
-		if serverFileExists(oldName .. suffixes:get(i-1)) then
-			local text = prefix .. suffixes:get(i-1)
-			self:drawText(text, self.newFilesX, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
-			local textWid = getTextManager():MeasureStringX(UIFont.Medium, text)
-			maxWid = math.max(maxWid, textWid)
+	self.modInfoByID = {}
+	local modDirectories = getModDirectoryTable()
+	for index, dirName in ipairs(modDirectories) do
+		local modInfo = getModInfo(dirName)
+		if modInfo then
+			self.modInfoByID[modInfo:getId()] = modInfo
 		end
 	end
-	y = self.newFilesY
-	for i=1,suffixes:size() do
-		if serverFileExists(oldName .. suffixes:get(i-1)) then
-			local text1 = "--->"
-			local text2 = self.entry:getText() .. suffixes:get(i-1)
-			if suffixes:get(i-1) == "_zombies.ini" then
-				text2 = getText("UI_ServerSettings_WillBeDeleted")
-			end
-			local text1Wid = getTextManager():MeasureStringX(UIFont.Medium, text1)
-			self:drawText(text1, self.newFilesX + maxWid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			self:drawText(text2, self.newFilesX + maxWid + 16 + text1Wid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
-		end
-	end
-	
-	self:updateWhenVisible()
 end
 
-function Page5:aboutToShow()
-	self.checkName = nil
-	self.entry:setText(self.settings:getName())
-end
 
-function Page5:onButtonCancel()
-	self:setVisible(false)
-	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
-end
-
-function Page5:onButtonAccept()
-	local newName = self.entry:getText()
-	if getServerSettingsManager():isValidNewName(newName) then
-		self.settings:rename(newName)
-	end
-	self:setVisible(false)
-	self.parent.pageStart:aboutToShow()
-	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
-end
-
-function Page5:onGainJoypadFocus(joypadData)
+function Page3.ChooseModsWindow:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-	self:setJoypadFocus(self.entry)
+	self:setISButtonForB(self.buttonCancel)
+	self:setISButtonForY(self.buttonMods)
+	self:setISButtonForA(self.buttonAccept)
+end
+
+function Page3.ChooseModsWindow:onButtonCancel()
+	self:setVisible(false)
+	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
+end
+
+function Page3.ChooseModsWindow:onButtonMods()
+	ServerSettingsScreen.instance:setVisible(false)
+
+	local data = {}
+	for _, item in ipairs(self.listbox.items) do
+		table.insert(data, item.item)
+	end
+
+	local finalFunc = function(finalData)
+		self.listbox:clear()
+		for _, item in ipairs(finalData) do
+			self.listbox:addItem(item.modInfo:getName(), item)
+		end
+		self.settings:getServerOptions():getOptionByName("Mods"):setValue(table.concat(finalData, ";"))
+		ServerSettingsScreen.instance:setVisible(true)
+		ServerSettingsScreen.instance.pageEdit.chooseModsWindow:setVisible(true, JoypadState.getMainMenuJoypad())
+	end
+	ModSelector.instance:setServerSettingsMods(data, finalFunc)
+	ModSelector.instance:setVisible(true, self.joyfocus)
+	ModSelector.instance:reloadMods()
+	ModSelector.showNagPanel()
+	ModSelector.instance.returnToUI = ServerSettingsScreen.instance
+end
+
+function Page3.ChooseModsWindow:onButtonNext()
+	self:setVisible(false)
+
+	local activeMods = ActiveMods.getById("serversettings")
+	local modArray = activeMods:getMods()
+	modArray:clear()
+	for _, item in ipairs(self.listbox.items) do
+		modArray:add(item.item.modID)
+	end
+
+	local reason = "ServerSettingsChange" .. "=" .. self.settings:getName()
+	if ActiveMods.requiresResetLua(activeMods) then
+		getCore():ResetLua("serversettings", reason)
+	else
+		self.parent.pageEdit.settings = self.settings
+		self.parent.pageEdit:aboutToShow()
+		self.parent.pageEdit:setVisible(true, self.joyfocus)
+
+
+		local modsPanel = nil
+		for _, panel in ipairs(self.parent.pageEdit.customui) do
+			if panel.Type == "ServerSettingsScreenModsPanel" then
+				modsPanel = panel
+				break
+			end
+		end
+
+		modsPanel.listbox:clear()
+		for i = 0, modArray:size()-1 do
+			local item = {}
+			item.modID = modArray:get(i)
+			item.modInfo = modsPanel.modInfoByID[modArray:get(i)]
+			if item.modInfo then
+				modsPanel.listbox:addItem(item.modInfo:getName(), item)
+			else
+				modsPanel.listbox:addItem(item.modID, item)
+			end
+		end
+	end
+end
+
+function Page3.ChooseModsWindow:aboutToShow()
+	self.listbox:clear()
+
+	local modsString = self.settings:getServerOptions():getOptionByName("Mods"):getValue()
+	local modIDs = string.split(modsString, ";")
+	for _,modID in ipairs(modIDs) do
+		if modID ~= "" then
+			self:addModToList(modID)
+		end
+	end
+end
+
+function Page3.ChooseModsWindow:addModToList(modID)
+	local item = {}
+	item.modID = modID
+	item.modInfo = self.modInfoByID[modID]
+	if item.modInfo then
+		self.listbox:addItem(item.modInfo:getName(), item)
+	else
+		self.listbox:addItem(modID, item)
+	end
+end
+
+function Page3.ChooseModsWindow:render()
+	ISPanelJoypad.render(self)
+	self:drawTextCentre(getText("UI_ServerSettings_ListOfMods"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
 end
 
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
+
 
 function Page4:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
@@ -3151,10 +3260,8 @@ function Page4:new(x, y, width, height)
 end
 
 function Page4:create()
-	local padX = 96
-
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, 96, labelHgt, getText("UI_ServerSettings_LabelDuplicate"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label1 = ISLabel:new(PADDING_X, 96, LABEL_HGT, getText("UI_ServerSettings_LabelDuplicate"), 1, 1, 1, 1, UIFont.Medium, true)
+	label1:setX((self.width-label1.width)/2)
 	self:addChild(label1)
 
 	local entryWid = 400
@@ -3164,31 +3271,33 @@ function Page4:create()
 	self.entry.font = UIFont.Medium
 	self.entry:initialise()
 	self.entry:instantiate()
+	self.entry:setX((self.width-self.entry.width)/2)
 	self:addChild(self.entry)
 
 	self:insertNewLineOfButtons(self.entry)
 
-	local label2 = ISLabel:new(padX, self.entry:getBottom() + 48, labelHgt, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	local label2 = ISLabel:new(PADDING_X, self.entry:getBottom() + 48, LABEL_HGT, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	label2:setX((self.width-label2.width)/2)
 	self:addChild(label2)
-	self.newFilesX = padX + 32
 	self.newFilesY = label2:getBottom() + 4
 
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.buttonCancel = ISButton:new(self.width / 2 - 15 - 100, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(PADDING_X, self.height-BUTTON_HGT-PADDING_X, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
 	self.buttonCancel:initialise()
 	self.buttonCancel:setAnchorLeft(true)
 	self.buttonCancel:setAnchorTop(false)
 	self.buttonCancel:setAnchorBottom(true)
-	self.buttonCancel.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonCancel:enableCancelColor()
 	self:addChild(self.buttonCancel)
 
-	self.buttonAccept = ISButton:new(self.width / 2 + 15, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_duplicate"), self, self.onButtonAccept)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_duplicate"))
+	self.buttonAccept = ISButton:new(self.width - btnWidth - PADDING_X, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_duplicate"), self, self.onButtonAccept)
 	self.buttonAccept:initialise()
-	self.buttonAccept:setAnchorLeft(true)
+	self.buttonAccept:setAnchorLeft(false)
+	self.buttonAccept:setAnchorRight(true)
 	self.buttonAccept:setAnchorTop(false)
 	self.buttonAccept:setAnchorBottom(true)
-	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonAccept:enableAcceptColor()
 	self:addChild(self.buttonAccept)
 end
 
@@ -3222,20 +3331,26 @@ end
 
 function Page4:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title4", self.settings:getName()), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page4", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title4", self.settings:getName()), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page4", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 
 	local oldName = self.settings:getName()
 	local prefix = getServerSettingsManager():getNameInSettingsFolder(oldName)
 	local suffixes = getServerSettingsManager():getSuffixes()
+	local prefixLength = getTextManager():MeasureStringX(UIFont.Medium, prefix)
+	local suffixLength = 0
+	local newPrefixLength = getTextManager():MeasureStringX(UIFont.Medium, self.entry:getText() .. "--->") + UI_BORDER_SPACING*2
+	for i=1,suffixes:size() do
+		suffixLength = math.max(getTextManager():MeasureStringX(UIFont.Medium, suffixes:get(i-1)),  suffixLength)
+	end
+	suffixLength = suffixLength * 2
 	local y = self.newFilesY
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	local maxWid = 0
 	for i=1,suffixes:size() do
 		if serverFileExists(oldName .. suffixes:get(i-1)) then
 			local text = prefix .. suffixes:get(i-1)
-			self:drawText(text, self.newFilesX, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
+			self:drawText(text, (self.width-prefixLength-suffixLength-newPrefixLength)/2, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
 			local textWid = getTextManager():MeasureStringX(UIFont.Medium, text)
 			maxWid = math.max(maxWid, textWid)
 		end
@@ -3249,12 +3364,12 @@ function Page4:render()
 				text2 = getText("UI_ServerSettings_WillBeDeleted")
 			end
 			local text1Wid = getTextManager():MeasureStringX(UIFont.Medium, text1)
-			self:drawText(text1, self.newFilesX + maxWid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			self:drawText(text2, self.newFilesX + maxWid + 16 + text1Wid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
+			self:drawText(text1, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING, y, 1, 1, 1, 1, UIFont.Medium)
+			self:drawText(text2, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING*2 + text1Wid, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
 		end
 	end
-	
+
 	self:updateWhenVisible()
 end
 
@@ -3291,6 +3406,176 @@ function Page4:onGainJoypadFocus(joypadData)
 	self:setJoypadFocus(self.entry, joypadData)
 end
 
+function Page4:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child ~= self.buttonCancel and child ~= self.buttonAccept then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+end
+
+-- -- -- -- --
+-- -- -- -- --
+-- -- -- -- --
+
+function Page5:new(x, y, width, height)
+	local o = ISPanelJoypad:new(x, y, width, height)
+	setmetatable(o, self)
+	self.__index = self
+	o.anchorBottom = true
+	o.anchorRight = true
+	return o
+end
+
+function Page5:create()
+	local label1 = ISLabel:new(PADDING_X, 96, LABEL_HGT, getText("UI_ServerSettings_LabelRename"), 1, 1, 1, 1, UIFont.Medium, true)
+	label1:setX((self.width-label1.width)/2)
+	self:addChild(label1)
+
+	local entryWid = 400
+	local entryHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight() + 2 * 2
+
+	self.entry = ISTextEntryBox:new("xyz", label1:getX(), label1:getBottom() + 2, entryWid, entryHgt)
+	self.entry.font = UIFont.Medium
+	self.entry:initialise()
+	self.entry:instantiate()
+	self.entry:setX((self.width-self.entry.width)/2)
+	self:addChild(self.entry)
+
+	self:insertNewLineOfButtons(self.entry)
+
+	local label2 = ISLabel:new(PADDING_X, self.entry:getBottom() + 48, LABEL_HGT, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	label2:setX((self.width-label2.width)/2)
+	self:addChild(label2)
+	self.newFilesY = label2:getBottom() + 4
+
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(PADDING_X, self.height-BUTTON_HGT-PADDING_X, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	self.buttonCancel:initialise()
+	self.buttonCancel:setAnchorLeft(true)
+	self.buttonCancel:setAnchorTop(false)
+	self.buttonCancel:setAnchorBottom(true)
+	self.buttonCancel:enableCancelColor()
+	self:addChild(self.buttonCancel)
+
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_rename"))
+	self.buttonAccept = ISButton:new(self.width - PADDING_X - btnWidth, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_rename"), self, self.onButtonAccept)
+	self.buttonAccept:initialise()
+	self.buttonAccept:setAnchorLeft(false)
+	self.buttonAccept:setAnchorRight(true)
+	self.buttonAccept:setAnchorTop(false)
+	self.buttonAccept:setAnchorBottom(true)
+	self.buttonAccept:enableAcceptColor()
+	self:addChild(self.buttonAccept)
+end
+
+function Page5:updateWhenVisible()
+	local newName = self.entry:getText()
+	if self.checkName ~= newName then
+		self.checkName = newName
+		local nameValid = newName ~= self.settings:getName() and getServerSettingsManager():isValidNewName(newName)
+		if nameValid then
+			self.entry.borderColor.a = 1
+			self.entry.borderColor.g = 0.4
+			self.entry.borderColor.b = 0.4
+		else
+			self.entry.borderColor.a = 0.9
+			self.entry.borderColor.g = 0.0
+			self.entry.borderColor.b = 0.0
+		end
+		self.buttonAccept:setEnable(nameValid)
+	end
+
+	if self.ISButtonA and (not self.joyfocus or self.entry.joypadFocused) then
+		self.ISButtonA = nil
+		self.ISButtonB = nil
+		self.buttonAccept:clearJoypadButton()
+		self.buttonCancel:clearJoypadButton()
+	elseif not self.ISButtonA and self.joyfocus and not self.entry.joypadFocused then
+		self:setISButtonForA(self.buttonAccept)
+		self:setISButtonForB(self.buttonCancel)
+	end
+end
+
+function Page5:render()
+	ISPanelJoypad.render(self)
+	self:drawTextCentre(getText("UI_ServerSettings_Title5", self.settings:getName()), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page5", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+
+	local oldName = self.settings:getName()
+	local prefix = getServerSettingsManager():getNameInSettingsFolder(oldName)
+	local suffixes = getServerSettingsManager():getSuffixes()
+	local prefixLength = getTextManager():MeasureStringX(UIFont.Medium, prefix)
+	local suffixLength = 0
+	local newPrefixLength = getTextManager():MeasureStringX(UIFont.Medium, self.entry:getText() .. "--->") + UI_BORDER_SPACING*2
+	for i=1,suffixes:size() do
+		suffixLength = math.max(getTextManager():MeasureStringX(UIFont.Medium, suffixes:get(i-1)),  suffixLength)
+	end
+	suffixLength = suffixLength * 2
+	local y = self.newFilesY
+	local maxWid = 0
+	for i=1,suffixes:size() do
+		if serverFileExists(oldName .. suffixes:get(i-1)) then
+			local text = prefix .. suffixes:get(i-1)
+			self:drawText(text, (self.width-prefixLength-suffixLength-newPrefixLength)/2., y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
+			local textWid = getTextManager():MeasureStringX(UIFont.Medium, text)
+			maxWid = math.max(maxWid, textWid)
+		end
+	end
+	y = self.newFilesY
+	for i=1,suffixes:size() do
+		if serverFileExists(oldName .. suffixes:get(i-1)) then
+			local text1 = "--->"
+			local text2 = self.entry:getText() .. suffixes:get(i-1)
+			if suffixes:get(i-1) == "_zombies.ini" then
+				text2 = getText("UI_ServerSettings_WillBeDeleted")
+			end
+			local text1Wid = getTextManager():MeasureStringX(UIFont.Medium, text1)
+			self:drawText(text1, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING, y, 1, 1, 1, 1, UIFont.Medium)
+			self:drawText(text2, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING*2 + text1Wid, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
+		end
+	end
+	
+	self:updateWhenVisible()
+end
+
+function Page5:aboutToShow()
+	self.checkName = nil
+	self.entry:setText(self.settings:getName())
+end
+
+function Page5:onButtonCancel()
+	self:setVisible(false)
+	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
+end
+
+function Page5:onButtonAccept()
+	local newName = self.entry:getText()
+	if getServerSettingsManager():isValidNewName(newName) then
+		self.settings:rename(newName)
+	end
+	self:setVisible(false)
+	self.parent.pageStart:aboutToShow()
+	self.parent.pageStart:setVisible(true, JoypadState.getMainMenuJoypad())
+end
+
+function Page5:onGainJoypadFocus(joypadData)
+	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+	self:setJoypadFocus(self.entry)
+end
+
+function Page5:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child ~= self.buttonCancel and child ~= self.buttonAccept then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -3305,30 +3590,29 @@ function Page6:new(x, y, width, height)
 end
 
 function Page6:create()
-	local padX = 96
+	local label1 = ISLabel:new(PADDING_X, 96, LABEL_HGT, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
+	label1:setX((self.width-label1.width)/2)
 
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, 96, labelHgt, getText("UI_ServerSettings_LabelAffectedFiles"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label1)
-	self.newFilesX = padX + 32
 	self.newFilesY = label1:getBottom() + 4
 
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-
-	self.buttonCancel = ISButton:new(self.width / 2 - 15 - 100, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(PADDING_X, self.height-BUTTON_HGT-PADDING_X, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
 	self.buttonCancel:initialise()
 	self.buttonCancel:setAnchorLeft(true)
 	self.buttonCancel:setAnchorTop(false)
 	self.buttonCancel:setAnchorBottom(true)
-	self.buttonCancel.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonCancel:enableCancelColor()
 	self:addChild(self.buttonCancel)
 
-	self.buttonAccept = ISButton:new(self.width / 2 + 15, self.height-64 + 8, 100, buttonHgt, getText("UI_btn_delete"), self, self.onButtonAccept)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_delete"))
+	self.buttonAccept = ISButton:new(self.width - PADDING_X - btnWidth, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_delete"), self, self.onButtonAccept)
 	self.buttonAccept:initialise()
-	self.buttonAccept:setAnchorLeft(true)
+	self.buttonAccept:setAnchorLeft(false)
+	self.buttonAccept:setAnchorRight(true)
 	self.buttonAccept:setAnchorTop(false)
 	self.buttonAccept:setAnchorBottom(true)
-	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonAccept:enableAcceptColor()
 	self:addChild(self.buttonAccept)
 end
 
@@ -3337,19 +3621,24 @@ end
 
 function Page6:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title6", self.settings:getName()), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page6", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title6", self.settings:getName()), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page6", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 
 	local prefix = getServerSettingsManager():getNameInSettingsFolder(self.settings:getName())
 	local suffixes = getServerSettingsManager():getSuffixes()
+	local prefixLength = getTextManager():MeasureStringX(UIFont.Medium, prefix)
+	local suffixLength = 0
+	local newPrefixLength = getTextManager():MeasureStringX(UIFont.Medium, "--->" .. getText("UI_ServerSettings_WillBeDeleted")) + UI_BORDER_SPACING*2
+	for i=1,suffixes:size() do
+		suffixLength = math.max(getTextManager():MeasureStringX(UIFont.Medium, suffixes:get(i-1)),  suffixLength)
+	end
 	local y = self.newFilesY
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	local maxWid = 0
 	for i=1,suffixes:size() do
 		if serverFileExists(self.settings:getName() .. suffixes:get(i-1)) then
 			local text = prefix .. suffixes:get(i-1)
-			self:drawText(text, self.newFilesX, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
+			self:drawText(text, (self.width-prefixLength-suffixLength-newPrefixLength)/2, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
 			local textWid = getTextManager():MeasureStringX(UIFont.Medium, text)
 			maxWid = math.max(maxWid, textWid)
 		end
@@ -3360,9 +3649,9 @@ function Page6:render()
 			local text1 = "--->"
 			local text2 = getText("UI_ServerSettings_WillBeDeleted")
 			local text1Wid = getTextManager():MeasureStringX(UIFont.Medium, text1)
-			self:drawText(text1, self.newFilesX + maxWid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			self:drawText(text2, self.newFilesX + maxWid + 16 + text1Wid + 16, y, 1, 1, 1, 1, UIFont.Medium)
-			y = y + labelHgt
+			self:drawText(text1, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING, y, 1, 1, 1, 1, UIFont.Medium)
+			self:drawText(text2, (self.width-prefixLength-suffixLength-newPrefixLength)/2 + maxWid + UI_BORDER_SPACING*2 + text1Wid, y, 1, 1, 1, 1, UIFont.Medium)
+			y = y + LABEL_HGT
 		end
 	end
 
@@ -3398,6 +3687,15 @@ function Page6:onLoseJoypadFocus(joypadData)
 	self.buttonCancel:clearJoypadButton()
 end
 
+function Page6:onResolutionChange()
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child ~= self.buttonCancel and child ~= self.buttonAccept then
+			child:setX((self.width-child.width)/2)
+		end
+	end
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -3410,17 +3708,13 @@ function Page7:new(x, y, width, height)
 end
 
 function Page7:create()
-	local labelHgt = getTextManager():getFontFromEnum(UIFont.Title):getLineHeight()
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	
-	local label = ISLabel:new(24, labelHgt + 24, fontHgt, getText("UI_ServerSettings_ListOfSpawnProfessions"), 1, 1, 1, 1, UIFont.Medium, true)
+	local listboxWidth = math.min((self.width - UI_BORDER_SPACING*3 - 2)/2, 600)
+
+	local label = ISLabel:new((self.width - UI_BORDER_SPACING)/2 - listboxWidth, TITLE_PADDING, LABEL_HGT, getText("UI_ServerSettings_ListOfSpawnProfessions"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
+	self.professionLabel = label
 
-	local buttonWid = 200
-	local buttonHgt = 40
-	local buttonGapY = 10
-
-	self.profListBox = ServerSettingsScreenMapsListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 3 - buttonWid, 400), self.height - 24 * 2)
+	self.profListBox = ServerSettingsScreenMapsListBox:new((self.width - UI_BORDER_SPACING)/2 - listboxWidth, label:getBottom() + UI_BORDER_SPACING, listboxWidth, self.height - 24 * 2)
 	self.profListBox:initialise()
 	self.profListBox:instantiate()
 	self.profListBox:setAnchorLeft(true)
@@ -3436,29 +3730,33 @@ function Page7:create()
 	self.profListBox.onRemoveItem = self.onRemoveProfession
 	self:addChild(self.profListBox)
 
-	label = ISLabel:new(self.profListBox:getX(), self.profListBox:getBottom() + 12, fontHgt, getText("UI_ServerSettings_AddSpawnProfession"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.profListBox:getX(), self.profListBox:getBottom() + UI_BORDER_SPACING*2, LABEL_HGT, getText("UI_ServerSettings_AddSpawnProfession"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
+	self.addProfessionLabel = label
 
-	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + 4, self.profListBox:getWidth(), fontHgt + 4, self, self.onAddProfession)
+	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + UI_BORDER_SPACING, listboxWidth, LABEL_HGT, self, self.onAddProfession)
 	comboBox:setToolTipMap({ defaultTooltip = getText("UI_ServerSettings_AddSpawnProfession_tooltip") })
 	self:addChild(comboBox)
 	self.profComboBox = comboBox
 
-	label = ISLabel:new(self.profListBox:getX(), comboBox:getBottom() + 12, 20, getText("UI_ServerSettings_AddOtherSpawnProfession"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.profListBox:getX(), comboBox:getBottom() + UI_BORDER_SPACING*2, LABEL_HGT, getText("UI_ServerSettings_AddOtherSpawnProfession"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
+	self.addAnotherProfessionLabel = label
 
-	local entry = ISTextEntryBox:new("", self.profListBox:getX(), label:getBottom() + 4, self.profListBox:getWidth(), fontHgt + 4)
+	local entry = ISTextEntryBox:new("", self.profListBox:getX(), label:getBottom() + UI_BORDER_SPACING, listboxWidth, LABEL_HGT)
 	entry.font = UIFont.Medium
 	entry.tooltip = getTooltipText("UI_ServerSettings_AddOtherSpawnProfession_tooltip")
 	entry.onCommandEntered = self.onAddOtherProfession
 	self:addChild(entry)
+	self.entryOtherProfession = entry
 
 	self:addJoypadColumn({ self.profListBox, self.profComboBox, entry })
 
-	label = ISLabel:new(self.profListBox:getRight() + 24, labelHgt + 24, fontHgt, getText("UI_ServerSettings_ListOfSpawnPoints"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.profListBox:getRight() + UI_BORDER_SPACING, TITLE_PADDING, LABEL_HGT, getText("UI_ServerSettings_ListOfSpawnPoints"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
+	self.spawnPointListLabel = label
 
-	self.pointListBox = ServerSettingsScreenMapsListBox:new(self.profListBox:getRight() + 24, self.profListBox:getY(), math.min(self.width - 24 * 3 - buttonWid, 400), self.height - 24 * 2)
+	self.pointListBox = ServerSettingsScreenMapsListBox:new(self.profListBox:getRight() + UI_BORDER_SPACING, self.profListBox.y, listboxWidth, self.height - 24 * 2)
 	self.pointListBox:initialise()
 	self.pointListBox:instantiate()
 	self.pointListBox:setAnchorLeft(true)
@@ -3473,31 +3771,36 @@ function Page7:create()
 	self.pointListBox.onRemoveItem = self.onRemovePoint
 	self:addChild(self.pointListBox)
 
-	label = ISLabel:new(self.pointListBox:getX(), self.pointListBox:getBottom() + 12, 20, getText("UI_ServerSettings_AddSpawnPoint"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(self.pointListBox:getX(), self.pointListBox:getBottom() + UI_BORDER_SPACING*2, LABEL_HGT, getText("UI_ServerSettings_AddSpawnPoint"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
+	self.addSpawnPointLabel = label
 
-	entry = ISTextEntryBox:new("", self.pointListBox:getX(), label:getBottom() + 4, self.pointListBox:getWidth(), fontHgt + 4)
+	entry = ISTextEntryBox:new("", self.pointListBox:getX(), label:getBottom() + UI_BORDER_SPACING, listboxWidth, LABEL_HGT)
 	entry.font = UIFont.Medium
 	entry.tooltip = getTooltipText("UI_ServerSettings_AddSpawnPoint_tooltip")
 	entry.onCommandEntered = self.onAddPoint
 	self:addChild(entry)
+	self.entryAddSpawnPoint = entry
 
 	self:addJoypadColumn({ self.pointListBox, entry })
 
-	self.buttonCancel = ISButton:new(self.width / 2 - 15 - 100, self.height-64 + 8, 100, 25, getText("UI_btn_cancel"), self, self.onButtonCancel)
+	local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_cancel"))
+	self.buttonCancel = ISButton:new(PADDING_X, self.height-BUTTON_HGT-PADDING_X, btnWidth, BUTTON_HGT, getText("UI_btn_cancel"), self, self.onButtonCancel)
 	self.buttonCancel:initialise()
 	self.buttonCancel:setAnchorLeft(true)
 	self.buttonCancel:setAnchorTop(false)
 	self.buttonCancel:setAnchorBottom(true)
-	self.buttonCancel.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonCancel:enableCancelColor()
 	self:addChild(self.buttonCancel)
 
-	self.buttonAccept = ISButton:new(self.width / 2 + 15, self.height-64 + 8, 100, 25, getText("UI_btn_save"), self, self.onButtonAccept)
+	btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_save"))
+	self.buttonAccept = ISButton:new(self.width - btnWidth - PADDING_X, self.buttonCancel.y, btnWidth, BUTTON_HGT, getText("UI_btn_save"), self, self.onButtonAccept)
 	self.buttonAccept:initialise()
-	self.buttonAccept:setAnchorLeft(true)
+	self.buttonAccept:setAnchorLeft(false)
+	self.buttonAccept:setAnchorRight(true)
 	self.buttonAccept:setAnchorTop(false)
 	self.buttonAccept:setAnchorBottom(true)
-	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.buttonAccept:enableAcceptColor()
 	self:addChild(self.buttonAccept)
 
 	self:setJoypadColumn(1)
@@ -3522,7 +3825,7 @@ function Page7:updateWhenVisible()
 		self.buttonAccept.tooltip = getTooltipText("UI_ServerSettings_UnemployedRequired")
 	end
 
-	if self.ISButtonA and ((not self.joyfocus) or (self.joypadIndexY > 0)) then
+	if (self.ISButtonA and not self.joyfocus) or (self.joypadIndexY > 0) then
 		self.ISButtonA = nil
 		self.ISButtonB = nil
 		self.buttonAccept:clearJoypadButton()
@@ -3535,8 +3838,8 @@ end
 
 function Page7:render()
 	ISPanelJoypad.render(self)
-	self:drawTextCentre(getText("UI_ServerSettings_Title7", self.region.file), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
-	if getDebug() then self:drawText("DEBUG: Page7", 8, 8, 0.5, 0.5, 0.5, 1, UIFont.Small) end
+	self:drawTextCentre(getText("UI_ServerSettings_Title7", self.region.file), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title)
+	if getDebug() then self:drawText("DEBUG: Page7", UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, 0.5, 0.5, 0.5, 1, UIFont.Small) end
 	self:updateWhenVisible()
 end
 
@@ -3607,8 +3910,8 @@ function Page7:fillPointList()
 end
 
 function Page7:addPointToList(pointTable, select)
-	local x = pointTable.worldX * 300 + pointTable.posX
-	local y = pointTable.worldY * 300 + pointTable.posY
+	local x = pointTable.posX
+	local y = pointTable.posY
 	local z = pointTable.posZ
 	self.pointListBox:addItem(x .. "," .. y .. "," .. z, {})
 	if select then
@@ -3651,7 +3954,7 @@ function Page7:onAddPoint()
 	local z = tonumber(ss[3])
 	if not x or x < 0 or not y or y < 0 or not z or z < 0 or z > 7 then return end
 	self:setText("")
-	local point = { worldX = math.floor(x / 300), worldY = math.floor(y / 300), posX = (x - math.floor(x / 300) * 300), posY = (y - math.floor(y / 300) * 300), posZ = z }
+	local point = { posX = x, posY = y, posZ = z }
 	local data = self.parent.profListBox.items[self.parent.profListBox.selected].item
 	table.insert(data.points, point)
 	self.parent:addPointToList(point, true)
@@ -3740,6 +4043,27 @@ function Page7:onJoypadDirDown(joypadData)
 	ISPanelJoypad.onJoypadDirDown(self, joypadData)
 end
 
+function Page7:onResolutionChange()
+	local listboxWidth = math.min((self.width - UI_BORDER_SPACING*3 - 2)/2, 600)
+	self.profListBox:setX((self.width - UI_BORDER_SPACING)/2 - listboxWidth)
+	self.profListBox:setWidth(listboxWidth)
+	self.professionLabel:setX(self.profListBox.x)
+	self.addProfessionLabel:setX(self.profListBox.x)
+	self.profComboBox:setX(self.profListBox.x)
+	self.profComboBox:setWidth(listboxWidth)
+	self.addAnotherProfessionLabel:setX(self.profListBox.x)
+	self.entryOtherProfession:setX(self.profListBox.x)
+	self.entryOtherProfession:setWidth(listboxWidth)
+
+	self.pointListBox:setX(self.profListBox:getRight()+UI_BORDER_SPACING)
+	self.pointListBox:setWidth(listboxWidth)
+	self.spawnPointListLabel:setX(self.pointListBox.x)
+	self.addSpawnPointLabel:setX(self.pointListBox.x)
+	self.entryAddSpawnPoint:setX(self.pointListBox.x)
+	self.entryAddSpawnPoint:setWidth(listboxWidth)
+
+end
+
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -3756,6 +4080,10 @@ function ServerSettingsScreen:create()
 	self.pageEdit = Page3:new(0, 0, self.width, self.height)
 	self.pageEdit:create()
 	self:addChild(self.pageEdit)
+
+	self.pageEdit.chooseModsWindow = Page3.ChooseModsWindow:new(0, 0, self.width, self.height)
+	self.pageEdit.chooseModsWindow:create()
+	self:addChild(self.pageEdit.chooseModsWindow)
 
 	self.pageDuplicate = Page4:new(0, 0, self.width, self.height)
 	self.pageDuplicate:create()
@@ -3785,6 +4113,7 @@ end
 function ServerSettingsScreen:aboutToShow()
 	self.pageNew:setVisible(false)
 	self.pageEdit:setVisible(false)
+	self.pageEdit.chooseModsWindow:setVisible(false)
 	self.pageDuplicate:setVisible(false)
 	self.pageRename:setVisible(false)
 	self.pageDelete:setVisible(false)
@@ -3797,6 +4126,15 @@ function ServerSettingsScreen:aboutToShow()
 end
 
 function ServerSettingsScreen:onResolutionChange(oldw, oldh, neww, newh)
+	self.pageStart:onResolutionChange()
+	self.pageNew:onResolutionChange()
+	if self.pageEdit.currentPanel then
+		self.pageEdit:onPanelChange()
+	end
+	self.pageDuplicate:onResolutionChange()
+	self.pageRename:onResolutionChange()
+	self.pageDelete:onResolutionChange()
+	self.pageSpawnPoints:onResolutionChange()
 end
 
 function ServerSettingsScreen:onGainJoypadFocus(joypadData)
@@ -3818,6 +4156,7 @@ function ServerSettingsScreen:getCurrentFocusForController()
 	if self.pageStart:isVisible() then return self.pageStart end
 	if self.pageNew:isVisible() then return self.pageNew end
 	if self.pageEdit:isVisible() then return self.pageEdit end
+	if self.pageEdit.chooseModsWindow:isVisible() then return self.pageEdit.chooseModsWindow end
 	if self.pageDuplicate:isVisible() then return self.pageDuplicate end
 	if self.pageRename:isVisible() then return self.pageRename end
 	if self.pageDelete:isVisible() then return self.pageDelete end
@@ -3830,6 +4169,74 @@ function ServerSettingsScreen:onJoypadBeforeDeactivate(joypadData)
 	self.joyfocus = nil
 end
 
+function ServerSettingsScreen:onResetLua(reason)
+	if luautils.stringStarts(reason, "ServerSettingsChange") then
+		MainScreen.instance.bottomPanel:setVisible(false)
+		if DebugScenarios.instance ~= nil then
+			MainScreen.instance:removeChild(DebugScenarios.instance);
+			DebugScenarios.instance = nil;
+		end
+
+		local settings = nil
+		local settingsName = luautils.split(reason, "=")[2]
+
+		self.prevScreen = CoopOptionsScreen.instance
+		self.initialSelectedSettings = settingsName
+		self:aboutToShow()
+		self:setVisible(true)
+
+		for _, v in ipairs(self.pageStart.listbox.items) do
+			if v.item:getName() == settingsName then
+				settings = v.item
+				break
+			end
+		end
+
+		if settings then
+			self.pageEdit.settings = settings
+			self.pageEdit.settings:loadFiles()
+			self.pageEdit:aboutToShow()
+
+			local modsPanel = nil
+			for _, panel in ipairs(self.pageEdit.customui) do
+				if panel.Type == "ServerSettingsScreenModsPanel" then
+					modsPanel = panel
+					break
+				end
+			end
+
+			modsPanel.listbox:clear()
+			local mods = ActiveMods.getById("serversettings"):getMods()
+			for i = 0, mods:size()-1 do
+				local item = {}
+				item.modID = mods:get(i)
+				item.modInfo = modsPanel.modInfoByID[mods:get(i)]
+				if item.modInfo then
+					modsPanel.listbox:addItem(item.modInfo:getName(), item)
+				else
+					modsPanel.listbox:addItem(item.modID, item)
+				end
+			end
+
+			reactivateJoypadAfterResetLua()
+			self.pageStart:setVisible(false)
+			self.pageEdit:setVisible(true, JoypadState.getMainMenuJoypad())
+		end
+	end
+	if reason == "ServerSettingsReturnToDefault" then
+		MainScreen.instance.bottomPanel:setVisible(false)
+		if DebugScenarios.instance ~= nil then
+			MainScreen.instance:removeChild(DebugScenarios.instance);
+			DebugScenarios.instance = nil;
+		end
+
+		self.prevScreen = CoopOptionsScreen.instance
+		self:aboutToShow()
+		self:setVisible(true)
+	end
+end
+
+Events.OnResetLua.Add(function(reason) ServerSettingsScreen.instance:onResetLua(reason) end)
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
@@ -3910,6 +4317,8 @@ SettingsTable = {
 					{ name = "TrashDeleteAll" },
 					{ name = "PVPMeleeWhileHitReaction" },
 					{ name = "MouseOverToSeeDisplayName" },
+					{ name = "UsernameDisguises" },
+					{ name = "HideDisguisedUserName" },
 					{ name = "HidePlayersBehindYou" },
 					{ name = "PlayerBumpPlayer" },
 					{ name = "MapRemotePlayerVisibility" },
@@ -3951,9 +4360,10 @@ SettingsTable = {
 			{
 				name = "Loot",
 				settings = {
-					{ name = "HoursForLootRespawn" },
-					{ name = "MaxItemsForLootRespawn" },
-					{ name = "ConstructionPreventsLootRespawn" },
+-- 					{ name = "HoursForLootRespawn" },
+-- 					{ name = "MaxItemsForLootRespawn" },
+-- 					{ name = "ConstructionPreventsLootRespawn" },
+					{ name = "SafehousePreventsLootRespawn" },
 					{ name = "ItemNumbersLimitPerContainer" },
 				},
 			},
@@ -3978,6 +4388,7 @@ SettingsTable = {
 					{ name = "SafeHouseRemovalTime" },
 					{ name = "DisableSafehouseWhenPlayerConnected" },
 					{ name = "SafehouseAllowNonResidential" },
+					{ name = "SafehouseDisableDisguises" },
 				},
 			},
 			{
@@ -4015,10 +4426,10 @@ SettingsTable = {
 					{ name = "DoLuaChecksum" },
 					{ name = "AllowDestructionBySledgehammer" },
 					{ name = "SledgehammerOnlyInSafehouse" },
-					{ name = "MinutesPerPage" },
+-- 					{ name = "MinutesPerPage" }, -- migrated to sandbox
 					{ name = "SaveWorldEveryMinutes" },
                     { name = "FastForwardMultiplier" },
-					{ name = "BloodSplatLifespanDays" },
+					-- { name = "BloodSplatLifespanDays" }, -- migrated to sandbox
 					{ name = "AllowNonAsciiUsername" },
 				},
 			},
@@ -4048,19 +4459,451 @@ SettingsTable = {
 				customui = SandboxPresetPanel,
 			},
 			{
-				name = "PopulationOptions",
-				settings = {
-					{ name = "Zombies" },
-					{ name = "Distribution" },
-				}
-			},
-			{
 				name = "TimeOptions",
 				settings = {
 					{ name = "DayLength" },
+					{ name = "TimeSinceApo" },
 					{ name = "StartMonth" },
 					{ name = "StartDay" },
 					{ name = "StartTime" },
+				},
+			},
+			{
+				name = "Zombie",
+				settings = {
+					{ name = "Zombies" },
+					{ name = "Distribution" },
+					{ name = "ZombieRespawn"},
+					{ name = "ZombieMigrate"},
+
+					{ name = "ZombieLore.Speed" , title = "ZombieLore" },
+					{ name = "ZombieLore.SprinterPercentage", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = "100" },
+							{ name = "Sandbox_VeryHigh", text = "90" },
+							{ name = "Sandbox_High", text = "50" },
+							{ name = "Sandbox_Normal", text = "33" },
+							{ name = "Sandbox_Low", text = "6" },
+							{ name = "Sandbox_None", text = "0" },
+						}
+					}
+					},
+					{ name = "ZombieLore.Strength" },
+					{ name = "ZombieLore.Toughness" },
+					{ name = "ZombieLore.Transmission" },
+					{ name = "ZombieLore.Mortality" },
+					{ name = "ZombieLore.Reanimate" },
+					{ name = "ZombieLore.Cognition" },
+					{ name = "ZombieLore.CrawlUnderVehicle" },
+					{ name = "ZombieLore.Memory" },
+					{ name = "ZombieLore.Sight" },
+					{ name = "ZombieLore.Hearing" },
+					{ name = "ZombieLore.SpottedLogic" },
+					{ name = "ZombieLore.ThumpNoChasing" },
+					{ name = "ZombieLore.ThumpOnConstruction" },
+					{ name = "ZombieLore.ActiveOnly" },
+					{ name = "ZombieLore.TriggerHouseAlarm" },
+					{ name = "ZombieLore.ZombiesDragDown" },
+					{ name = "ZombieLore.ZombiesCrawlersDragDown" },
+					{ name = "ZombieLore.ZombiesFenceLunge" },
+					{ name = "ZombieLore.DisableFakeDead" },
+					{ name = "ZombieLore.ZombiesArmorFactor" },
+					{ name = "ZombieLore.ZombiesMaxDefense" },
+					{ name = "ZombieLore.ChanceOfAttachedWeapon" },
+					{ name = "ZombieLore.ZombiesFallDamage" },
+					{ name = "ZombieLore.PlayerSpawnZombieRemoval" },
+
+					{ name = "ZombieConfig.PopulationMultiplier", title = "AdvancedZombieSettings", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = ZombiePopulationMultiplier.Insane },
+							{ name = "Sandbox_VeryHigh", text = ZombiePopulationMultiplier.VeryHigh },
+							{ name = "Sandbox_High", text = ZombiePopulationMultiplier.High },
+							{ name = "Sandbox_Normal", text = ZombiePopulationMultiplier.Normal },
+							{ name = "Sandbox_Low", text = ZombiePopulationMultiplier.Low },
+							{ name = "Sandbox_None", text = ZombiePopulationMultiplier.None },
+						}
+					}
+					},
+					{ name = "ZombieConfig.PopulationStartMultiplier", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = ZombiePopulationStartMultiplier.Insane },
+							{ name = "Sandbox_VeryHigh", text = ZombiePopulationStartMultiplier.VeryHigh },
+							{ name = "Sandbox_High", text = ZombiePopulationStartMultiplier.High },
+							{ name = "Sandbox_Normal", text = ZombiePopulationStartMultiplier.Normal },
+							{ name = "Sandbox_Low", text = ZombiePopulationStartMultiplier.Low },
+							{ name = "Sandbox_None", text = ZombiePopulationStartMultiplier.None },
+						}
+					}
+					},
+					{ name = "ZombieConfig.PopulationPeakMultiplier", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = ZombiePopulationPeakMultiplier.Insane },
+							{ name = "Sandbox_VeryHigh", text = ZombiePopulationPeakMultiplier.VeryHigh },
+							{ name = "Sandbox_High", text = ZombiePopulationPeakMultiplier.High },
+							{ name = "Sandbox_Normal", text = ZombiePopulationPeakMultiplier.Normal },
+							{ name = "Sandbox_Low", text = ZombiePopulationPeakMultiplier.Low },
+							{ name = "Sandbox_None", text = ZombiePopulationPeakMultiplier.None },
+						}
+					}
+					},
+					{ name = "ZombieConfig.PopulationPeakDay" },
+					{ name = "ZombieConfig.RespawnHours" },
+					{ name = "ZombieConfig.RespawnUnseenHours" },
+					{ name = "ZombieConfig.RespawnMultiplier" },
+					{ name = "ZombieConfig.RedistributeHours" },
+					{ name = "ZombieConfig.FollowSoundDistance" },
+					{ name = "ZombieConfig.RallyGroupSize" },
+					{ name = "ZombieConfig.RallyGroupSizeVariance" },
+					{ name = "ZombieConfig.RallyTravelDistance" },
+					{ name = "ZombieConfig.RallyGroupSeparation" },
+					{ name = "ZombieConfig.RallyGroupRadius" },
+					{ name = "ZombieConfig.ZombiesCountBeforeDelete" },
+				}
+			},
+			{
+				name = "Loot",
+				settings = {
+					{ name = "HoursForLootRespawn" },
+-- 					{ name = "LootRespawn", singlePlayerOnly = true },
+					{ name = "SeenHoursPreventLootRespawn" },
+					{ name = "MaxItemsForLootRespawn" },
+					{ name = "ConstructionPreventsLootRespawn" },
+-- 					{ name = "MaximumLooted" },
+					{ name = "MaximumLooted", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = "200" },
+							{ name = "Sandbox_VeryHigh", text = "150" },
+							{ name = "Sandbox_High", text = "100" },
+							{ name = "Sandbox_Normal", text = "50" },
+							{ name = "Sandbox_Low", text = "25" },
+							{ name = "Sandbox_None", text = "0" },
+						}
+					}
+					},
+					{ name = "DaysUntilMaximumLooted" },
+-- 					{ name = "RuralLooted" },
+					{ name = "RuralLooted", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = "2.0" },
+							{ name = "Sandbox_VeryHigh", text = "1.5" },
+							{ name = "Sandbox_High", text = "1.0" },
+							{ name = "Sandbox_Normal", text = "0.5" },
+							{ name = "Sandbox_Low", text = "0.25" },
+							{ name = "Sandbox_None", text = "0.0" },
+						}
+					}
+					},
+-- 					{ name = "MaximumDiminishedLoot" },
+					{ name = "MaximumDiminishedLoot", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = "100" },
+							{ name = "Sandbox_VeryHigh", text = "80" },
+							{ name = "Sandbox_High", text = "60" },
+							{ name = "Sandbox_Medium", text = "40" },
+							{ name = "Sandbox_Low", text = "20" },
+							{ name = "Sandbox_None", text = "0" },
+						}
+					}
+					},
+					{ name = "DaysUntilMaximumDiminishedLoot" },
+					-- Loot rarity
+					{ name = "FoodLootNew", title = "LootRarity",
+                    advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "CannedFoodLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "WeaponLootNew",
+                    advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "RangedWeaponLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "AmmoLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "MedicalLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "SurvivalGearsLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "MechanicsLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "LiteratureLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "ClothingLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "ContainerLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "KeyLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "MediaLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "MementoLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "CookwareLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "MaterialLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "FarmingLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "ToolLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "OtherLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "1" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+
+					{ name = "GeneratorSpawning" },
+					{ name = "LootItemRemovalList" },
+					{ name = "RemoveStoryLoot" },
+					{ name = "RemoveZombieLoot" },
+					{ name = "RollsMultiplier" },
+					{ name = "ZombiePopLootEffect",
+					advancedCombo = {
+                        default = 2,
+                        values = {
+                            { name = "Sandbox_None", text = "0" },
+                            { name = "Sandbox_Normal", text = "10" },
+                            { name = "Sandbox_Abundant", text = "20" },
+                        }
+                    }
+
+					},
+					-- temporary testing values
+-- 					{ name = "InsaneLootFactor" },
+-- 					{ name = "ExtremeLootFactor" },
+-- 					{ name = "RareLootFactor" },
+-- 					{ name = "NormalLootFactor" },
+-- 					{ name = "CommonLootFactor" },
+-- 					{ name = "AbundantLootFactor" },
 				},
 			},
 			{
@@ -4070,86 +4913,119 @@ SettingsTable = {
 					{ name = "ElecShutModifier" },
 					{ name = "WaterShut" },
 					{ name = "ElecShut" },
+					{ name = "AlarmDecay" },
 					{ name = "Alarm" },
 					{ name = "LockedHouses" },
-					{ name = "FoodRotSpeed" },
-					{ name = "FridgeFactor" },
-					{ name = "DaysForRottenFoodRemoval" },
-					{ name = "LootRespawn", singlePlayerOnly = true },
-					{ name = "SeenHoursPreventLootRespawn" },
-					{ name = "WorldItemRemovalList" },
-					{ name = "HoursForWorldItemRemoval" },
-					{ name = "ItemRemovalListBlacklistToggle" },
-					{ name = "TimeSinceApo" },
-					{ name = "NightDarkness" },
 					--{ name = "NightLength" },
 					{ name = "FireSpread" },
 					{ name = "AllowExteriorGenerator" },
-					{ name = "FuelStationGas" },
+
+-- 					{ name = "FuelStationGas" },
+					{ name = "FuelStationGasInfinite" },
+					{ name = "FuelStationGasMin",
+					advancedCombo = {
+                        default = 1,
+                        values = {
+                            { name = "Sandbox_FuelStationGas_option1", text = "0.0" },
+                            { name = "Sandbox_FuelStationGas_option2", text = "0.01" },
+                            { name = "Sandbox_FuelStationGas_option3", text = "0.1" },
+                            { name = "Sandbox_FuelStationGas_option4", text = "0.5" },
+                            { name = "Sandbox_FuelStationGas_option5", text = "0.7" },
+                            { name = "Sandbox_FuelStationGas_option6", text = "0.8" },
+                            { name = "Sandbox_FuelStationGas_option7", text = "0.9" },
+                            { name = "Sandbox_FuelStationGas_option8", text = "1.0" },
+                        }
+                    }
+					},
+					{ name = "FuelStationGasMax",
+					advancedCombo = {
+                        default = 5,
+                        values = {
+                            { name = "Sandbox_FuelStationGas_option1", text = "0.0" },
+                            { name = "Sandbox_FuelStationGas_option2", text = "0.01" },
+                            { name = "Sandbox_FuelStationGas_option3", text = "0.1" },
+                            { name = "Sandbox_FuelStationGas_option4", text = "0.5" },
+                            { name = "Sandbox_FuelStationGas_option5", text = "0.7" },
+                            { name = "Sandbox_FuelStationGas_option6", text = "0.8" },
+                            { name = "Sandbox_FuelStationGas_option7", text = "0.9" },
+                            { name = "Sandbox_FuelStationGas_option8", text = "1.0" },
+                        }
+                    }
+					},
+					{ name = "FuelStationGasEmptyChance" },
+
 					{ name = "LightBulbLifespan" },
+					{ name = "FoodRotSpeed" },
+					{ name = "FridgeFactor" },
+					{ name = "DaysForRottenFoodRemoval" },
+					{ name = "WorldItemRemovalList" },
+					{ name = "HoursForWorldItemRemoval" },
+					{ name = "ItemRemovalListBlacklistToggle" },
+-- 					{ name = "FallSpeedMultiplier" },
+-- 					{ name = "FallTimeMultiplier" },
+-- 					{ name = "HardFallThreshold" },
+-- 					{ name = "HardFallThreshold2" },
+-- 					{ name = "LethalFallThreshold" },
+					{ name = "Basement.SpawnFrequency", title = "Basements" },
 				},
 			},
 			{
 				name = "NatureOptions",
 				settings = {
+					{ name = "NightDarkness" },
 					{ name = "Temperature" },
 					{ name = "Rain" },
+					{ name = "MaxFogIntensity" },
+					{ name = "MaxRainFxIntensity" },
 					{ name = "ErosionSpeed" },
 					{ name = "ErosionDays" },
-					{ name = "Farming" },
-					{ name = "PlantResilience" },
-					{ name = "PlantAbundance" },
-					{ name = "NatureAbundance" },
+-- 					{ name = "Farming" },
+					{ name = "FarmingSpeedNew" },
 					{ name = "CompostTime" },
-                    { name = "MaxFogIntensity" },
-                    { name = "MaxRainFxIntensity" },
+					{ name = "FishAbundance" },
+					{ name = "NatureAbundance" },
+					{ name = "PlantResilience" },
+-- 					{ name = "PlantAbundance" },
+					{ name = "FarmingAmountNew" },
+					{ name = "KillInsideCrops" },
+					{ name = "PlantGrowingSeasons" },
+					{ name = "PlaceDirtAboveground" },
                     { name = "EnableSnowOnGround" },
 					{ name = "EnableTaintedWaterText"},
+					{ name = "MaximumRatIndex" },
+					{ name = "DaysUntilMaximumRatIndex" },
 				},
 			},
-            {
-                name = "SadisticAIDirector",
-                settings = {
-                    { name = "Helicopter" },
-                    { name = "MetaEvent" },
-                    { name = "SleepingEvent" },
-                },
-            },
 			{
 				name = "Meta",
 				settings = {
-					{ name = "GeneratorSpawning" },
+					{ name = "Helicopter" },
+					{ name = "MetaEvent" },
+					{ name = "SleepingEvent" },
 					{ name = "GeneratorFuelConsumption" },
 					{ name = "SurvivorHouseChance" },
+-- 					{ name = "SpawnHouseStories" },
 					{ name = "VehicleStoryChance" },
 					{ name = "ZoneStoryChance" },
 					{ name = "AnnotatedMapChance" },
 					{ name = "HoursForCorpseRemoval" },
 					{ name = "DecayingCorpseHealthImpact" },
+					{ name = "ZombieHealthImpact" },
 					{ name = "BloodLevel" },
+					{ name = "BloodSplatLifespanDays" },
 					{ name = "MaggotSpawn" },
-				},
-			},
-			{
-				name = "LootRarity",
-				settings = {
-					{ name = "FoodLoot"},
-					{ name = "CannedFoodLoot"},
-					{ name = "WeaponLoot" },
-					{ name = "RangedWeaponLoot" },
-					{ name = "AmmoLoot" },
-					{ name = "MedicalLoot" },
-					{ name = "SurvivalGearsLoot" },
-					{ name = "MechanicsLoot"},
-					{ name = "LiteratureLoot"},
-					{ name = "OtherLoot" },
+					{ name = "MetaKnowledge" },
+					-- In-game map
+					{ name = "Map.AllowWorldMap", title = "InGameMap" },
+					{ name = "Map.AllowMiniMap" },
+					{ name = "Map.MapAllKnown" },
+					{ name = "Map.MapNeedsLight" },
+
 				},
 			},
 			{
 				name = "Character",
 				settings = {
-					{ name = "XpMultiplier" },
-					{ name = "XpMultiplierAffectsPassive" },
 					{ name = "StatsDecrease" },
 					{ name = "EndRegen" },
 					{ name = "Nutrition" },
@@ -4158,20 +5034,64 @@ SettingsTable = {
 					{ name = "ConstructionBonusPoints" },
 					{ name = "InjurySeverity" },
 					{ name = "BoneFracture" },
+					{ name = "MuscleStrainFactor" },
+					{ name = "WoundInfectionFactor" },
 					{ name = "ClothingDegradation" },
+					{ name = "NoBlackClothes" },
 					{ name = "RearVulnerability" },
 					{ name = "MultiHitZombies" },
+					{ name = "FirearmNoiseMultiplier" },
+					{ name = "FirearmJamMultiplier" },
+					{ name = "FirearmMoodleMultiplier" },
+					{ name = "FirearmWeatherMultiplier" },
+					{ name = "FirearmHeadGearEffect" },
 					{ name = "AttackBlockMovements" },
 					{ name = "AllClothesUnlocked" },
 					{ name = "EnablePoisoning" },
-				},
-			},
-			{
-				name = "Map",
-				settings = {
-					{ name = "Map.AllowMiniMap" },
-					{ name = "Map.AllowWorldMap" },
-					{ name = "Map.MapAllKnown" },
+					{ name = "LiteratureCooldown" },
+					{ name = "NegativeTraitsPenalty" },
+					{ name = "MinutesPerPage" },
+					{ name = "LevelForDismantleXPCutoff" },
+					{ name = "LevelForMediaXPCutoff" },
+					{ name = "EasyClimbing" },
+					{ name = "SeeNotLearntRecipe" },
+					-- XP multiplier
+					{ name = "MultiplierConfig.Global", title = "XPMultipliers" },
+					{ name = "MultiplierConfig.GlobalToggle" },
+					{ name = "MultiplierConfig.Fitness" },
+					{ name = "MultiplierConfig.Strength" },
+					{ name = "MultiplierConfig.Sprinting" },
+					{ name = "MultiplierConfig.Lightfoot" },
+					{ name = "MultiplierConfig.Nimble" },
+					{ name = "MultiplierConfig.Sneak" },
+					{ name = "MultiplierConfig.Axe" },
+					{ name = "MultiplierConfig.Blunt" },
+					{ name = "MultiplierConfig.SmallBlunt" },
+					{ name = "MultiplierConfig.LongBlade" },
+					{ name = "MultiplierConfig.SmallBlade" },
+					{ name = "MultiplierConfig.Spear" },
+					{ name = "MultiplierConfig.Maintenance" },
+					{ name = "MultiplierConfig.Farming" },
+					{ name = "MultiplierConfig.Husbandry" },
+					{ name = "MultiplierConfig.Woodwork" },
+					{ name = "MultiplierConfig.Carving" },
+					{ name = "MultiplierConfig.Cooking" },
+					{ name = "MultiplierConfig.Electricity" },
+					{ name = "MultiplierConfig.Doctor" },
+					{ name = "MultiplierConfig.FlintKnapping" },
+					{ name = "MultiplierConfig.Masonry" },
+					{ name = "MultiplierConfig.Mechanics" },
+					{ name = "MultiplierConfig.Blacksmith" },
+					{ name = "MultiplierConfig.Pottery" },
+					{ name = "MultiplierConfig.Tailoring" },
+					{ name = "MultiplierConfig.MetalWelding" },
+					{ name = "MultiplierConfig.Aiming" },
+					{ name = "MultiplierConfig.Reloading" },
+					{ name = "MultiplierConfig.Fishing" },
+					{ name = "MultiplierConfig.PlantScavenging" },
+					{ name = "MultiplierConfig.Tracking" },
+					{ name = "MultiplierConfig.Trapping" },
+					{ name = "MultiplierConfig.Butchering" },
 				},
 			},
 			{
@@ -4193,55 +5113,40 @@ SettingsTable = {
 					{ name = "CarDamageOnImpact" },
 					{ name = "SirenShutoffHours" },
 					{ name = "DamageToPlayerFromHitByACar" },
+					{ name = "SirenEffectsZombies" },
 				},
 			},
 			{
-				name = "ZombieLore",
-				groupBox = "ProperZombies",
+				name = "Animal",
 				settings = {
-					{ name = "ZombieLore.Speed" },
-					{ name = "ZombieLore.Strength" },
-					{ name = "ZombieLore.Toughness" },
-					{ name = "ZombieLore.Transmission" },
-					{ name = "ZombieLore.Mortality" },
-					{ name = "ZombieLore.Reanimate" },
-					{ name = "ZombieLore.Cognition" },
-					{ name = "ZombieLore.CrawlUnderVehicle" },
-					{ name = "ZombieLore.Memory" },
-					{ name = "ZombieLore.Sight" },
-					{ name = "ZombieLore.Hearing" },
-					{ name = "ZombieLore.ThumpNoChasing" },
-					{ name = "ZombieLore.ThumpOnConstruction" },
-					{ name = "ZombieLore.ActiveOnly" },
-					{ name = "ZombieLore.TriggerHouseAlarm" },
-					{ name = "ZombieLore.ZombiesDragDown" },
-					{ name = "ZombieLore.ZombiesFenceLunge" },
-					{ name = "ZombieLore.DisableFakeDead" },
+					{ name = "AnimalStatsModifier" },
+					{ name = "AnimalPregnancyTime" },
+					{ name = "AnimalEggHatch" },
+					{ name = "AnimalAgeModifier" },
+					{ name = "AnimalMilkIncModifier" },
+					{ name = "AnimalWoolIncModifier" },
+					{ name = "AnimalRanchChance" },
+					{ name = "AnimalGrassRegrowTime" },
+					{ name = "AnimalMetaPredator" },
+					{ name = "AnimalMatingSeason" },
+					{ name = "AnimalSoundAttractZombies" },
 				},
 			},
-			{
-				name = "ZombieAdvanced",
-				settings = {
-					{ name = "ZombieConfig.PopulationMultiplier" },
-					{ name = "ZombieConfig.PopulationStartMultiplier" },
-					{ name = "ZombieConfig.PopulationPeakMultiplier" },
-					{ name = "ZombieConfig.PopulationPeakDay" },
-					{ name = "ZombieConfig.RespawnHours" },
-					{ name = "ZombieConfig.RespawnUnseenHours" },
-					{ name = "ZombieConfig.RespawnMultiplier" },
-					{ name = "ZombieConfig.RedistributeHours" },
-					{ name = "ZombieConfig.FollowSoundDistance" },
-					{ name = "ZombieConfig.RallyGroupSize" },
-					{ name = "ZombieConfig.RallyTravelDistance" },
-					{ name = "ZombieConfig.RallyGroupSeparation" },
-					{ name = "ZombieConfig.RallyGroupRadius" },
-				}
-			},
+-- @Patrick - DO NOT REMOVE - Commented out to hide Ragdoll information
+--			{
+--			    name = "Physics",
+--			    settings = {
+--			        { name = "RagdollUsePhysicHitReaction" },
+--			        { name = "RagdollEnableDismemberment" },
+--                  { name = "RagdollPhysicHitReactionFrequency" },
+--                  { name = "RagdollPhysicHitReactionStrength" },
+--	      	    },
+--			},
 		},
 	},
 }
 
-local serverOptions = ServerOptions:new()
+local serverOptions = ServerOptions.new()
 local missedSettings = {}
 for i=1,serverOptions:getNumOptions() do
 	missedSettings[serverOptions:getOptionByIndex(i-1):getName()] = true
@@ -4295,7 +5200,7 @@ for i=1,getSandboxOptions():getNumOptions() do
 	local option = getSandboxOptions():getOptionByIndex(i-1)
 	if option:isCustom() and option:getPageName() ~= nil then
 		local page = pageByName[option:getPageName()]
-		if not page then
+		if not page then		-- Here adds sandbox params from mods!
 			page = {}
 			page.name = option:getPageName()
 			page.settings = {}
@@ -4351,6 +5256,9 @@ for _,page in ipairs(SettingsTable[2].pages) do
 		missedSettings[option:getName()] = nil
 	end
 end
-for key,value in pairs(missedSettings) do
-	print('MISSING in SettingsTable: ' .. key)
+
+if (isClient() or isServer()) then
+    for key,value in pairs(missedSettings) do
+        print('WARN:MISSING in SettingsTable: ' .. key)
+    end
 end

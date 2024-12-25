@@ -52,21 +52,21 @@ season.EveryTenMinutes = function()
 		-- update the weather icon
 	--	season.updateWeatherIcon();
 	end
-	local sec = math.floor(GameTime:getInstance():getTimeOfDay() * 3600);
+	local sec = math.floor(GameTime.getInstance():getTimeOfDay() * 3600);
 	local currentHour = math.floor(sec / 3600);
 	-- we get our temperature, depending on the hour
 	if(currentHour ~= season.previousHour) then
-		local month = seasonProps.monthTemp[GameTime:getInstance():getMonth() + 1];
+		local month = seasonProps.monthTemp[GameTime.getInstance():getMonth() + 1];
 		season.previousHour = currentHour;
 		-- if we changed our month, we reset the dawn and dusk (so the sun will be late to rise in winter, etc.)
-		if GameTime:getInstance():getMonth() ~= season.previousMonth then
-			season.previousMonth = GameTime:getInstance():getMonth();
-            GameTime:getInstance():setDawn(month.dawn);
-            GameTime:getInstance():setDusk(month.dusk);
+		if GameTime.getInstance():getMonth() ~= season.previousMonth then
+			season.previousMonth = GameTime.getInstance():getMonth();
+            GameTime.getInstance():setDawn(month.dawn);
+            GameTime.getInstance():setDusk(month.dusk);
 		end
 		-- every day we get the min/max temp of the month and randomize it (-3/+3)
-		if season.previousDay ~= GameTime:getInstance():getDay() then
-			season.previousDay = GameTime:getInstance():getDay();
+		if season.previousDay ~= GameTime.getInstance():getDay() then
+			season.previousDay = GameTime.getInstance():getDay();
 			season.min = ZombRand((month.min - 3), (month.min + 4));
 			season.max = ZombRand((month.max - 3), (month.max + 4));
 
@@ -88,7 +88,7 @@ season.EveryTenMinutes = function()
 			end
 
 			season.rainToday = 0;
-            GameTime:getInstance():setThunderDay(ZombRand(20) == 0);
+            GameTime.getInstance():setThunderDay(ZombRand(20) == 0);
 		end
 		-- we calcul our temperature gain per hour
 		local tempPerHour = (season.max - season.min) / 12;
@@ -153,37 +153,37 @@ end
 -- for exemple if it was sunny and now it's cloudy, we need to slowly down the light
 season.updateAmbient = function()
     --[[
-    GameTime:getInstance():setMoon(season.moonAmbient);
-    if round2(GameTime:getInstance():getAmbientMax(), 3) < season.ambientMaxGoal then
-        GameTime:getInstance():setAmbientMax(GameTime:getInstance():getAmbientMax() + 0.02);
-       -- season.gameTime:setNightMax(GameTime:getInstance():getNightMax() - 0.02);
-        if GameTime:getInstance():getAmbientMax() > season.ambientMaxGoal then
-            GameTime:getInstance():setAmbientMax(season.ambientMaxGoal);
-       --     GameTime:getInstance():setNightMax(season.ambientMaxGoal);
+    GameTime.getInstance():setMoon(season.moonAmbient);
+    if round2(GameTime.getInstance():getAmbientMax(), 3) < season.ambientMaxGoal then
+        GameTime.getInstance():setAmbientMax(GameTime.getInstance():getAmbientMax() + 0.02);
+       -- season.gameTime:setNightMax(GameTime.getInstance():getNightMax() - 0.02);
+        if GameTime.getInstance():getAmbientMax() > season.ambientMaxGoal then
+            GameTime.getInstance():setAmbientMax(season.ambientMaxGoal);
+       --     GameTime.getInstance():setNightMax(season.ambientMaxGoal);
         end
 
-	elseif round2(GameTime:getInstance():getAmbientMax(), 3) > season.ambientMaxGoal then
-        GameTime:getInstance():setAmbientMax(GameTime:getInstance():getAmbientMax() - 0.02);
-      --  GameTime:getInstance():setNightMax(GameTime:getInstance():getNightMax() + 0.02);
-         if GameTime:getInstance():getAmbientMax() < season.ambientMaxGoal then
-             GameTime:getInstance():setAmbientMax(season.ambientMaxGoal);
-     --        GameTime:getInstance():setMoon(season.moonAmbient);
+	elseif round2(GameTime.getInstance():getAmbientMax(), 3) > season.ambientMaxGoal then
+        GameTime.getInstance():setAmbientMax(GameTime.getInstance():getAmbientMax() - 0.02);
+      --  GameTime.getInstance():setNightMax(GameTime.getInstance():getNightMax() + 0.02);
+         if GameTime.getInstance():getAmbientMax() < season.ambientMaxGoal then
+             GameTime.getInstance():setAmbientMax(season.ambientMaxGoal);
+     --        GameTime.getInstance():setMoon(season.moonAmbient);
          end
     end
 
- 	if round2(GameTime:getInstance():getAmbientMin(), 3) < season.ambientMinGoal then
-        GameTime:getInstance():setAmbientMin(GameTime:getInstance():getAmbientMin() + 0.02);
-       --  GameTime:getInstance():setNightMin(GameTime:getInstance():getNightMin() - 0.02);
-         if GameTime:getInstance():getAmbientMin() > season.ambientMinGoal then
-             GameTime:getInstance():setAmbientMin(season.ambientMinGoal);
-         --    GameTime:getInstance():setMoon(season.moonAmbient);
+ 	if round2(GameTime.getInstance():getAmbientMin(), 3) < season.ambientMinGoal then
+        GameTime.getInstance():setAmbientMin(GameTime.getInstance():getAmbientMin() + 0.02);
+       --  GameTime.getInstance():setNightMin(GameTime.getInstance():getNightMin() - 0.02);
+         if GameTime.getInstance():getAmbientMin() > season.ambientMinGoal then
+             GameTime.getInstance():setAmbientMin(season.ambientMinGoal);
+         --    GameTime.getInstance():setMoon(season.moonAmbient);
          end
-     elseif round2(GameTime:getInstance():getAmbientMin(), 3) > season.ambientMinGoal then
-        GameTime:getInstance():setAmbientMin(GameTime:getInstance():getAmbientMin() - 0.02);
-       -- GameTime:getInstance():setNightMin(GameTime:getInstance():getNightMin() + 0.02);
-         if GameTime:getInstance():getAmbientMin() < season.ambientMinGoal then
-             GameTime:getInstance():setAmbientMin(season.ambientMinGoal);
-           --  GameTime:getInstance():setMoon(season.moonAmbient);
+     elseif round2(GameTime.getInstance():getAmbientMin(), 3) > season.ambientMinGoal then
+        GameTime.getInstance():setAmbientMin(GameTime.getInstance():getAmbientMin() - 0.02);
+       -- GameTime.getInstance():setNightMin(GameTime.getInstance():getNightMin() + 0.02);
+         if GameTime.getInstance():getAmbientMin() < season.ambientMinGoal then
+             GameTime.getInstance():setAmbientMin(season.ambientMinGoal);
+           --  GameTime.getInstance():setMoon(season.moonAmbient);
          end
     end
     --]]
@@ -266,7 +266,7 @@ season.updateWeather = function(month, currentHour)
 				season.ambientMinGoal = season.ambientMaxGoal
 			end
 		end
-        GameTime:getInstance():setViewDistMax(seasonProps.weather[season.weather].view);
+        GameTime.getInstance():setViewDistMax(seasonProps.weather[season.weather].view);
 		season.currentTempModifier = seasonProps.weather[season.weather].temp;
 		season.previousWeatherHour = 2;
 		-- if it's raining, we set it
@@ -383,7 +383,7 @@ end
 season.load = function ()
     --[[
 	noise('loading GameTime modData')
-	season.gameTime = GameTime:getInstance();
+	season.gameTime = GameTime.getInstance();
 	local datas = season.gameTime:getModData();
 	season.min = datas["minTemp"];
 	season.max = datas["maxTemp"];
@@ -418,7 +418,7 @@ end
 -- save all our datas
 season.save = function()
     --[[
-	local datas = GameTime:getInstance():getModData();
+	local datas = GameTime.getInstance():getModData();
 	datas["minTemp"] = season.min;
 	datas["maxTemp"] = season.max;
 	datas["currentTemp"] = getWorld():getGlobalTemperature();
@@ -450,14 +450,9 @@ season.OnGameStart = function()
 			season.ambientMinGoal = season.ambientMaxGoal
 		end
 	end
-	GameTime:getInstance():setAmbientMax(season.ambientMaxGoal)
-	GameTime:getInstance():setAmbientMin(season.ambientMinGoal)
+	GameTime.getInstance():setAmbientMax(season.ambientMaxGoal)
+	GameTime.getInstance():setAmbientMin(season.ambientMinGoal)
     --]]
-end
-
--- round java style
-function round2(num, idp)
-  return tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
 
 --Events.EveryTenMinutes.Add(season.EveryTenMinutes);

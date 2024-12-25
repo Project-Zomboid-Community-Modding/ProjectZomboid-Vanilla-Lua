@@ -78,7 +78,7 @@ function SCampfireGlobalObject:addObject()
 	isoObject:setOutlineOnMouseover(true)
 	self:toModData(isoObject:getModData())
 	square:AddTileObject(isoObject)
-	self:noise('added campfire IsoObject at index='..isoObject:getObjectIndex())
+-- 	self:noise('added campfire IsoObject at index='..isoObject:getObjectIndex())
 end
 
 function SCampfireGlobalObject:removeObject()
@@ -90,11 +90,11 @@ end
 
 function SCampfireGlobalObject:setSpriteName(spriteName)
 	if spriteName == self.spriteName then return end
-	self:noise('changed campfire sprite from='..self.spriteName..' to '..spriteName..' '..self.x..','..self.y..','..self.z)
+-- 	self:noise('changed campfire sprite from='..self.spriteName..' to '..spriteName..' '..self.x..','..self.y..','..self.z)
 	self.spriteName = spriteName
 	local isoObject = self:getIsoObject()
 	if not isoObject then return end
-	isoObject:setSprite(spriteName)
+	isoObject:setSpriteFromName(spriteName)
 end
 
 function SCampfireGlobalObject:addContainer()
@@ -105,6 +105,12 @@ function SCampfireGlobalObject:addContainer()
 	local container = isoObject:getContainer()
 	if container then return end
 	container = ItemContainer.new("campfire", square, isoObject, 1, 1)
+	local capacity = 10
+	if self:getIsoObject():getSprite() and self:getIsoObject():getSprite():getProperties() and self:getIsoObject():getSprite():getProperties():Val("ContainerCapacity") then
+	    capacity = tonumber(self:getIsoObject():getSprite():getProperties():Val("ContainerCapacity"))
+	end
+-- 	container:setCapacity(tonumber(self:getIsoObject():getSprite():getProperties():Val("ContainerCapacity")))
+	container:setCapacity(capacity)
 	container:setExplored(true)
 	isoObject:setContainer(container)
 end
@@ -117,14 +123,14 @@ function SCampfireGlobalObject:addFireObject()
 	local fireObj = IsoFire.new(getCell(), square)
 	fireObj:AttachAnim("Fire", "01", 4, IsoFireManager.FireAnimDelay, -16, -78, true, 0, false, 0.7, IsoFireManager.FireTintMod)
 	square:AddTileObject(fireObj)
-	self:noise('added campfire IsoFire at index='..fireObj:getObjectIndex())
+-- 	self:noise('added campfire IsoFire at index='..fireObj:getObjectIndex())
 end
 
 function SCampfireGlobalObject:removeFireObject()
 	local fireObj = self:getFireObject()
 	if not fireObj then return end
 	local square = self:getSquare()
-	self:noise('removed campfire IsoFire at index='..fireObj:getObjectIndex())
+-- 	self:noise('removed campfire IsoFire at index='..fireObj:getObjectIndex())
 	square:transmitRemoveItemFromSquare(fireObj)
 	square:getProperties():UnSet(IsoFlagType.burning)
 end
@@ -218,7 +224,7 @@ function SCampfireGlobalObject:syncContainer()
 	end
 	self.transmitContainerTemp = false
 	if math.abs(t - container:getCustomTemperature()) > 0.01 then
-		self:noise('container temp changed from '..container:getCustomTemperature()..' to '..t)
+-- 		self:noise('container temp changed from '..container:getCustomTemperature()..' to '..t)
 		container:setCustomTemperature(t)
 		self.transmitContainerTemp = isServer()
 	end
@@ -257,7 +263,7 @@ function SCampfireGlobalObject:changeFireLvl()
 	self.radius = radius
 
 	local gs = self:getSquare()
-	self:noise('changeFireLvl x,y,z='..gs:getX()..','..gs:getY()..','..gs:getZ()..' fuelAmt='..self.fuelAmt..' isLit='..tostring(self.isLit)..' radius='..radius)
+-- 	self:noise('changeFireLvl x,y,z='..gs:getX()..','..gs:getY()..','..gs:getZ()..' fuelAmt='..self.fuelAmt..' isLit='..tostring(self.isLit)..' radius='..radius)
 
 	self:syncIsoObject()
 	self:syncSprite()
@@ -266,20 +272,20 @@ function SCampfireGlobalObject:changeFireLvl()
 
 	local isoObject = self:getIsoObject()
 	if self.transmitObject then
-		self:noise('transmit campfire object')
+-- 		self:noise('transmit campfire object')
 		isoObject:transmitCompleteItemToClients()
 	else
 		if self.transmitSprite then
-			self:noise('transmit campfire sprite')
+-- 			self:noise('transmit campfire sprite')
 			isoObject:transmitUpdatedSpriteToClients()
 		end
-		self:noise('transmit campfire modData')
+-- 		self:noise('transmit campfire modData')
 		isoObject:transmitModData()
 		if self.transmitContainer then
-			self:noise('transmit campfire container')
+-- 			self:noise('transmit campfire container')
 			isoObject:sendObjectChange('containers')
 		elseif self.transmitContainerTemp then
-			self:noise('transmit campfire container temperature')
+-- 			self:noise('transmit campfire container temperature')
 			isoObject:sendObjectChange('container.customTemperature')
 		end
 	end
@@ -294,7 +300,7 @@ function SCampfireGlobalObject:changeFireLvl()
 	if fireObj and fireObj:getLightRadius() ~= self.radius then
 		fireObj:setLightRadius(self.radius)
 		if isServer() then
-			self:noise('transmit campfire light radius')
+-- 			self:noise('transmit campfire light radius')
 			fireObj:sendObjectChange('lightRadius')
 		end
 	end
@@ -318,7 +324,7 @@ function SCampfireGlobalObject:fireRadius()
 end
 
 function SCampfireGlobalObject:saveData()
-	self:noise('update object modData for campfire '..self.x..','..self.y..','..self.z)
+-- 	self:noise('update object modData for campfire '..self.x..','..self.y..','..self.z)
 	local isoObject = self:getIsoObject()
 	if isoObject then
 		self:toModData(isoObject:getModData())

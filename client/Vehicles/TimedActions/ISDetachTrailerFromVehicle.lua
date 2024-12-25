@@ -24,23 +24,30 @@ end
 
 function ISDetachTrailerFromVehicle:start()
 	self:setActionAnim("VehicleTrailer")
+	self.sound = self.character:getEmitter():playSound("VehicleTowDetach")
 end
 
 function ISDetachTrailerFromVehicle:stop()
+	self:stopSound()
 	ISBaseTimedAction.stop(self)
 end
 
 function ISDetachTrailerFromVehicle:perform()
+	self:stopSound()
 	local args = { vehicle = self.vehicle:getId() }
 	sendClientCommand(self.character, 'vehicle', 'detachTrailer', args)
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
 
+function ISDetachTrailerFromVehicle:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound);
+	end
+end
+
 function ISDetachTrailerFromVehicle:new(character, vehicle, attachment)
 	local o = ISBaseTimedAction.new(self, character)
-	o.stopOnWalk = true
-	o.stopOnRun = true
 	o.maxTime = 100
 	o.vehicle = vehicle
 	o.attachment = attachment

@@ -15,6 +15,9 @@ require "ISUI/ISPanel"
 ISServerOptionsChange = ISPanel:derive("ISServerOptionsChange");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -33,32 +36,35 @@ function ISServerOptionsChange:setVisible(visible)
 end
 
 function ISServerOptionsChange:render()
-    local z = 20;
+    local y = UI_BORDER_SPACING+1
+    self:drawText(getText("IGUI_PlayerStats_ChangeServerOptionTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ChangeServerOptionTitle")) / 2), y, 1,1,1,1, UIFont.Medium);
+    y = y+FONT_HGT_MEDIUM+UI_BORDER_SPACING
+    self:drawText(self.option:getName(), 10, y+3, 1,1,1,1, UIFont.Small);
 
-    self:drawText(getText("IGUI_PlayerStats_ChangeServerOptionTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_ChangeServerOptionTitle")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 50;
-    self:drawText(self.option:getName(), 10, z, 1,1,1,1, UIFont.Small);
+    if (instanceof(self.option, "EnumConfigOption")) then
+        y = y+BUTTON_HGT+UI_BORDER_SPACING
+        self:drawText(getText("Sandbox_Default", self.option:getValueTranslationByIndex(self.option:getDefaultValue())), 10, y+3, 1,1,1,1, UIFont.Small);
+    elseif instanceof(self.option, "DoubleConfigOption") or instanceof(self.option, "IntegerConfigOption") then
+        y = y+BUTTON_HGT+UI_BORDER_SPACING
+        self:drawText(getText("Sandbox_MinMaxDefault", self.option:getMin(), self.option:getMax(), self.option:getDefaultValue()), 10, y+3, 1,1,1,1, UIFont.Small);
+    end
 
     if self.errorTxt then
-        self:drawText(self.errorTxt, 10, 100, 1,0,0,1, UIFont.Small);
+        y = y+BUTTON_HGT+UI_BORDER_SPACING
+        self:drawText(self.errorTxt, 10, y+3, 1,0,0,1, UIFont.Small);
     end
 
-    if instanceof(self.option, "DoubleConfigOption") or instanceof(self.option, "IntegerConfigOption") then
-        self:drawText(getText("Sandbox_MinMaxDefault", self.option:getMin(), self.option:getMax(), self.option:getDefaultValue()), 10, 130, 1,1,1,1, UIFont.Small);
-    end
+    self:setHeight(y+(BUTTON_HGT+UI_BORDER_SPACING)*2+1)
 
     self:updateButtons();
 end
 
 function ISServerOptionsChange:create()
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local padBottom = 10
 
-    local y = 70;
+    local y = FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1;
 
     if instanceof(self.option, "BooleanConfigOption") then
-        self:setWidth(400);
         local comboWid = getTextManager():MeasureStringX(UIFont.Small, "false") + 30
         self.booleanOption = ISComboBox:new(getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + 20, y, comboWid, FONT_HGT_SMALL + 2 * 2, nil,nil);
         self.booleanOption:initialise();
@@ -73,9 +79,20 @@ function ISServerOptionsChange:create()
         self:addChild(self.booleanOption);
     end
 
-    if instanceof(self.option, "DoubleConfigOption") or instanceof(self.option, "IntegerConfigOption") or instanceof(self.option, "StringConfigOption") then
-        local size = getTextManager():MeasureStringX(UIFont.Small, self.option:getValueAsString()) + 20;
-        if size > (self:getWidth() - (getTextManager():MeasureStringX(UIFont.Small, self.option:getName() ) + 30)) then
+    if instanceof(self.option, "EnumConfigOption") then
+        local comboWid = getTextManager():MeasureStringX(UIFont.Small, "false") + 30
+        self.enumOption = ISComboBox:new(getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + 20, y, comboWid, FONT_HGT_SMALL + 2 * 2, nil,nil);
+        self.enumOption:initialise();
+        for k=1,self.option:getNumValues() do
+            self.enumOption:addOption(self.option:getValueTranslationByIndex(k));
+        end
+        self.enumOption.parent = self;
+        self.defaultOption = self.option:getValue();
+        self.enumOption.selected = self.option:getValue();
+        self:addChild(self.enumOption);
+    elseif instanceof(self.option, "DoubleConfigOption") or instanceof(self.option, "IntegerConfigOption") or instanceof(self.option, "StringConfigOption") then
+        local size = self:getWidth() - (getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + UI_BORDER_SPACING*3+1);
+        if size > (self:getWidth() - (getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + 30)) then
             size = (self:getWidth() - (getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + 30));
         end
         self.entry = ISTextEntryBox:new(self.option:getValueAsString(), getTextManager():MeasureStringX(UIFont.Small, self.option:getName()) + 20, y, size, FONT_HGT_SMALL + 2 * 2);
@@ -91,7 +108,7 @@ function ISServerOptionsChange:create()
         self.defaultText = self.option:getValueAsString();
     end
 
-    self.saveBtn = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_characreation_BuildSave"), self, ISServerOptionsChange.onOptionMouseDown);
+    self.saveBtn = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_characreation_BuildSave"), self, ISServerOptionsChange.onOptionMouseDown);
     self.saveBtn.internal = "SAVE";
     self.saveBtn:initialise();
     self.saveBtn:instantiate();
@@ -99,14 +116,14 @@ function ISServerOptionsChange:create()
     self.saveBtn.enable = false;
     self:addChild(self.saveBtn);
 
-    self.cancel = ISButton:new(self:getWidth() - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, ISServerOptionsChange.onOptionMouseDown);
+    self.cancel = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1, self.saveBtn.y, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, ISServerOptionsChange.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
     self.cancel.borderColor = self.buttonBorderColor;
     self:addChild(self.cancel);
 
-    self.resetBtn = ISButton:new(self.cancel.x - btnWid - 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PlayerStats_ResetToDefault"), self, ISServerOptionsChange.onOptionMouseDown);
+    self.resetBtn = ISButton:new(self.cancel.x - btnWid - UI_BORDER_SPACING, self.saveBtn.y, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_ResetToDefault"), self, ISServerOptionsChange.onOptionMouseDown);
     self.resetBtn.internal = "RESET";
     self.resetBtn:initialise();
     self.resetBtn:instantiate();
@@ -119,6 +136,9 @@ end
 function ISServerOptionsChange:updateButtons()
     self.saveBtn.enable = false;
     self.resetBtn.enable = false;
+    self.saveBtn:setY(self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1)
+    self.cancel:setY(self.saveBtn.y)
+    self.resetBtn:setY(self.saveBtn.y)
     if self.entry then
         if self.entry:getText() ~= self.defaultText then
             self.saveBtn.enable = true;
@@ -136,6 +156,14 @@ function ISServerOptionsChange:updateButtons()
             self.resetBtn.enable = true;
         end
     end
+    if self.enumOption then
+        if self.enumOption.selected ~= self.defaultOption then
+            self.saveBtn.enable = true;
+        end
+        if (self.option:getDefaultValue() ~= self.enumOption.selected) then
+            self.resetBtn.enable = true;
+        end
+    end
 end
 
 function ISServerOptionsChange:onOptionMouseDown(button, x, y)
@@ -149,6 +177,9 @@ function ISServerOptionsChange:onOptionMouseDown(button, x, y)
                     newValue = "true";
                 end
                 self.onclick(self.target, button.parent.option, newValue);
+            end
+            if self.enumOption then
+                self.onclick(self.target, button.parent.option, tostring(self.enumOption.selected));
             end
             if self.entry then
                 if self.entry.min then
@@ -177,6 +208,9 @@ function ISServerOptionsChange:onOptionMouseDown(button, x, y)
                 self.booleanOption.selected = 1;
             end
         end
+        if self.enumOption then
+            self.enumOption.selected = self.option:getDefaultValue()
+        end
         if self.entry then
             self.entry:setText(tostring(button.parent.option:getDefaultValue()));
         end
@@ -204,6 +238,7 @@ function ISServerOptionsChange:new(x, y, width, height, target, onclick, option)
     o.onclick = onclick;
     o.option = option;
     o.defaultBool = 1;
+    o.defaultOption = 2;
     o.defaultText = "";
 
     return o;

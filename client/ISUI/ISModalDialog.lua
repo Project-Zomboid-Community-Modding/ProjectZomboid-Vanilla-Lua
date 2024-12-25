@@ -9,6 +9,8 @@ require "ISUI/ISPanelJoypad"
 ISModalDialog = ISPanelJoypad:derive("ISModalDialog");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISModalDialog:initialise
@@ -18,34 +20,32 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 function ISModalDialog:initialise()
 	ISPanel.initialise(self);
 	local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-	local padBottom = 10
 	if self.yesno then
-		self.yes = ISButton:new((self:getWidth() / 2) - btnWid - 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Yes"), self, ISModalDialog.onClick);
+		self.yes = ISButton:new((self:getWidth() - UI_BORDER_SPACING) / 2 - btnWid, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_Yes"), self, ISModalDialog.onClick);
 		self.yes.internal = "YES";
 		self.yes.anchorTop = false;
 		self.yes.anchorBottom = true;
 		self.yes:initialise();
 		self.yes:instantiate();
-		self.yes.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.yes:enableAcceptColor()
 		self:addChild(self.yes);
 
-		self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_No"), self, ISModalDialog.onClick);
+		self.no = ISButton:new((self:getWidth() + UI_BORDER_SPACING) / 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_No"), self, ISModalDialog.onClick);
 		self.no.internal = "NO";
 		self.no.anchorTop = false;
 		self.no.anchorBottom = true;
 		self.no:initialise();
 		self.no:instantiate();
-		self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.no:enableCancelColor()
 		self:addChild(self.no);
 	else
-		self.ok = ISButton:new((self:getWidth() / 2) - btnWid / 2, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, ISModalDialog.onClick);
+		self.ok = ISButton:new((self:getWidth() / 2) - btnWid / 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISModalDialog.onClick);
 		self.ok.internal = "OK";
 		self.ok.anchorTop = false;
 		self.ok.anchorBottom = true;
 		self.ok:initialise();
 		self.ok:instantiate();
-		self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.ok:enableAcceptColor()
 		self:addChild(self.ok);
 	end
 --	if UIManager.getSpeedControls() then
@@ -225,8 +225,8 @@ function ISModalDialog.CalcSize(width, height, text)
 		textHgt = textHgt + fontHgt
 	end
 	local buttonWid = 100
-	if width < math.max(textWid + 20, buttonWid * 2 + 10) then
-		width = math.max(textWid + 20, buttonWid * 2 + 10)
+	if width < math.max(textWid + UI_BORDER_SPACING, buttonWid * 2 + UI_BORDER_SPACING*3 + 2) then
+		width = math.max(textWid + UI_BORDER_SPACING, buttonWid * 2 + UI_BORDER_SPACING*3 + 2)
 	end
 	local buttonHgt = 25
 	local padBottom = 10

@@ -13,30 +13,52 @@ function ISScrollBar:initialise()
 end
 
 function ISScrollBar:onMouseDown(x, y)
-
 	self.scrolling = false;
-	if not self.barx then
-		return false
+	local part = self:hitTest(x, y)
+	if part ~= nil then
+		self:setCapture(true)
 	end
-	if self.barwidth == 0 or self.barheight == 0 then
-		return false
+	if part == "thumb" then
+		self.scrolling = true;
 	end
-	if (x >= self.barx and x <= self.barx + self.barwidth) then
+	if part == "arrowUp" then
+		self:onClickArrowUp()
+	end
+	if part == "arrowDown" then
+		self:onClickArrowDown()
+	end
+	if part == "trackUp" then
+		self:onClickTrackUp(y)
+	end
+	if part == "trackDown" then
+		self:onClickTrackDown(y)
+	end
+	if part == "arrowLeft" then
+		self:onClickArrowLeft()
+	end
+	if part == "arrowRight" then
+		self:onClickArrowRight()
+	end
+	if part == "trackLeft" then
+		self:onClickTrackLeft(x)
+	end
+	if part == "trackRight" then
+		self:onClickTrackRight(x)
+	end
+	return true
+end
 
-		if (y >= self.bary and y <= self.bary + self.barheight) then
-			self.scrolling = true;
-			self:setCapture(true)
-		end
-
-	end
+function ISScrollBar:onMouseDoubleClick(x, y)
+	return self:onMouseDown(x, y)
 end
 
 function ISScrollBar:onMouseUp(x, y)
-	if not self.scrolling then
+	if not self:getIsCaptured() then
 		return false
 	end
 	self.scrolling = false;
 	self:setCapture(false)
+	return true
 end
 
 function ISScrollBar:refresh()
@@ -68,6 +90,111 @@ end
 
 function ISScrollBar:onMouseMoveOutside(dx, dy)
 	self:onMouseMove(dx, dy);
+end
+
+function ISScrollBar:isPointOverThumb(x, y)
+	if not self.barx then
+		return false
+	end
+	if (self.barwidth == 0) or (self.barheight == 0) then
+		return false
+	end
+    local extraWidth = self.vertical and 2 or 0
+    local extraHeight = self.vertical and 0 or 2
+	if (x >= self.barx) and (x <= self.barx + self.barwidth + extraWidth) and
+			(y >= self.bary) and (y <= self.bary + self.barheight + extraHeight) then
+		return true
+	end
+	return false
+end
+
+function ISScrollBar:hitTest(x, y)
+	if not self:isPointOver(self:getAbsoluteX() + x, self:getAbsoluteY() + y) then
+		return nil
+	end
+	if self:isPointOverThumb(x, y) then
+		return "thumb"
+	end
+	if not self.barx or (self.barwidth == 0) then
+		return nil
+	end
+	if self.vertical then
+		if y < self.uptex:getHeight() then
+			return "arrowUp"
+		end
+		if y >= self:getHeight() - self.downtex:getHeight() then
+			return "arrowDown"
+		end
+		if y < self.bary then
+			return "trackUp"
+		end
+		return "trackDown"
+	else
+		if x < self.uptex:getWidth() then
+			return "arrowLeft"
+		end
+		if x >= self:getWidth() - self.downtex:getWidth() then
+			return "arrowRight"
+		end
+		if x < self.barx then
+			return "trackLeft"
+		end
+		return "trackRight"
+	end
+end
+
+function ISScrollBar:onClickArrowUp()
+	if self.parent.onMouseWheel then
+		local yScroll = self.parent:getYScroll()
+		self.parent:onMouseWheel(-1)
+		if yScroll ~= self.parent:getYScroll() then
+			return
+		end
+	end
+	self.parent:setYScroll(self.parent:getYScroll() + 20)
+end
+
+function ISScrollBar:onClickArrowDown()
+	if self.parent.onMouseWheel then
+		local yScroll = self.parent:getYScroll()
+		self.parent:onMouseWheel(1)
+		if yScroll ~= self.parent:getYScroll() then
+			return
+		end
+	end
+	self.parent:setYScroll(self.parent:getYScroll() - 20)
+end
+
+function ISScrollBar:onClickTrackUp(y)
+	local scrollAreaHgt = self.parent:getScrollAreaHeight()
+	local pixels = scrollAreaHgt * 0.9
+	self.parent:setYScroll(self.parent:getYScroll() + pixels)
+end
+
+function ISScrollBar:onClickTrackDown(y)
+	local scrollAreaHgt = self.parent:getScrollAreaHeight()
+	local pixels = scrollAreaHgt * 0.9
+	self.parent:setYScroll(self.parent:getYScroll() - pixels)
+end
+
+function ISScrollBar:onClickArrowLeft()
+	self.parent:setXScroll(self.parent:getXScroll() + 40)
+end
+
+function ISScrollBar:onClickArrowRight()
+	self.parent:setXScroll(self.parent:getXScroll() - 40)
+end
+
+function ISScrollBar:onClickTrackLeft(x)
+	local scrollAreaWid = self.parent:getScrollAreaWidth()
+	local pixels = scrollAreaWid * 0.9
+	self.parent:setXScroll(self.parent:getXScroll() + pixels)
+end
+
+function ISScrollBar:onClickTrackRight(x)
+	local scrollAreaWid = self.parent:getScrollAreaWidth()
+	local pixels = scrollAreaWid * 0.9
+	self.parent:setXScroll(self.parent:getXScroll() - pixels)
 end
 
 function ISScrollBar:updatePos()
@@ -185,7 +312,11 @@ function ISScrollBar:instantiate()
 end
 
 function ISScrollBar:render()
-
+	local mx = self:getMouseX()
+	local my = self:getMouseY()
+	local mouseOver = self.scrolling or (self:isMouseOver() and self:isPointOverThumb(mx, my))
+	local rgb = mouseOver and 0.95 or 0.9
+	if self.scrolling then rgb = 1.0 end
 	if self.vertical then
 		local sh = self.parent:getScrollHeight();
 
@@ -208,7 +339,7 @@ function ISScrollBar:render()
 			dif = dif * self.pos;
 			dif = math.ceil(dif)
 
-			self.barx = 4;
+			self.barx = 2+3;
 			self.bary = 16 + dif;
 			self.barwidth = 8;
 			self.barheight = boxheight;
@@ -216,9 +347,9 @@ function ISScrollBar:render()
             self:drawTexture(self.uptex, 1+3, 0, 1, 1, 1, 1);
             self:drawTexture(self.downtex, 1+3, self.height - 20, 1, 1, 1, 1);
 
-            self:drawTextureScaled(self.midtex, 2+3, self.bary+2, 9, self.barheight-4, 1, 1, 1, 1);
-            self:drawTexture(self.toptex, 2+3, self.bary, 1, 1, 1, 1);
-            self:drawTexture(self.bottex, 2+3, (self.bary+self.barheight)-3, 1, 1, 1, 1);
+            self:drawTextureScaled(self.midtex, 2+3, self.bary+2, 9, self.barheight-4, rgb, rgb, rgb, 1);
+            self:drawTexture(self.toptex, 2+3, self.bary, rgb, rgb, rgb, 1);
+            self:drawTexture(self.bottex, 2+3, (self.bary+self.barheight)-3, rgb, rgb, rgb, 1);
 
             self:drawRectBorder(3, 0, self:getWidth()-4, self:getHeight(), self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 			if self.doSetStencil then
@@ -253,16 +384,16 @@ function ISScrollBar:render()
 			dif = math.ceil(dif)
 
 			self.barx = 16 + dif
-			self.bary = 4
+			self.bary = 2+3
 			self.barwidth = boxwidth
 			self.barheight = 8
 
 			self:drawTexture(self.uptex, 0, 1+3, 1, 1, 1, 1)
 			self:drawTexture(self.downtex, self.width - 20, 1+3, 1, 1, 1, 1)
 
-			self:drawTextureScaled(self.midtex, self.barx+2, 2+3, self.barwidth-4, 9, 1, 1, 1, 1)
-			self:drawTexture(self.toptex, self.barx, 2+3, 1, 1, 1, 1)
-			self:drawTexture(self.bottex, (self.barx+self.barwidth)-3, 2+3, 1, 1, 1, 1)
+			self:drawTextureScaled(self.midtex, self.barx+2, 2+3, self.barwidth-4, 9, rgb, rgb, rgb, 1)
+			self:drawTexture(self.toptex, self.barx, 2+3, rgb, rgb, rgb, 1)
+			self:drawTexture(self.bottex, (self.barx+self.barwidth)-3, 2+3, rgb, rgb, rgb, 1)
 
 			self:drawRectBorder(0, 3, self:getWidth(), self:getHeight()-4, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 			if self.doSetStencil then

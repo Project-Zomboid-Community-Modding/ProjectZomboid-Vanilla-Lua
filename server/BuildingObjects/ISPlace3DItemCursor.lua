@@ -12,7 +12,7 @@
 
 if isServer() then return end
 
-require "ISBuildingObject"
+require "BuildingObjects/ISBuildingObject"
 
 ISPlace3DItemCursor = ISBuildingObject:derive("ISPlace3DItemCursor");
 
@@ -72,6 +72,12 @@ function ISPlace3DItemCursor:isValid(square)
         self.chr:faceLocation(square:getX(), square:getY())
     end
 --    print("render X/Y", self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemRot)
+    if not luautils.walkAdjTest(self.chr, square) then
+        return false
+    end
+	if square:getTotalWeightOfItemsOnFloor() >= 50 then
+		return false
+	end
     if not square:isCouldSee(self.chr:getPlayerNum()) then
         return false
     end
@@ -86,28 +92,27 @@ function ISPlace3DItemCursor:isValid(square)
 end
 
 function ISPlace3DItemCursor:render(x, y, z, square)
-    if not self.RENDER_SPRITE_FLOOR then
-        self.RENDER_SPRITE_FLOOR = IsoSprite.new()
-        self.RENDER_SPRITE_FLOOR:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-    end
     if not square or not self:isValid(square) then
-        self.RENDER_SPRITE_FLOOR:RenderGhostTileColor(x, y, z, 1.0, 0.0, 0.0, 0.2)
+        self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, 1.0, 0.0, 0.0, 0.2)
         self.chr:setIgnoreMovement(false) -- for joypad Y button
         return
     end
-    self.RENDER_SPRITE_FLOOR:RenderGhostTileColor(x, y, z, 1.0, 1.0, 1.0, 0.2)
+    self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, 1.0, 1.0, 1.0, 0.2)
 
+
+--    ISPlace3DItemCursor.panel:drawText("Press R/Shift-R to rotate", 0, 0, 1, 1, 1, 1, UIFont.Medium);
+
+--    ISEquippedItem.instance:drawText(getText("IGUI_Place3DItem_Rotate", getKeyName(getCore():getKey("Rotate building")), getKeyName(42)), 0, 200, 1, 1, 1, 1, UIFont.Small);
+--    if self.surfacesPossible and #self.surfacesPossible > 1 then
+--        ISEquippedItem.instance:drawText(getText("IGUI_Place3DItem_Surface", getKeyName(getCore():getKey("Toggle mode"))), 0, 220, 1, 1, 1, 1, UIFont.Small);
+--    end
+end
+
+function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
     self:checkRotateKey()
     self:checkSelectSurfaceKey()
     self:checkRotateJoypad()
     self:checkPositionJoypad()
-
-    if self.surfaceKeyTimer then
-        self.surfaceKeyTimer = self.surfaceKeyTimer - 1;
-        if self.surfaceKeyTimer == 0 then
-            self.surfaceKeyTimer = nil;
-        end
-    end
 
     local worldX = x + 0.5
     local worldY = y + 0.5
@@ -137,7 +142,7 @@ function ISPlace3DItemCursor:render(x, y, z, square)
     self.render3DItemXOffset = worldX - sq:getX();
     self.render3DItemYOffset = worldY - sq:getY();
     self.render3DItemZOffset = self:getSurface(sq);
-    if square:HasStairs() then
+    if square:HasStairs() or square:hasSlopedSurface() then
         self.render3DItemZOffset = square:getApparentZ(self.render3DItemXOffset, self.render3DItemYOffset)
     end
     self.selectedSqDrop = sq;
@@ -161,7 +166,7 @@ function ISPlace3DItemCursor:render(x, y, z, square)
             if container and container:getVehiclePart() then
                 self.itemSq = nil
             end
-            Render3DItem(v, sq, worldX, worldY, self.selectedSqDrop:getZ() + self.render3DItemZOffset, self:clamp(self.render3DItemRot));
+            Render3DItem(v, self.selectedSqDrop, worldX, worldY, self.selectedSqDrop:getZ() + self.render3DItemZOffset, self:clamp(self.render3DItemRot));
         end
     else
         local item = self.items[1]
@@ -182,15 +187,8 @@ function ISPlace3DItemCursor:render(x, y, z, square)
         if container and container:getVehiclePart() then
             self.itemSq = nil
         end
-        Render3DItem(item, sq, worldX, worldY, self.selectedSqDrop:getZ() + self.render3DItemZOffset, self:clamp(self.render3DItemRot));
+        Render3DItem(item, self.selectedSqDrop, worldX, worldY, self.selectedSqDrop:getZ() + self.render3DItemZOffset, self:clamp(self.render3DItemRot));
     end
-
---    ISPlace3DItemCursor.panel:drawText("Press R/Shift-R to rotate", 0, 0, 1, 1, 1, 1, UIFont.Medium);
-
---    ISEquippedItem.instance:drawText(getText("IGUI_Place3DItem_Rotate", getKeyName(getCore():getKey("Rotate building")), getKeyName(42)), 0, 200, 1, 1, 1, 1, UIFont.Small);
---    if self.surfacesPossible and #self.surfacesPossible > 1 then
---        ISEquippedItem.instance:drawText(getText("IGUI_Place3DItem_Surface", getKeyName(getCore():getKey("Toggle mode"))), 0, 220, 1, 1, 1, 1, UIFont.Small);
---    end
 end
 
 function ISPlace3DItemCursor:deactivate()
@@ -262,14 +260,10 @@ function ISPlace3DItemCursor:clamp(rot)
 end
 
 function ISPlace3DItemCursor:checkSelectSurfaceKey() -- switch between our possible surface height when pressing Shift
-    if self.surfaceKeyTimer then
-        return;
-    end
     if self.chr:getPlayerNum() ~= 0 then return end
     if self.chr:getJoypadBind() ~= -1 then return end
-    local pressed = isKeyDown(getCore():getKey("Toggle mode"))
-    if(pressed) then
-        self.surfaceKeyTimer = 10;
+    local pressed = isKeyPressed("Toggle mode")
+    if pressed then
         self.surfaceSelected = self.surfaceSelected + 1;
         if self.surfaceSelected > #self.surfacesPossible then
             self.surfaceSelected = 1;
@@ -280,7 +274,7 @@ end
 function ISPlace3DItemCursor:checkRotateKey()
     if self.chr:getPlayerNum() ~= 0 then return end
     if self.chr:getJoypadBind() ~= -1 then return end
-    local pressed = isKeyDown(getCore():getKey("Rotate building"))
+    local pressed = isKeyDown("Rotate building")
     local reverse = isShiftKeyDown()
     self:handleRotate(pressed, reverse)
 end

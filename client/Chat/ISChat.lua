@@ -78,6 +78,10 @@ ISChat.initChat = function()
 end
 
 function ISChat:createChildren()
+    local th = self:titleBarHeight()
+    local buttonHeight = th-2
+    local buttonOffset = 1 + (5-getCore():getOptionFontSizeReal())*2
+
     --window stuff
     -- Do corner x + y widget
     local rh = self:resizeWidgetHeight()
@@ -104,8 +108,7 @@ function ISChat:createChildren()
     self.resizeWidget2 = resizeWidget2;
 
     -- close button
-    local th = self:titleBarHeight()
-    self.closeButton = ISButton:new(3, 0, th, th, "", self, self.close);
+    self.closeButton = ISButton:new(1, 1, buttonHeight, buttonHeight, "", self, self.close);
     self.closeButton:initialise();
     self.closeButton.borderColor.a = 0.0;
     self.closeButton.backgroundColor.a = 0;
@@ -115,7 +118,7 @@ function ISChat:createChildren()
     self:addChild(self.closeButton);
 
     -- lock button
-    self.lockButton = ISButton:new(self.width - 19, 0, th, th, "", self, ISChat.pin);
+    self.lockButton = ISButton:new(self.width - buttonHeight - 1, 0, buttonHeight, buttonHeight, "", self, ISChat.pin);
     self.lockButton.anchorRight = true;
     self.lockButton.anchorLeft = false;
     self.lockButton:initialise();
@@ -132,14 +135,14 @@ function ISChat:createChildren()
     self.lockButton:setVisible(true);
 
     --gear button
-    self.gearButton = ISButton:new(self.lockButton:getX() - th / 2 - th, 1, th, th, "", self, ISChat.onGearButtonClick);
+    self.gearButton = ISButton:new(self.width - buttonHeight*2 - buttonOffset - 1, 1, buttonHeight, buttonHeight, "", self, ISChat.onGearButtonClick);
     self.gearButton.anchorRight = true;
     self.gearButton.anchorLeft = false;
     self.gearButton:initialise();
     self.gearButton.borderColor.a = 0.0;
     self.gearButton.backgroundColor.a = 0;
     self.gearButton.backgroundColorMouseOver.a = 0;
-    self.gearButton:setImage(getTexture("media/ui/Panel_Icon_Gear.png"));
+    self.gearButton:setImage(getTexture("media/ui/inventoryPanes/Button_Gear.png"));
     self.gearButton:setUIName(ISChat.gearButtonName);
     self:addChild(self.gearButton);
     self.gearButton:setVisible(true);
@@ -414,16 +417,6 @@ function ISChat:prerender()
     local th = self:titleBarHeight()
     local titlebarAlpha = self:calcAlpha(ISChat.minControlOpaque, ISChat.maxGeneralOpaque, self.fade:fraction());
     self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, th - 2, titlebarAlpha, 1, 1, 1);
-    if self.servermsg then
-        local x = getCore():getScreenWidth() / 2 - self:getX()
-        local y = getCore():getScreenHeight() / 4 - self:getY();
-        self:drawTextCentre(self.servermsg, x, y, 1, 0.1, 0.1, 1, UIFont.Title);
-        self.servermsgTimer = self.servermsgTimer - UIManager.getMillisSinceLastRender();
-        if self.servermsgTimer < 0 then
-            self.servermsg = nil;
-            self.servermsgTimer = 0;
-        end
-    end
 end
 
 function ISChat:render()
@@ -686,16 +679,10 @@ end
 
 ISChat.addLineInChat = function(message, tabID)
     local line = message:getTextWithPrefix();
-    if message:isServerAlert() then
-        ISChat.instance.servermsg = "";
-        if message:isShowAuthor() then
-            ISChat.instance.servermsg = message:getAuthor() .. ": ";
-        end
-        ISChat.instance.servermsg = ISChat.instance.servermsg .. message:getText();
-        ISChat.instance.servermsgTimer = 5000;
-        --return;
+    if message:getAuthor() and ISChat.instance.mutedUsers[message:getAuthor()] then
+        message:setText("* * *")
+        return
     end
-    if user and ISChat.instance.mutedUsers[user] then return end
     if not ISChat.instance.chatText then
         ISChat.instance.chatText = ISChat.instance.defaultTab;
         ISChat.instance:onActivateView();
@@ -751,11 +738,11 @@ end
 
 ISChat.onToggleChatBox = function(key)
     if ISChat.instance==nil then return; end
-    if key == getCore():getKey("Toggle chat") or key == getCore():getKey("Alt toggle chat") then
+    if getCore():isKey("Toggle chat", key) then
         ISChat.instance:focus();
     end
     local chat = ISChat.instance;
-    if key == getCore():getKey("Switch chat stream") then
+    if getCore():isKey("Switch chat stream", key) then
         chat.currentTabID = chat.currentTabID % chat.tabCnt + 1;
         chat.panel:activateView(chat.tabs[chat.currentTabID].tabTitle);
         ISChat.instance:onActivateView();
@@ -906,9 +893,8 @@ function ISChat:new (x, y, width, height)
     o.onRightMouseUp = nil;
     o.prevBtnTxt = getTexture("media/ui/sGuidePrevBtn.png");
     o.nextBtnTxt = getTexture("media/ui/sGuideNextBtn.png");
-    o.closeBtnTxt = getTexture("media/ui/sGuideCloseBtn.png");
-    o.chatLockedButtonTexture = getTexture("media/ui/lock.png");
-    o.chatUnLockedButtonTexture = getTexture("media/ui/lockOpen.png");
+    o.chatLockedButtonTexture = getTexture("media/ui/inventoryPanes/Button_Lock.png");
+    o.chatUnLockedButtonTexture = getTexture("media/ui/inventoryPanes/Button_LockOpen.png");
     o.background = true;
     o.timerTextEntry = 0;
     o.servermsg = "";
@@ -1145,16 +1131,6 @@ ISChat.createChat = function()
     Events.OnSetDefaultTab.Add(ISChat.onSetDefaultTab);
     Events.OnTabRemoved.Add(ISChat.onTabRemoved);
     Events.SwitchChatStream.Add(ISChat.onSwitchStream)
-end
-
-function logTo01(value)
-    if value < 0.0 or value > 1.0 then
-        error("only [0,1] accepted!");
-    end
-    if value > 0.0 then
-        return math.log10(value * 100) - 1;
-    end
-    return 0.0;
 end
 
 Events.OnGameStart.Add(ISChat.createChat);

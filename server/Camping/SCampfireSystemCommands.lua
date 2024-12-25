@@ -11,12 +11,7 @@ local function campfireAt(x, y, z)
 end
 
 function SCampfireSystemCommand(command, player, args)
-	if command == 'addCampfire' then
-		local gs = getCell():getGridSquare(args.x, args.y, args.z)
-		if gs then
-			SCampfireSystem.instance:addCampfire(gs)
-		end
-	elseif command == 'addFuel' then
+	if command == 'addFuel' then
 		local campfire = campfireAt(args.x, args.y, args.z)
 		if campfire then
 			campfire:addFuel(args.fuelAmt)
@@ -38,8 +33,8 @@ function SCampfireSystemCommand(command, player, args)
 		local campfire = campfireAt(args.x, args.y, args.z)
 		if campfire then
 			SCampfireSystem:removeCampfire(campfire)
-			local kit = InventoryItemFactory.CreateItem("camping.CampfireKit")
-			player:sendObjectChange('addItem', { item = kit } )
+			local items = player:getInventory():AddItems("Base.Stone2", 3);
+			sendAddItemsToContainer(player:getInventory(), items);
 		end
 	elseif command == 'setFuel' then
 		local campfire = campfireAt(args.x, args.y, args.z)

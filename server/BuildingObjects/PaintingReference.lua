@@ -205,3 +205,65 @@ OtherPainting["table"]["PaintRed"]          = {r=0.63,g=0.10,b=0.10};
 OtherPainting["table"]["PaintTurquoise"]    = {r=0.49,g=0.70,b=0.80};
 OtherPainting["table"]["PaintWhite"]        = {r=0.92,g=0.92,b=0.92};
 OtherPainting["table"]["PaintYellow"]       = {r=0.84,g=0.78,b=0.30};
+
+WallPaper = {};
+WallPaper["doorframe"] = {};
+WallPaper["pillar"] = {};
+WallPaper["wall"] = {};
+WallPaper["windowsframe"] = {};
+
+WallPaper["doorframe"]["Wallpaper_BeigeStripe"] = "walls_interior_house_01_46";
+WallPaper["doorframe"]["Wallpaper_BeigeStripeNorth"] = "walls_interior_house_01_47";
+WallPaper["pillar"]["Wallpaper_BeigeStripe"] = "walls_interior_house_01_39";
+WallPaper["wall"]["Wallpaper_BeigeStripe"] = "walls_interior_house_01_36";
+WallPaper["wall"]["Wallpaper_BeigeStripeNorth"] = "walls_interior_house_01_37";
+WallPaper["windowsframe"]["Wallpaper_BeigeStripe"] = "walls_interior_house_01_44";
+WallPaper["windowsframe"]["Wallpaper_BeigeStripeNorth"] = "walls_interior_house_01_45";
+
+WallPaper["doorframe"]["Wallpaper_BlackFloral"] = "walls_interior_house_03_62";
+WallPaper["doorframe"]["Wallpaper_BlackFloralNorth"] = "walls_interior_house_03_63";
+WallPaper["pillar"]["Wallpaper_BlackFloral"] = "walls_interior_house_03_55";
+WallPaper["wall"]["Wallpaper_BlackFloral"] = "walls_interior_house_03_52";
+WallPaper["wall"]["Wallpaper_BlackFloralNorth"] = "walls_interior_house_03_53";
+WallPaper["windowsframe"]["Wallpaper_BlackFloral"] = "walls_interior_house_03_60";
+WallPaper["windowsframe"]["Wallpaper_BlackFloralNorth"] = "walls_interior_house_03_61";
+
+WallPaper["doorframe"]["Wallpaper_BlueStripe"] = "walls_interior_house_01_10";
+WallPaper["doorframe"]["Wallpaper_BlueStripeNorth"] = "walls_interior_house_01_11";
+WallPaper["pillar"]["Wallpaper_BlueStripeNorth"] = "walls_interior_house_01_3";
+WallPaper["wall"]["Wallpaper_BlueStripe"] = "walls_interior_house_01_0";
+WallPaper["wall"]["Wallpaper_BlueStripeNorth"] = "walls_interior_house_01_1";
+WallPaper["windowsframe"]["Wallpaper_BlueStripe"] = "walls_interior_house_01_8";
+WallPaper["windowsframe"]["Wallpaper_BlueStripeNorth"] = "walls_interior_house_01_9";
+
+WallPaper["doorframe"]["Wallpaper_GreenDiamond"] = "walls_interior_house_03_26";
+WallPaper["doorframe"]["Wallpaper_GreenDiamondNorth"] = "walls_interior_house_03_27";
+WallPaper["pillar"]["Wallpaper_GreenDiamond"] = "walls_interior_house_03_19";
+WallPaper["wall"]["Wallpaper_GreenDiamond"] = "walls_interior_house_03_16";
+WallPaper["wall"]["Wallpaper_GreenDiamondNorth"] = "walls_interior_house_03_17";
+WallPaper["windowsframe"]["Wallpaper_GreenDiamond"] = "walls_interior_house_03_24";
+WallPaper["windowsframe"]["Wallpaper_GreenDiamondNorth"] = "walls_interior_house_03_25";
+
+WallPaper["doorframe"]["Wallpaper_GreenFloral"] = "location_hospitality_sunstarmotel_01_12";
+WallPaper["doorframe"]["Wallpaper_GreenFloralNorth"] = "location_hospitality_sunstarmotel_01_13";
+WallPaper["pillar"]["Wallpaper_GreenFloral"] = "location_hospitality_sunstarmotel_01_7";
+WallPaper["wall"]["Wallpaper_GreenFloral"] = "location_hospitality_sunstarmotel_01_4";
+WallPaper["wall"]["Wallpaper_GreenFloralNorth"] = "location_hospitality_sunstarmotel_01_5";
+WallPaper["windowsframe"]["Wallpaper_GreenFloral"] = "location_hospitality_sunstarmotel_01_14";
+WallPaper["windowsframe"]["Wallpaper_GreenFloralNorth"] = "location_hospitality_sunstarmotel_01_15";
+
+WallPaper["doorframe"]["Wallpaper_PinkChevron"] = "location_hospitality_sunstarmotel_01_8";
+WallPaper["doorframe"]["Wallpaper_PinkChevronNorth"] = "location_hospitality_sunstarmotel_01_5";
+WallPaper["pillar"]["Wallpaper_PinkChevron"] = "location_hospitality_sunstarmotel_01_3";
+WallPaper["wall"]["Wallpaper_PinkChevron"] = "location_hospitality_sunstarmotel_01_0";
+WallPaper["wall"]["Wallpaper_PinkChevronNorth"] = "location_hospitality_sunstarmotel_01_1";
+WallPaper["windowsframe"]["Wallpaper_PinkChevron"] = "location_hospitality_sunstarmotel_01_10";
+WallPaper["windowsframe"]["Wallpaper_PinkChevronNorth"] = "location_hospitality_sunstarmotel_01_11";
+
+WallPaper["doorframe"]["Wallpaper_PinkFloral"] = "walls_interior_house_04_62";
+WallPaper["doorframe"]["Wallpaper_PinkFloralNorth"] = "walls_interior_house_04_63";
+WallPaper["pillar"]["Wallpaper_PinkFloral"] = "walls_interior_house_04_55";
+WallPaper["wall"]["Wallpaper_PinkFloral"] = "walls_interior_house_04_52";
+WallPaper["wall"]["Wallpaper_PinkFloralNorth"] = "walls_interior_house_04_53";
+WallPaper["windowsframe"]["Wallpaper_PinkFloral"] = "walls_interior_house_04_60";
+WallPaper["windowsframe"]["Wallpaper_PinkFloralNorth"] = "walls_interior_house_04_61";

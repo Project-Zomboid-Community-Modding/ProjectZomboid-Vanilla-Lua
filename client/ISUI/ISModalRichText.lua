@@ -25,7 +25,7 @@ function ISModalRichText:initialise()
 		self.yes.anchorBottom = true
 		self.yes:initialise();
 		self.yes:instantiate();
-		self.yes.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.yes:enableAcceptColor();
 		self:addChild(self.yes);
 
 		self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_No"), self, ISModalRichText.onClick);
@@ -34,7 +34,7 @@ function ISModalRichText:initialise()
 		self.no.anchorBottom = true
 		self.no:initialise();
 		self.no:instantiate();
-		self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.no:enableCancelColor()
 		self:addChild(self.no);
 	else
 		self.ok = ISButton:new((self:getWidth() / 2) - btnWid / 2, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, ISModalRichText.onClick);
@@ -43,7 +43,7 @@ function ISModalRichText:initialise()
 		self.ok.anchorBottom = true
 		self.ok:initialise();
 		self.ok:instantiate();
-		self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+		self.ok:enableAcceptColor()
 		self:addChild(self.ok);
     end
 

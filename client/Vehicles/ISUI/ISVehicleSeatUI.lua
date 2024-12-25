@@ -209,7 +209,8 @@ function ISVehicleSeatUI:render()
 	local width = height * ratio
 	local ex = (self.width - width) / 2
 	local ey = (self.height - height) / 2
-	local props = ISCarMechanicsOverlay.CarList[scriptName]
+	local overlayName = script:getCarMechanicsOverlay() or scriptName
+	local props = ISCarMechanicsOverlay.CarList[overlayName]
 	if props and props.imgPrefix then
 		local tex = getTexture("media/ui/vehicles/seatui/" .. props.imgPrefix .. "base_small.png")
 		if tex then
@@ -432,7 +433,13 @@ function ISVehicleSeatUI:useSeat(seat)
 	self:closeSelf()
 	if self.character:getVehicle() then
 		if self.vehicle:canSwitchSeat(self.vehicle:getSeat(self.character), seat) then
-			if not ISVehicleMenu.moveItemsFromSeat(self.character, self.vehicle, seat, true, false) then return; end
+            local currentSeat = self.vehicle:getPartForSeatContainer(seat);
+            local cont = currentSeat:getItemContainer()
+            local minWeight = cont:getCapacity()/4
+            local weight = cont:getCapacityWeight()
+			if (weight > minWeight) and not ISVehicleMenu.moveItemsFromSeat(self.character, self.vehicle, seat, true, false) then
+			    return;
+			end
 			ISVehicleMenu.onSwitchSeat(self.character, seat)
 		else
 			-- In VanAmbulance, the front seats aren't reachable from the middle/rear.
@@ -531,20 +538,20 @@ function ISVehicleSeatUI:setVehicle(vehicle)
 end
 
 function ISVehicleSeatUI:isKeyConsumed(key)
-	if key == getCore():getKey("VehicleHorn") then
+	if getCore():isKey("VehicleHorn", key) then
 		-- Don't consume the key release, or the horn won't stop.
 		return false
 	end
 	return true
 	--[[
 	return (key == Keyboard.KEY_ESCAPE) or
-		(key == getCore():getKey("VehicleSwitchSeat")) or
+		(getCore():isKey("VehicleSwitchSeat", key)) or
 		(key >= Keyboard.KEY_1 and key <= Keyboard.KEY_9)
 	--]]
 end
 
 function ISVehicleSeatUI:onKeyPress(key)
-	if key == getCore():getKey("VehicleSwitchSeat") then
+	if getCore():isKey("VehicleSwitchSeat", key) then
 		self:closeSelf()
 		return
 	end

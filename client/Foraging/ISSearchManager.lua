@@ -12,8 +12,8 @@ require "ISUI/ISPanel";
 -------------------------------------------------
 -------------------------------------------------
 local eyeTex = {
-	eyeconOn = getTexture("media/textures/Foraging/eyeconOn_Shade.png"),
-	eyeconOff = getTexture("media/textures/Foraging/eyeconOff_Shade.png"),
+	eyeconOn = getTexture("media/ui/foraging/eyeconOn.png"),
+	eyeconOff = getTexture("media/ui/foraging/eyeconOff.png"),
 };
 -------------------------------------------------
 -------------------------------------------------
@@ -359,7 +359,7 @@ function ISSearchManager:addIcon(_id, _iconClass, _itemType, _itemObj, _x, _y, _
 		self.iconCategories[_iconClass] = _iconClass;
 	end;
 	if not self[_iconClass][id] then
-		local itemObj = _itemObj or InventoryItemFactory.CreateItem(_itemType or "Base.Plank");
+		local itemObj = _itemObj or instanceItem(_itemType or "Base.Plank");
 		local itemType = _itemType or itemObj:getFullType();
 		local icon = {
 			id          = id,
@@ -572,6 +572,7 @@ function ISSearchManager:createIconsForWorldItems(_square)
 					itemObjTable	= {},
 					itemType 		= itemType,
 					isBonusIcon     = false,
+					isTrack = ISAnimalTracksFinder.isTrack(worldObject);
 				};
 				icon.itemObjTable[itemObj] = itemObj;
 				self.worldIconStack[iconID] = icon;
@@ -604,10 +605,11 @@ function ISSearchManager:createIconsForContainers(_square, _object)
 	local square, object = _square, _object;
 	local iconCount = 0;
 	local newIconMax = 10000;
+	if instanceof(object, "IsoAnimalTrack") then return; end
 	if object:getContainer() then
 		if self.stashTypes[object:getContainer():getType()] then
 			if not self.stashIcons[object] then
-				local itemObj = InventoryItemFactory.CreateItem("Base.Plank");
+				local itemObj = instanceItem("Base.Plank");
 				local icon = {
 					id          = object,
 					x           = square:getX() + 0.5,
@@ -617,7 +619,7 @@ function ISSearchManager:createIconsForContainers(_square, _object)
 					itemType    = itemObj:getFullType(),
 					isBonusIcon = false,
 				};
-				self.stashIcons[object] = ISWorldItemIcon:new(self, icon);
+				self.stashIcons[object] = ISStashIcon:new(self, icon);
 				self.stashIcons[object].iconClass = "stashObject";
 				if self.stashIcons[object] then
 					self.stashIcons[object]:doUpdateEvents(true);
@@ -726,7 +728,7 @@ function ISSearchManager:spotIcon(_icon)
 	self:resetForceFindSystem();
 	--
 	if _icon.itemDef and (not self.xpIcons[_icon.iconID]) then
-		forageSystem.giveItemXP(self.character, _icon.itemDef, 0.25);
+		sendIconFound(self.character, _icon.itemType, 0.25)
 		self.xpIcons[_icon.iconID] = _icon.iconID;
 	end;
 end
@@ -1021,7 +1023,11 @@ function ISSearchManager:loadIcons()
 		if (not self.worldObjectIcons[icon.id]) then
 			j = j + 1;
 			if j > iconLoadRate then break; end;
-			self.worldObjectIcons[iconID] = ISWorldItemIcon:new(self, icon);
+			if icon.isTrack then
+				self.worldObjectIcons[iconID] = ISWorldItemIconTrack:new(self, icon);
+			else
+				self.worldObjectIcons[iconID] = ISWorldItemIcon:new(self, icon);
+			end
 			self.worldObjectIcons[iconID].iconClass = "worldObject";
 			if self.worldObjectIcons[iconID] then self.worldObjectIcons[iconID]:findTextureCenter(); end;
 		end;
@@ -1090,6 +1096,7 @@ function ISSearchManager:getOverlayRadius()
 end
 
 function ISSearchManager:updateOverlay()
+	if self.isOverride then return; end;
 	--
 	local blur = 0;
 	local desaturation = 0;
@@ -1122,7 +1129,7 @@ function ISSearchManager:updateOverlay()
 	self.overlayValues.darkness = darkness;
 	self.radius = radius;
 	--
-	getSearchMode():setEnabled(self.player, self.isSearchMode or self.isEffectOverlay);
+	self.searchMode:setEnabled(self.player, self.isSearchMode or self.isEffectOverlay);
 end
 -------------------------------------------------
 -------------------------------------------------
@@ -1135,6 +1142,15 @@ function ISSearchManager:checkShouldDisable()
 	end;
 	if (self.character:isRunning() or self.character:isSprinting() and self.character:isJustMoved()) then
 		return true;
+	end;
+	if (self.searchMode:isOverrideSearchManager(self.player)) then
+		return true;
+	end;
+	--don't allow foraging inside safezones if player isn't a member
+	if isClient() then
+		if not SafeHouse.isSafehouseAllowLoot(self.square, self.character) then
+			return true;
+		end;
 	end;
 	return false;
 end
@@ -1230,7 +1246,10 @@ function ISSearchManager:update()
 	self:updateVisionBonuses();
 	self:updateOverlay();
 	--
-	if (not self.isSearchMode) then return; end;
+	if (not self.isSearchMode) then
+		ISAnimalTracksFinder:clearTracks(self.character);
+		return;
+	end;
 	if self:getGameSpeed() == 0 then return; end;
 	--
 	self:doDisableCheck();
@@ -1238,6 +1257,13 @@ function ISSearchManager:update()
 	self:createIconsForCell();
 	self:doUpdateEvents();
 	self:loadIcons();
+
+	if self.isSearchMode then
+		local searchWindow = ISSearchWindow.players[self.character];
+		if searchWindow and searchWindow.searchFocusCategory and searchWindow.searchFocusCategory == "Tracks" then
+			ISAnimalTracksFinder:update(self.character);
+		end
+	end
 	--
 	self.isSpotting = false;
 end
@@ -1356,6 +1382,7 @@ function ISSearchManager:new(_character)
 
 	--overlay
 	o.searchModeOverlay		= getSearchMode():getSearchModeForPlayer(o.player);
+	o.searchMode			= getSearchMode();
 	o.radius				= 0;
 	o.minRadius             = forageSystem.minVisionRadius;
 	o.maxRadius             = forageSystem.maxVisionRadius;
@@ -1396,6 +1423,8 @@ function ISSearchManager:new(_character)
 
 	o.visibleTarget			= o;
 	o.visibleFunction		= ISSearchManager.onToggleVisible;
+
+	o.isOverride			= false;
 
 	o:initialise();
 	return o;
@@ -1450,15 +1479,28 @@ function ISSearchManager:toggleSearchMode(_isSearchMode)
 		self:reset();
 		self:setAlpha(0);
 		triggerEvent("onDisableSearchMode", self.character, self.isSearchMode);
+		ISAnimalTracksFinder:clearTracks(self.character);
 	end;
 
 	triggerEvent("onToggleSearchMode", self.character, self.isSearchMode);
 	self:setVisible(self.isSearchMode);
 end
 
+function ISSearchManager.handleOverride(_state, _playerNum)
+	local manager = ISSearchManager.getManager(getSpecificPlayer(_playerNum));
+	if (manager) then
+		manager.isOverride = _state;
+		if (manager.isSearchMode) and (_state == true) then
+			manager:toggleSearchMode(false);
+		end;
+	end;
+end
+
+Events.OnOverrideSearchManager.Add(ISSearchManager.handleOverride);
+
 function ISSearchManager.handleKeyPressed(_keyPressed)
 	if isGamePaused() then return end
-	if _keyPressed == getCore():getKey("Toggle Search Mode") then
+	if getCore():isKey("Toggle Search Mode", _keyPressed) then
 		local manager = ISSearchManager.getManager(getSpecificPlayer(0));
 		if manager then
 			manager:toggleSearchMode();
@@ -1499,7 +1541,7 @@ function ISSearchManager.onUpdateIcon(_zoneData, _iconID, _icon)
 				manager.forageIcons[_iconID].itemType			= _icon.itemType;
 				manager.forageIcons[_iconID].icon.itemType		= _icon.itemType;
 				manager.forageIcons[_iconID].icon.catName		= _icon.catDef.name;
-				manager.forageIcons[_iconID].itemObj			= InventoryItemFactory.CreateItem(_icon.itemType);
+				manager.forageIcons[_iconID].itemObj			= instanceItem(_icon.itemType);
 				manager.forageIcons[_iconID].itemTexture		= _icon.itemObj:getTexture();
 				manager.forageIcons[_iconID].isMover			= _icon.isMover or false;
 				manager.forageIcons[_iconID].altWorldTexture	= _icon.altWorldTexture;

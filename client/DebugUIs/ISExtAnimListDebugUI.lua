@@ -10,20 +10,30 @@ require "ISUI/ISPanelJoypad"
 
 ISExtAnimListDebugUI = ISCollapsableWindow:derive("ISExtAnimListDebugUI");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 --************************************************************************--
 --** ISExtAnimListDebugUI:initialise
 --**
 --************************************************************************--
 
 function ISExtAnimListDebugUI:createChildren()
-    local btnWid = 100
-    local btnHgt = 25
-    local padBottom = self:resizeWidgetHeight() + 10
+    local x = UI_BORDER_SPACING+1
+    local btnWid = UI_BORDER_SPACING*2 + math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Play")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Close"))
+    )
 
     self:createList()
     ISCollapsableWindow.createChildren(self)
 
-    self.combo = ISComboBox:new(self.width/2 - 100, self.height/2 - 10, 200, 20, self);
+    self.combo = ISComboBox:new(x, self:titleBarHeight() + UI_BORDER_SPACING, self.width - x*2, BUTTON_HGT, self);
+    self.combo.anchorLeft = true
+    self.combo.anchorRight = true
     self.combo:initialise();
     self:addChild(self.combo);
 
@@ -32,23 +42,25 @@ function ISExtAnimListDebugUI:createChildren()
     end
 --    self.combo:setWidthToOptions()
 
-    self.start = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Play", self, ISExtAnimListDebugUI.playAnim);
+    self.start = ISButton:new(x, self:getHeight() - BUTTON_HGT - x, btnWid, BUTTON_HGT, getText("IGUI_DebugMenu_Play"), self, ISExtAnimListDebugUI.playAnim);
     self.start.anchorTop = false
     self.start.anchorBottom = true
     self.start:initialise();
     self.start:instantiate();
-    self.start.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.start:enableAcceptColor()
     self:addChild(self.start);
 
-    self.closeBtn = ISButton:new(self:getWidth() - btnWid - 20, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Close", self, ISExtAnimListDebugUI.closeUI);
+    self.closeBtn = ISButton:new(self:getWidth() - btnWid - x, self.start.y, btnWid, BUTTON_HGT, getText("IGUI_DebugMenu_Close"), self, ISExtAnimListDebugUI.closeUI);
     self.closeBtn.anchorLeft = false
     self.closeBtn.anchorRight = true
     self.closeBtn.anchorTop = false
     self.closeBtn.anchorBottom = true
     self.closeBtn:initialise();
     self.closeBtn:instantiate();
-    self.closeBtn.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.closeBtn:enableCancelColor()
     self:addChild(self.closeBtn);
+
+    self:setHeight(self.combo:getBottom() + UI_BORDER_SPACING*2+BUTTON_HGT)
 end
 
 function ISExtAnimListDebugUI:playAnim()
@@ -66,8 +78,6 @@ end
 
 function ISExtAnimListDebugUI:render()
     ISCollapsableWindow.render(self);
-
-    self:drawTextCentre("Extended Anim List" , self.width / 2, 20, 1, 1, 1, 1, UIFont.Medium);
 end
 
 --************************************************************************--
@@ -97,6 +107,8 @@ function ISExtAnimListDebugUI:new(x, y, character)
     o.height = height;
     o.character = character;
     o.chr = character;
+    o.title = getText("IGUI_DebugContext_ExtendedAnimsList")
+    o:setResizable(false);
     o.moveWithMouse = true;
     o.anchorLeft = true;
     o.anchorRight = true;

@@ -10,6 +10,8 @@ StashDebug = ISPanel:derive("StashDebug");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** StashDebug:initialise
@@ -18,33 +20,24 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function StashDebug:initialise()
     ISPanel.initialise(self);
-    local btnWid1 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")) + 10
-    local btnWid2 = getTextManager():MeasureStringX(UIFont.Small, "Spawn") + 10
-    local btnWid3 = getTextManager():MeasureStringX(UIFont.Small, "Reinitialize") + 10
-    local btnWid = math.max(btnWid1, btnWid2, btnWid3, 100)
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 2 * 2)
-    local padBottom = 10
+    local btnWid = UI_BORDER_SPACING*2 + math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StashDebug_Spawn")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StashDebug_Reinitialize"))
+    )
 
-    self.no = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, StashDebug.onClick);
+    self.width = UI_BORDER_SPACING*3 + btnWid*2 + 2
+
+    self.no = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("UI_Cancel"), self, StashDebug.onClick);
     self.no.internal = "CANCEL";
     self.no.anchorTop = false
     self.no.anchorBottom = true
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
-    self.datas = ISScrollingListBox:new(10, 50, self.width - 20, self.height - padBottom - btnHgt - 2 - btnHgt - 2 - 50);
-    self.datas:initialise();
-    self.datas:instantiate();
-    self.datas.selected = 0;
-    self.datas.joypadParent = self;
-    self.datas.doDrawItem = self.drawDatas;
-    self.datas.drawBorder = true;
-    self:addChild(self.datas);
-    self.datas:setFont(UIFont.Small, 2)
-
-    self.viewBtn = ISButton:new(self:getWidth() - btnWid - 10,  self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Spawn", self, StashDebug.onClick);
+    self.viewBtn = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING-1,  self.no.y, btnWid, BUTTON_HGT, getText("IGUI_StashDebug_Spawn"), self, StashDebug.onClick);
     self.viewBtn.internal = "SPAWN";
     self.viewBtn.anchorTop = false
     self.viewBtn.anchorBottom = true
@@ -54,7 +47,7 @@ function StashDebug:initialise()
     self:addChild(self.viewBtn);
     self.viewBtn.enable = false;
 
-    self.reinitBtn = ISButton:new(self:getWidth() - btnWid - 10,  self.viewBtn.y - btnHgt - 2, btnWid, btnHgt, "Reinitialize", self, StashDebug.onClick);
+    self.reinitBtn = ISButton:new((self.width - btnWid)/2,  self.viewBtn.y - BUTTON_HGT - UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("IGUI_StashDebug_Reinitialize"), self, StashDebug.onClick);
     self.reinitBtn.internal = "REINIT";
     self.reinitBtn.anchorTop = false
     self.reinitBtn.anchorBottom = true
@@ -63,8 +56,17 @@ function StashDebug:initialise()
     self.reinitBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.reinitBtn);
 
-    self:populateList();
+    self.datas = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM + UI_BORDER_SPACING*2+1, self.width - (UI_BORDER_SPACING+1)*2, self.height - FONT_HGT_MEDIUM - UI_BORDER_SPACING*5 - BUTTON_HGT*2 - 2);
+    self.datas:initialise();
+    self.datas:instantiate();
+    self.datas.selected = 0;
+    self.datas.joypadParent = self;
+    self.datas.doDrawItem = self.drawDatas;
+    self.datas.drawBorder = true;
+    self:addChild(self.datas);
+    self.datas:setFont(UIFont.Small, 3)
 
+    self:populateList();
 end
 
 function StashDebug:populateList()
@@ -87,49 +89,32 @@ function StashDebug:drawDatas(y, item, alt)
         self.parent.selectedStash = item.item;
     end
 
-    self:drawText( item.item:getName(), 10, y + 2, 1, 1, 1, a, self.font);
+    self:drawText( item.item:getName(), UI_BORDER_SPACING, y + 3, 1, 1, 1, a, self.font);
 
     return y + self.itemheight;
 end
 
 function StashDebug:prerender()
-    local z = (self.datas.y - FONT_HGT_MEDIUM) / 2;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawTextCentre("Stash Debug UI", self.width/2, z, 1,1,1,1, UIFont.Medium);
+    self:drawTextCentre(getText("IGUI_DebugMenu_Dev_Stash"), self.width/2, UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function StashDebug:onClick(button)
     if button.internal == "CANCEL" then
---        self:setVisible(false);
         self:removeFromUIManager();
     end
     if button.internal == "SPAWN" then
         if self.selectedStash then
-            local map = InventoryItemFactory.CreateItem(self.selectedStash:getItem());
+            local map = instanceItem(self.selectedStash:getItem());
             StashSystem.doStashItem(self.selectedStash, map);
             getPlayer():getInventory():AddItem(map);
             local mapUI = ISMap:new(0, 0, 0, 0, map, 0);
---            mapUI:initialise();
---            mapUI:addToUIManager();
---            local wrap = mapUI:wrapInCollapsableWindow(map:getName());
---            wrap:addToUIManager();
---            wrap:setResizable(false);
---            wrap:setInfo(getText("IGUI_Map_Info"));
---            mapUI.wrap = wrap;
---            wrap.render = ISMap.renderWrap;
---            wrap.prerender = ISMap.prerenderWrap;
---            wrap.setVisible = ISMap.setWrapVisible;
---            wrap.mapUI = mapUI;
---            mapUI.render = ISMap.noRender;
---            mapUI.prerender = ISMap.noRender;
             map:doBuildingStash();
-            getPlayer():setX(self.selectedStash:getBuildingX() + 2);
-            getPlayer():setY(self.selectedStash:getBuildingY() + 2);
-            getPlayer():setLx(self.selectedStash:getBuildingX() + 2);
-            getPlayer():setLy(self.selectedStash:getBuildingY() + 2);
+--             getPlayer():setX(self.selectedStash:getBuildingX() + 2);
+--             getPlayer():setY(self.selectedStash:getBuildingY() + 2);
+--             getPlayer():setLastX(self.selectedStash:getBuildingX() + 2);
+--             getPlayer():setLastY(self.selectedStash:getBuildingY() + 2);
             self:populateList();
         end
     end
@@ -142,7 +127,7 @@ end
 
 function StashDebug.OnOpenPanel()
     if not StashDebug.instance then
-        local ui = StashDebug:new(0, 0, 300, 600);
+        local ui = StashDebug:new(0, 0, 300+(getCore():getOptionFontSizeReal()*10), 600);
         ui:initialise();
         StashDebug.instance = ui;
     else

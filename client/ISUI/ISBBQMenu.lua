@@ -7,11 +7,11 @@
 ISBBQMenu = {}
 
 local function predicateNotEmpty(item)
-	return item:getUsedDelta() > 0
+	return item:getCurrentUsesFloat() > 0
 end
 
 local function predicatePetrol(item)
-	return (item:hasTag("Petrol") or item:getType() == "PetrolCan") and item:getUsedDelta() > 0
+	return (item:hasTag("Petrol") or item:getType() == "PetrolCan") and item:getCurrentUsesFloat() > 0
 end
 
 local function predicateFuel(item, arg)
@@ -60,7 +60,8 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
 	local playerInv = playerObj:getInventory()
 
 	if test then return ISWorldObjectContextMenu.setTest() end
-	local option = context:addOption(getText("ContextMenu_BBQInfo"), worldobjects, ISBBQMenu.onDisplayInfo, player, bbq)
+	local option = context:addOption(bbq:getTileName() or getText("ContextMenu_BBQInfo") .. " " .. getText("ContextMenu_Info"), worldobjects, ISBBQMenu.onDisplayInfo, player, bbq)
+-- 	local option = context:addOption(getText("ContextMenu_BBQInfo"), worldobjects, ISBBQMenu.onDisplayInfo, player, bbq)
 	local fireState;
 	if bbq:isLit() then
 		fireState = getText("IGUI_Fireplace_Burning")
@@ -71,7 +72,8 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
 	end
 	if playerObj:DistToSquared(bbq:getX() + 0.5, bbq:getY() + 0.5) < 2 * 2 then
 		option.toolTip = ISWorldObjectContextMenu:addToolTip()
-		option.toolTip:setName(bbq:isPropaneBBQ() and getText("IGUI_BBQ_TypePropane") or getText("IGUI_BBQ_TypeCharcoal"))
+		option.toolTip:setName(bbq:getTileName())
+-- 		option.toolTip:setName(bbq:isPropaneBBQ() and getText("IGUI_BBQ_TypePropane") or getText("IGUI_BBQ_TypeCharcoal"))
 		option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(bbq:getFuelAmount())) .. " (" .. fireState .. ")"
 		if bbq:isPropaneBBQ() and not bbq:hasPropaneTank() then
 			option.toolTip.description = option.toolTip.description .. " <LINE> <RGB:1,0,0> " .. getText("IGUI_BBQ_NeedsPropaneTank")
@@ -111,64 +113,72 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
 	}
 	playerInv:getAllEvalArgRecurse(predicateFuel, arg)
 
+-- nerf for fire capacity
 	if #fuelList > 0 then
 		if test then return ISWorldObjectContextMenu.setTest() end
 		local fuelOption = context:addOption(campingText.addFuel, worldobjects, nil)
-		local subMenuFuel = ISContextMenu:getNew(context)
-		context:addSubMenu(fuelOption, subMenuFuel)
+		if bbq:getFuelAmount() >= 360 then
+		    fuelOption.notAvailable = true;
+            local tooltip = ISWorldObjectContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_Fuel_Full");
+            fuelOption.toolTip = tooltip;
+		else
+            local subMenuFuel = ISContextMenu:getNew(context)
+            context:addSubMenu(fuelOption, subMenuFuel)
 
-		if #fuelList > 1 then
-			local numItems = 0
-			local duration = 0
-			for _,item in ipairs(fuelList) do
-				local count = itemCount[item:getName()]
-				duration = duration + (ISCampingMenu.getFuelDurationForItem(item) or 0.0) * count
-				numItems = numItems + count
-			end
-			if numItems > 1 then
-				local allOption = subMenuFuel:addActionsOption(getText("ContextMenu_AllWithCount", numItems), ISBBQMenu.onAddAllFuel, bbq)
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(duration))
-				allOption.toolTip = tooltip
-			end
-		end
+            if #fuelList > 1 then
+                local numItems = 0
+                local duration = 0
+                for _,item in ipairs(fuelList) do
+                    local count = itemCount[item:getName()]
+                    duration = duration + (ISCampingMenu.getFuelDurationForItem(item) or 0.0) * count
+                    numItems = numItems + count
+                end
+                if numItems > 1 then
+                    local allOption = subMenuFuel:addActionsOption(getText("ContextMenu_AllWithCount", numItems), ISBBQMenu.onAddAllFuel, bbq)
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(duration))
+                    allOption.toolTip = tooltip
+                end
+            end
 
-		table.sort(fuelList, function(a,b) return not string.sort(a:getName(), b:getName()) end)
-		for i,v in ipairs(fuelList) do
-			local label = v:getName()
-			local count = itemCount[v:getName()]
-			if count > 1 then
-				label = label..' ('..count..')'
-				local subMenu = context:getNew(subMenuFuel)
-				local subOption = subMenuFuel:addOption(label)
-				subMenuFuel:addSubMenu(subOption, subMenu)
+            table.sort(fuelList, function(a,b) return not string.sort(a:getName(), b:getName()) end)
+            for i,v in ipairs(fuelList) do
+                local label = v:getName()
+                local count = itemCount[v:getName()]
+                if count > 1 then
+                    label = label..' ('..count..')'
+                    local subMenu = context:getNew(subMenuFuel)
+                    local subOption = subMenuFuel:addOption(label)
+                    subMenuFuel:addSubMenu(subOption, subMenu)
 
-				local subOption1 = subMenu:addActionsOption(getText("ContextMenu_One"), ISBBQMenu.onAddFuel, bbq, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
-				subOption1.toolTip = tooltip
+                    local subOption1 = subMenu:addActionsOption(getText("ContextMenu_One"), ISBBQMenu.onAddFuel, bbq, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
+                    subOption1.toolTip = tooltip
 
-				local subOption2 = subMenu:addActionsOption(getText("ContextMenu_AllWithCount", count), ISBBQMenu.onAddMultipleFuel, bbq, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v) * count))
-				subOption2.toolTip = tooltip
-			else
-				local subOption = subMenuFuel:addActionsOption(label, ISBBQMenu.onAddFuel, bbq, v:getFullType())
-				local tooltip = ISWorldObjectContextMenu.addToolTip()
-				tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
-				subOption.toolTip = tooltip
-			end
-		end
+                    local subOption2 = subMenu:addActionsOption(getText("ContextMenu_AllWithCount", count), ISBBQMenu.onAddMultipleFuel, bbq, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v) * count))
+                    subOption2.toolTip = tooltip
+                else
+                    local subOption = subMenuFuel:addActionsOption(label, ISBBQMenu.onAddFuel, bbq, v:getFullType())
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    tooltip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(v)))
+                    subOption.toolTip = tooltip
+                end
+            end
+        end
 	end
 
 	-- Options for lighting
-	local branch = playerInv:getFirstTypeRecurse("TreeBranch")
+	local branch = playerInv:getFirstTypeRecurse("TreeBranch2") or playerInv:getFirstTypeRecurse("TreeBranch")
 	local startFire = playerInv:getFirstTagRecurse("StartFire")
 	local lighter = playerInv:getFirstTypeRecurse("Lighter")
 	local matches = playerInv:getFirstTypeRecurse("Matches")
 	local petrol = playerInv:getFirstEvalRecurse(predicatePetrol)
 	local percedWood = playerInv:getFirstTypeRecurse("PercedWood")
-	local stick = playerInv:getFirstTypeRecurse("WoodenStick")
+	local stick = playerInv:getFirstTypeRecurse("WoodenStick2") or playerInv:getFirstTypeRecurse("WoodenStick")
 	
 	local lightFromLiterature = nil
 	local lightFromPetrol = nil
@@ -262,7 +272,7 @@ end
 
 function ISBBQMenu.FindPropaneTank(player, bbq)
 	local tank = player:getInventory():getFirstTypeEvalRecurse("Base.PropaneTank", predicateNotEmpty)
-	if tank and tank:getUsedDelta() > 0 then
+	if tank and tank:getCurrentUsesFloat() > 0 then
 		return tank
 	end
 	for y=bbq:getY()-1,bbq:getY()+1 do
@@ -273,7 +283,7 @@ function ISBBQMenu.FindPropaneTank(player, bbq)
 				for i=0,wobs:size()-1 do
 					local o = wobs:get(i)
 					if o:getItem():getFullType() == "Base.PropaneTank" then
-						if o:getItem():getUsedDelta() > 0 then
+						if o:getItem():getCurrentUsesFloat() > 0 then
 							return o
 						end
 					end
@@ -295,7 +305,8 @@ function ISBBQMenu.onAddFuel(playerObj, bbq, fuelType)
 		if playerObj:isEquipped(fuelItem) then
 			ISTimedActionQueue.add(ISUnequipAction:new(playerObj, fuelItem, 50));
 		end
-		ISTimedActionQueue.add(ISBBQAddFuel:new(playerObj, bbq, fuelItem, fuelAmt, 100))
+        if (bbq:getFuelAmount() + fuelAmt > 360) then return end
+		ISTimedActionQueue.add(ISBBQAddFuel:new(playerObj, bbq, fuelItem, fuelAmt))
 	end
 end
 
@@ -311,7 +322,8 @@ local function addFuel(playerObj, bbq, fuelItems)
 		local fuelAmt = ISCampingMenu.getFuelDurationForItem(fuelItem)
 		local uses = ISCampingMenu.getFuelItemUses(fuelItem)
 		for j=1,uses do
-			ISTimedActionQueue.add(ISBBQAddFuel:new(playerObj, bbq, fuelItem, fuelAmt, 100))
+		    if (bbq:getFuelAmount() + fuelAmt > 360) then return end
+			ISTimedActionQueue.add(ISBBQAddFuel:new(playerObj, bbq, fuelItem, fuelAmt))
 		end
 	end
 end
@@ -343,7 +355,7 @@ function ISBBQMenu.onLightFromLiterature(playerObj, itemType, lighter, bbq)
 	if luautils.walkAdj(playerObj, bbq:getSquare()) then
 		ISWorldObjectContextMenu.transferIfNeeded(playerObj, lighter)
 		ISWorldObjectContextMenu.transferIfNeeded(playerObj, fuelItem)
-		ISTimedActionQueue.add(ISBBQLightFromLiterature:new(playerObj, fuelItem, lighter, bbq, 100))
+		ISTimedActionQueue.add(ISBBQLightFromLiterature:new(playerObj, fuelItem, lighter, bbq))
 	end
 end
 
@@ -352,21 +364,21 @@ function ISBBQMenu.onLightFromPetrol(worldobjects, player, lighter, petrol, bbq)
 	if luautils.walkAdj(playerObj, bbq:getSquare()) then
 		ISWorldObjectContextMenu.transferIfNeeded(playerObj, lighter)
 		ISWorldObjectContextMenu.transferIfNeeded(playerObj, petrol)
-		ISTimedActionQueue.add(ISBBQLightFromPetrol:new(playerObj, bbq, lighter, petrol, 20))
+		ISTimedActionQueue.add(ISBBQLightFromPetrol:new(playerObj, bbq, lighter, petrol))
 	end
 end
 
 function ISBBQMenu.onLightFromKindle(worldobjects, player, percedWood, stickOrBranch, bbq)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, bbq:getSquare(), true) then
-		ISTimedActionQueue.add(ISBBQLightFromKindle:new(playerObj, percedWood, stickOrBranch, bbq, 1500))
+		ISTimedActionQueue.add(ISBBQLightFromKindle:new(playerObj, percedWood, stickOrBranch, bbq))
 	end
 end
 
 function ISBBQMenu.onExtinguish(worldobjects, player, bbq)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, bbq:getSquare()) then
-		ISTimedActionQueue.add(ISBBQExtinguish:new(playerObj, bbq, 60))
+		ISTimedActionQueue.add(ISBBQExtinguish:new(playerObj, bbq))
 	end
 end
 
@@ -377,24 +389,24 @@ function ISBBQMenu.onInsertPropaneTank(worldobjects, player, bbq, tank)
 		if playerObj:getSquare() ~= tank:getSquare() then
 			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, tank:getSquare()))
 		end
-		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(playerObj, bbq, tank, 100))
+		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(playerObj, bbq, tank))
 	elseif luautils.walkAdj(playerObj, square) then
 		ISWorldObjectContextMenu.transferIfNeeded(playerObj, tank)
-		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(playerObj, bbq, tank, 100))
+		ISTimedActionQueue.add(ISBBQInsertPropaneTank:new(playerObj, bbq, tank))
 	end
 end
 
 function ISBBQMenu.onRemovePropaneTank(worldobjects, player, bbq, tank)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, bbq:getSquare()) then
-		ISTimedActionQueue.add(ISBBQRemovePropaneTank:new(playerObj, bbq, 100))
+		ISTimedActionQueue.add(ISBBQRemovePropaneTank:new(playerObj, bbq))
 	end
 end
 
 function ISBBQMenu.onToggle(worldobjects, player, bbq, tank)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, bbq:getSquare()) then
-		ISTimedActionQueue.add(ISBBQToggle:new(playerObj, bbq, 50))
+		ISTimedActionQueue.add(ISBBQToggle:new(playerObj, bbq))
 	end
 end
 

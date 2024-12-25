@@ -14,6 +14,10 @@ local SandboxOptionsScreenGroupBox = SandboxOptionsScreenPanel:derive("SandboxOp
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
+local  preset
 
 local function getTooltipText(name)
 	local tooltip = getTextOrNull(name)
@@ -39,7 +43,11 @@ function SandboxOptionsScreenListBox:doDrawItem(y, item, alt)
 
 	local dx = 16
 	local dy = (self.itemheight - getTextManager():getFontHeight(self.font)) / 2
-	self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+	if item.searchFound then
+		self:drawText(item.text, dx, y + dy, 0.0, 0.9, 0.0, 0.9, self.font)
+	else
+		self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+	end
 
 	return y + item.height
 end
@@ -75,7 +83,14 @@ function SandboxOptionsScreenPanel:prerender()
 		self.entryText = {}
 	end
 	for _,settingName in ipairs(self.settingNames) do
+		local label = self.labels[settingName]
 		local control = self.controls[settingName]
+		if label and control then
+			label:setColor(1, 1, 1)
+			if label.searchFound then
+				label:setColor(0, 1, 0)
+			end
+		end
 		if control and control.Type == "ISTextEntryBox" then
 			local text = control:getText()
 			if text ~= self.entryText[settingName] then
@@ -242,7 +257,7 @@ function SandboxOptionsScreenGroupBox:settingsToUI(settings)
 				break
 			end
 		else
-			error "unhandled control type"
+-- 			error "unhandled control type"
 		end
 	end
 	self.cover:setVisible(allDefault)
@@ -283,31 +298,28 @@ end
 -- -- -- -- --
 
 function SandboxOptionsScreenPresetPanel:createChildren()
-	local fontHgt = FONT_HGT_SMALL
 	
-	local label = ISLabel:new(24, 24, fontHgt, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
 
-	self.listbox = ISScrollingListBox:new(24, label:getBottom() + 4, math.min(self.width - 24 * 2, 300), (FONT_HGT_SMALL + 4 * 2) * 12)
+	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING+1, label:getBottom() + UI_BORDER_SPACING, math.min(self.width - UI_BORDER_SPACING * 2, self.width/3), math.min(self.height-label:getBottom() - UI_BORDER_SPACING*2 - 1, BUTTON_HGT * 12))
 	self.listbox:initialise()
 	self.listbox:instantiate()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(false)
 	self.listbox:setAnchorTop(true)
 	self.listbox:setAnchorBottom(false)
-	self.listbox:setFont(UIFont.Small, 4)
+	self.listbox:setFont(UIFont.Small, 3)
 	self.listbox.drawBorder = true
-	self.listbox:setHeight(self.listbox.itemheight * 12)
 	self.listbox.vscroll:setHeight(self.listbox.height)
 	self.listbox.disableRemove = true
 	self:addChild(self.listbox)
 
-	local buttonX = self.listbox:getRight() + 24
+	local buttonX = self.listbox:getRight() + UI_BORDER_SPACING
 	local buttonY = self.listbox:getY()
-	local buttonWid = 150
-	local buttonHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
+	local buttonWid = getTextManager():MeasureStringX(UIFont.Small, getText("UI_ServerSettings_ButtonApplyPreset")) + UI_BORDER_SPACING*2
 
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("UI_ServerSettings_ButtonApplyPreset"), self, self.onButtonApplyPreset)
+	local button = ISButton:new(buttonX, buttonY, buttonWid, BUTTON_HGT, getText("UI_ServerSettings_ButtonApplyPreset"), self, self.onButtonApplyPreset)
 	button:initialise()
 	button:setAnchorLeft(true)
 	button:setAnchorTop(false)
@@ -328,44 +340,89 @@ function SandboxOptionsScreenPresetPanel:onButtonApplyPreset()
 	local options = self.options
 	options:resetToDefault()
 	local data = self.listbox.items[self.listbox.selected].item
+	local name = data.fileName
 	if data.userDefined then
 		options:loadPresetFile(data.fileName)
 	else
 		options:loadGameFile(data.fileName)
 	end
 	self.parent:settingsToUI(options)
+    getWorld():setPreset(name);
 end
 
+local index
+local presets = {}
+
 function SandboxOptionsScreenPresetPanel:addPresetToList(fileName, text, userDefined)
+    index = index + 1
+-- 	local mode = getCore():getGameMode()
+	local preset = getWorld():getPreset()
 	local item = {}
 	item.fileName = fileName
 	item.userDefined = userDefined
 	self.listbox:addItem(text, item)
+
+-- 	if mode == fileName then
+	if preset == fileName then
+        self.listbox.selected = index
+    end
+
 end
 
 function SandboxOptionsScreenPresetPanel:settingsToUI(options)
+    index = 0
 	self.options = options
 	self.listbox:clear()
+	self:addPresetToList("Apocalypse", getText("UI_NewGame_Apocalypse"), false)
+	self:addPresetToList("Survivor", getText("UI_NewGame_Survivor"), false)
+	self:addPresetToList("Builder", getText("UI_NewGame_Builder"), false)
 	self:addPresetToList("Beginner", getText("UI_NewGame_InitialInfection"), false)
 	self:addPresetToList("FirstWeek", getText("UI_NewGame_OneWeekLater"), false)
 	self:addPresetToList("Survival", getText("UI_NewGame_Survival"), false)
 	self:addPresetToList("SixMonthsLater", getText("UI_NewGame_SixMonths"), false)
 	local presets = getSandboxPresets()
 	if presets then
+	    local mode = getCore():getGameMode()
 		for i=1,presets:size() do
 			local fileName = presets:get(i-1)
 			self:addPresetToList(fileName, fileName, true)
 		end
 	end
+	index = 0
+
+-- 	getPlayer():Say(tostring(getCore():getGameMode()))
+-- 	self.listbox:setSelectedIndex(index - 1)
 end
 
 -- -- -- -- --
 -- -- -- -- --
 -- -- -- -- --
 
+function ISServerSandboxOptionsUI:doSearch()
+	local searchWord = string.lower(self.searchEntry:getInternalText())
+	for i, item in ipairs(self.listbox.items) do
+		item.searchFound = false
+		for name, label in pairs(item.item.panel.labels) do
+			if searchWord ~= "" and string.find(string.lower(label:getName()), searchWord) then
+				label.searchFound = true
+				item.searchFound = true
+			else
+				label.searchFound = false
+			end
+		end
+	end
+end
+
+function ISServerSandboxOptionsUI.searchPrerender(self)
+	ISTextEntryBox.prerender(self)
+	if not self.javaObject:isFocused() and self:getInternalText() == "" then
+		self:drawText(getText("UI_sandbox_searchEntryBoxWord"), 2, 2, 0.9, 0.9, 0.9, 0.5, UIFont.Small)
+	end
+end
+
 function ISServerSandboxOptionsUI:createChildren()
 	local titleHgt = FONT_HGT_LARGE
-	local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
+	local btnWid = 100
 
 	local SettingsTable = ServerSettingsScreen.getSandboxSettingsTable()
 	SettingsTable[1] = {
@@ -381,8 +438,28 @@ function ISServerSandboxOptionsUI:createChildren()
 	end
 
 	local scrollBarWid = 17
-	
-	self.listbox = SandboxOptionsScreenListBox:new(24, 10 + titleHgt + 10, 16 + maxWid + 16 + scrollBarWid, self.height - (10 + btnHgt + 10) - 10 - titleHgt - 10)
+
+	local searchHeight = FONT_HGT_SMALL + 4 * 2
+	self.searchEntry = ISTextEntryBox:new("", UI_BORDER_SPACING+1, UI_BORDER_SPACING*2 + titleHgt + 1, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, searchHeight)
+	self.searchEntry.font = UIFont.Small
+	self.searchEntry.onTextChange = function() self:doSearch() end
+	self.searchEntry.setText = function(_self, str)
+		if not str then
+			str = "";
+		end
+		_self.javaObject:SetText(str);
+		_self.title = str;
+
+		if OnScreenKeyboard.IsVisible() then
+			_self:onTextChange()
+		end
+	end
+	self.searchEntry.prerender = self.searchPrerender
+	self.searchEntry:initialise()
+	self.searchEntry:instantiate()
+	self:addChild(self.searchEntry)
+
+	self.listbox = SandboxOptionsScreenListBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING*3 + searchHeight + titleHgt + 1, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, self.height - BUTTON_HGT*2 - titleHgt - UI_BORDER_SPACING*5-2)
 	self.listbox:initialise()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(false)
@@ -408,16 +485,16 @@ function ISServerSandboxOptionsUI:createChildren()
 		MAX_WIDTH = math.max(MAX_WIDTH, item.panel.MAX_WIDTH)
 	end
 
-	self:setWidth(self.listbox:getRight() + 24 + MAX_WIDTH + scrollBarWid + 24)
+	self:setWidth(self.listbox:getRight() + MAX_WIDTH + scrollBarWid + UI_BORDER_SPACING*2)
 	self:ignoreWidthChange()
 
 	local titleWid = getTextManager():MeasureStringX(UIFont.Large, getText("UI_optionscreen_SandboxOptions"))
-	local title = ISLabel:new(self.width / 2 - titleWid / 2, 10, FONT_HGT_LARGE, getText("UI_optionscreen_SandboxOptions"), 1, 1, 1, 1, UIFont.Large, true)
+	local title = ISLabel:new(self.width / 2 - titleWid / 2, UI_BORDER_SPACING+1, FONT_HGT_LARGE, getText("UI_optionscreen_SandboxOptions"), 1, 1, 1, 1, UIFont.Large, true)
 	title:initialise()
 	title:instantiate()
 	self:addChild(title)
 
-	self.closeButton = ISButton:new(self.width - 24 - 100, self.height - 10 - btnHgt, 100, btnHgt, getText("IGUI_CraftUI_Close"), self, self.onButtonClose)
+	self.closeButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWid - 1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, self.onButtonClose)
 	self.closeButton.internal = "CLOSE"
 	self.closeButton:initialise()
 	self.closeButton:instantiate()
@@ -425,10 +502,10 @@ function ISServerSandboxOptionsUI:createChildren()
 	self.closeButton:setAnchorTop(false)
 	self.closeButton:setAnchorRight(false)
 	self.closeButton:setAnchorBottom(true)
-	self.closeButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.closeButton:enableCancelColor()
 	self:addChild(self.closeButton)
 
-	self.applyButton = ISButton:new(0, self.height - 10 - btnHgt, 100, btnHgt, getText("IGUI_PlayerStats_ReloadOptions"), self, self.onButtonApply)
+	self.applyButton = ISButton:new(0, self.closeButton.y, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_ReloadOptions"), self, self.onButtonApply)
 	self.applyButton.internal = "APPLY"
 	self.applyButton:initialise()
 	self.applyButton:instantiate()
@@ -436,9 +513,9 @@ function ISServerSandboxOptionsUI:createChildren()
 	self.applyButton:setAnchorTop(false)
 	self.applyButton:setAnchorRight(false)
 	self.applyButton:setAnchorBottom(true)
-	self.applyButton.borderColor = {r=1, g=1, b=1, a=0.1}
+	self.applyButton:enableAcceptColor()
 	self.applyButton:setWidthToTitle(100)
-	self.applyButton:setX(self.closeButton.x - 20 - self.applyButton.width)
+	self.applyButton:setX(self.closeButton.x - UI_BORDER_SPACING - self.applyButton.width)
 	self:addChild(self.applyButton)
 
 	self:settingsToUI(self.options)
@@ -450,8 +527,12 @@ function ISServerSandboxOptionsUI:createChildren()
 end
 
 function ISServerSandboxOptionsUI:createPanel(page)
+	local panelX = self.listbox:getRight() + UI_BORDER_SPACING
+	local panelY = self.searchEntry:getY()
+	local panelW = self.width - self.listbox:getRight() - UI_BORDER_SPACING*2-1
+	local panelH = self.listbox:getHeight() + self.searchEntry:getHeight() + UI_BORDER_SPACING
 	if page.customui then
-		local panel = page.customui:new(self.listbox:getRight() + 24, self.listbox:getY(), self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight())
+		local panel = page.customui:new(panelX, panelY, panelW, panelH)
 		panel:initialise()
 		panel:instantiate()
 		panel.backgroundColor.a = panel.backgroundColor.a
@@ -460,21 +541,20 @@ function ISServerSandboxOptionsUI:createPanel(page)
 		panel.parent = self
 		panel.MAX_WIDTH = 0
 		for _,child in pairs(self:getChildren()) do
-			panel.MAX_WIDTH = math.max(panel.MAX_WIDTH, child:getRight() + 24)
+			panel.MAX_WIDTH = math.max(panel.MAX_WIDTH, child:getRight() + UI_BORDER_SPACING)
 		end
+		panel.labels = {}
 		return panel
 	end
 
 	local panel
 	local bgAlpha = 0.8
 	if page.groupBox then
-		panel = SandboxOptionsScreenGroupBox:new(self.listbox:getRight() + 24, self.listbox:getY(),
-			self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight(),
-			getText("Sandbox_" .. page.groupBox))
+		panel = SandboxOptionsScreenGroupBox:new(panelX, panelY, panelW, panelH, getText("Sandbox_" .. page.groupBox))
 		self.groupBox[page.groupBox] = panel
 		bgAlpha = 1.0
 	else
-		panel = SandboxOptionsScreenPanel:new(self.listbox:getRight() + 24, self.listbox:getY(), self.width - 24 - self.listbox:getRight() - 24, self.listbox:getHeight())
+		panel = SandboxOptionsScreenPanel:new(panelX, panelY, panelW, panelH)
 	end
 	panel:initialise()
 	panel:instantiate()
@@ -484,9 +564,10 @@ function ISServerSandboxOptionsUI:createPanel(page)
 	panel:setAnchorBottom(true)
 	panel.settingNames = {}
 	panel.controls = {}
+	panel.labels = {}
 
 	local fontHgt = FONT_HGT_SMALL
-	local entryHgt = fontHgt + 2 * 2
+	local entryHgt = BUTTON_HGT
 
 	local labels = {}
 	local controls = {}
@@ -499,13 +580,14 @@ function ISServerSandboxOptionsUI:createPanel(page)
 		end
 		local label = nil
 		local control = nil
+		local ignore = false
 		if not getDebug() and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier") then
-			-- ignore
-		elseif setting.singlePlayerOnly then
+			ignore = true
+-- 		elseif setting.singlePlayerOnly then
 			-- ignore
 		elseif setting.type == "checkbox" then
 			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Small)
-			control = ISTickBox:new(0, 0, 100, entryHgt, "", nil, nil)
+			control = ISTickBox:new(0, 0, 100, entryHgt, "", self, self.onTickBoxSelected, setting.name)
 			control:addOption("")
 			control.selected[1] = setting.default
 			if setting.tooltip then
@@ -521,6 +603,7 @@ function ISServerSandboxOptionsUI:createPanel(page)
 			control.tooltip = tooltip
 			control:initialise()
 			control:instantiate()
+			control.backgroundColor.a = control.backgroundColor.a
 			control.backgroundColor.a = control.backgroundColor.a
 			control:setOnlyNumbers(setting.onlyNumbers or false)
 		elseif setting.type == "enum" then
@@ -550,7 +633,7 @@ function ISServerSandboxOptionsUI:createPanel(page)
 			end
 		elseif setting.type == "text" then
 			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Smal)
-			control = ISTextEntryBox:new(setting.text, 0, 0, 200, 4 + fontHgt * 4 + 4)
+			control = ISTextEntryBox:new(setting.text, 0, 0, 200,  BUTTON_HGT*4)
 			control.font = UIFont.Small
 			control:initialise()
 			control:instantiate()
@@ -566,48 +649,52 @@ function ISServerSandboxOptionsUI:createPanel(page)
 			self.controls[setting.name] = control
 			table.insert(panel.settingNames, setting.name)
 			panel.controls[setting.name] = control
+			panel.labels[setting.name] = label
 		else
---			error "no label or control"
+			if not ignore then
+				error "no label or control"
+			end
 		end
 	end
+
 	local labelWidth = 0
 	for _,label in ipairs(labels) do
 		labelWidth = math.max(labelWidth, label:getWidth())
 	end
-	local x = 24
-	local y = 12
+	local x = UI_BORDER_SPACING+1
+	local y = UI_BORDER_SPACING+1
 	local addControlsTo = panel
 	if page.groupBox then
 		addControlsTo = panel.contents
-		y = math.max(12, panel.tickBox.height / 2)
+		y = math.max(UI_BORDER_SPACING+1, panel.tickBox.height / 2)
 	end
 	addControlsTo:setScrollChildren(true)
 	addControlsTo:addScrollBars()
 	addControlsTo.vscroll.doSetStencil = true
 	for i=1,#labels do
 		local label = labels[i]
+		addControlsTo:addChild(label)
 		label:setX(x + labelWidth - label:getWidth())
 		label:setY(y)
-		addControlsTo:addChild(label)
-		y = y + math.max(label:getHeight(), controls[i]:getHeight()) + 6
+		y = y + math.max(label:getHeight(), controls[i]:getHeight()) + UI_BORDER_SPACING
 	end
-	y = 12
+	y = UI_BORDER_SPACING+1
 	if page.groupBox then
-		y = math.max(12, panel.tickBox.height / 2)
+		y = math.max(UI_BORDER_SPACING+1, panel.tickBox.height / 2)
 	end
 	panel.MAX_WIDTH = 0
 	for i=1,#controls do
 		local label = labels[i]
 		local control = controls[i]
-		control:setX(x + labelWidth + 16)
-		control:setY(y)
 		addControlsTo:addChild(control)
-		y = y + math.max(label:getHeight(), control:getHeight()) + 6
+		control:setX(x + labelWidth + UI_BORDER_SPACING)
+		control:setY(y)
+		y = y + math.max(label:getHeight(), control:getHeight()) + UI_BORDER_SPACING
 		if control.isCombobox or control.isTickBox then
 			panel:insertNewLineOfButtons(control)
 		end
-		addControlsTo:setScrollHeight(y)
-		panel.MAX_WIDTH = math.max(panel.MAX_WIDTH, control:getRight() + 24)
+		addControlsTo:setScrollHeight(y+1)
+		panel.MAX_WIDTH = math.max(panel.MAX_WIDTH, control:getRight() + UI_BORDER_SPACING)
 	end
 	if #panel.joypadButtonsY > 0 then
 		panel.joypadIndex = 1
@@ -615,6 +702,33 @@ function ISServerSandboxOptionsUI:createPanel(page)
 		panel.joypadButtons = panel.joypadButtonsY[1]
 	end
 	return panel
+end
+
+function ISServerSandboxOptionsUI:onTickBoxSelected(_, value, optionName)
+	if optionName == "ZombieMigrate" then
+		if value then
+			self.controls["ZombieConfig.RedistributeHours"]:setText("12.0")
+		else
+			self.controls["ZombieConfig.RedistributeHours"]:setText("0.0")
+		end
+	end
+end
+
+function ISServerSandboxOptionsUI:onComboBoxSelected(combo, optionName)
+	if optionName == "Zombies" then
+		local Zombies = combo.selected
+		local popMult = ZombiePopulationMultiplierTable
+		self.controls["ZombieConfig.PopulationMultiplier"]:setText(popMult[Zombies])
+	end
+	if optionName == "ZombieRespawn" then
+		local respawn = combo.selected
+		local respawnHours = { "16.0", "72.0", "216.0", "0.0" }
+		self.controls["ZombieConfig.RespawnHours"]:setText(respawnHours[respawn])
+		local respawnUnseenHours = { "6.0", "16.0", "48.0", "0.0" }
+		self.controls["ZombieConfig.RespawnUnseenHours"]:setText(respawnUnseenHours[respawn])
+		local respawnMultipler = { "0.5", "0.1", "0.05", "0.0" }
+		self.controls["ZombieConfig.RespawnMultiplier"]:setText(respawnMultipler[respawn])
+	end
 end
 
 function ISServerSandboxOptionsUI:settingsToUI(options)
@@ -661,6 +775,9 @@ function ISServerSandboxOptionsUI:settingsFromUI(options)
 				option:setValue(control:getText())
 			end
 		end
+	    if not isClient() then
+		    getSandboxOptions():set(option:getName(),option:getValue())
+		end
 	end
 end
 
@@ -672,8 +789,8 @@ function ISServerSandboxOptionsUI:onMouseDownListbox(item)
 		end
 		if item.panel then
 			self:addChild(item.panel)
-			item.panel:setWidth(self.width - 24 - self.listbox:getRight() - 24)
-			item.panel:setHeight(self.listbox:getHeight())
+			item.panel:setWidth(self.width - self.listbox:getRight() - UI_BORDER_SPACING*2-1)
+			item.panel:setHeight(self.listbox:getHeight() + self.searchEntry:getHeight() + UI_BORDER_SPACING)
 			self.currentPanel = item.panel
 		end
 	end
@@ -685,7 +802,13 @@ end
 
 function ISServerSandboxOptionsUI:onButtonApply()
 	self:settingsFromUI(self.options)
-	self.options:sendToServer()
+	if isClient() then
+	    self.options:sendToServer()
+	end
+	-- this is so mod stuff distribution stuff can get applied
+    IsoWorld.parseDistributions()
+    -- this is to apply any changes to the clutter pools on account of blacklist changes
+    StoryClutter.Init()
 	self:destroy()
 end
 

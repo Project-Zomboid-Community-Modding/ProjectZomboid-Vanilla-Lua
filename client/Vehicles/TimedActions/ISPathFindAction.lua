@@ -18,11 +18,15 @@ function ISPathFindAction:update()
 	end
 	local result = self.character:getPathFindBehavior2():update()
 	if result == BehaviorResult.Failed then
-		self:forceStop()
 		if self.onFailFunc then
 			local args = self.onFailArgs
 			self.onFailFunc(args[1], args[2], args[3], args[4])
+			if self.runActionsAfterFailing then
+				self:forceComplete();
+				return
+			end
 		end
+		self:forceStop()
 		return
 	end
 	if result == BehaviorResult.Succeeded then
@@ -36,6 +40,9 @@ function ISPathFindAction:start()
 	end
 	if self.goal[1] == 'Nearest' then
 		self.character:getPathFindBehavior2():pathToNearestTable(self.goal[2])
+	end
+	if self.goal[1] == 'SitOnFurniture' then
+		self.character:getPathFindBehavior2():pathToSitOnFurniture(self.goal[2], self.goal[3])
 	end
 	if self.goal[1] == 'VehicleAdjacent' then
 		self.character:getPathFindBehavior2():pathToVehicleAdjacent(self.goal[2])
@@ -55,6 +62,15 @@ function ISPathFindAction:stop()
 end
 
 function ISPathFindAction:perform()
+	if self.runActionsAfterFailing then
+		self.character:getPathFindBehavior2():cancel()
+		self.character:setPath2(nil)
+		ISBaseTimedAction.perform(self)
+		return
+	end
+	if self.goal[1] == 'SitOnFurniture' then
+		self.goalFurnitureObject = self.character:getPathFindBehavior2():getGoalSitOnFurnitureObject()
+	end
 	self.character:getPathFindBehavior2():cancel()
 	self.character:setPath2(nil)
 	ISBaseTimedAction.perform(self)
@@ -74,6 +90,10 @@ function ISPathFindAction:setOnFail(func, arg1, arg2, arg3, arg4)
 	self.onFailArgs = { arg1, arg2, arg3, arg4 }
 end
 
+function ISPathFindAction:setRunActionsAfterFailing(b)
+	self.runActionsAfterFailing = b
+end
+
 function ISPathFindAction:pathToLocationF(character, targetX, targetY, targetZ)
 	local o = ISBaseTimedAction.new(self, character)
 	o.stopOnAim = false
@@ -91,6 +111,16 @@ function ISPathFindAction:pathToNearest(character, locations)
 	o.stopOnRun = false
 	o.maxTime = -1
 	o.goal = { 'Nearest', locations }
+	return o
+end
+
+function ISPathFindAction:pathToSitOnFurniture(character, bed, bAnySpriteGridObject)
+	local o = ISBaseTimedAction.new(self, character)
+	o.stopOnAim = false
+	o.stopOnWalk = false
+	o.stopOnRun = false
+	o.maxTime = -1
+	o.goal = { 'SitOnFurniture', bed, bAnySpriteGridObject }
 	return o
 end
 

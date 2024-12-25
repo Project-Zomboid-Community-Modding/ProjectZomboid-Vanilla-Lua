@@ -2,44 +2,53 @@ require "TimedActions/ISBaseTimedAction"
 
 ISInventoryTransferAction = ISBaseTimedAction:derive("ISInventoryTransferAction");
 
--- The PutItemInBag FMOD event duration is 10 seconds long, which stops it playing too frequently.
-ISInventoryTransferAction.putSoundDelay = 9.5
+ISInventoryPage.putSoundContainer = nil
+ISInventoryTransferAction.putSoundDelay = 2
 ISInventoryTransferAction.putSoundTime = 0
 -- keep only one instance of this action so we can queue item to transfer and avoid ton of instance when moving lot of items.
-
-function ISInventoryTransferAction:countItemsRecursive(_containerList, _itemsNum)
-	local itemsNum = _itemsNum;
-	if #_containerList > 0 then
-		local nextContainerList = {};
-		for i = 1, #_containerList do
-			local containerObj = _containerList[i];
-			local containerList = containerObj:getItemsFromCategory("Container");
-			for j = 0, containerList:size() - 1 do
-				table.insert(nextContainerList, containerList:get(j):getInventory());
-			end;
-			itemsNum = itemsNum + containerObj:getItems():size();
-		end;
-		return self:countItemsRecursive(nextContainerList, itemsNum);
-	else
-		return itemsNum;
-	end;
-end
-
-function ISInventoryTransferAction:findRootInventory(_inventory)
-	local inventory = _inventory;
-	local containingItem = inventory:getContainingItem();
-	if containingItem and containingItem:getContainer() and containingItem:getContainer():getContainingItem() then
-		return self:findRootInventory(containingItem:getInventory());
-	end;
-	return inventory;
-end
 
 function ISInventoryTransferAction:isValid()
 	if not self.item then
 		return false;
     end
+    -- fix for items that were consumed in crafting still being put back into their container
+	if self.item:getIsCraftingConsumed() then
+		return false;
+    end
 	self.dontAdd = false;
 	if not self.destContainer or not self.srcContainer then return false; end
+	
+	-- Limit items per container in MP
+	if isClient() then
+		if not self.started and not isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer, nil) then
+			return false
+		end
+		local limit = getServerOptions():getInteger("ItemNumbersLimitPerContainer");
+		if limit > 0 and (not instanceof(self.destContainer:getParent(), "IsoGameCharacter")) then
+			--allow dropping full bags on an empty square or put full container in an empty container
+			if not self.destContainer:getItems():isEmpty() then
+				local destRoot = luautils.findRootInventory(self.destContainer);
+				local srcRoot = luautils.findRootInventory(self.srcContainer);
+				--total count remains the same if the same root container
+				if srcRoot ~= destRoot then
+					local transferItemsNum = 1;
+					if self.item:getCategory() == "Container" then
+						transferItemsNum = luautils.countItemsRecursive({self.item:getInventory()}, 1);
+					end;
+					--count items from the root container
+					local destContainerItemsNum = luautils.countItemsRecursive({destRoot}, 0);
+					--if destination is an item then add 1
+					if destRoot:getContainingItem() then destContainerItemsNum = destContainerItemsNum + 1; end;
+					--total items must not exceed the server limit
+					if destContainerItemsNum + transferItemsNum > limit then
+						return false;
+					end;
+				end;
+			end;
+		end;
+		return true;
+	end;
+	
 	if self.allowMissingItems and not self.srcContainer:contains(self.item) then -- if the item is destroyed before, for example when crafting something, we want to transfer the items left back to their original position, but some might be destroyed by the recipe (like molotov, the gas can will be returned, but the ripped sheet is destroyed)
 --		self:stop();
 		self.dontAdd = true;
@@ -60,36 +69,6 @@ function ISInventoryTransferAction:isValid()
 	if self:isAlreadyTransferred(self.item) then
 		return true
 	end
-
-	-- Limit items per container in MP
-	if isClient() then
-		if not isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer) then
-			return false
-		end
-		local limit = getServerOptions():getInteger("ItemNumbersLimitPerContainer");
-		if limit > 0 and (not instanceof(self.destContainer:getParent(), "IsoGameCharacter")) then
-			--allow dropping full bags on an empty square or put full container in an empty container
-			if not self.destContainer:getItems():isEmpty() then
-				local destRoot = self:findRootInventory(self.destContainer);
-				local srcRoot = self:findRootInventory(self.srcContainer);
-				--total count remains the same if the same root container
-				if srcRoot ~= destRoot then
-					local tranferItemsNum = 1;
-					if self.item:getCategory() == "Container" then
-						tranferItemsNum = self:countItemsRecursive({self.item:getInventory()}, 1);
-					end;
-					--count items from the root container
-					local destContainerItemsNum = self:countItemsRecursive({destRoot}, 0);
-					--if destination is an item then add 1
-					if destRoot:getContainingItem() then destContainerItemsNum = destContainerItemsNum + 1; end;
-					--total items must not exceed the server limit
-					if destContainerItemsNum + tranferItemsNum > limit then
-						return false;
-					end;
-				end;
-			end;
-		end;
-	end;
 
     if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
         return false;
@@ -128,6 +107,22 @@ function ISInventoryTransferAction:isValid()
 end
 
 function ISInventoryTransferAction:update()
+    -- players that aren't desensitized gain mild stress and unhappiness from stripping items from corpses
+    if self.character and ( not self.character:getTraits():contains("Desensitized") ) and self.srcContainer and self.srcContainer:getType() and ( self.srcContainer:getType() == "inventoryfemale" or self.srcContainer:getType() == "inventorymale" ) then
+        local rate =  getGameTime():getMultiplier()
+        if self.character:getTraits():contains("Cowardly") then rate = rate*2
+--             if self.character:getTraits():contains("Cowardly") or self.character:getTraits():contains("Hemophobic") then rate = rate*2
+        elseif self.character:getTraits():contains("Brave") then rate = rate/2 end
+        local stats = self.character:getStats()
+        stats:setStress(stats:getStress() + rate/10000);
+        local bodyDamage = self.character:getBodyDamage()
+        bodyDamage:setUnhappynessLevel(bodyDamage:getUnhappynessLevel()  + rate/100);
+    end
+    if self.character and self.character:getTraits():contains("Hemophobic") and self.item and self.item:getBloodLevel() > 0 then
+        local rate =  self.item:getBloodLevelAdjustedLow() * getGameTime():getMultiplier()
+        local stats = self.character:getStats()
+        stats:setStress(stats:getStress() + rate/10000);
+    end
 	-- reopen the correct container
 	if self.selectedContainer then
 		if self.selectedContainer:getParent() then
@@ -148,15 +143,24 @@ function ISInventoryTransferAction:update()
 	self.item:setJobDelta(self.action:getJobDelta());
 
     self.character:setMetabolicTarget(Metabolics.LightWork);
-end
 
-function ISInventoryTransferAction:removeItemOnCharacter()
-	self.character:removeAttachedItem(self.item)
-	if not self.character:isEquipped(self.item) then return true end
-	local addToWorld = self.character:removeFromHands(self.item)
-	self.character:removeWornItem(self.item, false)
-	triggerEvent("OnClothingUpdated", self.character)
-	return addToWorld;
+	if isClient() then
+		if isItemTransactionDone(self.transactionId) then
+			self:forceComplete();
+		elseif isItemTransactionRejected(self.transactionId) then
+			self:forceStop();
+		end
+
+        if self.maxTime == -1 then
+            local duration = getItemTransactionDuration(self.transactionId)
+            if duration > 0 then
+                self.maxTime = duration
+                self.action:setTime(self.maxTime)
+            end
+        end
+	end
+
+
 end
 
 ISInventoryTransferAction.putSound = nil;
@@ -189,7 +193,6 @@ function ISInventoryTransferAction:doActionAnim(cont)
 		self:setAnimVariable("LootPosition", "Low");
 	end
 	self.character:reportEvent("EventLootItem");
-	createItemTransaction(self.item, self.srcContainer, self.destContainer)
 	table.insert(self.transactions, { self.item, self.srcContainer, self.destContainer })
 end
 
@@ -255,46 +258,153 @@ function ISInventoryTransferAction:start()
     if self.srcContainer and self.srcContainer:getType() == "microwave" and self.srcContainer:getParent() and self.srcContainer:getParent():Activated() then
         self.srcContainer:getParent():setActivated(false);
     end
+	self:playSourceContainerOpenSound()
+	self:playDestContainerOpenSound()
+    if ISInventoryTransferAction.putSoundContainer ~= self.destContainer then
+        ISInventoryTransferAction.putSoundTime = 0
+    end
 --    if self.destContainer:getPutSound() then
-    if not ISInventoryTransferAction.putSound or not self.character:getEmitter():isPlaying(ISInventoryTransferAction.putSound) then
+    if self.item and self.item:getType() == "Animal" then
+        -- Hack: The put_down breed sound will be played by IsoGridSquare.AddWorldInventoryItem().
+    elseif not ISInventoryTransferAction.putSound or not self.character:getEmitter():isPlaying(ISInventoryTransferAction.putSound) then
         -- Players with the Deaf trait don't play sounds.  In multiplayer, we mustn't send multiple sounds to other clients.
+        ISInventoryTransferAction.putSoundContainer = self.destContainer
         if ISInventoryTransferAction.putSoundTime + ISInventoryTransferAction.putSoundDelay < getTimestamp() then
             ISInventoryTransferAction.putSoundTime = getTimestamp()
-            ISInventoryTransferAction.putSound = self.character:getEmitter():playSound("PutItemInBag")
+            ISInventoryTransferAction.putSound = self.character:getEmitter():playSound(self:getSoundName())
         end
     end
 --    end
 
+	if isClient() then
+		self.action:setWaitForFinished(true)
+	end
+
 	self:startActionAnim()
+	self.transactionId = createItemTransaction(self.character, self.item, self.srcContainer, self.destContainer)
+	self.started = true
+end
+
+function ISInventoryTransferAction:playSourceContainerOpenSound()
+	-- Play this once at the start of a (possibly multi-item) transfer
+	if self.sourceContainerOpened == self.srcContainer then return end
+	self.sourceContainerOpened = self.srcContainer
+	if self.srcContainer ~= nil and self.srcContainer:getType() == "stove" then
+		self.sourceContainerOpenSound = self.character:getEmitter():playSound("StoveDoorOpen")
+		return
+	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
+	-- If the destination container has no sound, play the source container sound
+	if self.destContainer == nil or self.destContainer:getOpenSound() == nil then
+		if self.srcContainer ~= nil and self.srcContainer:getOpenSound() ~= nil then
+			local soundName = self.srcContainer:getOpenSound()
+			self.sourceContainerOpenSound = self.character:getEmitter():playSound(soundName)
+		end
+	end
+--]]
+end
+
+function ISInventoryTransferAction:playSourceContainerCloseSound()
+	if self.sourceContainerOpenSound then
+--		self.character:getEmitter():setParameterValueByName(self.sourceContainerOpenSound, "ActionProgressPercent", 100.0)
+		self.character:getEmitter():stopOrTriggerSound(self.sourceContainerOpenSound)
+	end
+	if self.srcContainer ~= nil and self.srcContainer:getType() == "stove" then
+		self.character:getEmitter():playSound("StoveDoorClose")
+		return
+	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
+	-- If the destination container has no sound, play the source container sound
+	if self.destContainer == nil or self.destContainer:getCloseSound() == nil then
+		if self.srcContainer ~= nil and self.srcContainer:getCloseSound() ~= nil then
+			local soundName = self.srcContainer:getCloseSound()
+			self.sourceContainerCloseSound = self.character:getEmitter():playSound(soundName)
+		end
+	end
+--]]
+end
+
+function ISInventoryTransferAction:playDestContainerOpenSound()
+	-- Play this once at the start of a (possibly multi-item) transfer
+	if self.destContainerOpened == self.destContainer then return end
+	self.destContainerOpened = self.destContainer
+	if self.destContainer ~= nil and self.destContainer:getType() == "stove" then
+		self.destContainerOpenSound = self.character:getEmitter():playSound("StoveDoorOpen")
+	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
+	if self.destContainer ~= nil and self.destContainer:getOpenSound() ~= nil then
+		local soundName = self.destContainer:getOpenSound()
+		self.destContainerOpenSound = self.character:getEmitter():playSound(soundName)
+	end
+--]]
+end
+
+function ISInventoryTransferAction:playDestContainerCloseSound()
+	if self.destContainerOpenSound then
+--		self.character:getEmitter():setParameterValueByName(self.destContainerOpenSound, "ActionProgressPercent", 100.0)
+		self.character:getEmitter():stopOrTriggerSound(self.destContainerOpenSound)
+	end
+	if self.destContainer ~= nil and self.destContainer:getType() == "stove" then
+		self.character:getEmitter():playSound("StoveDoorClose")
+	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
+	-- If the destination container has no sound, play the source container sound
+	if self.destContainer ~= nil and self.destContainer:getCloseSound() ~= nil then
+		local soundName = self.destContainer:getCloseSound()
+		self.destContainerCloseSound = self.character:getEmitter():playSound(soundName)
+	end
+--]]
+end
+
+function ISInventoryTransferAction:getSoundName()
+    if not self.destContainer then return "PutItemInBag" end
+    if (self.destContainer:getType() == "floor") and ((self.item:getType() == "CorpseMale") or (self.item:getType() == "CorpseFemale")) then
+        return self.item:getDropSound() or "PutItemInBag"
+    end
+    if (self.destContainer:getType() == "floor") and (self.item:getType() == "CorpseAnimal") then
+        -- breed-specific sounds
+        return self.item:getDropSound() or "PutItemInBag"
+    end
+	if self.destContainer == self.character:getInventory() then
+		return "StoreItemPlayerInventory"
+	end
+	if self.destContainer:getType() == "trough" and self.item:getAnimalFeedType() == "AnimalFeed" then
+		return "AnimalFeederAddFeed"
+	end
+	return self.destContainer:getPutSound() or "PutItemInBag"
 end
 
 function ISInventoryTransferAction:stop()
+	self:playSourceContainerCloseSound()
+	self:playDestContainerCloseSound()
 	self.item:setJobDelta(0.0);
 	if self.action then
 		self.action:setLoopedAction(false);
 	end
-	if self.transactions then
-		for _,transaction in ipairs(self.transactions) do
-			removeItemTransaction(transaction[1], transaction[2], transaction[3])
-		end
-	end
+	--if self.transactions then
+	--	for _,transaction in ipairs(self.transactions) do
+	--		removeItemTransaction(transaction[1], transaction[2], transaction[3])
+	--	end
+	--end
+	removeItemTransaction(self.transactionId, true)
 	ISBaseTimedAction.stop(self);
+	self.started = false
 end
 
 function ISInventoryTransferAction:forceComplete()
+	if not isClient() then
+		return;
+	end
+	self.maxTime = 0.0
+	self.action:setTime(self.maxTime)
 	self.item:setJobDelta(0.0);
 	if self.action then
-		self.action:setLoopedAction(false);
-	end
-	ISBaseTimedAction.perform(self);
-end
+        self.action:stopTimedActionAnim();
+    end
 
-function ISInventoryTransferAction:forceStop()
-	self.item:setJobDelta(0.0);
-	if self.action then
-		self.action:setLoopedAction(false);
-	end
-	ISBaseTimedAction.stop(self);
+	self.action:forceComplete()
+
+	--ISBaseTimedAction.perform(self);
 end
 
 function ISInventoryTransferAction:perform()
@@ -311,14 +421,16 @@ function ISInventoryTransferAction:perform()
 		getPlayerLoot(self.character:getPlayerNum()):selectButtonForContainer(self.selectedContainer)
 	end
 
-	for i,item in ipairs(queuedItem.items) do
-		self.item = item
-		-- Check destination container capacity and item-count limit.
-		if not self:isValid() then
-			self.queueList = {}
-			break
+	if queuedItem ~= nil then
+		for i,item in ipairs(queuedItem.items) do
+			self.item = item
+			-- Check destination container capacity and item-count limit.
+			if not self:isValid() then
+				self.queueList = {}
+				break
+			end
+			self:transferItem(item);
 		end
-		self:transferItem(item);
 	end
 	-- if we still have other item to transfer in our queue list, we "reset" the action
 	if #self.queueList > 0 then
@@ -332,11 +444,18 @@ function ISInventoryTransferAction:perform()
 		if self.allowMissingItems and not self.srcContainer:contains(self.item) then
 			time = 0
 		end
+		if isClient() then
+		    self.action:setWaitForFinished(false)
+		end
 		self.maxTime = time
 		self.action:setTime(tonumber(time))
 		self:resetJobDelta();
 		self:startActionAnim()
+		self.transactionId = createItemTransaction(self.character, self.item, self.srcContainer, self.destContainer)
 	else
+		self:playSourceContainerCloseSound()
+		self:playDestContainerCloseSound()
+
 		self.action:stopTimedActionAnim();
 		self.action:setLoopedAction(false);
 
@@ -347,11 +466,13 @@ function ISInventoryTransferAction:perform()
 
 		-- needed to remove from queue / start next.
 		ISBaseTimedAction.perform(self);
+		self.started = false
 	end
 
 	if instanceof(self.item, "Radio") then
 		self.character:updateEquippedRadioFreq();
 	end
+
 end
 
 function ISInventoryTransferAction:isAlreadyTransferred(item)
@@ -420,44 +541,25 @@ function ISInventoryTransferAction:getNotFullFloorSquare(item)
 	end
 	return nil
 end
-
-function ISInventoryTransferAction.GetDropItemOffset(character, square, item)
-	-- local dropX = character:getX() - math.floor(character:getX())
-	-- local dropY = character:getY() - math.floor(character:getY())
-	local dropX = ZombRand(0.0 ,1.0)
-	local dropY = ZombRand(0.0 ,1.0)
-	local dropZ = character:getZ() - math.floor(character:getZ())
-	if character:isSeatedInVehicle() then
-		dropZ = math.floor(character:getZ())
-	end
-	-- if (square ~= character:getCurrentSquare()) or getCore():getOptionDropItemsOnSquareCenter() then
-	if getCore():getOptionDropItemsOnSquareCenter() then
-		dropX = ZombRand(3, 7) / 10.0
-		dropY = ZombRand(3, 7) / 10.0
-		dropZ = square:getApparentZ(dropX, dropY) - square:getZ()
-	end
-	return dropX,dropY,dropZ
-end
-
--- TODO: function to remove a list of items on server
 function ISInventoryTransferAction:transferItem(item)
+
+	removeItemTransaction(self.transactionId, false)
+
+	for index,transaction in ipairs(self.transactions) do
+		if transaction[1] == self.item and transaction[2] == self.srcContainer and transaction[3] == self.destContainer then
+			table.remove(self.transactions, index)
+			break
+		end
+	end
+
+	if isClient() then
+		return
+	end
+
 	if self:isAlreadyTransferred(item) then
 		return
 	end
-
-	if isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer) then
-		removeItemTransaction(self.item, self.srcContainer, self.destContainer)
-		for index,transaction in ipairs(self.transactions) do
-			if transaction[1] == self.item and transaction[2] == self.srcContainer and transaction[3] == self.destContainer then
-				table.remove(self.transactions, index)
-				break
-			end
-		end
-	else
-		self.queueList = {}
-		return
-	end
-
+	
 	if self.dontAdd then
 		-- Crafting ingredient was destroyed and can't be put back into the container it came from.
 		return
@@ -472,106 +574,13 @@ function ISInventoryTransferAction:transferItem(item)
 		return;
 	end
 
-	if self.srcContainer:getType() ~= "TradeUI" and isClient() and not self.destContainer:isInCharacterInventory(self.character) and self.destContainer:getType()~="floor" then
-		self.destContainer:addItemOnServer(self.item);
-	end
-	if self.srcContainer:getType() ~= "TradeUI" and isClient() and not self.srcContainer:isInCharacterInventory(self.character) and self.srcContainer:getType()~="floor" then
-		self.srcContainer:removeItemOnServer(self.item);
-	end
-	
-	if self.destContainer:getType() ~= "TradeUI" then
-		self.srcContainer:DoRemoveItem(self.item);
-	end
+	local square = self:getNotFullFloorSquare(item)
+	self.item = ISTransferAction:transferItem(self.character, self.item, self.srcContainer, self.destContainer, square)
+
 	-- clear it from the queue.
 	self.srcContainer:setDrawDirty(true);
 	self.srcContainer:setHasBeenLooted(true);
 	self.destContainer:setDrawDirty(true);
-
-	-- deal with containers that are floor
-	if self.destContainer:getType()=="floor" then
-		local square = self:getNotFullFloorSquare(item)
-		if square then
-			local addToWorld = self:removeItemOnCharacter();
-			-- might have been added by the masking system (if you have a bag equipped and drop it on ground for example)
-			if addToWorld then
-				self.destContainer:DoAddItemBlind(self.item);
-				local dropX,dropY,dropZ = ISInventoryTransferAction.GetDropItemOffset(self.character, square, self.item)
-				square:AddWorldInventoryItem(item, dropX, dropY, dropZ)
-
-				if instanceof(item, "Radio") then
-					local _obj = IsoRadio.new(getCell(), square, nil)
-					local deviceData = item:getDeviceData();
-					if deviceData then
-						_obj:setDeviceData(deviceData);
-					end
-
-					_obj:getModData().RadioItemID = item:getID()
-					square:AddSpecialObject(_obj, square:getObjects():size())
-					if isClient() then _obj:transmitCompleteItemToServer(); end
-					_obj:transmitModData()
-					triggerEvent("OnObjectAdded", _obj)
-					square:RecalcProperties()
-					square:RecalcAllWithNeighbours(true)
-				end
-			end
-		else
-			error "no square to drop item on"
-		end
-	elseif self.srcContainer:getType()=="floor" and self.item:getWorldItem() ~= nil then
-		if instanceof(self.item, "Radio") then
-			local square = self.item:getWorldItem():getSquare()
-			local _obj = nil
-			for i=0, square:getObjects():size()-1 do
-				local tObj = square:getObjects():get(i)
-				if instanceof(tObj, "IsoRadio") then
-					if tObj:getModData().RadioItemID == self.item:getID() then
-						_obj = tObj
-						break
-					end
-				end
-			end
-			if _obj ~= nil then
-				local deviceData = _obj:getDeviceData();
-				if deviceData then
-					self.item:setDeviceData(deviceData);
-				end
-				square:transmitRemoveItemFromSquare(_obj)
-				square:RecalcProperties();
-				square:RecalcAllWithNeighbours(true);
-			end
-		end
-	
-		self.item:getWorldItem():getSquare():transmitRemoveItemFromSquare(self.item:getWorldItem());
-		self.item:getWorldItem():getSquare():removeWorldObject(self.item:getWorldItem());
-		--        self.item:getWorldItem():getSquare():getObjects():remove(self.item:getWorldItem());
-		self.item:setWorldItem(nil);
-		self.destContainer:AddItem(self.item);
-	else
-		if self.srcContainer:getType() ~= "TradeUI" then
-			self.destContainer:AddItem(self.item);
-		end
-		if self.character:getInventory() ~= self.destContainer then
-			self:removeItemOnCharacter();
-		end
-		if self.item:getType() == "CandleLit" then
-			local candle = self.destContainer:AddItem("Base.Candle");
-			candle:setUsedDelta(self.item:getUsedDelta());
-			candle:setCondition(self.item:getCondition());
-			candle:setFavorite(self.item:isFavorite());
-			self.destContainer:Remove(self.item)
-			self.item = candle;
-		end
-	end
-
-	if self.destContainer:getParent() and instanceof(self.destContainer:getParent(), "BaseVehicle") and self.destContainer:getParent():getPartById(self.destContainer:getType()) then
-		local part = self.destContainer:getParent():getPartById(self.destContainer:getType());
-		part:setContainerContentAmount(part:getItemContainer():getCapacityWeight());
-	end
-
-	if self.srcContainer:getParent() and instanceof(self.srcContainer:getParent(), "BaseVehicle") and self.srcContainer:getParent():getPartById(self.srcContainer:getType()) then
-		local part = self.srcContainer:getParent():getPartById(self.srcContainer:getType());
-		part:setContainerContentAmount(part:getItemContainer():getCapacityWeight());
-	end
 
 	if instanceof(self.srcContainer:getParent(), "IsoDeadBody") then
 		self.item:setAttachedSlot(-1);
@@ -642,7 +651,7 @@ function ISInventoryTransferAction:checkQueueList()
 		-- we check if in our queue list an item with the same type exist, so we can transfer them in bulk
 		-- limit this to 20 items (so transfer 20 per 20 nails)
 		-- only for item with weight < 0.1
-		if round(action.item:getWeight(), 3) <= 0.1 then
+		if not isClient() and round(action.item:getWeight(), 3) <= 0.1 then
 			for i,v in ipairs(self.queueList) do
 				if v.type == action.item:getFullType() and #v.items < 20 then
 	--				print("found same type in list", action.item:getFullType())
@@ -687,6 +696,8 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 	o.character = character;
 	o.item = item;
 	o.dontAdd = false;
+	o.started = false;
+	o.transactionId = 0;
 	o.srcContainer = srcContainer;
 	o.destContainer = destContainer;
 	o.transactions = {}
@@ -750,8 +761,8 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 		if character:HasTrait("Dextrous") then
 			o.maxTime = o.maxTime * 0.5
 		end
-		if character:HasTrait("AllThumbs") then
-			o.maxTime = o.maxTime * 4.0
+		if character:HasTrait("AllThumbs") or character:isWearingAwkwardGloves() then
+			o.maxTime = o.maxTime * 2.0
 		end
     else
         o.maxTime = 0;
@@ -766,15 +777,18 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 	if item then -- kludge to fix error when filling gas bottles out of backpack
 		if item:isFavorite() and not o.destContainer:isInCharacterInventory(o.character) then o.maxTime = 0; end
 	end
-	
+
 	if item then -- kludge to fix error when filling gas bottles out of backpack
+		if isClient() then -- The client completes the transfer after receiving packet ItemTransactionPacket from the server
+			o.maxTime  = -1
+		end
 		o.queueList = {};
 		local queuedItem = {items = {o.item}, time = o.maxTime, type = o.item:getFullType()};
 		table.insert(o.queueList, queuedItem);
 		o.loopedAction = true
 	end
 
-    return o
+	return o
 end
 
 

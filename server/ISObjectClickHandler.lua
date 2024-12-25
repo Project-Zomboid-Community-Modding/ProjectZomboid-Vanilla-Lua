@@ -70,6 +70,23 @@ ISObjectClickHandler.doDoubleClick = function (object, x, y)
     if not sq:isSeen(0) then
         return;
     end
+
+--     changed clicking on workstations and crafting surfaces to open them to double clicking
+--     added check to ensure that the player can properly access the square in question (ie not in another room; behind a fence; etc)
+--     local playerNum = 0
+--     local playerObj = getSpecificPlayer(playerNum)
+--     if playerObj:canUseAsGenericCraftingSurface(object) and not object:getContainer() then
+--         if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:IsAiming() and
+--                 playerObj:getCurrentSquare() and object:getSquare() and
+--                 playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
+--                 not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
+--
+-- --         print("Opening crafting from ISObjectClickHandler")
+--             ISEntityUI.OpenHandcraftWindow(playerObj, object);
+--             return
+--         end
+--     end
+
     if object:getContainer() ~= nil then
         local parent = object:getSquare();
 
@@ -105,7 +122,7 @@ end
 
 function ISObjectClickHandler.doClickCurtain(object, playerNum, playerObj)
     if not object:canInteractWith(playerObj) then return false end
-    object:ToggleDoor(playerObj)
+    ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseCurtain:new(playerObj, object));
     return true
 end
 
@@ -117,13 +134,13 @@ function ISObjectClickHandler.doClickDoor(object, playerNum, playerObj)
     local playerSq = playerObj:getCurrentSquare()
     if object:getSquare():getZ() ~= playerSq:getZ() then return false end
     if not object:isAdjacentToSquare(playerSq) then return false end
-    if isKeyDown(Keyboard.KEY_LSHIFT) then
+    if isKeyDown(Keyboard.KEY_LSHIFT) and not playerObj:isWalking() then
         if object:HasCurtains() and (playerSq == object:getSheetSquare()) then
-            object:toggleCurtain()
+            ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseCurtain:new(playerObj, object))
+            return true
         end
-        return true
     end
-    object:ToggleDoor(playerObj)
+    ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseDoor:new(playerObj, object));
     return true
 end
 
@@ -135,7 +152,7 @@ function ISObjectClickHandler.doClickLightSwitch(object, playerNum, playerObj)
     local playerSq = playerObj:getCurrentSquare()
     if object:getSquare():DistToProper(playerObj) >= 2 then return false end
     if playerSq:isWallTo(object:getSquare()) then return false end
-    object:toggle()
+    ISTimedActionQueue.addGetUpAndThen(playerObj, ISToggleLightAction:new(playerObj, object))
     return true
 end
 
@@ -144,7 +161,7 @@ function ISObjectClickHandler.doClickThumpable(object, playerNum, playerObj)
     if object:getSquare():getZ() ~= playerSq:getZ() then return false end
     if not object:isDoor() then return false end
     if not object:isAdjacentToSquare(playerSq) then return false end
-    object:ToggleDoor(playerObj)
+    ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseDoor:new(playerObj, object));
     return true
 end
 
@@ -152,7 +169,7 @@ function ISObjectClickHandler.doClickWindow(object, playerNum, playerObj)
     if isKeyDown(Keyboard.KEY_LSHIFT) then
         local curtain = object:HasCurtains()
         if curtain and curtain:canInteractWith(playerObj) then
-            curtain:ToggleDoor(playerObj)
+            ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseCurtain:new(playerObj, curtain))
         end
         return true
     end
@@ -162,15 +179,13 @@ function ISObjectClickHandler.doClickWindow(object, playerNum, playerObj)
     if object:getBarricadeForCharacter(playerObj) then return true end
     if object:isDestroyed() then
         if not object:isBarricaded() then
-            playerObj:climbThroughWindow(object)
+            local worldobjects = nil
+            ISWorldObjectContextMenu.getUpAndThen(playerObj, ISWorldObjectContextMenu.onClimbThroughWindow, worldobjects, object, playerNum)
+--            playerObj:climbThroughWindow(object)
         end
         return true
     end
-    if object:IsOpen() then
-        playerObj:closeWindow(object)
-    else
-        playerObj:openWindow(object)
-    end
+    ISTimedActionQueue.addGetUpAndThen(playerObj, ISOpenCloseWindow:new(playerObj, object))
     return true
 end
 
@@ -217,6 +232,7 @@ ISObjectClickHandler.doClick = function (object, x, y)
     local playerNum = 0
     local playerObj = getSpecificPlayer(playerNum)
 
+
     local isPaused = UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0
     if getCore():getGameMode() ~= "Tutorial" and not isPaused and instanceof(object, "IsoWaveSignal") and playerObj:isAlive() and not playerObj:IsAiming() and
             playerObj:getCurrentSquare() and object:getSquare() and
@@ -226,8 +242,36 @@ ISObjectClickHandler.doClick = function (object, x, y)
         return
     end
 
-    if isClient() and SafeHouse.isSafeHouse(sq, playerObj:getUsername(), true) and
-            not getServerOptions():getBoolean("SafehouseAllowLoot") then
+    if object:getSpriteConfig() and object:getSpriteConfig():getMultiSquareMaster() then
+        local old = object;
+        object = object:getSpriteConfig():getMultiSquareMaster();
+        if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:IsAiming() and
+                playerObj:getCurrentSquare() and object:getSquare() and
+                playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
+                not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
+            if ISEntityUI.CanOpenWindowFor(playerObj, object) then
+                ISEntityUI.OpenWindow(playerObj, object)
+                return
+            end
+        end
+        object = old;
+    end
+
+-- --     changed clicking on workstations and crafting surfaces to open them to double clicking
+-- --     added check to ensure that the player can properly access the square in question (ie not in another room; behind a fence; etc)
+--     if playerObj:canUseAsGenericCraftingSurface(object) then
+--         if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:IsAiming() and
+--                 playerObj:getCurrentSquare() and object:getSquare() and
+--                 playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
+--                 not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
+--
+-- --         print("Opening crafting from ISObjectClickHandler")
+--             ISEntityUI.OpenHandcraftWindow(playerObj, object);
+--             return
+--         end
+--     end
+
+    if isClient() and not SafeHouse.isSafehouseAllowLoot(sq, playerObj) then
         return
     end
 

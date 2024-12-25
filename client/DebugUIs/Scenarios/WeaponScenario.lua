@@ -64,7 +64,6 @@ debugScenarios.WeaponScenario = {
 		--        SandboxVars.Rain = 3;
 		--        --    SandboxVars.erosion = 12
 		--        SandboxVars.ErosionSpeed = 1
-		--        SandboxVars.XpMultiplier = "1.0";
 		--        SandboxVars.Farming = 3;z
 		--        SandboxVars.NatureAbundance = 5;
 		--        SandboxVars.PlantResilience = 3;
@@ -134,17 +133,17 @@ debugScenarios.WeaponScenario = {
 		getPlayer():getInventory():AddItem("Base.LeafRake");
 	-- Spear
 		getPlayer():getInventory():AddItem("Base.GardenFork");
-		getPlayer():getInventory():AddItem("Base.SpearBreadKnife");
+-- 		getPlayer():getInventory():AddItem("Base.SpearBreadKnife");
 		getPlayer():getInventory():AddItem("Base.SpearKnife");
 		getPlayer():getInventory():AddItem("Base.SpearCrafted");
-		getPlayer():getInventory():AddItem("Base.SpearFork");
+-- 		getPlayer():getInventory():AddItem("Base.SpearFork");
 		getPlayer():getInventory():AddItem("Base.SpearHandFork");
 		getPlayer():getInventory():AddItem("Base.SpearHuntingKnife");
-		getPlayer():getInventory():AddItem("Base.SpearLetterOpener");
-		getPlayer():getInventory():AddItem("Base.SpearMachete");
-		getPlayer():getInventory():AddItem("Base.SpearScalpel");
+-- 		getPlayer():getInventory():AddItem("Base.SpearLetterOpener");
+-- 		getPlayer():getInventory():AddItem("Base.SpearMachete");
+-- 		getPlayer():getInventory():AddItem("Base.SpearScalpel");
 		getPlayer():getInventory():AddItem("Base.SpearScissors");
 		getPlayer():getInventory():AddItem("Base.SpearScrewdriver");
-		getPlayer():getInventory():AddItem("Base.SpearSpoon");
+-- 		getPlayer():getInventory():AddItem("Base.SpearSpoon");
 	end
 }

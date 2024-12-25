@@ -7,16 +7,16 @@ require "RadioCom/RadioWindowModules/RWMPanel"
 RWMMedia = RWMPanel:derive("RWMMedia");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 10
 
 function RWMMedia:initialise()
     ISPanel.initialise(self)
 end
 
 function RWMMedia:createChildren()
-    --self:setHeight(32);
-
-    local y = 4;
-    local ww = math.floor((self:getWidth()-20)/ISLcdBar.charW);
+    local y = UI_BORDER_SPACING+1;
+    local ww = math.floor((self:getWidth()-UI_BORDER_SPACING*2-2)/ISLcdBar.charW);
     local charWidth = ww;
     local lcdw = ww*ISLcdBar.charW;
     local x = ((self:getWidth()/2)-(lcdw/2))-2;
@@ -26,28 +26,22 @@ function RWMMedia:createChildren()
     self.lcd:setTextMode(false);
     self:addChild(self.lcd);
 
-    y = self.lcd:getY() + self.lcd:getHeight() + 5;
-
-    x = (self:getWidth()/2)-(24/2);
-    self.itemDropBox = ISItemDropBox:new (x, y, 24, 24, false, self, RWMMedia.addMedia, RWMMedia.removeMedia, RWMMedia.verifyItem, nil );
+    y = self.lcd:getY() + self.lcd:getHeight() + UI_BORDER_SPACING;
+    self.itemDropBox = ISItemDropBox:new (UI_BORDER_SPACING+1, y, BUTTON_HGT, BUTTON_HGT, false, self, RWMMedia.addMedia, RWMMedia.removeMedia, RWMMedia.verifyItem, nil );
     self.itemDropBox:initialise();
     self.itemDropBox:setBackDropTex( getTexture("Item_Battery"), 0.4, 1,1,1 );
     self.itemDropBox:setDoBackDropTex( true );
     self.itemDropBox:setToolTip( true, getText("IGUI_RadioDragBattery") );
     self:addChild(self.itemDropBox);
 
-    y = self.itemDropBox:getY() + self.itemDropBox:getHeight() + 5;
-
-    local btnHgt = FONT_HGT_SMALL + 1 * 2
-
-    self.toggleOnOffButton = ISButton:new(10, y, self:getWidth()-20, btnHgt, getText("ContextMenu_Turn_On"),self, RWMMedia.togglePlayMedia);
+    self.toggleOnOffButton = ISButton:new(self.itemDropBox:getRight() + UI_BORDER_SPACING, y, self.width - self.itemDropBox:getRight() - UI_BORDER_SPACING*2 - 1, BUTTON_HGT, getText("ContextMenu_Turn_On"),self, RWMMedia.togglePlayMedia);
     self.toggleOnOffButton:initialise();
     self.toggleOnOffButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.toggleOnOffButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
     self.toggleOnOffButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
     self:addChild(self.toggleOnOffButton);
 
-    y = self.toggleOnOffButton:getY() + self.toggleOnOffButton:getHeight() + 10;
+    y = self.toggleOnOffButton:getY() + self.toggleOnOffButton:getHeight() + UI_BORDER_SPACING+1;
 
     self:setHeight(y);
 end
@@ -193,7 +187,7 @@ function RWMMedia:update()
                 self.lcd:setDoScroll(true);
             else
                 self.lcd:setText(self.idleText);
-                self.lcd:setDoScroll(false);
+                self.lcd:setDoScroll(true);
             end
         else
             self.itemDropBox:setStoredItemFake( nil );

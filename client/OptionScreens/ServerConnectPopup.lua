@@ -149,18 +149,6 @@ function ServerConnectPopup:create()
     self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
 end
 
-function strsplit(inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={} ; local i=1;
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        t[i] = str
-        i = i + 1
-    end
-    return t
-end
-
 function ServerConnectPopup:setServer(ip, port, passwordStr)
     if not type(port) == "string" then error "port must be a string" end
     self.ip = ip;

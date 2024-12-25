@@ -45,13 +45,13 @@ function ISWeather:prerender()
 		width = 88;
 		x = 0;
 	end
-	self:drawRect((Core:getInstance():getOffscreenWidth() - 208) + x, 0, width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-	self:drawRectBorder((Core:getInstance():getOffscreenWidth() - 208) + x, 0, width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+	self:drawRect((Core.getInstance():getOffscreenWidth() - 208) + x, 0, width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+	self:drawRectBorder((Core.getInstance():getOffscreenWidth() - 208) + x, 0, width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	for i,v in pairs(self.images) do
-		self:drawTexture(v, (Core:getInstance():getOffscreenWidth() - 208) + x + 1, (self.height / 2) - (v:getHeight() / 2), 1, 1, 1, 1);
+		self:drawTexture(v, (Core.getInstance():getOffscreenWidth() - 208) + x + 1, (self.height / 2) - (v:getHeight() / 2), 1, 1, 1, 1);
 	end
 	if self.moon then
-		self:drawTexture(self.moon, (Core:getInstance():getOffscreenWidth() - 173) + x + 1, (self.height / 2) - (self.moon:getHeight() / 2), 1, 1, 1, 1);
+		self:drawTexture(self.moon, (Core.getInstance():getOffscreenWidth() - 173) + x + 1, (self.height / 2) - (self.moon:getHeight() / 2), 1, 1, 1, 1);
     end
 
     -- turned it off until can reposition it.

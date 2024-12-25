@@ -11,20 +11,18 @@ xpUpdate.lastX = 0;
 xpUpdate.lastY = 0;
 
 -- used everytime the player move
-xpUpdate.onPlayerMove = function()
-	local player = getPlayer();
+xpUpdate.onPlayerMove = function(player)
 	local x = player:getX();-- these values are used to prevent AFKing to grind nimble
 	local y = player:getY();
-	local xp = player:getXp();
 	-- pacing/sprinting xp
 	-- if you're running and your endurance has changed
 	if (player:IsRunning() or player:isSprinting()) and player:getStats():getEndurance() > player:getStats():getEndurancewarn() then
 		-- you may gain 1 xp in sprinting or fitness
 		if xpUpdate.randXp() then
-			xp:AddXP(Perks.Fitness, 1);
+		    addXp(player, Perks.Fitness, 1)
 		end
 		if xpUpdate.randXp() then
-			xp:AddXP(Perks.Sprinting, 1);
+		    addXp(player, Perks.Sprinting, 1)
 		end
 	end
 	--local manager = ISSearchManager.getManager(player); -- this is to nerf foraging and grinding nimble
@@ -32,12 +30,12 @@ xpUpdate.onPlayerMove = function()
 	if manager and manager.isSearchMode then searching = true end
 	-- aiming while moving, gain nimble xp (move faster in aiming mode)
 	if player:isAiming() and xpUpdate.randXp() and (xpUpdate.lastX ~= x or xpUpdate.lastY ~= y) then --the extra check is to prevent afking to grind nimble, the character must have moved to get the skill
-		xp:AddXP(Perks.Nimble, 1);
+		addXp(player, Perks.Nimble, 1)
 	end
 	-- if you're walking with a lot of stuff, you may gain in Strength
 	if player:getInventoryWeight() > player:getMaxWeight() * 0.5 then
 		if xpUpdate.randXp() then
-			xp:AddXP(Perks.Strength, 2);
+		    addXp(player, Perks.Strength, 2)
 		end
 	end	
 	xpUpdate.lastX = x;-- these values are used to prevent AFKing to grind nimble
@@ -47,12 +45,12 @@ end
 -- when you or a npc try to hit a tree
 xpUpdate.OnWeaponHitTree = function(owner, weapon)
 	if weapon and weapon:getType() ~= "BareHands" then
-		owner:getXp():AddXP(Perks.Strength, 2);
+	    addXp(owner, Perks.Strength, 2)
 	end
 end
 
 -- when you or a npc try to hit something
-xpUpdate.onWeaponHitXp = function(owner, weapon, hitObject, damage)
+xpUpdate.onWeaponHitXp = function(owner, weapon, hitObject, damage, hitCount)
     local isShove = false
     if hitObject:isOnFloor() == false and weapon:getType() == "BareHands" then
         isShove = true
@@ -64,47 +62,47 @@ xpUpdate.onWeaponHitXp = function(owner, weapon, hitObject, damage)
 	-- add info of favourite weapon
 	local modData = owner:getModData();
     if isShove == false then
-        if modData["Fav:"..weapon:getName()] == nil then
-            modData["Fav:"..weapon:getName()] = 1;
+        if modData["Fav:"..weapon:getScriptItem():getDisplayName()] == nil then
+            modData["Fav:"..weapon:getScriptItem():getDisplayName()] = 1;
         else
-            modData["Fav:"..weapon:getName()] = modData["Fav:"..weapon:getName()] + 1;
+            modData["Fav:"..weapon:getScriptItem():getDisplayName()] = modData["Fav:"..weapon:getScriptItem():getDisplayName()] + 1;
         end
     end
 	-- if you sucessful swing your non ranged weapon
 	if owner:getStats():getEndurance() > owner:getStats():getEndurancewarn() and not weapon:isRanged() then
-		owner:getXp():AddXP(Perks.Fitness, 1);
+	    addXp(owner, Perks.Fitness, 1)
 	end
 	-- we add xp depending on how many target you hit
 	if not weapon:isRanged() and owner:getLastHitCount() > 0 then
-		owner:getXp():AddXP(Perks.Strength, owner:getLastHitCount());
+	    addXp(owner, Perks.Strength, owner:getLastHitCount())
 	end
 	-- add xp for ranged weapon
 	if weapon:isRanged() then
-		local xp = owner:getLastHitCount();
+		local xp = hitCount;
 		if owner:getPerkLevel(Perks.Aiming) < 5 then
 			xp = xp * 2.7;
 		end
-		owner:getXp():AddXP(Perks.Aiming, xp);
+		addXp(owner, Perks.Aiming, xp)
 	end
 	-- add either blunt or blade xp (blade xp's perk name is Axe)
-	if owner:getLastHitCount() > 0 and not weapon:isRanged() then
+	if hitCount > 0 and not weapon:isRanged() then
 		if weapon:getScriptItem():getCategories():contains("Axe") then
-			owner:getXp():AddXP(Perks.Axe, exp);
+		    addXp(owner, Perks.Axe, exp)
 		end
 		if weapon:getScriptItem():getCategories():contains("Blunt") then
-			owner:getXp():AddXP(Perks.Blunt, exp);
+		    addXp(owner, Perks.Blunt, exp)
 		end
 		if weapon:getScriptItem():getCategories():contains("Spear") then
-			owner:getXp():AddXP(Perks.Spear, exp);
+		    addXp(owner, Perks.Spear, exp)
 		end
 		if weapon:getScriptItem():getCategories():contains("LongBlade") then
-			owner:getXp():AddXP(Perks.LongBlade, exp);
+		    addXp(owner, Perks.LongBlade, exp)
 		end
 		if weapon:getScriptItem():getCategories():contains("SmallBlade") then
-			owner:getXp():AddXP(Perks.SmallBlade, exp);
+		    addXp(owner, Perks.SmallBlade, exp)
 		end
 		if weapon:getScriptItem():getCategories():contains("SmallBlunt") then
-			owner:getXp():AddXP(Perks.SmallBlunt, exp);
+		    addXp(owner, Perks.SmallBlunt, exp)
 		end
 	end
 end
@@ -112,7 +110,7 @@ end
 -- get xp when you craft something
 xpUpdate.onMakeItem = function(item, resultItem, recipe)
 	if instanceof(resultItem, "Food") then
-		getPlayer():getXp():AddXP(Perks.Cooking, 3);
+		addXp(getPlayer(), Perks.Cooking, 3)
 	end
 --~ 	if resultItem:getType():contains("Plank") then
 --~ 		getPlayer():getXp():AddXP(Perks.Woodwork, 3);
@@ -130,20 +128,28 @@ xpUpdate.displayCharacterInfo = function(key)
 		return;
 	end
 	if not getPlayerData(0) then return end
-	if key == getCore():getKey("Toggle Skill Panel") then
+	if getCore():isKey("Crafting UI", key) then
+		if ISEntityUI.players[0] and ISEntityUI.players[0].instance and ISEntityUI.players[0].instance.xuiStyleName == "HandcraftWindow" then
+			ISEntityUI.players[0].instance:close();
+			ISEntityUI.players[0].instance:removeFromUIManager();
+		else
+			ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
+		end
+	end
+	if getCore():isKey("Toggle Skill Panel", key) then
 		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
 		xpUpdate.characterInfo:toggleView(xpSystemText.skills);
 	end
-	if key == getCore():getKey("Toggle Health Panel") then
+	if getCore():isKey("Toggle Health Panel", key) then
 		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
 		xpUpdate.characterInfo:toggleView(xpSystemText.health);
         xpUpdate.characterInfo.healthView.doctorLevel = playerObj:getPerkLevel(Perks.Doctor);
 	end
-	if key == getCore():getKey("Toggle Info Panel") then
+	if getCore():isKey("Toggle Info Panel", key) then
 		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
 		xpUpdate.characterInfo:toggleView(xpSystemText.info);
 	end
-	if key == getCore():getKey("Toggle Clothing Protection Panel") then
+	if getCore():isKey("Toggle Clothing Protection Panel", key) then
 		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
 		xpUpdate.characterInfo:toggleView(xpSystemText.protection);
 	end
@@ -151,7 +157,7 @@ end
 
 -- do we get xp ?
 xpUpdate.randXp = function()
-	return ZombRand(700 * GameTime:getInstance():getInvMultiplier()) == 0;
+	return ZombRand(700 * GameTime.getInstance():getInvMultiplier()) == 0;
 end
 
 -- handle when you gain xp, we gonna apply the xp multiplier
@@ -173,10 +179,19 @@ xpUpdate.addXp = function(owner, type, amount)
 			modData.fitnessUpTimer = -50000;
 		end
 	end
+
+	if type == Perks.PlantScavenging and amount > 0 then
+        local manager = ISSearchManager.getManager(owner);
+        local amount2 = round(amount, 2)
+        table.insert(manager.haloNotes, "[col=137,232,148]"..type:getName().." "..getText("Challenge_Challenge2_CurrentXp", amount2) .. "[/] [img=media/ui/ArrowUp.png]");
+    end
 end
 
 -- when you gain a level you could win or lose perks
 xpUpdate.levelPerk = function(owner, perk, level, addBuffer)
+    -- check AutoLearn craftRecipes
+    getScriptManager():checkAutoLearn(owner)
+
 	-- first Strength skill, grant you some traits that gonna help you to carry more stuff, hitting harder, etc.
 	if perk == Perks.Strength then
 		-- we start to remove all previous Strength related traits
@@ -243,12 +258,11 @@ xpUpdate.everyTenMinutes = function()
 			local modData = xpUpdate.getModData(playerObj)
 			-- strength stuff
 			modData.strengthUpTimer = modData.strengthUpTimer + 10;
-
 			-- if we've been lazy for too long, we start losing xp, every 1200 tick we lose 1 xp
 			if modData.strengthUpTimer > 20000 and modData.strengthMod ~= math.floor(modData.strengthUpTimer / 1200) then
 				modData.strengthMod = math.floor(modData.strengthUpTimer / 1200);
 				if playerObj:getXp():getXP(Perks.Strength) > 0 then
-					playerObj:getXp():AddXP(Perks.Strength, -1);
+					sendAddXp(playerObj, Perks.Strength, -1, true);
 				end
 				xpUpdate.checkForLosingLevel(playerObj, Perks.Strength);
 			end
@@ -261,8 +275,9 @@ xpUpdate.everyTenMinutes = function()
 			if modData.fitnessUpTimer > 20000 and modData.fitnessMod ~= math.floor(modData.fitnessUpTimer / 1200) then
 				modData.fitnessMod = math.floor(modData.fitnessUpTimer / 1200);
 				if playerObj:getXp():getXP(Perks.Fitness) > 0 then
-					playerObj:getXp():AddXP(Perks.Fitness, -1);
+					sendAddXp(playerObj, Perks.Fitness, -1, true);
 				end
+				xpUpdate.checkForLosingLevel(playerObj, Perks.Fitness);
 			end
 			if modData.fitnessUpTimer > 31000 then -- it's caped to a 30000 timer, so if you've been lazy for a lot of days, it's not so long to get in shape again
 				modData.fitnessUpTimer = 0;

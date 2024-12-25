@@ -7,6 +7,8 @@ require 'ISUI/Maps/Editor/WorldMapEditorListBox'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WorldMapEditorMode_Style = WorldMapEditorMode:derive("WorldMapEditorMode_Style")
 
@@ -23,8 +25,8 @@ function WorldMapStyleEditor:shrinkWrap()
 		xMax = math.max(xMax, child:getRight())
 		yMax = math.max(yMax, child:getBottom())
 	end
-	self:setWidth(xMax + 10)
-	self:setHeight(yMax + 10)
+	self:setWidth(xMax)
+	self:setHeight(yMax)
 end
 
 function WorldMapStyleEditor:display(layer)
@@ -121,17 +123,16 @@ end
 WorldMapStyleEditor_FilterPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_FilterPanel")
 
 function WorldMapStyleEditor_FilterPanel:createChildren()
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
 
-	local label = ISLabel:new(10, 10, entryHgt, "KEY:", 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("IGUI_WorldMapEditor_Key")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.keyEntry = ISTextEntryBox:new("", label:getRight() + 10, label.y, 200, entryHgt)
+	self.keyEntry = ISTextEntryBox:new("", label:getRight() + UI_BORDER_SPACING, label.y, self.width - label:getRight() - UI_BORDER_SPACING*2-1, BUTTON_HGT)
 	self.keyEntry.onCommandEntered = function(entry) self:onKeyEntered() end
 	self:addChild(self.keyEntry)
 
-	label = ISLabel:new(10, self.keyEntry:getBottom() + 10, entryHgt, "VALUE:", 1, 1, 1, 1, UIFont.Small, true)
+	label = ISLabel:new(UI_BORDER_SPACING+1, self.keyEntry:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_Value")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.valueEntry = ISTextEntryBox:new("", label:getRight() + 10, label.y, 200, entryHgt)
+	self.valueEntry = ISTextEntryBox:new("", label:getRight() + UI_BORDER_SPACING, label.y, self.width - label:getRight() - UI_BORDER_SPACING*2-1, BUTTON_HGT)
 	self.valueEntry.onCommandEntered = function(entry) self:onValueEntered() end
 	self:addChild(self.valueEntry)
 
@@ -163,48 +164,54 @@ end
 WorldMapStyleEditor_ColorStopsPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_ColorStopsPanel")
 
 function WorldMapStyleEditor_ColorStopsPanel:createChildren()
-	self.listbox = WorldMapEditorListBox:new(0, 0, self.width, (FONT_HGT_SMALL + 8) * 4 + 10 + (FONT_HGT_MEDIUM + 8), self.onListboxEvent, self)
+	self.listbox = WorldMapEditorListBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT * 6, self.onListboxEvent, self)
 	self:addChild(self.listbox)
 	self:setHeight(self.listbox:getBottom())
 
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
+	local maxLabelWidth = UI_BORDER_SPACING*2+1+math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_WorldMapEditor_Zoom")..":"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BulletTracerEffect_Red")..":"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BulletTracerEffect_Green")..":"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BulletTracerEffect_Blue")..":"),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BulletTracerEffect_Alpha")..":")
+	)
 
-	local label = ISLabel:new(10, self.listbox:getBottom() + 10, entryHgt, "ZOOM:", 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(UI_BORDER_SPACING+1, self.listbox:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_Zoom")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.zoomEntry = ISTextEntryBox:new("0.00", label:getRight() + 10, label.y, 80, entryHgt)
+	self.zoomEntry = ISTextEntryBox:new("0.00", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.zoomEntry.onCommandEntered = function(entry) self:onZoomEntered() end
 	self:addChild(self.zoomEntry)
 	self.zoomEntry:setOnlyNumbers(true)
 
-	label = ISLabel:new(10, label:getBottom() + 10, entryHgt, "RED:", 1, 1, 1, 1, UIFont.Small, true)
+	label = ISLabel:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_BulletTracerEffect_Red")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.redEntry = ISTextEntryBox:new("255", label:getRight() + 10, label.y, 80, entryHgt)
+	self.redEntry = ISTextEntryBox:new("255", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.redEntry.onCommandEntered = function(entry) self:onRedEntered() end
 	self:addChild(self.redEntry)
 	self.redEntry:setOnlyNumbers(true)
 
-	label = ISLabel:new(label.x, label:getBottom() + 10, entryHgt, "GREEN:", 1, 1, 1, 1, UIFont.Small, true)
+	label = ISLabel:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_BulletTracerEffect_Green")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.greenEntry = ISTextEntryBox:new("255", label:getRight() + 10, label.y, 80, entryHgt)
+	self.greenEntry = ISTextEntryBox:new("255", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.greenEntry.onCommandEntered = function(entry) self:onGreenEntered() end
 	self:addChild(self.greenEntry)
 	self.greenEntry:setOnlyNumbers(true)
 
-	label = ISLabel:new(label.x, label:getBottom() + 10, entryHgt, "BLUE:", 1, 1, 1, 1, UIFont.Small, true)
+	label = ISLabel:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_BulletTracerEffect_Blue")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.blueEntry = ISTextEntryBox:new("255", label:getRight() + 10, label.y, 80, entryHgt)
+	self.blueEntry = ISTextEntryBox:new("255", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.blueEntry.onCommandEntered = function(entry) self:onBlueEntered() end
 	self:addChild(self.blueEntry)
 	self.blueEntry:setOnlyNumbers(true)
 
-	label = ISLabel:new(label.x, label:getBottom() + 10, entryHgt, "ALPHA:", 1, 1, 1, 1, UIFont.Small, true)
+	label = ISLabel:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_BulletTracerEffect_Alpha")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.alphaEntry = ISTextEntryBox:new("255", label:getRight() + 10, label.y, 80, entryHgt)
+	self.alphaEntry = ISTextEntryBox:new("255", maxLabelWidth, label.y, 100, BUTTON_HGT)
 	self.alphaEntry.onCommandEntered = function(entry) self:onAlphaEntered() end
 	self:addChild(self.alphaEntry)
 	self.alphaEntry:setOnlyNumbers(true)
 
-	self:setHeight(self.alphaEntry:getBottom())
+	self:setHeight(self.alphaEntry:getBottom()+UI_BORDER_SPACING+1)
 end
 
 function WorldMapStyleEditor_ColorStopsPanel:onListboxEvent(action)
@@ -366,20 +373,18 @@ end
 WorldMapStyleEditor_TextureStopsPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_TextureStopsPanel")
 
 function WorldMapStyleEditor_TextureStopsPanel:createChildren()
-	self.listbox = WorldMapEditorListBox:new(0, 0, self.width, (FONT_HGT_SMALL + 8) * 4 + 10 + (FONT_HGT_MEDIUM + 8), self.onListboxEvent, self)
+	self.listbox = WorldMapEditorListBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT * 6, self.onListboxEvent, self)
 	self:addChild(self.listbox)
 	self:setHeight(self.listbox:getBottom())
 
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
-
-	local label = ISLabel:new(10, self.listbox:getBottom() + 10, entryHgt, "ZOOM:", 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(UI_BORDER_SPACING+1, self.listbox:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_Zoom")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.zoomEntry = ISTextEntryBox:new("0.00", label:getRight() + 10, label.y, 80, entryHgt)
+	self.zoomEntry = ISTextEntryBox:new("0.00", label:getRight() + UI_BORDER_SPACING, label.y, 100, BUTTON_HGT)
 	self.zoomEntry.onCommandEntered = function(entry) self:onZoomEntered() end
 	self:addChild(self.zoomEntry)
 	self.zoomEntry:setOnlyNumbers(true)
 
-	self.texturePathEntry = ISTextEntryBox:new("", 10, self.zoomEntry:getBottom() + 10, self.width - 10, entryHgt)
+	self.texturePathEntry = ISTextEntryBox:new("", UI_BORDER_SPACING+1, self.zoomEntry:getBottom() + UI_BORDER_SPACING, self.width - UI_BORDER_SPACING*2-2, BUTTON_HGT)
 	self.texturePathEntry.onCommandEntered = function(entry) self:onTexturePathEntered() end
 	self:addChild(self.texturePathEntry)
 
@@ -521,61 +526,64 @@ WorldMapStyleEditor_TexturePanel = WorldMapStyleEditor_TextureStopsPanel:derive(
 
 function WorldMapStyleEditor_TexturePanel:createChildren()
 	WorldMapStyleEditor_TextureStopsPanel.createChildren(self)
-	
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
 
-	local button = ISButton:new(10, self.texturePathEntry:getBottom() + 10, 80, buttonHgt, "RESIZE TO TEXTURE", self, self.onResizeToTexture)
+	local buttonPadding = UI_BORDER_SPACING*2
+	local button = ISButton:new(UI_BORDER_SPACING+1, self.texturePathEntry:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_ResizeToTexture"), self, self.onResizeToTexture)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "WORLD BOUNDS FROM TEXTURE", self, self.onBoundsFromTexture)
+	button = ISButton:new(UI_BORDER_SPACING+1, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_WorldBoundsFromTexture"), self, self.onBoundsFromTexture)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 
-	local label = ISLabel:new(button.x, button:getBottom() + 10, entryHgt, "SCALE:", 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(button.x, button:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_Scale")..":", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.scaleEntry = ISTextEntryBox:new("1.0", label:getRight() + 10, label.y, 80, entryHgt)
+	self.scaleEntry = ISTextEntryBox:new("1.0", label:getRight() + UI_BORDER_SPACING, label.y, 100, BUTTON_HGT)
 	self.scaleEntry.onCommandEntered = function(entry) self:onScaleEntered() end
 	self:addChild(self.scaleEntry)
 	self.scaleEntry:setOnlyNumbers(true)
 
-	self.lockSize = ISTickBox:new(label.x, label:getBottom() + 10, 20, FONT_HGT_SMALL + 4, "", self, self.onChangeSizeLocked)
+	self.lockSize = ISTickBox:new(label.x, label:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", self, self.onChangeSizeLocked)
 	self.lockSize.choicesColor = { r = 1, g = 1, b = 1, a = 1 }
 	self:addChild(self.lockSize)
-	self.lockSize:addOption("SIZE IS LOCKED")
+	self.lockSize:addOption(getText("IGUI_WorldMapEditor_SizeLocked"))
 	self.lockSize:setWidthToFit()
 
-	self.useWorldBounds = ISTickBox:new(self.lockSize.x, self.lockSize:getBottom() + 10, 20, FONT_HGT_SMALL + 4, "", self, self.onChangeUseWorldBounds)
+	self.useWorldBounds = ISTickBox:new(self.lockSize.x, self.lockSize:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "", self, self.onChangeUseWorldBounds)
 	self.useWorldBounds.choicesColor = { r = 1, g = 1, b = 1, a = 1 }
 	self:addChild(self.useWorldBounds)
-	self.useWorldBounds:addOption("USE WORLD BOUNDS")
+	self.useWorldBounds:addOption(getText("IGUI_WorldMapEditor_UseWorldBounds"))
 	self.useWorldBounds:setWidthToFit()
 
-	self.textureMode = ISComboBox:new(10, self.useWorldBounds:getBottom() + 10, 200, FONT_HGT_SMALL + 4, self, self.onChangeTextureMode)
+	self.textureMode = ISComboBox:new(UI_BORDER_SPACING+1, self.useWorldBounds:getBottom() + UI_BORDER_SPACING, 200, FONT_HGT_SMALL + 4, self, self.onChangeTextureMode)
 	self:addChild(self.textureMode)
-	self.textureMode:addOption("STRETCH")
-	self.textureMode:addOption("REPEAT")
+	self.textureMode:addOption(getText("IGUI_WorldMapEditor_Stretch"))
+	self.textureMode:addOption(getText("IGUI_WorldMapEditor_Repeat"))
 
 	self.snapButtons = {}
 
-	button = ISButton:new(10, self.textureMode:getBottom() + 10, 80, buttonHgt, "SNAP TO CELL", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING+1, self.textureMode:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapCell"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "cell"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.cell = button
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "SNAP TO CHUNK", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING+1, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapChunk"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "chunk"
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.chunk = button
 
-	button = ISButton:new(10, button:getBottom() + 10, 80, buttonHgt, "SNAP TO SQUARE", self, self.onChangeSnapMode)
+	button = ISButton:new(UI_BORDER_SPACING+1, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapSquare"), self, self.onChangeSnapMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "square"
 --	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.square = button
 
-	self:setHeight(button:getBottom())
+	self:setHeight(button:getBottom()+UI_BORDER_SPACING+1)
 end
 
 function WorldMapStyleEditor_TexturePanel:render()
@@ -732,30 +740,30 @@ end
 WorldMapStyleEditor_PolygonLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_PolygonLayerPanel")
 
 function WorldMapStyleEditor_PolygonLayerPanel:createChildren()
-	self.tabs = ISTabPanel:new(0, 0, 300, 100)
+	self.tabs = ISTabPanel:new(0, 0, 250+(getCore():getOptionFontSizeReal()*50), 100)
 	self.tabs:setEqualTabWidth(false)
 	self:addChild(self.tabs)
 
 	self.filterPanel = WorldMapStyleEditor_FilterPanel:new(self.tabs.width, self.editorMode)
 	self.filterPanel:initialise()
 	self.filterPanel:instantiate()
-	self.tabs:addView("Filter", self.filterPanel)
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Filter"), self.filterPanel)
 
 	self.fillPanel = WorldMapStyleEditor_ColorStopsPanel:new(self.tabs.width, self.editorMode)
 	self.fillPanel:initialise()
 	self.fillPanel:instantiate()
-	self.tabs:addView("Fill", self.fillPanel)
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Fill"), self.fillPanel)
 
 	self.texturePanel = WorldMapStyleEditor_TextureStopsPanel:new(self.tabs.width, self.editorMode)
 	self.texturePanel:initialise()
 	self.texturePanel:instantiate()
-	self.tabs:addView("Texture", self.texturePanel)
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Texture"), self.texturePanel)
 
 	self.tabs:setHeight(math.max(self.filterPanel:getBottom(), self.fillPanel:getBottom(), self.texturePanel:getBottom()))
 
 	self:shrinkWrap()
-	self:setX(getCore():getScreenWidth() - 10 - self.width)
-	self:setY(80)
+	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
+	self:setY(UI_BORDER_SPACING)
 end
 
 function WorldMapStyleEditor_PolygonLayerPanel:display(layer)
@@ -803,25 +811,25 @@ end
 WorldMapStyleEditor_TextureLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_TextureLayerPanel")
 
 function WorldMapStyleEditor_TextureLayerPanel:createChildren()
-	self.tabs = ISTabPanel:new(0, 0, 300, 100)
+	self.tabs = ISTabPanel:new(0, 0, 250+(getCore():getOptionFontSizeReal()*50), 100)
 	self.tabs:setEqualTabWidth(false)
 	self:addChild(self.tabs)
 
 	self.fillPanel = WorldMapStyleEditor_ColorStopsPanel:new(self.tabs.width, self.editorMode)
 	self.fillPanel:initialise()
 	self.fillPanel:instantiate()
-	self.tabs:addView("Fill", self.fillPanel)
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Fill"), self.fillPanel)
 
 	self.texturePanel = WorldMapStyleEditor_TexturePanel:new(self.tabs.width, self.editorMode)
 	self.texturePanel:initialise()
 	self.texturePanel:instantiate()
-	self.tabs:addView("Texture", self.texturePanel)
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Texture"), self.texturePanel)
 
 	self.tabs:setHeight(math.max(self.fillPanel:getBottom(), self.texturePanel:getBottom()))
 
 	self:shrinkWrap()
-	self:setX(getCore():getScreenWidth() - 10 - self.width)
-	self:setY(80)
+	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
+	self:setY(UI_BORDER_SPACING)
 end
 
 function WorldMapStyleEditor_TextureLayerPanel:display(layer)
@@ -870,26 +878,23 @@ end
 -----
 
 function WorldMapEditorMode_Style:createChildren()
-	self.listbox = WorldMapEditorListBox:new(10, 80, 400, 200, self.onListboxEvent, self)
+	self.listbox = WorldMapEditorListBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, 400, 200, self.onListboxEvent, self)
 	self:addChild(self.listbox)
 
-	local buttonHgt = FONT_HGT_MEDIUM + 8
-
-	local entryHgt = FONT_HGT_SMALL + 2 * 2
-	self.layerNameEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox:getBottom() + 10, self.listbox.width, entryHgt)
+	self.layerNameEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, BUTTON_HGT)
 	self.layerNameEntry.onCommandEntered = function(entry) self:onLayerNameEntered() end
 	self:addChild(self.layerNameEntry)
 
-	self.layerType = ISComboBox:new(10, self.layerNameEntry:getBottom() + 10, 200, FONT_HGT_SMALL + 4, self, self.onChangeLayerType)
+	self.layerType = ISComboBox:new(UI_BORDER_SPACING, self.layerNameEntry:getBottom() + UI_BORDER_SPACING, 200, BUTTON_HGT, self, self.onChangeLayerType)
 	self:addChild(self.layerType)
-	self.layerType:addOptionWithData("NONE", nil)
-	self.layerType:addOptionWithData("Line", "Line")
-	self.layerType:addOptionWithData("Polygon", "Polygon")
-	self.layerType:addOptionWithData("Texture", "Texture")
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_None"), nil)
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Line"), "Line")
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Polygon"), "Polygon")
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Texture"), "Texture")
 
-	local label = ISLabel:new(self.listbox.x, self.layerType:getBottom() + 10, entryHgt, "MIN ZOOM:", 1, 1, 1, 1, UIFont.Small, true)
+	local label = ISLabel:new(self.listbox.x, self.layerType:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_MinZoom") .. ":", 0, 0, 0, 1, UIFont.Small, true)
 	self:addChild(label)
-	self.zoomEntry = ISTextEntryBox:new("0.00", label:getRight() + 10, label.y, 80, entryHgt)
+	self.zoomEntry = ISTextEntryBox:new("0.00", label:getRight() + UI_BORDER_SPACING, label.y, 80, BUTTON_HGT)
 	self.zoomEntry.onCommandEntered = function(entry) self:onMinZoomEntered() end
 	self:addChild(self.zoomEntry)
 	self.zoomEntry:setOnlyNumbers(true)

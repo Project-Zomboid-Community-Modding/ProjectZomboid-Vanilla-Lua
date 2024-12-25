@@ -248,7 +248,7 @@ function ThunderDebug:new (x, y, width, height, player)
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.backgroundColor = {r=0, g=0, b=0, a=0.0};
+    o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.greyCol = { r=0.4,g=0.4,b=0.4,a=1};
     o.width = width;
     o.height = height;
@@ -259,7 +259,7 @@ function ThunderDebug:new (x, y, width, height, player)
     o.pin = true;
     o.isCollapsed = false;
     o.collapseCounter = 0;
-    o.title = "Thunderbug";
+    o.title = getText("IGUI_ClimDebuggers_Thunderbug");
     --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;

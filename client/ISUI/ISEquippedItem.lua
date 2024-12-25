@@ -8,6 +8,7 @@ ISEquippedItem.text = nil;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
 
 function ISEquippedItem:prerender()
 --	self:drawTexture(self.HandSecondaryTexture, -1, 50, 1, 1, 1, 1);
@@ -20,11 +21,23 @@ function ISEquippedItem:prerender()
 	else
 		self.invBtn:setImage(self.inventoryTexture);
     end
-    if getPlayerCraftingUI(0) and getPlayerCraftingUI(0):getIsVisible() then
+    if getPlayerZoneUI(0) and getPlayerZoneUI(0):getIsVisible() then
+        self.zoneBtn:setImage(self.zoneIconOn);
+    else
+        self.zoneBtn:setImage(self.zoneIcon);
+    end
+    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "HandcraftWindow" then
         self.craftingBtn:setImage(self.craftingIconOn);
     else
         self.craftingBtn:setImage(self.craftingIcon);
     end
+
+    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "BuildWindow" then
+        self.buildBtn:setImage(self.moveableIconBuildOn);
+    else
+        self.buildBtn:setImage(self.moveableIconBuild);
+    end
+
     if getPlayerInfoPanel(0) and getPlayerInfoPanel(0):getIsVisible() then
         self.healthBtn:setImage(self.heartIconOn);
     else
@@ -46,6 +59,8 @@ function ISEquippedItem:prerender()
             self.movableBtn:setImage(self.movableIconRotate);
         elseif getCell():getDrag(0):getMoveableMode() == "scrap" then
             self.movableBtn:setImage(self.movableIconScrap);
+        elseif getCell():getDrag(0):getMoveableMode() == "repair" then
+            self.movableBtn:setImage(self.moveableIconRepair);
         end
         self.movableTooltip:setVisible(true);
         self.movableBtn:setVisible(true);
@@ -99,31 +114,141 @@ function ISEquippedItem:prerender()
     end
     
     if self.adminBtn then
-        local isVisible = self.chr:getAccessLevel() ~= "" and self.chr:getAccessLevel() ~= "None"
+        local isVisible = self.chr:getRole():haveCapability(Capability.OpenAdminPanel)
         self.adminBtn:setVisible(isVisible)
-        if ISAdminPanelUI.instance then
-            self.adminBtn:setImage(self.adminIconOn);
-            if not isVisible then ISAdminPanelUI.instance:close(); end;
-        else
-            self.adminBtn:setImage(self.adminIcon);
+        if not isVisible then
+            if ISAdminPanelUI.instance then
+                ISAdminPanelUI.instance:close()
+            end
         end
-        
-        local safetyUI = getPlayerSafetyUI(self.chr:getPlayerNum())
-        if safetyUI ~= nil then
-            safetyUI:setX(self.adminBtn:getX() + 6)
-            if isVisible then
-                safetyUI:setY(self.adminBtn:getY() + self.adminIcon:getHeightOrig() + 18)
+
+        if ISAdminPanelUI.instance then
+            self.adminBtn:setImage(self.adminIconOn)
+        else
+            self.adminBtn:setImage(self.adminIcon)
+        end
+    end
+
+    if self.warManagerBtn then
+        local war = getWarNearest()
+        if war then
+            self.warManagerBtn:setVisible(true)
+
+            if not self.adminBtn:isVisible() then
+                self.warManagerBtn:setX(self.adminBtn:getX())
+                self.warManagerBtn:setY(self.adminBtn:getY())
             else
-                safetyUI:setY(self.adminBtn:getY() + 12)
+                self.warManagerBtn:setX(self.warManagerBtnX)
+                self.warManagerBtn:setY(self.warManagerBtnY)
+            end
+
+            local warX = self.warManagerBtn:getX()
+            local warY = self.warManagerBtn:getY()
+
+            if war:getState():name() == "Claimed" then
+                self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
+                self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small)
+                self.warManagerBtn:setImage(self.warInactive)
+            end
+
+            if war:getState():name() == "Accepted" then
+                self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
+                self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1,UIFont.Small)
+                self.warManagerBtn:setImage(self.warSoon)
+            end
+
+            if war:getState():name() == "Started" then
+                self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
+                self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1,UIFont.Small)
+                self.warManagerBtn:setImage(self.warActive)
+            end
+        else
+            self.warManagerBtn:setVisible(false)
+            if ISWarManagerUI.instance then
+                ISWarManagerUI.instance:closeModal()
             end
         end
     end
+
+    ---
+
+    local safetyEnabled = getServerOptions():getBoolean("SafetySystem");
+    local toggleTimeMax = getServerOptions():getInteger("SafetyToggleTimer");
+    local cooldownTimerMax = getServerOptions():getInteger("SafetyCooldownTimer");
+    local isNonPvpZone = NonPvpZone.getNonPvpZone(self.chr:getX(), self.chr:getY())
+
+
+
+    if isClient() then
+        self.safetyBtn:setVisible(safetyEnabled);
+        self.radialIcon:setVisible(false);
+
+        if safetyEnabled then
+
+            local safetyX = self.safetyBtn:getX();
+            local safetyY = self.safetyBtn:getY();
+
+            if self.safety:getToggle() > 0 or self.safety:getCooldown() > 0 then
+
+                self:drawTexture(self.lockTexture, safetyX + UI_BORDER_SPACING, safetyY + UI_BORDER_SPACING, 1,1,1,1);
+
+                if self.safety:getToggle() > 0 then
+
+                    self.radialIcon:setVisible(true);
+                    self.radialIcon:setValue(self.safety:getToggle() / toggleTimeMax);
+
+                    if self.safety:isEnabled() then
+                        self.radialIcon:setTexture(self.offTexture);
+                        self.safetyBtn:setImage(self.onTexture);
+                    else
+                        self.radialIcon:setTexture(self.onTexture);
+                        self.safetyBtn:setImage(self.offTexture);
+                    end
+
+                    self:drawText(tostring(math.ceil(self.safety:getToggle())), safetyX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
+
+                elseif self.safety:getCooldown() > 0 then
+
+                    self.radialIcon:setVisible(true);
+                    self.radialIcon:setValue(1 - self.safety:getCooldown() / cooldownTimerMax);
+
+                    if self.safety:isEnabled() then
+                        self.radialIcon:setTexture(self.onTexture);
+                        self.safetyBtn:setImage(self.onTexture);
+                    else
+                        self.radialIcon:setTexture(self.offTexture);
+                        self.safetyBtn:setImage(self.offTexture);
+                    end
+
+                    self:drawText(tostring(math.ceil(self.safety:getCooldown())), safetyX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
+
+                end
+            elseif not isNonPvpZone then
+                if self.safety:isEnabled() then
+                    self.safetyBtn:setImage(self.onTexture);
+                else
+                    self.safetyBtn:setImage(self.offTexture);
+                end
+            end
+        end
+
+        if isNonPvpZone then
+            self.safetyBtn:setImage(self.disableTexture);
+            self.radialIcon:setVisible(false);
+            if self:isMouseOver() then
+                self:drawText(getText("IGUI_PvpZone_NonPvpZone"), self.width + 10, self.height/2, 1, 0, 0, 1, self.Small);
+            end
+        end
+    end
+    ---
 
     if "Tutorial" == getCore():getGameMode() then
         self.movableBtn:setVisible(false);
         self.invBtn:setVisible(false);
         self.craftingBtn:setVisible(false);
+        self.zoneBtn:setVisible(false);
         self.searchBtn:setVisible(false);
+        self.buildBtn:setVisible(false);
         self.healthBtn:setY(self.invBtn:getY());
     end
 
@@ -139,110 +264,23 @@ function ISEquippedItem:prerender()
         local maxX = getCore():getScreenWidth();
         local statusData = getMPStatus()
 
-        local tmpY = 40
+        local tmpY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM*2
+        local tmpX = UI_BORDER_SPACING*3
 
         if tonumber(getMaxPlayers()) > 32 then
-            self:drawTextRight(getText("UI_MaxPlayers_Notification"), maxX-50, maxY-tmpY , 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
-            tmpY = tmpY + 20
-        end
-
-        if isShowConnectionInfo() then
-            self:drawTextRight("\"" .. getServerName() .. "\" (" .. getServerIP() .. ":" .. getServerPort() .. ")", maxX-50, maxY-tmpY, 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
-            tmpY = tmpY + 20
-        end
-
-        if isShowPingInfo() then
-            local lastPing = tonumber(statusData.lastPing)
-            local r = 0.8
-            local g = 0.8
-            local b = 0.8
-            if lastPing > 300 then
-                r = 1
-                g = 0.5
-                b = 0.2
-            elseif lastPing < 0 then
-                lastPing = 0
-                r = 0.5
-                g = 0.5
-                b = 0.5
-            end
-            self:drawTextRight(getText("UI_Ping", tostring(lastPing)), maxX-50, maxY-tmpY , r, g, b, 1, UIFont.NewMedium);
-            tmpY = tmpY + 20
+            self:drawTextRight(getText("UI_MaxPlayers_Notification"), maxX-tmpX, maxY-tmpY , 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
+            tmpY = tmpY + UI_BORDER_SPACING + FONT_HGT_MEDIUM
         end
 
         if isShowServerInfo() then
-            self:drawTextRight(statusData.serverTime, maxX-50, maxY-tmpY, 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
-            tmpY = tmpY + 20
-            self:drawTextRight(statusData.svnRevision.."  "..statusData.version, maxX-50, maxY-tmpY, 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
-            tmpY = tmpY + 20
+            self:drawTextRight(statusData.serverTime .. "   " .. statusData.position .. " : " .. statusData.lastPing, maxX-tmpX, maxY-tmpY, 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
+            tmpY = tmpY + UI_BORDER_SPACING + FONT_HGT_MEDIUM
         end
-    end
 
-    -- Display the various admin power you have
-    if false and isClient() and self.chr:getAccessLevel() and self.chr:getAccessLevel() ~= "None" then
-        local y = 20;
-        self:drawText("ADMIN POWER:", 80,y,1,1,1,1,UIFont.NewLarge);
-        y = y + FONT_HGT_LARGE;
-        local onOff = "Off";
-        if self.chr:isInvincible() then
-            onOff = "On";
+        if isShowConnectionInfo() then
+            self:drawTextRight("\"" .. getServerName() .. "\" (" .. getServerIP() .. ":" .. getServerPort() .. ")", maxX-tmpX, maxY-tmpY, 0.8, 0.8, 0.8, 1, UIFont.NewMedium);
+            tmpY = tmpY + UI_BORDER_SPACING + FONT_HGT_MEDIUM
         end
-        self:drawText("GodMode: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isInvisible() then
-            onOff = "On";
-        end
-        self:drawText("Invisible: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isNoClip() then
-            onOff = "On";
-        end
-        self:drawText("NoClip: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isCanSeeAll() then
-            onOff = "On";
-        end
-        self:drawText("CanSeeEveryone: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isNetworkTeleportEnabled() then
-            onOff = "On";
-        end
-        self:drawText("isNetworkTeleportEnabled: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isSeeEveryone() then
-            onOff = "On";
-        end
-        self:drawText("isSeeEveryone: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isCheatPlayerSeeEveryone() then
-            onOff = "On";
-        end
-        self:drawText("isCheatPlayerSeeEveryone: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isZombiesDontAttack() then
-            onOff = "On";
-        end
-        self:drawText("zombiesDontAttack: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:zombiesSwitchOwnershipEachUpdate() then
-            onOff = "On";
-        end
-        self:drawText("zombiesSwitchOwnershipEachUpdate: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-        y = y + FONT_HGT_MEDIUM;
-        onOff = "Off";
-        if self.chr:isCanHearAll() then
-            onOff = "On";
-        end
-        self:drawText("CanHearEveryone: " .. onOff, 80,y,1,1,1,1,UIFont.NewMedium);
-
     end
 end
 
@@ -386,21 +424,52 @@ function ISEquippedItem:renderFPS()
     if not ISFPS or not ISFPS.start then return end
     local second = getTimestamp()
     if (ISFPS.lastSec ~= second) or (ISEquippedItem.text == nil) then
-        ISEquippedItem.text = "FPS: " .. getAverageFPS()
+        ISEquippedItem.text = "FPS: " .. getAverageFPS() .. "\r\nCPU Waiting for GPU: " .. getCPUWait() .. "ms\r\nGPU Waiting for CPU: " .. getGPUWait() .. "ms\r\nCPU Time: " .. getCPUTime() .. "ms\r\nGPU Time: " .. getGPUTime() .. "ms"
         ISFPS.lastSec = second
     end
 end
 
 function ISEquippedItem:onOptionMouseDown(button, x, y)
+    local focus = nil
+    local playerNum = self.chr:getPlayerNum()
 	if button.internal == "INVENTORY" then
         self.inventory:setVisible(not self.inventory:getIsVisible());
         self.loot:setVisible(self.inventory:getIsVisible());
-
+        if self.inventory:isVisible() then
+            focus = self.inventory
+        end
     elseif button.internal == "HEALTH" then
 	--	xpUpdate.toggleCharacterInfo(self.chr);
 		self.infopanel:toggleView(getText("IGUI_XP_Health"));
+        if self.infopanel:isVisible() then
+            focus = self.infopanel.panel:getActiveView()
+        end
     elseif button.internal == "CRAFTING" then
-        ISCraftingUI.toggleCraftingUI();
+        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "HandcraftWindow" then
+            ISEntityUI.players[self.chr:getPlayerNum()].instance:close();
+        else
+            if isKeyDown(Keyboard.KEY_LMENU) then
+                ISEntityUI.OpenHandcraftWindow(self.chr, nil, "*");
+            else
+                -- temporary option to open handcraft window
+                ISEntityUI.OpenHandcraftWindow(self.chr, nil);
+            end
+        end
+--         elseif isKeyDown(Keyboard.KEY_LSHIFT) then
+--             -- temporary option to open handcraft window
+--             ISEntityUI.OpenHandcraftWindow(self.chr, nil);
+--         else
+--             ISCraftingUI.toggleCraftingUI();
+--             if getPlayerCraftingUI(playerNum):isVisible() then
+--                 focus = getPlayerCraftingUI(playerNum)
+--             end
+--         end
+    elseif button.internal == "ZONE" then
+        ISDesignationZonePanel.toggleZoneUI();
+        if getPlayerZoneUI(playerNum) and getPlayerZoneUI(playerNum):isVisible() then
+            focus = getPlayerZoneUI(playerNum)
+        end
+        ISAnimalZoneFirstInfo.showUI();
     elseif button.internal == "MAP" then
         ISWorldMap.ToggleWorldMap(self.chr:getPlayerNum())
     elseif button.internal == "DEBUG" and (getCore():getDebug() or ISDebugMenu.forceEnable) then
@@ -413,7 +482,7 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
         if ISUserPanelUI.instance then
             ISUserPanelUI.instance:close()
         else
-            local modal = ISUserPanelUI:new(200, 200, 350, 250, self.chr)
+            local modal = ISUserPanelUI:new(200, 200, 400, 250, self.chr)
             modal:initialise();
             modal:addToUIManager();
         end
@@ -425,14 +494,32 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             modal:initialise();
             modal:addToUIManager();
         end
+    elseif button.internal == "WARMANAGERPANEL" then
+        if ISWarManagerUI.instance then
+            ISWarManagerUI.instance:closeModal()
+        else
+            local modal = ISWarManagerUI:new(200, 200, 350, 270, getPlayer())
+            modal:initialise();
+            modal:addToUIManager();
+        end
+    elseif button.internal == "BUILD" then
+        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "BuildWindow" then
+            ISEntityUI.players[self.chr:getPlayerNum()].instance:close();
+        else
+            ISEntityUI.OpenBuildWindow(self.chr, nil, "*");
+        end
     elseif button.internal == "SEARCH" then
         ISSearchWindow.toggleWindow(self.chr);
+    elseif button.internal == "SAFETY" then
+        self:toggleSafety();
     end
-
+    if focus and JoypadState.players[playerNum+1] then
+        setJoypadFocus(playerNum, focus)
+    end
 end
 
 local activateCounter = 0;
-local activateTicks = 120; -- the actual value * 2;
+local activateTicks = 10; -- the actual value * 2;
 local lastId = 0;
 function ISEquippedItem:checkToolTip()
     local mx, my = getMouseX(), getMouseY();
@@ -520,6 +607,7 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.infopanel = getPlayerInfoPanel(chr:getPlayerNum());
     o.anchorLeft = true;
     o.chr = chr;
+    o.safety = o.chr:getSafety()
 	o.anchorRight = false;
 	o.anchorTop = true;
 	o.anchorBottom = false;
@@ -527,6 +615,8 @@ function ISEquippedItem:new (x, y, width, height, chr)
 	o.HandSecondaryTexture = getTexture("media/ui/HandSecondary2_Off.png");
 	o.inventoryTexture = getTexture("media/ui/Inventory2_Off.png");
 	o.inventoryTextureOn = getTexture("media/ui/Inventory2_On.png");
+    o.zoneIcon = getTexture("media/ui/Zone_Animal_Off.png");
+    o.zoneIconOn = getTexture("media/ui/Zone_Animal_On.png");
     o.craftingIcon = getTexture("media/ui/Carpentry_Off.png");
     o.craftingIconOn = getTexture("media/ui/Carpentry_On.png");
 	o.heartIcon = getTexture("media/ui/Heart2_Off.png");
@@ -535,7 +625,10 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.movableIconPickup = getTexture("media/ui/Furniture_Pickup.png");
     o.movableIconPlace = getTexture("media/ui/Furniture_Place.png");
     o.movableIconRotate = getTexture("media/ui/Furniture_Rotate.png");
+    o.moveableIconBuild = getTexture("media/ui/Build_Tool_Off.png");
+    o.moveableIconBuildOn = getTexture("media/ui/Build_Tool.png");
     o.movableIconScrap = getTexture("media/ui/Furniture_Disassemble.png");
+    o.moveableIconRepair = getTexture("media/ui/Furniture_On2.png");
     o.mapIconOff = getTexture("media/textures/worldMap/Map_Off.png");
     o.mapIconOn = getTexture("media/textures/worldMap/Map_On.png");
     o.debugIcon = getTexture("media/ui/Debug_Icon_Off.png");
@@ -544,8 +637,15 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.clientIconOn = getTexture("media/ui/Client_Icon_On.png");
     o.adminIcon = getTexture("media/ui/Admin_Icon.png");
     o.adminIconOn = getTexture("media/ui/Admin_Icon_On.png");
+    o.warActive = getTexture("media/ui/war_active.png");
+    o.warInactive = getTexture("media/ui/war_inactive.png");
+    o.warSoon = getTexture("media/ui/war_soon.png");
+    o.lockTexture = getTexture("media/ui/pvpicon_clock.png");
     o.searchIconOn = getTexture("media/ui/Search_Icon_On.png");
     o.searchIconOff = getTexture("media/ui/Search_Icon_Off.png");
+    o.offTexture = getTexture("media/ui/pvpicon_on.png"); --getTexture("media/ui/SafetyOFF.png");
+    o.onTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyON.png");
+    o.disableTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyDISABLE.png");
     o.healthIconOscillatorLevel = 0.0;
     o.healthIconOscillator = 0.0;
     o.healthIconOscillatorDecelerator = 0.96;
@@ -644,7 +744,25 @@ function ISEquippedItem:initialise()
         self:addChild(self.craftingBtn);
         self:addMouseOverToolTipItem(self.craftingBtn, getText("IGUI_CraftingTooltip") );
 
-        self.movableBtn = ISButton:new(0, self.craftingBtn:getY() + self.craftingIcon:getHeightOrig() + 5, self.movableIcon:getWidthOrig(), self.movableIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        local y = self.craftingBtn:getBottom() + 5
+
+        ----
+        self.buildBtn = ISButton:new(5, y, self.moveableIconBuild:getWidthOrig(), self.moveableIconBuild:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        self.buildBtn:setImage(self.moveableIconBuild);
+        self.buildBtn.internal = "BUILD";
+        self.buildBtn:initialise();
+        self.buildBtn:instantiate();
+        self.buildBtn:setDisplayBackground(false);
+
+        self.buildBtn.borderColor = {r=1, g=1, b=1, a=0.1};
+        self.buildBtn:ignoreWidthChange();
+        self.buildBtn:ignoreHeightChange();
+        self:addChild(self.buildBtn);
+        self:addMouseOverToolTipItem(self.buildBtn, getText("IGUI_Build_Name") );
+
+        y = self.buildBtn:getY() + self.moveableIconBuild:getHeightOrig() + 5
+
+        self.movableBtn = ISButton:new(0, y, self.movableIcon:getWidthOrig(), self.movableIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
         self.movableBtn:setImage(self.movableIcon);
         self.movableBtn.internal = "MOVABLE";
         self.movableBtn:initialise();
@@ -655,11 +773,13 @@ function ISEquippedItem:initialise()
         self.movableBtn:ignoreWidthChange();
         self.movableBtn:ignoreHeightChange();
 
-        self.movableTooltip = ISMoveablesIconToolTip:new (8+(self.movableIcon:getWidthOrig()/2), self.craftingBtn:getY() + self.craftingIcon:getHeightOrig() + 5 + 3, 120, self.movableIcon:getHeightOrig()-6,self.movableIcon:getWidthOrig()/2);
+        self.movableTooltip = ISMoveablesIconToolTip:new (0, self.movableBtn:getY(), 120, self.movableIcon:getHeightOrig()-6, self.movableBtn:getRight());
+
+        y = self.movableBtn:getY() + self.craftingIcon:getHeightOrig() + 5
 
         local texWid = self.movableIconPickup:getWidthOrig()
         local texHgt = self.movableIconPickup:getHeightOrig()
-        self.movablePopup = ISMoveablesIconPopup:new(10 + self.movableBtn:getX(), 10 + self.movableBtn:getY(), texWid * 5, texHgt)
+        self.movablePopup = ISMoveablesIconPopup:new(10 + self.movableBtn:getX(), 10 + self.movableBtn:getY(), texWid * 6, texHgt)
         self.movablePopup.owner = self
         self.movablePopup:addToUIManager()
         self.movablePopup:setVisible(false)
@@ -667,9 +787,7 @@ function ISEquippedItem:initialise()
         self:addChild(self.movableTooltip);
         self:addChild(self.movableBtn);
         self:addMouseOverToolTipItem(self.movableBtn, getText("IGUI_MovableTooltip") );
-
-        local y = self.movableBtn:getBottom() + 5
-
+        ----
         ----
         self.searchBtn = ISButton:new(0, y, self.searchIconOff:getWidthOrig(), self.searchIconOff:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
         self.searchBtn:setImage(self.searchIconOff);
@@ -686,6 +804,21 @@ function ISEquippedItem:initialise()
 
         y = self.searchBtn:getY() + self.searchIconOff:getHeightOrig() + 5
         ----
+
+        self.zoneBtn = ISButton:new(0, self.searchBtn:getY() + self.zoneIcon:getHeightOrig() + 5, self.zoneIcon:getWidthOrig(), self.zoneIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        self.zoneBtn:setImage(self.zoneIcon);
+        self.zoneBtn.internal = "ZONE";
+        self.zoneBtn:initialise();
+        self.zoneBtn:instantiate();
+        self.zoneBtn:setDisplayBackground(false);
+
+        self.zoneBtn.borderColor = {r=1, g=1, b=1, a=0.1};
+        self.zoneBtn:ignoreWidthChange();
+        self.zoneBtn:ignoreHeightChange();
+        self:addChild(self.zoneBtn);
+        self:addMouseOverToolTipItem(self.zoneBtn, getText("IGUI_Zone_Name") );
+
+        y = self.zoneBtn:getY() + self.zoneIcon:getHeightOrig() + 5
 
         if ISWorldMap.IsAllowed() then
             self.mapBtn = ISButton:new(0, y, self.mapIconOff:getWidthOrig(), self.mapIconOff:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
@@ -725,7 +858,7 @@ function ISEquippedItem:initialise()
             self:addChild(self.debugBtn);
 
             self:setHeight(self.debugBtn:getBottom())
-            y = self.debugBtn:getY() + self.debugIcon:getHeightOrig() + 10
+            y = self.debugBtn:getY() + self.debugIcon:getHeightOrig() + 5
         elseif self.mapBtn then
             self:setHeight(self.mapBtn:getBottom());
         elseif self.searchBtn then
@@ -733,42 +866,70 @@ function ISEquippedItem:initialise()
         else
             self:setHeight(self.movableBtn:getBottom());
         end;
-        
+
         if isClient() then
-            local texWid = self.clientIcon:getWidthOrig()
-            local texHgt = self.clientIcon:getHeightOrig()
-            self.clientBtn = ISButton:new(5, y, texWid, texHgt, "", self, ISEquippedItem.onOptionMouseDown);
+            self.safetyBtn = ISButton:new(2, y, self.disableTexture:getWidthOrig(), self.disableTexture:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.safetyBtn:setImage(self.disableTexture);
+            self.safetyBtn.internal = "SAFETY";
+            self.safetyBtn:initialise();
+            self.safetyBtn:instantiate();
+            self.safetyBtn:setDisplayBackground(false);
+            self.safetyBtn.borderColor = {r=1, g=1, b=1, a=0.1};
+            self.safetyBtn:ignoreWidthChange();
+            self.safetyBtn:ignoreHeightChange();
+            self:addChild(self.safetyBtn);
+
+            self.radialIcon = ISRadialProgressBar:new(2, y, self.disableTexture:getWidthOrig(), self.disableTexture:getHeight(), nil);
+            self.radialIcon:setVisible(false);
+            self:addChild(self.radialIcon);
+
+            self:setHeight(self.safetyBtn:getBottom())
+            y = self.safetyBtn:getBottom() + 5
+        end
+        if isClient() then
+            self.clientBtn = ISButton:new(5, y, self.clientIcon:getWidthOrig(), self.clientIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
             self.clientBtn:setImage(self.clientIcon);
             self.clientBtn.internal = "USERPANEL";
             self.clientBtn:initialise();
             self.clientBtn:instantiate();
             self.clientBtn:setDisplayBackground(false);
-    
             self.clientBtn.borderColor = {r=1, g=1, b=1, a=0.1};
             self.clientBtn:ignoreWidthChange();
             self.clientBtn:ignoreHeightChange();
-    
             self:addChild(self.clientBtn);
     
             self:setHeight(self.clientBtn:getBottom())
-            y = self.clientBtn:getY() + self.clientIcon:getHeightOrig() + 10
-        
-            self.adminBtn = ISButton:new(5, y, texWid, texHgt, "", self, ISEquippedItem.onOptionMouseDown);
+            y = y + self.clientIcon:getHeightOrig() + 5
+
+            self.adminBtn = ISButton:new(5, y, self.adminIcon:getWidthOrig(), self.adminIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
             self.adminBtn:setImage(self.adminIcon);
             self.adminBtn.internal = "ADMINPANEL";
             self.adminBtn:initialise();
             self.adminBtn:instantiate();
             self.adminBtn:setDisplayBackground(false);
-
             self.adminBtn.borderColor = {r=1, g=1, b=1, a=0.1};
             self.adminBtn:ignoreWidthChange();
             self.adminBtn:ignoreHeightChange();
-
             self:addChild(self.adminBtn);
 
             self:setHeight(self.adminBtn:getBottom())
-    
-            self.adminBtn:setVisible(false);
+            y = y + self.adminIcon:getHeightOrig() + 5
+
+            self.warManagerBtnX = 5
+            self.warManagerBtnY = y
+            self.warManagerBtn = ISButton:new(5, y, self.warActive:getWidthOrig(), self.warActive:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.warManagerBtn:setImage(self.warSoon);
+            self.warManagerBtn.internal = "WARMANAGERPANEL";
+            self.warManagerBtn:initialise();
+            self.warManagerBtn:instantiate();
+            self.warManagerBtn:setDisplayBackground(false);
+            self.warManagerBtn.borderColor = {r=1, g=1, b=1, a=0.1};
+            self.warManagerBtn:ignoreWidthChange();
+            self.warManagerBtn:ignoreHeightChange();
+            self:addChild(self.warManagerBtn);
+
+            self:setHeight(self.warManagerBtn:getBottom())
+            y = self.warManagerBtn:getY() + self.warActive:getHeightOrig() + 5
         end
     end
 
@@ -886,7 +1047,7 @@ function ISMoveablesIconPopup:render()
         self:drawRect(index * 50, 0, 50, self.height, 0.15, 1, 1, 1)
     end
     
-    local texts = { getText("IGUI_Exit"), getText("IGUI_Pickup"), getText("IGUI_Place"), getText("IGUI_Rotate"), getText("IGUI_Scrap") }
+    local texts = { getText("IGUI_Exit"), getText("IGUI_Pickup"), getText("IGUI_Place"), getText("IGUI_Rotate"), getText("IGUI_Scrap"), getText("IGUI_Repair") }
     if not mode then
         texts[1] = ""
     end
@@ -921,6 +1082,12 @@ function ISMoveablesIconPopup:render()
     end
     tex = self.owner.movableIconScrap
     self:drawTexture(tex, x + 50 * 4, y, 1, 1, 1, 1)
+
+    if mode == "repair" then
+        self:drawRectBorder(x + 50 * 5, 0, 50, self.height, 0.5, 1, 1, 1)
+    end
+    tex = self.owner.moveableIconRepair
+    self:drawTexture(tex, x + 50 * 5, y, 1, 1, 1, 1)
 end
 
 function ISMoveablesIconPopup:onMouseDown(x, y)
@@ -949,6 +1116,8 @@ function ISMoveablesIconPopup:onMouseUp(x, y)
         mode = "rotate"
     elseif index == 4 then
         mode = "scrap"
+    elseif index == 5 then
+        mode = "repair"
     end
     if not cursor then
         cursor = ISMoveableCursor:new(self.owner.chr)
@@ -1018,6 +1187,31 @@ end
 
 -----
 
+function ISEquippedItem:toggleSafety()
+    local player = getPlayer()
+    if player:getSafety():isToggleAllowed() then
+        player:getSafety():toggleSafety();
+        local action = { character = player,
+                         Type = "Safety",
+                         getExtraLogData = function() return (player:getSafety():isCurrent() and "Safety On") or "Safety Off" end }
+        ISLogSystem.logAction(action);
+    end
+end
+
+ISEquippedItem.onKeyPressed = function(key)
+    if getCore():isKey("Toggle Safety", key) then
+        if isClient() then
+            if getServerOptions():getBoolean("SafetySystem") then
+                ISEquippedItem:toggleSafety()
+            end
+        else
+            IsoPlayer.setCoopPVP(not IsoPlayer.getCoopPVP())
+        end
+    end
+end
+
+-----
+
 function launchEquippedItem(playerObj)
 	local playerNum = playerObj:getPlayerNum()
 	local x = getPlayerScreenLeft(playerNum)
@@ -1029,3 +1223,4 @@ function launchEquippedItem(playerObj)
 end
 
 --Events.OnCreateUI.Add(launchEquippedItem);
+Events.OnKeyPressed.Add(ISEquippedItem.onKeyPressed);

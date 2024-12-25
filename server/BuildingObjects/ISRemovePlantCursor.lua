@@ -31,17 +31,13 @@ function ISRemovePlantCursor:isValid(square)
 end
 
 function ISRemovePlantCursor:render(x, y, z, square)
-	if not ISRemovePlantCursor.floorSprite then
-		ISRemovePlantCursor.floorSprite = IsoSprite.new()
-		ISRemovePlantCursor.floorSprite:LoadFramesNoDirPageSimple('media/ui/FloorTileCursor.png')
-	end
 	local hc = getCore():getBadHighlitedColor()
 	if self:isValid(square) then
 		hc = getCore():getGoodHighlitedColor()
 		self:getRemovableObject(square):setHighlighted(true)
 		self:getRemovableObject(square):setHighlightColor(0.0, 1.0, 0.0, 1.0)
 	end
-	ISRemovePlantCursor.floorSprite:RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+	self:getFloorCursorSprite():RenderGhostTileColor(x, y, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 end
 
 function ISRemovePlantCursor:getRemovableObject(square)

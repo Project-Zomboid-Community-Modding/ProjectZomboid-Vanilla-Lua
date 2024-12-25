@@ -24,8 +24,8 @@ function CharacterInfoPage:createChildren()
 	self.avatarPanel:initialise();
 
 	self:addChild(self.avatarPanel);
-	self.avatarPanel.backgroundColor = {r=0, g=0, b=0, a=0.8};
-	self.avatarPanel.borderColor = {r=1, g=1, b=1, a=0.2};
+	self.avatarPanel.backgroundColor = {r=0, g=0, b=0, a=0};
+	self.avatarPanel.borderColor = {r=1, g=1, b=1, a=0};
 	self.avatarPanel.render = CharacterInfoPage.drawAvatar;
 
 	self:createAvatar();

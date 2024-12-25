@@ -5,7 +5,7 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local SBAR_WID = 17
+local SBAR_WID = 13
 
 ISSectionedPanel = ISPanel:derive("ISSectionedPanel")
 

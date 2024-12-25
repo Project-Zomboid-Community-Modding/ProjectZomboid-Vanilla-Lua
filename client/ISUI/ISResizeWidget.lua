@@ -35,8 +35,12 @@ function ISResizeWidget:resize(dx, dy)
     self.target.collapseCounter = 0;
 	--self:setX(self.x+dx);
 	--self:setY(self.y+dy);
-	self.target:setWidth(x);
-	self.target:setHeight(y);
+	if self.resizeFunction then
+		self.resizeFunction(self.target, x, y);
+	else
+		self.target:setWidth(x);
+		self.target:setHeight(y);
+	end
 end
 
 --************************************************************************--
@@ -148,5 +152,6 @@ function ISResizeWidget:new (x, y, width, height,  resizeTarget, yonly)
 	o.mouseOver = false;
     o.yonly = yonly;
 	o.target = resizeTarget;
+	o.resizeFunction = false;
 	return o
 end

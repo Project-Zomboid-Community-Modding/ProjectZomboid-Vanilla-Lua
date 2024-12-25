@@ -21,11 +21,9 @@ function ISQueueActionsAction:update()
 end
 
 function ISQueueActionsAction:start()
-	self.isAddingActions = true
-	self.indexToAdd = 1 + 1
+	self:beginAddingActions()
 	self.addActionsFunction(self.character, unpack(self.args))
-	self.isAddingActions = false
-	if self.indexToAdd == 1 + 1 then
+	if not self:endAddingActions() then
 		-- No actions were added, so stop.
 		self:forceStop()
 	else

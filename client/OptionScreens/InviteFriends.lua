@@ -6,6 +6,8 @@ require "ISUI/ISScrollingListBox"
 
 InviteFriends = ISPanelJoypad:derive("InviteFriends")
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+
 function InviteFriends:initialise()
 	ISPanelJoypad.initialise(self)
 end
@@ -143,7 +145,7 @@ function InviteFriends:render()
 	self:drawTextCentre(getText("UI_InviteFriends_Title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Large)
 	self:drawRectBorder(self.listbox:getX(), self.listbox:getY(), self.listbox:getWidth(), self.listbox:getHeight(), 0.9, 0.4, 0.4, 0.4)
 
-    self:drawText(getText("IGUI_CraftUI_Name_Filter"), self.filterEntry.x, self.filterEntry.y - 18, 1, 1, 1, 1, UIFont.Small)
+    self:drawText(getText("IGUI_CraftUI_Name_Filter"), self.filterEntry.x, self.filterEntry.y - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small)
 end
 
 function InviteFriends:doDrawItem(y, item, alt)
@@ -274,6 +276,7 @@ function InviteFriends:create()
 	local btnHgt = 25
 	local titleHgt = 10 + getTextManager():getFontFromEnum(UIFont.Large):getLineHeight() + 5
 	local avatarH = 32
+	local entryHgt = FONT_HGT_SMALL + 2 * 2
 
 	self.listbox = ISScrollingListBox:new(pad, titleHgt, self.width-pad*2, self.height-50-pad*2-btnHgt-titleHgt)
 	self.listbox:initialise()
@@ -286,7 +289,7 @@ function InviteFriends:create()
 	self.listbox.itemheight = 2 + avatarH + 2
 	self:addChild(self.listbox)
 
-    self.filterEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox.y + self.listbox.height + 25, 100, 18);
+    self.filterEntry = ISTextEntryBox:new("", self.listbox.x, self.listbox.y + self.listbox.height + FONT_HGT_SMALL, 100, entryHgt);
     self.filterEntry:initialise();
     self.filterEntry:instantiate();
     self.filterEntry:setText("");

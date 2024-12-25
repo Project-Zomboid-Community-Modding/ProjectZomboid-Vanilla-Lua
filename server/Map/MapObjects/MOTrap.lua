@@ -36,31 +36,39 @@ end
 local function removeExistingLuaObject(square)
 	local luaObject = STrapSystem.instance:getLuaObjectOnSquare(square)
 	if luaObject then
-		noise('removing luaObject at same location as newly-loaded isoObject')
+-- 		noise('removing luaObject at same location as newly-loaded isoObject')
 		STrapSystem.instance:removeLuaObject(luaObject)
 	end
 end
 
 local function CreateTrap(sq, spriteName)
 	local modData = {}
-	
+
 	local cell = getWorld():getCell()
 	local north = false
 	local javaObject = IsoThumpable.new(cell, sq, spriteName, north, modData)
 
-	javaObject:setCanPassThrough(false)
+	if sprite == "constructedobjects_01_16" then
+		--snare traps
+		javaObject:setCanPassThrough(true)
+		javaObject:setBlockAllTheSquare(false)
+		javaObject:setIsThumpable(false)
+	else
+		--all other traps
+		javaObject:setBlockAllTheSquare(true)
+		javaObject:setIsThumpable(true)
+	end
+
 	javaObject:setCanBarricade(false)
 	javaObject:setThumpDmg(1)
 	javaObject:setIsContainer(false)
 	javaObject:setIsDoor(false)
 	javaObject:setIsDoorFrame(false)
 	javaObject:setCrossSpeed(1.0)
-	javaObject:setBlockAllTheSquare(true)
 	javaObject:setName("Trap")
 	javaObject:setIsDismantable(false)
 	javaObject:setCanBePlastered(false)
 	javaObject:setIsHoppable(false)
-	javaObject:setIsThumpable(true)
 	javaObject:setModData(copyTable(modData))
 	javaObject:setMaxHealth(50)
 	javaObject:setHealth(50)
@@ -77,6 +85,7 @@ local function initObjectModData(isoObject, trapDef, north)
 	-- TODO: Random bait
 	modData.trapBait = ""
 	modData.trapBaitDay = 0
+	modData.animalAliveHour = 0;
 	modData.lastUpdate = 0
 	modData.baitAmountMulti = 0
 	-- TODO: Random animal (for closed traps only)
@@ -86,7 +95,7 @@ local function initObjectModData(isoObject, trapDef, north)
 	modData.closedSprite = north and trapDef.northClosedSprite or trapDef.closedSprite
 	modData.zone = square:getZone() and square:getZone():getType() or "TownZone"
 	modData.player = "unknown"
-	 -- TODO: Random player skill
+	-- TODO: Random player skill
 	modData.trappingSkill = 5
 	modData.destroyed = false;
 end
@@ -98,12 +107,12 @@ local function NewTrap(isoObject)
 
 	local sq = isoObject:getSquare()
 	removeExistingLuaObject(sq)
-	
+
 	local javaObject = CreateTrap(sq, isoObject:getSprite():getName())
 	local index = isoObject:getObjectIndex()
 	sq:transmitRemoveItemFromSquare(isoObject)
 	sq:AddSpecialObject(javaObject, index)
-	
+
 	initObjectModData(javaObject, trapDef, north)
 
 	javaObject:transmitCompleteItemToClients()

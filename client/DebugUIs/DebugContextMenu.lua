@@ -22,7 +22,7 @@ end
 DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	if not isDebugEnabled() then return true; end
 	if test and ISWorldObjectContextMenu.Test then return true end
-	
+
 	local square = nil;
 	for i,v in ipairs(worldobjects) do
 		square = v:getSquare();
@@ -33,111 +33,240 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 		table.insert(worldobjects, square:getObjects():get(i-1))
 	end
 	worldobjects = removeDuplicates(worldobjects)
-	
+
 	if getCore():getGameMode()=="LastStand" then
 		return;
 	end
-	
+
 	local playerObj = getSpecificPlayer(player)
 	local playerInv = playerObj:getInventory()
 
 	local building = square:getBuilding();
---	if building then
---		context:addOption("RBBASIC", building:getDef(), DebugContextMenu.doRandomizedBuilding, getWorld():getRBBasic());
---	end
+	--	if building then
+	--		context:addOption("RBBASIC", building:getDef(), DebugContextMenu.doRandomizedBuilding, getWorld():getRBBasic());
+	--	end
 
---		for i = 0, getWorld():getRandomizedVehicleStoryList():size()-1 do
---			local rvs = getWorld():getRandomizedVehicleStoryList():get(i);
+	--		for i = 0, getWorld():getRandomizedVehicleStoryList():size()-1 do
+	--			local rvs = getWorld():getRandomizedVehicleStoryList():get(i);
 
---	local rbOption = context:addOption("Remove All Vehicles on Zone", square:getZone(), DebugContextMenu.onRemoveVehicles);
---	for i = 0, getWorld():getRandomizedVehicleStoryList():size()-1 do
---		local rvs = getWorld():getRandomizedVehicleStoryList():get(i);
---
---		if rvs:getName() == "Basic Car Crash" then
---			local rbOption = context:addOption("ADD BURNT CAR CRASHED", square, DebugContextMenu.doRandomizedVehicleStory, rvs);
---			if not square:getZone() or not rvs:isValid(square:getZone(), square:getChunk(), true) then
---				rbOption.notAvailable = true;
---				local tooltip = ISWorldObjectContextMenu.addToolTip()
---				tooltip:setName("Zone not valid");
---				tooltip.description = rvs:getDebugLine();
---				rbOption.toolTip = tooltip;
---			end
---			break;
---		end
---	end
-	local debugOption = context:addDebugOption("Main", worldobjects, nil);
-	local subMenu = ISContextMenu:getNew(context);
-	context:addSubMenu(debugOption, subMenu);
+	--	local rbOption = context:addOption("Remove All Vehicles on Zone", square:getZone(), DebugContextMenu.onRemoveVehicles);
+	--	for i = 0, getWorld():getRandomizedVehicleStoryList():size()-1 do
+	--		local rvs = getWorld():getRandomizedVehicleStoryList():get(i);
+	--
+	--		if rvs:getName() == "Basic Car Crash" then
+	--			local rbOption = context:addOption("ADD BURNT CAR CRASHED", square, DebugContextMenu.doRandomizedVehicleStory, rvs);
+	--			if not square:getZone() or not rvs:isValid(square:getZone(), square:getChunk(), true) then
+	--				rbOption.notAvailable = true;
+	--				local tooltip = ISWorldObjectContextMenu.addToolTip()
+	--				tooltip:setName("Zone not valid");
+	--				tooltip.description = rvs:getDebugLine();
+	--				rbOption.toolTip = tooltip;
+	--			end
+	--			break;
+	--		end
+	--	end
+	local debugOption1 = context:addDebugOption(getText("IGUI_DebugContext_Title"), worldobjects, nil);
+	local debugMenu = ISContextMenu:getNew(context);
+	context:addSubMenu(debugOption1, debugMenu);
 
-	subMenu:addOption("Teleport", playerObj, DebugContextMenu.onTeleportUI);
-	subMenu:addOption("Remove item tool", playerObj, DebugContextMenu.onRemoveItemTool)
-	subMenu:addOption("Spawn Vehicle", playerObj, DebugContextMenu.onSpawnVehicle);
-	subMenu:addOption("Horde Manager", square, DebugContextMenu.onHordeManager, playerObj);
-	
-	debugOption = context:addDebugOption("UIs", worldobjects, nil);
-	subMenu = ISContextMenu:getNew(context);
-	context:addSubMenu(debugOption, subMenu);
+	local mainOption = debugMenu:addDebugOption(getText("IGUI_DebugContext_Main"), worldobjects, nil);
+	local mainMenu = ISContextMenu:getNew(debugMenu);
+	debugMenu:addSubMenu(mainOption, mainMenu);
 
-	subMenu:addOption("Missing 3D items", nil, DebugContextMenu.do3DItem);
-	subMenu:addOption("Debug interpolation UI", square, DebugContextMenu.onDebugInterpolationUI);
-	subMenu:addOption("Debug player UI", square, DebugContextMenu.onDebugPlayerInterpolationUI);
-	subMenu:addOption("Tiles Picker", playerObj, DebugContextMenu.onTilesPicker);
-	subMenu:addOption("Generate Loot UI", playerObj, DebugContextMenu.onGenerateLootUI);
-	subMenu:addOption("Running UI", playerObj, DebugContextMenu.onRunningUI);
-	subMenu:addOption("Spawn survivor horde in chunk", playerObj, DebugContextMenu.onSpawnSurvivorHorde);
-	subMenu:addOption("Attached Items", playerObj, DebugContextMenu.onAttachedItems);
-	subMenu:addOption("Extended Anims List", playerObj, DebugContextMenu.onExtList);
-	
-	
+	mainMenu:addDebugOption(getText("IGUI_GameStats_Teleport"), playerObj, DebugContextMenu.onTeleportUI);
+	mainMenu:addDebugOption(getText("IGUI_DebugContext_RemoveItemTool"), playerObj, DebugContextMenu.onRemoveItemTool)
+	mainMenu:addDebugOption(getText("IGUI_DebugContext_SpawnVehicle"), playerObj, DebugContextMenu.onSpawnVehicle);
+	mainMenu:addDebugOption(getText("IGUI_DebugContext_HordeManager"), square, DebugContextMenu.onHordeManager, playerObj);
+	local text = getText("IGUI_DebugContext_PlayerModelHide");
+	if not getCore():isDisplayPlayerModel() then
+		text = getText("IGUI_DebugContext_PlayerModelShow");
+	end
+	mainMenu:addDebugOption(text, playerObj, DebugContextMenu.onShowPlayerModel);
+
+	local text = getText("IGUI_DebugContext_CursorHide");
+	if not getCore():isDisplayCursor() then
+		text = getText("IGUI_DebugContext_CursorShow");
+	end
+	mainMenu:addDebugOption(text, playerObj, DebugContextMenu.onShowCursor);
+
+
+	local uiOption = debugMenu:addDebugOption(getText("IGUI_DebugContext_UIs"), worldobjects, nil);
+	local uiMenu = ISContextMenu:getNew(debugMenu);
+	debugMenu:addSubMenu(uiOption, uiMenu);
+
+	uiMenu:addOption(getText("IGUI_DebugContext_Missing3D"), nil, DebugContextMenu.do3DItem);
+	uiMenu:addOption(getText("IGUI_DebugContext_MissingClothing"), nil, DebugContextMenu.doMissingClothingItems);
+	uiMenu:addOption(getText("IGUI_DebugContext_MissingNonClothing"), nil, DebugContextMenu.doMissingItems);
+	uiMenu:addOption(getText("IGUI_DebugContext_DebugInterpolation"), square, DebugContextMenu.onDebugInterpolationUI);
+	uiMenu:addOption(getText("IGUI_DebugContext_DebugPlayer"), square, DebugContextMenu.onDebugPlayerInterpolationUI);
+	uiMenu:addOption(getText("IGUI_DebugContext_TilePicker"), playerObj, DebugContextMenu.onTilesPicker);
+	uiMenu:addOption(getText("IGUI_DebugContext_GenerateLootUI"), playerObj, DebugContextMenu.onGenerateLootUI);
+	uiMenu:addOption(getText("IGUI_DebugContext_RunningUI"), playerObj, DebugContextMenu.onRunningUI);
+	uiMenu:addOption(getText("IGUI_DebugContext_SpawnSurvivorHorde"), playerObj, DebugContextMenu.onSpawnSurvivorHorde);
+	uiMenu:addOption(getText("IGUI_DebugContext_AttachedItems"), playerObj, DebugContextMenu.onAttachedItems);
+	uiMenu:addOption(getText("IGUI_DebugContext_ExtendedAnimsList"), playerObj, DebugContextMenu.onExtList);
+
+	local x = getMouseX()
+	local y = getMouseY()
+	local square,sqX,sqY,sqZ = DebugContextMenu.pickSquare(x, y)
+	for dy=-1,1 do
+		for dx=-1,1 do
+			local l_square = getCell():getGridSquare(sqX+dx, sqY+dy, sqZ)
+			if l_square then
+				for i=1, l_square:getMovingObjects():size() do
+					local obj = l_square:getMovingObjects():get(i - 1)
+					if instanceof(obj, "IsoGameCharacter") then
+						debugMenu:addDebugOption(string.format("Animation Text (%s)", obj:getClass():getSimpleName()), obj, DebugContextMenu.onShowAnimationText)
+						if (obj:isAnimRecorderActive()) then
+							context:addDebugOption(string.format("%s - Stop Anim Recording", obj:getClass():getSimpleName()), obj, DebugContextMenu.onSetAnimRecorderActive, false)
+						else
+							context:addDebugOption(string.format("%s - Start Anim Recording", obj:getClass():getSimpleName()), obj, DebugContextMenu.onSetAnimRecorderActive, true)
+						end
+						break
+					end
+				end
+			end
+		end
+	end
+
+	if square == nil then
+		print("[DebugContextMenu][doDebugMenu] returned, square is null")
+		return;
+	end;
+
 	if square:getBuilding() then
-		DebugContextMenu.addRBDebugMenu(subMenu, square:getBuilding());
+		DebugContextMenu.addRBDebugMenu(debugMenu, square:getBuilding());
 		local def = square:getBuilding():getDef();
 		local alarm = "(Off)";
 		if def:isAlarmed() then
 			alarm = "(On)";
 		end
-		subMenu:addOption("Set Alarm " .. alarm, def, DebugContextMenu.onSetAlarm);
+		uiMenu:addDebugOption("Set Alarm " .. alarm, def, DebugContextMenu.onSetAlarm);
 	end
 
 	if square:getZone() then
-		DebugContextMenu.addRVSDebugMenu(subMenu, square);
+		DebugContextMenu.addRVSDebugMenu(mainMenu, square);
 	end
-	
-	DebugContextMenu.addRZSDebugMenu(subMenu, square);
+
+	DebugContextMenu.addRZSDebugMenu(mainMenu, square);
 
 
-	local noiseOption = subMenu:addOption("Make noise", worldobjects, nil);
-	local noiseSubMenu = subMenu:getNew(subMenu);
-	subMenu:addSubMenu(noiseOption, noiseSubMenu);
+	local noiseOption = mainMenu:addOption(getText("IGUI_DebugContext_MakeNoise"), worldobjects, nil);
+	local noiseSubMenu = mainMenu:getNew(mainMenu);
+	mainMenu:addSubMenu(noiseOption, noiseSubMenu);
 
-	noiseSubMenu:addOption("Radius: 10", square, DebugContextMenu.onMakeNoise, playerObj, 10, 100);
-	noiseSubMenu:addOption("Radius: 20", square, DebugContextMenu.onMakeNoise, playerObj, 20, 100);
-	noiseSubMenu:addOption("Radius: 50", square, DebugContextMenu.onMakeNoise, playerObj, 50, 100);
-	noiseSubMenu:addOption("Radius: 100", square, DebugContextMenu.onMakeNoise, playerObj, 100, 100);
-	noiseSubMenu:addOption("Radius: 200", square, DebugContextMenu.onMakeNoise, playerObj, 200, 100);
-	noiseSubMenu:addOption("Radius: 500", square, DebugContextMenu.onMakeNoise, playerObj, 500, 100);
-	
+	local noiseRadius = {10, 20, 50, 100, 200, 500}
+	for _,r in ipairs(noiseRadius) do
+		noiseSubMenu:addOption(getText("IGUI_DebugContext_Radius")..": " .. r, square, DebugContextMenu.onMakeNoise, playerObj, r, 100);
+	end
 	--DebugContextMenu.doCheatMenu(subMenu, playerObj);
-	
 
+	mainMenu:addDebugOption(getText("IGUI_DebugContext_SpawnPoints"), square, DebugContextMenu.onSpawnPoints, playerObj);
 
-	subMenu:addOption("Spawn Points", square, DebugContextMenu.onSpawnPoints, playerObj);
+	DebugContextMenu.doDebugObjectMenu(player, debugMenu, worldobjects, test)
+	DebugContextMenu.doDebugCorpseMenu(player, debugMenu, worldobjects, test)
+	DebugContextMenu.doDebugZombieMenu(player, debugMenu, worldobjects, test)
 
+	DebugContextMenu.doDebugAnimalMenu(playerObj, debugMenu, worldobjects, test, square)
 
+	--	if not DebugContextMenu.staggerBacking then
+	--		subMenu:addOption("Start Stagger Back", playerObj, DebugContextMenu.stagger, true);
+	--	else
+	--		subMenu:addOption("Stop Stagger Back", playerObj, DebugContextMenu.stagger, false);
+	--	end
+end
 
-	DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
-	DebugContextMenu.doDebugCorpseMenu(player, context, worldobjects, test)
-	DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test)
-	
---	if not DebugContextMenu.staggerBacking then
---		subMenu:addOption("Start Stagger Back", playerObj, DebugContextMenu.stagger, true);
---	else
---		subMenu:addOption("Stop Stagger Back", playerObj, DebugContextMenu.stagger, false);
---	end
+function DebugContextMenu.onShowPlayerModel(playerObj)
+	getCore():setDisplayPlayerModel(not getCore():isDisplayPlayerModel());
+end
+
+function DebugContextMenu.onShowCursor(playerObj)
+	getCore():setDisplayCursor(not getCore():isDisplayCursor());
+	Mouse.setCursorVisible(getCore():isDisplayCursor())
+end
+
+function DebugContextMenu.onAddDesignationZone(playerObj)
+	local ui = ISDesignationZonePanel:new(50,50, 600, 800, playerObj);
+	ui:initialise()
+	ui:addToUIManager()
+end
+
+function DebugContextMenu.doDebugAnimalMenu(playerObj, context, worldobjects, test, square)
+	local debugOption = context:addDebugOption(getText("IGUI_DebugContext_Animals"), worldobjects, nil);
+	local subMenu = ISContextMenu:getNew(context);
+	context:addSubMenu(debugOption, subMenu);
+
+	--	subMenu:addOption("Designation Zone", playerObj, DebugContextMenu.onAddDesignationZone);
+	if isClient() then
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllAnimalsClient)
+	else
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllAnimals)
+	end
+	local text = getText("IGUI_DebugContext_AnimalCheatEnable");
+	if AnimalContextMenu.cheat then
+		text = getText("IGUI_DebugContext_AnimalCheatDisable");
+	end
+	subMenu:addOption(text, playerObj, DebugContextMenu.onToggleAnimalCheat);
+	subMenu:addOption(getText("IGUI_DebugContext_AddEnclosure"), playerObj, DebugContextMenu.onAddEnclosure);
+	subMenu:addOption(getText("IGUI_DebugContext_AvatarUI"), playerObj, DebugContextMenu.onAvatarUI);
+
+	local groups = {};
+	local animals = {};
+	local defs = getAllAnimalsDefinitions();
+	for i=0, defs:size()-1 do
+		local def = defs:get(i);
+		if not animals[def:getGroup()] then
+			animals[def:getGroup()] = {};
+			table.insert(groups, def:getGroup());
+		end
+		table.insert(animals[def:getGroup()], def);
+	end
+
+	table.sort(groups, function(a,b)
+		local name1 = getText("IGUI_Animal_Group_" .. a)
+		local name2 = getText("IGUI_Animal_Group_" .. b)
+		return not string.sort(name1, name2)
+	end)
+
+	for _,group in ipairs(groups) do
+		local animalOption = subMenu:addOption(getText("IGUI_Animal_Group_" .. group), nil, nil);
+		local animalSubMenu = ISContextMenu:getNew(subMenu);
+		subMenu:addSubMenu(animalOption, animalSubMenu);
+		local defs = animals[group]
+		for j, def in ipairs(defs) do
+			local animalBreedOption = animalSubMenu:addOption("Add " .. getText("IGUI_AnimalType_" .. def:getAnimalType()), nil, nil);
+			local animalBreedSubMenu = ISContextMenu:getNew(animalSubMenu);
+			subMenu:addSubMenu(animalBreedOption, animalBreedSubMenu);
+			local canBeSkeleton = def:canBeSkeleton();
+
+			local breeds = def:getBreeds();
+			for i=0,breeds:size()-1 do
+				local breed = breeds:get(i);
+				animalBreedSubMenu:addOption(getText("IGUI_Breed_" .. breed:getName()), def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, false);
+				-- add the skeleton version
+				if canBeSkeleton and i == breeds:size()-1 then
+					animalBreedSubMenu:addOption("Skeleton", def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, true);
+				end
+			end
+		end
+	end
+end
+
+function DebugContextMenu.onToggleAnimalCheat()
+	AnimalContextMenu.cheat = not AnimalContextMenu.cheat;
+	getCore():setAnimalCheat(AnimalContextMenu.cheat);
 end
 
 function DebugContextMenu.do3DItem()
 	getCore():countMissing3DItems();
+end
+
+function DebugContextMenu.doMissingClothingItems()
+	getCore():debugOutputMissingCLothingSpawn();
+end
+
+function DebugContextMenu.doMissingItems()
+	getCore():debugOutputMissingItemSpawn();
 end
 
 function DebugContextMenu.onGenerateLootUI(playerObj)
@@ -161,14 +290,14 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 	local playerObj = getSpecificPlayer(player)
 	local playerInv = playerObj:getInventory()
 
-	local debugOption = context:addDebugOption("Objects", worldobjects, nil);
+	local debugOption = context:addDebugOption(getText("IGUI_DebugContext_Objects"), worldobjects, nil);
 	local subMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(debugOption, subMenu);
 
 	local sq = getSpecificPlayer(player):getCurrentSquare()
 	if sq and sq:getBuilding() then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		subMenu:addOption("Get Building Key", worldobjects, DebugContextMenu.OnGetBuildingKey, player)
+		subMenu:addOption(getText("IGUI_DebugContext_GetBuildingKey"), worldobjects, DebugContextMenu.OnGetBuildingKey, player)
 	end
 
 	local window = IsoObjectPicker.Instance:PickWindow(x, y)
@@ -178,9 +307,49 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 		subMenu:addOption(window:isPermaLocked() and "Window Perm Unlock" or "Window Perm Lock", worldobjects, DebugContextMenu.OnWindowPermLock, window)
 		subMenu:addOption("Window ~Smashed", worldobjects, DebugContextMenu.OnWindowSmash, window)
 		subMenu:addOption("Window ~GlassRemoved", worldobjects, DebugContextMenu.OnWindowGlassRemoved, window)
+		local barricade = window:getBarricadeForCharacter(playerObj)
+		if (barricade == nil) then
+			subMenu:addOption("Window Barricade +Metal Bars", playerObj, DebugContextMenu.OnWindowAddMetalBar, window)
+			subMenu:addOption("Window Barricade +Metal Panel", playerObj, DebugContextMenu.OnWindowAddMetal, window)
+		end
+		if (barricade ~= nil) and (barricade:isMetalBar()) then
+			subMenu:addOption("Window Barricade -Metal Bars", playerObj, DebugContextMenu.OnWindowRemoveMetalBar, window)
+		end
+		if (barricade ~= nil) and (barricade:isMetal()) then
+			subMenu:addOption("Window Barricade -Metal Panel", playerObj, DebugContextMenu.OnWindowRemoveMetal, window)
+		end
+		if (barricade == nil) or ((not barricade:isMetal()) and (not barricade:isMetalBar()) and (barricade:getNumPlanks() < 4)) then
+			subMenu:addOption("Window Barricade +Plank", playerObj, DebugContextMenu.OnWindowAddPlank, window)
+		end
+		if (barricade ~= nil) and (barricade:getNumPlanks() > 0) then
+			subMenu:addOption("Window Barricade -Plank", playerObj, DebugContextMenu.OnWindowRemovePlank, window)
+		end
 	end
 
-	local metalDrum = nil
+	local windowFrame = IsoObjectPicker.Instance:PickWindowFrame(x, y)
+	if instanceof(windowFrame, "IsoWindowFrame") and not windowFrame:hasWindow() then
+		if test then return ISWorldObjectContextMenu.setTest() end
+		local barricade = windowFrame:getBarricadeForCharacter(playerObj)
+		if barricade == nil then
+			if windowFrame:isBarricadeAllowed() then -- no sheet rope present
+				subMenu:addOption("WindowFrame Barricade +Metal Bars", playerObj, DebugContextMenu.OnWindowAddMetalBar, windowFrame)
+				subMenu:addOption("WindowFrame Barricade +Metal Panel", playerObj, DebugContextMenu.OnWindowAddMetal, windowFrame)
+				subMenu:addOption("WindowFrame Barricade +Plank", playerObj, DebugContextMenu.OnWindowAddPlank, windowFrame)
+			end
+		else
+			if barricade:canAddPlank() then
+				subMenu:addOption("WindowFrame Barricade +Plank", playerObj, DebugContextMenu.OnWindowAddPlank, windowFrame)
+			end
+			if barricade:isMetalBar() then
+				subMenu:addOption("WindowFrame Barricade -Metal Bars", playerObj, DebugContextMenu.OnWindowRemoveMetalBar, windowFrame)
+			elseif barricade:isMetal() then
+				subMenu:addOption("WindowFrame Barricade -Metal Panel", playerObj, DebugContextMenu.OnWindowRemoveMetal, windowFrame)
+			elseif barricade:getNumPlanks() > 0 then -- must be true
+				subMenu:addOption("WindowFrame Barricade -Plank", playerObj, DebugContextMenu.OnWindowRemovePlank, windowFrame)
+			end
+		end
+	end
+
 	local rainBarrel = nil
 
 	for _,obj in ipairs(worldobjects) do
@@ -190,7 +359,7 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 			subMenu:addOption(string.format("Set Door Key ID (%d)", obj:getKeyId()), worldobjects, DebugContextMenu.OnSetDoorKeyID, obj)
 			subMenu:addOption("Set Door Building Key ID", worldobjects, DebugContextMenu.OnSetDoorKeyIDBuilding, obj)
 			subMenu:addOption("Set Door Random Key ID", worldobjects, DebugContextMenu.OnSetDoorKeyIDRandom, obj)
-			subMenu:addOption(string.format("Set force lock (%s)", tostring(not door:getModData().CustomLock)), worldobjects, DebugContextMenu.setForceLockDoor, obj, player)
+			subMenu:addOption(string.format("Set force lock (%s)", tostring(not obj:getModData().CustomLock)), worldobjects, DebugContextMenu.setForceLockDoor, obj, player)
 		end
 		if instanceof(obj, "IsoGenerator") then
 			subMenu:addOption("Generator: Set Fuel", obj, DebugContextMenu.OnGeneratorSetFuel)
@@ -224,13 +393,6 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 		if CCampfireSystem.instance:isValidIsoObject(obj) then
 			subMenu:addOption("Campfire: Zero Fuel", obj, DebugContextMenu.OnCampfireZeroFuel)
 			subMenu:addOption("Campfire: Set Fuel", obj, DebugContextMenu.OnCampfireSetFuel)
-		end
-		if not metalDrum and CMetalDrumSystem:isValidIsoObject(obj) then
-			if obj:hasModData() and not obj:getModData().haveLogs and not obj:getModData().haveCharcoal then
-				subMenu:addOption("Metal Drum: Zero Water", obj, DebugContextMenu.OnMetalDrumZeroWater)
-				subMenu:addOption("Metal Drum: Set Water", obj, DebugContextMenu.OnMetalDrumSetWater)
-			end
-			metalDrum = obj
 		end
 		if not rainBarrel and CRainBarrelSystem:isValidIsoObject(obj) then
 			subMenu:addOption("Rain Barrel: Zero Water", obj, DebugContextMenu.OnRainBarrelZeroWater)
@@ -279,6 +441,13 @@ function DebugContextMenu.doDebugCorpseMenu(player, context, worldobjects, test)
 	local subMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(option, subMenu);
 
+	if body:isAnimal() then
+		local text = "Reanimate (Animal)"
+		subMenu:addOption(text, body, DebugContextMenu.OnReanimateCorpse)
+		subMenu:addOption("Remove", body, DebugContextMenu.OnDeadBodyRemove)
+		return
+	end
+
 	local text = body:isFakeDead() and "Reanimate (Zombie)" or "Reanimate (Player)"
 	subMenu:addOption(text, body, DebugContextMenu.OnReanimateCorpse)
 
@@ -299,14 +468,15 @@ function DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test)
 	local x = getMouseX()
 	local y = getMouseY()
 
-	local debugOption = context:addDebugOption("Zombies", worldobjects, nil);
+	local debugOption = context:addDebugOption(getText("IGUI_DebugContext_Zombies"), worldobjects, nil);
 	local subMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(debugOption, subMenu);
 
 	if isClient() then
-		subMenu:addOption("Remove All", obj, DebugContextMenu.OnRemoveAllZombiesClient)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllZombiesClient)
+		subMenu:addOption("Add Zombie", player, DebugContextMenu.OnAddZombieClient, player)
 	else
-		subMenu:addOption("Remove All", obj, DebugContextMenu.OnRemoveAllZombies)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllZombies)
 	end
 
 	local square,sqX,sqY,sqZ = DebugContextMenu.pickSquare(x, y)
@@ -347,6 +517,10 @@ function DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test)
 	end
 end
 
+DebugContextMenu.onSetAnimRecorderActive = function(character, isActive)
+	character:setAnimRecorderActive(isActive, true)
+end
+
 function DebugContextMenu.OnRemoveAllZombies(zombie)
 	local zombies = getCell():getObjectList()
 	for i=zombies:size(),1,-1 do
@@ -360,6 +534,26 @@ end
 
 function DebugContextMenu.OnRemoveAllZombiesClient(zombie)
 	SendCommandToServer(string.format("/removezombies -remove true"))
+end
+
+function DebugContextMenu.OnRemoveAllAnimals(zombie)
+	local animals = getCell():getObjectList()
+	for i=animals:size(),1,-1 do
+		local animal = animals:get(i-1)
+		if instanceof(animal, "IsoAnimal") then
+			animal:remove()
+		end
+	end
+end
+
+function DebugContextMenu.OnRemoveAllAnimalsClient(zombie)
+	SendCommandToServer(string.format("/remove animals"))
+end
+
+function DebugContextMenu.OnAddZombieClient(player)
+	local p = getSpecificPlayer(player)
+	SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -health %s -outfit %s",
+			math.floor(p:getX()), math.floor(p:getY()), math.floor(p:getZ()), 1, 1, "false", "false", "false", "false", "1", ""));
 end
 
 function DebugContextMenu.OnSelectZombie(zombie)
@@ -420,18 +614,36 @@ function DebugContextMenu.OnDeadBodyToggleFakeDead(body)
 end
 
 function DebugContextMenu.OnDeadBodyRemove(body)
-	body:removeFromWorld()
-	body:removeFromSquare()
+	body:getSquare():removeCorpse(body, false)
+
 end
 
 function DebugContextMenu.OnGetBuildingKey(worldobjects, player)
+	if isClient() then
+		sendClientCommand(getSpecificPlayer(player), 'debugAction', 'getBuildingKey', {})
+		return
+	end
+
 	local sq = getSpecificPlayer(player):getCurrentSquare()
 	if sq and sq:getBuilding() then
-		getSpecificPlayer(player):getInventory():AddItem("Base.Key1"):setKeyId(sq:getBuilding():getDef():getKeyId())
+		if isClient() then
+			SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\" \""..luautils.trim(tostring(ItemPickerJava.KeyNamer.getName(sq))).."\"")
+		else
+			local key = instanceItem("Base.Key1")
+			key:setKeyId(sq:getBuilding():getDef():getKeyId())
+			ItemPickerJava.keyNamerBuilding(key, sq)
+			getSpecificPlayer(player):getInventory():AddItem(key)
+		end
 	end
 end
 
 function DebugContextMenu.OnGetDoorKey(worldobjects, door, player)
+	if isClient() then
+		local args = { x = door:getX(), y = door:getY(), z = door:getZ(), index = door:getObjectIndex() }
+		sendClientCommand(getSpecificPlayer(player), 'debugAction', 'getDoorKey', args)
+		return
+	end
+
 	local keyID = -1
 	if instanceof(door, "IsoDoor") then
 		keyID = door:checkKeyId()
@@ -456,7 +668,13 @@ function DebugContextMenu.OnGetDoorKey(worldobjects, door, player)
 		object:setKeyId(keyID)
 	end
 
-	getSpecificPlayer(player):getInventory():AddItem("Base.Key1"):setKeyId(keyID)
+	if isClient() then
+		SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
+	else
+		local item = instanceItem("Base.Key1")
+		item:setKeyId(keyID)
+		getSpecificPlayer(player):getInventory():AddItem(item);
+	end
 end
 
 function DebugContextMenu.OnDoorLock(worldobjects, door)
@@ -488,7 +706,7 @@ local function OnDoorSetKeyID2(target, button, obj)
 		local keyId = tonumber(text)
 		if not keyId then return end
 		obj:setKeyId(keyId)
-		
+
 		local doubleDoorObjects = buildUtil.getDoubleDoorObjects(obj)
 		for i=1,#doubleDoorObjects do
 			local object = doubleDoorObjects[i]
@@ -570,6 +788,36 @@ end
 
 function DebugContextMenu.OnWindowGlassRemoved(worldobjects, window)
 	window:setGlassRemoved(not window:isGlassRemoved())
+end
+
+function DebugContextMenu.OnWindowAddMetal(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:addMetal(nil, nil)
+end
+
+function DebugContextMenu.OnWindowRemoveMetal(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:removeMetal(nil)
+end
+
+function DebugContextMenu.OnWindowAddMetalBar(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:addMetalBar(nil, nil)
+end
+
+function DebugContextMenu.OnWindowRemoveMetalBar(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:removeMetalBar(nil)
+end
+
+function DebugContextMenu.OnWindowAddPlank(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:addPlank(nil, nil)
+end
+
+function DebugContextMenu.OnWindowRemovePlank(playerObj, window)
+	local barricade = IsoBarricade.AddBarricadeToObject(window, playerObj)
+	barricade:removePlank(nil)
 end
 
 function DebugContextMenu.pickSquare(x, y)
@@ -732,7 +980,7 @@ function DebugContextMenu.OnMannequinCreateItem(script)
 	local spriteName = script:isFemale() and "location_shop_mall_01_65" or "location_shop_mall_01_68"
 	local obj = IsoMannequin.new(getCell(), nil, getSprite(spriteName))
 	obj:setMannequinScriptName(script:getName())
-	local item = InventoryItemFactory.CreateItem("Moveables.Moveable")
+	local item = instanceItem("Moveables.Moveable")
 	item:ReadFromWorldSprite(spriteName)
 	obj:setCustomSettingsToItem(item)
 	getSpecificPlayer(0):getInventory():AddItem(item)
@@ -742,27 +990,6 @@ function DebugContextMenu.OnMetalDrumZeroWater(obj)
 	local playerObj = getSpecificPlayer(0)
 	local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = 0 }
 	sendClientCommand(playerObj, 'object', 'setWaterAmount', args)
-end
-
-local function OnMetalDrumSetWater2(target, button, obj)
-	if button.internal == "OK" then
-		local playerObj = getSpecificPlayer(0)
-		local text = button.parent.entry:getText()
-		if tonumber(text) then
-			local waterAmt = math.min(tonumber(text), obj:getWaterMax())
-			waterAmt = math.max(waterAmt, 0.0)
-			local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = waterAmt }
-			sendClientCommand(playerObj, 'object', 'setWaterAmount', args)
-		end
-	end
-end
-
-function DebugContextMenu.OnMetalDrumSetWater(obj)
-	local luaObject = CMetalDrumSystem.instance:getLuaObjectOnSquare(obj:getSquare())
-	if not luaObject then return end
-	local modal = ISTextBox:new(0, 0, 280, 180, string.format("Water (0-%d):", obj:getWaterMax()), tostring(obj:getWaterAmount()), nil, OnMetalDrumSetWater2, nil, obj)
-	modal:initialise()
-	modal:addToUIManager()
 end
 
 function DebugContextMenu.OnRainBarrelZeroWater(obj)
@@ -809,7 +1036,7 @@ DebugContextMenu.doCheatMenu = function(context, playerObj)
 	local cheatOption = context:addOption("Cheat", nil, nil);
 	local cheatSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(cheatOption, cheatSubMenu)
-	
+
 	local text = "(Off)";
 	if playerObj:isGhostMode() then
 		text = "(On)";
@@ -852,7 +1079,7 @@ DebugContextMenu.onTeleportUI = function(playerObj)
 end
 
 DebugContextMenu.onRemoveItemTool = function(playerObj)
-	local ui = ISRemoveItemTool:new(0, 0, 320, 150, playerObj);
+	local ui = ISRemoveItemTool:new(0, 0, playerObj);
 	ui:initialise();
 	ui:addToUIManager();
 end
@@ -870,19 +1097,28 @@ DebugContextMenu.onTilesPicker = function(playerObj)
 end
 
 DebugContextMenu.onTeleportValid = function(button, x, y, z)
-	print("going to ", x, y, z)
-	getPlayer():setX(tonumber(x));
-	getPlayer():setY(tonumber(y));
-	getPlayer():setZ(tonumber(z));
-	getPlayer():setLx(tonumber(x));
-	getPlayer():setLy(tonumber(y));
-	getPlayer():setLz(tonumber(z));
+	if isClient() then
+		SendCommandToServer("/teleportto " .. x .. "," .. y .. "," .. z);
+	else
+		getPlayer():setX(tonumber(x));
+		getPlayer():setY(tonumber(y));
+		getPlayer():setZ(tonumber(z));
+		getPlayer():setLastX(tonumber(x));
+		getPlayer():setLastY(tonumber(y));
+		getPlayer():setLastZ(tonumber(z));
+	end
 end
 
 DebugContextMenu.onExtList = function(playerObj)
 	local ui = ISExtAnimListDebugUI:new(0, 0, playerObj);
 	ui:initialise();
 	ui:addToUIManager();
+end
+
+DebugContextMenu.onShowAnimationText = function(chr)
+	local ui = ISDebugAnimationTextUI:new(0, 0, 350, 200, chr)
+	ui:initialise()
+	ui:addToUIManager()
 end
 
 DebugContextMenu.onDebugInterpolationUI = function(square)
@@ -910,17 +1146,26 @@ DebugContextMenu.onSpawnSurvivorHorde = function(playerObj)
 end
 
 DebugContextMenu.addRVSDebugMenu = function(context, square)
-	local mainOption = context:addOption("Randomized Vehicle Story", nil, nil);
+	local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedRoadStory"), nil, nil);
 	local mainSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(mainOption, mainSubMenu)
-	
-	local rbOption = mainSubMenu:addOption("Remove All Vehicles on Zone", square:getZone(), DebugContextMenu.onRemoveVehicles);
-	
+
+	local rbOption = mainSubMenu:addOption(getText("IGUI_DebugContext_RemoveVehicles"), square:getZone(), DebugContextMenu.onRemoveVehicles);
+
 	for i = 0, getWorld():getRandomizedVehicleStoryList():size()-1 do
 		local rvs = getWorld():getRandomizedVehicleStoryList():get(i);
-		
+
 		local rbOption = mainSubMenu:addOption(rvs:getName(), square, DebugContextMenu.doRandomizedVehicleStory, rvs);
-		if not rvs:isValid(square:getZone(), square:getChunk(), true) then
+		local zones = getWorld():getMetaGrid():getZonesAt(square:getX(), square:getY(), square:getZ());
+		local valid = false;
+		for j=0,zones:size()-1 do
+			local zone = zones:get(j);
+			if rvs:isValid(zone, square:getChunk(), true) then
+				valid = true;
+				break;
+			end
+		end
+		if not valid then
 			rbOption.notAvailable = true;
 			local tooltip = ISWorldObjectContextMenu.addToolTip()
 			tooltip:setName("Zone not valid");
@@ -931,13 +1176,13 @@ DebugContextMenu.addRVSDebugMenu = function(context, square)
 end
 
 DebugContextMenu.addRZSDebugMenu = function(context, square)
-	local mainOption = context:addOption("Randomized Zone Story", nil, nil);
+	local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedZoneStory"), nil, nil);
 	local mainSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(mainOption, mainSubMenu)
-	
+
 	for i = 0, getWorld():getRandomizedZoneList():size()-1 do
 		local rzs = getWorld():getRandomizedZoneList():get(i);
-		
+
 		local rbOption = mainSubMenu:addOption(rzs:getName(), square, DebugContextMenu.doRandomizedZoneStory, rzs);
 		if not rzs:isValid() then
 			rbOption.notAvailable = true;
@@ -954,33 +1199,40 @@ DebugContextMenu.onRemoveVehicles = function(zone)
 end
 
 DebugContextMenu.doRandomizedZoneStory = function(square, rzs)
-	local zone = Zone.new("debugstoryzone", "debugstoryzone", square:getX() - 20, square:getY() - 20, square:getZ(), square:getX() + 20, square:getX() + 20);
-	zone:setPickedXForZoneStory(square:getX())
-	zone:setPickedYForZoneStory(square:getY())
-	zone:setX(square:getX() - (rzs:getMinimumWidth() / 2));
-	zone:setY(square:getY() - (rzs:getMinimumHeight() / 2));
-	zone:setW(rzs:getMinimumWidth() + 2);
-	zone:setH(rzs:getMinimumHeight() + 2);
-
-	rzs:randomizeZoneStory(zone);
+	if isClient() then
+		sendDebugStory(square, 1, rzs:getName())
+	else
+		local zone = Zone.new("debugstoryzone", "debugstoryzone", square:getX() - 20, square:getY() - 20, square:getZ(), square:getX() + 20, square:getX() + 20);
+		zone:setPickedXForZoneStory(square:getX())
+		zone:setPickedYForZoneStory(square:getY())
+		zone:setX(square:getX() - (rzs:getMinimumWidth() / 2));
+		zone:setY(square:getY() - (rzs:getMinimumHeight() / 2));
+		zone:setW(rzs:getMinimumWidth() + 2);
+		zone:setH(rzs:getMinimumHeight() + 2);
+		rzs:randomizeZoneStory(zone);
+	end
 end
 
 DebugContextMenu.doRandomizedVehicleStory = function(square, rvs)
-	rvs:randomizeVehicleStory(square:getZone(), square:getChunk());
+	if isClient() then
+		sendDebugStory(square, 0, rvs:getName())
+	else
+		rvs:randomizeVehicleStory(square:getZone(), square:getChunk());
+	end
 end
 
 DebugContextMenu.addRBDebugMenu = function(context, building)
 	local RBBasic = getWorld():getRBBasic();
-	
+
 	local mainOption = context:addOption("Randomized Building", nil, nil);
 	local mainSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(mainOption, mainSubMenu)
-	
+
 	-- Do survivor stories
 	local survivorStoriesOption = mainSubMenu:addOption("Survivor Stories", nil, nil);
 	local survivorStoriesSubMenu = ISContextMenu:getNew(mainSubMenu)
 	mainSubMenu:addSubMenu(survivorStoriesOption, survivorStoriesSubMenu)
-	
+
 	for i=0,RBBasic:getSurvivorStories():size()-1 do
 		if RBBasic:getSurvivorStories():get(i):getName() then
 			local storyOption = survivorStoriesSubMenu:addOption(RBBasic:getSurvivorStories():get(i):getName(), building:getDef(), DebugContextMenu.doRandomizedBuilding, RBBasic:getSurvivorStories():get(i));
@@ -993,7 +1245,7 @@ DebugContextMenu.addRBDebugMenu = function(context, building)
 			end
 		end
 	end
-	
+
 	-- Profession (spawn container with profession-related stuff)
 	local professionOption = mainSubMenu:addOption("Profession", nil, nil);
 	local professionSubMenu = ISContextMenu:getNew(mainSubMenu)
@@ -1001,14 +1253,15 @@ DebugContextMenu.addRBDebugMenu = function(context, building)
 	for i=0, RBBasic:getSurvivorProfession():size()-1 do
 		professionSubMenu:addOption(RBBasic:getSurvivorProfession():get(i), building:getDef(), DebugContextMenu.doRandomizedBuilding, RBBasic:getSurvivorProfession():get(i));
 	end
-	
-	mainSubMenu:addOption("RBBASIC", building:getDef(), DebugContextMenu.doRandomizedBuilding, getWorld():getRBBasic());
+
+	mainSubMenu:addOption("Basic Randomized Building (including table stories)", building:getDef(), DebugContextMenu.doRandomizedBuilding, getWorld():getRBBasic());
 
 	-- now do randomized building stories (ignore RBBasic as it's done on top)
 	for i = 0, getWorld():getRandomizedBuildingList():size()-1 do
 		local rb = getWorld():getRandomizedBuildingList():get(i);
-		if not instanceof(rb, "RBBasic") and rb:getName() then
-			local rbOption = mainSubMenu:addOption(rb:getName(), building:getDef(), DebugContextMenu.doRandomizedBuilding, rb);
+		if not instanceof(rb, "RBBasic") and rb and rb:getName() then
+			local name = rb:getName() or "NAME NOT FOUND";
+			local rbOption = mainSubMenu:addOption(name, building:getDef(), DebugContextMenu.doRandomizedBuilding, rb);
 			if not rb:isValid(building:getDef(), true) then
 				rbOption.notAvailable = true;
 				local tooltip = ISWorldObjectContextMenu.addToolTip()
@@ -1036,13 +1289,101 @@ DebugContextMenu.onTick = function()
 	if DebugContextMenu.staggerBacking then
 		DebugContextMenu.stagTime = DebugContextMenu.stagTime - 1;
 		if DebugContextMenu.stagTime < 0 then
-			local chr = IsoPlayer:getInstance();
+			local chr = IsoPlayer.getInstance();
 			DebugContextMenu.stagTime = 300;
 			chr:setBumpType("stagger");
 			chr:setVariable("BumpDone", false);
 			chr:setVariable("BumpFall", true);
 			chr:setVariable("BumpFallType", "pushedFront");
 		end
+	end
+end
+
+function DebugContextMenu.onAvatarUI(player)
+	local ui = ISDebugAvatarUI:new(player);
+	ui:initialise();
+	ui:addToUIManager();
+end
+
+function DebugContextMenu.onAddEnclosure(playerObj)
+	local size = 10;
+	DesignationZoneAnimal.new("NewZone", playerObj:getCurrentSquare():getX() - size, playerObj:getCurrentSquare():getY() - size,playerObj:getCurrentSquare():getZ(),playerObj:getCurrentSquare():getX() + size,playerObj:getCurrentSquare():getY() + size)
+
+	for x=playerObj:getCurrentSquare():getX()-9, playerObj:getCurrentSquare():getX()-4 do
+		for y=playerObj:getCurrentSquare():getY()-9, playerObj:getCurrentSquare():getY()-4 do
+			if (x == playerObj:getCurrentSquare():getX()-4 and y == playerObj:getCurrentSquare():getY()-4) or (x == playerObj:getCurrentSquare():getX()-9 and y == playerObj:getCurrentSquare():getY()-9) or (x == playerObj:getCurrentSquare():getX()-9 and y == playerObj:getCurrentSquare():getY()-4) or (x == playerObj:getCurrentSquare():getX()-4 and y == playerObj:getCurrentSquare():getY()-9) then
+				local sq = getSquare(x, y, 0);
+				local obj = IsoObject.getNew(sq, "walls_exterior_wooden_01_27", nil, false);
+				sq:AddTileObject(obj);
+			end
+			local sq =  IsoGridSquare.new(getCell(), nil, x, y, 1);
+			getCell():ConnectNewSquare(sq, false);
+			sq:addFloor("carpentry_02_56");
+		end
+	end
+
+	for x=playerObj:getCurrentSquare():getX() - size, playerObj:getCurrentSquare():getX()+(size-1) do
+		local sq = getSquare(x, playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getZ());
+		sq:AddTileObject(IsoObject.new(sq, "carpentry_02_41"));
+		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_41", false, ISSimpleFurniture:new("Fence", "carpentry_02_41", "carpentry_02_41"));
+		sq:AddTileObject(fence);
+		sq = getSquare(x, playerObj:getCurrentSquare():getY() + size, playerObj:getCurrentSquare():getZ());
+		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_41", false, ISSimpleFurniture:new("Fence", "carpentry_02_41", "carpentry_02_41"));
+		sq:AddTileObject(fence);
+	end
+	for y=playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getY()+(size-1) do
+		local sq = getSquare(playerObj:getCurrentSquare():getX() - size, y, playerObj:getCurrentSquare():getZ());
+
+		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_40", false, ISSimpleFurniture:new("Fence", "carpentry_02_40", "carpentry_02_40"));
+		sq:AddTileObject(fence);
+
+		local sq = getSquare(playerObj:getCurrentSquare():getX() + size, y, playerObj:getCurrentSquare():getZ());
+		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_40", false, ISSimpleFurniture:new("Fence", "carpentry_02_40", "carpentry_02_40"));
+		sq:AddTileObject(fence);
+
+	end
+
+	--local sq = getSquare(playerObj:getCurrentSquare():getX() - 3, playerObj:getCurrentSquare():getY() + 2, playerObj:getCurrentSquare():getZ())
+	--local trough = IsoFeedingTrough.new(sq, "location_farm_accesories_01_14", nil)
+	--local def = FeedingTroughDef["simple"];
+	--trough:setName("FeedingTrough")
+	--trough:setMaxWater(def.maxWater)
+	--trough:setDef(def);
+	--sq:AddSpecialObject(trough)
+	--trough:transmitCompleteItemToClients()
+	--trough:updateLuaObject();
+	--ISFeedingTroughMenu.onAddFoodDebug(nil, trough);
+	--
+	--local sq = getSquare(playerObj:getCurrentSquare():getX() - 3, playerObj:getCurrentSquare():getY(), playerObj:getCurrentSquare():getZ())
+	--local trough = IsoFeedingTrough.new(sq, "location_farm_accesories_01_14", nil)
+	--local def = FeedingTroughDef["simple"];
+	--trough:setName("FeedingTrough")
+	--trough:setMaxWater(def.maxWater)
+	--trough:setDef(def);
+	--sq:AddSpecialObject(trough)
+	--trough:transmitCompleteItemToClients()
+	--trough:updateLuaObject();
+	--ISFeedingTroughMenu.onAddWaterDebug(nil, trough);
+end
+
+function DebugContextMenu.AddAnimal(type, breed, square, skeleton)
+	if isClient() then
+		sendClientCommandV(playerObj, "animal", "add",
+				"type", type,
+				"breed", breed:getName(),
+				"x", square:getX(),
+				"y", square:getY(),
+				"z", square:getZ(),
+				"skeleton", skeleton)
+	else
+		local animal = addAnimal(getCell(),
+				getPlayer():getCurrentSquare():getX(),
+				getPlayer():getCurrentSquare():getY(),
+				getPlayer():getCurrentSquare():getZ(),
+				type,
+				breed,
+				skeleton)
+		animal:addToWorld()
 	end
 end
 

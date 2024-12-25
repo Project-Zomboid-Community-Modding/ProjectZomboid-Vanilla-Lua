@@ -1,0 +1,43 @@
+local bush_fat = {
+    main = {
+        "f_bushes_1_65",
+        "f_bushes_1_66",
+        "f_bushes_1_97",
+        "f_bushes_1_98",
+        "f_bushes_1_77",
+        "f_bushes_1_78",
+        "f_bushes_1_110",
+        "f_bushes_1_109",
+        "f_bushes_1_99",
+        "f_bushes_1_67",
+        "f_bushes_1_103",
+        "f_bushes_1_71",
+        "f_bushes_1_77",
+        "f_bushes_1_78",
+        "f_bushes_1_110",
+        "f_bushes_1_109",
+        "f_bushes_1_99",
+        "f_bushes_1_67",
+        "f_bushes_1_103",
+        "f_bushes_1_71",
+        "f_bushes_1_77",
+        "f_bushes_1_78",
+        "f_bushes_1_110",
+        "f_bushes_1_109",
+        "f_bushes_1_99",
+        "f_bushes_1_67",
+        "f_bushes_1_103",
+        "f_bushes_1_71",
+        "f_bushes_1_77",
+        "f_bushes_1_78",
+        "f_bushes_1_110",
+        "f_bushes_1_109",
+        "f_bushes_1_99",
+        "f_bushes_1_67",
+        "f_bushes_1_103",
+        "f_bushes_1_71",
+        "f_bushes_1_71"
+
+    }
+}
+worldgen.features.BUSH["bush_fat"] = bush_fat

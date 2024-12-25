@@ -39,7 +39,7 @@ function ISWorldMenuElements.ContextDoor()
 
     function self.onOpenCloseDoor(_p, _door)
         if luautils.walkAdjWindowOrDoor(_p.player, _door:getSquare(), _door) then
-            ISTimedActionQueue.add(ISOpenCloseDoor:new(_p.player, _door, 0));
+            ISTimedActionQueue.add(ISOpenCloseDoor:new(_p.player, _door));
         end
     end
 

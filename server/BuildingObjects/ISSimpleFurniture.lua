@@ -18,11 +18,11 @@ function ISSimpleFurniture:create(x, y, z, north, sprite)
 	self.javaObject:setMaxHealth(self:getHealth());
 	self.javaObject:setHealth(self.javaObject:getMaxHealth());
 	-- the sound that will be played when our door frame will be broken
-	self.javaObject:setBreakSound("BreakObject");
+	self.javaObject:setBreakSound(IsoThumpable.GetBreakFurnitureSound(sprite));
 	-- add the item to the ground
     self.sq:AddSpecialObject(self.javaObject);
 	
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 end
 
 function ISSimpleFurniture:removeFromGround(square)

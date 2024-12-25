@@ -21,7 +21,7 @@ end
 function TutorialMessage:createChildren()
 
     -- CREATE TUTORIAL PANEL
-    local panel = ISRichTextPanel:new(15, 10, self.width-30, self.height-32-10);
+    local panel = ISRichTextPanel:new(15, 0, self.width-30, self.height);
     panel:initialise();
 
     self:addChild(panel);
@@ -31,6 +31,39 @@ function TutorialMessage:createChildren()
     self.richtext:paginate();
     self.richtext.backgroundColor.a = 0;
 
+    self:updateSize()
+end
+
+function TutorialMessage:updateSize()
+    local text = self.richtext.text -- get a copy of the text for temporary modifying
+
+    -- remove all following patterns to prevent incorrect text padding
+    text = text:gsub(" <", "<")
+    text = text:gsub("> ", ">")
+    text = text:gsub("<CENTRE>", "")
+    text = text:gsub("<SIZE:medium>", "")
+    text = text:gsub("<SIZE:small>", "")
+    --note, <SIZE:large> is intentionally left in to add a little extra padding for long strings
+    text = text:gsub("<IMAGECENTRE:media/ui/controller/", "")
+    text = text:gsub("<IMAGE:media/ui/", "")
+    text = text:gsub(",28,28>", "")
+    text = text:gsub(",32,32>", "")
+
+    -- insert line breaks where appropriate for width wrapping accuracy.
+    text = text:gsub("<JOYPAD:", "\n")
+    text = text:gsub("<LINE>", "\n")
+    text = text:gsub(" ", "\n")
+    text = text:gsub(",", ",\n")
+
+    --the following lines are for easier reading in the console, and can be commented out if text output to the console is disabled
+    text = text:gsub("\n\n", "\n") --remove blank lines for easier reading
+    text = text:gsub("\n\n", "\n") --remove blank lines for easier reading
+
+    self.richtext:setWidth(math.max(self.richtext:getWidth(), getTextManager():MeasureStringX(UIFont.Medium, text)+80))
+    self.richtext:setHeight(self.richtext:getHeight())
+    self:setWidth(self.richtext:getWidth());
+    self:setHeight(self.richtext:getHeight()+10);
+    --print(text)
 end
 
 
@@ -58,11 +91,19 @@ function TutorialMessage:update()
     end
 end
 function TutorialMessage:render()
-    self:setWidth(self.richtext:getWidth() + 40);
-    self:setHeight(self.richtext:getHeight() + 35);
+
+    if self.message ~= self.richtext.text then
+        self.message = self.richtext.text
+        self:updateSize()
+    end
+
+    self.richtext:setHeight(self.richtext:getHeight())
+    self:setWidth(self.richtext:getWidth()+80);
+    self:setHeight(self.richtext:getHeight()+10);
+
 
     self:drawTextureScaled(TutorialMessage.spiffo, self.width - 43, -60, 256/2, 364/2, 1, 1, 1, 1);
-    
+    --self.richtext:drawRectBorder(self.richtext.x, self.richtext.y, self.richtext.width, self.richtext.height, 1, 0.2, 0.4, 1)
     if JoypadState.players[1] and self.clickToSkip and getJoypadFocus(0) ~= self and not Tutorial1.disableMsgFocus then
         setJoypadFocus(0, self)
     end
@@ -151,7 +192,7 @@ function TutorialMessage:new (x, y, width, height, clickToSkip, message)
     o.x = x;
     if clickToSkip then
         if JoypadState.players[1] then
-            message = message .. " <LINE> <LINE> <CENTER> <IMAGECENTRE:media/ui/xbox/XBOX_A.png>";
+            message = message .. " <LINE> <LINE> <IMAGECENTRE:media/ui/controller/" .. (getCore():getOptionControllerButtonStyle() == 1 and "XBOX" or "PS4") .."_A.png>";
         else
             message = message .. " <LINE> <LINE> <SIZE:large> (" .. getText("IGUI_PressSpaceContinue") .. ")";
         end

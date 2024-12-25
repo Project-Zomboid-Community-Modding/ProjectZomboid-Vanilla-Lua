@@ -92,6 +92,9 @@ function ISComboBoxPopup:doDrawItem(y, item, alt)
     if item.height == 0 then
         item.height = self.itemheight
     end
+    if y + self:getYScroll() + item.height < 0 or y + self:getYScroll() >= self.height then
+        return y + item.height
+    end
     local highlight = (self:isMouseOver() and not self:isMouseOverScrollBar()) and self.mouseoverselected or self.selected
     if self.parentCombo.joypadFocused then
         highlight = self.selected
@@ -99,8 +102,12 @@ function ISComboBoxPopup:doDrawItem(y, item, alt)
     if highlight == item.index then
         local selectColor = self.parentCombo.backgroundColorMouseOver
         self:drawRect(0, (y), self:getWidth(), item.height-1, selectColor.a, selectColor.r, selectColor.g, selectColor.b)
-
-        if self:isMouseOver() and not self:isMouseOverScrollBar() then
+        self.parentCombo:pointOnItem(highlight)
+        local mouseOver = self:isMouseOver() and not self:isMouseOverScrollBar()
+        if self.parentCombo.joypadFocused then
+            mouseOver = true
+        end
+        if mouseOver then
             local textWid = getTextManager():MeasureStringX(self.font, item.text)
             local scrollBarWid = self:isVScrollBarVisible() and 13 or 0
             if 10 + textWid > self.width - scrollBarWid then
@@ -228,6 +235,10 @@ end
 
 function ISComboBox:onJoypadDirDown(joypadData)
     self.popup:onJoypadDirDown(joypadData)
+end
+
+function ISComboBox:pointOnItem(index)
+
 end
 
 function ISComboBox:forceClick()
@@ -428,6 +439,14 @@ function ISComboBox:addOptionWithData(option, data)
 	end
 end
 
+function ISComboBox:getOptionCount()
+	return #self.options
+end
+
+function ISComboBox:isEmpty()
+	return #self.options == 0
+end
+
 function ISComboBox:contains(text)
 	for i, k in ipairs(self.options) do
 		if k.text == text then
@@ -488,6 +507,14 @@ function ISComboBox:getSelectedText()
 	return self:getOptionText(self.selected);
 end
 
+function ISComboBox:getSelected()
+	return self.selected;
+end
+
+function ISComboBox:setSelected(value)
+	self.selected = value
+end
+
 function ISComboBox:setWidthToOptions(minWidth)
 	local width = 0
 	for i=1,#self.options do
@@ -501,6 +528,14 @@ end
 function ISComboBox:clear()
 	self.options = {}
     self.tooltip = {}
+end
+
+function ISComboBox:setEnabled(enabled)
+	self.disabled = not enabled
+end
+
+function ISComboBox:isEnabled()
+	return self.disabled ~= true
 end
 
 function ISComboBox:setEditable(editable)

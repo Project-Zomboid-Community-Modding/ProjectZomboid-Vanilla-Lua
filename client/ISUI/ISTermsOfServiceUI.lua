@@ -200,6 +200,19 @@ function ISTermsOfServiceUI.OnGameStateEnter(javaStateObj)
 	modal:addToUIManager()
 	modal:setAlwaysOnTop(true)
 
+	local player = 0
+	if player and JoypadState.players[player+1] then
+		modal.prevFocus = JoypadState.players[player+1].focus
+		setJoypadFocus(player, modal)
+	else
+		local joypadData = JoypadState.getMainMenuJoypad()
+		if joypadData then
+			modal.prevFocus = joypadData.focus
+			joypadData.focus = modal
+			updateJoypadFocus(joypadData)
+		end
+	end
+
 	-- See JoyPadSetup.lua
 	ISTermsOfServiceUI.instance = modal
 	GameWindow.doRenderEvent(true)

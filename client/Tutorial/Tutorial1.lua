@@ -15,6 +15,7 @@ Tutorial1.PreloadInit = function()
     SandboxVars.ZombieLore.DisableFakeDead = 3;
     SandboxVars.ZombieLore.Strength = 1;
     SandboxVars.ThumpOnConstruction = true;
+    SandboxVars.FirearmJamMultiplier = 0;
 
     getCore():setAutoZoom(0, false) -- FIXME: save/restore this option?
 end
@@ -111,7 +112,7 @@ Tutorial1.createWorldContextMenuFromContext = function(context, worldobjects)
             table.insert(items, v:getSquare():getObjects():get(i));
         end
     end
-    local bottle = (chr:getInventory():FindAndReturn("WaterBottleEmpty") or chr:getInventory():FindAndReturn("WaterBottleFull"));
+    local bottle = (chr:getInventory():FindAndReturn("EmptyJar"));
     for i,v in ipairs(items) do
         if Tutorial1.contextMenuFillBottle and v:hasWater() and bottle then
             context:addOption(getText("ContextMenu_Fill") .. bottle:getName(), worldobjects, ISWorldObjectContextMenu.onTakeWater, v, nil, bottle, chr:getPlayerNum());
@@ -301,7 +302,10 @@ Tutorial1.Init = function()
         ISBackButtonWheel.disableScavenge = true;
     end
     
-    
+    -- set autorized zooms
+    setZoomLevels(1.75, 1.5, 1.25, 1.0);
+
+
     Tutorial1.steps:add(WelcomeStep:new())
     Tutorial1.steps:add(WalkToAdjacent:new())
     Tutorial1.steps:add(InventoryLootingStep:new());
@@ -348,6 +352,10 @@ end
 
 Tutorial1.lockDoor = function(x, y, z)
     local sq = getSquare(x, y, z);
+    if not sq then
+        print(string.format('Tutorial1.lockDoor() square is null @ %d,%d,%d', x, y, z))
+        return
+    end
     for i=0, sq:getObjects():size() -1 do
         local obj = sq:getObjects():get(i);
         if instanceof(obj, "IsoDoor") then
@@ -422,7 +430,8 @@ Tutorial1.FillContainers = function()
                         local apple = c:AddItem("Base.DeadMouse");
                         apple:setAge(17);
                         Tutorial1.DeadMouse = apple
-                        c:AddItem("Base.WaterBottleEmpty");
+                        c:AddItem("Base.EmptyJar");
+                        c:AddItem("Base.Dung_Mouse");
                     end
                     c:setExplored(true);
                 end
@@ -496,8 +505,6 @@ Tutorial1.name = "Tutorial1";
 --Tutorial1.description = "Prepare for a short, sharp dose of Zomboid. Deadheads are approaching from every angle.\nYou're going to check out, and soon, but just how long can you resist the horde?\nReady that shotgun...";
 Tutorial1.image = "media/lua/LastStand/Challenge1.png";
 Tutorial1.world = "challengemaps/Tutorial";
-Tutorial1.xcell = 0;
-Tutorial1.ycell = 0;
 Tutorial1.x = 157;
 Tutorial1.y = 157;
 Tutorial1.hourOfDay = 20;

@@ -23,13 +23,13 @@ debugScenarios.Trailer3Scenario_Building = {
 		SandboxVars.ElecShutModifier = 30;
 		SandboxVars.WaterShut = 2;
 		SandboxVars.ElecShut = 2;
-		SandboxVars.FoodLoot = 2;
-		SandboxVars.WeaponLoot = 2;
-		SandboxVars.OtherLoot = 2;
+-- 		SandboxVars.FoodLoot = 2;
+-- 		SandboxVars.WeaponLoot = 2;
+-- 		SandboxVars.OtherLoot = 2;
+        SandboxVars.LootItemRemovalList = "";
 		SandboxVars.Temperature = 3;
 		SandboxVars.Rain = 3;
 		SandboxVars.ErosionSpeed = 3;
-		SandboxVars.XpMultiplier = 1.0;
 		SandboxVars.StatsDecrease = 3;
 		SandboxVars.NatureAbundance = 3;
 		SandboxVars.Alarm = 1;
@@ -53,6 +53,11 @@ debugScenarios.Trailer3Scenario_Building = {
 		SandboxVars.RecentlySurvivorVehicles = 2;
 		SandboxVars.SurvivorHouseChance = 1;
 		SandboxVars.VehicleStoryChance = 1;
+
+		SandboxVars.MultiplierConfig = {
+			XPMultiplierGlobal = 1,
+			XPMultiplierGlobalToggle = true,
+		}
 		
 		SandboxVars.ZombieLore = {
 			Speed = 2,
@@ -116,9 +121,9 @@ debugScenarios.Trailer3Scenario_Building = {
 		chr:getInventory():AddItem("Base.Generator");
 		chr:getInventory():AddItem("Base.Hammer");
 		chr:getInventory():AddItem("Base.Nails");chr:getInventory():AddItem("Base.Nails");
-		chr:getInventory():AddItem("farming.HandShovel");
-		chr:getInventory():AddItem("farming.WateredCanFull");
-		chr:getInventory():AddItem("farming.CarrotBagSeed");
+		chr:getInventory():AddItem("Base.HandShovel");
+		chr:getInventory():AddItem("Base.WateredCanFull");
+		chr:getInventory():AddItem("Base.CarrotBagSeed2");
 		chr:getInventory():AddItem("Base.Saw");
 --		chr:getInventory():AddItem("Base.EmptyPetrolCan");chr:getInventory():AddItem("Base.EmptyPetrolCan");
 		

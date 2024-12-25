@@ -9,10 +9,16 @@ function ISClimbThroughWindow:isValid()
     if instanceof(self.item, 'IsoThumpable') and not self.item:canClimbThrough(self.character) then
         return false
     end
-    if IsoWindowFrame.isWindowFrame(self.item) and not IsoWindowFrame.canClimbThrough(self.item, self.character) then
+    if instanceof(self.item, 'IsoWindowFrame') and not self.item:canClimbThrough(self.character) then
         return false
     end
     return true;
+end
+
+function ISClimbThroughWindow:waitToStart()
+    local dir = self:getFacingDirection()
+    self.character:faceDirection(dir)
+    return self.character:shouldBeTurning()
 end
 
 function ISClimbThroughWindow:update()
@@ -28,7 +34,7 @@ end
 
 function ISClimbThroughWindow:perform()
     --self.item:ToggleWindow(self.character);
-    if IsoWindowFrame.isWindowFrame(self.item) then
+    if instanceof(self.item, "IsoWindowFrame") then
         self.character:climbThroughWindowFrame(self.item)
     else
         self.character:climbThroughWindow(self.item);
@@ -37,14 +43,33 @@ function ISClimbThroughWindow:perform()
     ISBaseTimedAction.perform(self);
 end
 
+function ISClimbThroughWindow:getNorth(object)
+    return object:getNorth()
+end
+
+function ISClimbThroughWindow:getFacingDirection()
+    local square = self.item:getSquare()
+    if self:getNorth(self.item) then
+        if self.character:getY() < square:getY() then
+            return IsoDirections.S
+        end
+        return IsoDirections.N
+    end
+    if self.character:getX() < square:getX() then
+        return IsoDirections.E
+    end
+    return IsoDirections.W
+end
+
+function ISClimbThroughWindow:getDeltaModifiers(deltas)
+    if not self:isStarted() then
+        deltas:setMaxTurnDelta(2f)
+    end
+end
+
 function ISClimbThroughWindow:new(character, item, time)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o.character = character;
+    local o = ISBaseTimedAction.new(self, character)
     o.item = item;
-    o.stopOnWalk = true;
-    o.stopOnRun = true;
     o.maxTime = time;
     return o;
 end

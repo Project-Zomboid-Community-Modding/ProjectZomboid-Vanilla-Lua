@@ -158,13 +158,13 @@ function WeatherChannel.AddFuzz(_c, _bc, _chance)
 end
 
 function WeatherChannel.AddPowerNotice(_c, _bc, _force)
-    if _force or (getGameTime():getNightsSurvived() == getSandboxOptions():getElecShutModifier()-2) then
+    if _force or (getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30 == getSandboxOptions():getElecShutModifier()-2) then
         _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_1")), _c.r, _c.g, _c.b) );
     end
-    if _force or (getGameTime():getNightsSurvived() == getSandboxOptions():getElecShutModifier()-1) then
+    if _force or (getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30 == getSandboxOptions():getElecShutModifier()-1) then
         _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_2")), _c.r, _c.g, _c.b) );
     end
-    if _force or (getGameTime():getNightsSurvived() >= getSandboxOptions():getElecShutModifier()) then
+    if _force or (getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30 >= getSandboxOptions():getElecShutModifier()) then
         _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_3")), _c.r, _c.g, _c.b) );
     end
 end
@@ -263,9 +263,9 @@ function WeatherChannel.GetForecastString(_type, _forecast)
         --b = roundstring(ClimateManager.ToKph(b)).." KpH";
         --c = roundstring(ClimateManager.ToKph(c)).." KpH";
         if getCore():getOptionDisplayAsCelsius() then
-            c = roundstring(ClimateManager.ToKph(c)).." KpH";
+            c = roundstring(ClimateManager.ToKph(c))..getRadioText("AEBS_KpH");
         else
-            c = roundstring(ClimateManager.ToMph(c)).." MpH";
+            c = roundstring(ClimateManager.ToMph(c))..getRadioText("AEBS_MpH");
         end
         local d = _forecast:getMeanWindAngleString();
         local dnew = getRadioText("AEBS_zone_name_"..d:lower());

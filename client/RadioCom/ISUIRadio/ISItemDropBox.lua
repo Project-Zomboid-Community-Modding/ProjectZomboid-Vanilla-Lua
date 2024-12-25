@@ -11,7 +11,7 @@ function ISItemDropBox:initialise()
 end
 
 function ISItemDropBox:createChildren()
-    --instanceItem("item");
+
 end
 
 function ISItemDropBox:prerender()
@@ -22,13 +22,16 @@ end
 function ISItemDropBox:render()
     ISPanel.render(self);
 
-    if self.mouseOverState > 0 then
+    if self.mouseOverState > 0 or (self.isLocked and self.doInvalidHighlight) then
         local c, c2 = self.backgroundColor, self.borderColor;
         if self.mouseOverState == 1 and self.doHighlight then
             c, c2 = self.backgroundColorHL, self.borderColorHL;
         elseif self.mouseOverState == 2 and self.doValidHighlight then
             c, c2 = self.backgroundColorHLVal, self.borderColorHLVal;
         elseif self.mouseOverState == 3 and self.doInvalidHighlight then
+            c, c2 = self.backgroundColorHLInv, self.borderColorHLInv;
+        end
+        if self.isLocked and self.doInvalidHighlight then
             c, c2 = self.backgroundColorHLInv, self.borderColorHLInv;
         end
 
@@ -40,7 +43,9 @@ function ISItemDropBox:render()
         self:drawTextureScaled(self.backDropTex, 2, 2, self:getHeight()-4, self:getHeight()-4, self.backDropTexCol.a, self.backDropTexCol.r, self.backDropTexCol.g, self.backDropTexCol.b);
     end
 
-    if self.storedItemTex then
+    if self.storedItem then
+        ISInventoryItem.renderItemIcon(self, self.storedItem, 2, 2, 1.0, self:getHeight()-4, self:getHeight()-4);
+    elseif self.storedItemTex then
         self:drawTextureScaled(self.storedItemTex, 2, 2, self:getHeight()-4, self:getHeight()-4, 1.0, 1.0, 1.0, 1.0);
     end
 end
@@ -73,8 +78,12 @@ function ISItemDropBox:onMouseMove(dx, dy)
 
     self:activateToolTip();
 
+    if self.isLocked then
+        return;
+    end
+
     self.mouseOverState = 1;
-    if self.boxOccupied == false and ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
+    if (self.allowDropAlways or self.boxOccupied == false) and ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
         if self:hasValidItemInDrag() then
             self.mouseOverState = 2;
         else
@@ -91,11 +100,30 @@ function ISItemDropBox:onMouseMoveOutside(dx, dy)
     self.mouseOverState = 0;
 end
 
+function ISItemDropBox:getValidItems()
+    local validItems = {};
+    local verifyFunc = self.onVerifyItem or self.defaultVerifyItem;
+    local allItems = self.player:getInventory():getItems();
+    for i=0, allItems:size()-1 do
+        local item = allItems:get(i);
+        if instanceof(item, "InventoryItem") then
+            if verifyFunc( self.functionTarget, item ) then
+                table.insert(validItems, item)
+            end
+        end
+    end
+    return validItems;
+end
+
 function ISItemDropBox:onMouseDown(x, y)
+
 end
 
 function ISItemDropBox:onMouseUp(x, y)
-    if not self:getIsVisible() or  self.boxOccupied == true or not self.mouseEnabled then
+    if not self:getIsVisible() or ((not self.allowDropAlways) and self.boxOccupied == true) or not self.mouseEnabled then
+        return;
+    end
+    if self.isLocked then
         return;
     end
 
@@ -134,8 +162,22 @@ function ISItemDropBox:onMouseUp(x, y)
     end
 end
 
+function ISItemDropBox:onDropItem(item)
+    local items = {};
+    table.insert(items, item);
+
+    if self.onItemDropped then
+        self.onItemDropped( self.functionTarget, items )
+    else
+        self:itemDropped( items );
+    end
+end
+
 function ISItemDropBox:onRightMouseUp(x, y)
     if not self.mouseEnabled then return; end
+    if self.isLocked then
+        return;
+    end
 
     if self.boxOccupied == true then
         if self.onItemRemove then
@@ -196,6 +238,9 @@ end
 
 function ISItemDropBox:activateToolTip()
     if self.doToolTip then
+        if self.isLocked and not self.toolTipTextLocked then
+            return;
+        end
         if self.toolTip ~= nil then
             self.toolTip:setVisible(true);
             self.toolTip:addToUIManager();
@@ -205,7 +250,13 @@ function ISItemDropBox:activateToolTip()
             self.toolTip:initialise();
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
-            self.toolTip.description = self.toolTipText; --"Drag a battery in here, or rightclick to remove it.";
+            self.toolTip.description = self.toolTipText;
+            if self.boxOccupied and self.toolTipTextItem then
+                self.toolTip.description = self.toolTipTextItem;
+            end
+            if self.isLocked then
+                self.toolTip.description = self.toolTipTextLocked;
+            end
             self.toolTip:doLayout();
         end
     end
@@ -286,5 +337,13 @@ function ISItemDropBox:new (x, y, width, height, storeItem, target, onItemDroppe
     o.toolTipText = "";
     --toggle mouse functionallity
     o.mouseEnabled = true;
+    -- always allow dropping item even if box occupied
+    o.allowDropAlways = false;
+    -- if true locks the box from user input
+    o.isLocked = false;
+    --tooltip for when there is an item stored
+    o.toolTipTextItem = false;
+    --tooltip when box isLocked
+    o.toolTipTextLocked = false;
     return o
 end

@@ -97,7 +97,7 @@ function EDebug.DemoTime( _erosionMain )
     end
 
     function publ.GameStart()
-        priv.gameTime				= GameTime:getInstance();
+        priv.gameTime				= GameTime.getInstance();
         priv.gameTime:setDay( priv.startDay );
         priv.gameTime:setMonth( priv.startMonth );
         priv.textMngr 		        = getTextManager();

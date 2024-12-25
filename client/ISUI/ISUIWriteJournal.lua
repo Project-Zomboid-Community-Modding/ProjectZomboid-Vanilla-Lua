@@ -211,6 +211,9 @@ function ISUIWriteJournal:onClick(button)
         self.lockButton:setImage(getTexture("media/ui/lock.png"));
         self.lockButton.internal = "UNLOCKBOOK";
         self.notebook:setLockedBy(self.character:getUsername());
+		if self.notebook:hasTag("LockOnWrite") then
+			self.notebook:setLockedBy(tostring(ZombRand(1000000))) 
+		end
         self.title:setEditable(false);
         self.entry:setEditable(false);
         self.lockButton:setTooltip("Allow the journal to be edited");
@@ -224,6 +227,9 @@ function ISUIWriteJournal:onClick(button)
         self.lockButton:setTooltip("Prevent the journal from being edited");
         self:setJoypadButtons(self.joyfocus)
     else
+		if button.internal == "OK" and self.notebook:hasTag("LockOnWrite") then 
+			self.notebook:setLockedBy(tostring(ZombRand(1000000))) 	
+		end
         self.newPage[self.currentPage] = self.entry:getText();
         self:destroy();
         if self.onclick ~= nil then

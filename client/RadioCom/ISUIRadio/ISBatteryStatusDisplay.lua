@@ -5,6 +5,7 @@
 require "ISUI/ISPanel"
 
 ISBatteryStatusDisplay = ISPanel:derive("ISBatteryStatusDisplay");
+local UI_BORDER_SPACING = 10
 
 function ISBatteryStatusDisplay:initialise()
     ISPanel.initialise(self)
@@ -12,7 +13,7 @@ end
 
 function ISBatteryStatusDisplay:createChildren()
     if self.doLed then
-        self.led = ISLedLight:new (10, (self.height-10)/2, 10, 10);
+        self.led = ISLedLight:new (UI_BORDER_SPACING, (self.height-UI_BORDER_SPACING*2)/2, UI_BORDER_SPACING*2, UI_BORDER_SPACING*2);
         self.led:initialise();
         self.led:getLedIsOn(false);
         self:addChild(self.led);
@@ -55,7 +56,7 @@ function ISBatteryStatusDisplay:render()
 
     local headW = (self:getWidth()-(offx+5))*0.02;
     if headW<2 then headW = 2; end
-    local x,y,w,h = offx+5, 0, self:getWidth()-(offx+5+headW), self:getHeight();
+    local x,y,w,h = offx+UI_BORDER_SPACING, 0, self:getWidth()-(offx+UI_BORDER_SPACING+headW), self:getHeight();
     local c = self.borderColor;
 
     self:drawTextureScaled(self.backTexture, x, y, w, h, 0.7, 1.0, 1.0, 1.0);

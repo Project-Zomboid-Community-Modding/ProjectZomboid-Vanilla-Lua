@@ -7,10 +7,13 @@ require "TimedActions/ISBaseTimedAction"
 ISGrabItemAction = ISBaseTimedAction:derive("ISGrabItemAction");
 
 function ISGrabItemAction:isValid()
-	-- Prevent grabbing item if another player acts with it
-	if not isItemTransactionConsistent(self.item:getItem(), self.item:getItem():getContainer(), self.destContainer) then
-		return false
-	end
+    -- Prevent grabbing item if another player acts with it
+    if isClient() then
+        if not self.started and not isItemTransactionConsistent(nil, self.sourceContainer, self.destContainer, nil) then
+            -- self.corpse, ItemContainer.new("floor", self.corpseBody:getSquare(), nil)
+            return false
+        end
+    end
 
 	-- Prevent grabbing items through walls
 	if self.item:getSquare() and self.character:getSquare() then
@@ -30,6 +33,22 @@ end
 
 function ISGrabItemAction:update()
 	self.item:getItem():setJobDelta(self:getJobDelta());
+
+	if isClient() then
+		if isItemTransactionDone(self.transactionId) then
+			self:forceComplete();
+		elseif isItemTransactionRejected(self.transactionId) then
+			self:forceStop();
+		end
+	end
+
+    if isClient() and self.maxTime == -1 then
+        local duration = getItemTransactionDuration(self.transactionId)
+        if duration > 0 then
+            self.maxTime = duration
+            self.action:setTime(self.maxTime)
+        end
+    end
 end
 
 function ISGrabItemAction:start()
@@ -39,12 +58,15 @@ function ISGrabItemAction:start()
 	self.item:getItem():setJobType(getText("ContextMenu_Grab"));
 	self.item:getItem():setJobDelta(0.0);
 	self.character:reportEvent("EventLootItem");
-	createItemTransaction(self.item:getItem(), self.item:getItem():getContainer(), self.destContainer)
+	self.transactionId = createItemTransaction(self.character, nil, self.sourceContainer, self.destContainer)
+	self.started = true
 end
 
 function ISGrabItemAction:stop()
+    removeItemTransaction(self.transactionId, true)
     ISBaseTimedAction.stop(self);
     self.item:getItem():setJobDelta(0.0);
+    self.started = false
 end
 
 function ISGrabItemAction:perform()
@@ -57,7 +79,7 @@ function ISGrabItemAction:perform()
 			break
 		end
 
-		if instanceof(item:getItem(), "Radio") then
+		if not isClient() and instanceof(item:getItem(), "Radio") then
 			local square = item:getItem():getWorldItem():getSquare()
 			local _obj = nil
 			for i=0, square:getObjects():size()-1 do
@@ -94,16 +116,17 @@ function ISGrabItemAction:perform()
 		-- needed to remove from queue / start next.
 		ISBaseTimedAction.perform(self);
 	end
+	self.started = false
 end
 
 function ISGrabItemAction:transferItem(item)
+	removeItemTransaction(self.transactionId, false)
+    if isClient() then
+        ISBaseTimedAction.perform(self);
+        return
+    end
 
-	if isItemTransactionConsistent(self.item:getItem(), self.item:getItem():getContainer(), self.destContainer) then
-		removeItemTransaction(self.item:getItem(), self.item:getItem():getContainer(), self.destContainer)
-	else
-		return
-	end
-
+	-- For SP only
 	local inventoryItem = self.item:getItem()
 	self.item:getSquare():transmitRemoveItemFromSquare(self.item);
 	self.item:removeFromWorld()
@@ -168,6 +191,12 @@ function ISGrabItemAction:new (character, item, time)
 	o.maxTime = time;
 	o.loopedAction = true;
 	o.destContainer = o.character:getInventory();
+	o.started = false;
+	o.transactionId = 0;
 	o:checkQueueList();
+	if isClient() then
+        o.maxTime = -1;
+        o.sourceContainer = ItemContainer.new("object", item:getSquare(), o.item)
+    end
 	return o
 end

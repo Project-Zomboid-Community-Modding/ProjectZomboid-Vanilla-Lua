@@ -23,7 +23,7 @@ function ISMakeUpUI:createChildren()
 	self.avatarPanel:setDirection(IsoDirections.S)
 	self.avatarPanel:setIsometric(false)
 	
-	self.avatarBackgroundTexture = getTexture("media/ui/avatarBackground.png")
+	self.avatarBackgroundTexture = getTexture("media/ui/avatarBackgroundWhite.png")
 
 	self.leftPanel = ISPanel:new(self.avatarPanel:getRight() + 20, self.avatarPanel.y, 120, self.height);
 	self.leftPanel:noBackground();
@@ -207,13 +207,25 @@ function ISMakeUpUI:updateLayout()
 end
 
 function ISMakeUpUI:onApplyMakeUp()
-	self.add.enable = false;
-	self.character:getInventory():AddItem(self.makeUpSelected);
-	if self.previousMakeUp then
-		self.character:getInventory():Remove(self.previousMakeUp);
+	if isClient() then
+		ISTimedActionQueue.add(ISApplyMakeUp:new(self.character, self.item, self.makeUpSelected:getFullType()))
+
+        self.add.enable = false;
+        self.previousMakeUp = nil;
+        self.makeUpSelected = nil;
+	else
+        self.add.enable = false;
+        self.character:getInventory():AddItem(self.makeUpSelected);
+        if self.previousMakeUp then
+            self.character:getInventory():Remove(self.previousMakeUp);
+        end
+        self.previousMakeUp = nil;
+        self.makeUpSelected = nil;
+        self.item:Use()
+        if self.item:getCurrentUses() <= 0 then
+            self:close()
+        end
 	end
-	self.previousMakeUp = nil;
-	self.makeUpSelected = nil;
 
 	self:reinitCombos();
 end
@@ -235,7 +247,7 @@ function ISMakeUpUI:onSelectMakeUp()
 	if not selected then
 		return;
 	end
-	local makeup = InventoryItemFactory.CreateItem(selected.item)
+	local makeup = instanceItem(selected.item)
 	-- backup previous makeup at this location in case we close
 	self.previousMakeUp = self.character:getWornItem(makeup:getBodyLocation());
 	self.character:setWornItem(makeup:getBodyLocation(), makeup);
@@ -290,7 +302,7 @@ function ISMakeUpUI:prerender()
 
 	local x,y,w,h = self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight
 	self:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3);
-	self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 1, 1, 1);
+	self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 0.4, 0.4, 0.4);
 end
 
 function ISMakeUpUI:update()
@@ -299,6 +311,9 @@ function ISMakeUpUI:update()
 	if self.needsUpdateLayout then
 		self.needsUpdateLayout = false
 		self:updateLayout()
+	end
+	if isClient() and self.item:getUseDelta() <= 0 then
+		self:close()
 	end
 end
 

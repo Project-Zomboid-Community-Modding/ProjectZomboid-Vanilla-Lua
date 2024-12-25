@@ -7,6 +7,8 @@ ISFactionsList.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 --************************************************************************--
 --** ISFactionsList:initialise
@@ -16,11 +18,8 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 function ISFactionsList:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
-    local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local btnHgt2 = 18
-    local padBottom = 10
 
-    self.no = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_CraftUI_Close"), self, ISFactionsList.onClick);
+    self.no = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISFactionsList.onClick);
     self.no.internal = "CANCEL";
     self.no.anchorTop = false
     self.no.anchorBottom = true
@@ -29,11 +28,11 @@ function ISFactionsList:initialise()
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.no);
 
-    local listY = 20 + FONT_HGT_MEDIUM + 20
-    self.datas = ISScrollingListBox:new(10, listY, self.width - 20, self.height - padBottom - btnHgt - padBottom - listY);
+    local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM+1
+    self.datas = ISScrollingListBox:new(self.no.x, listY, self.width - (UI_BORDER_SPACING+1)*2, self.no.y - listY - UI_BORDER_SPACING);
     self.datas:initialise();
     self.datas:instantiate();
-    self.datas.itemheight = FONT_HGT_SMALL + 2 * 2;
+    self.datas.itemheight = BUTTON_HGT;
     self.datas.selected = 0;
     self.datas.joypadParent = self;
     self.datas.font = UIFont.NewSmall;
@@ -41,7 +40,7 @@ function ISFactionsList:initialise()
     self.datas.drawBorder = true;
     self:addChild(self.datas);
 
-    self.viewBtn = ISButton:new(self:getWidth() - btnWid - 10,  self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("IGUI_PlayerStats_View"), self, ISFactionsList.onClick);
+    self.viewBtn = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1,  self.no.y, btnWid, BUTTON_HGT, getText("IGUI_PlayerStats_View"), self, ISFactionsList.onClick);
     self.viewBtn.internal = "VIEW";
     self.viewBtn.anchorTop = false
     self.viewBtn.anchorBottom = true
@@ -85,13 +84,9 @@ function ISFactionsList:drawDatas(y, item, alt)
 end
 
 function ISFactionsList:prerender()
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_SeeFaction"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeFaction")) / 2), z, 1,1,1,1, UIFont.Medium);
-    z = z + 30;
+    self:drawText(getText("IGUI_AdminPanel_SeeFaction"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeFaction")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 end
 
 function ISFactionsList:onClick(button)

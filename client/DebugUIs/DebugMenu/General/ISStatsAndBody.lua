@@ -5,6 +5,10 @@
 require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 ISStatsAndBody = ISDebugSubPanelBase:derive("ISStatsAndBody");
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 function ISStatsAndBody:initialise()
     ISPanel.initialise(self);
@@ -13,17 +17,17 @@ end
 function ISStatsAndBody:createChildren()
     ISPanel.createChildren(self);
 
-    local x,y,w, obj = 10,10,self.width-30;
+    local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH - 1;
 
     self:initHorzBars(x,w);
 
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"Player Stats and Body", UIFont.Medium);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_StatsAndBody_Title"), UIFont.Medium);
     obj.center = true;
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"(morale can only be adjusted when stress > 0)", UIFont.Small);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_StatsAndBody_MoraleInfo"), UIFont.Small);
     obj.center = true;
-    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,"(pain and sickness cannot be adjusted manually)", UIFont.Small);
+    y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_StatsAndBody_PainInfo"), UIFont.Small);
     obj.center = true;
-    y = ISDebugUtils.addHorzBar(self,y+5)+5;
+    y = ISDebugUtils.addHorzBar(self,y+UI_BORDER_SPACING)+UI_BORDER_SPACING+1;
 
     local player = getPlayer();
     local stats = player:getStats();
@@ -32,59 +36,80 @@ function ISStatsAndBody:createChildren()
     self.sliderOptions = {};
     self.boolOptions = {};
 
-    self:addSliderOption(stats,"Hunger", 0, 1);
-    self:addSliderOption(stats,"Thirst", 0, 1);
-
-    self:addSliderOption(stats,"Fatigue", 0, 1);
-    self:addSliderOption(stats,"Endurance", 0, 1);
-    local op = self:addSliderOption(stats,"Fitness", 0, 2); -- -1 to 1, use applymod due to slider
+    local op = self:addSliderOption(stats,"Hunger", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Hunger");
+    op = self:addSliderOption(stats,"Thirst", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Thirst");
+    op = self:addSliderOption(stats,"Fatigue", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Fatigue");
+    op = self:addSliderOption(stats,"Endurance", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Endurance");
+    op = self:addSliderOption(stats,"Fitness", 0, 2); -- -1 to 1, use applymod due to slider
     op.applyMod = 1;
-
-    self:addSliderOption(stats,"Drunkenness", 0, 100, 1);
-
-    self:addSliderOption(stats,"Anger", 0, 1);
-    --self:addSliderOption(stats,"Boredom", 0, 1);
-    self:addSliderOption(stats,"Fear", 0, 1);
-    self:addSliderOption(stats,"Pain", 0, 100, 1);
-    self:addSliderOption(stats,"Panic", 0, 100, 1);
-    self:addSliderOption(stats,"Morale", 0, 1);
-    self:addSliderOption(stats,"Stress", 0, 1);
-    self:addSliderOption(stats,"StressFromCigarettes", 0, stats:getMaxStressFromCigarettes());
-    self:addSliderOption(player,"TimeSinceLastSmoke", 0, 10);
-    self:addSliderOption(body,"BoredomLevel", 0, 100, 1);
-    self:addSliderOption(body,"UnhappynessLevel", 0, 100, 1);
-    self:addSliderOption(stats,"Sanity", 0, 1);
-
-    self:addSliderOption(body,"Wetness", 0, 100, 1);
-    self:addSliderOption(body,"Temperature", 20, 40, 0.1);
+    op.title = getText("IGUI_StatsAndBody_Fitness");
+    op = self:addSliderOption(stats,"Drunkenness", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_Drunkenness");
+    op = self:addSliderOption(stats,"Anger", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Anger");
+    op = self:addSliderOption(stats,"Fear", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Fear");
+    op = self:addSliderOption(stats,"Pain", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_Pain");
+    op = self:addSliderOption(stats,"Panic", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_Panic");
+    op = self:addSliderOption(stats,"Morale", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Morale");
+    op = self:addSliderOption(stats,"Stress", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Stress");
+    op = self:addSliderOption(stats,"StressFromCigarettes", 0, stats:getMaxStressFromCigarettes());
+    op.title = getText("IGUI_StatsAndBody_StressFromCigarettes");
+    op = self:addSliderOption(player,"TimeSinceLastSmoke", 0, 10);
+    op.title = getText("IGUI_StatsAndBody_TimeSinceLastSmoke");
+    op = self:addSliderOption(body,"BoredomLevel", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_BoredomLevel");
+    op = self:addSliderOption(body,"UnhappynessLevel", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_UnhappynessLevel");
+    op = self:addSliderOption(stats,"Sanity", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Sanity");
+    op = self:addSliderOption(body,"DiscomfortLevel", 0, 100);
+    op.title = getText("IGUI_StatsAndBody_DiscomfortLevel");
+    op = self:addSliderOption(body,"Wetness", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_Wetness");
+    op = self:addSliderOption(body,"Temperature", 20, 40, 0.1);
+    op.title = getText("IGUI_StatsAndBody_Temperature");
     op = self:addSliderOption(body,"ColdDamageStage", 0, 1);
-    op.title = "ColdDamageStage (hypo 4)";
-
-    self:addSliderOption(body,"OverallBodyHealth", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_ColdDamageStage");
+    op = self:addSliderOption(body,"OverallBodyHealth", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_OverallBodyHealth");
     op = self:addSliderOption(body,"ColdStrength", 0, 100, 1);
-    op.title = "CatchAColdStrength";
-    self:addSliderOption(stats,"Sickness", 0, 1);
-    self:addSliderOption(body,"InfectionLevel", 0, 100, 1);
-    self:addSliderOption(body,"FakeInfectionLevel", 0, 100, 1);
-    self:addSliderOption(body,"FoodSicknessLevel", 0, 100, 1);
-    self:addSliderOption(nutrition,"Calories", -2200, 3700, 1);
-    self:addSliderOption(nutrition, "Weight", 30, 130, 1);
-
-    self:addBoolOption(body,"IsInfected", "IsInfected", "setInfected");
-    self:addBoolOption(body,"IsFakeInfected", "IsFakeInfected", "setIsFakeInfected");
-    self:addBoolOption(body,"IsOnFire", "IsOnFire", "setIsOnFire");
-    self:addBoolOption(player,"Ghost", "isGhostMode", "setGhostMode");
-    self:addBoolOption(player,"God Mod", "isGodMod", "setGodMod");
-    self:addBoolOption(player,"Invisible", "isInvisible", "setInvisible");
+    op.title = getText("IGUI_StatsAndBody_ColdStrength");
+    op = self:addSliderOption(stats,"Sickness", 0, 1);
+    op.title = getText("IGUI_StatsAndBody_Sickness");
+    op = self:addSliderOption(body,"InfectionLevel", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_InfectionLevel");
+    op = self:addSliderOption(body,"FakeInfectionLevel", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_FakeInfectionLevel");
+    op = self:addSliderOption(body,"FoodSicknessLevel", 0, 100, 1);
+    op.title = getText("IGUI_StatsAndBody_FoodSicknessLevel");
+    op = self:addSliderOption(nutrition,"Calories", -2200, 3700, 1);
+    op.title = getText("IGUI_StatsAndBody_Calories");
+    op = self:addSliderOption(nutrition, "Weight", 30, 130, 1);
+    op.title = getText("IGUI_StatsAndBody_Weight");
+    self:addBoolOption(body,getText("IGUI_StatsAndBody_IsInfected"), "IsInfected", "setInfected");
+    self:addBoolOption(body,getText("IGUI_StatsAndBody_IsFakeInfected"), "IsFakeInfected", "setIsFakeInfected");
+    self:addBoolOption(body,getText("IGUI_StatsAndBody_IsOnFire"), "IsOnFire", "setIsOnFire");
+    self:addBoolOption(player,getText("IGUI_StatsAndBody_Ghost"), "isGhostMode", "setGhostMode");
+    self:addBoolOption(player,getText("IGUI_StatsAndBody_GodMod"), "isGodMod", "setGodMod");
+    self:addBoolOption(player,getText("IGUI_StatsAndBody_Invisible"), "isInvisible", "setInvisible");
     --self:addBoolOption(body,"HasACold", "isHasACold", "setHasACold");
 
-    local barMod = 3;
+    local barMod = UI_BORDER_SPACING;
     local y2, label, value, slider;
     for k,v in ipairs(self.sliderOptions) do
         y2,label = ISDebugUtils.addLabel(self,v,x,y,v.title or v.var, UIFont.Small);
 
-        y2,value = ISDebugUtils.addLabel(self,v,x+(w/2)-20,y,"0", UIFont.Small, false);
-        y,slider = ISDebugUtils.addSlider(self,v,x+(w/2),y,w/2, 18, ISStatsAndBody.onSliderChange);
+        y2,value = ISDebugUtils.addLabel(self,v,x+(w-300)-20,y,"0", UIFont.Small, false);
+        y,slider = ISDebugUtils.addSlider(self,v,x+(w-300),y,300, BUTTON_HGT, ISStatsAndBody.onSliderChange);
         slider.valueLabel = value;
 
         v.label = label;
@@ -96,7 +121,7 @@ function ISStatsAndBody:createChildren()
         --print(v.var.." = "..tostring(val))
         slider:setCurrentValue(val);
 
-        y = ISDebugUtils.addHorzBar(self,math.max(y,y2)+barMod)+barMod;
+        y = ISDebugUtils.addHorzBar(self,math.max(y,y2)+barMod)+barMod+1;
     end
 
     local tickbox;
@@ -104,16 +129,16 @@ function ISStatsAndBody:createChildren()
         y2,label = ISDebugUtils.addLabel(self,v,x,y,v.var, UIFont.Small);
 
         local tickOptions = {};
-        table.insert(tickOptions, { text = "Enabled", ticked = false });
-        y,tickbox = ISDebugUtils.addTickBox(self,v,x+(w/2),y,w/2,ISDebugUtils.FONT_HGT_SMALL,v.var,tickOptions,ISStatsAndBody.onTicked);
+        table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
+        y,tickbox = ISDebugUtils.addTickBox(self,v,x+(w-300),y,300,BUTTON_HGT,v.var,tickOptions,ISStatsAndBody.onTicked);
 
         v.label = label;
         v.tickbox = tickbox;
 
-        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod;
+        y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
-    self:setScrollHeight(y+10);
+    self:setScrollHeight(y+1);
 end
 
 function ISStatsAndBody:addSliderOption(_java, _var, _min, _max, _step, _get, _set)

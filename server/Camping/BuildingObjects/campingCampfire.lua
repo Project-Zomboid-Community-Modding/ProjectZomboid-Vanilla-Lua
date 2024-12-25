@@ -13,7 +13,10 @@ campingCampfire = ISBuildingObject:derive("campingCampfire");
 --************************************************************************--
 function campingCampfire:create(x, y, z, north, sprite)
 	local sq = getWorld():getCell():getGridSquare(x, y, z);
-	ISTimedActionQueue.add(ISPlaceCampfireAction:new(self.character, sq, self.character:getInventory():FindAndReturn("CampfireKit"), 0));
+
+    local items = self.character:getInventory():RemoveAll('Stone2', 3)
+    sendRemoveItemsFromContainer(self.character:getInventory(), items);
+    SCampfireSystem.instance:addCampfire(sq)
 end
 
 function campingCampfire:onTimedActionStart(action)
@@ -41,7 +44,7 @@ end
 function campingCampfire:isValid(square, north)
 	local result = self:isSquareFree(square)
 	if result then
-		result = self.character:getInventory():contains("CampfireKit");
+		result = self.character:getInventory():getCountType("Stone2") > 2
 	end
 	return result;
 end

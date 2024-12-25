@@ -23,6 +23,24 @@ local PaintMenuItems = {
     { paint = "PaintBlack",         text = "ContextMenu_Black",         color = { 0.20,0.20,0.20 } }
 }
 
+local WallpaperMenuItems = {
+    { paper = "Wallpaper_BeigeStripe",          text = "ContextMenu_BeigeStripe",},
+    { paper = "Wallpaper_BlackFloral",         text = "ContextMenu_BlackFloral", },
+    { paper = "Wallpaper_BlueStripe",    text = "ContextMenu_Light_BlueStripe", },
+    { paper = "Wallpaper_GreenDiamond",     text = "ContextMenu_Light_GreenDiamond",  },
+    { paper = "Wallpaper_GreenFloral",         text = "ContextMenu_GreenFloral",  },
+    { paper = "Wallpaper_PinkChevron",        text = "ContextMenu_PinkChevron", },
+    { paper = "Wallpaper_PinkFloral",          text = "ContextMenu_PinkFloral",  },
+}
+
+local function predicateEnoughPaste(item)
+ return item:getCurrentUsesFloat() >= 0.1
+end
+
+local function predicateNotBroken(item)
+ return not item:isBroken()
+end
+
 ISPaintMenu.doPaintMenu = function(player, context, worldobjects, test)
 
 	if test and ISWorldObjectContextMenu.Test then return true end
@@ -35,6 +53,7 @@ ISPaintMenu.doPaintMenu = function(player, context, worldobjects, test)
 	local square = nil;
     local paintableWall = nil;
     local paintableItem = nil;
+    local paperableWall = nil;
 
 	-- we get the thumpable item (like wall/door/furniture etc.) if exist on the tile we right clicked
 	for i,v in ipairs(worldobjects) do
@@ -49,18 +68,52 @@ ISPaintMenu.doPaintMenu = function(player, context, worldobjects, test)
         if props and (props:Is("WallN") or props:Is("WallW") or
                 props:Is("DoorWallN") or props:Is("DoorWallW")) then
             paintableWall = v;
+-- 			paperableWall = v;
         end
     end
 
     local joypad = JoypadState.players[player+1] or false
 
-    -- if the item can be plastered
-    if (joypad or (thump and thump:canBePlastered())) and ((playerObj:getPerkLevel(Perks.Woodwork) >= 4 and playerInv:containsTypeRecurse("BucketPlasterFull")) or ISBuildMenu.cheat) then
-		if test then return ISWorldObjectContextMenu.setTest() end
-		context:addOption(getText("ContextMenu_Plaster"), worldobjects, ISPaintMenu.onPlaster, player, thump, square);
-	end
+	local paintBrush = playerInv:getFirstTagRecurse("Paintbrush")
+	local wallpaper = playerInv:getFirstTagRecurse("Wallpaper")
+	local wallpaperPaste = playerInv:getFirstTagEvalRecurse("WallpaperPaste", predicateEnoughPaste)
+	local scissors = playerInv:getFirstTagEvalRecurse("Scissors", predicateNotBroken)
+	local plaster = playerInv:containsTypeRecurse("BucketPlasterFull")
+	local plasterTrowel = playerInv:containsTagRecurse("PlasterTrowel")
 
-	local paintBrush = playerInv:getFirstTypeRecurse("Paintbrush")
+--     if the item can be plastered TODO: commented out for future development
+    if (joypad or (thump and thump:canBePlastered())) and ((playerObj:getPerkLevel(Perks.Woodwork) >= 4 and plaster and plasterTrowel) or ISBuildMenu.cheat) then
+		if test then return ISWorldObjectContextMenu.setTest() end
+		local plaster = context:addOption(getText("ContextMenu_Plaster"), worldobjects, ISPaintMenu.onPlaster, player, thump, square);
+	elseif  (joypad or (thump and thump:canBePlastered())) and ((playerObj:getPerkLevel(Perks.Woodwork) >= 4 and (plaster or plasterTrowel))) then
+		if test then return ISWorldObjectContextMenu.setTest() end
+		local plaster = context:addOption(getText("ContextMenu_CantPlaster"), worldobjects, ISPaintMenu.onPlaster, player, thump, square);
+		plaster.notAvailable = true;
+	end
+    if (((thump and thump:isPaintable()) or paintableWall) or joypad) and (paintBrush and wallpaper and wallpaperPaste and scissors) then
+		if test then return ISWorldObjectContextMenu.setTest() end
+        local wallType
+        if paintableWall then wallType = paintableWall:getSprite():getProperties():Val("PaintingType");
+        else wallType = thump:getSprite():getProperties():Val("PaintingType");
+        end
+            local wallpaperOption = context:addOption(getText("ContextMenu_ApplyWallpaper"), worldobjects, nil);
+            local subMenuWallpaper= ISContextMenu:getNew(context);
+--             -- we add our new menu to the option we want (here paint)
+            context:addSubMenu(wallpaperOption, subMenuWallpaper);
+            ISPaintMenu.player = player
+            for _,wme in ipairs( WallpaperMenuItems) do
+--                 -- if (ISBuildMenu.cheat or playerInv:containsTypeRecurse(wme.paper)) and WallPaper[wallType][wme.paper] then
+                if (playerInv:containsTypeRecurse(wme.paper))
+                and WallPaper[wallType]
+                and WallPaper[wallType][wme.paper] then
+                    subMenuWallpaper:addOption(getText(wme.text),  worldobjects, ISPaintMenu.onPaper, player, item, wme.paper, wallType);
+                end
+            end
+            if subMenuWallpaper:isEmpty() then
+                context:removeLastOption()
+            end
+--         end
+    end
 
     -- paint various sign
     if (paintableWall or joypad) and (ISBuildMenu.cheat or paintBrush) then
@@ -189,6 +242,39 @@ ISPaintMenu.onPaint = function(worldobjects, player, thumpable, painting)
     ISTimedActionQueue.add(ISPaintAction:new(playerObj, thumpable, paintCan, painting, 100));
 end
 
+ISPaintMenu.onPaper = function( worldobjects, player, thumpable, papering, wallType)
+    local playerObj = getSpecificPlayer(player)
+    local playerInv = playerObj:getInventory()
+    if true or JoypadState.players[player+1] then
+--         getPlayer():Say("Papering " .. tostring(papering))
+        local bo = ISPaperCursor:new(playerObj, papering, WallPaper[wallType][papering])
+        getCell():setDrag(bo, bo.player)
+        return
+    end
+    local props = thumpable:getProperties()
+    local isWall = props:Is("WallN") or props:Is("WallW") or props:Is("DoorWallN") or props:Is("DoorWallW") or props:Is("WindowW") or props:Is("WindowN")
+    if isWall then
+        local north = props:Is("WallN") or props:Is("DoorWallN") or props:Is("WindowN")
+        if not luautils.walkAdjWall(playerObj, thumpable:getSquare(), north) then
+            return
+        end
+    else
+        if not luautils.walkAdj(playerObj, thumpable:getSquare()) then
+            return
+        end
+    end
+    local paintCan = nil
+    if not ISBuildMenu.cheat then
+        local paintBrush = playerInv:getFirstTagRecurse("Paintbrush")
+        ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintBrush)
+        wallPaper = playerInv:getFirstTypeRecurse(papering)
+        ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintCan)
+        paste = playerInv:getFirstTagRecurse("WallpaperPaste")
+        ISWorldObjectContextMenu.transferIfNeeded(playerObj, paste)
+    end
+    ISTimedActionQueue.add(ISWallpaperAction:new(playerObj, thumpable, wallPaper, papering));
+end
+
 ISPaintMenu.onPlaster = function(worldobjects, player, thumpable, square)
     local playerObj = getSpecificPlayer(player)
     local playerInv = playerObj:getInventory()
@@ -203,7 +289,7 @@ ISPaintMenu.onPlaster = function(worldobjects, player, thumpable, square)
 			plaster = playerInv:getFirstTypeRecurse("BucketPlasterFull")
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, plaster)
 		end
-		ISTimedActionQueue.add(ISPlasterAction:new(playerObj, thumpable, plaster, 100));
+		ISTimedActionQueue.add(ISPlasterAction:new(playerObj, thumpable, plaster));
  	end
 end
 

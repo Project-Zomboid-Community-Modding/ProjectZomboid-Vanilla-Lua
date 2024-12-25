@@ -15,6 +15,7 @@ end
 
 function ISFarmingWindow:visible(visible)
 	ISFarmingWindow.instance:setVisible(visible);
+	self.farmingPanel:setEnabled(visible)
 end
 
 

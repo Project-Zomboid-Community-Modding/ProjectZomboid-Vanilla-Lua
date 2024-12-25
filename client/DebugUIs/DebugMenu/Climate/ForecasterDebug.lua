@@ -7,6 +7,11 @@ require "ISUI/ISPanel"
 
 ForecasterDebug = ISPanel:derive("ForecasterDebug");
 ForecasterDebug.instance = nil;
+local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local SCROLL_BAR_WIDTH = 13
 
 local stages = {
     [0] = "STAGE_START",
@@ -29,7 +34,7 @@ end
 
 function ForecasterDebug.OnOpenPanel()
     if ForecasterDebug.instance==nil then
-        ForecasterDebug.instance = ForecasterDebug:new (100, 100, 640, 600, "Climate forecaster debugger");
+        ForecasterDebug.instance = ForecasterDebug:new (100, 100, 640+(getCore():getOptionFontSizeReal()*60), 600+(getCore():getOptionFontSizeReal()*50), "Climate forecaster debugger");
         ForecasterDebug.instance:initialise();
         ForecasterDebug.instance:instantiate();
     end
@@ -51,12 +56,13 @@ end
 function ForecasterDebug:createChildren()
     ISPanel.createChildren(self);
 
-    ISDebugUtils.addLabel(self, {}, 10, 20, "Climate forecaster debugger", UIFont.Medium, true)
+    local titleWidth = getTextManager():MeasureStringX(UIFont.Medium, "Climate forecaster debugger")
+    ISDebugUtils.addLabel(self, {}, (self.width - titleWidth)/2, UI_BORDER_SPACING+1, getText("IGUI_Forecaster_Title"), UIFont.Medium, true)
 
-    self.daysList = ISScrollingListBox:new(10, 50, 200, self.height - 100);
+    self.daysList = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MED+UI_BORDER_SPACING*2+1, (self.width-UI_BORDER_SPACING*3-2)/2, self.height-FONT_HGT_MED-BUTTON_HGT-UI_BORDER_SPACING*4-2);
     self.daysList:initialise();
     self.daysList:instantiate();
-    self.daysList.itemheight = 22;
+    self.daysList.itemheight = BUTTON_HGT;
     self.daysList.selected = 0;
     self.daysList.joypadParent = self;
     self.daysList.font = UIFont.NewSmall;
@@ -66,10 +72,10 @@ function ForecasterDebug:createChildren()
     self.daysList.target = self;
     self:addChild(self.daysList);
 
-    self.infoList = ISScrollingListBox:new(220, 50, 400, self.height - 100);
+    self.infoList = ISScrollingListBox:new(self.daysList:getRight()+UI_BORDER_SPACING, self.daysList.y, (self.width-UI_BORDER_SPACING*3-2)/2, self.daysList.height);
     self.infoList:initialise();
     self.infoList:instantiate();
-    self.infoList.itemheight = 22;
+    self.infoList.itemheight = BUTTON_HGT;
     self.infoList.selected = 0;
     self.infoList.joypadParent = self;
     self.infoList.font = UIFont.NewSmall;
@@ -77,7 +83,9 @@ function ForecasterDebug:createChildren()
     self.infoList.drawBorder = true;
     self:addChild(self.infoList);
 
-    local y, obj = ISDebugUtils.addButton(self,"close",self.width-200,self.height-40,180,20,getText("IGUI_CraftUI_Close"),ForecasterDebug.onClickClose);
+    local btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CraftUI_Close"))
+    local y, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,self.height-BUTTON_HGT-UI_BORDER_SPACING-1,btnWidth,BUTTON_HGT,getText("IGUI_CraftUI_Close"),ForecasterDebug.onClickClose);
+    obj:enableCancelColor()
 
     self:populateList();
 end
@@ -102,7 +110,7 @@ function ForecasterDebug:populateList()
     for i=0, forecasts:size()-1 do
         local forecast = forecasts:get(i);
 
-        local prefix = forecast:getIndexOffset()==0 and "[TODAY]" or ("[offset "..tostring(forecast:getIndexOffset()).."]");
+        local prefix = forecast:getIndexOffset()==0 and getText("IGUI_Forecaster_Today") or ("["..getText("IGUI_Forecaster_Offset").." "..tostring(forecast:getIndexOffset()).."]");
         local name = prefix .. " :: " .. forecast:getName()
 
         self.daysList:addItem(name, forecast);
@@ -148,86 +156,83 @@ end
 
 function ForecasterDebug:printForecastValue(_name, _value, _func, _func2)
     local formatFunc = _func or roundstring;
-    self.infoList:addItem("--- ".._name.." ----", nil);
+    self.infoList:addItem("--- ".._name.." ---", nil);
     --self.infoList:addItem("Min: "..self:formatVal(_value:getTotalMin(), formatFunc, _func2), nil);
     --self.infoList:addItem("Max: "..self:formatVal(_value:getTotalMax(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Min/Max: "..self:formatVal(_value:getTotalMin(), formatFunc, _func2).." / "..self:formatVal(_value:getTotalMax(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Mean: "..self:formatVal(_value:getTotalMean(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Day time Min/Max: "..self:formatVal(_value:getDayMin(), formatFunc, _func2).." / "..self:formatVal(_value:getDayMax(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Day time Mean: "..self:formatVal(_value:getDayMean(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Night time Min/Max: "..self:formatVal(_value:getNightMin(), formatFunc, _func2).." / "..self:formatVal(_value:getNightMax(), formatFunc, _func2), nil);
-    self.infoList:addItem("  Night time Mean: "..self:formatVal(_value:getNightMean(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_MinMax")..": "..self:formatVal(_value:getTotalMin(), formatFunc, _func2).." / "..self:formatVal(_value:getTotalMax(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_Mean")..": "..self:formatVal(_value:getTotalMean(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_DayMinMax")..": "..self:formatVal(_value:getDayMin(), formatFunc, _func2).." / "..self:formatVal(_value:getDayMax(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_DayMean")..": "..self:formatVal(_value:getDayMean(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_NightMinMax")..": "..self:formatVal(_value:getNightMin(), formatFunc, _func2).." / "..self:formatVal(_value:getNightMax(), formatFunc, _func2), nil);
+    self.infoList:addItem("  "..getText("IGUI_Forecaster_NightMean")..": "..self:formatVal(_value:getNightMean(), formatFunc, _func2), nil);
 end
 
 function ForecasterDebug:populateInfoList(_forecast)
     self.infoList:clear();
 
     self.infoList:addItem(_forecast:getName(), nil);
-    self.infoList:addItem("Dawn: "..roundstring(_forecast:getDawn()), nil);
-    self.infoList:addItem("Dusk: "..roundstring(_forecast:getDusk()), nil);
-    self.infoList:addItem("Day light hours: "..roundstring(_forecast:getDayLightHours()), nil);
-    self:printForecastValue("Temperature", _forecast:getTemperature());
-    self:printForecastValue("Humidity", _forecast:getHumidity());
-    self:printForecastValue("Wind direction", _forecast:getWindDirection(), ClimateManager.getWindAngleString);
-    self:printForecastValue("Wind speed (KpH)", _forecast:getWindPower(), ClimateManager.ToKph, roundstring);
-    self:printForecastValue("Cloudiness", _forecast:getCloudiness());
+    self.infoList:addItem(getText("IGUI_Forecaster_Dawn")..": "..roundstring(_forecast:getDawn()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_Dusk")..": "..roundstring(_forecast:getDusk()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_DaylightHours")..": "..roundstring(_forecast:getDayLightHours()), nil);
+    self:printForecastValue(getText("IGUI_ClimateOptions_TEMPERATURE"), _forecast:getTemperature());
+    self:printForecastValue(getText("IGUI_ClimateOptions_HUMIDITY"), _forecast:getHumidity());
+    self:printForecastValue(getText("IGUI_Forecaster_WindDirection"), _forecast:getWindDirection(), ClimateManager.getWindAngleString);
+    self:printForecastValue(getText("IGUI_Forecaster_WindSpeed"), _forecast:getWindPower(), ClimateManager.ToKph, roundstring);
+    self:printForecastValue(getText("IGUI_Forecaster_Cloudiness"), _forecast:getCloudiness());
 
     self.infoList:addItem("-----------------------------", nil);
-    self.infoList:addItem("Has fog: "..tostring(_forecast:isHasFog()), nil);
-    self.infoList:addItem("Fog strength: "..roundstring(_forecast:getFogStrength()), nil);
-    self.infoList:addItem("Fog duration: "..roundstring(_forecast:getFogDuration()), nil);
-    self.infoList:addItem("Airfront type (at day start): "..tostring(_forecast:getAirFrontString()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_HasFog")..": "..tostring(_forecast:isHasFog()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_FogStrength")..": "..roundstring(_forecast:getFogStrength()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_FogDuration")..": "..roundstring(_forecast:getFogDuration()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_AirfrontType")..": "..tostring(_forecast:getAirFrontString()), nil);
     --self.infoList:addItem("Weather wind: "..roundstring(_forecast:getWeatherWind()), nil);
     local weatherOverlaps = _forecast:getWeatherOverlap()~=nil and true or false;
 
     if _forecast:isWeatherStarts() or weatherOverlaps then
-        self.infoList:addItem("Chance on snow: "..tostring(_forecast:isChanceOnSnow()), nil);
-        self.infoList:addItem("Day has heavy rain: "..tostring(_forecast:isHasHeavyRain()), nil);
-        self.infoList:addItem("Day has storm: "..tostring(_forecast:isHasStorm()), nil);
-        self.infoList:addItem("Day has tropical storm: "..tostring(_forecast:isHasTropicalStorm()), nil);
-        self.infoList:addItem("Day has blizzard: "..tostring(_forecast:isHasBlizzard()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_SnowChance")..": "..tostring(_forecast:isChanceOnSnow()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_HeavyRain")..": "..tostring(_forecast:isHasHeavyRain()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_Storm")..": "..tostring(_forecast:isHasStorm()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_TropicalStorm")..": "..tostring(_forecast:isHasTropicalStorm()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_Blizzard")..": "..tostring(_forecast:isHasBlizzard()), nil);
 
-        self.infoList:addItem("--- TODAY'S WEATHERSTAGE TYPES ---", nil);
+        self.infoList:addItem("--- "..getText("IGUI_Forecaster_TodaysWeather").." ---", nil);
         local s = _forecast:getWeatherStages();
         for i=0, s:size()-1 do
             local index = s:get(i);
             local name = stages[index] or "UNKNOWN";
-            self.infoList:addItem("Stage ["..tostring(i).."]: "..tostring(name), nil);
+            self.infoList:addItem(getText("IGUI_Forecaster_Stage", tostring(i))..": "..tostring(name), nil);
         end
     end
 
     if _forecast:isWeatherStarts() then
-        self.infoList:addItem("--- WEATHER STARTS ---", nil);
-        self.infoList:addItem("Weather starts: "..tostring(_forecast:isWeatherStarts()), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_WeatherStarts")..": "..tostring(_forecast:isWeatherStarts()), nil);
         self:populateWeatherInfoList(_forecast);
     end
 
     if weatherOverlaps then
-        self.infoList:addItem("--- WEATHER OVERLAP ---", nil);
-        self.infoList:addItem("IsWeatherOverlap: true", nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_WeatherOverlap"), nil);
         self:populateWeatherInfoList(_forecast:getWeatherOverlap(), true);
     end
 end
 
 function ForecasterDebug:populateWeatherInfoList(_forecast, _isOverlap)
     if _isOverlap then
-        self.infoList:addItem("Weather start = ".._forecast:getName(), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_WeatherStartDate")..": ".._forecast:getName(), nil);
     end
-    self.infoList:addItem("Start time: "..roundstring(_forecast:getWeatherStartTime()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_WeatherStartTime")..": "..roundstring(_forecast:getWeatherStartTime()), nil);
 
     local period = _forecast:getWeatherPeriod();
 
-    self.infoList:addItem("Duration: "..roundstring(period:getDuration()), nil);
-    self.infoList:addItem("Strength: "..roundstring(period:getTotalStrength()), nil);
-    local frontType = period:getFrontType()==-1 and "COLD" or "WARM";
-    self.infoList:addItem("Front type: "..tostring(frontType), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_Duration")..": "..roundstring(period:getDuration()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_Strength")..": "..roundstring(period:getTotalStrength()), nil);
+    self.infoList:addItem(getText("IGUI_Forecaster_FrontType")..": "..tostring(period:getFrontType()==-1 and getText("IGUI_Forecaster_FrontType_Cold") or getText("IGUI_Forecaster_FrontType_Warm")), nil);
 
-    self.infoList:addItem("--- FULL WEATHER PATTERN ---", nil);
+    self.infoList:addItem("--- "..getText("IGUI_Forecaster_FullPattern").." ----", nil);
     local s = period:getWeatherStages();
     for i=0, s:size()-1 do
         local index = s:get(i):getStageID();
         local name = stages[index] or "UNKNOWN";
-        self.infoList:addItem("Stage ["..tostring(i).."]: "..tostring(name), nil);
+        self.infoList:addItem(getText("IGUI_Forecaster_Stage", tostring(i))..": "..tostring(name), nil);
     end
 
 end

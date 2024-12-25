@@ -7,7 +7,11 @@ require "TimedActions/ISBaseTimedAction"
 ISDetachItemHotbar = ISBaseTimedAction:derive("ISDetachItemHotbar");
 
 function ISDetachItemHotbar:isValid()
-	return self.character:getInventory():contains(self.item);
+    if isClient() and self.item then
+	    return self.character:getInventory():containsID(self.item:getID())
+	else
+	    return self.character:getInventory():contains(self.item);
+	end
 end
 
 function ISDetachItemHotbar:update()
@@ -15,6 +19,9 @@ function ISDetachItemHotbar:update()
 end
 
 function ISDetachItemHotbar:start()
+    if isClient() and self.item then
+        self.item = self.character:getInventory():getItemById(self.item:getID())
+    end
 	self.character:setVariable("AttachItemSpeed", self.animSpeed)
 	self:setActionAnim("DetachItem")
 	self.character:reportEvent("EventAttachItem");
@@ -32,7 +39,9 @@ function ISDetachItemHotbar:perform()
 	
 	self.hotbar:reloadIcons();
 
-	ISInventoryPage.renderDirty = true
+	ISInventoryPage.renderDirty = true;
+
+	syncItemFields(self.character, self.item);
 
     -- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);

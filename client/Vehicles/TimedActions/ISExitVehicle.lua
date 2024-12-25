@@ -38,6 +38,7 @@ function ISExitVehicle:start()
 --	end
 	self.character:SetVariable("bExitingVehicle", "true")
 	vehicle:playPassengerSound(seat, "exit")
+	self.character:triggerMusicIntensityEvent("VehicleExit")
 end
 
 function ISExitVehicle:stop()

@@ -136,9 +136,9 @@ function ISMicrowaveUI:onClick(button)
         end
     end
     if button.internal == "OK" then
-        self.oven:setTimer(self.timerKnob:getValue() * 60);
-        self.oven:setMaxTemperature(self.tempKnob:getValue());
-        self.oven:Toggle();
+        local args = { x = self.oven:getX(), y = self.oven:getY(), z = self.oven:getZ(),
+                       timer = self.timerKnob:getValue() * 60, maxTemperature = self.tempKnob:getValue() }
+        sendClientCommand(self.character, 'stove', 'setOvenParamsAndToggle', args)
     end
 end
 

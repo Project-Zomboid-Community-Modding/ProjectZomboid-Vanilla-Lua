@@ -7,6 +7,9 @@ require('Vehicles/ISUI/ISUI3DScene')
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local LABEL_HGT = FONT_HGT_MEDIUM + 6
 
 AttachmentEditorUI = ISPanel:derive("AttachmentEditorUI")
 
@@ -96,6 +99,7 @@ end
 function WorldAttachmentPanel:onTickBox(index, selected)
 	self.weaponRotationHack = selected
 	self.scene.javaObject:fromLua2("setModelWeaponRotationHack", "worldModel", selected)
+	self.editor:onSetModelWeaponRotationHackChanged(selected)
 end
 
 function WorldAttachmentPanel:setModelScriptName(scriptName)
@@ -105,9 +109,10 @@ function WorldAttachmentPanel:setModelScriptName(scriptName)
 	self.scene.javaObject:fromLua2("setModelWeaponRotationHack", "worldModel", self.weaponRotationHack)
 end
 
-function WorldAttachmentPanel:new(x, y, width, height)
+function WorldAttachmentPanel:new(x, y, width, height, editor)
 	local o = ISPanel.new(self, x, y, width, height)
 	o:noBackground()
+	o.editor = editor
 	return o
 end
 
@@ -125,17 +130,17 @@ local function drawVector(ui, label, x, y, vx, vy, vz)
 	ui:drawText(label, x, y, 1, 1, 1, 1, UIFont.Small)
 	x = x + getTextManager():MeasureStringX(UIFont.Small, label)
 
-	local dx = getTextManager():MeasureStringX(UIFont.Small, "99.9999")
+	local dx = getTextManager():MeasureStringX(UIFont.Small, "X: -99.9999")
 	str = vectorComponentToString(vx, 1)
-	ui:drawText(str, x, y, 1, 0, 0, 1, UIFont.Small)
-	x = x + dx
+	ui:drawText("X: " .. str, x, y, 1, 0, 0, 1, UIFont.Small)
+	x = x + dx + UI_BORDER_SPACING
 
 	str = vectorComponentToString(vy, 1)
-	ui:drawText(str, x, y, 0, 1, 0, 1, UIFont.Small)
-	x = x + dx
+	ui:drawText("Y: " .. str, x, y, 0, 1, 0, 1, UIFont.Small)
+	x = x + dx + UI_BORDER_SPACING
 
 	str = vectorComponentToString(vz, 1)
-	ui:drawText(str, x, y, 0, 0.5, 1, 1, UIFont.Small)
+	ui:drawText("Z: " .. str, x, y, 0, 0.5, 1, 1, UIFont.Small)
 end
 
 local function alignVectorToGrid(v, gridMult)
@@ -296,6 +301,10 @@ function EditPanel:java4(func, arg0, arg1, arg2, arg3)
 	return self.parent.scene.javaObject:fromLua4(func, arg0, arg1, arg2, arg3)
 end
 
+function EditPanel:java5(func, arg0, arg1, arg2, arg3, arg4)
+	return self.parent.scene.javaObject:fromLua5(func, arg0, arg1, arg2, arg3, arg4)
+end
+
 function EditPanel:java6(func, arg0, arg1, arg2, arg3, arg4, arg5)
 	return self.parent.scene.javaObject:fromLua6(func, arg0, arg1, arg2, arg3, arg4, arg5)
 end
@@ -315,12 +324,11 @@ AttachmentEditorUI_EditAttachment = EditPanel:derive("AttachmentEditorUI_EditAtt
 local EditAttachment = AttachmentEditorUI_EditAttachment
 
 function EditAttachment:createChildren()
-	local buttonPadY = 4
-	local buttonHgt = FONT_HGT_MEDIUM + 8
+	local buttonHgt = FONT_HGT_MEDIUM
 
-	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
-	local combo = ISComboBox:new(0, 0, self.width, comboHeight, self, self.onComboAddModel)
-	combo.noSelectionText = "ADD MODEL"
+	local comboHeight = FONT_HGT_MEDIUM
+	local combo = ISComboBox:new(0, 0, self.width, LABEL_HGT, self, self.onComboAddModel)
+	combo.noSelectionText = getText("IGUI_AttachmentEditor_AddModel")
 	combo:setEditable(true)
 	self:addChild(combo)
 	self.comboAddModel = combo
@@ -343,57 +351,79 @@ function EditAttachment:createChildren()
 	end
 	combo.selected = 0 -- ADD MODEL
 
-	local itemHeight = FONT_HGT_SMALL + 2
-	self.list = self:createList(0, combo:getBottom() + buttonPadY, self.width, itemHeight * 6)
+	local itemHeight = BUTTON_HGT
+	self.list = self:createList(0, combo:getBottom() + UI_BORDER_SPACING, self.width, itemHeight * 6)
 	self.list.itemheight = itemHeight
 	self.list.doDrawItem = function(self, y, item, alt) return self.parent.doDrawItem(self, y, item, alt) end
 	self.list.onRightMouseDown = function(self, x, y) return self.parent.onRightMouseDownList1(self.parent, x, y) end
 	self.list.selectionMode = "single"
 
-	local button0 = ISButton:new(10, self.list:getBottom() + buttonPadY, self.width - 10 * 2, buttonHgt, "REMOVE FROM SCENE", self, self.onRemoveModel)
+	local button0 = ISButton:new(0, self.list:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, getText("IGUI_AttachmentEditor_RemoveFromScene"), self, self.onRemoveModel)
 	button0:setEnable(false)
 	self:addChild(button0)
 	self.buttonRemoveModel = button0
 
-	self.comboPlayer = ISComboBox:new(0, button0:getBottom() + 10, self.width, comboHeight, self, self.onComboPlayerModel)
-	self.comboPlayer.noSelectionText = "PLAYER MODEL"
+	self.comboPlayer = ISComboBox:new(0, button0:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, self, self.onComboPlayerModel)
+	self.comboPlayer.noSelectionText = getText("IGUI_AttachmentEditor_PlayerModel")
 	self:addChild(self.comboPlayer)
-	self.comboPlayer:addOption("None")
-	self.comboPlayer:addOption("Female")
-	self.comboPlayer:addOption("Male")
+	self.comboPlayer:addOption(getText("IGUI_None"))
+	self.comboPlayer:addOption(getText("IGUI_char_Female"))
+	self.comboPlayer:addOption(getText("IGUI_char_Male"))
 	self.comboPlayer.selected = 0 -- PLAYER MODEL
 
-	self.list2 = self:createList(0, self.comboPlayer:getBottom() + 20, self.width, 24 * 6)
+	self.comboPlayerAnimation = ISComboBox:new(0, self.comboPlayer:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, self, self.onComboPlayerAnimation)
+	self.comboPlayerAnimation.noSelectionText = getText("IGUI_AttachmentEditor_PlayerAnim")
+	self.comboPlayerAnimation:setEditable(true)
+	self:addChild(self.comboPlayerAnimation)
+	self:setPlayerAnimationCombo()
+
+	self:initAnimalModelScripts()
+
+	self.comboAnimal = ISComboBox:new(0, self.comboPlayerAnimation:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, self, self.onComboAnimalModel)
+	self.comboAnimal.noSelectionText = getText("IGUI_AnimClipViewer_AnimalModel")
+	self.comboAnimal:setEditable(true)
+	self:addChild(self.comboAnimal)
+	self:fillAnimalCombo()
+	self.comboAnimal.selected = 0 -- ANIMAL MODEL
+
+	self.comboVehicle = ISComboBox:new(0, self.comboAnimal:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, self, self.onComboVehicleModel)
+	self.comboVehicle.noSelectionText = getText("IGUI_AttachmentEditor_VehicleModel")
+	self.comboVehicle:setEditable(true)
+	self:addChild(self.comboVehicle)
+	self:fillVehicleCombo()
+	self.comboVehicle.selected = 0 -- VEHICLE MODEL
+
+	self.list2 = self:createList(0, self.comboVehicle:getBottom() + UI_BORDER_SPACING, self.width, itemHeight * 6)
 	self.list2.doDrawItem = self.doDrawItem2
-	self.list2.itemheight = FONT_HGT_SMALL * 3 + 2
+	self.list2.itemheight = itemHeight
 	self.list2.selectionMode = "single"
 
-	self.belowList = ISPanel:new(0, self.list2:getBottom() + buttonPadY, self.width, 100)
+	self.belowList = ISPanel:new(0, self.list2:getBottom() + UI_BORDER_SPACING, self.width, 100)
 	self.belowList:noBackground()
 	self:addChild(self.belowList);
 
-	self.nameEntry = ISTextEntryBox:new("", 10, 0, self.width - 10 * 2, buttonHgt)
+	self.nameEntry = ISTextEntryBox:new("", 0, UI_BORDER_SPACING, self.width, LABEL_HGT)
 	self.nameEntry.font = UIFont.Medium
 	self.nameEntry.onCommandEntered = function(self) self.parent.parent:onNameEntered() end
 	self.belowList:addChild(self.nameEntry)
 
-	local button1 = ISButton:new(10, self.nameEntry:getBottom() + buttonPadY, (self.width - 10 * 3) / 2, buttonHgt, "NEW", self, self.onNewAttachment)
+	local button1 = ISButton:new(0, self.nameEntry:getBottom() + UI_BORDER_SPACING, (self.width - 10) / 2, LABEL_HGT, getText("IGUI_AttachmentEditor_New"), self, self.onNewAttachment)
 	self.belowList:addChild(button1)
 	button1:setEnable(false)
 	self.buttonNewAttachment = button1
 
-	local button2 = ISButton:new(button1:getRight() + 10, button1:getY(), button1.width, buttonHgt, "DELETE", self, self.onDeleteAttachment)
+	local button2 = ISButton:new(button1:getRight() + 10, button1:getY(), button1.width, LABEL_HGT, getText("IGUI_AttachmentEditor_Delete"), self, self.onDeleteAttachment)
 	button2:setEnable(false)
 	self.belowList:addChild(button2)
 	self.buttonDeleteAttachment = button2
 
 	self.gizmo = "translate"
-	local button3 = ISButton:new(10, button2:getBottom() + buttonPadY, self.width - 20, buttonHgt, "TRANSLATE", self, self.onToggleGizmo)
+	local button3 = ISButton:new(0, button2:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, getText("IGUI_AttachmentEditor_Translate"), self, self.onToggleGizmo)
 	self.belowList:addChild(button3)
 	self.button3 = button3
 
 	self.transformMode = "Global"
-	local button4 = ISButton:new(10, button3:getBottom() + buttonPadY, self.width - 20, buttonHgt, "GLOBAL", self, self.onToggleGlobalLocal)
+	local button4 = ISButton:new(0, button3:getBottom() + UI_BORDER_SPACING, self.width, LABEL_HGT, getText("IGUI_AttachmentEditor_Global"), self, self.onToggleGlobalLocal)
 	self.belowList:addChild(button4)
 	self.button4 = button4
 
@@ -404,9 +434,9 @@ end
 function EditAttachment:doLayout()
 	local top = self.list2:getY()
 	local labelTop = self.parent:getHeight() - self.parent.bottomPanel:getHeight() - 30
-	local bottom = labelTop - 20 - self.belowList.height - 4
+	local bottom = labelTop - 20 - self.belowList.height
 	self.list2:setHeight(bottom - top)
-	self.belowList:setY(self.list2:getBottom() + 4)
+	self.belowList:setY(self.list2:getBottom())
 	self:setHeight(self.belowList:getBottom())
 end
 
@@ -414,13 +444,73 @@ function EditAttachment:onComboAddModel()
 	local scriptName = self.comboAddModel:getOptionText(self.comboAddModel.selected)
 	for _,item in ipairs(self.list.items) do
 		local modelScript = item.item
-		if modelScript:getFullType() == scriptName then
+		if self:isVehicleScript(modelScript) then
+			--
+		elseif modelScript:getFullType() == scriptName then
 			return
 		end
 	end
 	self.comboAddModel.selected = 0 -- ADD MODEL
 	self:java2("createModel", scriptName, scriptName)
 	self:toUI()
+end
+
+function EditAttachment:fillAnimalCombo()
+	self.comboAnimal:clear()
+	self.comboAnimal:addOption(getText("IGUI_None"))
+	local defs = getAllAnimalsDefinitions()
+	for i=1,defs:size() do
+		local def = defs:get(i-1)
+		if self.animalScriptByName[def:getBodyModelStr()] then
+			local breeds = def:getBreeds()
+			for j=1,breeds:size() do
+				local breed = breeds:get(j-1)
+				local data = { definition = def, breed = breed }
+				self.comboAnimal:addOptionWithData(getText("IGUI_Animal_Group_" .. def:getGroup()) .. ' / ' .. getText("IGUI_AnimalType_" .. def:getAnimalType()) .. ' / ' .. getText("IGUI_Breed_" .. breed:getName()), data)
+			end
+		end
+	end
+	local option = self.comboAnimal.options[1] -- None
+	table.remove(self.comboAnimal.options, 1)
+	table.sort(self.comboAnimal.options, function(a,b) return not string.sort(a.text, b.text) end)
+	table.insert(self.comboAnimal.options, 1, option)
+end
+
+function EditAttachment:fillVehicleCombo()
+	self.comboVehicle:clear()
+	self.comboVehicle:addOption(getText("IGUI_None"))
+	local scripts = getScriptManager():getAllVehicleScripts()
+	local sorted = {}
+	for i=1,scripts:size() do
+		local script = scripts:get(i-1)
+		table.insert(sorted, script:getFullName())
+	end
+	table.sort(sorted)
+	local scriptNameScene = self.editor.scene.javaObject:fromLua1("getVehicleScript", "vehicle"):getFullName()
+	for _,scriptName in ipairs(sorted) do
+		self.comboVehicle:addOption(scriptName)
+		if scriptName == scriptNameScene then
+			self.comboVehicle.selected = #self.comboVehicle.options
+		end
+	end
+end
+
+function EditAttachment:initAnimalModelScripts()
+	self.animalScriptByName = {}
+	self.animalScriptByModelScript = {}
+	local defs = getAllAnimalsDefinitions()
+	for i=1,defs:size() do
+		local def = defs:get(i-1)
+		local modelScript = getScriptManager():getModelScript(def:getBodyModelStr())
+		if modelScript then
+			self.animalScriptByName[def:getBodyModelStr()] = modelScript
+			self.animalScriptByModelScript[modelScript] = modelScript
+		end
+		local breeds = def:getBreeds()
+		for j=1,breeds:size() do
+			local breed = breeds:get(j-1)
+		end
+	end
 end
 
 function EditAttachment:onSceneMouseDown(x, y)
@@ -435,18 +525,64 @@ end
 function EditAttachment:onRemoveModel(button, x, y)
 	for _,item in self.list:iteratorSelected() do
 		local modelScript = item.item
-		if not self:isBodyScript(modelScript) then
+		if not self:isCharacterScript(modelScript) and not self:isVehicleScript() then
+			if modelScript == self.selectedModelScript then
+				self.selectedModelScript = nil
+			end
 			self:java1("removeModel", modelScript:getFullType())
 		end
 	end
 	self:toUI()
 end
 
+function EditAttachment:setPlayerAnimationCombo()
+	self.comboPlayerAnimation:clear()
+	local clips = getAttachmentEditorState():fromLua0("getClipNames")
+	for i=1,clips:size() do
+		local clipName = clips:get(i-1)
+		self.comboPlayerAnimation:addOption(clipName)
+		if clipName == "Bob_Idle" then
+			self.comboPlayerAnimation.selected = i
+		end
+	end
+end
+
 function EditAttachment:onComboPlayerModel()
 	self:java2("setObjectVisible", "character1", self.comboPlayer.selected > 1)
 	self:java2("setCharacterFemale", "character1", self.comboPlayer.selected == 2)
+	self:java2("setCharacterState", "character1", "runtime")
+	local animation = self.comboPlayerAnimation:getOptionText(self.comboPlayerAnimation.selected)
+	self:java2("setCharacterAnimationClip", "character1", animation)
 	self.comboPlayer.selected = 0 -- PLAYER MODEL
 	self:toUI()
+end
+
+function EditAttachment:onComboPlayerAnimation()
+	local animation = self.comboPlayerAnimation:getOptionText(self.comboPlayerAnimation.selected)
+	self:java2("setCharacterAnimationClip", "character1", animation)
+end
+
+function EditAttachment:onComboAnimalModel()
+	self:java2("setObjectVisible", "animal1", self.comboAnimal.selected > 1)
+	if self.comboAnimal.selected == 1 then
+		-- Hidden
+	else
+		local data = self.comboAnimal:getOptionData(self.comboAnimal.selected)
+		self:java3("setAnimalDefinition", "animal1", data.definition, data.breed)
+		self.currentAnimalScript = self.animalScriptByName[data.definition:getBodyModelStr()]
+	end
+	self.comboAnimal.selected = 0 -- ANIMAL MODEL
+	self:toUI()
+end
+
+function EditAttachment:onComboVehicleModel()
+	self:java2("setObjectVisible", "vehicle", self.comboVehicle.selected > 1)
+	if self.comboVehicle.selected > 1 then
+		local scriptName = self.comboVehicle:getOptionText(self.comboVehicle.selected)
+		self:java2("setVehicleScript", "vehicle", scriptName)
+	end
+	self.comboVehicle.selected = 0 -- VEHICLE MODEL
+	self:populateObjectList()
 end
 
 function EditAttachment:onNameEntered()
@@ -476,23 +612,55 @@ function EditAttachment:getUniqueAttachmentId(modelScript)
 	error "too many attachments"
 end
 
-function EditAttachment:isBodyScript(modelScript)
+function EditAttachment:isPlayerScript(modelScript)
 	if modelScript == nil then
 		return false
 	end
 	return (modelScript == self.femaleBodyScript) or (modelScript == self.maleBodyScript)
 end
 
+function EditAttachment:isAnimalScript(modelScript)
+	if modelScript == nil then
+		return false
+	end
+	return self.animalScriptByModelScript[modelScript] ~= nil
+end
+
+function EditAttachment:isCharacterScript(modelScript)
+	if modelScript == nil then
+		return false
+	end
+	return self:isPlayerScript(modelScript) or self:isAnimalScript(modelScript)
+end
+
+function EditAttachment:isVehicleScript(modelScript)
+	if modelScript == nil then
+		return false
+	end
+	return instanceof(modelScript, "VehicleScript")
+--	return modelScript == self:java1("getVehicleScript", "vehicle")
+end
+
+function EditAttachment:getSceneObjectId(modelScript)
+	if not modelScript then return nil end
+	if self:isPlayerScript(modelScript) then return "character1" end
+	if self:isAnimalScript(modelScript) then return "animal1" end
+	if self:isVehicleScript(modelScript) then return "vehicle" end
+	return modelScript:getFullType()
+end
+
 function EditAttachment:onNewAttachment(button, x, y)
 	local modelScript = self.selectedModelScript
 	local id = self:getUniqueAttachmentId(modelScript)
 	local attach = nil
-	if self:isBodyScript(modelScript) then
+	if self:isCharacterScript(modelScript) then
 		if not modelScript:getAttachmentById(self.selectedBone) then
 			id = self.selectedBone
 		end
 		attach = modelScript:addAttachment(ModelAttachment.new(id))
 		attach:setBone(self.selectedBone)
+	elseif self:isVehicleScript(modelScript) then
+		-- Use the vehicle editor to edit vehicle attachments.
 	else
 		attach = self:java2("addAttachment", modelScript:getFullType(), id)
 	end
@@ -508,8 +676,10 @@ function EditAttachment:onDeleteAttachment(button, x, y)
 	for _,item in self.list:iteratorSelected() do
 		local modelScript = item.item
 		for _,item2 in self.list2:iteratorSelected() do
-			if self:isBodyScript(modelScript) then
+			if self:isCharacterScript(modelScript) then
 				modelScript:removeAttachment(item2.item)
+			elseif self:isVehicleScript(modelScript) then
+				-- Use the vehicle editor to edit vehicle attachments.
 			else
 				self:java2("removeAttachment", modelScript:getFullType(), item2.item:getId())
 			end
@@ -521,20 +691,23 @@ end
 function EditAttachment:onToggleGizmo()
 	if self.gizmo == "translate" then
 		self.gizmo = "rotate"
-		self.button3.title = "ROTATE"
+		self.button3.title = getText("IGUI_AttachmentEditor_Rotate")
+	elseif self.gizmo == "rotate" then
+		self.gizmo = "scale"
+		self.button3.title = getText("IGUI_AttachmentEditor_Scale")
 	else
 		self.gizmo = "translate"
-		self.button3.title = "TRANSLATE"
+		self.button3.title = getText("IGUI_AttachmentEditor_Translate")
 	end
 end
 
 function EditAttachment:onToggleGlobalLocal()
 	if self.transformMode == "Global" then
 		self.transformMode = "Local"
-		self.button4.title = "LOCAL"
+		self.button4.title = getText("IGUI_AttachmentEditor_Local")
 	else
 		self.transformMode = "Global"
-		self.button4.title = "GLOBAL"
+		self.button4.title = getText("IGUI_AttachmentEditor_Global")
 	end
 end
 
@@ -580,11 +753,15 @@ function EditAttachment:doDrawItem2(y, item, alt)
 	y = y + FONT_HGT_SMALL
 
 	local offset = attach:getOffset()
-	drawVector(self, "offset:   ", x + indent, y, offset:x(), offset:y(), offset:z())
+	drawVector(self, getText("IGUI_AttachmentEditor_Offset")..":   ", x + indent, y, offset:x(), offset:y(), offset:z())
 	y = y + FONT_HGT_SMALL
 
 	local rotate = attach:getRotate()
-	drawVector(self, "rotate:   ", x + indent, y, rotate:x(), rotate:y(), rotate:z())
+	drawVector(self, getText("IGUI_AttachmentEditor_Rotate")..":   ", x + indent, y, rotate:x(), rotate:y(), rotate:z())
+	y = y + FONT_HGT_SMALL
+
+	local scale = attach:getScale()
+	drawVector(self, getText("IGUI_AttachmentEditor_Scale")..":   ", x + indent, y, scale, scale, scale)
 	y = y + FONT_HGT_SMALL
 
 	self:drawRect(x, y, self.width - 4 * 2, 2, 1.0, 0.5, 0.5, 0.5)
@@ -597,18 +774,18 @@ function EditAttachment:onRightMouseDownList1(x, y)
 	local item = self.list.items[row]
 	if not item then return end
 	local child = item.item
-	local childName = self:isBodyScript(child) and "character1" or child:getFullType()
+	local childName = self:getSceneObjectId(child)
 	
 	local player = 0
 	local context = ISContextMenu.get(player, self.list:getAbsoluteX() + x, self.list:getAbsoluteY() + y)
 	context:removeFromUIManager()
 	context:addToUIManager()
 	local parentMenu = context:getNew(context)
-	parentMenu:addOption("None", self, self.onSetObjectParent, childName, nil, nil, nil)
+	parentMenu:addOption(getText("IGUI_None"), self, self.onSetObjectParent, childName, nil, nil, nil)
 	for _,item in ipairs(self.list.items) do
 		local parent = item.item
 		if parent ~= child then
-			local parentName = self:isBodyScript(parent) and "character1" or parent:getFullType()
+			local parentName = self:getSceneObjectId(parent)
 			if parent:getAttachmentCount() > 0 then
 				local attachmentMenu = context:getNew(parentMenu)
 				attachmentMenu:addOption("<no attachment>", self, self.onSetObjectParent, childName, nil, parentName, nil)
@@ -622,22 +799,84 @@ function EditAttachment:onRightMouseDownList1(x, y)
 					attachmentMenu:addOption(attach:getId(), self, self.onSetObjectParent, childName, attach:getId(), parentName, attach:getId())
 				end
 				parentMenu:addSubMenu(parentMenu:addOption(parent:getFullType()), attachmentMenu)
+				if self:isVehicleScript(parent) then
+					self:addVehiclePartParentMenus(context, parent, child, attachmentMenu)
+				end
 			else
 				parentMenu:addOption(parent:getFullType(), self, self.onSetObjectParent, childName, nil, parentName, nil)
 			end
 		end
 	end
 	context:addSubMenu(context:addOption("Set Parent"), parentMenu)
+	if self:isCharacterScript(child) then
+		local optionAnimate = context:addOption("Animate", self, self.onSetCharacterAnimate, childName)
+		context:setOptionChecked(optionAnimate, self:java1("getCharacterAnimate", childName))
+		local optionBones = context:addOption("Show Bones", self, self.onSetCharacterShowBones, childName)
+		context:setOptionChecked(optionBones, self:java1("getCharacterShowBones", childName))
+	elseif self:isVehicleScript(child) then
+		--
+	else
+		local optionIgnoreVehicleScale = context:addOption("Ignore Vehicle Scale", self, self.onSetModelIgnoreVehicleScale, childName)
+		context:setOptionChecked(optionIgnoreVehicleScale, self:java1("getModelIgnoreVehicleScale", childName))
+	end
 	local optionRotate = context:addOption("Auto-Rotate Y", self, self.onSetObjectAutoRotate, childName)
 	context:setOptionChecked(optionRotate, self:java1("getObjectAutoRotate", childName))
+	local optionVisible = context:addOption("Visible", self, self.onSetObjectVisible, childName)
+	context:setOptionChecked(optionVisible, self:java1("isObjectVisible", childName))
+end
+
+function EditAttachment:addVehiclePartParentMenus(context, vehicleScript, child, parentMenu)
+	for i=1,vehicleScript:getPartCount() do
+		local scriptPart = vehicleScript:getPart(i-1)
+		for j=1,scriptPart:getModelCount() do	
+			local scriptModel = scriptPart:getModel(j-1)
+			if scriptModel:getFile() then
+				local modelScript = getScriptManager():getModelScript(scriptModel:getFile())
+				if modelScript and (modelScript:getAttachmentCount() > 0) then
+					local attachmentMenu = context:getNew(parentMenu)
+					attachmentMenu:addOption("<no attachment>", self, self.onSetObjectParentToVehiclePart, child:getFullType(), scriptPart:getId(), scriptModel:getId(), nil)
+					local attachments = {}
+					for i=1,modelScript:getAttachmentCount() do
+						local attach = modelScript:getAttachment(i-1)
+						table.insert(attachments, attach)
+					end
+					table.sort(attachments, function(a,b) return not string.sort(a:getId(), b:getId()) end)
+					for _,attach in ipairs(attachments) do
+						attachmentMenu:addOption(attach:getId(), self, self.onSetObjectParentToVehiclePart, child:getFullType(), scriptPart:getId(), scriptModel:getId(), attach:getId())
+					end
+					parentMenu:addSubMenu(parentMenu:addOption(scriptPart:getId().."|"..scriptModel:getId()), attachmentMenu)
+				end
+			end
+		end
+	end
 end
 
 function EditAttachment:onSetObjectParent(child, childAttachment, parent, parentAttachment)
 	self:java4("setObjectParent", child, childAttachment, parent, parentAttachment)
 end
 
+function EditAttachment:onSetObjectParentToVehiclePart(child, scriptPart, scriptModel, attachment)
+	self:java5("setObjectParentToVehiclePart", "vehicle", child, scriptPart, scriptModel, attachment)
+end
+
+function EditAttachment:onSetCharacterAnimate(child)
+	self:java2("setCharacterAnimate", child, not self:java1("getCharacterAnimate", child))
+end
+
+function EditAttachment:onSetCharacterShowBones(child)
+	self:java2("setCharacterShowBones", child, not self:java1("getCharacterShowBones", child))
+end
+
+function EditAttachment:onSetModelIgnoreVehicleScale(child)
+	self:java2("setModelIgnoreVehicleScale", child, not self:java1("getModelIgnoreVehicleScale", child))
+end
+
 function EditAttachment:onSetObjectAutoRotate(child)
 	self:java2("setObjectAutoRotate", child, not self:java1("getObjectAutoRotate", child))
+end
+
+function EditAttachment:onSetObjectVisible(child)
+	self:java2("setObjectVisible", child, not self:java1("isObjectVisible", child))
 end
 
 function EditAttachment:prerenderEditor()
@@ -664,24 +903,31 @@ function EditAttachment:prerenderEditor()
 
 	local showGizmo = false
 
-	if self:isBodyScript(modelScript) then
+	if self:isCharacterScript(modelScript) then
+		local objectName = self:getSceneObjectId(modelScript)
 		if self.selectedBone then
-			self:java3("setGizmoOrigin", "bone", "character1", self.selectedBone)
-			self:java2("addBoneAxis", "character1", self.selectedBone)
+			self:java3("setGizmoOrigin", "bone", objectName, self.selectedBone)
+			self:java2("addBoneAxis", objectName, self.selectedBone)
 			-- can't transform a bone
 		else
 			local bone = self:pickCharacterBone()
-			if bone ~= "" then self:java2("setHighlightBone", "character1", bone) end
-			self:java2("setGizmoOrigin", "character", "character1")
+			if bone ~= "" then self:java2("setHighlightBone", objectName, bone) end
+			self:java2("setGizmoOrigin", "character", objectName)
 			-- Don't transform objects that are parented to others.
-			if not self:java1("getObjectParent", "character1") then
+			if not self:java1("getObjectParent", objectName) then
 				showGizmo = true
 			end
 		end
+	elseif self:isVehicleScript(modelScript) then
+		self:java2("setGizmoOrigin", "centerOfMass", "vehicle")
+		if not self:java1("getObjectParent", "vehicle") then
+			showGizmo = true
+		end
 	else
-		self:java2("setGizmoOrigin", "model", modelScript:getFullType())
+		local objectName = self:getSceneObjectId(modelScript)
+		self:java2("setGizmoOrigin", "model", objectName)
 		-- Don't transform objects that are parented to others.
-		if not self:java1("getObjectParent", modelScript:getFullType()) then
+		if not self:java1("getObjectParent", objectName) and not self:java1("getObjectParentVehiclePart", objectName) then
 			showGizmo = true
 		end
 	end
@@ -690,19 +936,26 @@ function EditAttachment:prerenderEditor()
 	local attach = mouseOver2 and mouseOver2.item or self:getSelectedAttachments()[1]
 	self:setSelectedAttachment(attach)
 
-	if attach then
+	if attach ~= nil and attach:getId() ~= "world" then
 		self:java1("setGizmoPos", attach:getOffset())
 		self:java1("setGizmoRotate", attach:getRotate())
-		if self:isBodyScript(modelScript) then
-			self:java3("setGizmoOrigin", "bone", "character1", attach:getBone())
+		local objectName = self:getSceneObjectId(modelScript)
+		if self:isCharacterScript(modelScript) then
+			self:java3("setGizmoOrigin", "bone", objectName, attach:getBone())
+		elseif self:java1("getObjectParentVehiclePart", objectName) then
+			local parentVehicle = self:java1("getObjectParentVehicle", objectName)
+			local parentVehiclePart = self:java1("getObjectParentVehiclePart", objectName)
+			local parentVehiclePartModel = self:java1("getObjectParentVehiclePartModel", objectName)
+			local parentVehiclePartModelAttachment = self:java1("getObjectParentVehiclePartModelAttachment", objectName)
+			self:java6("setGizmoOrigin", "vehiclePart", "vehicle", parentVehiclePart, parentVehiclePartModel, parentVehiclePartModelAttachment, false)
 		else
-			local parentAttachName = self:java1("getObjectParentAttachment", modelScript:getFullType())
+			local parentAttachName = self:java1("getObjectParentAttachment", objectName)
 			if parentAttachName then
-				local parentName = self:java1("getObjectParent", modelScript:getFullType())
-				self:java4("setGizmoOrigin", "attachment", modelScript:getFullType(), parentName, parentAttachName)
-				self:java1("setSelectedAttachment", attach:getId())
+				local parentName = self:java1("getObjectParent", objectName)
+				self:java4("setGizmoOrigin", "attachment", objectName, parentName, parentAttachName)
 			end
 		end
+		self:java1("setSelectedAttachment", attach:getId())
 		self:java6("addAxis", attach:getOffset():x(), attach:getOffset():y(), attach:getOffset():z(),
 			attach:getRotate():x(), attach:getRotate():y(), attach:getRotate():z())
 		showGizmo = true
@@ -714,8 +967,10 @@ function EditAttachment:prerenderEditor()
 		self:java1("setTransformMode", self.transformMode)
 	end
 
-	if self:isBodyScript(self.selectedModelScript) then
+	if self:isCharacterScript(self.selectedModelScript) then
 		self.buttonNewAttachment:setEnable(self.selectedBone ~= nil)
+	elseif self:isVehicleScript(self.selectedModelScript) then
+		self.buttonNewAttachment:setEnable(false)
 	else
 		self.buttonNewAttachment:setEnable(true)
 	end
@@ -726,7 +981,7 @@ function EditAttachment:setSelectedModel(modelScript)
 		return
 	end
 	self.selectedModelScript = modelScript
-	self.buttonRemoveModel:setEnable(modelScript ~= nil and not self:isBodyScript(modelScript))
+	self.buttonRemoveModel:setEnable(modelScript ~= nil and not self:isCharacterScript(modelScript) and not self:isVehicleScript(modelScript))
 	if not modelScript then
 		self.list2:clear()
 		return
@@ -737,6 +992,7 @@ function EditAttachment:setSelectedModel(modelScript)
 	end
 	self.list2:clear()
 	self.list2:setScrollHeight(0)
+	if self:isVehicleScript(modelScript) then return end
 	for i=1,modelScript:getAttachmentCount() do
 		local attach = modelScript:getAttachment(i-1)
 		self.list2:addItem(attach:getId(), attach)
@@ -754,27 +1010,44 @@ function EditAttachment:setSelectedAttachment(attach)
 	if self.selectedAttachment == attach then
 		return
 	end
+	local wasWorldAttachment = self.selectedAttachment ~= nil and self.selectedAttachment:getId() == "world"
+	local isWorldAttachment = attach ~= nil and attach:getId() == "world"
+	if wasWorldAttachment and not isWorldAttachment then
+		if self.selectedModelScript then
+			local objectName = self:getSceneObjectId(self.selectedModelScript)
+			self:java1("getObjectTranslation", objectName):set(0.0)
+			self:java1("getObjectRotation", objectName):set(0.0)
+		end
+	end
 	self.selectedAttachment = attach
-	if self.selectedModelScript then
+	if self.selectedModelScript and not self:isVehicleScript(self.selectedModelScript) then
 		self.parent.worldAttachmentPanel:setModelScriptName(self.selectedModelScript:getFullType())
 	end
-	self.parent.worldAttachmentPanel:setVisible(attach ~= nil and attach:getId() == "world")
+	self.parent.worldAttachmentPanel:setVisible(isWorldAttachment)
 	self.buttonDeleteAttachment:setEnable(attach ~= nil)
 	if not attach then
 		self.nameEntry:clear()
 		return
 	end
 	self.nameEntry:setText(attach:getId())
+	if isWorldAttachment then
+		local objectName = self:getSceneObjectId(self.selectedModelScript)
+		self:java3("placeAttachmentAtOrigin", objectName, attach:getId(), self.parent.worldAttachmentPanel.weaponRotationHack)
+	end
 end
 
 function EditAttachment:pickCharacterBone()
-	if not self:java1("isObjectVisible", "character1") then
+	local objectName = self:getSceneObjectId(self.selectedModelScript)
+	if not objectName then
 		return ""
 	end
-	if not self:isBodyScript(self.selectedModelScript) then
+	if not self:java1("isObjectVisible", objectName) then
 		return ""
 	end
-	local boneName = self:java3("pickCharacterBone", "character1", self.parent.scene:getMouseX(), self.parent.scene:getMouseY())
+	if not self:isCharacterScript(self.selectedModelScript) then
+		return ""
+	end
+	local boneName = self:java3("pickCharacterBone", objectName, self.parent.scene:getMouseX(), self.parent.scene:getMouseY())
 	self.parent.wroteScriptTime = getTimestampMs() - 4950
 	self.parent.wroteScriptLabel:setName(boneName)
 	return boneName
@@ -782,9 +1055,19 @@ end
 
 function EditAttachment:toUI()
 	EditPanel.toUI(self)
+	self:populateObjectList()
+end
+
+function EditAttachment:populateObjectList()
 	self.list:clear()
 	if self:java1("isObjectVisible", "character1") then
 		self.list:addItem("PLAYER", self:java1("isCharacterFemale", "character1") and self.femaleBodyScript or self.maleBodyScript)
+	end
+	if self:java1("isObjectVisible", "animal1") then
+		self.list:addItem("ANIMAL", self.currentAnimalScript)
+	end
+	if self:java1("isObjectVisible", "vehicle") then
+		self.list:addItem("VEHICLE", self:java1("getVehicleScript", "vehicle"))
 	end
 	for i=1,self:java0("getModelCount") do
 		local modelScript = self:java1("getModelScript", i-1)
@@ -818,12 +1101,21 @@ end
 function EditAttachment:onGizmoStart()
 	self.originalOffset = {}
 	self.originalRotate = {}
+	self.originalScale = {}
+	self.isWorldAttachment = false
 	if not self.selectedModelScript then
 		return
 	end
+
+	for _,attach in ipairs(self:getSelectedAttachments()) do
+		if attach:getId() == "world" then
+			self.isWorldAttachment = true
+		end
+	end
+
 	-- When no attachment is selected, transform the selected object
-	if self.list2:getSelectedCount() == 0 then
-		local objectName = self:isBodyScript(self.selectedModelScript) and "character1" or self.selectedModelScript:getFullType()
+	if (self.list2:getSelectedCount() == 0) or self.isWorldAttachment then
+		local objectName = self:getSceneObjectId(self.selectedModelScript)
 		if self.gizmo == "translate" then
 			local trans = Vector3f.new(self:java1("getObjectTranslation", objectName))
 			self.originalOffset[self.selectedModelScript] = alignVectorToGrid(trans, self:java0("getGridMult"))
@@ -831,14 +1123,22 @@ function EditAttachment:onGizmoStart()
 		if self.gizmo == "rotate" then
 			self.originalRotate[self.selectedModelScript] = Vector3f.new(self:java1("getObjectRotation", objectName))
 		end
+		if self.gizmo == "scale" then
+			self.originalScale[self.selectedModelScript] = Vector3f.new(self:java1("getObjectScale", objectName))
+		end
 		return
 	end
 	for _,attach in ipairs(self:getSelectedAttachments()) do
 		if self.gizmo == "translate" then
-			self.originalOffset[attach] = alignVectorToGrid(Vector3f.new(attach:getOffset()), self:java0("getGridMult"))
+			-- FIXME: Need to consider the scale of the parent to use alignVectorToGrid()
+--			self.originalOffset[attach] = alignVectorToGrid(Vector3f.new(attach:getOffset()), self:java0("getGridMult"))
+			self.originalOffset[attach] = Vector3f.new(attach:getOffset())
 		end
 		if self.gizmo == "rotate" then
 			self.originalRotate[attach] = Vector3f.new(attach:getRotate())
+		end
+		if self.gizmo == "scale" then
+			self.originalScale[attach] = attach:getScale()
 		end
 	end
 end
@@ -848,14 +1148,29 @@ function EditAttachment:onGizmoChanged(delta)
 	if not self.selectedModelScript then
 		return
 	end
-	if self.list2:getSelectedCount() == 0 then
-		local objectName = self:isBodyScript(self.selectedModelScript) and "character1" or self.selectedModelScript:getFullType()
+	if (self.list2:getSelectedCount() == 0) or self.isWorldAttachment then
+		local objectName = self:getSceneObjectId(self.selectedModelScript)
 		if self.gizmo == "translate" then
 			self:java1("getObjectTranslation", objectName):set(self.originalOffset[self.selectedModelScript]):add(delta)
 		end
 		if self.gizmo == "rotate" then
 			local rotation = self:java1("getObjectRotation", objectName)
 			self:java2("applyDeltaRotation", rotation:set(self.originalRotate[self.selectedModelScript]), delta)
+		end
+		if self.gizmo == "scale" then
+			local dxyz = delta:x()
+			if math.abs(delta:y()) > math.abs(dxyz) then
+				dxyz = delta:y()
+			end
+			if math.abs(delta:z()) > math.abs(dxyz) then
+				dxyz = delta:z()
+			end
+			local scale = self:java1("getObjectScale", objectName)
+			local xyz = self.originalScale[self.selectedModelScript]:x()
+			scale:set(math.max(xyz + xyz * (dxyz / 0.2), 0.001))
+		end
+		if self.isWorldAttachment then
+			self:java3("setAttachmentToOrigin", objectName, "world", self.parent.worldAttachmentPanel.weaponRotationHack)
 		end
 		return
 	end
@@ -866,6 +1181,16 @@ function EditAttachment:onGizmoChanged(delta)
 		if self.gizmo == "rotate" then
 			self:java2("applyDeltaRotation", attach:getRotate():set(self.originalRotate[attach]), delta)
 		end
+		if self.gizmo == "scale" then
+			local dxyz = delta:x()
+			if math.abs(delta:y()) > math.abs(dxyz) then
+				dxyz = delta:y()
+			end
+			if math.abs(delta:z()) > math.abs(dxyz) then
+				dxyz = delta:z()
+			end
+			attach:setScale(self.originalScale[attach] + self.originalScale[attach] * (dxyz / 0.2))
+		end
 	end
 end
 
@@ -873,14 +1198,21 @@ function EditAttachment:onGizmoCancel()
 	if not self.selectedModelScript then
 		return
 	end
-	if self.list2:getSelectedCount() == 0 then
-		local objectName = self:isBodyScript(self.selectedModelScript) and "character1" or self.selectedModelScript:getFullType()
+	if (self.list2:getSelectedCount() == 0) or self.isWorldAttachment then
+		local objectName = self:getSceneObjectId(self.selectedModelScript)
 		if self.gizmo == "translate" then
 			self:java1("getObjectTranslation", objectName):set(self.originalOffset[self.selectedModelScript])
 		end
 		if self.gizmo == "rotate" then
 			local rotation = self:java1("getObjectRotation", objectName)
 			rotation:set(self.originalRotate[self.selectedModelScript])
+		end
+		if self.gizmo == "scale" then
+			local scale = self:java1("getObjectScale", objectName)
+			scale:set(self.originalScale[self.selectedModelScript])
+		end
+		if self.isWorldAttachment then
+			self:java3("setAttachmentToOrigin", objectName, "world", self.parent.worldAttachmentPanel.weaponRotationHack)
 		end
 		return
 	end
@@ -891,12 +1223,74 @@ function EditAttachment:onGizmoCancel()
 		if self.gizmo == "rotate" then
 			attach:getRotate():set(self.originalRotate[attach])
 		end
+		if self.gizmo == "scale" then
+			attach:setScale(self.originalScale[attach])
+		end
 	end
 end
 
-function EditAttachment:new(x, y, width, height)
+function EditAttachment:onKeyPress(key)
+	if key == Keyboard.KEY_R then
+		if self.gizmo ~= "rotate" then
+			self.gizmo = "rotate"
+			self.button3.title = getText("IGUI_AttachmentEditor_Rotate")
+		end
+	end
+	if key == Keyboard.KEY_S then
+		if self.gizmo ~= "scale" then
+			self.gizmo = "scale"
+			self.button3.title = getText("IGUI_AttachmentEditor_Scale")
+		end
+	end
+	if key == Keyboard.KEY_T then
+		if self.gizmo ~= "translate" then
+			self.gizmo = "translate"
+			self.button3.title = getText("IGUI_AttachmentEditor_Translate")
+		end
+	end
+	if key == Keyboard.KEY_Z then
+		local isWorldAttachment = false
+		for _,attach in ipairs(self:getSelectedAttachments()) do
+			if attach:getId() == "world" then
+				isWorldAttachment = true
+			end
+		end
+		if (self.list2:getSelectedCount() == 0) or isWorldAttachment then
+			local objectName = self:getSceneObjectId(self.selectedModelScript)
+			if self.gizmo == "translate" then
+				self:java1("getObjectTranslation", objectName):set(0.0)
+			end
+			if self.gizmo == "rotate" then
+				local rotation = self:java1("getObjectRotation", objectName)
+				rotation:set(0.0)
+			end
+			if self.gizmo == "scale" then
+				local scale = self:java1("getObjectScale", objectName)
+				scale:set(1.0)
+			end
+			if isWorldAttachment then
+				self:java3("setAttachmentToOrigin", objectName, "world", self.parent.worldAttachmentPanel.weaponRotationHack)
+			end
+			return
+		end
+		for _,attach in ipairs(self:getSelectedAttachments()) do
+			if self.gizmo == "translate" then
+				attach:getOffset():set(0.0)
+			end
+			if self.gizmo == "rotate" then
+				attach:getRotate():set(0.0)
+			end
+			if self.gizmo == "scale" then
+				attach:setScale(1.0)
+			end
+		end
+	end
+end
+
+function EditAttachment:new(x, y, width, height, editor)
 	local o = EditPanel.new(self, x, y, width, height)
 	o:noBackground()
+	o.editor = editor
 	return o
 end
 
@@ -908,6 +1302,7 @@ function Scene:prerenderEditor()
 	if not self.zeroVector then self.zeroVector = Vector3f.new() end
 	self.javaObject:fromLua1("setGizmoPos", self.zeroVector)
 	self.javaObject:fromLua1("setGizmoRotate", self.zeroVector)
+	self.javaObject:fromLua1("setRotateGizmoSnap", false)
 	self.javaObject:fromLua0("clearAABBs")
 	self.javaObject:fromLua0("clearAxes")
 	self.javaObject:fromLua0("clearHighlightBone")
@@ -924,7 +1319,7 @@ function Scene:onMouseDown(x, y)
 	if self.gizmoAxis ~= "None" then
 		local scenePos = self.javaObject:fromLua0("getGizmoPos")
 		self.gizmoStartScenePos = alignVectorToGrid(Vector3f.new(scenePos), self.javaObject:fromLua0("getGridMult"))
-		self.gizmoClickScenePos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
+--		self.gizmoClickScenePos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
 		self.javaObject:fromLua3("startGizmoTracking", x, y, self.gizmoAxis)
 		self:onGizmoStart()
 	else
@@ -937,9 +1332,9 @@ function Scene:onMouseMove(dx, dy)
 		ISUI3DScene.onMouseMove(self, dx, dy)
 	else
 		local x,y = self:getMouseX(),self:getMouseY()
-		local newPos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
-		newPos:sub(self.gizmoClickScenePos)
-		newPos:add(self.gizmoStartScenePos)
+--		local newPos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
+--		newPos:sub(self.gizmoClickScenePos)
+--		newPos:add(self.gizmoStartScenePos)
 		self.javaObject:fromLua2("dragGizmo", x, y)
 	end
 end
@@ -1003,17 +1398,33 @@ function AttachmentEditorUI:createChildren()
 	self.scene.javaObject:fromLua1("setMaxZoom", 20)
 	self.scene.javaObject:fromLua1("setZoom", 10)
 	self.scene.javaObject:fromLua1("setGizmoScale", 1.0 / 5.0)
-	
+
 	self.scene.javaObject:fromLua1("createCharacter", "character1")
 	self.scene.javaObject:fromLua2("setCharacterAlpha", "character1", 1.0)
-	self.scene.javaObject:fromLua2("setCharacterAnimSet", "character1", "player-avatar")
+	self.scene.javaObject:fromLua2("setCharacterAnimate", "character1", false)
+	self.scene.javaObject:fromLua2("setCharacterAnimSet", "character1", "player-editor")
+	self.scene.javaObject:fromLua2("setCharacterState", "character1", "runtime")
+	self.scene.javaObject:fromLua2("setCharacterAnimationClip", "character1", "Bob_Idle")
 	self.scene.javaObject:fromLua2("setCharacterClearDepthBuffer", "character1", false)
 	self.scene.javaObject:fromLua2("setCharacterShowBones", "character1", true)
 	self.scene.javaObject:fromLua2("setObjectVisible", "character1", false)
 
+	local animalDefs = getAllAnimalsDefinitions()
+	if animalDefs:isEmpty() == false then
+		local animalDef = animalDefs:get(0)
+		self.scene.javaObject:fromLua3("createAnimal", "animal1", animalDef, animalDef:getBreeds():get(0))
+		self.scene.javaObject:fromLua2("setCharacterAlpha", "animal1", 1.0)
+		self.scene.javaObject:fromLua2("setCharacterClearDepthBuffer", "animal1", false)
+		self.scene.javaObject:fromLua2("setCharacterShowBones", "animal1", true)
+		self.scene.javaObject:fromLua2("setObjectVisible", "animal1", false)
+	end
+
+	self.scene.javaObject:fromLua1("createVehicle", "vehicle")
+	self.scene.javaObject:fromLua2("setObjectVisible", "vehicle", false)
+
 	local viewW = 150
 	local viewH = 100
-	self.bottomPanel = ISPanel:new(0, self.height - viewH, self.width, viewH)
+	self.bottomPanel = ISPanel:new(0, self.height - viewH - UI_BORDER_SPACING-1, self.width, viewH)
 	self.bottomPanel:setAnchorTop(false)
 	self.bottomPanel:setAnchorLeft(false)
 	self.bottomPanel:setAnchorRight(false)
@@ -1043,23 +1454,24 @@ function AttachmentEditorUI:createChildren()
 		end
 		self.bottomPanel:addChild(view)
 		table.insert(self.views, view)
-		viewX = viewX + viewW + 10
+		viewX = viewX + viewW + UI_BORDER_SPACING
 	end
 
 	self.editUI = {}
 	self.editUI.current = nil
 
-	local ui = EditAttachment:new(10, 10, 250, self.height - 100)
+	local ui = EditAttachment:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_AttachmentEditor_RemoveFromScene"))+20, self.height - 100, self) --widest button in the panel is "REMOVE FROM SCENE"
 	ui:setVisible(false)
 	self:addChild(ui)
 	self.editUI.attachments = ui
 
-	local buttonHgt = FONT_HGT_MEDIUM + 8;
-	local button = ISButton:new(10, self.bottomPanel.height - 10 - buttonHgt, 80, buttonHgt, "SAVE", self, self.onSave)
+	local button = ISButton:new(UI_BORDER_SPACING+1, self.bottomPanel.height - BUTTON_HGT, 80, BUTTON_HGT, getText("IGUI_DebugMenu_Save"), self, self.onSave)
 	self.bottomPanel:addChild(button)
+	button:enableAcceptColor()
 
-	local button2 = ISButton:new(button:getRight() + 10, self.bottomPanel.height - 10 - buttonHgt, 80, buttonHgt, "EXIT", self, self.onExit)
+	local button2 = ISButton:new(button:getRight() + UI_BORDER_SPACING, button.y, 80, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
 	self.bottomPanel:addChild(button2)
+	button2:enableCancelColor()
 
 	local label = ISLabel:new(10, self.bottomPanel.y - 30, FONT_HGT_SMALL, "", 1, 1, 1, 1, UIFont.Small, true)
 	label:setAnchorTop(false)
@@ -1067,17 +1479,20 @@ function AttachmentEditorUI:createChildren()
 	self:addChild(label)
 	self.wroteScriptLabel = label
 
-	local buttonWid = 60
-	local buttonHgt = FONT_HGT_SMALL + 8
-	local buttonScale1 = ISButton:new(self.width - 10 - buttonWid, self.bottomPanel.height - 10 - buttonHgt, buttonWid, buttonHgt, "0.001", self, self.onGridMult1)
+	local buttonWidthPadding = UI_BORDER_SPACING*2
+	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.001")
+
+	local buttonScale1 = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, button.y, btnWidth, BUTTON_HGT, "0.001", self, self.onGridMult1)
 	self.bottomPanel:addChild(buttonScale1)
 	self.buttonScale1 = buttonScale1
 
-	local buttonScale2 = ISButton:new(buttonScale1.x - 10 - buttonWid, buttonScale1.y, buttonWid, buttonHgt, "0.005", self, self.onGridMult2)
+	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.005")
+	local buttonScale2 = ISButton:new(buttonScale1.x - UI_BORDER_SPACING - btnWidth, button.y, btnWidth, BUTTON_HGT, "0.005", self, self.onGridMult2)
 	self.bottomPanel:addChild(buttonScale2)
 	self.buttonScale2 = buttonScale2
 
-	local buttonScale3 = ISButton:new(buttonScale2.x - 10 - buttonWid, buttonScale1.y, buttonWid, buttonHgt, "0.01", self, self.onGridMult3)
+	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.01")
+	local buttonScale3 = ISButton:new(buttonScale2.x - UI_BORDER_SPACING - btnWidth, button.y, btnWidth, BUTTON_HGT, "0.01", self, self.onGridMult3)
 	self.bottomPanel:addChild(buttonScale3)
 	self.buttonScale3 = buttonScale3
 
@@ -1088,7 +1503,7 @@ function AttachmentEditorUI:createChildren()
 	self:setEditUI(self.editUI.attachments)
 
 	-- This is displayed when editing a "world" attachment to show the model as it would appear in game.
-	self.worldAttachmentPanel = WorldAttachmentPanel:new(self.width - 50 - 350, 50, 350, 200)
+	self.worldAttachmentPanel = WorldAttachmentPanel:new(self.width - 50 - 350, 50, 350, 200, self)
 	self:addChild(self.worldAttachmentPanel)
 	self.worldAttachmentPanel:setVisible(false)
 end
@@ -1129,6 +1544,15 @@ function AttachmentEditorUI:setEditUI(ui)
 	end
 end
 
+function AttachmentEditorUI:onSetModelWeaponRotationHackChanged(isChecked)
+	local editUI = self.editUI.attachments
+	if editUI.selectedModelScript == nil then return end
+	local objectName = editUI:getSceneObjectId(editUI.selectedModelScript)
+	local attach = editUI.selectedAttachment
+	if attach == nil or attach:getId() ~= "world" then return end
+	self.scene.javaObject:fromLua3("placeAttachmentAtOrigin", objectName, attach:getId(), isChecked)
+end
+
 function AttachmentEditorUI:onSave(button, x, y)
 	local item = self.editUI.attachments.list:getSelectedItems()[1]
 	if item then
@@ -1161,6 +1585,14 @@ function AttachmentEditorUI:onGridMult3(button, x, y)
 	self.scene.javaObject:fromLua1("setGridMult", 1)
 end
 
+function AttachmentEditorUI:onKeyPress(key)
+	self.editUI.current:onKeyPress(key)
+	if key == Keyboard.KEY_SPACE then
+		local animate = self.scene.javaObject:fromLua1("getCharacterAnimate", "character1")
+		self.scene.javaObject:fromLua2("setCharacterAnimate", "character1", not animate)
+	end
+end
+
 -- Called from Java
 function AttachmentEditorUI:showUI()
 end
@@ -1176,6 +1608,7 @@ function AttachmentEditorUI:new(x, y, width, height)
 	o:setAnchorRight(true)
 	o:setAnchorBottom(true)
 	o:noBackground()
+	o:setWantKeyEvents(true)
 	getAttachmentEditorState():setTable(o)
 	return o
 end

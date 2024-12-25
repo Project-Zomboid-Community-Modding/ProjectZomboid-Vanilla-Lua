@@ -13,6 +13,14 @@ PublicServerList.refreshInterval = getSteamModeActive() and 5 or 60;
 
 local hasShownLargeServerWarning = false;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local JOYPAD_TEX_SIZE = 32
+local SCROLLBAR_SPACING = 10 + UI_BORDER_SPACING
+
+function PublicServerList:onSortingChanged()
+	PublicServerList.instance:sortList()
+end
 
 function PublicServerList:onCheckLargeServerOption()
     if PublicServerList.instance.largeServer.selected[1] and (not hasShownLargeServerWarning) then
@@ -26,27 +34,29 @@ function PublicServerList:onCheckLargeServerOption()
             joypadData.focus = modal
         end
     end
+    self:onFilterChanged()
 end
 
 function PublicServerList:create()
     if not isPublicServerListAllowed() then return; end
+    if getSteamModeActive() and not isClient() then
+        steamRequestInternetServersList()
+        PublicServerList.refreshTime = getTimestamp()
+    end
 
-    local bottomPad = 3
-    local buttonsHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
     local connectLabelHgt = 4 * 2 + getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-    local filterEtcHgt = math.max(FONT_HGT_SMALL, 18)
+    local filterEtcHgt = BUTTON_HGT
 
     local fontScale = FONT_HGT_SMALL / 15
     local entrySize = 200 * fontScale;
-    local entryX = self.width - 10 - entrySize;
-    local labelX = self.width - 10 - entrySize;
+    local entryX = self.width - entrySize - UI_BORDER_SPACING;
 
-    local listX = 16
-    local listWid = self.width - 10 - entrySize - 10 - listX
-    local tabHeight = FONT_HGT_SMALL + 6
-    local listTop = 14 + tabHeight
+    local listX = UI_BORDER_SPACING+1
+    local listWid = self.width - UI_BORDER_SPACING*2 - entrySize - listX
+    local tabHeight = BUTTON_HGT
+    local listTop = listX + tabHeight
 
-    self.tabs = ISTabPanel:new(listX, listTop - tabHeight, listWid, tabHeight);
+    self.tabs = ISTabPanel:new(listX, listTop - tabHeight, listWid, tabHeight+1);
     self.tabs:initialise();
     self.tabs:setAnchorBottom(false);
     self.tabs:setAnchorRight(true);
@@ -64,7 +74,7 @@ function PublicServerList:create()
     self.tabs:addView(getText("UI_servers_publicServer"), ISUIElement:new(0,0,100,100))
     self.tabs:activateView(getText("UI_servers_publicServer"))
 
-    self.listbox = ISScrollingListBox:new(listX, listTop, listWid, self.height-bottomPad-buttonsHgt-bottomPad-connectLabelHgt-bottomPad-filterEtcHgt-bottomPad-listTop);
+    self.listbox = ISScrollingListBox:new(listX, listTop, listWid, self.height-BUTTON_HGT-connectLabelHgt-filterEtcHgt-UI_BORDER_SPACING*4-listTop);
     self.listbox:initialise();
     self.listbox:instantiate();
     self.listbox:setAnchorLeft(true);
@@ -79,18 +89,34 @@ function PublicServerList:create()
     self.listbox.onJoypadDown = PublicServerList.onJoypadDown_ListBox
     self.listbox.onJoypadDirRight = PublicServerList.onJoypadDirRight_ListBox
     self.listbox.drawBorder = true
-    self.listbox.lockTexture = getTexture("media/ui/lock.png")
+    self.listbox.lockTexture = getTexture("media/ui/inventoryPanes/Button_Lock.png")
 
     self:addChild(self.listbox);
+    self.filteredCount = 0;
+    self.recountFilteredPending = false;
+    self.recountFiltered = false;
+
+    self.listTabs = ISTabPanelPaginated:new(listX, listX+self.listbox.height, listWid, tabHeight+1, #self.listbox.items);
+    self.listTabs:initialise();
+    self.listTabs:setAnchorBottom(false);
+    self.listTabs:setAnchorRight(true);
+    self.listTabs.mouseDownHook = self.onMouseDown_ListTabs
+    self.listTabs.onMouseUp = function(x,y) end
+    self.listTabs:setEqualTabWidth(false)
+    self.listTabs.tabPadX = 40
+    self.listTabs:setCenterTabs(true)
+    self.listTabs.tabHeight = tabHeight
+    self:addChild(self.listTabs);
+
+    self.skipCount = 0
+    self.listCount = 10
+    self.pageChanged = true
 
     local y = listTop;
-    local entryHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight() + 2 * 2
-
     local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
     local gapLabelY = 2
-	local gapEntryY = 10
 
-    self.scrollPanel = ISPanelJoypad:new(labelX, y, entrySize, self.listbox.height)
+    self.scrollPanel = ISPanelJoypad:new(entryX, y, entrySize, self.listbox.height)
     self.scrollPanel:initialise()
     self.scrollPanel:instantiate()
     self.scrollPanel:setAnchorLeft(false);
@@ -127,11 +153,9 @@ function PublicServerList:create()
     end
 
     entryX = 0
-    entrySize = entrySize - 17 - entryX
-    labelX = 0
     y = 0
 
-    self.serverNameLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_servername") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
+    self.serverNameLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_servername") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
     self.serverNameLabel:initialise();
     self.serverNameLabel:instantiate();
     self.serverNameLabel:setAnchorLeft(false);
@@ -142,7 +166,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.serverNameEntry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    self.serverNameEntry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     self.serverNameEntry:initialise();
     self.serverNameEntry:instantiate();
     self.serverNameEntry:setAnchorLeft(false);
@@ -151,9 +175,9 @@ function PublicServerList:create()
     self.serverNameEntry:setAnchorBottom(false);
     self.scrollPanel:addChild(self.serverNameEntry);
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    self.serverLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_IP"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.serverLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_IP"), 1, 1, 1, 1, UIFont.Medium, true);
     self.serverLabel:initialise();
     self.serverLabel:instantiate();
     self.serverLabel:setAnchorLeft(false);
@@ -164,7 +188,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.serverEntry = ISTextEntryBox:new("127.0.0.1", entryX, y, entrySize, entryHgt);
+    self.serverEntry = ISTextEntryBox:new("127.0.0.1", entryX, y, entrySize, BUTTON_HGT);
     self.serverEntry:initialise();
     self.serverEntry:instantiate();
     self.serverEntry:setAnchorLeft(false);
@@ -173,9 +197,9 @@ function PublicServerList:create()
     self.serverEntry:setAnchorBottom(false);
     self.scrollPanel:addChild(self.serverEntry);
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    self.portLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_Port"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.portLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_Port"), 1, 1, 1, 1, UIFont.Medium, true);
     self.portLabel:initialise();
     self.portLabel:instantiate();
     self.portLabel:setAnchorLeft(false);
@@ -186,7 +210,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.portEntry = ISTextEntryBox:new("16261", entryX, y, entrySize, entryHgt);
+    self.portEntry = ISTextEntryBox:new("16261", entryX, y, entrySize, BUTTON_HGT);
     self.portEntry:initialise();
     self.portEntry:instantiate();
     self.portEntry:setAnchorLeft(false);
@@ -195,9 +219,9 @@ function PublicServerList:create()
     self.portEntry:setAnchorBottom(false);
     self.scrollPanel:addChild(self.portEntry);
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
         
-    local label = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_serverpwd"), 1, 1, 1, 1, UIFont.Medium, true);
+    local label = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_serverpwd"), 1, 1, 1, 1, UIFont.Medium, true);
     label:initialise();
     label:instantiate();
     label:setAnchorLeft(false);
@@ -208,7 +232,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    local entry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    local entry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     entry:initialise();
     entry:instantiate();
     entry:setAnchorLeft(false);
@@ -220,12 +244,16 @@ function PublicServerList:create()
     self.scrollPanel:addChild(entry);
     self.serverPasswordEntry = entry
 
-    y = y + entryHgt + gapEntryY;
+	self.passwordWasFocused = false;
+	self.firstAddServer = true;
+	self.passwordText = "";
+
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
 --[[
     -- Steam ID label/field
 
-    self.steamIdLabel = ISLabel:new(labelX, y, labelHgt, "Steam ID", 1, 1, 1, 1, UIFont.Medium, true);
+    self.steamIdLabel = ISLabel:new(entryX, y, labelHgt, "Steam ID", 1, 1, 1, 1, UIFont.Medium, true);
     self.steamIdLabel:initialise();
     self.steamIdLabel:instantiate();
     self.steamIdLabel:setAnchorLeft(false);
@@ -237,7 +265,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.steamIdEntry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    self.steamIdEntry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     self.steamIdEntry:initialise();
     self.steamIdEntry:instantiate();
     self.steamIdEntry:setAnchorLeft(false);
@@ -247,9 +275,120 @@ function PublicServerList:create()
     self.steamIdEntry:setVisible(false);
     self:addChild(self.steamIdEntry);
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 --]]
-    self.descLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_desc") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
+    self.filtersPopup = ISPanel:new(self.width / 2 - 100, self.height / 2-200, 300, 350);
+    self.filtersPopup.internal = "googleAuthPopup";
+    self.filtersPopup:initialise();
+    self.filtersPopup:instantiate();
+    self.filtersPopup.choicesColor = {r=1, g=1, b=1, a=1}
+    self.filtersPopup:setAnchorLeft(false);
+    self.filtersPopup:setAnchorRight(true);
+    self.filtersPopup:setAnchorTop(true);
+    self.filtersPopup:setAnchorBottom(false);
+    self.filtersPopup.alwaysOnTop = true;
+    self.filtersPopup:setVisible(false);
+    self:addChild(self.filtersPopup);
+
+    self.filtersPopup.prerender = function(self)
+        if self.background then
+            self:drawRectStatic(0, 0, self.width, self.height, 1, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+            self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        end
+    end
+
+    self.filtersPopupLabel = ISLabel:new(self.filtersPopup:getWidth() / 2, BUTTON_HGT, labelHgt, getText("UI_servers_filters_Label"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.filtersPopupLabel:initialise();
+    self.filtersPopupLabel:instantiate();
+    self.filtersPopupLabel:setAnchorLeft(true);
+    self.filtersPopupLabel:setAnchorRight(false);
+    self.filtersPopupLabel:setAnchorTop(true);
+    self.filtersPopupLabel:setAnchorBottom(false);
+    self.filtersPopup:addChild(self.filtersPopupLabel);
+
+    self.closeFiltersPopupButton = ISButton:new(10, self.filtersPopup:getHeight()-BUTTON_HGT*2, 100, BUTTON_HGT, getText("UI_servers_close_filters"), self, self.onCloseFiltersButton);
+    self.closeFiltersPopupButton.internal = "QR";
+    self.closeFiltersPopupButton:initialise();
+    self.closeFiltersPopupButton:instantiate();
+    self.closeFiltersPopupButton:setAnchorLeft(true);
+    self.closeFiltersPopupButton:setAnchorRight(false);
+    self.closeFiltersPopupButton:setAnchorTop(true);
+    self.closeFiltersPopupButton:setAnchorBottom(false);
+    self.filtersPopup:addChild(self.closeFiltersPopupButton);
+
+    self.googleAuthPopup = ISPanel:new(self.width / 2 - 100, self.height / 2-200, 300, 350);
+    self.googleAuthPopup.internal = "googleAuthPopup";
+    self.googleAuthPopup:initialise();
+    self.googleAuthPopup:instantiate();
+    self.googleAuthPopup.choicesColor = {r=1, g=1, b=1, a=1}
+    self.googleAuthPopup:setAnchorLeft(false);
+    self.googleAuthPopup:setAnchorRight(true);
+    self.googleAuthPopup:setAnchorTop(true);
+    self.googleAuthPopup:setAnchorBottom(false);
+    self.googleAuthPopup.alwaysOnTop = true;
+    self.googleAuthPopup:setVisible(true);
+    self:addChild(self.googleAuthPopup);
+
+    self.googleAuthLabel = ISLabel:new(self.googleAuthPopup:getWidth() / 2, BUTTON_HGT, labelHgt, getText("UI_servers_send_QR_Label"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.googleAuthLabel:initialise();
+    self.googleAuthLabel:instantiate();
+    self.googleAuthLabel:setAnchorLeft(false);
+    self.googleAuthLabel:setAnchorRight(true);
+    self.googleAuthLabel:setAnchorTop(true);
+    self.googleAuthLabel:setAnchorBottom(false);
+    self.googleAuthLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthLabel:getWidth()/2);
+    self.googleAuthPopup:addChild(self.googleAuthLabel);
+
+    self.googleAuthConnectLabel = ISRichTextPanel:new(self.googleAuthPopup:getWidth() / 2, BUTTON_HGT*3, self.googleAuthPopup:getWidth() * 4 / 5, labelHgt);
+    self.googleAuthConnectLabel:initialise();
+    self.googleAuthConnectLabel:instantiate();
+    self.googleAuthConnectLabel:noBackground()
+    self.googleAuthConnectLabel:setMargins(0, 0, 0, 0)
+    self.googleAuthConnectLabel.font = UIFont.Medium
+    self.googleAuthConnectLabel.text = ""
+    self.googleAuthConnectLabel.text = " <CENTRE> " .. self.googleAuthConnectLabel.text
+    self.googleAuthConnectLabel:paginate()
+    self.googleAuthConnectLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthConnectLabel.width/2);
+    self.googleAuthPopup.qrY = self.googleAuthConnectLabel:getBottom()+25;
+    self.googleAuthPopup:addChild(self.googleAuthConnectLabel);
+
+    self.googleAuthButton = ISButton:new(10, self.googleAuthPopup:getHeight()-BUTTON_HGT*2, 100, BUTTON_HGT, getText("UI_servers_send_QR"), self, self.onSendButton);
+    self.googleAuthButton.internal = "QR";
+    self.googleAuthButton:initialise();
+    self.googleAuthButton:instantiate();
+    self.googleAuthButton:setAnchorLeft(false);
+    self.googleAuthButton:setAnchorRight(true);
+    self.googleAuthButton:setAnchorTop(false);
+    self.googleAuthButton:setAnchorBottom(true);
+    self.googleAuthButton:setX(self.googleAuthPopup:getWidth() - self.googleAuthButton:getWidth()-10);
+    self.googleAuthPopup:addChild(self.googleAuthButton);
+
+    self.closeAuthPopupButton = ISButton:new(10, self.googleAuthPopup:getHeight()-BUTTON_HGT*2, 100, BUTTON_HGT, getText("UI_servers_close_QR_popup"), self, self.onCloseQRButton);
+    self.closeAuthPopupButton.internal = "QR";
+    self.closeAuthPopupButton:initialise();
+    self.closeAuthPopupButton:instantiate();
+    self.closeAuthPopupButton:setAnchorLeft(false);
+    self.closeAuthPopupButton:setAnchorRight(true);
+    self.closeAuthPopupButton:setAnchorTop(false);
+    self.closeAuthPopupButton:setAnchorBottom(true);
+    --self.closeAuthPopupButton:setX(self.googleAuthPopup:getWidth() - self.closeAuthPopupButton:getWidth()-10);
+    self.googleAuthPopup:addChild(self.closeAuthPopupButton);
+
+    self.googleAuthPopup.qrTexture = nil;
+
+    self.googleKey = ""
+
+    self.googleAuthPopup.render = function(self)
+        ISPanel.render(self)
+        self:clearStencilRect()
+        if self.qrTexture then
+            self:drawTexture(self.qrTexture, self.width / 2 - self.qrTexture:getWidth()/2, self.qrY, 1, 1, 1, 1)
+        end
+    end
+
+    self.googleAuthPopup:setVisible(false);
+
+    self.descLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_desc") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
     self.descLabel:initialise();
     self.descLabel:instantiate();
     self.descLabel:setAnchorLeft(false);
@@ -260,7 +399,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.descEntry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    self.descEntry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     self.descEntry:initialise();
     self.descEntry:instantiate();
     self.descEntry:setAnchorLeft(false);
@@ -271,10 +410,10 @@ function PublicServerList:create()
     self.descEntry:setMultipleLine(true)
     self.descEntry:setMaxLines(20)
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    --    self.usernameLabel = ISLabel:new(labelX, y, 50, getText("UI_servers_username") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
-    self.usernameLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_username"), 1, 1, 1, 1, UIFont.Medium, true);
+    --    self.usernameLabel = ISLabel:new(entryX, y, 50, getText("UI_servers_username") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
+    self.usernameLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_username"), 1, 1, 1, 1, UIFont.Medium, true);
     self.usernameLabel:initialise();
     self.usernameLabel:instantiate();
     self.usernameLabel:setAnchorLeft(false);
@@ -285,7 +424,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.usernameEntry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    self.usernameEntry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     self.usernameEntry:initialise();
     self.usernameEntry:instantiate();
     self.usernameEntry:setAnchorLeft(false);
@@ -294,10 +433,39 @@ function PublicServerList:create()
     self.usernameEntry:setAnchorBottom(false);
     self.scrollPanel:addChild(self.usernameEntry);
 
-    y = y + entryHgt + gapEntryY;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
 
-    --    self.passwordLabel = ISLabel:new(labelX, y, 50, getText("UI_servers_pwd") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
-    self.passwordLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_pwd"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.authTypeLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_auth_type"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.authTypeLabel:initialise();
+    self.authTypeLabel:instantiate();
+    self.authTypeLabel:setAnchorLeft(false);
+    self.authTypeLabel:setAnchorRight(true);
+    self.authTypeLabel:setAnchorTop(true);
+    self.authTypeLabel:setAnchorBottom(false);
+    self.scrollPanel:addChild(self.authTypeLabel);
+
+    y = y + labelHgt + gapLabelY;
+
+    self.authType = ISComboBox:new(entryX, y, entrySize, BUTTON_HGT);
+    self.authType.internal = "AUTHTYPE";
+    self.authType:initialise();
+    self.authType:instantiate();
+    self.authType.choicesColor = {r=1, g=1, b=1, a=1}
+    self.authType:setAnchorLeft(false);
+    self.authType:setAnchorRight(true);
+    self.authType:setAnchorTop(true);
+    self.authType:setAnchorBottom(false);
+    self.authType:addOption(getText("UI_servers_auth_password"))
+    self.authType:addOption(getText("UI_servers_auth_google"))
+    self.authType:addOption(getText("UI_servers_auth_two_factor"))
+    self.scrollPanel:addChild(self.authType);
+    self.scrollPanel:insertNewLineOfButtons(self.authType);
+
+
+    y = y + BUTTON_HGT + UI_BORDER_SPACING
+
+    --    self.passwordLabel = ISLabel:new(entryX, y, 50, getText("UI_servers_pwd") .. ": ", 1, 1, 1, 1, UIFont.Medium, true);
+    self.passwordLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_pwd"), 1, 1, 1, 1, UIFont.Medium, true);
     self.passwordLabel:initialise();
     self.passwordLabel:instantiate();
     self.passwordLabel:setAnchorLeft(false);
@@ -308,7 +476,7 @@ function PublicServerList:create()
 
     y = y + labelHgt + gapLabelY;
 
-    self.passwordEntry = ISTextEntryBox:new("", entryX, y, entrySize, entryHgt);
+    self.passwordEntry = ISTextEntryBox:new("", entryX, y, entrySize, BUTTON_HGT);
     self.passwordEntry:initialise();
     self.passwordEntry:instantiate();
     self.passwordEntry:setAnchorLeft(false);
@@ -319,10 +487,25 @@ function PublicServerList:create()
     self.passwordEntry:setTooltip(getText("UI_servers_pwd_tt"))
     self.scrollPanel:addChild(self.passwordEntry);
 
-    y = y + entryHgt;
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
+
+    self.rememberPasswordTickBox = ISTickBox:new(entryX, y, entrySize, BUTTON_HGT,"");
+    self.rememberPasswordTickBox.internal = "REMEMBER";
+    self.rememberPasswordTickBox:initialise();
+    self.rememberPasswordTickBox:instantiate();
+    self.rememberPasswordTickBox.choicesColor = {r=1, g=1, b=1, a=1}
+    self.rememberPasswordTickBox:setAnchorLeft(false);
+    self.rememberPasswordTickBox:setAnchorRight(true);
+    self.rememberPasswordTickBox:setAnchorTop(true);
+    self.rememberPasswordTickBox:setAnchorBottom(false);
+    self.rememberPasswordTickBox:addOption(getText("UI_servers_remember_password"))
+    self.scrollPanel:addChild(self.rememberPasswordTickBox);
+    self.scrollPanel:insertNewLineOfButtons(self.rememberPasswordTickBox);
+
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
     
     if getSteamModeActive() then
-        self.connectTypeLabel = ISLabel:new(labelX, y, labelHgt, getText("UI_servers_connectionOptions"), 1, 1, 1, 1, UIFont.Medium, true);
+        self.connectTypeLabel = ISLabel:new(entryX, y, labelHgt, getText("UI_servers_connectionOptions"), 1, 1, 1, 1, UIFont.Medium, true);
         self.connectTypeLabel:initialise();
         self.connectTypeLabel:instantiate();
         self.connectTypeLabel:setAnchorLeft(false);
@@ -333,7 +516,7 @@ function PublicServerList:create()
 
         y = y + labelHgt + gapLabelY;
 
-        self.connectTypeEntry = ISTickBox:new(entryX, y, entrySize, entryHgt, "", nil, nil);
+        self.connectTypeEntry = ISTickBox:new(entryX, y, entrySize, BUTTON_HGT, "", nil, nil);
         self.connectTypeEntry:addOption(getText("UI_servers_useSteamRelay"))
         self.connectTypeEntry:initialise();
         self.connectTypeEntry:instantiate();
@@ -343,12 +526,16 @@ function PublicServerList:create()
         self.connectTypeEntry:setAnchorBottom(false);
         self.scrollPanel:addChild(self.connectTypeEntry);
 
-        y = y + entryHgt + gapEntryY;
+        y = y + BUTTON_HGT + UI_BORDER_SPACING;
     end
+    y = y + UI_BORDER_SPACING
 
-    y = y + 20
+    local saveEraseBtnWidth = UI_BORDER_SPACING*2 + math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_erase")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_save"))
+    )
 
-    self.eraseBtn = ISButton:new(labelX, y, 70, buttonsHgt, getText("UI_servers_erase"), self, PublicServerList.onOptionMouseDown);
+    self.eraseBtn = ISButton:new(entryX, y, saveEraseBtnWidth, BUTTON_HGT, getText("UI_servers_erase"), self, PublicServerList.onOptionMouseDown);
     self.eraseBtn.internal = "ERASE";
     self.eraseBtn:initialise();
     self.eraseBtn:instantiate();
@@ -358,7 +545,7 @@ function PublicServerList:create()
     self.eraseBtn:setAnchorBottom(false);
     self.scrollPanel:addChild(self.eraseBtn);
 
-    self.addBtn = ISButton:new(self.scrollPanel.width - 70 - 10, y, 70, buttonsHgt, getText("UI_servers_save"), self, PublicServerList.onOptionMouseDown);
+    self.addBtn = ISButton:new(self.scrollPanel.width - saveEraseBtnWidth, y, saveEraseBtnWidth, BUTTON_HGT, getText("UI_servers_save"), self, PublicServerList.onOptionMouseDown);
     self.addBtn.internal = "ADD";
     self.addBtn:initialise();
     self.addBtn:instantiate();
@@ -366,11 +553,71 @@ function PublicServerList:create()
     self.addBtn:setAnchorRight(true);
     self.addBtn:setAnchorTop(false);
     self.addBtn:setAnchorBottom(false);
-    self.addBtn:setWidthToTitle(70)
-    self.addBtn:setX(self.scrollPanel.width - 17 - self.addBtn:getWidth())
     self.scrollPanel:addChild(self.addBtn);
 
-    self.scrollPanel:setScrollHeight(y + buttonsHgt + 10)
+    y = y + BUTTON_HGT + UI_BORDER_SPACING;
+
+    y = y + UI_BORDER_SPACING
+    y = y + UI_BORDER_SPACING
+
+    self.steamIPwarningLabel = ISRichTextPanel:new(entryX, y, self.scrollPanel.width, labelHgt);
+    self.steamIPwarningLabel:initialise();
+    self.steamIPwarningLabel:instantiate();
+    self.steamIPwarningLabel:setAnchorLeft(false);
+    self.steamIPwarningLabel:setAnchorRight(true);
+    self.steamIPwarningLabel:setAnchorTop(true);
+    self.steamIPwarningLabel:setAnchorBottom(false);
+    self.steamIPwarningLabel:setMargins(0, 0, SCROLLBAR_SPACING, 0);
+    self.scrollPanel:addChild(self.steamIPwarningLabel);
+    self.steamIPwarningLabel.text = getText("UI_servers_serveripwarning")
+    self.steamIPwarningLabel:paginate()
+    self.lastUseSteamRelay = false
+
+    self.scrollPanel:setScrollHeight(self.steamIPwarningLabel:getBottom() + BUTTON_HGT + UI_BORDER_SPACING)
+
+    local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+    local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
+    self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, PublicServerList.onOptionMouseDown);
+    self.backButton.internal = "BACK";
+    self.backButton:initialise();
+    self.backButton:instantiate();
+    self.backButton:setAnchorLeft(true);
+    self.backButton:setAnchorTop(false);
+    self.backButton:setAnchorBottom(true);
+    self:addChild(self.backButton);
+
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_joinServer"))
+    self.playButton = ISButton:new(self.listbox.x + self.listbox.width - btnWidth, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_servers_joinServer"), self, PublicServerList.onOptionMouseDown);
+    self.playButton.internal = "NEXT";
+    self.playButton:initialise();
+    self.playButton:instantiate();
+    self.playButton:setAnchorLeft(false);
+    self.playButton:setAnchorRight(true);
+    self.playButton:setAnchorTop(false);
+    self.playButton:setAnchorBottom(true);
+    self:addChild(self.playButton);
+
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_delete"))
+    self.registerBtn = ISButton:new(self.playButton.x - UI_BORDER_SPACING - btnWidth, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_servers_register_QR"), self, PublicServerList.onOptionMouseDown);
+    self.registerBtn.internal = "REGISTER";
+    self.registerBtn:initialise();
+    self.registerBtn:instantiate();
+    self.registerBtn:setAnchorLeft(false);
+    self.registerBtn:setAnchorRight(true);
+    self.registerBtn:setAnchorTop(false);
+    self.registerBtn:setAnchorBottom(true);
+    self:addChild(self.registerBtn);
+
+    btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_refresh").." 99")
+    self.refreshBtn = ISButton:new(self.backButton:getRight() + UI_BORDER_SPACING, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_servers_refresh"), self, PublicServerList.onOptionMouseDown);
+    self.refreshBtn.internal = "REFRESH";
+    self.refreshBtn:initialise();
+    self.refreshBtn:instantiate();
+    self.refreshBtn:setAnchorLeft(true);
+    self.refreshBtn:setAnchorRight(false);
+    self.refreshBtn:setAnchorTop(false);
+    self.refreshBtn:setAnchorBottom(true);
+    self:addChild(self.refreshBtn);
 
     local children = self.scrollPanel.javaObject:getControls()
     for i=1,children:size() do
@@ -383,196 +630,188 @@ function PublicServerList:create()
     self.scrollPanel.joypadIndex = 1
     self.scrollPanel.joypadIndexY = 1
 
-    local filterEtcY = self.height-bottomPad-buttonsHgt-bottomPad-connectLabelHgt-bottomPad-filterEtcHgt
+    local filterEtcY = self.height-UI_BORDER_SPACING*3-BUTTON_HGT*3+3 -- figure this height issue out somehow
     self.filterUI = {}
     self.filterX = listX
-    self.filterPadX = 20
+    self.filterPadX = UI_BORDER_SPACING
     self.filterBottomPad = self.height - (filterEtcY + filterEtcHgt)
 
-    self.versionCheckBox = ISTickBox:new(listX, filterEtcY, 10, filterEtcHgt, "", nil, nil);
+    self.filtersButton = ISButton:new(listX, self.scrollPanel:getBottom()+UI_BORDER_SPACING, 10, filterEtcHgt, getText("UI_servers_btn_filters"), self, PublicServerList.onOptionMouseDown);
+    self.filtersButton.internal = "FILTERS";
+    self.filtersButton:initialise();
+    self.filtersButton:instantiate();
+    self.filtersButton:setAnchorLeft(true);
+    self.filtersButton:setAnchorTop(false);
+    self.filtersButton:setAnchorBottom(true);
+    self:addChild(self.filtersButton);
+
+    self.versionCheckBox = ISTickBox:new(listX, self.filtersPopupLabel:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
     self.versionCheckBox:initialise();
     self.versionCheckBox:instantiate();
     self.versionCheckBox:setAnchorLeft(true);
     self.versionCheckBox:setAnchorRight(false);
-    self.versionCheckBox:setAnchorTop(false);
-    self.versionCheckBox:setAnchorBottom(true);
+    self.versionCheckBox:setAnchorTop(true);
+    self.versionCheckBox:setAnchorBottom(false);
     self.versionCheckBox.autoWidth = true
-    self:addChild(self.versionCheckBox);
+    self.filtersPopup:addChild(self.versionCheckBox);
     self.versionCheckBox:addOption(getText("UI_servers_versionCheck"));
-    table.insert(self.filterUI, self.versionCheckBox)
 
-    self.emptyServer = ISTickBox:new(self.versionCheckBox:getRight() + self.filterPadX, filterEtcY, 10, filterEtcHgt, "", nil, nil);
+    self.emptyServer = ISTickBox:new(listX, self.versionCheckBox:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
     self.emptyServer:initialise();
     self.emptyServer:instantiate();
     self.emptyServer:setAnchorLeft(true);
     self.emptyServer:setAnchorRight(false);
-    self.emptyServer:setAnchorTop(false);
-    self.emptyServer:setAnchorBottom(true);
+    self.emptyServer:setAnchorTop(true);
+    self.emptyServer:setAnchorBottom(false);
     self.emptyServer.selected[1] = true;
     self.emptyServer.autoWidth = true
-    self:addChild(self.emptyServer);
+    self.filtersPopup:addChild(self.emptyServer);
     self.emptyServer:addOption(getText("UI_servers_showEmptyServer"));
-    table.insert(self.filterUI, self.emptyServer)
 
-    self.whitelistServer = ISTickBox:new(self.emptyServer:getRight() + self.filterPadX, filterEtcY, 10, filterEtcHgt, "", nil, nil);
+    self.whitelistServer = ISTickBox:new(listX, self.emptyServer:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
     self.whitelistServer:initialise();
     self.whitelistServer:instantiate();
     self.whitelistServer:setAnchorLeft(true);
     self.whitelistServer:setAnchorRight(false);
-    self.whitelistServer:setAnchorTop(false);
-    self.whitelistServer:setAnchorBottom(true);
+    self.whitelistServer:setAnchorTop(true);
+    self.whitelistServer:setAnchorBottom(false);
     self.whitelistServer.selected[1] = false;
     self.whitelistServer.autoWidth = true
-    self:addChild(self.whitelistServer);
+    self.filtersPopup:addChild(self.whitelistServer);
     self.whitelistServer:addOption(getText("UI_servers_showWhitelistServer"));
-    table.insert(self.filterUI, self.whitelistServer)
 
-    self.pwdProtected = ISTickBox:new(self.whitelistServer:getRight() + self.filterPadX, filterEtcY, 10, filterEtcHgt, "", nil, nil);
+    self.pwdProtected = ISTickBox:new(listX, self.whitelistServer:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
     self.pwdProtected:initialise();
     self.pwdProtected:instantiate();
     self.pwdProtected:setAnchorLeft(true);
     self.pwdProtected:setAnchorRight(false);
-    self.pwdProtected:setAnchorTop(false);
-    self.pwdProtected:setAnchorBottom(true);
+    self.pwdProtected:setAnchorTop(true);
+    self.pwdProtected:setAnchorBottom(false);
     self.pwdProtected.selected[1] = false;
     self.pwdProtected.autoWidth = true
-    self:addChild(self.pwdProtected);
+    self.filtersPopup:addChild(self.pwdProtected);
     self.pwdProtected:addOption(getText("UI_servers_showPwdProtectedServer"));
-    table.insert(self.filterUI, self.pwdProtected)
 
-    self.largeServer = ISTickBox:new(self.pwdProtected:getRight() + self.filterPadX, filterEtcY, 10, filterEtcHgt, "", self, PublicServerList.onCheckLargeServerOption);
+    self.largeServer = ISTickBox:new(listX, self.pwdProtected:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, PublicServerList.onCheckLargeServerOption);
     self.largeServer:initialise();
     self.largeServer:instantiate();
     self.largeServer:setAnchorLeft(true);
     self.largeServer:setAnchorRight(false);
-    self.largeServer:setAnchorTop(false);
-    self.largeServer:setAnchorBottom(true);
+    self.largeServer:setAnchorTop(true);
+    self.largeServer:setAnchorBottom(false);
     self.largeServer.selected[1] = false;
     self.largeServer.autoWidth = true
-    self:addChild(self.largeServer);
+    self.filtersPopup:addChild(self.largeServer);
     self.largeServer:addOption(getText("UI_servers_showLargeServer"));
-    table.insert(self.filterUI, self.largeServer)
 
-    self.filterLabel = ISLabel:new(listX, self.versionCheckBox:getBottom() + 2, FONT_HGT_SMALL + 2 * 2, getText("UI_servers_nameFilter"), 1, 1, 1, 1, UIFont.Small, true);
+    self.vanillaServer = ISTickBox:new(listX, self.largeServer:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
+    self.vanillaServer:initialise();
+    self.vanillaServer:instantiate();
+    self.vanillaServer:setAnchorLeft(true);
+    self.vanillaServer:setAnchorRight(false);
+    self.vanillaServer:setAnchorTop(true);
+    self.vanillaServer:setAnchorBottom(false);
+    self.vanillaServer.selected[1] = true;
+    self.vanillaServer.autoWidth = true
+    self.filtersPopup:addChild(self.vanillaServer);
+    self.vanillaServer:addOption(getText("UI_servers_showVanillaServer"));
+    --table.insert(self.filterUI, self.vanillaServer)
+
+    self.moddedServer = ISTickBox:new(listX, self.vanillaServer:getBottom()+ UI_BORDER_SPACING, 10, filterEtcHgt, "", self, self.onFilterChanged);
+    self.moddedServer:initialise();
+    self.moddedServer:instantiate();
+    self.moddedServer:setAnchorLeft(true);
+    self.moddedServer:setAnchorRight(false);
+    self.moddedServer:setAnchorTop(true);
+    self.moddedServer:setAnchorBottom(false);
+    self.moddedServer.selected[1] = true;
+    self.moddedServer.autoWidth = true
+    self.filtersPopup:addChild(self.moddedServer);
+    self.moddedServer:addOption(getText("UI_servers_showModdedServer"));
+    --table.insert(self.filterUI, self.moddedServer)
+
+    self.filterLabel = ISLabel:new(listX, self.moddedServer:getBottom()+ UI_BORDER_SPACING, BUTTON_HGT, getText("UI_servers_nameFilter"), 1, 1, 1, 1, UIFont.Small, true);
     self.filterLabel:initialise();
     self.filterLabel:instantiate();
     self.filterLabel:setAnchorLeft(true);
     self.filterLabel:setAnchorRight(false);
-    self.filterLabel:setAnchorTop(false);
-    self.filterLabel:setAnchorBottom(true);
-    self:addChild(self.filterLabel);
+    self.filterLabel:setAnchorTop(true);
+    self.filterLabel:setAnchorBottom(false);
+    self.filtersPopup:addChild(self.filterLabel);
 
-    self.filterEntry = ISTextEntryBox:new("", self.filterLabel:getRight() + 4, self.filterLabel:getY(), 130, FONT_HGT_SMALL + 2 * 2);
+    self.filterEntry = ISTextEntryBox:new("", self.filterLabel:getRight() + UI_BORDER_SPACING, self.filterLabel:getY(), 130, BUTTON_HGT);
     self.filterEntry:initialise();
     self.filterEntry:instantiate();
     self.filterEntry:setAnchorLeft(true);
     self.filterEntry:setAnchorRight(false);
-    self.filterEntry:setAnchorTop(false);
-    self.filterEntry:setAnchorBottom(true);
-    self:addChild(self.filterEntry);
+    self.filterEntry:setAnchorTop(true);
+    self.filterEntry:setAnchorBottom(false);
+    self.filtersPopup:addChild(self.filterEntry);
 
-    local buttonY = self.height - 5 - buttonsHgt
+    self.closeFiltersPopupButton:setY(self.filterEntry:getBottom() + UI_BORDER_SPACING)
+    self.filtersPopup:shrinkWrap(UI_BORDER_SPACING, UI_BORDER_SPACING, nil)
+    self.closeFiltersPopupButton:setX(self.filtersPopup:getWidth() / 2 - self.closeFiltersPopupButton:getWidth() / 2)
+    self.filtersPopupLabel:setX(self.filtersPopup:getWidth()/2 - self.filtersPopupLabel:getWidth()/2);
 
-    self.backButton = ISButton:new(16, buttonY, 100, buttonsHgt, getText("UI_btn_back"), self, PublicServerList.onOptionMouseDown);
-    self.backButton.internal = "BACK";
-    self.backButton:initialise();
-    self.backButton:instantiate();
-    self.backButton:setAnchorLeft(true);
-    self.backButton:setAnchorTop(false);
-    self.backButton:setAnchorBottom(true);
-    self:addChild(self.backButton);
+    self.sortingLabel = ISLabel:new(self.filtersButton:getRight() + UI_BORDER_SPACING, self.filtersButton:getY(), BUTTON_HGT, getText("UI_servers_sortLabel"), 1, 1, 1, 1, UIFont.Small, true);
+    self.sortingLabel:initialise();
+    self.sortingLabel:instantiate();
+    self.sortingLabel:setAnchorLeft(true);
+    self.sortingLabel:setAnchorRight(false);
+    self.sortingLabel:setAnchorTop(false);
+    self.sortingLabel:setAnchorBottom(true);
+    self:addChild(self.sortingLabel);
 
-    self.playButton = ISButton:new(self.listbox.x + self.listbox.width - 100, buttonY, 100, buttonsHgt, getText("UI_servers_joinServer"), self, PublicServerList.onOptionMouseDown);
-    self.playButton.internal = "NEXT";
-    self.playButton:initialise();
-    self.playButton:instantiate();
-    self.playButton:setAnchorLeft(false);
-    self.playButton:setAnchorRight(true);
-    self.playButton:setAnchorTop(false);
-    self.playButton:setAnchorBottom(true);
-    self.playButton:setWidthToTitle(100)
-    self.playButton:setX(self.listbox:getRight() - self.playButton:getWidth())
-    self:addChild(self.playButton);
-
-    self.savedBtn = ISButton:new(self.backButton:getRight() + 10, buttonY, 100, buttonsHgt, getText("UI_servers_savedServers"), self, PublicServerList.onOptionMouseDown);
-    self.savedBtn.internal = "SAVEDSERVERS";
-    self.savedBtn:initialise();
-    self.savedBtn:instantiate();
-    self.savedBtn:setAnchorLeft(true);
-    self.savedBtn:setAnchorRight(false);
-    self.savedBtn:setAnchorTop(false);
-    self.savedBtn:setAnchorBottom(true);
---    self:addChild(self.savedBtn);
-
-    self.refreshBtn = ISButton:new(self.savedBtn:getRight() + 10, buttonY, 90, buttonsHgt, getText("UI_servers_refresh"), self, PublicServerList.onOptionMouseDown);
-    self.refreshBtn.internal = "REFRESH";
-    self.refreshBtn:initialise();
-    self.refreshBtn:instantiate();
-    self.refreshBtn:setAnchorLeft(true);
-    self.refreshBtn:setAnchorRight(false);
-    self.refreshBtn:setAnchorTop(false);
-    self.refreshBtn:setAnchorBottom(true);
-    self:addChild(self.refreshBtn);
+    self.sortingType = ISComboBox:new(self.sortingLabel:getRight() + UI_BORDER_SPACING, self.filtersButton:getY(), 130, BUTTON_HGT, self, self.onSortingChanged);
+    self.sortingType:initialise();
+    self.sortingType:instantiate();
+    self.sortingType.choicesColor = {r=1, g=1, b=1, a=1}
+    self.sortingType:setAnchorLeft(true);
+    self.sortingType:setAnchorRight(false);
+    self.sortingType:setAnchorTop(false);
+    self.sortingType:setAnchorBottom(true);
+    self.sortingType:addOption(getText("UI_servers_sortType_Players"))
+    self.sortingType:addOption(getText("UI_servers_sortType_Ping"))
+    self:addChild(self.sortingType);
 
     if #self.listbox.items > 0 then
-        self:fillFields(self.listbox.items[1].item.server);
+        self:fillFields(self.listbox.items[self.listbox.selected].item.server);
     end
 
-    self:layoutFilterUI()
 end
 
-function PublicServerList:layoutFilterUI()
-    local totalWidth = 0
-    for i,ui in ipairs(self.filterUI) do
-        totalWidth = totalWidth + ui.width + self.filterPadX
-    end
-    totalWidth = totalWidth - self.filterPadX
-    if self.joyfocus then
-        self:clearJoypadFocus(self.joyfocus)
-    end
-    self.joypadButtonsY = {}
-    self.joypadIndex = 1
-    self.joypadIndexY = 1
-    if self.filterX + totalWidth < self.width - self.filterX then
-        self:insertNewListOfButtons(self.filterUI)
-        local x = self.filterX
-        local y = self.height - self.filterBottomPad - self.filterUI[1].height
-        for i,ui in ipairs(self.filterUI) do
-            ui:setX(x)
-            ui:setY(y)
-            x = x + ui.width + self.filterPadX
-        end
-    else
-        local x = self.filterX
-        local y = self.height - self.filterBottomPad - self.filterUI[1].height * 2
-        local row = {}
-        for i,ui in ipairs(self.filterUI) do
-            ui:setX(x)
-            ui:setY(y)
-            table.insert(row, ui)
-            if i == #self.filterUI then
-                break
-            end
-            if x + ui.width + self.filterPadX + self.filterUI[i+1].width > self.width - self.filterX then
-                self:insertNewListOfButtons(row)
-                row = {}
-                x = self.filterX
-                y = y + ui.height
-            else
-                x = x + ui.width + self.filterPadX
+
+function PublicServerList:onFilterChanged()
+    self.recountFilteredPending = true;
+    self.firstDrawPending = true
+    self.firstDraw = false
+    self.filteredCount = 0;
+    self.listTabs:setPagesCount(0)
+    --self.listbox:setVisible(false);
+end
+
+
+function PublicServerList:onMouseDown_ListTabs(x, y)
+    if self:getMouseY() >= 0 and self:getMouseY() < self.tabHeight then
+        local tabIndex = self:getTabIndexAtX(self:getMouseX())
+        PublicServerList.instance.skipCount = 0
+        PublicServerList.instance.pageChanged = true
+        PublicServerList.instance.firstDrawPending = true
+        PublicServerList.instance.firstDraw = false
+        --PublicServerList.instance.scrollPanel:setYScroll(0)
+
+        local clickedView = nil;
+        for ind,value in ipairs(self.viewList) do
+            -- we get the view we clicked on
+            if ind == tabIndex then
+                clickedView = value;
+                break;
             end
         end
-        if #row > 0 then
-            self:insertNewListOfButtons(row)
+        -- if we clicked on another view, we display it and make the previous one not visible
+        if clickedView and clickedView.name ~= self.activeView.name then
+            self:activateView(clickedView.name)
         end
-    end
-    local bottomPad = 3
-    self.listbox:setHeight(self.filterUI[1].y - bottomPad - self.listbox.y)
-    self.listbox.vscroll:setHeight(self.listbox.height)
-    self.scrollPanel:setHeight(self.listbox.height)
-    self:insertNewLineOfButtons(self.filterEntry)
-    if self.joyfocus then
-        self:restoreJoypadFocus(self.joyfocus)
     end
 end
 
@@ -584,8 +823,10 @@ function PublicServerList:onMouseDown_Tabs(x, y)
                 steamReleaseInternetServersRequest()
             end
             MainScreen.instance.joinPublicServer:setVisible(false)
-            MainScreen.instance.joinServer:setVisible(true, JoypadState.getMainMenuJoypad())
-            MainScreen.instance.joinServer:refreshList()
+            MainScreen.instance.serverList:setVisible(true, JoypadState.getMainMenuJoypad())
+            if not getSteamModeActive() then
+                MainScreen.instance.serverList:refreshList()
+            end
         end
     end
 end
@@ -598,13 +839,13 @@ PublicServerList.instance = self
 
 --    self:drawTextCentre( getText("UI_servers_publicServer"), self.width / 2 - 100, 10, 1, 1, 1, 1, UIFont.Large);
 
-    self:drawTextCentre(getText("UI_servers_addToFavorite"), self.scrollPanel:getX() + self.scrollPanel:getWidth() / 2, 10, 1, 1, 1, 1, UIFont.Large);
+    self:drawTextCentre(getText("UI_servers_addToFavorite"), self.scrollPanel:getX() + self.scrollPanel:getWidth() / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Large);
 
     local fieldsOK = self:checkFields()
 
     local find = false;
 
-    for i,v in ipairs(MainScreen.instance.joinServer.listbox.items) do
+    for i,v in ipairs(MainScreen.instance.serverList.listbox.items) do
         if v.item.server:getName() == self.serverNameEntry:getText() then
             find = true;
             break;
@@ -612,18 +853,64 @@ PublicServerList.instance = self
     end
 
     if fieldsOK and find then
+        self.firstAddServer = true;
         self.addBtn:setEnable(false);
         self.addBtn:setTooltip(getText("UI_servers_err_saved_server_exists"))
+        self.authType:setEnabled(false)
+        if self.passwordEntry:isFocused() then
+            if not self.passwordWasFocused then
+                self.passwordWasFocused = true
+                self.passwordEntry:setMasked(true)
+                self.passwordEntry:setText("")
+            end
+        else
+            if self.passwordWasFocused then
+                self.passwordWasFocused = false;
+                self.passwordText = self.passwordEntry:getInternalText();
+                if self.passwordText ~= "" then
+                    self.passwordEntry:setMasked(false);
+                    self.passwordEntry:setText(getText("UI_Server_Passwort_Hint"));
+                end
+            end
+        end
+        -- If google auth of two factor selected enable register QR button
+        if 1 ~= self.authType:getSelected() then
+            self.registerBtn:setVisible(true);
+            self.registerBtn:setEnabled(true);
+            self.passwordEntry:setMasked(true);
+        end
+    else
+        if self.firstAddServer then
+            self.firstAddServer = false;
+            self.passwordEntry:setText("");
+        end
+        self.authType:setEnabled(true)
+        self.registerBtn:setVisible(false);
+        self.registerBtn:setEnabled(false);
+    end
+-- Check if this is a google auth only
+    if 2 == self.authType:getSelected() then
+        self.rememberPasswordTickBox:setEnabled(false);
+        self.passwordEntry:setEnabled(false);
+        self.passwordLabel:setEnabled(false);
+        self.rememberPasswordTickBox:setVisible(false);
+        self.passwordEntry:setVisible(false);
+        self.passwordLabel:setVisible(false);
+    else
+        self.rememberPasswordTickBox:setEnabled(true);
+        self.passwordEntry:setEnabled(true);
+        self.passwordLabel:setEnabled(true);
+        self.rememberPasswordTickBox:setVisible(true);
+        self.passwordEntry:setVisible(true);
+        self.passwordLabel:setVisible(true);
     end
 
     if (getTimestamp() - PublicServerList.refreshTime) < PublicServerList.refreshInterval then
         self.refreshBtn:setEnable(false);
         self.refreshBtn:setTitle(getText("UI_servers_refresh") .. " " .. (PublicServerList.refreshInterval - math.floor(getTimestamp() - PublicServerList.refreshTime)));
-        self.refreshBtn:setWidthToTitle(90)
     else
         self.refreshBtn:setEnable(true);
         self.refreshBtn:setTitle(getText("UI_servers_refresh"));
-        self.refreshBtn:setWidthToTitle(90)
     end
 
     local item = self.listbox.items[self.listbox.selected]
@@ -643,6 +930,18 @@ PublicServerList.instance = self
         self.playButton:clearJoypadButton()
         self.backButton:clearJoypadButton()
         self.refreshBtn:clearJoypadButton()
+    end
+
+    local useSteamRelay = getSteamModeActive() and self.connectTypeEntry.selected[1]
+    if self.lastUseSteamRelay ~= useSteamRelay then
+        self.lastUseSteamRelay = useSteamRelay
+        if (useSteamRelay) then
+            self.steamIPwarningLabel:setText(getText("UI_servers_serveripmessage"))
+            self.steamIPwarningLabel:paginate()
+        else
+            self.steamIPwarningLabel:setText(getText("UI_servers_serveripwarning"))
+            self.steamIPwarningLabel:paginate()
+        end
     end
 end
 
@@ -746,14 +1045,33 @@ function PublicServerList:addServerToList(server)
         end
     end
 
+    if not self.vanillaServer.selected[1] then
+        if "" == server:getMods() then
+            return
+        end
+    end
+
+    if not self.moddedServer.selected[1] then
+        if "" ~= server:getMods() then
+            return
+        end
+    end
+
     if not self.hasVisibleItem then
         self:fillFields(server)
         self.listbox.selected = #self.listbox.items
         self.hasVisibleItem = true
     end
+    self.filteredCount = self.filteredCount + 1
+    self.listTabs:setPagesCount(math.ceil(self.filteredCount / self.listCount))
 end
 
 function PublicServerList:refreshList()
+    self.pageChanged = true
+    self.skipCount = 0
+    self.listCount = 10
+    self.filteredCount = 0
+    self.listTabs:setPagesCount(0)
     self.listbox:clear();
     self.hasVisibleItem = false
     if not isPublicServerListAllowed() then return; end
@@ -768,9 +1086,9 @@ function PublicServerList:refreshList()
     end
     table.sort(dirs, function(a,b) return tonumber(a:getPlayers())>tonumber(b:getPlayers()) end)
     for i, k in ipairs(dirs) do
-        if k:getVersion() == getCore():getVersion() then
+        --if k:getVersion() == getCore():getVersion() then
             self:addServerToList(k);
-        end
+        --end
     end
     PublicServerList.refreshTime = getTimestamp();
 end
@@ -781,7 +1099,12 @@ function PublicServerList:sortList()
         local item2 = {}
         item2.item = item
         item2.isSpiffoSpace = string.find(item.item.server:getName(), "SpiffoSpace")
-        item2.numPlayers = tonumber(item.item.server:getPlayers())
+        if 1 == self.sortingType:getSelected() then
+            item2.numPlayers = tonumber(item.item.server:getPlayers())
+        end
+        if 2 == self.sortingType:getSelected() then
+            item2.ping = tonumber(item.item.server:getPing())
+        end
         table.insert(sorted, item2)
     end
     table.sort(sorted, function(a,b)
@@ -794,7 +1117,12 @@ function PublicServerList:sortList()
                 return false
             end
         end
-        return a.numPlayers > b.numPlayers
+        if a.ping then
+            return a.ping < b.ping
+        end
+        if a.numPlayers then
+            return a.numPlayers > b.numPlayers
+        end
     end)
     self.listbox.items = {}
     for _,item2 in ipairs(sorted) do
@@ -802,7 +1130,33 @@ function PublicServerList:sortList()
     end
 end
 
+function PublicServerList:onSendButton()
+    local server = self.listbox.items[self.listbox.selected].item.server
+    local doHash = true;
+    if server:isSavePwd() and server:getPwd() == self.passwordText then
+        doHash = false;
+    end
+    self.googleAuthConnectLabel.text = getText("UI_servers_QR_connecting")
+    self.googleAuthConnectLabel.text = " <CENTRE> " .. self.googleAuthConnectLabel.text
+    self.googleAuthConnectLabel:paginate()
+    self.googleAuthConnectLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthConnectLabel.width/2);
+    sendSecretKey(self.usernameEntry:getText(), self.passwordText, self.serverEntry:getText(), self.portEntry:getText(), doHash, self.authType:getSelected(), self.googleKey);
+end
+
+function PublicServerList:onCloseQRButton()
+    self.googleAuthPopup.qrTexture = nil;
+    self.googleAuthPopup:setVisible(false);
+    self.googleAuthConnectLabel.name = ""
+end
+
+function PublicServerList:onCloseFiltersButton()
+    self.filtersPopup:setVisible(false);
+end
+
 function PublicServerList:onOptionMouseDown(button, x, y)
+    if button.internal == "FILTERS" then
+        self.filtersPopup:setVisible(true);
+    end
     if button.internal == "REFRESH" then
         self:refreshList();
     end
@@ -811,8 +1165,8 @@ function PublicServerList:onOptionMouseDown(button, x, y)
             steamReleaseInternetServersRequest()
         end
         self:setVisible(false);
-        MainScreen.instance.joinServer:setVisible(true);
-        MainScreen.instance.joinServer:refreshList();
+        MainScreen.instance.serverList:setVisible(true);
+        MainScreen.instance.serverList:refreshList();
     end
     if button.internal == "BACK" then
         if getSteamModeActive() then
@@ -820,19 +1174,26 @@ function PublicServerList:onOptionMouseDown(button, x, y)
         end
         --        getCore():ResetLua(true, "exitJoinServer")
         PublicServerList.instance:setVisible(false);
-        MainScreen.instance.joinServer:setVisible(false);
+        MainScreen.instance.serverList:setVisible(false);
         MainScreen.instance.bottomPanel:setVisible(true);
         local joypadData = JoypadState.getMainMenuJoypad()
         if joypadData then
             joypadData.focus = MainScreen.instance
             updateJoypadFocus(joypadData)
         end
+        MainScreen.resetLuaIfNeeded()
     end
     if button.internal == "ADD" then
         self:addServer();
     end
     if button.internal == "ERASE" then
         self:erase();
+    end
+    if button.internal == "REGISTER" then
+        self.googleAuthPopup:setVisible(true);
+        local username = self.usernameEntry:getText();
+        self.googleKey = generateSecretKey(username);
+        self.googleAuthPopup.qrTexture = createQRCodeTex(username,self.googleKey)
     end
     if button.internal == "NEXT" then
         local server = self.listbox.items[self.listbox.selected].item.server
@@ -844,9 +1205,16 @@ function PublicServerList:onOptionMouseDown(button, x, y)
                 end
                 local localIP = ""
                 local useSteamRelay = getSteamModeActive() and self.connectTypeEntry.selected[1]
+                local doHash = true;
+				if self.passwordEntry:isFocused() then
+					self.passwordText = self.passwordEntry:getInternalText();
+				end
+				if server:isSavePwd() and server:getPwd() == self.passwordText then
+                    doHash = false;
+                end
                 ConnectToServer.instance:connect(self, server:getName(), self.usernameEntry:getText(),
-                    self.passwordEntry:getInternalText(), self.serverEntry:getText(),
-					localIP, self.portEntry:getText(), self.serverPasswordEntry:getInternalText(), useSteamRelay);
+                    self.passwordText, self.serverEntry:getText(),
+					localIP, self.portEntry:getText(), self.serverPasswordEntry:getInternalText(), useSteamRelay, doHash, self.authType:getSelected());
             end
         end
     end
@@ -863,19 +1231,23 @@ function PublicServerList:addServer()
         newServer:setServerPassword(self.serverPasswordEntry:getInternalText() or "")
         newServer:setDescription(self.descEntry:getText() or "");
         newServer:setUserName(self.usernameEntry:getText() or "");
-        newServer:setPwd(self.passwordEntry:getInternalText() or "");
+        newServer:setPwd(self.passwordText or "", true);
+        self.passwordWasFocused = true;
+        newServer:setSavePwd(self.rememberPasswordTickBox:isSelected(1));
+        newServer:setAuthType(self.authType:getSelected());
         if getSteamModeActive() then
             newServer:setUseSteamRelay(self.connectTypeEntry:isSelected(1));
         end
 --        newServer:setSteamId(self.steamIdEntry:getText() or "");
+        getCustomizationData(newServer:getUserName(), newServer:getPwd(), newServer:getIp(), newServer:getPort(), newServer:getServerPassword(), newServer:getName(), false);
         self:writeServerOnFile(newServer, true);
         self:setVisible(false);
-        MainScreen.instance.joinServer:fillFields(newServer);
-        MainScreen.instance.joinServer:setVisible(true);
-        MainScreen.instance.joinServer:refreshList();
-        for index,item in ipairs(MainScreen.instance.joinServer.listbox.items) do
+        MainScreen.instance.serverList:fillFields(newServer);
+        MainScreen.instance.serverList:setVisible(true);
+        MainScreen.instance.serverList:refreshList();
+        for index,item in ipairs(MainScreen.instance.serverList.listbox.items) do
             if item.text == newServer:getName() then
-                MainScreen.instance.joinServer.listbox.selected = index
+                MainScreen.instance.serverList.listbox.selected = index
                 break
             end
         end
@@ -900,8 +1272,8 @@ function PublicServerList:checkFields()
 
     local valid = true
     local tooltip = nil
-    
-    if self.passwordEntry:getText():trim() == "" then
+    -- Check for an empty password. If it's a google auth (type 2) then there is no need to check.
+    if 2 ~= self.authType:getSelected() and self.passwordEntry:getInternalText():trim() == "" then
         self.passwordEntry:setValid(false)
         self.passwordEntry:setTooltip(getText("UI_servers_err_username_pwd"))
         if valid then
@@ -975,14 +1347,6 @@ function PublicServerList:canConnect()
 		self.playButton:setTitle(getText("UI_servers_joinServer"))
 		self.showCountdownForJoin = false;
 	end
-	if self.listbox.selected > 0 then
-		local server = self.listbox.items[self.listbox.selected].item.server
-		if server and server:getMaxPlayers() and server:getPlayers() then
-			if server and tonumber(server:getMaxPlayers()) <= tonumber(server:getPlayers()) then
-				return false, getText("UI_OnConnectFailed_ServerFull");
-			end
-		end
-	end
 	return true, "";
 end
 
@@ -992,6 +1356,7 @@ function PublicServerList:clickNext()
     end
     --    stopPing();
     --    PublicServerList.pingIndex = 1;
+    stopSendSecretKey();
     self.connecting = true;
     self.playButton:setEnable(false);
     self.backButton:setEnable(false);
@@ -1015,7 +1380,13 @@ function PublicServerList:writeServerOnFile(server, append)
     fileOutput:write("serverpassword=" .. server:getServerPassword() .. "\r\n");
     fileOutput:write("description=" .. server:getDescription() .. "\r\n");
     fileOutput:write("user=" .. server:getUserName() .. "\r\n");
-    fileOutput:write("password=" .. server:getPwd() .. "\r\n");
+    fileOutput:write("remember=" .. tostring(server:isSavePwd()) .. "\r\n");
+    fileOutput:write("authType=" .. tostring(server:getAuthType()) .. "\r\n");
+    fileOutput:write("loginScreenId=" .. tostring(server:getLoginScreenId()) .. "\r\n");
+    fileOutput:write("serverCustomizationLastUpdate=" .. tostring(server:getServerCustomizationLastUpdate()) .. "\r\n");
+    if server:isSavePwd() then
+        fileOutput:write("password=" .. server:getPwd() .. "\r\n");
+    end
     fileOutput:write("usesteamrelay=" .. tostring(server:getUseSteamRelay()) .. "\r\n");
     fileOutput:close();
 end
@@ -1028,6 +1399,9 @@ function PublicServerList:erase()
     self.descEntry:setText("");
     self.usernameEntry:setText("");
     self.passwordEntry:setText("");
+    self.passwordText = "";
+    self.rememberPasswordTickBox:setSelected(1, false)
+    self.authType:setSelected(1);
 --    self.steamIdEntry:setText("");
     if getSteamModeActive() then
         self.connectTypeEntry.selected[1] = false;
@@ -1047,6 +1421,10 @@ function PublicServerList:fillFields(item)
     self.descEntry:setText(item:getDescription());
     self.usernameEntry:setText(item:getUserName());
     self.passwordEntry:setText(item:getPwd());
+    self.passwordText = item:getPwd();
+    self.passwordWasFocused = true;
+    self.rememberPasswordTickBox:setSelected(1,item:isSavePwd());
+    self.authType:setSelected(item:getAuthType());
     if getSteamModeActive() then
         self.connectTypeEntry.selected[1] = item:getUseSteamRelay();
     end
@@ -1066,6 +1444,27 @@ end
 
 
 function PublicServerList:drawMap(y, item, alt)
+    if PublicServerList.instance.pageChanged then
+        PublicServerList.instance.pageChanged = false;
+        self.stopPrerender = true;
+        return y;
+    end
+    if item.index == 1 then
+        if PublicServerList.instance.recountFiltered then
+            PublicServerList.instance.recountFiltered = false
+        end
+        if PublicServerList.instance.recountFilteredPending then
+            PublicServerList.instance.recountFilteredPending = false
+            PublicServerList.instance.recountFiltered = true
+        end
+        PublicServerList.instance.pageChanged = false
+        PublicServerList.instance.skipCount = 0
+    end
+
+    if PublicServerList.instance.recountFilteredPending then
+        return y;
+    end
+
     local server = item.item.server
     if not server:isPublic() then
         return y;
@@ -1103,6 +1502,33 @@ function PublicServerList:drawMap(y, item, alt)
         if tonumber(server:getMaxPlayers()) >= 32 then
             return y
         end
+    end
+
+    if not PublicServerList.instance.vanillaServer.selected[1] then
+        if "" == server:getMods() then
+            return y
+        end
+    end
+
+    if not PublicServerList.instance.moddedServer.selected[1] then
+        if "" ~= server:getMods() then
+            return y
+        end
+    end
+    if PublicServerList.instance.recountFiltered then
+        PublicServerList.instance.filteredCount = PublicServerList.instance.filteredCount + 1;
+        PublicServerList.instance.listTabs:setPagesCount(math.ceil(PublicServerList.instance.filteredCount / PublicServerList.instance.listCount))
+    end
+
+    if PublicServerList.instance.listTabs:getActiveViewIndex() then
+        if PublicServerList.instance.skipCount < (tonumber(PublicServerList.instance.listTabs:getActiveViewIndex()) - 1) * PublicServerList.instance.listCount then
+            PublicServerList.instance.skipCount = PublicServerList.instance.skipCount + 1;
+            return y;
+        elseif PublicServerList.instance.skipCount >= tonumber(PublicServerList.instance.listTabs:getActiveViewIndex()) * PublicServerList.instance.listCount then
+            --PublicServerList.instance.skipCount = PublicServerList.instance.skipCount + 1;
+            --return y;
+        end
+        PublicServerList.instance.skipCount = PublicServerList.instance.skipCount + 1;
     end
 
     if y + self:getYScroll() + item.height < 0 or y + self:getYScroll() >= self.height then
@@ -1200,8 +1626,10 @@ function PublicServerList:onJoypadDown(button, joypadData)
             steamReleaseInternetServersRequest()
         end
         MainScreen.instance.joinPublicServer:setVisible(false)
-        MainScreen.instance.joinServer:setVisible(true, joypadData)
-        MainScreen.instance.joinServer:refreshList()
+        MainScreen.instance.serverList:setVisible(true, joypadData)
+        if not getSteamModeActive() then
+            MainScreen.instance.serverList:refreshList()
+        end
         return
     end
     ISPanelJoypad.onJoypadDown(self, button, joypadData)
@@ -1336,7 +1764,12 @@ end
 
 function PublicServerList:onResolutionChange(oldw, oldh, neww, newh)
     if not self.filterUI then return end
-    self:layoutFilterUI()
+    local fontScale = FONT_HGT_SMALL / 15
+    local entrySize = 200 * fontScale;
+    local listX = UI_BORDER_SPACING+1
+    local listWid = self.width - UI_BORDER_SPACING*2 - entrySize - listX
+    self.listbox:setWidth(math.max(listWid, 200))
+    self.tabs:setWidth(math.max(listWid, 200))
 end
 
 function PublicServerList:new(x, y, width, height)
@@ -1359,6 +1792,54 @@ function PublicServerList:new(x, y, width, height)
     o.anchorBottom = false;
     return o;
 end
+
+function PublicServerList:OnConnectFailed(message, detail)
+    if self.googleAuthConnectLabel then
+        local labelSuccess = " <CENTRE> " .. getText("UI_servers_QR_send_success")
+        local labelFailed = " <CENTRE> " .. getText("UI_servers_QR_send_failed")
+        if labelSuccess ~= self.googleAuthConnectLabel.text  and labelFailed ~= self.googleAuthConnectLabel.text then
+            self.googleAuthConnectLabel.text = message or getText("UI_servers_connectionfailed")
+            self.googleAuthConnectLabel.text = " <CENTRE> " .. self.googleAuthConnectLabel.text
+            self.googleAuthConnectLabel:paginate()
+            self.googleAuthConnectLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthConnectLabel.width/2);
+        end
+        stopSendSecretKey();
+    end
+end
+
+function PublicServerList:OnConnected()
+    if self.googleAuthConnectLabel then
+        self.googleAuthConnectLabel.text = getText("UI_servers_QR_sending_key")
+        self.googleAuthConnectLabel.text = " <CENTRE> " .. self.googleAuthConnectLabel.text
+        self.googleAuthConnectLabel:paginate()
+        self.googleAuthConnectLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthConnectLabel.width/2);
+    end
+end
+
+function PublicServerList:OnQRReceived(message)
+    self.googleAuthConnectLabel.text = message--getText("UI_servers_QR_send_success")
+    self.googleAuthConnectLabel.text = " <CENTRE> " .. self.googleAuthConnectLabel.text
+    self.googleAuthConnectLabel:paginate()
+    self.googleAuthConnectLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthConnectLabel.width/2);
+    stopSendSecretKey();
+end
+
+function OnConnectFailed(message, detail)
+    PublicServerList.instance:OnConnectFailed(message,detail)
+end
+
+function OnConnected()
+    PublicServerList.instance:OnConnected()
+end
+
+local function OnQRReceived(message)
+	PublicServerList.instance:OnQRReceived(message)
+end
+
+Events.OnQRReceived.Add(OnQRReceived)
+Events.OnConnectFailed.Add(OnConnectFailed)
+Events.OnDisconnect.Add(OnConnectFailed)
+Events.OnConnected.Add(OnConnected)
 
 Events.ServerPinged.Add(PublicServerList.ServerPinged);
 if getSteamModeActive() then

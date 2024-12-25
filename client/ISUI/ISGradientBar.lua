@@ -11,7 +11,7 @@ function ISGradientBar:initialise()
 end
 
 function ISGradientBar:createChildren()
-    --instanceItem("item");
+
 end
 
 function ISGradientBar:prerender()

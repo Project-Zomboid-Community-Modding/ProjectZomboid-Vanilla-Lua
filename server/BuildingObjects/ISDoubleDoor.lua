@@ -54,10 +54,10 @@ function ISDoubleDoor:addDoorPart(x,y,z,north,sprite,index)
 	-- set the key id if we had one
 	for _,item in ipairs(consumedItems) do
 		if item:getType() == "Doorknob" and item:getKeyId() ~= -1 then
-			self.javaObject:setKeyId(item:getKeyId(), false)
+			self.javaObject:setKeyId(item:getKeyId())
 		end
 	end
-	self.javaObject:transmitCompleteItemToServer();
+	self.javaObject:transmitCompleteItemToClients();
 end
 
 function ISDoubleDoor:overrideModData(spriteIndex)
@@ -94,19 +94,21 @@ function ISDoubleDoor:overrideModData(spriteIndex)
 	end
 end
 
-function ISDoubleDoor:new(sprite, spriteIndex)
+function ISDoubleDoor:new(spriteOriginal, spriteIndex)
 	local o = {};
 	setmetatable(o, self);
 	self.__index = self;
 	o:init();
-	o:setSprite(sprite .. spriteIndex);
-	o.sprite2 = sprite .. spriteIndex+1;
-	o.sprite3 = sprite .. spriteIndex-8;
-	o.sprite4 = sprite .. spriteIndex-7;
-	o.northSprite = sprite .. spriteIndex-6;
-	o.northSprite2 = sprite .. spriteIndex-5;
-	o.northSprite3 = sprite .. spriteIndex+2;
-	o.northSprite4 = sprite .. spriteIndex+3;
+	o.spriteOriginal = spriteOriginal
+	o.spriteIndex = spriteIndex;
+	o:setSprite(spriteOriginal .. spriteIndex);
+	o.sprite2 = spriteOriginal .. spriteIndex+1;
+	o.sprite3 = spriteOriginal .. spriteIndex-8;
+	o.sprite4 = spriteOriginal .. spriteIndex-7;
+	o.northSprite = spriteOriginal .. spriteIndex-6;
+	o.northSprite2 = spriteOriginal .. spriteIndex-5;
+	o.northSprite3 = spriteOriginal .. spriteIndex+2;
+	o.northSprite4 = spriteOriginal .. spriteIndex+3;
 	o.isDoor = true;
 	o.thumpDmg = 5;
 	o.name = "Double Door";
@@ -168,7 +170,7 @@ function ISDoubleDoor:render(x, y, z, square)
 		-- render the first part
 		local spriteName = self:getSprite()
 		local sprite = IsoSprite.new()
-		sprite:LoadFramesNoDirPageSimple(spriteName)
+		sprite:LoadSingleTexture(spriteName)
 		
 		-- if the square is free and our item can be build
 		local spriteFree = ISBuildingObject.isValid(self, square)
@@ -240,7 +242,7 @@ function ISDoubleDoor:render(x, y, z, square)
 	-- render each parts
 	if not existsA then
 		local spriteA = IsoSprite.new();
-		spriteA:LoadFramesNoDirPageSimple(spriteAName);
+		spriteA:LoadSingleTexture(spriteAName);
 		if spriteAFree then
 			spriteA:RenderGhostTile(xa, ya, z);
 		else
@@ -249,7 +251,7 @@ function ISDoubleDoor:render(x, y, z, square)
 	end
 	if not existsB then
 		local spriteB = IsoSprite.new();
-		spriteB:LoadFramesNoDirPageSimple(spriteBName);
+		spriteB:LoadSingleTexture(spriteBName);
 		if spriteBFree then
 			spriteB:RenderGhostTile(xb, yb, z);
 		else
@@ -258,7 +260,7 @@ function ISDoubleDoor:render(x, y, z, square)
 	end
 	if not existsC then
 		local spriteC = IsoSprite.new();
-		spriteC:LoadFramesNoDirPageSimple(spriteCName);
+		spriteC:LoadSingleTexture(spriteCName);
 		if spriteCFree then
 			spriteC:RenderGhostTile(xc, yc, z);
 		else

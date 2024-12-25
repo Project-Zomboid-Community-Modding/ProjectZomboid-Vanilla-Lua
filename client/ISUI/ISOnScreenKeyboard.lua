@@ -7,6 +7,10 @@ ISOnScreenKeyboard = ISPanelJoypad:derive("ISOnScreenKeyboard")
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local KEY_HGT = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2
+local JOYPAD_TEX_SIZE = 32
 
 -----
 
@@ -33,7 +37,8 @@ function OnScreenKeyboardEntry:render()
 		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
 		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
 	end
-	self:drawTextureScaled(Joypad.Texture.LBumper, self.width - 32, 2, FONT_HGT_SMALL * 1.5, FONT_HGT_SMALL * 1.5, 1, 1, 1, 1)
+	local offset = (KEY_HGT-JOYPAD_TEX_SIZE)/2
+	self:drawTextureScaled(Joypad.Texture.LBumper, self.width - JOYPAD_TEX_SIZE - offset, offset, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1, 1, 1, 1)
 end
 
 function OnScreenKeyboardEntry:update()
@@ -153,13 +158,13 @@ end
 OnScreenKeyboardPanel = ISPanelJoypad:derive("OnScreenKeyboardPanel")
 
 function OnScreenKeyboardPanel:createChildren()
-	local mult = 2
+	local mult = 2.75
 	self.buttonX = 0
 	self.buttonY = 0
-	self.buttonW = 40 * mult
-	self.buttonH = 32 * mult
-	self.buttonPadX = 4 * mult
-	self.buttonPadY = 4 * mult
+	self.buttonW = KEY_HGT
+	self.buttonH = KEY_HGT
+	self.buttonPadX = UI_BORDER_SPACING
+	self.buttonPadY = UI_BORDER_SPACING
 
 	local button
 	
@@ -179,7 +184,12 @@ function OnScreenKeyboardPanel:createChildren()
 	self:createButton_Char("0", ")")
 	self:createButton_Char("-", "_")
 	self:createButton_Char("=", "+")
-	button = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 1.5 + self.buttonPadX / 2, self.buttonH, "DELETE", ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_BACK)
+	local btnBaseWidth = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2 + self.buttonPadX*2
+	local btnWidth = math.max(
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Keyboard_Delete")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Keyboard_Accept"))
+	)
+	button = self:createButton2(self.buttonX, self.buttonY, btnWidth + btnBaseWidth, self.buttonH, getText("IGUI_Keyboard_Delete"), ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_BACK)
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.XButton)
 	self:insertNewListOfButtons(self.rowOfButtons)
@@ -207,7 +217,7 @@ function OnScreenKeyboardPanel:createChildren()
 	self.buttonX = rowX + self.buttonW / 2 + self.buttonPadX / 2
 	self.buttonY = self.buttonY + self.buttonH + self.buttonPadY
 	rowX = self.buttonX
-	button = self:createButton2(0, self.buttonY, rowX - self.buttonPadX, self.buttonH, "CAPS", ISOnScreenKeyboard.KeyFunction_CapsLock)
+	button = self:createButton2(0, self.buttonY, rowX - self.buttonPadX, self.buttonH, getText("IGUI_Keyboard_Caps"), ISOnScreenKeyboard.KeyFunction_CapsLock)
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.LStick)
 	self.parent.buttonCapsLock = button
@@ -222,18 +232,18 @@ function OnScreenKeyboardPanel:createChildren()
 	self:createButton_Char("l", "L")
 	self:createButton_Char(";", ":")
 	self:createButton_Char("'", "\"")
-	self.parent.buttonEnter = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 1.5 + self.buttonPadX / 2, self.buttonH, "ACCEPT", ISOnScreenKeyboard.KeyFunction_Enter)
+	self.parent.buttonEnter = self:createButton2(self.buttonX, self.buttonY, btnBaseWidth + btnWidth, self.buttonH, getText("IGUI_Keyboard_Accept"), ISOnScreenKeyboard.KeyFunction_Enter)
 	self.parent.buttonEnter:setFont(UIFont.Medium)
 	self.parent.buttonEnter:setJoypadButton(Joypad.Texture.RTrigger)
-	self.parent.buttonEnter.chLower = "ACCEPT"
-	self.parent.buttonEnter.chUpper = "ENTER"
+	self.parent.buttonEnter.chLower = getText("IGUI_Keyboard_Accept")
+	self.parent.buttonEnter.chUpper = getText("IGUI_Keyboard_Enter")
 	self:insertNewListOfButtons(self.rowOfButtons)
 
 	self.rowOfButtons = {}
 	self.buttonX = rowX + self.buttonW / 2 + self.buttonPadX / 2
 	self.buttonY = self.buttonY + self.buttonH + self.buttonPadY
 	rowX = self.buttonX
-	button = self:createButton2(0, self.buttonY, rowX - self.buttonPadX, self.buttonH, "SHIFT", ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_LSHIFT)
+	button = self:createButton2(0, self.buttonY, rowX - self.buttonPadX, self.buttonH, getText("IGUI_Keyboard_Shift"), ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_LSHIFT)
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.LTrigger)
 	self.parent.buttonLShift = button
@@ -247,7 +257,8 @@ function OnScreenKeyboardPanel:createChildren()
 	self:createButton_Char(",", "<")
 	self:createButton_Char(".", ">")
 	self:createButton_Char("/", "?")
-	button = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 2.0 + self.buttonPadX, self.buttonH, "SHIFT", ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_LSHIFT)
+	btnWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Keyboard_Shift"))
+	button = self:createButton2(self.buttonX, self.buttonY, btnBaseWidth + btnWidth, self.buttonH, getText("IGUI_Keyboard_Shift"), ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_LSHIFT)
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.LTrigger)
 	self.parent.buttonRShift = button
@@ -258,10 +269,10 @@ function OnScreenKeyboardPanel:createChildren()
 	self.buttonY = self.buttonY + self.buttonH + self.buttonPadY
 
 	button = self:createButton2(0, self.buttonY, self.buttonW, self.buttonH, "", ISOnScreenKeyboard.KeyFunction_TogglePassword)
-	button:setImage(getTexture("media/textures/Foraging/eyeconOn_Shade_UI.png"))
+	button:setImage(getTexture("media/ui/foraging/eyeconOn.png"))
 	self.parent.buttonPassword = button
 
-	button = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 5 + self.buttonPadX * 4, self.buttonH, "SPACE", ISOnScreenKeyboard.KeyFunction_Char, " ", " ")
+	button = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 5 + self.buttonPadX * 4, self.buttonH, getText("IGUI_Keyboard_Space"), ISOnScreenKeyboard.KeyFunction_Char, " ", " ")
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.YButton)
 	self.buttonX = self.buttonX + self.buttonW * 5 + self.buttonPadX * 4 + self.buttonPadX + self.buttonW + self.buttonPadX
@@ -269,7 +280,8 @@ function OnScreenKeyboardPanel:createChildren()
 	self.buttonX = self.buttonX + self.buttonW + self.buttonPadX
 	self:createButton2(self.buttonX, self.buttonY, self.buttonW, self.buttonH, ">", ISOnScreenKeyboard.KeyFunction_KeyCode, Keyboard.KEY_RIGHT)
 	self.buttonX = self.buttonX + self.buttonW + self.buttonPadX
-	button = self:createButton2(self.buttonX, self.buttonY, self.buttonW * 2.0 + self.buttonPadX, self.buttonH, "CANCEL", ISOnScreenKeyboard.KeyFunction_Hide)
+	btnWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Keyboard_Cancel"))
+	button = self:createButton2(self.buttonX, self.buttonY, btnBaseWidth + btnWidth, self.buttonH, getText("IGUI_Keyboard_Cancel"), ISOnScreenKeyboard.KeyFunction_Hide)
 	button:setFont(UIFont.Medium)
 	button:setJoypadButton(Joypad.Texture.BButton)
 	self:insertNewListOfButtons(self.rowOfButtons)
@@ -300,7 +312,7 @@ function OnScreenKeyboardPanel:createButton2(x, y, w, h, text, keyFunction, arg1
 --	button:setRepeatWhilePressed(function(self, button) keyFunction(self, arg1, arg2) end)
 	button.keyFunction = function(self) keyFunction(self.parent, arg1, arg2) end
 	button:setFont(UIFont.Large)
-	button.joypadTextureWH = 22
+	button.joypadTextureWH = JOYPAD_TEX_SIZE
 	self:addChild(button)
 	table.insert(self.rowOfButtons, button)
 	return button
@@ -395,11 +407,10 @@ end
 function ISOnScreenKeyboard:createChildren()
 	self.toggleButtonBG = { r = 0.5, g = 0.75, b = 1.0, a = 1 }
 
-	self.entry = OnScreenKeyboardEntry:new(0, 0, 100, FONT_HGT_LARGE + 2 * 2)
+	self.entry = OnScreenKeyboardEntry:new(0, 0, 100, KEY_HGT)
 	self:addChild(self.entry)
 
-	local mult = 2
-	self.buttonPadY = 4 * mult
+	self.buttonPadY = UI_BORDER_SPACING
 	self.keyPanel = OnScreenKeyboardPanel:new(0, self.entry:getBottom() + self.buttonPadY, self)
 	self:addChild(self.keyPanel)
 
@@ -624,18 +635,18 @@ function ISOnScreenKeyboard:setMultipleLine(multipleLine)
 --multipleLine = true
 	self.entry:setMultipleLine(multipleLine)
 	if multipleLine then
-		self.buttonEnter:setTitle("ENTER")
-		self.buttonEnter.chLower = "ENTER"
-		self.buttonEnter.chUpper = "ACCEPT"
+		self.buttonEnter:setTitle(getText("IGUI_Keyboard_Enter"))
+		self.buttonEnter.chLower = getText("IGUI_Keyboard_Enter")
+		self.buttonEnter.chUpper = getText("IGUI_Keyboard_Accept")
 		self.entry:setMaxLines(self.textEntryBox and self.textEntryBox:getMaxLines() or 10)
 --self.entry:setMaxLines(10)
 		self.entry:setHeight(FONT_HGT_LARGE * 8 + 2 * 2)
 	else
-		self.buttonEnter:setTitle("ACCEPT")
+		self.buttonEnter:setTitle(getText("IGUI_Keyboard_Accept"))
 		self.buttonEnter.chLower = nil
 		self.buttonEnter.chUpper = nil
 		self.entry:setMaxLines(1)
-		self.entry:setHeight(FONT_HGT_LARGE + 2 * 2)
+		self.entry:setHeight(KEY_HGT)
 	end
 	self.keyPanel:setY(self.entry:getBottom() + self.buttonPadY)
 	self:setHeight(self.keyPanel:getBottom())
