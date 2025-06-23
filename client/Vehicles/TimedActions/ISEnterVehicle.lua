@@ -24,6 +24,14 @@ function ISEnterVehicle:update()
 end
 
 function ISEnterVehicle:start()
+	if not isServer() then
+		local playerNum = self.character:getPlayerNum()
+		getCell():setDrag(nil, playerNum)
+		local contextMenu = getPlayerContextMenu(playerNum)
+		if contextMenu and contextMenu:isAnyVisible() then
+			contextMenu:hideAndChildren()
+		end
+	end
 	self.action:setBlockMovementEtc(true) -- ignore 'E' while entering
 	self.vehicle:enter(self.seat, self.character)
 	self.vehicle:playPassengerSound(self.seat, "enter")

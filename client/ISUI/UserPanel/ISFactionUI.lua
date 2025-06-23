@@ -426,7 +426,7 @@ function ISFactionUI:new(x, y, width, height, faction, player)
     ISFactionUI.instance = o;
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5};
     o.isOwner = faction:isOwner(player:getUsername())
-    o.isAdmin = player:getRole():haveCapability(Capability.FactionCheat)
+    o.isAdmin = player:getRole():hasCapability(Capability.FactionCheat)
     return o;
 end
 

@@ -64,12 +64,30 @@ function ISCloseVehicleDoor:complete()
         end
         self.part:getDoor():setOpen(false)
         self.vehicle:transmitPartDoor(self.part)
+        self:collapseLootWindow()
     else
        	print('no such vehicle id='..tostring(self.vehicle))
     end
 	triggerEvent("OnContainerUpdate")
 
 	return true
+end
+
+function ISCloseVehicleDoor:collapseLootWindow()
+    if isServer() then return end
+    if self.part:getId() ~= "TrunkDoor" and self.part:getId() ~= "DoorRear" then return end
+    local part = self.vehicle:getPartById("TruckBed")
+    if (part == nil) or (part:getItemContainer() == nil) then return end
+    local playerNum = self.character:getPlayerNum()
+    local loot = getPlayerLoot(playerNum)
+    if getJoypadData(playerNum) then
+        -- This can't happen if the inventory window is displayed
+    else
+        if not loot.isCollapsed and loot:isVisible() and not loot.pin and (loot.inventory == part:getItemContainer()) then
+            loot.isCollapsed = true
+            loot:setMaxDrawHeight(loot:titleBarHeight())
+        end
+    end
 end
 
 function ISCloseVehicleDoor:getDuration()

@@ -121,8 +121,12 @@ function ISVehicleSeatUI:prerender()
 			str = getText("IGUI_VehicleSeat_Self")
 		elseif self.vehicle:getCharacter(seat) then
 			str = getText("IGUI_VehicleSeat_Person")
+		--elseif self.vehicle:isSeatHoldingItems(seat) then
+		--	str = getText("IGUI_VehicleSeat_MoveItems")
+		--else
+		--	str = getText("IGUI_VehicleSeat_Items")
 		end
-	elseif playerSeat ~= -1 and  not self.vehicle:canSwitchSeat(playerSeat, seat) then
+	elseif playerSeat ~= -1 and not self.vehicle:canSwitchSeat(playerSeat, seat) then
 		str = getText("IGUI_VehicleSeat_ExitToSwitch")
 	end
 	if str then

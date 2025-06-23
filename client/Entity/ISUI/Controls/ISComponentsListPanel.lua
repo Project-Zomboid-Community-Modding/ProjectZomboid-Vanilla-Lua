@@ -139,6 +139,16 @@ function ISComponentsListPanel:update()
     ISPanel.update(self);
 end
 
+function ISComponentsListPanel:OnCloseWindow()
+    if self.panels then
+        for index,v in ipairs(self.panels) do
+            if v.panel and v.panel.OnCloseWindow then
+                v.panel:OnCloseWindow();
+            end
+        end
+    end
+end
+
 --************************************************************************--
 --** ISComponentsListPanel:new
 --**

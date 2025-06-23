@@ -91,7 +91,7 @@ function pzdebug(text, cat)
     LuaDebugOutput.instance:debug(text);
 end
 
-statCount = 1;
+local statCount = 1;
 DoTickDebugLuaDebugOutputWindow = function ()
 
     statCount = statCount + 1;

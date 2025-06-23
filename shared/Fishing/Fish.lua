@@ -67,7 +67,7 @@ function Fish:getFishByLure()
     local item = nil
     local trashFactor = FishSchoolManager.getInstance():getTrashAbundance(self.x, self.y)
     local fishNum = FishSchoolManager.getInstance():getFishAbundance(self.x, self.y)
-    if (fishNum == 0.0 and ZombRandFloat(0.0, 4.0) < 0.1 + self.fishingLvl / 20.0) or (fishNum ~= 0 and ZombRandFloat(0.0, 0.5 + self.fishingLvl / 20.0) > trashFactor) then
+    if (fishNum == 0.0 and ZombRandFloat(0.0, 4.0) < 0.1 + self.fishingLvl / 20.0) or (fishNum ~= 0 and ZombRandFloat(0.0 + self.fishingLvl / 30.0, 0.5 + self.fishingLvl / 20.0) > trashFactor) then
         local fishes = {}
         local baitFactorSum = 0
         for _, fishConfig in ipairs(Fishing.fishes) do
@@ -87,11 +87,11 @@ function Fish:getFishByLure()
         local sum = 0
         local fishNumber = ZombRandFloat(0.0, baitFactorSum)
         for _, fishConfig in ipairs(fishes) do
+            sum = sum + fishConfig.lure[self.lure]
             if sum >= fishNumber then
                 item = fishConfig
                 break
             end
-            sum = sum + fishConfig.lure[self.lure]
         end
 
         if item == nil then
@@ -112,13 +112,48 @@ function Fish:createFish(fishConfig)
     local fishSizeData = fishConfig:getFishSizeData(fishSmall, fishMedium, fishBig)
 
     local modelSuffix
-    if fishSizeData.size == "Big" then
+    if (fishSizeData.size == "Big") then
         modelSuffix = "_Big"
     elseif fishSizeData.size == "Medium" then
         modelSuffix = "_Medium"
     else
         modelSuffix = "_Little"
     end
+
+	-- TEMP NOTES WILL DELETE LATER
+	-- Placed after modelSuffix to avoid complications.
+	if fishSizeData.size == "Big" then
+		-- Can set up something more complex later. Roll a D20 for now!
+		local trophyRoll = ZombRand(20)
+		-- If successful roll, add extra length/weight to current fish.
+		if trophyRoll == 0 then
+			-- Add Length
+			if fishConfig.trophyLength then
+				local lengthDelta = fishConfig.trophyLength - fishSizeData.length
+				local newLength = fishSizeData.length + ZombRand(lengthDelta)
+				if newLength > fishConfig.maxLength then
+					fishSizeData.size = "Legendary"
+					fishSizeData.length = newLength
+				else
+					fishSizeData.length = fishConfig.maxLength
+				end
+			end
+			if fishConfig.trophyWeight then
+				-- Add Weight
+				local weightDelta = fishConfig.trophyWeight - fishSizeData.weight
+				local newWeight = fishSizeData.weight + ZombRandFloat(weightDelta)
+				if newWeight > fishConfig.maxWeight then
+					if newWeight > fishConfig.maxWeight then
+						fishSizeData.size = "Legendary"
+						fishSizeData.weight = newWeight
+					end
+					fishSizeData.weight = newWeight
+				else
+					fishSizeData.weight = fishConfig.maxWeight
+				end
+			end
+		end
+	end
 
     local item = instanceItem(fishConfig.itemType);
     local nutritionFactor = 2.2 * fishSizeData.weight / item:getActualWeight()

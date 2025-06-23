@@ -83,7 +83,7 @@ function ISUserPanelUI:create()
     self.serverOptionBtn:initialise();
     self.serverOptionBtn:instantiate();
     self.serverOptionBtn.borderColor = self.buttonBorderColor;
-    self.serverOptionBtn:setEnable(getPlayer():getRole():haveCapability(Capability.SeePublicServerOptions))
+    self.serverOptionBtn:setEnable(getPlayer():getRole():hasCapability(Capability.SeePublicServerOptions))
     self:addChild(self.serverOptionBtn);
     y = y + BUTTON_HGT + UI_BORDER_SPACING;
 

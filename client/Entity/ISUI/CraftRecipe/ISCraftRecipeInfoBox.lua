@@ -50,10 +50,11 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
     end
 
     if (isDebugEnabled() and debugSpam) or getSandboxOptions():isUnstableScriptNameSpam() then
-        self:addInfo("(DEBUG) " .. self.recipe:getName());
+        self:addInfo("Recipe Reports: " .. self.recipe:getName());
     end
 
-    local time = round(self.recipe:getTime()/10,2);
+    local time = round(self.recipe:getTime(self.player)/10,2);
+--     local time = round(self.recipe:getTime()/10,2);
     self:addInfoPair(getText("IGUI_CraftingWindow_CraftTime"), tostring(time).." " .. getText("IGUI_CraftingWindow_Seconds"));
 
     if self.recipe:isInHandCraftCraft() then
@@ -89,15 +90,19 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
         for i=0,self.recipe:getRequiredSkillCount()-1 do
             local requiredSkill = self.recipe:getRequiredSkill(i);
 
-            b = CraftRecipeManager.hasPlayerRequiredSkill(requiredSkill, self.player);
+            local hasSkill = CraftRecipeManager.hasPlayerRequiredSkill(requiredSkill, self.player);
             local key = getText("IGUI_CraftingWindow_Requires2").." ".. tostring(requiredSkill:getPerk():getName()).." "..getText("IGUI_CraftingWindow_Level").." " .. tostring(requiredSkill:getLevel());
 --             local key = "Has "..tostring(requiredSkill:getPerk():getName()).." "..tostring(requiredSkill:getLevel())..":";
             local val = getText("IGUI_CraftingWindow_Has") .. " "..tostring(self.player:getPerkLevel(requiredSkill:getPerk()));
 --             local val = b and "Yes" or "No ("..tostring(self.player:getPerkLevel(requiredSkill:getPerk()))..")";
-            self:addInfoPair(key, " ", b and colGood or colBad, true)
+            self:addInfoPair(key, " ", hasSkill and colGood or colBad, true)
 --             self:addInfoPair(key, val, b and colGood or colBad)
         end
     end
+
+    self:addInfoPair("XXXX", " ", colGood)
+
+
     if self.displayTags and self.recipe:getTags():size()>0 then
         local colTags = namedColorToTable("CornFlowerBlue");
         for i=0,self.recipe:getTags():size()-1 do

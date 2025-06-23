@@ -200,9 +200,11 @@ function ISEmoteRadialMenu.checkKey(key)
 	end
 	local queue = ISTimedActionQueue.queues[playerObj]
 	if queue and #queue.queue > 0 then
-		return false
-	end
-	return true
+		if playerObj:isCurrentlyBusy() then
+			return false;
+		end;
+	end;
+	return true;
 end
 
 function ISEmoteRadialMenu.onKeyPressed(key)

@@ -9,8 +9,31 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
+local TEXTURE_WIDTH = 0
+local TEXTURE_HEIGHT = 0
+
+local function setTextureWidth()
+    local size = getCore():getOptionSidebarSize()
+    if size == 6 then
+        size = getCore():getOptionFontSizeReal() - 1
+    end
+        TEXTURE_WIDTH = 48
+    if size == 2  then
+        TEXTURE_WIDTH = 64
+    elseif size == 3  then
+        TEXTURE_WIDTH = 80
+    elseif size == 4  then
+        TEXTURE_WIDTH = 96
+    elseif size == 5 then
+        TEXTURE_WIDTH = 128
+    end
+
+    TEXTURE_HEIGHT = TEXTURE_WIDTH * 0.75
+end
+
 
 function ISEquippedItem:prerender()
+    self:checkSidebarSizeOption()
 --	self:drawTexture(self.HandSecondaryTexture, -1, 50, 1, 1, 1, 1);
 
     if self.invBtn == nil then
@@ -26,13 +49,13 @@ function ISEquippedItem:prerender()
     else
         self.zoneBtn:setImage(self.zoneIcon);
     end
-    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "HandcraftWindow" then
+    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance then
         self.craftingBtn:setImage(self.craftingIconOn);
     else
         self.craftingBtn:setImage(self.craftingIcon);
     end
 
-    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "BuildWindow" then
+    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance then
         self.buildBtn:setImage(self.moveableIconBuildOn);
     else
         self.buildBtn:setImage(self.moveableIconBuild);
@@ -67,7 +90,7 @@ function ISEquippedItem:prerender()
         self.movablePopup:setVisible(false);
     else
         self.movableTooltip:setVisible(false);
-        self.movableBtn:setImage(self.movableIcon);
+        self.movableBtn:setImage(self.movableIconOff);
         self.movableBtn:setVisible(true);
         self.movablePopup:setVisible(false);
     end
@@ -77,7 +100,7 @@ function ISEquippedItem:prerender()
         if ISSearchManager.players[self.chr] and ISSearchManager.players[self.chr].isSearchMode then
             self.searchBtn:setImage(self.searchIconOn);
         else
-            self.searchBtn:setImage(self.searchIconOff);
+            self.searchBtn:setImage(self.searchIcon);
         end;
     end;
     ----
@@ -114,7 +137,7 @@ function ISEquippedItem:prerender()
     end
     
     if self.adminBtn then
-        local isVisible = self.chr:getRole():haveCapability(Capability.OpenAdminPanel)
+        local isVisible = self.chr:getRole():hasAdminTool()
         self.adminBtn:setVisible(isVisible)
         if not isVisible then
             if ISAdminPanelUI.instance then
@@ -356,11 +379,11 @@ function ISEquippedItem:render()
 
 	if primaryItem then
 		local item = primaryItem
-		if item:getTex() and item:getTex():getWidth() <= 32 and item:getTex():getHeight() <= 32 then
-			self:drawTextureScaled(item:getTex(),(self.handMainTexture:getWidth() / 2) - (item:getTex():getWidth() / 2),(self.handMainTexture:getHeight() / 2) - (item:getTex():getHeight() / 2),item:getTex():getWidth(), item:getTex():getHeight(), item:getA(),item:getR(),item:getG(),item:getB());
-		else
-			self:drawTextureScaledAspect(item:getTex(), self.handMainTexture:getWidth() / 2 - 16, self.handMainTexture:getHeight() / 2 - 16, 32, 32, item:getA(),item:getR(),item:getG(),item:getB());
-		end
+        if item:getTex() then
+            local scale = TEXTURE_WIDTH * 0.75
+            local hand = self.mainHand
+            self:drawTextureScaledAspect(item:getTex(), hand.x+(hand.width/2) - (scale/2), hand.y+(hand.height/2)-(scale/2), scale, scale, item:getA(),item:getR(),item:getG(),item:getB());
+        end
         -- This handles the condition star. commented out in case it's to be readded later
 --		if instanceof(item,"HandWeapon") then
 --			local n = math.floor(((item:getCondition() / item:getConditionMax()) * 5));
@@ -373,16 +396,12 @@ function ISEquippedItem:render()
 --		end
 	end
 	if secondaryItem then
-		local item = secondaryItem
-		local width = 24
-		local height = 24
-		if item:getTex() and item:getTex():getWidth() <= width and item:getTex():getHeight() <= height then
-			width = self.HandSecondaryTexture:getWidthOrig()
-			height = self.HandSecondaryTexture:getHeightOrig()
-			self:drawTextureScaled(item:getTex(), (width - item:getTex():getWidth()) / 2, 50 + (height - item:getTex():getHeight()) / 2, item:getTex():getWidth(), item:getTex():getHeight(), item:getA(),item:getR(),item:getG(),item:getB());
-		else
-			self:drawTextureScaledAspect(item:getTex(), 0 + (self.HandSecondaryTexture:getWidthOrig() - width) / 2, 50 + (self.HandSecondaryTexture:getHeightOrig() - height) / 2, width, height, item:getA(),item:getR(),item:getG(),item:getB());
-		end
+        local item = secondaryItem
+        if item:getTex() then
+            local scale = TEXTURE_HEIGHT * 0.75
+            local hand = self.offHand
+            self:drawTextureScaledAspect(item:getTex(), hand.x+(hand.width/2) - (scale/2), hand.y+(hand.height/2)-(scale/2), scale, scale, item:getA(),item:getR(),item:getG(),item:getB());
+        end
 	end
 
     if self.chr:getBodyDamage():getHealth() ~= self.previousHealth then
@@ -445,8 +464,8 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             focus = self.infopanel.panel:getActiveView()
         end
     elseif button.internal == "CRAFTING" then
-        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "HandcraftWindow" then
-            ISEntityUI.players[self.chr:getPlayerNum()].instance:close();
+        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance then
+            ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance:close();
         else
             if isKeyDown(Keyboard.KEY_LMENU) then
                 ISEntityUI.OpenHandcraftWindow(self.chr, nil, "*");
@@ -465,11 +484,11 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
 --             end
 --         end
     elseif button.internal == "ZONE" then
-        ISDesignationZonePanel.toggleZoneUI();
+        ISDesignationZonePanel.toggleZoneUI(playerNum);
         if getPlayerZoneUI(playerNum) and getPlayerZoneUI(playerNum):isVisible() then
             focus = getPlayerZoneUI(playerNum)
         end
-        ISAnimalZoneFirstInfo.showUI();
+        ISAnimalZoneFirstInfo.showUI(playerNum, false);
     elseif button.internal == "MAP" then
         ISWorldMap.ToggleWorldMap(self.chr:getPlayerNum())
     elseif button.internal == "DEBUG" and (getCore():getDebug() or ISDebugMenu.forceEnable) then
@@ -503,8 +522,8 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             modal:addToUIManager();
         end
     elseif button.internal == "BUILD" then
-        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].instance and ISEntityUI.players[self.chr:getPlayerNum()].instance.xuiStyleName == "BuildWindow" then
-            ISEntityUI.players[self.chr:getPlayerNum()].instance:close();
+        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance then
+            ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance:close();
         else
             ISEntityUI.OpenBuildWindow(self.chr, nil, "*");
         end
@@ -524,7 +543,7 @@ local lastId = 0;
 function ISEquippedItem:checkToolTip()
     local mx, my = getMouseX(), getMouseY();
     local mouseOverID, tooltiptext = -1, nil;
-    if self.mouseOverList ~= nil then
+    if self:isMouseOver() and self.mouseOverList ~= nil then
         for k,v in ipairs(self.mouseOverList) do
             if self:checkBounds(v.object, mx, my) then
                 mouseOverID = k;
@@ -553,7 +572,7 @@ end
 function ISEquippedItem:doToolTip( _state, _text )
     if _state then
         if self.toolTip == nil then
-            self.toolTip = ISToolTip:new(item);
+            self.toolTip = ISToolTip:new();
             self.toolTip:initialise();
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
@@ -591,58 +610,64 @@ function ISEquippedItem:checkBounds( _boundsItem, _x, _y)
 end
 
 function ISEquippedItem:new (x, y, width, height, chr)
-	local o = {}
-	--o.data = {}
-	o = ISPanel:new(x, y, width, height);
-	setmetatable(o, self)
-    self.__index = self
-	o.x = x;
-	o.y = y;
+    setTextureWidth()
+	local o = ISPanel.new(self, x, y, width, height);
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.backgroundColor = {r=0, g=0, b=0, a=0.5};
-	o.width = width;
-	o.height = height;
-    o.inventory = getPlayerInventory(chr:getPlayerNum());
-    o.loot = getPlayerLoot(chr:getPlayerNum());
-    o.infopanel = getPlayerInfoPanel(chr:getPlayerNum());
+    o.playerNum = chr:getPlayerNum();
+    o.inventory = getPlayerInventory(o.playerNum);
+    o.loot = getPlayerLoot(o.playerNum);
+    o.infopanel = getPlayerInfoPanel(o.playerNum);
     o.anchorLeft = true;
     o.chr = chr;
     o.safety = o.chr:getSafety()
 	o.anchorRight = false;
 	o.anchorTop = true;
 	o.anchorBottom = false;
-	o.handMainTexture = getTexture("media/ui/HandMain2_Off.png");
-	o.HandSecondaryTexture = getTexture("media/ui/HandSecondary2_Off.png");
-	o.inventoryTexture = getTexture("media/ui/Inventory2_Off.png");
-	o.inventoryTextureOn = getTexture("media/ui/Inventory2_On.png");
-    o.zoneIcon = getTexture("media/ui/Zone_Animal_Off.png");
-    o.zoneIconOn = getTexture("media/ui/Zone_Animal_On.png");
-    o.craftingIcon = getTexture("media/ui/Carpentry_Off.png");
-    o.craftingIconOn = getTexture("media/ui/Carpentry_On.png");
-	o.heartIcon = getTexture("media/ui/Heart2_Off.png");
-	o.heartIconOn = getTexture("media/ui/Heart2_On.png");
-    o.movableIcon = getTexture("media/ui/Furniture_Off2.png");
-    o.movableIconPickup = getTexture("media/ui/Furniture_Pickup.png");
-    o.movableIconPlace = getTexture("media/ui/Furniture_Place.png");
-    o.movableIconRotate = getTexture("media/ui/Furniture_Rotate.png");
-    o.moveableIconBuild = getTexture("media/ui/Build_Tool_Off.png");
-    o.moveableIconBuildOn = getTexture("media/ui/Build_Tool.png");
-    o.movableIconScrap = getTexture("media/ui/Furniture_Disassemble.png");
-    o.moveableIconRepair = getTexture("media/ui/Furniture_On2.png");
-    o.mapIconOff = getTexture("media/textures/worldMap/Map_Off.png");
-    o.mapIconOn = getTexture("media/textures/worldMap/Map_On.png");
-    o.debugIcon = getTexture("media/ui/Debug_Icon_Off.png");
-    o.debugIconOn = getTexture("media/ui/Debug_Icon_On.png");
-    o.clientIcon = getTexture("media/ui/Client_Icon_Off.png");
-    o.clientIconOn = getTexture("media/ui/Client_Icon_On.png");
-    o.adminIcon = getTexture("media/ui/Admin_Icon.png");
-    o.adminIconOn = getTexture("media/ui/Admin_Icon_On.png");
-    o.warActive = getTexture("media/ui/war_active.png");
-    o.warInactive = getTexture("media/ui/war_inactive.png");
+	o.handMainTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/HandMain_Off_" .. TEXTURE_WIDTH .. ".png");
+	o.HandSecondaryTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/HandSecondary_Off_" .. TEXTURE_WIDTH .. ".png");
+    --inventory
+	o.inventoryTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_Off_" .. TEXTURE_WIDTH .. ".png");
+	o.inventoryTextureOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_On_" .. TEXTURE_WIDTH .. ".png");
+    --health
+    o.heartIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Heart_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.heartIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Heart_On_" .. TEXTURE_WIDTH .. ".png");
+    --crafting
+    o.craftingIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Carpentry_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.craftingIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Carpentry_On_" .. TEXTURE_WIDTH .. ".png");
+    --building
+    o.moveableIconBuild = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Build_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.moveableIconBuildOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Build_On_" .. TEXTURE_WIDTH .. ".png");
+    --move furniture
+    o.movableIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_On_" .. TEXTURE_WIDTH .. ".png");
+    o.movableIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.movableIconPickup = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Pickup_" .. TEXTURE_WIDTH .. ".png");
+    o.movableIconPlace = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Place_" .. TEXTURE_WIDTH .. ".png");
+    o.movableIconRotate = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Rotate_" .. TEXTURE_WIDTH .. ".png");
+    o.movableIconScrap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Disassemble_" .. TEXTURE_WIDTH .. ".png");
+    o.moveableIconRepair = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Repair_" .. TEXTURE_WIDTH .. ".png");
+    --investigate area
+    o.searchIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Search_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.searchIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Search_On_" .. TEXTURE_WIDTH .. ".png");
+    --designated zones
+    o.zoneIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.zoneIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png");
+    --map
+    o.mapIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.mapIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png");
+    --debug
+    o.debugIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.debugIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_On_" .. TEXTURE_WIDTH .. ".png");
+
+    o.clientIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.clientIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_On_" .. TEXTURE_WIDTH .. ".png");
+    o.adminIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Admin_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.adminIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Admin_Icon_On_" .. TEXTURE_WIDTH .. ".png");
+    o.warActive = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Inactive_" .. TEXTURE_WIDTH .. ".png");
+    o.warInactive = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Active_" .. TEXTURE_WIDTH .. ".png");
     o.warSoon = getTexture("media/ui/war_soon.png");
     o.lockTexture = getTexture("media/ui/pvpicon_clock.png");
-    o.searchIconOn = getTexture("media/ui/Search_Icon_On.png");
-    o.searchIconOff = getTexture("media/ui/Search_Icon_Off.png");
+
     o.offTexture = getTexture("media/ui/pvpicon_on.png"); --getTexture("media/ui/SafetyOFF.png");
     o.onTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyON.png");
     o.disableTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyDISABLE.png");
@@ -654,6 +679,7 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.healthIconOscillatorStartLevel = 1.0;
     o.healthIconOscillatorStep = 0.0;
     o.previousHealth = 0.0;
+    o.sidebarSizeOption = getCore():getOptionSidebarSize()
     ISEquippedItem.instance = o;
 	return o;
 end
@@ -680,19 +706,26 @@ function ISEquippedItem:addMouseOverToolTipItem( _object, _displayString )
     end
 end
 
-function ISEquippedItem:initialise()
 
+
+function ISEquippedItem:initialise()
+    setTextureWidth()
 	ISPanel.initialise(self);
 
-    self.mainHand = ISImage:new((50 - 46) / 2, 0, self.handMainTexture:getWidthOrig(), self.handMainTexture:getHeight(), self.handMainTexture);
+    self.mainHand = ISImage:new(0, 0, TEXTURE_WIDTH, TEXTURE_WIDTH, self.handMainTexture);
+    self.mainHand.scaledWidth = TEXTURE_WIDTH;
+    self.mainHand.scaledHeight = TEXTURE_WIDTH;
     self.mainHand:initialise();
     self.mainHand.onMouseUp = self.onMouseUpPrimary;
     self.mainHand.onRightMouseUp = self.rightClickPrimary;
     self.mainHand.parent = self;
     self:addChild(self.mainHand);
+    local y = self.mainHand:getBottom() + UI_BORDER_SPACING + 5
 
     --    self:drawTexture(self.HandSecondaryTexture, -1, 50, 1, 1, 1, 1);
-    self.offHand = ISImage:new(0, 50, self.HandSecondaryTexture:getWidthOrig(), self.HandSecondaryTexture:getHeight(), self.HandSecondaryTexture);
+    self.offHand = ISImage:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, self.HandSecondaryTexture);
+    self.offHand.scaledWidth = TEXTURE_WIDTH;
+    self.offHand.scaledHeight = TEXTURE_HEIGHT;
     self.offHand:initialise();
     self.offHand.onMouseUp = self.onMouseUpSecondary;
     self.offHand.onRightMouseUp = self.rightClickSecondary;
@@ -700,86 +733,81 @@ function ISEquippedItem:initialise()
     self:addChild(self.offHand);
 
     self:setHeight(self.offHand:getBottom());
+    local y = self.offHand:getBottom() + UI_BORDER_SPACING + 5
 
     if self.chr:getPlayerNum() == 0 then
-        self:addMouseOverToolTipItem(createFakeObject(11,11,44,44), getText("IGUI_PrimaryTooltip") );
-        self:addMouseOverToolTipItem(createFakeObject(15,60,33,33), getText("IGUI_SecondaryTooltip") );
+        self:addMouseOverToolTipItem(createFakeObject(self.mainHand.x,self.mainHand.y,self.mainHand.width,self.mainHand.height), getText("IGUI_PrimaryTooltip") );
+        self:addMouseOverToolTipItem(createFakeObject(self.offHand.x,self.offHand.y,self.offHand.width,self.offHand.height), getText("IGUI_SecondaryTooltip") );
+
         -- inv btn
-        self.invBtn = ISButton:new(0, 90, self.inventoryTexture:getWidthOrig(), self.inventoryTexture:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        self.invBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
         self.invBtn:setImage(self.inventoryTexture);
         self.invBtn.internal = "INVENTORY";
         self.invBtn:initialise();
         self.invBtn:instantiate();
         self.invBtn:setDisplayBackground(false);
-
-        self.invBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.invBtn:ignoreWidthChange();
         self.invBtn:ignoreHeightChange();
         self:addChild(self.invBtn);
         self:addMouseOverToolTipItem(self.invBtn, getText("IGUI_InventoryTooltip") );
+
+        local y = self.invBtn:getBottom() + UI_BORDER_SPACING + 5
+
         -- health btn
-        self.healthBtn = ISButton:new(0, self.invBtn:getY() + self.inventoryTexture:getHeightOrig() + 5, self.heartIcon:getWidthOrig(), self.heartIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        self.healthBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
         self.healthBtn:setImage(self.heartIcon);
         self.healthBtn.internal = "HEALTH";
         self.healthBtn:initialise();
         self.healthBtn:instantiate();
         self.healthBtn:setDisplayBackground(false);
-
-        self.healthBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.healthBtn:ignoreWidthChange();
         self.healthBtn:ignoreHeightChange();
         self:addChild(self.healthBtn);
-        self:addMouseOverToolTipItem(self.healthBtn, getText("IGUI_HealthTooltip") );
+        self:addMouseOverToolTipItem(self.healthBtn, getText("IGUI_HealthTooltip"));
 
-        self.craftingBtn = ISButton:new(0, self.healthBtn:getY() + self.heartIcon:getHeightOrig() + 5, self.craftingIcon:getWidthOrig(), self.craftingIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        y = self.healthBtn:getBottom() + UI_BORDER_SPACING + 5
+
+        -- crafting button
+        self.craftingBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
         self.craftingBtn:setImage(self.craftingIcon);
         self.craftingBtn.internal = "CRAFTING";
         self.craftingBtn:initialise();
         self.craftingBtn:instantiate();
         self.craftingBtn:setDisplayBackground(false);
-
-        self.craftingBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.craftingBtn:ignoreWidthChange();
         self.craftingBtn:ignoreHeightChange();
         self:addChild(self.craftingBtn);
         self:addMouseOverToolTipItem(self.craftingBtn, getText("IGUI_CraftingTooltip") );
 
-        local y = self.craftingBtn:getBottom() + 5
+        y = self.craftingBtn:getBottom() + UI_BORDER_SPACING + 5
 
-        ----
-        self.buildBtn = ISButton:new(5, y, self.moveableIconBuild:getWidthOrig(), self.moveableIconBuild:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        -- building button
+        self.buildBtn = ISButton:new(5, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
         self.buildBtn:setImage(self.moveableIconBuild);
         self.buildBtn.internal = "BUILD";
         self.buildBtn:initialise();
         self.buildBtn:instantiate();
         self.buildBtn:setDisplayBackground(false);
-
-        self.buildBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.buildBtn:ignoreWidthChange();
         self.buildBtn:ignoreHeightChange();
         self:addChild(self.buildBtn);
         self:addMouseOverToolTipItem(self.buildBtn, getText("IGUI_Build_Name") );
 
-        y = self.buildBtn:getY() + self.moveableIconBuild:getHeightOrig() + 5
+        y = self.buildBtn:getBottom() + UI_BORDER_SPACING + 5
 
-        self.movableBtn = ISButton:new(0, y, self.movableIcon:getWidthOrig(), self.movableIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        -- moveable button
+        self.movableBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_WIDTH, "", self, ISEquippedItem.onOptionMouseDown);
         self.movableBtn:setImage(self.movableIcon);
         self.movableBtn.internal = "MOVABLE";
         self.movableBtn:initialise();
         self.movableBtn:instantiate();
         self.movableBtn:setDisplayBackground(false);
-
-        self.movableBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.movableBtn:ignoreWidthChange();
         self.movableBtn:ignoreHeightChange();
 
-        self.movableTooltip = ISMoveablesIconToolTip:new (0, self.movableBtn:getY(), 120, self.movableIcon:getHeightOrig()-6, self.movableBtn:getRight());
+        self.movableTooltip = ISMoveablesIconToolTip:new (0, self.movableBtn:getY(), 120, TEXTURE_WIDTH, self.movableBtn:getRight());
 
-        y = self.movableBtn:getY() + self.craftingIcon:getHeightOrig() + 5
-
-        local texWid = self.movableIconPickup:getWidthOrig()
-        local texHgt = self.movableIconPickup:getHeightOrig()
-        self.movablePopup = ISMoveablesIconPopup:new(10 + self.movableBtn:getX(), 10 + self.movableBtn:getY(), texWid * 6, texHgt)
+        self.movablePopup = ISMoveablesIconPopup:new(10 + self.movableBtn:getX(), 10 + self.movableBtn:getY(), TEXTURE_WIDTH * 6, TEXTURE_WIDTH)
         self.movablePopup.owner = self
         self.movablePopup:addToUIManager()
         self.movablePopup:setVisible(false)
@@ -787,41 +815,39 @@ function ISEquippedItem:initialise()
         self:addChild(self.movableTooltip);
         self:addChild(self.movableBtn);
         self:addMouseOverToolTipItem(self.movableBtn, getText("IGUI_MovableTooltip") );
-        ----
-        ----
-        self.searchBtn = ISButton:new(0, y, self.searchIconOff:getWidthOrig(), self.searchIconOff:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
-        self.searchBtn:setImage(self.searchIconOff);
+
+        y = self.movableBtn:getBottom() + UI_BORDER_SPACING + 5
+
+        -- search button
+        self.searchBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
+        self.searchBtn:setImage(self.searchIcon);
         self.searchBtn.internal = "SEARCH";
         self.searchBtn:initialise();
         self.searchBtn:instantiate();
         self.searchBtn:setDisplayBackground(false);
-
-        self.searchBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.searchBtn:ignoreWidthChange();
         self.searchBtn:ignoreHeightChange();
         self:addChild(self.searchBtn);
         self:addMouseOverToolTipItem(self.searchBtn, getText("UI_investigate_area_window_title") );
 
-        y = self.searchBtn:getY() + self.searchIconOff:getHeightOrig() + 5
-        ----
+        y = self.searchBtn:getBottom() + UI_BORDER_SPACING + 5
 
-        self.zoneBtn = ISButton:new(0, self.searchBtn:getY() + self.zoneIcon:getHeightOrig() + 5, self.zoneIcon:getWidthOrig(), self.zoneIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+        -- animal zone button
+        self.zoneBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
         self.zoneBtn:setImage(self.zoneIcon);
         self.zoneBtn.internal = "ZONE";
         self.zoneBtn:initialise();
         self.zoneBtn:instantiate();
         self.zoneBtn:setDisplayBackground(false);
-
-        self.zoneBtn.borderColor = {r=1, g=1, b=1, a=0.1};
         self.zoneBtn:ignoreWidthChange();
         self.zoneBtn:ignoreHeightChange();
         self:addChild(self.zoneBtn);
         self:addMouseOverToolTipItem(self.zoneBtn, getText("IGUI_Zone_Name") );
 
-        y = self.zoneBtn:getY() + self.zoneIcon:getHeightOrig() + 5
+        y = self.zoneBtn:getBottom() + UI_BORDER_SPACING + 5
 
         if ISWorldMap.IsAllowed() then
-            self.mapBtn = ISButton:new(0, y, self.mapIconOff:getWidthOrig(), self.mapIconOff:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.mapBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.mapBtn:setImage(self.mapIconOff);
             self.mapBtn.internal = "MAP";
             self.mapBtn:initialise();
@@ -832,30 +858,27 @@ function ISEquippedItem:initialise()
             self:addChild(self.mapBtn);
 
             if ISMiniMap.IsAllowed() then
-                self.mapPopup = ISMapPopup:new(10 + self.mapBtn:getX(), 10 + self.mapBtn:getY(), self.mapBtn.width * 2, self.mapBtn.height)
+                self.mapPopup = ISMapPopup:new(10 + self.mapBtn:getX(), 10 + self.mapBtn:getY(), TEXTURE_WIDTH * 2, TEXTURE_HEIGHT)
                 self.mapPopup.owner = self
                 self.mapPopup:addToUIManager()
                 self.mapPopup:setVisible(false)
             end
 
-            y = self.mapBtn:getBottom() + 5
+            y = self.mapBtn:getBottom() + UI_BORDER_SPACING + 5
         end
 
         if getCore():getDebug() or (ISDebugMenu.forceEnable and not isClient()) then
-            local texWid = self.debugIcon:getWidthOrig()
-            local texHgt = self.debugIcon:getHeightOrig()
-            self.debugBtn = ISButton:new(5, y, texWid, texHgt, "", self, ISEquippedItem.onOptionMouseDown);
+            self.debugBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.debugBtn:setImage(self.debugIcon);
             self.debugBtn.internal = "DEBUG";
             self.debugBtn:initialise();
             self.debugBtn:instantiate();
             self.debugBtn:setDisplayBackground(false);
-
-            self.debugBtn.borderColor = {r=1, g=1, b=1, a=0.1};
             self.debugBtn:ignoreWidthChange();
             self.debugBtn:ignoreHeightChange();
 
             self:addChild(self.debugBtn);
+            self:addMouseOverToolTipItem(self.debugBtn, getText("IGUI_DebugMenu"));
 
             self:setHeight(self.debugBtn:getBottom())
             y = self.debugBtn:getY() + self.debugIcon:getHeightOrig() + 5
@@ -884,10 +907,10 @@ function ISEquippedItem:initialise()
             self:addChild(self.radialIcon);
 
             self:setHeight(self.safetyBtn:getBottom())
-            y = self.safetyBtn:getBottom() + 5
+            y = self.safetyBtn:getBottom() + UI_BORDER_SPACING + 5
         end
         if isClient() then
-            self.clientBtn = ISButton:new(5, y, self.clientIcon:getWidthOrig(), self.clientIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.clientBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.clientBtn:setImage(self.clientIcon);
             self.clientBtn.internal = "USERPANEL";
             self.clientBtn:initialise();
@@ -901,7 +924,7 @@ function ISEquippedItem:initialise()
             self:setHeight(self.clientBtn:getBottom())
             y = y + self.clientIcon:getHeightOrig() + 5
 
-            self.adminBtn = ISButton:new(5, y, self.adminIcon:getWidthOrig(), self.adminIcon:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.adminBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.adminBtn:setImage(self.adminIcon);
             self.adminBtn.internal = "ADMINPANEL";
             self.adminBtn:initialise();
@@ -917,7 +940,7 @@ function ISEquippedItem:initialise()
 
             self.warManagerBtnX = 5
             self.warManagerBtnY = y
-            self.warManagerBtn = ISButton:new(5, y, self.warActive:getWidthOrig(), self.warActive:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
+            self.warManagerBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.warManagerBtn:setImage(self.warSoon);
             self.warManagerBtn.internal = "WARMANAGERPANEL";
             self.warManagerBtn:initialise();
@@ -1023,6 +1046,17 @@ function ISEquippedItem:removeFromUIManager()
 	ISPanel.removeFromUIManager(self)
 end
 
+function ISEquippedItem:checkSidebarSizeOption()
+    local playerData = getPlayerData(self.playerNum)
+    if playerData == nil then return end
+    if playerData.equipped ~= self then return end
+    if self.sidebarSizeOption == getCore():getOptionSidebarSize() then return end
+    self.sidebarSizeOption = getCore():getOptionSidebarSize()
+    self:setVisible(false)
+    self:removeFromUIManager()
+    playerData.equipped = launchEquippedItem(self.chr)
+end
+
 -----
 
 ISMoveablesIconPopup = ISPanel:derive("ISMoveablesIconPopup")
@@ -1042,9 +1076,9 @@ function ISMoveablesIconPopup:render()
     local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
     self:drawRect(0, 0, self.width, self.height + fontHgt + 2 * 2, 0.80, 0, 0, 0)
 
-    local index = math.floor(self:getMouseX() / 50)
+    local index = math.floor(self:getMouseX() / TEXTURE_WIDTH)
     if index > 0 or mode then
-        self:drawRect(index * 50, 0, 50, self.height, 0.15, 1, 1, 1)
+        self:drawRect(index * TEXTURE_WIDTH, 0, TEXTURE_WIDTH, self.height, 0.15, 1, 1, 1)
     end
     
     local texts = { getText("IGUI_Exit"), getText("IGUI_Pickup"), getText("IGUI_Place"), getText("IGUI_Rotate"), getText("IGUI_Scrap"), getText("IGUI_Repair") }
@@ -1052,42 +1086,42 @@ function ISMoveablesIconPopup:render()
         texts[1] = ""
     end
     local text = texts[index+1]
-    self:drawText(text, 2, self.height + 2, 1.0, 0.85, 0.05, 1.0, UIFont.Small)
+    self:drawText(text, UI_BORDER_SPACING, self.height + 2, 1.0, 0.85, 0.05, 1.0, UIFont.Small)
 
     local x = 0
     local y = 0
     local tex = self.owner.movableIcon
-    self:drawTexture(tex, x, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x, y+((TEXTURE_WIDTH-TEXTURE_HEIGHT)/2), 1, 1, 1, 1)
 
     if mode == "pickup" then
-        self:drawRectBorder(x + 50, 0, 50, self.height, 0.5, 1, 1, 1)
+        self:drawRectBorder(x + TEXTURE_WIDTH, 0, TEXTURE_WIDTH, self.height, 0.5, 1, 1, 1)
     end
     tex = self.owner.movableIconPickup
-    self:drawTexture(tex, x + 50, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x + TEXTURE_WIDTH, y, 1, 1, 1, 1)
 
     if mode == "place" then
-        self:drawRectBorder(x + 50 * 2, 0, 50, self.height, 0.5, 1, 1, 1)
+        self:drawRectBorder(x + TEXTURE_WIDTH * 2, 0, TEXTURE_WIDTH, self.height, 0.5, 1, 1, 1)
     end
     tex = self.owner.movableIconPlace
-    self:drawTexture(tex, x + 50 * 2, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x + TEXTURE_WIDTH * 2, y, 1, 1, 1, 1)
 
     if mode == "rotate" then
-        self:drawRectBorder(x + 50 * 3, 0, 50, self.height, 0.5, 1, 1, 1)
+        self:drawRectBorder(x + TEXTURE_WIDTH * 3, 0, TEXTURE_WIDTH, self.height, 0.5, 1, 1, 1)
     end
     tex = self.owner.movableIconRotate
-    self:drawTexture(tex, x + 50 * 3, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x + TEXTURE_WIDTH * 3, y, 1, 1, 1, 1)
 
     if mode == "scrap" then
-        self:drawRectBorder(x + 50 * 4, 0, 50, self.height, 0.5, 1, 1, 1)
+        self:drawRectBorder(x + TEXTURE_WIDTH * 4, 0, TEXTURE_WIDTH, self.height, 0.5, 1, 1, 1)
     end
     tex = self.owner.movableIconScrap
-    self:drawTexture(tex, x + 50 * 4, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x + TEXTURE_WIDTH * 4, y, 1, 1, 1, 1)
 
     if mode == "repair" then
-        self:drawRectBorder(x + 50 * 5, 0, 50, self.height, 0.5, 1, 1, 1)
+        self:drawRectBorder(x + TEXTURE_WIDTH * 5, 0, TEXTURE_WIDTH, self.height, 0.5, 1, 1, 1)
     end
     tex = self.owner.moveableIconRepair
-    self:drawTexture(tex, x + 50 * 5, y, 1, 1, 1, 1)
+    self:drawTexture(tex, x + TEXTURE_WIDTH * 5, y, 1, 1, 1, 1)
 end
 
 function ISMoveablesIconPopup:onMouseDown(x, y)
@@ -1101,7 +1135,7 @@ function ISMoveablesIconPopup:onMouseUp(x, y)
         cursor = getCell():getDrag(playerID)
     end
 
-    local index = math.floor(x / 50)
+    local index = math.floor(x / TEXTURE_WIDTH)
     local mode = nil
     if index == 0 then
         if cursor then
@@ -1129,6 +1163,7 @@ function ISMoveablesIconPopup:onMouseUp(x, y)
 end
 
 function ISMoveablesIconPopup:new (x, y, width, height)
+    setTextureWidth()
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -1144,21 +1179,33 @@ function ISMapPopup:prerender()
 end
 
 function ISMapPopup:render()
-    self:drawRect(0, 0, self.width, self.height, 0.80, 0, 0, 0)
+    local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
 
-    local index = math.floor(self:getMouseX() / 50)
+    local boxWidth = math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ViewMap")) + UI_BORDER_SPACING*2,
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ToggleMinimap")) + UI_BORDER_SPACING*2,
+            self.width
+    )
+
+    self:drawRect(0, 0, boxWidth, self.height + fontHgt + 2 * 2, 0.80, 0, 0, 0)
+
+    local index = math.floor(self:getMouseX() / TEXTURE_WIDTH)
     if index > 0 then
-        self:drawRect(index * 50, 0, 50, self.height, 0.15, 1, 1, 1)
+        self:drawRect(index * TEXTURE_WIDTH, 0, TEXTURE_WIDTH, self.height, 0.15, 1, 1, 1)
     end
+
+    local texts = { getText("IGUI_ViewMap"), getText("IGUI_ToggleMinimap")}
+    local text = texts[index+1]
+    self:drawText(text, UI_BORDER_SPACING, self.height + 2, 1.0, 0.85, 0.05, 1.0, UIFont.Small)
 
     local x = 0
     local y = 0
 
     local tex = self.texMap
-    self:drawTexture(tex, x + (50 - tex:getWidthOrig()) / 2, y + (self.height - tex:getHeightOrig()) / 2, 1, 1, 1, 1)
+    self:drawTextureScaled(tex, x, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
 
     tex = self.texMiniMap
-    self:drawTexture(tex, x + 50 + (50 - tex:getWidthOrig()) / 2, y + (self.height - tex:getHeightOrig()) / 2, 1, 1, 1, 1)
+    self:drawTextureScaled(tex, x + TEXTURE_WIDTH, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
 end
 
 function ISMapPopup:onMouseDown(x, y)
@@ -1168,7 +1215,7 @@ end
 function ISMapPopup:onMouseUp(x, y)
     self:setVisible(false)
     local playerNum = self.owner.chr:getPlayerNum()
-    local index = math.floor(x / 50)
+    local index = math.floor(x / TEXTURE_WIDTH)
     local mode = nil
     if index == 0 then
         ISWorldMap.ToggleWorldMap(playerNum)
@@ -1179,9 +1226,12 @@ function ISMapPopup:onMouseUp(x, y)
 end
 
 function ISMapPopup:new(x, y, width, height)
+    setTextureWidth()
+
     local o = ISPanel.new(self, x, y, width, height)
-    o.texMap = getTexture("media/textures/worldMap/Map_On.png")
-    o.texMiniMap = getTexture("media/textures/worldMap/Map_On.png")
+    o.texMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
+    o.texMiniMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
+
     return o
 end
 

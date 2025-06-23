@@ -27,7 +27,7 @@ function STrapSystem:initSystem()
 	-- Specify GlobalObject fields that should be saved.
 	self.system:setObjectModDataKeys({
 		'trapType', 'trapBait', 'trapBaitDay', 'lastUpdate', 'baitAmountMulti', 'animal', 'animalHour',
-		'openSprite', 'closedSprite', 'zone', 'player', 'trappingSkill', 'destroyed'})
+		'openSprite', 'closedSprite', 'zone', 'zones', 'player', 'trappingSkill', 'destroyed', 'animalAliveHour'})
 
 	self:convertOldModData()
 end

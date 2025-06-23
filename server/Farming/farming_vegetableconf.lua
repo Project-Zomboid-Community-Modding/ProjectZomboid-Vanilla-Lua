@@ -382,6 +382,17 @@ function badPlant(water, waterMax, diseaseLvl, plant, nextGrowing, updateNbOfGro
     plant.health = plant.health - (4 * badMultiplier);
 end
 
+-- spurcival - helper function used by VerifyAllCraftRecipesAreLearnable
+function doesSeasonRecipeExist(recipeName)
+	for typeOfSeed,props in pairs(farming_vegetableconf.props) do
+		if props.seasonRecipe == recipeName then
+			return true;
+		end
+	end
+	
+	return false;
+end
+
 farming_vegetableconf.props = {};
 
 farming_vegetableconf.sprite = {}

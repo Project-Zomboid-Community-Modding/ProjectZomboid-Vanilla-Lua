@@ -1,6 +1,7 @@
 ISSelectCursor = ISBuildingObject:derive("ISSelectCursor")
 
 function ISSelectCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISSelectCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	getCell():setDrag(nil, self.player)
 	self.ui:onSquareSelected(getWorld():getCell():getGridSquare(x, y, z))
 end
@@ -28,5 +29,6 @@ function ISSelectCursor:new(character, ui, onSquareSelected)
 	o.player = character:getPlayerNum()
 	o.noNeedHammer = true
 	o.skipBuildAction = true
+	showDebugInfoInChat("Cursor New \'ISSelectCursor\'")
 	return o
 end

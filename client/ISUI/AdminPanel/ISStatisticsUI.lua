@@ -125,6 +125,7 @@ function ISStatisticsPanel:renderStatistics()
     if ISStatisticsUI.instance.showPing then
         entries = 4 --include title row
         self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
         y = self:drawRow("Ping", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
         self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
         y = self:drawRow("Last :", lC, "", cC, statisticsData.clientLastPing, sC, y, dR, dG, dB, dA, true)
@@ -137,6 +138,7 @@ function ISStatisticsPanel:renderStatistics()
     if ISStatisticsUI.instance.showPing then
         entries = 6 --include title row
         self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --
         y = self:drawRow("Packet Ping", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
         self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
         y = self:drawRow("Last :", lC, "", cC, statisticsData.serverPingLast, sC, y, dR, dG, dB, dA, true)
@@ -151,6 +153,7 @@ function ISStatisticsPanel:renderStatistics()
     if ISStatisticsUI.instance.showTime then
         entries = 4 --include title row
         self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --
         y = self:drawRow("Time", lC, "", cC, "", sC, y, hR, hG, hB, hA, false)
         self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
         y = self:drawRow("Client :", lC, "", cC, statisticsData.clientTime, sC, y, dR, dG, dB, dA, true)
@@ -167,6 +170,19 @@ function ISStatisticsPanel:renderStatistics()
         y = self:drawRow("Players", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
         self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
         y = self:drawRow("Connected :", lC, statisticsData.clientPlayers, cC, statisticsData.serverPlayers, sC, y, dR, dG, dB, dA, true)
+        y = y + UI_BORDER_SPACING
+    end
+
+    --ANIMALS
+    if ISStatisticsUI.instance.showAnimals then
+        entries = 3 --include title row
+        self:drawRect(lC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --first vertical line
+        self:drawRect(cC + UI_BORDER_SPACING, y-TEXT_OFFSET, 1, BUTTON_HGT*entries, lA, lR, lG, lB); --second vertical line
+        y = self:drawRow("Animals", lC, "Client", cC, "Server", sC, y, hR, hG, hB, hA, false)
+        self:drawRect(0, y-TEXT_OFFSET, width, 1, lA, lR, lG, lB); --horizontal line between header
+        y = self:drawRow("Objects :", lC, statisticsData.clientAnimalObjects, cC, statisticsData.serverAnimalObjects, sC, y, dR, dG, dB, dA, true)
+        y = self:drawRow("Instances :", lC, statisticsData.clientAnimalInstances, cC, statisticsData.serverAnimalInstances, sC, y, dR, dG, dB, dA, false)
+        y = self:drawRow("Owned :", lC, statisticsData.clientAnimalOwned, cC, statisticsData.serverAnimalOwned, sC, y, dR, dG, dB, dA, true)
         y = y + UI_BORDER_SPACING
     end
 
@@ -285,19 +301,20 @@ function ISStatisticsUI:createChildren()
 
     local y = self:titleBarHeight() + UI_BORDER_SPACING
     local tickBoxWidth = 70
+    local tickBoxHeight = getTextManager():getFontHeight(UIFont.Small)
     local width = self.width - SCROLLBAR;
 
-    self.tickBoxLeft = ISTickBox:new(UI_BORDER_SPACING + 10, y, tickBoxWidth, BUTTON_HGT, "Settings left", self, self.onTickedLeft)
+    self.tickBoxLeft = ISTickBox:new(UI_BORDER_SPACING + 10, y, tickBoxWidth, tickBoxHeight, "Settings left", self, self.onTickedLeft)
     self.tickBoxLeft.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBoxLeft:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxLeft)
 
-    self.tickBoxCenter = ISTickBox:new(width/2 - tickBoxWidth/2 + 10, y, tickBoxWidth, BUTTON_HGT, "Settings center", self, self.onTickedCenter)
+    self.tickBoxCenter = ISTickBox:new(width/2 - tickBoxWidth/2 + 10, y, tickBoxWidth, tickBoxHeight, "Settings center", self, self.onTickedCenter)
     self.tickBoxCenter.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBoxCenter:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxCenter)
 
-    self.tickBoxRight = ISTickBox:new(width - tickBoxWidth - 10, y, tickBoxWidth, BUTTON_HGT, "Settings right", self, self.onTickedRight)
+    self.tickBoxRight = ISTickBox:new(width - tickBoxWidth - 10, y, tickBoxWidth, tickBoxHeight, "Settings right", self, self.onTickedRight)
     self.tickBoxRight.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBoxRight:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxRight)
@@ -340,7 +357,7 @@ function ISStatisticsUI:createChildren()
     n = self.tickBoxRight:addOption("Chhunks")
     self.tickBoxRight:setSelected(n, self.showChunks)
 
-    y = y + BUTTON_HGT * 4 + UI_BORDER_SPACING * 2
+    y = y + tickBoxHeight * 4 + UI_BORDER_SPACING * 2
 
     self.panel = ISStatisticsPanel:new(0, self:titleBarHeight() + y, self.width, self.height-self:titleBarHeight()-self:resizeWidgetHeight()-y)
     self.panel.anchorBottom = true
@@ -379,7 +396,7 @@ end
 
 function ISStatisticsUI:new(x, y, player)
     local width = 280
-    local height = 810
+    local height = 980
     local o = ISCollapsableWindow.new(self, x, y, width, height)
     o.playerNum = player:getPlayerNum()
     if y == 0 then
@@ -407,7 +424,7 @@ function ISStatisticsUI:new(x, y, player)
     o.showVOIP = false
     o.showPing = false
     o.showTime = false
-    o.showVersion = true
+    o.showVersion = false
     o.showPlayers = true
     o.showAnimals = true
     o.showZombies = true

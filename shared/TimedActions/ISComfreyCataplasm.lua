@@ -106,7 +106,7 @@ function ISComfreyCataplasm:new(character, otherPlayer, item, bodyPart)
     o.bandagedPlayerY = otherPlayer:getY();
     o.maxTime = o:getDuration();
 
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
+    if isMultiplayer() and character:getRole():hasCapability(Capability.CanMedicalCheat) then
         o.doctorLevel = 10;
     end
 

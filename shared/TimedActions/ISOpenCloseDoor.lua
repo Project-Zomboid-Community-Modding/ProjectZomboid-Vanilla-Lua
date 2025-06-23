@@ -47,6 +47,7 @@ function ISOpenCloseDoor:new(character, item)
 	o.stopOnRun = false;
 	o.stopOnAim = false;
 	o.ignoreHandsWounds = true;
+	o.retriggerLastAction = true; -- this is used when we for example eat something and open a door, the eat action is removed, but we store it in IsoPlayer.getTimedActionToRetrigger(), here we say to the queue "relaunch the previous action (eat)", it'll be relaunched at the delta it was saved
 	o.maxTime = o:getDuration();
 	return o;
 end

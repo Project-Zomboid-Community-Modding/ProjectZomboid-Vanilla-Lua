@@ -33,13 +33,16 @@ function ISHutchGrabEgg:start()
     self:setActionAnim("Loot")
     self.character:SetVariable("LootPosition", "Low")
     self.character:reportEvent("EventLootItem")
+    self.sound = self.character:playSound("GrabEggs")
 end
 
 function ISHutchGrabEgg:stop()
+    self:stopSound()
     ISBaseTimedAction.stop(self);
 end
 
 function ISHutchGrabEgg:perform()
+    self:stopSound()
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self);
 end
@@ -72,6 +75,12 @@ function ISHutchGrabEgg:getDuration()
         return -1;
     end
     return (self.nestbox:getEggsNb() * self.timePerEgg) + 5
+end
+
+function ISHutchGrabEgg:stopSound()
+    if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+        self.character:stopOrTriggerSound(self.sound);
+    end
 end
 
 function ISHutchGrabEgg:new(character, nestbox, hutch)

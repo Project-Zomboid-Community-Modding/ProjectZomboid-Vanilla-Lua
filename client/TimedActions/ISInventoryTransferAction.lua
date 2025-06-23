@@ -11,6 +11,13 @@ function ISInventoryTransferAction:isValid()
 	if not self.item then
 		return false;
     end
+    -- fix for players being able to replace items into containers they shouldnt
+
+
+    if not ISInventoryPaneContextMenu.getContainers(self.character):contains(self.destContainer) then
+        return false;
+    end
+
     -- fix for items that were consumed in crafting still being put back into their container
 	if self.item:getIsCraftingConsumed() then
 		return false;
@@ -79,11 +86,13 @@ function ISInventoryTransferAction:isValid()
     if self.srcContainer == self.destContainer then return false; end
 
     if self.destContainer:getType()=="floor" then
+		--[[
         if instanceof(self.item, "Moveable") and self.item:getSpriteGrid()==nil then
             if not self.item:CanBeDroppedOnFloor() then
                 return false;
             end
         end
+        ]]--
         if self:getNotFullFloorSquare(self.item) == nil then
             return false;
         end
@@ -107,25 +116,28 @@ function ISInventoryTransferAction:isValid()
 end
 
 function ISInventoryTransferAction:update()
-    -- players that aren't desensitized gain mild stress and unhappiness from stripping items from corpses
+
+    -- players that aren't desensitized gain mild unhappiness from stripping items from corpses
     if self.character and ( not self.character:getTraits():contains("Desensitized") ) and self.srcContainer and self.srcContainer:getType() and ( self.srcContainer:getType() == "inventoryfemale" or self.srcContainer:getType() == "inventorymale" ) then
         local rate =  getGameTime():getMultiplier()
         if self.character:getTraits():contains("Cowardly") then rate = rate*2
---             if self.character:getTraits():contains("Cowardly") or self.character:getTraits():contains("Hemophobic") then rate = rate*2
         elseif self.character:getTraits():contains("Brave") then rate = rate/2 end
-        local stats = self.character:getStats()
-        stats:setStress(stats:getStress() + rate/10000);
+--         local stats = self.character:getStats()
+--         stats:setStress(stats:getStress() + rate/10000);
         local bodyDamage = self.character:getBodyDamage()
         bodyDamage:setUnhappynessLevel(bodyDamage:getUnhappynessLevel()  + rate/100);
     end
+
+    -- players that have fear of blood gain mild stress from handling bloody items
     if self.character and self.character:getTraits():contains("Hemophobic") and self.item and self.item:getBloodLevel() > 0 then
         local rate =  self.item:getBloodLevelAdjustedLow() * getGameTime():getMultiplier()
         local stats = self.character:getStats()
-        stats:setStress(stats:getStress() + rate/10000);
+        stats:setStress(stats:getBasicStress() + rate/10000);
     end
+
 	-- reopen the correct container
 	if self.selectedContainer then
-		if self.selectedContainer:getParent() then
+		if self.selectedContainer:getParent() and not self.character:isSittingOnFurniture() then
 			self.character:faceThisObject(self.selectedContainer:getParent())
 		end
 		if self.character:shouldBeTurning() then
@@ -148,7 +160,7 @@ function ISInventoryTransferAction:update()
 		if isItemTransactionDone(self.transactionId) then
 			self:forceComplete();
 		elseif isItemTransactionRejected(self.transactionId) then
-			self:forceStop();
+			self:forceComplete();
 		end
 
         if self.maxTime == -1 then

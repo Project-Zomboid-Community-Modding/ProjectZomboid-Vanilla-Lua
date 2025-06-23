@@ -465,6 +465,7 @@ function NewGameScreen:create()
         challenge.desc = info.description or "NO DESCRIPTION";
         challenge.mode = "Challenge";
         challenge.thumb = info.image;
+        challenge.video = info.video;
         self.mainPanel:addChild(challenge);
         challenge:setOnMouseDoubleClick(self, NewGameScreen.dblClickChallenge);
         challenge.onMouseDown = NewGameScreen.onMenuItemMouseDown;
@@ -760,7 +761,14 @@ function NewGameScreen:render()
     local descRectHeight = self.mainPanel:getHeight()
 
     local text = ""
-    if selectedItem.thumb then
+    if selectedItem.video then
+        local w = 1920
+        local h = 1080
+        local div = w/(self.richText:getWidth() - UI_BORDER_SPACING*2 - 2)
+        local w2 = w / div
+        local h2 = h / div
+        text = "<VIDEOCENTRE:".. selectedItem.video ..","..w..","..h..","..w2..","..h2..">\n"
+    elseif selectedItem.thumb then
         local thumb = getTexture(selectedItem.thumb)
         local thumbH = thumb:getHeight()
         local thumbW = thumb:getWidth()

@@ -380,19 +380,19 @@ end
 CraftRecipeCode.GenericFixing = {}
 
 function CraftRecipeCode.GenericFixing.OnCreate(craftRecipeData, player)
-    CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"))
+    CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"), skill, false)
 end
 
 CraftRecipeCode.GenericBetterFixing = {}
 
 function CraftRecipeCode.GenericBetterFixing.OnCreate(craftRecipeData, player)
-    CraftRecipeCode.GenericFixer(craftRecipeData, player, 2, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"))
+    CraftRecipeCode.GenericFixer(craftRecipeData, player, 2, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"), skill, false)
 end
 
 CraftRecipeCode.GenericEvenBetterFixing = {}
 
 function CraftRecipeCode.GenericEvenBetterFixing.OnCreate(craftRecipeData, player)
-    CraftRecipeCode.GenericFixer(craftRecipeData, player, 3, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"))
+    CraftRecipeCode.GenericFixer(craftRecipeData, player, 3, craftRecipeData:getFirstInputItemWithFlag("IsDamaged"), skill, false)
 end
 
 function CraftRecipeCode.GenericFixer(craftRecipeData, player, factor, item, skill, head)
@@ -425,7 +425,11 @@ function CraftRecipeCode.GenericFixer(craftRecipeData, player, factor, item, ski
     failChance = math.max(failChance, 0)
 
     if ZombRand(100) <= failChance then
-        item:setCondition(item:getCondition() - 1);
+        if head then
+            item:setHeadCondition(item:getHeadCondition() - 1);
+        else
+            item:setCondition(item:getCondition() - 1);
+        end
         item:syncItemFields()
         return
     end

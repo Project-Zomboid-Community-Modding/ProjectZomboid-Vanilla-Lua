@@ -33,14 +33,42 @@ function ISKillAnimal:stop()
 	end
 end
 
+function ISKillAnimal:canKillAnimal()
+	if not self.character then
+		print("!canKillAnimal: self.character is null");
+		return false;
+	end
+
+	if not self.animal then
+		print("!canKillAnimal: self.animal is null");
+		return false;
+	end
+
+	if self.character:DistToSquared(self.animal:getX(), self.animal:getY()) > 2 * 2 then
+		print("!canKillAnimal: DistToSquared > 2 * 2");
+		return false;
+	end
+
+	return true;
+end
+
 function ISKillAnimal:perform()
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
-	self:kill();
+	local isSinglePlayerMode = (not isClient() and not isServer());
+
+	if isSinglePlayerMode then
+		self:kill();
+	end
 end
 
 function ISKillAnimal:complete()
-	self:kill();
+	if isServer() and not self:canKillAnimal() then
+		return false;
+	end
+
+	sendServerCommand('animal', 'kill', { id = self.animal:getOnlineID() });
+
 	return true
 end
 

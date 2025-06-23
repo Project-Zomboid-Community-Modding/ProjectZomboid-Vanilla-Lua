@@ -9,6 +9,7 @@ ISWoodenContainer = ISBuildingObject:derive("ISWoodenContainer");
 --**
 --************************************************************************--
 function ISWoodenContainer:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenContainer\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -45,6 +46,7 @@ function ISWoodenContainer:new(sprite, northSprite)
 	o.canBeAlwaysPlaced = true;
     o.canBeLockedByPadlock = true;
 	o.buildLow = true;
+	showDebugInfoInChat("Cursor New \'ISWoodenContainer\'")
 	return o;
 end
 

@@ -165,9 +165,9 @@ function ISVehicleMenu.showRadialMenu(playerObj)
 		local window = windowPart:getWindow()
 		if window:isOpenable() and not window:isDestroyed() then
 			if window:isOpen() then
-				option = menu:addSlice(getText("ContextMenu_Close_window"), getTexture("media/ui/vehicles/vehicle_windowCLOSED.png"), ISVehiclePartMenu.onOpenCloseWindow, playerObj, windowPart, false)
+				local option = menu:addSlice(getText("ContextMenu_Close_window"), getTexture("media/ui/vehicles/vehicle_windowCLOSED.png"), ISVehiclePartMenu.onOpenCloseWindow, playerObj, windowPart, false)
 			else
-				option = menu:addSlice(getText("ContextMenu_Open_window"), getTexture("media/ui/vehicles/vehicle_windowOPEN.png"), ISVehiclePartMenu.onOpenCloseWindow, playerObj, windowPart, true)
+				local option = menu:addSlice(getText("ContextMenu_Open_window"), getTexture("media/ui/vehicles/vehicle_windowOPEN.png"), ISVehiclePartMenu.onOpenCloseWindow, playerObj, windowPart, true)
 			end
 		end
 	end
@@ -1082,7 +1082,8 @@ function ISVehicleMenu.FillPartMenu(playerIndex, context, slice, vehicle)
 			local fuelStation = ISVehiclePartMenu.getNearbyFuelPump(vehicle)
 			if fuelStation then
 				local square = fuelStation:getSquare();
-				if square and ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (getSandboxOptions():getElecShutModifier() > -1 and (getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30) < getSandboxOptions():getElecShutModifier())) then
+				if square and ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (square:hasGridPower())) then
+-- 				if square and ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (getSandboxOptions():getElecShutModifier() > -1 and (getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30) < getSandboxOptions():getElecShutModifier())) then
 					if square and part:getContainerContentAmount() < part:getContainerCapacity() then
 						if slice then
 							slice:addSlice(getText("ContextMenu_VehicleRefuelFromPump"), getTexture("media/ui/vehicles/vehicle_refuel_from_pump.png"), ISVehiclePartMenu.onPumpGasoline, playerObj, part)
@@ -1102,7 +1103,7 @@ function ISVehicleMenu.onSwitchSeat(playerObj, seatTo)
 	if math.abs(vehicle:getCurrentSpeedKmHour()) > 0.8 and vehicle:isDriver(playerObj) then ISTimedActionQueue.add(ISStopVehicle:new(playerObj)) end
 	ISTimedActionQueue.add(ISSwitchVehicleSeat:new(playerObj, seatTo))
 	local doorPart = vehicle:getPassengerDoor(seatTo)
-    if doorPart:getDoor():isOpen() then
+    if doorPart and doorPart:getDoor():isOpen() then
         ISTimedActionQueue.add(ISCloseVehicleDoor:new(playerObj, vehicle, doorPart))
     end
 end
@@ -1116,7 +1117,14 @@ end
 function ISVehicleMenu.onToggleTrunkLocked(playerObj)
 	local vehicle = playerObj:getVehicle();
 	if not vehicle then return end
-	sendClientCommand(playerObj, 'vehicle', 'setTrunkLocked', { locked = not vehicle:isTrunkLocked() });
+	local trunkDoor = vehicle:getPartById("TrunkDoor") or vehicle:getPartById("DoorRear") or vehicle:getPartById("TrunkDoorOpened")
+	if not trunkDoor or not trunkDoor:getDoor() then return end
+	if trunkDoor:getDoor():isLocked() then
+		ISTimedActionQueue.add(ISUnlockVehicleDoor:new(playerObj, trunkDoor))
+	else
+		ISTimedActionQueue.add(ISLockVehicleDoor:new(playerObj, trunkDoor))
+	end
+-- 	sendClientCommand(playerObj, 'vehicle', 'setTrunkLocked', { locked = not vehicle:isTrunkLocked() });
 end
 
 function ISVehicleMenu.onToggleHeater(playerObj)
@@ -1188,20 +1196,25 @@ function ISVehicleMenu.onSleep(playerObj, vehicle)
 		return;
 	end
 	local playerNum = playerObj:getPlayerNum()
-	local modal = ISModalDialog:new(0,0, 250, 150, getText("IGUI_ConfirmSleep"), true, nil, ISVehicleMenu.onConfirmSleep, playerNum, playerNum, nil);
-	modal:initialise()
-	modal:addToUIManager()
+	local data = getPlayerData(playerNum)
+	if not data.vehicleSleepModal then
+		data.vehicleSleepModal = ISModalDialog:new(0,0, 250, 150, getText("IGUI_ConfirmSleep"), true, nil, ISVehicleMenu.onConfirmSleep, playerNum, playerNum, nil);
+		data.vehicleSleepModal:initialise()
+		data.vehicleSleepModal:addToUIManager()
+	end
 	if JoypadState.players[playerNum+1] then
-		setJoypadFocus(playerNum, modal)
+		setJoypadFocus(playerNum, data.vehicleSleepModal)
 	end
 end
 
 function ISVehicleMenu.onConfirmSleep(this, button, player, bed)
-	if button.internal == "YES" then
+	if button.internal == "YES" and getSpecificPlayer(player):getVehicle() then
 		getSpecificPlayer(player):setVariable("ExerciseStarted", false);
 		getSpecificPlayer(player):setVariable("ExerciseEnded", true);
 		ISWorldObjectContextMenu.onSleepWalkToComplete(player, nil)
 	end
+	local data = getPlayerData(player)
+	data.vehicleSleepModal = nil
 end
 
 function ISVehicleMenu.onOpenDoor(playerObj, part)
@@ -1292,75 +1305,57 @@ function ISVehicleMenu.getBestSwitchSeatExit(playerObj, vehicle, seat)
 	return getClosestSeat(playerObj, vehicle, seats)
 end
 
-function ISVehicleMenu.moveItemsOnSeat(seat, newSeat, playerObj, moveThem, itemListIndex)
---	if moveThem then print("moving item on seat from", seat:getId(), "to", newSeat:getId()) end
-	local cont = seat:getItemContainer()
-	local minWeight = cont:getCapacity()/4
-	local itemList = {};
-	local actualWeight = newSeat:getItemContainer():getCapacityWeight();
-	for i=itemListIndex,cont:getItems():size() -1 do
-		-- stop if there's enough room for a player
-		if (cont:getCapacityWeight() - actualWeight) <= minWeight then
-			break;
+function ISVehicleMenu.transferSeatItems(player, vehicle, part, otherPart, desiredWeight, testOnly)
+	if part:getItemContainer():isEmpty() then return 0 end
+	local remainingSpace =  otherPart:getItemContainer():getCapacity() - otherPart:getItemContainer():getContentsWeight()
+	local currentWeight = part:getItemContainer():getContentsWeight()
+	local movedWeight = 0
+	desiredWeight = desiredWeight or 0
+	for i=0, part:getItemContainer():getItems():size() -1 do
+		if remainingSpace <= 0 or currentWeight - movedWeight <= desiredWeight then
+			break
 		end
-		local item = cont:getItems():get(i);
-		actualWeight = actualWeight + item:getUnequippedWeight();
-		if newSeat:getItemContainer():hasRoomFor(playerObj, actualWeight) then
-			table.insert(itemList, item);
-		else
-			break;
+		local item = part:getItemContainer():getItems():get(i)
+		if item:getUnequippedWeight() <= remainingSpace then
+			remainingSpace = remainingSpace - item:getUnequippedWeight()
+			movedWeight = movedWeight + item:getUnequippedWeight()
+			if not testOnly then
+				ISTimedActionQueue.add(ISInventoryTransferAction:new(player, item, part:getItemContainer(), otherPart:getItemContainer(), 10))
+			end
 		end
 	end
-	if moveThem then
-		for i,v in ipairs(itemList) do
-			ISTimedActionQueue.add(ISInventoryTransferAction:new (playerObj, v, seat:getItemContainer(), newSeat:getItemContainer(), 10));
---			seat:getItemContainer():Remove(v);
---			newSeat:getItemContainer():AddItem(v);
-		end
-	end	
-	-- used if there's enough room for a player
-	if (cont:getCapacityWeight() - actualWeight) <= minWeight then
-		-- ISVehicleMenu.processEnter(playerObj, seat:getVehicle(), seat:getContainerSeatNumber());
-		return -1;
-	end
-	return #itemList + itemListIndex;
-end
-
-function ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, seatTo, itemListIndex)
-	local currentSeat = vehicle:getPartForSeatContainer(seat);
-	local cont = currentSeat:getItemContainer();
-	local minWeight = cont:getWeight()/4;
-	if cont:getItems():isEmpty() then return 0; end
-	local newSeat = vehicle:getPartById(seatTo);
-	if not newSeat or newSeat:getInventoryItem() == nil then return 0; end
-	if newSeat == currentSeat or (vehicle:getCharacter(newSeat:getContainerSeatNumber()) and playerObj ~= vehicle:getCharacter(newSeat:getContainerSeatNumber())) then return 0; end
-	if newSeat then
-		local movedItems = ISVehicleMenu.moveItemsOnSeat(currentSeat, newSeat, playerObj, moveThem, itemListIndex);
-		if doEnter and (movedItems == cont:getItems():size() or movedItems == cont:getItems():isEmpty() or movedItems == -1) then
-			ISVehicleMenu.processEnter(playerObj, vehicle, seat);
-			return movedItems;
-		end
-		return movedItems;
-	end
-	return 0;
+	return movedWeight
 end
 
 function ISVehicleMenu.moveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter)
-	-- if items are on the seats we'll try to move them to another empty seat, first rear seat then middle, then front left seats, never on driver's seat
-	-- first rear seats
-	local currentSeat = vehicle:getPartForSeatContainer(seat);
-	local cont = currentSeat:getItemContainer()
-	local movedItems = ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, "SeatRearLeft", 0);
-	if movedItems == cont:getItems():size() or movedItems == -1 then return true; end
-	movedItems = ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, "SeatRearRight", movedItems);
-	if movedItems == cont:getItems():size() or movedItems == -1 then return true; end
-	movedItems = ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, "SeatFrontRight", movedItems);
-	if movedItems == cont:getItems():size() or movedItems == -1 then return true; end
-	movedItems = ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, "SeatMiddleLeft", movedItems);
-	if movedItems == cont:getItems():size() or movedItems == -1 then return true; end
-	movedItems = ISVehicleMenu.tryMoveItemsFromSeat(playerObj, vehicle, seat, moveThem, doEnter, "SeatMiddleRight", movedItems);
-	if movedItems == cont:getItems():size() or movedItems == -1 then return true; end
-	return false;
+	local seats = vehicle:getAllSeatParts()
+	local desiredWeight = seats:get(seat):getItemContainer():getCapacity() * 0.25
+	local currentWeight = seats:get(seat):getItemContainer():getContentsWeight()
+	local trunk = vehicle:getPartIndex("TruckBed")
+	if trunk >= 0 and vehicle:canAccessContainer(trunk, playerObj) then
+		currentWeight = currentWeight - ISVehicleMenu.transferSeatItems(playerObj, vehicle, seats:get(seat), vehicle:getPartById("TruckBed"), desiredWeight, not moveThem)
+		if currentWeight <= desiredWeight then
+			if doEnter then
+				ISVehicleMenu.processEnter(playerObj, vehicle, seat);
+			end
+			return true
+		end
+	end
+
+	local nextSeat = (seat + 1) % seats:size()
+	while (nextSeat ~= seat) do
+		if nextSeat ~= 0 and seats:get(nextSeat) and vehicle:canSwitchSeat(seat, nextSeat) and not vehicle:getCharacter(nextSeat) then
+			currentWeight = currentWeight - ISVehicleMenu.transferSeatItems(playerObj, vehicle, seats:get(seat), seats:get(nextSeat), desiredWeight, not moveThem)
+			if currentWeight <= desiredWeight then
+				if doEnter then
+					ISVehicleMenu.processEnter(playerObj, vehicle, seat);
+				end
+				return true
+			end
+		end
+		nextSeat = (nextSeat + 1) % seats:size()
+	end
+	return false
 end
 
 function ISVehicleMenu.onEnter(playerObj, vehicle, seat)

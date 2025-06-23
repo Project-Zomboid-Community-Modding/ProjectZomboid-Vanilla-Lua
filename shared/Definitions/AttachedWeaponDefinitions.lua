@@ -200,6 +200,7 @@ AttachedWeaponDefinitions.knifeBack_Special = {
 		"Base.LongStick_Broken",
         "Base.SharpBone_Long",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -268,6 +269,7 @@ AttachedWeaponDefinitions.knifeLeftLeg_Special = {
 		"Base.LongStick_Broken",
         "Base.SharpBone_Long",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -336,6 +338,7 @@ AttachedWeaponDefinitions.knifeRightLeg_Special = {
 		"Base.LongStick_Broken",
         "Base.SharpBone_Long",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -405,6 +408,7 @@ AttachedWeaponDefinitions.knifeShoulder_Special = {
 		"Base.LongStick_Broken",
         "Base.SharpBone_Long",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -500,6 +504,7 @@ AttachedWeaponDefinitions.knifeStomach_Special = {
 		"Base.LongStick_Broken",
         "Base.SharpBone_Long",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -531,6 +536,7 @@ AttachedWeaponDefinitions.weaponInStomach = {
 		"Base.MetalworkingChisel",
 		"Base.Nightstick",
 		"Base.PipeWrench",
+		"Base.SheetMetalSnips",
 		"Base.SteelBar",
 		"Base.SteelBarHalf",
 		"Base.SteelRodHalf",
@@ -650,7 +656,7 @@ AttachedWeaponDefinitions.handgunHolsterDetective = {
 	},
 }
 AttachedWeaponDefinitions.handgunHolsterArmy = {
-	id = "handgunHolsterPolice",
+	id = "handgunHolsterArmy",
 	chance = 50,
 	outfit = {"ArmyCamoDesert", "ArmyCamoGreen", "ArmyInstructor",  "ArmyServiceUniform", },
 	weaponLocation =  {"Holster Right"},
@@ -720,6 +726,47 @@ AttachedWeaponDefinitions.handgunHolsterGhillie = {
 	weapons = {
 		"Base.Pistol",
 		"Base.Revolver_Long",
+	},
+}
+
+AttachedWeaponDefinitions.handgunHolsterWildWest = {
+	id = "handgunHolsterWildWest",
+	chance = 50,
+	outfit = { "CostumeWildWestLawman", "CostumeWildWestOutlaw"},
+	weaponLocation =  {"Holster Right"},
+	bloodLocations = nil,
+	addHoles = false,
+	daySurvived = 0,
+	ensureItem = "Base.HolsterSimple_Brown",
+	weapons = {
+		"Base.Revolver_CapGun",
+	},
+}
+
+AttachedWeaponDefinitions.handgunHolsterLeftWildWest = {
+	id = "handgunHolsterLeftWildWest",
+	chance = 50,
+	outfit = { "CostumeWildWestLawman", "CostumeWildWestOutlaw"},
+	weaponLocation =  {"Holster Left"},
+	bloodLocations = nil,
+	addHoles = false,
+	daySurvived = 0,
+	ensureItem = "Base.HolsterDouble",
+	weapons = {
+		"Base.Revolver_CapGun",
+	},
+}
+
+AttachedWeaponDefinitions.rifleWildWest = {
+	id = "shotgunPolice",
+	chance = 30,
+	outfit = { "CostumeWildWestLawman", "CostumeWildWestOutlaw"},
+	weaponLocation =  {"Rifle On Back"},
+	bloodLocations = nil,
+	addHoles = false,
+	daySurvived = 0,
+	weapons = {
+		"Base.Rifle_CapGun",
 	},
 }
 
@@ -1739,6 +1786,7 @@ AttachedWeaponDefinitions.knivesBelt_Bandit = {
 		"Base.SteakKnife",
 		"Base.SwitchKnife",
         "Base.Toothbrush_Shiv",
+		"Base.Screwdriver_Improvised",
 	},
 }
 
@@ -1763,6 +1811,7 @@ AttachedWeaponDefinitions.knivesBelt_Early = {
 		"Base.KnifeShiv",
         "Base.Toothbrush_Shiv",
 		"Base.FightingKnife",
+		"Base.Screwdriver_Improvised",
 
 -- 		-- more outre weapons
 -- 		"Base.BaseballBat_Broken",
@@ -1803,6 +1852,7 @@ AttachedWeaponDefinitions.knivesBelt_Mid = {
 		-- more outre weapons
 -- 		"Base.BaseballBat_Broken_Nails",
 		"Base.CrudeKnife",
+		"Base.Screwdriver_Improvised",
 -- 		"Base.Handle_Nails",
 -- 		"Base.Branch_Broken_Nails",
 -- 		"Base.LongHandle_Broken_Nails",
@@ -1845,6 +1895,7 @@ AttachedWeaponDefinitions.knivesBelt_Late = {
 		"Base.Machete_Crude",
 		"Base.SharpBone_Long",
 		"Base.ShortSword_Scrap",
+		"Base.Screwdriver_Improvised",
 -- 		"Base.ShortBat_RailSpike",
 -- 		"Base.ShortBat_RakeHead",
 -- 		"Base.SpikedShortBat",
@@ -2392,10 +2443,22 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Dean = {
 	},
 }
 
+AttachedWeaponDefinitions.attachedWeaponCustomOutfit.CostumeWildWestLawman = {
+	chance = 50;
+	maxitem = 3;
+	weapons = {
+		AttachedWeaponDefinitions.handgunHolsterWildWest,
+		AttachedWeaponDefinitions.handgunHolsterLeftWildWest,
+		AttachedWeaponDefinitions.rifleWildWest,
+	},
+}
+
+AttachedWeaponDefinitions.attachedWeaponCustomOutfit.CostumeWildWestOutlaw = AttachedWeaponDefinitions.attachedWeaponCustomOutfit.CostumeWildWestLawman
+
 -- consolitdated the back weapons to one table so have less paradoxes
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit = {
 	chance = 50;
-	maxitem = 2;
+	maxitem = 1;
 	weapons = {
 		AttachedWeaponDefinitions.meleeInBack_Bandit,
 		AttachedWeaponDefinitions.hammerBelt_Bandit,
@@ -2404,14 +2467,14 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit = {
 -- 		AttachedWeaponDefinitions.bladeInBack,
 -- 		AttachedWeaponDefinitions.gunOnBackBandit,
 -- 		AttachedWeaponDefinitions.survivalistBedroll,
--- 		AttachedWeaponDefinitions.handgunHolsterShoulder,
+-- 		AttachedWeaponDefinitions.handgunHolsterShoulder,W
 -- 		AttachedWeaponDefinitions.melee2InBack,
 	},
 }
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit_Early = {
-	chance = 60;
-	maxitem = 3;
+	chance = 50;
+	maxitem = 2;
 	weapons = {
 		AttachedWeaponDefinitions.meleeInBack_Early,
 		AttachedWeaponDefinitions.hammerBelt_Early,
@@ -2425,8 +2488,8 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit_Early = {
 }
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit_Mid = {
-	chance = 70;
-	maxitem = 4;
+	chance = 60;
+	maxitem = 3;
 	weapons = {
 		AttachedWeaponDefinitions.meleeInBack_Mid,
 		AttachedWeaponDefinitions.handgunHolster,
@@ -2439,8 +2502,8 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit_Mid = {
 }
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Bandit_Late = {
-	chance = 80;
-	maxitem = 5;
+	chance = 70;
+	maxitem = 4;
 	weapons = {
 -- 		AttachedWeaponDefinitions.gunOnBackBandit,
 		AttachedWeaponDefinitions.handgunHolster,
@@ -2470,7 +2533,7 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist = {
 }
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Mid = {
-	chance = 60;
+	chance = 50;
 	maxitem = 4;
 	weapons = {
 		AttachedWeaponDefinitions.meleeInBackBag_Mid,
@@ -2487,7 +2550,7 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Mid = {
 }
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Late = {
-	chance = 70;
+	chance = 60;
 	maxitem = 5;
 	weapons = {
 		AttachedWeaponDefinitions.meleeInBackBag_Late,
@@ -2517,8 +2580,6 @@ AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist02_Late = Attach
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist03_Late = AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Late
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist04_Late = AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Late
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist05_Late = AttachedWeaponDefinitions.attachedWeaponCustomOutfit.Survivalist_Late
-
-
 
 AttachedWeaponDefinitions.attachedWeaponCustomOutfit.ArmorTest_Gladiator = {
 	chance = 80;

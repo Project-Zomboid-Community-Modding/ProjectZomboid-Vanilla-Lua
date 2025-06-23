@@ -6,7 +6,7 @@
 ISFluidUtil = {};
 
 ISFluidUtil.isoPanelWalkToDist = 5; -- if player not within this range will walkto
-ISFluidUtil.isoMaxPanelDist = 10;   -- used to close fluid panel if outside this range
+ISFluidUtil.isoMaxPanelDist = 3;   -- used to close fluid panel if outside this range
 
 -- Validates containers for UI purposes
 function ISFluidUtil.validateContainer(_container)

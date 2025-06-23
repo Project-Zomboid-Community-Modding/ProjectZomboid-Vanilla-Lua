@@ -59,12 +59,13 @@ function ISBuildingObject:setDragNilAfterPlace(nilAfter)
 end
 
 function ISBuildingObject.onDestroy(thump, player)
-	if thump:getContainer() and thump:getContainer():getItems() then
-		local items = thump:getContainer():getItems()
-		for i=0,items:size()-1 do
-			thump:getSquare():AddWorldInventoryItem(items:get(i), 0.0, 0.0, 0.0)
-		end
-	end
+    thump:dumpContentsInSquare();
+-- 	if thump:getContainer() and thump:getContainer():getItems() then
+-- 		local items = thump:getContainer():getItems()
+-- 		for i=0,items:size()-1 do
+-- 			thump:getSquare():AddWorldInventoryItem(items:get(i), 0.0, 0.0, 0.0)
+-- 		end
+-- 	end
 	if camping.isTentObject(thump) then
 		camping.destroyTent(thump)
 		return
@@ -203,7 +204,8 @@ function ISBuildingObject:tryBuild(x, y, z)
 		-- before the action completes, such as rotating it with the 'Rotate Building' key.
 		local selfCopy = copyTable(self)
 		setmetatable(selfCopy, getmetatable(self, true))
-		buildAction = ISBuildAction:new(playerObj, selfCopy, x, y, z, self.north, self:getSprite(), maxTime);
+		local containers = ISInventoryPaneContextMenu.getContainers(playerObj);
+		buildAction = ISBuildAction:new(playerObj, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, containers);
 	end
 		
 	if self.buildPanelLogic then
@@ -215,7 +217,7 @@ function ISBuildingObject:tryBuild(x, y, z)
 	if ISBuildMenu.cheat or self:walkTo(x, y, z) or ((self.Type == "fishingNet") and (self:isValid(square, true))) then
 		if self.dragNilAfterPlace then
 			getCell():setDrag(nil, self.player)
-		elseif self.blockAfterPlace then
+		elseif self.blockAfterPlace and not ISBuildMenu.cheat then
 			self.blockBuild = true;
 		end
 
@@ -279,6 +281,7 @@ function ISBuildingObject:tryBuild(x, y, z)
 		end
 	else
 		print("ISBuildingObject -> tryBuild - cannot walkTo target")
+		self:onActionComplete();
 	end
 end
 
@@ -286,6 +289,13 @@ function ISBuildingObject:onActionComplete()
 	if self.buildPanelLogic ~= nil then
 		print("ISBuildingObject -> onActionComplete - refresh BuildPanel")
 		self.buildPanelLogic:stopCraftAction();
+
+		-- Additional update to actualize the available items
+		if isClient() and ISBuildWindow.instance then
+			self.buildPanelLogic:updateFloorContainer();
+			ISBuildWindow.instance:updateContainers();
+			--self:updateModData();
+		end
 	end
 end
 
@@ -340,17 +350,47 @@ end
 function ISBuildingObject:onTimedActionStop(action)
 end
 
-function ISBuildingObject:haveMaterial(square)
-	if ISBuildMenu.cheat then
-		return true;
+
+function ISBuildingObject:updateModData()
+	local items = self.buildPanelLogic:getRecipeData():getAllRecordedConsumedItems();
+	for i=0, items:size()-1 do
+		local usedItem = items:get(i)
+		local key = "need:" .. usedItem:getFullType()
+
+		if self.modData[key] == nil then
+			self.modData[key] = 0
+		end
+		self.modData[key] = self.modData[key] + 1
+
+		if usedItem:getFullType() == "Base.Doorknob" and usedItem:getKeyId() ~= -1 then
+			self.modData["keyId"] = usedItem:getKeyId()
+		end
 	end
+end
+
+function ISBuildingObject:haveMaterial(square)
 	local groundItems = buildUtil.getMaterialOnGround(square);
 	local groundItemCounts = buildUtil.getMaterialOnGroundCounts(groundItems)
 	local groundItemUses = buildUtil.getMaterialOnGroundUses(groundItems)
     local dragItem = self
 	local modData = dragItem.modData;
-	local playerObj = getSpecificPlayer(dragItem.player)
+	local playerObj = self.character;
+    if playerObj == nil and dragItem ~= nil then
+        playerObj = getSpecificPlayer(dragItem.player)
+    end
 	local playerInv = playerObj:getInventory()
+
+    local cheat = playerObj:isBuildCheat()
+    if self.logic and self.logic:isCraftCheat() then
+        cheat = true;
+    end
+    if ISBuildMenu and ISBuildMenu.cheat then
+        cheat = true;
+    end
+    if cheat then
+        return true;
+    end
+
 	if modData ~= nil then
 		for index, value in pairs(modData) do
 			if luautils.stringStarts(index, "need:") then
@@ -443,6 +483,7 @@ function ISBuildingObject:init()
 	self.canBePlastered = false;
 	self.hoppable = false;
     self.isThumpable = true;
+    self.isFloor = false;
 	self.modData = {};
 end
 

@@ -51,6 +51,11 @@ function DebugToolstrip:onButtonResume()
     doLuaDebuggerAction("Resume")
 end
 
+function DebugToolstrip:onComboFont()
+    local value = self.comboFont:getOptionData(self.comboFont.selected)
+    getCore():setOptionCodeFontSize(value)
+end
+
 function DebugToolstrip:prerender()
     if self.width ~= getCore():getScreenWidth() then
         self:setWidth(getCore():getScreenWidth())
@@ -97,6 +102,22 @@ function DebugToolstrip:createChildren()
     self.buttonResume:setImage(getTexture("media/ui/debug/DebuggerResume.png"))
     self.buttonResume:forceImageSize(BUTTON_HGT, BUTTON_HGT)
     self:addChild(self.buttonResume)
+
+    local comboHgt = BUTTON_HGT
+	self.comboFont = ISComboBox:new(self.width - 24 - 100, (self.height - comboHgt) / 2, 100, BUTTON_HGT, self, DebugToolstrip.onComboFont)
+	self.comboFont.anchorLeft = false
+	self.comboFont.anchorRight = true
+	self.comboFont.font = UIFont.Small
+	self.comboFont:initialise()
+	self.comboFont:instantiate()
+	self:addChild(self.comboFont)
+
+	self.comboFont:addOptionWithData("Small", "Small")
+	self.comboFont:addOptionWithData("Medium", "Medium")
+	self.comboFont:addOptionWithData("Large", "Large")
+	self.comboFont:setWidthToOptions()
+	self.comboFont:setX(self.width - 24 - self.comboFont.width)
+	self.comboFont:selectData(getCore():getOptionCodeFontSize())
 end
 
 function DebugToolstrip:new (x, y, width, height)

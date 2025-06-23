@@ -9,6 +9,7 @@ ISDoubleDoor = ISBuildingObject:derive("ISDoubleDoor");
 --**
 --************************************************************************--
 function ISDoubleDoor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISDoubleDoor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	local square = cell:getGridSquare(x, y, z);
 	local xa, ya = self:getSquare2Pos(square, north)
@@ -113,6 +114,7 @@ function ISDoubleDoor:new(spriteOriginal, spriteIndex)
 	o.thumpDmg = 5;
 	o.name = "Double Door";
 	o.isWallLike = true
+	showDebugInfoInChat("Cursor New \'ISDoubleDoor\'")
 	return o;
 end
 

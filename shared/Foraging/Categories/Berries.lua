@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateBerryDefs()
 	local items = {
@@ -72,7 +73,9 @@ local function generateBerryDefs()
 	};
 	for _, spawnTable in pairs(items) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
+			forageSystem.addForageDef(
+				itemName,
+				{
 				type = itemFullName,
 				minCount = 1,
 				maxCount = 4,
@@ -80,11 +83,15 @@ local function generateBerryDefs()
 				snowChance = -10,
 				categories = { "Berries" },
 				zones = {
-					Forest      = spawnTable.chance,
-					DeepForest  = spawnTable.chance,
-					Vegitation  = spawnTable.chance,
-					FarmLand    = spawnTable.chance,
-					Farm        = spawnTable.chance,
+					BirchForest 	= spawnTable.chance,
+					DeepForest  	= spawnTable.chance,
+					FarmLand    	= spawnTable.chance,
+					ForagingNav 	= spawnTable.chance,
+					Forest      	= spawnTable.chance,
+					OrganicForest	= spawnTable.chance,
+					PHForest  		= spawnTable.chance,
+					PRForest  		= spawnTable.chance,
+					Vegitation  	= spawnTable.chance,
 				},
 				months = spawnTable.months,
 				bonusMonths = { 5, 6, 7 },
@@ -95,9 +102,9 @@ local function generateBerryDefs()
 				poisonPowerMax = spawnTable.poisonPowerMax,
 				poisonDetectionLevel = spawnTable.poisonDetectionLevel,
 				altWorldTexture = forageSystem.worldSprites.berryBushes,
-				doIsoMarkerObject = true,
 				itemSizeModifier = 1.0,
-			};
+				}
+			);
 		end;
 	end;
 end

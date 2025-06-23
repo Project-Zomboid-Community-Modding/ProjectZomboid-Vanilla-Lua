@@ -30,7 +30,7 @@ function ISWidgetIngredientsOutputs:createChildren()
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
     local fontHeight = -1; -- <=0 sets label initial height to font
-    self.outputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Creates"), 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
+    self.outputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Creates"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     self.outputsLabel:initialise();
     self.outputsLabel:instantiate();
     self:addChild(self.outputsLabel);
@@ -228,8 +228,11 @@ function ISWidgetIngredientsOutputs:new (x, y, width, height, player, logic) -- 
     o.margin = UI_BORDER_SPACING;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-    o.itemSpacing = 24;
-    o.itemMargin = 24;
+
+    local fontScale = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+
+    o.itemSpacing = 10 * fontScale;
+    o.itemMargin = 10 * fontScale;
     o.itemNameMaxLines = 3;
 
     o.doToolTip = true;

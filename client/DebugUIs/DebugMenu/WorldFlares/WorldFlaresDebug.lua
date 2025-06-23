@@ -53,7 +53,7 @@ function WorldFlaresDebug:createChildren()
     y, obj = ISDebugUtils.addTickBox(self,{},x,y,BUTTON_HGT,BUTTON_HGT,"Debug range",tickOptions,WorldFlaresDebug.onTicked);
     y = y + UI_BORDER_SPACING;
 
-    _, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_Lifetime")..":", UIFont.Small, true);
+    local _, obj = ISDebugUtils.addLabel(self, {}, x, y, getText("IGUI_WorldFlares_Lifetime")..":", UIFont.Small, true);
     local boxWidth = columnWidth-obj.width - UI_BORDER_SPACING
     y, self.entryBoxLifeTime = ISDebugUtils.addTextEntryBox(self, {}, "60", obj:getRight() + UI_BORDER_SPACING, y, boxWidth, BUTTON_HGT);
     self.entryBoxLifeTime:setOnlyNumbers(true);

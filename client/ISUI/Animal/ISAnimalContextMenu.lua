@@ -40,7 +40,7 @@ AnimalContextMenu.doFeedFromHandMenu = function(playerObj, animal, context)
         return;
     end
     local foods = playerObj:getInventory():getAllEvalRecurse(function(item)
-        if item:getFluidContainer() and item:getFluidContainer():isPureFluid(Fluid.Get(animal:getBreed():getMilkType())) then
+        if item:getFluidContainer() and (item:getFluidContainer():isPureFluid(Fluid.Get(animal:getBreed():getMilkType())) or item:getFluidContainer():isPureFluid(Fluid.AnimalMilk)) then
             return true
         end
         if item:isAnimalFeed() or (instanceof(item, "Food") and (item:getFoodType() == "Fruits" or item:getFoodType() == "Vegetables" or item:getMilkType()) and item:getHungerChange() < 0 and not item:isRotten() and not item:isSpice()) then
@@ -65,6 +65,9 @@ AnimalContextMenu.doFeedFromHandMenu = function(playerObj, animal, context)
         local testType2 = nil;
         if foodInv:getFluidContainer() and foodInv:getFluidContainer():isPureFluid(Fluid.Get(animal:getBreed():getMilkType())) then
             testType = animal:getBreed():getMilkType();
+        end
+        if foodInv:getFluidContainer() and foodInv:getFluidContainer():isPureFluid(Fluid.AnimalMilk) then
+            testType = "AnimalMilk";
         end
         if instanceof(foodInv, "Food") then
             testType2 = foodInv:getFoodType();
@@ -126,7 +129,12 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
     local animalSubMenu = ISContextMenu:getNew(context);
     context:addSubMenu(animalOption, animalSubMenu);
 
-    local option = animalSubMenu:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
+    local option = nil;
+    if AnimalContextMenu.cheat and animal:isWild() then
+        option = animalSubMenu:addDebugOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
+    else
+        option = animalSubMenu:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
+    end
     if not AnimalContextMenu.cheat and animal:getCurrentSquare():DistToProper(playerObj) > ISAnimalUI.maxDist then
         option.notAvailable = true;
         local tooltip = ISWorldObjectContextMenu.addToolTip();
@@ -213,22 +221,20 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
 
     if animal:canBeSheared() and animal:getData():getWoolQuantity() > 1 then
         local shears = playerInv:getAllTagRecurse("Shear", ArrayList.new());
-        if shears:isEmpty() then
-            return;
-        end
+        if not shears:isEmpty() then
+            local shearOption = animalSubMenu:addOption(getText("ContextMenu_Shear"), nil, nil);
+            local shearSubMenu = ISContextMenu:getNew(animalSubMenu);
+            animalSubMenu:addSubMenu(shearOption, shearSubMenu);
 
-        local shearOption = animalSubMenu:addOption(getText("ContextMenu_Shear"), nil, nil);
-        local shearSubMenu = ISContextMenu:getNew(animalSubMenu);
-        animalSubMenu:addSubMenu(shearOption, shearSubMenu);
-
-        for i=0,shears:size()-1 do
-            local shear = shears:get(i);
-            local shearOptionSub = shearSubMenu:addOption(shear:getDisplayName(), animal, AnimalContextMenu.onShearAnimal, playerObj, shear);
-            if instanceof(shear, "DrainableComboItem") and shear:getCurrentUsesFloat() <= 0 then
-                shearOptionSub.notAvailable = true;
-                local tooltip = ISWorldObjectContextMenu.addToolTip();
-                tooltip:setName(getText("Tooltip_Animal_ShearNoBattery"));
-                shearOptionSub.toolTip = tooltip;
+            for i=0,shears:size()-1 do
+                local shear = shears:get(i);
+                local shearOptionSub = shearSubMenu:addOption(shear:getDisplayName(), animal, AnimalContextMenu.onShearAnimal, playerObj, shear);
+                if instanceof(shear, "DrainableComboItem") and shear:getCurrentUsesFloat() <= 0 then
+                    shearOptionSub.notAvailable = true;
+                    local tooltip = ISWorldObjectContextMenu.addToolTip();
+                    tooltip:setName(getText("Tooltip_Animal_ShearNoBattery"));
+                    shearOptionSub.toolTip = tooltip;
+                end
             end
         end
 
@@ -374,14 +380,14 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         debugSubMenu:addDebugOption("Kill", animal, AnimalContextMenu.onKill, playerObj);
 
         if not animal:isAnimalSitting() then
-            debugSubMenu:addDebugOption("Force sit", animal, AnimalContextMenu.onForceSit);
+            debugSubMenu:addDebugOption("Force sit", animal, AnimalContextMenu.onForceSit, playerObj);
         else
-            debugSubMenu:addDebugOption("Force stand up", animal, AnimalContextMenu.onForceSit);
+            debugSubMenu:addDebugOption("Force stand up", animal, AnimalContextMenu.onForceSit, playerObj);
         end
 
-        debugSubMenu:addDebugOption("Random Idle Anim", animal, AnimalContextMenu.onRandomIdleAnim);
+        debugSubMenu:addDebugOption("Random Idle Anim", animal, AnimalContextMenu.onRandomIdleAnim, playerObj);
         if animal:haveHappyAnim() then
-            debugSubMenu:addDebugOption("Random Happy Anim", animal, AnimalContextMenu.onRandomHappyAnim);
+            debugSubMenu:addDebugOption("Random Happy Anim", animal, AnimalContextMenu.onRandomHappyAnim, playerObj);
         end
 
         local text = "Make Invincible";
@@ -438,7 +444,7 @@ AnimalContextMenu.onDebugForcePoop = function(animal, playerObj)
         sendClientCommandV(playerObj, "animal", "dung",
                 "id", animal:getOnlineID())
     else
-        animal:getData():checkPoop(false);
+        animal:getData():checkPoop(false, true);
     end
 end
 
@@ -519,7 +525,7 @@ AnimalContextMenu.onRandomIdleAnim = function(animal)
     animal:debugRandomIdleAnim();
 end
 
-AnimalContextMenu.onRandomHappyAnim = function(animal)
+AnimalContextMenu.onRandomHappyAnim = function(animal, playerObj)
     if isClient() then
         sendClientCommandV(playerObj, "animal", "happy",
                 "id", animal:getOnlineID())
@@ -551,7 +557,7 @@ AnimalContextMenu.onToggleInvincible = function(animal, playerObj)
     end
 end
 
-AnimalContextMenu.onDebugForceEgg = function(animal)
+AnimalContextMenu.onDebugForceEgg = function(animal, playerObj)
     if isClient() then
         sendClientCommandV(playerObj, "animal", "forceEgg",
                 "id", animal:getOnlineID())
@@ -567,13 +573,14 @@ AnimalContextMenu.onLure = function(animal, playerObj, item)
     ISTimedActionQueue.add(ISLureAnimal:new(playerObj, animal, item))
 end
 
-AnimalContextMenu.onDebugSetStress = function(animal, chr)
-    local modal = ISTextBox:new(0, 0, 280, 180, "Set Stress", animal:getStress() .. "", nil, AnimalContextMenu.onSetStressClick, chr, animal, getSpecificPlayer(chr));
+AnimalContextMenu.onDebugSetStress = function(animal, playerNum)
+    local modal = ISTextBox:new(0, 0, 280, 180, "Set Stress", animal:getStress() .. "", nil, AnimalContextMenu.onSetStressClick, playerNum, animal, getSpecificPlayer(playerNum));
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[chr+1] then
-        setJoypadFocus(player, modal)
+    if getJoypadData(playerNum) then
+        modal.prevFocus = getJoypadFocus(playerNum)
+        setJoypadFocus(playerNum, modal)
     end
 end
 
@@ -612,7 +619,7 @@ AnimalContextMenu.onForceAnimalGrowAway = function(animal, playerObj)
 end
 
 AnimalContextMenu.doAnimalBodyMenuFromInv = function(context, playerObj, animalbody)
-    if animalbody:hasAnimalParts() then
+    if animalbody:hasAnimalParts() and not playerObj:getVehicle() then
         local knife = playerObj:getInventory():getFirstTagEvalRecurse("ButcherAnimal", predicateNotBroken)
         local butcherOption = context:addOption(getText("ContextMenu_ButcherAnimal", animalbody:getDisplayName()), animalbody, AnimalContextMenu.onButcherAnimalFromInv, playerObj, knife);
         if not knife then
@@ -622,7 +629,7 @@ AnimalContextMenu.doAnimalBodyMenuFromInv = function(context, playerObj, animalb
             butcherOption.toolTip = tooltip;
         elseif ISButcherHookUI:isCorpseValid(animalbody) then -- notice the player you won't get as much as using a butchering hook
             local tooltip = ISWorldObjectContextMenu.addToolTip();
-            tooltip:setName(getText("Tooltip_Animal_BetterOnHook"));
+            tooltip:setDescription(getText("Tooltip_Animal_BetterOnHook"));
             butcherOption.toolTip = tooltip;
         end
 
@@ -639,6 +646,7 @@ AnimalContextMenu.doAnimalBodyMenu = function(context, player, animalbody)
         txt = getText("ContextMenu_PickUpSkeleton");
     end
     local grabOption = context:addOption(txt, nil, ISWorldObjectContextMenu.onGrabCorpseItem, animalbody, player);
+    ISWorldObjectContextMenu.initWorldItemHighlightOption(grabOption, animalbody)
 
     if animalbody:hasAnimalParts() then
         local knife = playerObj:getInventory():getFirstTagEvalRecurse("ButcherAnimal", predicateNotBroken)
@@ -650,16 +658,17 @@ AnimalContextMenu.doAnimalBodyMenu = function(context, player, animalbody)
             butcherOption.toolTip = tooltip;
         elseif ISButcherHookUI:isCorpseValid(animalbody) then -- notice the player you won't get as much as using a butchering hook
             local tooltip = ISWorldObjectContextMenu.addToolTip();
-            tooltip:setName(getText("Tooltip_Animal_BetterOnHook"));
+            tooltip:setDescription(getText("Tooltip_Animal_BetterOnHook"));
             butcherOption.toolTip = tooltip;
         end
-
+        ISWorldObjectContextMenu.initWorldItemHighlightOption(butcherOption, animalbody)
         if AnimalContextMenu.cheat then
             context:addDebugOption("Butcher Debug UI " .. animalbody:getCustomName(), animalbody, AnimalContextMenu.onButcherAnimalDebug, playerObj);
         end
     end
     if animalbody:isAnimalSkeleton() then
-        context:addOption(getText("ContextMenu_GetBones", animalbody:getCustomName()), animalbody, AnimalContextMenu.onGetAnimalBones, playerObj);
+        local option = context:addOption(getText("ContextMenu_GetBones", animalbody:getCustomName()), animalbody, AnimalContextMenu.onGetAnimalBones, playerObj);
+        ISWorldObjectContextMenu.initWorldItemHighlightOption(option, animalbody)
     end
 end
 
@@ -708,11 +717,13 @@ AnimalContextMenu.onButcherAnimalFromInv = function(body, chr, knife)
     corpse:setSquare(chr:getCurrentSquare());
 
     corpse:getSquare():addCorpse(corpse, false);
+    corpse:transmitModData();
 
     --if (GameServer.bServer) then
     --    GameServer.sendCorpse(corpse);
     --end
-    chr:getInventory():Remove(body);
+    sendRemoveItemFromContainer(body:getContainer(), body);
+    body:getContainer():Remove(body);
     ISTimedActionQueue.add(ISButcherAnimal:new(chr, corpse));
 end
 
@@ -739,6 +750,7 @@ end
 AnimalContextMenu.onPetAnimal = function(animal, chr)
     animal:getBehavior():setBlockMovement(true);
     local vec = animal:getAttachmentWorldPos("head");
+    if not vec then return; end
     ISTimedActionQueue.add(ISWalkToTimedActionF:new(chr, vec));
     ISTimedActionQueue.add(ISPetAnimal:new(chr, animal))
 end
@@ -764,7 +776,7 @@ AnimalContextMenu.onShearAnimal = function(animal, chr, shear)
     local vecRight = animal:getAttachmentWorldPos("rightshear");
     local vecLeft = animal:getAttachmentWorldPos("leftshear");
     local vec = vecRight;
-    -- pick the closest vector, left or right of the animal
+-- pick the closest vector, left or right of the animal
     if chr:DistToSquared(vecLeft:x(), vecLeft:y()) < chr:DistToSquared(vecRight:x(), vecRight:y()) then
         vec = vecLeft;
     end
@@ -774,13 +786,14 @@ AnimalContextMenu.onShearAnimal = function(animal, chr, shear)
     ISTimedActionQueue.add(ISShearAnimal:new(chr, animal, shear))
 end
 
-AnimalContextMenu.onSetWoolQty = function(animal, chr)
-    local modal = ISTextBox:new(0, 0, 280, 180, getText("ContextMenu_SetWoolQty"), animal:getData():getWoolQuantity() .. "", nil, AnimalContextMenu.onSetWoolQtyClick, chr, animal, getSpecificPlayer(chr));
+AnimalContextMenu.onSetWoolQty = function(animal, playerNum)
+    local modal = ISTextBox:new(0, 0, 280, 180, getText("ContextMenu_SetWoolQty"), animal:getData():getWoolQuantity() .. "", nil, AnimalContextMenu.onSetWoolQtyClick, playerNum, animal, getSpecificPlayer(playerNum));
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[chr+1] then
-        setJoypadFocus(player, modal)
+    if getJoypadData(playerNum) then
+        modal.prevFocus = getJoypadFocus(playerNum)
+        setJoypadFocus(playerNum, modal)
     end
 end
 
@@ -798,13 +811,14 @@ function AnimalContextMenu:onSetWoolQtyClick(button, animal, playerObj)
     end
 end
 
-AnimalContextMenu.onSetMilkQty = function(animal, chr)
-    local modal = ISTextBox:new(0, 0, 280, 180, getText("ContextMenu_SetMilkQty"), animal:getData():getMilkQuantity() .. "", nil, AnimalContextMenu.onSetMilkQtyClick, chr, animal, getSpecificPlayer(chr));
+AnimalContextMenu.onSetMilkQty = function(animal, playerNum)
+    local modal = ISTextBox:new(0, 0, 280, 180, getText("ContextMenu_SetMilkQty"), animal:getData():getMilkQuantity() .. "", nil, AnimalContextMenu.onSetMilkQtyClick, playerNum, animal, getSpecificPlayer(playerNum));
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[chr+1] then
-        setJoypadFocus(player, modal)
+    if getJoypadData(playerNum) then
+        modal.prevFocus = getJoypadFocus(playerNum)
+        setJoypadFocus(playerNum, modal)
     end
 end
 
@@ -836,8 +850,8 @@ AnimalContextMenu.onMilkAnimal = function(animal, chr, bucket, all)
         right = false;
     end
     ISTimedActionQueue.add(ISWalkToTimedActionF:new(chr, vec));
-    --        ISWorldObjectContextMenu.transferIfNeeded(chr, shear)
-    --        ISWorldObjectContextMenu.equip(chr, chr:getPrimaryHandItem(), shear, true, false)
+--        ISWorldObjectContextMenu.transferIfNeeded(chr, shear)
+--        ISWorldObjectContextMenu.equip(chr, chr:getPrimaryHandItem(), shear, true, false)
     ISTimedActionQueue.add(ISMilkAnimal:new(chr, animal, bucket, right, all))
 end
 
@@ -877,7 +891,8 @@ AnimalContextMenu.SetFertilizedTime = function(animal, player)
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[player+1] then
+    if getJoypadData(player) then
+        modal.prevFocus = getJoypadFocus(player)
         setJoypadFocus(player, modal)
     end
 end
@@ -910,7 +925,8 @@ AnimalContextMenu.SetPregnancyPeriod = function(animal, player)
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[player+1] then
+    if getJoypadData(player) then
+        modal.prevFocus = getJoypadFocus(player)
         setJoypadFocus(player, modal)
     end
 end
@@ -934,7 +950,9 @@ AnimalContextMenu.onSetAnimalAge = function(animal, player)
     modal:initialise();
     modal:addToUIManager();
     modal:setOnlyNumbers(true);
-    if JoypadState.players[player+1] then
+    if getJoypadData(player) then
+        modal:centerOnScreen(player)
+        modal.prevFocus = getJoypadFocus(player)
         setJoypadFocus(player, modal)
     end
 end
@@ -963,9 +981,14 @@ AnimalContextMenu.onRemoveAnimal = function(animal, playerObj)
 end
 
 AnimalContextMenu.onAnimalInfo = function(animal, chr)
-    local ui = ISAnimalUI:new(100, 100, 680, 500, animal, chr)
+    local playerNum = chr:getPlayerNum()
+    local ui = ISAnimalUI:new(getPlayerScreenLeft(playerNum)+100, getPlayerScreenTop(playerNum)+100, 680, 500, animal, chr)
     ui:initialise();
     ui:addToUIManager();
+    if getJoypadData(playerNum) then
+        ui.prevFocus = getJoypadFocus(playerNum)
+        setJoypadFocus(playerNum, ui)
+    end
 end
 
 AnimalContextMenu.onDetachAnimalTree = function(animal, chr)
@@ -1037,18 +1060,24 @@ AnimalContextMenu.onBowtieRed = function(animal, playerObj)
 end
 
 AnimalContextMenu.doDesignationZoneMenu = function(context, zone, playerObj)
-    context:addOption(getText("ContextMenu_Animal_CheckZone", zone:getName()), zone, AnimalContextMenu.onCheckZone, playerObj);
+    local option = context:addOption(getText("ContextMenu_Animal_CheckZone", zone:getName()), zone, AnimalContextMenu.onCheckZone, playerObj);
+    local TEXTURE_WIDTH = 48
+    option.iconTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png")
 end
 
 AnimalContextMenu.onCheckZone = function(zone, playerObj)
-    local ui = ISDesignationZoneAnimalZoneUI:new(50,50, 600, 600, playerObj, zone);
+    local playerNum = playerObj:getPlayerNum()
+    local ui = ISDesignationZoneAnimalZoneUI:new(getPlayerScreenLeft(playerNum)+50, getPlayerScreenTop(playerNum)+50, 600, 600, playerObj, zone);
     ui:initialise()
     ui:addToUIManager()
-    ISAnimalZoneFirstInfo.showUI();
+    if getJoypadData(playerNum) then
+        setJoypadFocus(playerNum, ui)
+    end
+    ISAnimalZoneFirstInfo.showUI(playerNum, false);
 end
 
 AnimalContextMenu.onKillAnimal = function(animal, playerObj)
-    local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_KillAnimal_Confirm", animal:getFullName()), true, self, AnimalContextMenu.onKillAnimalConfirm);
+    local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_KillAnimal_Confirm", animal:getFullName()), true, nil, AnimalContextMenu.onKillAnimalConfirm);
     modal:initialise()
     modal:addToUIManager()
     modal.animal = animal;
@@ -1128,7 +1157,7 @@ function AnimalContextMenu.showRadialMenu(playerObj)
     if animal:getData():getMilkQuantity() > 0.1 and animal:canBeMilked() then
         local bucketList = playerObj:getInventory():getAvailableFluidContainer(animal:getData():getBreed():getMilkType())
         local bucket = nil;
-        if bucketList then
+        if bucketList and not bucketList:isEmpty() then
             bucket = bucketList:get(0);
         end
 
@@ -1160,6 +1189,12 @@ function AnimalContextMenu.showRadialMenu(playerObj)
     menu:setX(getPlayerScreenLeft(playerIndex) + getPlayerScreenWidth(playerIndex) / 2 - menu:getWidth() / 2)
     menu:setY(getPlayerScreenTop(playerIndex) + getPlayerScreenHeight(playerIndex) / 2 - menu:getHeight() / 2)
     menu:addToUIManager()
+
+    if getJoypadData(playerIndex) then
+        menu:setHideWhenButtonReleased(Joypad.DPadUp)
+        setJoypadFocus(playerIndex, menu)
+        playerObj:setJoypadIgnoreAimUntilCentered(true)
+    end
 end
 
 Events.OnClickedAnimalForContext.Add(AnimalContextMenu.clickedAnimals);

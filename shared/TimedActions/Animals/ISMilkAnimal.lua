@@ -157,7 +157,7 @@ function ISMilkAnimal:start()
 	self.animal:getBehavior():setBlockMovement(true);
 	self.character:setVariable("milkanimal", true)
 	self.character:setVariable("milkAnim", self.milkAnim)
-	sendEvent(self.character, "MilkAnimal")
+	self.sound = self.character:playSound("MilkAnimal")
 end
 
 function ISMilkAnimal:forceStop()
@@ -170,6 +170,7 @@ function ISMilkAnimal:forceStop()
 end
 
 function ISMilkAnimal:stop()
+	self:stopSound()
 	self.character:setVariable("milkanimalout", true)
 	self.animal:getBehavior():setBlockMovement(false);
 	if self.bucket then
@@ -179,6 +180,7 @@ function ISMilkAnimal:stop()
 end
 
 function ISMilkAnimal:perform()
+	self:stopSound()
 --	self.bucket = self.animal:milkAnimal(self.character, self.bucket);
 
 	self.character:setVariable("milkanimalout", true)
@@ -239,6 +241,12 @@ function ISMilkAnimal:getDuration()
 	--print("get duration", (math.max((milkMl * self.timePerLiter), self.timePerLiter) + 5) * 10)
 	--return (math.max((milkMl * self.timePerLiter), self.timePerLiter) + 5) * 10
 	return -1;
+end
+
+function ISMilkAnimal:stopSound()
+    if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+        self.character:stopOrTriggerSound(self.sound);
+    end
 end
 
 function ISMilkAnimal:new(character, animal, bucket, right, all)

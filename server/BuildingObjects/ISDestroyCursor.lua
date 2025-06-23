@@ -7,6 +7,7 @@ require "BuildingObjects/ISBuildingObject"
 ISDestroyCursor = ISBuildingObject:derive("ISDestroyCursor");
 
 function ISDestroyCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISDestroyCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local sq = getWorld():getCell():getGridSquare(x, y, z)
 	local player = self.character
 	local destroy = self:getObjectList()[self.objectIndex]
@@ -354,6 +355,7 @@ function ISDestroyCursor:new(character, dismantle, sledgehammer)
 	o.renderX = -1
 	o.renderY = -1
 	o.renderZ = -1
+	showDebugInfoInChat("Cursor New \'ISDestroyCursor\'")
 	return o
 end
 

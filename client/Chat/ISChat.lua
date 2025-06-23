@@ -172,7 +172,6 @@ function ISChat:createChildren()
     self.textEntry:instantiate();
     self.textEntry.backgroundColor = {r=0, g=0, b=0, a=0.5};
     self.textEntry.borderColor = {r=1, g=1, b=1, a=0.0};
-    self.textEntry:setHasFrame(true)
     self.textEntry:setAnchorTop(false);
     self.textEntry:setAnchorBottom(true);
     self.textEntry:setAnchorRight(true);
@@ -184,6 +183,8 @@ function ISChat:createChildren()
     self.textEntry.onClick = ISChat.onMouseDown;
     self.textEntry:setUIName(ISChat.textEntryName); -- need to be right this. If it will empty or another then focus will lost on click in chat
     self.textEntry:setHasFrame(true);
+    self.textEntry:setMaxLines(1);
+    self.textEntry:setMaxTextLength(getServerOptions():getInteger("ChatMessageCharacterLimit"));
     self:addChild(self.textEntry)
     ISChat.maxTextEntryOpaque = self.textEntry:getFrameAlpha();
 
@@ -232,6 +233,10 @@ end
 function ISChat:close()
     if not self.locked then
         ISCollapsableWindow.close(self);
+    end
+    if (ISWorldMap_instance and ISWorldMap_instance:isVisible()) then
+        ISWorldMap_instance:bringToTop();
+        ISChat.instance:unfocus();
     end
 end
 
@@ -396,7 +401,9 @@ function ISChat:makeFade(fraction)
     max = ISChat.maxTextEntryOpaque;
     min = ISChat.minTextEntryOpaque;
     alpha = self:calcAlpha(min, max, fraction);
-    self.textEntry:setFrameAlpha(alpha);
+    if self.textEntry:getHasFrame() then
+        self.textEntry:setFrameAlpha(alpha);
+    end;
     self.textEntry.backgroundColor.a = alpha;
 end
 
@@ -417,6 +424,19 @@ function ISChat:prerender()
     local th = self:titleBarHeight()
     local titlebarAlpha = self:calcAlpha(ISChat.minControlOpaque, ISChat.maxGeneralOpaque, self.fade:fraction());
     self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, th - 2, titlebarAlpha, 1, 1, 1);
+
+    if self.title ~= nil and self.drawFrame then
+        self:drawTextCentre(self.title, self:getWidth() / 2, 1, 1, 0.3, 0.3, 1, self.titleBarFont);
+        local titleWidth = getTextManager():MeasureStringX(self.titleBarFont, self.title);
+        self:drawTextureScaled(
+            getTexture("media/textures/Item_Snail.png"),
+            (self.width / 2) - (titleWidth / 2) - (self:titleBarHeight() + 2),
+            0,
+            self:titleBarHeight(),
+            self:titleBarHeight(),
+            1, 1, 1, 1
+        );
+    end
 end
 
 function ISChat:render()
@@ -454,8 +474,21 @@ function ISChat:onCommandEntered()
     local command = ISChat.instance.textEntry:getText();
     local chat = ISChat.instance;
 
-    ISChat.instance:unfocus();
-    if not command or command == "" then
+    if not getPlayer():getRole():hasCapability(Capability.IgnoreChatSlowMode) and chat.timerMessageSlowMode > getTimestampMs()then
+        chat.showSlowModeFeedback = true;
+        return;
+    end;
+
+    chat:unfocus();
+
+    if not getPlayer():getRole():hasCapability(Capability.EmptyLinesInChat) then
+        -- strip newlines that may have been copy pasted or entered in other ways in attempts to overflow the chat box.
+        -- there are some valid reasons to allow this such as moderation purposes so a role has been added for this capability.
+        -- admins can add this capability to everyone if users clearing chat isn't an issue on their server.
+        command = command:gsub("[\n\r]", " ");
+    end;
+
+    if not command or command == "" or command == " " then
         return;
     end
 
@@ -497,6 +530,9 @@ function ISChat:onCommandEntered()
         end
     end
     if not commandProcessed then
+        if not getPlayer():getRole():hasCapability(Capability.IgnoreChatSlowMode) then
+            chat.timerMessageSlowMode = getTimestampMs() + (getServerOptions():getInteger("ChatMessageSlowModeTime") * 1000);
+        end;
         if chatStreamName == "yell" then
             processShoutMessage(command);
         elseif chatStreamName == "whisper" then
@@ -513,10 +549,9 @@ function ISChat:onCommandEntered()
         elseif chatStreamName == "general" then
             processGeneralMessage(command);
         end
-
     end
     doKeyPress(false);
-    ISChat.instance.timerTextEntry = 20;
+    chat.timerTextEntry = 20;
 end
 
 function ISChat:onOtherKey(key)
@@ -897,6 +932,9 @@ function ISChat:new (x, y, width, height)
     o.chatUnLockedButtonTexture = getTexture("media/ui/inventoryPanes/Button_LockOpen.png");
     o.background = true;
     o.timerTextEntry = 0;
+    o.timerMessageSlowMode = 0;
+    o.showSlowModeFeedback = false;
+    o.slowTimeRemainingRatio = 0;
     o.servermsg = "";
     o.servermsgTimer = 0;
     o.showTimestamp = true;
@@ -1075,12 +1113,32 @@ function ISChat:isMuted(username)
     return self.mutedUsers[username] ~= nil
 end
 
--- RJ : Do this because of some delay your last key entered in chat can pop a "KeyPressed"
 ISChat.ontick = function()
-    if ISChat.instance and ISChat.instance.timerTextEntry > 0 then
-        ISChat.instance.timerTextEntry = ISChat.instance.timerTextEntry - 1;
-        if ISChat.instance.timerTextEntry == 0 then
-            doKeyPress(true);
+    local chat = ISChat.instance;
+    if chat then
+        if chat.timerTextEntry > 0 then
+            -- RJ : Do this because of some delay your last key entered in chat can pop a "KeyPressed"
+            chat.timerTextEntry = chat.timerTextEntry - 1;
+            if chat.timerTextEntry == 0 then
+                doKeyPress(true);
+            end
+        end
+        if chat.showSlowModeFeedback then
+            local slowTimeRemaining = chat.timerMessageSlowMode - getTimestampMs();
+            local r, g, b, a, borderColor;
+            local slowTimeRemainingRatio = slowTimeRemaining / (getServerOptions():getInteger("ChatMessageSlowModeTime") * 1000);
+            if slowTimeRemaining > 0 then
+                chat.showTitle = true;
+                chat:setTitle(getText("IGUI_Chatbox_SlowMode") .. " (" .. math.floor(slowTimeRemaining / 1000) .. ")")
+                borderColor = getCore():getBadHighlitedColor();
+                r, g, b, a = borderColor:getR(), borderColor:getG(), borderColor:getB(), slowTimeRemainingRatio;
+            else
+                r, g, b, a = 1, 1, 1, 0;
+                chat.showSlowModeFeedback = false;
+                chat:setTitle(nil);
+            end;
+            chat.slowTimeRemainingRatio = slowTimeRemainingRatio;
+            chat.borderColor = {r=r, g=g, b=b, a=a};
         end
     end
 end

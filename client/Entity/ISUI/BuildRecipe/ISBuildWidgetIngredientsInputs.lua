@@ -2,20 +2,20 @@
 --**                    THE INDIE STONE                    **
 --**                       Author: RJ                      **
 --***********************************************************
-require "ISUI/ISPanel"
+require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-ISBuildWidgetIngredientsInputs = ISPanel:derive("ISBuildWidgetIngredientsInputs");
+ISBuildWidgetIngredientsInputs = ISPanelJoypad:derive("ISBuildWidgetIngredientsInputs");
 
 function ISBuildWidgetIngredientsInputs:initialise()
-	ISPanel.initialise(self);
+	ISPanelJoypad.initialise(self);
 end
 
 function ISBuildWidgetIngredientsInputs:createChildren()
-    ISPanel.createChildren(self);
+    ISPanelJoypad.createChildren(self);
 
     --[[
     local column, row;
@@ -105,6 +105,16 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     self.inputsLabel.originalX = self.inputsLabel:getX();
     self.inputsLabel:setY(y);
 
+    local joypadData = JoypadState.players[self.player:getPlayerNum()+1]
+    local oldIndexY = math.max(self.joypadIndexY, 1)
+    local oldIndex = math.max(self.joypadIndex, 1)
+    if joypadData ~= nil and joypadData.focus == self and self.joypadButtons ~= nil and #self.joypadButtons > 0 then
+        self:clearJoypadFocus(joypadData)
+    end
+
+    self.joypadButtons = {}
+    self.joypadButtonsY = {}
+
     local inputTop = self.inputsLabel:getY() + self.inputsLabel:getHeight() + self.margin;
     local column = 0;
     local row = 0;
@@ -116,11 +126,25 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
         v:setX(x);
         v:setY(y);
         
+        table.insert(self.joypadButtons, v)
+
         column = column + 1;
         if column >= 4 then
             column = 0;
             row = row + 1;
+            table.insert(self.joypadButtonsY, self.joypadButtons)
+            self.joypadButtons = {}
         end
+        end
+
+    if #self.joypadButtons > 0 then
+        table.insert(self.joypadButtonsY, self.joypadButtons)
+    end
+    self.joypadIndexY = math.min(oldIndexY or 1, #self.joypadButtonsY)
+    self.joypadIndex = math.min(oldIndex or 1, #self.joypadButtonsY[self.joypadIndexY])
+    self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+    if joypadData ~= nil and joypadData.focus == self then
+        self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
     end
     
     self:setWidth(width);
@@ -132,15 +156,15 @@ function ISBuildWidgetIngredientsInputs:onResize()
 end
 
 function ISBuildWidgetIngredientsInputs:prerender()
-    ISPanel.prerender(self);
+    ISPanelJoypad.prerender(self);
 end
 
 function ISBuildWidgetIngredientsInputs:render()
-    ISPanel.render(self);
+    ISPanelJoypad.render(self);
 end
 
 function ISBuildWidgetIngredientsInputs:update()
-    ISPanel.update(self);
+    ISPanelJoypad.update(self);
 end
 
 function ISBuildWidgetIngredientsInputs:onRebuildItemNodes(_inputItems)
@@ -158,12 +182,28 @@ function ISBuildWidgetIngredientsInputs:onRecipeChanged()
     end
 end
 
+function ISBuildWidgetIngredientsInputs:onGainJoypadFocus(joypadData)
+    ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+    self:restoreJoypadFocus()
+--     if self.joypadButtons and #self.joypadButtons > 0 then
+--         self.joypadIndexY = 1
+--         self.joypadIndex = 1
+--         self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+--         self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
+--     end
+end
+
+function ISBuildWidgetIngredientsInputs:onLoseJoypadFocus(joypadData)
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+    self:clearJoypadFocus(joypadData)
+end
+
 --************************************************************************--
 --** ISBuildWidgetIngredientsInputs:new
 --**
 --************************************************************************--
 function ISBuildWidgetIngredientsInputs:new (x, y, width, height, player, logic) -- recipeData, craftBench)
-	local o = ISPanel:new(x, y, width, height);
+	local o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.player = player;

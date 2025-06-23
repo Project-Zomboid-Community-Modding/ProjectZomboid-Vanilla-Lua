@@ -16,6 +16,7 @@ function ISDebugBlood:createChildren()
 	self:initHorzBars(x, w)
 	local barMod = UI_BORDER_SPACING;
 
+	local obj;
 	y, obj = ISDebugUtils.addLabel(self, "float_title", x+(w/2), y, getText("IGUI_DebugBlood_Title"), UIFont.Medium)
 	obj.center = true
 	y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
@@ -84,7 +85,7 @@ end
 
 function ISDebugBlood:onRandomBlood()
 	local playerObj = getSpecificPlayer(0)
-	playerObj:addBlood(null, false, true, false)
+	playerObj:addBlood(nil, false, true, false)
 	triggerEvent("OnClothingUpdated", playerObj)
 	self:setSliderValues()
 end

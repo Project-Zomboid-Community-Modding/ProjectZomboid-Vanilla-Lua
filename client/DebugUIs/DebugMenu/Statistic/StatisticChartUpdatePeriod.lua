@@ -53,8 +53,8 @@ function StatisticChartUpdatePeriod:createChildren()
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Max")..": "),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Average")..": ")
     )
-	x = self.historyM1:getX()
-	y = self.historyM1:getY()+self.historyM1:getHeight()
+	local x = self.historyM1:getX()
+	local y = self.historyM1:getY()+self.historyM1:getHeight()
     y = self:addLabelValue(x, y, labelWidth, "value","Min",getText("IGUI_DebugMenu_Min")..":",0);
 	y = self:addLabelValue(x, y, labelWidth, "value","Max",getText("IGUI_DebugMenu_Max")..":",0);
 	y = self:addLabelValue(x, y, labelWidth, "value","Avg",getText("IGUI_DebugMenu_Average")..":",0);

@@ -174,7 +174,7 @@ function ISModalRichText:update()
 	ISPanelJoypad.update(self)
 	local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
 	local minHeight = self.chatText:getScrollHeight() + btnHgt + 10
-	maxHeight = getCore():getScreenHeight() - 40
+	local maxHeight = getCore():getScreenHeight() - 40
 	minHeight = math.min(minHeight, maxHeight)
 	if self:getHeight() < minHeight then
 		local dh = minHeight - self:getHeight()

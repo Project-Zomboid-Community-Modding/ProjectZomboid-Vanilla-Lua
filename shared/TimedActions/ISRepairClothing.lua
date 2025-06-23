@@ -31,7 +31,7 @@ function ISRepairClothing:update()
 	local jobType = hole and getText("ContextMenu_PatchHole") or getText("ContextMenu_AddPadding")
 	ISGarmentUI.setBodyPartActionForPlayer(self.character, self.part, self, jobType, { })
     local skill = self.character:getPerkLevel(Perks.Tailoring)
-    local strain = (1 - (skill * 0.05))/10 * getGameTime():getMultiplier()
+    local strain = ( (1 - (skill * 0.05))/10 * getGameTime():getMultiplier() ) / 2
     self.character:addNeckMuscleStrain(strain)
 end
 
@@ -77,7 +77,7 @@ function ISRepairClothing:complete()
 	self.thread:UseAndSync();
 
 	-- removed random exp because people don't understand how it averages out over time and think it's a bug or bad
-	addXp(self.character, Perks.Tailoring, ZombRand(4));
+	addXp(self.character, Perks.Tailoring, 2);
 -- 	addXp(self.character, Perks.Tailoring, ZombRand(1, 7));
 
 	syncVisuals(self.character);

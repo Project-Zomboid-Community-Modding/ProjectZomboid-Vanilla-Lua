@@ -91,7 +91,8 @@ function ISTabPanelPaginated:renderView(viewObject, tabDragSelected, _x, tabWidt
     tabWidth = self.equalTabWidth and self.maxLength or viewObject.tabWidth
     -- if we drag a tab over an existing one, we move the other
     local x = _x
-    if tabDragSelected ~= -1 and i == (tabDragSelected + 1) then
+	--FIXME: nil cannot be equal to a value
+    if tabDragSelected ~= -1 and nil == (tabDragSelected + 1) then
         x = x + tabWidth + gap;
     end
     -- if this tab is the active one, we make the tab btn lighter
@@ -136,7 +137,8 @@ function ISTabPanelPaginated:renderView(viewObject, tabDragSelected, _x, tabWidt
             self:drawRect(x, 0, tabWidth, self.tabHeight - 1, alpha, 1, 1, 1);
         else
             self:drawTextureScaled(ISTabPanel.tabUnSelected, x, 0, tabWidth, self.tabHeight - 1, self.tabTransparency,1,1,1);
-            if self:getMouseY() >= 0 and self:getMouseY() < self.tabHeight and self:isMouseOver() and self:getTabIndexAtX(self:getMouseX()) == i then
+			--FIXME: nil cannot be equal to a value
+            if self:getMouseY() >= 0 and self:getMouseY() < self.tabHeight and self:isMouseOver() and self:getTabIndexAtX(self:getMouseX()) == nil then
                 viewObject.fade:setFadeIn(true)
             else
                 viewObject.fade:setFadeIn(false)

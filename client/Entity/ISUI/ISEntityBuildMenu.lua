@@ -126,7 +126,8 @@ local function getTool(_info, _inventory)   -- takes: InputScript, ItemContainer
 end
 
 function ISEntityBuildMenu.onBuildEntity(_player, _info)
-    local buildEntity = ISBuildIsoEntity:new(_player, _info);
+    local containers = ISInventoryPaneContextMenu.getContainers(_player)
+    local buildEntity = ISBuildIsoEntity:new(_player, _info, 1, containers);
 
     local inventory = _player:getInventory();
     local items = ISEntityBuildMenu.items;
@@ -151,7 +152,7 @@ function ISEntityBuildMenu.createToolTip(_option, _player, info)
     for k=0,constructItems:size()-1 do
         local constructItem = constructItems:get(k);
         local entryItems = constructItem:getPossibleInputItems();    -- List<Item>
-        local testUses = constructItem:isUse();
+        local testUses = not constructItem:isItemCount();
         local required = 1;
         local available = 0;
         if testUses then

@@ -177,7 +177,7 @@ function ISWarManagerUI:onSelectWar(_item)
             ISWarManagerUI.instance.cancelBtn.enable = true
         end
 
-        if getPlayer():getRole() and getPlayer():getRole():haveCapability(Capability.CanGoInsideSafehouses) then
+        if getPlayer():getRole() and getPlayer():getRole():hasCapability(Capability.CanGoInsideSafehouses) then
             ISWarManagerUI.instance.endBtn:setVisible(true)
             ISWarManagerUI.instance.endBtn.enable = true
         end

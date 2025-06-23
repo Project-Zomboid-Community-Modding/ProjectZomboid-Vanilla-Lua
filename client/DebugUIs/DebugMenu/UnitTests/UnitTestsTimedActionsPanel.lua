@@ -24,7 +24,7 @@ function UnitTestsTimedActionsPanel:createChildren()
     local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*3-13;
     local y2, label, runButton, resultLabel;
 
-
+    local obj
     y2,obj = ISDebugUtils.addButton(self, { id = "runAll" }, x, y, (w-UI_BORDER_SPACING)/2, BUTTON_HGT, getText("IGUI_UnitTests_RunAllTests"), UnitTestsTimedActionsPanel.onRunAllButtonClick);
     y,obj = ISDebugUtils.addButton(self, { id = "stop" }, obj:getRight()+UI_BORDER_SPACING, y, (w+UI_BORDER_SPACING)/2, BUTTON_HGT, getText("IGUI_UnitTests_Stop"), UnitTestsTimedActionsPanel.onStopButtonClick)
     y = y + UI_BORDER_SPACING;

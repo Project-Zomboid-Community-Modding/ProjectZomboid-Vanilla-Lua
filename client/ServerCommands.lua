@@ -138,6 +138,10 @@ Commands.animal.invincible = function(args)
 end
 Commands.animal.kill = function(args)
     local animal = getAnimal(tonumber(args.id))
+    if not animal then
+        return;
+    end
+
     if args.index then
         local hutch = getHutch(tonumber(args.x), tonumber(args.y), tonumber(args.z))
         animal:getData():setHutchPosition(tonumber(args.index))
@@ -205,7 +209,7 @@ Commands.animal.pregnancyTime = function(args)
 end
 Commands.animal.dung = function(args)
     local animal = getAnimal(tonumber(args.id))
-    animal:getData():checkPoop(false);
+    animal:getData():checkPoop(false, true);
 end
 Commands.animal.happy = function(args)
     local animal = getAnimal(tonumber(args.id))
@@ -223,6 +227,22 @@ end
 Commands.animal.forceHutch = function(args)
     local animal = getAnimal(tonumber(args.id))
     animal:getBehavior():callToHutch(nil, true)
+end
+Commands.animal.removeDung = function(args)
+    local initialSquare = getSquare(tonumber(args.x), tonumber(args.y), tonumber(args.z))
+    if not initialSquare then
+        return;
+    end
+    local radius = tonumber(args.radius)
+
+    for x=initialSquare:getX(), initialSquare:getX() + radius-1 do
+        for y=initialSquare:getY(), initialSquare:getY() + radius-1 do
+            local sq = getSquare(x, y, initialSquare:getZ());
+            if sq then
+                sq:removeAllDung();
+            end
+        end
+    end
 end
 -- -- -- -- --
 Commands.hutch = {}
@@ -244,12 +264,59 @@ Commands.ui.DirtyUI = function(args)
     ISInventoryPage.dirtyUI();
 end
 -- -- -- -- --
+Commands.recipe = {}
+Commands.recipe.OpenMysteryCan = function(args)
+    local item = getPlayer():getInventory():getItemWithID(args.itemId)
+    if item ~= nil then
+        item:setTexture(getTexture("Item_CannedUnlabeled_Open"))
+        item:setWorldStaticModel("TinCanEmpty_Ground")
+        item:setStaticModel("MysteryCan_Open")
+        item:getModData().NoLabel = "true"
+    end
+end
+
+Commands.recipe.OpenDentedCan = function(args)
+    local item = getPlayer():getInventory():getItemWithID(args.itemId)
+    if item ~= nil then
+        item:setTexture(getTexture("Item_CannedUnlabeled_Gross"))
+        item:setWorldStaticModel(args.modelName)
+        item:setStaticModel(args.modelName)
+    end
+end
+
+Commands.recipe.SayText = function(args)
+    local player = getPlayerByOnlineID(args.onlineID)
+    if player ~= nil then
+        local text = ""
+        if args.type == 0 then -- RollOneDice
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_One") .. " " .. args.dieNameText .. " *"
+        elseif args.type == 1 or args.type == 2 then -- RollDice or Roll3d6
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. args.dieNameText .. " *"
+        elseif args.type == 3 then -- Rolld100
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_PercentileDice") .. " *"
+        elseif args.type == 4 then --DrawRandomCard
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Draws") .." " .. args.text .. " *"
+        elseif args.type == 5 then --ISResearchRecipe
+            if player:isLocalPlayer() then
+                for k,v in pairs(args.names) do
+                    HaloTextHelper.addGoodText(player, getText("IGUI_HaloNote_LearnedRecipe", getRecipeDisplayName(tostring(v)), "[br/]"))
+                end
+            end
+        end
+
+        player:Say(text);
+    end
+end
+-- -- -- -- --
 
 ServerCommands.OnServerCommand = function(module, command, args)
     if Commands[module] and Commands[module][command] then
         local argStr = ''
-        for k,v in pairs(args) do argStr = argStr..' '..k..'='..tostring(v) end
-        print('received '..module..' '..command..' '..argStr)
+        -- Can be nil if sending an empty table
+        if args then
+            for k,v in pairs(args) do argStr = argStr..' '..k..'='..tostring(v) end
+        end
+        print('received command '..module..' '..command..' argStr: '..argStr)
         Commands[module][command](args)
     end
 end

@@ -26,9 +26,6 @@ function RainCollectorBarrel:create(x, y, z, north, sprite)
     self.sq:AddSpecialObject(self.javaObject);
 	-- add some xp for because you successfully build the barrel
 	buildUtil.addWoodXp(self);
-	-- IsoObjects with 'waterAmount' 
-    self.javaObject:getModData()["waterMax"] = self.waterMax;
-    self.javaObject:getModData()["waterAmount"] = 0;
     self.javaObject:setSpecialTooltip(true)
 	self.javaObject:transmitCompleteItemToClients();
 	-- OnObjectAdded event will create the SRainBarrelGlobalObject on the server.

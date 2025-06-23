@@ -31,11 +31,21 @@ end
 function ISDebugAnimationTextUI:prerender()
 	ISCollapsableWindow.prerender(self)
 	if self.isCollapsed then
-		self.character:setOutlineHighlight(false)
+		if self.isHighlighted then
+			self.character:setOutlineHighlight(false)
+			self.isHighlighted = false
+		end
 		return
 	end
-	self.character:setOutlineHighlight(self:isMouseOver())
-	self.character:setOutlineHighlightCol(1.0, 1.0, 1.0, 1.0)
+	local highlight = self:isMouseOver()
+	if highlight then
+		self.character:setOutlineHighlight(true)
+		self.character:setOutlineHighlightCol(1.0, 1.0, 1.0, 1.0)
+		self.isHighlighted = true
+	elseif self.isHighlighted then
+		self.character:setOutlineHighlight(false)
+		self.isHighlighted = false
+	end
 	if self.character:getMovingObjectIndex() == -1 then
 		self:setVisible(false)
 		self:removeFromUIManager()

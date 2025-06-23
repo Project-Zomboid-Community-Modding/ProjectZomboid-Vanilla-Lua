@@ -42,7 +42,6 @@ function ISPetAnimal:start()
 		self.character:setVariable("animal", self.animal:getBabyType())
 	end
 	self.animal:setVariable("idleAction", "petting")
-	sendEvent(self.character, "PetAnimal")
 end
 
 function ISPetAnimal:forceStop()

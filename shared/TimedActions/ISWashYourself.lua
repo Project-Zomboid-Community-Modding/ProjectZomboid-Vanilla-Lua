@@ -112,7 +112,7 @@ function ISWashYourself:complete()
 			if self.soaps then
 				self.character:getBodyDamage():setUnhappynessLevel(self.character:getBodyDamage():getUnhappynessLevel() - 2);
 			end
-			if waterUsed >= self.sink:getWaterAmount() then
+			if waterUsed >= self.sink:getFluidAmount() then
 				break
 			end
 		end
@@ -127,9 +127,9 @@ function ISWashYourself:complete()
 	sendHumanVisual(self.character);
 
 	if instanceof(self.sink, "IsoWorldInventoryObject") then
-		self.sink:useWater(waterUsed)
+		self.sink:useFluid(waterUsed)
 	else
-		if self.sink:useWater(waterUsed) > 0 then
+		if self.sink:useFluid(waterUsed) > 0 then
 			self.sink:transmitModData()
 		end
 	end
@@ -141,7 +141,7 @@ function ISWashYourself:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
-	local waterUnits = math.min(ISWashYourself.GetRequiredWater(self.character), self.sink:getWaterAmount());
+	local waterUnits = math.min(ISWashYourself.GetRequiredWater(self.character), self.sink:getFluidAmount());
 	if not self.soaps then
 		return waterUnits * 126;
 	else

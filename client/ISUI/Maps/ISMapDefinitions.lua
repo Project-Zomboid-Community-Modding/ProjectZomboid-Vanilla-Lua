@@ -135,6 +135,10 @@ function MapUtils.initDefaultStyleV1(mapUI)
 	layer = styleAPI:newPolygonLayer("building-Residential")
 	layer:setMinZoom(MINZ_BUILDINGS)
 	layer:setFilter("building", "Residential")
+	if ColorblindPatterns then
+		layer:addTexture(MINZ, "media/textures/worldMap/Colorblind Patterns/Pattern_Residential.png", "ScreenPixel")
+		layer:addScale(MINZ, 4)
+	end
 	layer:addFill(MINZ_BUILDINGS, 210, 158, 105, 0)
 	layer:addFill(MINZ_BUILDINGS + 0.5, 210, 158, 105, 255)
 	layer:addFill(MAXZ, 210, 158, 105, 255)
@@ -233,6 +237,12 @@ function MapUtils.revealKnownArea(mapUI)
 	local x2 = mapAPI:getMaxXInSquares()
 	local y2 = mapAPI:getMaxYInSquares()
 	WorldMapVisited.getInstance():setKnownInSquares(x1, y1, x2, y2)
+end
+
+function MapUtils.renderDarkModeOverlay(mapUI)
+	local alpha = getCore():getOptionWorldMapBrightness()
+	alpha = 1 - PZMath.lerp(0.2, 1.0, alpha)
+	mapUI:drawTextureScaled(Texture.getWhite(), 0, 0, mapUI.width, mapUI.height, alpha, 0.0, 0.0, 0.0)
 end
 
 -----

@@ -42,9 +42,19 @@ function ISOpenButcherHookUI:perform()
 end
 
 function ISOpenButcherHookUI:complete()
-	local ui = ISButcherHookUI:new(100, 100, 650, 500, self.hook, self.player)
+	-- Prevent multiple splitscreen players opening the UI for the same hook.
+	for playerNum=1,4 do
+		local existing = ISButcherHookUI.ui and ISButcherHookUI.ui[playerNum-1] or nil
+		if existing ~= nil and existing.hook == self.hook then
+			existing:close()
+		end
+	end
+	local ui = ISButcherHookUI:new(getPlayerScreenLeft(self.playerNum)+100, getPlayerScreenTop(self.playerNum)+100, 650, 500, self.hook, self.player)
 	ui:initialise();
 	ui:addToUIManager();
+	if getJoypadData(self.playerNum) then
+		setJoypadFocus(self.playerNum, ui)
+	end
 	return true
 end
 
@@ -65,6 +75,7 @@ function ISOpenButcherHookUI:new(character, hook)
 	local o = ISBaseTimedAction.new(self, character)
 	o.hook = hook;
 	o.player = character;
+	o.playerNum = character:getPlayerNum();
 	o.maxTime = o:getDuration()
 	o.useProgressBar = false;
 	return o;

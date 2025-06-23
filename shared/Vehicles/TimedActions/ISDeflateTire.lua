@@ -83,8 +83,8 @@ function ISDeflateTire:new(character, part, psiTarget)
 	o.part = part
 	o.psiStart = part:getContainerContentAmount()
 	o.psiTarget = psiTarget
-    o.stopOnWalk = false
-    o.stopOnRun = false
+    o.stopOnWalk = true
+    o.stopOnRun = true
 	o.maxTime = o:getDuration()
 	o.jobType = getText("IGUI_JobType_DeflateTire")
 	return o

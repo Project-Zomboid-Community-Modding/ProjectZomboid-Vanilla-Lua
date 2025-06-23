@@ -27,7 +27,7 @@ function ISCraftAction:update()
 --             if self.character:getTraits():contains("Cowardly") or self.character:getTraits():contains("Hemophobic") then rate = rate*2
             elseif self.character:getTraits():contains("Brave") then rate = rate/2 end
             local stats = self.character:getStats()
-            stats:setStress(stats:getStress() + rate/10000);
+            stats:setStress(stats:getBasicStress() + rate/10000);
             local bodyDamage = self.character:getBodyDamage()
             bodyDamage:setUnhappynessLevel(bodyDamage:getUnhappynessLevel()  + rate/100);
         end
@@ -35,7 +35,7 @@ function ISCraftAction:update()
         if self.character and self.character:getTraits():contains("Hemophobic") and self.item:getBloodLevel() > 0 then
             local rate =  self.item:getBloodLevelAdjustedLow() * getGameTime():getMultiplier()
             local stats = self.character:getStats()
-            stats:setStress(stats:getStress() + rate/10000);
+            stats:setStress(stats:getBasicStress() + rate/10000);
         end
 		--fixme: when crafting multiple items, we can lose the original item
 		if (self.item:getContainer() == nil) then

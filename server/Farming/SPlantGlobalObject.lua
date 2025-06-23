@@ -25,6 +25,7 @@ end
 
 function SPlantGlobalObject.initModData(modData)
 	modData.state = "plow"
+	modData.owner = nil
 	modData.nbOfGrow = -1
 	modData.typeOfSeed = "none"
 	modData.fertilizer = 0
@@ -89,7 +90,7 @@ function SPlantGlobalObject:stateToIsoObject(isoObject)
 	end
 
 	isoObject:setName(self.objectName)
-	isoObject:setSprite(self.spriteName)
+	isoObject:setSpriteFromName(self.spriteName)
 	self:toModData(isoObject:getModData())
 
 	if isServer() then
@@ -123,7 +124,7 @@ function SPlantGlobalObject:setSpriteName(spriteName)
 	self.spriteName = spriteName
 	local object = self:getObject()
 	if object then
-		object:setSprite(self.spriteName)
+		object:setSpriteFromName(self.spriteName)
 		if isServer() then
 			object:sendObjectChange('sprite')
 		end
@@ -143,7 +144,7 @@ end
 
 function SPlantGlobalObject:isBadMonth()
     if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
-    if not self or self.typeOfSeed == nil then return end
+	if not self or self.typeOfSeed == nil then return end
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop then return end
 	if not prop.badMonth then return false end
@@ -157,7 +158,7 @@ end
 
 function SPlantGlobalObject:isBadMonthHardy()
     if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
-    if not self or self.typeOfSeed then return end
+    if not self or self.typeOfSeed == nil then return end
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop then return end
 	return prop.badMonthHardyLevel and self.nbOfGrow >= prop.badMonthHardyLevel
@@ -171,12 +172,12 @@ end
 
 function SPlantGlobalObject:isSowMonth()
     if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
-    if not self or self.typeOfSeed then return end
+	if not self or self.typeOfSeed == nil then return end
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop then return end
 	if not prop.sowMonth then return false end
     for i = 1, #prop.sowMonth do
-        if getGameTime():getMonth() == prop.sowMonth[i] then
+        if getGameTime():getMonth()+1 == prop.sowMonth[i] then
             return true
         end
     end
@@ -185,12 +186,12 @@ end
 
 function SPlantGlobalObject:isBestMonth()
     if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
-    if not self or self.typeOfSeed then return end
+	if not self or self.typeOfSeed == nil then return end
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop then return end
 	if not prop.bestMonth then return false end
     for i = 1, #prop.bestMonth do
-        if getGameTime():getMonth() == prop.bestMonth[i] then
+        if getGameTime():getMonth()+1 == prop.bestMonth[i] then
             return true
         end
     end
@@ -199,12 +200,12 @@ end
 
 function SPlantGlobalObject:isRiskMonth()
     if getSandboxOptions():getOptionByName("PlantGrowingSeasons"):getValue() == false then return false end
-    if not self or self.typeOfSeed then return end
+	if not self or self.typeOfSeed == nil then return end
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop then return end
 	if not prop.riskMonth then return false end
     for i = 1, #prop.riskMonth do
-        if getGameTime():getMonth() == prop.riskMonth[i] then
+        if getGameTime():getMonth()+1 == prop.riskMonth[i] then
             return true
         end
     end
@@ -816,6 +817,7 @@ function SPlantGlobalObject:fromModData(modData)
 	self.exterior = modData.exterior == true or modData.exterior == nil
 	self.spriteName = modData.spriteName
 	self.objectName = modData.objectName
+	self.owner = modData.owner
 	if not self.spriteName then -- old-style modData
 		self.spriteName = farming_vegetableconf.getSpriteName(self)
 	end
@@ -850,6 +852,7 @@ function SPlantGlobalObject:toModData(modData)
 	modData.exterior = self.exterior
 	modData.spriteName = self.spriteName
 	modData.objectName = self.objectName
+	modData.owner = self.owner
 end
 
 function SPlantGlobalObject:fromObject(object)

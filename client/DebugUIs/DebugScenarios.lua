@@ -141,7 +141,7 @@ end
 
 function DebugScenarios.ongamestart()
     if selectedDebugScenario and selectedDebugScenario.onStart then
-        CharacterCreationHeader.instance:randomGenericOutfit();
+        CharacterCreationMain.instance:randomGenericOutfit();
         getPlayer():setDescriptor(MainScreen.instance.desc);
         getPlayer():Dressup(MainScreen.instance.desc);
         selectedDebugScenario.onStart();

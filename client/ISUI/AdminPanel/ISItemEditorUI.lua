@@ -47,6 +47,14 @@ function ISItemEditorUI:createChildren()
 
     y = y + FONT_HGT_MEDIUM + UI_BORDER_SPACING;
 
+--     self.pathText = self.item:getFileAbsPath();
+--     self.path = ISLabel:new (0, y, FONT_HGT_MEDIUM, self.pathText, 1, 1, 1, 1.0, UIFont.Medium, true);
+--     self.path:initialise();
+--     self.path:instantiate();
+--     self:addChild(self.path);
+--
+--     y = y + FONT_HGT_MEDIUM + UI_BORDER_SPACING;
+
     local panelY = 200;
     self.optionsPanel = ISItemEditPanel:new(UI_BORDER_SPACING+1, y,400, panelY, self.admin, self.item);
     self.optionsPanel:initialise();
@@ -121,7 +129,8 @@ end
 
 function ISItemEditorUI:new(x, y, width, height, admin, item)
     local o = {};
-    o = ISPanel:new(x, y, 400, height);
+    o = ISPanel:new(x, y, 800, height);
+--     o = ISPanel:new(x, y, 400, height);
     setmetatable(o, self);
     self.__index = self;
     o.variableColor={r=0.9, g=0.55, b=0.1, a=1};

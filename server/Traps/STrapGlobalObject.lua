@@ -25,6 +25,7 @@ function STrapGlobalObject:initNew()
     self.openSprite = ""
     self.closedSprite = ""
     self.zone = "TownZone"
+    self.zones = {}
     self.player = "unknown"
     self.trappingSkill = 0
     self.destroyed = false;
@@ -45,6 +46,7 @@ function STrapGlobalObject:stateFromIsoObject(isoObject)
     self:fromModData(isoObject:getModData())
 
     self:setDef()
+    self:setZones(square)
     if self.animal.type then
         isoObject:setSprite(self.closedSprite)
     else
@@ -84,6 +86,7 @@ function STrapGlobalObject:stateToIsoObject(isoObject)
     end
 
     self:setDef()
+    self:setZones(square)
     self.animal = self.animal or {}
     if self.animal.type then
         isoObject:setSprite(self.closedSprite)
@@ -100,6 +103,7 @@ end
 
 function STrapGlobalObject:calculTrap(square)
     self:setDef();
+    self:setZones(square);
     if self.bait then
         self:checkForAnimal(square);
     end
@@ -212,6 +216,12 @@ function STrapGlobalObject:addAliveAnimal(character)
     end
 
     animal:setWild(false);
+
+    if not self.animalAliveHour then
+        print("animalAliveHour is missing, resetting to 1");
+        self.animalAliveHour = 1;
+    end;
+
     -- rand some passed hour, simulate animal has been in the wild
     self.animalAliveHour = ZombRand(self.animalAliveHour, self.animalAliveHour + 15);
     for i=0, self.animalAliveHour -1 do
@@ -263,6 +273,9 @@ function STrapGlobalObject:removeAnimal(character)
         if self.animal.canBeAlive then
             return self:addAliveAnimal(character);
         end
+        if not self.animal.item then
+            return;
+        end
         local item = instanceItem(self.animal.item)
         -- Randomize the hunger reduction of the animal
         local size = ZombRand(self.animal.minSize, self.animal.maxSize);
@@ -310,6 +323,29 @@ function STrapGlobalObject:removeAnimal(character)
     end
 end
 
+
+function STrapGlobalObject:testForAnimal(zoneType, animalsList)
+    for _, v in ipairs(TrapAnimals) do
+        -- check if at this hour we can get this animal
+        local timesOk = self:checkTime(v);
+        --local timesOk = true;
+        if
+        v.traps[self.trapType]
+                and (v.baits[self.bait] and ZombRand(100) < (v.traps[self.trapType] + v.baits[self.bait] + (self.trappingSkill * 1.5)))
+                and timesOk
+                and v.zone[zoneType]
+                and ZombRand(100) < (v.zone[zoneType] + (self.trappingSkill * 1.5))
+        then -- this animal can be caught by this trap and we have the correct bait for it
+            -- now check if the bait is still fresh
+            --print("can catch " .. v.type);
+            if self:checkBaitFreshness() then
+                --print("bait can catch " .. v.type);
+                table.insert(animalsList, v);
+            end
+        end
+    end
+end
+
 -- check if an animal is caught (every hour)
 function STrapGlobalObject:checkForAnimal(square)
     --print("check for animal")
@@ -329,19 +365,13 @@ function STrapGlobalObject:checkForAnimal(square)
     end
     -- first, get which animal we'll attract
     local animalsList = {};
-    for i,v in ipairs(TrapAnimals) do
-        -- check if at this hour we can get this animal
-        local timesOk = self:checkTime(v);
---        local timesOk = true;
-        if v.traps[self.trapType] and (v.baits[self.bait] and ZombRand(100) < (v.traps[self.trapType] + v.baits[self.bait] + (self.trappingSkill * 1.5))) and
-                timesOk and v.zone[self.zone] and ZombRand(100) < (v.zone[self.zone] + (self.trappingSkill * 1.5)) then -- this animal can be caught by this trap and we have the correct bait for it
-            -- now check if the bait is still fresh
-            if self:checkBaitFreshness() then
---                print("can catch " .. v.type);
-                table.insert(animalsList, v);
-            end
-        end
-    end
+    if self.zones then
+        for zoneType in pairs(self.zones) do
+            self:testForAnimal(zoneType, animalsList);
+        end;
+    else
+        self:testForAnimal(self.zone, animalsList);
+    end;
     -- random an animal
     if #animalsList > 0 then
         local int = ZombRand(#animalsList) + 1;
@@ -354,8 +384,8 @@ function STrapGlobalObject:checkForAnimal(square)
 end
 
 function STrapGlobalObject:setAnimal(animal)
-    if not animal or not animal.type or not animal.item then
-        self.noise('invalid animal for trap '..tostring(animal))
+    if not animal or not animal.type then
+        self.noise('invalid animal for trap '..tostring(animal.type))
         return
     end
     self.animal = animal
@@ -379,6 +409,13 @@ function STrapGlobalObject:addBait(bait, age, baitAmountMulti, player)
     self.player = player:getUsername();
     local object = self:getIsoObject()
     self:toObject(object, true)
+end
+
+function STrapGlobalObject:setZones(square)
+    if self.zones then return; end;
+    if square then
+        self.zones = TrapSystem.getTrapZones(square);
+    end;
 end
 
 function STrapGlobalObject:setDef()
@@ -423,6 +460,7 @@ function STrapGlobalObject:fromModData(modData)
     self.openSprite = modData["openSprite"];
     self.closedSprite = modData["closedSprite"];
     self.zone = modData["zone"];
+    self.zones = modData["zones"] or {TownZone = "TownZone"};
     self.player = modData["player"];
     self.trappingSkill = modData["trappingSkill"];
     self.destroyed = modData["destroyed"];
@@ -440,6 +478,7 @@ function STrapGlobalObject:toModData(modData)
     modData["openSprite"] = self.openSprite;
     modData["closedSprite"] = self.closedSprite;
     modData["zone"] = self.zone;
+    modData["zones"] = self.zones;
     modData["player"] = self.player;
     modData["trappingSkill"] = self.trappingSkill;
     modData["destroyed"] = self.destroyed;
@@ -471,6 +510,7 @@ function STrapGlobalObject:reinitModData(square)
     square:getModData()["openSprite"] = nil;
     square:getModData()["closedSprite"] = nil;
     square:getModData()["zone"] = nil;
+    square:getModData()["zones"] = nil;
     square:getModData()["player"] = nil;
     square:getModData()["trappingSkill"] = nil;
     square:getModData()["destroyed"] = nil;

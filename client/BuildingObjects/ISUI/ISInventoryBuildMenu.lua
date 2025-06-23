@@ -20,10 +20,12 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
     local gravelBag = {};
 	local sandBag = {};
     local dirtBag = {};
+    local claybag = {};
     local shovel = nil;
     local fillWithGravel = nil;
     local fillWithSand = nil;
     local fillWithDirt = nil;
+    local fillWithClay = nil;
     local nothingToTake = nil;
 
 	local playerObj = getSpecificPlayer(player)
@@ -71,6 +73,10 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
 				if itemCounts[groundType] + itemCounts.empty > 0 then
 					fillWithSand = object
 				end
+			elseif groundType == "clay" then
+                if itemCounts[groundType] + itemCounts.empty > 0 then
+                	fillWithClay = object
+                end
 		    else
 -- 		        print("Nothing 1")
 				nothingToTake = true
@@ -123,6 +129,10 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
     if fillWithDirt then
 		if test then return ISWorldObjectContextMenu.setTest() end
 		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_dirt"), playerObj, ISInventoryBuildMenu.onTakeThing, "dirt");
+    end
+	if fillWithClay then
+		if test then return ISWorldObjectContextMenu.setTest() end
+		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_clay"), playerObj, ISInventoryBuildMenu.onTakeThing, "clay");
     end
     if nothingToTake and playerInv:containsTypeRecurse("EmptySandbag") then
 		if test then return ISWorldObjectContextMenu.setTest() end

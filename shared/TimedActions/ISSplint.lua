@@ -157,7 +157,7 @@ function ISSplint:new(character, otherPlayer, rippedSheet, plank, bodyPart, doIt
     if character:isTimedActionInstant() then
         o.maxTime = 1;
     end
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
+    if isMultiplayer() and character:getRole():hasCapability(Capability.CanMedicalCheat) then
         o.doctorLevel = 10;
     end
 	return o;

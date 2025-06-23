@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateMushroomDefs()
 	local items = {
@@ -32,32 +33,38 @@ local function generateMushroomDefs()
 	};
 	for _, spawnTable in pairs(items) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
-				type = itemFullName,
-				minCount = 1,
-				maxCount = 3,
-				xp = 5,
-				rainChance = 15,
-				categories = { "Mushrooms" },
-				zones = {
-					Forest      = spawnTable.chance,
-					DeepForest  = spawnTable.chance,
-					Vegitation  = spawnTable.chance,
-					FarmLand    = spawnTable.chance,
-					Farm        = spawnTable.chance,
-					TrailerPark = spawnTable.chance,
-					TownZone    = spawnTable.chance,
-					ForagingNav = spawnTable.chance,
-				},
-				months = { 3, 4, 5, 6, 7, 8, 9, 10, 11 },
-				bonusMonths = { 8, 9, 10 },
-				malusMonths = { 3, 4 },
-				spawnFuncs = spawnTable.spawnFuncs,
-				poisonChance = spawnTable.poisonChance,
-				poisonPowerMin = spawnTable.poisonPowerMin,
-				poisonPowerMax = spawnTable.poisonPowerMax,
-				poisonDetectionLevel = spawnTable.poisonDetectionLevel,
-			};
+			forageSystem.addForageDef(
+				itemName,
+				{
+					type = itemFullName,
+					minCount = 1,
+					maxCount = 3,
+					xp = 5,
+					rainChance = 15,
+					categories = { "Mushrooms" },
+					zones = {
+						Forest = spawnTable.chance,
+						PHForest = spawnTable.chance,
+						PRForest = spawnTable.chance,
+						DeepForest = spawnTable.chance,
+						OrganicForest = spawnTable.chance,
+						BirchForest = spawnTable.chance,
+						Vegitation = spawnTable.chance,
+						FarmLand = spawnTable.chance,
+						TrailerPark = spawnTable.chance,
+						TownZone = spawnTable.chance,
+						ForagingNav = spawnTable.chance,
+					},
+					months = { 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+					bonusMonths = { 8, 9, 10 },
+					malusMonths = { 3, 4 },
+					spawnFuncs = spawnTable.spawnFuncs,
+					poisonChance = spawnTable.poisonChance,
+					poisonPowerMin = spawnTable.poisonPowerMin,
+					poisonPowerMax = spawnTable.poisonPowerMax,
+					poisonDetectionLevel = spawnTable.poisonDetectionLevel,
+				}
+			);
 		end;
 	end;
 end

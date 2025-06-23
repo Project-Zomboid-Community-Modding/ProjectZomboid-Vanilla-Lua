@@ -23,7 +23,9 @@ end
 
 function ISToggleLightAction:perform()
 	-- needed to remove from queue / start next.
-	self.object:getSquare():playSound("LightSwitch");
+	if not self.object:getProperties() or not self.object:getProperties():Is("streetlight") then
+	    self.object:getSquare():playSound("LightSwitch");
+	end
 	ISBaseTimedAction.perform(self)
 end
 

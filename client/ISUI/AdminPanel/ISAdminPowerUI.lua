@@ -8,7 +8,6 @@ ISAdminPowerUI = ISPanel:derive("ISAdminPowerUI");
 ISAdminPowerUI.messages = {};
 
 ISAdminPowerUI.cheatTooltips = {}
-ISAdminPowerUI.cheatTooltips["Fast Move"] = "Fast move:\nMove - arrow keys\nFloor Up/Down - PageUp/PageDown keys"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -56,108 +55,147 @@ end
 
 function ISAdminPowerUI:addAdminPowerOptions()
     self.setFunction = {}
-    if self.player:getRole():haveCapability(Capability.ToggleInvisibleHimself) then
-        self:addOption("Invisible", self.player:isInvisible(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.ToggleInvisibleHimself) then
+        self:addOption(getText("IGUI_AdminPanel_Invisible"), self.player:isInvisible(), function(self, selected)
             self.player:setInvisible(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_Invisible")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleInvisibleHimself:name())
     end
-    if self.player:getRole():haveCapability(Capability.ToggleGodModHimself) then
-        self:addOption("God mode", self.player:isGodMod(), function(self, selected)
+    --if self.player:getRole():hasCapability(Capability.ToggleInvincibleHimself) then
+    --    self:addOption(getText("IGUI_AdminPanel_Invincible"), self.player:isInvincible(), function(self, selected)
+    --        self.player:setInvincible(selected);
+    --    end);
+    --    ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_Invincible")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleInvincibleHimself:name())
+    --end
+    if self.player:getRole():hasCapability(Capability.ToggleGodModHimself) then
+        self:addOption(getText("IGUI_AdminPanel_GodMode"), self.player:isGodMod(), function(self, selected)
             self.player:setGodMod(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_GodMode")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleGodModHimself:name())
     end
---     if self.player:getRole():haveCapability(Capability.ToggleGodModHimself) then
---         self:addOption("Ghost mode", self.player:isGhostMode(), function(self, selected)
---             self.player:setGhostMode(selected);
---         end);
---     end
-    if self.player:getRole():haveCapability(Capability.ToggleNoclipHimself) then
-        self:addOption("No Clip", self.player:isNoClip(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.ToggleNoclipHimself) then
+        self:addOption(getText("IGUI_AdminPanel_NoClip"), self.player:isNoClip(), function(self, selected)
             self.player:setNoClip(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_NoClip")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleNoclipHimself:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseTimedActionInstantCheat) then
-        self:addOption("Timed Action Instant", self.player:isTimedActionInstantCheat(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.UseTimedActionInstantCheat) then
+        self:addOption(getText("IGUI_AdminPanel_TimedActionInstant"), self.player:isTimedActionInstantCheat(), function(self, selected)
             self.player:setTimedActionInstantCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_TimedActionInstant")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseTimedActionInstantCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.ToggleUnlimitedCarry) then
-        self:addOption("Unlimited Carry", self.player:isUnlimitedCarry(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedCarry) then
+        self:addOption(getText("IGUI_AdminPanel_UnlimitedCarry"), self.player:isUnlimitedCarry(), function(self, selected)
             self.player:setUnlimitedCarry(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedCarry")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedCarry:name())
     end
-    if self.player:getRole():haveCapability(Capability.ToggleUnlimitedEndurance) then
-        self:addOption("Unlimited Endurance", self.player:isUnlimitedEndurance(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedEndurance) then
+        self:addOption(getText("IGUI_AdminPanel_UnlimitedEndurance"), self.player:isUnlimitedEndurance(), function(self, selected)
             self.player:setUnlimitedEndurance(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedEndurance")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedEndurance:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseFastMoveCheat) then
-        self:addOption("Fast Move", ISFastTeleportMove.cheat, function(self, selected)
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedAmmo) then
+        self:addOption(getText("IGUI_AdminPanel_UnlimitedAmmo"), self.player:isUnlimitedAmmo(), function(self, selected)
+            self.player:setUnlimitedAmmo(selected);
+        end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedAmmo")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedAmmo:name())
+    end
+    if self.player:getRole():hasCapability(Capability.ToggleKnowAllRecipes) then
+        self:addOption(getText("IGUI_AdminPanel_KnowAllRecipes"), self.player:isKnowAllRecipes(), function(self, selected)
+            self.player:setKnowAllRecipes(selected);
+        end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_KnowAllRecipes")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleKnowAllRecipes:name())
+    end
+    if self.player:getRole():hasCapability(Capability.UseFastMoveCheat) then
+        self:addOption(getText("IGUI_AdminPanel_FastMove"), ISFastTeleportMove.cheat, function(self, selected)
             ISFastTeleportMove.cheat = selected;
             self.player:setFastMoveCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FastMove")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFastMoveCheat:name()) .. "\n" .. getText("IGUI_AdminPanel_Tooltip_FastMove")
     end
-    if self.player:getRole():haveCapability(Capability.UseBuildCheat) then
+    if self.player:getRole():hasCapability(Capability.UseBuildCheat) then
         self:addOption(getText("IGUI_AdminPanel_BuildCheat"), ISBuildMenu.cheat, function(self, selected)
             ISBuildMenu.cheat = selected;
             self.player:setBuildCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_BuildCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseBuildCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseFarmingCheat) then
+    if self.player:getRole():hasCapability(Capability.UseFarmingCheat) then
         self:addOption(getText("IGUI_AdminPanel_FarmingCheat"), ISFarmingMenu.cheat, function(self, selected)
             ISFarmingMenu.cheat = selected;
             self.player:setFarmingCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FarmingCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFarmingCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseFishingCheat) then
+    if self.player:getRole():hasCapability(Capability.UseFishingCheat) then
         self:addOption(getText("IGUI_AdminPanel_FishingCheat"), self.player:isFishingCheat(), function(self, selected)
             self.player:setFishingCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FishingCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFishingCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseHealthCheat) then
+    if self.player:getRole():hasCapability(Capability.UseHealthCheat) then
         self:addOption(getText("IGUI_AdminPanel_HealthCheat"), ISHealthPanel.cheat, function(self, selected)
             ISHealthPanel.cheat = selected;
             self.player:setHealthCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_HealthCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseHealthCheat:name())
     end
     -- disable mechanics cheat for non-debug
-    if getDebug() and self.player:getRole():haveCapability(Capability.UseMechanicsCheat) then
+    if getDebug() and self.player:getRole():hasCapability(Capability.UseMechanicsCheat) then
         self:addOption(getText("IGUI_AdminPanel_MechanicsCheat"), ISVehicleMechanics.cheat, function(self, selected)
             ISVehicleMechanics.cheat = selected;
             self.player:setMechanicsCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_MechanicsCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseMechanicsCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.CarryAndMovablesCheat) then
+    if self.player:getRole():hasCapability(Capability.UseMovablesCheat) then
         self:addOption(getText("IGUI_AdminPanel_MoveableCheat"), ISMoveableDefinitions.cheat, function(self, selected)
             ISMoveableDefinitions.cheat = selected;
             self.player:setMovablesCheat(selected);
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_MoveableCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseMovablesCheat:name())
     end
-    if self.player:getRole():haveCapability(Capability.CanSeeAll) then
-        self:addOption(getText("IGUI_AdminPanel_CanSeeAll"), self.player:isCanSeeAll(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.CanSeeAll) then
+        self:addOption(getText("IGUI_AdminPanel_CanSeeAll"), self.player:canSeeAll(), function(self, selected)
             self.player:setCanSeeAll(selected)
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_CanSeeAll")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.CanSeeAll:name())
     end
-    if self.player:getRole():haveCapability(Capability.CanHearAll) then
-        self:addOption(getText("IGUI_AdminPanel_CanHearAll"), self.player:isCanHearAll(), function(self, selected)
+    if self.player:getRole():hasCapability(Capability.CanHearAll) then
+        self:addOption(getText("IGUI_AdminPanel_CanHearAll"), self.player:canHearAll(), function(self, selected)
             self.player:setCanHearAll(selected)
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_CanHearAll")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.CanHearAll:name())
     end
-    if self.player:getRole():haveCapability(Capability.ManipulateZombie) then
+    if self.player:getRole():hasCapability(Capability.ManipulateZombie) then
         self:addOption(getText("IGUI_AdminPanel_ZombiesDontAttack"), self.player:isZombiesDontAttack(), function(self, selected)
             self.player:setZombiesDontAttack(selected)
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_ZombiesDontAttack")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ManipulateZombie:name())
     end
-    if self.player:getRole():haveCapability(Capability.GetStatistic) then
+    if self.player:getRole():hasCapability(Capability.GetStatistic) then
         self:addOption(getText("IGUI_AdminPanel_ShowMPInfos"), self.player:isShowMPInfos(), function(self, selected)
             self.player:setShowMPInfos(selected)
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_ShowMPInfos")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.GetStatistic:name())
     end
-    if self.player:getRole():haveCapability(Capability.UseBrushToolManager) then
-        self:addOption("Brush tool", BrushToolManager.cheat, function(self, selected)
+    if self.player:getRole():hasCapability(Capability.UseBrushToolManager) then
+        self:addOption(getText("IGUI_AdminPanel_BrushTool"), BrushToolManager.cheat, function(self, selected)
             BrushToolManager.cheat = selected;
             self.player:setCanUseBrushTool(selected)
         end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_BrushTool")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseBrushToolManager:name())
+    end
+    if self.player:getRole():hasCapability(Capability.UseLootTool) then
+        self:addOption(getText("IGUI_AdminPanel_LootTool"), ISLootZed.cheat, function(self, selected)
+            ISLootZed.cheat = selected;
+            ISLootLog.cheat = selected
+            self.player:setCanUseLootTool(selected)
+        end);
+        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_LootTool")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseLootTool:name())
     end
 
     --for some reason, sorting A-Z makes the options appear Z-A, so i reversed the sorting.

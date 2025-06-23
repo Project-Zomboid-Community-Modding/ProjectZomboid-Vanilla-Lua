@@ -13,7 +13,7 @@ end
 Events.OnGameStart.Add(Fishing.Handler.OnGameStart)
 
 function Fishing.Handler.onEquipPrimary(player, inventoryItem)
-    if not player:isAiming() then
+    if player:isLocal() and not player:isAiming() then
         Fishing.Handler.handleFishing(player, inventoryItem)
     end
 end
@@ -23,6 +23,10 @@ function Fishing.Handler.handleFishing(player, primaryHandItem)
     local playerIndex = player:getPlayerNum()
 
     if Fishing.Handler.isFishingValid(primaryHandItem) then
+        if player:getJoypadBind() then
+            player:Say("Fishing by gamepad not implemented yet")
+            return
+        end
         if Fishing.ManagerInstances[playerIndex] == nil then
             Fishing.ManagerInstances[playerIndex] = Fishing.FishingManager:new(player, player:getJoypadBind())
             --getCore():setZoomEnalbed(false)

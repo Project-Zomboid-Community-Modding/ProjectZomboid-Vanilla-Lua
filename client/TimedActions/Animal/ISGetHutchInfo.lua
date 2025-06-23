@@ -23,16 +23,26 @@ function ISGetHutchInfo:stop()
 end
 
 function ISGetHutchInfo:perform()
-	local ui = ISHutchUI:new(100, 100, 600, 500, self.hutch, self.character)
-	ui:initialise();
-	ui:addToUIManager();
-    -- needed to remove from queue / start next.
+	local ui = ISHutchUI.ShowWindow(self.character, self.hutch);
+	if ui and self.animal and (self.animal:getHutch() == self.hutch) then
+		if self.animal:getNestBoxIndex() == -1 then
+			ui:showRoosts()
+		else
+			ui:showNestBoxes()
+		end
+	end
+	if getJoypadData(self.playerNum) then
+		setJoypadFocus(self.playerNum, ui)
+	end
+	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
 end
 
-function ISGetHutchInfo:new(character, hutch)
+function ISGetHutchInfo:new(character, hutch, animal)
 	local o = ISBaseTimedAction.new(self, character)
+	o.playerNum = character:getPlayerNum()
 	o.hutch = hutch;
+	o.animal = animal;
 	o.maxTime = 1
 	o.stopOnAim = false;
 	return o;

@@ -53,13 +53,12 @@ function ISBBQLightFromPetrol:perform()
 end
 
 function ISBBQLightFromPetrol:complete()
-
-	self.lighter:Use(false, false, true)
-	self.petrol:Use(false, false, true)
+	self.petrol:getFluidContainer():adjustAmount(self.petrol:getFluidContainer():getAmount() - ZomboidGlobals.LightFromPetrolAmount);
+	self.lighter:UseAndSync()
 
 	if not self.bbq then return end
 	if self.bbq:hasFuel() and not self.bbq:isLit() then
-		self.bbq:setLit(true)
+		self.bbq:turnOn()
 		self.bbq:sendObjectChange('state')
 	end
 

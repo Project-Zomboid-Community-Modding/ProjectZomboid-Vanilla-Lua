@@ -17,7 +17,7 @@ end
 function ISWidgetRecipesPanel:createChildren()
     ISPanel.createChildren(self);
 
-    local styleCell = "S_TableLayoutCell_Pad5";
+    local styleCell = "S_TableLayoutCell_Pad2";
 
     self.recipeTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10, nil, nil, styleCell);
     self.recipeTable.drawDebugLines = self.drawDebugLines;
@@ -49,6 +49,7 @@ function ISWidgetRecipesPanel:createRecipeFilterPanel(_parentTable)
     self.recipeFilterPanel.searchInfoText = getText("IGUI_CraftingWindow_SearchRecipes");
     self.recipeFilterPanel.showAllVersionTickbox = self.showAllVersionTickbox;
     self.recipeFilterPanel.needFilterCombo = self.needFilterCombo;
+    self.recipeFilterPanel.needSortCombo = self.needSortCombo;
     self.recipeFilterPanel:initialise();
     self.recipeFilterPanel:instantiate();
 
@@ -60,6 +61,8 @@ function ISWidgetRecipesPanel:createRecipeListPanel(_parentTable)
     self.recipeListPanelRow = _parentTable:addRowFill(nil);
 
     self.recipeListPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipeListPanel, 0, 0, 10, 10, self.player, self.logic, self);
+    self.recipeListPanel.expandToFitTooltip = self.expandToFitTooltip;
+    self.recipeListPanel.wrapTooltipText = self.wrapTooltipText;
     self.recipeListPanel.ignoreSurface = self.ignoreSurface;
     self.recipeListPanel.ignoreLightIcon = self.ignoreLightIcon;
     self.recipeListPanel:initialise();
@@ -95,7 +98,7 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
             local favString = BaseCraftingLogic.getFavouriteModDataString(craftRecipe);
             local isFavourite = self.player:getModData()[favString] or false;
             if isFavourite then
-                _self:drawTextureScaledAspect(self.starSetTexture, _x + _width - LIST_FAVICON_SIZE, _y, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, a, r, g, b);
+                _self:drawTextureScaledAspect(self.starSetTexture, _x + _width - LIST_FAVICON_SIZE, _y, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, a, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
             --else
             --    _self:drawTextureScaledAspect(self.starUnsetTexture, _x + _width - LIST_FAVICON_SIZE, _y, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, a, r, g, b);
             end
@@ -118,6 +121,15 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
         self.tooltipCounter = (self.tooltipCounterTime*4);
     end
 
+    self.recipeIconPanel.render = function(_self)
+        ISTiledIconPanel.render(_self)
+        _self:renderJoypadFocus()
+    end
+
+    self.recipeIconPanel.hasConflictWithJoypadNavigateStart = function(_self)
+        return true
+    end
+
     self.recipeIconPanel:initialise();
     self.recipeIconPanel:instantiate();
 
@@ -136,10 +148,10 @@ function ISWidgetRecipesPanel:calculateLayout(_preferredWidth, _preferredHeight)
         height = math.max(height, self.recipeTable:getHeight());
     end
     
-    if self.recipeListPanel then
-        self.recipeListPanel:calculateLayout(width, height);
-    end
-    
+    --if self.recipeListPanel then
+    --    self.recipeListPanel:calculateLayout(width, height);
+    --end
+    --
     if self.recipeListPanelRow and self.recipeListPanelRow.visible then
         if self.recipeListPanel then
             local cell = self.recipeTable:cellFor(self.recipeListPanel);
@@ -147,7 +159,7 @@ function ISWidgetRecipesPanel:calculateLayout(_preferredWidth, _preferredHeight)
             local cellHeight = cell:getHeight() - UI_BORDER_SPACING;
             local cellWidth = cell:getWidth() - UI_BORDER_SPACING;
             local cellX = cell:getX() + UI_BORDER_SPACING/2;
-            local cellY = 0;
+            local cellY = UI_BORDER_SPACING/2;
 
             self.recipeListPanel:setInternalDimensions(cellX, cellY, cellWidth, cellHeight);
         end
@@ -209,7 +221,7 @@ function ISWidgetRecipesPanel:onRecipeChanged(_recipe)
     self:xuiRecalculateLayout();
 end
 
-function ISWidgetRecipesPanel:filterRecipeList(_category)
+function ISWidgetRecipesPanel:filterRecipeList()
     local activePanel = self.recipeListMode and self.recipeListPanel or self.recipeIconPanel;
 
     if activePanel == self.recipeIconPanel then -- list panel does not have This function
@@ -291,5 +303,8 @@ function ISWidgetRecipesPanel:new(x, y, width, height, player, craftBench, isoOb
     o.tooltipRecipe = nil;
     o.activeTooltip = nil;
 
+    o.expandToFitTooltip = false;
+    o.wrapTooltipText = false;
+    
     return o
 end

@@ -1,7 +1,3 @@
---***********************************************************
---**                    THE INDIE STONE                    **
---***********************************************************
-
 require "ISUI/ISPanelJoypad"
 require "ISUI/ISComboBox"
 require "ISUI/ISScrollingListBox"
@@ -189,6 +185,9 @@ function ServerSettingsScreenPanel:prerender()
 					--]]
 				end
 			end
+		end
+		if label.searchFound then
+			label:setColor(0, 1, 0)
 		end
 	end
 	local x1,y1,x2,y2 = 1,1,self.width-1,self.height-1
@@ -2518,6 +2517,13 @@ function Page3:create()
 	self.tooltipPanel.autosetheight = false
 	self:addChild(self.tooltipPanel)
 
+	self.filterEntry = ISTextEntryBox:new("", UI_BORDER_SPACING, UI_BORDER_SPACING, 200, BUTTON_HGT);
+	self.filterEntry.font = UIFont.Medium
+	self.filterEntry.onTextChange = function() self:doSearch() end
+	self.filterEntry:initialise()
+	self.filterEntry:instantiate()
+	self:addChild(self.filterEntry)
+
 	self.controls = {}
 	self.groupBox = {}
 	self.customui = {}
@@ -2561,6 +2567,25 @@ function Page3:create()
 
 	self.listbox.selected = 2
 	self:onMouseDownListBox(self.listbox.items[2].item)
+end
+
+function Page3:doSearch()
+	local searchWord = string.lower(self.filterEntry:getInternalText())
+	for i, item in ipairs(self.listbox.items) do
+		if not item.item.category then
+			item.item.page.searchFound = false
+			if item.item.panel and item.item.panel.labels then
+				for i, label in pairs(item.item.panel.labels) do
+					if searchWord ~= "" and string.find(string.lower(label:getName()), searchWord) then
+						label.searchFound = true
+						item.item.page.searchFound = true
+					else
+						label.searchFound = false
+					end
+				end
+			end
+		end
+	end
 end
 
 function Page3:createPanel(category, page)
@@ -2760,7 +2785,11 @@ function Page3:doDrawItem(y, item, alt)
 
 	local dx = item.item.page and 32 or 20
 	local dy = (self.itemheight - getTextManager():getFontFromEnum(self.font):getLineHeight()) / 2
-	self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+	if item.item.page and item.item.page.searchFound then
+        self:drawText(item.text, dx, y + dy, 0.0, 0.9, 0.0, 0.9, self.font)
+    else
+        self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
+    end
 
 	return y + item.height
 end
@@ -4397,6 +4426,8 @@ SettingsTable = {
 					{ name = "GlobalChat" },
 					{ name = "AnnounceDeath" },
 					{ name = "ServerWelcomeMessage" },
+					{ name = "ChatMessageCharacterLimit" },
+					{ name = "ChatMessageSlowModeTime" },
 				},
 			},
 			{
@@ -4613,6 +4644,8 @@ SettingsTable = {
 					}
 					},
 					{ name = "DaysUntilMaximumDiminishedLoot" },
+					{ name = "MaximumLootedBuildingRooms" },
+					{ name = "UniqueHomeVHS" },
 					-- Loot rarity
 					{ name = "FoodLootNew", title = "LootRarity",
                     advancedCombo = {
@@ -4919,6 +4952,8 @@ SettingsTable = {
 					--{ name = "NightLength" },
 					{ name = "FireSpread" },
 					{ name = "AllowExteriorGenerator" },
+					{ name = "GeneratorTileRange" },
+					{ name = "GeneratorVerticalPowerRange" },
 
 -- 					{ name = "FuelStationGas" },
 					{ name = "FuelStationGasInfinite" },
@@ -4967,6 +5002,7 @@ SettingsTable = {
 -- 					{ name = "HardFallThreshold2" },
 -- 					{ name = "LethalFallThreshold" },
 					{ name = "Basement.SpawnFrequency", title = "Basements" },
+					{ name = "MaximumFireFuelHours" },
 				},
 			},
 			{
@@ -4994,6 +5030,8 @@ SettingsTable = {
 					{ name = "EnableTaintedWaterText"},
 					{ name = "MaximumRatIndex" },
 					{ name = "DaysUntilMaximumRatIndex" },
+                    { name = "ClayLakeChance" },
+                    { name = "ClayRiverChance" },
 				},
 			},
 			{
@@ -5015,12 +5053,17 @@ SettingsTable = {
 					{ name = "BloodSplatLifespanDays" },
 					{ name = "MaggotSpawn" },
 					{ name = "MetaKnowledge" },
+					{ name = "DayNightCycle" },
+                    { name = "ClimateCycle" },
+                    { name = "FogCycle" },
+					-- Bent Fences
+					{ name = "ZombieLore.FenceThumpersRequired" },
+					{ name = "ZombieLore.FenceDamageMultiplier" },
 					-- In-game map
 					{ name = "Map.AllowWorldMap", title = "InGameMap" },
 					{ name = "Map.AllowMiniMap" },
 					{ name = "Map.MapAllKnown" },
 					{ name = "Map.MapNeedsLight" },
-
 				},
 			},
 			{
@@ -5035,11 +5078,13 @@ SettingsTable = {
 					{ name = "InjurySeverity" },
 					{ name = "BoneFracture" },
 					{ name = "MuscleStrainFactor" },
+					{ name = "DiscomfortFactor" },
 					{ name = "WoundInfectionFactor" },
 					{ name = "ClothingDegradation" },
 					{ name = "NoBlackClothes" },
 					{ name = "RearVulnerability" },
 					{ name = "MultiHitZombies" },
+					{ name = "FirearmUseDamageChance" },
 					{ name = "FirearmNoiseMultiplier" },
 					{ name = "FirearmJamMultiplier" },
 					{ name = "FirearmMoodleMultiplier" },
@@ -5092,6 +5137,7 @@ SettingsTable = {
 					{ name = "MultiplierConfig.Tracking" },
 					{ name = "MultiplierConfig.Trapping" },
 					{ name = "MultiplierConfig.Butchering" },
+					{ name = "MultiplierConfig.Glassmaking"}
 				},
 			},
 			{
@@ -5132,14 +5178,11 @@ SettingsTable = {
 					{ name = "AnimalSoundAttractZombies" },
 				},
 			},
--- @Patrick - DO NOT REMOVE - Commented out to hide Ragdoll information
 --			{
 --			    name = "Physics",
 --			    settings = {
---			        { name = "RagdollUsePhysicHitReaction" },
---			        { name = "RagdollEnableDismemberment" },
---                  { name = "RagdollPhysicHitReactionFrequency" },
---                  { name = "RagdollPhysicHitReactionStrength" },
+--                  { name = "RagdollUsePhysicHitReaction" },
+--                  { name = "RagdollMaxActiveRagdolls" },
 --	      	    },
 --			},
 		},

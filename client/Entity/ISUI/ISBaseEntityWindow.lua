@@ -137,7 +137,7 @@ function ISBaseEntityWindow:close()
     if JoypadState.players[self.playerNum+1] then
         if self.unfocusRecursive then
             self:unfocusRecursive(getFocusForPlayer(self.playerNum), self.playerNum);
-        elseif getFocusForPlayer(self.playerNum)==self then
+        elseif isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
             setJoypadFocus(self.playerNum, nil);
         end
     end

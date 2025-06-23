@@ -49,13 +49,13 @@ VehicleZoneDistribution.parkingstall.baseVehicleQuality = 0.7;
 VehicleZoneDistribution.trailerpark = {};
 VehicleZoneDistribution.trailerpark.vehicles = {};
 VehicleZoneDistribution.trailerpark.vehicles["Base.CarNormal"] = {index = -1, spawnChance = 25};
-VehicleZoneDistribution.trailerpark.vehicles["Base.SmallCar"] = {index = -1, spawnChance = 25};
-VehicleZoneDistribution.trailerpark.vehicles["Base.SmallCar02"] = {index = -1, spawnChance = 25};
+VehicleZoneDistribution.trailerpark.vehicles["Base.SmallCar"] = {index = -1, spawnChance = 29};
+VehicleZoneDistribution.trailerpark.vehicles["Base.SmallCar02"] = {index = -1, spawnChance = 29};
 VehicleZoneDistribution.trailerpark.vehicles["Base.CarStationWagon"] = {index = -1, spawnChance = 5};
 VehicleZoneDistribution.trailerpark.vehicles["Base.CarStationWagon2"] = {index = -1, spawnChance = 5};
 VehicleZoneDistribution.trailerpark.vehicles["Base.StepVan"] = {index = -1, spawnChance = 5};
-VehicleZoneDistribution.trailerpark.vehicles["Base.PickUpTruck_Camo"] = {index = -1, spawnChance = 5};
-VehicleZoneDistribution.trailerpark.vehicles["Base.PickUpVan_Camo"] = {index = -1, spawnChance = 5};
+VehicleZoneDistribution.trailerpark.vehicles["Base.PickUpTruck_Camo"] = {index = -1, spawnChance = 1};
+VehicleZoneDistribution.trailerpark.vehicles["Base.PickUpVan_Camo"] = {index = -1, spawnChance = 1};
 VehicleZoneDistribution.trailerpark.chanceToSpawnBurnt = 20;
 VehicleZoneDistribution.trailerpark.baseVehicleQuality = 0.5;
 VehicleZoneDistribution.trailerpark.chanceOfOverCar = 10;
@@ -361,13 +361,13 @@ VehicleZoneDistribution.airportservice.spawnRate = 32;
 -- farms
 VehicleZoneDistribution.farm = {};
 VehicleZoneDistribution.farm.vehicles = {};
-VehicleZoneDistribution.farm.vehicles["Base.PickUpTruck"] = {index = -1, spawnChance = 10};
-VehicleZoneDistribution.farm.vehicles["Base.PickUpVan"] = {index = -1, spawnChance = 10};
+VehicleZoneDistribution.farm.vehicles["Base.PickUpTruck"] = {index = -1, spawnChance = 14};
+VehicleZoneDistribution.farm.vehicles["Base.PickUpVan"] = {index = -1, spawnChance = 14};
 VehicleZoneDistribution.farm.vehicles["Base.Trailer"] = {index = -1, spawnChance = 10};
 VehicleZoneDistribution.farm.vehicles["Base.TrailerCover"] = {index = -1, spawnChance = 10};
 VehicleZoneDistribution.farm.vehicles["Base.Trailer_Livestock"] = {index = -1, spawnChance = 50};
-VehicleZoneDistribution.farm.vehicles["Base.PickUpTruck_Camo"] = {index = -1, spawnChance = 5};
-VehicleZoneDistribution.farm.vehicles["Base.PickUpVan_Camo"] = {index = -1, spawnChance = 5};
+VehicleZoneDistribution.farm.vehicles["Base.PickUpTruck_Camo"] = {index = -1, spawnChance = 1};
+VehicleZoneDistribution.farm.vehicles["Base.PickUpVan_Camo"] = {index = -1, spawnChance = 1};
 -- nothing but the above vehicles because this is for trailers!
 VehicleZoneDistribution.farm.chanceToSpawnNormal = 0;
 VehicleZoneDistribution.farm.chanceToSpawnSpecial = 0;
@@ -408,30 +408,45 @@ VehicleZoneDistribution.business.vehicles["Base.VanRadio"] = {index = -1, spawnC
 VehicleZoneDistribution.business.vehicles["Base.VanRadio_3N"] = {index = -1, spawnChance = 2};
 
 VehicleZoneDistribution.business.vehicles["Base.Van_LectroMax"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.Van_Locksmith"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.Van_MassGenFac"] = {index = -1, spawnChance = 2};
 
 VehicleZoneDistribution.business.vehicles["Base.VanPluggedInElectrics"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.Van_VoltMojo"] = {index = -1, spawnChance = 2};
 
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Blacksmith"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Butchers"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Cereal"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Citr8"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Florist"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Genuine_Beer"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Glass"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_Heralds"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_HuangsLaundry"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_MarineBites"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Masonry"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_MobileLibrary"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_Plonkies"] = {index = -1, spawnChance = 2};
-VehicleZoneDistribution.business.vehicles["Base.StepVan_Citr8"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_Propane"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.StepVan_SmartKut"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_SouthEasternHosp"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_SouthEasternPaint"] = {index = -1, spawnChance = 4};
-VehicleZoneDistribution.business.vehicles["Base.StepVan_MarineBites"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.StepVan_Zippee"] = {index = -1, spawnChance = 2};
-VehicleZoneDistribution.business.vehicles["Base.StepVan_Cereal"] = {index = -1, spawnChance = 4};
-VehicleZoneDistribution.business.vehicles["Base.StepVan_Genuine_Beer"] = {index = -1, spawnChance = 2};
 
 VehicleZoneDistribution.business.vehicles["Base.VanGreenes"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.VanOvoFarm"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.VanSpiffo"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.VanUncloggers"] = {index = -1, spawnChance = 4};
-VehicleZoneDistribution.business.vehicles["Base.Van_Transit"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.Van_Blacksmith"] = {index = -1, spawnChance = 2};
 VehicleZoneDistribution.business.vehicles["Base.Van_BugWipers"] = {index = -1, spawnChance = 2};
-VehicleZoneDistribution.business.vehicles["Base.Van_Perfick_Potato"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.Van_CraftSupplies"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.Van_Glass"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.Van_Leather"] = {index = -1, spawnChance = 4};
+VehicleZoneDistribution.business.vehicles["Base.Van_Masonry"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.Van_Transit"] = {index = -1, spawnChance = 4};
 VehicleZoneDistribution.business.vehicles["Base.Van_Charlemange_Beer"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.Van_HeritageTailors"] = {index = -1, spawnChance = 2};
+VehicleZoneDistribution.business.vehicles["Base.Van_Perfick_Potato"] = {index = -1, spawnChance = 4};
 
 VehicleZoneDistribution.business.vehicles["Base.VanSeats_Mural"] = {index = -1, spawnChance = 1};
 VehicleZoneDistribution.business.specialCar = true;

@@ -135,6 +135,11 @@ ProfessionVehicles.StepVan_Heralds = {
     Alternate = { "Base.StepVan", },
 }
 
+ProfessionVehicles.StepVan_MobileLibrary = {
+    Louisville = { "Base.StepVan", },
+    LAA = { "Base.StepVan", },
+}
+
 -- ProfessionVehicles.StepVanMail = {
 --     LAA = { "Base.StepVanMail", },
 -- }
@@ -158,6 +163,7 @@ ProfessionVehicles.VanBuilder = {
     "Base.PickUpVanKimbleKonstruction", "Base.PickUpVanMarchRidgeConstruction", "Base.VanBeckmans", "Base.VanKerrHomes",},
     LAA = { "Base.VanCoastToCoast", },
 }
+
 ProfessionVehicles.VanCarpenter = {
     Louisville = { "Base.StepVan_Jorgensen", "Base.PickUpVanLightsKentuckyLumber", },
     MarchRidge = {  "Base.PickUpVanYingsWood","Base.PickUpVanLightsKentuckyLumber", },
@@ -205,11 +211,11 @@ ProfessionVehicles.VanMetalworker = {
     "Base.PickUpVanHeltonMetalWorking", "Base.VanJonesFabrication", "Base.VanRiversideFabrication", "Base.VanSchwabSheetMetal", },
     LAA = { "Base.VanMeltingPointMetal", },
 }
-ProfessionVehicles.VanMobileMechanics = {
-    LAA = { "Base.VanMobileMechanics", },
+ProfessionVehicles.PickUpTruck_Camo = {
+     Louisville = { "Base.PickUpTruck", },
 }
-ProfessionVehicles.VanUtility = {
-    LAA = { "Base.PickUpTruckLightsAirport", },
+ProfessionVehicles.PickUpVan_Camo = {
+     Louisville = { "Base.PickUpVan", },
 }
 -- ProfessionVehicles.VanSeatsAirportShuttle = {
 --     LAA = { "Base.VanSeatsAirportShuttle", },
@@ -228,6 +234,18 @@ ProfessionVehicles.VanSeats_Mural = {
     WestPoint = { "Base.VanSeats_Valkyrie", },
     General = { "Base.VanSeats_Creature", "Base.VanSeats_LadyDelighter",  "Base.VanSeats_Space", "Base.VanSeats_Trippy", "Base.VanSeats_Valkyrie", },
     Alternate = { "Base.VanSeats", },
+}
+ProfessionVehicles.VanMechanic = {
+    Louisville = { "Base.StepVan_LouisvilleMotorShop", "Base.VanMobileMechanics", },
+    Muldraugh = { "Base.VanKorshunovs", "Base.VanMobileMechanics",},
+    Riverside = { "Base.VanBrewsterHarbin", "Base.VanMobileMechanics",},
+    Rosewood = { "Base.StepVan_CompleteRepairShop", "Base.VanPlattAuto", "Base.VanMobileMechanics",},
+    WestPoint = { "Base.VanMooreMechanics", "Base.VanMobileMechanics",},
+    General = { "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics",
+    "Base.StepVan_CompleteRepairShop",  "Base.StepVan_LouisvilleMotorShop", "Base.VanBrewsterHarbin", "Base.VanMooreMechanics", "Base.VanPlattAuto", },
+    Alternate = { "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics", "Base.VanMobileMechanics",
+    "Base.StepVan_CompleteRepairShop",  "Base.StepVan_LouisvilleMotorShop", "Base.VanBrewsterHarbin", "Base.VanMooreMechanics", "Base.VanPlattAuto", },
+    LAA = { "Base.VanMobileMechanics", },
 }
 
 

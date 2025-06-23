@@ -33,14 +33,20 @@ function ISWaitWhileGettingUp:stop()
 end
 
 function ISWaitWhileGettingUp:perform()
+	local actionToRetrigger = self.character:getTimedActionToRetrigger()
+	self.retriggerLastAction = false
+
+	-- needed to remove from queue / start next.
+	ISBaseTimedAction.perform(self)
+
+	self.character:setTimedActionToRetrigger(actionToRetrigger)
+
 	self:beginAddingActions()
 	if self.onCompleteFunc then
 		local a = self.onCompleteArgs
 		self.onCompleteFunc(a.p1, a.p2, a.p3, a.p4, a.p5, a.p6, a.p7, a.p8, a.p9, a.p10)
 	end
 	self:endAddingActions()
-	-- needed to remove from queue / start next.
-	ISBaseTimedAction.perform(self)
 end
 
 function ISWaitWhileGettingUp:complete()

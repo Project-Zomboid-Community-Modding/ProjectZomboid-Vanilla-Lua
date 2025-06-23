@@ -105,7 +105,7 @@ function ISFluidContainer:getFluidObject()
 end
 
 function ISFluidContainer:sync()
-    if not isServer() then
+    if isClient() then
         return
     end
 

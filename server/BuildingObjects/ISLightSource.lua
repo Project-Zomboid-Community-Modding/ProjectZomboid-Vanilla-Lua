@@ -9,6 +9,7 @@ ISLightSource = ISBuildingObject:derive("ISLightSource");
 --**
 --************************************************************************--
 function ISLightSource:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISLightSource\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -65,6 +66,7 @@ function ISLightSource:new(sprite, northSprite, character)
 	o.fuel = "Base.Battery";
 	o.baseItem = "Base.Torch";
 	o.radius = 10;
+	showDebugInfoInChat("Cursor New \'ISLightSource\'")
 	return o;
 end
 

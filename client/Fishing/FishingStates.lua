@@ -43,6 +43,7 @@ function Fishing.States.Idle:start()
     local primaryHandItem = self.manager.player:getPrimaryHandItem()
     if not (primaryHandItem ~= nil and primaryHandItem:hasTag("FishingRod")) then
         self.manager:changeState("None")
+        return
     end
     if self.manager.fishingRod == nil then
         self.manager.fishingRod = Fishing.FishingRod:new(self.manager.player)
@@ -55,7 +56,7 @@ function Fishing.States.Idle:update()
     if Fishing.Utils.isPlayerAimOnWater(self.manager.player) then
         Fishing.Utils.facePlayerToAim(self.manager.player)
 
-        if Fishing.Utils.isCastButtonPressed(self.manager.joypad) then
+        if Fishing.Utils.isCastButtonPressed(self.manager.joypad) and Fishing.Utils.isAccessibleAimDist(self.manager.player) then
             self.manager:changeState("Cast")
         end
     else

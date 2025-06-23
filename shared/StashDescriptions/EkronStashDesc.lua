@@ -43,7 +43,7 @@ stashMap.buildingY = 9540
 stashMap.barricades = 40;
 
 stashMap.spawnTable = "GunCache2";
-stashMap:addContainer("GunBox", nil, "Base.Bag_MoneyBag", "derelict", nil,nil,nil)
+stashMap:addContainer("GunBox", nil, "Base.Bag_DuffelBagTINT", "derelict", nil,nil,nil)
 
 stashMap:addStamp("X", nil, 792, 9541, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_EkronMap3_Text1", 762, 9547, 0.129,0.129,0.129)

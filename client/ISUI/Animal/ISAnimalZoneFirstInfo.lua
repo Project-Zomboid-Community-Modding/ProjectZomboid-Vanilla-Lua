@@ -4,25 +4,32 @@
 --- DateTime: 11/18/2024 10:46 AM
 ---
 
-ISAnimalZoneFirstInfo = ISPanel:derive("ISAnimalZoneFirstInfo");
+ISAnimalZoneFirstInfo = ISPanelJoypad:derive("ISAnimalZoneFirstInfo");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.NewMedium)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 15
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISAnimalZoneFirstInfo:initialise()
-    ISPanel.initialise(self);
+    ISPanelJoypad.initialise(self);
     local btnWid = 150
+    local x = UI_BORDER_SPACING+1
 
-    self.okBtn = ISButton:new(self:getWidth() / 2 - (btnWid / 2), self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISAnimalZoneFirstInfo.onClickOk);
-    self.okBtn.anchorTop = false
-    self.okBtn.anchorBottom = true
-    self.okBtn:initialise();
-    self.okBtn:instantiate();
-    self:addChild(self.okBtn);
+    local textLines = string.split(getText("IGUI_Animal_ZoneFirstInfo"), "<LINE> <LINE>");
+    local maxLength = 0;
+    local maxHeight = 0;
+    for i, v in pairs(textLines) do
+        maxLength = math.max(maxLength, getTextManager():MeasureStringX(UIFont.NewMedium, v))
+        maxHeight = maxHeight + 1
+    end
 
-    self.rich = ISRichTextPanel:new(5, 10, self.width - 10, self.height - 40);
+    self:setWidth(maxLength + x*2)
+    self:setHeight((maxHeight*2)*FONT_HGT_MEDIUM + BUTTON_HGT + UI_BORDER_SPACING*3 + 2)
+    self:setX((getCore():getScreenWidth() - self:getWidth()) / 2)
+    self:setY((getCore():getScreenHeight() - self:getHeight()) / 2)
+
+    self.rich = ISRichTextPanel:new(x, x, self.width - x*2, self.height - x*2 - UI_BORDER_SPACING - BUTTON_HGT);
     self.rich.anchorLeft = true;
     self.rich.anchorRight = true;
     self.rich.marginLeft = 0
@@ -33,6 +40,14 @@ function ISAnimalZoneFirstInfo:initialise()
     self.rich.backgroundColor = {r=0, g=0, b=0, a=0.3};
     self.rich.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.rich)
+
+    self.okBtn = ISButton:new(self:getWidth() / 2 - (btnWid / 2), self:getHeight() - BUTTON_HGT - x, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISAnimalZoneFirstInfo.onClickOk);
+    self.okBtn.anchorTop = false
+    self.okBtn.anchorBottom = true
+    self.okBtn:enableAcceptColor();
+    self.okBtn:initialise();
+    self.okBtn:instantiate();
+    self:addChild(self.okBtn);
 end
 
 function ISAnimalZoneFirstInfo:prerender()
@@ -52,24 +67,34 @@ function ISAnimalZoneFirstInfo:onClickOk()
 
     self:setVisible(false);
     self:removeFromUIManager();
-end
-
-ISAnimalZoneFirstInfo.showUI = function(force)
-    if force or getCore():getOptionShowFirstAnimalZoneInfo() then
-        local ui = ISAnimalZoneFirstInfo:new(0,0);
-        ui:initialise();
-        ui:addToUIManager();
+    if isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
+        setJoypadFocus(self.playerNum, self.prevFocus)
     end
 end
 
-function ISAnimalZoneFirstInfo:new(x, y)
+function ISAnimalZoneFirstInfo:onGainJoypadFocus(joypadData)
+    ISPanelJoypad.onGainJoypadFocus(self, joypadData);
+    self:setISButtonForA(self.okBtn)
+end
+
+ISAnimalZoneFirstInfo.showUI = function(playerNum, force)
+    if force or getCore():getOptionShowFirstAnimalZoneInfo() then
+        local ui = ISAnimalZoneFirstInfo:new(0, 0, playerNum);
+        ui:initialise();
+        ui:addToUIManager();
+        local joypadData = getJoypadData(playerNum)
+        if joypadData then
+            ui.prevFocus = joypadData.focus
+            setJoypadFocus(playerNum, ui)
+        end
+    end
+end
+
+function ISAnimalZoneFirstInfo:new(x, y, playerNum)
     local width = 700;
     local height = 500;
 
-    local o = {}
-    o = ISPanel:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISPanelJoypad.new(self, x, y, width, height);
     if y == 0 then
         o.y = getCore():getScreenHeight() / 2 - (height / 2)
         o:setY(o.y)
@@ -80,6 +105,6 @@ function ISAnimalZoneFirstInfo:new(x, y)
     end
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
-
+    o.playerNum = playerNum
     return o;
 end

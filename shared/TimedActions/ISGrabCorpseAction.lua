@@ -70,9 +70,17 @@ function ISGrabCorpseAction:complete()
         end
 
         self.corpseBody:getSquare():removeCorpse(self.corpseBody, false);
-        return;
+        return true;
     end
 
+    local playerID
+    if isMultiplayer() then
+        playerID = self.character:getOnlineID();
+    else
+        playerID = self.character:getPlayerNum();
+    end
+
+    self.corpseBody:getModData()["lastPlayerGrabbed"] = playerID;
     self.character:pickUpCorpse(self.corpseBody);
 
     return true;

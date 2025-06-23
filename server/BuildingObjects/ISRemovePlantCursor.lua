@@ -9,6 +9,7 @@ local function predicateCutPlant(item)
 end
 
 function ISRemovePlantCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISRemovePlantCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local square = getWorld():getCell():getGridSquare(x, y, z)
 	if self.removeType == "bush" then
 		ISWorldObjectContextMenu.doRemovePlant(self.character, square, false)
@@ -91,6 +92,7 @@ function ISRemovePlantCursor:new(character, removeType)
 	o.skipBuildAction = true
 	o.isYButtonResetCursor = true
 	o.removeType = removeType
+	showDebugInfoInChat("Cursor New \'ISRemovePlantCursor\'")
 	return o
 end
 

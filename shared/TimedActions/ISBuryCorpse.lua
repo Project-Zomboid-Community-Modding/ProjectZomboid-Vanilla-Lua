@@ -7,27 +7,26 @@ require "TimedActions/ISBaseTimedAction"
 ISBuryCorpse = ISBaseTimedAction:derive("ISBuryCorpse");
 
 function ISBuryCorpse:isValidStart()
-	return not ISEmptyGraves.isGraveFullOfCorpses(self.graves) and (self.character:getInventory():contains("CorpseMale") or self.character:getInventory():contains("CorpseFemale"))
+	return not ISEmptyGraves.isGraveFullOfCorpses(self.grave);
 end
 
 function ISBuryCorpse:isValid()
-	local playerInv = self.character:getInventory()
-	return playerInv:containsType("CorpseMale") or playerInv:containsType("CorpseFemale")
+	return true;
 end
 
 function ISBuryCorpse:waitToStart()
-	self.character:faceThisObject(self.graves)
+	self.character:faceThisObject(self.grave)
 	return self.character:shouldBeTurning()
 end
 
 function ISBuryCorpse:update()
-	self.character:faceThisObject(self.graves)
+	self.character:faceThisObject(self.grave)
 
     self.character:setMetabolicTarget(Metabolics.DiggingSpade);
 end
 
 function ISBuryCorpse:start()
-	self:setActionAnim(CharacterActionAnims.Dig)
+	--self:setActionAnim(CharacterActionAnims.Dig)
 end
 
 function ISBuryCorpse:stop()
@@ -40,64 +39,53 @@ function ISBuryCorpse:perform()
 end
 
 function ISBuryCorpse:complete()
-	local playerInv = self.character:getInventory()
-	if playerInv:containsType("CorpseMale") then
-		local item = playerInv:RemoveOneOf("CorpseMale", false)
-		sendRemoveItemFromContainer(playerInv, item);
-	elseif playerInv:containsType("CorpseFemale") then
-		local item = playerInv:RemoveOneOf("CorpseFemale", false)
-		sendRemoveItemFromContainer(playerInv, item);
+	if ISEmptyGraves.isGraveFullOfCorpses(self.grave) then
+		return false;
 	end
 
-	self.character:setPrimaryHandItem(nil)
-	self.character:setSecondaryHandItem(nil)
+	if self.primaryHandItem and self.primaryHandItem:hasTag("AnimalCorpse") then
+		return GraveHelper.onBuryAnimalCorpse(self.grave, self.character, self.primaryHandItem);
+	end
 
-	self.graves:getModData()["corpses"] = self.graves:getModData()["corpses"] + 1;
-	self.graves:transmitModData()
-
-	local sq1 = self.graves:getSquare();
-	local sq2 = nil;
-	if self.graves:getNorth() then
-		if self.graves:getModData()["spriteType"] == "sprite1" then
-			sq2 = getCell():getGridSquare(sq1:getX(), sq1:getY() - 1, sq1:getZ());
-		elseif self.graves:getModData()["spriteType"] == "sprite2" then
-			sq2 = getCell():getGridSquare(sq1:getX(), sq1:getY() + 1, sq1:getZ());
-		end
+	local playerID
+	if isMultiplayer() then
+		playerID = self.character:getOnlineID();
 	else
-		if self.graves:getModData()["spriteType"] == "sprite1" then
-			sq2 = getCell():getGridSquare(sq1:getX() - 1, sq1:getY(), sq1:getZ());
-		elseif self.graves:getModData()["spriteType"] == "sprite2" then
-			sq2 = getCell():getGridSquare(sq1:getX() + 1, sq1:getY(), sq1:getZ());
+		playerID = self.character:getPlayerNum();
+	end
+
+	local targetBody
+	for i = self.bodySquare:getStaticMovingObjects():size()-1, 0, -1 do
+		if instanceof(self.bodySquare:getStaticMovingObjects():get(i), "IsoDeadBody") then
+			local body = self.bodySquare:getStaticMovingObjects():get(i)
+			if body:getModData()["lastPlayerGrabbed"] ~= nil and
+					body:getModData()["lastPlayerGrabbed"] == playerID then
+				targetBody = body;
+			end
 		end
 	end
 
-	self:increaseCorpse(sq2);
+	if targetBody == nil then return false end
+
+	local sq = targetBody:getSquare()
+	local z = sq:getZ()
+	if z ~= 0 then return false end
+	GraveHelper.updateGrave(self.grave);
+
+	sq:removeCorpse(targetBody, false);
 
 	return true;
 end
 
 function ISBuryCorpse:getDuration()
-	if self.character:isTimedActionInstant() then
-		return 1
-	end
-	return 80
+	return 300;
 end
 
-function ISBuryCorpse:increaseCorpse(square)
-	for i=0,square:getSpecialObjects():size()-1 do
-		local grave = square:getSpecialObjects():get(i);
-		if grave:getName() == "EmptyGraves" then
-			grave:getModData()["corpses"] = grave:getModData()["corpses"] + 1;
-			grave:transmitModData()
-		end
-	end
-end
-
-function ISBuryCorpse:new(character, graves, shovel)
+function ISBuryCorpse:new(character, grave, primaryHandItem, bodySquare)
 	local o = ISBaseTimedAction.new(self, character)
-	o.graves = graves;
+	o.grave = grave;
 	o.maxTime = o:getDuration();
-    o.caloriesModifier = 5;
-    o.shovel = shovel
+    o.primaryHandItem = primaryHandItem;
+	o.bodySquare = bodySquare;
 	return o;
 end

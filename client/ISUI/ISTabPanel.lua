@@ -498,6 +498,7 @@ function ISTabPanel:getActiveView()
 	if self.activeView then
 		return self.activeView.view
 	end
+	return nil
 end
 
 function ISTabPanel:getActiveViewIndex()
@@ -549,6 +550,18 @@ function ISTabPanel:removeView(view)
 	end
 	self.viewList = newViewList;
 	self:removeChild(view);
+end
+
+function ISTabPanel:replaceView(view, panel)
+	local previous = nil
+	for _,viewObject in ipairs(self.viewList) do
+		if viewObject.view == view then
+			previous = viewObject.view
+			viewObject.view = panel
+			return previous
+		end
+	end
+	return nil
 end
 
 function ISTabPanel:setEqualTabWidth(equal)

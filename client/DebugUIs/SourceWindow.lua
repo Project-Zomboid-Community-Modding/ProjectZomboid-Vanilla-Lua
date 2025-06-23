@@ -2,6 +2,7 @@ require "ISUI/ISCollapsableWindow"
 
 SourceWindow = ISCollapsableWindow:derive("SourceWindow");
 
+local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 function SourceWindow:onMouseDoubleClickBreakpointToggle(item)
@@ -45,7 +46,9 @@ function SourceWindow:fill()
             if str ~= nil then
                 --         print(str);
                 str = str:gsub("\t", "    ")
-                self.sourceView:addItem(count.."    "..str, str);
+                local lineNumberStr = string.format("%d", count)
+                lineNumberStr = string.rep(" ", 5 - #lineNumberStr) .. lineNumberStr
+                self.sourceView:addItem(lineNumberStr.."    "..str, str);
                 count = count + 1;
             end
         end
@@ -60,14 +63,14 @@ function SourceWindow:createChildren()
     ISCollapsableWindow.createChildren(self);
 
     self.sourceView = ISScrollingListBox:new(0, self:titleBarHeight(), self.width, self.height - self:resizeWidgetHeight() - buttonHgt - self:titleBarHeight());
+    self.sourceView:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.sourceView.filename = self.filename;
     self.sourceView.anchorRight = true;
     self.sourceView.anchorBottom = true;
     self.sourceView:initialise();
     self.sourceView.doDrawItem = SourceWindow.doDrawItem;
     self.sourceView.prerender = SourceWindow.renderSrc;
-    self.sourceView.backgroundColor = {r=0.98, g=0.98, b=0.99, a=1}
-    self.sourceView.itemheight = 20;
+    self.sourceView.backgroundColor = {r=30/255, g=31/255, b=34/255, a=1}
     self.sourceView:setOnMouseDoubleClick(self, SourceWindow.onMouseDoubleClickBreakpointToggle);
     self.sourceView.onMouseWheel = SourceWindow.onSourceMouseWheel;
     self:addChild(self.sourceView);
@@ -83,6 +86,11 @@ function SourceWindow:createChildren()
     self.resizeWidget:bringToTop()
 
     self:fill();
+end
+
+function SourceWindow:prerender()
+    ISCollapsableWindow.prerender(self)
+    self:checkFontSize()
 end
 
 function SourceWindow:renderSrc()
@@ -117,35 +125,58 @@ end
 
 function SourceWindow:doDrawItem(y, item)
     if self.selected == item.index then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.2, 0.6, 0.7, 0.8);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.2, 0.6, 0.7, 0.8);
 
     end
 
     if hasBreakpoint(self.filename, item.index) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.3, 0.8, 0.6, 0.4);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.8, 0.6, 0.4);
     end
 
     if isCurrentExecutionPoint(self.filename, item.itemindex) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.6, 0.6, 0.8, 0.7);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.6, 0.6, 0.8, 0.7);
     end
 
   --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(item.text, 15, (y)+6, 0, 0, 0, 1, UIFont.Code);
+    self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
 
 end
 
-function SourceWindow:new (x, y, width, height, filename)
+function SourceWindow:scrollToLine(line)
+    local p = (line - 1) * self.sourceView.itemheight;
+    p = p - (self:getHeight() / 2);
+    self.sourceView:setScrollHeight(self.sourceView.count * self.sourceView.itemheight);
+    self.sourceView:setYScroll(-p);
+    self.sourceView.selected = line;
+end
 
-     print("creating new sourcewindow: "..filename);
+function SourceWindow:checkFontSize()
+    local font = getTextManager():getCurrentCodeFont()
+    if font == self.sourceView.font then return end
+    local fontHeight = getTextManager():getFontHeight(font)
+    FONT_HGT_CODE = fontHeight
+    self.sourceView:setFont(font, 0)
+    self:setListBoxItemHeight(self.sourceView)
+end
+
+function SourceWindow:setListBoxItemHeight(listBox)
+    for i=1,#listBox.items do
+        listBox.items[i].height = listBox.itemheight
+    end
+end
+
+function SourceWindow:new (x, y, width, height, filename)
+    log(DebugType.Lua, "sourcewindow: file:///"..filename);
+
     local o = {}
 
-     local del = getCore():getScreenWidth() / 1920;
-     x = getCore():getScreenWidth()-(700*del);
-     y = 48;
-     width = (700*del);
-     height = getCore():getScreenHeight() - (getCore():getScreenHeight()/3) -48
+    local del = getCore():getScreenWidth() / 1920;
+    x = getCore():getScreenWidth()-(700*del);
+    y = 48;
+    width = (700*del);
+    height = getCore():getScreenHeight() - (getCore():getScreenHeight()/3) -48
     --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)

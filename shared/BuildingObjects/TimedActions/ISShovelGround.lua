@@ -41,7 +41,8 @@ function ISShovelGround:start()
 	local jobTypes = {
 		["Base.Dirtbag"] = "ContextMenu_Take_some_dirt",
 		["Base.Gravelbag"] = "ContextMenu_Take_some_gravel",
-		["Base.Sandbag"] = "ContextMenu_Take_some_sands"
+		["Base.Sandbag"] = "ContextMenu_Take_some_sands",
+		["Base.Claybag"] = "ContextMenu_Take_some_clay"
 	}
 	self.emptyBag:setJobType(getText(jobTypes[self.newBag]))
 --    self.sound = getSoundManager():PlayWorldSound("shoveling", self.sandTile:getSquare(), 0, 5, 1, true);
@@ -98,7 +99,7 @@ function ISShovelGround:shovelGround(sq)
 		end
 
 		if self.emptyBag:hasTag("HoldDirt") and (self.newBag == "Base.Dirtbag" or
-				self.newBag == "Base.Gravelbag" or self.newBag == "Base.Sandbag") then
+				self.newBag == "Base.Gravelbag" or self.newBag == "Base.Sandbag" or self.newBag == "Base.Claybag") then
 			local isPrimary = self.character:isPrimaryHandItem(self.emptyBag)
 			local isSecondary = self.character:isSecondaryHandItem(self.emptyBag)
 			self.character:removeFromHands(self.emptyBag);
@@ -107,8 +108,10 @@ function ISShovelGround:shovelGround(sq)
 			local item = self.character:getInventory():AddItem(self.newBag);
 			sendAddItemToContainer(self.character:getInventory(), item);
 			if item ~= nil then
-				item:setUsedDelta(item:getUseDelta())
-				sendItemStats(item)
+			    if self.newBag ~= "Base.Claybag" then
+				    item:setUsedDelta(item:getUseDelta())
+				    sendItemStats(item)
+				end
 				if isPrimary then
 					self.character:setPrimaryHandItem(item)
 				end
@@ -121,11 +124,19 @@ function ISShovelGround:shovelGround(sq)
 			self.emptyBag:setUsedDelta(self.emptyBag:getCurrentUsesFloat() + self.emptyBag:getUseDelta())
 			sendItemStats(self.emptyBag)
 		end
-		if ZombRand(5) == 0 then
-			local item = instanceItem("Base.Worm")
-			self.character:getInventory():AddItem(item);
-			sendAddItemToContainer(self.character:getInventory(), item);
-		end
+
+        -- moved from ISShovelGround:complete()
+        -- maybe give worm ?
+        if self.newBag == "Base.Dirtbag" then
+            wormCheck(self.character, self.character:getPrimaryHandItem(), sq)
+        end
+
+		-- this was removed as producing worms has been revised to be realistic and was handled elsewhere
+-- 		if ZombRand(5) == 0 then
+-- 			local item = instanceItem("Base.Worm")
+-- 			self.character:getInventory():AddItem(item);
+-- 			sendAddItemToContainer(self.character:getInventory(), item);
+-- 		end
 	else
 		print('expected IsoObject got '..tostring(o))
 		return false
@@ -139,10 +150,10 @@ function ISShovelGround:complete()
 		return false
 	end
 
-	-- maybe give worm ?
-	if self.newBag == "Base.Dirtbag" then
-		wormCheck(self.character, self.item, sq)
-	end
+-- 	-- maybe give worm ?
+-- 	if self.newBag == "Base.Dirtbag" then
+-- 		wormCheck(self.character, self.item, sq)
+-- 	end
 
 	return true;
 end

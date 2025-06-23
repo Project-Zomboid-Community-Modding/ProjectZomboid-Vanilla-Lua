@@ -89,12 +89,11 @@ function ISAdminMessage:onClick(button)
     ISAdminMessage.RecalculPositions();
     self:destroy();
     if button.internal == "YES" then
-        getPlayer():setX(self.px);
-        getPlayer():setY(self.py);
-        getPlayer():setZ(self.pz);
-        getPlayer():setLastX(self.px);
-        getPlayer():setLastY(self.py);
-        getPlayer():setLastZ(self.pz);
+        if isClient() then
+            SendCommandToServer("/teleportto " .. tostring(self.px) .. "," .. tostring(self.py) .. "," .. tostring(self.pz));
+        else
+            getPlayer():teleportTo(self.px, self.py, self.pz)
+        end
     end
 end
 

@@ -41,7 +41,7 @@ function AddChumToWaterAction:complete()
         FishSchoolManager.getInstance():addChum(self.square:getX(), self.square:getY(), -400*self.chum:getHungChange())
 
         local args = { x=self.square:getX(), y=self.square:getY(), force=-400*self.chum:getHungChange() }
-        sendServerCommand(player, 'fishing', 'addChumToWater', args)
+        sendServerCommand(self.character, 'fishing', 'addChumToWater', args)
     end
     self.character:getInventory():Remove(self.chum);
     sendRemoveItemFromContainer(self.character:getInventory(), self.chum);
@@ -61,5 +61,6 @@ function AddChumToWaterAction:new(character, chum, square)
     o.chum = chum
     o.square = square
     o.maxTime = o:getDuration();
+    o.character = character;
     return o;
 end

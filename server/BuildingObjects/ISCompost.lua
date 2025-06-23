@@ -9,6 +9,7 @@ ISCompost = ISBuildingObject:derive("ISCompost");
 --**
 --************************************************************************--
 function ISCompost:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISCompost\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoCompost.new(cell, self.sq, sprite);
@@ -30,6 +31,7 @@ function ISCompost:new(name, sprite)
 	o.dismantable = true;
 	o.blockAllTheSquare = true;
 	o.canBeAlwaysPlaced = true;
+	showDebugInfoInChat("Cursor New \'ISCompost\'")
 	return o;
 end
 

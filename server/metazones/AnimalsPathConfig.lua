@@ -16,5 +16,5 @@ animals_path_config = {
         radius = { 40, 60 },
         extension = { 10, 20 },
         extension_chance = 0.75,
-    }
+    },
 }

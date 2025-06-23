@@ -134,7 +134,7 @@ function ISMoveableDefinitions:getInstance()
         if not self.scrapDefinitions[_material] then
             _tools = self.parseItemTypes(_tools);
             _tools2 = self.parseItemTypes(_tools2);
-            self.scrapDefinitions[_material] = { name = _material, tools = _tools, tools2 = (_tools2 ~=nil and _tools2 or {}), perk = _perk, perkName = PerkFactory.getPerkName(_perk), baseActionTime = _baseActionTime, sound = _sound, isWav = _isWav, returnItems = {}, returnItemsStatic = {}, baseChance = _baseChance, unusableItem = _unusableItem };
+            self.scrapDefinitions[_material] = { name = _material, tools = _tools, tools2 = (_tools2 ~=nil and _tools2 or {}), perk = _perk, perkName = PerkFactory.getPerkName(_perk), baseActionTime = _baseActionTime, sound = _sound, isWav = _isWav, returnItems = {}, returnItemsStatic = {}, baseChance = _baseChance, unusableItem = _unusableItem, fromModData = false };
             if _tools then
                 self.scrapDefinitions[_material].toolNames = {};
                 for _,v in pairs(_tools) do
@@ -259,6 +259,7 @@ function ISMoveableDefinitions:getInstance()
         if self.repairDefinitions[ _material ] then
             return self.repairDefinitions[ _material ];
         end
+        return nil
     end
 
     function self.removeRepairDefinition( _material )

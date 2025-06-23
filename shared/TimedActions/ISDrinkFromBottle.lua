@@ -152,5 +152,6 @@ function ISDrinkFromBottle:new (character, item, uses)
     o.eatAudio = 0
     o.tick = 0;
     o.ignoreHandsWounds = true;
+    o.isEating = true;
     return o
 end

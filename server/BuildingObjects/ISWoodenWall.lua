@@ -9,6 +9,7 @@ ISWoodenWall = ISBuildingObject:derive("ISWoodenWall");
 --**
 --************************************************************************--
 function ISWoodenWall:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenWall\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -84,6 +85,7 @@ function ISWoodenWall:new(sprite, northSprite, corner)
 	o.canBarricade = true;
 	o.name = "Wooden Wall";
 	o.isWallLike = true
+	showDebugInfoInChat("Cursor New \'ISWoodenWall\'")
 	return o;
 end
 

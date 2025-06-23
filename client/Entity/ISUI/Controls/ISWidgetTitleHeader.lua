@@ -10,7 +10,9 @@ require "ISUI/ISPanel"
 
 ISWidgetTitleHeader = ISPanel:derive("ISWidgetTitleHeader");
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
+local ICON_SIZE = 48 * math.max(1, FONT_SCALE);
 
 function ISWidgetTitleHeader:initialise()
 	ISPanel.initialise(self);
@@ -20,7 +22,7 @@ function ISWidgetTitleHeader:createChildren()
     ISPanel.createChildren(self);
 
     if self.enableIcon then
-        self.icon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 64, 64, self.iconTex);
+        self.icon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, ICON_SIZE, ICON_SIZE, self.iconTex);
         self.icon.autoScale = true;
         --self.icon.scaledWidth = self.iconSize;
         --self.icon.scaledHeight = self.iconSize;
@@ -31,28 +33,31 @@ function ISWidgetTitleHeader:createChildren()
 
         self.iconSize = self.icon:getHeight();
     else
-        self.iconSize = 32;
+        self.iconSize = ICON_SIZE;
     end
 
     local titleStr = self.title or "Unknown Object";
 
     if isDebugEnabled() then
-        titleStr = titleStr .. " ( DBG:" .. self.recipe:getName() .. ")";
+        titleStr = titleStr .. "\n( DBG:" .. self.recipe:getName() .. ")";
     end
-
+    
     local fontHeight = -1; -- <=0 sets label initial height to font
-    self.titleLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, titleStr, 1, 1, 1, 1, UIFont.Medium, true);
+    self.titleLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, titleStr, 1, 1, 1, 1, UIFont.Small, true);
     self.titleLabel.origTitleStr = titleStr;
     self.titleLabel:initialise();
     self.titleLabel:instantiate();
+    self.titleLabel:setHeightToName(0);
     self:addChild(self.titleLabel);
     
     -- favourite button
     self.favouritesIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, self.propertyIconSize, self.propertyIconSize, "", self, ISWidgetTitleHeader.onFavouritesClick);
     if self.isFavourite then
         self.favouritesIcon.image = getTexture("media/ui/inventoryPanes/FavouriteYes.png");
+        self.favouritesIcon.textureColor = { r=getCore():getGoodHighlitedColor():getR(),g=getCore():getGoodHighlitedColor():getG(),b=getCore():getGoodHighlitedColor():getB(),a=1 };
     else
         self.favouritesIcon.image = getTexture("media/ui/inventoryPanes/FavouriteNo.png");
+        self.favouritesIcon.textureColor = { r=1, g=1, b=1 ,a=1 };
     end
     self.favouritesIcon.borderColor.a = 0.0;
     self.favouritesIcon.backgroundColor.a = 0;
@@ -63,8 +68,15 @@ function ISWidgetTitleHeader:createChildren()
     self:addChild(self.favouritesIcon);
     
     if self.showPropertyIcons then
+
+        --if the image display size is 16x16, then this will automatically grab the 16x16 version
+        local fileSize = ".png"
+        if self.propertyIconSize == 16 then
+            fileSize = "_16.png"
+        end
+
         if self.isCanWalk then
-            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Walking.png");
+            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Walking" .. fileSize);
             self.isCanWalkIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.isCanWalkIcon.autoScale = true;
             self.isCanWalkIcon.mouseovertext = getText("IGUI_CraftingWindow_CanWalk");
@@ -74,7 +86,7 @@ function ISWidgetTitleHeader:createChildren()
         end
         if not self.canBeDoneInDark and not self.ignoreLightIcon then
             --local iconTex = getTexture("media/ui/craftingMenus/Icon_Moon_48x48.png");
-            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Light.png");
+            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Light" .. fileSize);
             self.canBeDoneInDarkIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.canBeDoneInDarkIcon.autoScale = true;
             self.canBeDoneInDarkIcon.mouseovertext = getText("IGUI_CraftingWindow_RequiresLight");
@@ -83,11 +95,13 @@ function ISWidgetTitleHeader:createChildren()
             self:addChild(self.canBeDoneInDarkIcon);
         end
         if self.needToBeLearn then
-            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Book.png");
+            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Book" .. fileSize);
             self.needToBeLearnIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.needToBeLearnIcon.autoScale = true;
             if not self.player:isRecipeKnown(self.recipe, true) then
                 self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_RequiresLearning");
+            elseif self.recipeBenefitLabel and self.recipeBenefitLabel.active then
+                self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand");
             else
                 self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_RecipeKnown");
             end
@@ -96,7 +110,7 @@ function ISWidgetTitleHeader:createChildren()
             self:addChild(self.needToBeLearnIcon);
         end        
         if self.requiresSurface and not self.ignoreSurface then
-            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Surface.png");
+            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Surface" .. fileSize);
             self.requiresSurfaceIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.requiresSurfaceIcon.autoScale = true;
             self.requiresSurfaceIcon.mouseovertext = getText("IGUI_CraftingWindow_RequiresSurface");
@@ -107,14 +121,17 @@ function ISWidgetTitleHeader:createChildren()
 
         if self.player then
             --local color = {r=0.5, g=0.5, b=0.5, a=1.0};
-            local time = round(self.recipe:getTime()/10,2);
+            -- modified to scale by player skill level
+            local time = round(self.recipe:getTime(self.player)/10,2);
+--             local time = round(self.recipe:getTime()/10,2);
+
             local timeText = getText("IGUI_CraftingWindow_CraftTime") .. " " .. tostring(time).." " .. getText("IGUI_CraftingWindow_Seconds");
             --self.timeLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_CraftTime") .. " " .. timeText, color.r, color.g, color.b, color.a, UIFont.NewSmall, true);
             --self.timeLabel:initialise();
             --self.timeLabel:instantiate();
             --self:addChild(self.timeLabel);
 
-            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Clock.png");
+            local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Clock" .. fileSize);
             self.timeIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.timeIcon.autoScale = true;
             self.timeIcon.mouseovertext = timeText;
@@ -148,8 +165,31 @@ function ISWidgetTitleHeader:createChildren()
                 self:addChild(requiredSkillLabel);
                 table.insert(self.requiredSkillList, requiredSkillLabel);
             end
-        end      
+        end
+
+--             -- UI information if a player could or would benefit from having a recipe item at hand
+--         if self.player and self.recipe:couldBenefitFromRecipeAtHand(self.player) then
+--             local text = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand")
+--             local lineColor = self.colBad
+--             if self.recipe:validateBenefitFromRecipeAtHand(self.player, self.logic:getContainers()) then
+--                  text = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand")
+--                  lineColor = self.colGood
+--             end
+--
+--             self.recipeBenefitLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, text, lineColor.r, lineColor.g, lineColor.b, lineColor.a, UIFont.NewSmall, true);
+--             self.recipeBenefitLabel.origTitleStr = text;
+--             self.recipeBenefitLabel:initialise();
+--             self.recipeBenefitLabel:instantiate();
+--             self:addChild(self.recipeBenefitLabel);
+--         end
+
     end
+
+    self.recipeBenefitLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "", self.colGood.r, self.colGood.g, self.colGood.b, self.colGood.a, UIFont.NewSmall, true);
+    self.recipeBenefitLabel.text = "";
+    self.recipeBenefitLabel:initialise();
+    self.recipeBenefitLabel:instantiate();
+    self:addChild(self.recipeBenefitLabel);
 
     self.errorLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "", self.colBad.r, self.colBad.g, self.colBad.b, self.colBad.a, UIFont.NewSmall, true);
     self.errorLabel.errorText = "";
@@ -175,7 +215,7 @@ function ISWidgetTitleHeader:updateLabels()
             errorText = errorText .. getText("IGUI_CraftingWindow_Error_Moving");
         end
 
-        if self.needToBeLearn and not CraftRecipeManager.hasPlayerLearnedRecipe(self.recipe, self.player) then
+        if self.needToBeLearn and not self.player:isRecipeKnown(self.recipe, true) then
             if errorText ~= "" then errorText = errorText .. ", " end
             errorText = errorText .. getText("IGUI_CraftingWindow_Error_NotLearn");
         end
@@ -197,6 +237,34 @@ function ISWidgetTitleHeader:updateLabels()
     else
         self.errorLabel:setVisible(false);
     end
+
+    if self.player and self.recipe and self.recipe:couldBenefitFromRecipeAtHand(self.player) then
+        local text
+        if self.recipe:validateBenefitFromRecipeAtHand(self.player, self.logic:getContainers()) then
+             text = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand")
+            self.recipeBenefitLabel.active = true
+        else
+            text = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand")
+            self.recipeBenefitLabel.active = false
+        end
+        self.recipeBenefitLabel.text = text;
+        self.recipeBenefitLabel:setVisible(true);
+    else
+        self.recipeBenefitLabel:setVisible(false);
+        self.recipeBenefitLabel.active = false
+    end
+
+    if self.recipe and self.player and self.needToBeLearnIcon and self.needToBeLearnIcon.mouseovertext then
+        if not self.player:isRecipeKnown(self.recipe, true) then
+            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_RequiresLearning");
+        elseif self.recipeBenefitLabel and self.recipeBenefitLabel.active then
+            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand");
+        elseif self.recipe:couldBenefitFromRecipeAtHand(self.player) then
+            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand2");
+        else
+            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_RecipeKnown");
+        end
+    end
 end
 function ISWidgetTitleHeader:updatePropertyIcons()
     if self.showPropertyIcons then
@@ -205,6 +273,8 @@ function ISWidgetTitleHeader:updatePropertyIcons()
         end
         if self.needToBeLearnIcon then
             self.needToBeLearnIcon.backgroundColor = not self.player:isRecipeKnown(self.recipe, true) and self.colBad or self.colWhite;
+            -- make the book icon green instead if a recipe ininventory enables performing the recipe
+            if self.recipeBenefitLabel.active then self.needToBeLearnIcon.backgroundColor = self.colGood end
         end
         if self.requiresSurfaceIcon then
             self.requiresSurfaceIcon.backgroundColor = self.logic and not self.logic:isCharacterInRangeOfWorkbench() and self.colBad or self.colWhite;
@@ -214,7 +284,7 @@ end
 
 function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
-    local height = math.max(self.minimumHeight, _preferredHeight or 0);
+    local height = math.max(self.minimumHeight, 0);--math.max(self.minimumHeight, _preferredHeight or 0);
 
     local spacing = 15;
     local propertyIconSpacing = 5;
@@ -225,15 +295,15 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     
     -- calc width
     local requiredWidth = spacing;
+    if self.favouritesIcon then
+        requiredWidth = requiredWidth + (self.favouritesIcon:getWidth()/3);
+    end
     if self.icon then
         requiredWidth = requiredWidth + self.icon:getWidth() + spacing;
     end
     
     requiredWidth = requiredWidth + self.titleLabel:getWidth() + spacing;
 
-    if self.favouritesIcon then
-        requiredWidth = requiredWidth + self.favouritesIcon:getWidth() + propertyIconSpacing;
-    end
     if self.isCanWalkIcon then
         requiredWidth = requiredWidth + self.isCanWalkIcon:getWidth() + propertyIconSpacing;
     end
@@ -256,6 +326,9 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     if self.icon then
         height = math.max(height, self.icon:getHeight() + (self.paddingTop + self.paddingBottom) + (self.marginTop+self.marginBottom));
     end
+    if self.favouritesIcon then
+        height = height + (self.favouritesIcon:getHeight()/3);
+    end
     
     local labelsHeight = self.titleLabel:getHeight() + (self.paddingTop + self.paddingBottom) + (self.marginTop+self.marginBottom);
     local labelSpacing = 3;
@@ -273,6 +346,17 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
             labelsHeight = labelsHeight + skillLabelSpacing + self.requiredSkillList[i]:getHeight() ;
         end
     end
+    if self.recipeBenefitLabel and self.recipeBenefitLabel:isVisible() then
+        local labelWidth = width - (self.paddingLeft + self.marginLeft + self.paddingRight + self.marginRight);
+        if self.icon then
+            labelWidth = labelWidth - (spacing + self.icon:getWidth() + spacing);
+        end
+
+        local wrappedText = getTextManager():WrapText(self.recipeBenefitLabel.font, self.recipeBenefitLabel.text, labelWidth)
+        self.recipeBenefitLabel:setName(wrappedText);
+        self.recipeBenefitLabel:setHeightToName(0);
+        labelsHeight = labelsHeight + labelSpacing + self.recipeBenefitLabel:getHeight();
+    end
     if self.errorLabel and self.errorLabel:isVisible() then
         local errorLabelWidth = width - (self.paddingLeft + self.marginLeft + self.paddingRight + self.marginRight);
         if self.icon then
@@ -282,7 +366,7 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
         local wrappedText = getTextManager():WrapText(self.errorLabel.font, self.errorLabel.errorText, errorLabelWidth)
         self.errorLabel:setName(wrappedText);
         self.errorLabel:setHeightToName(0);
-        labelsHeight = labelsHeight + (labelSpacing*2) + self.errorLabel:getHeight();
+        labelsHeight = labelsHeight + labelSpacing + getTextManager():MeasureStringY(self.errorLabel.font, wrappedText);
     end
     
     height = math.max(height, labelsHeight);
@@ -291,18 +375,27 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     -- draw labels
     local x = self.paddingLeft + self.marginLeft;
 
+    if self.favouritesIcon then
+        x = x + (self.favouritesIcon:getWidth()/3);
+    end
+    
     if self.icon then
         self.icon:setX(x);
-        self.icon:setY((height/2)-(self.icon:getHeight()/2));
+        local iconAreaHeight = self.icon:getHeight();
+        if self.favouritesIcon then
+            iconAreaHeight = iconAreaHeight + (self.favouritesIcon:getHeight()/3);
+        end
+        self.icon:setY((height/2)-(iconAreaHeight/2));
         x = self.icon:getX() + self.icon:getWidth() + spacing;
     end
-
+    
     self.titleLabel:setX(x);
     self.titleLabel.originalX = self.titleLabel:getX();
     self.titleLabel:setY(y);
     y = y + self.titleLabel:getHeight();
 
     if self.tooltipLabel then
+        y = y + labelSpacing;
         self.tooltipLabel:setX(self.titleLabel:getX());
         self.tooltipLabel.originalX = self.titleLabel:getX();
         self.tooltipLabel:setY(y);
@@ -310,6 +403,7 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     end
 
     if self.timeLabel then
+        y = y + labelSpacing;
         self.timeLabel:setX(self.titleLabel:getX());
         self.timeLabel.originalX = self.timeLabel:getX();
         self.timeLabel:setY(y);
@@ -317,8 +411,8 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     end
     
     if self.favouritesIcon then
-        self.favouritesIcon:setX(x + self.titleLabel:getWidth() + spacing);
-        self.favouritesIcon:setY(self.titleLabel:getY() + (self.titleLabel:getHeight()/2) - (self.favouritesIcon:getHeight()/2));
+        self.favouritesIcon:setX(self.icon:getX() - (self.favouritesIcon:getWidth()/3));
+        self.favouritesIcon:setY(self.icon:getY() + self.icon:getHeight() - (self.favouritesIcon:getHeight()*(2/3)));
     end
 
     if #self.requiredSkillList > 0 then
@@ -331,8 +425,16 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
         y = y + FONT_HGT_SMALL + skillLabelSpacing;
     end
 
+    if self.recipeBenefitLabel and self.recipeBenefitLabel:isVisible() then
+        y = y + labelSpacing;
+        self.recipeBenefitLabel:setX(self.titleLabel:getX());
+        self.recipeBenefitLabel.originalX = self.recipeBenefitLabel:getX();
+        self.recipeBenefitLabel:setY(y);
+        y = y + self.recipeBenefitLabel:getHeight();
+    end
+
     if self.errorLabel and self.errorLabel:isVisible() then
-        y = y + (labelSpacing*2);
+        y = y + labelSpacing;
         self.errorLabel:setX(self.titleLabel:getX());
         self.errorLabel.originalX = self.errorLabel:getX();
         self.errorLabel:setY(y);
@@ -394,8 +496,10 @@ function ISWidgetTitleHeader:onFavouritesClick()
 
     if self.isFavourite then
         self.favouritesIcon.image = getTexture("media/ui/inventoryPanes/FavouriteYes.png");
+        self.favouritesIcon.textureColor = { r=getCore():getGoodHighlitedColor():getR(),g=getCore():getGoodHighlitedColor():getG(),b=getCore():getGoodHighlitedColor():getB(),a=1 };
     else
         self.favouritesIcon.image = getTexture("media/ui/inventoryPanes/FavouriteNo.png");
+        self.favouritesIcon.textureColor = { r=1, g=1, b=1 ,a=1 };
     end
 end
 
@@ -417,7 +521,7 @@ function ISWidgetTitleHeader:new(x, y, width, height, recipe, player, logic, isF
     o.requiresSurface = recipe and recipe:isAnySurfaceCraft() or false;
 
     o.showPropertyIcons = recipe and true;
-    o.propertyIconSize = 24;
+    o.propertyIconSize = 16 * ICON_SCALE;
 
     o.player = player;
     o.recipe = recipe;

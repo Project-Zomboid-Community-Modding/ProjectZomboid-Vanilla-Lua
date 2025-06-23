@@ -293,36 +293,38 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
             -- Video Effects off, show the backup image
             self.images[self.imageCount] = getTexture(image);
 
-            w = self.images[self.imageCount]:getWidth();
-            h = self.images[self.imageCount]:getHeight();
+            if self.images[self.imageCount] ~= nil then
+                w = self.images[self.imageCount]:getWidth();
+                h = self.images[self.imageCount]:getHeight();
 
-            if(x + w >= self.width - (self.marginLeft + self.marginRight)) then
-                x = 0;
-                y = y +  lineHeight;
-            end
-
-            if(lineImageHeight < (h / 2) + 8) then
-                lineImageHeight = (h / 2) + 16;
-            end
-
-            if self.images[self.imageCount] == nil then
-                --print("Could not find texture");
-            end
-            local mx = (self.width - self.marginLeft - self.marginRight) / 2;
-            self.imageX[self.imageCount] = mx - (w/2);
-            self.imageY[self.imageCount] = y;
-            self.imageW[self.imageCount] = w;
-            self.imageH[self.imageCount] = h;
-            self.imageCount = self.imageCount + 1;
-            x = x + w + 7;
-
-            for c,v in ipairs(self.lines) do
-                if self.lineY[c] == y then
-                    self.lineY[c] = self.lineY[c] + (h / 2);
+                if(x + w >= self.width - (self.marginLeft + self.marginRight)) then
+                    x = 0;
+                    y = y +  lineHeight;
                 end
-            end
 
-            y = y + (h / 2);
+                if(lineImageHeight < (h / 2) + 8) then
+                    lineImageHeight = (h / 2) + 16;
+                end
+
+                if self.images[self.imageCount] == nil then
+                    --print("Could not find texture");
+                end
+                local mx = (self.width - self.marginLeft - self.marginRight) / 2;
+                self.imageX[self.imageCount] = mx - (w/2);
+                self.imageY[self.imageCount] = y;
+                self.imageW[self.imageCount] = w;
+                self.imageH[self.imageCount] = h;
+                self.imageCount = self.imageCount + 1;
+                x = x + w + 7;
+
+                for c,v in ipairs(self.lines) do
+                    if self.lineY[c] == y then
+                        self.lineY[c] = self.lineY[c] + (h / 2);
+                    end
+                end
+
+                y = y + (h / 2);
+            end
         end
     end
 

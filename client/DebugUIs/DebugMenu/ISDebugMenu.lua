@@ -49,7 +49,8 @@ function ISDebugMenu:setupButtons()
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_NewUI"), function() doNewUIDebug() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_UnitTests"), function() UnitTestsDebug:OnOpenPanel() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_CharacterDebug"), function() ISCharacterDebugUI.OnOpenPanel() end, "DEV");
-    --self:addButtonInfo(getText("IGUI_DebugMenu_Dev_RagdollSettings"), function() DebugRagdollPanel.OnOpenPanel() end, "DEV");  // @Patrick - DO NOT REMOVE - Commented out to hide Ragdoll information
+    self:addButtonInfo(getText("IGUI_DebugMenu_Dev_RagdollSettings"), function() DebugRagdollPanel.OnOpenPanel() end, "DEV");
+--     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_TestWildlifeSoundInCity"), function() getAmbientStreamManager():addRandomAmbient(true) end, "DEV");
 
     --sort buttons alphabetically
     table.sort(self.buttons, function(a, b) return string.sort(b.title, a.title) end);

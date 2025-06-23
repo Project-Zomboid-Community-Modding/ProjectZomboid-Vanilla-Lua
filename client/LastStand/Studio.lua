@@ -92,6 +92,8 @@ Studio.gameMode = "Studio";
 Studio.x = 1 * 300 + 183;
 Studio.y = 1 * 300 + 118;
 Studio.z = 0;
+Studio.zombiesMinPerChunk = 0.06 * 0.64 * 0.66
+Studio.zombiesMaxPerChunk = 12 * 0.64 * 0.66
 
 --Events.OnChallengeQuery.Add(Studio.Add)
 --Events.OnNewGame.Add(Studio.OnNewGame)

@@ -7,8 +7,8 @@
 NoContainerFillRooms = { armysurplus = {}, armysurplustorage = {}, bookstore = {}, camping = {}, campingstorage = {}, carsupply = {}, clothingstore = {}, clothingstorage = {}, hunting = {}, jayschicken_dining = {}, jayschicken_kitchen = {}, pawnshop = {}, pawnshopoffice = {}, pawnshopstorage = {}, spiffo_dining = {}, spiffoskitchen = {} }
 
 WeaponUpgrades = {
-	VarmintRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad",},
-	HuntingRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad",},
+	VarmintRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad"},
+	HuntingRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad"},
 	Shotgun = {"Sling", "ChokeTubeFull", "ChokeTubeImproved"},
 	Pistol = {},
 	Pistol2 = {},
@@ -156,6 +156,7 @@ local function mergeDistributions()
 	SuburbsDistributions.barbequestore = SuburbsDistributions.barbecuestore
 	SuburbsDistributions.baseballgiftstore = SuburbsDistributions.baseballstore
 	SuburbsDistributions.burgerstorage = SuburbsDistributions.burgerkitchenstorage
+	SuburbsDistributions.butchery = SuburbsDistributions.butcher
 	SuburbsDistributions.cells = SuburbsDistributions.prisoncells
 	SuburbsDistributions.clinic = SuburbsDistributions.medical
 	SuburbsDistributions.clothesstorage = SuburbsDistributions.clothingstorage
@@ -166,10 +167,11 @@ local function mergeDistributions()
 	SuburbsDistributions.elementaryhall = SuburbsDistributions.elementaryschool
 	SuburbsDistributions.fishing = SuburbsDistributions.fishingstorage
 	SuburbsDistributions.furnitureshowroom = SuburbsDistributions.furniturestore
-	SuburbsDistributions.garage = SuburbsDistributions.garagestorage
+	SuburbsDistributions.garage = SuburbsDistributions.mechanic
 	SuburbsDistributions.garage_storage = SuburbsDistributions.garagestorage
 	SuburbsDistributions.grocers = SuburbsDistributions.grocery
 	SuburbsDistributions.hairdresser = SuburbsDistributions.aesthetic
+	SuburbsDistributions.house_kitchen = SuburbsDistributions.kitchen
 	SuburbsDistributions.icecreamstand = SuburbsDistributions.icecreamkitchen
 	SuburbsDistributions.knoxbutcher = SuburbsDistributions.butcher
 	SuburbsDistributions.laumdromat = SuburbsDistributions.laundry
@@ -185,9 +187,10 @@ local function mergeDistributions()
 	SuburbsDistributions.restaurant_dining = SuburbsDistributions.restaurantdining
 	SuburbsDistributions.storageclothes = SuburbsDistributions.clothingstorage
 	SuburbsDistributions.tacokitchen = SuburbsDistributions.mexicankitchen
+	SuburbsDistributions.tech = SuburbsDistributions.technical
 	SuburbsDistributions.toolstorage = SuburbsDistributions.toolstorestorage
 	SuburbsDistributions.Satchel = SuburbsDistributions.Bag_Satchel
-	SuburbsDistributions.policestorage = SuburbsDistributions.policegunstorage
+	SuburbsDistributions.policestorage = SuburbsDistributions.policegunstorage -- this is needed because the two roomdefs are consitently used interchangably on the map
 	
 	--print("###################################")
 end

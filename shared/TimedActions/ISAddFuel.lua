@@ -18,6 +18,7 @@ function ISAddFuel:waitToStart()
 end
 
 function ISAddFuel:update()
+	self.petrol:setJobDelta(self:getJobDelta())
 	self.character:faceThisObject(self.generator)
 
     self.character:setMetabolicTarget(Metabolics.HeavyDomestic);
@@ -27,28 +28,32 @@ function ISAddFuel:start()
 	self:setActionAnim("refuelgascan")
 	-- Don't call setOverrideHandModels() with self.petrol, the right-hand mask
 	-- will bork the animation.
+	self.petrol:setJobType(getText("ContextMenu_GeneratorAddFuel"))
+	self.petrol:setJobDelta(0.0)
 	self:setOverrideHandModels(self.petrol:getStaticModel(), nil)
 	self.sound = self.character:playSound("GeneratorAddFuel")
 end
 
 function ISAddFuel:stop()
 	self.character:stopOrTriggerSound(self.sound)
+	self.petrol:setJobDelta(0.0)
     ISBaseTimedAction.stop(self);
 end
 
 function ISAddFuel:perform()
 	self.character:stopOrTriggerSound(self.sound)
-    
+    self.petrol:setJobDelta(0.0)
+		
     -- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
 end
 
 function ISAddFuel:complete()
 	local endFuel = 0;
-	while self.fluidCont and self.fluidCont:getAmount() >= 1.0 and self.generator:getFuel() + endFuel < 100 do
-		local amount = self.fluidCont:getAmount() - 1.0;
+	while self.fluidCont and self.fluidCont:getAmount() >= 0.098 and self.generator:getFuel() + endFuel < 100 do
+		local amount = self.fluidCont:getAmount() - 0.1;
 		self.fluidCont:adjustAmount(amount);
-		endFuel = endFuel + 10;
+		endFuel = endFuel + 1;
 	end
 
 	self.petrol:syncItemFields()

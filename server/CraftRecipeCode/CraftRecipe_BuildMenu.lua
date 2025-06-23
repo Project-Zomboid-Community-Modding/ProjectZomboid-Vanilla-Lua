@@ -78,7 +78,7 @@ function woodenChairLvl2Test(param)
     local player = param.player;
     local perkLevel = player:getPerkLevel(Perks.Woodwork);
 
-    return perkLevel >= 3 and perkLevel < 5;
+    return perkLevel >= 3 and perkLevel <= 5;
 end
 
 function woodenChairLvl3Test(param)

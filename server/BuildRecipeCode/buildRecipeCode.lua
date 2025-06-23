@@ -4,14 +4,49 @@
 --***********************************************************
 
 BuildRecipeCode = BuildRecipeCode or {}
+BuildRecipeCode.barricade = {}
+BuildRecipeCode.canBePlastered = {}
 BuildRecipeCode.stairs = {}
 BuildRecipeCode.floor = {}
+BuildRecipeCode.doorFrame = {}
 BuildRecipeCode.butcheringHook = {}
 BuildRecipeCode.chickenHutch = {}
 BuildRecipeCode.feedingTrough = {}
 BuildRecipeCode.campfire = {}
 BuildRecipeCode.composter = {}
 BuildRecipeCode.windowGlass = {};
+BuildRecipeCode.woodLampPillar = {};
+
+function BuildRecipeCode.barricade.OnIsValid(params)
+    local objects = params.square:getObjects();
+    local door;
+
+	for i = 0,params.square:getObjects():size()-1 do
+        local object = params.square:getObjects():get(i);
+        if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and object:isDoor()) then
+            door = object;
+        end
+	end
+
+    if door and door:isBarricadeAllowed() then
+        return true;
+    end
+
+    return false;
+end
+
+function BuildRecipeCode.barricade.OnCreate(thumpable, craftRecipeData, character)
+    local square = thumpable:getSquare();
+	local objects = square:getObjects();
+
+	for i=objects:size()-1, 0, -1 do
+		local object = objects:get(i);
+		if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and object:isDoor()) then
+            object:addRandomBarricades();
+        end
+	end
+	square:transmitRemoveItemFromSquare(thumpable);
+end
 
 function BuildRecipeCode.stairs.OnIsValid(params)
 	if params.square:getZ() >= getMaximumWorldLevel() then
@@ -64,6 +99,10 @@ function BuildRecipeCode.stairs.OnIsValid(params)
 	return true;
 end
 
+function BuildRecipeCode.canBePlastered.OnCreate(thumpable)
+    thumpable:setCanBePlastered(true);
+end
+
 function BuildRecipeCode.stairs.OnCreate(thumpable)
 	local topNorth = thumpable:getType() == IsoObjectType.stairsTN;
 	local topWest = thumpable:getType() == IsoObjectType.stairsTW;
@@ -74,7 +113,7 @@ function BuildRecipeCode.stairs.OnCreate(thumpable)
 	local z = thumpable:getZ();
 
 	local square = thumpable:getSquare();
-	local overWater = square:getFloor():getSprite():getProperties():Is(IsoFlagType.water);
+	local overWater = (square:getFloor() ~= nil) and square:getFloor():getSprite():getProperties():Is(IsoFlagType.water);
 
 	-- remove removable objects
 	local objects = square:getObjects();
@@ -146,6 +185,40 @@ function BuildRecipeCode.stairs.OnCreate(thumpable)
 		end
 		above:RecalcAllWithNeighbours(true);
 	end
+
+    --add pillars
+    local floating = not square:HasStairsBelow(); --not square:TreatAsSolidFloor()
+    if (topNorth or topWest) and (thumpable:getTextureName() and string.contains(thumpable:getTextureName(), "carpentry")) and floating then
+        local zI = z - 1;
+        local pillarSprite = "carpentry_02_95";
+        if topWest then
+            pillarSprite = "carpentry_02_94"
+        end
+        local sq = getCell():getGridSquare(x, y, zI);
+        if sq == nil then
+			sq = IsoGridSquare.new(getCell(), nil, x, y, zI);
+			getCell():ConnectNewSquare(sq, true);
+        end
+        while zI >= 0 do
+            local obj2 = IsoThumpable.new(getCell(), sq, pillarSprite, topNorth, {});
+    		sq:AddSpecialObject(obj2);
+    		obj2:transmitCompleteItemToServer();
+            sq:RecalcAllWithNeighbours(true);
+
+    		if sq:TreatAsSolidFloor() then
+                break;
+    		end
+
+    		zI = zI - 1;
+
+    		if getCell():getGridSquare(x, y, zI) == nil then
+				sq = IsoGridSquare.new(getCell(), nil, x, y, zI);
+				getCell():ConnectNewSquare(sq, true);
+    		else
+				sq = getCell():getGridSquare(x, y, zI);
+    		end
+        end
+    end
 end 
 
 function BuildRecipeCode.floor.OnIsValid(params)
@@ -245,48 +318,67 @@ function BuildRecipeCode.floor.OnCreate(thumpable)
 	thumpable:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_OBJECT_ADD);
 end
 
+function BuildRecipeCode.doorFrame.OnIsValid(params)
+	local square = (params.north and params.square:getN()) or (not params.north and params.square:getW());
+	if square and square:getModData()["ConnectedToStairs" .. tostring(params.north)] then
+		return false
+	end
+
+	return true;
+end
+
 function BuildRecipeCode.butcheringHook.OnCreate(thumpable)
 	local sq = thumpable:getSquare();
 	local javaObject = IsoButcherHook.new(sq);
 	sq:AddTileObject(javaObject)
 
-	sq:transmitRemoveItemFromSquare(thumpable);
+	if thumpable:getSquare() ~= nil then
+		thumpable:removeFromWorld();
+		thumpable:removeFromSquare();
+		thumpable:setSquare(nil);
+	end
+
+	return { replaceObject = true, object = javaObject };
 end
 
 function BuildRecipeCode.chickenHutch.OnCreate(thumpable)
 	local sprite = thumpable:getSprite():getName();
-
+	local hutch = nil;
 	for i,v in pairs(HutchDefinitions.hutchs) do
 		if sprite == v.baseSprite then
-			local hutch = IsoHutch.new(thumpable:getSquare(), thumpable:getNorth(), sprite, v, nil)
-			hutch:transmitCompleteItemToClients()
-			break;
+			hutch = IsoHutch.new(thumpable:getSquare(), thumpable:getNorth(), sprite, v, nil);
 		end
 	end
 
-	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+	if thumpable:getSquare() ~= nil then
+		thumpable:removeFromWorld();
+		thumpable:removeFromSquare();
+		thumpable:setSquare(nil);
+	end
+
+	return { replaceObject = true, object = hutch };
 end
 
 function BuildRecipeCode.feedingTrough.OnCreate(thumpable)
-	local sprite = thumpable:getSprite():getName();
-
+    local sprite = thumpable:getSprite()
+	local spriteName = sprite:getName();
 	for i,def in pairs(FeedingTroughDef) do
-		if def.sprite1 == sprite or def.spriteNorth1 == sprite then
-			thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
-			SFeedingTroughSystem.instance:addTrough(thumpable:getSquare(),def,thumpable:getNorth(),false)
-			if def.sprite2 then
-				local x1, y1, z1 = ISFeedingTrough:getSquare2Pos(thumpable:getSquare(),thumpable:getNorth())
-				local sq2 = getCell():getGridSquare(x1,y1,z1)
-				if sq2 then
-					SFeedingTroughSystem.instance:addTrough(sq2,def,thumpable:getNorth(),true)
-				end
+		local isWest = luautils.tableContains(def.spriteW, spriteName)
+		local isNorth = luautils.tableContains(def.spriteN, spriteName)
+		if isWest or isNorth then
+			local spriteGrid = sprite:getSpriteGrid()
+			if spriteGrid then
+				spriteGridX = spriteGrid:getSpriteGridPosX(sprite)
+				spriteGridY = spriteGrid:getSpriteGridPosY(sprite)
+				SFeedingTroughSystem.instance:addTrough(thumpable:getSquare(), def, isNorth, spriteGridX, spriteGridY)
+			else
+				SFeedingTroughSystem.instance:addTrough(thumpable:getSquare(), def, isNorth, -1, -1)
 			end
-		end
-		
-		if def.sprite2 == sprite or def.spriteNorth2 == sprite then
-			thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+			--thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 		end
 	end
+
+	return { objectAlreadyTransmitted = true }
 end
 
 function BuildRecipeCode.campfire.OnIsValid(params)
@@ -308,11 +400,10 @@ function BuildRecipeCode.campfire.OnCreate(thumpable)
 	luaObject:initNew()
 	luaObject:addObject()
 	luaObject:addContainer()
-	luaObject:getIsoObject():transmitCompleteItemToClients()
-
+	--luaObject:getIsoObject():transmitCompleteItemToClients()
 	-- 	self:noise("#campfires="..self:getLuaObjectCount())
 	luaObject:saveData()
-	return luaObject;
+	--return luaObject;
 end
 
 function BuildRecipeCode.composter.OnCreate(thumpable)
@@ -332,4 +423,60 @@ function BuildRecipeCode.windowGlass.OnCreate(thumpable)
 	thumpable:getSquare():AddSpecialObject(window);
 
 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+end
+
+function BuildRecipeCode.woodLampPillar.OnCreate(thumpable, craftRecipeData, character)
+--     getPlayer():Say("craftRecipeData - " .. tostring(craftRecipeData))
+--     getPlayer():Say("character - " .. tostring(character))
+--     if not character then character = getSpecificPlayer(0) end
+    local spriteName = thumpable:getSprite():getName();
+    local sq = thumpable:getSquare();
+    local north = spriteName == "carpentry_02_60"
+    local name = "Lamp on Pillar"
+    local fuel = "Base.Battery";
+    local baseItemType = "Base.HandTorch";
+    local radius = 10;
+    local baseItem = nil;
+    local items = {}
+    local table = {}
+    if craftRecipeData then
+        items = craftRecipeData:getAllInputItems()
+        for i = 0,items:size()-1 do
+            local item = items:get(i)
+            if item and item:getFullType() == baseItemType then baseItem = item end
+        end
+    end
+    if not baseItem then baseItem = instanceItem(baseItemType) end
+
+    -- light stuff
+    local offsetX = 0;
+    local offsetY = 0;
+    local lampOffsetX = 5;
+    local lampOffsetY = 5;
+
+    if spriteName == "carpentry_02_62" then
+        offsetX = lampOffsetX;
+    elseif spriteName == "carpentry_02_61" then
+        offsetX = -lampOffsetX;
+    elseif spriteName == "carpentry_02_59" then
+        offsetY = lampOffsetY;
+    elseif spriteName == "carpentry_02_60" then
+        offsetY = -lampOffsetY;
+    end
+    thumpable:createLightSource(radius, offsetX, offsetY, 0, 0, fuel, baseItem, character);
+-- 	thumpable:getModData()["need:"..baseItem] = "1"
+    sq:AddSpecialObject(thumpable);
+	thumpable:transmitCompleteItemToClients()
+
+-- 	local javaObject = IsoThumpable.new(getCell(), thumpable:getSprite(), north, nil);
+--     javaObject:createLightSource(radius, offsetX, offsetY, 0, 0, fuel, baseItem, character);
+-- --     javaObject:setLifeDelta(0.000009);
+-- --     javaObject:getLightSource():insertNewFuel(basItem);
+-- 	javaObject:getModData()["need:"..baseItem] = "1"
+--     sq:AddSpecialObject(javaObject);
+-- 	javaObject:transmitCompleteItemToClients()
+
+-- 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+
+
 end

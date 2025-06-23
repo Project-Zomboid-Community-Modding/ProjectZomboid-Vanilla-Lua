@@ -6,7 +6,7 @@ require "TimedActions/ISBaseTimedAction";
 ISForageAction = ISBaseTimedAction:derive("ISForageAction");
 
 function ISForageAction:isValid()
-	if not (self.manager and self.manager.forageIcons[self.forageIcon.iconID]) then return false; end; --required check for some split screen coop situations
+	--if not (self.manager and self.manager.forageIcons[self.forageIcon.iconID]) then return false; end; --required check for some split screen coop situations
 	if not self.forageIcon.square and self.character:getSquare() then return false; end; --ensure the icon and players have a valid square, or can walk there as it may not be loaded.
 	if self.forageIcon.square:isBlockedTo(self.character:getSquare()) then return false; end; --ensure character can reach and see the item
 	return true;
@@ -75,7 +75,7 @@ function ISForageAction:forage()
 	local itemTexture;
 	for _, itemData in pairs(itemsTable) do
 		local item = itemData.item;
-		local count = itemData.count;
+		self.itemCount = itemData.count;
 		if item:getTexture() ~= nil then
 			if string.find(tostring(item:getTexture():getName()), "media") and string.find(tostring(item:getTexture():getName()), "textures") then
 				itemTexture = "[img="..tostring(item:getTexture():getName()).."]";
@@ -86,7 +86,7 @@ function ISForageAction:forage()
 			itemTexture = ""
 		end
 		if not self.discardItems then
-			table.insert(self.manager.haloNotes,itemTexture.."    "..count.. " "..item:getDisplayName());
+			HaloTextHelper.addText(self.character,itemTexture.."    "..self.itemCount.. " "..item:getDisplayName());
 		end;
 	end;
 end
@@ -95,25 +95,15 @@ end
 function ISForageAction:complete()
 	-- add the items to player inventory
 	forageSystem.giveItemXP(self.character, self.itemDef, 0.75);
-	local itemList = {}
-	local itemCount = self.itemDef.minCount;
-	if self.itemDef then
-		if self.itemDef.minCount ~= self.itemDef.maxCount then
-			itemCount = ZombRand(self.itemDef.minCount, self.itemDef.maxCount) + 1;
-		end;
-		--
-		itemList = ArrayList.new();
-		for _ = 1, itemCount do
-			itemList:add(instanceItem(self.itemDef.type));
-		end;
-		--
-		if self.itemDef.spawnFuncs then
-			for _, spawnFunc in ipairs(self.itemDef.spawnFuncs) do
-				itemList = spawnFunc(self.character, self.character:getInventory(), self.itemDef, itemList) or itemList;
-			end;
-		end;
-	end;
-
+	local itemList;
+	if isServer() then
+	    itemList = ArrayList.new();
+        for _, type in pairs(self.itemTypeList) do
+            itemList:add(instanceItem(type));
+        end;
+	else
+	    itemList = self.forageIcon.itemList or ArrayList.new();
+	end
 	forageSystem.addOrDropItems(self.character, self.targetContainer, itemList, self.discardItems)
 
 	return true;
@@ -130,14 +120,15 @@ function ISForageAction:getDuration()
 	end
 end
 
-function ISForageAction:new(character, iconID, targetContainer, discardItems, itemType)
-	local o = ISBaseTimedAction.new(self, character)
+function ISForageAction:new(character, iconID, itemTypeList, targetContainer, discardItems, itemType)
+	local o = ISBaseTimedAction.new(self, character);
 	o.targetContainer = targetContainer;
 	o.discardItems = discardItems;
-	o.iconID = iconID;
 	o.itemType = itemType;
+	o.itemTypeList = itemTypeList;
 	--
 	if not isServer() then
+		o.iconID = iconID;
 		o.manager = ISSearchManager.getManager(character);
 		o.forageIcon = o.manager.forageIcons[iconID];
 		o.zoneData = o.forageIcon.zoneData;

@@ -27,6 +27,10 @@ function ISMiniMapInner:instantiate()
 	self:createChildren()
 end
 
+function ISMiniMapInner:prerender()
+	MapUtils.renderDarkModeOverlay(self)
+end
+
 function ISMiniMapInner:prerenderHack()
 	if self.dragging then return end
 	local playerObj = getSpecificPlayer(self.playerNum)
@@ -105,7 +109,7 @@ function ISMiniMapInner:onRightMouseUp(x, y)
 	local worldX = self.mapAPI:uiToWorldX(x, y)
 	local worldY = self.mapAPI:uiToWorldY(x, y)
 	if getDebug() and getWorld():getMetaGrid():isValidChunk(worldX / 10, worldY / 10) then
-		option = context:addOption("Teleport Here", self, self.onTeleport, worldX, worldY)
+		local option = context:addOption(getText("IGUI_ZombiePopulation_TeleportHere"), self, self.onTeleport, worldX, worldY)
 	end
 
 	if context.numOptions == 1 then
@@ -120,11 +124,11 @@ end
 function ISMiniMapInner:onTeleport(worldX, worldY)
 	local playerObj = getSpecificPlayer(0)
 	if not playerObj then return end
-	playerObj:setX(worldX)
-	playerObj:setY(worldY)
-	playerObj:setZ(0.0)
-	playerObj:setLastX(worldX)
-	playerObj:setLastY(worldY)
+	if isClient() then
+		SendCommandToServer("/teleportto " .. tostring(worldX) .. "," .. tostring(worldY) .. ",0");
+	else
+		playerObj:teleportTo(worldX, worldY, 0.0)
+	end
 end
 
 function ISMiniMapInner:new(x, y, width, height, playerNum)
@@ -497,6 +501,10 @@ function ISMiniMap.InitPlayer(playerNum)
 
 	INNER.mapAPI:setBoolean("HideUnvisited", true)
 	INNER.mapAPI:setBoolean("Players", true)
+	if isClient() then
+		INNER.mapAPI:setBoolean("RemotePlayers", true)
+		INNER.mapAPI:setBoolean("PlayerNames", true)
+	end
 	INNER.mapAPI:setBoolean("Symbols", false)
 	INNER.mapAPI:setBoolean("MiniMapSymbols", true)
 

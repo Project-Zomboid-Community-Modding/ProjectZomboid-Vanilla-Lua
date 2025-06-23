@@ -43,7 +43,8 @@ function ISBBQLightFromKindle:update()
 		end
 		if ZombRand(randNumber) == 0 then
 			if self.bbq:hasFuel() and not self.bbq:isLit() then
-				self.bbq:setLit(true)
+				self.bbq:turnOn()
+				self.bbq:sendObjectChange('state')
 			end
 		else
 			-- fail ? Maybe the wood kit will broke...
@@ -105,7 +106,7 @@ function ISBBQLightFromKindle:animEvent(event, parameter)
 			end
 			if ZombRand(randNumber) == 0 then
 				if self.bbq:hasFuel() and not self.bbq:isLit() then
-					self.bbq:setLit(true)
+					self.bbq:turnOn()
 					self.bbq:sendObjectChange('state')
 					self.netAction:forceComplete()
 				end

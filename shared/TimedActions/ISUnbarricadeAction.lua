@@ -55,11 +55,12 @@ function ISUnbarricadeAction:start()
                 self:setAnimVariable("RemoveBarricade", "CrowbarMid")
             end
             self:setOverrideHandModels(self.character:getPrimaryHandItem(), nil)
+            self.sound = self.character:playSound("BeginRemoveBarricadePlankCrowbar");
         else
             self.character:clearVariable("RemoveBarricade")
             self:setOverrideHandModels(nil, nil)
+            self.sound = self.character:playSound("BeginRemoveBarricadePlank");
         end
-        self.sound = self.character:playSound("BeginRemoveBarricadePlank");
         addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), 10, 1)
     end
 end

@@ -48,7 +48,7 @@ local function DoSpecialTooltip(tooltipUI, square)
 	tooltipUI:DrawTextCentre(getText("ContextMenu_Rain_Collector_Barrel"), tooltipUI:getWidth() / 2, 6, 1, 1, 1, 1)
 	tooltipUI:DrawText(getText("IGUI_invpanel_Remaining") .. ":", textX, textY, 1, 1, 1, 1)
 
-	local f = barrel:getWaterAmount() / barrel:getModData()["waterMax"]
+	local f = barrel:getFluidAmount() / barrel:getModData()["waterMax"]
 	local fg = { r=0.0, g=0.6, b=0.0, a=0.7 }
 	if f < 0.0 then f = 0.0 end
 	if f > 1.0 then f = 1.0 end

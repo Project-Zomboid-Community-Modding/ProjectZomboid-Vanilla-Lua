@@ -25,6 +25,7 @@ local function comparatorMostFull(item1, item2)
 end
 
 function ISShovelGroundCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISShovelGroundCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local playerObj = self.character
 	local square = getWorld():getCell():getGridSquare(x, y, z)
 	local groundType,object = self:getDirtGravelSand(square)
@@ -48,6 +49,7 @@ function ISShovelGroundCursor:new(sprite, northSprite, character, groundType)
 	o.player = character:getPlayerNum()
 	o.noNeedHammer = true
 	o.skipBuildAction = true
+	showDebugInfoInChat("Cursor New \'ISShovelGroundCursor\'")
 	return o
 end
 
@@ -73,6 +75,7 @@ function ISShovelGroundCursor.GetEmptyItemCounts(playerObj)
 	items.dirt = playerInv:getCountTypeEvalRecurse("Dirtbag", predicateNotFull)
 	items.gravel = playerInv:getCountTypeEvalRecurse("Gravelbag", predicateNotFull)
 	items.sand = playerInv:getCountTypeEvalRecurse("Sandbag", predicateNotFull)
+	items.clay = playerInv:getCountTypeEvalRecurse("Claybag", predicateNotFull)
 	return items
 end
 
@@ -85,6 +88,8 @@ function ISShovelGroundCursor.GetEmptyItem(playerObj, groundType)
 		fullType = "Base.Gravelbag"
 	elseif groundType == "sand" then
 		fullType = "Base.Sandbag"
+	elseif groundType == "clay" then
+        fullType = "Base.Claybag"
 	end
 	local item = playerInv:getBestEvalArgRecurse(predicateTypeNotFull, comparatorMostFull, fullType)
 	if not item then
@@ -94,8 +99,10 @@ function ISShovelGroundCursor.GetEmptyItem(playerObj, groundType)
 end
 
 function ISShovelGroundCursor.GetDirtGravelSand(square)
-	for i=1,square:getObjects():size() do
-		local obj = square:getObjects():get(i-1)
+	local index = square:getNextNonItemObjectIndex(0)
+	while index >= 0 and index < square:getObjects():size() do
+		local obj = square:getObjects():get(index)
+		index = square:getNextNonItemObjectIndex(index + 1)
 		if obj:hasModData() and obj:getModData().shovelled then
 			-- skip already-shovelled squares
 		elseif not isServer() and CFarmingSystem.instance and CFarmingSystem.instance:getLuaObjectOnSquare(square) then
@@ -116,6 +123,12 @@ function ISShovelGroundCursor.GetDirtGravelSand(square)
 						spriteName == "floors_exterior_natural_01_24" then
 				return "sand",obj
 			end
+			if spriteName == "blends_natural_01_96" or
+						spriteName == "blends_natural_01_101" or
+            			spriteName == "blends_natural_01_102" or
+            			spriteName == "blends_natural_01_103" then
+            	return "clay",obj
+            end
 			if luautils.stringStarts(spriteName, "blends_natural_01_") or
 					luautils.stringStarts(spriteName, "floors_exterior_natural") then
 				return "dirt",obj

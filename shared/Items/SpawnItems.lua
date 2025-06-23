@@ -249,11 +249,15 @@ function SpawnItems.OnNewGame(playerObj, square)
 	if card then
 	    card:nameAfterDescriptor(playerObj:getDescriptor())
 	end
+    if playerObj:HasTrait("SpeedDemon") and ZombRand(100) < SpawnItems.SpecialKeyRingChance then
+	   local ticket = playerObj:getInventory():AddItem("Base.SpeedingTicket")
+	    ticket:nameAfterDescriptor(playerObj:getDescriptor())
+    end
     if playerObj:getDescriptor():getProfession() then
         local prof = playerObj:getDescriptor():getProfession()
 	    -- add a badge if a character has a suitable profession
         if prof == "parkranger" or prof == "policeofficer" or prof == "fireofficer" then
-	        local badge = playerObj:getInventory():AddItem("Base.Badge");
+	        local badge = playerObj:getInventory():AddItem("Base.Badge")
 	        badge:nameAfterDescriptor(playerObj:getDescriptor())
         end
 	    -- add a pager if a character is a doctor
@@ -271,7 +275,7 @@ function SpawnItems.OnNewGame(playerObj, square)
 	-- key ring handling is now here and not in java
 	playerObj:createKeyRing(keyRing)
 
-	addTestSpawnPistol(playerObj)
+ 	addTestSpawnPistol(playerObj)
 	addTestFishingStuff(playerObj)
     addRanchStuff(playerObj)
     addBunkerStuff(playerObj)
@@ -291,7 +295,7 @@ SpawnItems.TraitKeyRings = {
     FormerScout = { "KeyRing_PineTree", },
     Gardener = { "Base.KeyRing_Bug", },
     Graceful = { "Base.KeyRing_Kitty", },
-    HeartyAppitite = { "Base.KeyRing_HotDog", },
+    HeartyAppetite = { "Base.KeyRing_HotDog", },
     FormerScout = { "KeyRing_PineTree", },
     Herbalist = { "KeyRing_PineTree", },
     Hiker = { "KeyRing_PineTree", },

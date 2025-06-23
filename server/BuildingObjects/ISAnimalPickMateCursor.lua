@@ -28,6 +28,7 @@ function ISAnimalPickMateCursor:new(character, femaleAnimal)
     local o = ISPickCharacterCursor.new(self, character)
     o.femaleAnimal = femaleAnimal
     o.dragNilAfterPlace = true
+    showDebugInfoInChat("Cursor New \'ISAnimalPickMateCursor\'")
     return o
 end
 

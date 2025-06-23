@@ -4,12 +4,18 @@ local light_oak_forest = {
             { f = worldgen.features.GROUND.medium_grass, p = 1.0 }
         },
         PLANT = {
-            { f = worldgen.features.PLANT.grass_overlay, p = 0.4 },
+            { f = worldgen.features.PLANT.grass_medium, p = 0.3 },
+            { f = worldgen.features.PLANT.grass_high, p = 0.3 },
             { f = worldgen.features.PLANT.generic_plant, p = 0.1 },
             { f = worldgen.features.PLANT.floor_leaves, p = 0.1 },
         },
         TREE = {
-            { f = worldgen.features.TREE.oak, p = 0.125 },
+            { f = worldgen.features.TREE.maple_jumbo, p = 0.10625 },
+            { f = worldgen.features.TREE.maple, p = 0.00625 },
+            { f = worldgen.features.TREE.linden_jumbo, p = 0.003125 },
+            { f = worldgen.features.TREE.linden, p = 0.003125 },
+            { f = worldgen.features.TREE.yellowwood_jumbo, p = 0.003125 },
+            { f = worldgen.features.TREE.yellowwood, p = 0.003125 },
             { f = worldgen.features.TREE.stumps, p = 0.0005 },
         }
     },
@@ -17,7 +23,7 @@ local light_oak_forest = {
         landscape = { "LIGHT_FOREST" },
         temperature = { "HOT" },
         hygrometry = { "DRY", "RAIN" },
-        zombies = 0.005,
+        zombies = 0.001,
         generate = false
     }
 }

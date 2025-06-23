@@ -76,25 +76,20 @@ function ISWorldMenuElements.ContextDisassemble()
                 end
                 toolTip.description = toolTip.description .. " <LINE> <INDENT:0> ";
             end
-            toolTip.object = v.moveProps.object;
             toolTip:setTexture(v.moveProps.spriteName);
             option.toolTip = toolTip;
 
-            --highlight the object on tile while the tooltip is showing
-            subMenu.showTooltip = function(_subMenu, _option)
-                ISContextMenu.showTooltip(_subMenu, _option);
-                if _subMenu.toolTip.object ~= nil then
-                    _subMenu.toolTip.object:setHighlightColor(hc);
-                    _subMenu.toolTip.object:setHighlighted(true, false);
+            option.onHighlightParams = { v.moveProps.object, hc };
+            option.onHighlight = function(_option, _menu, _isHighlighted, _object, _color)
+                if _object == nil then return end
+                if _isHighlighted then
+                    _object:setHighlightColor(_menu.player, _color);
+                    _object:setOutlineHighlightCol(_menu.player, _color);
                 end
-            end
-
-            --stop highlighting the object when the tooltip is not showing
-            subMenu.hideToolTip = function(_subMenu)
-                if _subMenu.toolTip and _subMenu.toolTip.object then
-                    _subMenu.toolTip.object:setHighlighted(false);
-                end;
-                ISContextMenu.hideToolTip(_subMenu);
+                _object:setHighlighted(_menu.player, _isHighlighted, false);
+                _object:setOutlineHighlight(_menu.player, _isHighlighted);
+                _object:setOutlineHlAttached(_menu.player, _isHighlighted);
+                ISInventoryPage.OnObjectHighlighted(_menu.player, _object, _isHighlighted)
             end
         end
     end

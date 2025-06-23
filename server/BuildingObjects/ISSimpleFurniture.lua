@@ -9,6 +9,7 @@ ISSimpleFurniture = ISBuildingObject:derive("ISSimpleFurniture");
 --**
 --************************************************************************--
 function ISSimpleFurniture:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISSimpleFurniture\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -47,6 +48,7 @@ function ISSimpleFurniture:new(name, sprite, northSprite)
 	o.blockAllTheSquare = true;
 	o.canBeAlwaysPlaced = true;
 	o.buildLow = true;
+	showDebugInfoInChat("Cursor New \'ISSimpleFurniture\'")
 	return o;
 end
 

@@ -152,7 +152,7 @@ function ISMultiplayerZoneEditor:createChildren()
 	self.buttonPanel.anchorBottom = true
 	self:addChild(self.buttonPanel)
 
-	self:onSwitchMode('NonPVP')
+	ISMultiplayerZoneEditor.OnRolesReceived()
 end
 
 function ISMultiplayerZoneEditor:prerender()
@@ -463,6 +463,10 @@ function ISMultiplayerZoneEditor:new(x, y, width, height)
 	o.hideUnvisitedAreas = false
 	o.isometric = false
 	o.character = nil
+
+	--FIXME: character is null without this line
+	local character = getSpecificPlayer(0);
+
 	o.playerNum = character and character:getPlayerNum() or 0
 	o.cross = getTexture("media/ui/LootableMaps/mapCross.png")
 	o.texViewIsometric = getTexture("media/textures/worldMap/ViewIsometric.png")
@@ -508,3 +512,27 @@ function ISMultiplayerZoneEditor.ToggleEditor()
 	ISMultiplayerZoneEditor.ShowEditor()
 end
 
+function ISMultiplayerZoneEditor.OnRolesReceived()
+	if ISMultiplayerZoneEditor_instance then
+		ISMultiplayerZoneEditor_instance.modeCombo:clear();
+		local close = true
+		if getPlayer():getRole():hasCapability(Capability.CanSetupNonPVPZone) then
+			ISMultiplayerZoneEditor_instance.modeCombo:addOptionWithData(getText("IGUI_MultiplayerZoneEditor_Mode_NonPVP"), 'NonPVP')
+			close = false
+		end
+		if getPlayer():getRole():hasCapability(Capability.CanSetupSafehouses) then
+			ISMultiplayerZoneEditor_instance.modeCombo:addOptionWithData(getText("IGUI_MultiplayerZoneEditor_Mode_Safehouse"), 'Safehouse')
+			close = false
+		end
+		if getPlayer():getRole():hasCapability(Capability.CanSetupNonPVPZone) then
+			ISMultiplayerZoneEditor_instance:onSwitchMode('NonPVP')
+		elseif getPlayer():getRole():hasCapability(Capability.CanSetupSafehouses) then
+			ISMultiplayerZoneEditor_instance:onSwitchMode('Safehouse')
+		end
+		if close then
+			ISMultiplayerZoneEditor_instance:close()
+		end
+	end
+end
+
+Events.OnRolesReceived.Add(ISMultiplayerZoneEditor.OnRolesReceived)

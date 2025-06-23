@@ -67,7 +67,7 @@ function ISRemoveGlass:complete()
     addXp(self.character, Perks.Doctor, 15);
 
     local addPain = (30 - (self.doctorLevel * 1))
-    if not (isMultiplayer() and self.doctor:getRole():haveCapability(Capability.CanMedicalCheat)) then
+    if not (isMultiplayer() and self.doctor:getRole():hasCapability(Capability.CanMedicalCheat)) then
         self.bodyPart:setAdditionalPain(self.bodyPart:getAdditionalPain() + addPain);
     end
 
@@ -84,7 +84,7 @@ function ISRemoveGlass:complete()
 end
 
 function ISRemoveGlass:getDuration()
-    if (isMultiplayer() and self.character:getRole():haveCapability(Capability.CanMedicalCheat)) or self.character:isTimedActionInstant() then
+    if (isMultiplayer() and self.character:getRole():hasCapability(Capability.CanMedicalCheat)) or self.character:isTimedActionInstant() then
         return 1;
     end
 
@@ -101,7 +101,7 @@ function ISRemoveGlass:stopSound()
     end
 end
 
-function ISRemoveGlass:new(character, otherPlayer, bodyPart)
+function ISRemoveGlass:new(character, otherPlayer, bodyPart, handPain)
     local o = ISBaseTimedAction.new(self, character)
 	o.character = character;
     o.otherPlayer = otherPlayer;
@@ -110,30 +110,10 @@ function ISRemoveGlass:new(character, otherPlayer, bodyPart)
     o.bandagedPlayerX = otherPlayer:getX();
     o.bandagedPlayerY = otherPlayer:getY();
     o.doctor = character;
-    o.handPain = false;
-    o.maxTime = o:getDuration();
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
+    o.handPain = handPain;
+
+    if isMultiplayer() and character:getRole():hasCapability(Capability.CanMedicalCheat) then
         o.doctorLevel = 10;
-    end
-
-    return o;
-end
-
-function ISRemoveGlass:new(character, otherPlayer, bodyPart, hands)
-    local o = ISBaseTimedAction.new(self, character)
-    o.character = character;
-    o.otherPlayer = otherPlayer;
-    o.doctorLevel = character:getPerkLevel(Perks.Doctor);
-    o.bodyPart = bodyPart;
-    o.bandagedPlayerX = otherPlayer:getX();
-    o.bandagedPlayerY = otherPlayer:getY();
-    o.doctor = character;
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
-        o.doctorLevel = 10;
-    end
-
-    if (hands) then
-        o.handPain = true;
     end
 
     o.maxTime = o:getDuration();

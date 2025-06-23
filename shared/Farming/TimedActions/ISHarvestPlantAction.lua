@@ -70,11 +70,11 @@ function ISHarvestPlantAction:complete()
 	end
 
 	if plant then
-		SFarmingSystem.instance:harvest(plant, self.character)
 		-- we successfull harvest our plant, we may gain xp !
 		if isPlayerOwn then
 			SFarmingSystem.instance:gainXp(self.character, plant)
 		end
+		SFarmingSystem.instance:harvest(plant, self.character)
 	end
 
 	return true;

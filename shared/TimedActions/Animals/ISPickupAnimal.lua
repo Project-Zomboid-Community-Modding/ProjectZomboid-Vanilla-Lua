@@ -49,6 +49,7 @@ function ISPickupAnimal:complete()
 
 	self.character:getAttachedAnimals():remove(self.animal);
 	self.animal:getData():setAttachedPlayer(nil);
+	self.animal:setWild(false);
 
 	self.animal:removeFromWorld();
 	self.animal:removeFromSquare();

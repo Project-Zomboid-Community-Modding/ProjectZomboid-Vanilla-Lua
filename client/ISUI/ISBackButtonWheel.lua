@@ -39,6 +39,7 @@ function ISBackButtonWheel:addCommands()
 		end
 		if not ISBackButtonWheel.disableCrafting then
 			self:addSlice(getText("IGUI_BackButton_Crafting"), getTexture("media/ui/Carpentry_On.png"), self.onCommand, self, "Crafting")
+			self:addSlice(getText("IGUI_BackButton_Building"), getTexture("media/ui/Build_Tool.png"), self.onCommand, self, "Building")
 		else
 			self:addSlice(nil, nil, nil)
 		end
@@ -58,18 +59,18 @@ function ISBackButtonWheel:addCommands()
 			self:addSlice(nil, nil, nil)
 		else
 			if UIManager.getSpeedControls():getCurrentGameSpeed() == 0 or getGameTime():getTrueMultiplier() > 1 then
-				self:addSlice(getText("IGUI_BackButton_Play"), getTexture("media/ui/Time_Play_Off.png"), self.onCommand, self, "Pause")
+				self:addSlice(getText("IGUI_BackButton_Play"), getTexture("media/ui/speedControls/Play_Off.png"), self.onCommand, self, "Pause")
 			else
-				self:addSlice(getText("UI_optionscreen_binding_Pause"), getTexture("media/ui/Time_Pause_Off.png"), self.onCommand, self, "Pause")
+				self:addSlice(getText("UI_optionscreen_binding_Pause"), getTexture("media/ui/speedControls/Pause_Off.png"), self.onCommand, self, "Pause")
 			end
 	
 			local multiplier = getGameTime():getTrueMultiplier()
 			if multiplier == 1 or multiplier == 40 then
-				self:addSlice(getText("IGUI_BackButton_FF1"), getTexture("media/ui/Time_FFwd1_Off.png"), self.onCommand, self, "FastForward")
+				self:addSlice(getText("IGUI_BackButton_FF1"), getTexture("media/ui/speedControls/FFwd1_Off.png"), self.onCommand, self, "FastForward")
 			elseif multiplier == 5 then
-				self:addSlice(getText("IGUI_BackButton_FF2"), getTexture("media/ui/Time_FFwd2_Off.png"), self.onCommand, self, "FastForward")
+				self:addSlice(getText("IGUI_BackButton_FF2"), getTexture("media/ui/speedControls/FFwd2_Off.png"), self.onCommand, self, "FastForward")
 			elseif multiplier == 20 then
-				self:addSlice(getText("IGUI_BackButton_FF3"), getTexture("media/ui/Time_Wait_Off.png"), self.onCommand, self, "FastForward")
+				self:addSlice(getText("IGUI_BackButton_FF3"), getTexture("media/ui/speedControls/Wait_Off.png"), self.onCommand, self, "FastForward")
 			end
 		end
 	end
@@ -133,9 +134,22 @@ function ISBackButtonWheel:onCommand(command)
 		getPlayerInfoPanel(self.playerNum):setVisible(true)
 		getPlayerInfoPanel(self.playerNum):addToUIManager()
 		focus = getPlayerInfoPanel(self.playerNum).panel:getActiveView()
+	elseif command == "Building" and not isPaused then
+		local entityUI = ISEntityUI.players[self.playerNum]
+		if entityUI and entityUI.instance and entityUI.instance.xuiStyleName == "BuildWindow" then
+			ISEntityUI.players[self.playerNum].instance:close()
+		else
+			ISEntityUI.OpenBuildWindow(playerObj, nil, "*")
+		end
+		return
 	elseif command == "Crafting" and not isPaused then
-		getPlayerCraftingUI(self.playerNum):setVisible(true)
-		focus = getPlayerCraftingUI(self.playerNum)
+		local entityUI = ISEntityUI.players[self.playerNum]
+		if entityUI and entityUI.instance and entityUI.instance.xuiStyleName == "HandcraftWindow" then
+			entityUI.instance:close()
+		else
+			ISEntityUI.OpenHandcraftWindow(playerObj, nil, "*")
+		end
+		return
 	elseif command == "MoveFurniture" and not isPaused then
 		local mo = ISMoveableCursor:new(getSpecificPlayer(self.playerNum));
 		getCell():setDrag(mo, mo.player);

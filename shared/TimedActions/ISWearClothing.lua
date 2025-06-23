@@ -158,5 +158,6 @@ function ISWearClothing:new(character, item)
 	o.item = item;
 	o.maxTime = o:getDuration();
 	o.fromHotbar = true; -- just to disable hotbar:update() during the wearing
+	o.clothingAction = true;
 	return o;
 end

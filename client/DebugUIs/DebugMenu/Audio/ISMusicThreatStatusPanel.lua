@@ -20,6 +20,7 @@ function ISMusicThreatStatusPanel:createChildren()
 	local statusCount = MusicThreatConfig.getInstance():getStatusCount()
 	for i=1,statusCount do
 		local id = MusicThreatConfig.getInstance():getStatusIdByIndex(i-1)
+		local obj;
 		y, obj = self:addFloatOption(id, id, x, y, w)
 		y = ISDebugUtils.addHorzBar(self,y + barMod) + barMod+1
 	end

@@ -32,7 +32,7 @@ end
 local getThumpable = function(x, y, z, index)
 	local sq = getCell():getGridSquare(x, y, z)
 	if sq and index >= 0 and index < sq:getObjects():size() then
-		o = sq:getObjects():get(index)
+		local o = sq:getObjects():get(index)
 		if instanceof(o, 'IsoThumpable') then
 			return o
 		end
@@ -179,7 +179,7 @@ Commands.object.shovelGround = function(player, args)
 				end
 			end
 			local emptyBag = player:getInventory():getItemWithID(args.emptyBag)
-			if emptyBag:hasTag("HoldDirt") and (args.newBag == "Base.Dirtbag" or args.newBag == "Base.Gravelbag" or args.newBag == "Base.Sandbag") then
+			if emptyBag:hasTag("HoldDirt") and (args.newBag == "Base.Dirtbag" or args.newBag == "Base.Gravelbag" or args.newBag == "Base.Sandbag" or args.newBag == "Base.Claybag") then
 				local isPrimary = player:isPrimaryHandItem(emptyBag)
 				local isSecondary = player:isSecondaryHandItem(emptyBag)
 				player:removeFromHands(emptyBag);
@@ -284,11 +284,13 @@ Commands.object.setWaterAmount = function(player, args)
 		print('invalid object')
 	end
 	local obj = gs:getObjects():get(args.index)
-	local amount = obj:getWaterAmount()
+	local amount = obj:getFluidAmount()
 	if amount == args.amount then
 		return
 	end
-	obj:setWaterAmount(args.amount)
+	
+	obj:emptyFluid();
+	obj:addFluid(FluidType.Water, args.amount);
 	obj:transmitModData()
 end
 
@@ -600,7 +602,7 @@ end
 
 Commands.debugAction = {}
 Commands.debugAction.getBuildingKey = function(player, args)
-	if not player:getRole():haveCapability(Capability.AddItem) then
+	if not player:getRole():hasCapability(Capability.AddItem) then
 		print('debugAction.getBuildingKey The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -617,7 +619,7 @@ Commands.debugAction.getBuildingKey = function(player, args)
 end
 
 Commands.debugAction.getDoorKey = function(player, args)
-	if not player:getRole():haveCapability(Capability.AddItem) then
+	if not player:getRole():hasCapability(Capability.AddItem) then
 		print('debugAction.getBuildingKey The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -664,7 +666,7 @@ Commands.debugAction.getDoorKey = function(player, args)
 end
 
 Commands.debugAction.mannequinCreateItem = function(player, args)
-	if not player:getRole():haveCapability(Capability.AddItem) then
+	if not player:getRole():hasCapability(Capability.AddItem) then
 		print('debugAction.getBuildingKey The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -685,7 +687,7 @@ end
 -- -- -- -- --
 Commands.animal = {}
 Commands.animal.forceEgg = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -695,7 +697,7 @@ Commands.animal.forceEgg = function(player, args)
 			"id", animal:getOnlineID())
 end
 Commands.animal.add = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -704,7 +706,7 @@ Commands.animal.add = function(player, args)
 	animal:addToWorld()
 end
 Commands.animal.addBaby = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -712,7 +714,7 @@ Commands.animal.addBaby = function(player, args)
 	animal:addBaby()
 end
 Commands.animal.addEgg = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -720,7 +722,7 @@ Commands.animal.addEgg = function(player, args)
 	animal:addEgg(false)
 end
 Commands.animal.forceEgg = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -728,14 +730,14 @@ Commands.animal.forceEgg = function(player, args)
 	animal:debugForceEgg()
 end
 Commands.animal.remove = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
 	removeAnimal(tonumber(args.id))
 end
 Commands.animal.removeFromHutch = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.removeFromHutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -744,7 +746,7 @@ Commands.animal.removeFromHutch = function(player, args)
 	animal:getHutch():removeAnimal(animal)
 end
 Commands.animal.removeEggFromNestBox = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.removeEggFromNestBox The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -763,7 +765,7 @@ Commands.animal.forceWander = function(player, args)
 	sendServerCommand(animal:getOwner(), "animal", "forceWander", args)
 end
 Commands.animal.hutch = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.hutch The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -781,7 +783,7 @@ Commands.animal.hutch = function(player, args)
 	end
 end
 Commands.animal.invincible = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.invincible The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -792,7 +794,7 @@ Commands.animal.invincible = function(player, args)
 			"value", animal:isInvincible())
 end
 Commands.animal.kill = function(player, args)
-	if not player:getRole():haveCapability(Capability.AnimalCheats) then
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.invincible The player\'s access level is not sufficient to perform this action')
 		return
 	end
@@ -917,8 +919,13 @@ Commands.animal.pregnancyTime = function(player, args)
 			"value", args.value)
 end
 Commands.animal.dung = function(player, args)
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
+		print('animal.dung The player\'s access level is not sufficient to perform this action')
+		return
+	end
+
 	local animal = getAnimal(tonumber(args.id))
-	animal:getData():checkPoop(false);
+	animal:getData():checkPoop(false, true);
 end
 Commands.animal.happy = function(player, args)
 	local animal = getAnimal(tonumber(args.id))

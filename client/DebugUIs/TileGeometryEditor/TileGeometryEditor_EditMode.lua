@@ -1314,6 +1314,11 @@ function TileGeometryEditor_TilePicker3:createChildren()
 	self.listBox = listBox
 end
 
+function TileGeometryEditor_TilePicker3:setTileset(tilesetName)
+	self.comboTileset:select(tilesetName)
+	self.listBox:setTileset(tilesetName)
+end
+
 function TileGeometryEditor_TilePicker3:onMouseWheel(del)
 	self.listBox:onMouseWheel(del)
 	return true
@@ -1380,7 +1385,7 @@ function TileGeometryEditor_EditMode_SceneTiles:createChildren()
 	self.buttonPanel:setVisible(false)
 
 	local scrollbarWidth = 13
-	self.tilePicker3 = TileGeometryEditor_TilePicker3:new(self.width - 10 - (8 * 32 + scrollbarWidth), 40, 8 * 32 + scrollbarWidth, self.height - 10 - 40, self.editor)
+	self.tilePicker3 = TileGeometryEditor_TilePicker3:new(self.width - 10 - (8 * 32 + scrollbarWidth), UI_BORDER_SPACING*2+BUTTON_HGT, 8 * 32 + scrollbarWidth, self.height - 10 - 40, self.editor)
 	self.tilePicker3:setAnchorBottom(true)
 	self.editor:addChild(self.tilePicker3)
 	self.tilePicker3:setVisible(false)
@@ -1418,6 +1423,17 @@ function TileGeometryEditor_EditMode_SceneTiles:activate()
 	TileGeometryEditor_EditMode.activate(self)
 	self.buttonPanel:setVisible(true)
 	self.tilePicker3:setVisible(true)
+	local picker = self.editor.tilePicker.listBox
+	local picker3 = self.tilePicker3.listBox
+	if picker.tileset ~= nil then
+		self.tilePicker3:setTileset(picker.tileset)
+	end
+	local selectedTile = picker:getFirstSelectedTile()
+	if selectedTile ~= nil then
+		self.tilePicker3.comboTileset:select(picker.tileset)
+		picker3:selectionClear()
+		picker3:selectionAdd(selectedTile.col, selectedTile.row)
+	end
 	self.previousGeometryVisible = self:java0("getDrawGeometry")
 	self:java1("setDrawGeometry", false)
 	self.previousTool = self.editor.scene.currentTool
@@ -1479,6 +1495,323 @@ function TileGeometryEditor_EditMode_SceneTiles:new(editor)
 	o:createChildren() -- this is not a ISUIElement
 	return o
 end
+-----
+
+TileGeometryEditor_CurtainPropertiesPanel = ISPanel:derive("TileGeometryEditor_CurtainPropertiesPanel")
+local CurtainPropertiesPanel = TileGeometryEditor_CurtainPropertiesPanel
+
+function CurtainPropertiesPanel:createChildren()
+	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, FONT_HGT_SMALL, "Curtain Offset", 1, 1, 1, 1, UIFont.Small, true)
+	self.curtainOffsetLabel = label
+	self:addChild(label)
+	self.curtainOffsetEntry = self:createEntry(label:getX(), label:getBottom(), 256, BUTTON_HGT, "CurtainOffset")
+
+	local button = ISButton:new(UI_BORDER_SPACING+1, self.curtainOffsetEntry:getBottom(), 40, BUTTON_HGT, "w", self, self.onButtonCurtainW)
+	self:addChild(button)
+
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, self.curtainOffsetEntry:getBottom(), 40, BUTTON_HGT, "n", self, self.onButtonCurtainN)
+	self:addChild(button)
+
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, self.curtainOffsetEntry:getBottom(), 40, BUTTON_HGT, "clear", self, self.onButtonClear)
+	self:addChild(button)
+
+	self:shrinkWrap(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, nil)
+end
+
+function CurtainPropertiesPanel:createEntry(x, y, w, h, id)
+	local entry = ISTextEntryBox:new("", x, y, w, h)
+	entry:initialise()
+	entry:instantiate()
+	entry.min = 0
+	entry:setOnlyNumbers(true)
+--	entry.onCommandEntered = function(self) self.parent:onTextEntered(self, id) end
+	self:addChild(entry)
+	return entry
+end
+
+function CurtainPropertiesPanel:onButtonCurtainW()
+	local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_16")
+	if not self:selectedTileHasCurtainOffsetProperty() then
+		self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
+	end
+	self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
+	self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
+end
+
+function CurtainPropertiesPanel:onButtonCurtainN()
+	local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_18")
+	if not self:selectedTileHasCurtainOffsetProperty() then
+		self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
+	end
+	self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
+	self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
+end
+
+function CurtainPropertiesPanel:onButtonClear()
+	local picker = self.editor.editMode.curtain.tilePicker3.listBox
+	local selectedTile = picker:getFirstSelectedTile()
+	TileGeometryManager.getInstance():setTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset", nil)
+	self.selectedTileForCurtain = nil
+end
+
+function CurtainPropertiesPanel:toUI()
+	local picker = self.editor.editMode.curtain.tilePicker3.listBox
+	local selectedTile = picker:getFirstSelectedTile()
+	local toolActive = self.scene.currentTool == self.scene.tools.setSurface
+	if self.selectedTileForCurtain ~= selectedTile.tileName then
+		self.selectedTileForCurtain = selectedTile and selectedTile.tileName or nil
+		self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(0.0)
+		self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(0.0)
+		self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(1.7 * 1.5)
+		if self.selectedTileForCurtain then
+			local sprite = getSprite(self.selectedTileForCurtain)
+			if sprite then
+				if self:getCurtainEdge(sprite) == "w" then
+					local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_16")
+					self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
+					self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
+					self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
+				end
+				if self:getCurtainEdge(sprite) == "n" then
+					local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_18")
+					self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
+					self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
+					self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
+				end
+			end
+			local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset")
+			if value then
+				local ss = string.split(value, " ")
+				if #ss == 3 then
+					local x = tonumber(ss[1])
+					local y = tonumber(ss[2])
+					local z = tonumber(ss[3])
+					self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(x, y, z)
+				end
+			end
+		end
+	end
+	if not self.curtainOffsetEntry:isFocused() or self:isTranslatingCurtain() then
+		local tileName = selectedTile.tileName
+--		local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset")
+--		if not value then value = "0.0 0.0 0.0" end
+		local translate = self.scene:java1("getObjectTranslation", "curtain")
+		local valueStr = string.format("%.4f %.4f %.4f", translate:x(), translate:y(), translate:z())
+		self.curtainOffsetEntry:setText(valueStr)
+		if self:isTranslatingCurtain() then
+			TileGeometryManager.getInstance():setTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset", valueStr)
+		end
+		if self:selectedTileHasCurtainOffsetProperty() then
+			self.curtainOffsetLabel:setColor(1.0, 1.0, 0.0)
+		else
+			self.curtainOffsetLabel:setColor(1.0, 1.0, 1.0)
+		end
+	end
+end
+
+function CurtainPropertiesPanel:configGizmo()
+	if self:isTranslatingCurtain() then
+		self.curtainOffsetEntry:focus()
+		self.scene:java1("setGizmoOrigin", "none")
+		local translate = self.scene:java1("getObjectTranslation", "curtain")
+		self.scene:java1("setGizmoPos", translate)
+		self.scene:java6("addAxisRelativeToOrigin", translate:x(), translate:y(), translate:z(), 0.0, 0.0, 0.0)
+		self.scene.tools.gizmo.translate.snapFunc = self.scene.tools.gizmo.translate.snap
+		return true
+	end
+	self.movingFace = nil
+	if self.curtainOffsetEntry:isFocused() or self.movingFace == "curtain" then
+		self.scene:java2("setGizmoOrigin", "none")
+		local translate = self.scene:java1("getObjectTranslation", "curtain")
+		self.scene:java1("setGizmoPos", translate)
+		self.scene:java6("addAxisRelativeToOrigin", translate:x(), translate:y(), translate:z(), 0.0, 0.0, 0.0)
+		self.movingFace = "curtain"
+		return true
+	end
+	return false
+end
+
+function CurtainPropertiesPanel:isTranslatingCurtain()
+	return (self.scene.currentTool == self.scene.tools.gizmo.translate) and (self.movingFace == "curtain")
+end
+
+function CurtainPropertiesPanel:getCurtainEdge(sprite)
+	if sprite:getProperties():Is(IsoFlagType.attachedW) or sprite:getProperties():Is(IsoFlagType.windowW) then return "w" end
+	if sprite:getProperties():Is(IsoFlagType.attachedN) or sprite:getProperties():Is(IsoFlagType.windowN) then return "n" end
+	return nil
+end
+
+function CurtainPropertiesPanel:selectedTileHasCurtainOffsetProperty()
+	local picker = self.editor.tilePicker.listBox
+	local selectedTile = picker:getFirstSelectedTile()
+	if not selectedTile then return false end
+	local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset")
+	return value ~= nil
+end
+
+function CurtainPropertiesPanel:new(x, y, width, height, editor)
+	local o = ISPanel.new(self, x, y, width, height)
+	o.editor = editor
+	o.scene = editor.scene
+	return o
+end
+
+-----
+
+TileGeometryEditor_EditMode_Curtain = TileGeometryEditor_EditMode:derive("TileGeometryEditor_EditMode_Curtain")
+
+function TileGeometryEditor_EditMode_Curtain:createChildren()
+	local buttonPadY = 4
+	local buttonHgt = FONT_HGT_MEDIUM + 8
+
+	self.buttonPanel = ISPanel:new(UI_BORDER_SPACING, UI_BORDER_SPACING, 250, 200)
+	self.buttonPanel:noBackground()
+	self.editor:addChild(self.buttonPanel)
+
+	local button1 = ISButton:new(0, 0, self.buttonPanel.width, buttonHgt, "toggle geometry", self, self.onButtonToggleGeometry)
+	self.buttonPanel:addChild(button1)
+	self.button1 = button1
+
+	self.buttonPanel:shrinkWrap(0, 0)
+	self.buttonPanel:setVisible(false)
+
+	local scrollbarWidth = 13
+	self.tilePicker3 = TileGeometryEditor_TilePicker3:new(self.width - UI_BORDER_SPACING - (8 * 32 + scrollbarWidth), UI_BORDER_SPACING*2+BUTTON_HGT, 8 * 32 + scrollbarWidth, self.height - UI_BORDER_SPACING - 40, self.editor)
+	self.tilePicker3:setAnchorBottom(true)
+	self.editor:addChild(self.tilePicker3)
+	self.tilePicker3:setVisible(false)
+
+	self.tilePicker3.listBox.renderItemBackground = TileGeometryEditor_EditMode_Curtain.renderItemBackground
+
+	self.propertiesPanel = CurtainPropertiesPanel:new(UI_BORDER_SPACING, self.buttonPanel:getBottom() + UI_BORDER_SPACING, 100, 100, self.editor)
+	self.editor:addChild(self.propertiesPanel)
+	self.propertiesPanel:setVisible(false)
+end
+
+function TileGeometryEditor_EditMode_Curtain:onButtonToggleGeometry()
+	local visible = not self:java0("getDrawGeometry")
+	self:java1("setDrawGeometry", visible)
+end
+
+function TileGeometryEditor_EditMode_Curtain:activate()
+	TileGeometryEditor_EditMode.activate(self)
+	self.buttonPanel:setVisible(true)
+	self.tilePicker3:setVisible(true)
+	self.propertiesPanel:setVisible(true)
+	local picker = self.editor.tilePicker.listBox
+	local picker3 = self.tilePicker3.listBox
+	if picker.tileset ~= nil then
+		self.tilePicker3:setTileset(picker.tileset)
+	end
+	local selectedTile = picker:getFirstSelectedTile()
+	if selectedTile ~= nil then
+		self.tilePicker3.comboTileset:select(picker.tileset)
+		picker3:selectionClear()
+		picker3:selectionAdd(selectedTile.col, selectedTile.row)
+	end
+	self.editor.editMode.geometry.listBox.selected = 1 -- character1
+	self.previousTool = self.editor.scene.currentTool
+	self.scene.gizmo = "translate"
+	self.editor.scene.currentTool = nil
+	self.previousAnimation = self.editor.editMode.geometry.animation
+	self:java2("setCharacterAnimationClip", "character1", "Bob_Idle")
+	self.selectedTile.tileset = nil
+end
+
+function TileGeometryEditor_EditMode_Curtain:deactivate()
+	TileGeometryEditor_EditMode.deactivate(self)
+	self.buttonPanel:setVisible(false)
+	self.tilePicker3:setVisible(false)
+	self.propertiesPanel:setVisible(false)
+	self.editor.scene.currentTool = self.previousTool
+	self:java2("setCharacterAnimationClip", "character1", self.previousAnimation)
+	self:java2("setObjectVisible", "curtain", false)
+end
+
+function TileGeometryEditor_EditMode_Curtain:prerenderEditor()
+	self:java2("setObjectVisible", "character1", true)
+	self:java2("setObjectVisible", "curtain", true)
+	self:setGeometryModeSelection()
+	self:prerenderProperties()
+end
+
+function TileGeometryEditor_EditMode_Curtain:prerenderProperties()
+	self.button1:setTitle(self:java0("getDrawGeometry") and "HIDE GEOMETRY" or "SHOW GEOMETRY")
+	if not self.tilePicker3.listBox:isSelectionEmpty() then
+		if not self.propertiesPanel:isVisible() then
+			self.propertiesPanel:setVisible(true)
+		end
+		self.propertiesPanel:toUI()
+		if self.propertiesPanel.curtainOffsetEntry:isFocused() or (self.propertiesPanel.movingFace == "curtain") then
+			self.scene.selectedObjectName = "curtain"
+		end
+	else
+		if self.propertiesPanel:isVisible() then
+			self.propertiesPanel:setVisible(false)
+		end
+	end
+end
+
+function TileGeometryEditor_EditMode_Curtain:configGizmo()
+	if self.propertiesPanel:isVisible() and self.propertiesPanel:configGizmo() then
+		return true
+	end
+	return false
+end
+
+function TileGeometryEditor_EditMode_Curtain:renderSceneTiles()
+	self.editor.sceneTiles:render()
+end
+
+function TileGeometryEditor_EditMode_Curtain:onMouseDownScene(x, y)
+	self.scene.gizmoAxis = self:java2("testGizmoAxis", x, y)
+	if self.scene.gizmoAxis ~= "None" then
+		self.scene.currentTool = self.scene.tools.gizmo[self.scene.gizmo]
+		self.scene.currentTool:onMouseDown(x, y)
+		return
+	end
+end
+
+-- 'self' is tilePicker3.listBox
+function TileGeometryEditor_EditMode_Curtain:renderItemBackground(tilesetName, col, row, x, y, w, h)
+	local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, tilesetName, col, row, "CurtainOffset")
+	if value then
+		self:drawRect(x, y, w, h, 1.0, 0.2, 0.2, 0.2)
+	end
+end
+
+function TileGeometryEditor_EditMode_Curtain:selectedTileHasCurtainOffsetProperty()
+	local picker = self.editor.tilePicker.listBox
+	local selectedTile = picker:getFirstSelectedTile()
+	if not selectedTile then return false end
+	local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset")
+	return value ~= nil
+end
+
+-- Select the tile in Geometry mode that is selected in our picker, so the tile is displayed.
+function TileGeometryEditor_EditMode_Curtain:setGeometryModeSelection()
+	local picker = self.editor.tilePicker.listBox
+	local picker3 = self.tilePicker3.listBox
+	if picker3.tileset ~= nil then
+		self.editor.tilePicker:setTileset(picker3.tileset)
+	end
+	local selectedTile = picker3:getFirstSelectedTile()
+	if selectedTile ~= nil then
+		picker:selectionClear()
+		picker:selectionAdd(selectedTile.col, selectedTile.row)
+	end
+end
+
+function TileGeometryEditor_EditMode_Curtain:onSave()
+	self.editor.editMode.geometry:onSave()
+end
+
+function TileGeometryEditor_EditMode_Curtain:new(editor)
+	local o = TileGeometryEditor_EditMode.new(self, editor)
+	o.selectedTile = {}
+	o:createChildren() -- this is not a ISUIElement
+	return o
+end
 
 -----
 
@@ -1532,7 +1865,7 @@ function TileGeometryEditor_EditMode_Seating:createChildren()
 	self.buttonPanel:setVisible(false)
 
 	local scrollbarWidth = 13
-	self.tilePicker3 = TileGeometryEditor_TilePicker3:new(self.width - UI_BORDER_SPACING - (8 * 32 + scrollbarWidth), 40, 8 * 32 + scrollbarWidth, self.height - UI_BORDER_SPACING - 40, self.editor)
+	self.tilePicker3 = TileGeometryEditor_TilePicker3:new(self.width - UI_BORDER_SPACING - (8 * 32 + scrollbarWidth), UI_BORDER_SPACING*2+BUTTON_HGT, 8 * 32 + scrollbarWidth, self.height - UI_BORDER_SPACING - 40, self.editor)
 	self.tilePicker3:setAnchorBottom(true)
 	self.editor:addChild(self.tilePicker3)
 	self.tilePicker3:setVisible(false)
@@ -1603,9 +1936,11 @@ function TileGeometryEditor_EditMode_Seating:activate()
 	self.propertiesPanel:setVisible(true)
 	local picker = self.editor.tilePicker.listBox
 	local picker3 = self.tilePicker3.listBox
+	if picker.tileset ~= nile then
+		self.tilePicker3:setTileset(picker.tileset)
+	end
 	local selectedTile = picker:getFirstSelectedTile()
 	if selectedTile ~= nil then
-		picker3:setTileset(picker.tileset)
 		picker3:selectionClear()
 		picker3:selectionAdd(selectedTile.col, selectedTile.row)
 	end
@@ -1791,9 +2126,11 @@ end
 function TileGeometryEditor_EditMode_Seating:setGeometryModeSelection()
 	local picker = self.editor.tilePicker.listBox
 	local picker3 = self.tilePicker3.listBox
+	if picker3.tileset ~= nil then
+		self.editor.tilePicker:setTileset(picker3.tileset)
+	end
 	local selectedTile = picker3:getFirstSelectedTile()
 	if selectedTile ~= nil then
-		picker:setTileset(picker3.tileset)
 		picker:selectionClear()
 		picker:selectionAdd(selectedTile.col, selectedTile.row)
 	end

@@ -13,12 +13,11 @@ require "Foraging/forageSystem";
 -------------------------------------------------
 -------------------------------------------------
 
---[[--======== forageDefaultDefs ========--
-    default values (applied if missing from item definition)
+--[[--======== defaultDefinitions ========--
+    default values applied if missing from item definition
 ]]--
 
-forageDefaultDefs = {
-	--- default values (applied if missing from item definition)
+forageSystem.defaultDefinitions = {
 	defaultItemDef = {
 		type                    = "Base.MissingItemType",                       --item type including module
 		minCount                = 1,                                            --minimum amount of items to pick up
@@ -38,7 +37,7 @@ forageDefaultDefs = {
 		dayChance               = 0,                                            --day chance modifier (percent)
 		nightChance             = 0,                                            --night chance modifier (percent)
 		--
-		zones           = {                                                     --zones where the item can be found
+		zones = {                                                     			--zones where the item can be found
 			Forest              = 1,                                            --[zone name] = number of rolls for item in this zone
 			DeepForest          = 1,                                            --/!\ it is NOT a percent chance /!\
 			Vegitation          = 1,
@@ -46,19 +45,20 @@ forageDefaultDefs = {
 			Farm                = 1,
 			TrailerPark         = 1,
 			TownZone            = 1,
+			Nav         		= 1,
 			ForagingNav         = 1,
 		},
 		--
 		months                  = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },    --months when the item can be found
+		validMonths             = {},    										--months when the item can be found
 		bonusMonths             = {},                                           --months when the item is more common (must be in months)
 		malusMonths             = {},                                           --months when the item is less common (must be in months)
+		--
 		spawnFuncs              = {},                                           --custom spawn function when item is picked up
 		forceOutside            = true,                                         --item must be outside
 		isOnWater               = false,                                        --item can be on water
 		forceOnWater            = false,                                        --item must be on water
-		isMover                 = false,                                        --does nothing, ignored
 		canBeAboveFloor         = false,                                        --does nothing, ignored
-		doIsoMarkerObject       = false,                                        --create an IsoMarker temp object on square
 		doIsoMarkerSprite       = nil,                                          --use a custom sprite/sprites for IsoMarker
 		canBeOnTreeSquare       = true,                                         --can occupy the same square as an IsoTree
 		--
@@ -77,10 +77,11 @@ forageDefaultDefs = {
 		densityMax              = 1,                                            --zone maximum icon density
 		refillPercent           = 1,                                            --percent of icons refilled per game day
 		abundanceSetting        = "NatureAbundance",                            --sandbox setting used for icon density multiplier - see forageSystem.abundanceSettings
+		containsBiomes			= {},				                            --loot tables contained within this zone. must be a valid loot table from another zone
 	},
 	--- default values (applied if missing from category definition)
-	defaultCatDef   = {
-		chance                  = 1,                                            --rolls for this category - /!\ it is NOT a percent chance /!\
+	defaultCatDef = {
+		chance                  = 0,                                            --rolls for this category - /!\ it is NOT a percent chance /!\
 		name                    = "Unknown",                                    --category name used for forageSystem.catDef key
 		typeCategory            = "Other",                                      --fuzzy category name - used for search window tooltip
 		identifyCategoryPerk    = "PlantScavenging",                            --perk to identify category
@@ -89,20 +90,28 @@ forageDefaultDefs = {
 		validFloors             = { "ANY" },                                    --valid floor types for items in this category - ANY is an override to allow all floors
 		validFunc               = nil,                                          --can be used to provide your own valid function for floors - see forageSystem.isValidSquare
 		--
+		validMonths             = {},    										--months when the item can be found
+		bonusMonths             = {},                                           --months when the item is more common (must be in months)
+		malusMonths             = {},
+		--
 		rainChance              = 0,                                            --rain chance modifier (percent)
 		hasRainedChance         = 0,                                            --after rain chance modifier (percent)
 		snowChance              = 0,                                            --snow chance modifier (percent)
 		dayChance               = 0,                                            --day chance modifier (percent)
 		nightChance             = 0,                                            --night chance modifier (percent)
-		zoneChance = {                                                          --zones where the category can be found
-			Forest              = 1,                                            --[zone name] = number of rolls for category in this zone
-			DeepForest          = 1,                                            --/!\ it is NOT a percent chance /!\
-			Vegitation          = 1,
-			FarmLand            = 1,
-			Farm                = 1,
-			TrailerPark         = 1,
-			TownZone            = 1,
-			ForagingNav         = 1,
+		zones = {                                                          		--zones where the category can be found
+			Forest              = 0,                                            --[zone name] = number of rolls for category in this zone
+			DeepForest          = 0,                                            --/!\ it is NOT a percent chance /!\
+			Vegitation          = 0,
+			FarmLand            = 0,
+			Farm                = 0,
+			TrailerPark         = 0,
+			TownZone            = 0,
+			ForagingNav         = 0,
+			PHForest     		= 0,
+			PRForest     		= 0,
+			OrganicForest  		= 0,
+			BirchForest  		= 0,
 		},
 		spriteAffinities        = {},                                           --sprite affinities for this item - see Stones/Twigs category for example
 		chanceToMoveIcon        = 0.0,                                          --percent chance to move a nearby icon to the sprite detected
@@ -120,62 +129,4 @@ forageDefaultDefs = {
 		specialisations         = {},                                           -- /!\ base /!\ vision bonus multipliers by category (percent)
 		testFuncs               = {},                                           -- test functions for bonus/malus effects
 	},
-};
-
---[[--======== forageDefs ========--]]--
-
-forageDefs = {
-	--======== BERRIES ========--
-	--(added via generateBerryDefs)
-	--======== FRUITS ========--
-	--(added via generateFruitsDefs)
-	--======== VEGETABLES ========--
-	--(added via generateVegetablesDefs)
-	--======== MUSHROOMS ========--
-	--(added via generateMushroomDefs)
-	--======== WILD PLANTS ========--
-	--(added via generateWildPlantsDefs)
-	--======== WILD HERBS ========--
-	--(added via generateHerbDefs)
-	--======== MEDICINAL PLANTS ========--
-	--(added via generateMedicinalPlantsDefs)
-	--======== ANIMALS ========--
-	--(added via generateAnimalsDefs)
-	--======== DEAD ANIMALS ========--
-	--(added via generateAnimalsDefs)
-	--======== INSECTS ========--
-	--(added via generateInsectsDefs)
-	SawflyLarva = {
-		type = "Base.SawflyLarva",
-		skill = 0,
-		xp = 5,
-		rainChance = 10,
-		snowChance = -20,
-		nightChance = 100,
-		categories = { "Insects", "FishBait" },
-		zones = {
-			Forest      = 3,
-			DeepForest  = 3,
-			Vegitation  = 3,
-			FarmLand    = 3,
-			Farm        = 3,
-			TrailerPark = 3,
-			TownZone    = 3,
-			ForagingNav = 3,
-		},
-		months = { 3, 4, 5, 6, 7, 8, 9, 10, 11 },
-		malusMonths = { 3, 4 },
-		forceOutside = false,
-		canBeAboveFloor = true,
-	},
-	--======== FOREST GOODS ========--
-	--(added via generateForestGoodsDefs)
-	--======== STONES ========--
-	--(added via generateStoneDefs)
-	--======== FOREST RARITIES ========--
-	--(added via generateForestRaritiesDefs)
-	--======== TRASH ITEMS ========--
-	--(added via generateJunkDefs)
-	--======== JUNK ITEMS ========--
-	--(added via generateJunkDefs)
 };

@@ -1,6 +1,8 @@
 require "ISUI/ISPanel"
 
 LuaThreadWindow = ISPanel:derive("LuaThreadWindow");
+
+local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 
@@ -22,12 +24,7 @@ function LuaThreadWindow:onMouseDoubleClickCallframe(item)
 
 
         end
-        local p = item.line * 20;
-        p = p - (src:getWidth() / 2);
-        src.sourceView:setScrollHeight(src.sourceView.count * 20);
-        src.sourceView:setYScroll(-p);
-        src.sourceView.selected = item.line+1;
-
+        src:scrollToLine(item.line+1)
     end
 end
 
@@ -65,12 +62,7 @@ function LuaThreadWindow:onMouseDoubleClickObject(item)
                 src:initialise();
                 src:addToUIManager();
             end
-            local p = (getFirstLineOfClosure(item)-1) * 20;
-            p = p - (src:getWidth() / 2);
-            src.sourceView:setScrollHeight(src.sourceView.count * 20);
-            src.sourceView:setYScroll(-p);
-            src.sourceView.selected = getFirstLineOfClosure(item)-1;
-
+            src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
 
     elseif instanceof (item, "Texture") then
@@ -114,6 +106,7 @@ function LuaThreadWindow:fill()
         if o ~= nil then
             local s = KahluaUtil.rawTostring2(o);
             if s ~= nil then
+                if #s > 128 then s = s:sub(1, 128) end
                 self.objectStack:addItem(s, o);
             end
         end
@@ -147,6 +140,7 @@ function LuaThreadWindow:populateLocalVariables()
                 local o = getCoroutineObjStack(coroutine, stack)
                 local s2 = KahluaUtil.rawTostring2(o)
                 if s2 == nil then s2 = "nil" end
+                if #s2 > 128 then s2 = s2:sub(1, 128) end
                 self.locals:addItem(s..s2, o)
             end
         end
@@ -162,6 +156,7 @@ function LuaThreadWindow:populateLocalVariables()
             s = tabToX(s, 40);
             local s2 = KahluaUtil.rawTostring2(getCoroutineObjStack(coroutine,stack))
             if s2 == nil then s2 = "nil" end
+            if #s2 > 128 then s2 = s2:sub(1, 128) end
             self.locals:addItem(s..s2, getCoroutineObjStack(coroutine,stack))
         end
     end
@@ -173,22 +168,26 @@ function LuaThreadWindow:createChildren()
     self.width =  self.width * 0.7
 
     self.objectStack = ISScrollingListBox:new(0, FONT_HGT_MEDIUM+(self.height/3), self.width / 2, (self.height/3)-FONT_HGT_MEDIUM);
+    self.objectStack:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.objectStack:initialise();
     self.objectStack.doDrawItem = LuaThreadWindow.doDrawItem;
     self.objectStack:setOnMouseDoubleClick(self, LuaThreadWindow.onMouseDoubleClickObject);
 
     self.callframeStack = ISScrollingListBox:new(self.width / 2, FONT_HGT_MEDIUM, self.width / 2, (self.height/3)-FONT_HGT_MEDIUM);
+    self.callframeStack:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.callframeStack:initialise();
     self.callframeStack.doDrawItem = LuaThreadWindow.doDrawItem;
     self.callframeStack:setOnMouseDoubleClick(self, LuaThreadWindow.onMouseDoubleClickCallframe);
 
     self.locals = ISScrollingListBox:new(0, FONT_HGT_MEDIUM, self.width / 2, (self.height/3)-FONT_HGT_MEDIUM);
+    self.locals:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.locals:initialise();
     self.locals.doDrawItem = LuaThreadWindow.doDrawItem;
     self.locals.doRepaintStencil = true
     self.locals:setOnMouseDoubleClick(self, LuaThreadWindow.onMouseDoubleClickObject);
 
     self.metaNodes = ISScrollingListBox:new(self.width / 2, FONT_HGT_MEDIUM+(self.height/3), self.width / 2, (self.height/3)-FONT_HGT_MEDIUM);
+    self.metaNodes:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.metaNodes:initialise();
     self.metaNodes.doDrawItem = LuaThreadWindow.doDrawItem;
     self.metaNodes:setOnMouseDoubleClick(self, LuaThreadWindow.onMouseDoubleClickMeta);
@@ -197,10 +196,6 @@ function LuaThreadWindow:createChildren()
     self:addChild(self.locals);
     self:addChild(self.objectStack);
     self:addChild(self.callframeStack);
-    self.locals.itemheight = 22;
-    self.metaNodes.itemheight = 22;
-    self.objectStack.itemheight = 22;
-    self.callframeStack.itemheight = 22;
     self:fill();
     self.width = oldw;
 --[[
@@ -228,7 +223,7 @@ function LuaThreadWindow:doDrawItem(y, item, alt)
 
     end
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(item.text, 15, (y)+6, 0.9, 0.9, 0.9, 0.9, UIFont.Code);
+    self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 0.9, 0.9, 0.9, 0.9, self.font);
     y = y + self.itemheight;
     return y;
 
@@ -255,11 +250,23 @@ function LuaThreadWindow:onResize(width, height)
     self.metaNodes:setY(FONT_HGT_MEDIUM+height/3)
 end
 
+function LuaThreadWindow:checkFontSize()
+    local font = getTextManager():getCurrentCodeFont()
+    if font == self.objectStack.font then return end
+    local fontHeight = getTextManager():getFontHeight(font)
+    FONT_HGT_CODE = fontHeight
+    self.objectStack:setFont(font, 0)
+    self.callframeStack:setFont(font, 0)
+    self.locals:setFont(font, 0)
+    self.metaNodes:setFont(font, 0)
+end
+
 function LuaThreadWindow:initialise()
     ISPanel.initialise(self);
 end
 
 function LuaThreadWindow:prerender()
+    self:checkFontSize()
     if self.callframeStack.selected ~= self.currentCallframeIndex then
         self.currentCallframeIndex = self.callframeStack.selected
         self:populateLocalVariables()

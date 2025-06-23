@@ -126,7 +126,7 @@ function ISTickBox:render()
 		c = c + 1;
     end
 
-    if self.enable and self:isMouseOver() and self.mouseOverOption and self.mouseOverOption ~= 0 and self.tooltip then
+    if self:isMouseOver() and self.mouseOverOption and self.mouseOverOption ~= 0 and self.tooltip then
         local text = self.tooltip;
         if not self.tooltipUI then
             self.tooltipUI = ISToolTip:new()
@@ -265,7 +265,10 @@ function ISTickBox:addOption(name, data, texture)
 	self.optionCount = self.optionCount + 1;
 	self:setHeight(#self.options * (self.itemHgt + UI_BORDER_SPACING) - UI_BORDER_SPACING);
 	if self.autoWidth then
-		local w = self.leftMargin + self.boxSize + self.textGap + getTextManager():MeasureStringX(self.font, name)
+		local w = self.leftMargin + self.boxSize
+		if name ~= nil and name ~= "" then
+			w = w + self.textGap + getTextManager():MeasureStringX(self.font, name)
+		end
 		if texture then
 			w = w + 32;
 		end
@@ -293,10 +296,13 @@ function ISTickBox:setFont(font)
 end
 
 function ISTickBox:setWidthToFit()
-	local textX = self.leftMargin + self.boxSize + self.textGap
+	local textX = self.leftMargin + self.boxSize
 	local maxWid = 0
 	for i,option in ipairs(self.options) do
-		local wid = textX + getTextManager():MeasureStringX(self.font, option)
+		local wid = textX
+		if option ~= nil and option ~= "" then
+			wid = wid + self.textGap + getTextManager():MeasureStringX(self.font, option)
+		end
 		if self.textures[i] then
 			wid = wid + 32
 		end

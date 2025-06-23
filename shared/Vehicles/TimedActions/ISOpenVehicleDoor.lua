@@ -79,6 +79,7 @@ function ISOpenVehicleDoor:complete()
     	print('no such vehicle id='..tostring(self.vehicle))
     end
 	triggerEvent("OnContainerUpdate")
+	self:selectContainerInLootWindow()
 
 	--Opening a door or the boot/trunk has a chance of setting the alarm off if the vehicle is alarmed
 	if not self.vehicle:isPreviouslyEntered() then
@@ -95,6 +96,45 @@ function ISOpenVehicleDoor:complete()
 	end
 
     return true
+end
+
+function ISOpenVehicleDoor:selectContainerInLootWindow()
+	if isServer() then return end
+	if not self.vehicle then return end
+	if not self.part then return end
+	if self.character:getVehicle() then return end
+	local playerNum = self.character:getPlayerNum()
+	local loot = getPlayerLoot(playerNum)
+	if self.part:getId() == "TrunkDoor" or self.part:getId() == "DoorRear" then
+		local part = self.vehicle:getPartById("TruckBed")
+		if (part ~= nil) and (part:getItemContainer() ~= nil) and self.vehicle:canAccessContainer(part:getIndex(), self.character) then
+			loot:setForceSelectedContainer(part:getItemContainer(), 100)
+			if getJoypadData(playerNum) then
+				loot:setVisible(true)
+				local joypadData = getJoypadData(playerNum)
+				joypadData.focus = loot
+				updateJoypadFocus(joypadData)
+				self.character:setBannedAttacking(true)
+			else
+				loot:setVisible(true)
+				loot.collapseCounter = 0
+				if loot.isCollapsed then
+					loot.isCollapsed = false
+					loot:clearMaxDrawHeight()
+					loot.collapseCounter = -30
+				end
+			end
+		end
+		return
+	end
+	for i=1,self.vehicle:getPartCount() do
+		local part = self.vehicle:getPartByIndex(i-1)
+		local seat = part:getContainerSeatNumber()
+		if (self.part == self.vehicle:getPassengerDoor(seat)) and self.vehicle:canAccessContainer(i-1, self.character) then
+			getPlayerLoot(self.character:getPlayerNum()):setForceSelectedContainer(part:getItemContainer(), 100)
+			return
+		end
+	end
 end
 
 function ISOpenVehicleDoor:getDuration()

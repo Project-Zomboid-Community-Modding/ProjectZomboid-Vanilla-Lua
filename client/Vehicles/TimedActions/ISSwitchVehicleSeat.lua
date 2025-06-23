@@ -8,7 +8,7 @@ ISSwitchVehicleSeat = ISBaseTimedAction:derive("ISSwitchVehicleSeat")
 
 function ISSwitchVehicleSeat:isValid()
 	local vehicle = self.character:getVehicle()
-	print(vehicle, vehicle:getSeat(self.character), vehicle:isSeatOccupied(self.seatTo), self.seatFrom, self.character:getVehicle():getSeat(self.character))
+	--print(vehicle, vehicle:getSeat(self.character), vehicle:isSeatOccupied(self.seatTo), self.seatFrom, self.character:getVehicle():getSeat(self.character))
 	return vehicle ~= nil and
 		vehicle:getSeat(self.character) ~= -1 and
 		not vehicle:isSeatOccupied(self.seatTo) and

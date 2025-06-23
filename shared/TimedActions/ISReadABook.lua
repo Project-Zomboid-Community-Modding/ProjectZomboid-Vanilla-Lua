@@ -178,6 +178,10 @@ function ISReadABook:start()
     else
         self.character:playSound("OpenMagazine")
     end
+
+    if self.item:hasModData() and self.item:getModData().printMedia then
+        self:startLoadingPrintMediaTextures()
+    end
 end
 
 function ISReadABook:stop()
@@ -215,61 +219,128 @@ function ISReadABook:perform()
     end
 
     self.isLiteratureRead = nil
-    if self.item:getModData().literatureTitle then
+    if self.item:hasModData() and self.item:getModData().literatureTitle then
         --         self.character:Say(self.item:getModData().literatureTitle)
         self.isLiteratureRead = self.character:isLiteratureRead(self.item:getModData().literatureTitle)
         self.character:addReadLiterature(self.item:getModData().literatureTitle)
     end
 
-    if self.item:getModData().printMedia then
-        --local val = "TheKentuckyHerald_July9"
-        local val = self.item:getModData().printMedia
-        local win = PZAPI.UI.PrintMedia{
-            x = 730, y = 100,
-        }
-        win.media_id = val
-        win.data = getText("Print_Media_" .. val .. "_info")
-        win.children.bar.children.name.text = getText("Print_Media_" .. val .. "_title")
-        win.textTitle = getText("Print_Text_" .. val .. "_title")
-        win.textData = string.gsub(getText("Print_Text_" .. val .. "_info"), "\\n", "\n")
+    if self.item:hasModData() and self.item:getModData().printMedia then
+        self:displayPrintMedia()
+    end
 
+    -- needed to remove from queue / start next.
+    ISBaseTimedAction.perform(self);
+end
 
-        win:instantiate()
-        win.javaObj:setAlwaysOnTop(false)
-
-        --[[
-        local index = self.item:getModData().printMedia
-        local panel = ISPrintMediaPage:new(0, 0, index, self.character, self.item);
-        panel:initialise();
-        panel:addToUIManager();
-
-        panel:setX((getCore():getScreenWidth() / 2) - (panel.width / 2));
-        panel:setY((getCore():getScreenHeight() / 2) - (panel.height / 2));
-
-        ISLayoutManager.RegisterWindow('PrintMedia', PrintMediaManager, self)
-        if PrintMediaDefinitions.MiscDetails[index] and PrintMediaDefinitions.MiscDetails[index].locations then
-            local locations = PrintMediaDefinitions.MiscDetails[index].locations
-
-            for i = 1, #locations do
-                local location = locations[i]
-                if location.x1 and location.x2 and location.y1 and location.y2 then
-                    local x1 = math.floor(locations[i].x1)
-                    local y1 = math.floor(locations[i].y1)
-                    local x2 = math.floor(locations[i].x2)
-                    local y2 = math.floor(locations[i].y2)
-                    WorldMapVisited.getInstance():setKnownInSquares(x1, y1, x2, y2)
-
-                elseif location.x and location.y then
-                    local x = math.floor(locations[i].x/300)
-                    local y = math.floor(locations[i].y/300)
-                    WorldMapVisited.getInstance():setKnownInCells(x, y, x, y)
+-- See init() in PrintMedia.lua
+function ISReadABook:startLoadingPrintMediaTextures()
+    local mediaID = self.item:getModData().printMedia
+    local text = getTextOrNull("Print_Media_" .. mediaID .. "_info")
+    if not text then return end
+    local elements = string.split(text, "<")
+    for i, val in ipairs(elements) do
+        if val ~= "" then
+            local data = string.split(val, ">")
+            local params = {}
+            local paramsData = string.split(data[1], ",")
+            local incorrectElement = nil
+            for _,v in ipairs(paramsData) do
+                local temp = string.split(v, ":")
+                if temp[1] == nil or temp[2] == nil then
+                    incorrectElement = v
+                else
+                    params[string.trim(temp[1])] = string.trim(temp[2])
+                end
+            end
+            if incorrectElement then
+                print("RICH TEXT ERROR: Incorrect string: " .. incorrectElement)
+                break
+            end
+            if params["type"] == "texture" then
+                for key,value in pairs(params) do
+                    if key == "texture" then
+                        loadstring("return " .. value)()
+                    end
                 end
             end
         end
-        ]]
     end
-    -- needed to remove from queue / start next.
-    ISBaseTimedAction.perform(self);
+end
+
+function ISReadABook:displayPrintMedia()
+    --local val = "TheKentuckyHerald_July9"
+    local val = self.item:getModData().printMedia
+    local win = PZAPI.UI.PrintMedia{
+        x = 730, y = 100,
+    }
+    win.media_id = val
+    win.data = getText("Print_Media_" .. val .. "_info")
+    win.children.bar.children.name.text = getText("Print_Media_" .. val .. "_title")
+    win.textTitle = getText("Print_Text_" .. val .. "_title")
+    win.textData = string.gsub(getText("Print_Text_" .. val .. "_info"), "\\n", "\n")
+    win:instantiate()
+    win.javaObj:setAlwaysOnTop(false)
+    win:centerOnScreen(self.playerNum)
+
+    if getJoypadData(self.playerNum) then
+        ISAtomUIJoypad.Apply(win)
+        win.close = function(self)
+            UIManager.RemoveElement(self.javaObj)
+            if getJoypadData(self.playerNum) then
+                setJoypadFocus(self.playerNum, self.prevFocus)
+            end
+        end
+        win.children.bar.children.closeButton.onLeftClick = function(_self)
+            getSoundManager():playUISound(_self.sounds.activate)
+            _self.parent.parent:close()
+        end
+        win.playerNum = self.playerNum
+        win.prevFocus = getJoypadData(self.playerNum).focus
+        win.onJoypadDown = function(self, button, joypadData)
+            if button == Joypad.BButton then
+                self.children.bar.children.closeButton:onLeftClick()
+            end
+            if button == Joypad.XButton then
+                self:onClickNewspaperButton()
+            end
+            if button == Joypad.YButton then
+                self:onClickMapButton()
+            end
+        end
+        setJoypadFocus(self.playerNum, win)
+    end
+
+    --[[
+    local index = self.item:getModData().printMedia
+    local panel = ISPrintMediaPage:new(0, 0, index, self.character, self.item);
+    panel:initialise();
+    panel:addToUIManager();
+
+    panel:setX((getCore():getScreenWidth() / 2) - (panel.width / 2));
+    panel:setY((getCore():getScreenHeight() / 2) - (panel.height / 2));
+
+    ISLayoutManager.RegisterWindow('PrintMedia', PrintMediaManager, self)
+    if PrintMediaDefinitions.MiscDetails[index] and PrintMediaDefinitions.MiscDetails[index].locations then
+        local locations = PrintMediaDefinitions.MiscDetails[index].locations
+
+        for i = 1, #locations do
+            local location = locations[i]
+            if location.x1 and location.x2 and location.y1 and location.y2 then
+                local x1 = math.floor(locations[i].x1)
+                local y1 = math.floor(locations[i].y1)
+                local x2 = math.floor(locations[i].x2)
+                local y2 = math.floor(locations[i].y2)
+                WorldMapVisited.getInstance():setKnownInSquares(x1, y1, x2, y2)
+
+            elseif location.x and location.y then
+                local x = math.floor(locations[i].x/300)
+                local y = math.floor(locations[i].y/300)
+                WorldMapVisited.getInstance():setKnownInCells(x, y, x, y)
+            end
+        end
+    end
+    ]]
 end
 
 function ISReadABook:complete()
@@ -277,10 +348,9 @@ function ISReadABook:complete()
 
     if self.item:getTeachedRecipes() and not self.item:getTeachedRecipes():isEmpty() then
         self.character:getAlreadyReadBook():add(self.item:getFullType());
-        --wacky hacky for herbalist trait
-        if self.item:getTeachedRecipes():contains("Herbalist") then
-            self.character:getTraits():add("Herbalist");
-        end
+         if self.item:getTeachedRecipes():contains("Herbalist") and not self.character:getTraits():contains("Herbalist") then
+             self.character:getTraits():add("Herbalist");
+         end
     end
 
     if not SkillBook[self.item:getSkillTrained()] and not self.isLiteratureRead then
@@ -293,14 +363,18 @@ function ISReadABook:complete()
         self.item:setAlreadyReadPages(0);
     end
 
-    if self.item:getModData().teachedRecipe ~= nil then
+    if self.item:hasModData() and self.item:getModData().teachedRecipe ~= nil then
         self.character:learnRecipe(self.item:getModData().teachedRecipe)
 --         self.character:getKnownRecipes():add(self.item:getModData().teachedRecipe)
     end
 
-    if self.item:getModData().literatureTitle then
-        --         self.character:Say(self.item:getModData().literatureTitle)
+    if self.item:hasModData() and self.item:getModData().literatureTitle then
+--        self.character:Say(self.item:getModData().literatureTitle)
         self.character:addReadLiterature(self.item:getModData().literatureTitle)
+    end
+
+    if self.item:hasModData() and self.item:getModData().printMedia then
+        self.character:addReadPrintMedia(self.item:getModData().printMedia)
     end
 
     ISReadABook.checkMultiplier(self);
@@ -326,15 +400,17 @@ function ISReadABook:animEvent(event, parameter)
     end
     if event == "ReadAPage" then
         if isServer() then
-            if self.item:getLvlSkillTrained() > self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 or self.character:HasTrait("Illiterate") then
-                if self.item:getNumberOfPages() > 0 then
-                    self.character:setAlreadyReadPages(self.item:getFullType(), 0)
-                    self.item:setAlreadyReadPages(0);
-                    syncItemFields(self.character, self.item)
-                    self.netAction:forceComplete()
+            if SkillBook[self.item:getSkillTrained()] then
+                if self.item:getLvlSkillTrained() > self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 or self.character:HasTrait("Illiterate") then
+                    if self.item:getNumberOfPages() > 0 then
+                        self.character:setAlreadyReadPages(self.item:getFullType(), 0)
+                        self.item:setAlreadyReadPages(0);
+                        syncItemFields(self.character, self.item)
+                        self.netAction:forceComplete()
+                    end
+                elseif self.item:getMaxLevelTrained() >= self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
+                    ISReadABook.checkMultiplier(self);
                 end
-            elseif self.item:getMaxLevelTrained() >= self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
-                ISReadABook.checkMultiplier(self);
             end
             if self.item:getNumberOfPages() > 0 and self.startPage then
                 local pagesRead = math.floor(self.item:getNumberOfPages() * self.netAction:getProgress()) + self.startPage;
@@ -402,6 +478,7 @@ end
 function ISReadABook:new(character, item)
     local o = ISBaseTimedAction.new(self, character);
     o.character = character;
+    o.playerNum = character:getPlayerNum()
     o.item = item;
 
     o.minutesPerPage = getSandboxOptions():getOptionByName("MinutesPerPage"):getValue() or 2.0

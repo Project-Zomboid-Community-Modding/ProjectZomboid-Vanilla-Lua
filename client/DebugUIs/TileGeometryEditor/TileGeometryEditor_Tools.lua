@@ -158,6 +158,13 @@ function GizmoToolTranslate:onGizmoChanged(delta)
 	local translation = self:java1("getObjectTranslation", objectName)
 	translation:set(self.originalOffset[objectName])
 	translation:add(delta)
+	if self.snapFunc == nil then return end
+	self:snapFunc()
+end
+
+function GizmoToolTranslate:snap()
+	local objectName = self.scene.selectedObjectName
+	local translation = self:java1("getObjectTranslation", objectName)
 	local sx = self.javaObject:sceneToUIX(0.0, 0.0, 0.0)
 	local sy = self.javaObject:sceneToUIY(0.0, 0.0, 0.0)
 	local sx2 = self.javaObject:sceneToUIX(1.0, 0.0, 0.0)
@@ -167,17 +174,20 @@ function GizmoToolTranslate:onGizmoChanged(delta)
 		sx2 = self.javaObject:sceneToUIX(1.0, 0.0, 0.0)
 		local xEqualsOnePixels = math.abs(sx2 - sx)
 		local sceneDX = (pixelScreenSize / xEqualsOnePixels)
---		translation:setComponent(0, math.floor(translation:x() / sceneDX) * sceneDX)
+		sceneDX = 1 / 64
+		translation:setComponent(0, math.floor(translation:x() / sceneDX) * sceneDX)
 	elseif self.gizmoAxis == "Y" then
 		sy2 = self.javaObject:sceneToUIY(0.0, 1.0, 0.0)
 		local yEqualsOnePixels = math.abs(sy2 - sy)
 		local sceneDY = (pixelScreenSize / yEqualsOnePixels)
---		translation:setComponent(1, math.floor(translation:y() / sceneDY) * sceneDY)
+		sceneDY = 1 / 96
+		translation:setComponent(1, math.floor(translation:y() / sceneDY) * sceneDY)
 	elseif self.gizmoAxis == "Z" then
 		sx2 = self.javaObject:sceneToUIX(0.0, 0.0, 1.0)
 		local zEqualsOnePixels = math.abs(sx2 - sx)
 		local sceneDZ = (pixelScreenSize / zEqualsOnePixels)
---		translation:setComponent(2, math.floor(translation:z() / sceneDZ) * sceneDZ)
+		sceneDZ = 1 / 64
+		translation:setComponent(2, math.floor(translation:z() / sceneDZ) * sceneDZ)
 	end
 end
 

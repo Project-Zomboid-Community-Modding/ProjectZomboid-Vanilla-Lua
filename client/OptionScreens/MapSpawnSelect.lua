@@ -271,9 +271,9 @@ function MapSpawnSelect:getSafehouseSpawnRegion()
 	for i=0,SafeHouse.getSafehouseList():size()-1 do
 		local safe = SafeHouse.getSafehouseList():get(i);
 		if safe:isRespawnInSafehouse(username) and (safe:getPlayers():contains(username) or (safe:getOwner() == username)) then
-			x = safe:getX() + (safe:getH() / 2);
-			y = safe:getY() + (safe:getW() / 2);
-			z = 0;
+			local x = safe:getX() + (safe:getH() / 2);
+			local y = safe:getY() + (safe:getW() / 2);
+			local z = 0;
 			return { {
 				name = getText("UI_mapspawn_Safehouse"), points = {
 					unemployed = {
@@ -369,6 +369,7 @@ function MapSpawnSelect:fillList()
 		for _,v in ipairs(regions) do
 			local info = getMapInfo(v.name)
 			if info then
+				self.mapPanel:initMapData('media/maps/'..v.name) -- FIXME: order of multiple maps matters
 				for _,dir in ipairs(info.lots) do
 					self.mapPanel:initMapData('media/maps/'..dir) -- FIXME: order of multiple maps matters
 				end
@@ -428,10 +429,13 @@ function MapSpawnSelect:hideOrShowSaveName()
 		self.startY = UI_BORDER_SPACING*3+1 + FONT_HGT_TITLE + FONT_HGT_MEDIUM+6
 		self.textEntryLabel:setVisible(true)
 		self.textEntry:setVisible(true)
+		self.seedPanel:setVisible(true)
+		self:checkSeed()
 	else
 		self.startY = UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE;
 		self.textEntryLabel:setVisible(false)
 		self.textEntry:setVisible(false)
+		self.seedPanel:setVisible(false)
 	end
 
 	self.listbox:setY(self.startY)
@@ -452,6 +456,10 @@ function MapSpawnSelect:onDblClick()
 end
 
 function MapSpawnSelect:clickBack()
+    if MainScreen.instance.createWorld then
+        self:discardGenParams()
+    end
+
 	if getWorld():getGameMode() == "Multiplayer" then
 		backToSinglePlayer()
 		getCore():ResetLua("default", "exitJoinServer")
@@ -473,6 +481,10 @@ function MapSpawnSelect:clickBack()
 end
 
 function MapSpawnSelect:clickNext()
+    if MainScreen.instance.createWorld then
+        self:saveGenParams()
+    end
+
     if self.listbox.items[self.listbox.selected].item.name == getText("UI_mapspawn_random") then
         local roll = ZombRand((#self.listbox.items - 1)) + 1
 --         print("Roll " .. tostring(roll))
@@ -553,9 +565,17 @@ function MapSpawnSelect:render()
 	if self.mapPanel:hasSomethingToDisplay() and self.mapPanel.shownInitialLocation then
 		if self.listbox.selected ~= self.selectedMapIndex then
 			self.selectedMapIndex = self.listbox.selected
-			self.mapPanel.mapAPI:transitionTo(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
-	--		self.mapPanel.mapAPI:centerOn(x, y)
-	--		self.mapPanel.mapAPI:setZoom(scale)
+			if selectedItem.zoomX ~= nil then -- nil during post-death at a player's location
+				self.mapPanel.mapAPI:transitionTo(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
+-- 				self.mapPanel.mapAPI:centerOn(x, y)
+-- 				self.mapPanel.mapAPI:setZoom(scale)
+			elseif selectedItem.region ~= nil and selectedItem.region.points ~= nil then
+				local points = selectedItem.region.points.unemployed
+				if points then
+					local point = points[1] -- spawn with player
+					self.mapPanel.mapAPI:transitionTo(point.posX, point.posY, self.mapPanel.mapAPI:getZoomF())
+				end
+			end
 		end
 		return
 	end
@@ -619,6 +639,7 @@ function MapSpawnSelect:recalculateMapSize()
 
 	if not MainScreen.instance.inGame then
 		self.textEntry:setWidth(self.listbox:getRight() - self.textEntry.x)
+        self.seedPanel:setWidth(self.listbox.width)
 	end
 end
 
@@ -718,6 +739,37 @@ end
 
 function MapSpawnSelect:onResolutionChange(oldw, oldh, neww, newh)
 	self:recalculateMapSize()
+
+	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
+	--if self.seedPanel then
+	--	self.randomButton:setX(self.seedPanel:getRight() - btnWidth - UI_BORDER_SPACING*2 - 2)
+	--	self.seedTextBox:setWidth(self.randomButton.x - self.seedLabel:getRight() - UI_BORDER_SPACING*2)
+	--end
+end
+
+function MapSpawnSelect:checkSeed()
+	if self.seedTextBox:getText() == nil or self.seedTextBox:getText() == "" then
+		self:generateNewSeed()
+	end
+end
+
+function MapSpawnSelect:generateNewSeed()
+	self.seedTextBox:setText(WGUtils.instance:generateSeed())
+end
+
+function MapSpawnSelect:saveGenParams()
+	self:checkSeed()
+	WGParams.instance:setSeedString(self.seedTextBox:getText())
+	--WGParams.instance:setMinXCell(self.minXSlider:getCurrentValue())
+	--WGParams.instance:setMinYCell(self.minYSlider:getCurrentValue())
+	--WGParams.instance:setMaxXCell(self.maxXSlider:getCurrentValue())
+	--WGParams.instance:setMaxYCell(self.maxYSlider:getCurrentValue())
+end
+
+function MapSpawnSelect:discardGenParams()
+    self.seedTextBox:setText("")
+    WGParams.instance:setSeedString(self.seedTextBox:getText())
 end
 
 function MapSpawnSelect:create()
@@ -777,7 +829,8 @@ function MapSpawnSelect:create()
 	self.listbox.drawBorder = true;
 	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5};
 
-	self.richText = MapSpawnSelectInfoPanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, self.height - self.listbox:getBottom() - UI_BORDER_SPACING*3 - BUTTON_HGT - 1);
+    local advPanelHeight = UI_BORDER_SPACING*2 + BUTTON_HGT + 2
+	self.richText = MapSpawnSelectInfoPanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, self.height - self.listbox:getBottom() - UI_BORDER_SPACING*4 - BUTTON_HGT - 1 - advPanelHeight);
 	self.richText.marginRight = UI_BORDER_SPACING+1
 	self.richText.marginLeft = UI_BORDER_SPACING+1
 	self.richText.autosetheight = false;
@@ -790,6 +843,39 @@ function MapSpawnSelect:create()
 	self.richText:addScrollBars()
 
 	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+    if not MainScreen.instance.inGame then -- don't show seed in splitscreen
+		--local advPanelHeight = UI_BORDER_SPACING*4 + BUTTON_HGT*3 + 2
+		self.seedPanel = ISPanel:new(self.listbox.x,self.richText:getBottom() + UI_BORDER_SPACING, self.listbox.width, advPanelHeight)
+		self.seedPanel:initialise()
+		self.seedPanel:instantiate()
+		self.seedPanel:setAnchorsTBLR(false, true, true, false)
+		self.seedPanel.backgroundColor  = {r=0, g=0, b=0, a=0.5};
+		self:addChild(self.seedPanel)
+
+		self.seedLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("UI_advWorld_seed_label") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
+		self.seedLabel:initialise()
+		self.seedLabel:instantiate()
+		self.seedLabel:setAnchorsTBLR(true, false, true, false)
+		self.seedPanel:addChild(self.seedLabel)
+
+		local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
+		self.randomButton = ISButton:new(self.seedPanel:getRight() - btnWidth - UI_BORDER_SPACING*2 - 2, self.seedLabel.y, btnWidth, BUTTON_HGT, getText("UI_advWorld_random_btn"), self, self.generateNewSeed)
+		self.randomButton:initialise()
+		self.randomButton:instantiate()
+		self.randomButton:setAnchorsTBLR(true, false, false, true)
+		self.randomButton:setEnable(true) -- sets the hard-coded border color
+		self.seedPanel:addChild(self.randomButton)
+
+		self.seedTextBox = ISTextEntryBox:new("", self.seedLabel:getRight() + UI_BORDER_SPACING, self.seedLabel.y, self.randomButton.x - self.seedLabel:getRight() - UI_BORDER_SPACING*2, BUTTON_HGT)
+		self.seedTextBox.font = UIFont.Small
+		self.seedTextBox:initialise()
+		self.seedTextBox:instantiate()
+		self.seedTextBox:setOnlyText(true)
+		self.seedTextBox:setMaxTextLength(16)
+		self.seedTextBox:setAnchorsTBLR(true, true, true, true)
+		self.seedPanel:addChild(self.seedTextBox)
+    end -- not MainScreen.instance.inGame
+
 	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
 	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, MapSpawnSelect.onOptionMouseDown)
 	self.backButton.internal = "BACK"

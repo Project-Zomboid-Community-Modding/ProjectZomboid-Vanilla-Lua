@@ -21,6 +21,7 @@ function ISStatsAndBody:createChildren()
 
     self:initHorzBars(x,w);
 
+    local obj;
     y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_StatsAndBody_Title"), UIFont.Medium);
     obj.center = true;
     y, obj = ISDebugUtils.addLabel(self,"float_title",x+(w/2),y,getText("IGUI_StatsAndBody_MoraleInfo"), UIFont.Small);
@@ -38,6 +39,8 @@ function ISStatsAndBody:createChildren()
 
     local op = self:addSliderOption(stats,"Hunger", 0, 1);
     op.title = getText("IGUI_StatsAndBody_Hunger");
+    op = self:addSliderOption(body,"HealthFromFoodTimer", 0, 10000);
+    op.title = getText("IGUI_StatsAndBody_HealthFromFoodTimer");
     op = self:addSliderOption(stats,"Thirst", 0, 1);
     op.title = getText("IGUI_StatsAndBody_Thirst");
     op = self:addSliderOption(stats,"Fatigue", 0, 1);
@@ -67,6 +70,8 @@ function ISStatsAndBody:createChildren()
     op.title = getText("IGUI_StatsAndBody_TimeSinceLastSmoke");
     op = self:addSliderOption(body,"BoredomLevel", 0, 100, 1);
     op.title = getText("IGUI_StatsAndBody_BoredomLevel");
+    op = self:addSliderOption(stats,"Idleness", 0, 1, 0.001);
+    op.title = getText("IGUI_StatsAndBody_Idleness");
     op = self:addSliderOption(body,"UnhappynessLevel", 0, 100, 1);
     op.title = getText("IGUI_StatsAndBody_UnhappynessLevel");
     op = self:addSliderOption(stats,"Sanity", 0, 1);
@@ -91,10 +96,18 @@ function ISStatsAndBody:createChildren()
     op.title = getText("IGUI_StatsAndBody_FakeInfectionLevel");
     op = self:addSliderOption(body,"FoodSicknessLevel", 0, 100, 1);
     op.title = getText("IGUI_StatsAndBody_FoodSicknessLevel");
+	op = self:addSliderOption(nutrition,"Carbohydrates", -500, 1000, 1);
+    op.title = getText("Fluid_Prop_Carbohydrates");
+	op = self:addSliderOption(nutrition,"Lipids", -500, 1000, 1);
+    op.title = getText("Fluid_Prop_Lipids");
+	op = self:addSliderOption(nutrition,"Proteins", -500, 1000, 1);
+    op.title = getText("Fluid_Prop_Proteins");
     op = self:addSliderOption(nutrition,"Calories", -2200, 3700, 1);
     op.title = getText("IGUI_StatsAndBody_Calories");
     op = self:addSliderOption(nutrition, "Weight", 30, 130, 1);
     op.title = getText("IGUI_StatsAndBody_Weight");
+    op = self:addSliderOption(body, "PoisonLevel", 0, 1000, 1);
+    op.title = getText("IGUI_StatsAndBody_Poison");
     self:addBoolOption(body,getText("IGUI_StatsAndBody_IsInfected"), "IsInfected", "setInfected");
     self:addBoolOption(body,getText("IGUI_StatsAndBody_IsFakeInfected"), "IsFakeInfected", "setIsFakeInfected");
     self:addBoolOption(body,getText("IGUI_StatsAndBody_IsOnFire"), "IsOnFire", "setIsOnFire");
@@ -192,12 +205,15 @@ function ISStatsAndBody:onSliderChange(_newval, _slider)
     local v = _slider.customData;
 
     if v.var=="Fitness" then
-        local xp = getPlayer():getXp();
-        local val = (_newval/2)*10;
-        --print("fitness = "..tostring(val))
-        xp:setXPToLevel(Perks.Fitness, val);
-        getPlayer():setPerkLevelDebug(Perks.Fitness, val);
-        return;
+        local playerXP = getPlayer():getXp();
+        local newLevel = (_newval / 2) * 10;
+        local currentLevel = getPlayer():getPerkLevel(Perks.Fitness);
+        -- stops resetting of the fitness xp to 0 for the current level during panel creation
+        if currentLevel ~= newLevel then
+            playerXP:setXPToLevel(Perks.Fitness, newLevel);
+            getPlayer():setPerkLevelDebug(Perks.Fitness, newLevel);
+            return;
+        end;
     elseif v.var=="OverallBodyHealth" then
         local b = getPlayer():getBodyDamage();
         if _newval<b:getOverallBodyHealth() then

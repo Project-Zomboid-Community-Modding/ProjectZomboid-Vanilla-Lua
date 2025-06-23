@@ -6,11 +6,6 @@ require "ISUI/ISPanel"
 
 ISSLFrame = ISPanel:derive("ISSLFrame");
 
-function round(num, idp)
-    local mult = 10^(idp or 0)
-    return math.floor(num * mult + 0.5) / mult
-end
-
 local function clerp( _t, _a, _b )
     local t2 = (1-math.cos(_t*math.pi))/2;
     return(_a*(1-t2)+_b*t2);

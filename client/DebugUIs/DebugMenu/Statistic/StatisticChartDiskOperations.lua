@@ -51,8 +51,8 @@ function StatisticChartDiskOperations:createChildren()
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Load")..": "),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Save")..": ")
     )
-	x = self.historyM1:getX()
-	y = self.historyM1:getY()+self.historyM1:getHeight()
+	local x = self.historyM1:getX()
+	local y = self.historyM1:getY()+self.historyM1:getHeight()
     y = self:addLabelValue(x, y, labelWidth, "value","load",getText("IGUI_DebugMenu_Load")..":",0);
 	y = self:addLabelValue(x, y, labelWidth, "value","save",getText("IGUI_DebugMenu_Save")..":",0);
     self:setHeight(y+UI_BORDER_SPACING)

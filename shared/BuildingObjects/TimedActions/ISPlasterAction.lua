@@ -31,20 +31,20 @@ end
 
 function ISPlasterAction:complete()
 	if self.thumpable then
-		local modData = self.thumpable:getModData();
 		local north = "";
 		if self.thumpable:getNorth() then
 			north = "North";
 		end
-		local sprite = Painting[modData["wallType"]]["plasterTile" .. north];
+		local sprite = Painting[ISPaintMenu.getWallType(self.thumpable)]["plasterTile" .. north];
 
 		self.thumpable:setSprite(sprite)
 		self.thumpable:setPaintable(true)
+		self.thumpable:setCanBePlastered(false)
 		self.thumpable:transmitUpdatedSpriteToClients()
 		self.thumpable:sendObjectChange("paintable")
 
 		if not self.character:isBuildCheat() then
-			self.plasterBucket:Use();
+			self.plasterBucket:UseAndSync();
 		end
 
 		return true

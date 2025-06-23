@@ -43,6 +43,16 @@ function ObjectAtCursorPanel:createChildren()
 	slider:setValues(0.5, 20.0, 0.5, 1.0, true)
 	slider:setCurrentValue(self.debugChunkState.gameState:fromLua1("getObjectAtCursor", "width"), false)
 
+	slider = ISSliderPanel:new(UI_BORDER_SPACING+1, self.sliderLevels:getY(), 100, sliderHgt, self, self.onScaleChanged)
+	self:addChild(slider)
+	self.sliderScale = slider
+
+	label = ISLabel:new(slider:getRight() + UI_BORDER_SPACING, slider.y, sliderHgt, "Scale", 1, 1, 1, 1, UIFont.Medium, true)
+	self:addChild(label)
+	slider.valueLabel = label
+	slider:setValues(1.0, 10.0, 1.0, 1.0, true)
+	slider:setCurrentValue(self.debugChunkState.gameState:fromLua1("getObjectAtCursor", "scale"), false)
+
 	self:syncUI()
 end
 
@@ -61,16 +71,22 @@ function ObjectAtCursorPanel:syncUI()
 		self.sliderLevels.valueLabel:setVisible(false)
 		self.sliderWidth:setVisible(false)
 		self.sliderWidth.valueLabel:setVisible(false)
+		self.sliderScale:setVisible(true)
+		self.sliderScale.valueLabel:setVisible(true)
 	elseif id == "plane" then
 		self.sliderLevels:setVisible(false)
 		self.sliderLevels.valueLabel:setVisible(false)
 		self.sliderWidth:setVisible(true)
 		self.sliderWidth.valueLabel:setVisible(true)
+		self.sliderScale:setVisible(false)
+		self.sliderScale.valueLabel:setVisible(false)
 	else
 		self.sliderLevels:setVisible(true)
 		self.sliderLevels.valueLabel:setVisible(true)
 		self.sliderWidth:setVisible(true)
 		self.sliderWidth.valueLabel:setVisible(true)
+		self.sliderScale:setVisible(false)
+		self.sliderScale.valueLabel:setVisible(false)
 	end
 	
 	self:shrinkWrap(0, 0, function(child) return child:isVisible() end)
@@ -90,6 +106,11 @@ end
 function ObjectAtCursorPanel:onWidthChanged(value, slider)
 	self.debugChunkState.gameState:fromLua2("setObjectAtCursor", "width", value)
 	slider.valueLabel:setName(string.format("Width: %.1f", value))
+end
+
+function ObjectAtCursorPanel:onScaleChanged(value, slider)
+	self.debugChunkState.gameState:fromLua2("setObjectAtCursor", "scale", value)
+	slider.valueLabel:setName(string.format("Scale: %.1f", value))
 end
 
 function ObjectAtCursorPanel:new(x, y, width, height, debugChunkState)

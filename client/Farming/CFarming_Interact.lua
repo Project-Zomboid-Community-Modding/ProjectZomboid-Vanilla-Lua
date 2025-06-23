@@ -87,7 +87,7 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     local digPlow = item:hasTag("DigPlow")
     local hasCuttingTool = item:hasTag("CutPlant")
     local pickaxe = item:hasTag("PickAxe")
-    local stoneMaul = item:hasTag("stoneMaul")
+    local stoneMaul = item:hasTag("StoneMaul") or item:hasTag("Maul")
     local sledge = item:hasTag("Sledgehammer")
     local hammer = item:hasTag("Hammer")
     local scythe = item:hasTag("Scythe")
@@ -345,6 +345,7 @@ CFarming_Interact.FastDropItem = function(key)
     then return end
 
 	local player = getSpecificPlayer(0)
+    if not player then return end
 
     if player:getClothingItem_Back() and (not player:getClothingItem_Back():isFavorite()) and (getCore():isKey("DropWornBag", key) or getCore():isKey("DropBothHeldItemsAndWornBag", key)) then
         ISInventoryPaneContextMenu.dropItem(player:getClothingItem_Back(), player:getPlayerNum())
@@ -389,7 +390,7 @@ CFarming_Interact.ChangeClimbDirection = function(key)
     and not getCore():isKey("ReleaseRope", key)--DropBothHeldItemsAndWornBag
     then return end
     local doUp = getCore():isKey("Forward", key)
-    local isUp = player:getCurrentState():equals(ClimbSheetRopeState.instance())
+    local isUp = player:getCurrentState() == ClimbSheetRopeState.instance()
 
 --     print("climbing up " .. tostring(player:getCurrentState():equals(ClimbSheetRopeState.instance())))
 --     print("climbing down " .. tostring(player:getCurrentState():equals(ClimbDownSheetRopeState.instance())))

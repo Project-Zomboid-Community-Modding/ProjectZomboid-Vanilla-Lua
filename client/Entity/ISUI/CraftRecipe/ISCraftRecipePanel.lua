@@ -19,7 +19,7 @@ end
 function ISCraftRecipePanel:createChildren()
     ISPanel.createChildren(self);
 
-    local styleCell = "S_TableLayoutCell_Pad5";
+    local styleCell = "S_TableLayoutCell_Pad2";
     self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10, nil, nil, styleCell);
     --self.rootTable:addColumnFill(nil);
     self.rootTable:initialise();
@@ -118,6 +118,8 @@ function ISCraftRecipePanel:calculateLayout(_preferredWidth, _preferredHeight)
         self.rootTable:setY(0);
         self.rootTable:calculateLayout(width, height);
 
+        self.titleWidget:setY(0);
+
         width = math.max(width, self.rootTable:getWidth());
         height = math.max(height, self.rootTable:getHeight());
     end
@@ -187,15 +189,18 @@ function ISCraftRecipePanel:updateContainers(containers)
     end
 end
 
+function ISCraftRecipePanel:onGainJoypadFocus(joypadData)
+    ISPanel.onGainJoypadFocus(self, joypadData)
+    joypadData.focus = self.inputs
+    updateJoypadFocus(joypadData)
+end
 
 --************************************************************************--
 --** ISCraftRecipePanel:new
 --**
 --************************************************************************--
 function ISCraftRecipePanel:new(x, y, width, height, player, logic, recipeData, craftBench, isoObject)
-    local o = ISPanel:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISPanel.new(self, x, y, width, height);
 
     o.background = false;
     --o.margin = 5;

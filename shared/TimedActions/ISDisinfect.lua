@@ -70,9 +70,18 @@ function ISDisinfect:perform()
 end
 
 function ISDisinfect:complete()
-    self.bodyPart:setAlcoholLevel(self.bodyPart:getAlcoholLevel() + self.alcohol:getAlcoholPower());
-    local addPain = (self.alcohol:getAlcoholPower() * 13) - (self.doctorLevel / 2)
-    if not (isMultiplayer() and self.doctor:getRole():haveCapability(Capability.CanMedicalCheat)) then
+	local addPain = 0.0
+	if self.alcohol:IsDrainable() then
+        self.bodyPart:setAlcoholLevel(self.bodyPart:getAlcoholLevel() + self.alcohol:getAlcoholPower());
+	    addPain = (self.alcohol:getAlcoholPower() * 13) - (self.doctorLevel / 2)
+    end
+	if self.alcohol:hasComponent(ComponentType.FluidContainer) then
+		local fluidContainer = self.alcohol:getFluidContainer()
+		local alcoholPower = 4 * fluidContainer:getProperties():getAlcohol() / fluidContainer:getAmount()
+        self.bodyPart:setAlcoholLevel(self.bodyPart:getAlcoholLevel() + alcoholPower);
+	    addPain = (alcoholPower * 13) - (self.doctorLevel / 2)
+	end
+    if not (isMultiplayer() and self.doctor:getRole():hasCapability(Capability.CanMedicalCheat)) then
         self.bodyPart:setAdditionalPain(self.bodyPart:getAdditionalPain() + addPain);
     end
     if self.alcohol:hasComponent(ComponentType.FluidContainer) and self.alcohol:getFluidContainer():getAmount() > 0.15 then

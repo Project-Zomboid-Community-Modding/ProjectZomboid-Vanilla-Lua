@@ -5,6 +5,7 @@
 ISBuildRampCursor = ISBuildingObject:derive("ISBuildRampCursor")
 
 function ISBuildRampCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISBuildRampCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	if self.which == "north20" then
 		for i=1,20 do
 			self:removeRampObjects(x, y-(i-1), z)
@@ -106,6 +107,7 @@ function ISBuildRampCursor:new(character, which)
 	o:init()
 	o.character = character
 	o.which = which
+	showDebugInfoInChat("Cursor New \'ISBuildRampCursor\'")
 	return o
 end
 

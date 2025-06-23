@@ -208,9 +208,12 @@ function ServerConnectPopup:onOptionMouseDown(button, x, y)
     if button.internal == "CONNECT" then
         if ServerConnectPopup.instance:checkFields() then
             local localIP = ""
-            local useSteamRelay = getSteamModeActive() and self.connectTypeEntry.selected[1]
+            local useSteamRelay = false
+            if getSteamModeActive() and self.connectTypeEntry.selected[1] then
+                useSteamRelay = true
+            end
             ConnectToServer.instance:connect(self, "", self.usernameEntry:getText(), self.passwordEntry:getInternalText(),
-                self.ip, localIP, self.port, self.serverPasswordEntry:getInternalText(), useSteamRelay);
+                self.ip, localIP, self.port, self.serverPasswordEntry:getInternalText(), useSteamRelay, true, 1);
         end
     end
 end

@@ -19,6 +19,7 @@ ISPlace3DItemCursor = ISBuildingObject:derive("ISPlace3DItemCursor");
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISPlace3DItemCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISPlace3DItemCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
     local drop = self.itemSq == nil; -- nil when the item is in a vehicle
     if self.itemSq and luautils.walkAdj(self.chr, self.itemSq, true) then
         drop = true;
@@ -68,7 +69,7 @@ function ISPlace3DItemCursor:isValid(square)
         self.previousSq = square;
         self.surfaceSelected = 1;
     end
-    if self.chr:getCharacterActions():isEmpty() then
+    if self.chr:getCharacterActions():isEmpty() and not self.chr:isSittingOnFurniture() then
         self.chr:faceLocation(square:getX(), square:getY())
     end
 --    print("render X/Y", self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemRot)
@@ -125,6 +126,8 @@ function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
                 self.keepOnSquareX = math.floor(worldX)
                 self.keepOnSquareY = math.floor(worldY)
             end
+        else
+            self.keepOnSquare = false;
         end
         if self.keepOnSquare then
             worldX = PZMath.clampFloat(worldX, self.keepOnSquareX + 0.05, self.keepOnSquareX + 0.95)
@@ -142,7 +145,7 @@ function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
     self.render3DItemXOffset = worldX - sq:getX();
     self.render3DItemYOffset = worldY - sq:getY();
     self.render3DItemZOffset = self:getSurface(sq);
-    if square:HasStairs() or square:hasSlopedSurface() then
+    if square and (square:HasStairs() or square:hasSlopedSurface()) then
         self.render3DItemZOffset = square:getApparentZ(self.render3DItemXOffset, self.render3DItemYOffset)
     end
     self.selectedSqDrop = sq;
@@ -153,7 +156,7 @@ function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
             if v:getWorldItem() then
                 sq = v:getWorldItem():getSquare();
             end
-            local container = item:getOutermostContainer()
+            local container = v:getOutermostContainer()
             if container then
                 if container:getParent() then
                     sq = container:getParent():getSquare();
@@ -470,6 +473,8 @@ function ISPlace3DItemCursor:new(character, items)
     o.joypadPositionActive = false;
     o.joypadPositionX = 0.5;
     o.joypadPositionY = 0.5;
+    o.dontLockItemToSquare = true;
+    showDebugInfoInChat("Cursor New \'ISPlace3DItemCursor\'")
     return o
 end
 

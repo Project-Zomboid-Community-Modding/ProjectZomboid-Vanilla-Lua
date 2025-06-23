@@ -45,8 +45,9 @@ function ISTiledIconPanel:createChildren()
     self.buttonNext:initialise();
     self.buttonNext:instantiate();
     self:addChild(self.buttonNext);
-
+    
     self.tiledIconListBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTiledIconListBox, 0, 0, 10, 10, self.dataList);
+    self.tiledIconListBox.minimumColumns = 5;
     self.tiledIconListBox.callbackTarget = self;
     self.tiledIconListBox.onRenderTile = self.onRenderTile;
     self.tiledIconListBox.onClickTile = self.onTileClicked;
@@ -221,6 +222,9 @@ function ISTiledIconPanel:filterData(_string)
 end
 
 function ISTiledIconPanel:setDataList(_dataList)
+    local currentRecipe = self.callbackTarget and self.callbackTarget.logic and self.callbackTarget.logic:getRecipe();
+    local currentRecipeFound = false;
+    
     self.sourceDataList = ArrayList.new();
     for i = 0, _dataList:size()-1 do
         local failed = false;
@@ -232,14 +236,27 @@ function ISTiledIconPanel:setDataList(_dataList)
         end
         if not failed then
             self.sourceDataList:add(_dataList:get(i));
+
+            if _dataList:get(i) == currentRecipe then
+                currentRecipeFound = true;
+            end
         end
     end
 
     self.dataList:clear();
     self.dataList:addAll(self.sourceDataList);
-
-
+    
     self:filterData(self.searchText);
+
+    if currentRecipeFound then
+        -- restore selection
+        self:setSelectedData(currentRecipe);
+    --elseif self.dataList:size() > 0 then
+    --    self:setSelectedData(self.dataList:get(0));
+    --    if self.callbackTarget and self.callbackTarget.logic then
+    --        self.callbackTarget.logic:setRecipe(self.dataList:get(0));
+    --    end
+    end
 end
 
 function ISTiledIconPanel:setSearchInfoText(_text)
@@ -253,6 +270,39 @@ function ISTiledIconPanel:setSelectedData(_data)
     if self.sourceDataList and self.sourceDataList:contains(_data) then
         self.tiledIconListBox.selectedTileData = _data;
     end
+end
+
+function ISTiledIconPanel:onJoypadButtonReleased(button, joypadData)
+    if button == Joypad.LBumper then
+        local currentPage = self.tiledIconListBox:getCurrentPage()
+        self.buttonPrev:forceClick()
+        if currentPage ~= self.tiledIconListBox:getCurrentPage() then
+            self.tiledIconListBox:trySelectDataElement(self.tiledIconListBox.currentPage * self.tiledIconListBox.tileCount)
+        end
+    end
+    if button == Joypad.RBumper then
+        local currentPage = self.tiledIconListBox:getCurrentPage()
+        self.buttonNext:forceClick()
+        if currentPage ~= self.tiledIconListBox:getCurrentPage() then
+            self.tiledIconListBox:trySelectDataElement(self.tiledIconListBox.currentPage * self.tiledIconListBox.tileCount)
+        end
+    end
+end
+
+function ISTiledIconPanel:onJoypadDirLeft(joypadData)
+    self.tiledIconListBox:onJoypadDirLeft(joypadData)
+end
+
+function ISTiledIconPanel:onJoypadDirRight(joypadData)
+    self.tiledIconListBox:onJoypadDirRight(joypadData)
+end
+
+function ISTiledIconPanel:onJoypadDirUp(joypadData)
+    self.tiledIconListBox:onJoypadDirUp(joypadData)
+end
+
+function ISTiledIconPanel:onJoypadDirDown(joypadData)
+    self.tiledIconListBox:onJoypadDirDown(joypadData)
 end
 
 --************************************************************************--

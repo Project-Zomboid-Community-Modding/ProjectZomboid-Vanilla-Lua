@@ -2,6 +2,7 @@ require "ISUI/ISCollapsableWindow"
 
 WatchWindow = ISCollapsableWindow:derive("WatchWindow");
 
+local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 
 function WatchWindow:onRightMouseDownObject(x, y)
     if instanceof(self.parent.obj, "KahluaTableImpl") then
@@ -121,12 +122,7 @@ function WatchWindow:onMouseDoubleClickOpenObject(item)
                 src:initialise();
                 src:addToUIManager();
             end
-            local p = (getFirstLineOfClosure(item)-1) * 20;
-            p = p - (src:getWidth() / 2);
-            src.sourceView:setScrollHeight(src.sourceView.count * 20);
-            src.sourceView:setYScroll(-p);
-            src.sourceView.selected = getFirstLineOfClosure(item)-1;
-
+            src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
 
     else
@@ -194,13 +190,13 @@ function WatchWindow:createChildren()
     local rh = self:resizeWidgetHeight()
 
     self.objectView = ISScrollingListBox:new(0, th, self.width, self.height-th-rh);
+    self.objectView:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.objectView:initialise();
     self.objectView.doDrawItem = WatchWindow.doDrawItem;
     self.objectView.onMouseWheel = WatchWindow.onSourceMouseWheel;
     self.objectView.anchorRight = true;
     self.objectView.onRightMouseDown = WatchWindow.onRightMouseDownObject;
     self.objectView.anchorBottom = true;
-    self.objectView.itemheight = 22;
     self.objectView:setOnMouseDoubleClick(self, WatchWindow.onMouseDoubleClickOpenObject);
     self:addChild(self.objectView);
 
@@ -226,19 +222,19 @@ end
 
 function WatchWindow:doDrawItem(y, item, alt)
     if self.selected == item.index then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.2, 0.6, 0.7, 0.8);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.2, 0.6, 0.7, 0.8);
 
     end
 
     if item.item.key ~= nil and hasDataBreakpoint(item.item.obj, item.item.key) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.3, 0.8, 0.6, 0.4);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.8, 0.6, 0.4);
     end
     if item.item.key ~= nil and hasDataReadBreakpoint(item.item.obj, item.item.key) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.3, 0.6, 0.8, 0.4);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.6, 0.8, 0.4);
     end
 
     --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(item.text, 15, (y)+6, 1, 1, 1, 1, UIFont.Code);
+    self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
 
@@ -246,6 +242,20 @@ end
 
 function WatchWindow:addWatch(obj)
 
+end
+
+function WatchWindow:prerender()
+    ISCollapsableWindow.prerender(self)
+    self:checkFontSize()
+end
+
+function WatchWindow:checkFontSize()
+    local font = getTextManager():getCurrentCodeFont()
+    local fontHeight = getTextManager():getFontHeight(font)
+    if font == self.objectView.font then return end
+    FONT_HGT_CODE = fontHeight
+    self.objectView:setFont(font, 0)
+    self.objectView.itemheight = FONT_HGT_CODE
 end
 
 function WatchWindow:new (x, y, width, height)

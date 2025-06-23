@@ -279,7 +279,7 @@ function PZAPI.ModOptions:load()
     local stringtoboolean = { ["true"] = true, ["false"] = false }
     PZAPI.ModOptions.OtherOptions = {}
 
-    local file = getFileReader("modOptions.ini", true)
+    local file = getFileReader("ModOptions.ini", true)
     local line = nil
     while true do
         line = file:readLine()

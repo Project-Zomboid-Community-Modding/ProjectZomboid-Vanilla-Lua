@@ -156,8 +156,8 @@ function ISHandcraftWindow:prerender()
             local surface = (props and props:Is("IsMoveAble") and props:Is("CustomName") and props:Val("CustomName")) or getText("IGUI_CraftingWindow_Surface"); --self.isoObject:getProperties():Is("IsMoveAble") and
             self.windowHeader.title.name = header .. surface;
         else
-            self.isoObject:setOutlineHighlight(false);
-            self.isoObject:setOutlineHlAttached(false);
+--             self.isoObject:setOutlineHighlight(false);
+--             self.isoObject:setOutlineHlAttached(false);
             self.windowHeader.title.name = getText("IGUI_CraftingWindow_Title");
         end
     else
@@ -175,6 +175,8 @@ end
 function ISHandcraftWindow:render()
     self:stayOnSplitScreen();
     ISCollapsableWindow.render(self);
+    local playerNum = self.player:getPlayerNum()
+    self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function ISHandcraftWindow:update()
@@ -232,12 +234,18 @@ function ISHandcraftWindow:close()
         return;
     end
     self.hasClosedWindowInstance = true;
+
+    if self.handCraftPanel then
+        self.handCraftPanel:OnCloseWindow();
+        self:prerender();
+    end
+    
     ISCollapsableWindow.close(self);
     ISEntityUI.OnCloseWindow(self);
     if JoypadState.players[self.playerNum+1] then
         if self.unfocusRecursive then
             self:unfocusRecursive(getFocusForPlayer(self.playerNum), self.playerNum);
-        elseif getFocusForPlayer(self.playerNum)==self then
+        elseif isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
             setJoypadFocus(self.playerNum, nil);
         end
     end
@@ -245,8 +253,8 @@ function ISHandcraftWindow:close()
         self.entity:setUsingPlayer(nil);
     end
     if self.isoObject and getCore():getOptionDoContainerOutline() then
-        self.isoObject:setOutlineHighlight(false);
-        self.isoObject:setOutlineHlAttached(false);
+--         self.isoObject:setOutlineHighlight(false);
+--         self.isoObject:setOutlineHlAttached(false);
     end
     self:removeFromUIManager();
 end
@@ -267,7 +275,7 @@ function ISHandcraftWindow:validateSizeBounds()
 end
 
 function ISHandcraftWindow:isKeyConsumed(key)
-    return key == Keyboard.KEY_ESCAPE
+    return key == Keyboard.KEY_ESCAPE or getCore():isKey("Crafting UI", key)
 end
 
 function ISHandcraftWindow:onKeyRelease(key)
@@ -278,10 +286,49 @@ function ISHandcraftWindow:onKeyRelease(key)
     end
 end
 
+function ISHandcraftWindow:onGainJoypadFocus(joypadData)
+    ISCollapsableWindow.onGainJoypadFocus(self, joypadData)
+    local recipeCategories = self.handCraftPanel.recipeCategories.recipeCategoryPanel
+    recipeCategories:setJoypadFocused(true, joypadData)
+end
+
+function ISHandcraftWindow:onLoseJoypadFocus(joypadData)
+    ISCollapsableWindow.onLoseJoypadFocus(self, joypadData)
+end
+
+function ISHandcraftWindow:onJoypadDown(button, joypadData)
+    ISCollapsableWindow.onJoypadDown(self, button, joypadData)
+end
+
+function ISHandcraftWindow:onJoypadDown_Descendant(descendant, button, joypadData)
+    if button == Joypad.AButton then
+        local craftControl = self.handCraftPanel.recipePanel.craftControl
+        craftControl.buttonCraft:forceClick()
+    end
+    if button == Joypad.BButton then
+        self:close()
+    end
+end
+
+function ISHandcraftWindow:onJoypadNavigateStart_Descendant(descendant, joypadData)
+    local recipeCategories = self.handCraftPanel.recipeCategories.recipeCategoryPanel
+    local recipeFilterPanel = self.handCraftPanel.recipesPanel.recipeFilterPanel
+    local recipeIconPanel = self.handCraftPanel.recipesPanel.recipeIconPanel
+    local recipeListPanel = self.handCraftPanel.recipesPanel.recipeListPanel.recipeListPanel
+    local listOrIconPanel = recipeIconPanel:isVisible() and recipeIconPanel or recipeListPanel
+    local recipePanel = self.handCraftPanel.recipePanel
+    local inventoryPanel = self.handCraftPanel.inventoryPanel.itemListBox
+    inventoryPanel.joypadNavigate = { left = recipePanel.inputs }
+    if not inventoryPanel:isReallyVisible() then inventoryPanel = nil end
+    recipeCategories.joypadNavigate = { right = listOrIconPanel }
+    recipeFilterPanel.joypadNavigate = { left = recipeCategories, right = recipePanel.inputs, down = listOrIconPanel }
+    listOrIconPanel.joypadNavigate = { left = recipeCategories,  up = recipeFilterPanel, right = recipePanel.inputs }
+    recipePanel.inputs.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, down = recipePanel.craftControl }
+    recipePanel.craftControl.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, up = recipePanel.inputs }
+end
+
 function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOverride)
-    local o = ISCollapsableWindow:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISCollapsableWindow.new(self, x, y, width, height);
 
     o.x = x;
     o.y = y;
@@ -324,9 +371,9 @@ function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOver
     o:setWantKeyEvents(true)
 
     if isoObject and getCore():getOptionDoContainerOutline() then
-        isoObject:setOutlineHighlight(true);
-        isoObject:setOutlineHlAttached(true);
-        isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
+--         isoObject:setOutlineHighlight(true);
+--         isoObject:setOutlineHlAttached(true);
+--         isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
     end
 
     return o

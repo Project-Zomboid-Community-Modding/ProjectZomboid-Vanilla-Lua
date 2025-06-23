@@ -16,48 +16,19 @@ local function removeExistingLuaObject(square)
 	end
 end
 
-local function ReplaceExistingObject(isoObject)
+local function ReplaceExistingObject(isoObject, isNorth)
 --	print("replace existing")
 	local square = isoObject:getSquare()
 	local spriteName = isoObject:getSprite():getName()
 	local index = isoObject:getObjectIndex()
 	removeExistingLuaObject(square)
 	square:transmitRemoveItemFromSquare(isoObject)
-	local north = true;
-	if "location_farm_accesories_01_14" == spriteName or "location_farm_accesories_01_4" == spriteName or "location_farm_accesories_01_5" == spriteName or "location_farm_accesories_01_34" == spriteName or "location_farm_accesories_01_35" == spriteName then
-		north = false;
-	end
 	isoObject = IsoFeedingTrough.new(square, spriteName, nil)
-	isoObject:setNorth(north);
-	-- we don't do double lua object for double feedingtrough, we just gonna link the lua object to the tile to get it from the right click context menu
-	if "location_farm_accesories_01_5" == spriteName then
-		isoObject:setLinkedX(square:getX());
-		isoObject:setLinkedY(square:getY() + 1);
---		print("defined a linked trough")
---		return;
-	end
-	if "location_farm_accesories_01_6" == spriteName then
-		isoObject:setLinkedX(square:getX() + 1);
-		isoObject:setLinkedY(square:getY());
---		print("defined a linked trough")
---		return;
-	end
-	if "location_farm_accesories_01_32" == spriteName then
-		isoObject:setLinkedX(square:getX() + 1);
-		isoObject:setLinkedY(square:getY());
-		--		print("defined a linked trough")
-		--		return;
-	end
-	if "location_farm_accesories_01_35" == spriteName then
-		isoObject:setLinkedX(square:getX());
-		isoObject:setLinkedY(square:getY() + 1);
-		--		print("defined a linked trough")
-		--		return;
-	end
+	isoObject:setNorth(isNorth);
 	isoObject:initWithDef(); -- we have a definition for each feeding trough, with their max feed amount etc..
 	square:AddSpecialObject(isoObject, index)
 	isoObject:transmitCompleteItemToClients()
-	if isoObject:getContainer() then
+	if (isoObject == isoObject:getMasterTrough()) and isoObject:getContainer() then
 		MOFeedingTrough.generateContainer(isoObject);
 	end
 
@@ -67,8 +38,9 @@ end
 
 -- Generate some food inside new feeding trough
 MOFeedingTrough.generateContainer = function(trough)
-	if ZombRand(6) == 0 then
-		trough:setWater(ZombRand(40, trough:getMaxWater()))
+	if trough:getFluidContainer() ~= nil and ZombRand(6) == 0 then
+		--trough:setWater(ZombRand(40, trough:getMaxWater()))
+		trough:addWater(FluidType.TaintedWater, ZombRand(30, trough:getMaxWater()));
 		return;
 	end
 	if ZombRand(4) == 0 then
@@ -95,19 +67,19 @@ end
 -- -- -- -- --
 
 local function NewDoubleW(object)
-	ReplaceExistingObject(object)
+	ReplaceExistingObject(object, false)
 end
 
 local function NewDoubleN(object)
-	ReplaceExistingObject(object)
+	ReplaceExistingObject(object, true)
 end
 
 local function NewSingleW(object)
-	ReplaceExistingObject(object)
+	ReplaceExistingObject(object, false)
 end
 
 local function NewSingleN(object)
-	ReplaceExistingObject(object)
+	ReplaceExistingObject(object, true)
 end
 
 local PRIORITY = 5
@@ -123,29 +95,47 @@ MapObjects.OnNewWithSprite("location_farm_accesories_01_35", NewDoubleW, PRIORIT
 MapObjects.OnNewWithSprite("location_farm_accesories_01_32", NewDoubleN, PRIORITY)
 MapObjects.OnNewWithSprite("location_farm_accesories_01_33", NewDoubleN, PRIORITY)
 
+-- triple metal
+MapObjects.OnNewWithSprite("location_farm_accesories_01_24", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_25", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_26", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_27", NewDoubleW, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_28", NewDoubleW, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_29", NewDoubleW, PRIORITY)
+
+-- quad metal
+MapObjects.OnNewWithSprite("location_farm_accesories_01_16", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_17", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_18", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_19", NewDoubleN, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_20", NewDoubleW, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_21", NewDoubleW, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_22", NewDoubleW, PRIORITY)
+MapObjects.OnNewWithSprite("location_farm_accesories_01_23", NewDoubleW, PRIORITY)
+
 -- -- -- -- --
 
-local function LoadObject(isoObject)
+local function LoadObject(isoObject, isNorth)
 	if not SFeedingTroughSystem.instance:isValidIsoObject(isoObject) then
-		isoObject = ReplaceExistingObject(isoObject)
+		isoObject = ReplaceExistingObject(isoObject, isNorth)
 	end
 	SFeedingTroughSystem.instance:loadIsoObject(isoObject)
 end
 
 local function LoadDoubleW(object)
-	LoadObject(object)
+	LoadObject(object, false)
 end
 
 local function LoadDoubleN(object)
-	LoadObject(object)
+	LoadObject(object, true)
 end
 
 local function LoadSingleW(object)
-	LoadObject(object)
+	LoadObject(object, false)
 end
 
 local function LoadSingleN(object)
-	LoadObject(object)
+	LoadObject(object, true)
 end
 
 MapObjects.OnLoadWithSprite("location_farm_accesories_01_4", LoadDoubleW, PRIORITY)
@@ -159,3 +149,20 @@ MapObjects.OnLoadWithSprite("location_farm_accesories_01_35", LoadDoubleW, PRIOR
 MapObjects.OnLoadWithSprite("location_farm_accesories_01_32", LoadDoubleN, PRIORITY)
 MapObjects.OnLoadWithSprite("location_farm_accesories_01_33", LoadDoubleN, PRIORITY)
 
+-- triple metal
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_24", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_25", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_26", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_27", LoadDoubleW, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_28", LoadDoubleW, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_29", LoadDoubleW, PRIORITY)
+
+-- quad metal
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_16", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_17", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_18", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_19", LoadDoubleN, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_20", LoadDoubleW, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_21", LoadDoubleW, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_22", LoadDoubleW, PRIORITY)
+MapObjects.OnLoadWithSprite("location_farm_accesories_01_23", LoadDoubleW, PRIORITY)

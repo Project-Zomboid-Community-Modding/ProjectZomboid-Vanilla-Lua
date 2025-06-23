@@ -12,8 +12,12 @@ local function predicatePetrol(item)
 	return item:getFluidContainer() and item:getFluidContainer():contains(Fluid.Petrol)
 end
 
-local function predicateEmptyPetrol(item)
+local function predicateEmptyContainer(item)
 	return item:getFluidContainer() and item:getFluidContainer():isEmpty()
+end
+
+local function predicateEmptyPetrol(item)
+	return item:getFluidContainer() and item:hasTag("Petrol") and item:getFluidContainer():isEmpty()
 end
 
 local function predicatePetrolNotFull(item)
@@ -94,6 +98,9 @@ function ISVehiclePartMenu.getGasCanNotFull(playerObj, typeToItem)
 	if inv:containsEvalRecurse(predicateEmptyPetrol) then
 		return inv:getFirstEvalRecurse(predicateEmptyPetrol)
 	end
+	if inv:containsEvalRecurse(predicateEmptyContainer) then
+    	return inv:getFirstEvalRecurse(predicateEmptyContainer)
+    end
 	return nil
 end
 

@@ -6,6 +6,26 @@
 
 TrapSystem = {}
 
+function TrapSystem.getTrapZones(square)
+    local zones = {};
+    if square then
+        local mapZones = getWorld():getMetaGrid():getZonesAt(square:getX(), square:getY(), square:getZ());
+        local tempZone, tempZoneType;
+        for i = 0, mapZones:size() - 1 do
+            tempZone = mapZones:get(i);
+            tempZoneType = tempZone and tempZone:getType();
+            if tempZone and tempZoneType then
+                for _, trappingData in pairs(TrapAnimals) do
+                    if trappingData.zone[tempZoneType] ~= nil then
+                        zones[tempZoneType] = tempZoneType;
+                    end;
+                end;
+            end;
+        end;
+    end;
+    return zones;
+end
+
 function TrapSystem.initObjectModData(isoObject, trapDef, north, player)
     local modData = isoObject:getModData()
     local square = isoObject:getSquare()
@@ -19,6 +39,7 @@ function TrapSystem.initObjectModData(isoObject, trapDef, north, player)
     modData.animalHour = 0
     modData.openSprite = north and trapDef.northSprite or trapDef.sprite
     modData.closedSprite = north and trapDef.northClosedSprite or trapDef.closedSprite
+    modData.zones = TrapSystem.getTrapZones(square);
     modData.zone = square:getZone() and square:getZone():getType() or "TownZone"
     if player then
         modData.player = player:getUsername()

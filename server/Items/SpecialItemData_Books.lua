@@ -330,6 +330,7 @@ SpecialLootSpawns.BookTitles.Childs = {
     "TheLandofTuckedaway",
     "TheAdventuresofTooksBear",
     "TheMagicHoodie",
+    "TheMagicHoodieSigned",
     "GenuinesBookofGlobalRecords92",
     "GenuinesBookofGlobalRecords91",
     "GenuinesBookofGlobalRecords90",
@@ -1245,20 +1246,17 @@ SpecialLootSpawns.BookTitles.NewAge = {
 }
 SpecialLootSpawns.BookTitles.Nature = {
     "AfricanInvertebrates",
-    "AmericasCutestDogs",
     "CreaturesoftheAmazon",
     "JunglesandTundra",
     "LifeintheArcticCircle",
     "LifeintheLakes",
     "LovelyDogs",
     "MammalsofEurope",
-    "NiceCats",
     "ShellfishoftheAtlantic",
     "SpidersandSnakes",
     "TheMightyOak",
     "TheMojave",
     "WalkingThroughAmerica",
-    "FuturemanHowWeMightEvolve",
     "LifeBeforeMan",
     "ATripThroughtheForest",
     -- Science
@@ -2006,6 +2004,8 @@ SpecialLootSpawns.BookTitles.ChildsPicture_Special = {
     "NosyNate",
     "NosyNateVisitstheZoo",
     "NosyNateAttheHospital",
+    "AmericasCutestDogs",
+    "NiceCats",
 }
 SpecialLootSpawns.BookTitles.Photo_Special = {
     "TheModernArts",
@@ -2031,6 +2031,8 @@ SpecialLootSpawns.BookTitles.Photo_Special = {
     "TheUniverse",
     "PhotographingtheHumanBody",
     "NudityAnArtisticGuide",
+    "AmericasCutestDogs",
+    "NiceCats",
 }
 
 SpecialLootSpawns.BookDetails = {
@@ -2229,6 +2231,7 @@ SpecialLootSpawns.BookDetails = {
     NannyBunnysBedtimeTales	 = { cover = "softcover", },
     TheAdventuresofTooksBear	 = { cover = "both", },
     TheMagicHoodie = { cover = "both", },
+    TheMagicHoodieSigned = { cover = "hardcover", countsAs = "TheMagicHoodie"},
     -- fantasy fiction
     Hairyfoot	 = { cover = "softcover", },
     TheLandofTuckedaway	 = { cover = "both", },
@@ -2870,7 +2873,7 @@ SpecialLootSpawns.BookDetails = {
     TheIslamicGoldenAge = { cover = "both", },
     -- Nature Books
     AfricanInvertebrates = { cover = "hardcover", },
-    AmericasCutestDogs = { cover = "both", },
+--     AmericasCutestDogs = { cover = "both", },
     CreaturesoftheAmazon = { cover = "hardcover", },
     FuturemanHowWeMightEvolve = { cover = "softcover", },
     JunglesandTundra = { cover = "softcover", },
@@ -2878,7 +2881,7 @@ SpecialLootSpawns.BookDetails = {
     LifeintheLakes = { cover = "softcover", },
     LovelyDogs = { cover = "hardcover", },
     MammalsofEurope = { cover = "hardcover", },
-    NiceCats = { cover = "hardcover", },
+--     NiceCats = { cover = "hardcover", },
     ShellfishoftheAtlantic = { cover = "softcover", },
     SpidersandSnakes = { cover = "hardcover", },
     TheMightyOak = { cover = "softcover", },

@@ -9,6 +9,7 @@ ISNaturalFloor = ISBuildingObject:derive("ISNaturalFloor");
 --**
 --************************************************************************--
 function ISNaturalFloor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISNaturalFloor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	self.sq = getWorld():getCell():getGridSquare(x, y, z);
 	local floor = self.sq:getFloor()
 	local spriteNames = floor:getModData().shovelledSprites or ISNaturalFloor.getFloorSpriteNames(self.sq)
@@ -52,6 +53,7 @@ function ISNaturalFloor:new(sprite, northSprite, item, character)
 	elseif o.floorType == "sand" then
 		o.craftingBank = "DropSoilFromSandBag";
 	end
+    showDebugInfoInChat("Cursor New \'ISNaturalFloor\'")
 	return o;
 end
 
@@ -112,7 +114,9 @@ function ISNaturalFloor:getFloorType(item)
 		return "dirt";
 	elseif item:getFullType()=="Base.Sandbag" then
 		return "sand";
-	end
+	elseif item:getFullType()=="Base.Claybag" then
+    	return "clay";
+    end
 end
 
 function ISNaturalFloor.getFloorSpriteNames(square)

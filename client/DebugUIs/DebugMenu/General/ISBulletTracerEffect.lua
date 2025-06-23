@@ -21,6 +21,7 @@ function ISBulletTracerEffect:createChildren()
 	self:initHorzBars(x, w)
 	local barMod = UI_BORDER_SPACING;
 
+	local obj;
 	y, obj = ISDebugUtils.addLabel(self, "float_title", x+(w/2), y, getText("IGUI_BulletTracerEffect_Title"), UIFont.Medium)
 	obj.center = true
 	y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;

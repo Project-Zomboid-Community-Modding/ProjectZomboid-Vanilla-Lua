@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateAmmoDefs()
 	local ammunition = {
@@ -57,22 +58,24 @@ local function generateAmmoDefs()
 	};
 	for _, spawnTable in pairs(ammunition) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
-				type = itemFullName,
-				minCount = 1,
-				maxCount = spawnTable.maxCount;
-				skill = 4,
-				xp = spawnTable.xp,
-				categories = { "Ammunition" },
-				zones = {
-					Vegitation  = spawnTable.chance,
-					TrailerPark = spawnTable.chance,
-					TownZone    = spawnTable.chance,
-					ForagingNav = spawnTable.chance,
-				},
-				forceOutside = false,
-				canBeAboveFloor = true,
-			};
+			forageSystem.addForageDef(
+				itemName,
+				{
+					type = itemFullName,
+					minCount = 1,
+					maxCount = spawnTable.maxCount;
+					skill = 4,
+					xp = spawnTable.xp,
+					categories = { "Ammunition" },
+					zones = {
+						TrailerPark = spawnTable.chance,
+						TownZone = spawnTable.chance,
+						ForagingNav = spawnTable.chance,
+					},
+					forceOutside = false,
+					canBeAboveFloor = true,
+				}
+			);
 		end;
 	end;
 end

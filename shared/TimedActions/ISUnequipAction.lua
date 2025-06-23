@@ -7,7 +7,11 @@ require "TimedActions/ISBaseTimedAction"
 ISUnequipAction = ISBaseTimedAction:derive("ISUnequipAction");
 
 function ISUnequipAction:isValid()
-	return true;
+	if isClient() and self.item then
+	    return true
+	else
+	    return self.character:getPrimaryHandItem() == self.item or self.character:getSecondaryHandItem() == self.item or self.character:getWornItems():contains(self.item)
+	end
 end
 
 function ISUnequipAction:update()
@@ -79,10 +83,21 @@ function ISUnequipAction:perform()
 		getPlayerInventory(self.character:getPlayerNum()):refreshBackpacks();
 	end
 
+	triggerEvent("OnClothingUpdated", self.character)
+
 	if self.fromHotbar then
 		local hotbar = getPlayerHotbar(self.character:getPlayerNum());
 		hotbar.chr:setAttachedItem(self.item:getAttachedToModel(), self.item);
 		self:setOverrideHandModels(nil, nil)
+	end
+
+
+	-- if it was an animal corpse, drop it
+	if self.item:getType() == "CorpseAnimal" and self.character:getCurrentSquare() then
+		if self.item:getContainer() then
+			self.item:getContainer():Remove(self.item);
+		end
+		self.character:getCurrentSquare():AddWorldInventoryItem(self.item, 0,0,0, true);
 	end
 
 	ISInventoryPage.renderDirty = true
@@ -150,6 +165,7 @@ function ISUnequipAction:new(character, item, maxTime)
 	o.stopOnRun = true;
 	o.maxTime = maxTime;
 	o.ignoreHandsWounds = true;
+	o.clothingAction = true;
 
 	if not isServer() then
 		o.hotbar = getPlayerHotbar(character:getPlayerNum());

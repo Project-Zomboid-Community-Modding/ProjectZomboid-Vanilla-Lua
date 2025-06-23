@@ -30,8 +30,12 @@ function ISTakePillAction:start()
 	if isClient() and self.item then
 		self.item = self.character:getInventory():getItemById(self.item:getID())
 	end
+	if self.item:getCustomMenuOption() then
+		self.item:setJobType(self.item:getCustomMenuOption())
+	else
+	    self.item:setJobType(getText("ContextMenu_Take_pills"));
+	end
 
-	self.item:setJobType(getText("ContextMenu_Take_pills"));
 	self.item:setJobDelta(0.0);
 	self:setOverrideHandModels(nil, self.item);
 end
@@ -74,5 +78,6 @@ function ISTakePillAction:new (character, item)
 	o.stopOnRun = true;
 	o.stopOnAim = false;
 	o.maxTime = o:getDuration();
+    o.isEating = true;
 	return o
 end

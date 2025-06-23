@@ -128,7 +128,7 @@ function ISTransferAction:transferItem(character, item, srcContainer, destContai
 			error "no square to drop item on"
 		end
 	elseif srcContainer:getType() == "floor" and item:getWorldItem() ~= nil then
-		DesignationZoneAnimal.removeFoodFromGround(item:getWorldItem())
+		DesignationZoneAnimal.removeItemFromGround(item:getWorldItem())
 		if instanceof(item, "Radio") then
 			local grabSquare = item:getWorldItem():getSquare()
 			local _obj = nil

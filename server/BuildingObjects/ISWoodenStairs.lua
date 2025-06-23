@@ -9,6 +9,7 @@ ISWoodenStairs = ISBuildingObject:derive("ISWoodenStairs");
 --**
 --************************************************************************--
 function ISWoodenStairs:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenStairs\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	--local thumpable = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -95,6 +96,7 @@ function ISWoodenStairs:new(sprite, sprite2, sprite3, northSprite, northSprite2,
 	o.northSprite3 = northSprite3;
     o.pillar = pillar;
     o.pillarNorth = pillarNorth;
+    showDebugInfoInChat("Cursor New \'ISWoodenStairs\'")
 	return o;
 end
 

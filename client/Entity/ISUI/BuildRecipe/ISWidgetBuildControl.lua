@@ -3,9 +3,14 @@
 --**				  Author: turbotutone				   **
 --***********************************************************
 
-require "ISUI/ISPanel"
+require "ISUI/ISPanelJoypad"
 
-ISWidgetBuildControl = ISPanel:derive("ISWidgetBuildControl");
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local BUTTON_SIZE = getTextManager():getFontHeight(UIFont.Small) * 1.5
+local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
+local BUTTON_ICON_SIZE = 16 * ICON_SCALE;
+
+ISWidgetBuildControl = ISPanelJoypad:derive("ISWidgetBuildControl");
 
 local debugSpam = true
 -- local debugSpam = false
@@ -15,11 +20,11 @@ local debugSpam = true
 --************************************************************************--
 
 function ISWidgetBuildControl:initialise()
-	ISPanel.initialise(self);
+	ISPanelJoypad.initialise(self);
 end
 
 function ISWidgetBuildControl:createChildren()
-    ISPanel.createChildren(self);
+    ISPanelJoypad.createChildren(self);
 
     self.colProgress = safeColorToTable(self.xuiSkin:color("C_ValidGreen"));
 
@@ -68,9 +73,10 @@ function ISWidgetBuildControl:createChildren()
     self.origButtonHeight = self.buttonCraft:getHeight();
 
     -- Debug tool to force being able to do recipes regardless of knowing recipes, skills, whatever
-    if isDebugEnabled() and debugSpam then
+    if isDebugEnabled() and debugSpam and (self.player:getRole() and self.player:getRole():hasCapability(Capability.UseBuildCheat)) then
         self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, 32, "Force Action")
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Insect_Aphid.png");
+        self.buttonForceCraft.joypadTextureWH = BUTTON_ICON_SIZE;
         --self.buttonPrev.image = getTexture("ArrowLeft");
         self.buttonForceCraft.font = UIFont.Medium;
         self.buttonForceCraft.target = self;
@@ -187,6 +193,18 @@ function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
 
     self:setWidth(width);
     self:setHeight(height);
+
+    self.joypadButtonsY = {}
+    self.joypadButtons = {}
+    self.joypadIndexY = 1
+    self.joypadIndex = 1
+    if self.slider and self.slider:isVisible() then
+        self:insertNewLineOfButtons(self.slider)
+    end
+    self:insertNewLineOfButtons(self.buttonCraft)
+    if self.buttonForceCraft then
+        self:insertNewLineOfButtons(self.buttonForceCraft)
+    end
 end
 
 function ISWidgetBuildControl:onResize()
@@ -194,7 +212,7 @@ function ISWidgetBuildControl:onResize()
 end
 
 function ISWidgetBuildControl:prerender()
-    --ISPanel.prerender(self);
+    --ISPanelJoypad.prerender(self);
 
 	if self.background then
 		self:drawRectStatic(0, 0, self.width, self.boxHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
@@ -242,7 +260,12 @@ function ISWidgetBuildControl:prerender()
         --end
     --else
     if self.buttonCraft then
-        local canBuild = self.logic:canPerformCurrentRecipe() or self.logic:isCraftCheat();
+        local cheat = self.player:isBuildCheat()
+        if self.logic and self.logic:isCraftCheat() then
+            cheat = true;
+        end
+
+        local canBuild = self.logic:cachedCanPerformCurrentRecipe() or cheat;
 
         if self.logic:isCraftActionInProgress() then
             canBuild = false;
@@ -256,11 +279,12 @@ function ISWidgetBuildControl:prerender()
 end
 
 function ISWidgetBuildControl:render()
-    ISPanel.render(self);
+    ISPanelJoypad.render(self);
+    self:renderJoypadFocus()
 end
 
 function ISWidgetBuildControl:update()
-    ISPanel.update(self);
+    ISPanelJoypad.update(self);
 end
 
 function ISWidgetBuildControl:onAutoToggled(_newState)
@@ -273,14 +297,13 @@ function ISWidgetBuildControl:onButtonClick(_button)
         self:startBuild(false);
     end
     if self.buttonForceCraft and _button==self.buttonForceCraft then
+        ISBuildMenu.cheat = true;
+        self.player:setBuildCheat(true);
+        sendPlayerExtraInfo(self.player)
         self:startBuild(true);
     end
     if self.buttonKnowAllRecipes and _button==self.buttonKnowAllRecipes then
---         self:startHandcraft(true);
---         getDebugOptions():getBoolean("Cheat.Recipe.KnowAll")
-        local option = true
-        if getDebugOptions():getBoolean("Cheat.Recipe.KnowAll") then option = false end
-        getDebugOptions():setBoolean("Cheat.Recipe.KnowAll", option)
+        self.player:setKnowAllRecipes(not self.player:isKnowAllRecipes())
     end
 end
 
@@ -317,13 +340,22 @@ function ISWidgetBuildControl.onTextChange(box)
     end
 end
 
+function ISWidgetBuildControl:onGainJoypadFocus(joypadData)
+    ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+    self:restoreJoypadFocus()
+end
+
+function ISWidgetBuildControl:onLoseJoypadFocus(joypadData)
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+    self:clearJoypadFocus()
+end
 
 --************************************************************************--
 --** ISWidgetBuildControl:new
 --**
 --************************************************************************--
 function ISWidgetBuildControl:new(x, y, width, height, player, logic)
-    local o = ISPanel:new(x, y, width, height);
+    local o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
 

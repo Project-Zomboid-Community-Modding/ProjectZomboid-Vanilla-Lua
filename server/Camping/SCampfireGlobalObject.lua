@@ -171,6 +171,10 @@ function SCampfireGlobalObject:syncIsoObject()
 		self:addObject()
 		self.transmitObject = true
 	end
+	local square = self:getSquare();
+	if square then
+		square:RecalcAllWithNeighbours(true);
+	end;
 end
 
 function SCampfireGlobalObject:syncSprite()
@@ -227,6 +231,9 @@ function SCampfireGlobalObject:syncContainer()
 -- 		self:noise('container temp changed from '..container:getCustomTemperature()..' to '..t)
 		container:setCustomTemperature(t)
 		self.transmitContainerTemp = isServer()
+	end
+	if self.isLit then
+		self:processContainerItems()
 	end
 end
 

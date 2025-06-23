@@ -42,7 +42,7 @@ end
 function ISGameStatisticPanel:createChildren()
     ISPanel.createChildren(self);
 
-    _, obj = ISDebugUtils.addLabel(self, {}, self.width/2, UI_BORDER_SPACING+1, getText("IGUI_GameStats_Title"), UIFont.Medium, true); obj.center = true;
+    local _, obj = ISDebugUtils.addLabel(self, {}, self.width/2, UI_BORDER_SPACING+1, getText("IGUI_GameStats_Title"), UIFont.Medium, true); obj.center = true;
 	local columnWidth = (self.width-UI_BORDER_SPACING*4-2)/3;
 	
 	local x = UI_BORDER_SPACING+1;
@@ -297,16 +297,16 @@ end
 function ISGameStatisticPanel:populatePacketsList()
 	self.data = getServerStatistic();
 	if self.data ~= nil then
-		self.incomePackets:clear();
-		for k, v in pairs(self.data.incomePacketsTable) do
-			self.incomePackets:addItem(v.name, v);
-		end
-		table.sort(self.incomePackets.items, function(a, b) return a.item.time>b.item.time end)
-		self.outcomePackets:clear();
-		for k, v in pairs(self.data.outcomePacketsTable) do
-			self.outcomePackets:addItem(v.name, v);
-		end
-		table.sort(self.outcomePackets.items, function(a, b) return a.item.time>b.item.time end)
+		--self.incomePackets:clear();
+		--for k, v in pairs(self.data.incomePacketsTable) do
+		--	self.incomePackets:addItem(v.name, v);
+		--end
+		--table.sort(self.incomePackets.items, function(a, b) return a.item.time>b.item.time end)
+		--self.outcomePackets:clear();
+		--for k, v in pairs(self.data.outcomePacketsTable) do
+		--	self.outcomePackets:addItem(v.name, v);
+		--end
+		--table.sort(self.outcomePackets.items, function(a, b) return a.item.time>b.item.time end)
 	end
 end
 

@@ -35,6 +35,10 @@ function ISCheckAnimalInsideTrailer:perform()
 	ui:initialise()
 	ui:instantiate()
 	ui:addToUIManager();
+	local playerNum = self.character:getPlayerNum()
+	if getJoypadData(playerNum) then
+		setJoypadFocus(playerNum, ui)
+	end
 end
 
 function ISCheckAnimalInsideTrailer:new(character, vehicle)

@@ -330,10 +330,6 @@ function ISUIWriteJournal:new(x, y, width, height, target, onclick, character, n
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.width = width;
-    local txtWidth = getTextManager():MeasureStringX(UIFont.Small, text) + 10;
-    if width < txtWidth then
-        o.width = txtWidth;
-    end
     o.height = height;
     o.anchorLeft = true;
     o.anchorRight = true;
@@ -348,7 +344,6 @@ function ISUIWriteJournal:new(x, y, width, height, target, onclick, character, n
     o.lineNumber = lineNumber;
     o.maxTextLength = lineNumber * 80;
     o.editable = editable;
-    o.text = text;
     o.numberOfPages = numberOfPages;
     o.currentPage = 1;
     o.notebook = notebook;

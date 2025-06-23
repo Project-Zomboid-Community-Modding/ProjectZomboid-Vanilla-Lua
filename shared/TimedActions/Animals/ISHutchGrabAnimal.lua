@@ -30,6 +30,10 @@ function ISHutchGrabAnimal:stop()
 end
 
 function ISHutchGrabAnimal:perform()
+    local animal = self.hutch:getAnimal(self.index)
+    if animal then
+        animal:playBreedSound("pick_up")
+    end
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self);
 

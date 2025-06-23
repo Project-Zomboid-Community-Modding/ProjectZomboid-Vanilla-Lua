@@ -56,12 +56,15 @@ function ISFireplaceLightFromPetrol:perform()
 end
 
 function ISFireplaceLightFromPetrol:complete()
-	self.lighter:Use(false, false, true)
-	self.petrol:Use(false, false, true)
+	self.petrol:getFluidContainer():adjustAmount(self.petrol:getFluidContainer():getAmount() - ZomboidGlobals.LightFromPetrolAmount);
+	self.lighter:UseAndSync()
 
 	if self.fireplace then
 		if not self.fireplace:isLit() and self.fireplace:hasFuel() then
 			self.fireplace:setLit(true)
+			if self.fireplace:getContainer() then
+				self.fireplace:getContainer():addItemsToProcessItems()
+			end
 		end
 		self.fireplace:sendObjectChange('state')
 	end

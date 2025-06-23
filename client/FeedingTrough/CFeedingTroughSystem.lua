@@ -26,6 +26,7 @@ function CFeedingTroughSystem:OnLuaObjectUpdated(luaObject)
 end
 
 local function DoSpecialTooltip1(tooltip, square)
+	if Mouse.isRightDown() then return; end
 	local luaObject = CFeedingTroughSystem.instance:getLuaObjectOnSquare(square)
 	if not luaObject then return; end
 
@@ -36,6 +37,9 @@ local function DoSpecialTooltip1(tooltip, square)
 		end
 	end
 
+	if not luaObject then
+		return;
+	end
 	local trough = luaObject:getIsoObject();
 	if not trough then return; end
 
@@ -83,6 +87,8 @@ end
 CGlobalObjectSystem.RegisterSystemClass(CFeedingTroughSystem)
 
 local function DoSpecialTooltip(tooltip, square)
+	local luaObject = CFeedingTroughSystem.instance:getLuaObjectOnSquare(square)
+	if not luaObject then return; end
 	tooltip:setWidth(100)
 	tooltip:setMeasureOnly(true)
 	DoSpecialTooltip1(tooltip, square)

@@ -46,11 +46,13 @@ function ISPickupDung:complete()
             end
         end
     end
+    sendServerCommand("animal", "removeDung", {x = self.sq:getX(), y = self.sq:getY(), z = self.sq:getZ(), radius = self.radius});
     return true
 end
 
 function ISPickupDung:pickUpDung(sq)
-    self.character:getInventory():AddItems(sq:removeAllDung());
+    local items = self.character:getInventory():AddItems(sq:removeAllDung());
+    sendAddItemsToContainer(self.character:getInventory(), items);
     --if sq:removeGrass() then
     --    if isServer() then
     --        local args = { x = sq:getX(), y = sq:getY(), z = sq:getZ() }

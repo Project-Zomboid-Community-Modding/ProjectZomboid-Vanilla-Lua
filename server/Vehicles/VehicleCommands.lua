@@ -254,7 +254,7 @@ end
 function Commands.putKeyInIgnition(player, args)
 	local vehicle = player:getVehicle()
 	if vehicle and vehicle:isDriver(player) then
-		vehicle:putKeyInIgnition(args.key)
+		vehicle:putKeyInIgnition(args.key, args.container)
 	else
 		noise('player not driving vehicle')
 	end

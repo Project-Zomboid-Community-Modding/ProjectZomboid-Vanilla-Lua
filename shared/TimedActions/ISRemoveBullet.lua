@@ -103,7 +103,7 @@ function ISRemoveBullet:new(character, otherPlayer, bodyPart)
     o.bandagedPlayerX = otherPlayer:getX();
     o.bandagedPlayerY = otherPlayer:getY();
     o.maxTime = o:getDuration();
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
+    if isMultiplayer() and character:getRole():hasCapability(Capability.CanMedicalCheat) then
         o.doctorLevel = 10;
     end
     return o;

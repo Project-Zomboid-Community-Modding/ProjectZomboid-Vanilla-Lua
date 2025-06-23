@@ -185,7 +185,7 @@ function ISBuildAction:stop()
 end
 
 function ISBuildAction:forceComplete()
-    ISBaseTimedAction:forceComplete()
+    ISBaseTimedAction.forceComplete(self)
     
     if self.onCompleteFunc then
         self.onCompleteFunc(self.onCompleteTarget);
@@ -193,7 +193,7 @@ function ISBuildAction:forceComplete()
 end
 
 function ISBuildAction:forceStop()
-    ISBaseTimedAction:forceStop()
+    ISBaseTimedAction.forceStop(self)
 
     if self.onCompleteFunc then
         self.onCompleteFunc(self.onCompleteTarget);
@@ -201,7 +201,7 @@ function ISBuildAction:forceStop()
 end
 
 function ISBuildAction:forceCancel()
-    ISBaseTimedAction:forceCancel()
+    ISBaseTimedAction.forceCancel(self)
 
     if self.onCancelFunc then
         self.onCancelFunc(self.onCancelTarget);

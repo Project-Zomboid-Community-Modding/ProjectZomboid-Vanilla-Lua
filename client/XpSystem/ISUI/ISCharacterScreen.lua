@@ -128,6 +128,7 @@ function ISCharacterScreen:render()
 	local panelWidth = self.avatarX + self.avatarWidth + AVATAR_BORDER + nameWid + professionWid + UI_BORDER_SPACING*3
 	panelWidth = math.max(panelWidth, nameX + nameWid + 40 + self.profImage.width + UI_BORDER_SPACING + 1)
 	panelWidth = math.max(panelWidth, hairBeardButtonX + self.hairButton.width + UI_BORDER_SPACING + 1)
+	panelWidth = math.max(panelWidth, self.literatureButton:getRight() + UI_BORDER_SPACING + 1)
 	self:setWidthAndParentWidth(math.max(self.width, panelWidth))
 
 	self.profImage:setX(self.width - UI_BORDER_SPACING - self.profImage.width)
@@ -339,7 +340,7 @@ function ISCharacterScreen:create()
 	self.beardButton:setVisible(false);
 	self:addChild(self.beardButton);
 
-	self.literatureButton = ISButton:new(0, 0, 100, BUTTON_HGT, getText("IGUI_char_Literature"), self, ISCharacterScreen.onShowLiterature);
+	self.literatureButton = ISButton:new(0, 0, 100, BUTTON_HGT, getText("IGUI_LiteratureUI_Title"), self, ISCharacterScreen.onShowLiterature);
 	self.literatureButton:initialise();
 	self.literatureButton:instantiate();
 	self.literatureButton.background = false;

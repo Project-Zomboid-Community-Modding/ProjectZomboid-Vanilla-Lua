@@ -9,6 +9,7 @@ ISDoubleTileFurniture = ISBuildingObject:derive("ISDoubleTileFurniture");
 --**
 --************************************************************************--
 function ISDoubleTileFurniture:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISDoubleTileFurniture\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self:setInfo(self.sq, north, sprite, self);
@@ -104,6 +105,7 @@ function ISDoubleTileFurniture:new(name, sprite, sprite2, northSprite, northSpri
 	o.blockAllTheSquare = true;
 	o.canBeAlwaysPlaced = true;
 	o.buildLow = true;
+	showDebugInfoInChat("Cursor New \'ISDoubleTileFurniture\'")
 	return o;
 end
 

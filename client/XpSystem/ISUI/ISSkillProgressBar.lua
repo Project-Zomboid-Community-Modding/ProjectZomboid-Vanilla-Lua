@@ -38,6 +38,7 @@ function ISSkillProgressBar:render()
 			self.tooltip:setOwner(self)
 		end
 		self.tooltip.description = self.message;
+		self.tooltip:setDesiredPosition(self:getAbsoluteX(), self:getAbsoluteY() + self:getHeight() + 8)
 	end
 end
 

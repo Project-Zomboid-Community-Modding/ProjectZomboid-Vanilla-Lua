@@ -92,7 +92,9 @@ function RWMVolume:onVolumeChange( _newVol )
     self.volume = _newVol/self.volumeBar:getVolumeSteps(); --self:round((_newVol/self.volumeBar:getVolumeSteps())*10,0)/10;
     --print("onvolumeChange", self.volume);
     if self.deviceData then
-        if self:doWalkTo() then
+        -- this is so players with a remote equipped can interact with televisions
+        if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+        or self:doWalkTo() then
             ISTimedActionQueue.add(ISRadioAction:new("SetVolume",self.player, self.device, self.volume ));
         end
         --self.deviceData:setDeviceVolume(self.volume);
@@ -103,14 +105,18 @@ function RWMVolume:onSpeakerButton( _ismute )
     self.isMute = _ismute;
     if self.isMute == true then
         if self.deviceData then
-            if self:doWalkTo() then
+            -- this is so players with a remote equipped can interact with televisions
+            if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+            or self:doWalkTo() then
                 ISTimedActionQueue.add(ISRadioAction:new("MuteVolume",self.player, self.device, true ));
             end
         end
         self.volumeBar:setEnableControls(false);
     else
         if self.deviceData then
-            if self:doWalkTo() then
+            -- this is so players with a remote equipped can interact with televisions
+            if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+            or self:doWalkTo() then
                 ISTimedActionQueue.add(ISRadioAction:new("UnMuteVolume",self.player, self.device, self.volume~=0 and self.volume or 0.1 ));
             end
         end

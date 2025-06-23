@@ -22,13 +22,22 @@ function ISFluidEmptyAction:update()
 	if isoObj then
 		self.character:faceThisObject(isoObj);
 	end
-
-	if self.amount<1.0 then
+	
+	if self.amount < 1.0 then
 		self.character:setMetabolicTarget(Metabolics.LightDomestic)
 	elseif self.amount < 5.0 then
 		self.character:setMetabolicTarget(Metabolics.HeavyDomestic)
 	else
 		self.character:setMetabolicTarget(Metabolics.MediumWork)
+	end
+	
+	-- do partial empty
+	if not isClient() then
+		if self.container:getFluidContainer() then
+			local targetFillAmount = self.amount * (1 - self:getJobDelta())
+			self.container:getFluidContainer():adjustAmount(targetFillAmount);
+			self.container:sync();
+		end
 	end
 end
 
@@ -42,6 +51,8 @@ function ISFluidEmptyAction:start()
 		self:setActionAnim(CharacterActionAnims.Pour);
 		self:setAnimVariable("PourType", item:getPourType());
 		self.sound = self.character:playSound(item:getPourLiquidOnGroundSound())
+	elseif instanceof(self.containerObject:getOwner(), "IsoFeedingTrough") then
+		self.sound = self.character:playSound("AnimalFeederEmptyWater")
 	end
 	self:setOverrideHandModels(item, nil);
 end
@@ -50,6 +61,7 @@ function ISFluidEmptyAction:stop()
 	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
 		self.character:stopOrTriggerSound(self.sound);
 	end
+	
 	ISBaseTimedAction.stop(self)
 end
 

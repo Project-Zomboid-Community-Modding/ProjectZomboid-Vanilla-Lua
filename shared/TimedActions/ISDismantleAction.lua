@@ -86,9 +86,18 @@ function ISDismantleAction:complete()
 		for i=1,#stairObjects do
 			stairObjects[i]:getSquare():transmitRemoveItemFromSquare(stairObjects[i])
 		end
+	elseif (self.thumpable:getSquare():getZ() <= 0) and (self.thumpable:isFloor() or (self.thumpable:getSprite() and self.thumpable:getSprite():getProperties():Is(IsoFlagType.solidfloor))) then
+		local floor = self.thumpable:getSquare():getFloor();
+		if floor then
+			floor:setSpriteFromName("blends_natural_01_64");
+			if isClient() then floor:transmitUpdatedSpriteToServer(); end
+			if isServer() then floor:transmitUpdatedSpriteToClients(); end
+		end;
 	else
 		self.thumpable:getSquare():transmitRemoveItemFromSquare(self.thumpable)
 	end
+
+
 
 	return true;
 end

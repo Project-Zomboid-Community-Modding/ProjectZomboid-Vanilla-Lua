@@ -5,6 +5,9 @@ require "PZAPI/ui/molecules/ScrollBarVertical"
 
 local UI = PZAPI.UI
 
+local BOTTOM_BUTTON_SIZE = 36
+local BOTTOM_BUTTONS_PANEL_H = 40
+
 local function getMapZoom(len)
     if len < 75 then return 17 end
     if len < 75*3 then return 16.5 end
@@ -17,17 +20,20 @@ end
 local revealOnMapTemplate = UI.Panel{
     enabled = false,
     visible = false,
-    y = -46,
-    height = 40, width = 40,
+    y = (BOTTOM_BUTTONS_PANEL_H - BOTTOM_BUTTON_SIZE) / 2,
+    height = BOTTOM_BUTTON_SIZE, width = BOTTOM_BUTTON_SIZE,
     children = {
-        icon = UI.Texture{
-            x = 20, y = 20,
-            width = 32, height = 32,
+        icon = UI.ImageButton{
+            x = BOTTOM_BUTTON_SIZE / 2, y = BOTTOM_BUTTON_SIZE / 2,
+            width = BOTTOM_BUTTON_SIZE - 2 * 2, height = BOTTOM_BUTTON_SIZE - 2 * 2,
             pivotX = 0.5, pivotY = 0.5,
             texture = getTexture("media/textures/Item_Map.png"),
+            onLeftClick = function(self)
+                self.parent:onLeftClick()
+            end
         }
     },
-    onLeftClick = function() end
+    onLeftClick = function(self) end
 }
 
 UI.PrintMedia = UI.Window{
@@ -35,6 +41,7 @@ UI.PrintMedia = UI.Window{
     isPin = false,
     children = {
         body = UI.Window.children.body{
+            anchorDown = -48,
             isStencil = true,
             children = {
                 printMedia = UI.Node{
@@ -186,52 +193,85 @@ UI.PrintMedia = UI.Window{
                 return true
             end
         },
-        bottomBar = UI.Window.children.bottomBar{
+        bottomButtons = UI.Panel{
+            height = BOTTOM_BUTTONS_PANEL_H,
+            anchorLeft = 0, anchorRight = 0, anchorDown = -8,
             children = {
                 revealOnMap1 = revealOnMapTemplate{ anchorRight = -6 },
-                revealOnMap2 = revealOnMapTemplate{ anchorRight = -6*2 - 40 },
-                revealOnMap3 = revealOnMapTemplate{ anchorRight = -6*3 - 40*2 },
-                revealOnMap4 = revealOnMapTemplate{ anchorRight = -6*4 - 40*3 },
-                revealOnMap5 = revealOnMapTemplate{ anchorRight = -6*5 - 40*4 },
+                revealOnMap2 = revealOnMapTemplate{ anchorRight = -6*2 - BOTTOM_BUTTON_SIZE },
+                revealOnMap3 = revealOnMapTemplate{ anchorRight = -6*3 - BOTTOM_BUTTON_SIZE*2 },
+                revealOnMap4 = revealOnMapTemplate{ anchorRight = -6*4 - BOTTOM_BUTTON_SIZE*3 },
+                revealOnMap5 = revealOnMapTemplate{ anchorRight = -6*5 - BOTTOM_BUTTON_SIZE*4 },
                 readNewspaper = UI.Panel{
                     enabled = true,
                     visible = true,
                     isClosed = true,
-                    height = 40, width = 40,
-                    y = -46,
+                    height = BOTTOM_BUTTON_SIZE, width = BOTTOM_BUTTON_SIZE,
+                    y = (BOTTOM_BUTTONS_PANEL_H - BOTTOM_BUTTON_SIZE) / 2,
                     anchorLeft = 6,
                     children = {
-                        icon = UI.Texture{
-                            x = 20, y = 20,
-                            width = 32, height = 32,
+                        icon = UI.ImageButton{
+                            x = BOTTOM_BUTTON_SIZE / 2, y = BOTTOM_BUTTON_SIZE / 2,
+                            width = BOTTOM_BUTTON_SIZE - 2 * 2, height = BOTTOM_BUTTON_SIZE - 2 * 2,
                             pivotX = 0.5, pivotY = 0.5,
                             texture = getTexture("media/textures/Item_Notebook.png"),
-                        }
+                            onLeftClick = function(self)
+                                self.parent:onLeftClick()
+                            end
+                        },
                     },
                     onLeftClick = function(self)
+                        getSoundManager():playUISound(self.children.icon.sounds.activate)
                         local body = self.parent.parent.children.body
-                        body.children.textNode:updateSize(body.width - 20, body.height - 30 - 32)
+                        body.children.textNode:updateSize(body.width - 20, body.height - 20)
                         if self.isClosed then
-                            body.children.textNode.javaObj:setEnabled(true)
-                            body.children.textNode.javaObj:setVisible(true)
+                            body.children.textNode:setEnabled(true)
+                            body.children.textNode:setVisible(true)
                         else
-                            body.children.textNode.javaObj:setEnabled(false)
-                            body.children.textNode.javaObj:setVisible(false)
+                            body.children.textNode:setEnabled(false)
+                            body.children.textNode:setVisible(false)
                         end
                         self.isClosed = not self.isClosed
                     end
+                },
+                joypadX = UI.Texture{
+                    texture = Joypad.Texture.XButton,
+                    y = (BOTTOM_BUTTONS_PANEL_H - Joypad.Texture.XButton:getHeight()) / 2,
+                    width = Joypad.Texture.XButton:getWidth(), height = Joypad.Texture.XButton:getHeight(),
+                    anchorLeft = 6 + BOTTOM_BUTTON_SIZE + 6,
+                    visible = false
+                },
+                joypadY = UI.Texture{
+                    texture = Joypad.Texture.YButton,
+                    x = -6 - BOTTOM_BUTTON_SIZE - 6 - Joypad.Texture.YButton:getWidth(),
+                    y = (BOTTOM_BUTTONS_PANEL_H - Joypad.Texture.YButton:getHeight()) / 2,
+                    width = Joypad.Texture.YButton:getWidth(), height = Joypad.Texture.YButton:getHeight(),
+                    visible = false
                 }
-            }
+            },
+            renderUpdate = function(self)
+                self.children.joypadX:setVisible(self.parent.playerNum ~= nil and getJoypadData(self.parent.playerNum) ~= nil)
+                self.children.joypadY:setVisible(self.parent.playerNum ~= nil and getJoypadData(self.parent.playerNum) ~= nil)
+                for i=5,1,-1 do
+                    local revealButton = self.children["revealOnMap" .. i]
+                    if revealButton.javaObj:isVisible() then
+                        local child = self.children.joypadY
+                        child:setX(revealButton.javaObj:getX() - 6 - child.javaObj:getWidth())
+                        break
+                    end
+                end
+            end
         }
     },
     init = function(self)
         if self.media_id and PrintMediaDefinitions.MiscDetails[self.media_id] then
             local details = PrintMediaDefinitions.MiscDetails[self.media_id]
             for i = 1, 5 do
-                local revealButton = self.children.bottomBar.children["revealOnMap" .. i]
+                local revealButton = self.children.bottomButtons.children["revealOnMap" .. i]
                 local locationData = details["location" .. i]
                 if locationData == nil then break end
-                revealButton.onLeftClick = function()
+                revealButton.onLeftClick = function(self)
+                    -- getSoundManager():playUISound(self.children.icon.sounds.activate)
                     local xx = 0
                     local yy = 0
                     local maxLen = 0
@@ -243,7 +283,7 @@ UI.PrintMedia = UI.Window{
                     end
                     local centerX = xx / (#locationData * 2)
                     local centerY = yy / (#locationData * 2)
-                    local playerObj = getPlayer()
+                    local playerObj = getPlayer() -- FIXME: splitscreen
                     ISTimedActionQueue.clear(playerObj)
                     ISTimedActionQueue.add(ISReadWorldMap:new(playerObj, centerX, centerY, getMapZoom(maxLen)))
                 end
@@ -253,8 +293,8 @@ UI.PrintMedia = UI.Window{
         end
     end,
     onResize = function(self)
-        if not self.children.bottomBar.children.readNewspaper.isClosed then
-            self.children.bottomBar.children.readNewspaper:onLeftClick()
+        if not self.children.bottomButtons.children.readNewspaper.isClosed then
+            self.children.bottomButtons.children.readNewspaper:onLeftClick()
         end
     end,
     updateSize = function(self)
@@ -270,16 +310,39 @@ UI.PrintMedia = UI.Window{
         end
 
         self:setWidth(w)
-        self:setHeight(h + 24 + 4)
+        self:setHeight(h + self.children.bar.height + self.children.bottomButtons.height + self.children.bottomBar.height)
 
         self.children.body.children.textNode:setX(10)
         self.children.body.children.textNode:setY(10)
-        self.children.body.children.textNode:updateSize(w - 20, h - 30)
+        self.children.body.children.textNode:updateSize(w - 20, h - 20)
     end,
     onKeyRelease = function(self, key)
         if key ~= Keyboard.KEY_ESCAPE then return false end
         UIManager.RemoveElement(self.javaObj)
         return true
+    end,
+    setCollapsed = function(self, collapsed)
+        self.children.body:setVisible(not collapsed)
+        self.children.bottomButtons:setVisible(not collapsed)
+        self.children.bottomBar:setVisible(not collapsed)
+    end,
+    -- Called by ISReadABook when using a controller.
+    onClickNewspaperButton = function(self)
+        local button = self.children.bottomButtons.children.readNewspaper
+        if button.javaObj:isVisible() then
+            button:onLeftClick()
+        end
+    end,
+    -- Called by ISReadABook when using a controller.
+    onClickMapButton = function(self)
+        -- FIXME: There could be 5 revealOnMap buttons.
+        for i = 1,5 do
+            local revealButton = self.children.bottomButtons.children["revealOnMap" .. i]
+            if revealButton.javaObj:isVisible() then
+                revealButton:onLeftClick()
+                break
+            end
+        end
     end
 }
 

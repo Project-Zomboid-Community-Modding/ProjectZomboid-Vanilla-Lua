@@ -52,17 +52,29 @@ function ISShovelAction:perform()
 	self.item:getContainer():setDrawDirty(true);
 	self.item:setJobDelta(0.0);
 
-	ISBaseTimedAction.perform(self);
-end
-
-function ISShovelAction:complete()
-	local plant = SFarmingSystem.instance:getLuaObjectAt(self.plant.x, self.plant.y, self.plant.z);
-	SFarmingSystem.instance:removePlant(plant);
 	local info = ISFarmingMenu.info[self.character]
 	if info and info:isVisible() then
 		info:setVisible(false)
 	end
-	
+
+	ISBaseTimedAction.perform(self);
+end
+
+function ISShovelAction:complete()
+
+
+    if self.plant:getSquare() then
+        local sq = self.plant:getSquare()
+        -- we remove grass and vegetation from the square
+        SFarmingSystem:removeTallGrass(sq)
+        local floor = sq:getFloor();
+        if (floor and floor:getSprite():getProperties():Val("grassFloor")) and sq:checkHaveGrass() == true then
+            sq:removeGrass()
+        end
+    end
+
+	local plant = SFarmingSystem.instance:getLuaObjectAt(self.plant.x, self.plant.y, self.plant.z);
+	SFarmingSystem.instance:removePlant(plant);
 	return true;
 end
 

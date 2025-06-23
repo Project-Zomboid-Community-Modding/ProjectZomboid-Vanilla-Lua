@@ -102,13 +102,16 @@ function SPH_misc:render1()
 	if square then
 		self:addLine("seen = %s  couldSee = %s  canSee = %s", square:getSeen(pn), square:isCouldSee(pn), square:getCanSee(pn))
 		self:addLine("darkMulti = %.4f  targetDarkMulti = %.4f", square:getDarkMulti(pn), square:getTargetDarkMulti(pn))
-		self:addLine("getVertLight() = %x, %x, %x, %x" , square:getVertLight(0, pn), square:getVertLight(1, pn), square:getVertLight(2, pn), square:getVertLight(3, pn))
+		self:addLine("getVertLight() = 0=%x, 1=%x,", square:getVertLight(0, pn), square:getVertLight(1, pn))
+		self:addLine("getVertLight() = 2=%x, 3=%x", square:getVertLight(2, pn), square:getVertLight(3, pn))
+		self:addLine("getVertLight() = 4=%x, 5=%x", square:getVertLight(4, pn), square:getVertLight(5, pn))
+		self:addLine("getVertLight() = 6=%x, 7=%x", square:getVertLight(6, pn), square:getVertLight(7, pn))
 --		self:addLine("cutaway = " .. tostring(square:getPlayerCutawayFlags(pn))
 		self:addLine("puddles = %.4f", square:getPuddlesInGround(), 4)
 		if square:getRoom() then
 			local roomDef = square:getRoom():getRoomDef()
 			self:addLine("buildingID = %d", square:getBuilding():getID())
-			self:addLine("roomID = %d", square:getRoomID())
+			self:addLine("roomID = %s", square:getRoomIDString())
 			self:addLine("roomDef.name = %s", roomDef:getName())
 			self:addLine("bExplored = %s", roomDef:isExplored())
 			self:addLine("alarm = %s", square:getBuilding():getDef():isAlarmed())
@@ -121,16 +124,16 @@ function SPH_misc:render1()
 				self:addLine("roomDef.ID = %d", roomDef:getID())
 				self:addLine("roomDef.name = %s", roomDef:getName())
 			else
-				self:addLine("roomID = %d  room = nil", square:getRoomID())
+				self:addLine("roomID = %d  room = nil", square:getRoomIDString())
 			end
 		end
 		local building = square:getRoofHideBuilding()
 		if building then
-			self:addLine("roof-hide building = %d", building:getDef():getID())
+			self:addLine("roof-hide building = %d", building:getDef():getIDString())
 		end
         local buildingDef = getWorld():getMetaGrid():getAssociatedBuildingAt(self.squareX, self.squareY)
         if buildingDef then
-            self:addLine("associated building = %d", buildingDef:getID())
+            self:addLine("associated building = %d", buildingDef:getIDString())
         end
 		local light = getCell():getLightSourceAt(self.squareX, self.squareY, self.squareZ)
 		if light then

@@ -21,11 +21,6 @@ function FireFighting.getExtinguisherUses(item)
 	return 10000
 end
 
-function FireFighting.getFluidContainerMillilitresPerUse()
-	-- Soul Filcher : "Water bottles had 10 uses and I set them to have 2L".
-	return 100
-end
-
 function FireFighting.getWaterUsesFloat(item)
 	if not item then return 0 end
 	if item:hasComponent(ComponentType.FluidContainer) then
@@ -34,7 +29,7 @@ function FireFighting.getWaterUsesFloat(item)
 		local fluidTypeString = fluidContainer:getPrimaryFluid():getFluidTypeString()
 		if fluidTypeString == "Water" or fluidTypeString == "TaintedWater" then
 			local millilitres = fluidContainer:getAmount() * 1000
-			return math.floor(millilitres / FireFighting.getFluidContainerMillilitresPerUse())
+			return math.floor(millilitres / ZomboidGlobals.fireFightingFluidContainerMillilitresPerUse)
 		end
 	end
 	if item:IsDrainable() and item:isWaterSource() then
@@ -51,7 +46,7 @@ function FireFighting.getWaterUsesInteger(item)
 		local fluidTypeString = fluidContainer:getPrimaryFluid():getFluidTypeString()
 		if fluidTypeString == "Water" or fluidTypeString == "TaintedWater" then
 			local millilitres = fluidContainer:getAmount() * 1000
-			return math.floor(millilitres / FireFighting.getFluidContainerMillilitresPerUse())
+			return math.floor(millilitres / ZomboidGlobals.fireFightingFluidContainerMillilitresPerUse)
 		end
 	end
 	if item:IsDrainable() and item:isWaterSource() then

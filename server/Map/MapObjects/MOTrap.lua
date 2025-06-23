@@ -93,6 +93,7 @@ local function initObjectModData(isoObject, trapDef, north)
 	modData.animalHour = 0
 	modData.openSprite = north and trapDef.northSprite or trapDef.sprite
 	modData.closedSprite = north and trapDef.northClosedSprite or trapDef.closedSprite
+	modData.zones = TrapSystem.getTrapZones(square);
 	modData.zone = square:getZone() and square:getZone():getType() or "TownZone"
 	modData.player = "unknown"
 	-- TODO: Random player skill

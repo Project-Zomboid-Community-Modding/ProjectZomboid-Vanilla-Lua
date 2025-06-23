@@ -262,7 +262,7 @@ function ConfigPanel:createChildren()
 		combo.selected = 1
 		self.comboDeleteFiles = combo
 
-		button = ISButton:new(combo:getRight() + UI_BORDER_SPACING, combo.y, buttonWid, comboHgt, "DELETE", self, ConfigPanel.onDeleteFiles)
+		local button = ISButton:new(combo:getRight() + UI_BORDER_SPACING, combo.y, buttonWid, comboHgt, "DELETE", self, ConfigPanel.onDeleteFiles)
 		self:addChild(button)
 		self.buttonDeleteFiles = button
 		y = button:getBottom()
@@ -618,7 +618,7 @@ function LoadGameScreen:create()
 end
 
 function LoadGameScreen:onSearchTextChange()
-	self = LoadGameScreen.instance
+	local self = LoadGameScreen.instance
 	local text = string.lower(self.searchEntry:getInternalText())
 	self.listbox:clear()
 	for k, v in pairs(self.listCache) do

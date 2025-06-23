@@ -36,7 +36,7 @@ function ISWidgetTooltipInput:createChildren()
 --     self.iconDrain.autoScale = true;
 --     self.iconDrain:initialise();
 --     self.iconDrain:instantiate();
---     self.iconDrain:setVisible(self.primary.isUse);
+--     self.iconDrain:setVisible(not self.primary.isItemCount);
 --     self:addChild(self.iconDrain);
 
     local arrowTexture = nil;
@@ -142,7 +142,7 @@ function ISWidgetTooltipInput:createScriptValues(_script)
     table.isConsume = true;
     table.script = _script;
     table.isKeep = _script:isKeep();
-    table.isUse = _script:isUse();
+    table.isItemCount = _script:isItemCount();
     table.iconTexture = nil;
     table.iconColor = { r=1,g=1,b=1,a=1 };
     table.cycleIcons = false;
@@ -262,6 +262,9 @@ function ISWidgetTooltipInput:updateScriptValues(_table)
             if _table.script:mayDegradeLight() and _table.script:isKeep() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_MayDegradeLight")
             end
+            if _table.script:mayDegradeVeryLight() and _table.script:isKeep() then
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_MayDegradeLight")
+            end
             if _table.script:sharpnessCheck() and _table.script:isKeep() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_SharpnessCheck")
             end
@@ -275,25 +278,25 @@ function ISWidgetTooltipInput:updateScriptValues(_table)
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsWorn")
             end
             if _table.script:isNotWorn() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsNotWorn")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsNotWorn")
             end
             if _table.script:isFull() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsFull")
             end
             if _table.script:isEmpty() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsEmpty")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsEmpty")
             end
             if _table.script:notFull() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_NotFull")
             end
             if _table.script:notEmpty() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_NotEmpty")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_NotEmpty")
             end
             if _table.script:isDamaged() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsDamaged")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsDamaged")
             end
             if _table.script:isUndamaged() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsUndamaged")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsUndamaged")
             end
             if _table.script:allowFrozenItem() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_AllowFrozenItem")
@@ -320,7 +323,7 @@ function ISWidgetTooltipInput:updateScriptValues(_table)
 --                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHandle")
 --             end
             if _table.script:isHeadPart() then
-               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHead")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHeadPart")
             end
             _table.icon:setMouseOverText(text);
 

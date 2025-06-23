@@ -2,20 +2,22 @@
 --**                    THE INDIE STONE                    **
 --**            Author: turbotutone / spurcival            **
 --***********************************************************
-require "ISUI/ISPanel"
+require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-ISWidgetIngredientsInputs = ISPanel:derive("ISWidgetIngredientsInputs");
+ISWidgetIngredientsInputs = ISPanelJoypad:derive("ISWidgetIngredientsInputs");
 
 function ISWidgetIngredientsInputs:initialise()
-	ISPanel.initialise(self);
+	ISPanelJoypad.initialise(self);
 end
 
 function ISWidgetIngredientsInputs:createChildren()
-    ISPanel.createChildren(self);
+    self:setScrollChildren(true)
+    self:addScrollBars()
+    ISPanelJoypad.createChildren(self);
 
     --[[
     local column, row;
@@ -30,10 +32,35 @@ function ISWidgetIngredientsInputs:createChildren()
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
     local fontHeight = -1; -- <=0 sets label initial height to font
-    self.inputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Requires"), 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
+    self.inputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Requires"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     self.inputsLabel:initialise();
     self.inputsLabel:instantiate();
     self:addChild(self.inputsLabel);
+    
+    -- create scroll panel for input slots
+    self.panel = ISPanel:new(0, self.inputsLabel:getHeight() + UI_BORDER_SPACING, 30, 10)
+    self.panel.prerender = function(self)
+        self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
+        ISPanel.prerender(self)
+    end
+    self.panel.render = function(self)
+        ISPanel.render(self)
+        self:clearStencilRect()
+    end
+    self.panel.onMouseWheel = function(self, del)
+        if self:getScrollHeight() > 0 then
+            self:setYScroll(self:getYScroll() - (del * 40))
+            return true
+        end
+        return false
+    end
+    self.panel:initialise()
+    self.panel:instantiate()
+    self.panel:noBackground()
+    self.panel:setScrollChildren(true)
+    self.panel:addScrollBars();
+    self:addChild(self.panel)
+    --
     
     self.inputs = {};
 
@@ -80,7 +107,7 @@ function ISWidgetIngredientsInputs:addInput(_inputScript)
     end
     input:initialise();
     input:instantiate();
-    self:addChild(input);
+    self.panel:addChild(input);
     table.insert(self.inputs, input);
 end
 
@@ -109,15 +136,30 @@ function ISWidgetIngredientsInputs:calculateLayout(_preferredWidth, _preferredHe
     local inputCols = 4;
     local inputRows = math.ceil(inputCount / inputCols);
     inputRows = math.max(1, inputRows);
-
+    
     local margins = inputRows * self.margin;
-    minHeight = minHeight + (minInputHeight * inputRows) + margins;
+    local contentHeight = (minInputHeight * inputRows) + margins;
+    
+    local inputRowsToShow = math.min(2, inputRows)
+    margins = inputRowsToShow * self.margin;
+    local panelHeight = (minInputHeight * inputRowsToShow) + margins;
+    minHeight = minHeight + panelHeight;
 
     minWidth = math.max(minWidth, (self.itemMargin*2)+(minInputWidth*inputCols)+(self.itemSpacing*(inputCols - 1)));
-
+    if inputRows > inputRowsToShow then
+        minWidth = minWidth + self.margin;
+    end
+        
     width = math.max(width, minWidth);
     height = math.max(height, minHeight);
 
+    self.panel.vscroll:setX(minWidth - self.panel.vscroll.width)
+    self.panel.vscroll:setY(0)
+    self.panel.vscroll:setHeight(panelHeight)
+    self.panel:setScrollHeight(contentHeight);
+    self.panel:setWidth(width);
+    self.panel:setHeight(panelHeight);
+    
     local x = self.margin;
     local y = self.margin;
 
@@ -125,7 +167,17 @@ function ISWidgetIngredientsInputs:calculateLayout(_preferredWidth, _preferredHe
     self.inputsLabel.originalX = self.inputsLabel:getX();
     self.inputsLabel:setY(y);
 
-    local inputTop = self.inputsLabel:getY() + self.inputsLabel:getHeight() + self.margin;
+    local joypadData = JoypadState.players[self.player:getPlayerNum()+1]
+    local oldIndexY = math.max(self.joypadIndexY, 1)
+    local oldIndex = math.max(self.joypadIndex, 1)
+    if joypadData ~= nil and joypadData.focus == self and self.joypadButtons ~= nil and #self.joypadButtons > 0 then
+        self:clearJoypadFocus(joypadData)
+    end
+
+    self.joypadButtons = {}
+    self.joypadButtonsY = {}
+
+    local inputTop = self.margin;
     local column = 0;
     local row = 0;
     for k,v in ipairs(self.inputs) do
@@ -136,11 +188,25 @@ function ISWidgetIngredientsInputs:calculateLayout(_preferredWidth, _preferredHe
         v:setX(x);
         v:setY(y);
         
+        table.insert(self.joypadButtons, v)
+
         column = column + 1;
         if column >= 4 then
             column = 0;
             row = row + 1;
+            table.insert(self.joypadButtonsY, self.joypadButtons)
+            self.joypadButtons = {}
         end
+        end
+
+    if #self.joypadButtons > 0 then
+        table.insert(self.joypadButtonsY, self.joypadButtons)
+    end
+    self.joypadIndexY = math.min(oldIndexY or 1, #self.joypadButtonsY)
+    self.joypadIndex = math.min(oldIndex or 1, #self.joypadButtonsY[self.joypadIndexY])
+    self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+    if joypadData ~= nil and joypadData.focus == self then
+        self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
     end
     
     self:setWidth(width);
@@ -148,19 +214,19 @@ function ISWidgetIngredientsInputs:calculateLayout(_preferredWidth, _preferredHe
 end
 
 function ISWidgetIngredientsInputs:onResize()
-    ISUIElement.onResize(self)
+    ISPanelJoypad.onResize(self)
 end
 
 function ISWidgetIngredientsInputs:prerender()
-    ISPanel.prerender(self);
+    ISPanelJoypad.prerender(self);
 end
 
 function ISWidgetIngredientsInputs:render()
-    ISPanel.render(self);
+    ISPanelJoypad.render(self);
 end
 
 function ISWidgetIngredientsInputs:update()
-    ISPanel.update(self);
+    ISPanelJoypad.update(self);
 end
 
 function ISWidgetIngredientsInputs:onRebuildItemNodes(_inputItems)
@@ -178,14 +244,40 @@ function ISWidgetIngredientsInputs:onRecipeChanged()
     end
 end
 
+function ISWidgetIngredientsInputs:onGainJoypadFocus(joypadData)
+    ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+    if self.joypadButtons and #self.joypadButtons > 0 then
+        self.joypadIndexY = 1
+        self.joypadIndex = 1
+        self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+        self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
+    end
+end
+
+function ISWidgetIngredientsInputs:onLoseJoypadFocus(joypadData)
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+    self:clearJoypadFocus(joypadData)
+end
+
+function ISWidgetIngredientsInputs:onJoypadDown(button, joypadData)
+    if button == Joypad.AButton then
+        local input = self.joypadButtons[self.joypadIndex]
+        if input and input.primary and input.primary.selectInputButton then
+            local indexY = self.joypadIndexY
+            local index = self.joypadIndex
+            input:onSelectInputsClicked(input.primary.selectInputButton)
+        end
+        return
+    end
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
+end
+
 --************************************************************************--
 --** ISWidgetIngredientsInputs:new
 --**
 --************************************************************************--
 function ISWidgetIngredientsInputs:new (x, y, width, height, player, logic) -- recipeData, craftBench)
-	local o = ISPanel:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
+	local o = ISPanelJoypad.new(self, x, y, width, height);
     o.player = player;
     o.logic = logic;
     --o.recipeData = recipeData;
@@ -203,8 +295,11 @@ function ISWidgetIngredientsInputs:new (x, y, width, height, player, logic) -- r
     o.margin = UI_BORDER_SPACING;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-    o.itemSpacing = 24;
-    o.itemMargin = 24;
+
+    local fontScale = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+
+    o.itemSpacing = 10 * fontScale;
+    o.itemMargin = 10 * fontScale;
     o.itemNameMaxLines = 3;
 
     o.doToolTip = true;

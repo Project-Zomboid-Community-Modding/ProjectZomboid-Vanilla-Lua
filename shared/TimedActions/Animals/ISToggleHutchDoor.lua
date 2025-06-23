@@ -56,5 +56,6 @@ function ISToggleHutchDoor:new(character, hutch)
 	o.maxTime = o:getDuration()
 	o.stopOnAim = false;
 	o.ignoreHandsWounds = true;
+	o.retriggerLastAction = true;
 	return o;
 end

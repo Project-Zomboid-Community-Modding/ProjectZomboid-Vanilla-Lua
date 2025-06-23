@@ -55,6 +55,9 @@ function ISFireplaceLightFromKindle:updateKindling()
 	if ZombRand(randNumber) == 0 then
 	    if self.fireplace then
             self.fireplace:setLit(true)
+            if self.fireplace:getContainer() then
+                self.fireplace:getContainer():addItemsToProcessItems()
+            end
             self.fireplace:sendObjectChange('state')
         end
         if isServer() then

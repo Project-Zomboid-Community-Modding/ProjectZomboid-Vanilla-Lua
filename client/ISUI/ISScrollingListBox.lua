@@ -28,39 +28,43 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 --************************************************************************--
 
 function ISScrollingListBox:initialise()
-    ISPanelJoypad.initialise(self);
+	ISPanelJoypad.initialise(self);
 end
 
 function ISScrollingListBox:setJoypadFocused(focused, joypadData)
-    if focused then
-        joypadData.focus = self;
-        updateJoypadFocus(joypadData);
-        if self.selected == -1 then
-            self.selected = 1;
-            if self.resetSelectionOnChangeFocus then
-                if self.items[self.selectedBeforeReset] then
-                    self.selected = self.selectedBeforeReset
-                end
-                self.selectedBeforeReset = nil
-            end
-            if self.onmousedown and self.items[self.selected] then
-                self.onmousedown(self.target, self.items[self.selected].item);
-            end
-        end
-    end
-    self.joypadFocused = focused;
+	if focused then
+		joypadData.focus = self;
+		updateJoypadFocus(joypadData);
+		if self.selected == -1 then
+			self.selected = 1;
+			if self.resetSelectionOnChangeFocus then
+				if self.items[self.selectedBeforeReset] then
+					self.selected = self.selectedBeforeReset
+				end
+				self.selectedBeforeReset = nil
+			end
+			if self.onmousedown and self.items[self.selected] then
+				self.onmousedown(self.target, self.items[self.selected].item);
+			end
+		end
+	end
+	self.joypadFocused = focused;
 end
 
 function ISScrollingListBox:onJoypadDirRight(joypadData)
-    if self.joypadParent then
-        self.joypadParent:onJoypadDirRight(joypadData);
-    end
+	if self.joypadParent then
+		self.joypadParent:onJoypadDirRight(joypadData);
+	else
+		ISPanelJoypad.onJoypadDirRight(self, joypadData);
+	end
 end
 
 function ISScrollingListBox:onJoypadDirLeft(joypadData)
-    if self.joypadParent then
-        self.joypadParent:onJoypadDirLeft(joypadData);
-    end
+	if self.joypadParent then
+		self.joypadParent:onJoypadDirLeft(joypadData);
+	else
+		ISPanelJoypad.onJoypadDirLeft(self, joypadData);
+	end
 end
 
 --************************************************************************--
@@ -157,17 +161,17 @@ function ISScrollingListBox:onMouseUp(x, y)
 	end
 end
 
-function ISScrollingListBox:addItem(name, item)
-    local i = {}
-    i.text=name;
-    i.item=item;
-	i.tooltip = nil;
-    i.itemindex = self.count + 1;
+function ISScrollingListBox:addItem(name, item, tooltip)
+	local i = {}
+	i.text=name;
+	i.item=item;
+	i.tooltip = tooltip;
+	i.itemindex = self.count + 1;
 	i.height = self.itemheight
-    table.insert(self.items, i);
-    self.count = self.count + 1;
-    self:setScrollHeight(self:getScrollHeight()+i.height);
-    return i;
+	table.insert(self.items, i);
+	self.count = self.count + 1;
+	self:setScrollHeight(self:getScrollHeight()+i.height);
+	return i;
 end
 
 function ISScrollingListBox:insertItem(index, name, item)
@@ -191,6 +195,20 @@ function ISScrollingListBox:insertItem(index, name, item)
 	return i
 end
 
+function ISScrollingListBox:addUniqueItem(name, item, tooltip)
+	if not self:contains(name) then
+		return self:addItem(name, item, tooltip);
+	end;
+	return nil;
+end
+
+function ISScrollingListBox:contains(itemText)
+	for i,v in ipairs(self.items) do
+		if v.text == itemText then return true; end;
+	end
+	return false;
+end
+
 function ISScrollingListBox:removeItem(itemText)
 	for i,v in ipairs(self.items) do
 		if v.text == itemText then
@@ -201,10 +219,22 @@ function ISScrollingListBox:removeItem(itemText)
 			if self.selected > self.count then
 				self.selected = self.count
 			end
-            return v;
+			return v;
 		end
 	end
-    return nil;
+	return nil;
+end
+
+function ISScrollingListBox:removeMatchingItems(itemText)
+	local matchingItems = {};
+	local matched = false;
+	for i = #self.items, 1, -1 do
+		if self.items[i] and self.items[i].text == itemText then
+			table.insert(matchingItems, self:removeItemByIndex(i));
+			matched = true;
+		end;
+	end;
+	return matched, matchingItems;
 end
 
 function ISScrollingListBox:removeItemByIndex(itemIndex)
@@ -222,18 +252,17 @@ function ISScrollingListBox:removeItemByIndex(itemIndex)
 	return nil
 end
 
-
 function ISScrollingListBox:removeFirst()
-    if self.count == 0 then return end
-    local item = self.items[1]
-    table.remove(self.items, 0);
-    self.count = self.count - 1;
+	if self.count == 0 then return end
+	local item = self.items[1]
+	table.remove(self.items, 0);
+	self.count = self.count - 1;
 	if not item.height then item.height = self.itemheight end -- compatibililty
-    self:setScrollHeight(self:getScrollHeight()-item.height);
+	self:setScrollHeight(self:getScrollHeight()-item.height);
 end
 
 function ISScrollingListBox:size()
-    return self.count;
+	return self.count;
 end
 
 function ISScrollingListBox:setOnMouseDownFunction(target, onmousedown)
@@ -248,22 +277,37 @@ end
 
 function ISScrollingListBox:doDrawItem(y, item, alt)
 	if not item.height then item.height = self.itemheight end -- compatibililty
-    if self.selected == item.index then
-        self:drawRect(0, (y), self:getWidth(), item.height-1, 0.3, 0.7, 0.35, 0.15);
-
-    end
+	if self.selected == item.index then
+		self:drawSelection(0, y, self:getWidth(), item.height-1);
+	elseif (self.mouseoverselected == item.index) and self:isMouseOver() and not self:isMouseOverScrollBar() then
+		self:drawMouseOverHighlight(0, y, self:getWidth(), item.height-1);
+	end
 	self:drawRectBorder(0, (y), self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	local itemPadY = self.itemPadY or (item.height - self.fontHgt) / 2
 	self:drawText(item.text, 15, (y)+itemPadY, 0.9, 0.9, 0.9, 0.9, self.font);
 	y = y + item.height;
 	return y;
-
 end
+
+function ISScrollingListBox:drawSelection(x, y, width, height)
+	local c = self.selectionColor
+	if c ~= nil and c.r and c.g and c.b and c.a then
+		self:drawRect(x, y, width, height, c.a, c.r, c.g, c.b)
+	end
+end
+
+function ISScrollingListBox:drawMouseOverHighlight(x, y, width, height)
+	local c = self.mouseOverHighlightColor
+	if c ~= nil and c.r and c.g and c.b and c.a then
+		self:drawRect(x, y, width, height, c.a, c.r, c.g, c.b)
+	end
+end
+
 function ISScrollingListBox:clear()
 	self.items = {}
 	self.selected = 1;
 	self.itemheightoverride = {}
-    self.count = 0;
+	self.count = 0;
 end
 
 function ISScrollingListBox:onMouseWheel(del)
@@ -288,8 +332,8 @@ function ISScrollingListBox:onMouseWheel(del)
 	if self.onScrolled then
 		self:onScrolled()
 	end
-	
-    return true;
+
+	return true;
 end
 
 function ISScrollingListBox:scrollToSelected()
@@ -297,14 +341,14 @@ function ISScrollingListBox:scrollToSelected()
 end
 
 function ISScrollingListBox.sortByName(a, b)
-    return not string.sort(a.text, b.text);
+	return not string.sort(a.text, b.text);
 
 end
 function ISScrollingListBox:sort()
-    table.sort(self.items, ISScrollingListBox.sortByName);
-    for i,item in ipairs(self.items) do
-        item.itemindex = i;
-    end
+	table.sort(self.items, ISScrollingListBox.sortByName);
+	for i,item in ipairs(self.items) do
+		item.itemindex = i;
+	end
 end
 
 function ISScrollingListBox:updateTooltip()
@@ -352,7 +396,7 @@ function ISScrollingListBox:updateTooltip()
 			self.tooltipUI:setVisible(false)
 			self.tooltipUI:removeFromUIManager()
 		end
-    end
+	end
 end
 
 function ISScrollingListBox:updateSmoothScrolling()
@@ -377,6 +421,20 @@ function ISScrollingListBox:updateSmoothScrolling()
 	end
 end
 
+function ISScrollingListBox:parentsHaveScrollChildren()
+	local obj = self
+	for i = 1, 100 do
+		if not obj.parent then
+			return false
+		end
+		if obj.parent:getScrollChildren() then
+			return true
+		end
+		obj = obj.parent
+	end
+	return false
+end
+
 function ISScrollingListBox:prerender()
 	if self.items == nil then
 		return;
@@ -387,7 +445,7 @@ function ISScrollingListBox:prerender()
 	local stencilX2 = self.width
 	local stencilY2 = self.height
 
-    self:drawRect(0, -self:getYScroll(), self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+	self:drawRect(0, -self:getYScroll(), self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	if self.drawBorder then
 		self:drawRectBorder(0, -self:getYScroll(), self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 		stencilX = 1
@@ -401,7 +459,7 @@ function ISScrollingListBox:prerender()
 	end
 
 	-- This is to handle this listbox being inside a scrolling parent.
-	if self.parent and self.parent:getScrollChildren() then
+	if self:parentsHaveScrollChildren() then
 		stencilX = self.javaObject:clampToParentX(self:getAbsoluteX() + stencilX) - self:getAbsoluteX()
 		stencilX2 = self.javaObject:clampToParentX(self:getAbsoluteX() + stencilX2) - self:getAbsoluteX()
 		stencilY = self.javaObject:clampToParentY(self:getAbsoluteY() + stencilY) - self:getAbsoluteY()
@@ -412,8 +470,8 @@ function ISScrollingListBox:prerender()
 	local y = 0;
 	local alt = false;
 
---	if self.selected ~= -1 and self.selected < 1 then
---		self.selected = 1
+	--	if self.selected ~= -1 and self.selected < 1 then
+	--		self.selected = 1
 	if self.selected ~= -1 and self.selected > #self.items then
 		self.selected = #self.items
 	end
@@ -421,29 +479,29 @@ function ISScrollingListBox:prerender()
 	local altBg = self.altBgColor
 
 	self.listHeight = 0;
-	 local i = 1;
-	 for k, v in ipairs(self.items) do
+	local i = 1;
+	for k, v in ipairs(self.items) do
 		if not v.height then v.height = self.itemheight end -- compatibililty
 
-		 if alt and altBg then
+		if alt and altBg then
 			self:drawRect(0, y, self:getWidth(), v.height-1, altBg.r, altBg.g, altBg.b, altBg.a);
-		 else
+		else
 
-		 end
-		 v.index = i;
-		 local y2 = self:doDrawItem(y, v, alt);
+		end
+		v.index = i;
+		local y2 = self:doDrawItem(y, v, alt);
 		if self.stopPrerender then
-		    self.stopPrerender = false;
-		    return;
-		 end
-		 self.listHeight = y2;
-		 v.height = y2 - y
-		 y = y2
+			self.stopPrerender = false;
+			return;
+		end
+		self.listHeight = y2;
+		v.height = y2 - y
+		y = y2
 
-		 alt = not alt;
-		 i = i + 1;
-		
-	 end
+		alt = not alt;
+		i = i + 1;
+
+	end
 
 	self:setScrollHeight((y));
 	self:clearStencilRect();
@@ -457,9 +515,9 @@ function ISScrollingListBox:prerender()
 		self:onMouseMove(0, self:getMouseY() - mouseY)
 	end
 	self:updateTooltip()
-	
+
 	if #self.columns > 0 then
---		print(self:getScrollHeight())
+		--		print(self:getScrollHeight())
 		self:drawRectBorderStatic(0, 0 - self.itemheight, self.width, self.itemheight, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 		self:drawRectStatic(0, 0 - self.itemheight, self.width, self.itemheight,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
 		local dyText = (self.itemheight - FONT_HGT_SMALL) / 2
@@ -469,6 +527,9 @@ function ISScrollingListBox:prerender()
 				self:drawText(v.name, v.size + 10, 0 - self.itemheight - 1 + dyText - self:getYScroll(), 1,1,1,1,UIFont.Small);
 			end
 		end
+	end
+	if self.useStencilForChildren then
+		self:setStencilRect(0, 0, self.width, self.height)
 	end
 end
 
@@ -490,14 +551,14 @@ function ISScrollingListBox:onMouseDown(x, y)
 		row = #self.items;
 	end
 	if row < 1 then
-		row = 1;
+		return
 	end
 
 	-- RJ: If you select the same item it unselect it
 	--if self.selected == y then
 	--if self.selected == y then
-		--self.selected = -1;
-		--return;
+	--self.selected = -1;
+	--return;
 	--end
 
 	getSoundManager():playUISound("UISelectListItem")
@@ -511,15 +572,15 @@ end
 
 
 function ISScrollingListBox:onJoypadDirUp()
-    self.selected = self:prevVisibleIndex(self.selected)
+	self.selected = self:prevVisibleIndex(self.selected)
 
-    if self.selected <= 0 then
-        self.selected = self:prevVisibleIndex(self.count + 1);
-    end
+	if self.selected <= 0 then
+		self.selected = self:prevVisibleIndex(self.count + 1);
+	end
 
-    getSoundManager():playUISound("UISelectListItem")
+	getSoundManager():playUISound("UISelectListItem")
 
-    self:ensureVisible(self.selected)
+	self:ensureVisible(self.selected)
 
 	if self.onmousedown and self.items[self.selected] then
 		self.onmousedown(self.target, self.items[self.selected].item);
@@ -527,14 +588,14 @@ function ISScrollingListBox:onJoypadDirUp()
 end
 
 function ISScrollingListBox:onJoypadDirDown()
-        self.selected = self:nextVisibleIndex(self.selected)
-        if self.selected == -1 then
-            self.selected = self:nextVisibleIndex(0);
-        end
+	self.selected = self:nextVisibleIndex(self.selected)
+	if self.selected == -1 then
+		self.selected = self:nextVisibleIndex(0);
+	end
 
-    getSoundManager():playUISound("UISelectListItem")
+	getSoundManager():playUISound("UISelectListItem")
 
-    self:ensureVisible(self.selected)
+	self:ensureVisible(self.selected)
 
 	if self.onmousedown and self.items[self.selected] then
 		self.onmousedown(self.target, self.items[self.selected].item);
@@ -542,17 +603,17 @@ function ISScrollingListBox:onJoypadDirDown()
 end
 
 function ISScrollingListBox:ensureVisible(index)
-    if not index or index < 1 or index > #self.items then return end
-    local y = 0
-    local height = 0
-    for k, v in ipairs(self.items) do
+	if not index or index < 1 or index > #self.items then return end
+	local y = 0
+	local height = 0
+	for k, v in ipairs(self.items) do
 		if k == index then
 			height = v.height
 			break
 		end
 		y = y + v.height
 	end
---	print('y='..y..' top='..self:getYScroll()..' bottom='..(self:getYScroll() + self.height))
+	--	print('y='..y..' top='..self:getYScroll()..' bottom='..(self:getYScroll() + self.height))
 	if not self.smoothScrollTargetY then self.smoothScrollY = self:getYScroll() end
 	if y <= 0-self:getYScroll() then
 		self.smoothScrollTargetY = 0 - y
@@ -562,49 +623,61 @@ function ISScrollingListBox:ensureVisible(index)
 end
 
 function ISScrollingListBox:render()
-    if self.joypadFocused then
-        self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
-        self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
-    end
+	if self.useStencilForChildren then
+		self:clearStencilRect();
+	end
+	self:renderJoypadFocus()
 end
 
 function ISScrollingListBox:onJoypadDown(button, joypadData)
-    if button == Joypad.AButton and self.onmousedblclick then
+	if button == Joypad.AButton and self.onmousedblclick then
 		if (#self.items > 0) and (self.selected ~= -1) then
 			local previousSelected = self.selected;
 			self.onmousedblclick(self.target, self.items[self.selected].item);
 			self.selected = previousSelected;
 		end
-    elseif button == Joypad.BButton and self.joypadParent then
-        self.joypadFocused = false;
-        joypadData.focus = self.joypadParent;
-        updateJoypadFocus(joypadData);
-    else
-        ISPanelJoypad.onJoypadDown(self, button);
-    end
+	elseif button == Joypad.BButton and self.joypadParent then
+		self.joypadFocused = false;
+		joypadData.focus = self.joypadParent;
+		updateJoypadFocus(joypadData);
+	else
+		ISPanelJoypad.onJoypadDown(self, button);
+	end
 end
 
 function ISScrollingListBox:onLoseJoypadFocus(joypadData)
-    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
-    self:setJoypadFocused(false, joypadData)
-    if self.resetSelectionOnChangeFocus then
-        self.selectedBeforeReset = self.selected
-        self.selected = -1;
-    end
+	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+	self:setJoypadFocused(false, joypadData)
+	if self.resetSelectionOnChangeFocus then
+		self.selectedBeforeReset = self.selected
+		self.selected = -1;
+	end
 end
 
 function ISScrollingListBox:setFont(font, padY)
-    self.font = UIFont[font] or font
-    self.fontHgt = getTextManager():getFontFromEnum(self.font):getLineHeight()
-    self.itemPadY = padY
-    self.itemheight = self.fontHgt + (self.itemPadY or 0) * 2;
+	self.font = UIFont[font] or font
+	self.fontHgt = getTextManager():getFontFromEnum(self.font):getLineHeight()
+	self.itemPadY = padY
+	self.itemheight = self.fontHgt + (self.itemPadY or 0) * 2;
 end
 
 function ISScrollingListBox:addColumn(columnName, size)
 	table.insert(self.columns, {name = columnName, size = size});
 end
 
-	--************************************************************************--
+function ISScrollingListBox:getItem(index)
+	return self.items[index or self.selected]
+end
+
+function ISScrollingListBox:getIndexOf(itemText)
+	for i,v in ipairs(self.items) do
+		if v.text == itemText then return i end;
+	end
+	return -1
+end
+
+
+--************************************************************************--
 --** ISInventoryPane:new
 --**
 --************************************************************************--
@@ -621,6 +694,8 @@ function ISScrollingListBox:new (x, y, width, height)
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=0.9};
 	o.altBgColor = {r=0.2, g=0.3, b=0.2, a=0.1 }
 	o.listHeaderColor = {r=0.4, g=0.4, b=0.4, a=0.3};
+	o.selectionColor = {r=0.7, g=0.35, b=0.15, a=0.3}
+	o.mouseOverHighlightColor = {r=1.0, g=1.0, b=1.0, a=0.1}
 	-- Since these were broken before, don't draw them by default
 	o.altBgColor = nil
 	o.drawBorder = false
@@ -630,12 +705,13 @@ function ISScrollingListBox:new (x, y, width, height)
 	o.anchorRight = false;
 	o.anchorTop = true;
 	o.anchorBottom = false;
+	o.useStencilForChildren = false;
 	o.font = UIFont.Large
 	o.fontHgt = getTextManager():getFontFromEnum(o.font):getLineHeight()
 	o.itemPadY = 7
 	o.itemheight = o.fontHgt + o.itemPadY * 2;
 	o.selected = 1;
-    o.count = 0;
+	o.count = 0;
 	o.itemheightoverride = {}
 	o.items = {}
 	o.columns = {};

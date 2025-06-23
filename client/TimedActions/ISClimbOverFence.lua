@@ -29,7 +29,11 @@ end
 
 function ISClimbOverFence:perform()
 	local dir = self:getFacingDirection()
-	self.character:climbOverFence(dir)
+	if self.isTallHoppable then
+		self.character:climbOverWall(dir);
+	else
+		self.character:climbOverFence(dir);
+	end;
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
@@ -41,6 +45,9 @@ function ISClimbOverFence:getDeltaModifiers(deltas)
 end
 
 function ISClimbOverFence:getFacingDirection()
+	if self.direction then
+		return self.direction
+	end
 	local square = self.item:getSquare()
 	local north = square:Is(IsoFlagType.HoppableN)
 	if north then
@@ -55,12 +62,15 @@ function ISClimbOverFence:getFacingDirection()
 	return IsoDirections.W
 end
 
-function ISClimbOverFence:new(character, item)
+function ISClimbOverFence:new(character, item, direction)
 	local o = ISBaseTimedAction.new(self, character)
 	o.item = item
+	o.direction = direction
 	o.maxTime = 0
 	o.stopOnWalk = false;
 	o.stopOnRun = false;
 	o.stopOnAim = false;
+	o.isTallHoppable = item:isTallHoppable();
+	o.retriggerLastAction = true; -- this is used when we for example eat something and climbing over, the eat action is removed, but we store it in IsoPlayer.getTimedActionToRetrigger(), here we say to the queue "relaunch the previous action (eat)", it'll be relaunched at the delta it was saved
 	return o
 end	

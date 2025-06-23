@@ -115,7 +115,7 @@ function ISStitch:complete()
     if endPain < 0 then
         endPain = 0;
     end
-    if not (isMultiplayer() and self.doctor:getRole():haveCapability(Capability.CanMedicalCheat)) then
+    if not (isMultiplayer() and self.doctor:getRole():hasCapability(Capability.CanMedicalCheat)) then
         self.bodyPart:setAdditionalPain(self.bodyPart:getAdditionalPain() + endPain);
     end
     -- boost the stitch depending on the doctor's level
@@ -169,7 +169,7 @@ function ISStitch:new(character, otherPlayer, item, bodyPart, doIt)
     o.bandagedPlayerY = otherPlayer:getY();
     o.maxTime = o:getDuration();
 
-    if isMultiplayer() and character:getRole():haveCapability(Capability.CanMedicalCheat) then
+    if isMultiplayer() and character:getRole():hasCapability(Capability.CanMedicalCheat) then
         o.doctorLevel = 10;
     end
 	return o;

@@ -109,7 +109,7 @@ function ISPvpZonePanel:prerender()
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(getText("IGUI_PvpZone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PvpZone_Title")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
-    if not self.player:getRole():haveCapability(Capability.CanSetupNonPVPZone) then
+    if not self.player:getRole():hasCapability(Capability.CanSetupNonPVPZone) then
         self:close()
     end
 end
@@ -124,7 +124,9 @@ function ISPvpZonePanel:render()
     self.teleportToZone.enable = false;
     if self.nonPvpList.selected > 0 then
         self.removeZone.enable = true;
-        self.teleportToZone.enable = true;
+        if self.player:getRole():hasCapability(Capability.TeleportToCoordinates) then
+            self.teleportToZone.enable = true;
+        end
         self.selectedZone = self.nonPvpList.items[self.nonPvpList.selected].item.zone;
     else
         self.selectedZone = nil;

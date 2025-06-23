@@ -7,6 +7,7 @@ require "BuildingObjects/ISBuildingObject"
 ISPickCharacterCursor = ISBuildingObject:derive("ISPickCharacterCursor")
 
 function ISPickCharacterCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISPickCharacterCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local square = getCell():getGridSquare(x, y, z)
 	local chr = self:getObjectList(square)[self.objectIndex]
 	self:onPickCharacter(chr)
@@ -127,6 +128,7 @@ function ISPickCharacterCursor:new(character)
 	o.noNeedHammer = true
 	o.skipBuildAction = true
 	o.objectIndex = 1
+	showDebugInfoInChat("Cursor New \'ISPickCharacterCursor\'")
 	return o
 end
 

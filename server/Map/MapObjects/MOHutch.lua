@@ -87,9 +87,9 @@ local function ReplaceExistingObject(isoObject)
 						end
 						--print("remove hutch at", sq:getX(), sq:getY())
 						if cords and cords.x == -1 and cords.y == 0 then
-							--print(obj:getSprite():getName(), "should be our base tile!")
-							baseX = sq:getX();
+							baseX = sq:getX()-1;
 							baseY = sq:getY();
+							--print(obj:getSprite():getName(), "should be our base tile! ", baseX-1, baseY)
 						end
 						table.insert(objToRemove, obj);
 					end
@@ -101,7 +101,7 @@ local function ReplaceExistingObject(isoObject)
 
 	for i,v in ipairs(objToRemove) do
 		square:transmitRemoveItemFromSquare(v)
-		v:getSquare():RemoveTileObject(v);
+		v:getSquare():RemoveTileObject(v, false);
 	end
 
 	local cords = MOHutch.sprites[spriteName];

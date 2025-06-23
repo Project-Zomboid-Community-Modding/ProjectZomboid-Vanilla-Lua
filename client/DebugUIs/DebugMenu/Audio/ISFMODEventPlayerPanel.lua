@@ -23,7 +23,7 @@ table.insert(PARAMETERS, { name = "EquippedBaggageContainer", type = "combo", va
 table.insert(PARAMETERS, { name = "FenceTypeLow", type = "combo", values = { "Wood", "Metal", "Sandbag", "Gravelbag", "Barbwire", "RoadBlock", "MetalGate" } })
 table.insert(PARAMETERS, { name = "FireSize", type = "combo", values = { "Small", "Medium", "Large" } })
 table.insert(PARAMETERS, { name = "FootstepMaterial", type = "combo", values = { "Upstairs", "BrokenGlass", "Concrete", "Grass", "Gravel", "Puddle", "Snow", "Wood", "Carpet", "Dirt", "Sand", "Ceramic", "Metal" }, defaultValue = 2.0 })
-table.insert(PARAMETERS, { name = "FootstepMaterial2", type = "combo", values = { "None", "BrokenGlass", "PuddleShallow", "PuddleDeep" } })
+table.insert(PARAMETERS, { name = "FootstepMaterial2", type = "combo", values = { "None", "BrokenGlass", "PuddleShallow", "PuddleDeep", "Garbage" } })
 table.insert(PARAMETERS, { name = "MeleeHitSurface", type = "combo", values = { "Default", "Body", "Fabric", "Glass", "Head", "Metal", "Plastic", "Stone", "Wood", "GarageDoor", "MetalDoor", "MetalGate", "PrisonMetalDoor", "SlidingGlassDoor", "WoodDoor", "WoodGate", "Tree" } })
 table.insert(PARAMETERS, { name = "RoomType", type = "combo", values = { "Generic", "Barn", "Mall", "Warehouse", "Prison", "Church", "Office", "Factory", "MovieTheater" } })
 table.insert(PARAMETERS, { name = "Season", type = "combo", values = { "Spring", "Summer", "Autumn", "Winter" } })

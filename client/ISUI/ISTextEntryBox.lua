@@ -12,10 +12,23 @@ function ISTextEntryBox:initialise()
 	ISPanelJoypad.initialise(self);
 end
 
+function ISTextEntryBox:setFont(font)
+    self.font = font
+    if self.javaObject then
+        self.javaObject:setFont(self.font)
+    end
+end
+
 function ISTextEntryBox:onCommandEntered()
 end
 
 function ISTextEntryBox:onTextChange()
+	if self.onTextChangeFunction then
+		self.onTextChangeFunction(self.target, self);
+	end
+end
+
+function ISTextEntryBox:onLostFocus()
 end
 
 function ISTextEntryBox:ignoreFirstInput()
@@ -129,6 +142,10 @@ function ISTextEntryBox:getInternalText()
 	return self.javaObject:getInternalText();
 end
 
+function ISTextEntryBox:isMasked()
+	return self.javaObject:isMasked();
+end
+
 function ISTextEntryBox:setMasked(b)
 	return self.javaObject:setMasked(b);
 end
@@ -215,6 +232,10 @@ end
 
 function ISTextEntryBox:clear()
 	self.javaObject:clearInput();
+end
+
+function ISTextEntryBox:getHasFrame()
+	return self.javaObject:getHasFrame();
 end
 
 function ISTextEntryBox:setHasFrame(hasFrame)

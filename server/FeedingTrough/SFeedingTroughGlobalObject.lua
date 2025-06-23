@@ -63,7 +63,7 @@ function SFeedingTroughGlobalObject:stateToIsoObject(isoObject)
 	isoObject:setLinkedX(self.linkedX or 0)
 	isoObject:setLinkedY(self.linkedY or 0)
 	self.water = self.water or 0
-	isoObject:setWater(self.water or 0)
+	--isoObject:setWater(self.water or 0)
 	if self.maxFeed ~= isoObject:getMaxFeed() or self.maxWater ~= isoObject:getMaxWater() then
 		self.maxFeed = isoObject:getMaxFeed()
 		self.maxWater = isoObject:getMaxWater()
@@ -94,27 +94,21 @@ function SFeedingTroughGlobalObject:emptyWater()
 	self:updateOnClient()
 end
 
-function SFeedingTroughGlobalObject:addObject(def, north, slave)
+function SFeedingTroughGlobalObject:addObject(def, north, spriteGridX, spriteGridY)
 	if self:getObject() then return end
 	local square = self:getSquare()
-	local sq2 = nil
 	if not square then return end
-    local x, y, z = self:getSquare2PosReverse(square, north)
-	local sprite = def.spriteNorth1;
-    if not north then
-        sprite = def.sprite1;
-    end
-
-	if slave then
-		sq2 = getSquare(x, y, z);
-		sprite = def.spriteNorth2;
-        if not north then
-            sprite = def.sprite2;
-        end
+	local masterSquare = nil
+	local spriteName = north and def.spriteN[1] or def.spriteW[1]
+	local sprite = getSprite(spriteName)
+	if sprite ~= nil and sprite:getSpriteGrid() ~= nil then
+		local spriteGrid = sprite:getSpriteGrid()
+		local sprite2 = spriteGrid:getSprite(spriteGridX, spriteGridY)
+		spriteName = sprite2:getName()
 	end
 
 	--print("chosen sprite: ", sprite, north)
-	local trough = IsoFeedingTrough.new(square, sprite, sq2)
+	local trough = IsoFeedingTrough.new(square, spriteName, masterSquare)
     trough:setName("FeedingTrough")
 
     trough:setMaxWater(def.maxWater)
@@ -124,6 +118,7 @@ function SFeedingTroughGlobalObject:addObject(def, north, slave)
     square:AddSpecialObject(trough)
 end
 
+--[[
 function SFeedingTroughGlobalObject:getSquare2Pos(square, north)
 	local x = square:getX()
 	local y = square:getY()
@@ -147,6 +142,7 @@ function SFeedingTroughGlobalObject:getSquare2PosReverse(square, north)
 	end
 	return x, y, z
 end
+--]]
 
 function SFeedingTroughGlobalObject:addFeed(type, feedAmount)
 --	self.feedAmount = feedAmount

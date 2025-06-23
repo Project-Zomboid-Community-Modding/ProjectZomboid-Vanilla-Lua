@@ -45,7 +45,8 @@ function SFarmingSystem:initSystem()
 		'state', 'nbOfGrow', 'typeOfSeed', 'fertilizer', 'mildewLvl',
 		'aphidLvl', 'fliesLvl', 'slugsLvl', 'hasWeeds',  'waterLvl', 'waterNeeded', 'waterNeededMax',
 		'lastWaterHour', 'nextGrowing', 'hasSeed', 'hasVegetable',
-		'health', 'badCare', 'exterior', 'spriteName', 'objectName', 'cursed', 'compost', 'bonusYield', 'naturalLight'})
+		'health', 'badCare', 'exterior', 'spriteName', 'objectName', 'cursed', 'compost', 'bonusYield', 'naturalLight',
+        'owner'})
 
 	self:convertOldModData()
 end
@@ -310,7 +311,8 @@ function SFarmingSystem:checkPlantSquare(luaObject)
     -- if the plant has enough of a pest flies infestation we apply flies to the square
     if luaObject:hasVisibleFlies() then square:setHasFlies(true) end
     -- we may destroy our plant if someone walk onto it, or if it's already dead
-    self:destroyOnWalk(luaObject, square)
+    -- this is now handled java-side
+--     self:destroyOnWalk(luaObject, square)
 end
 
 function SFarmingSystem:checkWater(luaObject)
@@ -348,9 +350,9 @@ function SFarmingSystem:harvest(luaObject, player)
 	local numberOfVeg = getVegetablesNumber(props.minVeg, props.maxVeg, props.minVegAutorized, props.maxVegAutorized, luaObject, skill)
 
 	if numberOfVeg > 0 and props.isFlower and player then
-        player:getBodyDamage():setUnhappynessLevel(bodyDamage:getUnhappynessLevel() - numberOfVeg/2 )
+        player:getBodyDamage():setUnhappynessLevel(player:getBodyDamage():getUnhappynessLevel() - numberOfVeg/2 )
         player:getBodyDamage():setBoredomLevel(player:getBodyDamage():getBoredomLevel() - numberOfVeg/2 )
-        player:getStats():setStress(stats:getStress() - numberOfVeg/2 )
+        player:getStats():setStress(player:getStats():getBasicStress() - numberOfVeg/2 )
 	end
 
 	if props.vegetableName and player then
@@ -365,7 +367,7 @@ function SFarmingSystem:harvest(luaObject, player)
 
 	if luaObject.hasSeed and player then
 	    local seedPerVeg = props.seedPerVeg or 0.5
-	    local number = math.min(tonumber(math.floor(numberOfVeg * seedPerVeg)), 1)
+	    local number = math.max(tonumber(math.floor(numberOfVeg * seedPerVeg)), 1)
 		local items = player:getInventory():AddItems(props.seedName, number);
 		sendAddItemsToContainer(player:getInventory(), items);
 	end
@@ -477,10 +479,10 @@ function SFarmingSystem:destroyOnWalk(luaObject, square)
 -- 	local square = luaObject:getSquare()
 -- 	if not square then return end
 -- 	if luaObject.state == "plow" or luaObject.state == "destroyed" or luaObject.state == "harvested" then return end
-	if square:isVehicleIntersectingCrops() then
-        luaObject:destroyThis()
-        return
-	end
+-- 	if square:isVehicleIntersectingCrops() then
+--         luaObject:destroyThis()
+--         return
+-- 	end
 	-- the other stuff is handled java-side now
 
 	-- if zombie walk on our plant !
@@ -520,11 +522,11 @@ end
 -- plow the land
 function SFarmingSystem:plow(square)
     -- we remove grass and vegetation from the square
-	self:removeTallGrass(square)
-    local floor = square:getFloor();
-    if (floor and floor:getSprite():getProperties():Val("grassFloor")) and square:checkHaveGrass() == true then
-	    square:removeGrass()
-	end
+-- 	self:removeTallGrass(square)
+--     local floor = square:getFloor();
+--     if (floor and floor:getSprite():getProperties():Val("grassFloor")) and square:checkHaveGrass() == true then
+-- 	    square:removeGrass()
+-- 	end
 	-- we set the square to be shovelled to eliminate dirt exploits
 --     local type,o = ISShovelGroundCursor.GetDirtGravelSand(sq)
 --     if instanceof(o, 'IsoObject') then
@@ -557,8 +559,8 @@ function SFarmingSystem:gainXp(player, luaObject)
 	end
 	if xp > 100 then
 		xp = 100
-	elseif xp < 0 then
-		xp = 0
+	elseif xp < 1 then
+		xp = 1
 	end
 
 	addXp(player, Perks.Farming, xp);
@@ -575,7 +577,7 @@ end
 function SFarmingSystem:removeTallGrass(sq)
 	-- remove vegetation
 	for i=sq:getObjects():size(),1,-1 do
-		o = sq:getObjects():get(i-1)
+		local o = sq:getObjects():get(i-1)
 		-- FIXME: blends_grassoverlays tiles should have 'vegitation' flag
 		if o:getSprite() and (
 				o:getSprite():getProperties():Is(IsoFlagType.canBeRemoved) or
@@ -608,8 +610,8 @@ function SFarmingSystem:hasWeeds(square)
     local objects = square:getObjects()
     if objects and objects:size() > 0 then
 	for i=square:getObjects():size(),1,-1 do
-		    v = square:getObjects():get(i-1)
-            if v and self:hasWeeds2(v) then return true end
+		    local object = square:getObjects():get(i-1)
+            if object and self:hasWeeds2(object) then return true end
         end
     end
     return false

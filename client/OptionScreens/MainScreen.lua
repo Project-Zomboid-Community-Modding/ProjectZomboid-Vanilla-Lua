@@ -45,13 +45,15 @@ function MainScreen:setBottomPanelVisible(visible)
     if self.parent and self.parent.termsOfService then
         self.parent.termsOfService:setVisible(visible)
     end
+    if self.parent and self.parent.reportBug then
+        self.parent.reportBug:setVisible(visible)
+    end
 end
 
 function MainScreen:instantiate()
 
 	MainScreen.instance = self;
     self:getLatestSave();
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	self.javaObject:setX(self.x);
 	self.javaObject:setY(self.y);
@@ -81,20 +83,7 @@ function MainScreen:instantiate()
     self.bottomPanel:noBackground()
     MainScreen.instance.bottomPanel.setVisible = MainScreen.setBottomPanelVisible;
 
-
     if not self.inGame and not isDemo() then
-
-
-        self.serverList = ServerList:new(0, 0, self.width, self.height);
-
-        self.serverList:initialise();
-        self.serverList:setVisible(false);
-        self.serverList:setAnchorRight(true);
-        self.serverList:setAnchorLeft(true);
-        self.serverList:setAnchorBottom(true);
-        self.serverList:setAnchorTop(true);
-        self.serverList.backgroundColor = {r=0, g=0, b=0, a=0.8};
-        self.serverList.borderColor = {r=1, g=1, b=1, a=0.5};
 
         self.bootstrapConnectPopup = BootstrapConnectPopup:new(0, 0, self.width, self.height);
         self.bootstrapConnectPopup:initialise();
@@ -125,28 +114,6 @@ function MainScreen:instantiate()
         self.serverConnectPopup:setAnchorTop(true);
         self.serverConnectPopup.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.serverConnectPopup.borderColor = {r=1, g=1, b=1, a=0.5};
-
-        self.multiplayer = MultiplayerScreen:new(0, 0, self.width, self.height);
-
-        self.multiplayer:initialise();
-        self.multiplayer:setVisible(false);
-        self.multiplayer:setAnchorRight(true);
-        self.multiplayer:setAnchorLeft(true);
-        self.multiplayer:setAnchorBottom(true);
-        self.multiplayer:setAnchorTop(true);
-        self.multiplayer.backgroundColor = {r=0, g=0, b=0, a=0.8};
-        self.multiplayer.borderColor = {r=1, g=1, b=1, a=0.5};
-
-        self.joinPublicServer = PublicServerList:new(0, 0, self.width, self.height);
-
-        self.joinPublicServer:initialise();
-        self.joinPublicServer:setVisible(false);
-        self.joinPublicServer:setAnchorRight(true);
-        self.joinPublicServer:setAnchorLeft(true);
-        self.joinPublicServer:setAnchorBottom(true);
-        self.joinPublicServer:setAnchorTop(true);
-        self.joinPublicServer.backgroundColor = {r=0, g=0, b=0, a=0.8};
-        self.joinPublicServer.borderColor = {r=1, g=1, b=1, a=0.5};
 
         self.soloScreen = NewGameScreen:new(0, 0, self.width, self.height);
         self.soloScreen:initialise();
@@ -303,17 +270,6 @@ function MainScreen:instantiate()
         self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.5};
 
-        self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 260+UI_BORDER_SPACING+BUTTON_HGT);
-        self.charCreationHeader:initialise();
-        self.charCreationHeader:setVisible(true);
-        self.charCreationHeader:setAnchorRight(true);
-        self.charCreationHeader:setAnchorLeft(true);
-        self.charCreationHeader:setAnchorBottom(false);
-        self.charCreationHeader:setAnchorTop(true);
-
-        self.charCreationHeader.backgroundColor = {r=0, g=0, b=0, a=0.0};
-        self.charCreationHeader.borderColor = {r=1, g=1, b=1, a=0};
-
 		self.lastStandPlayerSelect = LastStandPlayerSelect:new(0, 0, self.width, self.height);
         self.lastStandPlayerSelect:initialise();
         self.lastStandPlayerSelect:setVisible(false);
@@ -351,14 +307,9 @@ function MainScreen:instantiate()
         self:addChild(self.worldSelect);
         self:addChild(self.mapSpawnSelect);
         self:addChild(self.modSelect);
-        self:addChild(self.serverList);
         self:addChild(self.bootstrapConnectPopup);
         self:addChild(self.connectToServer);
         self:addChild(self.serverConnectPopup);
-        self:addChild(self.multiplayer);
-        if isPublicServerListAllowed() then
-            self:addChild(self.joinPublicServer);
-        end
 		self:addChild(self.lastStandPlayerSelect);
         if self.workshopSubmit then
             self:addChild(self.workshopSubmit)
@@ -380,9 +331,6 @@ function MainScreen:instantiate()
 	self:recalcSize();
     local uis = {
         { self.scoreboard, 0.6, 0.7 },
-        { self.serverList, 0.7, 0.8 },
-        { self.multiplayer, 1.0, 1.0 },
-        { self.joinPublicServer, 0.7, 0.8 },
         { self.connectToServer, 0.7, 0.8 },
         { self.onlineCoopScreen, 0.5, 0.6 },
         { self.soloScreen, 0.7, 0.8 },
@@ -426,7 +374,8 @@ function MainScreen:instantiate()
         getTextManager():MeasureStringX(UIFont.Small, getText("UI_Details")),
         getTextManager():MeasureStringX(UIFont.Small, getText("UI_NewGame_Mods")),
         getTextManager():MeasureStringX(UIFont.Small, getText("UI_TermsOfService_MainMenu")),
-        getTextManager():MeasureStringX(UIFont.Small, getText("UI_ResetLua"))
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_ResetLua")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_ReportBug"))
     )
 
     if not self.inGame then
@@ -520,22 +469,6 @@ function MainScreen:instantiate()
             self.bottomPanel:addChild(self.survivalOption);
             self.survivalOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
             labelY = labelY + labelHgt
-            --
-            --self.onlineOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_multiplayer"), 1, 1, 1, 1, UIFont.Large, true);
-            --self.onlineOption.internal = "MULTIPLAYER";
-            --self.onlineOption:initialise();
-            --self.bottomPanel:addChild(self.onlineOption);
-            --self.onlineOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            --self.onlineOption:setVisible(true)
-            --labelY = labelY + labelHgt
-            --
-            --self.onlineCoopOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_coop"), 1, 1, 1, 1, UIFont.Large, true);
-            --self.onlineCoopOption.internal = "COOP";
-            --self.onlineCoopOption:initialise();
-            --self.bottomPanel:addChild(self.onlineCoopOption);
-            --self.onlineCoopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            --self.onlineCoopOption:setVisible(true)
-            --labelY = labelY + labelHgt
 
             labelY = labelY + labelSeparator
 
@@ -658,7 +591,6 @@ function MainScreen:instantiate()
     end
     self.bottomPanel:setX(logoX + math.max(0, logoWidth - maxWidth) / 2)
     print(logoX + math.max(0, logoWidth - maxWidth) / 2)
---    self.bottomPanel:setX(logoX)
     self.bottomPanel:setWidth(maxWidth)
     self.bottomPanel:setHeight(labelY)
 
@@ -673,8 +605,20 @@ function MainScreen:instantiate()
     self.versionDetail:setAnchorBottom(true)
     self.versionDetail.internal = "VERSIONDETAIL";
 
+    local reportY = self.versionDetail and self.versionDetail.y or self.versionDetail.y
+    reportY = reportY - UI_BORDER_SPACING - BUTTON_HGT
+    self.reportBug = ISButton:new(self.versionDetail.x, reportY, btnWidth, BUTTON_HGT, getText("UI_ReportBug"), self, MainScreen.onClickReportBug);
+    self.reportBug:initialise();
+    self.reportBug.borderColor = {r=1, g=0, b=0, a=1};
+    self.reportBug.textColor =  {r=1, g=1, b=1, a=1};
+    self.reportBug:setAnchorLeft(false)
+    self.reportBug:setAnchorTop(false)
+    self.reportBug:setAnchorRight(true)
+    self.reportBug:setAnchorBottom(true)
+    self:addChild(self.reportBug);
+
     if self.inGame then
-        self.modListDetail = ISButton:new(self.versionDetail.x, self.versionDetail.y - UI_BORDER_SPACING - BUTTON_HGT, btnWidth, BUTTON_HGT, getText("UI_NewGame_Mods") , self, MainScreen.onClickModList);
+        self.modListDetail = ISButton:new(self.versionDetail.x, self.reportBug.y - UI_BORDER_SPACING - BUTTON_HGT, btnWidth, BUTTON_HGT, getText("UI_NewGame_Mods") , self, MainScreen.onClickModList);
         self.modListDetail:initialise();
         self.modListDetail.borderColor = {r=1, g=1, b=1, a=0.7};
         self.modListDetail.textColor =  {r=1, g=1, b=1, a=0.7};
@@ -687,7 +631,7 @@ function MainScreen:instantiate()
     end
 
     if not self.inGame then
-        local termsY = self.modListDetail and self.modListDetail.y or self.versionDetail.y
+        local termsY = self.modListDetail and self.modListDetail.y or self.reportBug.y
         termsY = termsY - UI_BORDER_SPACING - BUTTON_HGT
         self.termsOfService = ISButton:new(self.versionDetail.x, termsY, btnWidth, BUTTON_HGT, getText("UI_TermsOfService_MainMenu"), self, MainScreen.onClickTermsOfService);
         self.termsOfService:initialise();
@@ -715,6 +659,13 @@ function MainScreen:instantiate()
 	self.versionLabel:initialise();
 	self.versionDetail:addChild(self.versionLabel);
 
+    if self.inGame then
+        local seed = getText("UI_mainscreen_seed", WGParams.instance:getSeedString())
+        self.seedLabel = ISLabel:new(-12, -20, FONT_HGT_SMALL, seed , 1, 1, 1, 0.7, UIFont.Small);
+        self.seedLabel:initialise();
+        self.versionDetail:addChild(self.seedLabel);
+    end
+
     self.mainOptions:create();
 
     for _,child in pairs(self.bottomPanel:getChildren()) do
@@ -735,7 +686,6 @@ function MainScreen:instantiate()
         triggerEvent("OnChallengeQuery");
 
 		self.desc = SurvivorFactory.CreateSurvivor();
-	    self.charCreationHeader:create();
         self.charCreationMain:create();
 	    self.charCreationProfession:create();
 		self.lastStandPlayerSelect:create();
@@ -743,9 +693,6 @@ function MainScreen:instantiate()
         self.soloScreen:create();
         self.loadScreen:create();
         self.onlineCoopScreen:create();
-        self.serverList:create();
-        self.joinPublicServer:create();
-        self.multiplayer:create();
         self.bootstrapConnectPopup:create();
         self.connectToServer:create();
         self.serverConnectPopup:create();
@@ -766,9 +713,11 @@ function MainScreen:instantiate()
 --			self:onClickVersionDetail()
 --        end
 
-        if not getCore():isAnimPopupDone() and not (getDebug() and getDebugOptions():getBoolean("UI.DisableWelcomeMessage")) then
+        if not getCore():isAnimPopupDone() and not (getDebug() and getDebugOptions():getBoolean("UI.DisableWelcomeMessage")) and getCore():getOptionShowWelcomeMessage() then
             local windowSize = 600+(getCore():getOptionFontSizeReal()*100);
-            self.animPopup = ISModalRichText:new((getCore():getScreenWidth()-windowSize)/2,getCore():getScreenHeight()/2-300,windowSize,600, getText("UI_News_Anim3"), false);
+            self.animPopup = ISModalRichText:new((getCore():getScreenWidth()-windowSize)/2,getCore():getScreenHeight()/2-300,windowSize,600, getText("UI_News_Anim3"), true, nil, function(_, button)
+                getCore():setOptionUsePhysicsHitReaction(button.internal == "YES")
+            end);
             self.animPopup:initialise();
             self.animPopup.backgroundColor = {r=0, g=0, b=0, a=0.9};
             self.animPopup.alwaysOnTop = true;
@@ -868,9 +817,9 @@ function MainScreen:prerender()
 
 	ISPanel.prerender(self);
     if(self.inGame) then
-        if isClient() then
-            self.scoreOption:setEnabled(getPlayer():getRole():haveCapability(Capability.SeePlayersConnected))
-            self.scoreOption:setVisible(getPlayer():getRole():haveCapability(Capability.SeePlayersConnected))
+        if isClient() and getPlayer():getRole() then
+            self.scoreOption:setEnabled(getPlayer():getRole():hasCapability(Capability.SeePlayersConnected))
+            self.scoreOption:setVisible(getPlayer():getRole():hasCapability(Capability.SeePlayersConnected))
         end
         self:drawRect(0, 0, self.width, self.height, 0.5, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
         if isQuitCooldown() then
@@ -1513,7 +1462,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     if MainScreen.instance.tutorialButton then return end
     if MainScreen.instance.checkSavefileModal then return end
 
-    if (item.internal == "MULTIPLAYER" or item.internal == "SERVERLIST" or item.internal == "CHALLENGE" or item.internal == "SANDBOX" or item.internal == "BEGINNER" or item.internal == "APOCALYPSE" or item.internal == "SOLO") and not MainScreen.checkTutorial(item) then
+    if (item.internal == "MULTIPLAYER" or item.internal == "CHALLENGE" or item.internal == "SANDBOX" or item.internal == "BEGINNER" or item.internal == "APOCALYPSE" or item.internal == "SOLO") and not MainScreen.checkTutorial(item) then
         return;
     end
 
@@ -1559,25 +1508,13 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         return
     end
 
-    if item.internal == "MULTIPLAYER" then
-        MainScreen.instance.bottomPanel:setVisible(false);
-        MainScreen.instance.multiplayer:setVisible(true, joypadData);
-    end
-    if item.internal == "SERVERLIST" then
-        MainScreen.instance.bottomPanel:setVisible(false);
-        MainScreen.instance.serverList:pingServers(true);
-        MainScreen.instance.serverList:setVisible(true, joypadData);
-        if ActiveMods.requiresResetLua(ActiveMods.getById("nomods")) then
-            getCore():ResetLua("nomods", "joinServer")
-        end
-    end
     if item.internal == "COOP" then
         MainScreen.instance.bottomPanel:setVisible(false);
         MainScreen.instance.onlineCoopScreen:aboutToShow()
         MainScreen.instance.onlineCoopScreen:setVisible(true, joypadData);
     end
     if item.internal == "SCOREBOARD" then
-        if getPlayer():getRole():haveCapability(Capability.SeePlayersConnected) then
+        if getPlayer():getRole():hasCapability(Capability.SeePlayersConnected) then
             MainScreen.instance.scoreboard:setVisible(true, joypadData);
             scoreboardUpdate()
         end
@@ -1763,6 +1700,15 @@ function MainScreen:onClickTermsOfService(button)
         end
     end
     self.termsOfServiceDialog = modal
+end
+
+function MainScreen:onClickReportBug(button)
+	local url = "https://theindiestone.com/forums/index.php?/topic/43261-read-here-first-bug-reporting-guideformatting/"
+	if isSteamOverlayEnabled() then
+		activateSteamOverlayToWebPage(url)
+	else
+		openUrl(url)
+	end
 end
 
 function MainScreen:onTermsOfServiceOK()
@@ -2074,8 +2020,27 @@ local function StartPressCancelActionKey(key)
 	if getCell() and getCell():getDrag(0) then return end
 	local playerObj = getSpecificPlayer(0)
 	if isPlayerDoingActionThatCanBeCancelled(playerObj) then
-		stopDoingActionThatCanBeCancelled(playerObj)
+		CancelAction(0)
+-- 		stopDoingActionThatCanBeCancelled(playerObj)
 		GameKeyboard.eatKeyPress(key)
+	end
+end
+
+function CancelAction(playerNum, addPreviousToRetrigger)
+	if not MainScreen.instance or not MainScreen.instance.inGame then return end
+	if MainScreen.instance:getIsVisible() then return end
+	if getCell() and getCell():getDrag(playerNum) then return end
+	local playerObj = getSpecificPlayer(playerNum)
+    if addPreviousToRetrigger then
+        if not playerObj:getCharacterActions():isEmpty() then
+			local action = playerObj:getCharacterActions():get(0)
+			if not action:finished() and not action:isForceComplete() then -- don't repeat ISWaitWhileGettingUp, for example.
+				playerObj:setTimedActionToRetrigger(action);
+			end
+        end
+    end
+	if isPlayerDoingActionThatCanBeCancelled(playerObj) then
+		stopDoingActionThatCanBeCancelled(playerObj)
 	end
 end
 
@@ -2190,7 +2155,7 @@ end
 MainScreenPanelJoinSteam = function ()
 	if isIngameState() then
 		local player = 0
-		local modal = ISModalDialog:new(0,0, 250, 150, getText("IGUI_ConfirmLeaveGame"), true, nil, MainScreenPanelJoinSteam_onConfirmLeaveGame, player, player, bed);
+		local modal = ISModalDialog:new(0,0, 250, 150, getText("IGUI_ConfirmLeaveGame"), true, nil, MainScreenPanelJoinSteam_onConfirmLeaveGame, player);
 		modal:initialise()
 		modal:addToUIManager()
 		if JoypadState.players[player+1] then
@@ -2210,7 +2175,7 @@ MainScreenPanelJoinSteam = function ()
 	end
 end
 
-function MainScreenPanelJoinSteam_onConfirmLeaveGame(this, button, player, bed)
+function MainScreenPanelJoinSteam_onConfirmLeaveGame(this, button, player)
     if button.internal == "YES" then
         setGameSpeed(1);
         pauseSoundAndMusic();
@@ -2284,7 +2249,10 @@ function MainScreen:onJoypadDown(button, joypadData)
     if button == Joypad.XButton then
         self.versionDetail:forceClick();
     elseif button == Joypad.YButton then
-        self.termsOfService:forceClick();
+        -- the TOS button is not available in the pause menu.
+        if self.termsOfService then
+            self.termsOfService:forceClick();
+        end
     end
 end
 
@@ -2300,15 +2268,6 @@ end
 
 function MainScreen.onResetLua(reason)
 	local self = MainScreen.instance
-	if reason == "joinServer" then
-		self.bottomPanel:setVisible(false);
-		self.serverList:pingServers(true)
-		self.serverList:setVisible(true)
-        if DebugScenarios.instance ~= nil then
-            MainScreen.instance:removeChild(DebugScenarios.instance)
-            DebugScenarios.instance = nil
-	    end
-	end
 	if reason == "continueSave" then
 		if DebugScenarios.instance ~= nil then
 			MainScreen.instance:removeChild(DebugScenarios.instance)
@@ -2335,9 +2294,6 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 
 	local uis = {
         { self.scoreboard, 0.6, 0.7 },
-        { self.serverList, 0.7, 0.8 },
-        { self.multiplayer, 1.0, 1.0 },
-        { self.joinPublicServer, 0.7, 0.8 },
         { self.connectToServer, 0.7, 0.8 },
         { self.onlineCoopScreen, 0.5, 0.6 },
         { self.soloScreen, 0.7, 0.8 },
@@ -2402,15 +2358,6 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 	if self.serverSettingsScreen then
 		self.serverSettingsScreen:onResolutionChange(oldw, oldh, neww, newh)
 	end
-    if self.serverList then
-        self.serverList:onResolutionChange(oldw, oldh, neww, newh)
-    end
-    if self.joinPublicServer then
-		self.joinPublicServer:onResolutionChange(oldw, oldh, neww, newh)
-    end
-    if self.multiplayer then
-        self.multiplayer:onResolutionChange(oldw, oldh, neww, newh)
-    end
     if self.onlineCoopScreen then
         self.onlineCoopScreen:onResolutionChange(oldw, oldh, neww, newh)
     end
@@ -2472,9 +2419,6 @@ function MainScreen:getAllUIs()
 	return {
 		self.animPopup,
 		self.scoreboard,
-		self.serverList,
-		self.multiplayer,
-		self.joinPublicServer,
 		self.onlineCoopScreen,
 		self.soloScreen,
 		self.loadScreen,

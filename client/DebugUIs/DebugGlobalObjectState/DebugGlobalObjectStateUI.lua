@@ -67,12 +67,11 @@ end
 function DebugGlobalObjectStateUI:ObjectList_OnMouseDoubleClick(item)
 	local x,y,z = item.x, item.y, item.z
 	local playerObj = getSpecificPlayer(0)
-	playerObj:setX(x + 0.5)
-	playerObj:setY(y + 0.5)
-	playerObj:setZ(z)
-	playerObj:setLastX(x + 0.5)
-	playerObj:setLastY(y + 0.5)
-	playerObj:setLastZ(z)
+	if isClient() then
+		SendCommandToServer("/teleportto " .. tostring(x) .. "," .. tostring(y) .. "," .. tostring(z));
+	else
+		playerObj:teleportTo(x + 0.5, y + 0.5, z)
+	end
 	self.zLevelSlider:setCurrentValue(z)
 end
 

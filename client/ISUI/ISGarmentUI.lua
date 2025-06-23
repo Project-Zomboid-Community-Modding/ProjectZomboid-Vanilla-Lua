@@ -179,7 +179,7 @@ function ISGarmentUI:doContextMenu(part, x, y)
 	local context = ISContextMenu.get(self.chr:getPlayerNum(), x, y);
 	
 	-- you need thread and needle
-	local thread = self.chr:getInventory():getItemFromType("Thread", true, true);
+	local thread = self.chr:getInventory():getItemFromType("Thread", true, true) or self.chr:getInventory():getItemFromTag("Thread", true, true);
 	local needle = self.chr:getInventory():getItemFromType("Needle", true, true) or self.chr:getInventory():getFirstTagRecurse("SewingNeedle");
 	local fabric1 = self.chr:getInventory():getItemFromType("RippedSheets", true, true);
 	local fabric2 = self.chr:getInventory():getItemFromType("DenimStrips", true, true);

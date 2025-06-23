@@ -511,7 +511,7 @@ end
 
 function Page3:onButtonCreate()
 	self:setVisible(false)
-	self.parent.item:setID(null)
+	self.parent.item:setID(nil)
 	self.parent.page5:setFields(self)
 	self.parent.page5:aboutToShow(self.joyfocus)
 	self.parent.page5:setVisible(true, self.joyfocus)

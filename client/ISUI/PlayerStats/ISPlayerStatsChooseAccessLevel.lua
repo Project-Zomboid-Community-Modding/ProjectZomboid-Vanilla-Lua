@@ -47,12 +47,11 @@ function ISPlayerStatsChooseAccessLevelUI:create()
 --        end
 --    end
 
-    if self.admin:getRole():haveCapability(Capability.ModifyDB) then
+    if self.admin:getRole():hasCapability(Capability.ManipulateWhitelist) then
         local roles = getRoles()
         for i=0,roles:size()-1 do
             local role = roles:get(i);
-            self.datas:addItem(role:getName(), role);
-            if role:rightLevel() <= self.admin:getRole():rightLevel() then
+            if role:getPosition() <= self.admin:getRole():getPosition() then
                 table.insert(self.comboList, {type=role:getName(), label=role:getName()});
             end
         end

@@ -18,11 +18,13 @@ function ISPVPLogToolUI:initialise()
     self.tickBox:setFont(UIFont.Small)
     self:addChild(self.tickBox)
 
-    local n = self.tickBox:addOption(getText("IGUI_PVPLogTool_SendToChat"))
-    self.tickBox:setSelected(n, getServerOptions():getBoolean("PVPLogToolChat"))
+    if getPlayer():getRole():hasCapability(Capability.ChangeAndReloadServerOptions) then
+        local n = self.tickBox:addOption(getText("IGUI_PVPLogTool_SendToChat"))
+        self.tickBox:setSelected(n, getServerOptions():getBoolean("PVPLogToolChat"))
 
-    local n = self.tickBox:addOption(getText("IGUI_PVPLogTool_WriteToFile"))
-    self.tickBox:setSelected(n, getServerOptions():getBoolean("PVPLogToolFile"))
+        local n = self.tickBox:addOption(getText("IGUI_PVPLogTool_WriteToFile"))
+        self.tickBox:setSelected(n, getServerOptions():getBoolean("PVPLogToolFile"))
+    end
 
     self.close = ISButton:new(UI_BORDER_SPACING * 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, buttonWidth, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISPVPLogToolUI.onClick);
     self.close.internal = "CLOSE";
@@ -101,8 +103,9 @@ function ISPVPLogToolUI:prerender()
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(getText("IGUI_AdminPanel_PVPLogTool"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_PVPLogTool")) / 2), UI_BORDER_SPACING + 1, 1, 1, 1, 1, UIFont.Medium);
     self:drawRect(UI_BORDER_SPACING * 2, UI_BORDER_SPACING * 2 + FONT_HGT_SMALL, self.width - UI_BORDER_SPACING * 4, 1, 0.5, 1, 1, 1);
-
-    self.teleport:setVisible(ISPVPLogToolUI.instance.selectedItem ~= nil)
+    if getPlayer():getRole():hasCapability(Capability.TeleportToPlayer) then
+        self.teleport:setVisible(ISPVPLogToolUI.instance.selectedItem ~= nil)
+    end
 end
 
 function ISPVPLogToolUI:onClick(button)
@@ -112,12 +115,11 @@ function ISPVPLogToolUI:onClick(button)
         return
     end
     if button.internal == "TELEPORT" then
-        getPlayer():setX(tonumber(ISPVPLogToolUI.instance.selectedItem:getX()));
-        getPlayer():setY(tonumber(ISPVPLogToolUI.instance.selectedItem:getY()));
-        getPlayer():setZ(tonumber(ISPVPLogToolUI.instance.selectedItem:getZ()));
-        getPlayer():setLastX(tonumber(ISPVPLogToolUI.instance.selectedItem:getX()));
-        getPlayer():setLastY(tonumber(ISPVPLogToolUI.instance.selectedItem:getY()));
-        getPlayer():setLastZ(tonumber(ISPVPLogToolUI.instance.selectedItem:getZ()));
+        if isClient() then
+            SendCommandToServer("/teleportto " .. tostring(ISPVPLogToolUI.instance.selectedItem:getX()) .. "," .. tostring(ISPVPLogToolUI.instance.selectedItem:getY()) .. "," .. tostring(ISPVPLogToolUI.instance.selectedItem:getZ()));
+        else
+            getPlayer():teleportTo(tonumber(ISPVPLogToolUI.instance.selectedItem:getX()), tonumber(ISPVPLogToolUI.instance.selectedItem:getY()), tonumber(ISPVPLogToolUI.instance.selectedItem:getZ()))
+        end
     end
     if button.internal == "CLEAR" then
         clearPVPEvents()

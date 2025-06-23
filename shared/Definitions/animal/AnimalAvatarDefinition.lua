@@ -394,3 +394,35 @@ AnimalAvatarDefinition["mousepups"].trailerDir = AnimalAvatarDefinition["hen"].t
 AnimalAvatarDefinition["mousepups"].trailerZoom = AnimalAvatarDefinition["hen"].trailerZoom;
 AnimalAvatarDefinition["mousepups"].trailerXoffset = AnimalAvatarDefinition["hen"].trailerXoffset;
 AnimalAvatarDefinition["mousepups"].trailerYoffset = -0.10;
+
+AnimalAvatarDefinition["raccoonkit"] = {};
+AnimalAvatarDefinition["raccoonkit"].zoom = 10;
+AnimalAvatarDefinition["raccoonkit"].xoffset = -0.1;
+AnimalAvatarDefinition["raccoonkit"].yoffset = -0.2;
+AnimalAvatarDefinition["raccoonkit"].avatarWidth = 200;
+AnimalAvatarDefinition["raccoonkit"].avatarDir = IsoDirections.SE;
+AnimalAvatarDefinition["raccoonkit"].trailerDir = IsoDirections.SW;
+AnimalAvatarDefinition["raccoonkit"].trailerZoom = 8.5;
+AnimalAvatarDefinition["raccoonkit"].trailerXoffset = 0.2;
+AnimalAvatarDefinition["raccoonkit"].trailerYoffset = -0.3;
+
+AnimalAvatarDefinition["raccoonboar"] = {};
+AnimalAvatarDefinition["raccoonboar"].zoom = AnimalAvatarDefinition["turkeyhen"].zoom;
+AnimalAvatarDefinition["raccoonboar"].xoffset = AnimalAvatarDefinition["turkeyhen"].xoffset;
+AnimalAvatarDefinition["raccoonboar"].yoffset = AnimalAvatarDefinition["turkeyhen"].yoffset;
+AnimalAvatarDefinition["raccoonboar"].avatarWidth = 200;
+AnimalAvatarDefinition["raccoonboar"].avatarDir = IsoDirections.SE;
+AnimalAvatarDefinition["raccoonboar"].trailerZoom = 0;
+AnimalAvatarDefinition["raccoonboar"].trailerXoffset = 0;
+AnimalAvatarDefinition["raccoonboar"].trailerYoffset = -0.25;
+
+AnimalAvatarDefinition["raccoonsow"] = {};
+AnimalAvatarDefinition["raccoonsow"].zoom = 15;
+AnimalAvatarDefinition["raccoonsow"].xoffset = 0;
+AnimalAvatarDefinition["raccoonsow"].yoffset = -0.1;
+AnimalAvatarDefinition["raccoonsow"].avatarWidth = 200;
+AnimalAvatarDefinition["raccoonsow"].avatarDir = IsoDirections.SE;
+AnimalAvatarDefinition["raccoonsow"].trailerDir = IsoDirections.SW;
+AnimalAvatarDefinition["raccoonsow"].trailerZoom = 12;
+AnimalAvatarDefinition["raccoonsow"].trailerXoffset = 0;
+AnimalAvatarDefinition["raccoonsow"].trailerYoffset = -0.2;

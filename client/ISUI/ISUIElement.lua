@@ -423,6 +423,14 @@ function ISUIElement:setStencilRect(x, y, w, h)
 	return self.javaObject:setStencilRect(x, y, w, h);
 end
 
+function ISUIElement:setStencilCircle(x, y, w, h)
+	if self.javaObject == nil then
+		self:instantiate();
+	end
+
+	return self.javaObject:setStencilCircle(x, y, w, h);
+end
+
 function ISUIElement:clearStencilRect()
 	if self.javaObject == nil then
 		self:instantiate();
@@ -605,11 +613,16 @@ function ISUIElement:getRenderThisPlayerOnly()
 end
 
 function ISUIElement:onLoseJoypadFocus(joypadData)
+    self:setJoypadFocused(false, joypadData)
     self.joyfocus = nil;
 end
 
 function ISUIElement:onGainJoypadFocus(joypadData)
     self.joyfocus = joypadData;
+end
+
+function ISUIElement:setJoypadFocused(focused, joypadData)
+	self.joypadFocused = focused;
 end
 
 --************************************************************************--
@@ -655,26 +668,229 @@ function ISUIElement:isReallyVisible()
 	return self.javaObject:isReallyVisible();
 end
 
-function ISUIElement:onJoypadDown(button)
-
+function ISUIElement:onJoypadDown(button, joypadData)
+	if self.parent then
+		self.parent:onJoypadDown_Descendant(self, button, joypadData)
+	end
 end
 
-function ISUIElement:onJoypadDirUp()
-
+function ISUIElement:onJoypadButtonReleased(button, joypadData)
+	if self.parent then
+		self.parent:onJoypadButtonReleased_Descendant(self, button, joypadData)
+	end
 end
 
-function ISUIElement:onJoypadDirDown()
-
+function ISUIElement:onJoypadDirUp(joypadData)
+	if self.parent then
+		self.parent:onJoypadDirUp_Descendant(self, joypadData)
+	end
 end
 
-function ISUIElement:onJoypadDirLeft()
-
+function ISUIElement:onJoypadDirDown(joypadData)
+	if self.parent then
+		self.parent:onJoypadDirDown_Descendant(self, joypadData)
+	end
 end
 
-function ISUIElement:onJoypadDirRight()
-
+function ISUIElement:onJoypadDirLeft(joypadData)
+	if self.parent then
+		self.parent:onJoypadDirLeft_Descendant(self, joypadData)
+	end
 end
 
+function ISUIElement:onJoypadDirRight(joypadData)
+	if self.parent then
+		self.parent:onJoypadDirRight_Descendant(self, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadButtonReleased_Descendant(descendant, button, joypadData)
+	if self.parent then
+		self.parent:onJoypadButtonReleased_Descendant(self, button, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadDown_Descendant(descendant, button, joypadData)
+	if self.parent then
+		self.parent:onJoypadDown_Descendant(descendant, button, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadDirUp_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadDirUp_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadDirDown_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadDirDown_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadDirLeft_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadDirLeft_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadDirRight_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadDirRight_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadBeforeDeactivate(joypadData)
+	if self.parent then
+		self.parent:onJoypadBeforeDeactivate_Descendant(self, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadBeforeDeactivate_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadBeforeDeactivate_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:hasConflictWithJoypadNavigateStart()
+	return false
+end
+
+function ISUIElement:getJoypadNavigateStartDelay()
+	if self:hasConflictWithJoypadNavigateStart() then
+		-- This UIElement supports joypad navigation, but uses the same button as the one used to
+		-- initiate joypad navigation (currently RBumper).  In these cases, releasing RBumper before
+		-- this many milliseconds should initiate some action, such as switching tabs.
+		return 250
+	end
+	return 0
+end
+
+function ISUIElement:onJoypadNavigateStart(joypadData)
+	if self.parent then
+		self.parent:onJoypadNavigateStart_Descendant(self, joypadData)
+	end
+end
+
+function ISUIElement:onJoypadNavigateEnd(joypadData)
+	if joypadData.focus and joypadData.focus.joypadFocused then
+		joypadData.focus:setJoypadFocused(false, joypadData)
+	end
+	self:setJoypadFocused(true, joypadData)
+	if joypadData.focus ~= self then
+		joypadData.focus = self
+	end
+end
+
+function ISUIElement:onJoypadNavigateUp(joypadData)
+	if self.joypadNavigate and self.joypadNavigate.up then
+		joypadData.currentNavigateUI = self.joypadNavigate.up
+	end
+end
+
+function ISUIElement:onJoypadNavigateDown(joypadData)
+	if self.joypadNavigate and self.joypadNavigate.down then
+		joypadData.currentNavigateUI = self.joypadNavigate.down
+	end
+end
+
+function ISUIElement:onJoypadNavigateLeft(joypadData)
+	if self.joypadNavigate and self.joypadNavigate.left then
+		joypadData.currentNavigateUI = self.joypadNavigate.left
+	end
+end
+
+function ISUIElement:onJoypadNavigateRight(joypadData)
+	if self.joypadNavigate and self.joypadNavigate.right then
+		joypadData.currentNavigateUI = self.joypadNavigate.right
+	end
+end
+
+function ISUIElement:onJoypadNavigateParent(joypadData)
+	if self.joypadNavigate and self.joypadNavigate.parent then
+		joypadData.currentNavigateUI = self.joypadNavigate.parent
+	end
+end
+
+function ISUIElement:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	if self.parent then
+		self.parent:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	end
+end
+
+function ISUIElement:renderJoypadFocus(x, y, w, h)
+	if self.joypadFocused or (self.joyfocus and self.joyfocus.focus == self) then
+		if not x then
+			x,y,w,h = 0, 0, self.width, self.height
+		end
+		self:drawRectBorderStatic(x, y, w, h, 0.4, 0.2, 1.0, 1.0)
+		self:drawRectBorderStatic(x+1, y+1, w-2, h-2, 0.4, 0.2, 1.0, 1.0)
+	end
+end
+
+function ISUIElement:renderJoypadNavigateOverlay(playerNum)
+	local joypadData = JoypadState.players[playerNum+1] or JoypadState.getMainMenuJoypad() or CoopCharacterCreation.getJoypad()
+	if joypadData == nil or not joypadData.isDoingNavigation or joypadData.currentNavigateUI == nil then
+		return
+	end
+	if not joypadData:isFocusOnElementOrDescendant(self) then
+		return
+	end
+
+	self:repaintStencilRect(0, 0, self.width, self.height)
+
+	local child = joypadData.currentNavigateUI
+	local x = child:getAbsoluteX() - self:getAbsoluteX()
+	local y = child:getAbsoluteY() - self:getAbsoluteY()
+	local w,h = child.width, child.height
+	local jn = self.joypadNavigate
+	if child ~= self or jn == nil or not (jn.left or jn.right or jn.up or jn.down) then
+		self:drawRect(x, y, w, h, 0.5, 1.0, 1.0, 1.0)
+	else
+		self:drawRectBorderStatic(x, y, w, h, 0.5, 1.0, 1.0, 1.0)
+		self:drawRectBorderStatic(x + 1, y + 1, w - 2, h - 2, 0.5, 1.0, 1.0, 1.0)
+	end
+
+	jn = child.joypadNavigate
+	if jn == nil then return end
+
+	self:renderJoypadNavigateHighlight(joypadData, jn.left)
+	self:renderJoypadNavigateHighlight(joypadData, jn.right)
+	self:renderJoypadNavigateHighlight(joypadData, jn.up)
+	self:renderJoypadNavigateHighlight(joypadData, jn.down)
+
+	self:renderJoypadNavigateTexture(joypadData, jn.left, "DPadLeft")
+	self:renderJoypadNavigateTexture(joypadData, jn.right, "DPadRight")
+	self:renderJoypadNavigateTexture(joypadData, jn.up, "DPadUp")
+	self:renderJoypadNavigateTexture(joypadData, jn.down, "DPadDown")
+
+	if jn.parent then
+		local x = jn.parent:getAbsoluteX() - self:getAbsoluteX()
+		local y = jn.parent:getAbsoluteY() - self:getAbsoluteY()
+		local texW,texH = 64,64
+		self:drawRect(x, y, texW * 1.5, 2, 1.0, 1.0, 1.0, 1.0)
+		self:drawRect(x, y, 2, texH * 1.5, 1.0, 1.0, 1.0, 1.0)
+		self:drawTextureScaledAspect(Joypad.Texture.LBumper, x + 4, y + 4, texW, texH, 1.0, 1.0, 1.0, 1.0)
+	end
+end
+
+function ISUIElement:renderJoypadNavigateHighlight(joypadData, child)
+	if not child then return end
+	local x = child:getAbsoluteX() - self:getAbsoluteX()
+	local y = child:getAbsoluteY() - self:getAbsoluteY()
+	local w,h = child.width, child.height
+	self:drawRect(x, y, w, h, 0.15, 1.0, 1.0, 1.0)
+end
+
+function ISUIElement:renderJoypadNavigateTexture(joypadData, child, texture)
+	if not child then return end
+	if not Joypad.Texture[texture] then return end
+	local x = child:getAbsoluteX() - self:getAbsoluteX()
+	local y = child:getAbsoluteY() - self:getAbsoluteY()
+	local w,h = child.width, child.height
+	local texW,texH = 64,64
+	self:drawTextureScaledAspect(Joypad.Texture[texture], x + w / 2 - texW / 2, y + h / 2 - texH / 2, texW, texH, 1.0, 1.0, 1.0, 1.0)
+end
 
 --************************************************************************--
 --** ISUIElement:instantiate
@@ -1685,6 +1901,15 @@ function ISUIElement:shrinkWrap(padRight, padBottom, predicate)
 	end
 	self:setWidth(xMax + padRight)
 	self:setHeight(yMax + padBottom)
+end
+
+function ISUIElement:centerOnScreen(playerNum)
+    local width = self:getWidth()
+    local height = self:getHeight()
+    local x = getPlayerScreenLeft(playerNum) + (getPlayerScreenWidth(playerNum) - width) / 2
+    local y = getPlayerScreenTop(playerNum) + (getPlayerScreenHeight(playerNum) - height) / 2
+    self:setX(x)
+    self:setY(y)
 end
 
 --************************************************************************--

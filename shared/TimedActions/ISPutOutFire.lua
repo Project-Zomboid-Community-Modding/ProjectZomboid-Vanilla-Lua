@@ -43,7 +43,7 @@ function ISPutOutFire:useItem()
 		if instanceof(self.item, "DrainableComboItem") then
 			self.item:UseAndSync()
 		elseif self.item:getFluidContainer() then
-			local amount = self.item:getFluidContainer():getAmount() - FireFighting.getFluidContainerMillilitresPerUse() / 1000
+			local amount = self.item:getFluidContainer():getAmount() - ZomboidGlobals.fireFightingFluidContainerMillilitresPerUse / 1000
 			if amount < 0 then amount = 0 end
 			self.item:getFluidContainer():adjustAmount(amount)
 		end

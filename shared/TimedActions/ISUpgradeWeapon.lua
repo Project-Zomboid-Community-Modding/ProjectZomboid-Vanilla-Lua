@@ -7,7 +7,8 @@ local function predicateNotBroken(item)
 end
 
 function ISUpgradeWeapon:isValid()
-    if not self.character:getInventory():containsTagEval("Screwdriver", predicateNotBroken) then return false end
+    if not self.part:canAttach(self.character, self.weapon) then return false end
+    -- if not self.character:getInventory():containsTagEval("Screwdriver", predicateNotBroken) then return false end
     if self.weapon:getWeaponPart(self.part:getPartType()) then return false end
     if isClient() and self.part and self.weapon then
         return self.character:getInventory():containsID(self.part:getID()) and self.character:getInventory():containsID(self.weapon:getID());

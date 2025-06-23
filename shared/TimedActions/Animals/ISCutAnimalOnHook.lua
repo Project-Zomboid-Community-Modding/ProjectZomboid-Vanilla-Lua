@@ -7,6 +7,10 @@ require "TimedActions/ISBaseTimedAction"
 ISCutAnimalOnHook = ISBaseTimedAction:derive("ISCutAnimalOnHook");
 
 function ISCutAnimalOnHook:isValid()
+	if isClient() and not ButcheringUtil.isHookUsingSameCharacter(self.hook, self.character) then
+		return false;
+	end
+
 	return self.body ~= nil;
 end
 
@@ -27,26 +31,48 @@ function ISCutAnimalOnHook:update()
 	end
 end
 
+function ISCutAnimalOnHook:serverStart()
+	if not self.hook:getUsingPlayer() then
+		ButcheringUtil.setUsingPlayerForHook(self.hook, self.character);
+	end
+end
+
+function ISCutAnimalOnHook:serverStop()
+	if ButcheringUtil.isHookUsingSameCharacter(self.hook, self.character) then
+		ButcheringUtil.setUsingPlayerForHook(self.hook, nil);
+	end
+end
+
 function ISCutAnimalOnHook:start()
 	self:setActionAnim("Loot")
 	--self.character:SetVariable("LootPosition", "Low")
 	self.character:reportEvent("EventLootItem")
+	self.luaHook.hook:setPlayRemovingBloodSound(true)
+	self.hook:setLuaHook(self.luaHook);
 end
 
 function ISCutAnimalOnHook:stop()
+    self.luaHook.hook:setPlayRemovingBloodSound(false)
     ISBaseTimedAction.stop(self);
 end
 
 function ISCutAnimalOnHook:perform()
+	self.luaHook.hook:setPlayRemovingBloodSound(false)
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
 end
 
 function ISCutAnimalOnHook:complete()
+	if not ButcheringUtil.isHookUsingSameCharacter(self.hook, self.character) then
+		return false;
+	end
+
 	-- if we had a bucket we gonna start ISGatherBloodFromAnimal, otherwise after a cut we need to make the animal bleed
 	if not self.bucket then
-		self.luaHook:onCutCorpse();
+		self.hook:startRemovingBlood(self.luaHook);
 	end
+
+	ButcheringUtil.setUsingPlayerForHook(self.hook, nil);
 
 	return true
 end
@@ -58,11 +84,11 @@ function ISCutAnimalOnHook:getDuration()
 	return 150 - (self.perkLevel * 10);
 end
 
-function ISCutAnimalOnHook:new(character, body, hook, luaHook, bucket)
+function ISCutAnimalOnHook:new(character, body, hook, luaHookUI, bucket)
 	local o = ISBaseTimedAction.new(self, character)
 	o.body = body;
 	o.hook = hook;
-	o.luaHook = luaHook;
+	o.luaHook = luaHookUI;
 	o.bucket = bucket;
 	o.animalDef = ButcheringUtil.getAnimalDef(body:getTypeAndBreed())
 	o.perkLevel = character:getPerkLevel(Perks.Butchering);

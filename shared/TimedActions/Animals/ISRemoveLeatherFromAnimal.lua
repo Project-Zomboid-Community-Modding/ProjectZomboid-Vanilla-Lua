@@ -7,6 +7,16 @@ require "TimedActions/ISBaseTimedAction"
 ISRemoveLeatherFromAnimal = ISBaseTimedAction:derive("ISRemoveLeatherFromAnimal");
 
 function ISRemoveLeatherFromAnimal:isValid()
+	if isClient() then
+		if not ButcheringUtil.isHookUsingSameCharacter(self.hook, self.character) then
+			return false;
+		end
+
+		if self.started then
+			return true;
+		end
+	end
+
 	return self.body ~= nil and self.body:getModData()["leather"];
 end
 
@@ -38,37 +48,76 @@ function ISRemoveLeatherFromAnimal:start()
 	self:setActionAnim("Loot")
 	--self.character:SetVariable("LootPosition", "Low")
 	self.character:reportEvent("EventLootItem")
+	self.started = true;
+	self.sound = self.character:playSound("ButcheringSkinCorpse")
 end
 
 function ISRemoveLeatherFromAnimal:stop()
+	self:stopSound();
 	self.luaHook.doingAction = false;
 
     ISBaseTimedAction.stop(self);
 end
 
+function ISRemoveLeatherFromAnimal:serverStart()
+	if not self.hook:getUsingPlayer() then
+		ButcheringUtil.setUsingPlayerForHook(self.hook, self.character);
+	end
+end
+
+function ISRemoveLeatherFromAnimal:serverStop()
+	if self.hook:getUsingPlayer() == self.character then
+		ButcheringUtil.setUsingPlayerForHook(self.hook, nil);
+	end
+end
+
+function ISRemoveLeatherFromAnimal:updateCorpse()
+	if self.luaHook then
+		self.luaHook.doingAction = false;
+		-- don't try and change the model on the fly it makes things weiiiird, so i'm recreating stuff
+		self.luaHook:resetCorpse();
+		self.luaHook:updateCorpseDatas();
+	else
+		ButcheringUtil.updateCorpseDatas({ }, self.body, self.hook);
+	end
+end
+
 function ISRemoveLeatherFromAnimal:perform()
-	self.luaHook.doingAction = false;
+	if self.luaHook then
+		self.luaHook.doingAction = false;
+	end
+
+	self:updateCorpse();
+	self:stopSound();
 
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
 end
 
 function ISRemoveLeatherFromAnimal:complete()
-	self.luaHook.doingAction = false;
+	if not ButcheringUtil.isHookUsingSameCharacter(self.hook, self.character) then
+		return false;
+	end
 
 	local leather = ButcheringUtil.getLeather(self.body:getTypeAndBreed());
 	-- TODO Leather quality maybe? (this gonna be screwed by the craftProcessor for now anyway)
 	if leather then
 		local leatherItem = self.character:getInventory():AddItem(leather);
+		sendAddItemToContainer(self.character:getInventory(), leatherItem);
 	end
 
     addXp(self.character, Perks.Butchering, self.xp * 3);
 	self.body:getModData()["leather"] = nil;
 	self.body:getModData()["skinned"] = true;
+
 	self.hook:getAnimal():getModData()["skinned"] = true;
-	-- don't try and change the model on the fly it makes things weiiiird, so i'm recreating stuff
-	self.luaHook:resetCorpse();
-	self.luaHook:updateCorpseDatas();
+
+	self.body:transmitModData();
+	self.hook:getAnimal():transmitModData();
+
+	self:updateCorpse();
+
+	ButcheringUtil.setUsingPlayerForHook(self.hook, nil);
 
 	return true
 end
@@ -80,11 +129,21 @@ function ISRemoveLeatherFromAnimal:getDuration()
 	return 400 - (self.perkLevel * 15);
 end
 
-function ISRemoveLeatherFromAnimal:new(character, body, hook, luaHook)
+function ISRemoveLeatherFromAnimal:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:getEmitter():stopOrTriggerSound(self.sound);
+	end
+end
+
+function ISRemoveLeatherFromAnimal:new(character, body, hook, luaHookUI)
 	local o = ISBaseTimedAction.new(self, character)
+	if not body then
+		return o;
+	end
+
 	o.body = body;
 	o.hook = hook;
-	o.luaHook = luaHook;
+	o.luaHook = luaHookUI;
 	o.animalDef = ButcheringUtil.getAnimalDef(body:getTypeAndBreed())
 	o.perkLevel = character:getPerkLevel(Perks.Butchering);
 	o.xp = o.animalDef.xpPerItem;

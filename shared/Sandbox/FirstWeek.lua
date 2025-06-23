@@ -42,7 +42,7 @@ return {
     LootRespawn = 1,
     SeenHoursPreventLootRespawn = 0,
 	-- please ensure that Base.Maggots stays in the list with any future changes due to corpse maggots,
-    WorldItemRemovalList = "Base.Hat,Base.Glasses,Base.Maggots,Base.Slug,Base.Slug2,Base.Snail,Base.Worm", -- please ensure that Base.Maggots stays in the list with any future changes due to corpse maggots,
+    WorldItemRemovalList = "Base.Hat,Base.Glasses,Base.Maggots,Base.Slug,Base.Slug2,Base.Snail,Base.Worm,Base.Dung_Mouse,Base.Dung_Rat", -- please ensure that Base.Maggots stays in the list with any future changes due to corpse maggots,
     HoursForWorldItemRemoval = 24.0,
     ItemRemovalListBlacklistToggle = false,
     TimeSinceApo = 1,
@@ -119,6 +119,7 @@ return {
         ZombiesDragDown = true,
         ZombiesFenceLunge = true,
 		DisableFakeDead = 1,
+        FenceThumpersRequired = 50,
     },
     ZombieConfig = {
         PopulationMultiplier = tonumber(ZombiePopulationMultiplier.Normal),

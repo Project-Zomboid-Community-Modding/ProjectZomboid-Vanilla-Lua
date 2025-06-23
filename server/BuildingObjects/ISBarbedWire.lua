@@ -5,6 +5,7 @@
 ISBarbedWire = ISBuildingObject:derive("ISBarbedWire")
 
 function ISBarbedWire:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISBarbedWire\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell()
 	self.sq = cell:getGridSquare(x, y, z)
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self)
@@ -34,6 +35,7 @@ function ISBarbedWire:new(sprite, northSprite)
 	o.canBarricade = false
 	o.name = "Barbed Fence"
 	o.isWallLike = true
+	showDebugInfoInChat("Cursor New \'ISBarbedWire\'")
 	return o
 end
 

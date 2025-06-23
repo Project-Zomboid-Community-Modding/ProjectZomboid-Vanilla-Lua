@@ -10,34 +10,22 @@ ISAnimalTracksFinder = {};
 ISAnimalTracksFinder.tracks = {};
 ISAnimalTracksFinder.tick = 0;
 
-ISAnimalTracksFinder.getAnimalTracks = function (chr, tracks)
-    if not tracks then
-            return;
-        end
-        for i=0, tracks:size()-1 do
-            local track = tracks:get(i);
-            if track:isDiscovered() then
-                if track:isItem() then
-                    local item = track:addItemToWorld();
-                    print("discover!", item)
-                    ISAnimalTracksFinder:addItemIcon(item, chr);
-                else
-                    local isoTracks = track:addToWorld();
-                    for j=0,isoTracks:size()-1 do
-                        local isoTrack = isoTracks:get(j);
-                        if isoTrack and not ISAnimalTracksFinder.tracks[isoTrack] then
-                            table.insert(ISAnimalTracksFinder.tracks, isoTrack);
-                        end
-                    end
-                end
-            elseif track:isAddedToWorld() then
-                local isoTrack = track:getIsoAnimalTrack();
-                if isoTrack and not ISAnimalTracksFinder.tracks[isoTrack] then
-    --                print("adding a track")
-                    table.insert(ISAnimalTracksFinder.tracks, isoTrack);
-                end
+ISAnimalTracksFinder.getAnimalTracks = function (chr, track)
+    if not track then
+        return
+    end
+    if track:isItem() then
+        local item = track:getItem()
+        ISAnimalTracksFinder:addItemIcon(item, chr);
+    else
+        local isoTracks = track:getAllIsoTracks();
+        for i=0,isoTracks:size()-1 do
+            local isoTrack = isoTracks:get(i);
+            if isoTrack and not ISAnimalTracksFinder.tracks[isoTrack] then
+                table.insert(ISAnimalTracksFinder.tracks, isoTrack);
             end
         end
+    end
 end
 
 -- get every near tracks depending on our tracking level and check if we can find them
@@ -52,7 +40,9 @@ function ISAnimalTracksFinder:update(chr)
     ISAnimalTracksFinder.tick = 20;
     local tracks = getAndFindNearestTracks(chr);
     if not isClient() then
-        ISAnimalTracksFinder.getAnimalTracks(chr, tracks)
+        for i=0,tracks:size()-1 do
+            ISAnimalTracksFinder.getAnimalTracks(chr, tracks:get(i))
+        end
     end
 end
 

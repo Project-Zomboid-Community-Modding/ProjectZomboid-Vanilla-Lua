@@ -5,6 +5,8 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 
 ISWidgetOutput = ISPanel:derive("ISWidgetOutput");
 
@@ -15,8 +17,8 @@ end
 function ISWidgetOutput:createChildren()
     ISPanel.createChildren(self);
 
-    self.amountWidth = getTextManager():MeasureStringX(UIFont.Medium, "00/00")
-    self.amountWidth2 = getTextManager():MeasureStringX(UIFont.Medium, "00.00")
+    self.amountWidth = getTextManager():MeasureStringX(UIFont.Small, "00/00")
+    self.amountWidth2 = getTextManager():MeasureStringX(UIFont.Small, "00.00")
 
     self.textColor = { r=1, g=1, b=1, a=1 };
     self.colPartial = safeColorToTable(self.xuiSkin:color("Orange"));
@@ -109,9 +111,10 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
     -- set icon positions
     x = 0
     y = self.margin + self.iconBorderSizeY + spacing;
+    local iconAdj = (self.primary.label:getHeight() - self.labelIconSize) / 2;
 
     self.iconCreate:setX(x);
-    self.iconCreate:setY(y);
+    self.iconCreate:setY(y + iconAdj);
 
     -- set item name label
     x = self.labelIconSize + spacing;
@@ -208,7 +211,7 @@ function ISWidgetOutput:createScriptValues(_script)
     table.icon.tooltipUI.defaultMyWidth = 0;
 
     local fontHeight = -1; -- <=0 sets label initial height to font
-    table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
+    table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     --table.label.textColor = self.textColor;
     table.label:initialise();
     table.label:instantiate();
@@ -329,10 +332,9 @@ function ISWidgetOutput:new (x, y, width, height, player, logic, outputScript) -
     o.outputScript = outputScript;
     o.createScript = outputScript:getCreateToItemScript();
 
-    local fontScale = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-    o.iconSize = 32 * fontScale;
-    o.iconMargin = 16 * fontScale;
-    o.labelIconSize = 18 * fontScale;
+    o.iconSize = 48 * ICON_SCALE;
+    o.iconMargin = 12 * FONT_SCALE;
+    o.labelIconSize = 18 * ICON_SCALE;
 
     o.normalBorderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.iconBorderSizeX = (o.iconMargin * 2) + (o.iconSize*1.5);

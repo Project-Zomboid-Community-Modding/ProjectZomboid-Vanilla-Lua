@@ -1,24 +1,34 @@
 local map_deep_forest = {
-    features = { },
+    features = {},
     params = {
-        landscape = { },
-        plant = { },
-        temperature = { },
-        hygrometry = { },
-        placement = {
-            "blends_natural_01_*",
+        landscape = {},
+        plant = {},
+        temperature = {},
+        hygrometry = {},
+        placements = {
+            GENERIC = {
+                "blends_natural_01_*",
 
-            "!blends_natural_01_0",
-            "!blends_natural_01_5",
-            "!blends_natural_01_6",
-            "!blends_natural_01_7",
+                "!blends_natural_01_0",
+                "!blends_natural_01_5",
+                "!blends_natural_01_6",
+                "!blends_natural_01_7",
 
-            "!blends_natural_01_64",
-            "!blends_natural_01_69",
-            "!blends_natural_01_70",
-            "!blends_natural_01_71",
+                "!blends_natural_01_64",
+                "!blends_natural_01_69",
+                "!blends_natural_01_70",
+                "!blends_natural_01_71",
 
-            "!blends_natural_02_*",
+                "!blends_natural_02_*",
+            },
+        },
+        protected = {
+            "vegetation_drying*",
+            "vegetation_farm*",
+            "vegetation_foliage*",
+            "vegetation_gardening*",
+            "vegetation_indoor*",
+            "vegetation_ornamental*",
         },
         generate = false
     }

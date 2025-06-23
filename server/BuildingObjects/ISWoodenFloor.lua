@@ -9,6 +9,7 @@ ISWoodenFloor = ISBuildingObject:derive("ISWoodenFloor");
 --**
 --************************************************************************--
 function ISWoodenFloor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenFloor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	self.sq = getWorld():getCell():getGridSquare(x, y, z);
 	self.javaObject = self.sq:addFloor(sprite);
 	buildUtil.consumeMaterial(self);
@@ -37,6 +38,7 @@ function ISWoodenFloor:new(sprite, northSprite)
 	o:setNorthSprite(northSprite);
 	o.buildLow = true;
 	o.floor = true;
+	showDebugInfoInChat("Cursor New \'ISWoodenFloor\'")
 	return o;
 end
 

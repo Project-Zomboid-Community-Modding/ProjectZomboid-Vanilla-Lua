@@ -135,10 +135,10 @@ function ISTextBox:destroy()
 end
 
 function ISTextBox:onClick(button)
-    if self.player and JoypadState.players[self.player+1] then
-        setJoypadFocus(self.player, nil)
+    if self.player and getJoypadData(self.player) then
+        setJoypadFocus(self.player, self.prevFocus)
     elseif self.joyfocus and self.joyfocus.focus == self then
-        self.joyfocus.focus = nil
+        self.joyfocus.focus = self.prevFocus
     end
     if self.onclick ~= nil then
         self.onclick(self.target, button, self.param1, self.param2, self.param3, self.param4);

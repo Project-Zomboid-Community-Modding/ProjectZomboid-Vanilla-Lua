@@ -5,7 +5,7 @@
 ISPickUpGroundCoverItem = ISBaseTimedAction:derive("ISPickUpGroundCoverItem")
 
 function ISPickUpGroundCoverItem:isValid()
-	return true
+	return self.square:getObjects():contains(self.object)
 end
 
 function ISPickUpGroundCoverItem:waitToStart()
@@ -47,7 +47,7 @@ end
 
 
 function ISPickUpGroundCoverItem:perform()
-
+    ISInventoryPage.renderDirty = true
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self)
 end
@@ -58,9 +58,9 @@ function ISPickUpGroundCoverItem:complete()
 		if ScriptManager.instance:getItem(self.objectType) then trashItem = self.objectType
         elseif (string.find(tostring(self.objectType), "Stones") ~= nil) then trashItem = "Base.Stone2"
 		elseif self.objectType == "StoneTwigs" then trashItem = "Base.Stone2"
-		elseif self.objectType == "LargeStoneTwigs" then trashItem = "Base.LargeStone" end
+		elseif self.objectType == "LargeStoneTwigs" then trashItem = "Base.LargeStone"
+		elseif self.objectType == "flatRock" then trashItem = "Base.FlatStone" end
 		if trashItem then
-			ISInventoryPage.renderDirty = true
 			local player = self.character
 			local item = instanceItem(trashItem)
 			if player:getInventory():hasRoomFor(player, item) then
@@ -69,13 +69,11 @@ function ISPickUpGroundCoverItem:complete()
 			else
 				local square = player:getCurrentSquare()
 				local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(player, square, item)
-				player:getCurrentSquare():AddWorldInventoryItem(item, dropX, dropY, dropZ);
-				ISInventoryPage.renderDirty = true
+				square:SpawnWorldInventoryItem(trashItem, dropX, dropY, dropZ);
 			end
 		end
         if self.objectType == "StoneTwigs" or self.objectType == "LargeStoneTwigs"then
             trashItem = "Base.Twigs"
-			ISInventoryPage.renderDirty = true
 			local player = self.character
 			local item = instanceItem(trashItem)
 			if player:getInventory():hasRoomFor(player, item) then
@@ -84,23 +82,20 @@ function ISPickUpGroundCoverItem:complete()
 			else
 				local square = player:getCurrentSquare()
 				local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(player, square, item)
-				player:getCurrentSquare():AddWorldInventoryItem(item, dropX, dropY, dropZ);
-				ISInventoryPage.renderDirty = true
+				square:SpawnWorldInventoryItem(trashItem, dropX, dropY, dropZ);
 			end
         elseif self.objectType == "Stones" then
             trashItem = "Base.Stone2"
-			ISInventoryPage.renderDirty = true
             for i = 1, 3 do
                 local player = self.character
                 local item = instanceItem(trashItem)
                 if player:getInventory():hasRoomFor(player, item) then
-                    player:getInventory():AddItem(item);
+                    player:getInventory():SpawnItem(item);
                     sendAddItemToContainer(player:getInventory(), item);
                 else
                     local square = player:getCurrentSquare()
                     local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(player, square, item)
-                    player:getCurrentSquare():AddWorldInventoryItem(item, dropX, dropY, dropZ);
-                    ISInventoryPage.renderDirty = true
+                    square:SpawnWorldInventoryItem(trashItem, dropX, dropY, dropZ);
                 end
 			end
 		end
@@ -163,10 +158,11 @@ function ISPickUpGroundCoverItem:getDuration()
 end
 
 function ISPickUpGroundCoverItem:new(character, square, object)
-    if instanceof(item, "IsoObject") and item:getSprite()  then
-        local spriteName = item:getSprite():getName() or item:getSpriteName()
+	local objectType;
+    if instanceof(object, "IsoObject") and object:getSprite()  then
+        local spriteName = object:getSprite():getName() or object:getSpriteName()
         if not spriteName then
-            spriteName = item:getSpriteName()
+            spriteName = object:getSpriteName()
         end
         if spriteName and spriteName == ("d_generic_1_23") then
             objectType = "flatRock"
@@ -176,7 +172,7 @@ function ISPickUpGroundCoverItem:new(character, square, object)
 	o.square = square
 	o.object = object
     local props = object:getSprite():getProperties()
-    local objectType = props:Is("CustomName") and props:Val("CustomName") or nil
+    objectType = objectType or props:Is("CustomName") and props:Val("CustomName") or nil
 	o.objectType = objectType;
 	o.objectType = objectType;
 	o.maxTime = o:getDuration()

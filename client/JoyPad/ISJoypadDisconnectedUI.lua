@@ -81,7 +81,7 @@ function ISJoypadDisconnectedUI:renderControllerDisconnected()
 end
 
 function ISJoypadDisconnectedUI:new(playerNum)
-	o = ISUIElement.new(self, 0, 0, 1, 1)
+	local o = ISUIElement.new(self, 0, 0, 1, 1)
 	o.playerNum = playerNum
 	return o
 end

@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateForestRaritiesDefs()
 	local forestRarities = {
@@ -40,8 +41,6 @@ local function generateForestRaritiesDefs()
 				["TrapMouse"]           = "Base.TrapMouse",
 				["TrapSnare"]           = "Base.TrapSnare",
 				["TrapStick"]           = "Base.TrapStick",
-				["Bag_NormalHikingBag"] = "Base.Bag_NormalHikingBag",
-				["Bag_BigHikingBag"]    = "Base.Bag_BigHikingBag",
 			},
 		},
 		hiker = {
@@ -69,38 +68,28 @@ local function generateForestRaritiesDefs()
 				["IronOre"]				= "Base.IronOre",
 			},
 		},
- 		--tentpegs = {
- 		--	skill = 4,
- 		--	xp = 10,
- 		--	minCount = 4,
- 		--	maxCount = 6,
- 		--	items = {
- 		--		["TentPeg"]             = "Base.TentPeg",
- 		--	},
- 		--},
-		--clover = {
-		--	skill = 10,
-		--	xp = 50,
-		--	minCount = 1,
-		--	maxCount = 1,
-		--	items = {
-		--		["Clover"] = "Base.Clover",
-		--	},
-		--},
 	};
 	for _, spawnTable in pairs(forestRarities) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
-				type = itemFullName,
-				minCount = spawnTable.minCount,
-				maxCount = spawnTable.maxCount;
-				skill = spawnTable.skill,
-				xp = spawnTable.xp,
-				categories = { "ForestRarities" },
-				zones = {
-					DeepForest  = 1,
-				},
-			};
+			forageSystem.addForageDef(
+				itemName,
+				{
+					type = itemFullName,
+					minCount = spawnTable.minCount,
+					maxCount = spawnTable.maxCount;
+					skill = spawnTable.skill,
+					xp = spawnTable.xp,
+					categories = { "ForestRarities" },
+					zones = {
+						BirchForest = 1,
+						DeepForest = 1,
+						Forest = 1,
+						OrganicForest = 1,
+						PHForest = 1,
+						PRForest = 1,
+					},
+				}
+			);
 		end;
 	end;
 end

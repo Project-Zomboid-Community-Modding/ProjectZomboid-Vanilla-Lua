@@ -31,13 +31,13 @@ function SFeedingTroughSystem:newLuaObject(globalObject)
 	return SFeedingTroughGlobalObject:new(self, globalObject)
 end
 
-function SFeedingTroughSystem:addTrough(grid, def, north, slave)
+function SFeedingTroughSystem:addTrough(grid, def, north, spriteGridX, spriteGridY)
 	if not grid then return end
 	if self:getIsoObjectOnSquare(grid) then return nil end
 
 	local luaObject = self:newLuaObjectOnSquare(grid)
 	luaObject:initNew()
-	luaObject:addObject(def, north, slave)
+	luaObject:addObject(def, north, spriteGridX, spriteGridY)
 	--luaObject:addContainer()
 	luaObject:stateFromIsoObject(luaObject:getIsoObject())
 	luaObject:updateOnClient()

@@ -48,7 +48,7 @@ function ISServerOptions:onMouseMove(dx, dy)
     local y = self:getMouseY();
     self.changeBtn:setVisible(false)
 
-    if self.player:getRole():haveCapability(Capability.ChangeAndReloadServerOptions) and not self.modifying and x >= self.datas:getX() and x <= self.datas:getX() + (self.datas:getWidth() - 40) and y >= self.datas:getY() and y <= self.datas:getY() + self.datas:getHeight() then
+    if self.player:getRole():hasCapability(Capability.ChangeAndReloadServerOptions) and not self.modifying and x >= self.datas:getX() and x <= self.datas:getX() + (self.datas:getWidth() - 40) and y >= self.datas:getY() and y <= self.datas:getY() + self.datas:getHeight() then
         y = self.datas:rowAt(self.datas:getMouseX(), self.datas:getMouseY())
         if self.datas.items[y] then
             self.changeBtn:setVisible(true);
@@ -135,7 +135,7 @@ function ISServerOptions:create()
     self.cancel.borderColor = self.buttonBorderColor;
     self:addChild(self.cancel);
 
-    if not self.player:getRole():haveCapability(Capability.ChangeAndReloadServerOptions) then
+    if not self.player:getRole():hasCapability(Capability.ChangeAndReloadServerOptions) then
         self.changeBtn:setVisible(false);
         self.saveBtn:setVisible(false);
     end

@@ -35,6 +35,9 @@ function ISWallpaperAction:serverStart()
     if props:Is("WallN") or props:Is("DoorWallN")  or props:Is("WindowN") then
         self.sprite = WallPaper[self.thumpable:getSprite():getProperties():Val("PaintingType")][self.papering .. "North"]
     end
+    if props:Is("WallNW") then
+        self.sprite = WallPaper[self.thumpable:getSprite():getProperties():Val("PaintingType")][self.papering .. "Corner"]
+    end
     if not instanceof(self.thumpable, "IsoThumpable") then
         self.isThump = false;
     end
@@ -53,10 +56,14 @@ function ISWallpaperAction:perform()
 end
 
 function ISWallpaperAction:complete()
-    if not ISBuildMenu.cheat then
-        self.wallpaper:UseAndSync();
+    if isServer() or not ISBuildMenu.cheat then
+        if self.wallpaper then
+            self.wallpaper:UseAndSync();
+        end
         local paste = self.character:getInventory():getFirstTagRecurse("WallpaperPaste")
-        paste:UseAndSync();
+        if paste then
+            paste:UseAndSync();
+        end
     end
 
     if self.sprite then
@@ -85,10 +92,13 @@ function ISWallpaperAction:new(character, thumpable, wallpaper, papering)
     if props:Is("WallN") or props:Is("DoorWallN")  or props:Is("WindowN") then
         o.sprite = WallPaper[thumpable:getSprite():getProperties():Val("PaintingType")][papering .. "North"]
     end
+    if props:Is("WallNW") then
+        o.sprite = WallPaper[thumpable:getSprite():getProperties():Val("PaintingType")][papering .. "Corner"]
+    end
     if not instanceof(thumpable, "IsoThumpable") then
         o.isThump = false;
     end
-    if ISBuildMenu.cheat then o.maxTime = 1; end
+    if (not isMultiplayer() and ISBuildMenu.cheat) then o.maxTime = 1; end
     o.caloriesModifier = 4;
 	return o;
 end

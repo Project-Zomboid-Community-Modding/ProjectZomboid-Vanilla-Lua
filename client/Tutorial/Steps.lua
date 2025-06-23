@@ -201,6 +201,9 @@ TutorialTests.LookedAround = function()
     return false;
 end
 
+TutorialTests.inArea = function(x, y, w, h)
+    return getPlayer():getX() >= x and getPlayer():getX() <= x + w and getPlayer():getY() >= y and getPlayer():getY() <= y + h
+end
 
 WelcomeStep = TutorialStep:derive("WelcomeStep");
 function WelcomeStep:new () local o = {} setmetatable(o, self)    self.__index = self    return o end
@@ -370,7 +373,7 @@ function WalkToAdjacent:finish()
 end
 
 InventoryLootingStep = TutorialStep:derive("InventoryLootingStep");
-InventoryLootingStep.itemToEat = "DeadMouse";
+InventoryLootingStep.itemToEat = "DeadRat";
 function InventoryLootingStep:new () local o = {} setmetatable(o, self)    self.__index = self    return o end
 
 function InventoryLootingStep:begin()
@@ -392,13 +395,13 @@ function InventoryLootingStep:begin()
             local o = objs:get(i);
             local c = o:getContainer();
             if c ~= nil then
-                local mouse = c:AddItem("Base.DeadMouse");
+                local mouse = c:AddItem("Base.DeadRat");
                 mouse:setAge(17);
                 Tutorial1.DeadMouse = mouse;
                 c:AddItem("Base.EmptyJar");
-                c:AddItem("Base.Dung_Mouse");
+                c:AddItem("Base.Dung_Rat");
                 InventoryLootingStep.container = o
-                getPlayerLoot(0).inventoryPane.highlightItem = "DeadMouse";
+                getPlayerLoot(0).inventoryPane.highlightItem = "DeadRat";
                 break;
             end
         end
@@ -516,7 +519,7 @@ function InventoryUseStep:begin()
     if getCore():getDebug() and not InventoryLootingStep.finished then
         getPlayer():setAuthorizeMeleeAction(false);
         getPlayer():setIgnoreInputsForDirection(false);
-        Tutorial1.DeadMouse = getPlayer():getInventory():AddItem("Base.DeadMouse");
+        Tutorial1.DeadMouse = getPlayer():getInventory():AddItem("Base.DeadRat");
         getPlayer():getInventory():AddItem("Base.EmptyJar");
         if not JoypadState.players[1] then
             getPlayerInventory(0):setVisible(true);
@@ -663,7 +666,7 @@ function InventoryUseStep:fillBottle()
         end
     end
 
-	print("TUTORIAL BOTTLE ISSUE: " .. tostring(emptybottle))
+	--print("TUTORIAL BOTTLE ISSUE: " .. tostring(emptybottle))
     if emptybottle and emptybottle:getFluidContainer() and not emptybottle:getFluidContainer():isEmpty() then
         InventoryUseStep.lastInventory = getPlayerLoot(0).inventoryPane.inventory;
         Tutorial1.contextMenuFillBottle = false;
@@ -903,10 +906,10 @@ function FightStep:ClimbThroughWindow()
         end
         TutorialMessage.instance.richtext:paginate();
     end
-    if getPlayer():getCurrentState():equals(ClimbThroughWindowState.instance()) then
+    if getPlayer():getCurrentState() == ClimbThroughWindowState.instance() then
         FightStep.climbThrough = true;
     end
-    if FightStep.climbThrough and getPlayer():getCurrentState():equals(IdleState.instance()) and getPlayer():getCurrentSquare():getX() == 162 and getPlayer():getCurrentSquare():getY() == 154 then
+    if FightStep.climbThrough and getPlayer():getCurrentState() ~= ClimbThroughWindowState.instance() and TutorialTests.inArea(162, 153, 4, 4) then -- (getPlayer():getCurrentSquare():getX() == 162 or getPlayer():getCurrentSquare():getX() == 163) and getPlayer():getCurrentSquare():getY() == 154 then
         TutorialTests.RemoveMarkers();
         TutorialTests.stopHighlight(FightStep.window);
         return true;
@@ -1499,7 +1502,7 @@ function BandageStep:begin()
         self:addMessage(getText("IGUI_Tutorial1_Bandage1Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.Vault);
         self:addMessage(getText("IGUI_Tutorial1_Bandage2Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 550, 110, false, BandageStep.ThroughWindow);
         self:addMessage(getText("IGUI_Tutorial1_Bandage3Joypad"), getCore():getScreenWidth()/3, getCore():getScreenHeight()/2, 500, 110, false, TutorialTests.PlayerInfoOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage4Joypad"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/3, 500, 110, false, BandageStep.BandageYourself);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage4Joypad"), getCore():getScreenWidth()/3, getCore():getScreenHeight()/4, 500, 110, false, BandageStep.BandageYourself);
         self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 320, 110, false, BandageStep.CheckWindow);
         self:addMessage(getText("IGUI_Tutorial1_Bandage6Joypad"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.OpenCurtain);
         self:addMessage(getText("IGUI_Tutorial1_Bandage7"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 110, true);
@@ -1508,7 +1511,7 @@ function BandageStep:begin()
         self:addMessage(getText("IGUI_Tutorial1_Bandage1", getKeyName(getCore():getKey("Run")), Tutorial1.moveKeys), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.Vault);
         self:addMessage(getText("IGUI_Tutorial1_Bandage2", getKeyName(getCore():getKey("Interact"))), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 550, 110, false, BandageStep.ThroughWindow);
         self:addMessage(getText("IGUI_Tutorial1_Bandage3", getKeyName(getCore():getKey("Toggle Health Panel"))), getCore():getScreenWidth()/3, getCore():getScreenHeight()/2, 500, 110, false, BandageStep.HealthOpen);
-        self:addMessage(getText("IGUI_Tutorial1_Bandage4"), getCore():getScreenWidth()/4, getCore():getScreenHeight()/3, 500, 110, false, BandageStep.BandageYourself);
+        self:addMessage(getText("IGUI_Tutorial1_Bandage4"), getCore():getScreenWidth()/3, getCore():getScreenHeight()/4, 500, 110, false, BandageStep.BandageYourself);
         self:addMessage(getText("IGUI_Tutorial1_Bandage5"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 320, 110, false, BandageStep.CheckWindow);
         self:addMessage(getText("IGUI_Tutorial1_Bandage6"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/5, 500, 110, false, BandageStep.OpenCurtain);
         self:addMessage(getText("IGUI_Tutorial1_Bandage7"), getCore():getScreenWidth()/2, getCore():getScreenHeight()/4, 500, 110, true);
@@ -1540,14 +1543,15 @@ function BandageStep.Vault()
     end
 
     local complete = false;
-    if not BandageStep.vaulted and getPlayer():getCurrentState():equals(ClimbOverFenceState.instance()) then
+    if not BandageStep.vaulted and getPlayer():getCurrentState() == ClimbOverFenceState.instance() then
         BandageStep.vaulted = true;
     end
-    if BandageStep.vaulted and getPlayer():getCurrentState():equals(IdleState.instance()) and getPlayer():getCurrentSquare():getX() ~= 173 then
+    local inArea = TutorialTests.inArea(173, 145, 1, 7)
+    if BandageStep.vaulted and getPlayer():getCurrentState() == IdleState.instance() and not inArea then
         BandageStep.vaultedWrong = true;
         complete = true;
     end
-    if BandageStep.vaulted and getPlayer():getCurrentSquare():getX() == 173 then
+    if BandageStep.vaulted and inArea then
         complete = true;
     end
     if complete then
@@ -1930,7 +1934,6 @@ function ShotgunStep:begin()
                 -- impossible to sprint
             end
         end
-        -- if shout is unbound, we need to temp rebind it to Q during this step, and unbind it at ShotgunStep.TheEnd
         self:addMessage(sprintText, getCore():getScreenWidth()/2, 150 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.Sprinted);
         -- if shout is unbound, we need to use its default Q here so we dont screw the text for IGUI_Tutorial1_Shotgun6
         -- since the previous step hasnt actually happened yet
@@ -1940,6 +1943,15 @@ function ShotgunStep:begin()
         self:addMessage(getText("IGUI_Tutorial1_Shotgun8", getKeyName(getCore():getKey("Toggle Survival Guide"))), getCore():getScreenWidth()/2, 50 + getCore():getScreenHeight()/2, 420, 110, false, ShotgunStep.TheEnd);
     end
     self:doMessage();
+    Events.OnPlayerUpdate.Add(ShotgunStep.playerUpdate)
+end
+
+function ShotgunStep.playerUpdate(player)
+    if not player:getPrimaryHandItem() == SneakStep.shotgun or SneakStep.shotgun:isRoundChambered() then return end
+    local queue = ISTimedActionQueue.getTimedActionQueue(player)
+    if queue:indexOfType("ISRackFirearm") > -1 then return end
+    if not ISReloadWeaponAction.canRack(SneakStep.shotgun) then return end
+    ISTimedActionQueue.add(ISRackFirearm:new(player, SneakStep.shotgun))
 end
 
 function ShotgunStep.TheEnd()
@@ -1958,10 +1970,10 @@ end
 
 function ShotgunStep.BackOverFence()
     getPlayer():setIgnoreContextKey(false);
-    if not ShotgunStep.vaulted and getPlayer():getCurrentState():equals(ClimbOverWallState.instance()) then
+    if not ShotgunStep.vaulted and getPlayer():getCurrentState() == ClimbOverWallState.instance() then
         ShotgunStep.vaulted = true;
     end
-    local complete = ShotgunStep.vaulted and (getPlayer():getCurrentSquare():getY() == 153 or getPlayer():getCurrentSquare():getY() == 154) and getPlayer():getCurrentState():equals(IdleState.instance());
+    local complete = ShotgunStep.vaulted and (getPlayer():getCurrentSquare():getY() == 153 or getPlayer():getCurrentSquare():getY() == 154) and getPlayer():getCurrentState() == IdleState.instance();
     if complete then
         SneakStep.setZoom(1.5);
         for x,v in ipairs(ShotgunStep.squares) do
@@ -1990,10 +2002,11 @@ function ShotgunStep.ClimbedFence()
 --    if ShotgunStep.block then
 --        getPlayer():setIgnoreInputsForDirection(true);
 --    end
-    if not ShotgunStep.vaulted and getPlayer():getCurrentState():equals(ClimbOverWallState.instance()) then
+    if not ShotgunStep.vaulted and getPlayer():getCurrentState() == ClimbOverWallState.instance() then
         ShotgunStep.vaulted = true;
     end
-    local complete = ShotgunStep.vaulted and (getPlayer():getCurrentSquare():getY() == 152 or getPlayer():getCurrentSquare():getY() == 151) and getPlayer():getCurrentState():equals(IdleState.instance());
+    local complete = ShotgunStep.vaulted and getPlayer():getCurrentState() == IdleState.instance() and TutorialTests.inArea(181, 149,5, 3);
+    --local complete = ShotgunStep.vaulted and (getPlayer():getCurrentSquare():getY() <= 152 and getPlayer():getCurrentSquare():getY() >= 150) and getPlayer():getCurrentState() == IdleState.instance();
     if complete then
         getPlayer():setIgnoreContextKey(true);
         getPlayer():setSneaking(false);

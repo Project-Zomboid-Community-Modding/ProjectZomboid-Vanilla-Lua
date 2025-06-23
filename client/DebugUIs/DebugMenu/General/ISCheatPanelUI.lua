@@ -69,11 +69,11 @@ function ISCheatPanelUI:addAdminPowerOptions()
     self:addOption("IGUI_CheatPanel_UnlimitedEndurance", self.player:isUnlimitedEndurance(), function(self, selected)
         self.player:setUnlimitedEndurance(selected);
     end);
-    self:addOption("IGUI_CheatPanel_UnlimitedAmmo", getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo"), function(self, selected)
-        getDebugOptions():setBoolean("Cheat.Player.UnlimitedAmmo", selected)
+    self:addOption("IGUI_CheatPanel_UnlimitedAmmo", self.player:isUnlimitedAmmo(), function(self, selected)
+        self.player:setUnlimitedAmmo(selected);
     end)
-    self:addOption("IGUI_CheatPanel_KnowAllRecipes", getDebugOptions():getBoolean("Cheat.Recipe.KnowAll"), function(self, selected)
-        getDebugOptions():setBoolean("Cheat.Recipe.KnowAll", selected)
+    self:addOption("IGUI_CheatPanel_KnowAllRecipes", self.player:isKnowAllRecipes(), function(self, selected)
+        self.player:setKnowAllRecipes(selected);
     end)
     self:addOption("IGUI_CheatPanel_SeeAllRecipes", getDebugOptions():getBoolean("Cheat.Recipe.SeeAll"), function(self, selected)
         getDebugOptions():setBoolean("Cheat.Recipe.SeeAll", selected)

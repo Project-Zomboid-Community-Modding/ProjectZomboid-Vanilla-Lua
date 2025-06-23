@@ -184,12 +184,16 @@ function ISInventoryPage:createChildren()
         self.collapseButton:setVisible(false);
     end
 	-- load the current weight of the container
-	self.totalWeight	=	ISInventoryPage.loadWeight(self.inventory);
-	self.totalItems		=	0;
+	self.totalWeight = ISInventoryPage.loadWeight(self.inventory);
+	self.totalItems = 0;
 
     self:refreshBackpacks();
 
     self:collapse();
+end
+
+function ISInventoryPage:updateItemCount()
+    self.totalItems = luautils.countItemsRecursive({luautils.findRootInventory(self.inventoryPane.inventory)});
 end
 
 function ISInventoryPage:refreshWeight()
@@ -223,7 +227,7 @@ local TurnOnOff = {
 	},
 	ClothingWasher = {
 		isPowered = function(object)
-			if object:getWaterAmount() <= 0 then return false end
+			if object:getFluidAmount() <= 0 then return false end
 			return object:getContainer() and object:getContainer():isPowered() or false
 		end,
 		isActivated = function(object)
@@ -237,7 +241,7 @@ local TurnOnOff = {
 	},
 	CombinationWasherDryer = {
 		isPowered = function(object)
-			if object:isModeWasher() and (object:getWaterAmount() <= 0) then return false end
+			if object:isModeWasher() and (object:getFluidAmount() <= 0) then return false end
 			return object:getContainer() and object:getContainer():isPowered() or false
 		end,
 		isActivated = function(object)
@@ -365,38 +369,73 @@ function ISInventoryPage:isRemoveButtonVisible()
 	return sprite and sprite:getProperties() and sprite:getProperties():Is("IsTrashCan")
 end
 
+-- Hack to give priority to another piece of code highlighting an object.
+local ObjectsHighlightedElsewhere = {}
+ObjectsHighlightedElsewhere[1] = {}
+ObjectsHighlightedElsewhere[2] = {}
+ObjectsHighlightedElsewhere[3] = {}
+ObjectsHighlightedElsewhere[4] = {}
+function ISInventoryPage.OnObjectHighlighted(playerNum, object, isHighlighted)
+    ObjectsHighlightedElsewhere[playerNum+1][object] = isHighlighted or nil
+    local pdata = getPlayerData(playerNum)
+    if pdata then
+        pdata.playerInventory:updateContainerHighlight()
+        pdata.lootInventory:updateContainerHighlight()
+    end
+end
+
+function ISInventoryPage:getContainerParent(container)
+    if not container then return nil end
+    if container:getParent() then return container:getParent() end
+    local item = container:getContainingItem()
+    if item and item:getWorldItem() then
+        return item:getWorldItem()
+    end
+    return nil
+end
+
+function ISInventoryPage:updateContainerHighlight()
+    local coloredObj = self:getContainerParent(self.coloredInv)
+    if coloredObj and ((self.inventory ~= self.coloredInv) or self.isCollapsed) then
+        if ObjectsHighlightedElsewhere[self.player+1][coloredObj] then
+            -- Another piece of code is highlighting this object, don't change it.
+        elseif coloredObj then
+            coloredObj:setHighlighted(self.player, false)
+            coloredObj:setOutlineHighlight(self.player, false);
+            coloredObj:setOutlineHlAttached(self.player, false);
+        end
+        self.coloredInv = nil;
+    end
+
+    coloredObj = self:getContainerParent(self.inventory)
+    if ObjectsHighlightedElsewhere[self.player+1][coloredObj] then
+        -- Another piece of code is highlighting this object, don't change it.
+    elseif not self.isCollapsed then
+--        print(self.inventory:getParent());
+        if coloredObj and ((not instanceof(coloredObj, "IsoPlayer")) or instanceof(coloredObj, "IsoDeadBody")) then
+            coloredObj:setHighlighted(self.player, true, false);
+            if getCore():getOptionDoContainerOutline() then -- TODO RJ: this make the player blink, not sure what was wanted here?
+                coloredObj:setOutlineHighlight(self.player, true);
+                coloredObj:setOutlineHlAttached(self.player, true);
+                coloredObj:setOutlineHighlightCol(self.player, getCore():getObjectHighlitedColor():getR(), getCore():getObjectHighlitedColor():getG(), getCore():getObjectHighlitedColor():getB(), 1);
+            end
+            coloredObj:setHighlightColor(self.player, getCore():getObjectHighlitedColor());
+--             coloredObj:setHighlightColor(ColorInfo.new(0.3,0.3,0.3,1));
+--             coloredObj:setBlink(true);
+--             coloredObj:setCustomColor(0.98,0.56,0.11,1);
+            self.coloredInv = self.inventory;
+        end
+    end
+end
+
 function ISInventoryPage:update()
     local playerObj = getSpecificPlayer(self.player)
     if self.inventory:getEffectiveCapacity(playerObj) ~= self.capacity then
         self.capacity = self.inventory:getEffectiveCapacity(playerObj)
     end
 
-    if self.coloredInv and (self.inventory ~= self.coloredInv or self.isCollapsed) then
-        if self.coloredInv:getParent() then
-            self.coloredInv:getParent():setHighlighted(false)
-            self.coloredInv:getParent():setOutlineHighlight(false);
-            self.coloredInv:getParent():setOutlineHlAttached(false);
-        end
-        self.coloredInv = nil;
-    end
+    self:updateContainerHighlight()
 
-    if not self.isCollapsed then
---        print(self.inventory:getParent());
-        if self.inventory:getParent() and ((not instanceof(self.inventory:getParent(), "IsoPlayer")) or instanceof(self.inventory:getParent(), "IsoDeadBody")) then
-            self.inventory:getParent():setHighlighted(true, false);
-			if getCore():getOptionDoContainerOutline() then -- TODO RJ: this make the player blink, not sure what was wanted here?
-				self.inventory:getParent():setOutlineHighlight(true);
-				self.inventory:getParent():setOutlineHlAttached(true);
-				self.inventory:getParent():setOutlineHighlightCol(getCore():getObjectHighlitedColor():getR(), getCore():getObjectHighlitedColor():getG(), getCore():getObjectHighlitedColor():getB(), 1);
-			end
-            self.inventory:getParent():setHighlightColor(getCore():getObjectHighlitedColor());
---             self.inventory:getParent():setHighlightColor(ColorInfo.new(0.3,0.3,0.3,1));
-            --            self.inventory:getParent():setBlink(true);
---            self.inventory:getParent():setCustomColor(0.98,0.56,0.11,1);
-            self.coloredInv = self.inventory;
-        end
-	end
-	
     if (ISMouseDrag.dragging ~= nil and #ISMouseDrag.dragging > 0) or self.pin then
         self.collapseCounter = 0;
         if isClient() and self.isCollapsed then
@@ -437,8 +476,6 @@ function ISInventoryPage:update()
         end
     end
 
-	self.totalItems = luautils.countItemsRecursive({luautils.findRootInventory(self.inventoryPane.inventory)});
-
 	self:syncToggleStove()
 end
 
@@ -459,9 +496,9 @@ function ISInventoryPage:setBlinkingContainer(blinking, containerType)
 	end
 end
 
-function ISInventoryPage:setForceSelectedContainer(container)
+function ISInventoryPage:setForceSelectedContainer(container, ms)
 	self.forceSelectedContainer = container
-	self.forceSelectedContainerTime = getTimestampMs() + 1000
+	self.forceSelectedContainerTime = getTimestampMs() + (ms or 1000)
 end
 
 --************************************************************************--
@@ -565,9 +602,8 @@ function ISInventoryPage:prerender()
 			--display the item total and limit per container in MP
 			if isClient() then
 				local itemLimit = getServerOptions():getInteger("ItemNumbersLimitPerContainer");
-				local itemNumber = luautils.countItemsRecursive({luautils.findRootInventory(self.inventoryPane.inventory)});
 				if itemLimit > 0 then
-					weightLabel = roundedWeight .. " / " .. self.capacity .. " (" .. itemNumber .. " / " .. itemLimit .. ")";
+					weightLabel = roundedWeight .. " / " .. self.capacity .. " (" .. self.totalItems .. " / " .. itemLimit .. ")";
 				else
 					weightLabel = roundedWeight .. " / " .. self.capacity;
 				end;
@@ -938,6 +974,7 @@ function ISInventoryPage:dropItemsInContainer(button)
 		ISMouseDrag.dragging = nil;
 	end
 	self:refreshWeight();
+    self:updateItemCount();
 	return true
 end
 
@@ -1096,7 +1133,7 @@ function ISInventoryPage:onMouseMoveOutside(dx, dy)
 --        else
 --            self.render3DItem = nil;
 --        end
-        self.collapseCounter = self.collapseCounter + getGameTime():getMultiplier() / 0.8;
+        self.collapseCounter = self.collapseCounter + getGameTime():getMultiplier() / getGameTime():getTrueMultiplier() / 0.8;
         local bDo = false;
         if ISMouseDrag.dragging == nil then
             bDo = true;
@@ -1184,6 +1221,12 @@ function ISInventoryPage:isCycleContainerKeyDown()
 	end
 	if keyName == "control+shift" then
 		return isCtrlKeyDown() and isShiftKeyDown()
+	end
+	if keyName == "command" then
+		return isMetaKeyDown()
+	end
+	if keyName == "command+shift" then
+		return isMetaKeyDown() and isShiftKeyDown()
 	end
 	error "unknown cycle container key"
 end
@@ -1414,6 +1457,7 @@ end
 
 function ISInventoryPage:refreshBackpacks()
     ISHandCraftPanel.drawDirty = true;
+    ISBuildPanel.drawDirty = true;
 
 	self.buttonPool = self.buttonPool or {}
 	for i,v in ipairs(self.backpacks) do
@@ -1766,7 +1810,9 @@ function ISInventoryPage:refreshBackpacks()
 
 	self:refreshWeight()
 
-	self:syncToggleStove()
+	self:updateItemCount()
+
+    self:syncToggleStove()
 
 	triggerEvent("OnRefreshInventoryWindowContainers", self, "end")
 end
@@ -1826,6 +1872,9 @@ function ISInventoryPage:new (x, y, width, height, inventory, onCharacter, zoom)
     o.visibleTarget = o;
     o.visibleFunction = ISInventoryPage.onToggleVisible;
 
+    -- The right shoulder button is used for navigation, and sometimes used for container switching.
+    o.disableJoypadNavigation = true
+
    return o
 end
 
@@ -1879,6 +1928,7 @@ function ISInventoryPage:canPutIn()
 end
 
 function ISInventoryPage:RestoreLayout(name, layout)
+    if getJoypadData(self.player) then return end
     ISLayoutManager.DefaultRestoreWindow(self, layout)
     if layout.pin == 'true' then
         self:setPinned()
@@ -1887,6 +1937,7 @@ function ISInventoryPage:RestoreLayout(name, layout)
 end
 
 function ISInventoryPage:SaveLayout(name, layout)
+    if getJoypadData(self.player) then return end
     ISLayoutManager.DefaultSaveWindow(self, layout)
     if self.pin then layout.pin = 'true' else layout.pin = 'false' end
     self.inventoryPane:SaveLayout(name, layout)

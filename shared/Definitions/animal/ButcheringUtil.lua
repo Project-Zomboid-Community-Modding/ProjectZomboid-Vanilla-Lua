@@ -39,8 +39,8 @@ function setAnimalBodyData(died, modData)
     modData["head"] = ButcheringUtil.getHead(fullName) ~= nil;
     modData["meatRatio"] = died:getUsedGene("meatRatio"):getCurrentValue();
     modData["isbaby"] = died:isBaby();
-    modData["corpseSize"] = died:getCorpseSize() * died:getAnimalSize();
-    modData["animalSize"] = died:getAnimalSize();
+    modData["corpseSize"] = died:getCorpseSize() * died:getAnimalOriginalSize();
+    modData["animalSize"] = died:getAnimalOriginalSize();
     modData["corpseLength"] = died:getCorpseLength() * died:getAnimalSize(); -- TODO RJ: currently not working
     modData["animalTrailerSize"] = died:getAnimalTrailerSize();
     if died:getData():getPregnancyTime() / died:getData():getPregnantPeriod() > 0.3 then
@@ -53,6 +53,7 @@ function setAnimalBodyData(died, modData)
         modData["woolQty"] = died:getData():getWoolQuantity();
         modData["shouldBeBodyFleece"] = died:getData():getWoolQuantity() > (died:getData():getMaxWool() / 2);
     end
+    modData["roadKill"] = died:isRoadKill();
 end
 
 -- Give every items to the player defined in ButcheringUtil.animals[]
@@ -76,13 +77,13 @@ function ButcheringUtil.butcherAnimalFromGround(carcass, player, keepCorpse)
     end
 
     local adef = AnimalDefinitions.getDef(carcass:getAnimalType());
-    if adef == null then
+    if adef == nil then
         log(DebugType.Animal, "Couldn't find animal def for animal type: " .. carcass:getAnimalType());
         return;
     end
 
     local breed = adef:getBreedByName(carcass:getBreed());
-    if breed == null then
+    if breed == nil then
         log(DebugType.Animal, "Couldn't find animal breed def for breed type: " .. carcass:getBreed());
         return;
     end
@@ -107,21 +108,32 @@ function ButcheringUtil.butcherAnimalFromGround(carcass, player, keepCorpse)
         ---- TODO Leather quality maybe? (this gonna be screwed by the craftProcessor for now anyway)
         if leather then
             local leatherItem = player:getInventory():AddItem(leather);
+            sendAddItemToContainer(player:getInventory(), leatherItem);
             text = text .. leatherItem:getDisplayName() .. "\r\n";
         end
     end
 
     -- head
-    local head = ButcheringUtil.getHead(ButcheringUtil.getCarcassName(carcass));
-    if head and carcass:getModData()["head"] then
-        local headItem = player:getInventory():AddItem(head);
-        text = text .. headItem:getDisplayName() .. "\r\n";
-    end
+    --if carcass:getModData()["animalRotStage"] == 0 then -- corpse is not rotten, otherwise we don't give a head (you'll get a skull from gathering bones)
+        local head = ButcheringUtil.getHead(ButcheringUtil.getCarcassName(carcass));
+        if head and carcass:getModData()["head"] then
+            carcass:getModData()["head"] = nil;
+            carcass:getModData()["headless"] = true;
+            local headItem = instanceItem(head);
+            if carcass:getModData()["animalRotStage"] > 0 then
+                headItem:setAge(ZombRand(headItem:getOffAgeMax() + 3, headItem:getOffAgeMax() * 1.5));
+            end
+            local headItem = player:getInventory():AddItem(headItem);
+            sendAddItemToContainer(player:getInventory(), headItem);
+            text = text .. headItem:getDisplayName() .. "\r\n";
+        end
+    --end
 
     -- feather
     if breed:getFeatherItem() then
         local featherItems = player:getInventory():AddItems(breed:getFeatherItem(), carcass:getModData()["MaxFeather"]);
         if featherItems and not featherItems:isEmpty() then
+            sendAddItemsToContainer(player:getInventory(), featherItems);
             text = text .. featherItems:size() .. " " .. featherItems:get(0):getDisplayName() .. "\r\n";
         end
     end
@@ -140,13 +152,38 @@ function ButcheringUtil.butcherAnimalFromGround(carcass, player, keepCorpse)
     -- in the butcher debug stuff i'm keeping the corpse to quickly test again
     if not keepCorpse and not partDef.noSkeleton then
         carcass:getModData()["skeleton"] = "true";
-        carcass:getModData()["parts"] =  null;
+        carcass:getModData()["parts"] =  nil;
+        carcass:changeRotStage(2 - carcass:getModData()["animalRotStage"]); -- switch to a bloody skeleton, if we were rotten we remove one stage, otherwise update will put it to stage 4
         carcass:invalidateCorpse();
     end
 
-    if partDef.noSkeleton and carcass:getSquare() then
-        carcass:getSquare():removeCorpse(carcass, false);
-        carcass:invalidateCorpse();
+    if carcass:getSquare() then
+        if partDef.noSkeleton then
+            carcass:getSquare():removeCorpse(carcass, false);
+            carcass:invalidateCorpse();
+        else
+            carcass:transmitModData();
+        end
+    end
+
+    -- add possible blood on character
+    local bloodNb = ZombRand(22 - (player:getPerkLevel(Perks.Butchering) * 2));
+
+    -- if animal still had blood in it, add lots more
+    local bloodGround = 0;
+    if carcass:getModData()["BloodQty"] > 0 then
+        bloodNb = bloodNb + carcass:getModData()["BloodQty"] * 2
+        bloodGround = carcass:getModData()["BloodQty"] * 2;
+    end
+
+    -- add some blood on ground and on player
+    for i=0,bloodNb do
+        player:addBlood(nil, true, false, false);
+    end
+    syncVisuals(player);
+
+    for i=0,bloodGround do
+        addBloodSplat(carcass:getSquare(), 2, ZombRandFloat(-0.3, 0.3), ZombRandFloat(-0.3, 0.3))
     end
 
     return text;
@@ -172,9 +209,20 @@ function ButcheringUtil.getHead(name)
     return def.head;
 end
 
+function ButcheringUtil.getSkull(name)
+    local def = ButcheringUtil.getAnimalDef(name);
+
+    if def == nil then
+        log(DebugType.Animal, "Couldn't find animal parts def for " .. name);
+    end
+
+    return def.skull;
+end
+
 -- Add an animal part in the player's inventory
 -- If the part is a food we gonna modify it
 function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
+    local skill = player:getPerkLevel(Perks.Butchering);
     local text = "";
     -- if you're doing it from ground but animal can't go on a hook, it's all ok
     if fromGround then
@@ -195,10 +243,13 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
                 corpse:invalidateCorpse();
                 corpse:setInvalidateNextRender(true);
                 baby:remove();
+
+                sendCorpse(corpse);
             end
         end
         carcass:getModData()["wasPregnant"] = false;
         carcass:getModData()["pregnancyTime"] = 0;
+        carcass:transmitModData();
     end
 
     --print("do animal part", part.item, part.minNb, part.maxNb)
@@ -211,9 +262,18 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
     local nb = part.nb;
     -- lower parts gathered if from the ground
     if fromGround then
-        minNb = minNb * 0.8;
-        maxNb = maxNb * 0.8;
+        minNb = minNb * 0.6;
+        maxNb = maxNb * 0.6;
+    else
+        minNb = minNb * 1.2;
+        maxNb = maxNb * 1.2;
     end
+
+    -- every 2 pts in butchering gives * 1.1 max meat ratio
+    local skillIndex = (math.floor(skill/2) / 10) + 1;
+    maxNb = maxNb * skillIndex;
+
+
     local meatRatio = carcass:getModData()["meatRatio"];
     if meatRatio <= 0 then
         meatRatio = 1;
@@ -228,6 +288,25 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
 
     --print("meat ratio", meatRatio, minNb, maxNb, nb, carcass:getAnimalSize())
 
+    if carcass:getModData()["roadKill"] then
+        minNb = minNb / 2;
+        maxNb = maxNb / 2;
+        meatRatio = ZombRandFloat(0.2, 0.4);
+    end
+
+    local rotten = false;
+    -- depending on the time passed since death we lower the food nb/ratio
+    local deathAge = carcass:getModData()["deathAge"] or 0;
+    if deathAge > 12 then -- give 12h before starting to lower it
+        local delta = deathAge/30;
+        minNb = minNb / delta;
+        maxNb = maxNb / delta;
+        meatRatio = meatRatio / delta;
+        if carcass:getModData()["animalRotStage"] > 0 then -- corpse has rotten
+            rotten = true;
+        end
+    end
+
     if nb == -1 then
         nb = ZombRand(minNb, maxNb);
     end
@@ -238,7 +317,7 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
 
     -- meat can be modified to give prime cut/medium cut etc.
     if AnimalPartsDefinitions.meat[part.item] then
-        text = text .. ButcheringUtil.giveMeatModified(AnimalPartsDefinitions.meat[part.item], nb, player, meatRatio, carcass, fromGround);
+        text = text .. ButcheringUtil.giveMeatModified(AnimalPartsDefinitions.meat[part.item], nb, player, meatRatio, carcass, fromGround, rotten, deathAge);
         return text;
     end
 
@@ -248,12 +327,13 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
 
         -- If the item is a food we alter its hunger depending on the size of animal
         if instanceof(item, "Food") then
-            text = text .. ButcheringUtil.modifyMeat(item, carcass:getAnimalSize(), meatRatio);
+            text = text .. ButcheringUtil.modifyMeat(item, carcass:getAnimalSize(), meatRatio, 1, rotten, deathAge);
         else
             text = text .. item:getDisplayName();
         end
 
         player:getInventory():AddItem(item);
+        sendAddItemToContainer(player:getInventory(), item);
         addXp(player, Perks.Butchering, animalDef.xpPerItem)
     end
 
@@ -278,9 +358,8 @@ function roundButcher(x)
 end
 
 -- gives various type of meat depending on the definition
-function ButcheringUtil.giveMeatModified(meatDef, nb, player, meatRatio, carcass, fromGround)
+function ButcheringUtil.giveMeatModified(meatDef, nb, player, meatRatio, carcass, fromGround, rotten, deathAge)
     local text = "";
-
     local percRest = 100;
     local animalDef = ButcheringUtil.getAnimalDef(ButcheringUtil.getCarcassName(carcass));
     local baseXp = animalDef.xpPerItem;
@@ -307,9 +386,9 @@ function ButcheringUtil.giveMeatModified(meatDef, nb, player, meatRatio, carcass
 
             local hungerBoost = partDef.hungerBoost;
             if fromGround then
-                hungerBoost = hungerBoost * 0.7;
+                hungerBoost = hungerBoost * 0.6;
             end
-            ButcheringUtil.modifyMeat(item, carcass:getAnimalSize(), meatRatio, partDef.hungerBoost);
+            ButcheringUtil.modifyMeat(item, carcass:getAnimalSize(), meatRatio, hungerBoost, rotten, deathAge);
             item:setName(getText("IGUI_AnimalMeat", getText(partDef.baseName), getText(partDef.extraName)))
             item:setCustomName(true);
 
@@ -322,7 +401,7 @@ function ButcheringUtil.giveMeatModified(meatDef, nb, player, meatRatio, carcass
             end
 
             player:getInventory():AddItem(item);
-
+            sendAddItemToContainer(player:getInventory(), item);
             addXp(player, Perks.Butchering, xpToGive)
         end
 
@@ -342,7 +421,7 @@ end
 
 -- Modify the meat/food item given by the butchering by the meatRatio & size of animal
 -- Adding a *0.9-1.1 for extra flavor
-function ButcheringUtil.modifyMeat(item, size, meatRatio, hungerBoost)
+function ButcheringUtil.modifyMeat(item, size, meatRatio, hungerBoost, rotten, deathAge)
     local text = "";
 
     local ratio = size * meatRatio;
@@ -360,6 +439,12 @@ function ButcheringUtil.modifyMeat(item, size, meatRatio, hungerBoost)
     item:setLipids(item:getLipids() * ratio * ZombRandFloat(0.9, 1.1));
     item:setProteins(item:getProteins() * ratio * ZombRandFloat(0.9, 1.1));
     item:setCarbohydrates(item:getCarbohydrates() * ratio * ZombRandFloat(0.9, 1.1));
+
+    if rotten then
+        item:setAge(ZombRand(item:getOffAgeMax() + 3, item:getOffAgeMax() * 1.5));
+    else
+        item:setAge(ZombRand(0, deathAge/10));
+    end
 
     hungChangePositive = round(math.abs(item:getHungChange() * 100), 2);
 
@@ -386,12 +471,25 @@ function ButcheringUtil.getAnimalBones(carcass, player)
         ButcheringUtil.addAnimalPart(v, player, carcass);
     end
 
+    if not carcass:getModData()["headless"] then -- we might still have a skull to get
+        local skull = ButcheringUtil.getSkull(ButcheringUtil.getCarcassName(carcass));
+        if skull then
+            carcass:getModData()["head"] = nil;
+            carcass:getModData()["headless"] = true;
+            carcass:transmitModData();
+            local skullItem = player:getInventory():AddItem(skull);
+            sendAddItemToContainer(player:getInventory(), skullItem);
+        end
+    end
+
     player:getInventory():setDrawDirty(true);
 
-    local pdata = getPlayerData(player:getPlayerNum());
-    if pdata ~= nil then
-        pdata.playerInventory:refreshBackpacks();
-        pdata.lootInventory:refreshBackpacks();
+    if not isServer() then
+        local pdata = getPlayerData(player:getPlayerNum());
+        if pdata ~= nil then
+            pdata.playerInventory:refreshBackpacks();
+            pdata.lootInventory:refreshBackpacks();
+        end
     end
 
     carcass:getSquare():removeCorpse(carcass, false);
@@ -402,6 +500,8 @@ end
 
 function ButcheringUtil.getAllBonesDef(name)
     local def = ButcheringUtil.getAnimalDef(name);
+
+    print("want bones for ", name, def, def.bones)
 
     if def == nil then
         log(DebugType.Animal, "Couldn't find animal parts def for " .. name);
@@ -425,5 +525,171 @@ function ButcheringUtil.getAnimalDef(name)
         if i == name then
             return v;
         end
+    end
+end
+
+function ButcheringUtil.onAddedCorpseOnHook(hook, corpse, character)
+    local wasDeadBody = instanceof(corpse, "IsoDeadBody");
+    local newCorpse = ButcheringUtil.createCorpseFromItem(corpse, character); -- used to get the skin texture
+
+    ButcheringUtil.createAnimalForHook(hook, newCorpse);
+
+    if wasDeadBody and corpse then
+        corpse:getSquare():removeCorpse(corpse, false);
+        corpse:invalidateCorpse();
+    end
+    if not wasDeadBody and corpse:getContainer() then
+        local inv = corpse:getContainer()
+        inv:Remove(corpse);
+        inv:setDrawDirty(true);
+        sendRemoveItemFromContainer(inv, corpse);
+    end
+
+    return newCorpse;
+end
+
+function ButcheringUtil.createCorpseFromItem(item, chr)
+    if instanceof(item, "IsoDeadBody") or instanceof(item, "IsoAnimal") then
+        return item;
+    end
+
+    return chr:getCurrentSquare():createAnimalCorpseFromItem(item);
+end
+
+function ButcheringUtil.createAnimalForHook(hook, newCorpse)
+    local modData = newCorpse:getModData();
+    local animal = IsoAnimal.new(getCell(), hook:getSquare():getX(), hook:getSquare():getY(), hook:getSquare():getZ(), modData["AnimalType"], modData["AnimalBreed"]);
+    if newCorpse then
+        modData["originalSize"] = newCorpse:getAnimalSize();
+    end
+    animal:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
+    if modData["animalSize"] < animal:getData():getSize() then
+        animal:getData():setSizeForced(modData["animalSize"]);
+    end
+    hook:setAnimal(animal);
+    animal:setDir(IsoDirections.NE)
+    animal:setX(animal:getX() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionX)
+    animal:setY(animal:getY() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionY)
+    animal:setZ(animal:getZ() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionZ)
+    animal:setOnHook(true);
+    animal:setHook(hook);
+    animal:setModData(modData)
+    animal:getAnimalVisual():setSkinTextureName(newCorpse:getAnimalVisual():getSkinTexture());
+    animal:transmitModData();
+end
+
+function ButcheringUtil.onRemoveCorpseFromHook(hook, animal)
+    animal:getData():setSizeForced(animal:getModData()["originalSize"])
+
+    local body
+    if not isClient() then
+        body = IsoDeadBody.new(animal, false);
+        body:setX(animal:getX());
+        body:setY(animal:getY());
+        body:setZ(hook:getZ());
+
+        if animal:getModData()["skeleton"] == "true" then
+            body:changeRotStage(2); -- switch to a bloody skeleton
+        end
+
+        body:invalidateCorpse();
+        body:setInvalidateNextRender(true);
+        body:setModData(animal:getModData())
+    end
+
+    hook:playPutDownCorpseSound(animal);
+    hook:setAnimal(nil);
+
+    if animal then
+        animal:remove();
+    end
+
+    if isServer() then
+        hook:sync();
+        removeAnimal(animal:getOnlineID());
+        sendCorpse(body);
+    end
+
+    return body;
+end
+
+function ButcheringUtil.updateCorpseDatas(dataTable, animal, hook)
+    dataTable.leather = nil;
+    dataTable.blood = 0;
+    dataTable.head = nil;
+    dataTable.meat = nil;
+
+    if not animal or not ButcheringUtil.getAnimalDef(animal:getTypeAndBreed()) then
+        return false;
+    end
+
+    local modData = animal:getModData();
+
+    dataTable.leather = modData["leather"];
+    dataTable.blood = tonumber(modData["BloodQty"]);
+    dataTable.head = not modData["headless"];
+    dataTable.meat = modData["parts"];
+
+    local partDef = ButcheringUtil.getAnimalDef(animal:getTypeAndBreed());
+    local noSkeleton = false;
+    if partDef and partDef.noSkeleton then
+        noSkeleton = true;
+    end
+
+    if not dataTable.leather and not dataTable.head and not dataTable.meat and (not dataTable.blood or dataTable.blood <= 0) then
+        if noSkeleton then
+            --if not self.animal3D then
+            --    return;
+            --end
+            --if self.corpse:getSquare() then
+            --    self.corpse:getSquare():removeCorpse(self.corpse);
+            --end
+            --local body = IsoDeadBody.new(self.animal3D, false);
+            --body:setX(self.animal3D:getX());
+            --body:setY(self.animal3D:getY());
+            --body:setZ(self.hook:getZ());
+            --if self.animal3D then
+            --    self.animal3D:remove();
+            --end
+            --self.corpse = nil;
+            --self.hook:setCorpse(nil);
+            --self.hook:setAnimal(nil);
+            --self:setAnimalAvatar();
+        else
+            animal:getModData()["skeleton"] = "true";
+
+            if isServer() then
+                animal:transmitModData();
+            end
+            --self.corpse:invalidateCorpse();
+            --self:onClickRemoveCorpse();
+        end
+
+        if isServer() then
+            ButcheringUtil.onRemoveCorpseFromHook(hook, animal);
+        else
+            dataTable:onClickRemoveCorpse();
+        end
+    end
+
+    return true;
+end
+
+function ButcheringUtil.getBuckets(character)
+    return character:getInventory():getAvailableFluidContainer("AnimalBlood");
+end
+
+function ButcheringUtil.isHookUsingSameCharacter(hook, character)
+    if not hook:getUsingPlayer() then
+        return true;
+    end
+
+    return hook:getUsingPlayer() == character;
+end
+
+function ButcheringUtil.setUsingPlayerForHook(hook, character)
+    if isServer() then
+        hook:setUsingPlayer(character);
+        hook:sync()
     end
 end

@@ -5,6 +5,7 @@
 ISCleanGraffitiCursor = ISBuildingObject:derive("ISCleanGraffitiCursor")
 
 function ISCleanGraffitiCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISCleanGraffitiCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local square = getWorld():getCell():getGridSquare(x, y, z)
 	ISWorldObjectContextMenu.doCleanGraffiti(self.character, square)
 end
@@ -32,6 +33,7 @@ function ISCleanGraffitiCursor:new(sprite, northSprite, character)
 	o.player = character:getPlayerNum()
 	o.noNeedHammer = true
 	o.skipBuildAction = true
+	showDebugInfoInChat("Cursor New \'ISCleanGraffitiCursor\'")
 	return o
 end
 

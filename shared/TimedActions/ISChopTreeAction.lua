@@ -1,14 +1,10 @@
---***********************************************************
---**                    THE INDIE STONE                    **
---***********************************************************
-
 require "TimedActions/ISBaseTimedAction"
 
 ISChopTreeAction = ISBaseTimedAction:derive("ISChopTreeAction")
 
 function ISChopTreeAction:isValid()
 	return self.tree ~= nil and self.tree:getObjectIndex() >= 0 and
-			self.character:CanAttack() and
+	        self.character:isEnduranceSufficientForAction() and
 			self.character:getPrimaryHandItem() ~= nil and
             self.character:getPrimaryHandItem():getScriptItem():getCategories():contains("Axe")
 end
@@ -66,7 +62,8 @@ end
 
 function ISChopTreeAction:animEvent(event, parameter)
 	if not isClient() then
-		if event == 'ChopTree' then
+		-- check for self.axe here. If spamming the tree chop button, we can receive the ChopTree event before having called Start() or serverStart()
+		if event == 'ChopTree' and self.axe then
 			self.tree:WeaponHit(self.character, self.axe)
 			local modifier = 1
 			if ("lumberjack" == self.character:getDescriptor():getProfession()) then modifier = 0.5 end

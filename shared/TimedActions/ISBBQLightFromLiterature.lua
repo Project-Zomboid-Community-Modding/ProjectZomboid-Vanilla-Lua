@@ -69,7 +69,7 @@ function ISBBQLightFromLiterature:complete()
 		self.bbq:addFuel(self.fuelAmt)
 	end
 	if self.bbq:hasFuel() and not self.bbq:isLit() then
-		self.bbq:setLit(true)
+		self.bbq:turnOn()
 		self.bbq:sendObjectChange('state')
 	end
 
@@ -90,10 +90,11 @@ function ISBBQLightFromLiterature:new(character, item, lighter, bbq)
 	o.bbq = bbq
 	o.item = item
 	o.lighter = lighter
-	if campingLightFireType[item:getType()] then
-		o.fuelAmt = campingLightFireType[item:getType()] * 60
-	elseif campingLightFireCategory[item:getCategory()] then
-		o.fuelAmt = campingLightFireCategory[item:getCategory()] * 60
-	end
+-- 	if campingLightFireType[item:getType()] then
+-- 		o.fuelAmt = campingLightFireType[item:getType()] * 60
+-- 	elseif campingLightFireCategory[item:getCategory()] then
+-- 		o.fuelAmt = campingLightFireCategory[item:getCategory()] * 60
+-- 	end
+    o.fuelAmt = ISCampingMenu.getFuelDurationForItem(item);
 	return o
 end

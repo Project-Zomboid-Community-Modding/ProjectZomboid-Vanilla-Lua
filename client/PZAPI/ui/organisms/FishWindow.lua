@@ -2,6 +2,30 @@ require "PZAPI/ui/organisms/Window"
 require "PZAPI/ui/molecules/TabPanel"
 local UI = PZAPI.UI
 
+local FishTooltip = UI.Texture{
+    r=0, g=0, b=0, a=0.85,
+    width = 316, height = 100,
+    children = {
+        text = UI.Text{
+            x = 8, y = 8,
+            height = 32,
+            scaleX = 0.5, scaleY = 0.5,
+            pivotY = 0, pivotX = 0,
+            init = function(self)
+                self.player = getPlayer()
+                self.javaObj:setAutoWidth(300*2)
+                self:setText(getText("IGUI_" .. self.parent.fish .. "_Description"))
+                self.parent:setHeight(self.javaObj:getTextHeight())
+            end,
+            update = function(self)
+                self:setText(getText("IGUI_" .. self.parent.fish .. "_Description"))
+                self.parent:setHeight(self.javaObj:getTextHeight())
+            end
+        }
+    }
+}
+
+
 local fishItemUI = UI.Node{
     children = {
         icon = UI.Texture{
@@ -13,6 +37,28 @@ local fishItemUI = UI.Node{
             text = ""
         }
     },
+    onHover = function(self, val)
+        if self.player:getPerkLevel(Perks.Fishing) < 6 then
+            return
+        end
+        if not self.player:getModData().fishing_catchedFish[self.fishType] then
+            return
+        end
+
+        if val then
+            local pos = self.javaObj:getLuaAbsolutePosition(8, 8)
+            self.tooltip = FishTooltip{
+                x = pos.x, y = pos.y
+            }
+            self.tooltip.fish = self.fishType
+            self.tooltip:instantiate()
+        else
+            if self.tooltip then
+                UIManager.RemoveElement(self.tooltip.javaObj)
+                self.tooltip = nil
+            end
+        end
+    end,
     update = function(self)
         if self.player:getModData().fishing_catchedFish[self.fishType] then
             self.children.text:setText(self.children.text.fishText)
@@ -109,33 +155,53 @@ UI.FishWindow = UI.Window{
                             update = function(self)
                                 local params = Fishing.Utils.getTimeParams()
 
-                                if params.coeff > 1 then
-                                    self.children.textTime:setText("Time: " .. "Good")
-                                else
-                                    self.children.textTime:setText("Time: " .. "Normal")
-                                end
-
                                 if self.player == nil then
                                     self.player = getPlayer()
                                 end
-                                params = Fishing.Utils.getTemperatureParams(self.player)
-                                if params.coeff == 1 then
-                                    self.children.textTemperature:setText("Temperature: " .. "Good")
-                                elseif params.coeff == 0.75 then
-                                    self.children.textTemperature:setText("Temperature: " .. "Normal")
-                                elseif params.coeff == 0.5 then
-                                    self.children.textTemperature:setText("Temperature: " .. "Bad")
+                                local fishingLvl = self.player:getPerkLevel(Perks.Fishing)
+
+                                if fishingLvl < 2 then
+                                    self.children.textTime:setColor(0.8, 0.8, 0.8, 1)
+                                    self.children.textTime:setText(getText("Sandbox_TimeOptions") .. ": " .. getText("Fluid_Unknown"))
+                                elseif params.coeff > 1 then
+                                    self.children.textTime:setColor(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1)
+                                    self.children.textTime:setText(getText("Sandbox_TimeOptions") .. ": " .. getText("IGUI_health_Good"))
                                 else
-                                    self.children.textTemperature:setText("Temperature: " .. "Bad")
+                                    self.children.textTime:setColor(1, 1, 1, 1)
+                                    self.children.textTime:setText(getText("Sandbox_TimeOptions") .. ": " .. getText("Sandbox_Normal"))
+                                end
+
+                                params = Fishing.Utils.getTemperatureParams(self.player)
+                                if fishingLvl < 4 then
+                                    self.children.textTemperature:setColor(0.8, 0.8, 0.8, 1)
+                                    self.children.textTemperature:setText(getText("IGUI_Temperature") .. ": " .. getText("Fluid_Unknown"))
+                                elseif params.coeff == 1 then
+                                    self.children.textTemperature:setColor(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1)
+                                    self.children.textTemperature:setText(getText("IGUI_Temperature") .. ": " .. getText("IGUI_health_Good"))
+                                elseif params.coeff == 0.75 then
+                                    self.children.textTemperature:setColor(1, 1, 1, 1)
+                                    self.children.textTemperature:setText(getText("IGUI_Temperature") .. ": " .. getText("Sandbox_Normal"))
+                                elseif params.coeff == 0.5 then
+                                    self.children.textTemperature:setColor(getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1)
+                                    self.children.textTemperature:setText(getText("IGUI_Temperature") .. ": " .. getText("IGUI_Fishing_BadParam"))
+                                else
+                                    self.children.textTemperature:setColor(getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1)
+                                    self.children.textTemperature:setText(getText("IGUI_Temperature") .. ": " .. getText("IGUI_Fishing_BadParam"))
                                 end
 
                                 params = Fishing.Utils.getWeatherParams()
-                                if params.isFog then
-                                    self.children.textWeather:setText("Weather: Bad")
+                                if fishingLvl < 6 then
+                                    self.children.textWeather:setColor(0.8, 0.8, 0.8, 1)
+                                    self.children.textWeather:setText(getText("IGUI_ClimateControl_Weather") .. ": " .. getText("Fluid_Unknown"))
+                                elseif params.isFog then
+                                    self.children.textWeather:setColor(getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1)
+                                    self.children.textWeather:setText(getText("IGUI_ClimateControl_Weather") .. ": " .. getText("IGUI_Fishing_BadParam"))
                                 elseif params.isRain then
-                                    self.children.textWeather:setText("Weather: Good")
+                                    self.children.textWeather:setColor(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1)
+                                    self.children.textWeather:setText(getText("IGUI_ClimateControl_Weather") .. ": " .. getText("IGUI_health_Good"))
                                 else
-                                    self.children.textWeather:setText("Weather: Normal")
+                                    self.children.textWeather:setColor(1, 1, 1, 1)
+                                    self.children.textWeather:setText(getText("IGUI_ClimateControl_Weather") .. ": " .. getText("Sandbox_Normal"))
                                 end
 
                                 local wind = getClimateManager():getWindPower()
@@ -154,13 +220,15 @@ UI.FishWindow = UI.Window{
                                     windStr = "Minor breezes, ";
                                 end
 
-                                if wind >= 0.5 then
-                                    --self.textWind:setColor(1, 0.5, 0, 1)
-                                    --self.textWind:setText("Wind: " .. "Bad, ".. windStr .. ClimateManager.getWindAngleString(getClimateManager():getWindAngleIntensity()))
-                                    self.children.textWind:setText("Wind: " .. "Bad")
+                                if fishingLvl < 8 then
+                                    self.children.textWind:setColor(0.8, 0.8, 0.8, 1)
+                                    self.children.textWind:setText(getText("IGUI_Fishing_Wind") .. ": " .. getText("Fluid_Unknown"))
+                                elseif wind >= 0.5 then
+                                    self.children.textWind:setColor(getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1)
+                                    self.children.textWind:setText(getText("IGUI_Fishing_Wind") .. ": " .. getText("IGUI_Fishing_BadParam"))
                                 else
-                                    --self.textWind:setColor(1, 1, 1, 1)
-                                    self.children.textWind:setText("Wind: " .. "Normal")
+                                    self.children.textWind:setColor(1, 1, 1, 1)
+                                    self.children.textWind:setText(getText("IGUI_Fishing_Wind") .. ": " .. getText("Sandbox_Normal"))
                                 end
                             end,
                             init = function(self)

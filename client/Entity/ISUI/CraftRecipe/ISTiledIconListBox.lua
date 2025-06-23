@@ -253,6 +253,60 @@ function ISTiledIconListBox:focusPageOnSelectedTile()
     end
 end
 
+function ISTiledIconListBox:getDataElementColumnRow(_tileData)
+    if self.dataArrayList == nil then return -1,-1 end
+    local index = self.dataArrayList:indexOf(_tileData)
+    if index == -1 then return -1,-1 end
+    index = index - self.currentPage * self.tileCount
+    local col = index % self.columns
+    local row = math.floor(index / self.columns)
+    return col,row
+end
+
+function ISTiledIconListBox:trySelectDataElement(_index)
+    local data = self:getDataElement(_index)
+    if data ~= nil and data ~= self.selectedTileData then
+        self.selectedTileData = data
+        getSoundManager():playUISound("UISelectListItem");
+        if self.onClickTile then
+            self.onClickTile(self.callbackTarget, data);
+        end
+    end
+    return data
+end
+
+function ISTiledIconListBox:onJoypadDirLeft(joypadData)
+    local col,row = self:getDataElementColumnRow(self.selectedTileData)
+    if col ~= -1 and col > 0 then
+        col = col - 1
+        self:trySelectDataElement(self.currentPage * self.tileCount + col + row * self.columns)
+    end
+end
+
+function ISTiledIconListBox:onJoypadDirRight(joypadData)
+    local col,row = self:getDataElementColumnRow(self.selectedTileData)
+    if col ~= -1 and col < self.columns - 1 then
+        col = col + 1
+        self:trySelectDataElement(self.currentPage * self.tileCount + col + row * self.columns)
+    end
+end
+
+function ISTiledIconListBox:onJoypadDirUp(joypadData)
+    local col,row = self:getDataElementColumnRow(self.selectedTileData)
+    if row ~= -1 and row > 0 then
+        row = row - 1
+        self:trySelectDataElement(self.currentPage * self.tileCount + col + row * self.columns)
+    end
+end
+
+function ISTiledIconListBox:onJoypadDirDown(joypadData)
+    local col,row = self:getDataElementColumnRow(self.selectedTileData)
+    if row ~= -1 and row < self.rows - 1 then
+        row = row + 1
+        self:trySelectDataElement(self.currentPage * self.tileCount + col + row * self.columns)
+    end
+end
+
 --************************************************************************--
 --** ISTiledIconListBox:new
 --**
@@ -278,17 +332,20 @@ function ISTiledIconListBox:new (x, y, width, height, dataList)
     o.onHoverTile = false;
     o.onClickTile = false;
 
-    o.iconWidth = 64;
-    o.iconHeight = 64;
+    local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+    local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
 
-    o.tilePadX = 4;
-    o.tilePadY = 4;
+    o.iconWidth = 48 * ICON_SCALE;
+    o.iconHeight = 48 * ICON_SCALE;
+
+    o.tilePadX = 2 * ICON_SCALE;
+    o.tilePadY = 2 * ICON_SCALE;
 
     o.tileWidth = o.iconWidth + (o.tilePadX*2);
     o.tileHeight = o.iconHeight + (o.tilePadY*2);
 
-    o.tileMarginX = 8;
-    o.tileMarginY = 8;
+    o.tileMarginX = 4 * ICON_SCALE;
+    o.tileMarginY = 4 * ICON_SCALE;
 
     o.minimumColumns = 6;
 --     o.minimumColumns = 5;

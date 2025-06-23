@@ -6,6 +6,7 @@
 ISBrushToolTileCursor = ISBuildingObject:derive("ISBrushToolTileCursor")
 
 function ISBrushToolTileCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISBrushToolTileCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
     local square = getCell():getGridSquare(x, y, z)
     local objs = square:getObjects()
 
@@ -41,6 +42,7 @@ function ISBrushToolTileCursor:new(sprite, northSprite, character)
     o.skipBuildAction = true
     o.skipWalk2 = true
     o.canBeAlwaysPlaced = true
+    showDebugInfoInChat("Cursor New \'ISBrushToolTileCursor\'")
     return o
 end
 

@@ -89,8 +89,8 @@ function ISInflateTire:new(character, part, item, psiTarget)
 	o.item = item
 	o.psiStart = part:getContainerContentAmount()
 	o.psiTarget = psiTarget
-	o.stopOnWalk = false
-	o.stopOnRun = false
+	o.stopOnWalk = true
+	o.stopOnRun = true
 	o.maxTime = o:getDuration()
 	o.jobType = getText("IGUI_JobType_InflateTire")
 	return o

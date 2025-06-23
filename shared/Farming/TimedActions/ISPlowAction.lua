@@ -110,7 +110,7 @@ function ISPlowAction:complete()
     end
     local skill = self.character:getPerkLevel(Perks.Farming)
     local strain = (1 - (skill * 0.05))
-    if tool then
+    if tool and instanceof(tool, "HandWeapon")then
         self.character:addCombatMuscleStrain(self.item, 1, strain)
     else
         self.character:addArmMuscleStrain(strain * 1)
@@ -122,6 +122,14 @@ function ISPlowAction:complete()
 
 
     local sq = self.gridSquare
+
+    -- we remove grass and vegetation from the square
+	SFarmingSystem:removeTallGrass(sq)
+    local floor = sq:getFloor();
+    if (floor and floor:getSprite():getProperties():Val("grassFloor")) and sq:checkHaveGrass() == true then
+	    sq:removeGrass()
+	end
+
     -- for removing destroyed tiles that are being re-plowed
     local plant = SFarmingSystem.instance:getLuaObjectOnSquare(sq)
     if plant then
@@ -165,6 +173,7 @@ end
 
 function wormCheck(character, item, square)
     if (not square) or (not square:isOutside()) or (square:getZ() > 0) then return end
+
     local wormTime = getGameTime():getWorldAgeHours() / 24
     local mData = square:getModData()
     if mData.wormTime and (wormTime - 7) <= mData.wormTime then

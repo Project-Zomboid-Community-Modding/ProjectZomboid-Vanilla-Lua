@@ -78,7 +78,7 @@ SpriteModelEditor_OptionsPanel = ISPanel:derive("SpriteModelEditor_OptionsPanel"
 local OptionsPanel = SpriteModelEditor_OptionsPanel
 
 function OptionsPanel:createChildren()
-	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox)
 	tickBox:initialise()
 	self:addChild(tickBox)
 	local gameState = getSpriteModelEditorState()
@@ -710,11 +710,14 @@ function SpriteModelEditor:createChildren()
 	local tilePickerWidth = 8 * 32 + scrollbarWidth
 	local tilePickerTop = BUTTON_HGT+UI_BORDER_SPACING
 	self.tilePicker = TilePicker:new(self.width - UI_BORDER_SPACING - tilePickerWidth-1, UI_BORDER_SPACING+tilePickerTop, tilePickerWidth, self.height - UI_BORDER_SPACING*2-2-tilePickerTop, self)
+	self.tilePicker:setAnchorLeft(false)
+	self.tilePicker:setAnchorRight(true)
+	self.tilePicker:setAnchorBottom(true)
 	self:addChild(self.tilePicker)
 
 	self.bottomPanel = ISPanel:new(0, self.height - bottomH, 200, bottomH)
 	self.bottomPanel:setAnchorTop(false)
-	self.bottomPanel:setAnchorLeft(false)
+	self.bottomPanel:setAnchorLeft(true)
 	self.bottomPanel:setAnchorRight(false)
 	self.bottomPanel:setAnchorBottom(true)
 	self.bottomPanel:noBackground()
@@ -722,10 +725,12 @@ function SpriteModelEditor:createChildren()
 
 	local button1 = ISButton:new(UI_BORDER_SPACING+1, self.bottomPanel.height - UI_BORDER_SPACING - BUTTON_HGT - 1, 80, BUTTON_HGT, "EXIT", self, self.onExit)
 	self.bottomPanel:addChild(button1)
+	button1:enableCancelColor()
 
 	local button2 = ISButton:new(button1:getRight() + UI_BORDER_SPACING, button1.y, 80, BUTTON_HGT, "SAVE", self, self.onSave)
 	self.bottomPanel:addChild(button2)
-	
+	button2:enableAcceptColor()
+
 	local button3 = ISButton:new(button2:getRight() + UI_BORDER_SPACING, button2.y, 80, BUTTON_HGT, "CREATE TILESET IMAGE", self, self.onCreateTilesetImage)
 	self.buttonCreateTilesetImage = button3
 	self.bottomPanel:addChild(button3)
@@ -950,7 +955,6 @@ end
 function SpriteModelEditor:onResolutionChange(oldw, oldh, neww, newh)
 	self:setWidth(neww)
 	self:setHeight(newh)
-	self.bottomPanel:setX(self.width / 2 - self.bottomPanel.width / 2)
 end
 
 function SpriteModelEditor:update()

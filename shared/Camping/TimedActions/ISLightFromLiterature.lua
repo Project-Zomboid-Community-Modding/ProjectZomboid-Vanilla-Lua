@@ -63,7 +63,7 @@ function ISLightFromLiterature:complete()
     self.item:UseAndSync();
 	self.lighter:UseAndSync();
 
-	local fuelAmt = self.fuelAmt * 60
+	local fuelAmt = self.fuelAmt
 
 	local campfire = SCampfireSystem.instance:getLuaObjectAt(self.campfire.x, self.campfire.y, self.campfire.z)
 
@@ -87,7 +87,7 @@ function ISLightFromLiterature:new(character, item, lighter, campfire, fuelAmt)
 	o.campfire = campfire;
 	o.item = item;
 	o.lighter = lighter;
-	o.fuelAmt = fuelAmt;
+ 	o.fuelAmt = fuelAmt;
 	o.maxTime = o:getDuration();
 	return o;
 end

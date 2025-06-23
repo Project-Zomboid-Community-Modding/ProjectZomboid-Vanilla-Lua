@@ -24,7 +24,7 @@ function CFeedingTroughGlobalObject:OnLuaObjectUpdated()
 		isoObject:setLinkedY(self.linkedY or 0)
 		isoObject:setMaxFeed(self.maxFeed or 0);
 		isoObject:setMaxWater(self.maxWater or 0);
-		isoObject:setWater(self.water or 0);
+		--isoObject:setWater(self.water or 0);
 	end
 end
 

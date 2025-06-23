@@ -49,7 +49,7 @@ ISBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
     -- TODO: RJ: removed it for now need to see exactly how it works as now we have a proper right click to dismantle items...
 	if playerInv:contains("Saw") and playerInv:contains("Screwdriver") and isDebugEnabled() then
         if test then return ISWorldObjectContextMenu.setTest() end
-		context:addOption(getText("ContextMenu_Dismantle"), worldobjects, ISBuildMenu.onDismantle, playerObj);
+		context:addDebugOption(getText("ContextMenu_Dismantle"), worldobjects, ISBuildMenu.onDismantle, playerObj);
 	end
 
 	-- destroy item with sledgehammer

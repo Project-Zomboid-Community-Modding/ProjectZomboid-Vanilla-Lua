@@ -50,7 +50,7 @@ function CharacterCreationProfessionListBox:onJoypadDirRight(joypadData)
 end
 
 function CharacterCreationProfessionListBox:onJoypadBeforeDeactivate(joypadData)
-	self.parent:onJoypadBeforeDeactivate(joypadData)
+    self.parent:onJoypadBeforeDeactivate(joypadData)
 end
 
 -- -- -- -- --
@@ -126,67 +126,68 @@ end
 --**
 --************************************************************************--
 function CharacterCreationProfession:instantiate()
-	self.javaObject = UIElement.new(self);
-	self.javaObject:setX(self.x);
-	self.javaObject:setY(self.y);
-	self.javaObject:setHeight(self.height);
-	self.javaObject:setWidth(self.width);
-	self.javaObject:setAnchorLeft(self.anchorLeft);
-	self.javaObject:setAnchorRight(self.anchorRight);
-	self.javaObject:setAnchorTop(self.anchorTop);
-	self.javaObject:setAnchorBottom(self.anchorBottom);
-	self:createChildren();
+    self.javaObject = UIElement.new(self);
+    self.javaObject:setX(self.x);
+    self.javaObject:setY(self.y);
+    self.javaObject:setHeight(self.height);
+    self.javaObject:setWidth(self.width);
+    self.javaObject:setAnchorLeft(self.anchorLeft);
+    self.javaObject:setAnchorRight(self.anchorRight);
+    self.javaObject:setAnchorTop(self.anchorTop);
+    self.javaObject:setAnchorBottom(self.anchorBottom);
+    self:createChildren();
 end
 
 function CharacterCreationProfession:create()
-    self.freeTraits = {};
+    --self.freeTraits = {};
+    self.freeTraits = ArrayList.new();
 
-	self.pointToSpend = 0;
+    self.pointToSpend = 0;
 
-	local w = self.width * 0.75;
-	local h = self.height * 0.8;
-	if (w < 768) then
-		w = 768;
-	end
+    local w = self.width * 0.75;
+    local h = self.height * 0.8;
+    if (w < 768) then
+        w = 768;
+    end
 
-	self.tablePadX = UI_BORDER_SPACING
-	self.tableWidth = (self:getWidth() - 16 * 2 - self.tablePadX * 2) / 3
-	self.topOfLists = UI_BORDER_SPACING*3 + FONT_HGT_MEDIUM + 1 + FONT_HGT_TITLE
-	self.tooltipHgt = FONT_HGT_SMALL
-	if self.width <= 1980 then
-		self.tooltipHgt = FONT_HGT_SMALL * 2
-	end
-	self.belowLists = UI_BORDER_SPACING*2 + BUTTON_HGT + 1
-	self.bottomOfLists = self:getHeight() - self.belowLists
-	self.traitButtonHgt = BUTTON_HGT
-	self.traitButtonPad = UI_BORDER_SPACING
+    self.tablePadX = UI_BORDER_SPACING
+    self.tableWidth = (self:getWidth() - 16 * 2 - self.tablePadX * 2) / 3
+    self.topOfLists = UI_BORDER_SPACING*3 + FONT_HGT_MEDIUM + 1 + FONT_HGT_TITLE
+    self.tooltipHgt = FONT_HGT_SMALL
+    if self.width <= 1980 then
+        self.tooltipHgt = FONT_HGT_SMALL * 2
+    end
+    self.belowLists = UI_BORDER_SPACING*2 + BUTTON_HGT + 1
+    self.bottomOfLists = self:getHeight() - self.belowLists
+    self.traitButtonHgt = BUTTON_HGT
+    self.traitButtonPad = UI_BORDER_SPACING
 
-	local traitButtonGap = self.traitButtonPad * 2 + self.traitButtonHgt
-	local halfListHeight = (self.bottomOfLists - self.topOfLists - FONT_HGT_SMALL - traitButtonGap) / 2
+    local traitButtonGap = self.traitButtonPad * 2 + self.traitButtonHgt
+    local halfListHeight = (self.bottomOfLists - self.topOfLists - FONT_HGT_SMALL - traitButtonGap) / 2
 
     local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
     local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
-	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, self.onOptionMouseDown);
-	self.backButton.internal = "BACK";
-	self.backButton:initialise();
-	self.backButton:instantiate();
-	self.backButton:setAnchorLeft(true);
-	self.backButton:setAnchorTop(false);
-	self.backButton:setAnchorBottom(true);
-	self.backButton:enableCancelColor()
-	self:addChild(self.backButton);
+    self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, self.onOptionMouseDown);
+    self.backButton.internal = "BACK";
+    self.backButton:initialise();
+    self.backButton:instantiate();
+    self.backButton:setAnchorLeft(true);
+    self.backButton:setAnchorTop(false);
+    self.backButton:setAnchorBottom(true);
+    self.backButton:enableCancelColor()
+    self:addChild(self.backButton);
 
     btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_next"))
-	self.playButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, self.onOptionMouseDown);
-	self.playButton.internal = "NEXT";
-	self.playButton:initialise();
-	self.playButton:instantiate();
-	self.playButton:setAnchorLeft(false);
-	self.playButton:setAnchorRight(true);
-	self.playButton:setAnchorTop(false);
-	self.playButton:setAnchorBottom(true);
-	self.playButton:enableAcceptColor()
-	self:addChild(self.playButton);
+    self.playButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_next"), self, self.onOptionMouseDown);
+    self.playButton.internal = "NEXT";
+    self.playButton:initialise();
+    self.playButton:instantiate();
+    self.playButton:setAnchorLeft(false);
+    self.playButton:setAnchorRight(true);
+    self.playButton:setAnchorTop(false);
+    self.playButton:setAnchorBottom(true);
+    self.playButton:enableAcceptColor()
+    self:addChild(self.playButton);
 
     btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_characreation_random"))
     self.randomButton = ISButton:new(self.playButton:getX() - UI_BORDER_SPACING - btnWidth, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_characreation_random"), self, self.randomizeTraits);
@@ -220,23 +221,23 @@ function CharacterCreationProfession:create()
     self.infoBtn:setAnchorBottom(false);
     self:addChild(self.infoBtn);
 
-	-- the selected trait list
-	self.listboxTraitSelected = CharacterCreationProfessionListBox:new(((w / 3) * 2), self.topOfLists + FONT_HGT_SMALL, self.tableWidth, halfListHeight);
-	self.listboxTraitSelected:initialise();
-	self.listboxTraitSelected:instantiate();
-	self.listboxTraitSelected:setAnchorLeft(true);
-	self.listboxTraitSelected:setAnchorRight(false);
-	self.listboxTraitSelected:setAnchorTop(true);
-	self.listboxTraitSelected:setAnchorBottom(true);
-	self.listboxTraitSelected.itemheight = BUTTON_HGT;
-	self.listboxTraitSelected.selected = -1;
-	self.listboxTraitSelected.doDrawItem = CharacterCreationProfession.drawTraitMap;
-	self.listboxTraitSelected:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectChosenTrait);
-	self.listboxTraitSelected:setOnMouseDoubleClick(self, CharacterCreationProfession.onDblClickSelectedTrait);
+    -- the selected trait list
+    self.listboxTraitSelected = CharacterCreationProfessionListBox:new(((w / 3) * 2), self.topOfLists + FONT_HGT_SMALL, self.tableWidth, halfListHeight);
+    self.listboxTraitSelected:initialise();
+    self.listboxTraitSelected:instantiate();
+    self.listboxTraitSelected:setAnchorLeft(true);
+    self.listboxTraitSelected:setAnchorRight(false);
+    self.listboxTraitSelected:setAnchorTop(true);
+    self.listboxTraitSelected:setAnchorBottom(true);
+    self.listboxTraitSelected.itemheight = BUTTON_HGT;
+    self.listboxTraitSelected.selected = -1;
+    self.listboxTraitSelected.doDrawItem = CharacterCreationProfession.drawTraitMap;
+    self.listboxTraitSelected:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectChosenTrait);
+    self.listboxTraitSelected:setOnMouseDoubleClick(self, CharacterCreationProfession.onDblClickSelectedTrait);
     self.listboxTraitSelected.resetSelectionOnChangeFocus = true;
     self.listboxTraitSelected.drawBorder = true
     self.listboxTraitSelected.fontHgt = self.fontHgt
-	self:addChild(self.listboxTraitSelected);
+    self:addChild(self.listboxTraitSelected);
 
     -- the xp boost list (from trait/profession)
     self.listboxXpBoost = ISScrollingListBox:new(((w / 3) * 2), self.listboxTraitSelected:getY() + self.listboxTraitSelected:getHeight() + traitButtonGap, self.tableWidth, halfListHeight);
@@ -254,24 +255,24 @@ function CharacterCreationProfession:create()
     self.listboxXpBoost.fontHgt = self.fontHgt
     self:addChild(self.listboxXpBoost);
 
-	-- the traits list choice
-	self.listboxTrait = CharacterCreationProfessionListBox:new((w / 3), self.topOfLists + FONT_HGT_SMALL, self.tableWidth, halfListHeight);
-	self.listboxTrait:initialise();
-	self.listboxTrait:instantiate();
-	self.listboxTrait:setAnchorLeft(true);
-	self.listboxTrait:setAnchorRight(false);
-	self.listboxTrait:setAnchorTop(true);
-	self.listboxTrait:setAnchorBottom(true);
-	self.listboxTrait.itemheight = BUTTON_HGT;
-	self.listboxTrait.selected = -1;
-	self:populateTraitList(self.listboxTrait);
-	self.listboxTrait.doDrawItem = CharacterCreationProfession.drawTraitMap;
-	self.listboxTrait:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectTrait);
-	self.listboxTrait:setOnMouseDoubleClick(self, CharacterCreationProfession.onDblClickTrait);
+    -- the traits list choice
+    self.listboxTrait = CharacterCreationProfessionListBox:new((w / 3), self.topOfLists + FONT_HGT_SMALL, self.tableWidth, halfListHeight);
+    self.listboxTrait:initialise();
+    self.listboxTrait:instantiate();
+    self.listboxTrait:setAnchorLeft(true);
+    self.listboxTrait:setAnchorRight(false);
+    self.listboxTrait:setAnchorTop(true);
+    self.listboxTrait:setAnchorBottom(true);
+    self.listboxTrait.itemheight = BUTTON_HGT;
+    self.listboxTrait.selected = -1;
+    self:populateTraitList(self.listboxTrait);
+    self.listboxTrait.doDrawItem = CharacterCreationProfession.drawTraitMap;
+    self.listboxTrait:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectTrait);
+    self.listboxTrait:setOnMouseDoubleClick(self, CharacterCreationProfession.onDblClickTrait);
     self.listboxTrait.resetSelectionOnChangeFocus = true;
     self.listboxTrait.drawBorder = true
     self.listboxTrait.fontHgt = self.fontHgt
-	self:addChild(self.listboxTrait);
+    self:addChild(self.listboxTrait);
 
     -- the bad traits list choice
     self.listboxBadTrait = CharacterCreationProfessionListBox:new((w / 3), self.listboxTrait:getY() + self.listboxTrait:getHeight() + traitButtonGap, self.tableWidth, halfListHeight);
@@ -332,31 +333,31 @@ function CharacterCreationProfession:create()
     self:addChild(self.addBadTraitBtn);
 
     -- the profession list choice
-	self.listboxProf = CharacterCreationProfessionListBox:new(UI_BORDER_SPACING+1, self.topOfLists, self.tableWidth, self.bottomOfLists - self.topOfLists - traitButtonGap + UI_BORDER_SPACING);
-	self.listboxProf:initialise();
-	self.listboxProf:instantiate();
-	self.listboxProf:setAnchorLeft(true);
-	self.listboxProf:setAnchorRight(false);
-	self.listboxProf:setAnchorTop(true);
-	self.listboxProf:setAnchorBottom(true);
-	self.listboxProf.itemheight = 70;
-	self.listboxProf.selected = 1;
-	self.listboxProf:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectProf);
-	self.listboxProf:setOnMouseDoubleClick(self, CharacterCreationProfession.onSelectProf);
-	self:populateProfessionList(self.listboxProf);
-	self.listboxProf.doDrawItem = CharacterCreationProfession.drawProfessionMap;
+    self.listboxProf = CharacterCreationProfessionListBox:new(UI_BORDER_SPACING+1, self.topOfLists, self.tableWidth, self.bottomOfLists - self.topOfLists - traitButtonGap + UI_BORDER_SPACING);
+    self.listboxProf:initialise();
+    self.listboxProf:instantiate();
+    self.listboxProf:setAnchorLeft(true);
+    self.listboxProf:setAnchorRight(false);
+    self.listboxProf:setAnchorTop(true);
+    self.listboxProf:setAnchorBottom(true);
+    self.listboxProf.itemheight = 70;
+    self.listboxProf.selected = 1;
+    self.listboxProf:setOnMouseDownFunction(self, CharacterCreationProfession.onSelectProf);
+    self.listboxProf:setOnMouseDoubleClick(self, CharacterCreationProfession.onSelectProf);
+    self:populateProfessionList(self.listboxProf);
+    self.listboxProf.doDrawItem = CharacterCreationProfession.drawProfessionMap;
     self.listboxProf.drawBorder = true
     self.listboxProf.fontHgt = self.fontHgt
-	self:addChild(self.listboxProf);
+    self:addChild(self.listboxProf);
 
-	self.tooltipRichText = ISRichTextPanel:new(UI_BORDER_SPACING+1, self.listboxProf:getBottom() + UI_BORDER_SPACING, self.width - UI_BORDER_SPACING - 200, self.tooltipHgt)
-	self.tooltipRichText:setAnchorTop(false)
-	self.tooltipRichText:setAnchorBottom(true)
-	self.tooltipRichText:setAnchorRight(true)
-	self.tooltipRichText:setMargins(0, 0, 0, 0)
-	self.tooltipRichText.autosetheight = false
-	self.tooltipRichText:setVisible(false) -- only visible using a controller
-	self:addChild(self.tooltipRichText)
+    self.tooltipRichText = ISRichTextPanel:new(UI_BORDER_SPACING+1, self.listboxProf:getBottom() + UI_BORDER_SPACING, self.width - UI_BORDER_SPACING - 200, self.tooltipHgt)
+    self.tooltipRichText:setAnchorTop(false)
+    self.tooltipRichText:setAnchorBottom(true)
+    self.tooltipRichText:setAnchorRight(true)
+    self.tooltipRichText:setMargins(0, 0, 0, 0)
+    self.tooltipRichText.autosetheight = false
+    self.tooltipRichText:setVisible(false) -- only visible using a controller
+    self:addChild(self.tooltipRichText)
 
     self.presetPanel = CharacterCreationProfessionPresetPanel:new(0, self.backButton.y, 100, BUTTON_HGT)
     self.presetPanel:noBackground()
@@ -413,19 +414,19 @@ function CharacterCreationProfession:create()
     self.listboxTraitSelected.joyfocusLeft = self.listboxBadTrait
     self.listboxTraitSelected.joyfocusRight = self.presetPanel
 
-	self:onSelectProf(ProfessionFactory.getProfessions():get(0));
+    self:onSelectProf(ProfessionFactory.getProfessions():get(0));
 end
 
 function CharacterCreationProfession:onSelectChosenTrait(item)
-	if item:isFree() then
-		self.removeTraitBtn:setEnable(false);
-	else
-		self.removeTraitBtn:setEnable(true);
-	end
+    if item:isFree() then
+        self.removeTraitBtn:setEnable(false);
+    else
+        self.removeTraitBtn:setEnable(true);
+    end
 end
 
 function CharacterCreationProfession:onSelectTrait(item)
-	self.addTraitBtn:setEnable(true);
+    self.addTraitBtn:setEnable(true);
 end
 
 function CharacterCreationProfession:onSelectBadTrait(item)
@@ -433,17 +434,17 @@ function CharacterCreationProfession:onSelectBadTrait(item)
 end
 
 function CharacterCreationProfession:onDblClickSelectedTrait(item)
-	self:removeTrait();
+    self:removeTrait();
     self:checkXPBoost();
 end
 
 function CharacterCreationProfession:onDblClickBadTrait(item)
-	self:addTrait(true);
+    self:addBadTrait();
     self:checkXPBoost();
 end
 
 function CharacterCreationProfession:onDblClickTrait(item)
-    self:addTrait(false);
+    self:addGoodTrait();
     self:checkXPBoost();
 end
 
@@ -478,61 +479,66 @@ end
 
 function CharacterCreationProfession:onSelectProf(item)
     if self.profession ~= item then
-		local removed = {}
-		if self.profession then
-			-- remove the previous free trait
-			for i = 0, self.profession:getFreeTraits():size() - 1 do
-				local freeTrait = TraitFactory.getTrait(self.profession:getFreeTraits():get(i));
-				local label = freeTrait:getLabel();
-				self.listboxTraitSelected:removeItem(label);	
-				table.insert(removed, freeTrait);
-				for k=#self.freeTraits, 1, -1 do
-					if self.freeTraits[k]:getLabel() == label then
-						table.remove(self.freeTraits, k);
-					end
-				end
-			end
-		end
+        local removed = {}
+        if self.profession then
+            -- remove the previous free trait
+            for i = 0, self.profession:getFreeTraits():size() - 1 do
+                local freeTrait = TraitFactory.getTrait(self.profession:getFreeTraits():get(i));
+                local label = freeTrait:getLabel();
+                self.listboxTraitSelected:removeMatchingItems(label);
+                table.insert(removed, freeTrait);
+                self.freeTraits:remove(label)
+                --for k=#self.freeTraits, 1, -1 do
+                --	if self.freeTraits[k]:getLabel() == label then
+                --		table.remove(self.freeTraits, k);
+                --	end
+                --end
+            end
+        end
 
         -- Remove chosen traits that are excluded by the profession's free traits.
         for i=self.listboxTraitSelected:size(),1,-1 do
             local selectedTrait = self.listboxTraitSelected.items[i].item
             for j=1,item:getFreeTraits():size() do
                 local freeTrait = TraitFactory.getTrait(item:getFreeTraits():get(j-1))
+                -- TODO: use better detection
                 if freeTrait:getMutuallyExclusiveTraits():contains(selectedTrait:getType()) then
-                    self.listboxTraitSelected.selected = i
-                    self:removeTrait()
+                    --self.listboxTraitSelected.selected = i
+                    self:removeTrait(i)
                 end
             end
         end
-		
+
         -- we add the free trait that our selected profession give us
         for i = 0, item:getFreeTraits():size() - 1 do
             local freeTrait = TraitFactory.getTrait(item:getFreeTraits():get(i));
-            local newTrait = self.listboxTraitSelected:addItem(freeTrait:getLabel(), freeTrait);
-            newTrait.tooltip = freeTrait:getDescription();
-            table.insert(self.freeTraits, freeTrait);
-            self:mutualyExclusive(freeTrait, false);
+            local newTrait = self.listboxTraitSelected:addUniqueItem(freeTrait:getLabel(), freeTrait);
+            if newTrait then
+                newTrait.tooltip = freeTrait:getDescription();
+            end
+            self.freeTraits:add(freeTrait:getLabel())
+            --table.insert(self.freeTraits, freeTrait);
+            self:doTestForMutuallyExclusiveTraits(freeTrait, false);
         end
-		
+
         for _,trait in pairs(removed) do
-            self:mutualyExclusive(trait, true)
+            self:doTestForMutuallyExclusiveTraits(trait, true)
         end
 
         self.profession = item;
 
-		local desc = MainScreen.instance.desc;
-		desc:setProfessionSkills(self.profession);
-		desc:setProfession(self.profession:getType());
+        local desc = MainScreen.instance.desc;
+        desc:setProfessionSkills(self.profession);
+        desc:setProfession(self.profession:getType());
 
-		self.cost = self.profession:getCost();
+        self.cost = self.profession:getCost();
         self:changeClothes();
         self:checkXPBoost();
         CharacterCreationMain.sort(self.listboxTrait.items);
         CharacterCreationMain.invertSort(self.listboxBadTrait.items);
         CharacterCreationMain.sort(self.listboxTraitSelected.items);
         CharacterCreationMain.instance:disableBtn()
-     end
+    end
 end
 
 function CharacterCreationMain.sortByCost(a, b)
@@ -569,7 +575,7 @@ function CharacterCreationProfession:changeClothes()
 end
 
 function CharacterCreationProfession:setVisible(visible, joypadData)
-	ISPanelJoypad.setVisible(self, visible, joypadData)
+    ISPanelJoypad.setVisible(self, visible, joypadData)
 end
 
 function CharacterCreationProfession:onOptionMouseDown(button, x, y)
@@ -597,394 +603,379 @@ function CharacterCreationProfession:onOptionMouseDown(button, x, y)
             self.infoRichText:bringToTop();
         end
     end
-	if button.internal == "BACK" then
-		if self.infoRichText then
-			self.infoRichText:removeFromUIManager()
-			self.infoRichText = nil
-		end
-		self:setVisible(false)
-		if self.previousScreen == "NewGameScreen" then
-			self.previousScreen = nil
-			NewGameScreen.instance:setVisible(true, joypadData)
-			return
-		end
-		if self.previousScreen == "LoadGameScreen" then
-			self.previousScreen = nil
-			LoadGameScreen.instance:setSaveGamesList()
-			LoadGameScreen.instance:setVisible(true, joypadData)
-			return
-		end
-		if self.previousScreen == "MapSpawnSelect" then
-			self.previousScreen = nil
-			MapSpawnSelect.instance:setVisible(true, joypadData)
-			return
-		end
-		if self.previousScreen == "WorldSelect" then
-			self.previousScreen = nil
-			WorldSelect.instance:setVisible(true, joypadData)
-			return
-		end
-		if self.previousScreen == "LastStandPlayerSelect" then
-			self.previousScreen = nil
-			LastStandPlayerSelect.instance:setVisible(true, joypadData)
-			return
-		end
-		if self.previousScreen == "SandboxOptionsScreen" then
-			self.previousScreen = nil
-			SandboxOptionsScreen.instance:setVisible(true, joypadData)
-			return
-		end
-		if getWorld():getGameMode() == "Multiplayer" then
-			backToSinglePlayer()
-			getCore():ResetLua("default", "exitJoinServer")
-			return
-		end
-	end
-	if button.internal == "NEXT" then
-		if self.infoRichText then
-			self.infoRichText:removeFromUIManager()
-			self.infoRichText = nil
-		end
-		MainScreen.instance.charCreationProfession:setVisible(false);
-		MainScreen.instance.charCreationMain:setVisible(true, joypadData);
---		-- set the player desc we build
---		self:initPlayer();
---		-- set up the world
---		if not getWorld():getMap() then
---			getWorld():setMap("Muldraugh, KY");
---        end
---		if MainScreen.instance.createWorld then
---			createWorld(getWorld():getWorld())
---		end
---        GameWindow.doRenderEvent(false);
---        -- menu activated via joypad, we disable the joypads and will re-set them automatically when the game is started
---        if self.joyfocus then
---            local joypadData = self.joyfocus
---            joypadData.focus = nil;
---            updateJoypadFocus(joypadData)
---            JoypadState.count = 0
---            JoypadState.players = {};
---            JoypadState.joypads = {};
---            JoypadState.forceActivate = joypadData.id;
---        end
---		forceChangeState(GameLoadingState.new());
-	end
-	if button.internal == "ADDTRAIT" then
-		if self.listboxTrait.selected > 0 then
-			self:addTrait(false);
+    if button.internal == "BACK" then
+        if self.infoRichText then
+            self.infoRichText:removeFromUIManager()
+            self.infoRichText = nil
+        end
+        self:setVisible(false)
+        if self.previousScreen == "NewGameScreen" then
+            self.previousScreen = nil
+            NewGameScreen.instance:setVisible(true, joypadData)
+            return
+        end
+        if self.previousScreen == "LoadGameScreen" then
+            self.previousScreen = nil
+            LoadGameScreen.instance:setSaveGamesList()
+            LoadGameScreen.instance:setVisible(true, joypadData)
+            return
+        end
+        if self.previousScreen == "MapSpawnSelect" then
+            self.previousScreen = nil
+            MapSpawnSelect.instance:setVisible(true, joypadData)
+            return
+        end
+        if self.previousScreen == "WorldSelect" then
+            self.previousScreen = nil
+            WorldSelect.instance:setVisible(true, joypadData)
+            return
+        end
+        if self.previousScreen == "LastStandPlayerSelect" then
+            self.previousScreen = nil
+            LastStandPlayerSelect.instance:setVisible(true, joypadData)
+            return
+        end
+        if self.previousScreen == "SandboxOptionsScreen" then
+            self.previousScreen = nil
+            SandboxOptionsScreen.instance:setVisible(true, joypadData)
+            return
+        end
+        if getWorld():getGameMode() == "Multiplayer" then
+            backToSinglePlayer()
+            getCore():ResetLua("default", "exitJoinServer")
+            return
+        end
+    end
+    if button.internal == "NEXT" then
+        if self.infoRichText then
+            self.infoRichText:removeFromUIManager()
+            self.infoRichText = nil
+        end
+        MainScreen.instance.charCreationProfession:setVisible(false);
+        MainScreen.instance.charCreationMain:setVisible(true, joypadData);
+        --		-- set the player desc we build
+        --		self:initPlayer();
+        --		-- set up the world
+        --		if not getWorld():getMap() then
+        --			getWorld():setMap("Muldraugh, KY");
+        --        end
+        --		if MainScreen.instance.createWorld then
+        --			createWorld(getWorld():getWorld())
+        --		end
+        --        GameWindow.doRenderEvent(false);
+        --        -- menu activated via joypad, we disable the joypads and will re-set them automatically when the game is started
+        --        if self.joyfocus then
+        --            local joypadData = self.joyfocus
+        --            joypadData.focus = nil;
+        --            updateJoypadFocus(joypadData)
+        --            JoypadState.count = 0
+        --            JoypadState.players = {};
+        --            JoypadState.joypads = {};
+        --            JoypadState.forceActivate = joypadData.id;
+        --        end
+        --		forceChangeState(GameLoadingState.new());
+    end
+    if button.internal == "ADDTRAIT" then
+        if self.listboxTrait.selected > 0 then
+            self:addGoodTrait();
             self:checkXPBoost();
-		end
+        end
     end
     if button.internal == "ADDBADTRAIT" then
         if self.listboxBadTrait.selected > 0 then
-            self:addTrait(true);
+            self:addBadTrait();
             self:checkXPBoost();
         end
     end
-	if button.internal == "REMOVETRAIT" then
-		if self.listboxTraitSelected.selected > 0 then
-			self:removeTrait();
+    if button.internal == "REMOVETRAIT" then
+        if self.listboxTraitSelected.selected > 0 then
+            self:removeTrait();
             self:checkXPBoost();
-		end
-	end
-	if button.internal == "RESETTRAITS" then
-		self:resetTraits();
-	end
+        end
+    end
+    if button.internal == "RESETTRAITS" then
+        self:resetTraits();
+    end
 end
 
-function CharacterCreationProfession:addTrait(bad)
-    local list = self.listboxTrait;
-    if bad then
-        list = self.listboxBadTrait;
-    end
-	local selectedTrait = list.items[list.selected].text;
-	-- points left calcul
-	self.pointToSpend = self.pointToSpend - list.items[list.selected].item:getCost();
-	-- remove from the available traits
-	local newItem = self.listboxTraitSelected:addItem(selectedTrait, list.items[list.selected].item);
-	newItem.tooltip = list.items[list.selected].tooltip;
-	
-	-- we add the free trait that our selected trait give us
-    for i = 0, list.items[list.selected].item:getFreeTraits():size() - 1 do
-        local freeTrait = TraitFactory.getTrait(list.items[list.selected].item:getFreeTraits():get(i));
-        local newTrait = self.listboxTraitSelected:addItem(freeTrait:getLabel(), freeTrait);
-        newTrait.tooltip = freeTrait:getDescription();
-        table.insert(self.freeTraits, freeTrait);
-        self:mutualyExclusive(freeTrait, false);
-    end
-	
-	-- then we remove the mutualy exclusive traits
-	self:mutualyExclusive(list.items[list.selected].item, false);
-	-- add into our selected traits
-    list:removeItem(selectedTrait);
-	-- reset cursor
-	self.listboxTraitSelected.selected = -1;
+function CharacterCreationProfession:repopulateTraitLists()
+    self:populateTraitList(self.listboxTrait);
+    self:populateBadTraitList(self.listboxBadTrait);
+    -- reset cursor
+    self.listboxTraitSelected.selected = -1;
     self.listboxBadTrait.selected = -1;
     self.listboxTrait.selected = -1;
-	self.removeTraitBtn:setEnable(false);
-	self.addTraitBtn:setEnable(false);
+    self.removeTraitBtn:setEnable(false);
+    self.addTraitBtn:setEnable(false);
     self.addBadTraitBtn:setEnable(false);
     CharacterCreationMain.sort(self.listboxTraitSelected.items);
+    CharacterCreationMain.sort(self.listboxTrait.items);
+    CharacterCreationMain.invertSort(self.listboxBadTrait.items);
 end
 
-function CharacterCreationProfession:mutualyExclusive(trait, bAdd)
-	for i = 0, trait:getMutuallyExclusiveTraits():size() - 1 do
-		local exclusiveTrait = trait:getMutuallyExclusiveTraits():get(i);
-        exclusiveTrait = TraitFactory.getTrait(exclusiveTrait);
-		if exclusiveTrait:isFree() then
-			-- nothing
-		elseif not bAdd then
-			-- remove from our available traits list the exclusive ones
-            if exclusiveTrait:getCost() > 0 then
-                self.listboxTrait:removeItem(exclusiveTrait:getLabel());
-            else
-                self.listboxBadTrait:removeItem(exclusiveTrait:getLabel());
-            end
-		elseif not self:isTraitExcluded(exclusiveTrait) then
-			-- add the previously removed exclusive trait to the available ones
-            local newItem = {};
-            if exclusiveTrait:getCost() > 0 then
-			    newItem = self.listboxTrait:addItem(exclusiveTrait:getLabel(), exclusiveTrait);
-            else
-                newItem = self.listboxBadTrait:addItem(exclusiveTrait:getLabel(), exclusiveTrait);
-            end
-			newItem.tooltip = exclusiveTrait:getDescription();
-		end
-	end
+function CharacterCreationProfession:addBadTrait()
+    self:addTrait(self.listboxBadTrait:getItem().item)
+end
+
+function CharacterCreationProfession:addGoodTrait()
+    self:addTrait(self.listboxTrait:getItem().item)
+end
+
+function CharacterCreationProfession:addTrait(trait)
+    if not self.listboxTraitSelected:contains(trait:getLabel()) then
+        self.pointToSpend = self.pointToSpend - trait:getCost();
+        self.listboxTraitSelected:addUniqueItem(trait:getLabel(), trait, trait:getDescription());
+    end
+
+    if not trait:isFree() then
+        self.listboxTrait:removeMatchingItems(trait:getLabel());
+        self.listboxBadTrait:removeMatchingItems(trait:getLabel());
+    end
+
+    for i = 0, trait:getFreeTraits():size() - 1 do
+        local freeTrait = TraitFactory.getTrait(trait:getFreeTraits():get(i));
+        self.freeTraits:add(freeTrait:getLabel())
+        -- self:addTrait(freeTrait)
+        self.listboxTraitSelected:addUniqueItem(freeTrait:getLabel(), freeTrait, freeTrait:getDescription());
+        self:doTestForMutuallyExclusiveTraits(freeTrait, false);
+    end
+
+    self:doTestForMutuallyExclusiveTraits(trait, false);
+    self:repopulateTraitLists()
+end
+
+function CharacterCreationProfession:doTestForMutuallyExclusiveTraits(trait, isRemovingTrait)
+    --for i = 0, trait:getMutuallyExclusiveTraits():size() - 1 do
+    --    --
+    --	local exclusiveTrait = trait:getMutuallyExclusiveTraits():get(i);
+    --    exclusiveTrait = TraitFactory.getTrait(exclusiveTrait);
+    --	if exclusiveTrait:isFree() then
+    --		-- nothing
+    --	elseif isRemovingTrait and not self:isTraitExcluded(exclusiveTrait) then
+    --        -- add the previously removed exclusive trait to the available ones
+    --        if exclusiveTrait:getCost() > 0 then
+    --            self.listboxTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
+    --        else
+    --            self.listboxBadTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
+    --        end
+    --    elseif not isRemovingTrait then
+    --        -- remove from our available traits list the exclusive ones
+    --        if exclusiveTrait:getCost() > 0 then
+    --            self.listboxTrait:removeMatchingItems(exclusiveTrait:getLabel());
+    --        else
+    --            self.listboxBadTrait:removeMatchingItems(exclusiveTrait:getLabel());
+    --        end;
+    --    end;
+    --end;
 end
 
 function CharacterCreationProfession:isTraitExcluded(trait)
-	for i=1,self.listboxTraitSelected:size() do
-		local selectedTrait = self.listboxTraitSelected.items[i].item
-		local excludedTraits = selectedTrait:getMutuallyExclusiveTraits()
-		if excludedTraits:contains(trait:getType()) then
-			return true
-		end
-	end
-	return false
+    for i=1,self.listboxTraitSelected:size() do
+        if trait == self.listboxTraitSelected.items[i].item or trait:isMutuallyExclusive(self.listboxTraitSelected.items[i].item) then
+            return true
+        end
+    end
+    return false
 end
 
-function CharacterCreationProfession:removeTrait()
-	local trait = self.listboxTraitSelected.items[self.listboxTraitSelected.selected].item
-	if not trait:isFree() then
-		-- remove from the selected traits
-		self.listboxTraitSelected:removeItem(trait:getLabel());
-		-- points left calcul
-		self.pointToSpend = self.pointToSpend + trait:getCost();
-		-- add to available traits
-        local newItem = {};
-        if trait:getCost() > 0 then
-    		newItem = self.listboxTrait:addItem(trait:getLabel(), trait);
-        else
-            newItem = self.listboxBadTrait:addItem(trait:getLabel(), trait);
+function CharacterCreationProfession:removeTrait(index)
+    -- if index is nil currently selected item is used
+    local trait = self.listboxTraitSelected:getItem(index).item
+    if not trait:isFree() then
+        self.listboxTraitSelected:removeMatchingItems(trait:getLabel());
+        self.pointToSpend = self.pointToSpend + trait:getCost();
+    end
+
+    -- we remove the free trait that our selected trait give us
+    for i = 0, trait:getFreeTraits():size() - 1 do
+        local freeTrait = TraitFactory.getTrait(trait:getFreeTraits():get(i));
+        local label = freeTrait:getLabel();
+        self.freeTraits:remove(label)
+        if not self.freeTraits:contains(label) then
+            --self:removeTrait(self.listboxTraitSelected:getIndexOf(label))
+            self.listboxTraitSelected:removeMatchingItems(label);
         end
-		
-		-- we add the free trait that our selected trait give us
-		local removed = {}
-		for i = 0, trait:getFreeTraits():size() - 1 do
-			local freeTrait = TraitFactory.getTrait(trait:getFreeTraits():get(i));
-			local label = freeTrait:getLabel();
-			self.listboxTraitSelected:removeItem(label);	
-			table.insert(removed, freeTrait);
-			for k=#self.freeTraits, 1, -1 do
-				if self.freeTraits[k]:getLabel() == label then
-					table.remove(self.freeTraits, k);
-				end
-			end
-		end
-		
-		
-		newItem.tooltip = trait:getDescription();
-		-- add traits excluded by the removed trait back to the available-traits lists
-		self:mutualyExclusive(trait, true);
-		-- reset cursor
-		self.listboxTraitSelected.selected = -1;
-		self.listboxTrait.selected = -1;
-        self.listboxBadTrait.selected = -1;
-		self.removeTraitBtn:setEnable(false);
-		self.addTraitBtn:setEnable(false);
-        self.addBadTraitBtn:setEnable(false);
-        CharacterCreationMain.sort(self.listboxTrait.items);
-        CharacterCreationMain.invertSort(self.listboxBadTrait.items);
-	end
+    end
+
+    self:repopulateTraitLists()
 end
 
 function CharacterCreationProfession:update()
-	ISPanelJoypad.update(self)
-	self.deleteBuildButton:setEnable(self.savedBuilds.selected ~= 0)
+    ISPanelJoypad.update(self)
+    self.deleteBuildButton:setEnable(self.savedBuilds.selected ~= 0)
 end
 
 function CharacterCreationProfession:prerender()
     CharacterCreationProfession.instance = self
-	ISPanel.prerender(self);
-	self:drawTextCentre(getText("UI_characreation_title2"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
+    ISPanel.prerender(self);
+    self:drawTextCentre(getText("UI_characreation_title2"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Title);
 
-	-- resize our stuff
-	local listWidth = (self:getWidth() - (UI_BORDER_SPACING+1) * 2 - self.tablePadX * 2) / 3
-	self.listboxProf:setWidth(listWidth);
-	self.listboxTrait:setX(self.listboxProf:getX() + self.listboxProf:getWidth() + UI_BORDER_SPACING);
-	self.listboxTrait:setWidth(listWidth);
+    -- resize our stuff
+    local listWidth = (self:getWidth() - (UI_BORDER_SPACING+1) * 2 - self.tablePadX * 2) / 3
+    self.listboxProf:setWidth(listWidth);
+    self.listboxTrait:setX(self.listboxProf:getX() + self.listboxProf:getWidth() + UI_BORDER_SPACING);
+    self.listboxTrait:setWidth(listWidth);
     self.listboxBadTrait:setX(self.listboxTrait:getX());
     self.listboxBadTrait:setWidth(listWidth);
-	self.listboxTraitSelected:setX(self.listboxTrait:getX() + self.listboxTrait:getWidth() + UI_BORDER_SPACING);
-	self.listboxTraitSelected:setWidth(listWidth);
+    self.listboxTraitSelected:setX(self.listboxTrait:getX() + self.listboxTrait:getWidth() + UI_BORDER_SPACING);
+    self.listboxTraitSelected:setWidth(listWidth);
     self.listboxXpBoost:setX(self.listboxTraitSelected:getX());
     self.listboxXpBoost:setWidth(listWidth);
-	self.addBadTraitBtn:setX(self.listboxBadTrait:getRight() - self.addBadTraitBtn:getWidth());
+    self.addBadTraitBtn:setX(self.listboxBadTrait:getRight() - self.addBadTraitBtn:getWidth());
     self.addTraitBtn:setX(self.listboxTrait:getRight() - self.addTraitBtn:getWidth());
     self.removeTraitBtn:setX(self.listboxTraitSelected:getRight() - self.removeTraitBtn:getWidth());
 
-	self.bottomOfLists = self:getHeight() - self.belowLists
-	local traitButtonGap = self.traitButtonPad * 2 + self.traitButtonHgt
-	local heightForHalfLists = self.bottomOfLists - self.topOfLists - FONT_HGT_SMALL - traitButtonGap*2 + UI_BORDER_SPACING
-	local halfListHeight1 = math.floor(heightForHalfLists / 2)
-	local halfListHeight2 = heightForHalfLists - halfListHeight1
+    self.bottomOfLists = self:getHeight() - self.belowLists
+    local traitButtonGap = self.traitButtonPad * 2 + self.traitButtonHgt
+    local heightForHalfLists = self.bottomOfLists - self.topOfLists - FONT_HGT_SMALL - traitButtonGap*2 + UI_BORDER_SPACING
+    local halfListHeight1 = math.floor(heightForHalfLists / 2)
+    local halfListHeight2 = heightForHalfLists - halfListHeight1
 
-	self.listboxTrait:setHeight(halfListHeight1)
-	self.addTraitBtn:setY(self.listboxTrait:getY() + halfListHeight1 + self.traitButtonPad)
+    self.listboxTrait:setHeight(halfListHeight1)
+    self.addTraitBtn:setY(self.listboxTrait:getY() + halfListHeight1 + self.traitButtonPad)
 
-	self.listboxTraitSelected:setHeight(halfListHeight1)
-	self.removeTraitBtn:setY(self.addTraitBtn:getY())
-	
-	self.listboxBadTrait:setY(self.listboxTrait:getY() + halfListHeight1 + traitButtonGap)
-	self.listboxBadTrait:setHeight(halfListHeight2)
-	self.addBadTraitBtn:setY(self.listboxBadTrait:getY() + halfListHeight2 + self.traitButtonPad)
+    self.listboxTraitSelected:setHeight(halfListHeight1)
+    self.removeTraitBtn:setY(self.addTraitBtn:getY())
 
-	self.listboxXpBoost:setY(self.listboxBadTrait:getY())
-	self.listboxXpBoost:setHeight(halfListHeight2)
+    self.listboxBadTrait:setY(self.listboxTrait:getY() + halfListHeight1 + traitButtonGap)
+    self.listboxBadTrait:setHeight(halfListHeight2)
+    self.addBadTraitBtn:setY(self.listboxBadTrait:getY() + halfListHeight2 + self.traitButtonPad)
 
-	local joypadData = JoypadState.getMainMenuJoypad() or CoopCharacterCreation.getJoypad()
-	if not joypadData or not joypadData:isConnected() then
-		if not self.addTraitBtn:isVisible() then
-			self.addTraitBtn:setVisible(true)
-			self.addBadTraitBtn:setVisible(true)
-			self.removeTraitBtn:setVisible(true)
-			self.tooltipRichText:setVisible(false)
+    self.listboxXpBoost:setY(self.listboxBadTrait:getY())
+    self.listboxXpBoost:setHeight(halfListHeight2)
 
-			self.addTraitBtn:setEnable(self.listboxTrait.items[self.listboxTrait.selected] ~= nil)
-			self.addBadTraitBtn:setEnable(self.listboxBadTrait.items[self.listboxBadTrait.selected] ~= nil)
-			self.removeTraitBtn:setEnable(self.listboxTraitSelected.items[self.listboxTraitSelected.selected] ~= nil)
-		end
-		return
-	end
-	if self.addTraitBtn:isVisible() then
-		self.addTraitBtn:setVisible(false)
-		self.addBadTraitBtn:setVisible(false)
-		self.removeTraitBtn:setVisible(false)
-		self.tooltipRichText:setVisible(true)
-	end
+    local joypadData = JoypadState.getMainMenuJoypad() or CoopCharacterCreation.getJoypad()
+    if not joypadData or not joypadData:isConnected() then
+        if not self.addTraitBtn:isVisible() then
+            self.addTraitBtn:setVisible(true)
+            self.addBadTraitBtn:setVisible(true)
+            self.removeTraitBtn:setVisible(true)
+            self.tooltipRichText:setVisible(false)
 
-	-- Update controller tooltip
-	if self.listboxProf.joyfocus and self.listboxProf.items[self.listboxProf.selected] then
-		self.tooltipLabel = self.listboxProf.items[self.listboxProf.selected].tooltip or ""
-		self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
-		self.tooltipColor = { r = 1.0, g = 1.0, b = 1.0 }
-	elseif self.listboxTrait.joyfocus and self.listboxTrait.items[self.listboxTrait.selected] then
-		self.tooltipLabel = self.listboxTrait.items[self.listboxTrait.selected].tooltip or ""
-		self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
-		self.tooltipColor = self:getTraitColor(self.listboxTrait.items[self.listboxTrait.selected].item)
-	elseif self.listboxBadTrait.joyfocus and self.listboxBadTrait.items[self.listboxBadTrait.selected] then
-		self.tooltipLabel = self.listboxBadTrait.items[self.listboxBadTrait.selected].tooltip or ""
-		self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
-		self.tooltipColor = self:getTraitColor(self.listboxBadTrait.items[self.listboxBadTrait.selected].item)
-	elseif self.listboxTraitSelected.joyfocus and self.listboxTraitSelected.items[self.listboxTraitSelected.selected] then
-		self.tooltipLabel = self.listboxTraitSelected.items[self.listboxTraitSelected.selected].tooltip or ""
-		self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
-		self.tooltipColor = self:getTraitColor(self.listboxTraitSelected.items[self.listboxTraitSelected.selected].item)
-	else
-		self.tooltipLabel = nil
-	end
+            self.addTraitBtn:setEnable(self.listboxTrait:getItem() ~= nil)
+            self.addBadTraitBtn:setEnable(self.listboxBadTrait:getItem() ~= nil)
+            self.removeTraitBtn:setEnable(self.listboxTraitSelected:getItem() ~= nil)
+        end
+        return
+    end
+    if self.addTraitBtn:isVisible() then
+        self.addTraitBtn:setVisible(false)
+        self.addBadTraitBtn:setVisible(false)
+        self.removeTraitBtn:setVisible(false)
+        self.tooltipRichText:setVisible(true)
+    end
+
+    -- Update controller tooltip
+    if self.listboxProf.joyfocus and self.listboxProf:getItem() then
+        self.tooltipLabel = self.listboxProf:getItem().tooltip or ""
+        self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
+        self.tooltipColor = { r = 1.0, g = 1.0, b = 1.0 }
+    elseif self.listboxTrait.joyfocus and self.listboxTrait:getItem() then
+        self.tooltipLabel = self.listboxTrait:getItem().tooltip or ""
+        self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
+        self.tooltipColor = self:getTraitColor(self.listboxTrait:getItem().item)
+    elseif self.listboxBadTrait.joyfocus and self.listboxBadTrait:getItem() then
+        self.tooltipLabel = self.listboxBadTrait:getItem().tooltip or ""
+        self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
+        self.tooltipColor = self:getTraitColor(self.listboxBadTrait:getItem().item)
+    elseif self.listboxTraitSelected.joyfocus and self.listboxTraitSelected:getItem() then
+        self.tooltipLabel = self.listboxTraitSelected:getItem().tooltip or ""
+        self.tooltipLabel = self.tooltipLabel:gsub("\n", " <SPACE> <SPACE> <SPACE> ")
+        self.tooltipColor = self:getTraitColor(self.listboxTraitSelected:getItem().item)
+    else
+        self.tooltipLabel = nil
+    end
 end
 
 function CharacterCreationProfession:render()
-	-- point to spend text
-	local pointsY = self.playButton:getY() - FONT_HGT_MEDIUM - UI_BORDER_SPACING - 5
+    -- point to spend text
+    local pointsY = self.playButton:getY() - FONT_HGT_MEDIUM - UI_BORDER_SPACING - 5
 
-	local offset = self:negativeTraitOffset()
-	local pointsWid = getTextManager():MeasureStringX(UIFont.Medium, tostring(offset))
-	local offsetString = offset .. "";
-	if getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue() ~= 1 then
+    local offset = self:negativeTraitOffset()
+    local pointsWid = getTextManager():MeasureStringX(UIFont.Medium, tostring(offset))
+    local offsetString = offset .. "";
+    if getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue() ~= 1 then
         local hc = getCore():getGoodHighlitedColor()
         if offset > 0 then hc = getCore():getBadHighlitedColor() end
         self:drawTextRight(getText("UI_characreation_negativeTraitOffset"), self:getWidth() - pointsWid - 160 - 8, pointsY, 1, 1, 1, 1, UIFont.Medium);
         self:drawTextRight(offsetString, self:getWidth() - 160, pointsY, hc:getR(), hc:getG(), hc:getB(), 1, UIFont.Medium);
     end
 
-	pointsWid = getTextManager():MeasureStringX(UIFont.Medium, tostring(self:PointToSpend()))
-	self:drawTextRight(getText("UI_characreation_pointToSpend"), self:getWidth() - pointsWid - UI_BORDER_SPACING*2-1, pointsY, 1, 1, 1, 1, UIFont.Medium);
-	if self:PointToSpend() < 0 then
-		self.playButton:setEnable(false);
+    pointsWid = getTextManager():MeasureStringX(UIFont.Medium, tostring(self:PointToSpend()))
+    self:drawTextRight(getText("UI_characreation_pointToSpend"), self:getWidth() - pointsWid - UI_BORDER_SPACING*2-1, pointsY, 1, 1, 1, 1, UIFont.Medium);
+    if self:PointToSpend() < 0 then
+        self.playButton:setEnable(false);
         self.playButton:setTooltip(getText("UI_charactercreation_needpoints"));
         local hc = getCore():getBadHighlitedColor()
         self:drawTextRight(self:PointToSpend() .. "", self:getWidth() - UI_BORDER_SPACING-1, pointsY, hc:getR(), hc:getG(), hc:getB(), 1, UIFont.Medium);
-	else
-		self.playButton:setEnable(true);
+    else
+        self.playButton:setEnable(true);
         self.playButton:setTooltip(nil);
         local hc = getCore():getGoodHighlitedColor()
         self:drawTextRight(self:PointToSpend() .. "", self:getWidth() - UI_BORDER_SPACING-1, pointsY, hc:getR(), hc:getG(), hc:getB(), 1, UIFont.Medium);
-	end
-	-- title over each table
-	self:drawText(getText("UI_characreation_occupation"), UI_BORDER_SPACING, self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_characreation_availabletraits"), self.listboxTrait:getX(), self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_characreation_choosentraits"), self.listboxTraitSelected:getX(), self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
+    end
+    -- title over each table
+    self:drawText(getText("UI_characreation_occupation"), UI_BORDER_SPACING, self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
+    self:drawText(getText("UI_characreation_availabletraits"), self.listboxTrait:getX(), self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
+    self:drawText(getText("UI_characreation_choosentraits"), self.listboxTraitSelected:getX(), self.listboxProf:getY() - FONT_HGT_MEDIUM - 8, 1, 1, 1, 1, UIFont.Medium);
 
-	self:drawText(getText("UI_characreation_description"), self.listboxTrait:getX(), self.listboxTrait:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
-	self:drawTextRight(getText("UI_characreation_cost"), self.listboxTrait:getX() + self.listboxTrait:getWidth() - 11, self.listboxTrait:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
-	self:drawText(getText("UI_characreation_description"), self.listboxTraitSelected:getX(), self.listboxTraitSelected:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
-	self:drawTextRight(getText("UI_characreation_cost"), self.listboxTraitSelected:getX() + self.listboxTraitSelected:getWidth() - 11, self.listboxTraitSelected:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
+    self:drawText(getText("UI_characreation_description"), self.listboxTrait:getX(), self.listboxTrait:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
+    self:drawTextRight(getText("UI_characreation_cost"), self.listboxTrait:getX() + self.listboxTrait:getWidth() - 11, self.listboxTrait:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
+    self:drawText(getText("UI_characreation_description"), self.listboxTraitSelected:getX(), self.listboxTraitSelected:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
+    self:drawTextRight(getText("UI_characreation_cost"), self.listboxTraitSelected:getX() + self.listboxTraitSelected:getWidth() - 11, self.listboxTraitSelected:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
     self:drawText(getText("UI_characreation_MajorSkills"), self.listboxTraitSelected:getX(), self.listboxXpBoost:getY() - FONT_HGT_SMALL, 1, 1, 1, 1, UIFont.Small);
 
-	if self.tooltipLabel and self.tooltipLabel ~= "" then
-		if self.tooltipRichText.text ~= self.tooltipLabel then
-			self.tooltipRichText.text = string.format(" <RGB:%.2f,%.2f,%.2f> %s", self.tooltipColor.r, self.tooltipColor.g, self.tooltipColor.b, self.tooltipLabel)
-			self.tooltipRichText:paginate()
-		end
-	end
+    if self.tooltipLabel and self.tooltipLabel ~= "" then
+        if self.tooltipRichText.text ~= self.tooltipLabel then
+            self.tooltipRichText.text = string.format(" <RGB:%.2f,%.2f,%.2f> %s", self.tooltipColor.r, self.tooltipColor.g, self.tooltipColor.b, self.tooltipLabel)
+            self.tooltipRichText:paginate()
+        end
+    end
 end
 
 function CharacterCreationProfession:PointToSpend()
     local offset = 0
-	if getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue() ~= 1 then offset = self:negativeTraitOffset() end
-	if SandboxVars and SandboxVars.CharacterFreePoints then
-		return self.pointToSpend + self.cost + SandboxVars.CharacterFreePoints - offset
-	end
-	return self.pointToSpend + self.cost - offset;
+    if getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue() ~= 1 then offset = self:negativeTraitOffset() end
+    if SandboxVars and SandboxVars.CharacterFreePoints then
+        return self.pointToSpend + self.cost + SandboxVars.CharacterFreePoints - offset
+    end
+    return self.pointToSpend + self.cost - offset;
 end
 
 -- fetch all our profession to populate our list box
 function CharacterCreationProfession:populateProfessionList(list)
-	local professionList = ProfessionFactory.getProfessions();
-	for i = 0, professionList:size() - 1 do
-		local newitem = list:addItem(i, professionList:get(i));
+    local professionList = ProfessionFactory.getProfessions();
+    for i = 0, professionList:size() - 1 do
+        local newitem = list:addItem(i, professionList:get(i));
         newitem.tooltip = professionList:get(i):getDescription();
-	end
+    end
 end
 
 -- fetch all our traits to populate our list box
 function CharacterCreationProfession:populateTraitList(list)
-	local traitList = TraitFactory.getTraits();
-	for i = 0, traitList:size() - 1 do
-		local trait = traitList:get(i);
-		if not trait:isFree() and trait:getCost() > 0 and not trait:isRemoveInMP() then
-			local newItem = list:addItem(trait:getLabel(), trait);
-			newItem.tooltip = trait:getDescription();
-		end
-	end
-end
-
-function CharacterCreationProfession:populateBadTraitList(list)
+    list:clear()
     local traitList = TraitFactory.getTraits();
     for i = 0, traitList:size() - 1 do
         local trait = traitList:get(i);
-        if not trait:isFree() and trait:getCost() < 0 and not trait:isRemoveInMP() then
-            local newItem = list:addItem(trait:getLabel(), trait);
-            newItem.tooltip = trait:getDescription();
+        if not trait:isFree() and trait:getCost() > 0 and not trait:isRemoveInMP() and not self:isTraitExcluded(trait) then
+            list:addItem(trait:getLabel(), trait, trait:getDescription());
+        end
+    end
+end
+
+function CharacterCreationProfession:populateBadTraitList(list)
+    list:clear()
+    local traitList = TraitFactory.getTraits();
+    for i = 0, traitList:size() - 1 do
+        local trait = traitList:get(i);
+        if not trait:isFree() and trait:getCost() < 0 and not trait:isRemoveInMP() and not self:isTraitExcluded(trait) then
+            list:addItem(trait:getLabel(), trait, trait:getDescription());
         end
     end
 end
 
 function CharacterCreationProfession:negativeTraitOffset()
---     local offset = self.possibleNegativeTraitOffset()
+    --     local offset = self.possibleNegativeTraitOffset()
 
     local penalty = getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue()
     if penalty == 1 then return 0 end
@@ -1042,39 +1033,39 @@ function CharacterCreationProfession:drawXpBoostMap(y, item, alt)
 end
 
 function CharacterCreationProfession:getTraitColor(trait)
-	local color
-	if trait:getCost() > 0 then
+    local color
+    if trait:getCost() > 0 then
         local hc = getCore():getGoodHighlitedColor()
         color = {r=hc:getR(), g=hc:getG(), b=hc:getB()}
-	elseif trait:getCost() < 0 then
+    elseif trait:getCost() < 0 then
         local hc = getCore():getBadHighlitedColor()
         color = {r=hc:getR(), g=hc:getG(), b=hc:getB()}
-	else
-		color = {r = 1.0, g = 1.0, b = 1.0}
-	end
-	return color
+    else
+        color = {r = 1.0, g = 1.0, b = 1.0}
+    end
+    return color
 end
 
 -- draw the list of available traits
 function CharacterCreationProfession:drawTraitMap(y, item, alt)
-	-- the rect over our item
-	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    -- the rect over our item
+    self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-	-- if we selected an item, we display a grey rect over it
+    -- if we selected an item, we display a grey rect over it
     local isMouseOver = self.mouseoverselected == item.index and not self:isMouseOverScrollBar()
-	if self.selected == item.index then
-		self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
+    if self.selected == item.index then
+        self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
     elseif isMouseOver then
         self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 4, 0.95, 0.05, 0.05, 0.05);
-	end
+    end
 
-	-- icon of the trait
-	local tex = item.item:getTexture()
-	if tex then
-		self:drawTexture(tex, UI_BORDER_SPACING, y + (self.itemheight - tex:getHeight()) / 2, 1, 1, 1, 1);
-	end
+    -- icon of the trait
+    local tex = item.item:getTexture()
+    if tex then
+        self:drawTexture(tex, UI_BORDER_SPACING, y + (self.itemheight - tex:getHeight()) / 2, 1, 1, 1, 1);
+    end
 
-	-- get the right color (green if it's a good trait, red if not)
+    -- get the right color (green if it's a good trait, red if not)
     local hc = getCore():getGoodHighlitedColor()
     local r = 1;
     local g = 1;
@@ -1084,102 +1075,102 @@ function CharacterCreationProfession:drawTraitMap(y, item, alt)
         r = hc:getR();
         g = hc:getG();
         b = hc:getB();
-	elseif item.item:getCost() < 0 then
+    elseif item.item:getCost() < 0 then
         hc = getCore():getBadHighlitedColor()
         r = hc:getR();
         g = hc:getG();
         b = hc:getB();
-	end
-	-- the name of the trait
-	local x = UI_BORDER_SPACING;
-	if item.item:getTexture() then
-		x = item.item:getTexture():getWidth() + UI_BORDER_SPACING*2;
-	end
+    end
+    -- the name of the trait
+    local x = UI_BORDER_SPACING;
+    if item.item:getTexture() then
+        x = item.item:getTexture():getWidth() + UI_BORDER_SPACING*2;
+    end
     local dy = (self.itemheight - self.fontHgt) / 2
-	self:drawText(item.item:getLabel(), x, y + dy, r, g, b, 0.9, UIFont.Small);
+    self:drawText(item.item:getLabel(), x, y + dy, r, g, b, 0.9, UIFont.Small);
 
-	-- the cost of the trait
-	self:drawTextRight(item.item:getRightLabel(), self:getWidth() - UI_BORDER_SPACING*2, y + dy, r, g, b, 0.9, UIFont.Small);
+    -- the cost of the trait
+    self:drawTextRight(item.item:getRightLabel(), self:getWidth() - UI_BORDER_SPACING*2, y + dy, r, g, b, 0.9, UIFont.Small);
 
-	self.itemheightoverride[item.item:getLabel()] = self.itemheight;
+    self.itemheightoverride[item.item:getLabel()] = self.itemheight;
 
-	y = y + self.itemheightoverride[item.item:getLabel()];
+    y = y + self.itemheightoverride[item.item:getLabel()];
 
-	return y;
+    return y;
 end
 
 -- draw the list of profession
 function CharacterCreationProfession:drawProfessionMap(y, item, alt)
-	-- the rect over our item
-	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    -- the rect over our item
+    self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-	-- if we selected an item, we display a grey rect over it
+    -- if we selected an item, we display a grey rect over it
     local isMouseOver = self.mouseoverselected == item.index and not self:isMouseOverScrollBar()
-	if self.selected == item.index then
-		self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
+    if self.selected == item.index then
+        self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
     elseif isMouseOver then
         self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 4, 0.95, 0.05, 0.05, 0.05);
-	end
+    end
 
-	-- icon of the profession
-	if item.item:getTexture() then
-		self:drawTexture(item.item:getTexture(), 8, y + (item.height - 64) / 2, 1, 1, 1, 1);
-	end
+    -- icon of the profession
+    if item.item:getTexture() then
+        self:drawTexture(item.item:getTexture(), 8, y + (item.height - 64) / 2, 1, 1, 1, 1);
+    end
 
-	local x = 7;
+    local x = 7;
 
-	-- the name of the profession
-	if item.item:getTexture() then
-		x = 74;
-	end
-	self:drawText(item.item:getName(), x, y + (item.height - self.fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
+    -- the name of the profession
+    if item.item:getTexture() then
+        x = 74;
+    end
+    self:drawText(item.item:getName(), x, y + (item.height - self.fontHgt) / 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small);
 
-	self.itemheightoverride[item.item:getName()] = self.itemheight;
+    self.itemheightoverride[item.item:getName()] = self.itemheight;
 
-	y = y + self.itemheightoverride[item.item:getName()];
+    y = y + self.itemheightoverride[item.item:getName()];
 
-	return y;
+    return y;
 end
 
 function CharacterCreationProfession.initWorld()
-	if isDemo() then
-		return
-	end
-	if getCore():getGameMode() == "Tutorial" then
-		return
-	end
-	if MainScreen.instance == nil then
-		return
-	end
+    if isDemo() then
+        return
+    end
+    if getCore():getGameMode() == "Tutorial" then
+        return
+    end
+    if MainScreen.instance == nil then
+        return
+    end
 
-	getWorld():setLuaPlayerDesc(MainScreen.instance.desc);
-	getWorld():getLuaTraits():clear()
-	for i, v in pairs(CharacterCreationProfession.instance.listboxTraitSelected.items) do
-		getWorld():addLuaTrait(v.item:getType());
-	end
+    getWorld():setLuaPlayerDesc(MainScreen.instance.desc);
+    getWorld():getLuaTraits():clear()
+    for i, v in pairs(CharacterCreationProfession.instance.listboxTraitSelected.items) do
+        getWorld():addLuaTrait(v.item:getType());
+    end
 
-	local spawnRegion = MapSpawnSelect.instance.selectedRegion
-	if not spawnRegion then
-		-- possible to skip MapSpawnSelect by going from LoadGameScreen to CharacterCreationMain
-		-- i.e., double-clicking an existing savefile with a dead character
-		spawnRegion = MapSpawnSelect.instance:useDefaultSpawnRegion()
-	end
-	if not spawnRegion then
-		error "no spawn region was chosen, don't know where to spawn the player"
-		return
-	end
-	print('using spawn region '..tostring(spawnRegion.name))
-	-- we generate the spawn point for the profession choose
-	local spawn = spawnRegion.points[MainScreen.instance.desc:getProfession()];
-	if not spawn then
-		spawn = spawnRegion.points["unemployed"];
-	end
-	if not spawn then
-		error "there is no spawn point table for the player's profession, don't know where to spawn the player"
-		return
-	end
-	print(#spawn..' possible spawn points')
-	local randSpawnPoint = spawn[(ZombRand(#spawn) + 1)];
+    local spawnRegion = MapSpawnSelect.instance.selectedRegion
+    if not spawnRegion then
+        -- possible to skip MapSpawnSelect by going from LoadGameScreen to CharacterCreationMain
+        -- i.e., double-clicking an existing savefile with a dead character
+        spawnRegion = MapSpawnSelect.instance:useDefaultSpawnRegion()
+    end
+    if not spawnRegion then
+        error "no spawn region was chosen, don't know where to spawn the player"
+        return
+    end
+    print('using spawn region '..tostring(spawnRegion.name))
+    -- we generate the spawn point for the profession choose
+    local spawn = spawnRegion.points[MainScreen.instance.desc:getProfession()];
+    if not spawn then
+        spawn = spawnRegion.points["unemployed"];
+    end
+    if not spawn then
+        error "there is no spawn point table for the player's profession, don't know where to spawn the player"
+        return
+    end
+    print(#spawn..' possible spawn points')
+    local randSpawnPoint = spawn[(ZombRand(#spawn) + 1)];
 
     if randSpawnPoint.position then
         if randSpawnPoint.position == "center" then
@@ -1209,26 +1200,26 @@ function CharacterCreationProfession.initWorld()
 end
 
 function CharacterCreationProfession:onGainJoypadFocus(joypadData)
---    print("character profession gain focus");
+    --    print("character profession gain focus");
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
     self:setISButtonForA(self.playButton);
     self:setISButtonForB(self.backButton);
     self:setISButtonForY(self.randomButton);
-	self:setISButtonForX(self.resetButton);
-	--    self.listboxProf.selected = -1;
+    self:setISButtonForX(self.resetButton);
+    --    self.listboxProf.selected = -1;
 end
 
 function CharacterCreationProfession:onLoseJoypadFocus(joypadData)
-	self.playButton:clearJoypadButton()
-	self.backButton:clearJoypadButton()
-	self.randomButton:clearJoypadButton()
-	self.resetButton:clearJoypadButton()
-	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+    self.playButton:clearJoypadButton()
+    self.backButton:clearJoypadButton()
+    self.randomButton:clearJoypadButton()
+    self.resetButton:clearJoypadButton()
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
 end
 
 function CharacterCreationProfession:onJoypadBeforeDeactivate(joypadData)
-	-- Focus could be on one of the lists
-	self.joyfocus = nil
+    -- Focus could be on one of the lists
+    self.joyfocus = nil
 end
 
 function CharacterCreationProfession:onJoypadDirUp(joypadData)
@@ -1247,47 +1238,47 @@ function CharacterCreationProfession:onJoypadDirRight(joypadData)
 end
 
 function CharacterCreationProfession:onResolutionChange(oldw, oldh, neww, newh)
-	local w = neww * 0.75;
-	local h = newh * 0.8;
-	if (w < 768) then
-		w = 768;
-	end
-	local screenWid = neww;
-	local screenHgt = newh;
-	self:setWidth(w)
-	self:setHeight(h)
-	self:setX((screenWid - w) / 2)
-	self:setY((screenHgt - h) / 2)
-	self:recalcSize()
+    local w = neww * 0.75;
+    local h = newh * 0.8;
+    if (w < 768) then
+        w = 768;
+    end
+    local screenWid = neww;
+    local screenHgt = newh;
+    self:setWidth(w)
+    self:setHeight(h)
+    self:setX((screenWid - w) / 2)
+    self:setY((screenHgt - h) / 2)
+    self:recalcSize()
 
 end
 
 function CharacterCreationProfession:new(x, y, width, height)
-	-- using a virtual 100 height res for doing the UI, so it resizes properly on different rez's.
+    -- using a virtual 100 height res for doing the UI, so it resizes properly on different rez's.
 
-	local o = {}
+    local o = {}
 
-	--o.data = {}
-	o = ISPanelJoypad:new(x, y, width, height);
-	setmetatable(o, self)
-	self.__index = self
-	o.x = x;
-	o.y = y;
+    --o.data = {}
+    o = ISPanelJoypad:new(x, y, width, height);
+    setmetatable(o, self)
+    self.__index = self
+    o.x = x;
+    o.y = y;
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.borderColor = {r=1, g=1, b=1, a=0.2};
     o.width = width
     o.height = height
-	o.itemheightoverride = {};
-	o.anchorLeft = true;
-	o.anchorRight = false;
-	o.anchorTop = true;
-	o.anchorBottom = false;
-	o.profession = nil;
+    o.itemheightoverride = {};
+    o.anchorLeft = true;
+    o.anchorRight = false;
+    o.anchorTop = true;
+    o.anchorBottom = false;
+    o.profession = nil;
     o.whiteBar = getTexture("media/ui/whitebar.png");
-	o.cost = 0;
-	o.fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-	CharacterCreationProfession.instance = o;
-	return o
+    o.cost = 0;
+    o.fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
+    CharacterCreationProfession.instance = o;
+    return o
 end
 
 -- }}}
@@ -1305,7 +1296,7 @@ function CharacterCreationProfession.loadBuild(self, box) -- {{{
     for i=1,#self.listboxProf.items do
         if self.listboxProf.items[i].item:getType() == traits[1] then
             self.listboxProf.selected = i;
-            self:onSelectProf(self.listboxProf.items[self.listboxProf.selected].item);
+            self:onSelectProf(self:getSelectedProf());
         end
     end
 
@@ -1336,7 +1327,7 @@ end
 
 function CharacterCreationProfession:saveBuildValidate(text)
     return text ~= "" and not text:contains("/") and not text:contains("\\") and
-        not text:contains(":") and not text:contains(";") and not text:contains('"')
+            not text:contains(":") and not text:contains(";") and not text:contains('"')
 end
 -- }}}
 
@@ -1347,9 +1338,9 @@ function CharacterCreationProfession:presetExists(findText)
 end
 
 function CharacterCreationProfession:saveBuildStep1() -- {{{
-	local text = self.savedBuilds.options[self.savedBuilds.selected] or ""
+    local text = self.savedBuilds.options[self.savedBuilds.selected] or ""
     if text == "" then
-        text = self.listboxProf.items[self.listboxProf.selected].item:getName()
+        text = self:getSelectedProf():getName()
         if self:presetExists(text) then
             local index = 1
             while self:presetExists(string.format("%s %d", text, index)) do
@@ -1381,7 +1372,7 @@ function CharacterCreationProfession:saveBuildStep2(button, joypadData, param2) 
 
     local builds = BCRC.readSaveFile();
 
-    local prof = self.listboxProf.items[self.listboxProf.selected].item:getType();
+    local prof = self:getSelectedProf():getType();
     local savestring = prof..";";
     for i=1,#self.listboxTraitSelected.items do
         if not self.listboxTraitSelected.items[i].item:isFree() then
@@ -1408,25 +1399,25 @@ function CharacterCreationProfession:saveBuildStep2(button, joypadData, param2) 
         end
         i = i + 1;
     end
---    luautils.okModal("Saved this build!", true);
+    --    luautils.okModal("Saved this build!", true);
 end
 -- }}}
 
 function CharacterCreationProfession:deleteBuildStep1()
-	local delBuild = self.savedBuilds.options[self.savedBuilds.selected]
-	local screenW = getCore():getScreenWidth()
-	local screenH = getCore():getScreenHeight()
-	local modal = ISModalDialog:new((screenW - 230) / 2, (screenH - 120) / 2, 230, 120, getText("UI_characreation_BuildDeletePrompt", delBuild), true, self, CharacterCreationProfession.deleteBuildStep2);
-	modal.backgroundColor.a = 0.9
-	modal:initialise()
-	modal:setCapture(true)
-	modal:addToUIManager()
-	modal:setAlwaysOnTop(true)
-	if self.presetPanel.joyfocus then
-		modal.param1 = self.presetPanel.joyfocus
-		self.presetPanel.joyfocus.focus = modal
-		updateJoypadFocus(self.presetPanel.joyfocus)
-	end
+    local delBuild = self.savedBuilds.options[self.savedBuilds.selected]
+    local screenW = getCore():getScreenWidth()
+    local screenH = getCore():getScreenHeight()
+    local modal = ISModalDialog:new((screenW - 230) / 2, (screenH - 120) / 2, 230, 120, getText("UI_characreation_BuildDeletePrompt", delBuild), true, self, CharacterCreationProfession.deleteBuildStep2);
+    modal.backgroundColor.a = 0.9
+    modal:initialise()
+    modal:setCapture(true)
+    modal:addToUIManager()
+    modal:setAlwaysOnTop(true)
+    if self.presetPanel.joyfocus then
+        modal.param1 = self.presetPanel.joyfocus
+        self.presetPanel.joyfocus.focus = modal
+        updateJoypadFocus(self.presetPanel.joyfocus)
+    end
 end
 
 function CharacterCreationProfession:deleteBuildStep2(button, joypadData) -- {{{
@@ -1436,7 +1427,7 @@ function CharacterCreationProfession:deleteBuildStep2(button, joypadData) -- {{{
     end
 
     if button.internal == "NO" then return end
-    
+
     local delBuild = self.savedBuilds.options[self.savedBuilds.selected];
 
     local builds = BCRC.readSaveFile();
@@ -1458,7 +1449,7 @@ function CharacterCreationProfession:deleteBuildStep2(button, joypadData) -- {{{
         self.savedBuilds.selected = #self.savedBuilds.options
     end
     self:loadBuild(self.savedBuilds)
---    luautils.okModal("Deleted build "..delBuild.."!", true);
+    --    luautils.okModal("Deleted build "..delBuild.."!", true);
 end
 
 function CharacterCreationProfession:randomizeTraits() -- {{{
@@ -1467,7 +1458,7 @@ function CharacterCreationProfession:randomizeTraits() -- {{{
     local size = #self.listboxProf.items;
     local prof = ZombRand(size)+1;
     self.listboxProf.selected = prof;
-    self:onSelectProf(self.listboxProf.items[self.listboxProf.selected].item);
+    self:onSelectProf(self:getSelectedProf());
 
     local numTraits = ZombRand(5);
     for i=0,numTraits do
@@ -1530,23 +1521,31 @@ end
 
 function CharacterCreationProfession:resetBuild() -- {{{
     self.listboxProf.selected = 1;
-    self:onSelectProf(self.listboxProf.items[self.listboxProf.selected].item);
+    self:onSelectProf(self:getSelectedProf());
 
     while #self.listboxTraitSelected.items > 0 do
-        self.listboxTraitSelected.selected = 1;
-        self:onOptionMouseDown(self.removeTraitBtn);
+        self:removeTrait(1);
+        --self.listboxTraitSelected.selected = 1;
+        --self:onOptionMouseDown(self.removeTraitBtn);
     end
+    self:checkXPBoost();
+    self.listboxTraitSelected.selected = -1;
 end
 
 function CharacterCreationProfession:resetTraits()
-	self:onSelectProf(self.listboxProf.items[1].item);
+    self:onSelectProf(self.listboxProf.items[1].item);
 
-	while #self.listboxTraitSelected.items > 0 do
-		self.listboxTraitSelected.selected = 1;
-		self:onOptionMouseDown(self.removeTraitBtn);
-	end
+    while #self.listboxTraitSelected.items > 0 do
+        self:removeTrait(1);
+        --self.listboxTraitSelected.selected = 1;
+        --self:onOptionMouseDown(self.removeTraitBtn);
+    end
 
-	self:onSelectProf(self.listboxProf.items[self.listboxProf.selected].item);
+    self:onSelectProf(self:getSelectedProf());
+end
+
+function CharacterCreationProfession:getSelectedProf()
+    return self.listboxProf:getItem().item
 end
 
 BCRC = {};

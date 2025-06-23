@@ -115,7 +115,12 @@ function SafehouseConfirm:prerender()
 end
 
 function SafehouseConfirm:updateButtons()
-	self.yes:setEnable(true)
+	local p = getPlayerFromUsername(self.entryOwner:getInternalText())
+	if p == nil then
+		self.yes:setEnable(false)
+	else
+		self.yes:setEnable(true)
+	end
 	self.yes.tooltip = nil
 --	local text = self.entryTitle:getText()
 	if self.joyfocus and self.entry.joypadFocused then
@@ -351,16 +356,18 @@ function DetailsPanel:onClickRespawn(clickedOption, enabled)
 end
 
 function DetailsPanel:populateList()
-	local selected = self.playerList.selected
-	self.playerList:clear()
-	for i=1,self.safehouse:getPlayers():size() do
-		local newPlayer = {}
-		newPlayer.name = self.safehouse:getPlayers():get(i-1)
-		if newPlayer.name ~= self.safehouse:getOwner() then
-			self.playerList:addItem(newPlayer.name, newPlayer)
+	if self.safehouse then
+		local selected = self.playerList.selected
+		self.playerList:clear()
+		for i=1,self.safehouse:getPlayers():size() do
+			local newPlayer = {}
+			newPlayer.name = self.safehouse:getPlayers():get(i-1)
+			if newPlayer.name ~= self.safehouse:getOwner() then
+				self.playerList:addItem(newPlayer.name, newPlayer)
+			end
 		end
+		self.playerList.selected = math.min(selected, #self.playerList.items)
 	end
-	self.playerList.selected = math.min(selected, #self.playerList.items)
 end
 
 function DetailsPanel:drawPlayers(y, item, alt)
@@ -389,24 +396,26 @@ function DetailsPanel:render()
 end
 
 function DetailsPanel:prerender()
-	local z = 20
-	local splitPoint = 100
-	local x = 10
-	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
-	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-	self.title:setName(self.safehouse:getTitle())
-	self.changeTitle:setX(self.title:getRight() + UI_BORDER_SPACING)
-	z = z + 30
-	self.owner:setName(self.safehouse:getOwner())
-	if self:isOwner() or self:hasPrivilegedAccessLevel() then
-		self.releaseSafehouse:setVisible(true)
-		self.changeOwnership:setVisible(true)
-		self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING)
-	end
-	if self:hasPrivilegedAccessLevel() then
-		self.quitSafehouse:setY(self.removePlayer.y + FONT_HGT_SMALL + UI_BORDER_SPACING)
-	else
-		self.quitSafehouse:setY(self.playerList.y + self.playerList.height + UI_BORDER_SPACING)
+	if self.safehouse then
+		local z = 20
+		local splitPoint = 100
+		local x = 10
+		self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
+		self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
+		self.title:setName(self.safehouse:getTitle())
+		self.changeTitle:setX(self.title:getRight() + UI_BORDER_SPACING)
+		z = z + 30
+		self.owner:setName(self.safehouse:getOwner())
+		if self:isOwner() or self:hasPrivilegedAccessLevel() then
+			self.releaseSafehouse:setVisible(true)
+			self.changeOwnership:setVisible(true)
+			self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING)
+		end
+		if self:hasPrivilegedAccessLevel() then
+			self.quitSafehouse:setY(self.removePlayer.y + FONT_HGT_SMALL + UI_BORDER_SPACING)
+		else
+			self.quitSafehouse:setY(self.playerList.y + self.playerList.height + UI_BORDER_SPACING)
+		end
 	end
 end
 
@@ -421,12 +430,13 @@ end
 function DetailsPanel:updateButtons()
 	local isOwner = self:isOwner()
 	local hasPrivilegedAccessLevel = self:hasPrivilegedAccessLevel()
+	local isMember = self:isMember()
 	self.releaseSafehouse:setVisible(isOwner or hasPrivilegedAccessLevel)
 	self.changeOwnership:setVisible(isOwner or hasPrivilegedAccessLevel)
 	self.removePlayer.enable = isOwner or hasPrivilegedAccessLevel
 	self.addPlayer.enable = isOwner or hasPrivilegedAccessLevel
 	self.changeTitle.enable = isOwner or hasPrivilegedAccessLevel
-	self.quitSafehouse:setVisible(not isOwner and self.safehouse:getPlayers():contains(self.player:getUsername()))
+	self.quitSafehouse:setVisible(not isOwner and isMember)
 end
 
 function DetailsPanel:hideModalUI()
@@ -509,14 +519,14 @@ end
 
 function DetailsPanel:onQuitSafehouse(button)
 	if button.internal == "YES" then
-		sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.player, true)
+		sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.selectedPlayer)
 	end
 --	button.parent.ui:close()
 end
 
 function DetailsPanel:onRemovePlayerFromSafehouse(button, player)
 	if button.internal == "YES" then
-		sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.player, true)
+		sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.selectedPlayer)
 		button.parent.ui:populateList()
 	end
 end
@@ -531,15 +541,26 @@ function DetailsPanel:onReleaseSafehouse(button, player)
 end
 
 function DetailsPanel:isOwner()
-	return self.safehouse:isOwner(self.player)
+	if self.safehouse then
+		return self.safehouse:isOwner(self.player)
+	else
+		return false
+	end
 end
 
 function DetailsPanel:hasPrivilegedAccessLevel()
-	return self.player:getRole():haveCapability(Capability.CanSetupSafehouses)
+	return self.player:getRole():hasCapability(Capability.CanSetupSafehouses)
+end
+
+function DetailsPanel:isMember()
+	if self.safehouse then
+		return self.safehouse:getPlayers():contains(self.player:getUsername())
+	else
+		return false
+	end
 end
 
 function DetailsPanel:onSafehousesChanged()
-	if not self.safehouse then return end
 	if not SafeHouse.getSafehouseList():contains(self.safehouse) then
 		self:setSafehouse(nil)
 		self:setVisible(false)
@@ -590,6 +611,7 @@ function MultiplayerZoneEditorMode_Safehouse:createChildren()
 	self.addButton = button
 
 	self.detailsPanel = DetailsPanel:new(UI_BORDER_SPACING, self.addButton:getBottom() + UI_BORDER_SPACING, 500, 200, self:getPlayer())
+	self.detailsPanel:onSafehousesChanged()
 	self:addChild(self.detailsPanel)
 end
 
@@ -680,6 +702,9 @@ end
 
 function MultiplayerZoneEditorMode_Safehouse:fillList()
 	local selectedZone = self:getSelectedZone()
+	if self:getSelectedZone() == nil then
+		self.detailsPanel:setVisible(false);
+	end
 	local selectedTitle = selectedZone and selectedZone:getTitle() or nil
 	if self.delaySelectTitle then
 		selectedTitle = self.delaySelectTitle
@@ -850,7 +875,7 @@ function MultiplayerZoneEditorMode_Safehouse:isNewZoneValid(x1, y1, x2, y2)
 	if x1 == x2 or y1 == y2 then return false end
 	if SafeHouse.getSafehouseOverlapping(x1, y1, x2, y2) ~= nil then return false end
 	local character = self:getPlayer()
-	if not character:getRole():haveCapability(Capability.CanSetupSafezone) then return false end
+	if not character:getRole():hasCapability(Capability.CanSetupSafehouses) then return false end
 	return true
 end
 

@@ -507,12 +507,16 @@ function AnimationClipViewer:createChildren()
 	self:setClipList()
 
 	self.soundPanel = SoundPanel:new(self.width - UI_BORDER_SPACING - self.comboAnimal.width - 1, UI_BORDER_SPACING+1, self.comboAnimal.width, 100)
+	self.soundPanel:setAnchorTop(true)
+	self.soundPanel:setAnchorLeft(false)
+	self.soundPanel:setAnchorRight(true)
+	self.soundPanel:setAnchorBottom(false)
 	self:addChild(self.soundPanel)
 
 	self.bottomPanel = ISPanel:new(0, self.height - bottomH, self.width, bottomH)
 	self.bottomPanel:setAnchorTop(false)
-	self.bottomPanel:setAnchorLeft(false)
-	self.bottomPanel:setAnchorRight(false)
+	self.bottomPanel:setAnchorLeft(true)
+	self.bottomPanel:setAnchorRight(true)
 	self.bottomPanel:setAnchorBottom(true)
 	self.bottomPanel:noBackground()
 	self:addChild(self.bottomPanel)
@@ -520,13 +524,23 @@ function AnimationClipViewer:createChildren()
 	local fullWidth = self.width - (UI_BORDER_SPACING+1)*2
 
 	self.soundBar = SoundBar:new(UI_BORDER_SPACING+1, 0, fullWidth, soundBarHeight)
+	self.soundBar:setAnchorTop(true)
+	self.soundBar:setAnchorLeft(true)
+	self.soundBar:setAnchorRight(true)
+	self.soundBar:setAnchorBottom(false)
 	self.bottomPanel:addChild(self.soundBar)
 
 	local timeline = Timeline:new(UI_BORDER_SPACING+1, soundBarHeight + UI_BORDER_SPACING, fullWidth, timelineHeight)
+	timeline:setAnchorTop(true)
+	timeline:setAnchorLeft(true)
+	timeline:setAnchorRight(true)
+	timeline:setAnchorBottom(false)
 	self.bottomPanel:addChild(timeline)
 	self.timeline = timeline
 
 	self.speedScale = ISSliderPanel:new(self.width - 310, self.bottomPanel.y - 30, 300, 20, self, self.onSpeedScaleChanged)
+	self.speedScale.anchorLeft = false
+	self.speedScale.anchorRight = true
 	self.speedScale.anchorTop = false
 	self.speedScale.anchorBottom = true
 	self.speedScale:setValues(0.0, 5.0, 0.1, 1.0)
@@ -648,9 +662,7 @@ end
 function AnimationClipViewer:onResolutionChange(oldw, oldh, neww, newh)
 	self:setWidth(neww)
 	self:setHeight(newh)
-	self.bottomPanel:setX(self.width / 2 - self.bottomPanel.width / 2)
-
-	self.speedScale:setX(self.width / 2 - self.speedScale.width / 2)
+	self.toolBar:setX(self.width / 2 - self.toolBar.width / 2)
 end
 
 function AnimationClipViewer:update()
@@ -674,7 +686,9 @@ function AnimationClipViewer:prerender()
 	ISPanel.prerender(self)
 	self.scene:prerenderEditor()
 
-	self.scene.javaObject:fromLua6("addAxis", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+	if getAnimationViewerState():getBoolean("DrawGrid") then
+		self.scene.javaObject:fromLua6("addAxis", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+	end
 end
 
 function AnimationClipViewer:render()

@@ -14,6 +14,7 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local COL_1_WIDTH = 200
 local COL_2_WIDTH = 50
+local COL_3_WIDTH = 75
 
 --************************************************************************--
 --** ISAdminTicketsUI:initialise
@@ -124,9 +125,12 @@ end
 
 function ISAdminTicketsUI:update()
     self.answerTicketBtn.enable = false;
+    self.removeBtn.enable = false;
     if self.selectedTicket then
+        self.removeBtn.enable = true;
         if not self.selectedTicket:getAnswer() then
             self.answerTicketBtn.enable = true;
+            self.removeBtn.enable = false;
         end
     end
 end
@@ -151,7 +155,8 @@ function ISAdminTicketsUI:drawDatas(y, item, alt)
 
     self:drawText(ticket:getAuthor(), UI_BORDER_SPACING, y + 3, 1, 1, 1, a, self.font);
     self:drawText(ticket:getTicketID() .. "", UI_BORDER_SPACING + COL_1_WIDTH, y + 3, 1, 1, 1, a, self.font);
-    item.item.richText:render(UI_BORDER_SPACING + COL_1_WIDTH + COL_2_WIDTH, y + 3, self)
+    self:drawText(tostring(ticket:isViewed()) .. "", UI_BORDER_SPACING + COL_1_WIDTH + COL_2_WIDTH, y + 3, 1, 1, 1, a, self.font);
+    item.item.richText:render(UI_BORDER_SPACING + COL_1_WIDTH + COL_2_WIDTH + COL_3_WIDTH, y + 3, self)
     local messageHeight = math.max(item.item.richText:getHeight() + 3, self.itemheight)
 --    self:drawText(ticket:getMessage(), 205, y + 2, 1, 1, 1, a, self.font);
 
@@ -165,6 +170,7 @@ function ISAdminTicketsUI:drawDatas(y, item, alt)
 
     self:drawRect(COL_1_WIDTH, y, 1, messageHeight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawRect(COL_1_WIDTH+COL_2_WIDTH, y, 1, messageHeight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    self:drawRect(COL_1_WIDTH+COL_2_WIDTH+COL_3_WIDTH, y, 1, messageHeight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     return y + messageHeight + answerHeight;
 end
@@ -191,6 +197,9 @@ function ISAdminTicketsUI:render()
     self:drawText("ID", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
     x = x + COL_2_WIDTH
     self:drawRect(x, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    self:drawText("Viewed", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
+    x = x + COL_3_WIDTH
+    self:drawRect(x, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText("Message", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
 end
 
@@ -212,6 +221,10 @@ function ISAdminTicketsUI:onClick(button)
         modal:initialise();
         modal.ticketID = self.selectedTicket:getTicketID();
         modal:addToUIManager();
+        if not self.selectedTicket:isViewed() then
+            self.selectedTicket:setViewed(true);
+            viewedTicket(self.player:getUsername(), self.selectedTicket:getTicketID());
+        end
     end
     if button.internal == "REFRESH" then
         self.datas:clear();

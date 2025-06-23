@@ -8,8 +8,6 @@ ISFarmingCursor = ISBuildingObject:derive("ISFarmingCursor");
 
 function ISFarmingCursor:create(x, y, z, north, sprite)
 	local sq = getWorld():getCell():getGridSquare(x, y, z)
-	local playerObj = self.character
-	local object = self:getObjectList()[self.objectIndex]
 
 	local x = getPlayerScreenLeft(self.player)
 	local y = getPlayerScreenTop(self.player)

@@ -29,10 +29,14 @@ function ISSearchWindow:update()
 	end;
 	if ISSearchWindow.showDebug and self.manager.isSearchMode then
 		local currentZone = self.manager.currentZone;
+		local zoneTitleString = self.zoneDisplay.zoneTitleString;
 		if currentZone and currentZone.name then
-			local title = "DEBUG: " .. currentZone.name;
-			local itemsLeft = " - ICONS: (" .. currentZone.itemsLeft .. " / " .. currentZone.itemsTotal .. ")";
-			self:setTitle(title .. itemsLeft);
+			--this doesn't work properly with multiple zones stacked and not really needed except when debugging spawn density which is per zone, so 'fixing' it would just create useless numbers.
+			--for a total of items in a zone, just check the .itemsLeft value of that zone.
+			--local title = "DEBUG: " .. zoneTitleString;
+			--local itemsLeft = " - ICONS: (" .. currentZone.itemsLeft .. " / " .. currentZone.itemsTotal .. ")";
+			--self:setTitle(title .. itemsLeft);
+			self:setTitle("DEBUG: " .. zoneTitleString);
 		else
 			self:setTitle("DEBUG: No Zone Here Or Zone Is Updating");
 		end;
@@ -153,7 +157,7 @@ function ISSearchWindow:checkShowFirstTimeSearchTutorial()
 		--
 		if SurvivalGuideManager.instance and SurvivalGuideManager.instance.panel then
 			SurvivalGuideManager.instance.panel:setVisible(true);
-			SurvivalGuideManager.instance.panel:setPage(11);
+			SurvivalGuideManager.instance.panel:setPage(12);
 			if JoypadState.players[self.player+1] then setJoypadFocus(self.player, SurvivalGuideManager.instance.panel); end;
 			getCore():setShowFirstTimeSearchTutorial(false);
 			getCore():saveOptions();

@@ -23,6 +23,7 @@ function ISMicrowaveUI:initialise()
     self.tempKnob:instantiate();
     self.tempKnob.onMouseUpFct = ISMicrowaveUI.ChangeKnob;
     self.tempKnob.target = self;
+    self.tempKnob.switchSound = "ToggleTemp";
     self:addChild(self.tempKnob);
 
     local texBG = getTexture("media/ui/Knobs/KnobBGMicrowaveTimer.png")
@@ -38,6 +39,7 @@ function ISMicrowaveUI:initialise()
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:setSound("activate", nil)
     self:addChild(self.ok);
 
     self.close = ISButton:new(self:getWidth() - btnWid - 10, self.timerKnob:getBottom() + 20, btnWid, btnHgt, getText("UI_Cancel"), self, ISMicrowaveUI.onClick);

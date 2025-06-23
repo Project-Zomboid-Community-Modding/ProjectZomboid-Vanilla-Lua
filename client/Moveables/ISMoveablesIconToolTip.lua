@@ -28,7 +28,9 @@ function ISMoveablesIconToolTip:render()
         local text = getCell():getDrag(0):getMoveableMode():gsub("^%l", string.upper)
         local textY = (self:getHeight() - self.fontheight * 2) / 2
         self:drawText(getText("IGUI_" .. text), self.marginOffset+5,textY,1.0,0.85,0.05,1.0,UIFont.Small);
-        self:drawText(self.subText, self.marginOffset+5,textY+self.fontheight,0.75,0.75,0.75,1.0,UIFont.Small);
+        if getJoypadData(0) == nil then
+            self:drawText(self.subText, self.marginOffset+5,textY+self.fontheight,0.75,0.75,0.75,1.0,UIFont.Small);
+        end
     end
 end
 

@@ -20,21 +20,20 @@ function ISFluidContainerPanel:initialise()
 end
 
 function ISFluidContainerPanel:createChildren()
-    self.pad = UI_BORDER_SPACING;
-    self.innerHeight = BUTTON_HGT*4+UI_BORDER_SPACING*2+2;
+    local y = UI_BORDER_SPACING+1
+    self.innerHeight = BUTTON_HGT*4 + y*2;
 
     if self.isIso then
         self:getIsoObjectTextures();
     end
 
-    local y = UI_BORDER_SPACING+1;
     if self.doTitle then
-        y = y+FONT_HGT_SMALL+UI_BORDER_SPACING;
+        y = BUTTON_HGT+1;
     end
 
     self.innerY = y;
 
-    self.fluidBar = ISFluidBar:new (0, y, BUTTON_HGT, self.innerHeight, self.player);
+    self.fluidBar = ISFluidBar:new (self.width - BUTTON_HGT - UI_BORDER_SPACING - 1, y, BUTTON_HGT, self.innerHeight, self.player);
     self.fluidBar:initialise();
     self.fluidBar:instantiate();
     self:addChild(self.fluidBar);
@@ -45,6 +44,10 @@ function ISFluidContainerPanel:createChildren()
         w = self.width - self.fluidBar.width - UI_BORDER_SPACING*3 - 2,
         h = self.innerHeight,
     }
+
+	--if self.isIso and (#self.textureList > 0) then
+	--	self.containerBox.x = UI_BORDER_SPACING+1+64*2 + UI_BORDER_SPACING
+	--end
 
     if self.isItem then
         self.itemDropBox = ISItemDropBox:new (self.containerBox.x + UI_BORDER_SPACING+1, self.containerBox.y+UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, true, self, ISFluidContainerPanel.addItem, ISFluidContainerPanel.removeItem, ISFluidContainerPanel.verifyItem, nil );
@@ -76,10 +79,15 @@ function ISFluidContainerPanel:createChildren()
 end
 
 function ISFluidContainerPanel:clickedDropBox(x, y)
-    self = self.parent;
+    local self = self.parent;
     local validItems = self.itemDropBox:getValidItems();
+    if #validItems == 0 then return end
     local parent = self.parent;
-    local context = ISContextMenu.get(0, 0, 0)
+    local playerNum = self.player:getPlayerNum()
+    local oldFocus = JoypadState.players[playerNum+1] and JoypadState.players[playerNum+1].focus or nil
+    local x = parent:getAbsoluteX() + parent:getWidth();
+    local y = parent:getAbsoluteY() + self:getY();
+    local context = ISContextMenu.get(playerNum, x, y)
     local addedItems = {};
     for i,item in ipairs(validItems) do
         local name = item:getName() .. " (" .. round(item:getFluidContainer():getAmount() * 1000, 2) .. " mL)";
@@ -90,14 +98,16 @@ function ISFluidContainerPanel:clickedDropBox(x, y)
     for i,v in pairs(addedItems) do
         context:addOption(i, self.itemDropBox, ISItemDropBox.onDropItem, v);
     end
-    local x = parent:getAbsoluteX() + parent:getWidth();
-    local y = parent:getAbsoluteY() + self:getY();
     if self.isLeft then
         x = parent:getAbsoluteX() - context:getWidth();
+        context:setSlideGoalX(x + 20, x);
     end
     context:bringToTop();
-    context:setX(x);
-    context:setY(y);
+    if oldFocus then
+        context.origin = oldFocus
+        context.mouseOver = 1
+        setJoypadFocus(playerNum, context)
+    end
 end
 
 function ISFluidContainerPanel:drawTextureIso(texture, x, y, a, r, g, b)
@@ -130,42 +140,42 @@ function ISFluidContainerPanel:prerender()
     end
     local ownerOffsetY = self.owner:getRenderYOffset() * Core.getTileScale();
 
-    -- In case the container is IsoObject draw the square tiles, outline the owner object.
-    if self.textureList and #self.textureList > 0 then
-        local x = self.containerBox.x + 20;
-        local y = self.containerBox.y;
-        for i = 1, #self.textureList do
-            local children = self.textureList[i].children;
-            local texture = self.textureList[i].texture;
-            local offsetY = -self.textureList[i].offsetY;-- / Core.getTileScale()
-            offsetY = offsetY + 50;
-            if self.textureList[i].texture == self.ownerTexture and self.textureList[i].offsetY == ownerOffsetY then
-                self:drawTextureIso(texture, x, y + offsetY, 1);
-
-                if children and #children>0 then
-                    for j=1, #children do
-                        local childTexture = children[j].texture;
-                        local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
-                        self:drawTextureIso(childTexture, x, y + childOffsetY);
-                    end
-                end
-
-                if self.doOwnerOutlines then
-                    self:drawTextureOutlines(texture, x, y + offsetY);
-
-                    if children and #children>0 then
-                        for j=1, #children do
-                            local childTexture = children[j].texture;
-                            local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
-                            self:drawTextureOutlines(childTexture, x, y + childOffsetY);
-                        end
-                    end
-                end
-            else
-                self:drawTextureIso(texture, x, y + offsetY, 0.5);
-            end
-        end
-    end
+--    -- In case the container is IsoObject draw the square tiles, outline the owner object.
+--    if self.textureList and #self.textureList > 0 then
+--        local x = UI_BORDER_SPACING+1;
+--        local y = self:getHeight() - 128*2;
+--        for i = 1, #self.textureList do
+--            local children = self.textureList[i].children;
+--            local texture = self.textureList[i].texture;
+--            local offsetY = -self.textureList[i].offsetY;-- / Core.getTileScale()
+--            --offsetY = offsetY + 50;
+--            if self.textureList[i].texture == self.ownerTexture and self.textureList[i].offsetY == ownerOffsetY then
+--                self:drawTextureIso(texture, x, y + offsetY, 1);
+--
+--                if children and #children>0 then
+--                    for j=1, #children do
+--                        local childTexture = children[j].texture;
+--                        local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
+--                        self:drawTextureIso(childTexture, x, y + childOffsetY);
+--                    end
+--                end
+--
+--                if self.doOwnerOutlines then
+--                    self:drawTextureOutlines(texture, x, y + offsetY);
+--
+--                    if children and #children>0 then
+--                        for j=1, #children do
+--                            local childTexture = children[j].texture;
+--                            local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
+--                            self:drawTextureOutlines(childTexture, x, y + childOffsetY);
+--                        end
+--                    end
+--                end
+--            else
+--                self:drawTextureIso(texture, x, y + offsetY, 0.5);
+--            end
+--        end
+--    end
 end
 
 function ISFluidContainerPanel:render()
@@ -175,17 +185,19 @@ function ISFluidContainerPanel:render()
 
     if self.doTitle and self.title then
         c = self.textColor;
-        self:renderText(self.title, self.width/2,UI_BORDER_SPACING+1, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextCentre);
+        self:renderText(self.title, self.width/2,(BUTTON_HGT-FONT_HGT_SMALL)/2, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextCentre);
     end
 
     local name = false
 
-    local x = self.containerBox.x + UI_BORDER_SPACING*2+1 + BUTTON_HGT
+    local x = self.containerBox.x + UI_BORDER_SPACING+1;
     local y = self.containerBox.y + UI_BORDER_SPACING+1;
 	
     c = self.textColor;
+    local containerNameRight = x
     if self.containerName then
         self:renderText(self.containerName, x,y+3, c.r,c.g,c.b,c.a,UIFont.Small);
+        containerNameRight = x + getTextManager():MeasureStringX(UIFont.Small, self.containerName)
     else
         --try to get containerName automatically.
         if self.container and self.container:getFluidContainer() then
@@ -197,7 +209,12 @@ function ISFluidContainerPanel:render()
         end
 
         if name then
-            self:renderText(name, x,y+3, c.r,c.g,c.b,c.a,UIFont.Small);
+            local tx = x
+            if self.itemDropBox then
+                tx = self.itemDropBox:getRight() + UI_BORDER_SPACING
+            end
+            self:renderText(name, tx, y+3, c.r,c.g,c.b,c.a,UIFont.Small);
+            containerNameRight = tx + getTextManager():MeasureStringX(UIFont.Small, name)
         end
     end
 
@@ -257,31 +274,11 @@ function ISFluidContainerPanel:render()
             self:renderText(self.info.capacity.tag, tagx,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight);
             c = self.textColor;
             self:renderText(self.info.capacity.value, valx,y, c.r,c.g,c.b,c.a,UIFont.Small);
-
-            local valRight = valx + UI_BORDER_SPACING + 1 + math.max(
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.capacity.value),
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.stored.value),
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.free.value)
-            )
-            valRight = math.max(valRight, UI_BORDER_SPACING*3+1 + BUTTON_HGT + getTextManager():MeasureStringX(UIFont.Small, name))
-            self.containerBox.w = valRight
-            self.width = math.max(self.containerBox.x + self.containerBox.w, self.fluidBar:getRight()) + UI_BORDER_SPACING+1
-            self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING);
         end
-	else
-		    local tagWid = math.max(
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.capacity.tag),
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.stored.tag),
-                    getTextManager():MeasureStringX(UIFont.Small, self.info.free.tag)
-            )
-			local tagx = self.containerBox.x + UI_BORDER_SPACING + 1 + tagWid
-	        local valx = tagx + UI_BORDER_SPACING;	
-			
-			local valRight = valx + UI_BORDER_SPACING + 1 + getTextManager():MeasureStringX(UIFont.Small, " 000 mL");
-			self.containerBox.w = valRight
-			self.width = math.max(self.containerBox.x + self.containerBox.w, self.fluidBar:getRight()) + UI_BORDER_SPACING+1
-			self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING);
     end
+
+    self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING);
+    self:setWidth( math.max(self.containerBox.x + self.containerBox.w, self.fluidBar:getRight()) + UI_BORDER_SPACING+1 );
 
     c = self.borderOuterColor;
     self:drawRectBorder(0, 0, self.width, self.height, c.a, c.r, c.g, c.b);
@@ -378,7 +375,7 @@ function ISFluidContainerPanel:setIsLeft(_b)
     if not self.customTitle then
         self.title = self.isLeft and getText("Fluid_Source") or getText("Fluid_Target");
     end
-
+--[[ This conflicts with code in render()
     if not self.isLeft then
         local x = UI_BORDER_SPACING+1;
         self.fluidBar:setX(x);
@@ -388,6 +385,7 @@ function ISFluidContainerPanel:setIsLeft(_b)
 			self.itemDropBox:setX(self.containerBox.x + UI_BORDER_SPACING+1)
 		end
     end
+--]]
 end
 
 function ISFluidContainerPanel:setInvalid(_b)
@@ -489,8 +487,9 @@ function ISFluidContainerPanel:onClose()
 end
 
 function ISFluidContainerPanel:new (x, y, _player, _container, _doTitle, _isLeft, _isoHeight)
-    local width = 300;
-    local height = BUTTON_HGT*5+UI_BORDER_SPACING*5+FONT_HGT_SMALL;
+    local width = math.max(140 + (getCore():getOptionFontSizeReal()*40), 200); --160 is the smallest size that fits the smallest font size
+
+    local height = BUTTON_HGT*4 + UI_BORDER_SPACING*3 + 4 + (_doTitle and BUTTON_HGT or UI_BORDER_SPACING);
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

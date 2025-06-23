@@ -89,21 +89,36 @@ function ISAddNonPvpZoneUI:prerender()
         endY = startingY;
         startingY = y2;
     end
-    local width = math.abs(startingX - endX) * 2;
-    local height = math.abs(startingY - endY) * 2;
-    self:drawText(getText("IGUI_PvpZone_CurrentZoneSize"), x, z+3,1,1,1,1,UIFont.Small);
-    self.size = math.max(luautils.round(width + height,0),1);
-    self:drawText(self.size .. "", splitPoint, z,1,1,1,1,UIFont.Small);
-    z = z + BUTTON_HGT + UI_BORDER_SPACING;
-    self.defineStartingPointBtn:setY(z);
-    z = z + BUTTON_HGT + UI_BORDER_SPACING;
-    self.ok:setY(z);
-    self.cancel:setY(z)
-
-    --self:setHeight(z+BUTTON_HGT+UI_BORDER_SPACING+1)
-
-    local r,g,b,a = 0.0, 0.0, 1.0, 0.25
-    addAreaHighlight(startingX, startingY, endX, endY, 0, r, g, b, a)
+    -- check for zones interception
+    if (self.player:checkZonesInterception(startingX,endX,startingY,endY)) then
+        self.interception = true;
+        self:drawText(getText("IGUI_PvpZone_ZoneInterception"), x, z+3,1,1,1,1,UIFont.Small);
+        z = z + BUTTON_HGT + UI_BORDER_SPACING;
+        self.defineStartingPointBtn:setY(z);
+        z = z + BUTTON_HGT + UI_BORDER_SPACING;
+        self.ok:setY(z);
+        self.ok:setEnable(false);
+        self.ok.enable = false;
+        self.cancel:setY(z)
+        --self:setHeight(z+BUTTON_HGT+UI_BORDER_SPACING+1)
+        local r,g,b,a = 1.0, 0.0, 0.0, 0.25
+        addAreaHighlight(startingX, startingY, endX, endY, 0, r, g, b, a)
+    else
+        self.interception = false;
+        local width = math.abs(startingX - endX) * 2;
+        local height = math.abs(startingY - endY) * 2;
+        self:drawText(getText("IGUI_PvpZone_CurrentZoneSize"), x, z+3,1,1,1,1,UIFont.Small);
+        self.size = math.max(luautils.round(width + height,0),1);
+        self:drawText(self.size .. "", splitPoint, z,1,1,1,1,UIFont.Small);
+        z = z + BUTTON_HGT + UI_BORDER_SPACING;
+        self.defineStartingPointBtn:setY(z);
+        z = z + BUTTON_HGT + UI_BORDER_SPACING;
+        self.ok:setY(z);
+        self.cancel:setY(z)
+        --self:setHeight(z+BUTTON_HGT+UI_BORDER_SPACING+1)
+        local r,g,b,a = 0.0, 0.0, 1.0, 0.25
+        addAreaHighlight(startingX, startingY, endX, endY, 0, r, g, b, a)
+    end
 --[[
     for x2=startingX, endX do
         for y=startingY, endY do
@@ -122,7 +137,7 @@ function ISAddNonPvpZoneUI:prerender()
 end
 
 function ISAddNonPvpZoneUI:updateButtons()
-    self.ok.enable = self.size > 1;
+    self.ok.enable = self.size ~= nil and self.size > 1 and not self.interception;
 end
 
 function ISAddNonPvpZoneUI:onClick(button)
@@ -185,6 +200,7 @@ function ISAddNonPvpZoneUI:new(x, y, width, height, player)
     o.startingY = player:getY();
     o.endX = player:getX();
     o.endY = player:getY();
+    o.interception = false;
     player:setSeeNonPvpZone(true);
     o.moveWithMouse = true;
     ISAddNonPvpZoneUI.instance = o;

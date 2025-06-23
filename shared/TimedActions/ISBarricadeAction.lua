@@ -71,7 +71,8 @@ function ISBarricadeAction:start()
         addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), radius, radius)
     else
         self:setActionAnim("Build")
-        self.sound = self.character:getEmitter():playSound("Hammering")
+        -- Hammering sound is played by animation events.
+--        self.sound = self.character:getEmitter():playSound("Hammering")
         local radius = 20 * self.character:getHammerSoundMod()
         addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), radius, radius)
     end

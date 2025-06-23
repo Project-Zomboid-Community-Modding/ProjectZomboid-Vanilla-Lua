@@ -285,6 +285,14 @@ function ISButtonPrompt:openDeviceOptions(device)
     ISRadioWindow.activate( playerObj, device, false );
 end
 
+function ISButtonPrompt:openEntityUI(entity)
+    local playerObj = getSpecificPlayer(self.player)
+    if ISEntityUI.CanOpenWindowFor(playerObj, entity) then
+        ISEntityUI.OpenWindow(playerObj, entity)
+    end
+end
+
+
 function ISButtonPrompt:cmdUseVehicle(vehicle, part)
     local playerObj = getSpecificPlayer(self.player)
     VehicleUtils.callLua(part:getLuaFunction("use"), vehicle, part, playerObj)
@@ -524,6 +532,20 @@ function ISButtonPrompt:testAButtonAction(dir)
         end
         if device and not getCore():getGameMode() == "Tutorial" then
             self:setAPrompt(getText("IGUI_DeviceOptions"), self.openDeviceOptions, device)
+        end
+    end
+
+    if self.aPrompt == nil and square2 ~= nil then
+        for i=1,square2:getObjects():size() do
+            local object = square2:getObjects():get(i-1)
+            local obj = object:getMasterObject()
+            if ISEntityUI.CanOpenWindowFor(playerObj, obj) then
+                local label = obj:getEntityDisplayName()
+                if (not label) or (label == GameEntity.getDefaultEntityDisplayName()) then
+                    label = getText("Entity_Open_Window")
+                end
+                self:setAPrompt(label, self.openEntityUI, obj)
+            end
         end
     end
 end
@@ -1116,8 +1138,8 @@ function ISButtonPrompt:setRBPrompt(str, func, param1, param2, param3, param4)
     self.rbParams = {param1, param2, param3, param4}
 end
 
-function ISButtonPrompt:onJoypadButtonReleased(button)
-    ISFirearmRadialMenu.onJoypadButtonReleased(self, button)
+function ISButtonPrompt:onJoypadButtonReleased(button, joypadData)
+    ISFirearmRadialMenu.onJoypadButtonReleased(self, button, joypadData)
 end
 
 --************************************************************************--

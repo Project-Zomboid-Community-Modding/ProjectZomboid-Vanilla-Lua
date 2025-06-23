@@ -13,7 +13,7 @@ function ISJoypadListBox:fill()
 	for i=1,getMaxActivePlayers() do
 		local playerObj = getSpecificPlayer(i-1)
 		if JoypadState.players[i] == nil and playerObj and playerObj:isAlive() then
-			if not getRemotePlayModeActive() then
+			if not getRemotePlayModeActive() or not isClient() or isCoopHost() then
 				listBox:addItem(getText("IGUI_Controller_TakeOverPlayer", i), { cmd = "takeover", playerNum = i-1 })
 			end
 		end
@@ -55,6 +55,12 @@ function ISJoypadListBox:fill()
 		end
 	end
 	listBox:addItem(getText("UI_Cancel"), { cmd = "cancel" })
+	local maxWidth = 200
+	for i=1,listBox:size() do
+		local textWidth = getTextManager():MeasureStringX(listBox.font, listBox.items[i].text)
+		maxWidth = math.max(maxWidth, 15 + textWidth + 15)
+	end
+	listBox:setWidth(maxWidth)
 	listBox.selected = 1
 	listBox:setHeight(math.min(listBox:getScrollHeight(), getCore():getScreenHeight()))
 end

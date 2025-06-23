@@ -35,14 +35,15 @@ stashMap:addContainer("SurvivorCrate", "carpentry_01_16", nil, nil, 12643, 3228,
 
 -- LVMap3 (tools)
 local stashMap = StashUtil.newStash("LouisvilleStashMap3", "Map", "Base.LouisvilleMap8", "Stash_AnnotedMap");
---stashMap.buildingX = 13003
---stashMap.buildingY = 3246
+stashMap.buildingX = 13003
+stashMap.buildingY = 3246
 stashMap:addStamp(nil, "Stash_LVMap3_Text1", 12954, 3181, 0.06, 0.39, 0.17)
 stashMap:addStamp("ArrowSouth", nil, 13005, 3233, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_LVMap3_Text2", 13017, 3225, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_LVMap3_Text3", 12999, 3257, 0.06, 0.39, 0.17)
 stashMap.spawnTable = "ToolsCache1";
-stashMap:addContainer("ToolsBox","carpentry_01_16",nil,nil,nil,nil,nil);
+stashMap:addContainer("Toolbox","carpentry_01_16",nil,nil,nil,nil,nil);
+
 -- LVMap4 (general location info)
 local stashMap = StashUtil.newStash("LouisvilleStashMap4", "Map", "Base.LouisvilleMap9", "Stash_AnnotedMap")
 stashMap.buildingX = 13961

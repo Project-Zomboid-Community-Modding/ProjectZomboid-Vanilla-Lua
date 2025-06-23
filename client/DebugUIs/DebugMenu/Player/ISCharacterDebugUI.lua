@@ -25,18 +25,17 @@ function ISCharacterDebugUI:initialise()
     ISPanel.initialise(self);
 
     local tckWidth = UI_BORDER_SPACING*2 + BUTTON_HGT + math.max(
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Self")),
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Player")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_LocalPlayer")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_RemotePlayer")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Zombie")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Animal")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_DeadBody")),
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Owner")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Position")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Prediction")),
             getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_State")),
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Variables")),
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Hit")),
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Desync"))
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_StateVariables")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Animation")),
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_CharacterDebug_Variables"))
     )
 
     local tckTop = UI_BORDER_SPACING+1
@@ -44,16 +43,16 @@ function ISCharacterDebugUI:initialise()
     self:setWidth(UI_BORDER_SPACING * 6 + 5 * tckWidth)
     self:setHeight(tckTop + (BUTTON_HGT+UI_BORDER_SPACING)*(self.tcks+1)+1)
 
-    self.tickBoxSelf = ISTickBox:new(tckLeft, tckTop, tckWidth, BUTTON_HGT, getText("IGUI_CharacterDebug_Self"), self, self.onTicked)
-    self.tickBoxSelf.choicesColor = {r=1, g=1, b=1, a=1}
-    self.tickBoxSelf:setFont(UIFont.Small)
-    self:addChild(self.tickBoxSelf)
+    self.tickBoxLocalPlayer= ISTickBox:new(tckLeft, tckTop, tckWidth, BUTTON_HGT, getText("IGUI_CharacterDebug_LocalPlayer"), self, self.onTicked)
+    self.tickBoxLocalPlayer.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxLocalPlayer:setFont(UIFont.Small)
+    self:addChild(self.tickBoxLocalPlayer)
     tckLeft = tckLeft + tckWidth + UI_BORDER_SPACING
 
-    self.tickBoxPlayer = ISTickBox:new(tckLeft, tckTop, tckWidth, BUTTON_HGT, getText("IGUI_CharacterDebug_Player"), self, self.onTicked)
-    self.tickBoxPlayer.choicesColor = {r=1, g=1, b=1, a=1}
-    self.tickBoxPlayer:setFont(UIFont.Small)
-    self:addChild(self.tickBoxPlayer)
+    self.tickBoxRemotePlayer = ISTickBox:new(tckLeft, tckTop, tckWidth, BUTTON_HGT, getText("IGUI_CharacterDebug_RemotePlayer"), self, self.onTicked)
+    self.tickBoxRemotePlayer.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxRemotePlayer:setFont(UIFont.Small)
+    self:addChild(self.tickBoxRemotePlayer)
     tckLeft = tckLeft + tckWidth + UI_BORDER_SPACING
 
     self.tickBoxZombie = ISTickBox:new(tckLeft, tckTop, tckWidth, BUTTON_HGT, getText("IGUI_CharacterDebug_Zombie"), self, self.onTicked)
@@ -92,16 +91,16 @@ function ISCharacterDebugUI:initialise()
     self.btnClose:enableCancelColor()
     self:addChild(self.btnClose)
 
-    self.setFunctionSelf = {}
-    self:addTickOptions(self.tickBoxSelf, self.setFunctionSelf)
-    self.setFunctionPlayer = {}
-    self:addTickOptions(self.tickBoxPlayer, self.setFunctionPlayer)
+    self.setFunctionLocalPlayer = {}
+    self:addTickOptions(self.tickBoxLocalPlayer, self.setFunctionLocalPlayer, "LocalPlayer")
+    self.setFunctionRemotePlayer = {}
+    self:addTickOptions(self.tickBoxRemotePlayer, self.setFunctionRemotePlayer, "RemotePlayer")
     self.setFunctionZombie = {}
-    self:addTickOptions(self.tickBoxZombie, self.setFunctionZombie)
+    self:addTickOptions(self.tickBoxZombie, self.setFunctionZombie, "Zombie")
     self.setFunctionAnimal = {}
-    self:addTickOptions(self.tickBoxAnimal, self.setFunctionAnimal)
+    self:addTickOptions(self.tickBoxAnimal, self.setFunctionAnimal, "Animal")
     self.setFunctionDeadBody = {}
-    self:addTickOptions(self.tickBoxDeadBody, self.setFunctionDeadBody)
+    self:addTickOptions(self.tickBoxDeadBody, self.setFunctionDeadBody, "DeadBody")
 end
 
 function ISCharacterDebugUI:onClick(button)
@@ -121,39 +120,35 @@ function ISCharacterDebugUI:addOption(tickBox, text, selected, setFunction, tick
     tickSetFunction[n] = setFunction
 end
 
-function ISCharacterDebugUI:addTickOptions(tickBox, tickSetFunction)
+function ISCharacterDebugUI:addTickOptions(tickBox, tickSetFunction, name)
     local prefix = "Multiplayer.DebugFlags."
     self:addOption(tickBox, tickBox.name,
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Enable"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Enable", selected); end,
-            tickSetFunction);
-    self:addOption(tickBox, getText("IGUI_CharacterDebug_Owner"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Owner"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Owner", selected); end,
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".Enable"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".Enable", selected); end,
             tickSetFunction);
     self:addOption(tickBox, getText("IGUI_CharacterDebug_Position"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Position"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Position", selected); end,
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".Position"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".Position", selected); end,
             tickSetFunction);
     self:addOption(tickBox, getText("IGUI_CharacterDebug_Prediction"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Prediction"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Prediction", selected); end,
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".Prediction"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".Prediction", selected); end,
             tickSetFunction);
     self:addOption(tickBox, getText("IGUI_CharacterDebug_State"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".State"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".State", selected); end,
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".State"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".State", selected); end,
+            tickSetFunction);
+    self:addOption(tickBox, getText("IGUI_CharacterDebug_StateVariables"),
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".StateVariables"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".StateVariables", selected); end,
+            tickSetFunction);
+    self:addOption(tickBox, getText("IGUI_CharacterDebug_Animation"),
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..name..".Animation"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".Animation", selected); end,
             tickSetFunction);
     self:addOption(tickBox, getText("IGUI_CharacterDebug_Variables"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Variables"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Variables", selected); end,
-            tickSetFunction);
-    self:addOption(tickBox, getText("IGUI_CharacterDebug_Hit"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Hit"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Hit", selected); end,
-            tickSetFunction);
-    self:addOption(tickBox, getText("IGUI_CharacterDebug_Desync"),
-            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..tickBox.name..".Desync"),
-            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..tickBox.name..".Desync", selected); end,
+            getDebugOptions():getBoolean("Multiplayer.DebugFlags."..".Variables"),
+            function(self, selected) getDebugOptions():setBoolean("Multiplayer.DebugFlags."..name..".Variables", selected); end,
             tickSetFunction);
 end
 
@@ -170,11 +165,11 @@ function ISCharacterDebugUI:prerender()
 end
 
 function ISCharacterDebugUI:apply()
-    for i=1,#self.tickBoxSelf.options do
-        self.setFunctionSelf[i](self, self.tickBoxSelf:isSelected(i))
+    for i=1,#self.tickBoxLocalPlayer.options do
+        self.setFunctionLocalPlayer[i](self, self.tickBoxLocalPlayer:isSelected(i))
     end
-    for i=1,#self.tickBoxPlayer.options do
-        self.setFunctionPlayer[i](self, self.tickBoxPlayer:isSelected(i))
+    for i=1,#self.tickBoxRemotePlayer.options do
+        self.setFunctionRemotePlayer[i](self, self.tickBoxRemotePlayer:isSelected(i))
     end
     for i=1,#self.tickBoxZombie.options do
         self.setFunctionZombie[i](self, self.tickBoxZombie:isSelected(i))
@@ -201,6 +196,6 @@ function ISCharacterDebugUI:new(x, y, width, height)
     o.player = getPlayer();
     o.moveWithMouse = true;
     ISCharacterDebugUI.instance = o;
-    o.tcks = 8
+    o.tcks = 7
     return o;
 end

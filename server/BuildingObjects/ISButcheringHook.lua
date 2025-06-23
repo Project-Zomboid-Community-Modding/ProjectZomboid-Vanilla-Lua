@@ -9,6 +9,7 @@ ISButcheringHook = ISBuildingObject:derive("ISButcheringHook");
 --**
 --************************************************************************--
 function ISButcheringHook:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISButcheringHook\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoButcherHook.new(self.sq);
@@ -24,6 +25,7 @@ function ISButcheringHook:new(name, sprite)
 	o:setSprite(sprite);
 	o:setNorthSprite(sprite);
 	o.name = name;
+	showDebugInfoInChat("Cursor New \'ISButcheringHook\'")
 	return o;
 end
 

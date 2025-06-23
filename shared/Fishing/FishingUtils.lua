@@ -37,8 +37,8 @@ function Fishing.Utils.isStopFishingButtonPressed(joypad)
     return false
 end
 
-function Fishing.Utils.isPlayerAimOnWater(player)
-    if not player:isAiming() then return false end
+function Fishing.Utils.isPlayerAimOnWater(player, autoAim)
+    if (not player:isAiming() and not autoAim) then return false end
 
     local x, y = Fishing.Utils.getAimCoords(player)
 
@@ -51,6 +51,11 @@ function Fishing.Utils.isPlayerAimOnWater(player)
         return true
     end
     return false
+end
+
+function Fishing.Utils.isAccessibleAimDist(player)
+    local x, y = Fishing.Utils.getAimCoords(player)
+    return IsoUtils.DistanceTo(player:getX(), player:getY(), x, y) < 16
 end
 
 Fishing.Utils.tempVec2 = Vector2.new()
@@ -87,13 +92,13 @@ end
 -- Small, Medium, Big
 Fishing.Utils.fishSizeChancesBySkillLevel = {}
 Fishing.Utils.fishSizeChancesBySkillLevel[0] = { 95, 5, 0 }
-Fishing.Utils.fishSizeChancesBySkillLevel[1] = { 85, 15, 1 }
-Fishing.Utils.fishSizeChancesBySkillLevel[2] = { 75, 20, 5 }
-Fishing.Utils.fishSizeChancesBySkillLevel[3] = { 65, 25, 10 }
-Fishing.Utils.fishSizeChancesBySkillLevel[4] = { 55, 30, 15 }
-Fishing.Utils.fishSizeChancesBySkillLevel[5] = { 40, 40, 20 }
-Fishing.Utils.fishSizeChancesBySkillLevel[6] = { 30, 40, 30 }
-Fishing.Utils.fishSizeChancesBySkillLevel[7] = { 25, 40, 35 }
+Fishing.Utils.fishSizeChancesBySkillLevel[1] = { 85, 15, 0 }
+Fishing.Utils.fishSizeChancesBySkillLevel[2] = { 75, 24, 1 }
+Fishing.Utils.fishSizeChancesBySkillLevel[3] = { 70, 25, 5 }
+Fishing.Utils.fishSizeChancesBySkillLevel[4] = { 60, 30, 10 }
+Fishing.Utils.fishSizeChancesBySkillLevel[5] = { 48, 40, 12 }
+Fishing.Utils.fishSizeChancesBySkillLevel[6] = { 35, 45, 20 }
+Fishing.Utils.fishSizeChancesBySkillLevel[7] = { 25, 45, 30 }
 Fishing.Utils.fishSizeChancesBySkillLevel[8] = { 20, 40, 40 }
 Fishing.Utils.fishSizeChancesBySkillLevel[9] = { 15, 40, 45 }
 Fishing.Utils.fishSizeChancesBySkillLevel[10] = { 10, 40, 50 }

@@ -337,9 +337,9 @@ function ISRadioInteractions:getInstance()
         end
 
         if doArrow~=0 then
-            HaloTextHelper.addTextWithArrow(currentPlayer, _str, doArrow==1 and true or false, color);
+            HaloTextHelper.addTextWithArrow(currentPlayer, _str, "[br/]", doArrow==1 and true or false, color);
         else
-            HaloTextHelper.addText(currentPlayer, _str, color);
+            HaloTextHelper.addText(currentPlayer, _str, "[br/]", color);
         end
     end
 

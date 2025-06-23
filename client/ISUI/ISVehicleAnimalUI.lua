@@ -1,31 +1,105 @@
-require "ISUI/ISCollapsableWindow"
+require "ISUI/ISCollapsableWindowJoypad"
 
-ISVehicleAnimalUI = ISCollapsableWindow:derive("ISVehicleAnimalUI")
+ISVehicleAnimalUI = ISCollapsableWindowJoypad:derive("ISVehicleAnimalUI")
 ISVehicleAnimalUI.ui = nil;
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
+-----
+
+-- Avatar and controls for a single animal in a vehicle.
+ISAnimalInVehiclePanel = ISPanelJoypad:derive("ISAnimalInVehiclePanel")
+
+function ISAnimalInVehiclePanel:createChildren()
+    local btnWidth = self.animalUI.btnWidth
+    local btnHeight = self.animalUI.btnHeight
+
+    self.avatar = ISVehicleAnimal3DModel:new(0, 0, self.width, self.height - btnHeight - 5)
+    self:addChild(self.avatar)
+end
+
+function ISAnimalInVehiclePanel:prerender()
+    local x,y,w,h = 0, 0, self.avatar.width, self.avatar.height
+    self:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3)
+    self:drawTextureScaled(self.animalUI.avatarBackgroundTexture, x, y, w, h, 1, 0.4, 0.4, 0.4)
+    if self.joypadFocused then
+        self:renderJoypadFocus(-2, -2, w + 4, h + 4)
+    end
+end
+
+function ISAnimalInVehiclePanel:onRightMouseUp(x, y)
+    local animal = self.avatar.animal
+    local context = ISContextMenu.get(self.animalUI.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
+    context:addOption(getText("ContextMenu_AnimalInfo"), self.animalUI, ISVehicleAnimalUI.onAnimalInfo, animal);
+    local option = context:addOption(getText("ContextMenu_Grab"), self.animalUI, ISVehicleAnimalUI.onGrabAnimal, animal);
+    if not animal:canBePicked(self.animalUI.character) then
+        option.notAvailable = true;
+        local toolTip = ISToolTip:new()
+        toolTip:initialise()
+        toolTip:setVisible(false)
+        toolTip:setName(getText("Tooltip_Animal_TooHeavy"))
+        option.toolTip = toolTip
+    end
+
+    context:addOption(getText("IGUI_TicketUI_RemoveTicket"), self.animalUI, ISVehicleAnimalUI.onRemoveAnimal, animal);
+    if not animal:isDead() and animal:getStats():getThirst() >= 0.1 then
+        AnimalContextMenu.doWaterAnimalMenu(context, animal, self.animalUI.character);
+    end
+    if not animal:isDead() and animal:getStats():getHunger() >= 0.1 then
+        AnimalContextMenu.doFeedFromHandMenu(self.animalUI.character, animal, context);
+    end
+    if AnimalContextMenu.cheat and not animal:isDead() then
+        context:addDebugOption("Kill", animal, ISVehicleAnimalUI.onKillAnimalDebug, self.animalUI.character);
+    end
+    local joypadData = getJoypadData(self.animalUI.playerNum)
+    if self.joypadFocused and joypadData then
+        context.mouseOver = 1
+        context.origin = self.parent
+        setJoypadFocus(self.animalUI.playerNum, context)
+    end
+    return true
+end
+
+function ISAnimalInVehiclePanel:onJoypadDownInParent(button, joypadData)
+    if button == Joypad.AButton then
+        self:onRightMouseUp(self:getWidth() + 4, 0)
+    end
+end
+
+function ISAnimalInVehiclePanel:new(width, height, animalUI)
+    local o = ISPanelJoypad.new(self, 0, 0, width, height)
+    o.animalUI = animalUI
+    return o
+end
+
+-----
+
 function ISVehicleAnimalUI:initialise()
-    ISCollapsableWindow.initialise(self);
+    ISCollapsableWindowJoypad.initialise(self);
 end
 
 function ISVehicleAnimalUI:createChildren()
-    ISCollapsableWindow.createChildren(self)
+    ISCollapsableWindowJoypad.createChildren(self)
 
-    self.progressBar = ISProgressBar:new (17, 40, 166, self.btnHeight, "", UIFont.NewSmall);
+    local titleBarHeight = self:titleBarHeight()
+    local resizeWidgetHeight = self:resizeWidgetHeight()
+    self.progressBar = ISProgressBar:new (17, titleBarHeight + FONT_HGT_SMALL, 166, self.btnHeight, "", UIFont.NewSmall);
     self.progressBar:setVisible(true);
     self:addChild(self.progressBar);
 
-    self.addBtn = ISButton:new(self.progressBar.x + self.progressBar:getWidth() + 10,40, self.btnWidth,self.btnHeight, getText("ContextMenu_AddAnimal"), self, ISVehicleAnimalUI.onAddAnimal);
+    self.addBtn = ISButton:new(self.progressBar.x + self.progressBar:getWidth() + 50, titleBarHeight + 10, self.btnWidth, BUTTON_HGT, getText("ContextMenu_AddAnimal"), self, ISVehicleAnimalUI.onAddAnimal);
     self.addBtn:initialise();
     self.addBtn:instantiate();
     self.addBtn.borderColor = {r=1, g=1, b=1, a=0.8};
     self:addChild(self.addBtn);
 
-	local titleBarHeight = self:titleBarHeight()
-
-    self.scrollPanel = ISPanelJoypad:new(10, titleBarHeight + 45, self:getWidth() - 10, self:getHeight() - 60 - titleBarHeight)
+    local panelY = self.progressBar:getBottom() + 5
+    local panelHgt = self.height - resizeWidgetHeight - panelY
+    self.scrollPanel = ISPanelJoypad:new(0, panelY, self:getWidth(), panelHgt)
     self.scrollPanel:initialise()
     self.scrollPanel:instantiate()
-    self.scrollPanel:setAnchorLeft(false);
+    self.scrollPanel:setAnchorLeft(true);
     self.scrollPanel:setAnchorRight(true);
     self.scrollPanel:setAnchorTop(true);
     self.scrollPanel:setAnchorBottom(true);
@@ -35,6 +109,7 @@ function ISVehicleAnimalUI:createChildren()
     self.scrollPanel.vscroll.doRepaintStencil = true
     self.scrollPanel.vehicle = self.vehicle;
     self.scrollPanel.animals = {};
+    self.scrollPanel.avatars = {};
     self:addChild(self.scrollPanel);
 
     for i=0, self.vehicle:getAnimals():size()-1 do
@@ -43,16 +118,21 @@ function ISVehicleAnimalUI:createChildren()
 
     self.scrollPanel.reset = ISVehicleAnimalUI.reset;
     self.scrollPanel.prerender = ISVehicleAnimalUI.prerenderScrollPanel;
-    self.scrollPanel.onRightMouseUp = ISVehicleAnimalUI.onRightMouseUpScrollPanel;
 
-    self.scrollPanel.render = function(self)
-        self:setStencilRect(0, 10, self:getWidth(), self:getHeight() - 20)
-        ISPanelJoypad.render(self)
-        self:clearStencilRect()
+    self.scrollPanel.render = function(_self)
+        ISPanelJoypad.render(_self)
+        _self:clearStencilRect()
+        local joypadData = getJoypadData(_self.parent.playerNum)
+        if joypadData then
+            local jf = _self.joyfocus
+            _self.joyfocus = joypadData
+            _self:ensureVisible()
+            _self.joyfocus = jf
+        end
     end
-    self.scrollPanel.onMouseWheel = function(self, del)
-        if self:getScrollHeight() > 0 then
-            self:setYScroll(self:getYScroll() - (del * 40))
+    self.scrollPanel.onMouseWheel = function(_self, del)
+        if _self:getScrollHeight() > 0 then
+            _self:setYScroll(_self:getYScroll() - (del * 40))
             return true
         end
         return false
@@ -62,6 +142,8 @@ function ISVehicleAnimalUI:createChildren()
 end
 
 function ISVehicleAnimalUI:checkCanAddAnimal()
+    if not self.vehicle or not self.vehicle:getSquare() then return; end
+
     self.addBtn.enable = false;
 
     local doorOpen = true;
@@ -108,33 +190,13 @@ function ISVehicleAnimalUI:checkCanAddAnimal()
 end
 
 function ISVehicleAnimalUI:onAddAnimal()
-    local context = ISContextMenu.get(0, self.addBtn:getAbsoluteX() + 10, self.addBtn:getAbsoluteY() + 10)
-
+    local context = ISContextMenu.get(self.playerNum, self.addBtn:getAbsoluteX() + 10, self.addBtn:getAbsoluteY() + 10)
     ISVehicleMenu.doAnimalSubMenu(context, self.character, self.vehicle);
-end
-
-function ISVehicleAnimalUI:onRightMouseUpScrollPanel(x, y)
-    local clickedAnimal;
-    for i, avatar in ipairs(self.avatars) do
-        if avatar.animal and x > avatar.x and x < avatar.x + avatar.width and y > avatar.y and y < avatar.y + avatar.height then
-            clickedAnimal = avatar.animal;
-        end
+    if getJoypadData(self.playerNum) then
+        context.mouseOver = 1
+        context.origin = self
+        setJoypadFocus(self.playerNum, context)
     end
-    if clickedAnimal then
-        local context = ISContextMenu.get(self.parent.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
-        context:addOption(getText("ContextMenu_AnimalInfo"), clickedAnimal, AnimalContextMenu.onAnimalInfo, self.parent.character);
-
-        if not clickedAnimal:isDead() and clickedAnimal:getStats():getThirst() >= 0.1 then
-            AnimalContextMenu.doWaterAnimalMenu(context, clickedAnimal, self.parent.character);
-        end
-        if not clickedAnimal:isDead() and  clickedAnimal:getStats():getHunger() >= 0.1 then
-            AnimalContextMenu.doFeedFromHandMenu(self.parent.character, clickedAnimal, context);
-        end
-        if AnimalContextMenu.cheat and not clickedAnimal:isDead() then
-            context:addDebugOption("Kill", clickedAnimal, ISVehicleAnimalUI.onKillAnimalDebug, self.parent.character);
-        end
-    end
-    return false
 end
 
 function ISVehicleAnimalUI.onKillAnimalDebug(animal, player)
@@ -144,32 +206,31 @@ end
 function ISVehicleAnimalUI:prerenderScrollPanel()
     ISPanelJoypad.prerender(self)
 
+    local joypadIndexY = math.max(self.joypadIndexY, 1)
+    local joypadIndex = math.max(self.joypadIndex, 1)
+    self.joypadButtonsY = {}
+    self.joypadButtons = {}
+    self.joypadIndexY = 1
+    self.joypadIndex = 1
+    local lineOfButtons = {}
+    local joypadData = getJoypadData(self.parent.playerNum)
+    if joypadData then
+        self:clearJoypadFocus(joypadData)
+    end
+
     local xoffset = 10;
-    local yoffset = 40;
+    local yoffset = 10;
     local index = 0;
     --self:drawText(getText("IGUI_Animal_TrailerAvailability") .. round(self.vehicle:getCurrentTotalAnimalSize(), 1) .. "/" .. self.vehicle:getAnimalTrailerSize(), 20, 12, 1,1,1,1, UIFont.NewSmall);
-    for i, avatar in ipairs(self.avatars) do
-        avatar:setX(xoffset);
-        avatar:setY(yoffset + self:getYScroll());
-
---        self.removeBtns[i]:setX((avatar.width / 2) - (self.parent.btnWidth / 2) + xoffset);
-        self.removeBtns[i]:setX(avatar:getX());
-        self.removeBtns[i]:setY(avatar.y + avatar.height + 5);
-
---        self.grabBtns[i]:setX((avatar.width / 2) - (self.parent.btnWidth / 2) + xoffset);
-        self.grabBtns[i]:setX(avatar:getX() + avatar:getWidth() - self.parent.btnWidth - 2);
-        self.grabBtns[i]:setY(avatar.y + avatar.height + 5);
-
-        self.infoBtns[i]:setX(avatar:getX() + avatar:getWidth() - self.parent.btnWidth - 2);
-        self.infoBtns[i]:setY(avatar.y + avatar.height - self.parent.btnHeight - 2);
-
+    for i,animalPanel in ipairs(self.avatars) do
+        animalPanel:setX(xoffset);
+        animalPanel:setY(yoffset);
+        local avatar = animalPanel.avatar
         xoffset = xoffset + avatar.width + 10;
 
         if avatar.animal then
             --            self:drawRectBorder(avatar.x, avatar.y, avatar.width, avatar.height, 1, 0.3, 0.3, 0.3);
             local x,y,w,h = avatar.x, avatar.y, avatar.width, avatar.height
-            self:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3);
-            self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 0.4, 0.4, 0.4);
             local avatarDef = AnimalAvatarDefinition[avatar.animal:getAnimalType()];
             if avatarDef then
                 avatar:setZoom(avatarDef.trailerZoom * avatar.animal:getData():getSize());
@@ -192,30 +253,33 @@ function ISVehicleAnimalUI:prerenderScrollPanel()
                 end
                 self:drawTextCentre(text, avatar.x + avatar.width / 2, avatar.y + 10, 1,1,1,1, UIFont.NewSmall);
             end
-
-            if not avatar.animal:canBePicked(self.parent.character) then
-                self.grabBtns[i].enable = false;
-                self.grabBtns[i].tooltip = getText("Tooltip_Animal_TooHeavy");
-            else
-                self.grabBtns[i].enable = true;
-                self.grabBtns[i].tooltip = nil;
-            end
+            table.insert(lineOfButtons, animalPanel)
+            index = index + 1;
         else
-            avatar:setVisible(false);
-            self.removeBtns[i]:setVisible(false);
-            self.grabBtns[i]:setVisible(false);
-            self.infoBtns[i]:setVisible(false);
+            animalPanel:setVisible(false);
         end
 
-        index = index + 1;
         if index >= 4 then
+            self:insertNewListOfButtons(lineOfButtons)
+            lineOfButtons = {}
             yoffset = yoffset + avatar.height + 10 + self.parent.btnHeight;
             xoffset = 10;
             index = 0;
         end
     end
-
+    if #lineOfButtons > 0 then
+        self:insertNewListOfButtons(lineOfButtons)
+    end
+    if joypadData ~= nil and joypadData:isConnected() and joypadIndexY <= #self.joypadButtonsY then
+        self.joypadIndexY = joypadIndexY
+        self.joypadButtons = self.joypadButtonsY[joypadIndexY]
+        if joypadIndex <= #self.joypadButtons then
+            self.joypadIndex = joypadIndex
+        end
+        self:restoreJoypadFocus(joypadData)
+    end
     self:setScrollHeight(yoffset + 20 + self.parent.avatarHeight)
+    self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
 end
 
 function ISVehicleAnimalUI:update()
@@ -228,7 +292,7 @@ function ISVehicleAnimalUI:update()
 end
 
 function ISVehicleAnimalUI:prerender()
-    ISCollapsableWindow.prerender(self)
+    ISCollapsableWindowJoypad.prerender(self)
 
 --    if not AnimalContextMenu.cheat then
         if not self.vehicle or not self.vehicle:getCurrentSquare() or not self.character or not self.character:getCurrentSquare() or self.vehicle:getCurrentSquare():DistToProper(self.character) > 4 then
@@ -239,9 +303,9 @@ end
 
 --
 function ISVehicleAnimalUI:render()
-    ISCollapsableWindow.render(self)
+    ISCollapsableWindowJoypad.render(self)
 
-    self:drawText(getText("IGUI_Animal_TrailerAvailability"), self.progressBar.x, self.progressBar.y - 15, 1,1,1,1, UIFont.NewSmall);
+    self:drawText(getText("IGUI_Animal_TrailerAvailability"), self.progressBar.x, self.progressBar.y - FONT_HGT_SMALL, 1,1,1,1, UIFont.NewSmall);
 
     self.progressBar:setText(round(self.vehicle:getAnimalTrailerSize() - self.vehicle:getCurrentTotalAnimalSize(), 1) .. "");
     self.progressBar.progress = self.vehicle:getCurrentTotalAnimalSize() / self.vehicle:getAnimalTrailerSize();
@@ -252,88 +316,42 @@ function ISVehicleAnimalUI:render()
 end
 
 function ISVehicleAnimalUI:create(reset)
-    self.scrollPanel.avatars = {};
-    self.scrollPanel.removeBtns = {};
-    self.scrollPanel.grabBtns = {};
-    self.scrollPanel.infoBtns = {};
-
     for i, animal in ipairs(self.scrollPanel.animals) do
         local addAvatar = false;
 
-        local avatar = self.scrollPanel.avatars[i];
-        if not avatar then
+        local animalPanel = self.scrollPanel.avatars[i];
+        if not animalPanel then
             addAvatar = true;
-            avatar = ISVehicleAnimal3DModel:new(0, 0, self.avatarWidth, self.avatarHeight)
+            animalPanel = ISAnimalInVehiclePanel:new(self.avatarWidth, self.avatarHeight + 5 + self.btnHeight, self)
+            self.scrollPanel:addChild(animalPanel)
         end
-        avatar:setVisible(true)
-        self.scrollPanel:addChild(avatar)
-        avatar:setX(100)
-        avatar:setY(100)
+        animalPanel:setVisible(true)
+        animalPanel:setX(100)
+        animalPanel:setY(100)
+        local avatar = animalPanel.avatar
         if animal then
             avatar:setAnimSetName(animal:GetAnimSetName())
             avatar:setCharacter(animal)
             avatar:setDirection(IsoDirections.S)
             avatar.animal = animal;
         else
-            avatar:setVisible(false)
+            animalPanel:setVisible(false)
         end
 
         if addAvatar then
-            table.insert(self.scrollPanel.avatars, avatar);
+            self.scrollPanel.avatars[i] = animalPanel;
         end
-
-        local addBtnRemove = false;
-        local addBtnGrab = false;
-        local addBtnInfo = false;
-        local removeBtn = self.scrollPanel.removeBtns[i];
-        local grabBtn = self.scrollPanel.grabBtns[i];
-        local infoBtn = self.scrollPanel.infoBtns[i];
-        if not removeBtn then
-            addBtnRemove = true;
-            removeBtn = ISButton:new(0,0, self.btnWidth,self.btnHeight, getText("IGUI_TicketUI_RemoveTicket"), self, ISVehicleAnimalUI.onRemoveAnimal);
-            removeBtn.animal = animal;
-            removeBtn.panel = self.scrollPanel;
-            removeBtn.player = self.character;
-            removeBtn:initialise();
-            removeBtn:instantiate();
-            removeBtn.borderColor = {r=1, g=1, b=1, a=0.8};
-            removeBtn:setVisible(animal ~= nil);
-            self.scrollPanel:addChild(removeBtn);
-        end
-        if not grabBtn then
-            addBtnGrab = true;
-            grabBtn = ISButton:new(0,0, self.btnWidth,self.btnHeight, getText("ContextMenu_Grab"), self, ISVehicleAnimalUI.onGrabAnimal);
-            grabBtn.animal = animal;
-            grabBtn.panel = self.scrollPanel;
-            grabBtn.player = self.character;
-            grabBtn:initialise();
-            grabBtn:instantiate();
-            grabBtn.borderColor = {r=1, g=1, b=1, a=0.8};
-            grabBtn:setVisible(animal ~= nil);
-            self.scrollPanel:addChild(grabBtn);
-        end
-        if not infoBtn then
-            addBtnInfo = true;
-            infoBtn = ISButton:new(0,0, self.btnWidth,self.btnHeight, getText("ContextMenu_Info"), self, ISVehicleAnimalUI.onAnimalInfo);
-            infoBtn.animal = animal;
-            infoBtn.panel = self.scrollPanel;
-            infoBtn.player = self.character;
-            infoBtn:initialise();
-            infoBtn:instantiate();
-            infoBtn.borderColor = {r=1, g=1, b=1, a=0.8};
-            infoBtn:setVisible(animal ~= nil);
-            self.scrollPanel:addChild(infoBtn);
-        end
-
-        if addBtnRemove then
-            table.insert(self.scrollPanel.removeBtns, removeBtn);
-        end
-        if addBtnGrab then
-            table.insert(self.scrollPanel.grabBtns, grabBtn);
-        end
-        if addBtnInfo then
-            table.insert(self.scrollPanel.infoBtns, infoBtn);
-        end
+--[[
+        local removeBtn = animalPanel.removeBtn;
+        local grabBtn = animalPanel.grabBtn;
+        local infoBtn = animalPanel.infoBtn;
+        removeBtn.animal = animal;
+        removeBtn.borderColor = {r=1, g=1, b=1, a=0.8};
+        grabBtn.animal = animal;
+        grabBtn.borderColor = {r=1, g=1, b=1, a=0.8};
+        infoBtn.animal = animal;
+        infoBtn.borderColor = {r=1, g=1, b=1, a=0.8};
+--]]
     end
 
     -- custom size
@@ -343,27 +361,27 @@ function ISVehicleAnimalUI:create(reset)
     end
 end
 
-function ISVehicleAnimalUI:onAnimalInfo(button, x, y)
+function ISVehicleAnimalUI:onAnimalInfo(animal)
     local vec = self.vehicle:getAreaCenter("AnimalEntry");
     local sq = getSquare(vec:getX(), vec:getY(), self.vehicle:getZ());
-    if luautils.walkAdj(button.player, sq) then
-        ISTimedActionQueue.add(ISOpenAnimalInfo:new(button.player, button.animal));
+    if luautils.walkAdj(self.character, sq) then
+        ISTimedActionQueue.add(ISOpenAnimalInfo:new(self.character, animal, self));
     end
 end
 
-function ISVehicleAnimalUI:onRemoveAnimal(button, x, y)
+function ISVehicleAnimalUI:onRemoveAnimal(animal)
     local vec = self.vehicle:getAreaCenter("AnimalEntry");
     local sq = getSquare(vec:getX(), vec:getY(), self.vehicle:getZ());
-    if luautils.walkAdj(button.player, sq) then
-        ISTimedActionQueue.add(ISRemoveAnimalFromTrailer:new(button.player, self.vehicle, button.animal, false));
+    if luautils.walkAdj(self.character, sq) then
+        ISTimedActionQueue.add(ISRemoveAnimalFromTrailer:new(self.character, self.vehicle, animal, false));
     end
 end
 
-function ISVehicleAnimalUI:onGrabAnimal(button, x, y)
+function ISVehicleAnimalUI:onGrabAnimal(animal)
     local vec = self.vehicle:getAreaCenter("AnimalEntry");
     local sq = getSquare(vec:getX(), vec:getY(), self.vehicle:getZ());
-    if luautils.walkAdj(button.player, sq) then
-        ISTimedActionQueue.add(ISRemoveAnimalFromTrailer:new(button.player, self.vehicle, button.animal, true));
+    if luautils.walkAdj(self.character, sq) then
+        ISTimedActionQueue.add(ISRemoveAnimalFromTrailer:new(self.character, self.vehicle, animal, true));
     end
 end
 
@@ -373,23 +391,17 @@ function ISVehicleAnimalUI:reset(panel)
         table.insert(panel.animals, panel.vehicle:getAnimals():get(i));
     end
 
-    for i, avatar in ipairs(panel.avatars) do
-        avatar:setCharacter(nil);
-        avatar:setVisible(false);
-        avatar.animal = nil;
-        --        avatar:removeFromUIManager(); -- TODO RJ this somehow doesn't work, didn't want to spend too much time on it, so i went to an ugly/not optimized way, meh.
-        panel.removeBtns[i]:setVisible(false);
-        panel.removeBtns[i]:removeFromUIManager();
-        panel.grabBtns[i]:setVisible(false);
-        panel.grabBtns[i]:removeFromUIManager();
-        panel.infoBtns[i]:setVisible(false);
-        panel.infoBtns[i]:removeFromUIManager();
+    local joypadData = getJoypadData(self.playerNum)
+    if joypadData then
+        self.scrollPanel:clearJoypadFocus(joypadData)
     end
 
-    panel.avatars = {};
-    panel.removeBtns = {};
-    panel.grabBtns = {};
-    panel.infoBtns = {};
+    for _,animalPanel in ipairs(panel.avatars) do
+        animalPanel:setVisible(false);
+        local avatar = animalPanel.avatar
+        avatar:setCharacter(nil);
+        avatar.animal = nil;
+    end
 
     panel.parent:create(true);
 end
@@ -398,21 +410,47 @@ function ISVehicleAnimalUI:close()
     self:setVisible(false);
     self:removeFromUIManager()
     ISVehicleAnimalUI.ui = nil;
+    if getJoypadData(self.playerNum) then
+        setJoypadFocus(self.playerNum, nil)
+    end
+end
+
+function ISVehicleAnimalUI:onGainJoypadFocus(joypadData)
+    ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
+    self.scrollPanel:setISButtonForY(self.addBtn)
+    joypadData.focus = self.scrollPanel
+end
+
+function ISVehicleAnimalUI:onJoypadDown_Descendant(descendant, button, joypadData)
+    if button == Joypad.BButton then
+        self:close()
+        return
+    end
+    ISCollapsableWindowJoypad.onJoypadDown_Descendant(self, descendant, button, joypadData)
+end
+
+function ISVehicleAnimalUI:onJoypadBeforeDeactivate(joypadData)
+    for _,animalPanel in ipairs(self.scrollPanel.avatars) do
+        animalPanel:setJoypadFocused(false, joypadData)
+    end
+end
+
+function ISVehicleAnimalUI:onJoypadBeforeDeactivate_Descendant(descendant, joypadData)
+    self:onJoypadBeforeDeactivate(joypadData)
 end
 
 function ISVehicleAnimalUI:new(vehicle, player)
     local avatarWidth = 160;
     local avatarHeight = 200;
     local btnHeight = 25;
-    local o = ISCollapsableWindow:new(100, 10, (avatarWidth * 4) + 100, avatarHeight * 4 + (3*(btnHeight+10)) + 40)
+    local playerNum = player:getPlayerNum()
+    local o = ISCollapsableWindowJoypad.new(self, getPlayerScreenLeft(playerNum)+100, getPlayerScreenTop(playerNum)+10, (avatarWidth * 4) + 100, avatarHeight * 4 + (3*(btnHeight+10)) + 40)
     o.avatarWidth = avatarWidth;
     o.avatarHeight = avatarHeight;
     o.btnHeight = btnHeight;
     o.btnWidth = 60;
-    setmetatable(o, self)
-    self.__index = self
     o.character = player
-    o.playerNum = player:getPlayerNum()
+    o.playerNum = playerNum
     o.vehicle = vehicle;
     o.animalCount = o.vehicle:getAnimals():size();
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
@@ -466,11 +504,11 @@ function ISVehicleAnimal3DModel:new(x, y, width, height)
 end
 
 function ISVehicleAnimalUI:isKeyConsumed(key)
-    return key == Keyboard.KEY_ESCAPE
+    return self.playerNum == 0 and key == Keyboard.KEY_ESCAPE
 end
 
 function ISVehicleAnimalUI:onKeyRelease(key)
-    if key == Keyboard.KEY_ESCAPE then
+    if self.playerNum == 0 and key == Keyboard.KEY_ESCAPE then
         self:close()
         return
     end

@@ -28,7 +28,7 @@ SeamEditorUI_OptionsPanel = ISPanel:derive("SeamEditorUI_OptionsPanel")
 local OptionsPanel = SeamEditorUI_OptionsPanel
 
 function OptionsPanel:createChildren()
-	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox)
 	tickBox:initialise()
 	self:addChild(tickBox)
 	local gameState = getSeamEditorState()
@@ -596,9 +596,11 @@ function SeamEditorUI:createChildren()
 
 	local button2 = ISButton:new(10, self.bottomPanel.height - 10 - buttonHgt, 80, buttonHgt, "EXIT", self, self.onExit)
 	self.bottomPanel:addChild(button2)
+	button2:enableCancelColor()
 
 	local button3 = ISButton:new(button2:getRight() + 10, button2.y, 80, buttonHgt, "SAVE", self, self.onSave)
 	self.bottomPanel:addChild(button3)
+	button3:enableAcceptColor()
 end
 
 function SeamEditorUI:createToolbar()

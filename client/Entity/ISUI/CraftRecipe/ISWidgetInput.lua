@@ -5,6 +5,8 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 
 ISWidgetInput = ISPanel:derive("ISWidgetInput");
 
@@ -15,8 +17,8 @@ end
 function ISWidgetInput:createChildren()
     ISPanel.createChildren(self);
 
-    self.amountWidth = getTextManager():MeasureStringX(UIFont.Medium, "00/00")
-    self.amountWidth2 = getTextManager():MeasureStringX(UIFont.Medium, "00.00")
+    self.amountWidth = getTextManager():MeasureStringX(UIFont.Small, "00/00")
+    self.amountWidth2 = getTextManager():MeasureStringX(UIFont.Small, "00.00")
 
     self.textColor = { r=1, g=1, b=1, a=1 };
     self.colPartial = safeColorToTable(self.xuiSkin:color("Orange"));
@@ -26,7 +28,7 @@ function ISWidgetInput:createChildren()
 
     -- identifier icons
     local icon = self.textureConsumed;
-    --if self.primary.isUse then
+    --if not self.primary.isItemCount then
     --    self.iconConsumed.texture = self.textureUsed;
     --end
     self.iconConsumed = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, icon);
@@ -124,18 +126,24 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     -- set icon positions
     x = 0
     y = topMargin + self.iconBorderSizeY + spacing;
+    local iconAdj = (self.primary.label:getHeight() - self.labelIconSize) / 2;
 
     self.iconTool:setX(x);
-    self.iconTool:setY(y);
+    self.iconTool:setY(y + iconAdj);
     self.iconConsumed:setX(x);
-    self.iconConsumed:setY(y);
+    self.iconConsumed:setY(y + iconAdj);
     self.iconReturned:setX(x);
-    self.iconReturned:setY(y);
+    self.iconReturned:setY(y + iconAdj);
     
     -- set item name label
     x = self.labelIconSize + spacing;
     local clampToWidth = self.iconBorderSizeX - x;
     local itemLabel = self.secondary and self.secondary.iconText or self.primary.iconText or "";
+    if self.primary.isItemCount and self.primary.iconText and self.secondary and self.secondary.iconText then
+        -- combine the labels for itemcount primaries with drainable contents
+        itemLabel = getText("IGUI_CraftingWindow_InputWithContents", self.primary.iconText, self.secondary.iconText);
+    end
+    
     local wrappedText = getTextManager():WrapText(self.primary.itemNameLabel.font, itemLabel, clampToWidth, 3, "...");
     local textHeight = getTextManager():MeasureStringY(self.primary.itemNameLabel.font, wrappedText);
     self.primary.itemNameLabel:setX(x);
@@ -165,6 +173,10 @@ end
 function ISWidgetInput:prerender()
     self:updateValues();
     ISPanel.prerender(self);
+
+    if self.primary and self.primary.selectInputButton and self:isMouseOver() then
+        self:drawRect(-4, -4, self.width + 4 * 2, self.height + 4 * 2, 0.1, 1.0, 1.0, 1.0)
+    end
     
     -- border the main icon
     local topMargin = self.displayAsOutput and 0 or self.selectInputButtonSize / 2;
@@ -174,6 +186,7 @@ end
 
 function ISWidgetInput:render()
     ISPanel.render(self);
+    self:renderJoypadFocus(-4, -4, self.width + 8, self.height + 8)
 end
 
 function ISWidgetInput:update()
@@ -188,7 +201,7 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
     table.isDrain = false;
     table.isKeep = _script:isKeep();
     table.isTool = _script:isTool();
-    table.isUse = _script:isUse();
+    table.isItemCount = _script:isItemCount();
     table.inputFullName = nil;
     table.iconTexture = nil;
     table.iconColor = { r=1,g=1,b=1,a=1 };
@@ -202,26 +215,34 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
         if table.inputObjects:size() == 0 then
             table.inputObjects = _script:getPossibleInputItems();
         end
-        
+
         if table.inputObjects:size()>0 then
             table.iconTexture = table.inputObjects:get(0):getNormalTexture();
-			table.iconColor = { r=table.inputObjects:get(0):getR(),g=table.inputObjects:get(0):getG(),b=table.inputObjects:get(0):getB(),a=1 };
+            table.iconColor = { r=table.inputObjects:get(0):getR(),g=table.inputObjects:get(0):getG(),b=table.inputObjects:get(0):getB(),a=1 };
             --table.cycleIcons = table.inputObjects:size() > 1;
             table.inputFullName = table.inputObjects:get(0):getFullName();
             table.inputItem = table.inputObjects:get(0);
         end
     elseif _script:getResourceType()==ResourceType.Fluid then
         table.amount = _script:getAmount();
+        table.satisfiedAmount = self.logic:getInputUses(_script);
         if self.displayAsOutput then
             table.amount = self.logic:getResidualFluidFromInput(_script);
         end
         if table.amount < 0 then
             table.amountStr = "?";
         else
-        	table.amountStr = tostring(round(table.amount,2)).."L";
+            if self.displayAsOutput then
+                table.amountStr = tostring(round(table.amount,2)).."L";
+            else
+                table.amountStr = tostring(round(table.satisfiedAmount,2)).."/"..tostring(round(table.amount,2)).."L";
+            end
         end
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
-        table.inputObjects = _script:getPossibleInputFluids();
+        table.inputObjects = self.logic:getSatisfiedInputFluids(_script);
+        if table.inputObjects:size() == 0 then
+            table.inputObjects = _script:getPossibleInputFluids();
+        end
         if table.inputObjects:size()>0 then
             table.inputFullName = table.inputObjects:get(0):getFluidTypeString();
         --    local fluid = table.inputObjects:get(0);
@@ -257,7 +278,7 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
     table.icon.tooltipUI.defaultMyWidth = 0;
 
     local fontHeight = -1; -- <=0 sets label initial height to font
-    table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
+    table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     table.label.textColor = self.textColor;
     table.label.amountValue = table.amount;
     table.label.satisfiedValue = -1;
@@ -286,8 +307,8 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
             --table.selectInputButton.textureColorMouseOver = {r=0.909, g=0.929, b=0.78, a=1};
             
             table.selectInputButton.target = self;
-            table.selectInputButton.onclick = ISWidgetInput.onSelectInputsClicked;
-            table.selectInputButton.enable = true;
+--            table.selectInputButton.onclick = ISWidgetInput.onSelectInputsClicked;
+--            table.selectInputButton.enable = true;
             table.selectInputButton:initialise();
             table.selectInputButton:instantiate();
             self:addChild(table.selectInputButton)
@@ -295,6 +316,19 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
     end
 
     return table;
+end
+
+function ISWidgetInput:onMouseDown(x, y)
+    if self.primary and self.primary.selectInputButton then
+        getSoundManager():playUISound("UIActivateButton")
+        self:onSelectInputsClicked(self.primary.selectInputButton)
+    end
+end
+
+function ISWidgetInput:onMouseDownOutside(x, y)
+    if self:isMouseOver() then -- clicked in a child
+        self:onMouseDown(x, y)
+    end
 end
 
 function ISWidgetInput:onSelectInputsClicked(_button)
@@ -316,33 +350,51 @@ function ISWidgetInput:updateScriptValues(_table)
     local index = 0;
     local oldIconText = _table.iconText;
     if _table.script:getResourceType()==ResourceType.Item then
+        -- update table with satisfied items if possible
+        _table.inputObjects = self.logic:getSatisfiedInputItems(_table.script);
+        if _table.inputObjects:size() == 0 then
+            _table.inputObjects = _table.script:getPossibleInputItems();
+        end
+
         if _table.cycleIcons then
             local playerIndex = self.player:getPlayerNum();
             index = UIManager.getSyncedIconIndex(playerIndex, _table.inputObjects:size());
         end
         local item = _table.inputObjects:get(index);
         _table.iconTexture = item:getNormalTexture();
-		_table.iconColor.r = item:getR();
+        _table.iconColor.r = item:getR();
         _table.iconColor.g = item:getG();
         _table.iconColor.b = item:getB();
         _table.iconText = item:getDisplayName();
         _table.inputFullName = item:getFullName();
         _table.inputItem = item;
     elseif _table.script:getResourceType()==ResourceType.Fluid then
+        -- update table with satisfied fluids if possible
+        _table.inputObjects = self.logic:getSatisfiedInputFluids(_table.script);
+        if _table.inputObjects:size() == 0 then
+            _table.inputObjects = _table.script:getPossibleInputFluids();
+        end
+
         if _table.cycleIcons then
             local playerIndex = self.player:getPlayerNum();
             index = UIManager.getSyncedIconIndex(playerIndex, _table.inputObjects:size());
         end
         local fluid = _table.inputObjects:get(index);
+        _table.amount = _table.script:getAmount();
+        _table.satisfiedAmount = self.logic:getInputUses(_table.script);
         if self.displayAsOutput then
             _table.amount = self.logic:getResidualFluidFromInput(_table.script);
-            if _table.amount < 0 then
-                _table.amountStr = "?";
-            else
-                _table.amountStr = tostring(round(_table.amount,2)).."L";
-            end
-            _table.label:setName(_table.amountStr);
         end
+        if _table.amount < 0 then
+            _table.amountStr = "?";
+        else
+            if self.displayAsOutput then
+                _table.amountStr = tostring(round(_table.amount,2)).."L";
+            else
+                _table.amountStr = tostring(round(_table.satisfiedAmount,2)).."/"..tostring(round(_table.amount,2)).."L";
+            end
+        end
+        _table.label:setName(_table.amountStr);
         local c = fluid:getColor();
         _table.iconColor.r = c:getRedFloat();
         _table.iconColor.g = c:getGreenFloat();
@@ -383,6 +435,8 @@ function ISWidgetInput:updateScriptValues(_table)
             end
             if _table.script:mayDegradeLight() and _table.script:isKeep() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_MayDegradeLight")
+            end
+            if _table.script:mayDegradeVeryLight() and _table.script:isKeep() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_MayDegradeLight")
             end
             if _table.script:sharpnessCheck() and _table.script:isKeep() then
@@ -398,25 +452,25 @@ function ISWidgetInput:updateScriptValues(_table)
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsWorn")
             end
             if _table.script:isNotWorn() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsNotWorn")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsNotWorn")
             end
             if _table.script:isFull() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsFull")
             end
             if _table.script:isEmpty() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsEmpty")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsEmpty")
             end
             if _table.script:notFull() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_NotFull")
             end
             if _table.script:notEmpty() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_NotEmpty")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_NotEmpty")
             end
             if _table.script:isDamaged() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsDamaged")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsDamaged")
             end
             if _table.script:isUndamaged() then
-               text = text .. "<BR>" .. getText("IGUI_CraftingWindow_IsUndamaged")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsUndamaged")
             end
             if _table.script:allowFrozenItem() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_AllowFrozenItem")
@@ -443,7 +497,7 @@ function ISWidgetInput:updateScriptValues(_table)
 --                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHandle")
 --             end
             if _table.script:isHeadPart() then
-               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHead")
+               text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHeadPart")
             end
             _table.icon:setMouseOverText(text);
 
@@ -496,7 +550,7 @@ function ISWidgetInput:updateValues()
         end
         self.borderColor = self.normalBorderColor;
     end
-
+    
     if self.logic and self.interactiveMode and self.inputScript:getResourceType()==ResourceType.Item then
         if self.logic:isManualSelectInputs() then
             self.editedLabels = true;
@@ -512,7 +566,7 @@ function ISWidgetInput:updateValues()
                     self.primary.icon.texture = inputItem:getScriptItem():getNormalTexture();
                 end
             end
-            local amount = self.primary.inputFullName and self.inputScript:getAmount(self.primary.inputFullName) or self.inputScript.getIntAmount();
+            local amount = self.primary.inputFullName and self.inputScript:getAmount(self.primary.inputFullName) or self.inputScript:getIntAmount();
             local satisfiedAmount = self.logic:getInputCount(self.inputScript);
             if self.primary.label.amountValue~=amount or self.primary.label.satisfiedValue~=satisfiedAmount then
                 if not self.primary.isKeep and self.primary.inputItem and self.primary.inputItem:getTypeString() == "Drainable" and not self.inputScript:isItemCount() then
@@ -520,7 +574,17 @@ function ISWidgetInput:updateValues()
                     self.iconConsumed.mouseovertext = getText("IGUI_CraftingWindow_WillBeConsume", tostring(amount));
                 end
                 if not self.displayAsOutput then
-                    self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount));
+                    local item = inputItem and inputItem:getScriptItem() or self.primary.inputItem;
+                    if self.inputScript:isUsesPartialItem(item) then
+                        if inputItem and not self.logic:getRecipeData():getDataForInputScript(self.inputScript):isInputItemsSatisfied() then 
+                            self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount).." "..getText("Attributes_Type_Uses"));                        
+                        else
+                            self.primary.label:setName(tostring(amount).." "..getText("Attributes_Type_Uses"));
+                        end
+                    else
+                        self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount));
+                    end
+                    
                 end
                 self.primary.label.amountValue = amount;
                 self.primary.label.satisfiedValue = satisfiedAmount;
@@ -580,11 +644,10 @@ function ISWidgetInput:new (x, y, width, height, player, logic, inputScript) --r
     o.consumeScript = inputScript:getConsumeFromItemScript();
     o.createScript = inputScript:getCreateToItemScript();
 
-    local fontScale = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-    o.iconSize = 32 * fontScale;
-    o.iconMargin = 16 * fontScale;
-    o.labelIconSize = 18 * fontScale;
-    o.selectInputButtonSize = 22 * fontScale;
+    o.iconSize = 48 * ICON_SCALE;
+    o.iconMargin = 12 * FONT_SCALE;
+    o.labelIconSize = 18 * ICON_SCALE;
+    o.selectInputButtonSize = 24 * ICON_SCALE;
     
     o.selectInputButtonBackgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
     o.selectInputButtonBackgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};

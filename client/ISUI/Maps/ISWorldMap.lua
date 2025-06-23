@@ -32,9 +32,8 @@ end
 function WorldMapOptions:createChildren()
 	local entryHgt = BUTTON_HGT
 
-	local x = 12
+	local x = UI_BORDER_SPACING+1
 	local y = self:titleBarHeight() + 6
-	local maxWidth = 0
 
 	self.doubleBoxes = {}
 	self.tickBoxes = {}
@@ -51,6 +50,23 @@ function WorldMapOptions:createChildren()
 	self.joypadButtonsY = {}
 	self.joypadIndex = 1
 	self.joypadIndexY = 1
+
+    local label = ISLabel:new(x, y, FONT_HGT_SMALL, getText("IGUI_Map_Brightness"), 1, 1, 1, 1, UIFont.Small, true)
+    self:addChild(label)
+
+    label = ISLabel:new(x + 200, y, FONT_HGT_SMALL, "", 1, 1, 1, 1, UIFont.Small, false)
+    self:addChild(label)
+    self.darkModeLabel = label
+    y = label:getBottom()
+
+	self.darkModeSlider = ISSliderPanel:new(x, y, 200, BUTTON_HGT, self, self.onDarkModeChanged)
+	self:addChild(self.darkModeSlider)
+	local alpha = getCore():getOptionWorldMapBrightness()
+	self.darkModeSlider:setCurrentValue(alpha * 100)
+	self:insertNewLineOfButtons(self.darkModeSlider)
+	y = self.darkModeSlider:getBottom() + 6
+
+	local maxWidth = self.darkModeSlider:getWidth()
 
 	local visibleOptions = self:getVisibleOptions()
 	for i,option in ipairs(visibleOptions) do
@@ -82,7 +98,7 @@ function WorldMapOptions:createChildren()
 		end
 		if y + entryHgt + 6 >= maxHeight then
 			x = x + maxWidth
-			y = self:titleBarHeight() + 6
+			y = self.darkModeSlider:getBottom() + 6
 			maxWidth = 0
 		end
 	end
@@ -93,10 +109,16 @@ function WorldMapOptions:createChildren()
 		width = math.max(width, child:getRight())
 		height = math.max(height, child:getBottom())
 	end
-	self:setWidth(width + 12)
+	self:setWidth(width + UI_BORDER_SPACING + 1)
 	self:setHeight(height + self:resizeWidgetHeight())
 
 	self.screenHeight = getCore():getScreenHeight()
+end
+
+function WorldMapOptions:onDarkModeChanged(value, slider)
+	getCore():setOptionWorldMapBrightness(value / 100)
+	local alpha = PZMath.lerp(20, 100, value / 100)
+	self.darkModeLabel:setName(tostring(math.ceil(alpha)))
 end
 
 function WorldMapOptions:getVisibleOptions()
@@ -241,7 +263,7 @@ ISWorldMap = ISPanelJoypad:derive("ISWorldMap")
 
 function ISWorldMap:instantiate()
 	self.javaObject = UIWorldMap.new(self)
-	self.mapAPI = self.javaObject:getAPIv1()
+	self.mapAPI = self.javaObject:getAPIv3()
 	self.mapAPI:setMapItem(MapItem.getSingleton())
 	self.javaObject:setX(self.x)
 	self.javaObject:setY(self.y)
@@ -313,6 +335,11 @@ function ISWorldMap:createChildren()
 	self.buttonPanel:addChild(self.symbolsBtn)
 	table.insert(buttons, self.symbolsBtn)
 
+	self.printMediaBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "P", self, self.onTogglePrintMedia)
+	self.printMediaBtn:setImage(getTexture("Item_Flier"))
+	self.buttonPanel:addChild(self.printMediaBtn)
+	table.insert(buttons, self.printMediaBtn)
+
 	self.forgetBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "?", self, function(self, button) self:onForget(button) end)
 	self.buttonPanel:addChild(self.forgetBtn)
 	table.insert(buttons, self.forgetBtn)
@@ -336,6 +363,10 @@ function ISWorldMap:prerender()
 		MapUtils.initDefaultStyleV1(self)
 		MapUtils.overlayPaper(self)
 	end
+	self:renderPrintMedia()
+	self:renderStashMaps()
+	self:positionStashMap()
+	MapUtils.renderDarkModeOverlay(self)
 end
 
 function ISWorldMap:render()
@@ -359,7 +390,14 @@ function ISWorldMap:render()
 		self:drawTexture(self.cross, self.width/2-12, self.height/2-12, 1, 1,1,1);
 	end
 
-	if self.joyfocus then
+    if self.joyfocus and self.stashMapUI and self.stashMapUI:isVisible() then
+			if self.mouseOverPrintMedia then
+				self:renderJoypadPrompt(Joypad.Texture.AButton, "PRINT MEDIA", self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt)
+			end
+		self:renderJoypadPrompt(Joypad.Texture.BButton, getText("UI_Cancel"), self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt - 10 - self.joypadPromptHgt)
+		self:renderJoypadPrompt(Joypad.Texture.LTrigger, getText("IGUI_Map_ZoomOut"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
+		self:renderJoypadPrompt(Joypad.Texture.RTrigger, getText("IGUI_Map_ZoomIn"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
+	elseif self.joyfocus then
 		local joypadTexture = Joypad.Texture.YButton
 		self:drawTexture(joypadTexture, self.buttonPanel.x - 16 - joypadTexture:getWidth(), self.buttonPanel.y + (self.buttonPanel.height - joypadTexture:getHeight()) / 2, 1, 1, 1, 1)
 
@@ -372,19 +410,362 @@ function ISWorldMap:render()
 			if text then
 				self:renderJoypadPrompt(Joypad.Texture.AButton, text, self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt)
 			end
+		else
+			if self.mouseOverPrintMedia then
+				self:renderJoypadPrompt(Joypad.Texture.AButton, "PRINT MEDIA", self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt)
+			end
+			if self.mouseOverStashMap then
+				self:renderJoypadPrompt(Joypad.Texture.AButton, "STASH MAP", self.buttonPanel.x - 16 - 32, self.buttonPanel.y - 10 - self.joypadPromptHgt)
+			end
 		end
 
 		self:renderJoypadPrompt(Joypad.Texture.LTrigger, getText("IGUI_Map_ZoomOut"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
 		self:renderJoypadPrompt(Joypad.Texture.RTrigger, getText("IGUI_Map_ZoomIn"), 16, self.height - 16 - self.joypadPromptHgt - 8 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
 	end
 
-    -- change to make the chat window visible when the map is open
-    if isClient() then
-        ISChat.chat:setVisible(true);
-        ISChat.chat:bringToTop()
-    end
+	-- change to make the chat window visible when the map is open
+	if isClient() and ISChat.chat ~= nil and ISChat.chat:isVisible() then
+		ISChat.chat:bringToTop()
+	end
 
 	ISPanelJoypad.render(self)
+end
+
+function ISWorldMap:renderPrintMedia()
+    self.mouseOverPrintMedia = nil
+    if not self.showPrintMedia then return end
+    if not self.character then return end
+    local mediaIDSet = self.character:getReadPrintMedia()
+    local mediaIDList = ArrayList.new(mediaIDSet)
+    if self.mapAPI:getBoolean("AllPrintMedia") then
+        mediaIDList:clear()
+        for k,v in pairs(PrintMediaDefinitions.MiscDetails) do
+            mediaIDList:add(k)
+        end
+    end
+    local mx,my = self:getMouseX(),self:getMouseY()
+    if self.playerNum and ((self.playerNum ~= 0) or (getJoypadData(self.playerNum) ~= nil and not wasMouseActiveMoreRecentlyThanJoypad())) then
+        mx = self.width / 2
+        my = self.height / 2
+    end
+    local mouseOver = nil
+    for i=1,mediaIDList:size() do
+        local mediaID = mediaIDList:get(i-1)
+        local details = PrintMediaDefinitions.MiscDetails[mediaID]
+        if details then
+            for j=1,5 do
+                local locations = details["location"..j]
+                if locations then
+                    for _,location in ipairs(locations) do
+                        local sx = self.mapAPI:worldToUIX(location.x1 / 2 + location.x2 / 2, location.y1 / 2 + location.y2 / 2)
+                        local sy = self.mapAPI:worldToUIY(location.x1 / 2 + location.x2 / 2, location.y1 / 2 + location.y2 / 2)
+                        sx = sx - 64 / 2
+                        sy = sy - 64 / 2
+                        self:drawTextureScaledAspect(getTexture("Item_Flier"), sx, sy, 64, 64, 1.0, 1.0, 1.0, 1.0)
+                        if mx >= sx and my >= sy and mx < sx + 64 and my < sy + 64 then
+                            mouseOver = { mediaID=mediaID, location=location, x=sx, y=sy }
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if not mouseOver then return end
+    if not self:isPointOver(getMouseX(), getMouseY()) then return end
+    self:drawRectBorder(mouseOver.x, mouseOver.y, 64, 64, 1.0, 1.0, 1.0, 1.0)
+    local location = mouseOver.location
+    self:drawMapRect(location)
+    self.mouseOverPrintMedia = mouseOver
+end
+
+function ISWorldMap:drawMapRect(bounds)
+    local x1 = self.mapAPI:worldToUIX(bounds.x1, bounds.y1)
+    local y1 = self.mapAPI:worldToUIY(bounds.x1, bounds.y1)
+    local x2 = self.mapAPI:worldToUIX(bounds.x2, bounds.y1)
+    local y2 = self.mapAPI:worldToUIY(bounds.x2, bounds.y1)
+    local x3 = self.mapAPI:worldToUIX(bounds.x2, bounds.y2)
+    local y3 = self.mapAPI:worldToUIY(bounds.x2, bounds.y2)
+    local x4 = self.mapAPI:worldToUIX(bounds.x1, bounds.y2)
+    local y4 = self.mapAPI:worldToUIY(bounds.x1, bounds.y2)
+    local thickness = 1
+    self.javaObject:DrawLine(nil, x1, y1, x2, y2, thickness, 1.0, 1.0, 1.0, 1.0)
+    self.javaObject:DrawLine(nil, x2, y2, x3, y3, thickness, 1.0, 1.0, 1.0, 1.0)
+    self.javaObject:DrawLine(nil, x3, y3, x4, y4, thickness, 1.0, 1.0, 1.0, 1.0)
+    self.javaObject:DrawLine(nil, x4, y4, x1, y1, thickness, 1.0, 1.0, 1.0, 1.0)
+end
+
+function ISWorldMap:onMouseUpPrintMedia()
+    if not self.mouseOverPrintMedia then return end
+    if self.printMedia and not UIManager.getUI():contains(self.printMedia.javaObj) then
+        self.printMedia = nil
+    end
+    self:closePrintMedia()
+    local val = self.mouseOverPrintMedia.mediaID
+    local win = PZAPI.UI.PrintMedia{
+        x = 20, y = 20,
+    }
+    win.media_id = val
+    win.data = getText("Print_Media_" .. val .. "_info")
+    win.children.bar.children.name.text = getText("Print_Media_" .. val .. "_title")
+    win.textTitle = getText("Print_Text_" .. val .. "_title")
+    win.textData = string.gsub(getText("Print_Text_" .. val .. "_info"), "\\n", "\n")
+    win:instantiate()
+    for i=1,5 do
+        win.children.bottomButtons.children["revealOnMap"..i]:setVisible(false)
+    end
+    win.javaObj:setAlwaysOnTop(true)
+--        win:centerOnScreen(self.playerNum)
+
+    if getJoypadData(self.playerNum) then
+        ISAtomUIJoypad.Apply(win)
+        win.close = function(self)
+            UIManager.RemoveElement(self.javaObj)
+            if getJoypadData(self.playerNum) then
+                setJoypadFocus(self.playerNum, self.prevFocus)
+            end
+        end
+        win.children.bar.children.closeButton.onLeftClick = function(_self)
+            getSoundManager():playUISound(_self.sounds.activate)
+            _self.parent.parent:close()
+        end
+        win.playerNum = self.playerNum
+        win.prevFocus = getJoypadData(self.playerNum).focus
+        win.onJoypadDown = function(self, button, joypadData)
+            if button == Joypad.BButton then
+                self.children.bar.children.closeButton:onLeftClick()
+            end
+            if button == Joypad.XButton then
+                self:onClickNewspaperButton()
+            end
+            if button == Joypad.YButton then
+                self:onClickMapButton()
+            end
+        end
+        setJoypadFocus(self.playerNum, win)
+    end
+
+    self.printMedia = win
+end
+
+function ISWorldMap:closePrintMedia()
+    if not self.printMedia then return end
+    if self.printMedia.close then
+        self.printMedia:close() -- joypad
+    else
+        UIManager.RemoveElement(self.printMedia.javaObj)
+    end
+    self.printMedia = nil
+end
+
+function ISWorldMap:renderStashMaps()
+    self.mouseOverStashMap = nil
+    if not self.showPrintMedia then return end
+    if not self.character then return end
+    local stashNameList = StashSystem.getAlreadyReadMap()
+    if self.mapAPI:getBoolean("AllStashMaps") then
+        stashNameList = ArrayList.new()
+        local stashList = StashSystem.getAllStashes()
+        for i=1,stashList:size() do
+            local stash = stashList:get(i-1)
+            stashNameList:add(stash:getName())
+        end
+    end
+    local mx,my = self:getMouseX(),self:getMouseY()
+    if self.playerNum and ((self.playerNum ~= 0) or (getJoypadData(self.playerNum) ~= nil and not wasMouseActiveMoreRecentlyThanJoypad())) then
+        mx = self.width / 2
+        my = self.height / 2
+    end
+    local mouseOver = nil
+    for i=1,stashNameList:size() do
+        local stashName = stashNameList:get(i-1)
+        local bounds = self:getStashMapBounds(stashName)
+        if bounds and bounds.x1 then
+            local sx = self.mapAPI:worldToUIX(bounds.x1 / 2 + bounds.x2 / 2, bounds.y1 / 2 + bounds.y2 / 2)
+            local sy = self.mapAPI:worldToUIY(bounds.x1 / 2 + bounds.x2 / 2, bounds.y1 / 2 + bounds.y2 / 2)
+            sx = sx - 64 / 2
+            sy = sy - 64 / 2
+            self:drawTextureScaledAspect(getTexture("Item_Map"), sx, sy, 64, 64, 1.0, 1.0, 1.0, 1.0)
+            if mx >= sx and my >= sy and mx < sx + 64 and my < sy + 64 then
+                mouseOver = { stashName=stashName, bounds=bounds, x=sx, y=sy }
+            end
+        end
+    end
+    if not mouseOver then return end
+    if not self:isPointOver(getMouseX(), getMouseY()) then return end
+    if self.stashMapUI and self.stashMapUI:isVisible() and self.stashMapUI:isMouseOver() then return end
+    self:drawRectBorder(mouseOver.x, mouseOver.y, 64, 64, 1.0, 1.0, 1.0, 1.0)
+    local bounds = mouseOver.bounds
+    self:drawMapRect(bounds)
+    self.mouseOverStashMap = mouseOver
+end
+
+function ISWorldMap:getStashMapBounds(stashName)
+    self.stashMapBounds = self.stashMapBounds or {}
+    if self.stashMapBounds[stashName] then
+        return self.stashMapBounds[stashName]
+    end
+    if not self.stashMapBoundsUI then
+        local ui = {}
+        ui.javaObject = UIWorldMap.new(ui)
+        ui.mapAPI = ui.javaObject:getAPIv3()
+        self.stashMapBoundsUI = ui
+    end
+    local bounds = {}
+    local f = LootMaps.Init[stashName]
+    if f then
+        self.stashMapBoundsUI.mapAPI:clearData()
+        self.stashMapBoundsUI.mapAPI:getStyleAPI():clear()
+        f(self.stashMapBoundsUI)
+        bounds.x1 = self.stashMapBoundsUI.mapAPI:getMinXInSquares()
+        bounds.y1 = self.stashMapBoundsUI.mapAPI:getMinYInSquares()
+        bounds.x2 = self.stashMapBoundsUI.mapAPI:getMaxXInSquares() + 1
+        bounds.y2 = self.stashMapBoundsUI.mapAPI:getMaxYInSquares() + 1
+    end
+    self.stashMapBounds[stashName] = bounds
+    return bounds
+end
+
+-----
+
+AnnotatedMapOverlay = ISPanel:derive("AnnotatedMapOverlay")
+
+function AnnotatedMapOverlay:instantiate()
+	self.javaObject = UIWorldMap.new(self)
+	self.mapAPI = self.javaObject:getAPIv3()
+	self.javaObject:setX(self.x)
+	self.javaObject:setY(self.y)
+	self.javaObject:setWidth(self.width)
+	self.javaObject:setHeight(self.height)
+	self.javaObject:setAnchorLeft(self.anchorLeft)
+	self.javaObject:setAnchorRight(self.anchorRight)
+	self.javaObject:setAnchorTop(self.anchorTop)
+	self.javaObject:setAnchorBottom(self.anchorBottom)
+	self.javaObject:setConsumeMouseEvents(false)
+	self.mapAPI:setMaxZoom(24.0)
+	self.mapAPI:setBoolean("ClampBaseZoomToPoint5", false);
+	self.mapAPI:setBoolean("Isometric", false)
+	self.mapAPI:setBoolean("WorldBounds", false)
+	self.mapAPI:setMapItem(instanceItem("Base.Map")) -- used for WorldMapSymbols
+	self:createChildren()
+end
+
+function AnnotatedMapOverlay:prerender()
+    ISPanel.prerender(self)
+    MapUtils.renderDarkModeOverlay(self)
+end
+
+function AnnotatedMapOverlay:onMouseDown(x, y)
+    return false
+end
+
+function AnnotatedMapOverlay:onMouseUp(x, y)
+    return false
+end
+
+function AnnotatedMapOverlay:onMouseMove(dx, dy)
+    return false
+end
+
+function AnnotatedMapOverlay:new(x, y, width, height)
+    local o = ISPanel.new(self, x, y, width, height)
+    o.anchorLeft = false
+    o.anchorTop = false
+    o.anchorRight = false
+    o.anchorBottom = false
+    o.backgroundColor.a = 0.0
+    return o
+end
+
+-----
+
+function ISWorldMap:onMouseUpStashMap()
+    if not self.mouseOverStashMap then return false end
+--    if self.stashMapUI and not UIManager.getUI():contains(self.stashMapUI.javaObj) then
+--        self.stashMapUI = nil
+--    end
+    self:closeStashMap()
+    local bounds = self.mouseOverStashMap.bounds
+    local x1 = self.mapAPI:worldToUIX(bounds.x1, bounds.y1)
+    local y1 = self.mapAPI:worldToUIY(bounds.x1, bounds.y1)
+    local x2 = self.mapAPI:worldToUIX(bounds.x2, bounds.y1)
+    local y2 = self.mapAPI:worldToUIY(bounds.x2, bounds.y1)
+    local x3 = self.mapAPI:worldToUIX(bounds.x2, bounds.y2)
+    local y3 = self.mapAPI:worldToUIY(bounds.x2, bounds.y2)
+    local x4 = self.mapAPI:worldToUIX(bounds.x1, bounds.y2)
+    local y4 = self.mapAPI:worldToUIY(bounds.x1, bounds.y2)
+    local minX = x4
+    local minY = y1
+    local maxX = x2
+    local maxY = y3
+    local width = math.ceil(maxX - minX)
+    local height = math.ceil(maxY - minY)
+    local ui = self.stashMapUI
+    if ui then
+        ui:setX(minX)
+        ui:setY(minY)
+        ui:setWidth(width)
+        ui:setHeight(height)
+        ui.mapAPI:clearData()
+        ui.mapAPI:getStyleAPI():clear()
+        ui.mapAPI:getSymbolsAPI():clear()
+        ui:setVisible(true)
+    else
+        ui = AnnotatedMapOverlay:new(minX, minY, width, height)
+        ui:initialise()
+    end
+    self:addChild(ui)
+    self.stashMapUI = ui
+    local f = LootMaps.Init[self.mouseOverStashMap.stashName]
+    if f then
+        f(self.stashMapUI)
+    end
+    self.stashMapUI.mapAPI:setZoom(self.stashMapUI.mapAPI:getBaseZoom())
+    local stash = StashSystem.getStash(self.mouseOverStashMap.stashName)
+    if stash then
+        stash:applyAnnotations(ui.javaObject)
+    end
+    return true
+end
+
+function ISWorldMap:positionStashMap()
+    if not self.stashMapUI or not self.stashMapUI:isVisible() then return end
+    local api = self.stashMapUI.mapAPI
+    local bounds = { x1 = api:getMinXInSquares(), y1 = api:getMinYInSquares(), x2 = api:getMaxXInSquares() + 1, y2 = api:getMaxYInSquares() + 1 }
+    local x1 = self.mapAPI:worldToUIX(bounds.x1, bounds.y1)
+    local y1 = self.mapAPI:worldToUIY(bounds.x1, bounds.y1)
+    local x2 = self.mapAPI:worldToUIX(bounds.x2, bounds.y1)
+    local y2 = self.mapAPI:worldToUIY(bounds.x2, bounds.y1)
+    local x3 = self.mapAPI:worldToUIX(bounds.x2, bounds.y2)
+    local y3 = self.mapAPI:worldToUIY(bounds.x2, bounds.y2)
+    local x4 = self.mapAPI:worldToUIX(bounds.x1, bounds.y2)
+    local y4 = self.mapAPI:worldToUIY(bounds.x1, bounds.y2)
+    local minX = x4
+    local minY = y1
+    local maxX = x2
+    local maxY = y3
+    local width = math.ceil(maxX - minX)
+    local height = math.ceil(maxY - minY)
+    local changed = (self.stashMapUI.width ~= width) or (self.stashMapUI.height ~= height)
+    self.stashMapUI:setX(minX)
+    self.stashMapUI:setY(minY)
+    self.stashMapUI:setWidth(width)
+    self.stashMapUI:setHeight(height)
+--    self.stashMapUI.javaObject:scaleWidthToHeight()
+    if true or changed then
+        self.stashMapUI.mapAPI:resetView()
+        local zoom = self.stashMapUI.mapAPI:getBaseZoom()
+        self.stashMapUI.mapAPI:setZoom(zoom)
+    end
+    self.stashMapUI.mapAPI:setBoolean("CellGrid", false)
+    self.stashMapUI.mapAPI:setBoolean("Features", true)
+    self.stashMapUI.mapAPI:setBoolean("Isometric", false)
+end
+
+function ISWorldMap:closeStashMap()
+    if not self.stashMapUI then return end
+    self:removeChild(self.stashMapUI)
+    self.stashMapUI:setVisible(false)
+--    self.stashMapUI = nil
 end
 
 function ISWorldMap:renderJoypadPrompt(texture, text, x, y)
@@ -395,6 +776,10 @@ function ISWorldMap:renderJoypadPrompt(texture, text, x, y)
 end
 
 function ISWorldMap:onMouseDown(x, y)
+	-- change to make the chat window not to blink while map scrolling
+	if isClient() and ISChat.chat~= nil and ISChat.chat:isVisible() then
+		ISChat.chat:bringToTop()
+	end
 	if self.symbolsUI:onMouseDownMap(x, y) then
 		return true
 	end
@@ -433,9 +818,21 @@ function ISWorldMap:onMouseMoveOutside(dx, dy)
 end
 
 function ISWorldMap:onMouseUp(x, y)
+	local wasDragging = self.dragging
 	self.dragging = false
 	if self.symbolsUI:onMouseUpMap(x, y) then
 		return true
+	end
+	if wasDragging and not self.dragMoved and self:onMouseUpPrintMedia() then
+		self:closeStashMap()
+		return true
+	end
+	if wasDragging and not self.dragMoved and self:onMouseUpStashMap() then
+		self:closePrintMedia()
+		return true
+	end
+	if wasDragging and not self.dragMoved then
+		self:closeStashMap()
 	end
 	return true
 end
@@ -495,7 +892,7 @@ function ISWorldMap:onRightMouseUp(x, y)
 	local worldX = self.mapAPI:uiToWorldX(x, y)
 	local worldY = self.mapAPI:uiToWorldY(x, y)
 	if getWorld():getMetaGrid():isValidChunk(worldX / 10, worldY / 10) then
-		option = context:addOption("Teleport Here", self, self.onTeleport, worldX, worldY)
+		option = context:addOption(getText("IGUI_ZombiePopulation_TeleportHere"), self, self.onTeleport, worldX, worldY)
 	end
 
 	local animalChunk = getAnimalChunk(worldX, worldY);
@@ -577,6 +974,14 @@ function ISWorldMap:onToggleSymbols()
 	end
 end
 
+function ISWorldMap:onTogglePrintMedia()
+	self.showPrintMedia = not self.showPrintMedia
+	if not self.showPrintMedia then
+		self:closePrintMedia()
+		self:closeStashMap()
+	end
+end
+
 function ISWorldMap:onToggleLegend()
 	if self.keyUI:isVisible() then
 		self.keyUI:undisplay()
@@ -595,7 +1000,7 @@ function ISWorldMap:onCenterOnPlayer()
 		self.mapAPI:resetView()
 		return
 	end
-	self.mapAPI:centerOn(self.character:getX(), self.character:getY())
+	self.mapAPI:transitionTo(self.character:getX(), self.character:getY(), self.mapAPI:getZoomF())
 end
 
 function ISWorldMap:onTogglePyramid()
@@ -639,11 +1044,11 @@ end
 function ISWorldMap:onTeleport(worldX, worldY)
 	local playerObj = getSpecificPlayer(0)
 	if not playerObj then return end
-	playerObj:setX(worldX)
-	playerObj:setY(worldY)
-	playerObj:setZ(0.0)
-	playerObj:setLastX(worldX)
-	playerObj:setLastY(worldY)
+	if isClient() then
+		SendCommandToServer("/teleportto " .. tostring(worldX) .. "," .. tostring(worldY) .. ",0");
+	else
+		playerObj:teleportTo(worldX, worldY, 0.0)
+	end
 end
 
 function ISWorldMap:setHideUnvisitedAreas(hide)
@@ -683,10 +1088,13 @@ end
 
 function ISWorldMap:close()
 	self:saveSettings()
+	getCore():saveOptions() -- OptionWorldMapBrightness
 	self.symbolsUI:undisplay()
 	if self.forgetUI then
 		self.forgetUI.no:forceClick()
 	end
+	self:closePrintMedia()
+	self:closeStashMap()
 	self:setVisible(false)
 	self:removeFromUIManager()
 	if getSpecificPlayer(0) then
@@ -698,7 +1106,7 @@ function ISWorldMap:close()
 		end
 	end
 	if JoypadState.players[self.playerNum+1] then
-		setJoypadFocus(self.playerNum, nil)
+		setJoypadFocus(self.playerNum, self.prevFocus)
 	end
 	if MainScreen.instance and not MainScreen.instance.inGame then
 		-- Debug in main menu
@@ -729,6 +1137,10 @@ function ISWorldMap:onKeyRelease(key)
 		if self.symbolsUI:onKeyRelease(key) then
 			return
 		end
+		if self.stashMapUI and self.stashMapUI:isVisible() then
+			self:closeStashMap()
+			return
+		end
 		if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then
 			self:close()
 		end
@@ -750,6 +1162,7 @@ function ISWorldMap:updateJoypad()
 	if self.getJoypadFocus then
 		self.getJoypadFocus = false;
 		if JoypadState.players[self.playerNum+1] then
+			self.prevFocus = getJoypadFocus(self.playerNum)
 			setJoypadFocus(self.playerNum, self)
 		end
 	end
@@ -764,7 +1177,7 @@ function ISWorldMap:updateJoypad()
 	local cx = self.mapAPI:getCenterWorldX()
 	local cy = self.mapAPI:getCenterWorldY()
 
-	if isJoypadLTPressed(self.joyfocus.id, Joypad.LBumper) then
+	if isJoypadLTPressed(self.joyfocus.id) then
 		if not self.LBumperZoom then
 			self.LBumperZoom = self.mapAPI:getZoomF()
 		end
@@ -775,7 +1188,7 @@ function ISWorldMap:updateJoypad()
 	else
 		self.LBumperZoom = nil
 	end
-	if isJoypadRTPressed(self.joyfocus.id, Joypad.RBumper) then
+	if isJoypadRTPressed(self.joyfocus.id) then
 		if not self.RBumperZoom then
 			self.RBumperZoom = self.mapAPI:getZoomF()
 		end
@@ -854,15 +1267,30 @@ end
 
 function ISWorldMap:onJoypadDown(button, joypadData)
 	if button == Joypad.AButton then
-		self.symbolsUI:onJoypadDownInMap(button, joypadData)
+		if self.symbolsUI.currentTool then
+			self.symbolsUI:onJoypadDownInMap(button, joypadData)
+		elseif self.mouseOverPrintMedia then
+			self:closeStashMap()
+			self:onMouseUpPrintMedia()
+		elseif self.mouseOverStashMap then
+			self:closePrintMedia()
+			self:onMouseUpStashMap()
+		end
 	end
 	if button == Joypad.BButton then
 		if self.symbolsUI:onKeyRelease(Keyboard.KEY_ESCAPE) then
 			return
 		end
+		if self.stashMapUI and self.stashMapUI:isVisible() then
+			self:closeStashMap()
+			return
+		end
 		self:close()
 	end
 	if button == Joypad.XButton then
+        if self.stashMapUI and self.stashMapUI:isVisible() then
+            return
+        end
 		self.symbolsUI:onKeyRelease(Keyboard.KEY_ESCAPE)
 		if self.symbolsUI:isVisible() then
 			setJoypadFocus(joypadData.player, self.symbolsUI)
@@ -872,6 +1300,9 @@ function ISWorldMap:onJoypadDown(button, joypadData)
 		end
 	end
 	if button == Joypad.YButton then
+		if self.stashMapUI and self.stashMapUI:isVisible() then
+			return
+		end
 		setJoypadFocus(joypadData.player, self.buttonPanel)
 	end
 end
@@ -939,7 +1370,7 @@ function ISWorldMap:new(x, y, width, height)
 	o.hideUnvisitedAreas = false
 	o.isometric = true
 	o.character = nil
-	o.playerNum = character and character:getPlayerNum() or 0
+	o.playerNum = 0
 	o.cross = getTexture("media/ui/LootableMaps/mapCross.png")
 	o.texViewIsometric = getTexture("media/textures/worldMap/ViewIsometric.png")
 	o.texViewOrthographic = getTexture("media/textures/worldMap/ViewOrtho.png")
@@ -1045,8 +1476,18 @@ function ISWorldMap.ToggleWorldMap(playerNum)
           ISWorldMap.HideWorldMap(playerNum)
           return
     end
+    local tooDarkToRead = false
+    if playerObj then
+        tooDarkToRead = playerObj:tooDarkToRead()
+        if playerObj:getVehicle() then
+            if playerObj:getVehicle():hasLiveBattery() then tooDarkToRead = false end
+            if playerObj:getTorchStrength() > 0 then tooDarkToRead = false end
+        end
+    end
+    if getCore():getDebug() then tooDarkToRead = false end
+
     -- check for light if the map needing light sandbox setting is enabled
-	if ISWorldMap and ISWorldMap.NeedsLight() and playerObj and playerObj:tooDarkToRead() and not (isAdmin() or getCore():getDebug()) then
+	if ISWorldMap and ISWorldMap.NeedsLight() and playerObj and tooDarkToRead and not isAdmin() then
 		-- kludge to allow for vehicle interior lights
 		if not (playerObj:getVehicle() and playerObj:getVehicle():getBatteryCharge() > 0) then 
 			HaloTextHelper.addBadText(playerObj, getText("ContextMenu_TooDark"));

@@ -69,10 +69,13 @@ function ISFireplaceLightFromLiterature:complete()
 
 	if self.fireplace then
 		if self.fuelAmt then
-			self.fireplace:addFuel(self.fuelAmt * 60)
+			self.fireplace:addFuel(self.fuelAmt)
 		end
 		if not self.fireplace:isLit() and self.fireplace:hasFuel() then
 			self.fireplace:setLit(true)
+			if self.fireplace:getContainer() then
+				self.fireplace:getContainer():addItemsToProcessItems()
+			end
 		end
 		self.fireplace:sendObjectChange('state')
 	end
@@ -86,13 +89,14 @@ function ISFireplaceLightFromLiterature:getDuration()
 	return 100
 end
 
-function ISFireplaceLightFromLiterature:new(character, item, lighter, fireplace, fuelAmt)
+function ISFireplaceLightFromLiterature:new(character, item, lighter, fireplace)
 	local o = ISBaseTimedAction.new(self, character);
 	o.maxTime = o:getDuration()
 	-- custom fields
 	o.fireplace = fireplace
 	o.item = item
 	o.lighter = lighter
-	o.fuelAmt = fuelAmt
+-- 	o.fuelAmt = fuelAmt
+    o.fuelAmt = ISCampingMenu.getFuelDurationForItem(item);
 	return o
 end

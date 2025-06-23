@@ -290,17 +290,23 @@ function ISComboBox:prerender()
 	if self:isEditable() and self.editor and self.editor:isReallyVisible() then
 		-- editor is visible, don't draw text
 	elseif self.options[self.selected] then
-		self:clampStencilRectToParent(0, 0, self.width - self.image:getWidthOrig() - 6, self.height)
+		local stencilX,stencilY,stencilW,stencilH = self:clampStencilRectToParent(0, 0, self.width - self.image:getWidthOrig() - 6, self.height)
 		if not self.disabled then
 			self:drawText(self:getOptionText(self.selected), 10, y, self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a, self.font);
 		else
 			self:drawText(self:getOptionText(self.selected), 10, y, 0.6, 0.6, 0.6, 1, self.font);
 		end
 		self:clearStencilRect()
+		if self.doRepaintStencil then
+			self:repaintStencilRect(stencilX, stencilY, stencilW, stencilH)
+		end
 	elseif self.noSelectionText then
-		self:clampStencilRectToParent(0, 0, self.width - self.image:getWidthOrig() - 6, self.height)
+		local stencilX,stencilY,stencilW,stencilH = self:clampStencilRectToParent(0, 0, self.width - self.image:getWidthOrig() - 6, self.height)
 		self:drawText(self.noSelectionText, 10, y, self.textColor.r, self.textColor.g, self.textColor.b, self.textColor.a, self.font);
 		self:clearStencilRect()
+		if self.doRepaintStencil then
+			self:repaintStencilRect(stencilX, stencilY, stencilW, stencilH)
+		end
 	end
 
 	if self:isMouseOver() and not self.expanded and self:getOptionTooltip(self.selected) then

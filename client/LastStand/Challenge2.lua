@@ -58,9 +58,9 @@ function Challenge2.RemovePlayer(playerObj)
 		Challenge2.upgradeScreen[playerNum] = nil
 	end
 	setAggroTarget(playerNum, -1, -1)
-	if Challenge2.radarPanel[p] then
-		UIManager.RemoveUI(Challenge2.radarPanel[p])
-		Challenge2.radarPanel[p] = nil
+	if Challenge2.radarPanel[playerNum] then
+		UIManager.RemoveUI(Challenge2.radarPanel[playerNum])
+		Challenge2.radarPanel[playerNum] = nil
 	end
 end
 
@@ -126,7 +126,7 @@ Challenge2.Render = function()
 	end
 
 	-- render all the money the player have
-	y = 60;
+	local y = 60;
 	for i = 0,getNumActivePlayers() - 1 do
 		local playerObj = getSpecificPlayer(i)
 		if playerObj and not playerObj:isDead() then
@@ -324,6 +324,7 @@ end
 
 Challenge2.id = "Challenge2";
 Challenge2.image = "media/lua/client/LastStand/Challenge2.png";
+Challenge2.video = "HouseInTheWoods.bik";
 Challenge2.world = "challengemaps/Challenge1";
 Challenge2.x = 153;
 Challenge2.y = 158;

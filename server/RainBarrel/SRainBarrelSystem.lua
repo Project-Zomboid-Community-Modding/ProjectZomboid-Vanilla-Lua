@@ -53,13 +53,13 @@ function SRainBarrelSystem:checkRain()
 				luaObject.exterior = square:isOutside()
 			end
 			if luaObject.exterior then
-				luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + 1 * RainCollectorBarrel.waterScale)
+				local addAmount = 1 * RainCollectorBarrel.waterScale;
+				luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + addAmount)
 				luaObject.taintedWater = true
 				local isoObject = luaObject:getIsoObject()
 				if isoObject then -- object might have been destroyed
 					self:noise('added rain to barrel at '..luaObject.x..","..luaObject.y..","..luaObject.z..' waterAmount='..luaObject.waterAmount)
-					isoObject:setTaintedWater(true)
-					isoObject:setWaterAmount(luaObject.waterAmount)
+					isoObject:addFluid(FluidType.TaintedWater, addAmount)
 					isoObject:transmitModData()
 				end
 			end
@@ -84,8 +84,8 @@ local function OnWaterAmountChange(object, prevAmount)
 	if not object then return end
 	local luaObject = SRainBarrelSystem.instance:getLuaObjectAt(object:getX(), object:getY(), object:getZ())
 	if luaObject then
-		noise('waterAmount changed to '..object:getWaterAmount()..' tainted='..tostring(object:isTaintedWater())..' at '..luaObject.x..','..luaObject.y..','..luaObject.z)
-		luaObject.waterAmount = object:getWaterAmount()
+		noise('waterAmount changed to '..object:getFluidAmount()..' tainted='..tostring(object:isTaintedWater())..' at '..luaObject.x..','..luaObject.y..','..luaObject.z)
+		luaObject.waterAmount = object:getFluidAmount()
 		luaObject.taintedWater = object:isTaintedWater()
 		luaObject:changeSprite(object)
 	end

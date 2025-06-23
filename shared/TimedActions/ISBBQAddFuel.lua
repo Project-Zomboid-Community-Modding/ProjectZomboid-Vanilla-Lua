@@ -7,7 +7,7 @@ require "TimedActions/ISBaseTimedAction"
 ISBBQAddFuel = ISBaseTimedAction:derive("ISBBQAddFuel");
 
 function ISBBQAddFuel:isValid()
-    if self.fireplace:getFuelAmount() + self.fuelAmt > 360 then return end
+    if self.fireplace:getFuelAmount() + self.fuelAmt > getCampingFuelMax() then return end
     if isClient() and self.item then
         return self.fireplace:getObjectIndex() ~= -1 and
             self.character:getInventory():containsID(self.item:getID())

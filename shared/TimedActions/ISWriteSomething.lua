@@ -19,9 +19,9 @@ function ISWriteSomething:isValid()
         return not vehicle:isEngineRunning() or vehicle:getSpeed2D() == 0
     end
     if isClient() and self.item then
-        return self.character:getInventory():containsID(self.item:getID()) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
+        return self.container:containsID(self.item:getID()) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
     else
-        return self.character:getInventory():contains(self.item) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
+        return self.container:containsID(self.item:getID()) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
     end
 end
 
@@ -32,7 +32,7 @@ end
 
 function ISWriteSomething:start()
     if isClient() and self.item then
-        self.item = self.character:getInventory():getItemById(self.item:getID())
+        self.item = self.container:getItemById(self.item:getID())
     end
 
     if self.item:getReadType() then
@@ -135,6 +135,7 @@ function ISWriteSomething:new(character, item)
     local o = ISBaseTimedAction.new(self, character);
     o.character = character;
     o.item = item;
+    o.container = item:getOutermostContainer();
     o.ignoreHandsWounds = true;
     o.maxTime = o:getDuration();
     return o;

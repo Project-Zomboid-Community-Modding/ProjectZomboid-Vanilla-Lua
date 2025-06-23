@@ -32,11 +32,10 @@ function ISWorldItemIcon:doPickup(_x, _y, _contextOption, _targetContainer, _ite
 	local targetContainer = _targetContainer or getPlayerInventory(self.player).inventory or self.character:getInventory();
 	if self.square and luautils.walkAdj(self.character, self.square) then
 		local items = _items or {self.itemObj};
-		local time = ISWorldObjectContextMenu.grabItemTime(self.character, self.itemObj:getWorldItem());
 		for _, itemObj in ipairs(items) do
 			if self:isValid() and itemObj and itemObj:getWorldItem() then
 				if targetContainer:isItemAllowed(itemObj) then
-					local grabAction = ISGrabItemAction:new(self.character, itemObj:getWorldItem(), time);
+					local grabAction = ISGrabItemAction:new(self.character, itemObj:getWorldItem(), ISWorldObjectContextMenu.grabItemTime(self.character, itemObj:getWorldItem()));
 					grabAction.destContainer = targetContainer;
 					ISTimedActionQueue.add(grabAction);
 				end;
@@ -69,7 +68,7 @@ function ISWorldItemIcon:isValid()
 	end;
 	return false;
 end
--------------------------------------------------
+----------------------------------------------------
 -------------------------------------------------
 function ISWorldItemIcon:findPinOffset()
 	-- IsoWorldInventoryObjects are 3/4 icon height above the world x,y coords.
@@ -91,6 +90,24 @@ end
 function ISWorldItemIcon:checkIsForageable()
 	self.isForageable = self:isValid();
 	return self.isForageable;
+end
+
+function ISWorldItemIcon:checkForPoison()
+	self.isKnownPoison = false;
+	if self.itemObj and self.itemObj:getWorldItem() then
+		if self.character:isKnownPoison(self.itemObj) then
+			self.isKnownPoison = true;
+		end;
+	else
+		for _, itemObj in pairs(self.itemObjTable) do
+			if itemObj and itemObj:getWorldItem() then
+				if self.character:isKnownPoison(itemObj) then
+					self.isKnownPoison = true;
+					break;
+				end;
+			end;
+		end;
+	end;
 end
 -------------------------------------------------
 -------------------------------------------------

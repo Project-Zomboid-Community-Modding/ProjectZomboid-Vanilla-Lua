@@ -379,7 +379,7 @@ Tests.add_water_to_rainbarrel = {
 		local object = CRainBarrelSystem.instance:getIsoObjectOnSquare(square)
 		local item = newInventoryItem("Base.WaterBottleFull")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISAddWaterFromItemAction:new(PLAYER_OBJ, item, object))
+		ISTimedActionQueue.add(ISAddFluidFromItemAction:new(PLAYER_OBJ, item, object))
 	end
 }
 
@@ -894,7 +894,6 @@ Tests.campfire_light_book_lighter = {
 		local campfire = CCampfireSystem.instance:getLuaObjectAt(x, y, z)
 		local book = newInventoryItem("Base.Book")
 		local fuelAmt = ISCampingMenu.getFuelDurationForItem(book)
--- 		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
 		local lighter = newInventoryItem("Base.Lighter")
 		luautils.walkAdj(PLAYER_OBJ, square)
 		ISTimedActionQueue.add(ISLightFromLiterature:new(PLAYER_OBJ, book, lighter, campfire, fuelAmt))
@@ -954,10 +953,10 @@ Tests.fireplace_light_book_lighter = {
 		local fireplace = IsoFireplace.new(getCell(), square, getSprite("fixtures_fireplaces_01_0"))
 		square:AddTileObject(fireplace)
 		local book = newInventoryItem("Base.Book")
-		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
+-- 		local fuelAmt = campingFuelCategory[book:getCategory()] * 60
 		local lighter = newInventoryItem("Base.Lighter")
 		ISTimedActionQueue.add(ISWalkToTimedAction:new(PLAYER_OBJ, square))
-		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(PLAYER_OBJ, book, lighter, fireplace, fuelAmt))
+		ISTimedActionQueue.add(ISFireplaceLightFromLiterature:new(PLAYER_OBJ, book, lighter, fireplace))
 	end
 }
 
@@ -1280,10 +1279,11 @@ local function OnTick()
 			return
 		end
 		if PLAYER_OBJ and PLAYER_OBJ:getCurrentSquare() ~= PLAYER_SQR_ORIG then
-			PLAYER_OBJ:setX(PLAYER_SQR_ORIG:getX() + 0.5)
-			PLAYER_OBJ:setY(PLAYER_SQR_ORIG:getY() + 0.5)
-			PLAYER_OBJ:setLastX(PLAYER_OBJ:getX())
-			PLAYER_OBJ:setLastY(PLAYER_OBJ:getY())
+			if isClient() then
+				SendCommandToServer("/teleportto " .. tostring(PLAYER_SQR_ORIG:getX() + 0.5) .. "," .. tostring(PLAYER_SQR_ORIG:getY() + 0.5) .. ",0");
+			else
+				PLAYER_OBJ:teleportTo(PLAYER_SQR_ORIG:getX() + 0.5, PLAYER_SQR_ORIG:getY() + 0.5, 0.0)
+			end
 			PLAYER_OBJ:setCurrent(PLAYER_SQR_ORIG)
 		end
 		if #testsToRun == 0 then
@@ -1293,7 +1293,7 @@ local function OnTick()
 		end
 		local testName = testsToRun[1]
 		table.remove(testsToRun, 1)
-		if not ShouldSkipTest(test) then
+		if not ShouldSkipTest(nil) then
 			RunTest(testName)
 		end
 	end

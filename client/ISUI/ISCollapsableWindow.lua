@@ -265,7 +265,7 @@ function ISCollapsableWindow:onMouseMoveOutside(dx, dy)
 	end
 
 	if not self.pin and (self:getMouseX() < 0 or self:getMouseY() < 0 or self:getMouseX() > self:getWidth() or self:getMouseY() > self:getHeight()) then
-		self.collapseCounter = self.collapseCounter + 1;
+		self.collapseCounter = self.collapseCounter + getGameTime():getMultiplier() / getGameTime():getTrueMultiplier() / 0.8;
 
 		local bDo = true;
 

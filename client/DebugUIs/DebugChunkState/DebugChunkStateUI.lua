@@ -26,7 +26,7 @@ DebugChunkStateUI_OptionsPanel = ISPanel:derive("DebugChunkStateUI_OptionsPanel"
 local OptionsPanel = DebugChunkStateUI_OptionsPanel
 
 function OptionsPanel:createChildren()
-	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox)
 	tickBox:initialise()
 	self:addChild(tickBox)
 	for i=1,self.gameState:getOptionCount() do
@@ -90,15 +90,24 @@ end
 
 function DebugChunkStateUI:createChildren()
 	local panelWidth = 200+(getCore():getOptionFontSizeReal()*50);
-	local combo = ISComboBox:new(UI_BORDER_SPACING, UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangePlayer)
-	self:addChild(combo)
-	combo:addOption("Player 0")
-	combo:addOption("Player 1")
-	combo:addOption("Player 2")
-	combo:addOption("Player 3")
-	self.comboPlayerIndex = combo
 
-	self.zLevelSlider = ISSliderPanel:new(UI_BORDER_SPACING, combo:getBottom() + UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangeZLevel)
+	self.buttonPlayer0 = ISButton:new(UI_BORDER_SPACING, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "PLR 0", self, self.onChangePlayer)
+	self.buttonPlayer0.playerIndex = 0
+	self:addChild(self.buttonPlayer0)
+
+	self.buttonPlayer1 = ISButton:new(self.buttonPlayer0:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "PLR 1", self, self.onChangePlayer)
+	self:addChild(self.buttonPlayer1)
+	self.buttonPlayer1.playerIndex = 1
+
+	self.buttonPlayer2 = ISButton:new(self.buttonPlayer1:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "PLR 2", self, self.onChangePlayer)
+	self:addChild(self.buttonPlayer2)
+	self.buttonPlayer2.playerIndex = 2
+
+	self.buttonPlayer3 = ISButton:new(self.buttonPlayer2:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "PLR 3", self, self.onChangePlayer)
+	self:addChild(self.buttonPlayer3)
+	self.buttonPlayer3.playerIndex = 3
+
+	self.zLevelSlider = ISSliderPanel:new(UI_BORDER_SPACING, self.buttonPlayer0:getBottom() + UI_BORDER_SPACING, panelWidth, BUTTON_HGT, self, self.onChangeZLevel)
 	self.zLevelSlider:initialise()
 	self.zLevelSlider:setValues(-31, 31, 1, 1, true)
 	self.zLevelSlider:setCurrentValue(self.gameState:fromLua0("getZ"), true)
@@ -172,12 +181,10 @@ function DebugChunkStateUI:createChildren()
 	self.objectAtCursorPanel:setX(self.vehicleStoryPanel.x - 10 - self.objectAtCursorPanel.width)
 end
 
-function DebugChunkStateUI:onChangePlayer()
-	local playerIndex = self.comboPlayerIndex.selected - 1
+function DebugChunkStateUI:onChangePlayer(button, x, y)
+	local playerIndex = button.playerIndex
 	if getSpecificPlayer(playerIndex) then
 		self.gameState:fromLua1("setPlayerIndex", playerIndex)
-	else
-		self.comboPlayerIndex.selected = 1
 	end
 end
 
@@ -317,8 +324,11 @@ end
 
 function DebugChunkStateUI:prerender()
 	ISPanel.prerender(self)
+	self.buttonPlayer0:setEnable(getSpecificPlayer(0) ~= nil)
+	self.buttonPlayer1:setEnable(getSpecificPlayer(1) ~= nil)
+	self.buttonPlayer2:setEnable(getSpecificPlayer(2) ~= nil)
+	self.buttonPlayer3:setEnable(getSpecificPlayer(3) ~= nil)
 	self.spritePopupPanel.sprite = nil
-
 	local item = self.objectList.items[self.objectList.mouseoverselected]
 	if not item then return end
 	local object = item.item

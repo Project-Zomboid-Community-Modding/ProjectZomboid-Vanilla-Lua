@@ -78,7 +78,7 @@ function BootstrapConnectPopup:connect(host, port, serverPassword)
 		self.port = tonumber(port)
 		self.serverPassword = serverPassword
 		self:setVisible(true, joypadData)
-		if not steamRequestServerDetails(host, tonumber(port)) then
+		if not steamRequestServerDetails(getHostByName(host), tonumber(port)) then
 			self.connecting = false
 			self.connectLabel.name = "steamRequestServerDetails() returned false"
 		end
@@ -97,20 +97,20 @@ function BootstrapConnectPopup:connect(host, port, serverPassword)
 end
 
 function BootstrapConnectPopup:OnSteamServerResponded2(host, port, server2)
-	if self.connecting and host == self.host and port == self.port then
+	if self.connecting and host == getHostByName(self.host) and port == self.port then
 		self.connecting = false
 		self:setVisible(false)
 		if server2:isHosted() then
 			ConnectToServer.instance:connectCoop(self, server2:getSteamId())
 		else
-			ServerConnectPopup.instance:setServer(host, tostring(port), self.serverPassword)
+			ServerConnectPopup.instance:setServer(self.host, tostring(port), self.serverPassword)
 			ServerConnectPopup.instance:setVisible(true)
 		end
 	end
 end
 
 function BootstrapConnectPopup:OnSteamServerFailedToRespond2(host, port)
-	if self.connecting and host == self.host and port == self.port then
+	if self.connecting and host == getHostByName(self.host) and port == self.port then
 		self.connecting = false
 		self.connectLabel.name = getText("UI_servers_ServerFailedToRespond")
 	end

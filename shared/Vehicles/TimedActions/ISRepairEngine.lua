@@ -84,6 +84,9 @@ function ISRepairEngine:complete()
 end
 
 function ISRepairEngine:getDuration()
+	if self.character:isTimedActionInstant() then
+		return 1;
+	end
 	return self.maxTime;
 end
 

@@ -27,6 +27,7 @@ local PaintColor = {
 }
 
 function ISPaintCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISPaintCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local sq = getWorld():getCell():getGridSquare(x, y, z)
 	local playerObj = self.character
 	local playerInv = playerObj:getInventory()
@@ -35,7 +36,7 @@ function ISPaintCursor:create(x, y, z, north, sprite)
 	if self.action == "paintSign" then
 		local paintCan = nil
 		if not ISBuildMenu.cheat then
-			local paintBrush = playerInv:getFirstTypeRecurse("Paintbrush")
+			local paintBrush = playerInv:getFirstTagRecurse("Paintbrush")
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintBrush)
 			paintCan = playerInv:getFirstTypeRecurse(args.paintType)
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintCan)
@@ -45,7 +46,7 @@ function ISPaintCursor:create(x, y, z, north, sprite)
 	if self.action == "paintThump" then
 		local paintCan = nil
 		if not ISBuildMenu.cheat then
-			local paintBrush = playerInv:getFirstTypeRecurse("Paintbrush")
+			local paintBrush = playerInv:getFirstTagRecurse("Paintbrush")
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintBrush)
 			paintCan = playerInv:getFirstTypeRecurse(args.paintType)
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, paintCan)
@@ -132,8 +133,8 @@ function ISPaintCursor:render(x, y, z, square)
 			self.signSprite:RenderGhostTileColor(x, y, z, color.r, color.g, color.b, 1.0)
 		elseif self.action == "plaster" then
 			local north = (object:getNorth() and "North") or ""
-			local modData = object:getModData()
-			local spriteName = Painting[modData.wallType]["plasterTile" .. north]
+			local wallType = ISPaintMenu.getWallType(object);
+			local spriteName = Painting[wallType]["plasterTile" .. north]
 			self.plasterSprite = IsoSprite.new()
 			self.plasterSprite:LoadSingleTexture(spriteName)
 			self.plasterSprite:RenderGhostTile(x, y, z)
@@ -204,8 +205,7 @@ function ISPaintCursor:canPaint(object)
 	end
 	if self.action == "paintThump" then
 		if instanceof(object, "IsoThumpable") and object:isPaintable() then
-			local modData = object:getModData()
-			return Painting[modData.wallType][self.args.paintType] ~= nil
+			return Painting[ISPaintMenu.getWallType(object)][self.args.paintType] ~= nil
 		end
 		if props and props:Is("IsPaintable") then
 			local wallType = props:Val("PaintingType")
@@ -230,7 +230,7 @@ function ISPaintCursor:hasItems()
 	local playerInv = playerObj:getInventory()
 	if self.action == "paintSign" or self.action == "paintThump" then
 		if not ISBuildMenu.cheat then
-			local paintBrush = playerInv:getFirstTypeRecurse("Paintbrush")
+			local paintBrush = playerInv:getFirstTagRecurse("Paintbrush")
 			local paintCan = playerInv:getFirstTypeRecurse(self.args.paintType)
 			return paintBrush ~= nil and paintCan ~= nil
 		end
@@ -277,6 +277,7 @@ function ISPaintCursor:new(character, action, args)
 	o.renderX = -1
 	o.renderY = -1
 	o.renderZ = -1
+	showDebugInfoInChat("Cursor New \'ISPaintCursor\'")
 	return o
 end
 

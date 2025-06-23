@@ -71,6 +71,7 @@ function buildUtil.checkCorner(x, y, z, north, thumpable, item)
 		sy = y + 1;
 	end
 	local sq2 = getCell():getGridSquare(x + xoffset, y + yoffset, z);
+	if not sq2 then return end
 	for i = 0, sq2:getSpecialObjects():size() - 1 do
 		local item = sq2:getSpecialObjects():get(i);
 		if instanceof(item, "IsoThumpable") and item:getNorth() ~= north  then
@@ -95,6 +96,7 @@ function buildUtil.addCorner(x,y,z, thumpable, item)
 		local corner = IsoThumpable.new(getCell(), sq, item.corner, false, nil);
 		corner:setCorner(true);
 		corner:setCanBarricade(false);
+		corner:setCanBePlastered(true);
 		sq:AddSpecialObject(corner);
 		sq:RecalcAllWithNeighbours(true);
 		corner:transmitCompleteItemToClients();
@@ -290,7 +292,7 @@ function buildUtil.openNailsBox(ISItem)
 
 	if removedFromGround then
 		if isServer() then
-			sendServerCommand(self.character, 'ui', 'dirtyUI', { });
+			sendServerCommand(playerObj, 'ui', 'dirtyUI', { });
 		else
 			ISInventoryPage.dirtyUI();
 		end
@@ -391,6 +393,7 @@ function buildUtil.setInfo(javaObject, ISItem)
 	if ISItem.modData and ISItem.modData["use:Base.BlowTorch"] then
 		javaObject:setThumpSound("ZombieThumpMetal")
 	end
+	javaObject:setIsFloor(ISItem.isFloor);
 end
 
 local function addStairObject(objects, x, y, z)

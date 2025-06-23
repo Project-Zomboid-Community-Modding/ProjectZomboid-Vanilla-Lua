@@ -380,17 +380,31 @@ local function createWindow(_player, _windowInstance, _isoObject)
     local y = getMouseY() + 10;
     local adjustPos = true;
 
-    if ISEntityUI.players[playerNum] then
-        if ISEntityUI.players[playerNum].instance then
-            ISEntityUI.players[playerNum].instance:close();
+    local width = 0;
+    local height = 0;
+    
+    local windowKey = _windowInstance.xuiStyleName or "Default";
+    
+    -- close all other entity windows - we only allow one open at the moment. - spurcival
+    ISEntityUI.CloseWindows();
+
+    if ISEntityUI.players[playerNum] and ISEntityUI.players[playerNum].windows[windowKey] then
+        if ISEntityUI.players[playerNum].windows[windowKey].instance then
+            ISEntityUI.players[playerNum].windows[windowKey].instance:close();
         end
-        if ISEntityUI.players[playerNum].x and ISEntityUI.players[playerNum].y then
-            x = ISEntityUI.players[playerNum].x;
-            y = ISEntityUI.players[playerNum].y;
+        if ISEntityUI.players[playerNum].windows[windowKey].x and ISEntityUI.players[playerNum].windows[windowKey].y then
+            x = ISEntityUI.players[playerNum].windows[windowKey].x;
+            y = ISEntityUI.players[playerNum].windows[windowKey].y;
             adjustPos = false;
         end
+        if ISEntityUI.players[playerNum].windows[windowKey].width and ISEntityUI.players[playerNum].windows[windowKey].height then
+            width = ISEntityUI.players[playerNum].windows[windowKey].width;
+            height = ISEntityUI.players[playerNum].windows[windowKey].height;
+        end
     else
-        ISEntityUI.players[playerNum] = {};
+        ISEntityUI.players[playerNum] = ISEntityUI.players[playerNum] or {};
+        ISEntityUI.players[playerNum].windows = ISEntityUI.players[playerNum].windows or {};
+        ISEntityUI.players[playerNum].windows[windowKey] = {};
     end
 
     _windowInstance:initialise();
@@ -399,13 +413,13 @@ local function createWindow(_player, _windowInstance, _isoObject)
     _windowInstance:setY(y);
     _windowInstance:setVisible(true);
     if _windowInstance.calculateLayout then
-        _windowInstance:calculateLayout(0,0);
+        _windowInstance:calculateLayout(width,height);
     end
     _windowInstance:addToUIManager();
 
-    ISEntityUI.players[playerNum].instance = _windowInstance;
-    ISEntityUI.players[playerNum].playerObj = _player;
-    ISEntityUI.players[playerNum].entityObj = _isoObject;
+    ISEntityUI.players[playerNum].windows[windowKey].instance = _windowInstance;
+    ISEntityUI.players[playerNum].windows[windowKey].playerObj = _player;
+    ISEntityUI.players[playerNum].windows[windowKey].entityObj = _isoObject;
 
     --first time open panel and isoobject then middle of screen.
     if adjustPos and instanceof(_isoObject, "IsoObject") then
@@ -413,8 +427,8 @@ local function createWindow(_player, _windowInstance, _isoObject)
         local y = (getCore():getScreenHeight()/2) - (_windowInstance:getHeight()/2);
         _windowInstance:setX(x);
         _windowInstance:setY(y);
-        ISEntityUI.players[playerNum].x = x;
-        ISEntityUI.players[playerNum].y = y;
+        ISEntityUI.players[playerNum].windows[windowKey].x = x;
+        ISEntityUI.players[playerNum].windows[windowKey].y = y;
     end
 
     if JoypadState.players[playerNum+1] then
@@ -461,18 +475,21 @@ function ISEntityUI.OpenWindow(_player, _entity)
 end
 
 function ISEntityUI.OnCloseWindow(_window)
-    if _window and _window.playerNum and ISEntityUI.players[_window.playerNum] then
-        if not ISEntityUI.players[_window.playerNum].instance then
+    local windowKey = _window.xuiStyleName or "Default";
+    if _window and _window.playerNum and ISEntityUI.players[_window.playerNum] and ISEntityUI.players[_window.playerNum].windows[windowKey] then
+        if not ISEntityUI.players[_window.playerNum].windows[windowKey].instance then
             log(DebugType.CraftLogic, "No window instance found!");
             return;
         end
 
-        if ISEntityUI.players[_window.playerNum].instance==_window then
-            ISEntityUI.players[_window.playerNum].x = _window:getX();
-            ISEntityUI.players[_window.playerNum].y = _window:getY();
-            ISEntityUI.players[_window.playerNum].playerObj = nil;
-            ISEntityUI.players[_window.playerNum].entityObj = nil;
-            ISEntityUI.players[_window.playerNum].instance = nil;
+        if ISEntityUI.players[_window.playerNum].windows[windowKey].instance==_window then
+            ISEntityUI.players[_window.playerNum].windows[windowKey].x = _window:getX();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].y = _window:getY();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].width = _window:getWidth();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].height = _window:getHeight();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].playerObj = nil;
+            ISEntityUI.players[_window.playerNum].windows[windowKey].entityObj = nil;
+            ISEntityUI.players[_window.playerNum].windows[windowKey].instance = nil;
         else
             log(DebugType.CraftLogic, "Closing window not current instance!");
         end
@@ -494,11 +511,15 @@ end
 function ISEntityUI.GetReloadTable()
     local t = {};
     for k,v in pairs(ISEntityUI.players) do
-        if v.instance then
+        if v.windows then
+            for kk,vv in pairs(v.windows) do
+                if vv.instance then
             table.insert(t, {
-                player = v.playerObj,
-                entity = v.entityObj,
+                player = vv.playerObj,
+                entity = vv.entityObj,
             });
+        end
+    end
         end
     end
     return t;
@@ -506,8 +527,12 @@ end
 
 function ISEntityUI.CloseWindows()
     for k,v in pairs(ISEntityUI.players) do
-        if v.instance and v.instance.close then
-            v.instance:close();
+        if v.windows then
+            for kk,vv in pairs(v.windows) do
+                if vv.instance and vv.instance.close then
+                    vv.instance:close();
+                end
+            end
         end
     end
 end
@@ -533,12 +558,12 @@ function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ig
     local windowInstance = ISXuiSkin.build(skin, windowStyle, ISHandcraftWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
 
-    if _isoObject  and getCore():getOptionDoContainerOutline() then
-        _isoObject:setOutlineHighlight(true);
-        _isoObject:setOutlineHlAttached(true);
-        _isoObject:setOutlineHighlightCol(1, 1, 1, 1);
-        _isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
-    end
+--     if _isoObject  and getCore():getOptionDoContainerOutline() then
+--         _isoObject:setOutlineHighlight(true);
+--         _isoObject:setOutlineHlAttached(true);
+--         _isoObject:setOutlineHighlightCol(1, 1, 1, 1);
+--         _isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
+--     end
 end
 
 function ISEntityUI.FindCraftSurface(_player, _radius)

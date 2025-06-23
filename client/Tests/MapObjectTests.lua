@@ -316,7 +316,8 @@ function MapObjectTestRainBarrel()
 	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
 	testNewObject(x, y, z, "carpentry_02_54")
 	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_54")
-	isoObject:setWaterAmount(RainCollectorBarrel.smallWaterMax)
+	isoObject:emptyFluid();
+	isoObject:addFluid(FluidType.Water, RainCollectorBarrel.smallWaterMax)
 	expectModData(isoObject:getModData(), {
 		waterAmount = RainCollectorBarrel.smallWaterMax,
 	})

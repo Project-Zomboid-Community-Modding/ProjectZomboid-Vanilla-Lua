@@ -28,7 +28,7 @@ function ISHutchMenu.OnFillWorldObjectContextMenu(player, context, worldobjects,
 
     local distOk = playerObj:getCurrentSquare():DistToProper(hutch:getEntrySq()) <= 5;
 
-    local subOption = context:addOption(getText("ContextMenu_Hutch"), worldobjects, nil);
+    local subOption = context:addOptionOnTop(getText("ContextMenu_Hutch"), worldobjects, nil);
     local subMenu = ISContextMenu:getNew(context);
     context:addSubMenu(subOption, subMenu);
 
@@ -114,12 +114,14 @@ ISHutchMenu.setNestDirt = function(hutch, player, perc)
 end
 
 ISHutchMenu.onInfo = function(hutch, chr)
-    if luautils.walkAdj(chr, hutch:getEntrySq()) then
-        ISTimedActionQueue.add(ISGetHutchInfo:new(chr, hutch))
+    if chr:getCurrentSquare() ~= hutch:getEntrySq() then
+        ISTimedActionQueue.add(ISWalkToTimedAction:new(chr, hutch:getEntrySq()))
     end
+    ISTimedActionQueue.add(ISGetHutchInfo:new(chr, hutch))
 end
 
 ISHutchMenu.onToggleDoor = function(hutch, player)
+    print("toggle door!")
     if luautils.walkAdj(player, hutch:getEntrySq()) then
         ISTimedActionQueue.add(ISToggleHutchDoor:new(player, hutch))
     end

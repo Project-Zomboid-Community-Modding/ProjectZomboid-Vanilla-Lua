@@ -7,7 +7,7 @@ require "TimedActions/ISBaseTimedAction"
 ISWashClothing = ISBaseTimedAction:derive("ISWashClothing");
 
 function ISWashClothing:isValid()
-	if self.sink:getWaterAmount() < ISWashClothing.GetRequiredWater(self.item) then
+	if self.sink:getFluidAmount() < ISWashClothing.GetRequiredWater(self.item) or self.item:getContainer() ~= self.character:getInventory() then
 		return false
 	end
 	return true
@@ -22,7 +22,12 @@ end
 function ISWashClothing:start()
 	self:setActionAnim("ScrubClothWithSoap")
 	self:setOverrideHandModels(getScriptManager():FindItem("Soap2"):getStaticModel(), getScriptManager():FindItem("DishCloth"):getStaticModel())
-	self.sound = self.character:playSound("WashClothing")
+	local bandages = { ["Base.BandageDirty"]=1, ["Base.DenimStripsDirty"]=1, ["Base.LeatherStripsDirty"]=1, ["Base.RippedSheetsDirty"]=1 }
+	if bandages[self.item:getFullType()] then
+		self.sound = self.character:playSound("FirstAidCleanRag")
+	else
+		self.sound = self.character:playSound("WashClothing")
+	end
 	self.character:reportEvent("EventWashClothing");
 end
 
@@ -114,7 +119,7 @@ end
 function ISWashClothing:complete()
 	local item = self.item;
 	local water = ISWashClothing.GetRequiredWater(item)
-
+    local isRemoved = false;
 	if instanceof(item, "Clothing") then
 		local coveredParts = BloodClothingType.getCoveredParts(item:getBloodClothingType())
 		if coveredParts then
@@ -128,15 +133,23 @@ function ISWashClothing:complete()
 		end
 		item:setWetness(100);
 		item:setDirtyness(0);
-
+	elseif item:getItemAfterCleaning() then
+	    isRemoved = true;
+		local newItemType = item:getItemAfterCleaning();
+		self.character:getInventory():Remove(item);
+		sendRemoveItemFromContainer(self.character:getInventory(), item);
+		local newItem = self.character:getInventory():AddItem(newItemType);
+		sendAddItemToContainer(self.character:getInventory(), newItem);
 	else
 		self:useSoap(item, nil);
 	end
 
 	item:setBloodLevel(0);
-
-	--sync Wetness, Dirtyness, BloodLevel
-	syncItemFields(self.character, item);
+	-- if we haven't already removed item
+    if not isRemoved then
+        --sync Wetness, Dirtyness, BloodLevel
+        syncItemFields(self.character, item);
+	end
 	syncVisuals(self.character);
 	self.character:updateHandEquips();
 
@@ -147,7 +160,7 @@ function ISWashClothing:complete()
 		self.character:setSecondaryHandItem(item);
 	end
 
-	self.sink:useWater(water);
+	self.sink:useFluid(water);
 
 	return true;
 end
@@ -190,7 +203,7 @@ function ISWashClothing:getDuration()
 		maxTime = 100;
 	end
 
-	return maxTime;
+	return self:adjustMaxTime(maxTime);
 end
 
 function ISWashClothing:new(character, sink, soaps, item, bloodAmount, dirtAmount, noSoap)

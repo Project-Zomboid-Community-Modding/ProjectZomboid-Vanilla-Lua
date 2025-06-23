@@ -16,6 +16,8 @@ ISInventoryPane = ISPanel:derive("ISInventoryPane");
 ISInventoryPane.MAX_ITEMS_IN_STACK_TO_RENDER = 50
 ISInventoryPane.ghc = getCore():getGoodHighlitedColor()
 
+local favoriteRecipeInputStarSize = 12
+
 --************************************************************************--
 --** ISInventoryPane:initialise
 --**
@@ -817,6 +819,9 @@ end
 
 function ISInventoryPane:updateTooltip()
 	if not self:isReallyVisible() then
+		if self.parent.onCharacter then
+			Key.setHighlightDoors(self.player, nil)
+		end
 		return -- in the main menu
 	end
 	local item = nil
@@ -848,6 +853,9 @@ function ISInventoryPane:updateTooltip()
 	if item and self.toolRender and (item == self.toolRender.item) and
 			(weightOfStack == self.toolRender.tooltip:getWeightOfStack()) and
 			self.toolRender:isVisible() then
+		if self.parent.onCharacter then
+			Key.setHighlightDoors(self.player, item)
+		end
 		return
 	end
 	if item then
@@ -976,7 +984,8 @@ function ISInventoryPane:doContextualDblClick(item)
 		end
 	end
 	if instanceof(item, "Food") and item:getHungChange() < 0 and not item:getScriptItem():isCantEat() then
-        if playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 or playerObj:getNutrition():getCalories() < 1000 then
+        -- if playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 or playerObj:getNutrition():getCalories() < 1000 then
+        if playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 then
             ISInventoryPaneContextMenu.onEatItems({item}, 1, self.player);
         end
 
@@ -2241,19 +2250,19 @@ function ISInventoryPane:renderdetails(doDragged)
                         if instanceof(item, "Food") and(item:isTainted() and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue()) or player:isKnownPoison(item) or item:hasTag("ShowPoison") then
                             self:drawTexture(self.poisonIcon, texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
-                        if (instanceof(item,"Literature") and
-                                ((player:isLiteratureRead(item:getModData().literatureTitle)) or
-                                        (SkillBook[item:getSkillTrained()] ~= nil and item:getMaxLevelTrained() < player:getPerkLevel(SkillBook[item:getSkillTrained()].perk) + 1) or
-                                        (item:getNumberOfPages() > 0 and player:getAlreadyReadPages(item:getFullType()) == item:getNumberOfPages()) or
-                                        (item:getTeachedRecipes() ~= nil and player:getKnownRecipes():containsAll(item:getTeachedRecipes())) or
-                                        (item:getModData().teachedRecipe ~= nil and player:getKnownRecipes():contains(item:getModData().teachedRecipe)))) then
+                        if self:isLiteratureRead(player, item) then
                             self:drawTexture(getTexture("media/ui/Tick_Mark-10.png"), texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
-						if item:hasComponent(ComponentType.FluidContainer) and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() and (not item:getFluidContainer():isEmpty()) and (item:getFluidContainer():contains(Fluid.Bleach) or (item:getFluidContainer():contains(Fluid.TaintedWater) and item:getFluidContainer():getPoisonRatio() > 0.1)) then
+                        local fluidContainer = item:getFluidContainer() or (item:getWorldItem() and item:getWorldItem():getFluidContainer());
+						if fluidContainer ~= nil and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1)) then
 							self:drawTexture(self.poisonIcon, (10+auxDXY+xoff), (y*self.itemHgt)+self.headerHgt+auxDXY-1+yoff, 1, 1, 1, 1);
 						end
                         if item:isFavorite() then
-                            self:drawTexture(self.favoriteStar, texOffsetX+auxDXY+3, texOffsetY+auxDXY-1, 1, 1, 1, 1);
+                            self:drawTexture(self.favoriteStar, texOffsetX, texOffsetY+auxDXY, 1, 1, 1, 1);
+--                         end
+                        elseif item:isFavouriteRecipeInput(player) then
+                            self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
+--                             self:drawTexture(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
                         end
                     elseif v.count > 2 or (doDragged and count > 1 and self.selected[(y+1) - (count-1)] == nil) then
                         -- removed the fade effect on items in stacks as it makes it difficult to tell what color clothing and bags in stacks are
@@ -2272,6 +2281,10 @@ function ISInventoryPane:renderdetails(doDragged)
                         end
                         if item:isFavorite() then
                             self:drawTexture(self.favoriteStar, texOffsetX+auxDXY+19, texOffsetY+auxDXY-1, 1, 1, 1, 1);
+--                         end
+                        elseif item:isFavouriteRecipeInput(player) then
+                            self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
+--                             self:drawTexture(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
                         end
                     end
                 end
@@ -2530,20 +2543,51 @@ function ISInventoryPane:renderdetails(doDragged)
 
 end
 
+function ISInventoryPane:isLiteratureRead(playerObj, item)
+    if not item then return false end
+    if not item:IsLiterature() then return false end
+    local modData = item:hasModData() and item:getModData() or nil
+    if modData ~= nil then
+        if (modData.literatureTitle) and playerObj:isLiteratureRead(modData.literatureTitle) then return true end
+        if (modData.printMedia ~= nil) and playerObj:isPrintMediaRead(modData.printMedia) then return true end
+        if (modData.teachedRecipe ~= nil) and playerObj:getKnownRecipes():contains(modData.teachedRecipe) then return true end
+    end
+    local skillBook = SkillBook[item:getSkillTrained()]
+    if (skillBook ~= nil) and (item:getMaxLevelTrained() < playerObj:getPerkLevel(skillBook.perk) + 1) then return true end
+    if (item:getNumberOfPages() > 0) and (playerObj:getAlreadyReadPages(item:getFullType()) == item:getNumberOfPages()) then return true end
+    if (item:getTeachedRecipes() ~= nil) and playerObj:getKnownRecipes():containsAll(item:getTeachedRecipes()) then return true end
+    return false
+end
+
+function ISInventoryPane:getProgressBarWidth()
+    return 200
+end
+
+function ISInventoryPane:getProgressBarHeight()
+    local height = 5
+    if self.font == UIFont.Medium then
+        height = 6
+    elseif self.font == UIFont.Large then
+        height = 7
+    end
+    return height
+end
+
 function ISInventoryPane:drawProgressBar(x, y, w, h, f, fg)
 	if f < 0.0 then f = 0.0 end
 	if f > 1.0 then f = 1.0 end
 	local done = math.floor(w * f)
 	if f > 0 then done = math.max(done, 1) end
-	self:drawRect(x, y, done, h, fg.a, fg.r, fg.g, fg.b);
-	local bg = {r=0.25, g=0.25, b=0.25, a=1.0};
-	self:drawRect(x + done, y, w - done, h, bg.a, bg.r, bg.g, bg.b);
+	self:drawRect(x-1, y-1, w+2, h, 1.0, 0.25, 0.25, 0.25)
+	self:drawRect(x, y, done, h-2, fg.a, fg.r, fg.g, fg.b);
+	local bg = {r=0.5, g=0.5, b=0.5, a=1.0};
+	self:drawRect(x + done, y, w - done, h-2, bg.a, bg.r, bg.g, bg.b);
 end
 
 function ISInventoryPane:drawTextAndProgressBar(text, fraction, xoff, top, fgText, fgBar)
 	self:drawText(text, 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font)
 	local textWid = getTextManager():MeasureStringX(self.font, text)
-	self:drawProgressBar(40 + math.max(120, 30 + textWid + 20) + xoff, top+(self.itemHgt/2)-1, 100, 2, fraction, fgBar)
+	self:drawProgressBar(40 + math.max(120, 30 + textWid + 20) + xoff, top+(self.itemHgt/2)-1, self:getProgressBarWidth(), self:getProgressBarHeight(), fraction, fgBar)
 end
 
 function ISInventoryPane:drawItemDetails(item, y, xoff, yoff, red)
@@ -2563,7 +2607,7 @@ function ISInventoryPane:drawItemDetails(item, y, xoff, yoff, red)
 	if instanceof(item, "HandWeapon") then
 		local text = getText("IGUI_invpanel_Condition") .. ":"
 		self:drawTextAndProgressBar(text, item:getCondition() / item:getConditionMax(), xoff, top, fgText, fgBar)
-	elseif instanceof(item, "Drainable") then
+	elseif instanceof(item, "Drainable") and not item:hasTag("HideRemaining") then
 		local text = getText("IGUI_invpanel_Remaining") .. ":"
 		self:drawTextAndProgressBar(text, item:getCurrentUsesFloat(), xoff, top, fgText, fgBar)
     elseif item:getMeltingTime() > 0 then
@@ -2588,7 +2632,7 @@ function ISInventoryPane:drawItemDetails(item, y, xoff, yoff, red)
 			self:drawText(s, 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font);
 			if item:isBurnt() then return end
 			local textWid = getTextManager():MeasureStringX(self.font, s)
-			self:drawProgressBar(40 + math.max(120, 30 + textWid + 20) + xoff, top+(self.itemHgt/2)-1, 100, 2, f, fgBar);
+			self:drawProgressBar(40 + math.max(120, 30 + textWid + 20) + xoff, top+(self.itemHgt/2)-1, self:getProgressBarWidth(), self:getProgressBarHeight(), f, fgBar);
         elseif item:getFreezingTime() > 0 then
 			local text = getText("IGUI_invpanel_FreezingTime") .. ":"
 			self:drawTextAndProgressBar(text, item:getFreezingTime() / 100, xoff, top, fgText, fgBar)
@@ -2613,7 +2657,7 @@ function ISInventoryPane:doWorldObjectHighlight(_item)
         if (worldItem and worldItem:getChunk() ~= nil) then
             --found the world item, highlight and keep track of it
             if not self.highlightItems[worldItem] then
-                worldItem:setHighlighted(true);
+                worldItem:setHighlighted(self.player, true, false);
             end;
             self.highlightItems[worldItem] = worldItem;
         end;
@@ -2628,7 +2672,7 @@ end
 function ISInventoryPane:clearWorldObjectHighlights()
     for worldItem in pairs(self.highlightItems) do
         if worldItem:getItem() ~= nil then
-            worldItem:setHighlighted(false);
+            worldItem:setHighlighted(self.player, false);
         end;
         self.highlightItems[worldItem] = nil;
     end;
@@ -2779,5 +2823,6 @@ function ISInventoryPane:new (x, y, width, height, inventory, zoom)
     o.poisonIcon = getTexture("media/ui/SkullPoison.png");
     o.itemSortFunc = ISInventoryPane.itemSortByNameInc; -- how to sort the items...
     o.favoriteStar = getTexture("media/ui/FavoriteStar.png");
+    o.favoriteRecipeInputStar = getTexture("media/ui/inventoryPanes/FavouriteYes.png");
    return o
 end

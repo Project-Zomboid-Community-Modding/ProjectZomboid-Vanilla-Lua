@@ -20,6 +20,7 @@ StoryClutter.BarnClutter = {
     "Base.PickAxe",
     "Base.JerryCan",
     "Base.Bucket",
+    "Base.BucketWood",
     "Base.Twine",
     "Base.Hat_StrawHat",
     "Base.Dungarees",
@@ -42,6 +43,11 @@ StoryClutter.BarnClutter = {
     "Base.JawboneBovide", -- poor bessie! :(
     "Base.Toolbox_Wooden",
     "Base.Fleshing_Tool",
+    "Base.Whetstone",
+    "Base.BarbedWire",
+    "Base.IronBandSmall",
+    "Base.HandAxe_Old",
+    "Base.Axe_Old",
 }
 
 -- residential bathrooms, used for Randomized Residential Buildings
@@ -95,6 +101,38 @@ StoryClutter.BBQClutter = {
     "Base.Pop",
     "Base.PorkChop",
     "Base.Steak",
+    "Base.Hotdog_single",
+    "Base.BeerEmpty",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.BeerCanEmpty",
+}
+
+StoryClutter.BeachPartyClutter = {
+	"Base.Crisps",
+	"Base.Crisps3",
+	"Base.Pop",
+	"Base.Whiskey",
+	"Base.CigaretteSingle",
+	"Base.BeerBottle",
+	"Base.BeerBottle",
+	"Base.BeerCan",
+	"Base.BeerCan",
+	"Base.BeerCan",
+	"Base.BeerCan",
+	"Base.BeerCan",
+	"Base.BeerCan",
+	"Base.Hat_Visor_WhiteTINT",
+	"Base.BathTowel",
+	"Base.Glasses_Sun",
+    "Base.Glasses_SunCheap",
+    "Base.Glasses_SwimmingGoggles",
+    "Base.Hotdog",
+    "Base.Bikini_TINT",
+    "Base.BeerEmpty",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.BeerCanEmpty",
 }
 
 -- the clothing that spawns on the foot of the bed in residential bedrooms, used for Randomized Residential Buildings
@@ -176,6 +214,8 @@ StoryClutter.DeadEndClutter = {
     "Base.Passport",
     "Base.DogTag_Pet",
     "Base.ChildsPictureBook",
+    "Base.Hat_Cowboy_Plastic",
+    "Base.HobbyHorse",
 }
 
 -- university dorm squalor, used in the Dorm Randomized Building
@@ -263,6 +303,11 @@ StoryClutter.DormClutter = {
     "Base.CorrectionFluid",
     "Base.Specimen_Butterflies",
     "Base.KeyRing_StinkyFace",
+    "Base.CanPipe",
+    "Base.Glasses_SunCheap",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.Hat_Cowboy_Plastic",
 }
 
 -- farming stuff that isn't farm animal based for farm storage rooms, used in the Barn Randomized Buildings
@@ -289,6 +334,7 @@ StoryClutter.FarmStorageClutter = {
     "Base.Fertilizer",
     "Base.CompostBag",
     "Base.Bucket",
+    "Base.BucketWood",
     "Base.HandFork",
     "Base.HandShovel",
     "Base.Twine",
@@ -345,6 +391,7 @@ StoryClutter.FarmStorageClutter = {
     "Base.BookFarming4",
     "Base.BookFarming5",
     "Base.Shotgun",
+    "DoubleBarrelShotgun",
     "Base.Jack",
     "Base.Extinguisher",
     "Base.BlowerFan",
@@ -375,6 +422,18 @@ StoryClutter.FarmStorageClutter = {
     "Base.WaterDispenserBottle",
     "Base.ShotgunShells", -- ain't no big deal in farm country
     "Base.Calipers", -- fixing farm equipment
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.BarbedWire",
+    "Base.SheetMetalSnips",
+    "Base.IronBandSmall",
+    "Base.MasonsChisel",
+    "Base.MasonsTrowel",
+    "Base.HandAxe_Old",
+    "Base.Axe_Old",
+    "Base.Fleshing_Tool",
+    "Base.Sledgehammer",
+    "Base.Sledgehammer2",
 }
 
 -- used for the football night story clutter
@@ -388,6 +447,8 @@ StoryClutter.FootballNightDrinks = {
     "Base.CigaretteSingle",
     "Base.Wine",
     "Base.Wine2",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
 }
 
 -- yes pop are also drinks, but the name of the table isn't that important
@@ -505,6 +566,15 @@ StoryClutter.GarageStorageClutter = {
     "Base.Bag_GardenBasket",
     "Base.WaterDispenserBottle",
     "Base.Calipers",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.SheetMetalSnips",
+    "Base.IronBandSmall",
+    "Base.MasonsChisel",
+    "Base.MasonsTrowel",
+    "Base.HandAxe",
+    "Base.Sledgehammer",
+    "Base.Sledgehammer2",
 }
 
 StoryClutter.GigamartClutter = {
@@ -644,6 +714,10 @@ StoryClutter.HoedownClutter = {
 	"Base.MetalCup",
     "Base.PillsVitamins",
     "Base.Violin",
+    "Base.BeerEmpty",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
+    "Base.BeerCanEmpty",
 }
 
 -- used for the house party story clutter
@@ -688,7 +762,7 @@ StoryClutter.KidClutter = {
     "Base.JacquesBeaver",
     "Base.MoleyMole",
     "Base.PancakeHedgehog",
-    "Base.Pancho",
+    "Base.PanchoDog",
     "Base.Plushabug",
     "Base.Pillow_Happyface",
     "Base.Pillow_Star",
@@ -748,12 +822,14 @@ StoryClutter.KidClutter = {
     "Base.KnifePocket", -- normal thing for a kid in 1993 kentucky to have
     "Base.Handiknife", -- ditto
     "Base.Hat_ArmyWWII", -- kids like using hats as toys and some kids have cooler toys than others; again, kentucky, 1993, not unusual for kids to have surplus stuff as toys
-    "Base.Hat_Cowboy",
+    "Base.Hat_Cowboy_Plastic",
     "Base.Hat_Pirate",
     "Base.Hat_FishermanRainHat",
     "Base.MagazineWordsearch",
     "Base.Clitter",
     "Base.GuitarPick",
+    "Base.Glasses_SunCheap",
+    "Base.HobbyHorse",
 }
 
 -- residential kitchens, used for Randomized Residential Buildings
@@ -873,6 +949,8 @@ StoryClutter.KitchenCounterClutter = {
     "Base.ParkingTicket",
     "Base.SpeedingTicket",
     "Base.Postcard",
+    "Base.Whetstone",
+    "Base.Coffee2",
 }
 
 -- residential kitchen sinks, used for Randomized Residential Buildings
@@ -925,6 +1003,7 @@ StoryClutter.LaundryRoomClutter = {
     "Base.Underpants_White",
     "Base.WineBox", -- "doing the laundry"
     "Base.Vinegar_Jug", -- can be used for laundry or cleaning in general
+    "Base.SewingKit",
 }
 
 -- residential livingrooms, used for Randomized Residential Buildings
@@ -982,6 +1061,44 @@ StoryClutter.MedicalClutter = {
     "Base.RubberHose",
 }
 
+StoryClutter.MurderSceneClutter = {
+    "Base.PetrolCan",
+    "Base.Hammer",
+    "Base.Tarp",
+    "Base.Rope",
+    "Base.DuctTape",
+    "Base.Saw",
+    "Base.Garbagebag",
+    "Base.Scissors",
+    "Base.BlowTorch",
+    "Base.BallPeenHammer",
+    "Base.Gloves_Surgical",
+    "Base.ClubHammer",
+    "Base.Gloves_LeatherGlovesBlack",
+    "Base.Hat_BalaclavaFull",
+    "Base.Screwdriver",
+    "Base.Zipties",
+    "Base.EmptySandbag",
+    "Base.SmashedBottle",
+    "Base.LeadPipe",
+    "Base.StraightRazor",
+    "Base.TireIron",
+    "Base.SuspiciousPackage",
+    "Base.MoneyBundle",
+    "Base.Briefcase_Money",
+}
+
+StoryClutter.NastyMattressClutter = {
+    "Base.BeerCanEmpty",
+    "Base.BeerEmpty",
+	"Base.SmashedBottle",
+    "Base.LighterDisposable",
+    "Base.CigaretteRollingPapers",
+    "Base.HottieZ",
+    "Base.RippedSheetsDirty",
+    "Base.CanPipe",
+}
+
 -- stuff on the ground for old campsites, shelters and tents in the forest
 StoryClutter.OldShelterClutter = {
     "Base.GuitarAcoustic",
@@ -998,6 +1115,7 @@ StoryClutter.OldShelterClutter = {
     "Base.Book",
     "Base.Paperback",
     "Base.Spork",
+    "Base.Whetstone",
 }
 
 -- to be used in Nolan's offices
@@ -1154,7 +1272,7 @@ StoryClutter.PillowClutter = {
     "Base.JacquesBeaver",
     "Base.MoleyMole",
     "Base.PancakeHedgehog",
-    "Base.Pancho",
+    "Base.PanchoDog",
     "Base.Plushabug",
     "Base.Pillow_Happyface",
     "Base.Pillow_Heart",
@@ -1214,6 +1332,8 @@ StoryClutter.RichJerkClutter = {
     "Base.Suitcase",
     "Base.Wallet_Male",
     "Base.Passport",
+    "Base.Pager",
+    "Base.CordlessPhone",
 }
 
 StoryClutter.SadCampsiteClutter = {
@@ -1254,6 +1374,8 @@ StoryClutter.SadCampsiteClutter = {
     "Base.ScoutCookies",
     "Base.PhotoAlbum",
     "Base.Newspaper_Recent",
+    "Base.Hat_Cowboy_Plastic",
+    "Base.HobbyHorse",
 }
 
 -- sidetables in residential bedrooms, used for Randomized Residential Buildings
@@ -1321,6 +1443,10 @@ StoryClutter.SurvivalistCampsiteClutter = {
 	"Base.HottieZ",
 	"Base.MetalCup",
     "Base.Harmonica",
+    "Base.Whetstone",
+    "Base.Fleshing_Tool",
+    "Base.HandAxe",
+    "Base.FirewoodBundle",
 }
 
 StoryClutter.TwiggyClutter = {
@@ -1338,6 +1464,8 @@ StoryClutter.TwiggyClutter = {
 	"Base.Vermouth",
 	"Base.Vodka",
 	"Base.Whiskey",
+    "Base.BeerEmpty",
+    "Base.BeerCanEmpty",
 }
 
 -- the tools that can spawn on the road next to a manhole with the utility vehicle road story
@@ -1350,6 +1478,30 @@ StoryClutter.UtilityToolClutter = {
     "Base.Shovel2",
     "Base.Sledgehammer",
     "Base.Sledgehammer2",
+}
+
+StoryClutter.VanCampClutter = {
+    "Base.Phonebook",
+    "Base.HottieZ",
+    "Base.Socks_Ankle_Black",
+    "Base.Boxers_White",
+    "Base.Suit_Jacket",
+    "Base.Suit_JacketTINT",
+    "Base.Trousers_Suit",
+    "Base.Tie_Full",
+    "Base.Pillow",
+    "Base.ToiletPaper",
+    "Base.Shirt_FormalWhite_ShortSleeve",
+    "Base.Shirt_FormalWhite",
+    "Base.Shirt_FormalWhite_ShortSleeve",
+    "Base.Shirt_FormalWhite",
+    "Base.Hotdog",
+    "Base.Paperwork",
+    "Base.ParkingTicket",
+    "Base.Paperback_SelfHelp",
+    "Base.GenericMail",
+    "Base.PhotoAlbum",
+    "Base.Photo",
 }
 
 -- the pool of watches that are sometimes spawned instead of sidetable clutter in residential bedrooms, used for Randomized Residential Buildings

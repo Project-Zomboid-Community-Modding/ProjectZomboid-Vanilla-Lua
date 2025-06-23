@@ -142,7 +142,8 @@ function ISEntityScriptsPanel:onButtonClick(_button)
             return;
         end
 
-        local buildEntity = ISBuildIsoEntity:new(self.player, info);
+        local containers = ISInventoryPaneContextMenu.getContainers(self.player)
+        local buildEntity = ISBuildIsoEntity:new(self.player, info, 1, containers);
         buildEntity.buildCheat = true;
         buildEntity.maxTime = 1;
 

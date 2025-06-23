@@ -246,10 +246,6 @@ function ISSpawnVehicleUI:new(x, y, width, height, player)
 	o.name = nil;
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-	local txtWidth = getTextManager():MeasureStringX(UIFont.Small, text) + 10;
-	if o.width < txtWidth then
-		o.width = txtWidth;
-	end
 	o.anchorLeft = true;
 	o.anchorRight = true;
 	o.anchorTop = true;

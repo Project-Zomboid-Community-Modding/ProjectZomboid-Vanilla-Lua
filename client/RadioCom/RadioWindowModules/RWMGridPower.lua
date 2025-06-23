@@ -55,7 +55,9 @@ function RWMGridPower:createChildren()
 end
 
 function RWMGridPower:toggleOnOff()
-    if self:doWalkTo() then
+    -- this is so players with a remote equipped can interact with televisions
+    if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+    or self:doWalkTo() then
         ISTimedActionQueue.add(ISRadioAction:new("ToggleOnOff",self.player, self.device ));
     end
 end

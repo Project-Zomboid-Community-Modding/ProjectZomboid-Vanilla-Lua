@@ -50,7 +50,9 @@ end
 function RWMChannelTV:doTuneInButton()
     if self:isValidPresets() and self.player and self.device then
         local p = self.presets:get( self.comboBox.selected-1 );
-        if self:doWalkTo() then
+        -- this is so players with a remote equipped can interact with televisions
+        if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+        or self:doWalkTo() then
             ISTimedActionQueue.add(ISRadioAction:new("SetChannel",self.player, self.device, p:getFrequency() ));
         end
     end

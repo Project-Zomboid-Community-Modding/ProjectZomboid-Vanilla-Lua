@@ -7,7 +7,12 @@ local flower_plain = {
             { f = worldgen.features.PLANT.flower_overlay, p = 0.5 }
         },
         TREE = {
-            { f = worldgen.features.TREE.oak, p = 0.01 }
+            { f = worldgen.features.TREE.maple_jumbo, p = 0.0025 },
+            { f = worldgen.features.TREE.maple, p = 0.0005 },
+            { f = worldgen.features.TREE.linden_jumbo, p = 0.0025 },
+            { f = worldgen.features.TREE.linden, p = 0.0005 },
+            { f = worldgen.features.TREE.yellowwood_jumbo, p = 0.002 },
+            { f = worldgen.features.TREE.yellowwood, p = 0.0005 },
         }
     },
     params = {

@@ -36,7 +36,7 @@ function ISChallenge2PlayerUpWindow:create()
 	self:addChild(rect);
 
 	y = y + 25;
-	button = ISButton:new(16, y, 200, 25, "Blunt Lvl 1 - 0xp", self, ISChallenge2PlayerUpWindow.onOptionMouseDown);
+	local button = ISButton:new(16, y, 200, 25, "Blunt Lvl 1 - 0xp", self, ISChallenge2PlayerUpWindow.onOptionMouseDown);
 	button.internal = "skills";
 	button.perk = Perks.Blunt;
 	button.initialCost = 300;

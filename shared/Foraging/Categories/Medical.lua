@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateMedicalDefs()
 	local medical = {
@@ -55,23 +56,26 @@ local function generateMedicalDefs()
 	};
 	for _, spawnTable in pairs(medical) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
-				type = itemFullName,
-				skill = 0,
-				xp = spawnTable.xp,
-				categories = { "Medical" },
-				zones = {
-					Vegitation  = spawnTable.chance,
-					TrailerPark = spawnTable.chance,
-					TownZone    = spawnTable.chance,
-					ForagingNav = spawnTable.chance,
-				},
-				spawnFuncs = { forageSystem.doGenericItemSpawn },
-				forceOutside = false,
-				canBeAboveFloor = true,
-				itemSizeModifier = 0.5,
-				isItemOverrideSize = true,
-			};
+			forageSystem.addForageDef(
+				itemName,
+				{
+					type = itemFullName,
+					skill = 0,
+					xp = spawnTable.xp,
+					categories = { "Medical" },
+					zones = {
+						Vegitation = spawnTable.chance,
+						TrailerPark = spawnTable.chance,
+						TownZone = spawnTable.chance,
+						ForagingNav = spawnTable.chance,
+					},
+					spawnFuncs = { forageSystem.doGenericItemSpawn },
+					forceOutside = false,
+					canBeAboveFloor = true,
+					itemSizeModifier = 0.5,
+					isItemOverrideSize = true,
+				}
+			);
 		end;
 	end;
 end

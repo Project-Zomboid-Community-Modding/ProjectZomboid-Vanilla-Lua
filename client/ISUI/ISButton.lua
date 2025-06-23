@@ -54,7 +54,6 @@ function ISButton:onMouseUp(x, y)
     if self.enable and (process or self.allowMouseUpProcessing) then
         getSoundManager():playUISound(self.sounds.activate)
         self.onclick(self.target, self, self.onClickArgs[1], self.onClickArgs[2], self.onClickArgs[3], self.onClickArgs[4]);
-	    --print(self.title);
     end
 
 end
@@ -129,6 +128,9 @@ function ISButton:prerender()
 			fill.b * f + self.backgroundColor.b * (1 - f));
 		if self.textureBackground then
 			self:drawTextureScaled(self.textureBackground, 0, 0, self.width, self.height, 1-f, 1, 1, 1);
+		end
+		if self.iconRight then
+			self:drawTextureScaled(self.iconRight, self.width - self.iconRightWidth - 3, (self.height / 2 - self.iconRightHeight / 2), self.iconRightWidth, self.iconRightHeight, self.iconRightColor.a, self.iconRightColor.r, self.iconRightColor.g, self.iconRightColor.b);
 		end
         self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     end
@@ -222,14 +224,18 @@ function ISButton:render()
 	end
 
 	local x = self.width / 2 - textW / 2;
+
 	if (self.isJoypad and self.joypadTexture) or self.iconTexture then
 		local texWH = self.joypadTextureWH
 		local texX = x - 5 - texWH
-		local texY = self.height / 2 - 32 / 2
+		local texY = self.height / 2 - self.joypadTextureWH / 2
 		texX = math.max(5, texX)
 		x = texX + texWH + 5
 		local tex = self.joypadTexture or self.iconTexture;
 		self:drawTextureScaled(tex,texX,texY,texWH,texWH,1,1,1,1);
+	end
+	if self.titleLeft then
+		x = 3;
 	end
 	if textW > 0 then
         if self.enable then
@@ -245,6 +251,8 @@ function ISButton:render()
 	end
 	-- call the onMouseOverFunction
 	if (self.mouseOver and self.onmouseover) then
+		local x = self:getMouseX();
+		local y = self:getMouseY();
 		self.onmouseover(self.target, self, x, y);
     end
 
@@ -286,7 +294,7 @@ function ISButton:update()
 			self.repeatWhilePressedFunc(self.target, self)
 		else
 			local ms = getTimestampMs()
-			if ms - self.pressedTime > 500 then
+			if ms - self.pressedTime > self.repeatWhilePressedTimer then
 				self.pressedTime = ms
 				self.repeatWhilePressedFunc(self.target, self)
 			end
@@ -297,7 +305,7 @@ function ISButton:update()
 end
 
 function ISButton:updateTooltip()
-	if self:isMouseOver() and self.tooltip then
+	if (self:isMouseOver() or self.joypadFocused) and self.tooltip then
 		local text = self.tooltip
 		if not self.tooltipUI then
 			self.tooltipUI = ISToolTip:new()
@@ -315,7 +323,11 @@ function ISButton:updateTooltip()
 			self.tooltipUI:setVisible(true)
 		end
 		self.tooltipUI.description = text
-		self.tooltipUI:setDesiredPosition(getMouseX(), self:getAbsoluteY() + self:getHeight() + 8)
+		if self:isMouseOver() then
+		    self.tooltipUI:setDesiredPosition(getMouseX(), self:getAbsoluteY() + self:getHeight() + 8)
+		else
+		    self.tooltipUI:setDesiredPosition(self:getAbsoluteX(), self:getAbsoluteY() + self:getHeight() + 8)
+        end
 	else
 		if self.tooltipUI and self.tooltipUI:getIsVisible() then
 			self.tooltipUI:setVisible(false)
@@ -485,10 +497,16 @@ function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmouse
     o.yoffset = 0;
     o.fade = UITransition.new()
     o.joypadTextureWH = 32
+	o.repeatWhilePressedTimer = 500;
     o.sounds = {}
     o.sounds.activate = "UIActivateButton"
 	o.originalWidth = width;
 	o.originalHeight = height;
 	o.textureBackground = nil;
+	o.iconRight = nil; -- this is the icon that will be shown at the far right
+	o.iconRightHeight = height - 2;
+	o.iconRightWidth = o.iconRightHeight;
+	o.iconRightColor = {r=1, g=1, b=1, a=1};
+	o.titleLeft = false; -- if true we draw the title on the left of the button instead of center
    return o
 end

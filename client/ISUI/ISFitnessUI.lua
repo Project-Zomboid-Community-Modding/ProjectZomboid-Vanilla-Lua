@@ -263,7 +263,7 @@ function ISFitnessUI:updateButtons(currentAction)
 		self.ok.enable = false;
 		self.ok.tooltip = getText("Tooltip_TooHeavyFitness");
 	end
-	if self.player:getVariableBoolean("sitonground") then
+	if self.player:getVariableBoolean("sitonground") or self.player:isSittingOnFurniture() then
 		self.ok.enable = false;
 		self.ok.tooltip = getText("Tooltip_StandStillFitness");
 	end
@@ -330,7 +330,7 @@ function ISFitnessUI:onClick(button)
 		if not haveItem then return; end
 		local action = ISFitnessAction:new(self.player, self.selectedExe, tonumber(self.exeTime:getInternalText()), self.exeData, self.exeData.type);
 		action.fitnessUI = self;
-		ISTimedActionQueue.add(action);
+		ISTimedActionQueue.addGetUpAndThen(self.player, action);
 	elseif button.internal == "CLOSE" then
 		self:setVisible(false);
 		self:removeFromUIManager();
@@ -340,12 +340,11 @@ function ISFitnessUI:onClick(button)
 		end
 	elseif button.internal == "CANCEL" then
 		self.player:setVariable("ExerciseStarted", false);
-		self.player:setVariable("ExerciseEnded", true);
---		local actionQueue = ISTimedActionQueue.getTimedActionQueue(self.player)
---		local currentAction = actionQueue.queue[1]
---		if currentAction and (currentAction.Type == "ISFitnessAction") and currentAction.action then
---			currentAction.action:forceStop()
---		end
+		local actionQueue = ISTimedActionQueue.getTimedActionQueue(self.player)
+		local currentAction = actionQueue.queue[1]
+		if currentAction and (currentAction.Type == "ISFitnessAction") and currentAction.action then
+			currentAction.action:forceStop()
+		end
 	elseif button.internal == "RESETVALUES" then
 		self.fitness:resetValues();
 	end

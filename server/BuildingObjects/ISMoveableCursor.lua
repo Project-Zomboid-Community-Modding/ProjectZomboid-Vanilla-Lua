@@ -182,8 +182,9 @@ function ISMoveableCursor:setMoveableMode( _mode )
 end
 
 function ISMoveableCursor:create(_x, _y, _z, _north, _sprite)
+    showDebugInfoInChat("Cursor Create \'ISMoveableCursor\' "..tostring(_x)..", "..tostring(_y)..", "..tostring(_z)..", "..tostring(_north)..", "..tostring(_sprite))
     local square = getCell():getGridSquare(_x, _y, _z);
-    if square ~= null then
+    if square ~= nil then
         if not self:isValid(square) then
             return
         end
@@ -524,8 +525,9 @@ function ISMoveableCursor:isValid( _square )
                     self.currentMoveProps   = moveProps;
                     self.origMoveProps      = moveProps;
                     self.canCreate          = moveProps:canScrapObject( self.character ).canScrap;
-                    self.colorMod           = ISMoveableCursor.normalColor;
-                    self.objectSprite       = nil;
+                    local colorInfo = getCore():getBadHighlitedColor() -- same color as the Disassemble context menu
+                    self.colorMod           = { r=colorInfo:getR(), g=colorInfo:getG(), b=colorInfo:getB() }-- ISMoveableCursor.normalColor;
+                    self.objectSprite       = moveProps.sprite;
                     self.origSpriteName     = moveProps.spriteName;
                     self.yOffset            = moveProps:getYOffsetCursor();
                     self:setInfoPanel( _square, object, moveProps );
@@ -1000,5 +1002,6 @@ function ISMoveableCursor:new(_character)
     o.yOffset = 0;
     o:setMoveableMode(ISMoveableCursor.mode[o.player] or "pickup");
     ISMoveableCursor.cursors[o.player] = o;
+    showDebugInfoInChat("Cursor New \'ISMoveableCursor\'")
     return o;
 end

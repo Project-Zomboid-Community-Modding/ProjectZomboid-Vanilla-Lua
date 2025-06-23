@@ -247,18 +247,21 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 					local typeToItem = VehicleUtils.getItems(self.chr:getPlayerNum())
 					-- display all possible item that can be installed
 					for i=0,part:getItemType():size() - 1 do
-						local name = part:getItemType():get(i);
-						if getItem(name) then name = getItemName(name); end
+						local itemType = part:getItemType():get(i);
+						local scriptItem = getItem(itemType)
+						local name = scriptItem and getItemName(itemType);
 						local itemOpt = subMenu:addOption(name, playerObj, nil);
+						itemOpt.iconTexture = scriptItem and scriptItem:getNormalTexture()
 						self:doMenuTooltip(part, itemOpt, "install", part:getItemType():get(i));
 						if not typeToItem[part:getItemType():get(i)] then
 							itemOpt.notAvailable = true;
 						else
-							-- display every item the player posess
+							-- display every item the player possesses
 							local subMenuItem = ISContextMenu:getNew(subMenu);
 							self.context:addSubMenu(itemOpt, subMenuItem);
 							for j,v in ipairs(typeToItem[part:getItemType():get(i)]) do
 								local itemOpt = subMenuItem:addOption(v:getDisplayName() .. " (" .. v:getCondition() .. "%)", playerObj, ISVehiclePartMenu.onInstallPart, part, v);
+								itemOpt.itemForTexture = v
 								self:doMenuTooltip(part, itemOpt, "install", part:getItemType():get(i));
 							end
 						end
@@ -325,7 +328,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 			self:doMenuTooltip(part, option, "takeengineparts");
 			option.notAvailable = true;
 		end
-		if part:getCondition() < 100 and self.chr:getInventory():getNumberOfItem("EngineParts", false, true) > 0 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():contains("Wrench") then
+		if part:getCondition() < 100 and self.chr:getInventory():getNumberOfItem("EngineParts", false, true) > 0 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():containsTypeRecurse("Wrench") then
 			local option = self.context:addOption(getText("IGUI_RepairEngine"), playerObj, ISVehicleMechanics.onRepairEngine, part);
 			self:doMenuTooltip(part, option, "repairengine");
 		else
@@ -419,7 +422,8 @@ function ISVehicleMechanics.onRepairEngine(playerObj, part)
 	local typeToItem = VehicleUtils.getItems(playerObj:getPlayerNum())
 	local item = typeToItem["Base.Wrench"][1]
 	ISVehiclePartMenu.toPlayerInventory(playerObj, item)
-	
+	local parts = playerObj:getInventory():getFirstTypeRecurse("EngineParts");
+	ISVehiclePartMenu.toPlayerInventory(playerObj, parts)	
 	ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
 	
 	local engineCover = nil
@@ -1136,7 +1140,7 @@ function ISVehicleMechanics:render()
 	y = y + 5;
 	local debugLine = "";
 	if getCore():getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
-		debugLine = " (" .. self.vehicle:getScript():getName() .. " )";
+		debugLine = " ( Vehicle Report: " .. self.vehicle:getScript():getName() .. " )";
 	end
     local carName = self.vehicle:getScript():getCarModelName() or self.vehicle:getScript():getName()
 	local name = getText("IGUI_VehicleName" .. carName);

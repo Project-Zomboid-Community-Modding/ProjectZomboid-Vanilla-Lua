@@ -6,6 +6,9 @@ require "ISUI/ISPanel"
 
 ISSliderPanel = ISPanel:derive("ISSliderPanel");
 
+local BUTTON_WIDTH = 10
+local BUTTON_SPACING = 5
+
 function ISSliderPanel:round(num, idp)
     local mult = 10^(idp or 0);
     return math.floor(num * mult + 0.5) / mult;
@@ -26,14 +29,14 @@ function ISSliderPanel:paginate()
     end
 
     if self.doButtons then
-        self.btnLeftDim = { x = 0, y = 0, w = 10, h = self:getHeight() };
-        self.btnRightDim = { x = self:getWidth()-10, y = 0, w = 10, h = self:getHeight() };
+        self.btnLeftDim = { x = 0, y = 0, w = BUTTON_WIDTH, h = self:getHeight() };
+        self.btnRightDim = { x = self:getWidth()-BUTTON_WIDTH, y = 0, w = BUTTON_WIDTH, h = self:getHeight() };
 
-        self.sliderBarDim = { x = 10+5, y = (self:getHeight()/2)-1, w = self:getWidth()-(20+10), h = 2 };
+        self.sliderBarDim = { x = BUTTON_WIDTH+BUTTON_SPACING, y = (self:getHeight()/2)-1, w = self:getWidth()-(BUTTON_WIDTH+BUTTON_SPACING)*2, h = 2 };
     else
-        self.sliderBarDim = { x = 5, y = (self:getHeight()/2)-1, w = self:getWidth()-5, h = 2 };
+        self.sliderBarDim = { x = 0, y = (self:getHeight()/2)-1, w = self:getWidth(), h = 2 };
     end
-    self.sliderDim = { x = 2, y = 0, w = 5, h = self:getHeight() } --used a bit differently, see render
+    self.sliderDim = { x = 2, y = 0, w = BUTTON_WIDTH/2, h = self:getHeight() } --used a bit differently, see render
 end
 
 function ISSliderPanel:onMouseDown(_x, _y)
@@ -87,6 +90,17 @@ function ISSliderPanel:onMouseMove(_x, _y)
     end
 end
 
+function ISSliderPanel:setWidth(w)
+    if self.doButtons then
+        self.btnRightDim.x = w - BUTTON_WIDTH
+        self.sliderBarDim.w = w - (BUTTON_WIDTH+BUTTON_SPACING)*2
+    else
+        self.sliderBarDim.w = w
+    end
+    ISUIElement.setWidth(self, w);
+    self:paginate();
+end
+
 function ISSliderPanel:onMouseMoveOutside(_x, _y)
     if not self:getIsVisible() then return; end
     self:onMouseMove(_x, _y);
@@ -109,6 +123,15 @@ end
 
 function ISSliderPanel:update()
     ISPanel.update(self);
+    if self.joyfocus and self.joypadFocused then
+        local axisX = getJoypadAimingAxisX(self.joyfocus.id)
+        local rate = UIManager.getSecondsSinceLastUpdate() / 200 * ((self.maxValue - self.minValue) / self.stepValue)
+        if axisX > 0.5 then
+            self:setCurrentValue(self:getCurrentValue() + rate)
+        elseif axisX < -0.5 then
+            self:setCurrentValue(self:getCurrentValue() - rate)
+        end
+    end
 end
 
 function ISSliderPanel:prerender()
@@ -183,7 +206,7 @@ function ISSliderPanel:activateToolTip()
             self.toolTip:addToUIManager();
             self.toolTip:bringToTop()
         else
-            self.toolTip = ISToolTip:new(item);
+            self.toolTip = ISToolTip:new();
             self.toolTip:initialise();
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
@@ -200,8 +223,9 @@ function ISSliderPanel:deactivateToolTip()
     end
 end
 
-function ISSliderPanel:setJoypadFocused(focused)
+function ISSliderPanel:setJoypadFocused(focused, joypadData)
     self.joypadFocused = focused
+    self.joyfocus = joypadData
     if focused then
         self.sliderBarColor = {r=0.3, g=0.3, b=0.5, a=1.0};
     else

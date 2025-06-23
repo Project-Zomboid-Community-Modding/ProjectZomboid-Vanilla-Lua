@@ -37,6 +37,10 @@ function ISBaseTimedAction:getJobDelta()
 	return self.action:getJobDelta();
 end
 
+function ISBaseTimedAction:setJobDelta(delta)
+	self.action:setJobDelta(delta);
+end
+
 function ISBaseTimedAction:resetJobDelta()
 	return self.action:resetJobDelta();
 end
@@ -74,6 +78,9 @@ function ISBaseTimedAction:create()
 end
 
 function ISBaseTimedAction:begin()
+	if not self.retriggerLastAction then
+		self.character:setTimedActionToRetrigger(nil);
+	end
 	self:create();
 	self.character:StartAction(self.action);
 end
@@ -89,10 +96,10 @@ end
 function ISBaseTimedAction:adjustMaxTime(maxTime)
 	if maxTime > 1 then
 		-- add a slight maxtime if the character is unhappy
-		maxTime = maxTime * (1 + (self.character:getMoodles():getMoodleLevel(MoodleType.Unhappy) / 50))
+		maxTime = maxTime * (1 + (self.character:getMoodles():getMoodleLevel(MoodleType.Unhappy) / 4))
 
 		-- add time if the character is drunk
-		maxTime = maxTime * (1 + (self.character:getMoodles():getMoodleLevel(MoodleType.Drunk) / 50))
+		maxTime = maxTime * (1 + (self.character:getMoodles():getMoodleLevel(MoodleType.Drunk) / 4))
 
 		-- add more time if the character have his hands wounded
 		local maxPain = 0;

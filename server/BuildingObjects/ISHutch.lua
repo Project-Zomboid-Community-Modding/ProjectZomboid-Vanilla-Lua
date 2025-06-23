@@ -4,6 +4,7 @@ require "BuildingObjects/ISBuildingObject"
 ISHutch = ISBuildingObject:derive("ISHutch");
 
 function ISHutch:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISHutch\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local sq = getWorld():getCell():getGridSquare(x, y, z);
 	local hutch = IsoHutch.new(sq, north, sprite, self.def, nil)
 	hutch:transmitCompleteItemToClients()
@@ -46,7 +47,7 @@ function ISHutch:new(character, def)
 	end
     o.actionAnim = "Loot"
 	o.def = def
---~ 	o:setDragNilAfterPlace(true);
+    showDebugInfoInChat("Cursor New \'ISHutch\'")
 	return o;
 end
 

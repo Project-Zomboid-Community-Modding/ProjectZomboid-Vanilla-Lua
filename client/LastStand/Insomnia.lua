@@ -126,7 +126,7 @@ function injectInsomnia()
                 if luautils.stringStarts(l:toString(), "zombie.characters.IsoZombie") then
                     l:setFakeDead(false);
                     l:setForceFakeDead(false);
-                    l:Hit(null,player,0,true,0);
+                    l:Hit(nil,player,0,true,0);
                     zomCount = zomCount + 1;
                 end
             end

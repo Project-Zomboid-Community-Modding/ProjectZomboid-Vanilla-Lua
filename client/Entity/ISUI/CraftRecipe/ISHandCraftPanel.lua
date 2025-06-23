@@ -46,7 +46,7 @@ function ISHandCraftPanel:createChildren()
         self:createRecipeCategoryColumn();
     end
 
-    local viewMode = self.logic:getSelectedRecipeStyle("handcraft", self.player);
+    local viewMode = self.logic:getSelectedRecipeStyle();
     if (viewMode == "grid") then
         self.recipeListMode = false;
     else
@@ -63,13 +63,19 @@ end
 --*****************************************
 function ISHandCraftPanel:createRecipeCategoryColumn()
     self.recipeCategories = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipeCategories, 0, 0, 10, 10);
-    --self.recipeCategories.autoWidth = true;
+    self.recipeCategories.autoWidth = true;
     self.recipeCategories.callbackTarget = self;
     self.recipeCategories:initialise();
     self.recipeCategories:instantiate();
 
     local column = self.rootTable:addColumn(nil);
     self.rootTable:setElement(column:index(), 0, self.recipeCategories);
+end
+
+function ISHandCraftPanel:onDoubleClick(item)
+    if self.recipePanel.craftControl.buttonCraft.enable then
+        self.recipePanel.craftControl:startHandcraft(false);
+    end
 end
 
 --*****************************************
@@ -80,11 +86,15 @@ function ISHandCraftPanel:createRecipesColumn()
 
     self.recipesPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipesPanel, 0, 0, 10, 10, self.player, self.craftBench, self.isoObject, self.logic, self);
     self.recipesPanel.needFilterCombo = true;
+    --self.recipesPanel.expandToFitTooltip = true;
+    self.recipesPanel.wrapTooltipText = true;
     self.recipesPanel:initialise();
     self.recipesPanel:instantiate();
     self.recipesPanel.noTooltip = true;
 
-    local column = self.rootTable:addColumn(nil);
+    self.recipesPanel.recipeListPanel.recipeListPanel:setOnMouseDoubleClick(self, ISHandCraftPanel.onDoubleClick)
+
+    local column = self.rootTable:addColumnFill(nil);
     self.rootTable:setElement(column:index(), 0, self.recipesPanel);
     --self.rootTable:cell(column:index(), 0).padding = 0;
 end
@@ -117,8 +127,8 @@ function ISHandCraftPanel:createRecipePanel()
 end
 
 function ISHandCraftPanel:calculateLayout(_preferredWidth, _preferredHeight)
-    local width = math.max(self.minimumWidth, _preferredWidth or 0);
-    local height = math.max(self.minimumHeight, _preferredHeight or 0);
+    local width =math.max(self.minimumWidth, _preferredWidth or 0);
+    local height =math.max(self.minimumHeight, _preferredHeight or 0);
 
     --local x,y = 0,headerHeight;
     if self.rootTable then
@@ -128,13 +138,6 @@ function ISHandCraftPanel:calculateLayout(_preferredWidth, _preferredHeight)
 
         width = math.max(width, self.rootTable:getWidth());
         height = math.max(height, self.rootTable:getHeight());
-    end
-
-    local categoryCell = self.rootTable:cellFor(self.recipeCategories);
-    if self.recipeCategories then
-        local categoryHeight = categoryCell:getHeight() - (UI_BORDER_SPACING*2);
-        self.recipeCategories:setInternalHeight(categoryHeight);
-        self.recipeCategories:setHeight(categoryHeight);
     end
 
     self:setWidth(width);
@@ -311,6 +314,12 @@ function ISHandCraftPanel:onShowManualSelectChanged(_showManualSelectInputs)
     end
 end
 
+function ISHandCraftPanel:OnCloseWindow()
+    if self.logic:shouldShowManualSelectInputs() then
+        self:onShowManualSelectChanged(false);
+    end
+end
+
 function ISHandCraftPanel:onStopCraft()
     --log(DebugType.CraftLogic, "Calling listener ISHandCraftPanel.onStopCraft")
     self:updateContainers();
@@ -333,24 +342,35 @@ function ISHandCraftPanel:setRecipeFilter(_filterString, _filterMode)
     self:filterRecipeList();
 end
 
-function ISHandCraftPanel:filterRecipeList(_category)
+function ISHandCraftPanel:setSortMode(_sortMode)
+    self.logic:setRecipeSortMode(_sortMode);
+    self:sortRecipeList();
+end
+
+function ISHandCraftPanel:filterRecipeList()
     -- there was a lot of methods for filterRecipeList, so i'm just adding the mode to the filter string, it's cut in java
-    if self._filterMode and self._filterString then
+    if self._filterMode and self._filterString and self._filterString ~= "" then
         self._filterString = self._filterString .. "-@-" .. self._filterMode;
     end
-    self.logic:filterRecipeList(self._filterString, _category);
-    self.recipesPanel:filterRecipeList(_category);
+    self.logic:filterRecipeList(self._filterString, self._categoryString);
+    self.recipesPanel:filterRecipeList();
+end
+
+function ISHandCraftPanel:sortRecipeList()
+    self.logic:sortRecipeList();
+    self.recipesPanel:filterRecipeList();
 end
 
 function ISHandCraftPanel:onCategoryChanged(_category)
-    self:filterRecipeList(_category);
+    self._categoryString = _category;
+    self:filterRecipeList();
     self.logic:checkValidRecipeSelected();
     self:onRecipeChanged(self.logic:getRecipe());
 end
 
 function ISHandCraftPanel:setRecipeListMode(_useListMode)
     self.recipesPanel:setRecipeListMode(_useListMode);
-    self.logic:setSelectedRecipeStyle("handcraft", _useListMode and "list" or "grid", self.player);
+    self.logic:setSelectedRecipeStyle(_useListMode and "list" or "grid");
     self:onUpdateRecipeList();
 end
 
@@ -367,7 +387,7 @@ function ISHandCraftPanel:new(x, y, width, height, player, craftBench, isoObject
     self.__index = self
 
     o.background = false;
-
+    
     o.logic = HandcraftLogic.new(player, craftBench, isoObject);
     o.logic:setManualSelectInputs(true);
     --o.logic:addEventListener("onUpdateContainers", o.onUpdateContainers, o);
@@ -396,7 +416,7 @@ function ISHandCraftPanel:new(x, y, width, height, player, craftBench, isoObject
     o.tooltipRecipe = nil;
     o.activeTooltip = nil;
     o.updateTimer = 0; -- just to not update everytime we refresh backpacks, adding bit of a timer as sometimes it can trigger fast
-
+    
     --local test = getScriptManager():getAllRecipes();
     --log(DebugType.CraftLogic, "Recipe count: "..tostring(test:size()))
 

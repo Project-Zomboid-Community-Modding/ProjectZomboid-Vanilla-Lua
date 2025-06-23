@@ -9,6 +9,7 @@
 --]]---------------------------------------------
 
 require "Foraging/forageDefinitions";
+require "Foraging/forageSystem";
 
 local function generateClothingDefs()
 	local clothing = {
@@ -105,11 +106,7 @@ local function generateClothingDefs()
 				["Hat_Spiffo"] = "Base.Hat_Spiffo",
 				["Hat_SummerHat"] = "Base.Hat_SummerHat",
 				["Hat_SurgicalCap"] = "Base.Hat_SurgicalCap",
--- 				["Hat_SurgicalCap_Blue"] = "Base.Hat_SurgicalCap_Blue", -- replaced by a single item with randomized color
--- 				["Hat_SurgicalCap_Green"] = "Base.Hat_SurgicalCap_Green",
 				["Hat_SurgicalMask"] = "Base.Hat_SurgicalMask",
--- 				["Hat_SurgicalMask_Blue"] = "Base.Hat_SurgicalMask_Blue", -- replaced by a single item with randomized color
--- 				["Hat_SurgicalMask_Green"] = "Base.Hat_SurgicalMask_Green",
 				["Hat_Sweatband"] = "Base.Hat_Sweatband",
 				["Hat_TinFoilHat"] = "Base.Hat_TinFoilHat",
 				["Hat_VisorBlack"] = "Base.Hat_VisorBlack",
@@ -248,7 +245,6 @@ local function generateClothingDefs()
 				["LongCoat_Bathrobe"] = "Base.LongCoat_Bathrobe",
 				["LongJohns"] = "Base.LongJohns",
 				["LongJohns_Bottoms"] = "Base.LongJohns_Bottoms",
-				--["Male_Undies"] = "Base.Male_Undies",
 				["PonchoGreen"] = "Base.PonchoGreen",
 				["PonchoGreenDOWN"] = "Base.PonchoGreenDOWN",
 				["PonchoYellow"] = "Base.PonchoYellow",
@@ -563,51 +559,32 @@ local function generateClothingDefs()
 				["WristWatch_Right_DigitalBlack"] = "Base.WristWatch_Right_DigitalBlack",
 				["WristWatch_Right_DigitalDress"] = "Base.WristWatch_Right_DigitalDress",
 				["WristWatch_Right_DigitalRed"] = "Base.WristWatch_Right_DigitalRed",
-				--["Bag_BaseballBag"] = "Base.Bag_BaseballBag",
-				--["Bag_BurglarBag"] = "Base.Bag_BurglarBag",
-				--["Bag_ConstructionBag"] = "Base.Bag_ConstructionBag",
-				--["Bag_Dancer"] = "Base.Bag_Dancer",
-				--["Bag_DoctorBag"] = "Base.Bag_DoctorBag",
-				--["Bag_DuffelBag"] = "Base.Bag_DuffelBag",
-				--["Bag_DuffelBagTINT"] = "Base.Bag_DuffelBagTINT",
-				--["Bag_FannyPackBack"] = "Base.Bag_FannyPackBack",
-				--["Bag_InmateEscapedBag"] = "Base.Bag_InmateEscapedBag",
-				--["Bag_JanitorToolbox"] = "Base.Bag_JanitorToolbox",
-				--["Bag_MedicalBag"] = "Base.Bag_MedicalBag",
-				--["Bag_Military"] = "Base.Bag_Military",
-				--["Bag_MoneyBag"] = "Base.Bag_MoneyBag",
-				--["Bag_SatchelPhoto"] = "Base.Bag_SatchelPhoto",
-				--["Bag_ShotgunBag"] = "Base.Bag_ShotgunBag",
-				--["Bag_ShotgunDblBag"] = "Base.Bag_ShotgunDblBag",
-				--["Bag_ShotgunDblSawnoffBag"] = "Base.Bag_ShotgunDblSawnoffBag",
-				--["Bag_ShotgunSawnoffBag"] = "Base.Bag_ShotgunSawnoffBag",
-				--["Bag_Stripper"] = "Base.Bag_Stripper",
-				--["Bag_SurvivorBag"] = "Base.Bag_SurvivorBag",
-				--["Bag_TennisBag"] = "Base.Bag_TennisBag",
-				--["Bag_ToolBag"] = "Base.Bag_ToolBag",
-				--["Bag_TrashBag"] = "Base.Bag_TrashBag",
+				["BlackRobe"] = "Base.BlackRobe",
 			},
 		},
 	};
 	for _, spawnTable in pairs(clothing) do
 		for itemName, itemFullName in pairs(spawnTable.items) do
-			forageDefs[itemName] = {
-				type = itemFullName,
-				skill = 0,
-				xp = spawnTable.xp,
-				categories = { "Clothing" },
-				zones = {
-					Vegitation  = spawnTable.chance,
-					TrailerPark = spawnTable.chance,
-					TownZone    = spawnTable.chance,
-					ForagingNav = spawnTable.chance,
-				},
-				spawnFuncs = { forageSystem.doClothingItemSpawn },
-				forceOutside = false,
-				canBeAboveFloor = true,
-				itemSizeModifier = 0.5,
-				isItemOverrideSize = true,
-			};
+			forageSystem.addForageDef(
+					itemName,
+				{
+					type = itemFullName,
+					skill = 0,
+					xp = spawnTable.xp,
+					categories = { "Clothing" },
+					zones = {
+						Vegitation = spawnTable.chance,
+						TrailerPark = spawnTable.chance,
+						TownZone = spawnTable.chance,
+						ForagingNav = spawnTable.chance,
+					},
+					spawnFuncs = { forageSystem.doClothingItemSpawn },
+					forceOutside = false,
+					canBeAboveFloor = true,
+					itemSizeModifier = 0.5,
+					isItemOverrideSize = true,
+				}
+			);
 		end;
 	end;
 end

@@ -86,10 +86,15 @@ function WorldMapEditor:createChildren()
 	self.modeButton.Stashes = button
 
 	button = ISButton:new(UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - BUTTON_HGT, 10, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
+	button:setAnchorTop(false)
+	button:setAnchorBottom(true)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
+	button:enableCancelColor()
 
 	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - BUTTON_HGT, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_LuaToClipboard"), self, self.onGenerateLuaScript)
+	button:setAnchorTop(false)
+	button:setAnchorBottom(true)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)
 

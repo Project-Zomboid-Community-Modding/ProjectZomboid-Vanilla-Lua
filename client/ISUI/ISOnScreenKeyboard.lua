@@ -461,6 +461,7 @@ end
 function ISOnScreenKeyboard:accept()
 	if self.textEntryBox then
 		self.textEntryBox:setText(self.entry:getInternalText())
+		self.textEntryBox.javaObject:onTextChange()
 	end
 	self:hide()
 end

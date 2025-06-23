@@ -129,9 +129,9 @@ xpUpdate.displayCharacterInfo = function(key)
 	end
 	if not getPlayerData(0) then return end
 	if getCore():isKey("Crafting UI", key) then
-		if ISEntityUI.players[0] and ISEntityUI.players[0].instance and ISEntityUI.players[0].instance.xuiStyleName == "HandcraftWindow" then
-			ISEntityUI.players[0].instance:close();
-			ISEntityUI.players[0].instance:removeFromUIManager();
+		if ISEntityUI.players[0] and ISEntityUI.players[0].windows["HandcraftWindow"] and ISEntityUI.players[0].windows["HandcraftWindow"].instance then
+			ISEntityUI.players[0].windows["HandcraftWindow"].instance:close();
+			ISEntityUI.players[0].windows["HandcraftWindow"].instance:removeFromUIManager();
 		else
 			ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
 		end
@@ -181,9 +181,8 @@ xpUpdate.addXp = function(owner, type, amount)
 	end
 
 	if type == Perks.PlantScavenging and amount > 0 then
-        local manager = ISSearchManager.getManager(owner);
         local amount2 = round(amount, 2)
-        table.insert(manager.haloNotes, "[col=137,232,148]"..type:getName().." "..getText("Challenge_Challenge2_CurrentXp", amount2) .. "[/] [img=media/ui/ArrowUp.png]");
+		HaloTextHelper.addTextWithArrow(owner, type:getName().." "..getText("Challenge_Challenge2_CurrentXp", amount2), "[br/]", true, HaloTextHelper.getGoodColor());
     end
 end
 

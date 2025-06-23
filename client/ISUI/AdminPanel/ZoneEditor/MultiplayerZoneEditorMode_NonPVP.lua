@@ -89,8 +89,9 @@ function MultiplayerZoneEditorMode_NonPVP:renderResizer()
 	end
 	if self.mode == "Resize" then
 		local x1,y1,x2,y2 = self.resizer.x1, self.resizer.y1, self.resizer.x2 - DXY(), self.resizer.y2 - DXY()
-		local ignoreZone = self:getSelectedZone()
-		if x1 == x2 or y1 == y2 then
+		local zones = NonPvpZone.getAllZones();
+		local index = zones:indexOf(self:getSelectedZone());
+		if x1 == x2 or y1 == y2 or not self:isResizedZoneValid(x1, y1, x2, y2, index) then
 			r = 1
 		end
 	end
@@ -201,7 +202,9 @@ function MultiplayerZoneEditorMode_NonPVP:onMouseUp(x, y)
 		self.mode = nil
 		self.resizeMode = nil
 		local x1,y1,x2,y2 = self.resizer.x1, self.resizer.y1, self.resizer.x2 - DXY(), self.resizer.y2 - DXY()
-		if self:isZoneSizeValid(x1, y1, x2, y2) then
+		local zones = NonPvpZone.getAllZones();
+		local index = zones:indexOf(self:getSelectedZone());
+		if self:isResizedZoneValid(x1, y1, x2, y2, index) then
 			self:setZoneBounds(x1, y1, x2, y2)
 		else
 			self.selectedZone = nil -- set resizer bounds
@@ -277,8 +280,29 @@ function MultiplayerZoneEditorMode_NonPVP:cancelResize()
 	return false
 end
 
+function MultiplayerZoneEditorMode_NonPVP:isResizedZoneValid(x1, y1, x2, y2, index)
+	if not self:isZoneSizeValid(x1, y1, x2, y2) then return false end
+	local zones = NonPvpZone.getAllZones()
+	for i=1,zones:size() do
+		local npz = zones:get(i-1)
+		if not (index == i-1) then
+			if x1 < npz:getX2() and x2 > npz:getX() and y1 < npz:getY2() and y2 > npz:getY() then
+				return false;
+			end
+		end
+	end
+	return true
+end
+
 function MultiplayerZoneEditorMode_NonPVP:isNewZoneValid(x1, y1, x2, y2)
 	if not self:isZoneSizeValid(x1, y1, x2, y2) then return false end
+	local zones = NonPvpZone.getAllZones()
+	for i=1,zones:size() do
+		local npz = zones:get(i-1)
+		if x1 < npz:getX2() and x2 > npz:getX() and y1 < npz:getY2() and y2 > npz:getY() then
+			return false;
+		end
+	end
 	return true
 end
 

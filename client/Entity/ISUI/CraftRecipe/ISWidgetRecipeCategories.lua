@@ -8,8 +8,9 @@
 --]]
 require "ISUI/ISPanel"
 
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local UI_BORDER_SPACING = 10
-local LIST_BOX_WIDTH = 250
+local MIN_LIST_BOX_WIDTH = 125 * FONT_SCALE;
 
 ISWidgetRecipeCategories = ISPanel:derive("ISWidgetRecipeCategories");
 
@@ -25,13 +26,13 @@ end
 function ISWidgetRecipeCategories:createChildren()
     ISPanel.createChildren(self);
 
-    self.recipeCategoryPanel = ISScrollingListBox:new(0, 0, self.listBoxWidth or LIST_BOX_WIDTH, 0);
+    self.recipeCategoryPanel = ISScrollingListBox:new(0, 0, self.listBoxWidth or MIN_LIST_BOX_WIDTH, 0);
     self.recipeCategoryPanel:initialise();
     self.recipeCategoryPanel:instantiate();
-    self.recipeCategoryPanel.itemheight = ISCraftingUI.mediumFontHeight + UI_BORDER_SPACING;
+    self.recipeCategoryPanel.itemheight = ISCraftingUI.smallFontHeight + UI_BORDER_SPACING;
     self.recipeCategoryPanel.selected = 0;
     --self.recipeCategoryPanel.joypadParent = self;
-    self.recipeCategoryPanel.font = UIFont.Medium
+    self.recipeCategoryPanel.font = UIFont.Small
     self.recipeCategoryPanel.drawBorder = true
     self.recipeCategoryPanel:setOnMouseDownFunction(self, self.onCategoryChanged);
     self.recipeCategoryPanel.drawDebugLines = self.drawDebugLines;
@@ -44,19 +45,31 @@ function ISWidgetRecipeCategories:calculateLayout(_preferredWidth, _preferredHei
     local biggestSize = 0;
     if self.autoWidth then
         for i,v in pairs(self.recipeCategoryPanel.items) do
-            local size = getTextManager():MeasureStringX(UIFont.Medium, v.text)
+            local size = getTextManager():MeasureStringX(UIFont.Small, v.text)
             if size > biggestSize then
                 biggestSize = size;
             end
         end
     end
 
-    if biggestSize > 0 then
-        self:setWidth(biggestSize + 30);
+    if biggestSize > 0 and biggestSize > MIN_LIST_BOX_WIDTH then 
+        local desiredWidth = biggestSize + (UI_BORDER_SPACING * FONT_SCALE);
+        if self.recipeCategoryPanel.vscroll then
+            desiredWidth = desiredWidth + self.recipeCategoryPanel.vscroll:getWidth();
+        end
+        
+        self:setWidth(desiredWidth);
         self.recipeCategoryPanel:setWidth(self:getWidth())
     else
-        self:setWidth(self.listBoxWidth or LIST_BOX_WIDTH);
+        self:setWidth(self.listBoxWidth or MIN_LIST_BOX_WIDTH);
     end
+
+    if self.recipeCategoryPanel.vscroll then
+        self.recipeCategoryPanel.vscroll:setX(self.recipeCategoryPanel:getWidth()-self.recipeCategoryPanel.vscroll:getWidth());
+    end
+    
+    self:setHeight(_preferredHeight);
+    self:setInternalHeight(_preferredHeight);
 end
 
 function ISWidgetRecipeCategories:onResize()

@@ -14,7 +14,7 @@ function ISBurnCorpseAction:isValid()
     end
     if isClient() and self.petrol and self.lighter then
         return self.character:getInventory():containsID(self.petrol:getID()) and self.character:getInventory():containsID(self.lighter:getID());
-    else
+    elseif self.petrol and self.lighter then
         return self.character:getInventory():contains(self.petrol) and self.character:getInventory():contains(self.lighter);
     end
 end

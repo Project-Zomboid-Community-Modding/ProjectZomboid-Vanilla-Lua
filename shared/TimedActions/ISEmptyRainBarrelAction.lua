@@ -17,18 +17,21 @@ end
 
 function ISEmptyRainBarrelAction:start()
 	self.sound = self.character:playSound("GetWaterFromLake")
-	self.startAmount = self.object:getWaterAmount()
+	self.startAmount = self.object:getFluidAmount()
 end
 
 function ISEmptyRainBarrelAction:update()
 	self.character:faceThisObject(self.object)
     self.character:setMetabolicTarget(Metabolics.LightDomestic)
-    self.object:setWaterAmount(self.startAmount * (1 - self:getJobDelta()))
 end
 
 function ISEmptyRainBarrelAction:stop()
 	self:stopSound()
 
+	if not isClient() and not isServer() then
+		self:serverStop()
+	end
+	
 	ISBaseTimedAction.stop(self)
 end
 
@@ -46,14 +49,13 @@ function ISEmptyRainBarrelAction:stopSound()
 end
 
 function ISEmptyRainBarrelAction:serverStop()
-	self.object:setWaterAmount(self.object:getWaterAmount() * (1 - self.netAction:getProgress()))
-	self.object:transmitModData()
+	local progress = self.netAction and self.netAction:getProgress() or self:getJobDelta();
+	local used = self.object:getFluidAmount() * progress;
+	self.object:useFluid(used)
 end
 
 function ISEmptyRainBarrelAction:complete()
-	self.object:setWaterAmount(0)
-	self.object:transmitModData()
-
+	self.object:emptyFluid()
 	return true
 end
 
@@ -62,7 +64,7 @@ function ISEmptyRainBarrelAction:getDuration()
 		return 1;
 	end
 
-	return math.max(self.object:getWaterAmount(), 100)
+	return math.max(self.object:getFluidAmount(), 100)
 end
 
 function ISEmptyRainBarrelAction:new(character, object)

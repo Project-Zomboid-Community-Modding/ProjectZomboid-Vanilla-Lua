@@ -55,9 +55,9 @@ function ISCleanBandage:complete()
 	sendEquip(self.character)
 
 	if instanceof(self.waterObject, "IsoWorldInventoryObject") then
-		self.waterObject:useWater(1)
+		self.waterObject:useFluid(1)
 	else
-		if self.waterObject:useWater(1) > 0 then
+		if self.waterObject:useFluid(1) > 0 then
 			self.waterObject:transmitModData()
 		end
 	end

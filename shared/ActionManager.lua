@@ -31,6 +31,7 @@ function Actions.addOrDropItem(character, item)
 end
 
 Actions.build = function(character, args)
+    args.item.character = character
     args.item:create(args.x, args.y, args.z, args.north, args.spriteName);
     local square = getCell():getGridSquare(args.x, args.y, args.z);
     square:RecalcAllWithNeighbours(true);

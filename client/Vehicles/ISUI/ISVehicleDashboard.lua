@@ -611,7 +611,8 @@ end
 
 function ISVehicleDashboard.onExitVehicle(character)
 	if instanceof(character, 'IsoPlayer') and character:isLocalPlayer() then
-		getPlayerVehicleDashboard(character:getPlayerNum()):setVehicle(nil)
+		local data = getPlayerVehicleDashboard(character:getPlayerNum())
+		if data then data:setVehicle(nil) end
 	end
 end
 
@@ -662,6 +663,9 @@ ISVehicleDashboard.lastVehicleDamageTimer = 0
 function ISVehicleDashboard.damageChecker()
 	local character = getPlayer()
 	if character == nil then return end
+	if character:getVehicle() == nil then
+        ISVehicleDashboard.onExitVehicle(character)
+    end
 
 	if ISVehicleDashboard.lastVehicleDamageTimer <= 0 then	
 		local vehicle = character:getVehicle()

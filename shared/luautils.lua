@@ -18,7 +18,7 @@ luautils.trim = function(s)
 end
 
 -- split java style
-luautils.split = function(pString, pPattern)
+luautils.splitJavaStyle = function(pString, pPattern)
    local Table = {};
    local fpat = "(.-)" .. pPattern;
    local last_end = 1;
@@ -229,6 +229,63 @@ function luautils.walkAdjWindowOrDoor(playerObj, square, item, keepActions)
 --	end
 end
 
+local function getClosestChoice(choices, playerObj)
+	local minDist = 100000
+	local closest = nil
+	for _,square in ipairs(choices) do
+		local dist = square:DistToProper(playerObj)
+		if dist < minDist then
+			minDist = dist
+			closest = square
+		end
+	end
+	return closest
+end
+
+function luautils.walkAdjFence(playerObj, square, object, keepActions)
+	if not keepActions then
+		ISTimedActionQueue.clear(playerObj);
+	end
+	if object:getProperties():Is(IsoFlagType.cutW) and object:getProperties():Is(IsoFlagType.cutN) then
+		-- Special case handling of combined north-west corner fences.
+		local choices = {}
+		if AdjacentFreeTileFinder.privCanStand(square) then
+			table.insert(choices, square)
+		end
+		local n = square:getAdjacentSquare(IsoDirections.N)
+		if n ~= nil and AdjacentFreeTileFinder.privCanStand(n) then
+			table.insert(choices, n)
+		end
+		local w = square:getAdjacentSquare(IsoDirections.W)
+		if w ~= nil and AdjacentFreeTileFinder.privCanStand(w) then
+			table.insert(choices, w)
+		end
+		local adjacent = getClosestChoice(choices, playerObj)
+		if adjacent ~= nil then
+			if adjacent == playerObj:getCurrentSquare() then
+				return true;
+			end
+			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+			return true;
+		end
+		return  false;
+	end
+--	if not AdjacentFreeTileFinder.isTileOrAdjacent(playerObj:getCurrentSquare(), square) then
+		local adjacent = AdjacentFreeTileFinder.FindWindowOrDoor(square, object, playerObj);
+		if adjacent ~= nil then
+			if adjacent == playerObj:getCurrentSquare() then
+				return true;
+			end
+			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+			return true;
+		else
+			return  false;
+		end
+--	else
+--		return true;
+--	end
+end
+
 function luautils.walkToContainer(container, playerNum)
 	if container:getType() == "floor" then
 		return true
@@ -286,6 +343,18 @@ function luautils.haveToBeTransfered(player, item, dontWalk)
 		if dontWalk then return true; end
 		luautils.walkToContainer(item:getContainer(), player:getPlayerNum())
 		return true
+	else
+		return false;
+	end
+end
+
+function luautils.haveToBeTransferedWhileTrading(player, item, dontWalk)
+	if item and item:getContainer() ~= player:getInventory() then
+		if dontWalk then return true; end
+		if item:getContainer() ~= nil then
+			luautils.walkToContainer(item:getContainer(), player:getPlayerNum())
+		end
+		return true;
 	else
 		return false;
 	end
@@ -507,7 +576,8 @@ function luautils.split(inputstr, sep)
     if sep == nil then
         sep = "%s"
     end
-    local t={} ; i=1
+    local t={};
+	local i=1
     for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
         t[i] = str
         i = i + 1
@@ -585,7 +655,91 @@ function luautils.findRootInventory(_inventory)
 	local inventory = _inventory;
 	local containingItem = inventory:getContainingItem();
 	if containingItem and containingItem:getContainer() and containingItem:getContainer():getContainingItem() then
-		return luautils.findRootInventory(containingItem:getInventory());
+		if containingItem:getInventory() ~= _inventory then
+			return luautils.findRootInventory(containingItem:getInventory());
+		end;
 	end;
 	return inventory;
+end
+
+--tests for rough equality, useful for checking if something is "close enough" such as the final step of a lerp operation.
+--
+--@param _value - current value.
+--
+--@param _value2 - the value we want to check against.
+--
+--@param _delta - how different can it be, before it's considered unequal.
+--
+--@return - whether or not it's equal enough.
+--
+--@author eris
+
+function luautils.roughlyEqual(_value, _value2, _delta)
+	return math.abs(_value - _value2) < _delta;
+end
+
+--Lerps towards a value, with a built in final step to prevent infinite lerp.
+--
+--@param _sourceValue - current value.
+--
+--@param _destinationValue - the value we want to step towards.
+--
+--@param _stepRate - ratio of steps, higher values are faster.
+--
+--@param _finalStepRatio - optional, override the final step ratio.
+--
+--@return - the new value after one step.
+--
+--@author eris
+
+function luautils.lerp(_sourceValue, _destinationValue, _stepRate, _finalStepRatio)
+	--prevent endless lerping towards a target, if the next step would fall below the ratio threshold.
+	if (luautils.roughlyEqual(_sourceValue, _destinationValue, _finalStepRatio or _stepRate)) then return _destinationValue; end;
+
+	--return the new value
+	return _sourceValue + (_destinationValue - _sourceValue) * _stepRate;
+end
+
+--Prints or dumps to file every global variable accessible by Lua.
+--
+--@param _print (optional) - prints output to console.
+--
+--@param _save (optional) - save output to LuaGlobals.log.
+--
+--@param _test (optional) - tests objects for closure, table or function type and prints to console.
+--
+--@return - void
+--
+--@author eris
+
+function luautils.exportGlobals(_print, _save, _test)
+	if _print then
+		for k, v in pairs(_G) do
+			print(tostring(k), tostring(v));
+		end;
+	end;
+	if _save then
+		print("writing globals to file: LuaGlobals.log");
+		local file = getFileWriter("LuaGlobals.log", true, false);
+		for k, v in pairs(_G) do
+			file:write(tostring(k) .. " = " .. tostring(v) .. "\r\n");
+		end;
+		file:close();
+	end;
+	if _test then
+		for k, v in pairs(_G) do
+			if not (string.find(tostring(v), "closure")
+					or string.find(tostring(v), "table")
+					or string.find(tostring(v), "function")
+			)
+			then
+				print(tostring(k) .. " = " .. tostring(v) .. " did not pass exportGlobals test.")
+			end;
+		end;
+	end;
+end
+
+function round(num, idp)
+	local mult = 10^(idp or 0)
+	return math.floor(num * mult + 0.5) / mult
 end

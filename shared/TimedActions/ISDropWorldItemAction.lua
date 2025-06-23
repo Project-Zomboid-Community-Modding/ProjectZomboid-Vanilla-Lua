@@ -83,10 +83,9 @@ function ISDropWorldItemAction:complete()
 		worldItem:setWorldZRotation(self.rotation);
 		if worldItem:getWorldItem() then
 			worldItem:getWorldItem():setIgnoreRemoveSandbox(true); -- avoid the item to be removed by the SandboxOption WorldItemRemovalList
+            worldItem:getWorldItem():setExtendedPlacement(false)
+            worldItem:getWorldItem():transmitCompleteItemToClients();
 		end
-	end
-	if worldItem:getWorldItem() then
-		worldItem:getWorldItem():transmitCompleteItemToClients();
 	end
 	self.character:getInventory():Remove(self.item);
 	sendRemoveItemFromContainer(self.character:getInventory(), self.item);

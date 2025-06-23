@@ -163,6 +163,7 @@ end
 function ISBuildWindow:render()
     self:stayOnSplitScreen();
     ISCollapsableWindow.render(self);
+    self:renderJoypadNavigateOverlay(self.playerNum)
 end
 
 function ISBuildWindow:update()
@@ -208,7 +209,7 @@ function ISBuildWindow:close()
     if JoypadState.players[self.playerNum+1] then
         if self.unfocusRecursive then
             self:unfocusRecursive(getFocusForPlayer(self.playerNum), self.playerNum);
-        elseif getFocusForPlayer(self.playerNum)==self then
+        elseif isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
             setJoypadFocus(self.playerNum, nil);
         end
     end
@@ -234,6 +235,46 @@ function ISBuildWindow:validateSizeBounds()
     end
     if self.maximumHeight>0 and self.maximumHeight<self.minimumHeight then
         self.maximumHeight = self.minimumHeight;
+    end
+end
+
+function ISBuildWindow:onGainJoypadFocus(joypadData)
+    ISCollapsableWindow.onGainJoypadFocus(self, joypadData)
+    local recipeCategories = self.BuildPanel.recipeCategories.recipeCategoryPanel
+    recipeCategories:setJoypadFocused(true, joypadData)
+end
+
+function ISBuildWindow:onJoypadDown_Descendant(descendant, button, joypadData)
+    if button == Joypad.AButton then
+        local craftControl = self.BuildPanel.craftRecipePanel.craftControl
+        craftControl.buttonCraft:forceClick()
+    end
+    if button == Joypad.BButton then
+        self:close()
+    end
+end
+
+function ISBuildWindow:onJoypadNavigateStart_Descendant(descendant, joypadData)
+    local recipeCategories = self.BuildPanel.recipeCategories.recipeCategoryPanel
+    local recipeFilterPanel = self.BuildPanel.recipesPanel.recipeFilterPanel
+    local recipeIconPanel = self.BuildPanel.recipesPanel.recipeIconPanel
+    local recipeListPanel = self.BuildPanel.recipesPanel.recipeListPanel.recipeListPanel
+    local listOrIconPanel = recipeIconPanel:isVisible() and recipeIconPanel or recipeListPanel
+    local recipePanel = self.BuildPanel.craftRecipePanel
+    local recipeInputs = recipePanel and recipePanel.inputs or nil
+    local craftControl = recipePanel and recipePanel.craftControl or nil
+--    local inventoryPanel = self.BuildPanel.inventoryPanel.itemListBox
+--    inventoryPanel.joypadNavigate = { left = recipePanel.inputs }
+--    if not inventoryPanel:isReallyVisible() then inventoryPanel = nil end
+    local inventoryPanel = nil
+    recipeCategories.joypadNavigate = { right = listOrIconPanel }
+    recipeFilterPanel.joypadNavigate = { left = recipeCategories, right = recipeInputs, down = listOrIconPanel }
+    listOrIconPanel.joypadNavigate = { left = recipeCategories,  up = recipeFilterPanel, right = recipeInputs }
+    if recipeInputs then
+        recipeInputs.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, down = craftControl }
+    end
+    if craftControl then
+        craftControl.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, up = recipeInputs }
     end
 end
 

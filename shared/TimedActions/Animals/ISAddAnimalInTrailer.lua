@@ -7,7 +7,17 @@ require "TimedActions/ISBaseTimedAction"
 ISAddAnimalInTrailer = ISBaseTimedAction:derive("ISAddAnimalInTrailer");
 
 function ISAddAnimalInTrailer:isValid()
-	return true
+	if not self.fromHand then
+		if instanceof(self.animal, "IsoDeadBody") then
+			return true;
+		end
+		return self.animal and self.animal:isExistInTheWorld();
+	else
+		if instanceof(self.animalInventoryItem, "IsoDeadBody") then
+			return true;
+		end
+		return self.animalInventoryItem and self.character:getInventory():contains(self.animalInventoryItem);
+	end
 end
 
 function ISAddAnimalInTrailer:waitToStart()
@@ -85,5 +95,12 @@ function ISAddAnimalInTrailer:new(character, vehicle, animal, fromHand)
 	o.animal = animal;
 	o.maxTime = o:getDuration()
 	o.fromHand = fromHand;
+	if fromHand then
+		if instanceof(animal, "IsoDeadBody") then
+			o.animalInventoryItem = animal;
+		else
+			o.animalInventoryItem = character:getInventory():getAnimalInventoryItem(animal);
+		end
+	end
 	return o;
 end

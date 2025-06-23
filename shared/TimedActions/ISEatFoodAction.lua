@@ -10,8 +10,12 @@ local function predicateNotEmpty(item)
 	return item:getCurrentUsesFloat() > 0
 end
 
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
+
 function ISEatFoodAction:isValidStart()
-	return self.character:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 or self.character:getNutrition():getCalories() < 1000
+	return self.character:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 -- or self.character:getNutrition():getCalories() < 1000
 end
 
 function ISEatFoodAction:waitToStart()
@@ -48,7 +52,8 @@ function ISEatFoodAction:start()
 		self.item = self.character:getInventory():getItemById(self.item:getID())
 	end
 
-	if self.item:getRequireInHandOrInventory() and not (self.carLighter or self.openFlame) then
+	-- fromRelaunch is added in ISTimedAction to not consume stuff again when we relaunch the action
+	if not self.fromRelaunch and self.item:getRequireInHandOrInventory() and not (self.carLighter or self.openFlame) then
         local lighter = self:getRequiredItem()
         lighter:setUsedDelta(lighter:getCurrentUsesFloat() - lighter:getUseDelta())
 	end
@@ -69,17 +74,17 @@ function ISEatFoodAction:start()
 		-- for can or 2handed, add a fork or a spoon if we have them otherwise we'll use default eat action
 		-- use 2handforced if you don't want this to happen (like eating a burger..)
 		if self.item:getEatType() == "can" or self.item:getEatType() == "candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "plate" or self.item:getEatType() == "2handbowl" then
-			local playerInv = self.character:getInventory()
-			local spoon = playerInv:getFirstTag("Spoon") or playerInv:getFirstType("Base.Spoon");
-			local fork = playerInv:getFirstTag("Fork") or playerInv:getFirstType("Base.Fork");
+-- 			local playerInv = self.character:getInventory()
+-- 			local spoon = playerInv:getFirstTagEvalRecurse("Spoon", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Spoon", predicateNotBroken);
+-- 			local fork = playerInv:getFirstTagEvalRecurse("Fork", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Fork", predicateNotBroken);
 
-			if self.item:getEatType() == "2handbowl" and spoon then
+			if self.item:getEatType() == "2handbowl" and self.spoon then
 				self:setAnimVariable("FoodType", "2handbowl");
-				secondItem = spoon;
+				secondItem = self.spoon;
 			elseif self.item:getEatType() == "2handbowl" then
 				self:setAnimVariable("FoodType", "bowl");
 			else
-				secondItem = fork or spoon;
+				secondItem = self.fork or self.spoon;
 				if self.item:getEatType() == "plate" then
 				    if secondItem then
 						self:setAnimVariable("FoodType", "plate");
@@ -130,6 +135,10 @@ function ISEatFoodAction:stop()
 		self.character:stopOrTriggerSound(self.scrapeSound)
 	end
 	self.item:setJobDelta(0.0);
+
+	if not isClient() and not isServer() then
+		self:serverStop();
+	end
 end
 
 function ISEatFoodAction:serverStop()
@@ -195,7 +204,82 @@ function ISEatFoodAction:eat(food, percentage)
 end
 
 function ISEatFoodAction:getDuration()
-	return self.maxTime;
+	if self.character:isTimedActionInstant() then
+		return 1;
+	end
+
+	local maxTime = math.abs(self.item:getBaseHunger() * 150 * self.percentage) * 8;
+
+    if maxTime > math.abs(self.item:getHungerChange() * 150 * 8) then
+        maxTime = math.abs(self.item:getHungerChange() * 150 * 8);
+    end
+
+	local hungerConsumed = math.abs(self.item:getBaseHunger() * self.percentage * 100);
+	local eatingLoop = 1;
+	if hungerConsumed >= 30 then
+		eatingLoop = 2;
+	end
+	if hungerConsumed >= 80 then
+		eatingLoop = 3;
+	end
+
+	-- people requested benefits from spoons and forks so they make you eat faster; this is really the only practical means with the animations we have to work with
+	if self.useUtensil and eatingLoop >= 2 then
+        if isDebugEnabled() then
+            print("IMPORTANT: player is eating with a utensil and will benefit from faster eating times if the time for eating is long enough to be reduced.")
+        end
+	    eatingLoop = eatingLoop - 1
+	end
+
+	local timerForOne = 232;
+	if self.item:getCustomMenuOption() == getText("ContextMenu_Drink") then
+		hungerConsumed = math.abs(self.item:getThirstChange() * self.percentage * 100);
+		timerForOne = 171;
+		if hungerConsumed >= 3 then
+			eatingLoop = 2;
+		end
+		if hungerConsumed >= 6 then
+			eatingLoop = 3;
+		end
+	end
+
+	maxTime = timerForOne * eatingLoop;
+
+	-- Cigarettes don't reduce hunger
+	if hungerConsumed == 0 then maxTime = 460 end
+	if self.item:getEatTime() and self.item:getEatTime() > 0 then maxTime = self.item:getEatTime() end
+
+
+	if self.item:getEatType() == "popcan" then
+		maxTime = 160;
+	end
+	return maxTime;
+end
+
+function ISEatFoodAction:getSecondItem()
+    local secondItem = nil;
+    if self.item:getEatType() and self.item:getEatType() ~= "" then
+        -- for can or 2handed, add a fork or a spoon if we have them otherwise we'll use default eat action
+        -- use 2handforced if you don't want this to happen (like eating a burger..)
+        if self.item:getEatType() == "can" or self.item:getEatType() == "candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "plate" or self.item:getEatType() == "2handbowl" then
+--             local playerInv = self.character:getInventory()
+--             local spoon = playerInv:getFirstTagEvalRecurse("Spoon", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Spoon", predicateNotBroken);
+--             local fork = playerInv:getFirstTagEvalRecurse("Fork", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Fork", predicateNotBroken);
+
+            if self.item:getEatType() == "2handbowl" and self.spoon then
+                secondItem = self.spoon;
+            elseif self.item:getEatType() == "2handbowl" then
+                --
+            else
+                secondItem = self.fork or self.spoon;
+            end
+            if secondItem and isDebugEnabled() then
+                print("IMPORTANT: player is eating with a utensil and will benefit better unhappiness/boredom values.")
+                print("IMPORTANT: however if the food being eaten has no boredom or unhappiness effects then eating with a utensil will have no effect on that")
+            end
+        end
+    end
+    return secondItem
 end
 
 function ISEatFoodAction:isEatingRemaining(item)
@@ -229,79 +313,19 @@ function ISEatFoodAction:new (character, item, percentage)
     o.openFlame = false;
     if item:hasTag("Smokable") then o.openFlame = ISInventoryPaneContextMenu.hasOpenFlame(character) end
     o.useUtensil = false;
-    local secondItem = nil;
-    if o.item:getEatType() and o.item:getEatType() ~= "" then
-        -- for can or 2handed, add a fork or a spoon if we have them otherwise we'll use default eat action
-        -- use 2handforced if you don't want this to happen (like eating a burger..)
-        if o.item:getEatType() == "can" or o.item:getEatType() == "candrink" or o.item:getEatType() == "2hand" or o.item:getEatType() == "plate" or o.item:getEatType() == "2handbowl" then
-            local playerInv = o.character:getInventory()
-            local spoon = playerInv:getFirstTag("Spoon") or playerInv:getFirstType("Base.Spoon");
-            local fork = playerInv:getFirstTag("Fork") or playerInv:getFirstType("Base.Fork");
-
-            if o.item:getEatType() == "2handbowl" and spoon then
-                secondItem = spoon;
-            elseif o.item:getEatType() == "2handbowl" then
-                --
-            else
-                secondItem = fork or spoon;
-            end
-            if secondItem and isDebugEnabled() then
-                print("IMPORTANT: player is eating with a utensil and will benefit better unhappiness/boredom values.")
-                print("IMPORTANT: however if the food being eaten has no boredom or unhappiness effects then eating with a utensil will have no effect on that")
-            end
-        end
+    o.isEating = true;
+    local playerInv = o.character:getInventory()
+    o.spoon = playerInv:getFirstTagEvalRecurse("Spoon", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Spoon", predicateNotBroken);
+    o.fork = playerInv:getFirstTagEvalRecurse("Fork", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Fork", predicateNotBroken);
+    if ISEatFoodAction.getSecondItem(o) then
+        o.useUtensil = true
     end
-    if secondItem then o.useUtensil = true end
 
     if not o.percentage then
         o.percentage = 1;
     end
 
-	o.maxTime = math.abs(item:getBaseHunger() * 150 * o.percentage) * 8;
-
-    if o.maxTime > math.abs(item:getHungerChange() * 150 * 8) then
-        o.maxTime = math.abs(item:getHungerChange() * 150 * 8);
-    end
-
-	local hungerConsumed = math.abs(item:getBaseHunger() * o.percentage * 100);
-	local eatingLoop = 1;
-	if hungerConsumed >= 30 then
-		eatingLoop = 2;
-	end
-	if hungerConsumed >= 80 then
-		eatingLoop = 3;
-	end
-
-	-- people requested benefits from spoons and forks so they make you eat faster; this is really the only practical means with the animations we have to work with
-	if secondItem and eatingLoop >= 2 then
-        if isDebugEnabled() then
-            print("IMPORTANT: player is eating with a utensil and will benefit from faster eating times if the time for eating is long enough to be reduced.")
-        end
-	    eatingLoop = eatingLoop - 1
-	end
-	
-	local timerForOne = 232;
-	if o.item:getCustomMenuOption() == getText("ContextMenu_Drink") then
-		hungerConsumed = math.abs(item:getThirstChange() * o.percentage * 100);
-		timerForOne = 171;
-		if hungerConsumed >= 3 then
-			eatingLoop = 2;
-		end
-		if hungerConsumed >= 6 then
-			eatingLoop = 3;
-		end
-	end
-
-	o.maxTime = timerForOne * eatingLoop;
-	
-	-- Cigarettes don't reduce hunger
-	if hungerConsumed == 0 then o.maxTime = 460 end
-	if item:getEatTime() and item:getEatTime() > 0 then o.maxTime = item:getEatTime() end
-
-
-	if item:getEatType() == "popcan" then
-		o.maxTime = 160;
-	end
+    o.maxTime = ISEatFoodAction.getDuration(o)
 
     o.eatSound = item:getCustomEatSound() or "Eating";
     o.eatAudio = 0

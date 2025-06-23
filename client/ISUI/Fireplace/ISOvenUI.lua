@@ -24,6 +24,7 @@ function ISOvenUI:initialise()
     self.tempKnob:instantiate();
     self.tempKnob.onMouseUpFct = ISOvenUI.ChangeKnob;
     self.tempKnob.target = self;
+    self.tempKnob.switchSound = "ToggleTemp";
     self:addChild(self.tempKnob);
 
     self.tempType = ISTickBox:new(20, self.tempKnob.y + self.tempKnob.height + 10, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Oven_Fahrenheit")) + 20, 18, "", self, ISOvenUI.onChangeTempType);
@@ -50,6 +51,7 @@ function ISOvenUI:initialise()
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:setSound("activate", "ToggleStove")
     self:addChild(self.ok);
 
     self.close = ISButton:new(self:getWidth() - btnWid - 10, self.tempType:getBottom() + 10, btnWid, btnHgt, getText("UI_Cancel"), self, ISOvenUI.onClick);

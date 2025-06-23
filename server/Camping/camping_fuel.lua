@@ -172,3 +172,9 @@ while i < 54 do
 	campingLightFireType[trash]= 15.0/60
 	i = i +1	
 end
+-- the maximum amount of fuel, in minutes, that can be in a BBQ/Campfire/Fireplace
+-- CAMPING_FUEL_MAX = 480
+function getCampingFuelMax()
+    local max = (getSandboxOptions():getOptionByName("MaximumFireFuelHours"):getValue() * 60)
+    return max
+end

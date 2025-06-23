@@ -40,7 +40,6 @@ BagsAndContainers.ALICEpack_Army = {
 			
 		}
 	},
-	fillRand = 1,
 }
 
 BagsAndContainers.ALICE_BeltSus = {
@@ -76,8 +75,85 @@ BagsAndContainers.ALICE_BeltSus = {
 			
 		}
 	},
-	fillRand = 1,
 }
+
+BagsAndContainers.Bag_Skill_Maintenance_DuffelBag = {
+	rolls = 1,
+	items = {
+		-- Keys/Keyrings
+		"CarKey", 0.5,
+		"KeyRing", 0.1,
+		"Key1", 0.5,
+		"Key1", 0.5,
+		-- Tools
+		"Awl", 4,
+		"BallPeenHammer", 8,
+		"BlowTorch", 4,
+		"BoltCutters", 4,
+		"Calipers", 2,
+		"CarpentryChisel", 4,
+		"ClubHammer", 4,
+		"Crowbar", 4,
+		"File", 2,
+		"Funnel", 10,
+		"GardenSaw", 8,
+		"Hammer", 8,
+		"HandDrill", 4,
+		"HeadingTool", 1,
+		"KnifePocket", 0.1,
+		"MasonsChisel", 2,
+		"MasonsTrowel", 2,
+		"MetalworkingChisel", 2,
+		"MetalworkingPunch", 2,
+		"PipeWrench", 8,
+		"Pliers", 10,
+		"Saw", 8,
+		"Screwdriver", 10,
+		"SheetMetalSnips", 4,
+		"SmallFileSet", 2,
+		"SmallPunchSet", 2,
+		"SmallSaw", 2,
+		"Tongs", 2,
+		"ViseGrips", 4,
+		"WoodenMallet", 4,
+		"Wrench", 8,
+		-- Literature (Skill Books)
+		"BookMaintenance1", 50,
+		"BookMaintenance2", 20,
+		"BookMaintenance3", 10,
+		"BookMaintenance4", 8,
+		"BookMaintenance5", 4,
+		-- Materials
+		"DuctTape", 20,
+		"DuctTape", 10,
+		"Epoxy", 20,
+		"Epoxy", 10,
+		"FiberglassTape", 20,
+		"FiberglassTape", 10,
+		"Woodglue", 20,
+		"Woodglue", 10,
+		-- Equipment
+		"FlashLight_AngleHead", 10,
+		"Glasses_SafetyGoggles", 4,
+		"HandTorch", 4,
+		"Hat_BuildersRespirator", 2,
+		"Hat_DustMask", 4,
+		"Hat_EarMuff_Protectors", 4,
+		"RespiratorFilters", 2,
+		-- Misc.
+		"MarkerBlack", 10,
+		"MeasuringTape", 10,
+		"TobaccoChewing", 1,
+		"Whetstone", 10,
+	},
+	junk = {
+		rolls = 1,
+		items = {
+			
+		}
+	},
+}
+
 -- More generic version of the Survivor bag.
 -- Contents reflect a wide variety of possible loot sources.
 BagsAndContainers.BanditItems = {
@@ -100,6 +176,7 @@ BagsAndContainers.BanditItems = {
 	"GoldBar", 0.1,
 	"HollowBook_Valuables", 0.1,
 	"IDcard_Blank", 0.1,
+	"KeyRing_Clover", 0.005,
 	"KeyRing_RabbitFoot", 0.1,
 	"Locket", 0.1,
 	"Medal_Gold", 1,
@@ -142,6 +219,8 @@ BagsAndContainers.BanditItems = {
 	-- Random Valuables
 	"AlarmClock2", 1,
 	"Bricktoys", 1,
+	"ButterKnife_Gold", 1,
+	"ButterKnife_Silver", 1,
 	"Camera", 1,
 	"CardDeck", 1,
 	"ChristmasOrnament_Gold1", 0.01,
@@ -163,6 +242,8 @@ BagsAndContainers.BanditItems = {
 	"ElectronicsScrap", 1,
 	"EngineParts", 1,
 	"Firecracker", 1,
+	"Fork_Gold", 1,
+	"Fork_Silver", 1,
 	"HairDyeUncommon", 1,
 	"Hairgel", 1,
 	"Hairspray2", 1,
@@ -193,6 +274,8 @@ BagsAndContainers.BanditItems = {
 	"PenSpiffo", 0.1,
 	"Perfume", 1,
 	"PetrolCan", 1,
+	"PlasticSpoon", 1,
+	"PlasticFork", 1,
 	"Plushabug", 0.1,
 	"PokerChips", 1,
 	"PoolBall", 1,
@@ -208,6 +291,8 @@ BagsAndContainers.BanditItems = {
 	"Sparklers", 1,
 	"Spiffo", 0.1,
 	"SpiffoBig", 0.001,
+	"Spoon_Gold", 1,
+	"Spoon_Silver", 1,
 	"Spork", 1,
 	"StraightRazor", 1,
 	"ToiletPaper", 10,
@@ -492,6 +577,22 @@ BagsAndContainers.BanditItems = {
 	"DoubleBarrelShotgunSawnoff", 1,
 	"Molotov", 1,
 	"ShotgunShellsBox", 6,
+	-- Recipe Magazines/Schematics
+	"ArmorMag1", 4,
+	"ArmorMag2", 4,
+	"ArmorMag3", 4,
+	"ArmorMag4", 4,
+	"ArmorMag5", 4,
+	"ArmorMag6", 4,
+	"ArmorMag7", 4,
+	"ArmorSchematic", 4,
+	"MeleeWeaponSchematic", 4,
+	"WeaponMag1", 4,
+	"WeaponMag2", 4,
+	"WeaponMag3", 4,
+	"WeaponMag4", 4,
+	"WeaponMag5", 4,
+	"WeaponMag6", 4,
 }
 
 BagsAndContainers.BanditBag = {
@@ -528,7 +629,20 @@ BagsAndContainers.BanditBag_Mid = {
 	maxMap = 1,
 	-- this mean 90% chance on normal sandbox settings to have an annoted map
 	stashChance = 10,
-	fillRand = 0,
+}
+
+BagsAndContainers.BanditBag_Late = {
+	rolls = 4,
+	items = BagsAndContainers.BanditItems,
+	junk = {
+		rolls = 1,
+		items = {
+
+		}
+	},
+	maxMap = 1,
+	-- this mean 90% chance on normal sandbox settings to have an annoted map
+	stashChance = 10,
 }
 
 BagsAndContainers.Cashbox = {
@@ -885,6 +999,17 @@ BagsAndContainers.CookieJar = {
 	}
 }
 
+BagsAndContainers.Empty = {
+	rolls = 1,
+	items = {
+	},
+	junk = {
+		rolls = 1,
+		items = {
+		}
+	}
+}
+
 BagsAndContainers.Farming = {
 	rolls = 3,
 	items = {
@@ -940,7 +1065,9 @@ BagsAndContainers.Farming = {
 		"FarmingMag8", 2,
 		-- Tools
 		"CarpentryChisel", 2,
+		"Fleshing_Tool", 10,
 		"GardenSaw", 10,
+		"HandAxe", 4,
 		"HandDrill", 10,
 		"HandFork", 10,
 		"HandScythe", 2,
@@ -966,7 +1093,6 @@ BagsAndContainers.Farming = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.FirstAidKit = {
@@ -1004,7 +1130,6 @@ BagsAndContainers.FirstAidKit = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.Gardening = {
@@ -1012,11 +1137,9 @@ BagsAndContainers.Gardening = {
 	items = {
 		-- Herbs
 		"BasilBagSeed", 4,
-		"ChamomileBagSeed", 4,
 		"ChivesBagSeed", 4,
 		"CilantroBagSeed", 4,
 		"LemonGrassBagSeed", 4,
-		"MarigoldBagSeed", 4,
 		"MintBagSeed", 4,
 		"OreganoBagSeed", 4,
 		"ParsleyBagSeed", 4,
@@ -1051,6 +1174,12 @@ BagsAndContainers.Gardening = {
 		"TurnipBagSeed", 4,
 		"WatermelonBagSeed", 2,
 		"ZucchiniBagSeed", 2,
+		-- Flowers
+		"ChamomileBagSeed", 4,
+		"LavenderBagSeed", 4,
+		"MarigoldBagSeed", 4,
+		"PoppyBagSeed", 4,
+		"RoseBagSeed", 4,
 		-- Literature
 		"BookFarming1", 10,
 		"FarmingMag1", 2,
@@ -1064,6 +1193,7 @@ BagsAndContainers.Gardening = {
 		-- Tools
 		"GardenSaw", 10,
 		"HandDrill", 10,
+		"HandAxe", 4,
 		"HandFork", 10,
 		"HandScythe", 2,
 		"HandShovel", 10,
@@ -1088,7 +1218,6 @@ BagsAndContainers.Gardening = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.HalloweenCandyBucket = {
@@ -1141,6 +1270,7 @@ BagsAndContainers.HalloweenCandyBucket = {
 		"Pop2", 1,
 		"Pop3", 1,
 		"SodaCan", 1,
+		--"SodaCanRare", 0.1,
 		-- Misc.
 		"Money", 4,
 		"Toothbrush", 1,
@@ -1153,7 +1283,6 @@ BagsAndContainers.HalloweenCandyBucket = {
 			
 		}
 	},
-	fillRand = 1,
 }
 
 BagsAndContainers.HandbagsAndPurses = {
@@ -1225,6 +1354,7 @@ BagsAndContainers.HandbagsAndPurses = {
 		"Gum", 10,
 		"KnifePocket", 0.1,
 		"PokerChips", 0.1,
+		"Revolver_Short", 0.1,
 		"Tissue", 10,
 		"ToiletPaper", 0.1,
 		"Wallet_Female", 10,
@@ -1235,7 +1365,6 @@ BagsAndContainers.HandbagsAndPurses = {
 			"IDcard_Female", 10,
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.Guitarcase = {
@@ -1254,7 +1383,6 @@ BagsAndContainers.Guitarcase = {
 			"TuningFork", 4,
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.Hatbox = {
@@ -1332,67 +1460,66 @@ BagsAndContainers.HikingBag = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 -- Accessories that may include high-end jewelry but not always.
 BagsAndContainers.JewelleryBox = {
 	rolls = 2,
 	items = {
-			"BellyButton_DangleGold", 2,
-			"BellyButton_DangleGoldRuby", 0.5,
-			"BellyButton_DangleSilver", 8,
-			"BellyButton_DangleSilverDiamond", 1,
-			"BellyButton_RingGold", 2,
-			"BellyButton_RingGoldDiamond", 0.1,
-			"BellyButton_RingGoldRuby", 0.5,
-			"BellyButton_RingSilver", 8,
-			"BellyButton_RingSilverAmethyst", 4,
-			"BellyButton_RingSilverDiamond", 1,
-			"BellyButton_RingSilverRuby", 2,
-			"BellyButton_StudGold", 2,
-			"BellyButton_StudGoldDiamond", 0.1,
-			"BellyButton_StudSilver", 8,
-			"BellyButton_StudSilverDiamond", 1,
-			"Bracelet_BangleLeftGold", 2,
-			"Bracelet_BangleLeftSilver", 8,
-			"Bracelet_ChainLeftGold", 2,
-			"Bracelet_ChainLeftSilver", 8,
-			"Earring_Dangly_Diamond", 0.1,
-			"Earring_Dangly_Emerald", 0.1,
-			"Earring_Dangly_Pearl", 1,
-			"Earring_Dangly_Ruby", 0.5,
-			"Earring_Dangly_Sapphire", 0.5,
-			"Earring_LoopLrg_Gold", 1,
-			"Earring_LoopLrg_Silver", 4,
-			"Earring_LoopMed_Gold", 1,
-			"Earring_LoopMed_Silver", 4,
-			"Earring_LoopSmall_Gold_Both", 1,
-			"Earring_LoopSmall_Gold_Top", 1,
-			"Earring_LoopSmall_Silver_Both", 4,
-			"Earring_LoopSmall_Silver_Top", 4,
-			"Earring_Stone_Emerald", 0.1,
-			"Earring_Stone_Ruby", 0.1,
-			"Earring_Stone_Sapphire", 0.1,
-			"Earring_Stud_Gold", 2,
-			"Earring_Stud_Silver", 4,
-			"Necklace_Choker", 10,
-			"Necklace_Choker_Amber", 4,
-			"Necklace_Choker_Diamond", 1,
-			"Necklace_Choker_Sapphire", 2,
-			"Necklace_Crucifix", 4,
-			"Necklace_SilverCrucifix", 1,
-			"Necklace_YingYang", 8,
-			"NoseRing_Gold", 2,
-			"NoseRing_Silver", 8,
-			"NoseStud_Gold", 2,
-			"NoseStud_Silver", 8,
-			"Ring_Left_RingFinger_Gold", 2,
-			"Ring_Left_RingFinger_GoldDiamond", 0.1,
-			"Ring_Left_RingFinger_GoldRuby", 0.5,
-			"Ring_Left_RingFinger_Silver", 4,
-			"Ring_Left_RingFinger_SilverDiamond", 0.5,
-			"WristWatch_Left_DigitalDress", 4,
+		"BellyButton_DangleGold", 2,
+		"BellyButton_DangleGoldRuby", 0.5,
+		"BellyButton_DangleSilver", 8,
+		"BellyButton_DangleSilverDiamond", 1,
+		"BellyButton_RingGold", 2,
+		"BellyButton_RingGoldDiamond", 0.1,
+		"BellyButton_RingGoldRuby", 0.5,
+		"BellyButton_RingSilver", 8,
+		"BellyButton_RingSilverAmethyst", 4,
+		"BellyButton_RingSilverDiamond", 1,
+		"BellyButton_RingSilverRuby", 2,
+		"BellyButton_StudGold", 2,
+		"BellyButton_StudGoldDiamond", 0.1,
+		"BellyButton_StudSilver", 8,
+		"BellyButton_StudSilverDiamond", 1,
+		"Bracelet_BangleLeftGold", 2,
+		"Bracelet_BangleLeftSilver", 8,
+		"Bracelet_ChainLeftGold", 2,
+		"Bracelet_ChainLeftSilver", 8,
+		"Earring_Dangly_Diamond", 0.1,
+		"Earring_Dangly_Emerald", 0.1,
+		"Earring_Dangly_Pearl", 1,
+		"Earring_Dangly_Ruby", 0.5,
+		"Earring_Dangly_Sapphire", 0.5,
+		"Earring_LoopLrg_Gold", 1,
+		"Earring_LoopLrg_Silver", 4,
+		"Earring_LoopMed_Gold", 1,
+		"Earring_LoopMed_Silver", 4,
+		"Earring_LoopSmall_Gold_Both", 1,
+		"Earring_LoopSmall_Gold_Top", 1,
+		"Earring_LoopSmall_Silver_Both", 4,
+		"Earring_LoopSmall_Silver_Top", 4,
+		"Earring_Stone_Emerald", 0.1,
+		"Earring_Stone_Ruby", 0.1,
+		"Earring_Stone_Sapphire", 0.1,
+		"Earring_Stud_Gold", 2,
+		"Earring_Stud_Silver", 4,
+		"Necklace_Choker", 10,
+		"Necklace_Choker_Amber", 4,
+		"Necklace_Choker_Diamond", 1,
+		"Necklace_Choker_Sapphire", 2,
+		"Necklace_Crucifix", 4,
+		"Necklace_SilverCrucifix", 1,
+		"Necklace_YingYang", 8,
+		"NoseRing_Gold", 2,
+		"NoseRing_Silver", 8,
+		"NoseStud_Gold", 2,
+		"NoseStud_Silver", 8,
+		"Ring_Left_RingFinger_Gold", 2,
+		"Ring_Left_RingFinger_GoldDiamond", 0.1,
+		"Ring_Left_RingFinger_GoldRuby", 0.5,
+		"Ring_Left_RingFinger_Silver", 4,
+		"Ring_Left_RingFinger_SilverDiamond", 0.5,
+		"WristWatch_Left_DigitalDress", 4,
 	},
 	junk = {
 		rolls = 1,
@@ -1406,56 +1533,56 @@ BagsAndContainers.JewelleryBox = {
 BagsAndContainers.JewelleryBox_Fancy = {
 	rolls = 2,
 	items = {
-			-- Rings
-			"Ring_Left_RingFinger_Gold", 4,
-			"Ring_Left_RingFinger_GoldDiamond", 1,
-			"Ring_Left_RingFinger_GoldRuby", 2,
-			"Ring_Left_RingFinger_Silver", 8,
-			"Ring_Left_RingFinger_SilverDiamond", 2,
-			-- Bracelets
-			"Bracelet_BangleLeftGold", 4,
-			"Bracelet_BangleLeftSilver", 8,
-			"Bracelet_ChainLeftGold", 4,
-			"Bracelet_ChainLeftSilver", 8,
-			-- Earrings
-			"Earring_Dangly_Diamond", 1,
-			"Earring_Dangly_Emerald", 4,
-			"Earring_Dangly_Ruby", 4,
-			"Earring_Dangly_Sapphire", 4,
-			"Earring_LoopLrg_Gold", 8,
-			"Earring_LoopLrg_Silver", 8,
-			"Earring_LoopMed_Gold", 8,
-			"Earring_LoopMed_Silver", 8,
-			"Earring_LoopSmall_Gold_Both", 8,
-			"Earring_LoopSmall_Gold_Top", 8,
-			"Earring_LoopSmall_Silver_Both", 8,
-			"Earring_LoopSmall_Silver_Top", 8,
-			"Earring_Pearl", 10,
-			"Earring_Dangly_Pearl", 10,
-			"Earring_Stone_Emerald", 4,
-			"Earring_Stone_Ruby", 4,
-			"Earring_Stone_Sapphire", 4,
-			-- Necklaces
-			"NecklaceLong_Gold", 8,
-			"NecklaceLong_GoldDiamond", 1,
-			"NecklaceLong_Silver", 8,
-			"NecklaceLong_SilverDiamond", 2,
-			"NecklaceLong_SilverEmerald", 4,
-			"NecklaceLong_SilverSapphire", 4,
-			"Necklace_Gold", 8,
-			"Necklace_GoldDiamond", 1,
-			"Necklace_GoldRuby", 2,
-			"Necklace_Pearl", 10,
-			"Necklace_Silver", 8,
-			"Necklace_SilverCrucifix", 8,
-			"Necklace_SilverDiamond", 2,
-			"Necklace_SilverSapphire", 4,
-			-- Memorabilia
-			"Photo_VeryOld", 10,
-			"Pocketwatch", 8,
-			"WristWatch_Left_Expensive", 2,
-			-- Special
-			"GemBag", 0.001,
+		-- Rings
+		"Ring_Left_RingFinger_Gold", 4,
+		"Ring_Left_RingFinger_GoldDiamond", 1,
+		"Ring_Left_RingFinger_GoldRuby", 2,
+		"Ring_Left_RingFinger_Silver", 8,
+		"Ring_Left_RingFinger_SilverDiamond", 2,
+		-- Bracelets
+		"Bracelet_BangleLeftGold", 4,
+		"Bracelet_BangleLeftSilver", 8,
+		"Bracelet_ChainLeftGold", 4,
+		"Bracelet_ChainLeftSilver", 8,
+		-- Earrings
+		"Earring_Dangly_Diamond", 1,
+		"Earring_Dangly_Emerald", 4,
+		"Earring_Dangly_Ruby", 4,
+		"Earring_Dangly_Sapphire", 4,
+		"Earring_LoopLrg_Gold", 8,
+		"Earring_LoopLrg_Silver", 8,
+		"Earring_LoopMed_Gold", 8,
+		"Earring_LoopMed_Silver", 8,
+		"Earring_LoopSmall_Gold_Both", 8,
+		"Earring_LoopSmall_Gold_Top", 8,
+		"Earring_LoopSmall_Silver_Both", 8,
+		"Earring_LoopSmall_Silver_Top", 8,
+		"Earring_Pearl", 10,
+		"Earring_Dangly_Pearl", 10,
+		"Earring_Stone_Emerald", 4,
+		"Earring_Stone_Ruby", 4,
+		"Earring_Stone_Sapphire", 4,
+		-- Necklaces
+		"NecklaceLong_Gold", 8,
+		"NecklaceLong_GoldDiamond", 1,
+		"NecklaceLong_Silver", 8,
+		"NecklaceLong_SilverDiamond", 2,
+		"NecklaceLong_SilverEmerald", 4,
+		"NecklaceLong_SilverSapphire", 4,
+		"Necklace_Gold", 8,
+		"Necklace_GoldDiamond", 1,
+		"Necklace_GoldRuby", 2,
+		"Necklace_Pearl", 10,
+		"Necklace_Silver", 8,
+		"Necklace_SilverCrucifix", 8,
+		"Necklace_SilverDiamond", 2,
+		"Necklace_SilverSapphire", 4,
+		-- Memorabilia
+		"Photo_VeryOld", 10,
+		"Pocketwatch", 8,
+		"WristWatch_Left_Expensive", 2,
+		-- Special
+		"GemBag", 0.001,
 	},
 	junk = {
 		rolls = 1,
@@ -1502,6 +1629,28 @@ BagsAndContainers.KeyRing = {
 	}
 }
 
+BagsAndContainers.KeyRingOutdoors = {
+	rolls = 2,
+	items = {
+		"CarKey", 50,
+		"Key1", 50,
+		"Key1", 50,
+		"Key1", 50,
+		"Key1", 50,
+		"Key1", 50,
+	},
+	junk = {
+		rolls = 1,
+		items = {
+			"BottleOpener_Keychain", 10,
+		    "CompassDirectional", 1,
+			"Handiknife", 1,
+			"P38", 1,
+			"Whistle", 1,
+		}
+	}
+}
+
 BagsAndContainers.Lunchbox = {
 	rolls = 2,
 	items = {
@@ -1535,7 +1684,6 @@ BagsAndContainers.Lunchbox = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.MakeupCase_Professional = {
@@ -1579,6 +1727,27 @@ BagsAndContainers.MakeupCase_Professional = {
 	}
 }
 
+BagsAndContainers.MoneyBag = {
+	rolls = 4,
+	items = {
+		"GemBag", 1,
+		"Money", 100,
+		"Money", 50,
+		"Money", 50,
+		"Money", 20,
+		"MoneyBundle", 100,
+		"MoneyBundle", 50,
+		"MoneyBundle", 20,
+		"StockCertificate", 10,
+	},
+	junk = {
+		rolls = 1,
+		items = {
+			
+		}
+	},
+}
+
 BagsAndContainers.Parcel_ExtraSmall = {
 	onlyOne = true,
 	rolls = 100,
@@ -1619,6 +1788,7 @@ BagsAndContainers.Parcel_ExtraSmall = {
 		"VHS_Retail", 10,
 		"VideoGame", 10,
 		"Wallet", 10,
+		"Whetstone", 10,
 		"WristWatch_Left_ClassicGold", 10,
 		"Yoyo", 10,
 	},
@@ -1738,7 +1908,6 @@ BagsAndContainers.PencilCase = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.PencilCase_Gaming = {
@@ -1783,7 +1952,6 @@ BagsAndContainers.PistolCase1 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.PistolCase2 = {
@@ -1805,7 +1973,6 @@ BagsAndContainers.PistolCase2 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.PistolCase3 = {
@@ -1827,7 +1994,23 @@ BagsAndContainers.PistolCase3 = {
 			
 		}
 	},
-	fillRand = 0,
+}
+
+BagsAndContainers.Plasticbags = {
+	rolls = 10,
+	items = {
+		"Plasticbag", 20,
+		"Plasticbag", 20,
+		"Plasticbag", 20,
+		"Plasticbag", 20,
+		"Plasticbag", 20,
+	},
+	junk = {
+		rolls = 1,
+		items = {
+			
+		}
+	}
 }
 
 BagsAndContainers.Bag_Police = {
@@ -1880,7 +2063,6 @@ BagsAndContainers.Bag_Police = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.ProduceStorage_Apple = {
@@ -2273,7 +2455,6 @@ BagsAndContainers.RevolverCase1 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RevolverCase2 = {
@@ -2292,7 +2473,6 @@ BagsAndContainers.RevolverCase2 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RevolverCase3 = {
@@ -2312,7 +2492,6 @@ BagsAndContainers.RevolverCase3 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RifleCase1 = {
@@ -2335,7 +2514,6 @@ BagsAndContainers.RifleCase1 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RifleCase2 = {
@@ -2358,7 +2536,6 @@ BagsAndContainers.RifleCase2 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RifleCase3 = {
@@ -2383,7 +2560,6 @@ BagsAndContainers.RifleCase3 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.RifleCase4 = {
@@ -2409,7 +2585,6 @@ BagsAndContainers.RifleCase4 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.Schoolbag = {
@@ -2445,7 +2620,6 @@ BagsAndContainers.Schoolbag = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.Shoebox = {
@@ -2491,7 +2665,6 @@ BagsAndContainers.ShotgunCase1 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
 BagsAndContainers.ShotgunCase2 = {
@@ -2510,9 +2683,9 @@ BagsAndContainers.ShotgunCase2 = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
+-- Item table
 BagsAndContainers.SurvivorItems = {
 	-- Survival Gear
 	"Candle", 20,
@@ -2577,54 +2750,135 @@ BagsAndContainers.SurvivorItems = {
 	"RosewoodMap", 20,
 	"WestpointMap", 20,
 	-- Literature
+	"ArmorMag1", 4,
 	"ArmorMag2", 4,
 	"ArmorMag3", 4,
+	"ArmorMag4", 4,
+	"ArmorMag5", 4,
+	"ArmorMag6", 4,
 	"ArmorMag7", 4,
 	"ArmorSchematic", 4,
+	"BookAiming1", 8,
+	"BookAiming2", 8,
+	"BookAiming3", 8,
 	"BookAiming4", 8,
 	"BookAiming5", 4,
+	"BookBlacksmith1", 8,
+	"BookBlacksmith2", 8,
+	"BookBlacksmith3", 8,
 	"BookBlacksmith4", 8,
 	"BookBlacksmith5", 4,
+	"BookButchering1", 8,
+	"BookButchering2", 8,
+	"BookButchering3", 8,
 	"BookButchering4", 8,
 	"BookButchering5", 4,
+	"BookCarpentry1", 8,
+	"BookCarpentry2", 8,
+	"BookCarpentry3", 8,
 	"BookCarpentry4", 8,
 	"BookCarpentry5", 4,
+	"BookCarving1", 8,
+	"BookCarving2", 8,
+	"BookCarving3", 8,
 	"BookCarving4", 8,
 	"BookCarving5", 4,
+	"BookCooking1", 8,
+	"BookCooking2", 8,
+	"BookCooking3", 8,
 	"BookCooking4", 8,
 	"BookCooking5", 4,
+	"BookElectrician1", 8,
+	"BookElectrician2", 8,
+	"BookElectrician3", 8,
 	"BookElectrician4", 8,
 	"BookElectrician5", 4,
+	"BookFarming1", 8,
+	"BookFarming2", 8,
+	"BookFarming3", 8,
 	"BookFarming4", 8,
 	"BookFarming5", 4,
+	"BookFirstAid1", 8,
+	"BookFirstAid2", 8,
+	"BookFirstAid3", 8,
 	"BookFirstAid4", 8,
 	"BookFirstAid5", 4,
+	"BookFishing1", 8,
+	"BookFishing2", 8,
+	"BookFishing3", 8,
 	"BookFishing4", 8,
 	"BookFishing5", 4,
+	"BookFlintKnapping1", 8,
+	"BookFlintKnapping2", 8,
+	"BookFlintKnapping3", 8,
 	"BookFlintKnapping4", 8,
 	"BookFlintKnapping5", 4,
+	"BookForaging1", 8,
+	"BookForaging2", 8,
+	"BookForaging3", 8,
 	"BookForaging4", 8,
 	"BookForaging5", 4,
+	"BookGlassmaking1", 8,
+	"BookGlassmaking2", 8,
+	"BookGlassmaking3", 8,
 	"BookGlassmaking4", 8,
 	"BookGlassmaking5", 4,
+	"BookHusbandry1", 8,
+	"BookHusbandry2", 8,
+	"BookHusbandry3", 8,
 	"BookHusbandry4", 8,
 	"BookHusbandry5", 4,
+	"BookLongBlade1", 8,
+	"BookLongBlade2", 8,
+	"BookLongBlade3", 8,
 	"BookLongBlade4", 8,
 	"BookLongBlade5", 4,
+	"BookMaintenance1", 8,
+	"BookMaintenance2", 8,
+	"BookMaintenance3", 8,
+	"BookMaintenance4", 8,
+	"BookMaintenance5", 4,
+	"BookMasonry1", 8,
+	"BookMasonry2", 8,
+	"BookMasonry3", 8,
 	"BookMasonry4", 8,
 	"BookMasonry5", 4,
+	"BookMechanic1", 8,
+	"BookMechanic2", 4,
+	"BookMechanic3", 8,
+	"BookMechanic5", 4,
 	"BookMechanic4", 8,
 	"BookMechanic5", 4,
+	"BookMechanic4", 8,
+	"BookMechanic5", 4,
+	"BookMetalWelding1", 8,
+	"BookMetalWelding2", 8,
+	"BookMetalWelding3", 8,
 	"BookMetalWelding4", 8,
 	"BookMetalWelding5", 4,
+	"BookPottery1", 8,
+	"BookPottery2", 8,
+	"BookPottery3", 8,
 	"BookPottery4", 8,
 	"BookPottery5", 4,
+	"BookReloading1", 8,
+	"BookReloading2", 8,
+	"BookReloading3", 8,
 	"BookReloading4", 8,
 	"BookReloading5", 4,
+	"BookTailoring1", 8,
+	"BookTailoring2", 8,
+	"BookTailoring3", 8,
 	"BookTailoring4", 8,
 	"BookTailoring5", 4,
+	"BookTracking1", 8,
+	"BookTracking2", 8,
+	"BookTracking3", 8,
 	"BookTracking4", 8,
 	"BookTracking5", 4,
+	"BookTrapping1", 8,
+	"BookTrapping2", 8,
+	"BookTrapping3", 8,
 	"BookTrapping4", 8,
 	"BookTrapping5", 4,
 	"BSToolsSchematic", 4,
@@ -2652,6 +2906,8 @@ BagsAndContainers.SurvivorItems = {
 	"Paperback", 10,
 	"PrimitiveToolMag1", 4,
 	"PrimitiveToolMag2", 4,
+	"PrimitiveToolMag3", 4,
+	"SurvivalSchematic", 4,
 	"TrickMag1", 4,
 	"WeaponMag1", 4,
 	"WeaponMag2", 4,
@@ -2669,13 +2925,16 @@ BagsAndContainers.SurvivorItems = {
 	"WildGarlicBagSeed", 10,
 	-- Misc.
 	"CDplayer", 2,
+	"CrudeWhetstone", 10,
 	"Disc_Retail", 4,
 	"VHS_Retail", 4,
 	"VHS_Home", 4,
 	"EngineParts", 1,
+	"Firecracker", 1,
 	"Hat_BandanaTINT", 10,
 	"Holster_DuctTape", 4,
 	"IDcard_Blank", 0.1,
+	"MortarPestle", 1,
 	"PanForged", 8,
 	"PonchoGarbageBag", 4,
 	"PonchoTarp", 4,
@@ -2686,6 +2945,7 @@ BagsAndContainers.SurvivorItems = {
 	"Soap2", 10,
 	"Spork", 10,
 	"TobaccoChewing", 1,
+	"Whetstone", 1,
 	-- Weapons/Accessories
 	"Bag_ChestRig", 1,
 	"DoubleBarrelShotgunSawnoff", 8,
@@ -2697,6 +2957,13 @@ BagsAndContainers.SurvivorItems = {
 	"ShotgunShellsBox", 10,
 	-- Special
 	"Bag_ProtectiveCaseSmall_KeyCutting", 4,
+	-- Bootleneck Crafting Items
+	"Fleshing_Tool", 1,
+	"HeadingTool", 1,
+	"KnappingTool", 1,
+    "MasonsChisel", 1,
+    "MasonsTrowel", 1,
+	"Tongs", 1,
 }
 
 BagsAndContainers.SurvivorBag = {
@@ -2712,7 +2979,6 @@ BagsAndContainers.SurvivorBag = {
 	maxMap = 1,
 	-- this mean 90% chance on normal sandbox settings to have an annoted map
 	stashChance = 10,
-	fillRand = 0,
 }
 
 BagsAndContainers.SurvivorBag_Mid = {
@@ -2728,11 +2994,10 @@ BagsAndContainers.SurvivorBag_Mid = {
 	maxMap = 2,
 	-- this mean 90% chance on normal sandbox settings to have an annoted map
 	stashChance = 10,
-	fillRand = 0,
 }
 
 BagsAndContainers.SurvivorBag_Late = {
-	rolls = 3,
+	rolls = 2,
 	items = BagsAndContainers.SurvivorItems,
 	junk = {
 		rolls = 1,
@@ -2744,22 +3009,19 @@ BagsAndContainers.SurvivorBag_Late = {
 	maxMap = 2,
 	-- this mean 90% chance on normal sandbox settings to have an annoted map
 	stashChance = 10,
-	fillRand = 0,
 }
 
+-- Box of fishing tackle and related supplies.
 BagsAndContainers.Tacklebox = {
-	rolls = 1,
+	rolls = 2,
 	items = {
 		-- Keys/Keyrings
 		"CarKey", 0.5,
 		"KeyRing_Bass", 0.1,
 		"Key1", 0.5,
 		"Key1", 0.5,
-		-- TODO: Sort Me!
-		"Bobber", 20,
+		-- Fishing Gear
 		"Bobber", 10,
-		"BookFishing1", 10,
-		"BottleOpener", 10,
 		"FishingHook", 20,
 		"FishingHook", 10,
 		"FishingHookBox", 4,
@@ -2767,21 +3029,29 @@ BagsAndContainers.Tacklebox = {
 		"FishingLine", 10,
 		"FishingTackle", 10,
 		"FishingTackle2", 10,
-		"FishingMag1", 1,
-		"FlashLight_AngleHead", 10,
-		"FishingMag2", 1,
-		"HandTorch", 4,
-		"InsectRepellent", 10,
 		"JigLure", 10,
+		"MinnowLure", 10,
+		"PremiumFishingLine", 4,
+		-- Tools
+		"FlashLight_AngleHead", 10,
+		"HandTorch", 4,
 		"KnifeFillet", 10,
 		"KnifePocket", 10,
-		"MeasuringTape", 10,
-		"MinnowLure", 10,
 		"Pliers", 10,
-		"PremiumFishingLine", 4,
-		"ShortBat", 4,
+		"ShortBat", 2,
+		-- Literature
+		"BookFishing1", 10,
+		"FishingMag1", 4,
+		"FishingMag2", 4,
+		-- Misc.
+		"BeerCan", 2,
+		"BeerBottle", 1,
+		"BottleOpener", 10,
+		"Gloves_Dish", 8,
+		"InsectRepellent", 10,
+		"MeasuringTape", 6,
 		"TobaccoChewing", 1,
-		"Twine", 10,
+		"Whetstone", 10,
 	},
 	junk = {
 		rolls = 1,
@@ -2789,11 +3059,11 @@ BagsAndContainers.Tacklebox = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
+-- Paper takeout container for chinese restaurants.
 BagsAndContainers.TakeoutBox_Chinese = {
-	rolls = 4,
+	rolls = 2,
 	items = {
 		"MeatDumpling", 20,
 		"MeatSteamBun", 20,
@@ -2810,24 +3080,29 @@ BagsAndContainers.TakeoutBox_Chinese = {
 	}
 }
 
+-- Styrofoam takeout container for other restaurants.
+-- Should spawn one piece of prepared food and possibly a side dish.
 BagsAndContainers.TakeoutBox_Styrofoam = {
-	rolls = 4,
+	rolls = 10,
+	onlyOne = true,
 	items = {
 		"Burger", 20,
-		"Burrito", 20,
-		"FriedOnionRings", 20,
-		"Fries", 20,
-		"Hotdog", 20,
-		"Pizza", 20,
+		"Burrito", 10,
+		"ChickenFried", 10,
+		"Hotdog", 10,
+		"Pizza", 10,
 	},
 	junk = {
-		rolls = 1,
+		rolls = 4,
+		onlyOne = true,
 		items = {
-			
+			"FriedOnionRings", 4,
+			"Fries", 20,
 		}
 	}
 }
 
+-- Generic toolbox. No specific trade.
 BagsAndContainers.Toolbox = {
 	rolls = 1,
 	items = {
@@ -2836,66 +3111,75 @@ BagsAndContainers.Toolbox = {
 		"KeyRing", 0.1,
 		"Key1", 0.5,
 		"Key1", 0.5,
-		-- TODO: Sort Me!
+		-- Tools
 		"Awl", 4,
 		"BallPeenHammer", 8,
 		"BlowTorch", 4,
 		"BoltCutters", 4,
-		"BookCarpentry1", 1,
-		"BookElectrician1", 1,
-		"BookMechanic1", 1,
-		"BookMetalWelding1", 1,
 		"Calipers", 2,
 		"CarpentryChisel", 4,
 		"ClubHammer", 4,
-		"CombinationPadlock", 10,
 		"Crowbar", 4,
-		"DuctTape", 8,
-		"Epoxy", 2,
-		"FiberglassTape", 2,
 		"File", 2,
-		"FlashLight_AngleHead", 10,
 		"Funnel", 10,
 		"GardenSaw", 8,
-		"Glasses_SafetyGoggles", 4,
 		"Hammer", 8,
+		"HandAxe", 1,
 		"HandDrill", 4,
-		"HandTorch", 4,
-		"Hat_BuildersRespirator", 2,
-		"Hat_DustMask", 4,
-		"Hat_EarMuff_Protectors", 4,
-		"KnifePocket", 8,
-		"MarkerBlack", 10,
-		"MeasuringTape", 10,
+		"HeadingTool", 1,
+		"KnifePocket", 0.1,
+		"MasonsChisel", 2,
+		"MasonsTrowel", 2,
 		"MetalworkingChisel", 2,
 		"MetalworkingPunch", 2,
-		"Nails", 10,
-		"NailsBox", 4,
-		"NutsBolts", 10,
-		"Padlock", 1,
 		"PipeWrench", 8,
 		"Pliers", 10,
-		"PowerBar", 1,
-		"RespiratorFilters", 2,
-		"RubberHose", 10,
 		"Saw", 8,
 		"Screwdriver", 10,
-		"Screws", 10,
-		"ScrewsBox", 4,
 		"SheetMetalSnips", 4,
 		"SmallFileSet", 2,
 		"SmallPunchSet", 2,
 		"SmallSaw", 2,
-		"SteelWool", 10,
-		"TobaccoChewing", 1,
-		"Twine", 10,
+		"Tongs", 2,
 		"ViseGrips", 4,
-		"WeldingMask", 1,
-		"WeldingRods", 4,
 		"WoodenMallet", 4,
-		"Woodglue", 8,
 		"Wrench", 8,
+		-- Literature (Skill Books)
+		"BookCarpentry1", 1,
+		"BookElectrician1", 1,
+		"BookMechanic1", 1,
+		"BookMetalWelding1", 1,
+		-- Materials
+		"DuctTape", 8,
+		"Epoxy", 2,
+		"FiberglassTape", 2,
+		"Nails", 10,
+		"NailsBox", 4,
+		"NutsBolts", 10,
+		"RubberHose", 10,
+		"Screws", 10,
+		"ScrewsBox", 4,
+		"Twine", 10,
+		"WeldingRods", 4,
 		"Wire", 4,
+		"Woodglue", 8,
+		-- Equipment
+		"FlashLight_AngleHead", 10,
+		"Glasses_SafetyGoggles", 4,
+		"HandTorch", 4,
+		"Hat_BuildersRespirator", 2,
+		"Hat_DustMask", 4,
+		"Hat_EarMuff_Protectors", 4,
+		"RespiratorFilters", 2,
+		"WeldingMask", 1,
+		-- Misc.
+		"CombinationPadlock", 8,
+		"MarkerBlack", 10,
+		"MeasuringTape", 10,
+		"Padlock", 4,
+		"PowerBar", 4,
+		"TobaccoChewing", 1,
+		"Whetstone", 10,
 	},
 	junk = {
 		rolls = 1,
@@ -2903,9 +3187,9 @@ BagsAndContainers.Toolbox = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
+-- Traveling tourist and their supplies.
 BagsAndContainers.Tourist = {
 	rolls = 1,
 	items = {
@@ -2983,37 +3267,34 @@ BagsAndContainers.Tourist = {
 			
 		}
 	},
-	fillRand = 1,
 }
 
+-- Generic wallet, meant to be found in containers.
 BagsAndContainers.Wallet = {
 	rolls = 1,
 	items = {
-		"Bandaid", 1,
-		"Brochure", 2,
-		"BusinessCard", 10,
--- 		"CreditCard", 10, -- commented out, for now, to avoid paradoxical results
--- 		"CreditCard", 2,
--- 		"CreditCard", 2,
-		"Doodle", 0.1,
-		"Flier", 2,
--- 		"IDcard", 100,  -- commented out, for now, to avoid paradoxical results
-		"LetterHandwritten", 2,
-		"Locket", 0.01,
-		"Matches", 1,
+		-- ID/Cards
+		"CreditCard", 10,
+		-- Money
 		"Money", 50,
 		"Money", 20,
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
-		"Note", 10,
-		"ParkingTicket", 2,
-		"Photo", 10,
-		"Photo_Secret", 0.001,
+		-- Misc.
+		"BusinessCard", 10,
+		"ParkingTicket", 4,
 		"Receipt", 10,
 		"ScratchTicket", 0.1,
 		"ScratchTicket_Winner", 0.1,
-		"SpeedingTicket", 2,
+		"SpeedingTicket", 4,
+		-- Mementos
+		"Doodle", 0.1,
+		"LetterHandwritten", 1,
+		"Locket", 0.01,
+		"Photo", 10,
+		"Photo_Secret", 0.001,
+		"Postcard", 2,
 	},
 	junk = {
 		rolls = 1,
@@ -3021,37 +3302,37 @@ BagsAndContainers.Wallet = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
+-- Women's wallet. Mostly found on deceased zombies.
 BagsAndContainers.Wallet_Female = {
 	rolls = 1,
 	items = {
-		"Bandaid", 1,
-		"Brochure", 2,
-		"BusinessCard", 10,
+		-- ID/Cards
 		"CreditCard", 10,
 		"CreditCard", 2,
 		"CreditCard", 2,
-		"Doodle", 0.1,
-		"Flier", 2,
 		"IDcard_Female", 50,
-		"LetterHandwritten", 2,
-		"Locket", 0.01,
-		"Matches", 1,
+		-- Money
 		"Money", 50,
 		"Money", 20,
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
-		"Note", 10,
-		"ParkingTicket", 2,
-		"Photo", 10,
-		"Photo_Secret", 0.001,
+		-- Misc.
+		"BusinessCard", 10,
+		"ParkingTicket", 4,
 		"Receipt", 10,
 		"ScratchTicket", 0.1,
 		"ScratchTicket_Winner", 0.1,
-		"SpeedingTicket", 2,
+		"SpeedingTicket", 4,
+		-- Mementos
+		"Doodle", 0.1,
+		"LetterHandwritten", 1,
+		"Locket", 0.01,
+		"Photo", 10,
+		"Photo_Secret", 0.001,
+		"Postcard", 2,
 	},
 	junk = {
 		rolls = 1,
@@ -3059,42 +3340,41 @@ BagsAndContainers.Wallet_Female = {
 			
 		}
 	},
-	fillRand = 0,
 }
 
+-- Men's wallet. Same as above.
 BagsAndContainers.Wallet_Male = {
 	rolls = 1,
 	items = {
-		"Bandaid", 1,
-		"Brochure", 2,
-		"BusinessCard", 10,
+		-- ID/Cards
 		"CreditCard", 10,
 		"CreditCard", 2,
 		"CreditCard", 2,
-		"Doodle", 0.1,
-		"Flier", 2,
 		"IDcard_Male", 50,
-		"LetterHandwritten", 2,
-		"Locket", 0.01,
-		"Matches", 1,
+		-- Money
 		"Money", 50,
 		"Money", 20,
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
-		"Note", 10,
-		"ParkingTicket", 2,
-		"Photo", 10,
-		"Photo_Secret", 0.001,
+		-- Misc.
+		"BusinessCard", 10,
+		"ParkingTicket", 4,
 		"Receipt", 10,
 		"ScratchTicket", 0.1,
 		"ScratchTicket_Winner", 0.1,
-		"SpeedingTicket", 2,
+		"SpeedingTicket", 4,
+		-- Mementos
+		"Doodle", 0.1,
+		"LetterHandwritten", 1,
+		"Locket", 0.01,
+		"Photo", 10,
+		"Photo_Secret", 0.001,
+		"Postcard", 2,
 	},
 	junk = {
 		rolls = 1,
 		items = {
 		}
 	},
-	fillRand = 0,
 }

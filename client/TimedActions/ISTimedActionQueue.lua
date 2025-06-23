@@ -58,13 +58,37 @@ function ISTimedActionQueue:clearQueue()
 end
 
 function ISTimedActionQueue:onCompleted(action)
+    -- RJ: this is here to relaunch any timed action after another one was canceled (currently only used for ISOpenCloseDoor.lua)
+    local addedBack = false;
+    if self.current and self.character and self.current.retriggerLastAction and self.character:getTimedActionToRetrigger() then
+        self.character:getTimedActionToRetrigger():getTable().relaunchWithDelta = true; -- when we canceled the previous action, we want to restart it from were we left off (so if out eating action was 50% done, it'll be restarted at 50%)
+        self.character:getTimedActionToRetrigger():getTable().fromRelaunch = true; -- this is added to not consume again some items, like in ISEatFoodAction to not use the lighter again.
+        self:addToQueue(self.character:getTimedActionToRetrigger():getTable())
+        addedBack = true;
+    end
+    -- Some isValidStart are a bit weird, like the eating will only check for "eat moodle level", meaning smoking will be canceled when we retrigger it, so i want to avoid checking this if we're retriggering
+    local checkIsValid = true;
+    if self.current and self.character and self.current.retriggerLastAction then
+        self.character:setTimedActionToRetrigger(nil);
+        if addedBack then
+            checkIsValid = false;
+        end
+    end
 	self:removeFromQueue(action)
 
 	self.current = self.queue[1]
 
-	if self.current  then
-        if self.current:isValidStart() then
+	if self.current then
+        if not checkIsValid or self.current:isValidStart() then
+            local newDelta = 0;
+            if self.current.action then
+                newDelta = self.current:getJobDelta();
+            end
             self.current:begin()
+            if self.current and self.current.relaunchWithDelta and self.current.action then
+
+                self.current:setJobDelta(newDelta)
+            end
         else
             print('ISTimedActionQueue:onCompleted: bugged action, cleared queue ', self.current.Type or "???")
             self:resetQueue()
@@ -145,6 +169,22 @@ ISTimedActionQueue.add = function(action)
         action.stopOnAim = false;
     end
 
+    ---- to cancel eating actions when performing other actions
+    --local eatingNonConflictAction = action.isEating or action.clothingAction;
+    --local oldEating = false;
+    --local actualQueue = queue.queue
+    --if not eatingNonConflictAction then
+    --    for i,v in ipairs(actualQueue) do
+    --        if v.isEating then
+    --            oldEating = true
+    --            CancelAction(queue.character:getPlayerNum())
+    --            break
+    --        end
+    --    end
+    --end
+
+--     getPlayer():Say("oldEating " .. tostring(oldEating))
+
 	-- This is to handle an action queueing other actions inside it's perform() method.
 	if queue:isCurrentActionAddingOtherActions() then
 		local current = queue.queue[1];
@@ -180,6 +220,7 @@ end
 
 ISTimedActionQueue.addGetUpAndThen = function(character, action)
 	local action1 = ISWaitWhileGettingUp:new(character)
+	action1.retriggerLastAction = action.retriggerLastAction
 	action1:setOnComplete(ISTimedActionQueue.add, action)
 	ISTimedActionQueue.add(action1)
 end

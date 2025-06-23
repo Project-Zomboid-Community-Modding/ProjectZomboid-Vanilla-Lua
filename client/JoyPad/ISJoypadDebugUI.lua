@@ -48,6 +48,6 @@ function ISJoypadDebugUI:addLine(x1, x2, y, label, value)
 end
 
 function ISJoypadDebugUI:new()
-	o = ISUIElement.new(self, 0, 0, 1, 1)
+	local o = ISUIElement.new(self, 0, 0, 1, 1)
 	return o
 end

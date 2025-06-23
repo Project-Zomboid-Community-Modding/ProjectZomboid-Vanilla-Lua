@@ -23,13 +23,16 @@ function ISGetAnimalBones:start()
 	self:setActionAnim("Loot")
 	self.character:SetVariable("LootPosition", "Low")
 	self.character:reportEvent("EventLootItem")
+	self.sound = self.character:playSound("ButcheringGatherBones")
 end
 
 function ISGetAnimalBones:stop()
+	self:stopSound();
     ISBaseTimedAction.stop(self);
 end
 
 function ISGetAnimalBones:perform()
+	self:stopSound();
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);
 end
@@ -49,7 +52,7 @@ function ISGetAnimalBones:complete()
 
 	ButcheringUtil.butcherAnimalFromGround(self.body, self.character);
 
-	sendButcherAnimal(self.body, self.character)
+	--sendButcherAnimal(self.body, self.character)
 
 	return true
 end
@@ -59,6 +62,12 @@ function ISGetAnimalBones:getDuration()
 		return 1
 	end
 	return 150
+end
+
+function ISGetAnimalBones:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:getEmitter():stopOrTriggerSound(self.sound);
+	end
 end
 
 function ISGetAnimalBones:new(character, body)

@@ -13,7 +13,7 @@ function ISMedicalCheckAction.getHealthWindowForPlayer(playerObj)
 end
 
 function ISMedicalCheckAction:isValid()
-	return (isMultiplayer() and self.character:getRole():haveCapability(Capability.CanMedicalCheat)) or
+	return (isMultiplayer() and self.character:getRole():hasCapability(Capability.CanMedicalCheat)) or
             (self.otherPlayerX == self.otherPlayer:getX() and self.otherPlayerY == self.otherPlayer:getY()) or
             (not self.character:isDriving() and ISHealthPanel.IsCharactersInSameCar(self.character, self.otherPlayer));
 end

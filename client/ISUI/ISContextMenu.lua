@@ -59,6 +59,7 @@ end
 function ISContextMenu:onMouseMoveOutside(dx, dy)
 	if self.player == 0 then
 		self.mouseOut = true;
+		self:checkHighlightedOption(nil)
 		self:hideToolTip()
 	end
 end
@@ -87,6 +88,7 @@ function ISContextMenu:onMouseUp(x, y)
 		if option ~= nil and option.onSelect ~= nil and not option.notAvailable and not option.isDisabled then
             ISContextMenu.globalPlayerContext = self.player;
 			self:closeAll()
+			-- FIXME: When option.onSelect is a Java method, it will be called with all param1,...,param10 arguments.
 			option.onSelect(option.target, option.param1, option.param2, option.param3, option.param4, option.param5, option.param6, option.param7, option.param8, option.param9, option.param10);
 		end
 		if option ~= nil and option.subOption ~= nil then
@@ -135,6 +137,7 @@ function ISContextMenu:onJoypadDirUp()
     if self.mouseOver <= 0 then
         self.mouseOver = self.numOptions - 1;
     end
+    self:checkHighlightedOption(nil)
     self:hideToolTip()
     self.mouseOut = false
     self:ensureVisible()
@@ -150,6 +153,7 @@ function ISContextMenu:onJoypadDirDown()
     if self.mouseOver >= self.numOptions then
         self.mouseOver = 1;
     end
+    self:checkHighlightedOption(nil)
     self:hideToolTip()
     self.mouseOut = false
     self:ensureVisible()
@@ -171,6 +175,7 @@ function ISContextMenu:onJoypadDirLeft()
 			self.subMenu = nil
 		end
 		self.mouseOver = nil
+		self:checkHighlightedOption(nil)
 		self:hideToolTip()
 		setJoypadFocus(self.player, self.parent)
 	end
@@ -179,6 +184,7 @@ end
 function ISContextMenu:onJoypadDirRight()
 	local option = self.options[self.mouseOver]
 	if option ~= nil and option.onSelect == nil and option.subOption ~= nil then
+		self:checkHighlightedOption(nil)
 		self:hideToolTip()
 		local subMenu = self:getSubMenu(option.subOption)
 		if self:isOptionSingleMenu() then
@@ -201,6 +207,7 @@ function ISContextMenu:hideSelf()
     self:setVisible(false)
     self.visibleCheck = false
     self.forceVisible = false
+    self:checkHighlightedOption(nil)
     self:hideToolTip()
 end
 
@@ -236,6 +243,22 @@ function ISContextMenu:hideToolTip()
 		self.toolTip:setVisible(false)
 		self.toolTip = nil
 	end
+end
+
+function ISContextMenu:checkHighlightedOption(option)
+	if self.highlightedOption ~= option then
+		if self.highlightedOption ~= nil then
+			self:callOptionHighlightFunction(self.highlightedOption, false)
+		end
+		self.highlightedOption = option
+		self:callOptionHighlightFunction(self.highlightedOption, true)
+	end
+end
+
+function ISContextMenu:callOptionHighlightFunction(option, isHighlighted)
+    if option == nil then return end
+    if type(option.onHighlight) ~= "function" then return end
+    option:onHighlight(self, isHighlighted, unpack(option.onHighlightParams))
 end
 
 function ISContextMenu:onJoypadDown(button)
@@ -365,6 +388,7 @@ function ISContextMenu:render()
 	local sizeMap = {};
 	local offTop,offBottom = false,false
 	local showTooltip = false
+	local highlightedOption = nil
 
 	for i,k in ipairs(self.options) do
         if k.disable then return; end
@@ -379,11 +403,7 @@ function ISContextMenu:render()
 			if k.isDisabled then
 				self:drawRect(0, y, self.width, self.itemHgt, 0.1, 0.05, 0.05, 0.05);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
-				if k.color ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
-				elseif k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
-				end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
 				if k.subOption ~= nil then
 					self:drawTextRight(">", self.width - 4, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
@@ -391,9 +411,7 @@ function ISContextMenu:render()
 			elseif k.notAvailable then
 				self:drawRect(0, y, self.width, self.itemHgt, 0.1, 0.05, 0.05, 0.05);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
-				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
-				end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
                 if k.subOption ~= nil then
                     self:drawTextRight(">", self.width - 4, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
@@ -401,11 +419,7 @@ function ISContextMenu:render()
 			else
 				self:drawRect(0, y, self.width, self.itemHgt, 0.8, 0.5, 0.5, 0.5);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
-				if k.color ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
-				elseif k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1)
-				end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 1, 1, 1, self.font);
 			end
 --~ 			if k.textDisplay then
@@ -422,6 +436,9 @@ function ISContextMenu:render()
 			local isMouseOut = self:isMouseOut()
 			if JoypadState.players[self.player+1] and not self.joyfocus then
 				isMouseOut = true
+			end
+			if not isMouseOut then
+				highlightedOption = k
 			end
 			if k.toolTip and not isMouseOut then
 				self:showTooltip(k)
@@ -449,20 +466,14 @@ function ISContextMenu:render()
 			self.currentOptionRect = { x = self.x, y = self.y + y + self:getYScroll(), width = 100, height = self.itemHgt }
 		else
 			if k.isDisabled then
-				if k.color ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
-				elseif k.iconTexture ~= nil then
-				self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
-				end
+                self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
 
 				if k.subOption ~= nil then
 				self:drawTextRight(">", self.width - 4, y+textDY, 0.5, 0.5, 0.5, 0.85, self.font);
 				end
 			elseif k.notAvailable then
-				if k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
-				end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
 
                 if k.subOption ~= nil then
@@ -491,11 +502,7 @@ function ISContextMenu:render()
 
                     self:drawRect(0, y, self.width, self.itemHgt, self.blinkAlpha, 1, 1, 1);
                 end
-				if k.color ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1.0, k.color.r, k.color.g, k.color.b)
-				elseif k.iconTexture ~= nil then
-					self:drawTextureScaledAspect(k.iconTexture, iconShiftX, y + iconShiftY, iconSize, iconSize, 1, 1, 1, 1)
-				end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.8, 0.8, 0.9, self.font);
 
 				if k.isDefaultOption then
@@ -560,6 +567,8 @@ function ISContextMenu:render()
 			subMenu:setX(self.x + ww + 1)
 		end
 	end
+
+	self:checkHighlightedOption(highlightedOption)
 
 	if not showTooltip and self.player == 0 then
 		self:hideToolTip()
@@ -672,6 +681,7 @@ end
 
 function ISContextMenu:setSlideGoalX(startX, finalX)
 	self:setX(finalX)
+	self.slideGoalX = nil
 	if not self:isOptionSingleMenu() then return end
 	if not JoypadState.players[self.player+1] then return end
 	self:setX(startX)
@@ -681,6 +691,7 @@ end
 
 function ISContextMenu:setSlideGoalY(startY, finalY)
 	self:setY(finalY)
+	self.slideGoalY = nil
 	if not self:isOptionSingleMenu() then return end
 	if JoypadState.players[self.player+1] then return end
 	self:setY(startY)
@@ -874,6 +885,9 @@ function ISContextMenu:addDebugOption(name, target, onSelect, param1, param2, pa
 	option.iconTexture = getTexture("media/textures/Item_Insect_Aphid.png");
 -- 	option.iconTexture = getTexture("media/ui/BugIcon.png");
 	option.color = nil;
+	if getDebugOptions():getBoolean("UI.HideDebugContextMenuOptions") then
+		self:removeLastOption()
+	end
 	return option;
 end
 
@@ -973,10 +987,15 @@ function ISContextMenu:insertOptionBefore(nextOptionName, name, target, onSelect
 end
 
 function ISContextMenu:removeLastOption()
-    table.insert(self.optionPool, self.options[self.numOptions - 1])
-    self.options[self.numOptions - 1] =  nil;
-    self.numOptions = self.numOptions -1;
+	table.insert(self.optionPool, self.options[self.numOptions - 1])
+	self.options[self.numOptions - 1] =  nil;
+	self.numOptions = self.numOptions -1;
+	if self.requestX ~= nil and self.requestY ~= nil then -- only set for top-level context menus
+		self:setSlideGoalX(self.requestX + 20, self.requestX)
+		self:setSlideGoalY(self.requestY - SLIDEY, self.requestY)
+	end
 	self:calcHeight()
+	self:setWidth(self:calcWidth())
 end
 
 function ISContextMenu:removeOptionByName(optName)
@@ -1018,6 +1037,16 @@ function ISContextMenu:onGetUpAndThen(onSelect, p1, p2, p3, p4, p5, p6, p7, p8, 
 	local action = ISWaitWhileGettingUp:new(playerObj)
 	action:setOnComplete(onSelect, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
 	ISTimedActionQueue.add(action)
+end
+
+function ISContextMenu:renderOptionTextureOrColor(option, x, y, w, h)
+	if option.color ~= nil then
+		self:drawTextureScaledAspect(option.iconTexture, x, y, w, h, 1.0, option.color.r, option.color.g, option.color.b)
+	elseif option.iconTexture ~= nil then
+		self:drawTextureScaledAspect(option.iconTexture, x, y, w, h, 1.0, 1.0, 1.0, 1.0)
+	elseif option.itemForTexture ~= nil then
+		ISInventoryItem.renderItemIcon(self, option.itemForTexture, x, y, 1.0, w, h)
+	end
 end
 
 function ISContextMenu:getMenuOptionNames()
@@ -1132,6 +1161,8 @@ ISContextMenu.get = function(player, x, y)
     context:setFontFromOption()
 	context.forceVisible = true;
     context.parent = nil;
+    context.requestX = x
+    context.requestY = y
     context:setSlideGoalX(x + 20, x)
     context:setSlideGoalY(y - SLIDEY, y)
     context:bringToTop();

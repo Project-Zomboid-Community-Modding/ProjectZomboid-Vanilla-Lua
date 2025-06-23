@@ -49,8 +49,8 @@ function StatisticChartMemory:createChildren()
     StatisticChart.createChildren(self);
 
 	local labelWidth = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_GameStats_Used")..": ")
-	x = self.historyM1:getX()
-	y = self.historyM1:getY()+self.historyM1:getHeight()
+	local x = self.historyM1:getX()
+	local y = self.historyM1:getY()+self.historyM1:getHeight()
     y = self:addLabelValue(x, y, labelWidth, "value","used",getText("IGUI_GameStats_Used")..":",0);
     self:setHeight(y+UI_BORDER_SPACING)
 end

@@ -23,6 +23,7 @@ function ISCraftInventoryPanel:createChildren()
     ISPanel.createChildren(self);
 
     self.colGood = safeColorToTable(self.xuiSkin:color("C_ValidGreen"));
+    self.colYellow = safeColorToTable(self.xuiSkin:color("C_UsedInputYellow"));
     self.colBad = safeColorToTable(self.xuiSkin:color("C_InvalidRed"));
 
     self.itemListBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISScrollingListBox, 0, 0, 100, 44);
@@ -58,10 +59,12 @@ function ISCraftInventoryPanel:createChildren()
                 if not _self.tooltipItem then
                     _self.tooltipItem = ISToolTipInv:new(data.inventoryItem);
                     _self.tooltipItem:addToUIManager();
+                    _self.tooltipItem.owner = self
                 end
                 if not _self.tooltipItemUnavail then
                     _self.tooltipItemUnavail = ISToolTip:new();
                     _self.tooltipItemUnavail:addToUIManager();
+                    _self.tooltipItemUnavail.owner = self
                 end
 
                 if data.inventoryItem then
@@ -106,8 +109,9 @@ function ISCraftInventoryPanel:createChildren()
     self.itemListBox.logic = self.logic;
     --self.itemListBox.recipeData = self.recipeData;
     self.itemListBox.colGood = self.colGood;
+    self.itemListBox.colYellow = self.colYellow;
     self.itemListBox.colBad = self.colBad;
-    self.itemListBox.font = UIFont.Medium;
+    self.itemListBox.font = UIFont.Small;
     self.itemListBox.doDrawItem = ISCraftInventoryPanel.drawListItem;
     self.itemListBox.target = self;
     self.itemListBox.onmousedown = ISCraftInventoryPanel.onListSelected;
@@ -162,6 +166,11 @@ function ISCraftInventoryPanel:selectFirst()
 end
 
 function ISCraftInventoryPanel:populate()
+    local inputFilterData = self.logic:getRecipeData():getDataForInputScript(self.logic:getManualSelectInputScriptFilter());
+    if not inputFilterData then
+        return;
+    end
+    
     local selectedInventoryItem = nil;
     if self.itemListBox.items and self.itemListBox.selected and self.itemListBox.selected > 0 then
         selectedInventoryItem = self.itemListBox.items[self.itemListBox.selected].item.inventoryItem;
@@ -179,73 +188,119 @@ function ISCraftInventoryPanel:populate()
     --    return;
     --end
 
-    local item;
+    local item = nil;
+    local availableItems = {};
+    local usedItems = {};
 
-    local addedToolsHeader = false;
-    local addedItemsHeader = false;
     for i=0,nodes:size()-1 do
         local node = nodes:get(i);
-        
-        if node:isTool() then
-            if not addedToolsHeader then
-                local header = self:createListHeader("Tools");
-                self.itemListBox:addItem(header.name, header);
-                addedToolsHeader = true;
-            end
-            --add tool element
-            item = self:createListItemNode(node);
-            self.itemListBox:addItem(item.name, item);
-
-            if node:isExpanded() then
-                for k=0,node:getItems():size()-1 do
-                    local inventoryItem = node:getItems():get(k);
-                    item = self:createListItemEntree(node, inventoryItem, k);
-                    self.itemListBox:addItem(item.name, item);
+        for j=0,node:getItems():size()-1 do
+            local inventoryItem = node:getItems():get(j);
+            local itemIsAssigned = self.logic:getRecipeData():containsInputItem(inventoryItem);
+            local itemIsAssignedToThisInput = self.logic:getRecipeData():containsInputItem(inputFilterData, inventoryItem);
+            if itemIsAssigned then
+                if itemIsAssignedToThisInput then
+                    table.insert(availableItems, inventoryItem);
+                else
+                    table.insert(usedItems, inventoryItem);
                 end
+            else
+                table.insert(availableItems, inventoryItem);
             end
         end
     end
+    
+    local header = self:createListHeader(getText("IGUI_CraftUI_AvailableItems"));
+    self.itemListBox:addItem(header.name, header);
+    local addedItemNames = {}
+    local itemHeader = nil;
+    
     for i=0,nodes:size()-1 do
         local node = nodes:get(i);
+        if not luautils.tableContains(addedItemNames, node:getScriptItem():getDisplayName()) then
+            for _,inventoryItem in ipairs(availableItems) do
+                if node:getScriptItem():getDisplayName() == inventoryItem:getScriptItem():getDisplayName() then
+                    if not item then
+                        --add items element
+                        item = self:createListItemNode(node, false);
+                        itemHeader = item;
+                        self.itemListBox:addItem(item.name, item);
+                        table.insert(addedItemNames, node:getScriptItem():getDisplayName())
+                    end
 
-        if not node:isTool() then
-            if not addedItemsHeader then
-                local header = self:createListHeader("Available Items");
-                self.itemListBox:addItem(header.name, header);
-                addedItemsHeader = true;
-            end
-            --add items element
-            item = self:createListItemNode(node);
-            self.itemListBox:addItem(item.name, item);
-
-            if node:isExpanded() then
-                for k=0,node:getItems():size()-1 do
-                    local inventoryItem = node:getItems():get(k);
-                    item = self:createListItemEntree(node, inventoryItem, k);
-                    local listItem = self.itemListBox:addItem(item.name, item);
-                    
-                    -- restore selection
-                    if inventoryItem == selectedInventoryItem then
-                        self.itemListBox.selected = listItem.itemIndex;                        
+                    itemHeader.count = itemHeader.count + 1;
+                    if node:isExpandedAvailable() then
+                        item = self:createListItemEntry(node, inventoryItem, node:getItems():indexOf(inventoryItem), false);
+                        local listItem = self.itemListBox:addItem(item.name, item);
+                        
+                        -- restore selection
+                        if inventoryItem == selectedInventoryItem then
+                            self.itemListBox.selected = listItem.itemIndex;
+                        end
                     end
                 end
             end
         end
+
+        if itemHeader then
+            itemHeader.text = node:getScriptItem():getDisplayName().." ("..tostring(itemHeader.count)..")";
+        end
+        
+        item = nil;
+        itemHeader = nil;
     end
 
-    if (not addedToolsHeader) and (not addedItemsHeader) then
-        local header = self:createListHeader("Available Items");
+    if #usedItems > 0 then
+        addedItemNames = {}
+        local header = self:createListHeader(getText("IGUI_CraftUI_AlreadyAssigned"));
         self.itemListBox:addItem(header.name, header);
+
+        for i=0,nodes:size()-1 do
+            local node = nodes:get(i);
+            if not luautils.tableContains(addedItemNames, node:getScriptItem():getDisplayName()) then
+                for _,inventoryItem in ipairs(usedItems) do
+                    if node:getScriptItem():getDisplayName() == inventoryItem:getScriptItem():getDisplayName() then
+                        if not item then
+                            --add items element
+                            item = self:createListItemNode(node, true);
+                            itemHeader = item;
+                            self.itemListBox:addItem(item.name, item);
+                            table.insert(addedItemNames, node:getScriptItem():getDisplayName())
+                        end
+
+                        itemHeader.count = itemHeader.count + 1;
+                        if node:isExpandedUsed() then
+                            item = self:createListItemEntry(node, inventoryItem, node:getItems():indexOf(inventoryItem), true);
+                            local listItem = self.itemListBox:addItem(item.name, item);
+
+                            -- restore selection
+                            if inventoryItem == selectedInventoryItem then
+                                self.itemListBox.selected = listItem.itemIndex;
+                            end
+                        end
+                    end
+                end
+            end
+
+            if itemHeader then
+                itemHeader.text = node:getScriptItem():getDisplayName().." ("..tostring(itemHeader.count)..")";
+            end
+
+            item = nil;
+            itemHeader = nil;
+        end
     end
     
     -- unavailables
     if allInputItems then
-        local header = self:createListHeader("Possible Items", true);
+        local header = self:createListHeader(getText("IGUI_CraftUI_PossibleItems"), true);
         header.isUnavailableItemsHeader = true;
         self.itemListBox:addItem(header.name, header);
 
-        if self.unavailablesExpanded or ((not addedToolsHeader) and (not addedItemsHeader)) then
+        if self.unavailablesExpanded then
+            local addedPairs = {};
             local index = 0;
+            local inputItems = {}
             for i = 0, allInputItems:size()-1 do
                 local inputItem = allInputItems:get(i);
                 local found = false;
@@ -254,18 +309,42 @@ function ISCraftInventoryPanel:populate()
                         found = true;
                     end
                 end
-
+                
+                -- also check against already added items
                 if not found then
-                    item = self:createUnavailableListItemEntree(inputItem, index);
-                    self.itemListBox:addItem(item.name, item);
-
-                    index = index + 1;
+                    if addedPairs[inputItem:getDisplayName()] ~= nil then
+                        for _,iconTexture in ipairs(addedPairs[inputItem:getDisplayName()]) do
+                            local inputItemTextureName = inputItem:getNormalTexture():getName();
+                            if iconTexture == inputItemTextureName then
+                                found = true;
+                                break;
+                            end
+                        end
+                    end
                 end
+                
+                if not found then
+                    table.insert(inputItems, inputItem)
+                    
+                    if addedPairs[inputItem:getDisplayName()] == nil then
+                        addedPairs[inputItem:getDisplayName()] = {};
+                    end
+                    table.insert(addedPairs[inputItem:getDisplayName()], inputItem:getNormalTexture():getName());
+                end
+            end
+            table.sort(inputItems, function(a,b) return not string.sort(a:getDisplayName(), b:getDisplayName()) end)
+            for index,inputItem in ipairs(inputItems) do
+                item = self:createUnavailableListItemEntry(inputItem, index)
+                self.itemListBox:addItem(item.name, item)
             end
         end
     end
 
     self.itemListBox:updateScrollbars();
+
+    if self.itemListBox and (not self.itemListBox.selected or self.itemListBox.selected < 1) then
+        self:selectFirst();
+    end
 end
 
 function ISCraftInventoryPanel:createListHeader(_text, hasExpandArrow)
@@ -276,12 +355,12 @@ function ISCraftInventoryPanel:createListHeader(_text, hasExpandArrow)
     item.name = _text;
     item.text = _text;
     item.hasExpandArrow = hasExpandArrow;
-    item.textWidth = getTextManager():MeasureStringX(UIFont.Medium, item.text);
+    item.textWidth = getTextManager():MeasureStringX(UIFont.Small, item.text);
 
     return item;
 end
 
-function ISCraftInventoryPanel:createListItemNode(_node) -- _node:InputItemNode
+function ISCraftInventoryPanel:createListItemNode(_node, _isUsedItems) -- _node:InputItemNode
     local item = {};
 
     item.isHeader = false;
@@ -290,12 +369,14 @@ function ISCraftInventoryPanel:createListItemNode(_node) -- _node:InputItemNode
     item.script = _node:getScriptItem();
     item.name = _node:getScriptItem():getScriptObjectFullType();
     item.text = _node:getScriptItem():getDisplayName().." ("..tostring(_node:getItems():size())..")";
-    item.textWidth = getTextManager():MeasureStringX(UIFont.Medium, item.text);
-
+    item.count = 0;
+    item.textWidth = getTextManager():MeasureStringX(UIFont.Small, item.text);
+    item.isUsedItems = _isUsedItems;
+    
     return item;
 end
 
-function ISCraftInventoryPanel:createListItemEntree(_node, _inventoryItem, _index)
+function ISCraftInventoryPanel:createListItemEntry(_node, _inventoryItem, _index, _isUsedItems)
     local item = {};
 
     item.isHeader = false;
@@ -306,12 +387,13 @@ function ISCraftInventoryPanel:createListItemEntree(_node, _inventoryItem, _inde
     item.index = _index;
     item.name = tostring(_index)..":".._node:getScriptItem():getScriptObjectFullType();
     item.text = _inventoryItem:getName(); --_node:getScriptItem():getDisplayName();
-    item.textWidth = getTextManager():MeasureStringX(UIFont.Medium, item.text);
+    item.textWidth = getTextManager():MeasureStringX(UIFont.Small, item.text);
+    item.isUsedItems = _isUsedItems;
 
     return item;
 end
 
-function ISCraftInventoryPanel:createUnavailableListItemEntree(_item, _index)
+function ISCraftInventoryPanel:createUnavailableListItemEntry(_item, _index)
     local item = {};
 
     item.isHeader = false;
@@ -322,7 +404,7 @@ function ISCraftInventoryPanel:createUnavailableListItemEntree(_item, _index)
     item.index = _index;
     item.name = tostring(_index)..":".._item:getScriptObjectFullType();
     item.text = _item:getDisplayName();
-    item.textWidth = getTextManager():MeasureStringX(UIFont.Medium, item.text);
+    item.textWidth = getTextManager():MeasureStringX(UIFont.Small, item.text);
     item.isUnavailable = true;
 
     return item;
@@ -348,7 +430,7 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
 
         dx = (width/2)-(data.textWidth/2);
-        dy = y + ((self.itemheight/2)-(MEDIUM_FONT_HGT/2));
+        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
 
         if data.hasExpandArrow then
             --dx = dx - 36;
@@ -358,8 +440,9 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
                 iconTexture = getTexture("media/ui/Entity/Icon_ExpandArrow_Open_48x48.png");
             end
 
-            self:drawTextureScaledAspect(iconTexture, 16, dy+4, 16, 16, 1, 1, 1, 1);
-            --dx = dx + 36;
+            local arrowY = y + ((self.itemheight/2) - 8);
+            self:drawTextureScaledAspect(iconTexture, 5, arrowY, 16, 16, 1, 1, 1, 1);
+            dx = math.max(26, dx);
         end
 
         self:drawText( data.text, dx, dy, 1, 1, 1, 1.0, self.font);
@@ -367,16 +450,16 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.1, 1.0, 1.0, 1.0);
 
         dx = 10;
-        if data.script then
-            ISInventoryItem.renderScriptItemIcon(self, data.script, dx, y+2, 1.0, self.itemheight-4, self.itemheight-4);
-        end
-        dx = dx + self.itemheight + 16;
-        dy = y + ((self.itemheight/2)-(MEDIUM_FONT_HGT/2));
+        --if data.script then
+        --    ISInventoryItem.renderScriptItemIcon(self, data.script, dx, y+2, 1.0, self.itemheight-4, self.itemheight-4);
+        --end
+        --dx = dx + self.itemheight + 16;
+        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
 
         self:drawText( data.text, dx, dy, 1, 1, 1, 1.0, self.font);
     else
         if data.inventoryItem and self.logic:getRecipeData():containsInputItem(data.inventoryItem) then
-            local c = self.colGood;
+            local c = data.isUsedItems and self.colYellow or self.colGood;
             self:drawRect(2, (y), width, self.itemheight - 1, 0.5, c.r, c.g, c.b);
         end
         dx = 10;
@@ -386,7 +469,7 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
             ISInventoryItem.renderScriptItemIcon(self, data.script, dx, y+2, 0.5, self.itemheight-4, self.itemheight-4);
         end
         dx = dx + self.itemheight + 16;
-        dy = y + ((self.itemheight/2)-(MEDIUM_FONT_HGT/2));
+        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
 
         if data.isUnavailable then
             self:drawText( data.text, dx, dy, 1, 1, 1, 0.5, self.font);
@@ -418,15 +501,24 @@ function ISCraftInventoryPanel:onListSelected(_item)
             end
             --currently do nothing
         elseif self.selectedItem.isNode then
-            self.selectedItem.node:toggleExpanded();
-            --self.selectedItem.node.expanded = not self.selectedItem.node.expanded;
+            
+            --if self.selectedItem.isUsedItems then -- for now we are opening up the used and avail drawers at the same time as it seems to be more useful - spurcival
+                self.selectedItem.node:toggleExpandedUsed()
+            --else
+                self.selectedItem.node:toggleExpandedAvailable()
+            --end
+            
             self.isDirty = true;
-            --self:populate();
         else
             if _item.inventoryItem then
                 if self.logic:getRecipeData():containsInputItem(_item.inventoryItem) then
                     --remove the item - called on logic instead of cacheddata to trigger helper events - spurcival
                     self.logic:removeInputItem(_item.inventoryItem);
+                    if _item.isUsedItems then
+                        -- try to steal item
+                        self.logic:offerInputItem(_item.inventoryItem);
+                        self.isDirty = true;
+                    end
                 else
                     --try and add the item to a input - called on logic instead of cacheddata to trigger helper events - spurcival
                     self.logic:offerInputItem(_item.inventoryItem);
@@ -445,9 +537,6 @@ function ISCraftInventoryPanel:onRebuildItemNodes(_inputItems)
     --todo check if have to remove all previous added InputItems from recipeData
 
     self:populate();
-    if self.itemListBox and (not self.itemListBox.selected or self.itemListBox.selected < 1) then
-    self:selectFirst();
-end
 end
 
 function ISCraftInventoryPanel:updateContainers(_containers)

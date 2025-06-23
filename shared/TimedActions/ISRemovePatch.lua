@@ -37,24 +37,22 @@ function ISRemovePatch:stop()
 end
 
 function ISRemovePatch:complete()
-
-	self.clothing:removePatch(self.part);
-
 	-- chance to get the patch back
 	if ZombRand(100) < ISRemovePatch.chanceToGetPatchBack(self.character) then
-		local patch = self.clothing:getPatchType(self.part);
-		local fabricType = ClothingPatchFabricType.fromIndex(patch:getFabricType());
+		local fabricType = ClothingPatchFabricType.fromIndex(self.fabricType);
 		local item = instanceItem(ClothingRecipesDefinitions["FabricType"][fabricType:getType()].material);
 		self.character:getInventory():addItem(item);
 		sendAddItemToContainer(self.character:getInventory(), item);
 		-- doubled because the xp gains from ripping clothing was nerfed
-		addXp(self.character, Perks.Tailoring, 6);
+-- 		addXp(self.character, Perks.Tailoring, 6);
+		-- halved based on feedback about it being efficient for grinding xp
+		addXp(self.character, Perks.Tailoring, 2);
 	end
 
 	-- doubled because the xp gains from ripping clothing was nerfed
 	-- removed random exp because people don't understand how it averages out over time and think it's a bug or bad
-	addXp(self.character, Perks.Tailoring, ZombRand(2));
 -- 	addXp(self.character, Perks.Tailoring, ZombRand(1, 3));
+
 	syncVisuals(self.character);
 	return true;
 end
@@ -64,6 +62,7 @@ function ISRemovePatch:perform()
 		self.character:stopOrTriggerSound(self.sound)
 	end
 	ISGarmentUI.setBodyPartActionForPlayer(self.character, self.part, nil, nil, nil)
+	self.fabricType = self.clothing:getPatchType(self.part):getFabricType()
     self.clothing:removePatch(self.part);
 	self.character:resetModel();
 	triggerEvent("OnClothingUpdated", self.character)
@@ -93,6 +92,6 @@ function ISRemovePatch:new(character, clothing, part, needle)
 	o.part = part;
 	o.needle = needle;
 	o.maxTime = o:getDuration();
-
+	o.fabricType = nil; -- set during perform
 	return o;
 end

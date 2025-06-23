@@ -59,8 +59,8 @@ function StatisticChartPackets:createChildren()
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StatisticChart_MaxPacketsBytes")..":  "),
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StatisticChart_MaxPacketsBPS")..":  ")
 	)
-	x = self.historyM1:getX()
-	y = self.historyM1:getY()+self.historyM1:getHeight()
+	local x = self.historyM1:getX()
+	local y = self.historyM1:getY()+self.historyM1:getHeight()
     y = self:addLabelValue(x, y, labelWidth, "value","countIncomePackets",getText("IGUI_StatisticChart_PacketsInCount")..": ",0);
 	y = self:addLabelValue(x, y, labelWidth, "value","countIncomeBytes",getText("IGUI_StatisticChart_PacketsInBytes")..": ",0);
 	y = self:addLabelValue(x, y, labelWidth, "value","maxIncomeBytesPerSecound",getText("IGUI_StatisticChart_PacketsInBPS")..": ",0);

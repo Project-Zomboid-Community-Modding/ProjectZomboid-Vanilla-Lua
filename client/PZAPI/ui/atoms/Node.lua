@@ -113,5 +113,11 @@ UI.Node = UI._mt.__call{
         if self.javaObj then
             self.javaObj:setAlwaysBack(value)
         end
+    end,
+    centerOnScreen = function(self, playerNum)
+        local x = getPlayerScreenLeft(playerNum) + (getPlayerScreenWidth(playerNum) - self.width) / 2
+        local y = getPlayerScreenTop(playerNum) + (getPlayerScreenHeight(playerNum) - self.height) / 2
+        self:setX(x)
+        self:setY(y)
     end
 }

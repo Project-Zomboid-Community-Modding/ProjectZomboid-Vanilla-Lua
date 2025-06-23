@@ -7,9 +7,13 @@ require "ISUI/ISPanel"
 
 local UI_BORDER_SPACING = 10
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local LIST_ICON_SIZE = 64
-local LIST_FAVICON_SIZE = 16
+local FONT_HGT_HEADING = getTextManager():getFontHeight(UIFont.Small)
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
+local LIST_ICON_SIZE = math.max(1, 48 * FONT_SCALE)
+local LIST_SUBICON_SIZE = 16 * ICON_SCALE
+local LIST_FAVICON_SIZE = 10 * ICON_SCALE
+local LIST_SUBICON_SPACING = 2 * ICON_SCALE
 
 ISWidgetRecipeListPanel = ISPanel:derive("ISWidgetRecipeListPanel");
 
@@ -27,10 +31,13 @@ function ISWidgetRecipeListPanel:createChildren()
     self.recipeListPanel.starUnsetTexture = getTexture("media/ui/inventoryPanes/FavouriteNo.png")
     self.recipeListPanel.starSetTexture = getTexture("media/ui/inventoryPanes/FavouriteYes.png")
 
-    self.recipeListPanel.itemheight = math.max(2 + FONT_HGT_MEDIUM + FONT_HGT_SMALL + UI_BORDER_SPACING, LIST_ICON_SIZE + UI_BORDER_SPACING);
+    self.recipeListPanel.itemheight = math.max(2 + FONT_HGT_HEADING + FONT_HGT_SMALL + UI_BORDER_SPACING, LIST_ICON_SIZE + UI_BORDER_SPACING);
     self.recipeListPanel.doDrawItem = function(_self, _y, _item, _alt)
         local craftRecipe = _item and _item.item;
         if craftRecipe then
+            local favString = BaseCraftingLogic.getFavouriteModDataString(craftRecipe);
+            local isFavourite = self.player:getModData()[favString] or false;
+            
             local yActual = _self:getYScroll() + _y;
             if _item.cachedHeight and (yActual > _self.height or (yActual + _item.cachedHeight) < 0) then
                 -- we are outside stencil, dont draw, just return cachedHeight
@@ -38,13 +45,17 @@ function ISWidgetRecipeListPanel:createChildren()
             end
             
             if not _item.height then _item.height = _self.itemheight end -- compatibililty
-            local usedHeight = _item.height;
             local safeDrawWidth = _self:getWidth() - (_self.vscroll and _self.vscroll:getWidth() or 0);
+
+            local cheat = self.player:isBuildCheat()
+            if self.logic and self.logic:isCraftCheat() then
+                cheat = true;
+            end
 
             -- set colours
             local color = {r=1.0, g=1.0, b=1.0, a=1.0};
             local cachedRecipeInfo = self.logic:getCachedRecipeInfo(craftRecipe)
-            if not self.logic:isCraftCheat() then
+            if not cheat then
                 if cachedRecipeInfo and (not cachedRecipeInfo:isValid()) then
                     color = {r=0.5, g=0.5, b=0.5, a=1.0};
                 elseif cachedRecipeInfo and (not cachedRecipeInfo:isCanPerform()) then
@@ -53,7 +64,9 @@ function ISWidgetRecipeListPanel:createChildren()
             end
 
             if _self.selected == _item.index then
-                _self:drawRect(0, _y, _self:getWidth(), _item.height-1, 0.3, 0.7, 0.35, 0.15);
+                _self:drawSelection(0, _y, _self:getWidth(), _item.height-1);
+            elseif (_self.mouseoverselected == _item.index) and _self:isMouseOver() and not _self:isMouseOverScrollBar() then
+                _self:drawMouseOverHighlight(0, _y, _self:getWidth(), _item.height-1);
             end
 
             _self:drawRectBorder(0, _y, _self:getWidth(), _item.height, 0.5, _self.borderColor.r, _self.borderColor.g, _self.borderColor.b);
@@ -71,17 +84,55 @@ function ISWidgetRecipeListPanel:createChildren()
                 a=getCore():getBadHighlitedColor():getA(),
             }
 
-            if self.logic:isCraftCheat() then
+            if cheat then
                 colBad = colGood;
             end
 
             local detailsLeft = UI_BORDER_SPACING + LIST_ICON_SIZE + UI_BORDER_SPACING;
-            local detailsCentre = detailsLeft + ((safeDrawWidth - detailsLeft) / 2);
-            local iconRight = _self:getWidth() - 34;
+            --local detailsCentre = detailsLeft + ((safeDrawWidth - detailsLeft) / 2);
+            local detailsY = 4;
 
+            -- icons
+
+            --if the image display size is 16x16, then this will automatically grab the 16x16 version
+            local fileSize = ".png"
+            if LIST_SUBICON_SIZE == 16 then
+                fileSize = "_16.png"
+            end
+
+            local iconRight = safeDrawWidth - UI_BORDER_SPACING - (LIST_SUBICON_SIZE/2) - LIST_SUBICON_SPACING;
+            if craftRecipe:isCanWalk() then
+                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Walking" .. fileSize);
+                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY, LIST_SUBICON_SIZE, LIST_SUBICON_SIZE, color.a, color.r, color.g, color.b);
+                iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
+            end
+            if not craftRecipe:canBeDoneInDark() and not self.ignoreLightIcon then
+                --local iconTexture = getTexture("media/ui/craftingMenus/Icon_Moon_48x48.png");
+                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Light" .. fileSize);
+                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY, LIST_SUBICON_SIZE, LIST_SUBICON_SIZE, color.a, color.r, color.g, color.b);
+                iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
+            end
+            if craftRecipe:needToBeLearn() then
+                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Book" .. fileSize);
+                local alpha = 1;
+                if not self.player:isRecipeKnown(craftRecipe, true) then
+                    alpha = 0.5;
+                end
+                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY, LIST_SUBICON_SIZE, LIST_SUBICON_SIZE, alpha, color.r, color.g, color.b);
+                iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
+            end
+            if not craftRecipe:isInHandCraftCraft() and not self.ignoreSurface then
+                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Surface" .. fileSize);
+                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY, LIST_SUBICON_SIZE, LIST_SUBICON_SIZE, color.a, color.r, color.g, color.b);
+                iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
+            end
+            
             -- header
-            local detailsY = 2;
-            local titleStr = craftRecipe:getTranslationName();
+            local headerAdj = (LIST_SUBICON_SIZE - FONT_HGT_HEADING) / 2;
+            detailsY = detailsY + headerAdj;
+            local maxTitleWidth = (iconRight - detailsLeft) - (UI_BORDER_SPACING + LIST_SUBICON_SIZE + LIST_SUBICON_SPACING); -- current gap, minus space for Favicon
+            local titleStr = getTextManager():WrapText(UIFont.Small, craftRecipe:getTranslationName(), maxTitleWidth, 2, "...");
+            local recipeNameWidth = getTextManager():MeasureStringX(UIFont.Small, titleStr);
             if isDebugEnabled() then
                 local tags = "";
                 for i=0,craftRecipe:getTags():size() -1 do
@@ -91,50 +142,12 @@ function ISWidgetRecipeListPanel:createChildren()
                     end
                 end
                 --titleStr = titleStr .. " ( DBG:" .. craftRecipe:getTags() .. ")";
-                titleStr = titleStr .. " (tags: " .. tags .. ")";
+                titleStr = titleStr .. "\n (tags: " .. tags .. ")";
             end
-            _self:drawText(titleStr, detailsLeft, _y+detailsY, color.r, color.g, color.b, color.a, UIFont.Medium);
+            _self:drawText(titleStr, detailsLeft, _y+detailsY, color.r, color.g, color.b, color.a, UIFont.Small);
 
-            -- favourite button
-            local favString = BaseCraftingLogic.getFavouriteModDataString(craftRecipe);
-            local isFavourite = self.player:getModData()[favString] or false;
-            local headerTextWidth = getTextManager():MeasureStringX(UIFont.Medium, craftRecipe:getTranslationName());
-            local headerTextHeight = getTextManager():getFontHeight(UIFont.Medium);
-            local starIconY = _y+detailsY + (headerTextHeight/2) - (LIST_FAVICON_SIZE/2);
-            if isFavourite then
-                _self:drawTextureScaledAspect(_self.starSetTexture, detailsLeft + headerTextWidth + UI_BORDER_SPACING, starIconY, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, color.a, color.r, color.g, color.b);
-            --else
-            --    _self:drawTextureScaledAspect(_self.starUnsetTexture, detailsLeft + headerTextWidth + UI_BORDER_SPACING, starIconY, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, color.a, color.r, color.g, color.b);
-            end
-
-            -- icons
-            if craftRecipe:isCanWalk() then
-                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Walking.png");
-                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY+2, 16, 16, color.a, color.r, color.g, color.b);
-                iconRight = iconRight - 18;
-            end
-            if not craftRecipe:canBeDoneInDark() and not self.ignoreLightIcon then
-                --local iconTexture = getTexture("media/ui/craftingMenus/Icon_Moon_48x48.png");
-                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Light.png");
-                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY+2, 16, 16, color.a, color.r, color.g, color.b);
-                iconRight = iconRight - 18;
-            end
-            if craftRecipe:needToBeLearn() then
-                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Book.png");
-                local alpha = 1;
-                if not self.player:isRecipeKnown(craftRecipe, true) then
-                    alpha = 0.5;
-                end
-                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY+2, 16, 16, alpha, color.r, color.g, color.b);
-                iconRight = iconRight - 18;
-            end
-            if not craftRecipe:isInHandCraftCraft() and not self.ignoreSurface then
-                local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Surface.png");
-                _self:drawTextureScaledAspect(iconTexture, iconRight, _y+detailsY+2, 16, 16, color.a, color.r, color.g, color.b);
-                iconRight = iconRight - 18;
-            end
-
-            detailsY = detailsY + FONT_HGT_MEDIUM;
+            local headerTextHeight = getTextManager():MeasureStringY(UIFont.Small, titleStr);
+            detailsY = detailsY + headerTextHeight;
 
             -- craft time
             --local time = round(craftRecipe:getTime()/10,2);
@@ -146,6 +159,11 @@ function ISWidgetRecipeListPanel:createChildren()
             -- description
             if craftRecipe:getTooltip() then
                 local text = getText(craftRecipe:getTooltip());
+                if self.wrapTooltipText then
+                    local tooltipAvailableWidth = (safeDrawWidth - detailsLeft) - (UI_BORDER_SPACING*2 + LIST_SUBICON_SPACING);
+                    text = text:gsub("\n", " ");    -- remove existing tooltip newlines before resplitting. This seems to be generally better for our use case - spurcival
+                    text = getTextManager():WrapText(UIFont.Small, text, tooltipAvailableWidth)
+                end                
                 _self:drawText(text, detailsLeft, _y+detailsY, 0.5, 0.5, 0.5, color.a, UIFont.Small);
                 -- add more space for each <br> (which are turned into \n)
                 local split = luautils.split(text, "\n");
@@ -182,7 +200,11 @@ function ISWidgetRecipeListPanel:createChildren()
                 end
             end
 
-            usedHeight = math.max(usedHeight, detailsY + UI_BORDER_SPACING)
+            local usedHeight = math.max(_self.itemheight, detailsY + UI_BORDER_SPACING)
+            if isFavourite then
+                usedHeight = math.max(usedHeight, LIST_ICON_SIZE + (LIST_FAVICON_SIZE/2));
+            end
+            
             _item.height = usedHeight;
             _item.cachedHeight = usedHeight;
 
@@ -191,6 +213,12 @@ function ISWidgetRecipeListPanel:createChildren()
             local texture = craftRecipe:getIconTexture()
             _self:drawTextureScaledAspect(texture, UI_BORDER_SPACING, iconY, LIST_ICON_SIZE, LIST_ICON_SIZE, color.a, color.r, color.g, color.b);
 
+            -- favourite button
+            local starIconY = iconY + (LIST_ICON_SIZE) - (LIST_FAVICON_SIZE);
+            if isFavourite then
+                _self:drawTextureScaledAspect(_self.starSetTexture, UI_BORDER_SPACING, starIconY, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, color.a, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
+            end
+            
             return _y + usedHeight;
         end
         return _y;
@@ -217,6 +245,21 @@ function ISWidgetRecipeListPanel:calculateLayout(_preferredWidth, _preferredHeig
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
+    if self.expandToFitTooltip and self.recipeListPanel and self.recipeListPanel.items then
+        for k, v in ipairs(self.recipeListPanel.items) do
+            local craftRecipe = v and v.item;
+            if craftRecipe then
+                local text = craftRecipe:getTooltip() and getText(craftRecipe:getTooltip());
+                local tooltipWidth = UI_BORDER_SPACING + LIST_ICON_SIZE + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, text) + UI_BORDER_SPACING + (self.recipeListPanel.vscroll and self.recipeListPanel.vscroll:getWidth() or 0);
+                if v.itemindex == 1 or tooltipWidth > self.largestTooltipWidth then
+                    self.largestTooltipWidth = tooltipWidth;
+                end
+            end
+        end
+        
+        width = math.max(width, self.largestTooltipWidth);
+    end
+    
     self:setWidth(width);
     self:setHeight(height);
 end
@@ -240,6 +283,7 @@ end
 
 function ISWidgetRecipeListPanel:render()
     ISPanel.render(self);
+    self:renderJoypadFocus()
 end
 
 function ISWidgetRecipeListPanel:update()
@@ -258,7 +302,8 @@ end
 
 function ISWidgetRecipeListPanel:setDataList(_recipeList)
     local currentRecipe = self.logic:getRecipe();
-
+    local currentRecipeFound = false;
+    
     self.recipeListPanel:clear();
     for i = 0, _recipeList:size()-1 do
         local failed = false;
@@ -274,9 +319,15 @@ function ISWidgetRecipeListPanel:setDataList(_recipeList)
             if listItem.item == currentRecipe then
                 -- restore selection
                 self.recipeListPanel.selected = listItem.itemindex;
+                currentRecipeFound = true;
             end
         end
     end
+    
+    --if not currentRecipeFound and #self.recipeListPanel.items > 0 then
+    --    self:setSelectedData(self.recipeListPanel.items[1].item)
+    --    self.logic:setRecipe(self.recipeListPanel.items[1].item);
+    --end
 end
 
 function ISWidgetRecipeListPanel:setInternalDimensions(_x, _y, _width, _height)
@@ -301,6 +352,11 @@ function ISWidgetRecipeListPanel:new(x, y, width, height, player, logic, callbac
     o.logic = logic;
     o.callbackTarget = callbackTarget;
     o.enabledShowAllFilter = false;
+    
+    o.wrapTooltipText = false;
+    
+    o.expandToFitTooltip = false;
+    o.largestTooltipWidth = 0;
 
     return o
 end

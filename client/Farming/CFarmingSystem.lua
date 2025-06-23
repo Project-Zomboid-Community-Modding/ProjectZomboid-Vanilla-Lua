@@ -58,7 +58,6 @@ local function DoSpecialTooltip1(tooltip, square)
 
 	local plant = CFarmingSystem.instance:getLuaObjectOnSquare(square)
 	if not plant or plant.typeOfSeed == "none" then return end
-	if not plant:isAlive() and not ISFarmingMenu.cheat then return end
 
 	local farmingLevel = CFarmingSystem.instance:getXp(playerObj)
 	local water_rgb = ISFarmingInfo.getWaterLvlColor(plant, farmingLevel)
@@ -175,6 +174,8 @@ local function DoSpecialTooltip1(tooltip, square)
 end
 
 local function DoSpecialTooltip(tooltip, square)
+	local plant = CFarmingSystem.instance:getLuaObjectOnSquare(square)
+	if not plant or plant.typeOfSeed == "none" then return end
 	tooltip:setWidth(100)
 	tooltip:setMeasureOnly(true)
 	DoSpecialTooltip1(tooltip, square)

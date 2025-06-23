@@ -38,7 +38,7 @@ end
 
 function ISFixGenerator:continueFixing()
 	if self.generator:getCondition() < 100 then
-		scrapItem = self.character:getInventory():getFirstTypeRecurse("ElectronicsScrap")
+		local scrapItem = self.character:getInventory():getFirstTypeRecurse("ElectronicsScrap")
 		if scrapItem then
 			local previousAction = self
 			if scrapItem:getContainer() ~= self.character:getInventory() then

@@ -4,12 +4,18 @@ local light_pine_forest = {
             { f = worldgen.features.GROUND.dark_grass, p = 1.0 }
         },
         PLANT = {
-            { f = worldgen.features.PLANT.grass_overlay, p = 0.4 },
+            { f = worldgen.features.PLANT.grass_medium, p = 0.3 },
+            { f = worldgen.features.PLANT.grass_high, p = 0.3 },
             { f = worldgen.features.PLANT.generic_plant, p = 0.1 },
             { f = worldgen.features.PLANT.floor_leaves, p = 0.1 },
         },
         TREE = {
-            { f = worldgen.features.TREE.pine, p = 0.125 },
+            { f = worldgen.features.TREE.pine_jumbo, p = 0.035415 },
+            { f = worldgen.features.TREE.holly_jumbo, p = 0.035415 },
+            { f = worldgen.features.TREE.hemlock_jumbo, p = 0.035415 },
+            { f = worldgen.features.TREE.pine, p = 0.00625 },
+            { f = worldgen.features.TREE.holly, p = 0.00625 },
+            { f = worldgen.features.TREE.hemlock, p = 0.00625 },
             { f = worldgen.features.TREE.stumps, p = 0.0005 },
         }
     },
@@ -17,7 +23,7 @@ local light_pine_forest = {
         landscape = { "LIGHT_FOREST" },
         temperature = { "COLD" },
         hygrometry = { "DRY", "RAIN" },
-        zombies = 0.005,
+        zombies = 0.001,
         generate = false
     }
 }

@@ -15,6 +15,7 @@ local function predicateEnoughPaste(item)
 end
 
 function ISPaperCursor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISPaperCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local sq = getWorld():getCell():getGridSquare(x, y, z)
 	local playerObj = self.character
 	local playerInv = playerObj:getInventory()
@@ -108,7 +109,7 @@ function ISPaperCursor:render(x, y, z, square)
 		local object = objects[self.objectIndex]
         local props =object:getProperties()
 
-        if props and (props:Is("WallN") or props:Is("WallW") or props:Is("DoorWallN") or props:Is("DoorWallW")or props:Is("WindowN") or props:Is("WindowW"))
+        if props and (props:Is("WallNW") or props:Is("WallN") or props:Is("WallW") or props:Is("DoorWallN") or props:Is("DoorWallW")or props:Is("WindowN") or props:Is("WindowW"))
 --                 or (instanceof(object, "IsoThumpable") and object:isPaintable())
                 then
             -- getPlayer():Say("object" .. tostring(object))
@@ -128,6 +129,9 @@ function ISPaperCursor:render(x, y, z, square)
                 newSprite = WallPaper[wallType][self.paperType .. "North"]
 --                     getPlayer():Say(tostring(newSprite))
             end
+			if props:Is("WallNW") then
+				newSprite = WallPaper[wallType][self.paperType .. "Corner"]
+			end
             self.newSpriteSprite = IsoSprite.new()
             self.newSpriteSprite:LoadSingleTexture(newSprite)
             self.newSprite = newSprite
@@ -259,13 +263,14 @@ function ISPaperCursor:new(character, paperType, newSprite)
 	o.skipWalk = true
 	o.renderFloorHelper = true
 --	o.dragNilAfterPlace = true
-	o.action = action
+--	o.action = action
 	o.paperType = paperType
 	o.newSprite = newSprite
 	o.objectIndex = 1
 	o.renderX = -1
 	o.renderY = -1
 	o.renderZ = -1
+	showDebugInfoInChat("Cursor New \'ISPaperCursor\'")
 	return o
 end
 

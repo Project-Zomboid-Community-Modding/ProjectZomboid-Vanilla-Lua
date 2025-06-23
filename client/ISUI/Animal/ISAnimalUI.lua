@@ -6,13 +6,13 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-require "ISUI/ISCollapsableWindow"
+require "ISUI/ISCollapsableWindowJoypad"
 require "ISUI/ISUI3DModel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
-ISAnimalUI = ISCollapsableWindow:derive("ISAnimalUI");
+ISAnimalUI = ISCollapsableWindowJoypad:derive("ISAnimalUI");
 ISAnimalUI.maxDist = 5;
 ISAnimalUI.btnOffset = 210;
 
@@ -34,7 +34,7 @@ function ISAnimalUI:prerender()
             self:close();
         end
     end
-    ISCollapsableWindow.prerender(self)
+    ISCollapsableWindowJoypad.prerender(self)
 
 --    self.avatarPanel:setZoom(6 * self.animal:getData():getSize());
 --    self.avatarPanel:setXOffset(-0.1 * self.animal:getData():getSize());
@@ -51,7 +51,7 @@ function ISAnimalUI:prerender()
 end
 
 function ISAnimalUI:render()
-    ISCollapsableWindow.render(self);
+    ISCollapsableWindowJoypad.render(self);
 
     local x = self.avatarPanel.x + self.avatarPanel.width + 30;
     local y = self.avatarPanel.y;
@@ -377,17 +377,36 @@ function ISAnimalUI:render()
         --end
     end
 
+    self:renderJoypadFocus()
+
+    local button = self.renameBtn
+    if self.milkAnimalBtn:isVisible() then
+        button = self.milkAnimalBtn
+    end
+    if self.width < button:getRight() + 10 then
+        self:setWidth(button:getRight() + 10)
+    end
     self:setHeight(math.max(self.avatarPanel.y + self.avatarPanel.height + 30, y + 30))
 end
 
 function ISAnimalUI:initialise()
-    ISCollapsableWindow.initialise(self);
+    ISCollapsableWindowJoypad.initialise(self);
     self:create();
 end
 
 function ISAnimalUI:close()
     self:setVisible(false);
     self:removeFromUIManager();
+    if isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
+        local newFocus = self.prevFocus
+        if newFocus ~= nil then
+            if newFocus.Type == "ISVehicleAnimalUI" then
+                newFocus:setVisible(true, getJoypadData(self.playerNum))
+            end
+            self.prevFocus = nil
+        end
+        setJoypadFocus(self.playerNum, newFocus)
+    end
 end
 
 function ISAnimalUI:create()
@@ -465,6 +484,16 @@ function ISAnimalUI:create()
         infoTxt = infoTxt .. getText("IGUI_AnimalUI_Info_" .. self.animal:getNextStageAnimalType());
     end
     self:setInfo(infoTxt);
+
+    self.joypadButtonsY = {}
+    self.joypadButtons = {}
+    self.joypadIndexY = 1
+    self.joypadIndex = 1
+    self:insertNewLineOfButtons(self.renameBtn)
+    self:insertNewLineOfButtons(self.genderBtn)
+    self:insertNewLineOfButtons(self.ageBtn)
+    self:insertNewLineOfButtons(self.feedBtn)
+    self:insertNewLineOfButtons(self.milkAnimalBtn)
 end
 
 function ISAnimalUI:attachAnimal()
@@ -488,7 +517,9 @@ function ISAnimalUI:renameAnimal()
     modal:initialise();
     modal:addToUIManager();
     modal.maxChars = 30;
-    if JoypadState.players[self.playerNum+1] then
+    if getJoypadFocus(self.playerNum) then
+        modal:centerOnScreen(self.playerNum)
+        modal.prevFocus = getJoypadFocus(self.playerNum)
         setJoypadFocus(self.playerNum, modal)
     end
 end
@@ -618,13 +649,22 @@ function ISAnimalUI:onMilkAnimal()
     AnimalContextMenu.onMilkAnimal(self.animal, self.chr, bucket, true);
 end
 
-function ISAnimalUI:new(x, y, width, height, animal, player)
-    local o = {};
-    o = ISCollapsableWindow:new(x, y, width, height);
---    o:noBackground();
-    setmetatable(o, self);
+function ISAnimalUI:onGainJoypadFocus(joypadData)
+    ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
+    self:restoreJoypadFocus(joypadData)
+end
 
-    self.__index = self;
+function ISAnimalUI:onJoypadDown(button, joypadData)
+    if button == Joypad.BButton and not self:isFocusOnControl() then
+        self:close()
+        return
+    end
+    ISCollapsableWindowJoypad.onJoypadDown(self, button, joypadData)
+end
+
+function ISAnimalUI:new(x, y, width, height, animal, player)
+    local o = ISCollapsableWindowJoypad.new(self, x, y, width, height);
+--    o:noBackground();
     o.animal = animal;
     o.chr = player;
     o.playerNum = player:getPlayerNum();

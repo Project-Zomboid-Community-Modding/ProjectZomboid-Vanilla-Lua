@@ -40,11 +40,28 @@ function ISFarmingCursorMouse:renderTooltip()
 		self.tooltip = ISWorldObjectContextMenu.addToolTip();
 		self.tooltip:setVisible(true)
 		self.tooltip:addToUIManager()
-		self.tooltip.followMouse = not self.joyfocus
+		self.tooltip.followMouse = not self.joypadFarming
 		self.tooltip.maxLineWidth = 1000
 	else
 		self.tooltip.description = self.tooltipTxt;
 	end
+
+	if self.tooltip and self.joypadFarming then
+		self.tooltip:setX(isoToScreenX(self.player, self.square:getX(), self.square:getY(), self.square:getZ()));
+		self.tooltip:setY(isoToScreenY(self.player, self.square:getX(), self.square:getY(), self.square:getZ()));
+	end
+end
+
+function ISFarmingCursorMouse:getAPrompt()
+	return getText("ContextMenu_Farming")
+end
+
+function ISFarmingCursorMouse:getLBPrompt()
+	return nil
+end
+
+function ISFarmingCursorMouse:getRBPrompt()
+	return nil
 end
 
 function ISFarmingCursorMouse.IsVisible()
@@ -62,5 +79,6 @@ function ISFarmingCursorMouse:new(character, onSquareSelected, isValid)
 	o.player = character:getPlayerNum()
 	o.noNeedHammer = true
 	o.skipBuildAction = true
+	o.joypadFarming = JoypadState.players[o.player + 1];
 	return o
 end

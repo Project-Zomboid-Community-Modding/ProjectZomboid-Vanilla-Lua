@@ -131,7 +131,7 @@ local function drawVector(ui, label, x, y, vx, vy, vz)
 	x = x + getTextManager():MeasureStringX(UIFont.Small, label)
 
 	local dx = getTextManager():MeasureStringX(UIFont.Small, "X: -99.9999")
-	str = vectorComponentToString(vx, 1)
+	local str = vectorComponentToString(vx, 1)
 	ui:drawText("X: " .. str, x, y, 1, 0, 0, 1, UIFont.Small)
 	x = x + dx + UI_BORDER_SPACING
 
@@ -446,7 +446,7 @@ function EditAttachment:onComboAddModel()
 		local modelScript = item.item
 		if self:isVehicleScript(modelScript) then
 			--
-		elseif modelScript:getFullType() == scriptName then
+		elseif modelScript and modelScript:getFullType() == scriptName then
 			return
 		end
 	end
@@ -515,6 +515,9 @@ end
 
 function EditAttachment:onSceneMouseDown(x, y)
 	local boneName = self:pickCharacterBone()
+	if boneName == "" then
+		boneName = self:pickModelBone()
+	end
 	if boneName == "" then
 		self.selectedBone = nil
 	else
@@ -724,7 +727,8 @@ function EditAttachment:doDrawItem(y, item, alt)
 		self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 2, 0.25, 1.0, 1.0, 1.0)
 	end
 
-	self:drawText(modelScript:getName(), x, y, 1, 1, 1, 1, UIFont.Small)
+	self:drawText(modelScript and modelScript:getName() or "????", x, y, 1, 1, 1, 1, UIFont.Small)
+
 	y = y + FONT_HGT_SMALL
 
 	self:drawRect(x, y, self.width - 4 * 2, 2, 1.0, 0.5, 0.5, 0.5)
@@ -883,6 +887,7 @@ function EditAttachment:prerenderEditor()
 	self.list2.doDrawItem = self.doDrawItem2
 	
 	self:pickCharacterBone()
+	self:pickModelBone()
 
 	local mouseOver = self.list.items[self.list.mouseoverselected]
 	local item = mouseOver or self.list:getSelectedItems()[1]
@@ -925,10 +930,19 @@ function EditAttachment:prerenderEditor()
 		end
 	else
 		local objectName = self:getSceneObjectId(modelScript)
-		self:java2("setGizmoOrigin", "model", objectName)
-		-- Don't transform objects that are parented to others.
-		if not self:java1("getObjectParent", objectName) and not self:java1("getObjectParentVehiclePart", objectName) then
-			showGizmo = true
+		if self.selectedBone then
+			self:java2("setHighlightBone", objectName, self.selectedBone)
+			self:java3("setGizmoOrigin", "bone", objectName, self.selectedBone)
+			self:java2("addBoneAxis", objectName, self.selectedBone)
+			-- can't transform a bone
+		else
+			local bone = self:pickModelBone()
+			if bone ~= "" then self:java2("setHighlightBone", objectName, bone) end
+			self:java2("setGizmoOrigin", "model", objectName)
+			-- Don't transform objects that are parented to others.
+			if not self:java1("getObjectParent", objectName) and not self:java1("getObjectParentVehiclePart", objectName) then
+				showGizmo = true
+			end
 		end
 	end
 
@@ -971,7 +985,7 @@ function EditAttachment:prerenderEditor()
 		self.buttonNewAttachment:setEnable(self.selectedBone ~= nil)
 	elseif self:isVehicleScript(self.selectedModelScript) then
 		self.buttonNewAttachment:setEnable(false)
-	else
+	else -- TODO: SceneModel has bones?
 		self.buttonNewAttachment:setEnable(true)
 	end
 end
@@ -1048,6 +1062,23 @@ function EditAttachment:pickCharacterBone()
 		return ""
 	end
 	local boneName = self:java3("pickCharacterBone", objectName, self.parent.scene:getMouseX(), self.parent.scene:getMouseY())
+	self.parent.wroteScriptTime = getTimestampMs() - 4950
+	self.parent.wroteScriptLabel:setName(boneName)
+	return boneName
+end
+
+function EditAttachment:pickModelBone()
+	local objectName = self:getSceneObjectId(self.selectedModelScript)
+	if not objectName then
+		return ""
+	end
+	if not self:java1("isObjectVisible", objectName) then
+		return ""
+	end
+	if self:isCharacterScript(self.selectedModelScript) then
+		return ""
+	end
+	local boneName = self:java3("pickModelBone", objectName, self.parent.scene:getMouseX(), self.parent.scene:getMouseY())
 	self.parent.wroteScriptTime = getTimestampMs() - 4950
 	self.parent.wroteScriptLabel:setName(boneName)
 	return boneName
@@ -1426,14 +1457,14 @@ function AttachmentEditorUI:createChildren()
 	local viewH = 100
 	self.bottomPanel = ISPanel:new(0, self.height - viewH - UI_BORDER_SPACING-1, self.width, viewH)
 	self.bottomPanel:setAnchorTop(false)
-	self.bottomPanel:setAnchorLeft(false)
-	self.bottomPanel:setAnchorRight(false)
+	self.bottomPanel:setAnchorLeft(true)
+	self.bottomPanel:setAnchorRight(true)
 	self.bottomPanel:setAnchorBottom(true)
 	self.bottomPanel:noBackground()
 	self:addChild(self.bottomPanel)
 
 	local viewNames = {'Left', 'Right', 'Top', 'Bottom', 'Front', 'Back'}
-	local viewX = (self.width - #viewNames * viewW - (#viewNames - 1) * 10) / 2
+	local viewX = self.width / 2 - (#viewNames * viewW + (#viewNames - 1) * UI_BORDER_SPACING) / 2
 	local viewY = 0
 	self.views = {}
 	for _,viewName in ipairs(viewNames) do
@@ -1483,16 +1514,22 @@ function AttachmentEditorUI:createChildren()
 	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.001")
 
 	local buttonScale1 = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, button.y, btnWidth, BUTTON_HGT, "0.001", self, self.onGridMult1)
+	buttonScale1:setAnchorLeft(false)
+	buttonScale1:setAnchorRight(true)
 	self.bottomPanel:addChild(buttonScale1)
 	self.buttonScale1 = buttonScale1
 
 	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.005")
 	local buttonScale2 = ISButton:new(buttonScale1.x - UI_BORDER_SPACING - btnWidth, button.y, btnWidth, BUTTON_HGT, "0.005", self, self.onGridMult2)
+	buttonScale2:setAnchorLeft(false)
+	buttonScale2:setAnchorRight(true)
 	self.bottomPanel:addChild(buttonScale2)
 	self.buttonScale2 = buttonScale2
 
 	local btnWidth = buttonWidthPadding + getTextManager():MeasureStringX(UIFont.Small, "0.01")
 	local buttonScale3 = ISButton:new(buttonScale2.x - UI_BORDER_SPACING - btnWidth, button.y, btnWidth, BUTTON_HGT, "0.01", self, self.onGridMult3)
+	buttonScale3:setAnchorLeft(false)
+	buttonScale3:setAnchorRight(true)
 	self.bottomPanel:addChild(buttonScale3)
 	self.buttonScale3 = buttonScale3
 
@@ -1511,7 +1548,12 @@ end
 function AttachmentEditorUI:onResolutionChange(oldw, oldh, neww, newh)
 	self:setWidth(neww)
 	self:setHeight(newh)
-	self.bottomPanel:setX(self.width / 2 - self.bottomPanel.width / 2)
+	local viewW = 150
+	local viewX = self.width / 2 - (#self.views * viewW + (#self.views - 1) * UI_BORDER_SPACING) / 2
+	for _,view in ipairs(self.views) do
+		view:setX(viewX)
+		viewX = viewX + viewW + UI_BORDER_SPACING
+	end
 	self.editUI.attachments:doLayout()
 end
 

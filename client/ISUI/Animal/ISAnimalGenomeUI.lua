@@ -348,7 +348,7 @@ function ISAnimalGenomeUI:new(x, y, width, height, animal, player)
     setmetatable(o, self);
 
     self.__index = self;
-    o.title = getText("ContextMenu_ModifyGenome");
+    o.title = animal:getFullName() .. " " .. getText("ContextMenu_ModifyGenome");
     o.animal = animal;
     o.chr = player;
     o.playerNum = player:getPlayerNum();

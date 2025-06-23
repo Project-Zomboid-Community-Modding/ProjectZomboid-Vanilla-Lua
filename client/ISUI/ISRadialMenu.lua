@@ -137,6 +137,7 @@ function ISRadialMenu:new(x, y, innerRadius, outerRadius, playerNum)
 	o.slices = {}
 	o:setForceCursorVisible(playerNum == 0)
 	o.sounds = {}
+	o.disableJoypadNavigation = true -- ISFirearmRadialMenu is displayed by holding down the right bumper
 	return o
 end
 

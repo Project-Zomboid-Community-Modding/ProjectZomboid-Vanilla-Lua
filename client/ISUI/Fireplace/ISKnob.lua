@@ -195,6 +195,8 @@ end
 --************************************************************************--
 function ISKnob:new(x, y, tex, valuesBg, title, player)
     local o = {}
+    local width;
+    local height;
     if valuesBg then
         width = valuesBg:getWidthOrig();
         height = valuesBg:getHeightOrig();
@@ -216,6 +218,6 @@ function ISKnob:new(x, y, tex, valuesBg, title, player)
 	o.joypadFocused = false
 	o.isKnob = true;
     o.tex = tex;
-    o.switchSound = nil;
+    o.switchSound = "KnobSwitch";
     return o;
 end

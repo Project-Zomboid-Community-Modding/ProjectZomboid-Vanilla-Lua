@@ -10,6 +10,7 @@ ISWoodenDoorFrame = ISBuildingObject:derive("ISWoodenDoorFrame");
 --**
 --************************************************************************--
 function ISWoodenDoorFrame:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenDoorFrame\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self.javaObject = IsoThumpable.new(cell, self.sq, sprite, north, self);
@@ -39,6 +40,7 @@ function ISWoodenDoorFrame:new(sprite, northSprite, corner)
 	o.name = "Wooden Door Frame";
 	o.isThumpable = false
 	o.isWallLike = true
+	showDebugInfoInChat("Cursor New \'ISWoodenDoorFrame\'")
 	return o;
 end
 

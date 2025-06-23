@@ -11,8 +11,8 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
 
 function CoopCharacterCreation:initPlayer()
-	MainScreen.instance.desc:setForename(self.charCreationHeader.forenameEntry:getText());
-	MainScreen.instance.desc:setSurname(self.charCreationHeader.surnameEntry:getText());
+	MainScreen.instance.desc:setForename(self.charCreationMain.forenameEntry:getText());
+	MainScreen.instance.desc:setSurname(self.charCreationMain.surnameEntry:getText());
 	MainScreen.instance.desc:setVoicePrefix(self.charCreationMain.instance:getVoicePrefix());
 	MainScreen.instance.desc:setVoiceType(self.charCreationMain.instance:getVoiceType());
 	MainScreen.instance.desc:setVoicePitch(self.charCreationMain.instance:getVoicePitch());
@@ -197,15 +197,6 @@ function CoopCharacterCreation:createChildren()
 	self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.8}
 	self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.5}
 
-	self.charCreationHeader = CharacterCreationHeader:new(0, 0, 600, 260+UI_BORDER_SPACING+BUTTON_HGT)
-	self.charCreationHeader:initialise()
-	self.charCreationHeader:setAnchorRight(true)
-	self.charCreationHeader:setAnchorLeft(true)
-	self.charCreationHeader:setAnchorBottom(false)
-	self.charCreationHeader:setAnchorTop(true)
-	self.charCreationHeader.backgroundColor = {r=0, g=0, b=0, a=0.0}
-	self.charCreationHeader.borderColor = {r=1, g=1, b=1, a=0.0}
-
 	self:addChild(self.coopUserName)
 	self:addChild(self.mapSpawnSelect)
 	self:addChild(self.charCreationMain)
@@ -213,18 +204,15 @@ function CoopCharacterCreation:createChildren()
 
 	MainScreen.instance.desc = SurvivorFactory.CreateSurvivor()
 	MainScreen.instance.avatar = nil
-	MainScreen.instance.charCreationHeader = self.charCreationHeader
 	MainScreen.instance.charCreationProfession = self.charCreationProfession
 
 	self.mapSpawnSelect:create()
-	self.charCreationHeader:create()
 	self.charCreationMain:create()
 	self.charCreationProfession:create()
 
 	self.mapSpawnSelect:setVisible(false)
 	self.charCreationMain:setVisible(false)
 	self.charCreationProfession:setVisible(false)
-	self.charCreationHeader:setVisible(true)
 end
 
 function CoopCharacterCreation.getJoypad()

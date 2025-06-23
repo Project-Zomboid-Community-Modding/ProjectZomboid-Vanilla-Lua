@@ -18,6 +18,9 @@ function ISFitnessAction:waitToStart()
 	if self.character:isAiming() then
 		self.character:nullifyAiming()
 	end
+	if self.character:isSneaking() then
+		self.character:setSneaking(false)
+	end
 	if not self.character:isCurrentState(IdleState.instance()) then
 		-- Only the player.idle state has a transition to the player.fitness state.
 		return true
@@ -28,6 +31,9 @@ end
 function ISFitnessAction:update()
 	if self.character:isClimbing() or self.character:isAiming() then
 		self:forceStop();
+	end
+	if self.character:isSneaking() then
+		self.character:setSneaking(false)
 	end
 	if self.character:pressedMovement(true) or self.character:getMoodles():getMoodleLevel(MoodleType.Endurance) > ISFitnessUI.enduranceLevelTreshold then
 		self.character:setVariable("ExerciseStarted", false);

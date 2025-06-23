@@ -116,5 +116,7 @@ Kingsmouth.gameMode = "Kingsmouth";
 Kingsmouth.x = 100 * 300 + 265;
 Kingsmouth.y = 101 * 300 + 248;
 Kingsmouth.z = 0;
+Kingsmouth.zombiesMinPerChunk = 0.06 * 0.64 * 0.66
+Kingsmouth.zombiesMaxPerChunk = 12 * 0.64 * 0.66
 
 --Events.OnChallengeQuery.Add(Kingsmouth.Add)

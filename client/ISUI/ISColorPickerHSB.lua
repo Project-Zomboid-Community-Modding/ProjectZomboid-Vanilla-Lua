@@ -127,6 +127,24 @@ function ISColorPickerHSB:render()
 	if self.joyfocus then
 		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
 		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
+
+		local s,b = self.s, self.b
+		local rate = 0.1 * UIManager.getMillisSinceLastRender() * (1 / 180)
+		local axisX = getJoypadAimingAxisX(self.joyfocus.id)
+		local axisY = getJoypadAimingAxisY(self.joyfocus.id)
+		if axisX < -0.5 then
+			s = math.max(0, s - rate)
+		elseif axisX > 0.5 then
+			s = math.min(1, s + rate)
+		end
+		if axisY < -0.5 then
+			b = math.min(1, b + rate)
+		elseif axisY > 0.5 then
+			b = math.max(0, b - rate)
+		end
+		if s ~= self.s or b ~= self.b then
+			self:setCurrentColor(self.h, s, b)
+		end
 	end
 end
 
@@ -243,28 +261,21 @@ function ISColorPickerHSB:onMouseUpOutside(x, y)
 	return self:onMouseUp(x, y)
 end
 
-function ISColorPickerHSB:onJoypadDirLeft(joypadData)
-	local col = (self.index-1) % self.columns
-	if col > 0 then self.index = self.index - 1 else self.index = self.index + self.columns - 1 end
-	self:picked(false)
+function ISColorPickerHSB:onGainJoypadFocus(joypadData)
+	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+	self.joypadIndexY = 1
+	self.joypadIndex = 1
+	self.joypadButtonsY = {}
+	self.joypadButtons = {}
+	self:insertNewLineOfButtons(self.hueSlider)
+	self:insertNewLineOfButtons(self.satSlider)
+	self:insertNewLineOfButtons(self.valSlider)
+	self:restoreJoypadFocus(joypadData)
 end
 
-function ISColorPickerHSB:onJoypadDirRight(joypadData)
-	local col = (self.index-1) % self.columns
-	if col < self.columns-1 then self.index = self.index + 1 else self.index = self.index - self.columns + 1 end
-	self:picked(false)
-end
-
-function ISColorPickerHSB:onJoypadDirUp(joypadData)
-	local row = math.floor((self.index-1) / self.columns)
-	if row > 0 then self.index = self.index - self.columns else self.index = self.index + self.columns * (self.rows - 1) end
-	self:picked(false)
-end
-
-function ISColorPickerHSB:onJoypadDirDown(joypadData)
-	local row = math.floor((self.index-1) / self.columns)
-	if row < self.rows-1 then self.index = self.index + self.columns else self.index = self.index - self.columns * (self.rows - 1) end
-	self:picked(false)
+function ISColorPickerHSB:onLoseJoypadFocus(joypadData)
+	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+	self:clearJoypadFocus(joypadData)
 end
 
 function ISColorPickerHSB:onJoypadDown(button)

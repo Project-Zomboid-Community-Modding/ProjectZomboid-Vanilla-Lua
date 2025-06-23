@@ -59,12 +59,6 @@ ISLiteratureUI.SetItemHidden('Base.WheatBagSeed_Empty', true)
 -----
 
 function ISLiteratureList:doDrawItem(y, item, alt)
-	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
-	if item.height == 0 then
-		item.height = BUTTON_HGT -- this is needed, otherwise items don't draw in the list properly
-	end
-	if y + self:getYScroll() >= self.height then return y + item.height end
-	if y + item.height + self:getYScroll() <= 0 then return y + item.height end
 --[[
 	if self.selected == item.index then
 		self:drawRect(0, y, self:getWidth(), item.height-1, 0.3, 0.7, 0.35, 0.15)
@@ -96,26 +90,32 @@ function ISLiteratureList:doDrawItem(y, item, alt)
 			r,g,b = 1.0,1.0,1.0
 		end
 	end
+	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
 	if r ~= 1 and metaKnowledge == 3 then
 		return y
-	else
-		self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-		if texture then
-			local texWidth = texture:getWidthOrig()
-			local texHeight = texture:getHeightOrig()
-			local a = 1
-			if texWidth <= 32 and texHeight <= 32 then
-				self:drawTexture(texture,6+(32-texWidth)/2,y+(item.height-texHeight)/2,a,1,1,1)
-			else
-				self:drawTextureScaledAspect(texture,6,y+(item.height-texHeight)/2,32,32,a,1,1,1)
-			end
-		end
-		if r == 1 or metaKnowledge == 1 then
-			self:drawText(Translator.getRecipeName(item.text), 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
-		else
-			self:drawText("???", 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
-		end
 	end
+	if item.height == 0 then
+		item.height = self.itemheight -- this is needed, otherwise items don't draw in the list properly
+	end
+	if y + self:getYScroll() >= self.height then return y + item.height end
+	if y + item.height + self:getYScroll() <= 0 then return y + item.height end
+
+    self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
+    if texture then
+        local texHeight = math.min(texture:getHeightOrig(), FONT_HGT_SMALL)
+        local texWidth = texture:getWidthOrig()/(texture:getHeightOrig()/FONT_HGT_SMALL)
+        local a = 1
+        if texWidth <= 32 and texHeight <= 32 then
+            self:drawTextureScaled(texture,6+(32-texWidth)/2,y+(item.height-texHeight)/2, texWidth, texHeight,a,1,1,1)
+        else
+            self:drawTextureScaledAspect(texture,6,y+(item.height-texHeight)/2,32,32,a,1,1,1)
+        end
+    end
+    if r == 1 or metaKnowledge == 1 then
+        self:drawText(Translator.getRecipeName(item.text), 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
+    else
+        self:drawText("???", 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
+    end
 
 	y = y + item.height
 	return y;
@@ -398,14 +398,21 @@ function ISLiteratureUI:setLists()
 
 	prev = nil;
 
+	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
 	table.sort(recipes, sortRecipe)
 	self.listbox3:clear()
+	local scrollHeight = 0
 	for _,item in ipairs(recipes) do
 		if prev ~= item then
-			self.listbox3:addItem(item, item)
+			local listItem = self.listbox3:addItem(item, item)
+			if (metaKnowledge == 3) and not self.character:getKnownRecipes():contains(item) then
+				listItem.height = 0
+			end
+			scrollHeight = scrollHeight + listItem.height
 			prev = item;
 		end
 	end
+	self.listbox3:setScrollHeight(scrollHeight)
 
 	self:setMediaLists(media)
 

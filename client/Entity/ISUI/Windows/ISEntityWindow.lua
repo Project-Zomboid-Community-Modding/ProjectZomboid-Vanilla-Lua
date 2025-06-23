@@ -192,7 +192,29 @@ function ISEntityWindow:refresh()
 end
 
 function ISEntityWindow:close()
+    if self.componentsPanel then
+        self.componentsPanel:OnCloseWindow();
+        self:prerender();
+    end
+    
     ISBaseEntityWindow.close(self);
+end
+
+function ISEntityWindow:onGainJoypadFocus(joypadData)
+    ISBaseEntityWindow.onGainJoypadFocus(self, joypadData)
+    -- Pass focus to ISCraftBenchPanel, for example.
+    local panelInfo = self.componentsPanel.panels[1]
+    if panelInfo and panelInfo.panel then
+        joypadData.focus = panelInfo.panel
+        updateJoypadFocus(joypadData)
+    end
+end
+
+function ISEntityWindow:onJoypadDown_Descendant(descendant, button, joypadData)
+    if button == Joypad.BButton then
+        self:close()
+        self:removeFromUIManager();
+    end
 end
 
 function ISEntityWindow:new (x, y, width, height, player, entity, entityConfig)

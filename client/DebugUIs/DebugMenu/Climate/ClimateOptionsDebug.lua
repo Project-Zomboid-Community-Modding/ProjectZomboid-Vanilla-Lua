@@ -26,6 +26,7 @@ function ClimateOptionsDebug:createChildren()
     self.bools = {};
 
     local v, obj;
+    local vName;
 
     local x,y,w = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1,self.width-UI_BORDER_SPACING*2 - SCROLL_BAR_WIDTH - 1;
 

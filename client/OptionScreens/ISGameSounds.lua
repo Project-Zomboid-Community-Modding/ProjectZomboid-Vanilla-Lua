@@ -201,8 +201,6 @@ function ISGameSounds:addVolumeControl(x, y, w, h, name, volume, target, onchang
 	local volumeCtl = ISGameSoundVolumeControl:new(x+20, y + self.addY + (math.max(fontHgt, h) - h) / 2, w, h, target, onchange)
 	volumeCtl:initialise()
 	volumeCtl:setVolume(volume)
-	volumeCtl.selected = selected
-	volumeCtl.default = selected
 	volumeCtl.label = label
 	self.mainPanel:addChild(volumeCtl)
 

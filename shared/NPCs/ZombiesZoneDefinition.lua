@@ -376,8 +376,8 @@ ZombiesZoneDefinition.StreetPoor = {
 		chance=15,
 		beardStyles="Long:10;Chops:10;Goatee:10;Moustache:10;Full:10;BeardOnly:10",
 	},
-	Bandit = {
-		name="Bandit",
+	Bandit_Early = {
+		name="Bandit_Early",
 		chance=5,
 	},
 	Backpacker = {
@@ -1558,11 +1558,15 @@ ZombiesZoneDefinition.Cowboy = {
 	},
 	CostumeWildWestCowpoke = {
 		name="CostumeWildWestCowpoke",
-		chance=10,
+		chance=5,
 	},
 	CostumeWildWestFancy = {
 		name="CostumeWildWestFancy",
 		chance=10,
+	},
+	CostumeWildWestCowpoke = {
+		name="CostumeWildWestLawman",
+		chance=5,
 	},
 	CostumeWildWestMayor = {
 		name="CostumeWildWestMayor",
@@ -1576,10 +1580,8 @@ ZombiesZoneDefinition.Cowboy = {
 		name="CostumeWildWestOutlaw",
 		toSpawn=10,
 	},
-
-
-	Young = {
-		name="Young",
+	Retiree = {
+		name="Retiree",
 		chance=10,
 	},
 	Student = {
@@ -1587,17 +1589,49 @@ ZombiesZoneDefinition.Cowboy = {
 		chance=10,
 -- 		chance=50,
 	},
+	Tourist = {
+		name="Tourist",
+		chance=10,
+	},
 	Varsity = {
 		name="Varsity",
 		chance=1,
+	},
+	Young = {
+		name="Young",
+		chance=10,
+	},
+	YoungCowpoke = {
+		name="YoungCowpoke",
+		chance=5,
+	},
+}
+
+-- Not used yet
+ZombiesZoneDefinition.PonyRoama = {
+	CostumeWildWestCowpoke = {
+		name="CostumeWildWestCowpoke",
+		chance=5,
+	},
+	Student = {
+		name="Student",
+		chance=10,
 	},
 	Tourist = {
 		name="Tourist",
 		chance=10,
 	},
-	Retiree = {
-		name="Retiree",
+	Varsity = {
+		name="Varsity",
+		chance=1,
+	},
+	Young = {
+		name="Young",
 		chance=10,
+	},
+	YoungCowpoke = {
+		name="YoungCowpoke",
+		chance=25,
 	},
 }
 
@@ -1766,5 +1800,7 @@ table.insert(ZombiesZoneDefinition.Default,{name = "ExterminatorSuited", chance=
 table.insert(ZombiesZoneDefinition.Default,{name = "Retiree", chance=1});
 table.insert(ZombiesZoneDefinition.Default,{name = "HospitalPatient", chance=50, room="hospitalroom"});
 table.insert(ZombiesZoneDefinition.Default,{name = "HospitalPatientBathrobe", chance=50, room="hospitalroom"});
+table.insert(ZombiesZoneDefinition.Default,{name = "Hobbo", chance=5, room="derelict"});
+table.insert(ZombiesZoneDefinition.Default,{name = "Bandit", chance=1, room="derelict"});
 
 

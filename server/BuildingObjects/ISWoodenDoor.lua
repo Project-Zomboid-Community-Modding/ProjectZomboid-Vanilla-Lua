@@ -9,6 +9,7 @@ ISWoodenDoor = ISBuildingObject:derive("ISWoodenDoor");
 --**
 --************************************************************************--
 function ISWoodenDoor:create(x, y, z, north, sprite)
+    showDebugInfoInChat("Cursor Create \'ISWoodenDoor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	local openSprite = self.openSprite;
@@ -48,6 +49,7 @@ function ISWoodenDoor:new(sprite, northSprite, openSprite, openNorthSprite)
 	o.thumpDmg = 5;
 	o.name = "Wooden Door";
 	o.isWallLike = true
+	showDebugInfoInChat("Cursor New \'ISWoodenDoor\'")
 	return o;
 end
 

@@ -137,7 +137,8 @@ function ISHotbar:doMenu(slotIndex)
 							subMenuAttach = context:getNew(context);
 							context:addSubMenu(subOption, subMenuAttach);
 						end
-						subMenuAttach:addOption(item:getDisplayName(), self, ISHotbar.attachItem, item, v, slotIndex, slotDef, true);
+						local itemOption = subMenuAttach:addOption(item:getDisplayName(), self, ISHotbar.attachItem, item, v, slotIndex, slotDef, true);
+						itemOption.itemForTexture = item
 						found = true;
 					end
 				end

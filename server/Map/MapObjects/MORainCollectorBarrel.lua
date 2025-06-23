@@ -13,8 +13,6 @@ local function CreateBarrel(sq, spriteName, health)
 	modData["need:Base.Plank"] = "4"
 	modData["need:Base.Nails"] = "4"
 	modData["need:Base.Garbagebag"] = "4"
-	modData["waterAmount"] = waterAmount
-	modData["waterMax"] = waterMax
 
 	local cell = getWorld():getCell()
 	local north = false

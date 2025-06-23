@@ -337,15 +337,10 @@ function ISRemoveItemTool.removeItem(item, player)
     local playerObj = getSpecificPlayer(player)
 
     srcContainer:DoRemoveItem(item);
-    if isServer() then
-        sendRemoveItemFromContainer(srcContainer, item)
-    end
-    if isClient() then
-        SendCommandToServer("/removeitem " .. item:getFullType() .. " " .. 1)
-    end
+    sendRemoveItemFromContainer(srcContainer, item);
 
     if srcContainer:getType() == "floor" and item:getWorldItem() ~= nil then
-        DesignationZoneAnimal.removeFoodFromGround(item:getWorldItem())
+        DesignationZoneAnimal.removeItemFromGround(item:getWorldItem())
         if instanceof(item, "Radio") then
             local grabSquare = item:getWorldItem():getSquare()
             local _obj = nil
@@ -392,7 +387,7 @@ end
 
 local function RemoveItemContextOptions(player, context, items)
 
-    if not isDebugEnabled() or (isClient() and not getPlayer():getRole():haveCapability(Capability.EditItem)) then
+    if not isDebugEnabled() or (isClient() and not getPlayer():getRole():hasCapability(Capability.EditItem)) then
         return true
     end
 

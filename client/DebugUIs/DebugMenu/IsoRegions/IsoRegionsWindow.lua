@@ -127,10 +127,12 @@ end
 
 function IsoRegionsWindow:onTeleport(worldX, worldY)
     local player = getSpecificPlayer(0)
-    player:setX(worldX)
-    player:setY(worldY)
-    player:setLastX(worldX)
-    player:setLastY(worldY)
+    if not player then return end
+    if isClient() then
+        SendCommandToServer("/teleportto " .. tostring(worldX) .. "," .. tostring(worldY) .. ",0");
+    else
+        player:teleportTo(worldX, worldY, 0.0)
+    end
 end
 
 function IsoRegionsWindow:onSquareDetails(worldX, worldY)

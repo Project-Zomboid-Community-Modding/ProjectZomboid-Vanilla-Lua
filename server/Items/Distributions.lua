@@ -258,20 +258,6 @@ local distributionTable = {
 				}
 			}
 		},
-        CoffeeMaker = {
-            rolls = 1,
-            onlyOne = true,
-            items = {
-                -- DEPRECATED - NO LONGER A CONTAINER
-            },
-            junk = {
-                rolls = 1,
-                canBurn = true,
-                items = {
-
-                }
-            }
-        },
 		-- Empty Coffin
 		coffin = {
 			rolls = 1,
@@ -399,15 +385,15 @@ local distributionTable = {
 		fireplace = {
 			rolls = 1,
 			items = {
-				"Bellows", 10,
-				"FireplacePoker", 10,
-				"Tongs", 10,
+				"Bellows", 20,
+				"FireplacePoker", 20,
+				"Tongs", 20,
 			},
 			junk = {
 				rolls = 4,
 				items = {
-					"Log", 4,
-					"Newspaper", 8,
+					"Firewood", 8,
+					"Newspaper", 4,
 					"TreeBranch2", 6,
 					"Twigs", 10,
 				}
@@ -498,7 +484,7 @@ local distributionTable = {
 				"MakeupEyeshadow", 1,
 				"MakeupFoundation", 1,
 				"Matches", 0.5,
-				"Newspaper", 1,
+				"Newspaper_Recent", 1,
 				"Note", 1,
 				"Notebook", 1,
 				"Pen", 1,
@@ -560,7 +546,7 @@ local distributionTable = {
 				"Locket", 1,
 				"Magazine", 1,
 				"Matches", 0.5,
-				"Newspaper", 1,
+				"Newspaper_Recent", 1,
 				"Note", 1,
 				"Notebook", 1,
 				"Pen", 1,
@@ -605,6 +591,8 @@ local distributionTable = {
 				"Branch_Broken", 10,
 				"LargeBranch", 8,
 				"TreeBranch2", 10,
+				-- Firewood
+				"Firewood", 10,
 				-- Detritus
 				"Sapling", 4,
 				"Splinters", 20,
@@ -614,6 +602,7 @@ local distributionTable = {
 				"Log", 20,
 				"Log", 20,
 				"Log", 10,
+
 			},
 			junk = {
 				rolls = 1,
@@ -1191,14 +1180,24 @@ local distributionTable = {
 				}
 			}
 		},
-        toaster = {
-			-- DEPRECATED - NO LONGER A CONTAINER
-        },
 		toolcabinet = {
 			procedural = true,
 			procList = {
 				{name="ToolCabinetMechanics", min=0, max=99, weightChance=100},
 				{name="CrateTools", min=0, max=99, weightChance=20},
+			}
+		},
+		-- Empty for testing purposes.
+		trough = {
+			rolls = 1,
+			items = {
+				
+			},
+			junk = {
+				rolls = 1,
+				items = {
+					
+				}
 			}
 		},
 		vendingpop = {
@@ -1274,8 +1273,8 @@ local distributionTable = {
 			junk = {
 				rolls = 4,
 				items = {
-					"Log", 4,
-					"Newspaper", 8,
+					"Firewood", 8,
+					"Newspaper", 4,
 					"TreeBranch2", 6,
 					"Twigs", 10,
 				}
@@ -1386,15 +1385,21 @@ local distributionTable = {
 			rolls = 1,
 			items = {
 				"Base.HempBagSeed", 1,
+			    "CameraDisposable", 1,
 				"CigaretteRolled", 8,
 				"CigaretteRollingPapers", 4,
+	            "CompassDirectional", 1,
 				"Handiknife", 0.1,
 				"HempMag1", 2,
+				"LetterHandwritten", 1,
 				"LighterDisposable", 8,
 				"Passport", 20,
+		        "Photo", 1,
+			    "Postcard", 1,
+			    "SmokingPipe", 0.1,
 				"Spork", 10,
 				"Sportsbottle", 4,
-				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
 			},
 			junk = {
 				rolls = 1,
@@ -1414,6 +1419,9 @@ local distributionTable = {
 				"HuntingKnife", 8,
 				"KnifePocket", 0.1,
 				"SwitchKnife", 8,
+				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
+				"Whetstone", 1,
 			},
 			bags = BagsAndContainers.BanditBag,
 			junk = {
@@ -1434,6 +1442,9 @@ local distributionTable = {
 				"HuntingKnife", 8,
 				"KnifePocket", 0.1,
 				"SwitchKnife", 8,
+				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
+				"Whetstone", 1,
 			},
 			bags = BagsAndContainers.BanditBag_Early,
 			junk = {
@@ -1454,6 +1465,9 @@ local distributionTable = {
 				"HuntingKnife", 8,
 				"KnifePocket", 0.1,
 				"SwitchKnife", 8,
+				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
+				"Whetstone", 1,
 			},
 			bags = BagsAndContainers.BanditBag_Mid,
 			junk = {
@@ -1474,8 +1488,11 @@ local distributionTable = {
 				"HuntingKnife", 8,
 				"KnifePocket", 0.1,
 				"SwitchKnife", 8,
+				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
+				"Whetstone", 1,
 			},
-			bags = BagsAndContainers.SurvivorBag,
+			bags = BagsAndContainers.BanditBag_Late,
 			junk = {
 				rolls = 1,
 				items = {
@@ -1522,6 +1539,18 @@ local distributionTable = {
 				}
 			}
 		},
+		Outfit_Bathrobe = {
+			defaultInventoryLoot = false,
+			rolls = 1,
+			items = {
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
 		Outfit_Biker = {
 			rolls = 1,
 			items = {
@@ -1531,11 +1560,13 @@ local distributionTable = {
 				"CigaretteRollingPapers", 1,
 				"Cigarillo", 4,
 				"Flask", 1,
+	            "Harmonica", 0.1,
 				"HuntingKnife", 8,
 				"Pistol", 1,
 				"Revolver_Short", 4,
 				"SwitchKnife", 8,
 				"TobaccoChewing", 1,
+				"TobaccoLoose", 1,
 			},
 			junk = {
 				rolls = 1,
@@ -1701,6 +1732,31 @@ local distributionTable = {
 			items = {
 				"ToyBadge", 100,
 			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
+		Outfit_CostumeWildWestLawman = {
+			rolls = 1,
+			items = {
+				"ToyBadge", 100,
+			},
+			bags = BagsAndContainers.Empty,
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
+		Outfit_CostumeWildWestOutlaw = {
+			rolls = 1,
+			items = {
+			},
+			bags = BagsAndContainers.Empty,
 			junk = {
 				rolls = 1,
 				items = {
@@ -1918,6 +1974,7 @@ local distributionTable = {
 				"PremiumFishingLine", 4,
 				"TobaccoChewing", 8,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 			},
 			junk = {
 				rolls = 1,
@@ -2165,6 +2222,30 @@ local distributionTable = {
 				}
 			}
 		},
+		Outfit_HospitalPatient = {
+			defaultInventoryLoot = false,
+			rolls = 1,
+			items = {
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
+		Outfit_HospitalPatientBathrobe = {
+			defaultInventoryLoot = false,
+			rolls = 1,
+			items = {
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
 		Outfit_Hunter = {
 			rolls = 1,
 			items = {
@@ -2179,6 +2260,7 @@ local distributionTable = {
 				"ShotgunShells", 10,
 				"TobaccoChewing", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			junk = {
@@ -2205,6 +2287,7 @@ local distributionTable = {
 			}
 		},
 		Outfit_InmateKhaki = {
+			defaultInventoryLoot = false,
 			rolls = 1,
 			items = {
 				"CigaretteRolled", 10,
@@ -2231,6 +2314,7 @@ local distributionTable = {
 				"Pencil", 10,
 				"Screws", 8,
 				"TobaccoChewing", 1,
+                "Whetstone", 1,
 			},
 			junk = {
 				rolls = 1,
@@ -2284,11 +2368,37 @@ local distributionTable = {
 			rolls = 1,
 			items = {
 				"IcePick", 1,
+				"MoneyBundle", 1,
+				"SuspiciousPackage", 1,
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
+			}
+		},
+		Outfit_Naked = {
+			defaultInventoryLoot = false,
+			rolls = 1,
+			items = {
 			},
 			junk = {
 				rolls = 1,
 				items = {
 					
+				}
+			}
+		},
+		Outfit_NakedVeil = {
+			defaultInventoryLoot = false,
+			rolls = 1,
+			items = {
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
 				}
 			}
 		},
@@ -2701,6 +2811,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag,
@@ -2729,6 +2840,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag,
@@ -2757,6 +2869,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag,
@@ -2785,6 +2898,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag,
@@ -2813,6 +2927,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag,
@@ -2841,6 +2956,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Mid,
@@ -2869,6 +2985,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Mid,
@@ -2897,6 +3014,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Mid,
@@ -2925,6 +3043,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Mid,
@@ -2953,6 +3072,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Mid,
@@ -2981,6 +3101,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Late,
@@ -3009,6 +3130,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Late,
@@ -3037,6 +3159,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Late,
@@ -3065,6 +3188,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Late,
@@ -3093,6 +3217,7 @@ local distributionTable = {
 				"TobaccoChewing", 10,
 				"WaterBottle", 10,
 				"WaterPurificationTablets", 1,
+				"Whetstone", 1,
 				"Whistle", 2,
 			},
 			bags = BagsAndContainers.SurvivorBag_Late,
@@ -3197,16 +3322,23 @@ local distributionTable = {
 			rolls = 1,
 			items = {
 				"CigarettePack", 1,
+				"CigaretteRollingPapers", 1,
+		        "Cigarillo", 1,
 				"Flask", 1,
+	            "Harmonica", 1,
 				"HottieZ", 4,
+			    "KeyRing_EagleFlag", 1,
 				"LighterDisposable", 4,
 				"PillsVitamins", 20,
 				"TobaccoChewing", 10,
+				"TobaccoLoose", 1,
 			},
 			junk = {
 				rolls = 1,
 				items = {
-					
+				    "Pistol2", 0.01,
+				    "Revolver_Short", 0.01,
+			        "SuspiciousPackage", 0.0001,
 				}
 			}
 		},
@@ -4904,7 +5036,7 @@ local distributionTable = {
 		locker = {
 			procedural = true,
 			procList = {
-				{name="CampingLockers", min=0, max=99, forceForTiles="furniture_storage_02_12;furniture_storage_02_13;furniture_storage_02_14;furniture_storage_02_15"},
+				{name="CultistClothing", min=0, max=99, forceForZones="Cultists"},
 			}
 		},
 		plankstash = {
@@ -5016,15 +5148,20 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="BookstoreArt", min=0, max=1, weightChance=40},
+				{name="BookstoreAutomotive", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together
 				{name="BookstoreBiography", min=0, max=1, weightChance=60},
-				{name="BookstoreBooks", min=1, max=99, weightChance=20},
+				{name="BookstoreBlueCollar", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together
+-- 				{name="BookstoreBooks", min=1, max=99, weightChance=20}, -- not sure what to do re this, in that they are in thematic containers now as well, but I don't hate having it as a backup for now :D
 				{name="BookstoreBusiness", min=0, max=1, weightChance=40},
 				{name="BookstoreChilds", min=0, max=1, weightChance=80},
 				{name="BookstoreCinema", min=0, max=1, weightChance=40},
 				{name="BookstoreComputer", min=0, max=1, weightChance=40},
+				{name="BookstoreCooking", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together
+				{name="BookstoreCrafts", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together
 				{name="BookstoreCrimeFiction", min=0, max=1, weightChance=60},
 				{name="BookstoreFantasySciFi", min=1, max=1, weightChance=100},
-				{name="BookstoreFashion", min=0, max=1, weightChance=40},
+				{name="BookstoreFashion", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together
+				{name="BookstoreFarming", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together; changed so outdoors can serve hunting/fishing type concerns
 				{name="BookstoreGeneralReference", min=0, max=1, weightChance=60},
 				{name="BookstoreHistory", min=0, max=1, weightChance=60},
 				{name="BookstoreHobbies", min=0, max=1, weightChance=40},
@@ -5037,7 +5174,7 @@ local distributionTable = {
 				{name="BookstoreNewAge", min=0, max=1, weightChance=40},
 				{name="BookstoreNonFiction", min=1, max=1, weightChance=100},
 				{name="BookstoreOccult", min=0, max=1, weightChance=10},
-				{name="BookstoreOutdoors", min=1, max=1, weightChance=100},
+				{name="BookstoreOutdoors", min=1, max=1, weightChance=100}, -- set up for skill books, recipe magazines and subject magazines to spawn together; changed for a hunting/farming focus vs a farming specific one
 				{name="BookstorePhilosophy", min=0, max=1, weightChance=40},
 				{name="BookstorePolitics", min=0, max=1, weightChance=40},
 				{name="BookstoreReligion", min=0, max=1, weightChance=40},
@@ -5051,6 +5188,17 @@ local distributionTable = {
 				{name="BookstoreWestern", min=0, max=1, weightChance=40},
 				{name="BookstoreMisc", min=0, max=2, weightChance=10},
 				{name="StoreShelfCombo", min=0, max=99, forceForTiles="location_shop_generic_01_0;location_shop_generic_01_1"},
+			}
+		},
+		sidetable = { -- this is needed as bookstore on the map have sidetables on them as decor
+			rolls = 1,
+			items = {
+			},
+			junk = {
+				rolls = 1,
+				items = {
+
+				}
 			}
 		},
 		smallbox = {
@@ -5275,7 +5423,7 @@ local distributionTable = {
 			procList = {
 				{name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
-				{name="BurgerKitchenButcher", min=0, max=2, weightChance=80},
+				{name="BurgerKitchenButcher", min=1, max=2, weightChance=80},
 				{name="BurgerKitchenSauce", min=0, max=4, weightChance=40},
 				{name="BurgerKitchenCutlery", min=0, max=99, weightChance=10},
 			}
@@ -5772,7 +5920,7 @@ local distributionTable = {
 				{name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="StoreKitchenBaking", min=0, max=1, weightChance=100},
-				{name="StoreKitchenButcher", min=0, max=1, weightChance=100},
+				{name="StoreKitchenButcher", min=1, max=1, weightChance=100},
 				{name="StoreKitchenCutlery", min=0, max=1, weightChance=20},
 				{name="StoreKitchenDishes", min=0, max=1, weightChance=20},
 				{name="StoreKitchenGlasses", min=0, max=1, weightChance=20},
@@ -6109,7 +6257,7 @@ local distributionTable = {
 		filingcabinet = {
 			procedural = true,
 			procList = {
-				{name="PolicePaperwork", min=0, max=99},
+				{name="PoliceFilingCabinet", min=0, max=99},
 			}
 		},
 		locker = {
@@ -6349,7 +6497,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
-				{name="CatfishKitchenButcher", min=0, max=1, weightChance=80},
+				{name="CatfishKitchenButcher", min=1, max=1, weightChance=80},
 				{name="FishChipsKitchenSauce", min=0, max=1, weightChance=80},
 				{name="StoreKitchenCutlery", min=0, max=1, weightChance=20},
 				{name="StoreKitchenDishes", min=0, max=1, weightChance=20},
@@ -6464,7 +6612,7 @@ local distributionTable = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="ChineseKitchenCutlery", min=0, max=1, weightChance=20},
 				{name="ChineseKitchenBaking", min=0, max=1, weightChance=100},
-				{name="ChineseKitchenButcher", min=0, max=1, weightChance=100},
+				{name="ChineseKitchenButcher", min=1, max=1, weightChance=100},
 				{name="ChineseKitchenSauce", min=0, max=1, weightChance=100},
 				{name="StoreKitchenDishes", min=0, max=1, weightChance=20},
 				{name="StoreKitchenGlasses", min=0, max=1, weightChance=20},
@@ -6506,9 +6654,9 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="ServingTrayMeatDumplings", min=1, max=2, weightChance=100},
-				{name="ServingTrayMeatSpringRolls", min=1, max=2, weightChance=60},
+				{name="ServingTraySpringRolls", min=1, max=2, weightChance=60},
 				{name="ServingTrayMeatSteamBuns", min=1, max=2, weightChance=100},
-				{name="ServingTrayMeatTofuFried", min=1, max=2, weightChance=60},
+				{name="ServingTrayTofuFried", min=1, max=2, weightChance=60},
 				{name="ServingTrayNoodleSoup", min=1, max=2, weightChance=20},
 				{name="ServingTrayShrimpDumplings", min=1, max=2, weightChance=100},
 			}
@@ -6537,9 +6685,9 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="ServingTrayMeatDumplings", min=1, max=2, weightChance=100},
-				{name="ServingTrayMeatSpringRolls", min=1, max=2, weightChance=60},
+				{name="ServingTraySpringRolls", min=1, max=2, weightChance=60},
 				{name="ServingTrayMeatSteamBuns", min=1, max=2, weightChance=100},
-				{name="ServingTrayMeatTofuFried", min=1, max=2, weightChance=60},
+				{name="ServingTrayTofuFried", min=1, max=2, weightChance=60},
 				{name="ServingTrayNoodleSoup", min=1, max=2, weightChance=20},
 				{name="ServingTrayShrimpDumplings", min=1, max=2, weightChance=100},
 			}
@@ -6547,6 +6695,13 @@ local distributionTable = {
 	},
 	
 	classroom = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=1},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
+			}
+		},
 		counter = {
 			procedural = true,
 			procList = {
@@ -6572,6 +6727,35 @@ local distributionTable = {
 				{name="ClassroomShelves", min=0, max=99},
 			}
 		}
+	},
+	
+	classroom_anthro = {
+		counter = {
+			procedural = true,
+			procList = {
+				{name="AnthropologyCounter", min=0, max=99},
+			}
+		},
+		desk = {
+			procedural = true,
+			procList = {
+				{name="AnthropologyDesk", min=0, max=99},
+			}
+		},
+		displaycase = {
+			procedural = true,
+			procList = {
+				{name="AnthropologyDisplayClothing", min=1, max=1, weightChance=100},
+				{name="AnthropologyDisplayTools", min=1, max=1, weightChance=100},
+				{name="AnthropologyDisplayWeapons", min=1, max=1, weightChance=100},
+			}
+		},
+		shelves = {
+			procedural = true,
+			procList = {
+				{name="AnthropologyBooks", min=0, max=99},
+			}
+		},
 	},
 	
 	closet = {
@@ -6924,7 +7108,7 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=20},
+				{name="CrateClayBricks", min=0, max=1, weightChance=20},
 				{name="CrateConcrete", min=0, max=99, weightChance=10},
 				{name="CrateLumber", min=0, max=99, weightChance=80},
 				{name="CratePaint", min=0, max=99, weightChance=60},
@@ -6942,7 +7126,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=20},
+				{name="CrateClayBricks", min=0, max=1, weightChance=20},
 				{name="CrateConcrete", min=0, max=99, weightChance=10},
 				{name="CrateLumber", min=0, max=99, weightChance=80},
 				{name="CratePaint", min=0, max=99, weightChance=60},
@@ -7368,7 +7552,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
-				{name="BurgerKitchenButcher", min=0, max=1, weightChance=80},
+				{name="BurgerKitchenButcher", min=1, max=1, weightChance=80},
 				{name="BurgerKitchenSauce", min=0, max=1, weightChance=80},
 				{name="FishChipsKitchenButcher", min=0, max=1, weightChance=80},
 				{name="FishChipsKitchenSauce", min=0, max=1, weightChance=80},
@@ -7792,7 +7976,7 @@ local distributionTable = {
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="StoreKitchenBaking", min=0, max=1, weightChance=100},
-				{name="StoreKitchenButcher", min=0, max=1, weightChance=80},
+				{name="StoreKitchenButcher", min=1, max=1, weightChance=80},
 				{name="StoreKitchenCafe", min=0, max=1, weightChance=100},
 				{name="StoreKitchenCutlery", min=0, max=1, weightChance=20},
 				{name="StoreKitchenDishes", min=0, max=1, weightChance=20},
@@ -8443,6 +8627,13 @@ local distributionTable = {
 	
 	-- TODO: Set up specific containers for these.
 	elementaryclassroom = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=1},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
+			}
+		},
 		counter = {
 			procedural = true,
 			procList = {
@@ -8479,6 +8670,13 @@ local distributionTable = {
 	
 	-- TODO: Set up specific containers for these.
 	elementaryschool = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=1},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
+			}
+		},
 		locker = {
 			procedural = true,
 			procList = {
@@ -8622,7 +8820,61 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+	firegarage = {
+		bin = {
+			procedural = true,
+			procList = {
+				{name="BinFireStation", min=0, max=99, weightChance=100},
+			}
+		},
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="FireStorageTools", min=0, max=99, weightChance=40},
+				{name="FireStorageOutfit", min=0, max=99, weightChance=20},
+			}
+		},
+		counter = {
+			procedural = true,
+			procList = {
+				{name="FireStorageMechanics", min=0, max=99},
+			}
+		},
+		crate = {
+			procedural = true,
+			procList = {
+				{name="FireStorageTools", min=0, max=99, weightChance=40},
+				{name="FireStorageOutfit", min=0, max=99, weightChance=20},
+			}
+		},
+		locker = {
+			procedural = true,
+			procList = {
+				{name="FireDeptLockers", min=0, max=99},
+			}
+		},
+		metal_shelves = {
+			procedural = true,
+			procList = {
+				{name="FireStorageTools", min=0, max=99},
+			}
+		},
+		smallbox = {
+			procedural = true,
+			procList = {
+				{name="FireStorageOutfit", min=0, max=99, weightChance=20},
+				{name="CrateBootsOld", min=0, max=99, weightChance=100},
+			}
+		},
+		toolcabinet = {
+			procedural = true,
+			procList = {
+				{name="FireStorageMechanics", min=0, max=99},
+			}
+		},
+	},
+
 	firestorage = {
 		cardboardbox = {
 			procedural = true,
@@ -9128,7 +9380,7 @@ local distributionTable = {
 				{name="CrateLinens", min=0, max=1, weightChance=10},
 				{name="CrateLumber", min=0, max=1, weightChance=60},
 				{name="CrateMagazines", min=0, max=1, weightChance=10},
-				{name="CrateMasonry", min=0, max=1, weightChance=10},
+				{name="CrateMasonry", min=0, max=1, weightChance=40},
 				{name="CrateMechanics", min=0, max=1, weightChance=80},
 				{name="CrateMetalwork", min=0, max=1, weightChance=80},
 				{name="CrateNewspapers", min=0, max=1, weightChance=10},
@@ -9202,7 +9454,7 @@ local distributionTable = {
 				{name="CrateGravelBags", min=0, max=1, weightChance=80},
 				{name="CrateLimestoneCrushed", min=0, max=1, weightChance=5},
 				{name="CrateLumber", min=0, max=1, weightChance=60},
-				{name="CrateMasonry", min=0, max=1, weightChance=10},
+				{name="CrateMasonry", min=0, max=1, weightChance=40},
 				{name="CrateMechanics", min=0, max=1, weightChance=80},
 				{name="CrateMetalwork", min=0, max=1, weightChance=80},
 				{name="CratePaint", min=0, max=1, weightChance=80},
@@ -9956,7 +10208,7 @@ local distributionTable = {
 				{name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="StoreKitchenBaking", min=0, max=99, weightChance=100},
-				{name="StoreKitchenButcher", min=0, max=99, weightChance=100},
+				{name="StoreKitchenButcher", min=1, max=99, weightChance=100},
 				{name="StoreKitchenPots", min=0, max=1, weightChance=20},
 			}
 		},
@@ -10247,7 +10499,7 @@ local distributionTable = {
 		freezer = {
 			procedural = true,
 			procList = {
-				{name="FreezerFrozenFood", min=0, max=99, forceForTiles="appliances_refrigeration_01_20;appliances_refrigeration_01_21;appliances_refrigeration_01_38;appliances_refrigeration_01_39"},
+				{name="FreezerFrozenFood", min=0, max=99, forceForTiles="appliances_refrigeration_01_20;appliances_refrigeration_01_21;appliances_refrigeration_01_38;appliances_refrigeration_01_39;appliances_refrigeration_01_48;appliances_refrigeration_01_49;appliances_refrigeration_01_50;appliances_refrigeration_01_51"},
 			}
 		},
 		fridge = {
@@ -10760,7 +11012,7 @@ local distributionTable = {
 		displaycasebakery = {
 			procedural = true,
 			procList = {
-				{name="IceCreamKitchenFreezer", min=0, max=99},
+				{name="FreezerIceCream", min=0, max=99},
 			}
 		},
 		fridge = {
@@ -10774,13 +11026,13 @@ local distributionTable = {
 		freezer = {
 			procedural = true,
 			procList = {
-				{name="IceCreamKitchenFreezer", min=0, max=99},
+				{name="FreezerIceCream", min=0, max=99},
 			}
 		},
 		restaurantdisplay = {
 			procedural = true,
 			procList = {
-				{name="IceCreamKitchenFreezer", min=0, max=99},
+				{name="FreezerIceCream", min=0, max=99},
 			}
 		}
 	},
@@ -10877,7 +11129,7 @@ local distributionTable = {
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="ItalianKitchenBaking", min=0, max=1, weightChance=100},
-				{name="ItalianKitchenButcher", min=0, max=1, weightChance=100},
+				{name="ItalianKitchenButcher", min=1, max=1, weightChance=100},
 				{name="ItalianKitchenSauce", min=0, max=1, weightChance=100},
 				{name="StoreKitchenCutlery", min=0, max=1, weightChance=20},
 				{name="StoreKitchenDishes", min=0, max=1, weightChance=20},
@@ -11443,7 +11695,7 @@ local distributionTable = {
 				{name="KitchenDishes", min=0, max=1, weightChance=80},
 				{name="KitchenDryFood", min=0, max=1, weightChance=100},
 				{name="KitchenPots", min=0, max=1, weightChance=80},
-				{name="KitchenRandom", min=0, max=1, weightChance=20},
+				{name="KitchenRandom", min=0, max=1, weightChance=20}, -- this has a lot of useful stuff in it, crafting, collectibles, rarities, flashlights, candles, batteries, sparklers, etc., and probably should have a much greater weight
 			}
 		},
 		crate = {
@@ -12852,7 +13104,7 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="CrateCornFlour", min=0, max=1, weightChance=80},
+				{name="CrateCornflour", min=0, max=1, weightChance=80},
 				{name="CrateFlour", min=0, max=1, weightChance=40},
 				{name="CrateHotsauce", min=0, max=1, weightChance=100},
 				{name="CrateOilVegetable", min=0, max=1, weightChance=60},
@@ -12865,7 +13117,7 @@ local distributionTable = {
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="MexicanKitchenBaking", min=1, max=1, weightChance=100},
-				{name="MexicanKitchenButcher", min=0, max=1, weightChance=100},
+				{name="MexicanKitchenButcher", min=1, max=1, weightChance=100},
 				{name="MexicanKitchenSauce", min=0, max=1, weightChance=100},
 				{name="StoreKitchenBags", min=0, max=1, weightChance=20},
 				{name="StoreKitchenCups", min=0, max=1, weightChance=20},
@@ -12876,7 +13128,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateCornFlour", min=0, max=1, weightChance=80},
+				{name="CrateCornflour", min=0, max=1, weightChance=80},
 				{name="CrateFlour", min=0, max=1, weightChance=40},
 				{name="CrateHotsauce", min=0, max=1, weightChance=100},
 				{name="CrateOilVegetable", min=0, max=1, weightChance=60},
@@ -12910,7 +13162,7 @@ local distributionTable = {
 			cookFood = true,
 			procedural = true,
 			procList = {
-				{name="ServingTrayTacos", min=1, max=4, weightChance=100},
+				{name="ServingTrayTaco", min=1, max=4, weightChance=100},
 				{name="ServingTrayBurritos", min=1, max=4, weightChance=100},
 				{name="ServingTrayRefriedBeans", min=1, max=2, weightChance=20},
 			}
@@ -12918,7 +13170,7 @@ local distributionTable = {
 		smallbox = {
 			procedural = true,
 			procList = {
-				{name="CrateCornFlour", min=0, max=1, weightChance=80},
+				{name="CrateCornflour", min=0, max=1, weightChance=80},
 				{name="CrateFlour", min=0, max=1, weightChance=40},
 				{name="CrateHotsauce", min=0, max=1, weightChance=100},
 				{name="CrateOilVegetable", min=0, max=1, weightChance=60},
@@ -12968,8 +13220,8 @@ local distributionTable = {
 			}
 		},
 		overhead = {
-			rolls = 1,
-			items = {
+			procedural = true,
+			procList = {
 				{name="MotelTowels", min=0, max=1, weightChance=20},
 				{name="Empty", min=0, max=99, weightChance=100},
 			}
@@ -14143,10 +14395,10 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
-				{name="PizzaKitchenBaking", min=0, max=1, weightChance=100},
-				{name="PizzaKitchenButcher", min=0, max=1, weightChance=100},
-				{name="PizzaKitchenCheese", min=0, max=1, weightChance=100},
-				{name="PizzaKitchenSauce", min=0, max=1, weightChance=100},
+				{name="PizzaKitchenBaking", min=1, max=1, weightChance=100},
+				{name="PizzaKitchenButcher", min=1, max=1, weightChance=100},
+				{name="PizzaKitchenCheese", min=1, max=1, weightChance=100},
+				{name="PizzaKitchenSauce", min=1, max=1, weightChance=100},
 				{name="StoreKitchenBags", min=0, max=1, weightChance=20},
 				{name="StoreKitchenCups", min=0, max=1, weightChance=20},
 				{name="StoreKitchenTrays", min=0, max=1, weightChance=20},
@@ -14293,7 +14545,7 @@ local distributionTable = {
 		filingcabinet = {
 			procedural = true,
 			procList = {
-				{name="PolicePaperwork", min=0, max=99},
+				{name="PoliceFilingCabinet", min=0, max=99},
 			}
 		},
 		metal_shelves = {
@@ -14305,6 +14557,24 @@ local distributionTable = {
 	},
 	
 	policegarage = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="PoliceStorageMechanics", min=0, max=99},
+			},
+		},
+		crate = {
+			procedural = true,
+			procList = {
+				{name="PoliceStorageMechanics", min=0, max=99},
+			},
+		},
+		counter = {
+			procedural = true,
+			procList = {
+				{name="PoliceStorageMechanics", min=0, max=99},
+			},
+		},
 		locker = {
 			procedural = true,
 			procList = {
@@ -14314,13 +14584,19 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="ToolCabinetMechanics", min=0, max=99},
+				{name="PoliceStorageMechanics", min=0, max=99},
+			},
+		},
+		smallbox = {
+			procedural = true,
+			procList = {
+				{name="PoliceStorageMechanics", min=0, max=99},
 			},
 		},
 		toolcabinet = {
 			procedural = true,
 			procList = {
-				{name="ToolCabinetMechanics", min=0, max=99},
+				{name="PoliceStorageMechanics", min=0, max=99},
 			}
 		},
 	},
@@ -14368,7 +14644,7 @@ local distributionTable = {
 		filingcabinet = {
 			procedural = true,
 			procList = {
-				{name="PolicePaperwork", min=0, max=99},
+				{name="PoliceFilingCabinet", min=0, max=99},
 			}
 		},
 		freezer = {
@@ -14391,7 +14667,14 @@ local distributionTable = {
 		},
 	},
 	
-	policegunstorage = {
+	policegunstorage = { -- note: it is significantly harder for players to get into these rooms in b42 versus previous builds are the doors are much stronger and cannot be dismantled
+		filingcabinet = {
+			procedural = true,
+			procList = {
+				{name="PoliceEvidence", min=0, max=99},  -- these need to have something worthwhile or interesting spawning in them; these containers exist in the roomdef on the map
+		    },
+			dontSpawnAmmo = true,
+		},
 		locker = {
 			procedural = true,
 			procList = {
@@ -14400,11 +14683,24 @@ local distributionTable = {
 			},
 			dontSpawnAmmo = true,
 		},
+		metal_shelves = {
+			procedural = true,
+			procList = {
+				{name="PoliceStorageGuns", min=0, max=99, weightChance=100}, -- these need to have something worthwhile or interesting spawning in them; these containers exist in the roomdef on the map
+			}
+		},
 		militarylocker = {
 			procedural = true,
 			procList = {
 				{name="PoliceStorageGuns", min=0, max=99},
 			}
+		},
+		smallbox = {
+			procedural = true,
+			procList = {
+				{name="PoliceEvidence", min=0, max=99}, -- these need to have something worthwhile or interesting spawning in them; these containers exist in the roomdef on the map
+		    },
+			dontSpawnAmmo = true,
 		},
 	},
 	
@@ -14517,6 +14813,30 @@ local distributionTable = {
 				{name="PrisonCellRandomClassy", min=0, max=99, forceForTiles="appliances_television_01_8;appliances_television_01_9;appliances_television_01_10;appliances_television_01_11"},
 			}
 		}
+	},
+
+	prisonstorage = { -- this needs to have worthwhile and interesting stuff in all of the containers, especially it is significantly harder for players to get into these rooms in b42 versus previous builds are the doors are much stronger and cannot be dismantled
+		locker = {
+			procedural = true,
+			procList = {
+				{name="PrisonArmoryShotguns", min=0, max=99, forceForTiles="furniture_storage_02_8;furniture_storage_02_9;furniture_storage_02_10;furniture_storage_02_11"},
+				{name="PrisonRiotStorage", min=0, max=99, forceForTiles="furniture_storage_02_4;furniture_storage_02_5;furniture_storage_02_6;furniture_storage_02_7"},
+			},
+			dontSpawnAmmo = true,
+		},
+		metal_shelves = {
+			procedural = true,
+			procList = {
+				{name="PrisonStorageArmor", min=1, max=99, weightChance=100},
+				{name="CrateBootsArmy", min=1, max=4, weightChance=60},
+			}
+		},
+		militarylocker = {
+			procedural = true,
+			procList = {
+				{name="PrisonArmoryShotguns", min=0, max=99},
+			}
+		},
 	},
 	
 	producestorage = {
@@ -14802,15 +15122,6 @@ local distributionTable = {
 		},
 	},
 	
-	restaurant = {
-		overhead = {
-			rolls = 1,
-			items = {
-				
-			}
-		},
-	},
-	
 	restaurantdining = {
 		isShop = true,
 		counter = {
@@ -14819,6 +15130,12 @@ local distributionTable = {
 				{name="RestaurantMenus", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
 				{name="StoreCounterCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="BarCounterLiquor", min=0, max=99, forceForTiles="location_restaurant_bar_01_0;location_restaurant_bar_01_1;location_restaurant_bar_01_2;location_restaurant_bar_01_3;location_restaurant_bar_01_4;location_restaurant_bar_01_5;location_restaurant_bar_01_6;location_restaurant_bar_01_7;location_restaurant_bar_01_16;location_restaurant_bar_01_17;location_restaurant_bar_01_18;location_restaurant_bar_01_19;location_restaurant_bar_01_20;location_restaurant_bar_01_21;location_restaurant_bar_01_22;location_restaurant_bar_01_23;location_restaurant_bar_01_56;location_restaurant_bar_01_57;location_restaurant_bar_01_58;location_restaurant_bar_01_59;location_restaurant_bar_01_60;location_restaurant_bar_01_61;location_restaurant_bar_01_62;location_restaurant_bar_01_63"},
+			}
+		},
+		overhead = {
+			rolls = 1,
+			items = {
+				
 			}
 		},
 		restaurantdisplay = {
@@ -14850,7 +15167,7 @@ local distributionTable = {
 			procList = {
 				{name="BarShelfLiquor", min=0, max=99, forceForTiles="location_restaurant_bar_01_29;location_restaurant_bar_01_30;location_restaurant_bar_01_31;location_restaurant_bar_01_37;location_restaurant_bar_01_38;location_restaurant_bar_01_39;location_restaurant_bar_01_64;location_restaurant_bar_01_65;location_restaurant_bar_01_66;location_restaurant_bar_01_72;location_restaurant_bar_01_73;location_restaurant_bar_01_74"},
 			}
-		}
+		},
 	},
 	
 	restaurantkitchen = {
@@ -14872,7 +15189,7 @@ local distributionTable = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="StoreKitchenBaking", min=0, max=1, weightChance=100},
 				{name="StoreKitchenButcher", min=0, max=1, weightChance=100},
-				{name="StoreKitchenCafe", min=0, max=1, weightChance=80},
+				{name="StoreKitchenCafe", min=1, max=1, weightChance=80},
 				{name="StoreKitchenPotatoes", min=0, max=1, weightChance=60},
 				{name="StoreKitchenSauce", min=0, max=1, weightChance=60},
 				{name="StoreKitchenPots", min=0, max=1, weightChance=40},
@@ -15018,9 +15335,9 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBags", min=0, max=1, weightChance=20},
-				{name="SchoolGymSportsGear", min=0, max=1, weightChance=20},
-				{name="CrateBooks", min=0, max=99, weightChance=100},
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=40},
+				{name="CrateClayBags", min=0, max=1, weightChance=80},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
 			}
 		},
 		counter = {
@@ -15035,9 +15352,9 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBags", min=0, max=1, weightChance=20},
-				{name="SchoolGymSportsGear", min=0, max=1, weightChance=20},
-				{name="CrateBooks", min=0, max=99, weightChance=100},
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=40},
+				{name="CrateClayBags", min=0, max=1, weightChance=80},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
 			}
 		},
 		desk = {
@@ -15049,13 +15366,15 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="ClassroomMisc", min=0, max=99},
+				{name="CrateClayBags", min=0, max=1, weightChance=80},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
 			}
 		},
 		smallbox = {
 			procedural = true,
 			procList = {
-				{name="ClassroomMisc", min=0, max=2, weightChance=100},
+				{name="CrateClayBags", min=0, max=1, weightChance=80},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
 			}
 		},
 	},
@@ -15075,7 +15394,7 @@ local distributionTable = {
 				{name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
 				{name="SeafoodKitchenSauce", min=0, max=1, weightChance=100},
 				{name="JaysKitchenBaking", min=0, max=1, weightChance=100},
-				{name="SeafoodKitchenButcher", min=0, max=2, weightChance=100},
+				{name="SeafoodKitchenButcher", min=1, max=2, weightChance=100},
 				{name="StoreKitchenBags", min=0, max=1, weightChance=20},
 				{name="StoreKitchenCups", min=0, max=1, weightChance=20},
 				{name="StoreKitchenPotatoes", min=1, max=1, weightChance=100},
@@ -15142,6 +15461,13 @@ local distributionTable = {
 	
 	-- TODO: Set up specific containers for these.
 	secondaryclassroom = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateSkeletonDisplay", min=0, max=1, weightChance=1},
+				{name="CrateBooksSchool", min=0, max=99, weightChance=100},
+			}
+		},
 		counter = {
 			procedural = true,
 			procList = {
@@ -15227,6 +15553,7 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
+				{name="SewingStoreDye", min=0, max=99, weightChance=100},
 				{name="SewingStoreTools", min=0, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=0, max=99, weightChance=100},
 			}
@@ -15234,6 +15561,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
+				{name="SewingStoreDye", min=0, max=99, weightChance=100},
 				{name="SewingStoreTools", min=0, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=0, max=99, weightChance=100},
 			}
@@ -15241,6 +15569,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
+				{name="SewingStoreDye", min=0, max=99, weightChance=100},
 				{name="SewingStoreTools", min=0, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=0, max=99, weightChance=100},
 			}
@@ -15248,6 +15577,7 @@ local distributionTable = {
 		smallbox = {
 			procedural = true,
 			procList = {
+				{name="SewingStoreDye", min=0, max=99, weightChance=100},
 				{name="SewingStoreTools", min=0, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=0, max=99, weightChance=100},
 			}
@@ -15268,6 +15598,7 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
+				{name="SewingStoreDye", min=0, max=99, weightChance=100},
 				{name="SewingStoreTools", min=1, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=1, max=99, weightChance=100},
 			}
@@ -15275,11 +15606,7 @@ local distributionTable = {
 		clothingrack = {
 			procedural = true,
 			procList = {
-				{name="SewingStoreTools", min=1, max=99, weightChance=100},
-				{name="SewingStoreFabric", min=1, max=99, weightChance=100},
-				{name="ClothingStoresDress", min=1, max=5, weightChance=80},
-				{name="ClothingStoresWoman", min=1, max=5, weightChance=80},
-				{name="ClothingStoresJumpers", min=1, max=5, weightChance=80},
+				{name="ClothingStoresDress", min=0, max=99},
 			}
 		}
 	},
@@ -15292,7 +15619,7 @@ local distributionTable = {
 				{name="CrateBlackBBQ", min=0, max=1, weightChance=40},
 				{name="CrateCamping", min=0, max=1, weightChance=80},
 				{name="CrateCarpentry", min=0, max=1, weightChance=100},
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=1, weightChance=10},
 				{name="CrateElectronics", min=0, max=1, weightChance=80},
 				{name="CrateFarming", min=0, max=1, weightChance=100},
@@ -15328,7 +15655,7 @@ local distributionTable = {
 				{name="CrateBlackBBQ", min=0, max=1, weightChance=40},
 				{name="CrateCamping", min=0, max=1, weightChance=80},
 				{name="CrateCarpentry", min=0, max=1, weightChance=100},
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=1, weightChance=10},
 				{name="CrateElectronics", min=0, max=1, weightChance=100},
 				{name="CrateFarming", min=0, max=1, weightChance=100},
@@ -15818,6 +16145,20 @@ local distributionTable = {
 				{name="SportStorageBalls", min=0, max=99, weightChance=100},
 			}
 		},
+		metal_shelves = {
+			procedural = true,
+			procList = {
+				{name="SportStoreBadminton", min=1, max=2, weightChance=10},
+				{name="SportStoreBaseball", min=1, max=2, weightChance=20},
+				{name="SportStoreBoxing", min=1, max=2, weightChance=10},
+				{name="SportStoreFootball", min=1, max=2, weightChance=20},
+				{name="SportStoreIceHockey", min=1, max=2, weightChance=10},
+				{name="SportStoreGolf", min=1, max=2, weightChance=10},
+				{name="SportStorePadding", min=1, max=2, weightChance=10},
+				{name="SportStoreTennis", min=1, max=2, weightChance=20},
+				{name="SportStoreSneakers", min=0, max=99, weightChance=100},
+			}
+		},
 		shelves = {
 			procedural = true,
 			procList = {
@@ -15845,7 +16186,29 @@ local distributionTable = {
 
 	-- Most basements use this roomdef at the moment. This is a placeholder that uses the old 'outdoor generic crates' list.
 	storage = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateToolsOld", min=0, max=99, weightChance=5},
+				{name="CratePaint", min=0, max=99, weightChance=20},
+				{name="CrateWallFinish", min=0, max=99, weightChance=20},
+				{name="CrateCarpentry", min=0, max=99, weightChance=40},
+				{name="CrateMetalwork", min=0, max=99, weightChance=40},
+				{name="CrateTools", min=0, max=99, weightChance=100},
+			}
+		},
 		crate = {
+			procedural = true,
+			procList = {
+				{name="CrateToolsOld", min=0, max=99, weightChance=5},
+				{name="CratePaint", min=0, max=99, weightChance=20},
+				{name="CrateWallFinish", min=0, max=99, weightChance=20},
+				{name="CrateCarpentry", min=0, max=99, weightChance=40},
+				{name="CrateMetalwork", min=0, max=99, weightChance=40},
+				{name="CrateTools", min=0, max=99, weightChance=100},
+			}
+		},
+		smallbox = {
 			procedural = true,
 			procList = {
 				{name="CrateToolsOld", min=0, max=99, weightChance=5},
@@ -15923,7 +16286,7 @@ local distributionTable = {
 				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=1},
 				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=1},
 				{name="CrateRandomJunk", min=0, max=4, weightChance=60},
-				{name="CrateBooks", min=0, max=4, weightChance=60},
+				{name="CrateBooks", min=0, max=1, weightChance=20},
 				{name="CrateMagazines", min=0, max=4, weightChance=80},
 				{name="CrateNewspapers", min=0, max=4, weightChance=100},
 			}
@@ -15999,7 +16362,7 @@ local distributionTable = {
 				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=1},
 				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=1},
 				{name="CrateRandomJunk", min=0, max=4, weightChance=60},
-				{name="CrateBooks", min=0, max=4, weightChance=60},
+				{name="CrateBooks", min=0, max=1, weightChance=20},
 				{name="CrateMagazines", min=0, max=4, weightChance=80},
 				{name="CrateNewspapers", min=0, max=4, weightChance=100},
 			}
@@ -16072,7 +16435,7 @@ local distributionTable = {
 				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=1},
 				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=1},
 				{name="CrateRandomJunk", min=0, max=4, weightChance=60},
-				{name="CrateBooks", min=0, max=4, weightChance=60},
+				{name="CrateBooks", min=0, max=1, weightChance=20},
 				{name="CrateMagazines", min=0, max=4, weightChance=80},
 				{name="CrateNewspapers", min=0, max=4, weightChance=100},
 			}
@@ -16142,7 +16505,7 @@ local distributionTable = {
 				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=1},
 				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=1},
 				{name="CrateRandomJunk", min=0, max=4, weightChance=60},
-				{name="CrateBooks", min=0, max=4, weightChance=60},
+				{name="CrateBooks", min=0, max=1, weightChance=20},
 				{name="CrateMagazines", min=0, max=4, weightChance=80},
 				{name="CrateNewspapers", min=0, max=4, weightChance=100},
 			}
@@ -16330,7 +16693,19 @@ local distributionTable = {
 	},
 	
 	technical = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="GeneratorRoom", min=0, max=99},
+			}
+		},
 		counter = {
+			procedural = true,
+			procList = {
+				{name="GeneratorRoom", min=0, max=99},
+			}
+		},
+		locker = {
 			procedural = true,
 			procList = {
 				{name="GeneratorRoom", min=0, max=99},
@@ -16556,12 +16931,54 @@ local distributionTable = {
 		},
 	},
 	
+	tobaccostorage = {
+		cardboardbox = {
+			procedural = true,
+			procList = {
+				{name="CrateCigarettes", min=0, max=99},
+			}
+		},
+		metal_shelves = {
+			procedural = true,
+			procList = {
+				{name="TobaccoStoreChew", min=0, max=99, weightChance=40},
+				{name="TobaccoStoreCigarettes", min=0, max=99, weightChance=80},
+				{name="TobaccoStoreCigarillos", min=0, max=99, weightChance=40},
+			}
+		},
+	},
+	
+	tobaccostore = {
+		counter = {
+			procedural = true,
+			procList = {
+				{name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
+			}
+		},
+		displaycase = {
+			procedural = true,
+			procList = {
+				{name="TobaccoStoreCigars", min=1, max=99, weightChance=100},
+				{name="TobaccoStorePipes", min=1, max=99, weightChance=40},
+			}
+		},
+		shelves = {
+			procedural = true,
+			procList = {
+				{name="TobaccoStoreAccessories", min=0, max=99, forceForTiles="location_shop_generic_01_12;location_shop_generic_01_13;location_shop_generic_01_14;location_shop_generic_01_15"},
+				{name="TobaccoStoreChew", min=1, max=2, weightChance=60},
+				{name="TobaccoStoreCigarettes", min=1, max=4, weightChance=100},
+				{name="TobaccoStoreCigarillos", min=1, max=2, weightChance=60},
+			}
+		},
+	},
+	
 	toolstorestorage = {
 		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16580,7 +16997,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16599,7 +17016,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16631,7 +17048,7 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16668,7 +17085,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16693,7 +17110,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=2, weightChance=10},
 				{name="CrateLongStick", min=0, max=2, weightChance=20},
 				{name="CrateLumber", min=0, max=4, weightChance=40},
@@ -16863,14 +17280,14 @@ local distributionTable = {
 			procList = {
 				{name="UniversityLibraryArt", min=0, max=1, weightChance=40},
 				{name="UniversityLibraryBiography", min=0, max=1, weightChance=40},
-				{name="UniversityLibraryBooks", min=1, max=99, weightChance=20},
+				{name="UniversityLibraryBooks", min=2, max=99, weightChance=20},
 				{name="UniversityLibraryBusiness", min=0, max=1, weightChance=20},
 				{name="UniversityLibraryCinema", min=0, max=1, weightChance=20},
 				{name="UniversityLibraryComputer", min=0, max=1, weightChance=20},
 				{name="UniversityLibraryGeneralReference", min=0, max=1, weightChance=80},
 				{name="UniversityLibraryHistory", min=0, max=1, weightChance=80},
 				{name="UniversityLibraryLegal", min=0, max=1, weightChance=20},
-				{name="UniversityLibraryMagazines", min=1, max=99, weightChance=20},
+				{name="UniversityLibraryMagazines", min=2, max=99, weightChance=20},
 				{name="UniversityLibraryMedical", min=0, max=1, weightChance=100},
 				{name="UniversityLibraryMilitaryHistory", min=0, max=1, weightChance=20},
 				{name="UniversityLibraryMusic", min=0, max=1, weightChance=60},
@@ -16893,7 +17310,7 @@ local distributionTable = {
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="UniversityStorageaAnthropology", min=0, max=4, weightChance=40},
+				{name="UniversityStorageAnthropology", min=0, max=4, weightChance=40},
 				{name="UniversityStorageScience", min=0, max=4, weightChance=80},
 				{name="UniversityLibraryBooks", min=0, max=99, weightChance=100},
 			}
@@ -17031,7 +17448,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="CrateCarpentry", min=0, max=99, weightChance=100},
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=99, weightChance=10},
 				{name="CrateFarming", min=0, max=99, weightChance=60},
 				{name="CrateGravelBags", min=0, max=99, weightChance=20},
@@ -17056,7 +17473,7 @@ local distributionTable = {
 			procList = {
 				{name="CrateAntiqueStove", min=0, max=1, weightChance=5},
 				{name="CrateCarpentry", min=0, max=99, weightChance=100},
-				{name="CrateClayBrick", min=0, max=1, weightChance=10},
+				{name="CrateClayBricks", min=0, max=1, weightChance=10},
 				{name="CrateConcrete", min=0, max=99, weightChance=10},
 				{name="CrateFarming", min=0, max=99, weightChance=60},
 				{name="CrateGravelBags", min=0, max=99, weightChance=20},
@@ -17205,7 +17622,7 @@ local distributionTable = {
 				{name="StoreKitchenPotatoes", min=0, max=1, weightChance=100},
 				{name="StoreKitchenPots", min=0, max=99, weightChance=20},
 				{name="WesternKitchenBaking", min=0, max=1, weightChance=100},
-				{name="WesternKitchenButcher", min=0, max=1, weightChance=100},
+				{name="WesternKitchenButcher", min=1, max=1, weightChance=100},
 				{name="WesternKitchenSauce", min=0, max=1, weightChance=100},
 			}
 		},
@@ -17723,6 +18140,7 @@ local distributionTable = {
 	--	BAGS/CONTAINERS
 	-- =====================
 
+	-- Chest straps with assorted ammunition types.
 	AmmoStrap_Bullets = {
 		rolls = 4,
 		items = {
@@ -17736,7 +18154,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_223 = {
@@ -17752,7 +18169,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_308 = {
@@ -17768,7 +18184,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_38 = {
@@ -17784,7 +18199,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_44 = {
@@ -17800,7 +18214,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_45 = {
@@ -17816,7 +18229,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Bullets_9mm = {
@@ -17832,7 +18244,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
 	AmmoStrap_Shells = {
@@ -17848,35 +18259,55 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
+	-- Generic large backpack. Hiker-oriented.
 	Bag_ALICEpack = {
 		rolls = 1,
 		items = {
-			"AlcoholWipes", 1,
-			"Bandage", 1,
-			"BathTowel", 2,
-			"CDplayer", 1,
-			"Canteen", 1,
-			"Chocolate", 1,
+			-- Snacks/Drinks
+			"BeefJerky", 4,
+			"Chocolate", 2,
 			"Crisps", 1,
+			"DehydratedMeatStick", 4,
+			"GranolaBar", 8,
+			"Gum", 10,
+			"Peanuts", 2,
+			"SunflowerSeeds", 2,
+			"Sportsbottle", 1,
+			-- Tobacco/Smoking
+			"CigarettePack", 1,
+			"Lighter", 0.5,
+			"LighterDisposable", 1,
+			"Matches", 4,
+			"TobaccoChewing", 1,
+			-- Survival Gear
+			"Canteen", 1,
+			"CompassDirectional", 8,
+			"KnifePocket", 0.5,
+			"MetalCup", 1,
+			"Multitool", 0.5,
+			"P38", 1,
+			"Spork", 4,
+			"WaterPurificationTablets", 1,
+			"Whistle", 4,
+			-- Clothing
+			"Hat_Bandana", 2,
+			"Hat_BandanaTINT", 2,
+			"HoodieDOWN_WhiteTINT", 1,
+			"PonchoYellowDOWN", 4,
+			"ShemaghScarf_Green", 0.1,
+			"Socks_Heavy", 2,
+			-- Electronics/Music
+			"Battery", 1,
+			"CDplayer", 1,
 			"Disc_Retail", 2,
 			"Earbuds", 1,
-			"FirstAidKit_Camping", 4,
-			"GranolaBar", 1,
-			"Gum", 10,
-			"HoodieDOWN_WhiteTINT", 0.5,
-			"KnifePocket", 0.1,
-			"Lighter", 1,
-			"Peanuts", 1,
-			"Socks_Ankle_White", 2,
-			"Spork", 10,
-			"SunflowerSeeds", 1,
-			"TobaccoChewing", 1,
-			"Vest_DefaultTEXTURE_TINT", 2,
-			"WaterBottle", 1,
-			"WaterPurificationTablets", 1,
+			-- Medical
+			"AlcoholWipes", 4,
+			"Bandage", 2,
+			"Bandaid", 8,
+			"FirstAidKit_Camping", 1,
 		},
 		junk = {
 			rolls = 1,
@@ -17884,7 +18315,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ALICEpack_Army = BagsAndContainers.ALICEpack_Army,
@@ -17893,6 +18323,7 @@ local distributionTable = {
 
 	Bag_ALICE_BeltSus = BagsAndContainers.ALICE_BeltSus,
 
+	-- Metal ammo cans. Used by the army and gun enthusiasts.
 	Bag_AmmoBox = {
 		rolls = 4,
 		items = {
@@ -17906,7 +18337,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_223 = {
@@ -17922,7 +18352,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_308 = {
@@ -17938,7 +18367,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_38 = {
@@ -17954,7 +18382,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_44 = {
@@ -17970,7 +18397,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_45 = {
@@ -17986,7 +18412,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_9mm = {
@@ -18002,7 +18427,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_Hunting = {
@@ -18018,7 +18442,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_Mixed = {
@@ -18039,7 +18462,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_AmmoBox_ShotgunShells = {
@@ -18054,24 +18476,50 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Duffel bag for baseball players.
 	Bag_BaseballBag = {
-		rolls = 1,
+		rolls = 2,
 		items = {
-			"BaseballBat", 100,
+			-- Baseball Gear
+			"AthleticCup", 20,
+			"BaseballBat", 50,
 			"BaseballBat", 20,
-			"Baseball", 100,
+			"BaseballBat_Metal", 50,
+			"BaseballBat_Metal", 20,
+			"Baseball", 50,
 			"Baseball", 50,
 			"Baseball", 20,
 			"Baseball", 20,
-			"Shoes_TrainerTINT", 50,
-			"Shorts_LongSport", 20,
-			"Shorts_ShortSport", 50,
-			"Trousers_Sport", 10,
-			"Tshirt_Sport", 50,
-			"WaterBottle", 1,
+			"Gloves_FingerlessLeatherGloves", 20,
+			"Hat_BaseballHelmet", 10,
+			"ShinKneeGuard_L_Baseball", 10,
+			"Shoes_TrainerTINT", 20,
+			"Trousers_WhiteTEXTURE", 20,
+			"Vest_CatcherVest", 10,
+			"Whistle", 50,
+			-- Snacks/Drinks
+			"Flask", 1,
+			"Gum", 50,
+			"Gum", 50,
+			"Gum", 20,
+			"Gum", 20,
+			"Sportsbottle", 50,
+			"TobaccoChewing", 10,
+			-- Stationery/Office
+			"Clipboard", 20,
+			"Notepad", 50,
+			"Pencil", 50,
+			"Pencil", 20,
+			-- Misc.
+			"BathTowel", 20,
+			"Money", 20,
+			"Money", 10,
+			"Photo", 4,
+			"Medal_Bronze", 1,
+			"Medal_Gold", 0.01,
+			"Medal_Silver", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -18085,6 +18533,7 @@ local distributionTable = {
 
 	Bag_BigHikingBag_Travel = BagsAndContainers.HikingBag,
 
+	-- Gift basket for children.
 	Bag_BirthdayBasket = {
 		rolls = 1,
 		items = {
@@ -18128,19 +18577,33 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Bag for bowling alley patrons.
 	Bag_BowlingBallBag = {
-		rolls = 1,
+		rolls = 2,
 		items = {
+			-- Bowling Gear
+			"Gloves_FingerlessLeatherGloves", 20,
 			"Shoes_Bowling", 50,
-			"Shirt_Bowling_Blue", 1,
-			"Shirt_Bowling_Brown", 1,
-			"Shirt_Bowling_Green", 1,
-			"Shirt_Bowling_LimeGreen", 1,
-			"Shirt_Bowling_Pink", 1,
-			"Shirt_Bowling_White", 1,
+			"Shirt_Bowling_Blue", 4,
+			"Shirt_Bowling_Brown", 4,
+			"Shirt_Bowling_Green", 4,
+			"Shirt_Bowling_LimeGreen", 4,
+			"Shirt_Bowling_Pink", 4,
+			"Shirt_Bowling_White", 4,
+			-- Stationery/Office
+			"Notepad", 50,
+			"Pencil", 50,
+			"Pencil", 20,
+			-- Misc.
+			"BathTowel", 20,
+			"Money", 20,
+			"Money", 10,
+			"Photo", 4,
+			"Medal_Bronze", 1,
+			"Medal_Gold", 0.01,
+			"Medal_Silver", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -18148,54 +18611,63 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Emergency supply bag for cars, in case of breakdown on the road.
 	Bag_BreakdownBag = {
 		rolls = 1,
 		items = {
-			"Base.LouisvilleMap1", 0.01,
-			"Base.LouisvilleMap2", 0.01,
-			"Base.LouisvilleMap3", 0.01,
-			"Base.LouisvilleMap4", 0.01,
-			"Base.LouisvilleMap5", 0.01,
-			"Base.LouisvilleMap6", 0.01,
-			"Base.LouisvilleMap7", 0.01,
-			"Base.LouisvilleMap8", 0.01,
-			"Base.LouisvilleMap9", 0.01,
-			"Base.MarchRidgeMap", 0.4,
-			"Base.MuldraughMap", 0.4,
-			"Base.RiversideMap", 0.4,
-			"Base.RosewoodMap", 0.4,
-			"Base.WestpointMap", 0.4,
-			"Battery", 10,
-			"BeefJerky", 10,
-			"Candle", 20,
-			"DehydratedMeatStick", 10,
-			"ElectricWire", 50,
-			"PetrolCanEmpty", 20,
-			"Extinguisher", 10,
-			"FirstAidKit_Camping", 10,
+			-- Tools
 			"Funnel", 50,
-			"GranolaBar", 10,
-			"HandTorch", 50,
 			"Jack", 20,
 			"LugWrench", 50,
-			"Matches", 50,
+			"Screwdriver", 50,
+			"TireIron", 50,
+			"TirePump", 50,
+			"Wrench", 50,
+			-- Emergency Supplies
+			"BatteryBox", 10,
+			"CandleBox", 20,
+			"FirstAidKit_Camping", 10,
+			"Matchbox", 20,
+			"PetrolCanEmpty", 20,
+			"Sheet", 50,
+			"ToiletPaper", 50,
+			"Whistle", 50,
+			-- Snacks/Drinks
+			"BeefJerky", 20,
+			"DehydratedMeatStick", 20,
+			"GranolaBar", 20,
+			"Plonkies", 20,
+			"SunflowerSeeds", 20,
+			"WaterBottle", 20,
+			-- Lighting
+			"HandTorch", 50,
+			"Torch", 20,
+			-- Materials
+			"ElectricWire", 50,
+			"Rope", 50,
+			"RubberHose", 50,
+			"Tarp", 20,
+			-- Maps
+			"LouisvilleMap1", 0.01,
+			"LouisvilleMap2", 0.01,
+			"LouisvilleMap3", 0.01,
+			"LouisvilleMap4", 0.01,
+			"LouisvilleMap5", 0.01,
+			"LouisvilleMap6", 0.01,
+			"LouisvilleMap7", 0.01,
+			"LouisvilleMap8", 0.01,
+			"LouisvilleMap9", 0.01,
+			"MarchRidgeMap", 0.4,
+			"MuldraughMap", 0.4,
+			"RiversideMap", 0.4,
+			"RosewoodMap", 0.4,
+			"WestpointMap", 0.4,
+			-- Literature (Recipes)
 			"MechanicMag1", 4,
 			"MechanicMag2", 4,
 			"MechanicMag3", 4,
-			"Notebook", 50,
-			"Rope", 50,
-			"RubberHose", 50,
-			"Screwdriver", 50,
-			"Sheet", 50,
-			"TireIron", 50,
-			"TirePump", 50,
-			"ToiletPaper", 20,
-			"Torch", 20,
-			"WaterBottle", 20,
-			"Wrench", 50,
 		},
 		junk = {
 			rolls = 1,
@@ -18205,6 +18677,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Various tools that are perfectly legal to own, officer. I swear!
 	Bag_BurglarBag = {
 		rolls = 1,
 		items = {
@@ -18213,6 +18686,7 @@ local distributionTable = {
 			"BoltCutters", 20,
 			"ClubHammer", 20,
 			"Crowbar", 100,
+			"HandAxe", 10,
 			"Hammer", 20,
 			"KnifeButterfly", 10,
 			"Pliers", 20,
@@ -18263,6 +18737,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Military chest rig.
 	Bag_ChestRig = {
 		rolls = 1,
 		items = {
@@ -18274,65 +18749,71 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 1,
 	},
 
+	-- Duffel bag full of construction tools.
 	Bag_ConstructionBag = {
 		rolls = 1,
 		items = {
+			-- Tools
 			"BallPeenHammer", 20,
 			"CarpentryChisel", 10,
 			"ClubHammer", 20,
 			"Crowbar", 20,
-			"DuctTape", 50,
-			"DuctTape", 20,
-			"Epoxy", 10,
-			"FiberglassTape", 10,
-			"Glasses_SafetyGoggles", 50,
+			"HandAxe", 10,
 			"Hammer", 50,
 			"HandDrill", 20,
-			"Handle", 8,
-			"Hat_BuildersRespirator", 10,
-			"Hat_DustMask", 50,
-			"Hat_HardHat", 50,
 			"KnifePocket", 0.1,
-			"LongStick", 4,
-			"MeasuringTape", 50,
-			"NailsBox", 50,
-			"NailsBox", 20,
 			"PipeWrench", 20,
 			"Pliers", 50,
-			"RespiratorFilters", 10,
-			"RippedSheets", 50,
-			"RippedSheets", 20,
-			"Rope", 20,
 			"Saw", 50,
 			"Screwdriver", 50,
-			"ScrewsBox", 10,
 			"SheetMetalSnips", 20,
 			"Shovel", 10,
 			"Shovel2", 10,
 			"Sledgehammer", 0.5,
 			"Sledgehammer2", 0.5,
-			"SmallHandle", 8,
 			"ViseGrips", 20,
 			"WoodenMallet", 20,
-			"WoodenStick2", 4,
+			"Wrench", 50,
+			-- Equipment
+			"Glasses_SafetyGoggles", 50,
+			"Hat_BuildersRespirator", 10,
+			"Hat_DustMask", 50,
+			"Hat_HardHat", 50,
+			"RespiratorFilters", 10,
+			-- Spare Handles
+			"Handle", 10,
+			"LongStick", 10,
+			"SmallHandle", 10,
+			"WoodenStick2", 10,
+			-- Materials
+			"DuctTape", 50,
+			"DuctTape", 20,
+			"Epoxy", 10,
+			"FiberglassTape", 10,
+			"NailsBox", 50,
+			"NailsBox", 20,
+			"RippedSheets", 50,
+			"RippedSheets", 20,
+			"Rope", 20,
+			"ScrewsBox", 10,
 			"Woodglue", 20,
 			"Woodglue", 10,
-			"Wrench", 50,
 		},
 		junk = {
 			rolls = 1,
 			items = {
-				
+				"MeasuringTape", 50,
 			}
 		}
 	},
 
+	-- Professional dancer's bag.
 	Bag_Dancer = {
 		rolls = 1,
 		items = {
+			-- Clothing
 			"Bikini_Pattern01", 2,
 			"Bikini_TINT", 2,
 			"BoobTube", 1,
@@ -18348,41 +18829,15 @@ local distributionTable = {
 			"Bra_Straps_FrillyBlack", 4,
 			"Bra_Straps_FrillyPink", 4,
 			"Bra_Straps_White", 10,
-			"Brochure", 2,
-			"Camera", 10,
-			"CameraDisposable", 20,
-			"CameraFilm", 20,
-			"CameraFilm", 20,
-			"CameraFilm", 10,
-			"CameraFilm", 10,
-			"CameraExpensive", 0.05,
-			"Card_Valentine", 1,
-			"Comb", 4,
 			"Corset", 2,
 			"Corset_Black", 2,
-			"Diary1", 1,
-			"Flier", 2,
 			"FrillyUnderpants_Black", 4,
 			"FrillyUnderpants_Pink", 4,
 			"FrillyUnderpants_Red", 4,
 			"Garter", 2,
-			"Gum", 10,
-			"HairDryer", 10,
-			"HairIron", 10,
-			"Hairgel", 10,
-			"Hairspray2", 10,
 			"Hat_BunnyEarsBlack", 4,
 			"Hat_BunnyEarsWhite", 4,
 			"Hat_Police", 4,
-			"KeyRing_Sexy", 1,
-			"LetterHandwritten", 1,
-			"Lipstick", 6,
-			"MakeupEyeshadow", 6,
-			"MakeupFoundation", 6,
-			"Mirror", 8,
-			"Perfume", 4,
-			"Pillow_Heart", 0.001,
-			"Photo_Secret", 1,
 			"Shirt_CropTopNoArmTINT", 1,
 			"Shirt_CropTopTINT", 1,
 			"Shoes_Fancy", 1,
@@ -18395,8 +18850,39 @@ local distributionTable = {
 			"TightsBlackSemiTrans", 4,
 			"TightsBlackTrans", 4,
 			"TightsFishnets", 2,
-			"Tweezers", 10,
 			"Underpants_Black", 10,
+			-- Cosmetic
+			"Comb", 4,
+			"HairDryer", 10,
+			"Hairgel", 10,
+			"HairIron", 10,
+			"Hairspray2", 10,
+			"Lipstick", 6,
+			"MakeupEyeshadow", 6,
+			"MakeupFoundation", 6,
+			"Mirror", 8,
+			"Perfume", 4,
+			"Tweezers", 10,
+			-- Tobacco/Smoking
+			"CigarettePack", 20,
+			"LighterDisposable", 10,
+			"Matches", 10,
+			-- Misc.
+			"Gum", 50,
+			"Gum", 50,
+			"PillsVitamins", 20,
+			"PillsVitamins", 10,
+			"SodaCan", 50,
+			"SodaCan", 20,
+			-- Special
+			"Card_Valentine", 10,
+			"Diary1", 10,
+			"KeyRing_Sexy", 10,
+			"Locket", 10,
+			"LetterHandwritten", 10,
+			"Photo_Racy", 10,
+			"Pillow_Heart", 0.01,
+			"Postcard", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -18406,6 +18892,7 @@ local distributionTable = {
 		}
 	},
 
+	-- I don't know what you were expecting?
 	Bag_DeadMice = {
 		rolls = 12,
 		items = {
@@ -18448,6 +18935,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Old-school black leather doctor's bag.
 	Bag_DoctorBag = {
 		rolls = 2,
 		items = {
@@ -18491,6 +18979,8 @@ local distributionTable = {
 		}
 	},
 
+	Bag_DoctorBag_Money = BagsAndContainers.MoneyBag,
+
 	Bag_DuffelBag = {
 		rolls = 1,
 		items = {
@@ -18516,7 +19006,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_DuffelBagTINT = {
@@ -18544,7 +19033,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FannyPackFront = {
@@ -18593,7 +19081,6 @@ local distributionTable = {
 				"Wallet", 20,
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FannyPackBack = {
@@ -18642,21 +19129,15 @@ local distributionTable = {
 				"Wallet", 20,
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FishingBasket= {
 		rolls = 1,
 		items = {
 			"BlackCrappie", 10,
-			"BlueCatfish", 10,
 			"Bluegill", 10,
-			"ChannelCatfish", 10,
-			"FlatheadCatfish", 10,
-			"FreshwaterDrum", 10,
 			"GreenSunfish", 10,
 			"LargemouthBass", 10,
-			"Muskellunge", 10,
 			"RedearSunfish", 10,
 			"Sauger", 10,
 			"SmallmouthBass", 10,
@@ -18673,7 +19154,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FluteCase = {
@@ -18690,7 +19170,7 @@ local distributionTable = {
 	},
 
 	Bag_FoodSnacks = {
-		rolls = 4,
+		rolls = 2,
 		items = {
 			"BeefJerky", 20,
 			"BeefJerky", 10,
@@ -18726,11 +19206,10 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FoodCanned = {
-		rolls = 4,
+		rolls = 2,
 		items = {
 			"CannedBolognese", 20,
 			"CannedCarrots2", 20,
@@ -18755,7 +19234,6 @@ local distributionTable = {
 				"TinOpener", 100,
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_FruitBasket = {
@@ -18781,7 +19259,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_GardenBasket = BagsAndContainers.Gardening,
@@ -18812,28 +19289,35 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_GolfBag = {
 		rolls = 2,
 		items = {
-			"CigarettePack", 2,
-			"Eraser", 10,
+			-- Clubs
 			"Golfclub", 200,
 			"Golfclub", 50,
 			"Golfclub", 20,
 			"Golfclub", 10,
+			-- Golf Balls
 			"GolfBall", 200,
 			"GolfBall", 50,
 			"GolfBall", 20,
 			"GolfBall", 10,
+			-- Misc.
+			"CigarettePack", 2,
+			-- Accessories
+			"GolfTee", 200,
+			"GolfTee", 50,
+			"GolfTee", 50,
+			"GolfTee", 20,
+			"Notepad", 10,
+			"Pencil", 10,
+			-- Clothing
 			"Gloves_LeatherGloves", 1,
 			"Hat_GolfHatTINT", 2,
 			"Hat_VisorBlack", 2,
 			"Hat_VisorRed", 2,
-			"Notepad", 10,
-			"Pencil", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -18841,33 +19325,37 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Bag of sports equipment, and some of the tools that are more suited for melee combat.
 	Bag_GolfBag_Melee = {
 		rolls = 4,
 		items = {
-			"Axe", 6,
+			-- Sports Equipment
 			"BaseballBat", 20,
 			"BaseballBat_Metal", 20,
-			"BaseballBat_Nails", 6,
-			"Crowbar", 10,
 			"FieldHockeyStick", 20,
+			"Hat_HockeyMask", 1,
+			"IceHockeyStick", 20,
+			"LaCrosseStick", 20,
+			-- Tools
+			"Axe", 6,
+			"Crowbar", 10,
 			"FireplacePoker", 1,
+			"HandAxe", 10,
 			"GardenFork", 6,
 			"GardenFork_Forged", 0.1,
 			"GardenHoe", 6,
-			"Hat_HockeyMask", 1,
-			"IceHockeyStick", 20,
 			"Katana", 0.5,
-			"LaCrosseStick", 20,
 			"Machete", 6,
 			"Shovel", 6,
 			"Shovel2", 6,
 			"Sledgehammer", 0.5,
 			"Sledgehammer2", 0.5,
-			"SpearCrafted", 10,
 			"WoodAxe", 4,
+			-- Crafted Weapons
+			"BaseballBat_Nails", 6,
+			"SpearCrafted", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -18875,7 +19363,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_HikingBag_Travel = BagsAndContainers.HikingBag,
@@ -18883,17 +19370,26 @@ local distributionTable = {
 	Bag_InmateEscapedBag = {
 		rolls = 1,
 		items = {
-			"CrudeKnife", 10,
-			"DuctTape", 50,
-			"Hammer", 20,
-			"GlassShiv", 10,
-			"KnifeShiv", 20,
-			"RippedSheets", 20,
+			-- Weapons/Tools
+			"Awl", 10,
+			"CrudeKnife", 20,
+			"File", 10,
+			"GlassShiv", 50,
+			"Hammer", 10,
+			"IcePick", 20,
+			"KnifeShiv", 50,
+			"Screwdriver", 10,
+			-- Materials
+			"DuctTape", 20,
+			"RippedSheets", 50,
 			"RippedSheets", 20,
 			"Rope", 50,
-			"Screwdriver", 20,
+			"SheetRope", 50,
 			"SheetRope", 20,
-			"SheetRope", 20,
+			-- Misc.
+			"Belt2", 4,
+			"Zipties", 20,
+			"LeatherStrips", 8,
 		},
 		junk = {
 			rolls = 1,
@@ -18901,7 +19397,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_JanitorToolbox = {
@@ -18916,6 +19411,7 @@ local distributionTable = {
 			-- Tools
 			"Crowbar", 20,
 			"Hammer", 50,
+			"HandAxe", 1,
 			"HandTorch", 50,
 			"KnifePocket", 0.1,
 			"PipeWrench", 100,
@@ -18939,10 +19435,13 @@ local distributionTable = {
 			"Woodglue", 8,
 			-- Misc.
 			"BottleOpener", 1,
+			"Flask", 1,
 			"Gum", 10,
+			"HottieZ", 1,
 			"MarkerBlack", 10,
 			"MeasuringTape", 50,
 			"TobaccoChewing", 1,
+		    "Whetstone", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -18951,7 +19450,6 @@ local distributionTable = {
 				"Padlock", 10,
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Laundry = {
@@ -19062,7 +19560,7 @@ local distributionTable = {
 			items = {
 				
 			}
-		}
+		},
 	},
 
 	Bag_LaundryHospital = {
@@ -19107,7 +19605,7 @@ local distributionTable = {
 			items = {
 				
 			}
-		}
+		},
 	},
 
 	Bag_Mail = {
@@ -19186,7 +19684,7 @@ local distributionTable = {
 			items = {
 				
 			}
-		}
+		},
 	},
 
 	MakeupCase_Professional = BagsAndContainers.MakeupCase_Professional,
@@ -19236,32 +19734,12 @@ local distributionTable = {
 			items = {
 				
 			}
-		}
+		},
 	},
 
 	Bag_Military = BagsAndContainers.ALICEpack_Army,
 
-	Bag_MoneyBag = {
-		rolls = 4,
-		items = {
-			"GemBag", 1,
-			"Money", 100,
-			"Money", 50,
-			"Money", 50,
-			"Money", 20,
-			"MoneyBundle", 100,
-			"MoneyBundle", 50,
-			"MoneyBundle", 20,
-			"StockCertificate", 10,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				
-			}
-		},
-		fillRand = 0,
-	},
+	Bag_MoneyBag = BagsAndContainers.MoneyBag,
 
 	Bag_NormalHikingBag = BagsAndContainers.HikingBag,
 
@@ -19323,7 +19801,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Police = BagsAndContainers.Bag_Police,
@@ -19367,6 +19844,7 @@ local distributionTable = {
 			"Thread", 10,
 			"WalkieTalkie3", 4,
 			"WaterPurificationTablets", 8,
+			"Whetstone", 10,
 			"Whistle", 2,
 			"x2Scope", 2,
 			"x4Scope", 1,
@@ -19378,7 +19856,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCase_Tools = BagsAndContainers.Toolbox,
@@ -19394,7 +19871,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulky_SCBA = {
@@ -19410,7 +19886,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulky_Survivalist = {
@@ -19462,6 +19937,7 @@ local distributionTable = {
 			"Vest_BulletCivilian", 0.5,
 			"WalkieTalkie3", 4,
 			"WaterPurificationTablets", 8,
+			"Whetstone", 10,
 			"Whistle", 2,
 			"x2Scope", 4,
 			"x4Scope", 2,
@@ -19473,7 +19949,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo = {
@@ -19488,7 +19963,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_223 = {
@@ -19503,7 +19977,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_308 = {
@@ -19518,7 +19991,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_38 = {
@@ -19533,7 +20005,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_44 = {
@@ -19548,7 +20019,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_45 = {
@@ -19563,7 +20033,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_556 = {
@@ -19578,7 +20047,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_9mm = {
@@ -19593,7 +20061,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_Hunting = {
@@ -19608,7 +20075,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulkyAmmo_ShotgunShells = {
@@ -19623,7 +20089,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseBulky_Audio = {
@@ -19680,7 +20145,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmall_Armorer = {
@@ -19704,7 +20168,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmall_Electronics = {
@@ -19730,7 +20193,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmall_FirstAid = BagsAndContainers.FirstAidKit,
@@ -19756,9 +20218,11 @@ local distributionTable = {
 			"Needle", 20,
 			"P38", 50,
 			"PenLight", 20,
+			"SurvivalSchematic", 10,
 			"Thread", 50,
 			"Thread", 20,
 			"WaterPurificationTablets", 10,
+			"Whetstone", 10,
 			"Whistle", 2,
 		},
 		junk = {
@@ -19767,7 +20231,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmall_Pistol1 = BagsAndContainers.PistolCase1,
@@ -19799,7 +20262,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmall_WalkieTalkiePolice = {
@@ -19819,7 +20281,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseSmallMilitary_FirstAid = BagsAndContainers.FirstAidKit,
@@ -19843,7 +20304,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ProtectiveCaseMilitary_Tools = BagsAndContainers.Toolbox,
@@ -19873,32 +20333,39 @@ local distributionTable = {
 			"Key1", 0.5,
 			"Key1", 0.5,
 			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"BluePen", 8,
-			"Book", 20,
-			"Book", 20,
-			"Book", 10,
-			"Book", 10,
-			"CDplayer", 2,
+			-- Literature (Generic)
 			"ComicBook_Retail", 20,
 			"ComicBook", 10,
-			"Disc_Retail", 2,
-			"Earbuds", 2,
-			"Eraser", 6,
-			"Gum", 10,
-			"KnifePocket", 0.1,
+			"Book", 20,
+			"Book", 20,
+			"Book", 10,
+			"Book", 10,
 			"Paperback", 10,
+			"SheetPaper2", 20,
+			"SheetPaper2", 20,
+			"SheetPaper2", 10,
+			"SheetPaper2", 10,
+			"WaterBottle", 1,
+			-- Stationery/Office
+			"BluePen", 8,
+			"Eraser", 6,
+			"MarkerBlack", 4,
+			"MarkerBlue", 2,
+			"MarkerGreen", 2,
+			"MarkerRed", 2,
 			"Pen", 8,
 			"Pencil", 10,
 			"RedPen", 8,
 			"RubberBand", 6,
 			"Scissors", 2,
 			"Scotchtape", 4,
-			"SheetPaper2", 20,
-			"SheetPaper2", 20,
-			"SheetPaper2", 10,
-			"SheetPaper2", 10,
-			"WaterBottle", 1,
+			-- Electronics/Music
+			"CDplayer", 2,
+			"Disc_Retail", 2,
+			"Earbuds", 2,
+			-- Misc.
+			"Gum", 10,
+			"KnifePocket", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -19906,7 +20373,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Satchel_Fishing = BagsAndContainers.Tacklebox,
@@ -19957,7 +20423,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Satchel_Mail = {
@@ -20129,9 +20594,7 @@ local distributionTable = {
 			"Key1", 0.5,
 			"Key1", 0.5,
 			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"BluePen", 8,
-			"Book", 10,
+			-- Photography
 			"Camera", 50,
 			"Camera", 50,
 			"CameraExpensive", 20,
@@ -20139,27 +20602,37 @@ local distributionTable = {
 			"CameraFilm", 50,
 			"CameraFilm", 50,
 			"CameraFilm", 50,
+			"Photo", 50,
+			"Photo", 20,
+			"Photo", 20,
+			"Photo", 10,
+			"PhotoAlbum", 20,
+			-- Electronics/Music
 			"CDplayer", 2,
-			"CordlessPhone", 10,
+			"Pager", 10,
 			"Disc_Retail", 2,
 			"Earbuds", 2,
-			"Eraser", 6,
-			"Gum", 10,
+			"WalkieTalkie2", 2,
+			"WalkieTalkie3", 1,
+			-- Literature (Generic)
+			"Book_Art", 10,
 			"Magazine_Art", 5,
 			"Magazine_Fashion", 5,
+			-- Stationery/Office
+			"BluePen", 8,
+			"Eraser", 6,
 			"Notebook", 4,
 			"Notepad", 10,
 			"Pen", 8,
 			"Pencil", 10,
-			"Photo", 10,
 			"RedPen", 8,
 			"RubberBand", 6,
 			"Scissors", 2,
 			"Scotchtape", 4,
 			"SheetPaper2", 20,
 			"SheetPaper2", 10,
-			"WalkieTalkie2", 2,
-			"WalkieTalkie3", 1,
+			-- Misc.
+			"Gum", 10,
 			"WaterBottle", 1,
 		},
 		junk = {
@@ -20168,7 +20641,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_SaxophoneCase = {
@@ -20200,6 +20672,7 @@ local distributionTable = {
 			"Doll", 10,
 			"DoodleKids", 20,
 			"FluffyfootBunny", 0.001,
+            "Firecracker", 0.01,
 			"FreddyFox", 0.001,
 			"GranolaBar", 8,
 			"JacquesBeaver", 0.001,
@@ -20236,7 +20709,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Schoolbag_Patches = BagsAndContainers.Schoolbag,
@@ -20275,20 +20747,26 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Basket of knitting supplies grandma uses to uncomfortable sweaters.
 	Bag_SewingBasket = {
-		rolls = 4,
+		rolls = 1,
 		items = {
-			"Awl", 1,
-			"KnittingNeedles", 20,
-			"SewingKit", 4,
+			-- Tools
+			"KnittingNeedles", 200,
+			"KnittingNeedles", 100,
+			"KnittingNeedles", 50,
+			-- Materials
+			"Yarn", 200,
+			"Yarn", 100,
+			"Yarn", 50,
 			"Yarn", 50,
 			"Yarn", 20,
-			"Yarn", 20,
-			"Yarn", 10,
-			"Yarn", 10,
+			-- Misc.
+			"IndustrialDye", 1,
+			"SewingKit", 4,
+			"MeasuringTape", 50,
 		},
 		junk = {
 			rolls = 1,
@@ -20296,7 +20774,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_Sheriff = BagsAndContainers.Bag_Police,
@@ -20319,7 +20796,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ShotgunCase_Police = BagsAndContainers.ShotgunCase1,
@@ -20348,7 +20824,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ShotgunDblSawnoffBag = {
@@ -20369,7 +20844,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_ShotgunSawnoffBag = {
@@ -20390,10 +20864,11 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_SurvivorBag = BagsAndContainers.SurvivorBag,
+
+	Bag_Skill_Maintenance_DuffelBag = BagsAndContainers.Bag_Skill_Maintenance_DuffelBag,
 
 	Bag_SWAT = BagsAndContainers.Bag_Police,
 
@@ -20480,7 +20955,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_TrashBag = {
@@ -20611,7 +21085,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Bag_WorkerBag = {
@@ -20623,22 +21096,34 @@ local distributionTable = {
 			"Key1", 0.5,
 			"Key1", 0.5,
 			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"BluePen", 8,
-			"CDplayer", 1,
-			"Chocolate", 8,
+			-- Snacks/Drinks
+			"Chocolate", 2,
+			"Crisps", 1,
+			"Gum", 10,
+			"Peanuts", 2,
+			"SunflowerSeeds", 2,
+			"Sportsbottle", 8,
+			"Plonkies", 1,
+			"Lunchbag", 8,
+			"Lunchbox", 8,
+			"Lunchbox2", 0.1,
+			-- Tobacco/Smoking
 			"CigarettePack", 1,
-			"Crisps", 10,
+			"Lighter", 0.5,
+			"LighterDisposable", 2,
+			"Matches", 4,
+			"TobaccoChewing", 1,
+			-- Electronics/Music
+			"CDplayer", 1,
 			"Disc_Retail", 2,
-			"Gum", 1,
-			"Peanuts", 8,
+			"Earbuds", 1,
+			-- Stationery/Office
+			"BluePen", 8,
 			"Pen", 8,
 			"Pencil", 10,
 			"RedPen", 8,
 			"RubberBand", 1,
 			"Scissors", 2,
-			"SunflowerSeeds", 8,
-			"WaterBottle", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -20646,7 +21131,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Briefcase = {
@@ -20658,43 +21142,42 @@ local distributionTable = {
 			"Key1", 0.5,
 			"Key1", 0.5,
 			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"BluePen", 8,
-			"BluePen", 8,
-			"Book", 10,
+			-- Literature (Generic)
+			"Book_Business", 4,
+			"Magazine_Business", 10,
+			"Paperback_Business", 8,
+			-- Stationery/Office
+			"Calculator", 2,
+			"Clipboard", 4,
+			"CorrectionFluid", 1,
+			"HolePuncher", 1,
+			"MarkerBlack", 2,
+			"Notebook", 4,
+			"Notepad", 8,
+			"Paperclip", 10,
+			"PaperclipBox", 1,
+			"Paperwork", 50,
+			"Paperwork", 20,
+			"Paperwork", 20,
+			"Paperwork", 10,
+			"Pen", 8,
+			"PenFancy", 2,
+			"Staples", 1,
+			-- Misc.
 			"Brochure", 2,
 			"BusinessCard", 10,
 			"CameraFilm", 0.1,
-			"CordlessPhone", 1,
-			"CorrectionFluid", 1,
 			"CreditCard", 1,
 			"Diary2", 1,
 			"Disc_Retail", 2,
 			"Flier", 2,
 			"Gum", 10,
-			"Journal", 10,
-			"Magazine", 5,
-			"Magazine_Popular", 5,
-			"Magazine_Business", 10,
-			"MagazineCrossword", 0.1,
-			"MagazineWordsearch", 0.1,
-			"Newspaper", 10,
-			"Notebook", 10,
-			"Notepad", 10,
-			"Paperback", 10,
-			"Pen", 8,
-			"Pen", 8,
-			"Pencil", 10,
-			"Pencil", 10,
+			"Pager", 8,
+			"Photo", 4,
 			"Receipt", 1,
-			"RedPen", 8,
-			"RedPen", 8,
-			"RubberBand", 6,
-			"SheetPaper2", 20,
-			"SheetPaper2", 20,
-			"SheetPaper2", 20,
-			"SheetPaper2", 20,
-			"TVMagazine", 20,
+			-- Special
+			"Money", 4,
+			"MoneyBundle", 0.01,
 		},
 		junk = {
 			rolls = 1,
@@ -20702,23 +21185,26 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Briefcase_Money = {
 		rolls = 4,
 		items = {
-			"GemBag", 1,
+			-- Money
 			"Money", 100,
 			"Money", 100,
 			"Money", 100,
 			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
+			"Money", 50,
+			"Money", 50,
+			"Money", 50,
+			"Money", 50,
+			"MoneyBundle", 20,
+			"MoneyBundle", 10,
+			-- Other Valuables
+			"GemBag", 4,
+			"StockCertificate", 50,
 			"StockCertificate", 20,
-			"StockCertificate", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -20726,7 +21212,6 @@ local distributionTable = {
 
 			}
 		},
-		fillRand = 0,
 	},
 
 	Cashbox = BagsAndContainers.Cashbox,
@@ -20893,9 +21378,9 @@ local distributionTable = {
 
 	FirstAidKit = BagsAndContainers.FirstAidKit,
 
-	FirstAidKit_Camping = BagsAndContainers.FirstAidKit_Camping,
+	FirstAidKit = BagsAndContainers.FirstAidKit,
 
-	FirstAidKit_Military = BagsAndContainers.FirstAidKit_Military,
+	FirstAidKit = BagsAndContainers.FirstAidKit,
 
 	Flightcase = BagsAndContainers.Guitarcase,
 
@@ -21084,7 +21569,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	GroceryBag2 = {
@@ -21149,7 +21633,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	GroceryBag3 = {
@@ -21201,7 +21684,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	GroceryBag4 = {
@@ -21234,7 +21716,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	GroceryBag5 = {
@@ -21288,7 +21769,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	GroceryBagGourmet = {
@@ -21326,7 +21806,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Guitarcase = BagsAndContainers.Guitarcase,
@@ -21424,29 +21903,39 @@ local distributionTable = {
 		}
 	},
 
+	-- Hidden contraband cache.
 	HollowBook_Prison = {
 		rolls = 1,
 		items = {
-			"CigaretteRollingPapers", 10,
-			"CordlessPhone", 50,
-			"CrudeKnife", 10,
-			"GlassShiv", 10,
-			"KnifeButterfly", 10,
-			"KnifePocket", 0.1,
-			"KnifeShiv", 50,
-			"Lighter", 10,
-			"LighterDisposable", 20,
+			-- Money
 			"Money", 100,
 			"Money", 50,
 			"Money", 50,
 			"Money", 50,
 			"Notepad", 50,
-			"Pills", 50,
+			-- Tobacco/Smoking
+			"CigarettePack", 20,
+			"CigaretteRollingPapers", 10,
+			"Lighter", 10,
+			"LighterDisposable", 20,
+			"TobaccoChewing", 10,
+			"TobaccoLoose", 10,
+			-- Contraband
+			"File", 50,
+			"Flask", 20,
+			"Pager", 50,
 			"Pills", 20,
+			"Pills", 50,
 			"PillsVitamins", 50,
 			"PillsVitamins", 20,
+			-- Weapons
+			"CrudeKnife", 10,
+			"GlassShiv", 20,
+			"IcePick", 10,
+			"KnifeButterfly", 10,
+			"KnifePocket", 0.1,
+			"KnifeShiv", 50,
 			"SwitchKnife", 10,
-			"Whiskey", 20,
 		},
 		junk = {
 			rolls = 1,
@@ -21456,9 +21945,18 @@ local distributionTable = {
 		}
 	},
 
+	-- Hidden stash of stolen goods.
 	HollowBook_Valuables = {
 		rolls = 1,
 		items = {
+			-- Money
+			"Money", 100,
+			"Money", 100,
+			"Money", 100,
+			"Money", 100,
+			"Money", 100,
+			"Money", 100,
+			-- Stolen Goods
 			"CreditCard_Stolen", 100,
 			"CreditCard_Stolen", 50,
 			"CreditCard_Stolen", 20,
@@ -21467,22 +21965,15 @@ local distributionTable = {
 			"Emerald", 1,
 			"GemBag", 1,
 			"IDcard_Blank", 1,
-			"MilitaryMedal", 0.1,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"Money", 100,
-			"PillsVitamins", 10,
-			"PokerChips", 10,
-			"Revolver_Short", 10,
 			"Ruby", 1,
 			"Sapphire", 1,
 			"StockCertificate", 20,
 			"StockCertificate", 10,
-			"Wallet", 50,
-			"Whiskey", 10,
+			-- Misc.
+			"Flask", 10,
+			"PillsVitamins", 10,
+			"PokerChips", 10,
+			"Revolver_Short", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -21492,6 +21983,7 @@ local distributionTable = {
 		}
 	},
 
+	-- I don't have a drinking problem, I swear!
 	HollowBook_Whiskey = {
 		rolls = 1,
 		items = {
@@ -21513,6 +22005,7 @@ local distributionTable = {
 
 	KeyRing = BagsAndContainers.KeyRing,
 
+	-- Keyring with keys for various cars around the lot.
 	KeyRing_CarDealer = {
 		rolls = 2,
 		items = {
@@ -21530,6 +22023,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Same as above, but unique.
 	KeyRing_Nolans = {
 		rolls = 2,
 		items = {
@@ -21547,13 +22041,15 @@ local distributionTable = {
 		}
 	},
 
-	KeyRing_Bass = BagsAndContainers.KeyRing,
+	KeyRing_Bass = BagsAndContainers.KeyRingOutdoors,
 
 	KeyRing_BlueFox = BagsAndContainers.KeyRing,
 
 	KeyRing_Bug = BagsAndContainers.KeyRing,
 
-	KeyRing_EagleFlag = BagsAndContainers.KeyRing,
+	KeyRing_Clover = BagsAndContainers.KeyRing,
+
+	KeyRing_EagleFlag = BagsAndContainers.KeyRingOutdoors,
 
 	KeyRing_EightBall = BagsAndContainers.KeyRing,
 
@@ -21565,7 +22061,7 @@ local distributionTable = {
 
 	KeyRing_Panther = BagsAndContainers.KeyRing,
 
-	KeyRing_PineTree = BagsAndContainers.KeyRing,
+	KeyRing_PineTree = BagsAndContainers.KeyRingOutdoors,
 
 	KeyRing_PrayingHands = BagsAndContainers.KeyRing,
 
@@ -21593,6 +22089,7 @@ local distributionTable = {
 
 	MakeupCase_Professional = BagsAndContainers.MakeupCase_Professional,
 
+	-- Empty paper bag for lunches or whatever.
 	PaperBag = {
 		rolls = 1,
 		items = {
@@ -21606,19 +22103,23 @@ local distributionTable = {
 		}
 	},
 
+	-- Paper bag with fried chicken and sides.
 	Paperbag_Jays = {
 		rolls = 1,
 		items = {
+			-- Fried Chicken
 			"ChickenFried", 200,
 			"ChickenFried", 50,
 			"ChickenFried", 20,
 			"ChickenFried", 10,
+			-- Side Dishes
 			"Fries", 50,
 			"Fries", 20,
 			"Fries", 10,
 			"Cornbread", 50,
 			"Cornbread", 20,
 			"Cornbread", 10,
+			-- Misc.
 			"PaperNapkins2", 200,
 			"PaperNapkins2", 50,
 			"PlasticKnife", 50,
@@ -21632,22 +22133,25 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Ten Gallon Burger. Pure Beef.
 	Paperbag_Spiffos = {
 		rolls = 1,
 		items = {
+			-- Burgers
 			"Burger", 200,
 			"Burger", 50,
 			"Burger", 20,
 			"Burger", 10,
+			-- Side Dishes
 			"Fries", 50,
 			"Fries", 20,
 			"Fries", 10,
 			"FriedOnionRings", 50,
 			"FriedOnionRings", 20,
 			"FriedOnionRings", 10,
+			-- Misc.
 			"PaperNapkins2", 200,
 			"PaperNapkins2", 50,
 			"Straw2", 100,
@@ -21659,7 +22163,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Parcel_ExtraLarge = BagsAndContainers.Parcel_ExtraLarge,
@@ -21674,6 +22177,7 @@ local distributionTable = {
 
 	PencilCase = BagsAndContainers.PencilCase,
 
+	-- Photo album with photos of past moments from people's lives.
 	PhotoAlbum = {
 		rolls = 4,
 		items = {
@@ -21696,6 +22200,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Same as above but with even older photos.
 	PhotoAlbum_Old = {
 		rolls = 4,
 		items = {
@@ -21707,6 +22212,7 @@ local distributionTable = {
 			-- Memorabilia
 			"Postcard", 20,
 			"LetterHandwritten", 20,
+			"Locket", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -21722,6 +22228,7 @@ local distributionTable = {
 
 	PistolCase3 = BagsAndContainers.PistolCase3,
 
+	-- Empty plastic bag.
 	Plasticbag = {
 		rolls = 1,
 		items = {
@@ -21735,22 +22242,7 @@ local distributionTable = {
 		}
 	},
 
-	Plasticbag_Bags = {
-		rolls = 10,
-		items = {
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				
-			}
-		}
-	},
+	Plasticbag_Bags = BagsAndContainers.Plasticbags,
 
 	Plasticbag_Clothing = BagsAndContainers.Clothing_Generic,
 
@@ -21784,51 +22276,56 @@ local distributionTable = {
 	SeedBag = {
 		rolls = 4,
 		items = {
-			"BasilBagSeed", 4,
-			"BarleyBagSeed", 1,
-			"BellPepperBagSeed", 2,
+			-- Herbs
+			"BasilBagSeed", 2,
+			"ChamomileBagSeed", 2,
+			"ChivesBagSeed", 2,
+			"CilantroBagSeed", 2,
+			"LemonGrassBagSeed", 2,
+			"MarigoldBagSeed", 2,
+			"MintBagSeed", 2,
+			"OreganoBagSeed", 2,
+			"ParsleyBagSeed", 2,
+			"RosemaryBagSeed", 2,
+			"SageBagSeed", 2,
+			"ThymeBagSeed", 2,
+			-- Fruits
+			"StrewberrieBagSeed2", 2,
+			"WatermelonBagSeed", 0.5,
+			-- Vegetables
+			"BellPepperBagSeed", 1,
 			"BroccoliBagSeed2", 2,
 			"CabbageBagSeed2", 2,
 			"CarrotBagSeed2", 2,
 			"CauliflowerBagSeed", 2,
-			"ChamomileBagSeed", 4,
-			"ChivesBagSeed", 4,
-			"CilantroBagSeed", 4,
-			"CornBagSeed", 1,
 			"CucumberBagSeed", 2,
-			"FlaxBagSeed", 1,
 			"GarlicBagSeed", 2,
 			"GreenpeasBagSeed", 2,
-			"HabaneroBagSeed", 1,
-			"HopsBagSeed", 1,
-			"JalapenoBagSeed", 2,
-			"KaleBagSeed", 2,
-			"LeekBagSeed", 4,
-			"LemonGrassBagSeed", 4,
-			"LettuceBagSeed", 2,
-			"MarigoldBagSeed", 4,
-			"MintBagSeed", 4,
+			"HabaneroBagSeed", 0.5,
+			"JalapenoBagSeed", 1,
+			"KaleBagSeed", 1,
+			"LeekBagSeed", 1,
+			"LettuceBagSeed", 1,
 			"OnionBagSeed", 2,
-			"OreganoBagSeed", 4,
-			"ParsleyBagSeed", 4,
 			"PotatoBagSeed2", 2,
-			"PumpkinBagSeed", 2,
+			"PumpkinBagSeed", 0.5,
 			"RedRadishBagSeed2", 2,
-			"RosemaryBagSeed", 4,
-			"RyeBagSeed", 1,
-			"SageBagSeed", 4,
-			"SpinachBagSeed", 2,
-			"StrewberrieBagSeed2", 2,
-			"SugarBeetBagSeed", 1,
-			"SunflowerBagSeed", 4,
-			"SweetPotatoBagSeed", 2,
-			"ThymeBagSeed", 4,
-			"TobaccoBagSeed", 1,
+			"SpinachBagSeed", 1,
+			"SugarBeetBagSeed", 0.5,
+			"SweetPotatoBagSeed", 0.5,
 			"TomatoBagSeed2", 2,
-			"TurnipBagSeed", 2,
-			"WatermelonBagSeed", 2,
-			"WheatBagSeed", 1,
+			"TurnipBagSeed", 1,
 			"ZucchiniBagSeed", 2,
+			-- Seed Crops
+			"CornBagSeed", 1,
+			"FlaxBagSeed", 0.5,
+			"HopsBagSeed", 0.1,
+			"RyeBagSeed", 0.5,
+			"BarleyBagSeed", 0.5,
+			"WheatBagSeed", 0.5,
+			-- Misc.
+			"TobaccoBagSeed", 0.1,
+			"SunflowerBagSeed", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -21836,58 +22333,62 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
-	-- Farmer's seedbag. Weighted towards crops.
+	-- Farmer's seedbag. Weighted towards seed crops.
 	SeedBag_Farming = {
 		rolls = 4,
 		items = {
-			"BarleyBagSeed", 8,
-			"BasilBagSeed", 1,
-			"BellPepperBagSeed", 2,
-			"BroccoliBagSeed2", 2,
-			"CabbageBagSeed2", 2,
-			"CarrotBagSeed2", 2,
-			"CauliflowerBagSeed", 2,
-			"ChamomileBagSeed", 1,
-			"ChivesBagSeed", 1,
-			"CilantroBagSeed", 1,
+			-- Seed Crops
 			"CornBagSeed", 8,
-			"CucumberBagSeed", 2,
-			"FlaxBagSeed", 8,
-			"GarlicBagSeed", 2,
-			"GreenpeasBagSeed", 2,
-			"HabaneroBagSeed", 1,
-			"HopsBagSeed", 8,
-			"JalapenoBagSeed", 2,
-			"KaleBagSeed", 2,
-			"LeekBagSeed", 2,
-			"LemonGrassBagSeed", 1,
-			"LettuceBagSeed", 2,
-			"MarigoldBagSeed", 1,
-			"MintBagSeed", 1,
+			"FlaxBagSeed", 4,
+			"HopsBagSeed", 2,
+			"RyeBagSeed", 4,
+			"BarleyBagSeed", 4,
+			"WheatBagSeed", 8,
+			-- Herbs
+			"BasilBagSeed", 0.1,
+			"ChamomileBagSeed", 0.1,
+			"ChivesBagSeed", 0.1,
+			"CilantroBagSeed", 0.1,
+			"LemonGrassBagSeed", 0.1,
+			"MarigoldBagSeed", 0.1,
+			"MintBagSeed", 0.1,
+			"OreganoBagSeed", 0.1,
+			"ParsleyBagSeed", 0.1,
+			"RosemaryBagSeed", 0.1,
+			"SageBagSeed", 0.1,
+			"ThymeBagSeed", 0.1,
+			-- Fruits
+			"StrewberrieBagSeed2", 2,
+			"WatermelonBagSeed", 2,
+			-- Vegetables
+			"BellPepperBagSeed", 1,
+			"BroccoliBagSeed2", 1,
+			"CabbageBagSeed2", 1,
+			"CarrotBagSeed2", 1,
+			"CauliflowerBagSeed", 1,
+			"CucumberBagSeed", 1,
+			"GarlicBagSeed", 1,
+			"GreenpeasBagSeed", 1,
+			"HabaneroBagSeed", 0.5,
+			"JalapenoBagSeed", 1,
+			"KaleBagSeed", 1,
+			"LeekBagSeed", 1,
+			"LettuceBagSeed", 1,
 			"OnionBagSeed", 2,
-			"OreganoBagSeed", 1,
-			"ParsleyBagSeed", 1,
 			"PotatoBagSeed2", 2,
 			"PumpkinBagSeed", 2,
-			"RedRadishBagSeed2", 2,
-			"RosemaryBagSeed", 1,
-			"RyeBagSeed", 8,
-			"SageBagSeed", 1,
-			"SpinachBagSeed", 2,
-			"StrewberrieBagSeed2", 2,
-			"SugarBeetBagSeed", 8,
-			"SunflowerBagSeed", 2,
+			"RedRadishBagSeed2", 1,
+			"SpinachBagSeed", 1,
+			"SugarBeetBagSeed", 2,
 			"SweetPotatoBagSeed", 2,
-			"ThymeBagSeed", 1,
-			"TobaccoBagSeed", 8,
-			"TomatoBagSeed2", 2,
-			"TurnipBagSeed", 2,
-			"WatermelonBagSeed", 2,
-			"WheatBagSeed", 8,
-			"ZucchiniBagSeed", 2,
+			"TomatoBagSeed2", 1,
+			"TurnipBagSeed", 1,
+			"ZucchiniBagSeed", 1,
+			-- Misc.
+			"TobaccoBagSeed", 1,
+			"SunflowerBagSeed", 4,
 		},
 		junk = {
 			rolls = 1,
@@ -21895,28 +22396,36 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
+	-- Small kit with needle and thread. Usually has other sewing-related tools.
 	SewingKit = {
 		rolls = 1,
 		items = {
-			"Awl", 1,
-			"Buckle", 10,
-			"Button", 20,
-			"Button", 10,
-			"KnittingNeedles", 4,
+			-- Tools
+			"Awl", 10,
 			"Needle", 200,
+			"Needle", 100,
 			"Needle", 50,
 			"Needle", 20,
-			"Needle", 10,
-			"Scissors", 8,
+			"Scissors", 10,
 			"Thimble", 50,
+			"Thimble", 20,
+			-- Buckles/Buttons
+			"Buckle", 20,
+			"Buckle", 10,
+			"Button", 50,
+			"Button", 50,
+			"Button", 20,
+			"Button", 20,
+			-- Materials
 			"Thread", 200,
 			"Thread", 50,
+			"Thread", 50,
 			"Thread", 20,
-			"Thread", 10,
-			"Yarn", 4,
+			-- Misc.
+			"IndustrialDye", 4,
+			"MeasuringTape", 20,
 		},
 		junk = {
 			rolls = 1,
@@ -21924,7 +22433,6 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	Shoebox = BagsAndContainers.Shoebox,
@@ -21956,39 +22464,60 @@ local distributionTable = {
 		items = {
 			-- Keys/Keyrings
 			"CarKey", 2,
+			"KeyRing_Bass", 0.001,
+			"KeyRing_EagleFlag", 0.001,
+			"KeyRing_EightBall", 0.001,
+			"KeyRing_Hotdog", 0.001,
+			"KeyRing_Panther", 0.001,
+			"KeyRing_PineTree", 0.001,
+			"KeyRing_PrayingHands", 0.001,
+			"KeyRing_Sexy", 0.001,
 			"KeyRing", 0.1,
 			"Key1", 0.5,
 			"Key1", 0.5,
 			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"BookMechanic1", 4,
-			"BookMechanic2", 2,
-			"BookMechanic3", 1,
-			"DuctTape", 8,
-			"ElectricWire", 10,
+			-- Tools
+			"Calipers", 4,
+			"HandDrill", 2,
+			"Jack", 4,
+			"LugWrench", 8,
+			"Pliers", 4,
+			"Ratchet", 8,
+			"Screwdriver", 8,
+			"TireIron", 8,
+			"TirePump", 4,
+			"ViseGrips", 2,
+			"Wrench", 8,
+			-- Materials
+			"DuctTape", 1,
+			"ElectricWire", 8,
 			"Epoxy", 4,
 			"FiberglassTape", 4,
-			"HandDrill", 4,
-			"HandTorch", 10,
-			"Jack", 2,
+			"Funnel", 8,
 			"KnifePocket", 0.1,
-			"LugWrench", 6,
-			"MarkerBlack", 4,
-			"MeasuringTape", 10,
-			"MechanicMag1", 1,
-			"MechanicMag2", 1,
-			"MechanicMag3", 1,
-			"NutsBolts", 10,
-			"Pliers", 8,
-			"Ratchet", 10,
-			"RubberHose", 10,
-			"Screwdriver", 10,
-			"ScrewsBox", 8,
-			"TireIron", 4,
-			"TirePump", 8,
+			"NutsBolts", 2,
+			"RippedSheets", 2,
+			"RippedSheetsDirty", 8,
+			"RubberHose", 8,
+			-- Accessories
+			"ElbowPad_Left_Workman", 0.5,
+			"FlashLight_AngleHead", 4,
+			"Glasses_SafetyGoggles", 4,
+			"HandTorch", 2,
+			"Hat_BuildersRespirator", 2,
+			"Kneepad_Left_Workman", 2,
+			"PenLight", 6,
+			-- Misc.
+			"Flask", 1,
+			"HottieZ", 1,
 			"TobaccoChewing", 1,
-			"ViseGrips", 4,
-			"Wrench", 8,
+			-- Literature (Skills/Recipe)
+			"BookMechanic1", 8,
+			"BookMechanic2", 4,
+			"BookMechanic3", 2,
+			"MechanicMag1", 2,
+			"MechanicMag2", 2,
+			"MechanicMag3", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -21996,30 +22525,29 @@ local distributionTable = {
 				
 			}
 		},
-		fillRand = 0,
 	},
 
 	ToolRoll_Leather = BagsAndContainers.Toolbox,
 	
+	-- Professional kitchen tools for skilled chefs.
 	ToolRoll_Fabric = {
 		rolls = 3,
 		items = {
 			-- Slicing/Chopping
 			"KitchenKnife", 20,
-			"BreadKnife", 20,
+			"KitchenKnifeForged", 10,
 			"KnifeFillet", 20,
 			"KnifeParing", 20,
-			"KnifeSushi", 4,
-			"MeatCleaver", 10,
+			"KnifeSushi", 10,
 			-- Grilling
-			"BastingBrush", 10,
-			"CarvingFork2", 10,
-			"GrillBrush", 10,
-			"KitchenTongs", 10,
-			"Spatula", 10,
+			"BastingBrush", 8,
+			"CarvingFork2", 8,
+			"GrillBrush", 8,
+			"KitchenTongs", 8,
+			"Spatula", 8,
 			-- Misc.
-			"Whetstone", 8,
-			"Ladle", 10,
+			"Whetstone", 10,
+			"Ladle", 8,
 		},
 		junk = {
 			rolls = 1,
@@ -22029,6 +22557,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Empty tote bag for fancy stores.
 	Tote = {
 		rolls = 1,
 		items = {
@@ -22042,22 +22571,7 @@ local distributionTable = {
 		}
 	},
 
-	Tote_Bags = {
-		rolls = 10,
-		items = {
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-			"Plasticbag", 20,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				
-			}
-		}
-	},
+	Tote_Bags = BagsAndContainers.Plasticbags,
 
 	Tote_Clothing = BagsAndContainers.Clothing_Generic,
 
@@ -22066,9 +22580,10 @@ local distributionTable = {
 	Wallet_Female = BagsAndContainers.Wallet_Female,
 
 	Wallet_Male = BagsAndContainers.Wallet_Male,
-
+	
+	-- Sack of dried wheat sheaves.
 	WheatSack = {
-		rolls = 10,
+		rolls = 6,
 		items = {
 			"WheatSheafDried", 100,
 			"WheatSheafDried", 100,
@@ -22084,6 +22599,7 @@ local distributionTable = {
 		}
 	},
 
+	-- Sack of wheat seeds.
 	WheatSeedSack = {
 		rolls = 10,
 		items = {
@@ -24077,7 +24593,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons", min=0, max=2, weightChance=40},
+				{name="FirearmWeapons", min=1, max=2, weightChance=40},
 				{name="MeleeWeapons", min=1, max=2, weightChance=60},
 				{name="SafehouseMedical", min=0, max=1, weightChance=80},
 				{name="SafehouseFood", min=1, max=8, weightChance=100},
@@ -24092,7 +24608,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor", min=0, max=1, weightChance=60},
 				{name="SafehouseTraps", min=0, max=2, weightChance=80},
 				{name="MeleeWeapons", min=1, max=2, weightChance=100},
@@ -24119,7 +24635,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=10},
-				{name="FirearmWeapons", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor", min=0, max=1, weightChance=60},
 				{name="SafehouseTraps", min=0, max=2, weightChance=80},
 				{name="MeleeWeapons", min=1, max=2, weightChance=100},
@@ -24158,7 +24674,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons", min=1, max=2, weightChance=80},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
 				{name="CrateTools", min=0, max=99, weightChance=100},
@@ -24167,7 +24683,7 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
-				{name="SafehouseBookShelf", min=0, max=1, weightChance=10},
+				{name="SafehouseBookShelf", min=1, max=99, weightChance=10},
 				{name="LivingRoomShelf", min=0, max=99, weightChance=100},
 			}
 		},
@@ -24180,7 +24696,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor", min=0, max=1, weightChance=60},
 				{name="SafehouseTraps", min=0, max=2, weightChance=80},
 				{name="MeleeWeapons", min=1, max=2, weightChance=100},
@@ -24189,14 +24705,14 @@ local distributionTable = {
 		stove = {
 			procedural = true,
 			procList = {
-				{name="SafehouseOven", min=1, max=99},
+				{name="SafehouseStove", min=1, max=99},
 			}
 		},
 		wardrobe = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons", min=0, max=1, weightChance=10},
-				{name="MeleeWeapons", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons", min=1, max=1, weightChance=10},
+				{name="MeleeWeapons", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor", min=1, max=99, weightChance=100},
 			}
 		},
@@ -24213,7 +24729,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Mid", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Mid", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Mid", min=1, max=2, weightChance=80},
 				{name="SafehouseMedical_Mid", min=0, max=1, weightChance=40},
 				{name="SafehouseFood_Mid", min=1, max=8, weightChance=100},
@@ -24228,7 +24744,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Mid", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Mid", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Mid", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Mid", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24255,7 +24771,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Mid", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Mid", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Mid", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Mid", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24294,7 +24810,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons_Mid", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Mid", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Mid", min=1, max=2, weightChance=80},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
 				{name="CrateTools", min=0, max=99, weightChance=100},
@@ -24303,7 +24819,7 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
-				{name="SafehouseBookShelf", min=0, max=1, weightChance=10},
+				{name="SafehouseBookShelf", min=1, max=99, weightChance=10},
 				{name="LivingRoomShelf", min=0, max=99, weightChance=100},
 			}
 		},
@@ -24316,7 +24832,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Mid", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Mid", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Mid", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Mid", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24325,14 +24841,14 @@ local distributionTable = {
 		stove = {
 			procedural = true,
 			procList = {
-				{name="SafehouseOven_Mid", min=1, max=99},
+				{name="SafehouseStove_Mid", min=1, max=99},
 			}
 		},
 		wardrobe = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons_Mid", min=0, max=1, weightChance=10},
-				{name="MeleeWeapons_Mid", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons_Mid", min=1, max=1, weightChance=10},
+				{name="MeleeWeapons_Mid", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor_Mid", min=1, max=99, weightChance=100},
 			}
 		},
@@ -24353,7 +24869,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Late", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Late", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Late", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Late", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24375,7 +24891,7 @@ local distributionTable = {
 			procedural = true,
 			procList = {
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Late", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Late", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Late", min=1, max=2, weightChance=80},
 				{name="SafehouseMedical_Late", min=0, max=1, weightChance=40},
 				{name="SafehouseFood_Late", min=1, max=8, weightChance=100},
@@ -24389,7 +24905,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Late", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Late", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Late", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Late", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24429,7 +24945,7 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons_Late", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Late", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Late", min=1, max=2, weightChance=80},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
 				{name="CrateTools", min=0, max=99, weightChance=100},
@@ -24438,7 +24954,7 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
-				{name="SafehouseBookShelf", min=0, max=1, weightChance=10},
+				{name="SafehouseBookShelf", min=1, max=99, weightChance=10},
 				{name="LivingRoomShelf", min=0, max=99, weightChance=100},
 			}
 		},
@@ -24450,7 +24966,7 @@ local distributionTable = {
 				{name="Antiques", min=0, max=1, weightChance=10},
 				{name="CrateCamping", min=0, max=1, weightChance=10},
 				{name="CrateEmptyBottles2", min=0, max=1, weightChance=20},
-				{name="FirearmWeapons_Late", min=0, max=2, weightChance=20},
+				{name="FirearmWeapons_Late", min=1, max=2, weightChance=20},
 				{name="MeleeWeapons_Late", min=1, max=2, weightChance=80},
 				{name="SafehouseArmor_Late", min=0, max=2, weightChance=40},
 				{name="SafehouseTraps", min=0, max=1, weightChance=60},
@@ -24459,14 +24975,14 @@ local distributionTable = {
 		stove = {
 			procedural = true,
 			procList = {
-				{name="SafehouseOven_Late", min=1, max=99},
+				{name="SafehouseStove_Late", min=1, max=99},
 			}
 		},
 		wardrobe = {
 			procedural = true,
 			procList = {
-				{name="FirearmWeapons_Late", min=0, max=1, weightChance=10},
-				{name="MeleeWeapons_Late", min=0, max=1, weightChance=40},
+				{name="FirearmWeapons_Late", min=1, max=1, weightChance=10},
+				{name="MeleeWeapons_Late", min=1, max=1, weightChance=40},
 				{name="SafehouseArmor_Late", min=1, max=99, weightChance=100},
 			}
 		},

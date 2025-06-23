@@ -145,10 +145,10 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	end
 
 	if square:getZone() then
-		DebugContextMenu.addRVSDebugMenu(mainMenu, square);
+		DebugContextMenu.addRVSDebugMenu(mainMenu, square, playerObj);
 	end
 
-	DebugContextMenu.addRZSDebugMenu(mainMenu, square);
+	DebugContextMenu.addRZSDebugMenu(mainMenu, square, playerObj);
 
 
 	local noiseOption = mainMenu:addOption(getText("IGUI_DebugContext_MakeNoise"), worldobjects, nil);
@@ -165,10 +165,13 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 
 	DebugContextMenu.doDebugObjectMenu(player, debugMenu, worldobjects, test)
 	DebugContextMenu.doDebugCorpseMenu(player, debugMenu, worldobjects, test)
-	DebugContextMenu.doDebugZombieMenu(player, debugMenu, worldobjects, test)
-
+	DebugContextMenu.doDebugZombieMenu(player, debugMenu, worldobjects, test, square)
 	DebugContextMenu.doDebugAnimalMenu(playerObj, debugMenu, worldobjects, test, square)
+	DebugContextMenu.doDebugPlayerMenu(playerObj, debugMenu, worldobjects)
+	DebugContextMenu.doDebugVehicleMenu(playerObj, debugMenu, worldobjects)
+	DebugContextMenu.doSurvivorSwapMenu(player, debugMenu, worldobjects, test)
 
+	DebugContextMenu.doForageMenu(player, debugMenu, worldobjects, test)
 	--	if not DebugContextMenu.staggerBacking then
 	--		subMenu:addOption("Start Stagger Back", playerObj, DebugContextMenu.stagger, true);
 	--	else
@@ -198,9 +201,9 @@ function DebugContextMenu.doDebugAnimalMenu(playerObj, context, worldobjects, te
 
 	--	subMenu:addOption("Designation Zone", playerObj, DebugContextMenu.onAddDesignationZone);
 	if isClient() then
-		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllAnimalsClient)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllAnimalsClient)
 	else
-		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllAnimals)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllAnimals)
 	end
 	local text = getText("IGUI_DebugContext_AnimalCheatEnable");
 	if AnimalContextMenu.cheat then
@@ -242,14 +245,35 @@ function DebugContextMenu.doDebugAnimalMenu(playerObj, context, worldobjects, te
 			local breeds = def:getBreeds();
 			for i=0,breeds:size()-1 do
 				local breed = breeds:get(i);
-				animalBreedSubMenu:addOption(getText("IGUI_Breed_" .. breed:getName()), def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, false);
+				animalBreedSubMenu:addOption(getText("IGUI_Breed_" .. breed:getName()), def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, false, playerObj);
 				-- add the skeleton version
 				if canBeSkeleton and i == breeds:size()-1 then
-					animalBreedSubMenu:addOption("Skeleton", def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, true);
+					animalBreedSubMenu:addOption("Skeleton", def:getAnimalType(), DebugContextMenu.AddAnimal, breed, square, true, playerObj);
 				end
 			end
 		end
 	end
+end
+
+function DebugContextMenu.doDebugPlayerMenu(playerObj, context, worldobjects)
+	local playerOption = context:addDebugOption(getText("IGUI_DebugContext_Players"), worldobjects, nil);
+	local playerMenu = ISContextMenu:getNew(context);
+	context:addSubMenu(playerOption, playerMenu);
+	playerMenu:addDebugOption(getText("IGUI_GameStats_Teleport"), playerObj, DebugContextMenu.onTeleportUI);
+	playerMenu:addDebugOption(getText("IGUI_DebugContext_TeleportPlayers"), playerObj, DebugContextMenu.onTeleportPlayers);
+end
+
+function DebugContextMenu.doDebugVehicleMenu(playerObj, context, worldobjects)
+	local vehicleOption = context:addDebugOption(getText("IGUI_DebugContext_Vehicles"), worldobjects, nil);
+	local vehicleMenu = ISContextMenu:getNew(context);
+	context:addSubMenu(vehicleOption, vehicleMenu);
+	vehicleMenu:addDebugOption(getText("IGUI_DebugContext_SpawnVehicle"), playerObj, DebugContextMenu.onSpawnVehicle);
+	vehicleMenu:addDebugOption(getText("IGUI_DebugContext_AddVehicle"), playerObj, DebugContextMenu.onAddVehicle);
+	local square = DebugContextMenu.pickSquare(getMouseX(), getMouseY())
+	if square and square:getVehicleContainer() then
+		vehicleMenu:addDebugOption(getText("IGUI_DebugContext_RemoveVehicle"), playerObj, DebugContextMenu.onRemoveVehicle, square:getVehicleContainer())
+	end
+	vehicleMenu:addDebugOption(getText("IGUI_DebugContext_RemoveAll"), playerObj, DebugContextMenu.onRemoveAllVehicles);
 end
 
 function DebugContextMenu.onToggleAnimalCheat()
@@ -394,22 +418,19 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 			subMenu:addOption("Campfire: Zero Fuel", obj, DebugContextMenu.OnCampfireZeroFuel)
 			subMenu:addOption("Campfire: Set Fuel", obj, DebugContextMenu.OnCampfireSetFuel)
 		end
-		if not rainBarrel and CRainBarrelSystem:isValidIsoObject(obj) then
-			subMenu:addOption("Rain Barrel: Zero Water", obj, DebugContextMenu.OnRainBarrelZeroWater)
-			subMenu:addOption("Rain Barrel: Set Water", obj, DebugContextMenu.OnRainBarrelSetWater)
-			rainBarrel = obj
-		end
 	end
 
-	square = DebugContextMenu.pickSquare(x, y)
+	local square = DebugContextMenu.pickSquare(x, y)
 	if square then
 		for i=1,square:getObjects():size() do
 			local obj = square:getObjects():get(i-1)
 			if BentFences.getInstance():isBentObject(obj) then
 				subMenu:addOption("Un-bend Fence", worldobjects, DebugContextMenu.OnUnbendFence, obj)
+				subMenu:addOption("Reset Fence", worldobjects, DebugContextMenu.OnResetFence, obj)
 			end
 			if BentFences.getInstance():isUnbentObject(obj) then
 				subMenu:addOption("Bend Fence", worldobjects, DebugContextMenu.OnBendFence, obj)
+				subMenu:addOption("Bend Fence Towards Player", worldobjects, DebugContextMenu.OnBendFence, obj, true)
 			end
 			if BrokenFences.getInstance():isBreakableObject(obj) then
 				subMenu:addOption("Break Fence", worldobjects, DebugContextMenu.OnBreakFence, obj)
@@ -464,19 +485,21 @@ function DebugContextMenu.doDebugCorpseMenu(player, context, worldobjects, test)
 	end
 end
 
-function DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test)
+function DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test, square)
 	local x = getMouseX()
 	local y = getMouseY()
+	local playerObj = getSpecificPlayer(player)
 
 	local debugOption = context:addDebugOption(getText("IGUI_DebugContext_Zombies"), worldobjects, nil);
 	local subMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(debugOption, subMenu);
 
 	if isClient() then
-		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllZombiesClient)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllZombiesClient)
 		subMenu:addOption("Add Zombie", player, DebugContextMenu.OnAddZombieClient, player)
+		subMenu:addOption("Horde Manager", square, AdminContextMenu.onHordeManager, playerObj)
 	else
-		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), obj, DebugContextMenu.OnRemoveAllZombies)
+		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllZombies)
 	end
 
 	local square,sqX,sqY,sqZ = DebugContextMenu.pickSquare(x, y)
@@ -828,7 +851,7 @@ function DebugContextMenu.pickSquare(x, y)
 	return getCell():getGridSquare(worldX, worldY, z), worldX, worldY, z
 end
 
-function DebugContextMenu.OnBendFence(worldobjects, fence)
+function DebugContextMenu.OnBendFence(worldobjects, fence, towards)
 	local playerObj = getSpecificPlayer(0)
 	local props = fence:getProperties()
 	local dir = nil
@@ -839,11 +862,16 @@ function DebugContextMenu.OnBendFence(worldobjects, fence)
 	else
 		dir = (playerObj:getX() >= fence:getX()) and IsoDirections.W or IsoDirections.E
 	end
+	if towards then dir = IsoDirections.reverse(dir); end;
 	BentFences.getInstance():bendFence(fence, dir)
 end
 
 function DebugContextMenu.OnUnbendFence(worldobjects, fence)
 	BentFences.getInstance():unbendFence(fence)
+end
+
+function DebugContextMenu.OnResetFence(worldobjects, fence)
+	BentFences.getInstance():resetFence(fence)
 end
 
 function DebugContextMenu.OnBreakFence(worldobjects, fence)
@@ -986,39 +1014,6 @@ function DebugContextMenu.OnMannequinCreateItem(script)
 	getSpecificPlayer(0):getInventory():AddItem(item)
 end
 
-function DebugContextMenu.OnMetalDrumZeroWater(obj)
-	local playerObj = getSpecificPlayer(0)
-	local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = 0 }
-	sendClientCommand(playerObj, 'object', 'setWaterAmount', args)
-end
-
-function DebugContextMenu.OnRainBarrelZeroWater(obj)
-	local playerObj = getSpecificPlayer(0)
-	local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = 0 }
-	sendClientCommand(playerObj, 'object', 'setWaterAmount', args)
-end
-
-local function OnRainBarrelSetWater2(target, button, obj)
-	if button.internal == "OK" then
-		local playerObj = getSpecificPlayer(0)
-		local text = button.parent.entry:getText()
-		if tonumber(text) then
-			local waterAmt = math.min(tonumber(text), obj:getWaterMax())
-			waterAmt = math.max(waterAmt, 0.0)
-			local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = waterAmt }
-			sendClientCommand(playerObj, 'object', 'setWaterAmount', args)
-		end
-	end
-end
-
-function DebugContextMenu.OnRainBarrelSetWater(obj)
-	local luaObject = CRainBarrelSystem.instance:getLuaObjectOnSquare(obj:getSquare())
-	if not luaObject then return end
-	local modal = ISTextBox:new(0, 0, 280, 180, string.format("Water (0-%d):", obj:getWaterMax()), tostring(obj:getWaterAmount()), nil, OnRainBarrelSetWater2, nil, obj)
-	modal:initialise()
-	modal:addToUIManager()
-end
-
 DebugContextMenu.onHordeManager = function(square, player)
 	local ui = ISSpawnHordeUI:new(0, 0, player, square);
 	ui:initialise();
@@ -1078,6 +1073,10 @@ DebugContextMenu.onTeleportUI = function(playerObj)
 	ui:addToUIManager();
 end
 
+DebugContextMenu.onTeleportPlayers = function(playerObj)
+	teleportPlayers(playerObj)
+end
+
 DebugContextMenu.onRemoveItemTool = function(playerObj)
 	local ui = ISRemoveItemTool:new(0, 0, playerObj);
 	ui:initialise();
@@ -1090,6 +1089,18 @@ DebugContextMenu.onSpawnVehicle = function(playerObj)
 	ui:addToUIManager();
 end
 
+DebugContextMenu.onRemoveAllVehicles = function(playerObj)
+	removeAllVehicles(playerObj)
+end
+
+DebugContextMenu.onRemoveVehicle = function(playerObj, vehicle)
+	removeVehicle(playerObj, vehicle)
+end
+
+DebugContextMenu.onAddVehicle = function(playerObj)
+	addVehicle(getScriptManager():getRandomVehicleScript():getName(), playerObj:getX(), playerObj:getY(), playerObj:getZ())
+end
+
 DebugContextMenu.onTilesPicker = function(playerObj)
 	local ui = ISTilesPickerDebugUI:new(0, 0, playerObj);
 	ui:initialise();
@@ -1100,12 +1111,7 @@ DebugContextMenu.onTeleportValid = function(button, x, y, z)
 	if isClient() then
 		SendCommandToServer("/teleportto " .. x .. "," .. y .. "," .. z);
 	else
-		getPlayer():setX(tonumber(x));
-		getPlayer():setY(tonumber(y));
-		getPlayer():setZ(tonumber(z));
-		getPlayer():setLastX(tonumber(x));
-		getPlayer():setLastY(tonumber(y));
-		getPlayer():setLastZ(tonumber(z));
+	    getPlayer():teleportTo(tonumber(x), tonumber(y), tonumber(z))
 	end
 end
 
@@ -1145,7 +1151,10 @@ DebugContextMenu.onSpawnSurvivorHorde = function(playerObj)
 	playerObj:getCurrentSquare():getChunk():addSurvivorInHorde(true);
 end
 
-DebugContextMenu.addRVSDebugMenu = function(context, square)
+DebugContextMenu.addRVSDebugMenu = function(context, square, playerObj)
+	if isClient() and not playerObj:getRole():hasCapability(Capability.CreateStory) then
+		return;
+	end
 	local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedRoadStory"), nil, nil);
 	local mainSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(mainOption, mainSubMenu)
@@ -1175,7 +1184,16 @@ DebugContextMenu.addRVSDebugMenu = function(context, square)
 	end
 end
 
-DebugContextMenu.addRZSDebugMenu = function(context, square)
+DebugContextMenu.addRZSDebugMenu = function(context, square, playerObj)
+	if isClient() and not playerObj:getRole():hasCapability(Capability.CreateStory) then
+		return;
+	end
+    -- Fixed for using the debug zone spawning story on fences inappropriately
+    if square:hasFenceInVicinty()  then
+	    local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedZoneStoryFenceVicinity"), nil, nil);
+        mainOption.notAvailable = true;
+	    return;
+    end
 	local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedZoneStory"), nil, nil);
 	local mainSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(mainOption, mainSubMenu)
@@ -1285,6 +1303,49 @@ DebugContextMenu.doRandomizedBuilding = function(building, RBdef)
 	end
 end
 
+DebugContextMenu.doSurvivorSwapMenu = function(player, context, worldobjects, test)
+	--if not SurvivorSwap then return end
+	if not SurvivorSwap or (table.isempty(SurvivorSwap.Survivors) and table.isempty(SurvivorSwap.Loadouts)) then return end
+	local playerObj = getSpecificPlayer(player)
+	local menu = ISContextMenu:getNew(context)
+	context:addSubMenu(context:addOption("Survivor Swap"), menu)
+
+	local submenu = ISContextMenu:getNew(menu)
+	context:addSubMenu(menu:addOption("Survivors (replaces current)"), submenu)
+	for id, data in pairs(SurvivorSwap.Survivors) do
+		submenu:addOption(id, playerObj, SurvivorSwap.applyCharacter, data)
+	end
+
+	submenu = ISContextMenu:getNew(menu)
+	context:addSubMenu(menu:addOption("Inventory (replaces current)"), submenu)
+	for id, data in pairs(SurvivorSwap.Loadouts) do
+		submenu:addOption(id, playerObj, SurvivorSwap.applyLoadout, data)
+	end
+end
+
+DebugContextMenu.onTick = function()
+	if DebugContextMenu.staggerBacking then
+		DebugContextMenu.stagTime = DebugContextMenu.stagTime - 1;
+		if DebugContextMenu.stagTime < 0 then
+			local chr = IsoPlayer.getInstance();
+			DebugContextMenu.stagTime = 300;
+			chr:setBumpType("stagger");
+			chr:setVariable("BumpDone", false);
+			chr:setVariable("BumpFall", true);
+			chr:setVariable("BumpFallType", "pushedFront");
+		end
+	end
+end
+
+DebugContextMenu.doForageMenu = function(player, context, worldobjects, test)
+	local character = getSpecificPlayer(player);
+	local manager = ISSearchManager.getManager(character);
+	local clickedX = screenToIsoX(player, context.x, context.y, character:getZ());
+	local clickedY = screenToIsoY(player, context.x, context.y, character:getZ());
+	local square = getCell():getGridSquare(clickedX, clickedY, character:getZ());
+	ISSearchManager.createDebugContextMenu(player, context, manager, square)
+end
+
 DebugContextMenu.onTick = function()
 	if DebugContextMenu.staggerBacking then
 		DebugContextMenu.stagTime = DebugContextMenu.stagTime - 1;
@@ -1324,7 +1385,6 @@ function DebugContextMenu.onAddEnclosure(playerObj)
 
 	for x=playerObj:getCurrentSquare():getX() - size, playerObj:getCurrentSquare():getX()+(size-1) do
 		local sq = getSquare(x, playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getZ());
-		sq:AddTileObject(IsoObject.new(sq, "carpentry_02_41"));
 		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_41", false, ISSimpleFurniture:new("Fence", "carpentry_02_41", "carpentry_02_41"));
 		sq:AddTileObject(fence);
 		sq = getSquare(x, playerObj:getCurrentSquare():getY() + size, playerObj:getCurrentSquare():getZ());
@@ -1366,7 +1426,7 @@ function DebugContextMenu.onAddEnclosure(playerObj)
 	--ISFeedingTroughMenu.onAddWaterDebug(nil, trough);
 end
 
-function DebugContextMenu.AddAnimal(type, breed, square, skeleton)
+function DebugContextMenu.AddAnimal(type, breed, square, skeleton, playerObj)
 	if isClient() then
 		sendClientCommandV(playerObj, "animal", "add",
 				"type", type,

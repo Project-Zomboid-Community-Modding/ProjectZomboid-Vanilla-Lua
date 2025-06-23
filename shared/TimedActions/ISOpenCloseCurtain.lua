@@ -50,5 +50,6 @@ function ISOpenCloseCurtain:new(character, item)
 	o.item = item;
 	o.ignoreHandsWounds = true;
 	o.maxTime = o:getDuration();
+	o.retriggerLastAction = true;
 	return o;
 end

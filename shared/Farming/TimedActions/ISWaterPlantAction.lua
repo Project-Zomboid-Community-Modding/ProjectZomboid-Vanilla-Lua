@@ -118,7 +118,7 @@ function ISWaterPlantAction:useItemOneUnit()
     if self.item:hasComponent(ComponentType.FluidContainer) then
         local fluidContainer = self.item:getFluidContainer()
         if fluidContainer then
-            local use = ISFarmingMenu.getFluidContainerMillilitresPerUse() / 1000
+            local use = ZomboidGlobals.farmingFluidContainerMillilitresPerUse / 1000
             fluidContainer:adjustAmount(fluidContainer:getAmount() - use)
         end
         return

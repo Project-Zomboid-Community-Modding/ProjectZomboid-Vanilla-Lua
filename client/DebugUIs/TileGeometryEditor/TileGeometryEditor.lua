@@ -77,7 +77,7 @@ TileGeometryEditor_OptionsPanel = ISPanel:derive("TileGeometryEditor_OptionsPane
 local OptionsPanel = TileGeometryEditor_OptionsPanel
 
 function OptionsPanel:createChildren()
-	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox, option)
+	local tickBox = ISTickBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, "", self, self.onTickBox)
 	tickBox:initialise()
 	self:addChild(tickBox)
 	local gameState = getTileGeometryState()
@@ -120,6 +120,7 @@ function Scene:prerenderEditor()
 	self:java1("setGizmoVisible", self.editPoints and "none" or self.gizmo)
 	self:java1("setGizmoOrigin", "none")
 	self:java1("setTransformMode", "Local")
+	self.tools.gizmo.translate.snapFunc = nil
 	if not self.zeroVector then self.zeroVector = Vector3f.new() end
 	self:java1("setGizmoPos", self.zeroVector)
 	self:java1("setGizmoRotate", self.zeroVector)
@@ -714,7 +715,7 @@ TileGeometryEditor_TilePicker = ISPanel:derive("TileGeometryEditor_TilePicker")
 local TilePicker = TileGeometryEditor_TilePicker
 
 function TilePicker:createChildren()
-	local comboHeight = BUTTON_HGT
+	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
 	local combo = ISComboBox:new(0, 0, self.width, comboHeight, self, self.onSelectTileset)
 	combo.noSelectionText = "TILESET"
 	combo:setEditable(true)
@@ -746,6 +747,11 @@ function TilePicker:createChildren()
 	self.listBox = listBox
 end
 
+function TilePicker:setTileset(tilesetName)
+	self.comboTileset:select(tilesetName)
+	self.listBox:setTileset(tilesetName)
+end
+
 function TilePicker:onMouseWheel(del)
 	self.listBox:onMouseWheel(del)
 	return true
@@ -774,7 +780,7 @@ TileGeometryEditor_TilePicker2 = ISPanel:derive("TileGeometryEditor_TilePicker2"
 local TilePicker2 = TileGeometryEditor_TilePicker2
 
 function TilePicker2:createChildren()
-	local comboHeight = BUTTON_HGT
+	local comboHeight = FONT_HGT_MEDIUM + 3 * 2
 	local combo = ISComboBox:new(0, 0, self.width, comboHeight, self, self.onSelectTileset)
 	combo.noSelectionText = "TILESET"
 	combo:setEditable(true)
@@ -804,6 +810,12 @@ function TilePicker2:createChildren()
 	self:addChild(listBox)
 	listBox:addScrollBars()
 	self.listBox = listBox
+end
+
+
+function TilePicker2:setTileset(tilesetName)
+	self.comboTileset:select(tilesetName)
+	self.listBox:setTileset(tilesetName)
 end
 
 function TilePicker2:onMouseWheel(del)
@@ -871,6 +883,14 @@ function TileGeometryEditor:createChildren()
 	self.scene:java2("setCharacterUseDeferredMovement", "character1", gameState:getBoolean("UseDeferredMovement"))
 	self.scene:java2("setObjectVisible", "character1", true)
 
+	self.scene.javaObject:fromLua2("createModel", "curtain", "SheetDoorClosed")
+	local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_16")
+--	self.scene:java2("setModelSpriteModel", "curtain", spriteModel)
+	self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
+	self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
+	self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
+	self.scene:java2("setObjectVisible", "curtain", false)
+
 	self:createToolbar()
 
 	local scrollbarWidth = 13
@@ -886,7 +906,7 @@ function TileGeometryEditor:createChildren()
 
 	self.bottomPanel = ISPanel:new(0, self.height - UI_BORDER_SPACING - BUTTON_HGT-1, 200, BUTTON_HGT)
 	self.bottomPanel:setAnchorTop(false)
-	self.bottomPanel:setAnchorLeft(false)
+	self.bottomPanel:setAnchorLeft(true)
 	self.bottomPanel:setAnchorRight(false)
 	self.bottomPanel:setAnchorBottom(true)
 	self.bottomPanel:noBackground()
@@ -894,9 +914,11 @@ function TileGeometryEditor:createChildren()
 
 	local button2 = ISButton:new(UI_BORDER_SPACING+1, 0, 80, BUTTON_HGT, "EXIT", self, self.onExit)
 	self.bottomPanel:addChild(button2)
+	button2:enableCancelColor()
 
 	local button3 = ISButton:new(button2:getRight() + UI_BORDER_SPACING, button2.y, 80, BUTTON_HGT, "SAVE", self, self.onSave)
 	self.bottomPanel:addChild(button3)
+	button3:enableAcceptColor()
 
 	local button4 = ISButton:new(button3:getRight() + UI_BORDER_SPACING, button3.y, 80, BUTTON_HGT, "RELOAD TEXTURE", self, self.onReloadTexture)
 	self.bottomPanel:addChild(button4)
@@ -976,6 +998,9 @@ function TileGeometryEditor:createChildren()
 	mode = TileGeometryEditor_EditMode_Seating:new(self)
 	self.editMode.seating = mode
 
+	mode = TileGeometryEditor_EditMode_Curtain:new(self)
+	self.editMode.curtain = mode
+
 	self:setEditMode(self.editMode.geometry)
 
 	self:setGeometryList()
@@ -998,6 +1023,7 @@ function TileGeometryEditor:createToolbar()
 	self.toolBar:addChild(self.comboMode)
 	self.comboMode:addOptionWithData("Geometry", "geometry")
 	self.comboMode:addOptionWithData("Seating", "seating")
+	self.comboMode:addOptionWithData("Curtains", "curtain")
 	self.comboMode:addOptionWithData("Other Tiles", "sceneTiles")
 	self.comboMode:setWidthToOptions()
 
@@ -1153,6 +1179,9 @@ function TileGeometryEditor:onKeyPress(key)
 			self:setEditMode(self.editMode.seating)
 			self.comboMode:selectData("seating")
 		elseif self.editMode.current == self.editMode.seating then
+			self:setEditMode(self.editMode.curtain)
+			self.comboMode:selectData("curtain")
+		elseif self.editMode.current == self.editMode.curtain then
 			self:setEditMode(self.editMode.sceneTiles)
 			self.comboMode:selectData("sceneTiles")
 		else

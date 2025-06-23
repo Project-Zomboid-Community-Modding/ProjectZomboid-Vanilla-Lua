@@ -15,10 +15,10 @@ function AcceptItemFunction.FirstAidKit(container, item)
 	return item:getStringItemType() == "Medical"
 end
 
--- Example: not used
-function AcceptItemFunction.KeyRing(container, item)
-	return item:getCategory() == "Key"
-end
+-- -- Example: not used
+-- function AcceptItemFunction.KeyRing(container, item)
+-- 	return item:getCategory() == "Key"
+-- end
 
 function AcceptItemFunction.AmmoStrap_Bullets(container, item)
 	return item:hasTag("Ammo") and not item:hasTag("ShotgunShell")

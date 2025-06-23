@@ -14,8 +14,8 @@ end
 function preLoadLastStandInit()
     if getCore():isChallenge() then
         LastStandData.chosenChallenge = findCurrentChallenge();
-
         globalChallenge = LastStandData.chosenChallenge;
+        setMinMaxZombiesPerChunk(globalChallenge.zombiesMinPerChunk or 0.0, globalChallenge.zombiesMaxPerChunk or 255.0);
         globalChallenge.OnInitWorld();
 
         Events.OnGameStart.Add(doLastStandInit);

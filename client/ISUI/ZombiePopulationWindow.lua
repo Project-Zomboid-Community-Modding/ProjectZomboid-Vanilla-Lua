@@ -97,10 +97,12 @@ end
 
 function ZombiePopulationWindow:onTeleport(worldX, worldY)
 	local player = getSpecificPlayer(0)
-	player:setX(worldX)
-	player:setY(worldY)
-	player:setLastX(worldX)
-	player:setLastY(worldY)
+	if not player then return end
+	if isClient() then
+		SendCommandToServer("/teleportto " .. tostring(worldX) .. "," .. tostring(worldY) .. ",0");
+	else
+		player:teleportTo(worldX, worldY, 0.0)
+	end
 end
 
 function ZombiePopulationWindow:onChangeOption(option)
@@ -117,9 +119,9 @@ function ZombiePopulationWindow:onMapRightMouseUp(x, y)
 		cellX = math.floor(cellX)
 		cellY = math.floor(cellY)
 		local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
-		context:addOption(getText("IGUI_ZombiePopulation_ClearZombies"), cellX, zpopClearZombies, cellY)
-		context:addOption(getText("IGUI_ZombiePopulation_SetTimeZero"), cellX, zpopSpawnTimeToZero, cellY)
-		context:addOption(getText("IGUI_ZombiePopulation_SpawnNow"), cellX, zpopSpawnNow, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_ClearZombies"), cellX, function(_cellX, _cellY) zpopClearZombies(_cellX, _cellY) end, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_SetTimeZero"), cellX, function(_cellX, _cellY) zpopSpawnTimeToZero(_cellX, _cellY) end, cellY)
+		context:addOption(getText("IGUI_ZombiePopulation_SpawnNow"), cellX, function(_cellX, _cellY) zpopSpawnNow(_cellX, _cellY) end, cellY)
 		local worldX = self.renderer:uiToWorldX(x)
 		local worldY = self.renderer:uiToWorldY(y)
 		context:addOption(getText("IGUI_ZombiePopulation_WorldSound"), self.parent, ZombiePopulationWindow.onAddWorldSound, worldX, worldY)

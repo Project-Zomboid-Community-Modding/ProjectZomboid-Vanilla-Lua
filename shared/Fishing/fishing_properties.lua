@@ -114,8 +114,16 @@ function Fishing.FishConfig:setMaxLength(length)
     self.maxLength = math.floor(length)
 end
 
+function Fishing.FishConfig:setTrophyLength(length)
+    self.trophyLength = math.floor(length)
+end
+
 function Fishing.FishConfig:setMaxWeight(weight)
     self.maxWeight = weight
+end
+
+function Fishing.FishConfig:setTrophyWeight(weight)
+    self.trophyWeight = weight
 end
 
 function Fishing.FishConfig:addLures(itemTable, chanceCoeff)
@@ -209,8 +217,10 @@ Fishing.fishes = Fishing.fishes or {};
 
 local LargemouthBass = Fishing.FishConfig:new("Base.LargemouthBass")
 LargemouthBass:setLocation(true, true)    -- River, Lake
-LargemouthBass:setMaxLength(75) -- CM
-LargemouthBass:setMaxWeight(10) -- KG
+LargemouthBass:setMaxLength(51) -- CM
+LargemouthBass:setTrophyLength(75)
+LargemouthBass:setMaxWeight(2.3) -- KG
+LargemouthBass:setTrophyWeight(10)
 LargemouthBass:initFishSizeData()
 
 LargemouthBass:addLures(Fishing.lure.Insect, 0.3)
@@ -229,8 +239,10 @@ table.insert(Fishing.fishes, LargemouthBass)
 
 local SmallmouthBass = Fishing.FishConfig:new("Base.SmallmouthBass")
 SmallmouthBass:setLocation(true, true)    -- River, Lake
-SmallmouthBass:setMaxLength(55) -- CM
-SmallmouthBass:setMaxWeight(5) -- KG
+SmallmouthBass:setMaxLength(41) -- CM
+SmallmouthBass:setTrophyLength(55)
+SmallmouthBass:setMaxWeight(1.8) -- KG
+SmallmouthBass:setTrophyWeight(5)
 SmallmouthBass:initFishSizeData()
 
 SmallmouthBass:addLures(Fishing.lure.Insect, 0.3)
@@ -249,8 +261,10 @@ table.insert(Fishing.fishes, SmallmouthBass)
 
 local WhiteBass = Fishing.FishConfig:new("Base.WhiteBass")
 WhiteBass:setLocation(true, true)    -- River, Lake
-WhiteBass:setMaxLength(40) -- CM
-WhiteBass:setMaxWeight(3) -- KG
+WhiteBass:setMaxLength(38) -- CM
+WhiteBass:setTrophyLength(40)
+WhiteBass:setMaxWeight(1) -- KG
+WhiteBass:setTrophyWeight(3)
 WhiteBass:initFishSizeData()
 
 WhiteBass:addLures(Fishing.lure.Insect, 0.3)
@@ -269,8 +283,10 @@ table.insert(Fishing.fishes, WhiteBass);
 
 local SpottedBass = Fishing.FishConfig:new("Base.SpottedBass")
 SpottedBass:setLocation(true, true)    -- River, Lake
-SpottedBass:setMaxLength(45) -- CM
-SpottedBass:setMaxWeight(5) -- KG
+SpottedBass:setMaxLength(38) -- CM
+SpottedBass:setTrophyLength(45)
+SpottedBass:setMaxWeight(1.3) -- KG
+SpottedBass:setTrophyWeight(5)
 SpottedBass:initFishSizeData()
 
 SpottedBass:addLures(Fishing.lure.Insect, 0.3)
@@ -287,10 +303,13 @@ table.insert(Fishing.fishes, SpottedBass);
 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
+-- Large saltwater fish that can swim upstream from coastal waters. Only found in lakes when stocked.
 local StripedBass = Fishing.FishConfig:new("Base.StripedBass")
 StripedBass:setLocation(true, true)    -- River, Lake
-StripedBass:setMaxLength(90) -- CM
-StripedBass:setMaxWeight(15) -- KG
+StripedBass:setMaxLength(76) -- CM
+StripedBass:setTrophyLength(90)
+StripedBass:setMaxWeight(9) -- KG
+StripedBass:setTrophyWeight(15)
 StripedBass:initFishSizeData()
 
 StripedBass:addLures(Fishing.lure.Insect, 0.1)
@@ -309,8 +328,10 @@ table.insert(Fishing.fishes, StripedBass);
 
 local Bluegill = Fishing.FishConfig:new("Base.Bluegill")
 Bluegill:setLocation(true, true)    -- River, Lake
-Bluegill:setMaxLength(35) -- CM
-Bluegill:setMaxWeight(1.2) -- KG
+Bluegill:setMaxLength(20) -- CM
+Bluegill:setTrophyLength(35)
+Bluegill:setMaxWeight(0.9) -- KG
+Bluegill:setTrophyWeight(1.2)
 Bluegill:initFishSizeData()
 
 Bluegill:addLures(Fishing.lure.Insect, 0.5)
@@ -329,8 +350,10 @@ table.insert(Fishing.fishes, Bluegill);
 
 local WhiteCrappie = Fishing.FishConfig:new("Base.WhiteCrappie")
 WhiteCrappie:setLocation(true, true)    -- River, Lake
-WhiteCrappie:setMaxLength(24) -- CM
-WhiteCrappie:setMaxWeight(2.5) -- KG
+WhiteCrappie:setMaxLength(30) -- CM
+WhiteCrappie:setTrophyLength(24)
+WhiteCrappie:setMaxWeight(0.4) -- KG
+WhiteCrappie:setTrophyWeight(2.5)
 WhiteCrappie:initFishSizeData()
 
 WhiteCrappie:addLures(Fishing.lure.Insect, 0.1)
@@ -349,8 +372,10 @@ table.insert(Fishing.fishes, WhiteCrappie);
 
 local BlackCrappie = Fishing.FishConfig:new("Base.BlackCrappie")
 BlackCrappie:setLocation(true, true)    -- River, Lake
-BlackCrappie:setMaxLength(28) -- CM
-BlackCrappie:setMaxWeight(2.7) -- KG
+BlackCrappie:setMaxLength(25) -- CM
+BlackCrappie:setTrophyLength(28)
+BlackCrappie:setMaxWeight(0.4) -- KG
+BlackCrappie:setTrophyWeight(2.7)
 BlackCrappie:initFishSizeData()
 
 BlackCrappie:addLures(Fishing.lure.Insect, 0.1)
@@ -370,7 +395,9 @@ table.insert(Fishing.fishes, BlackCrappie);
 local RedearSunfish = Fishing.FishConfig:new("Base.RedearSunfish")
 RedearSunfish:setLocation(true, true)    -- River, Lake
 RedearSunfish:setMaxLength(20) -- CM
+RedearSunfish:setTrophyLength(24)
 RedearSunfish:setMaxWeight(0.9) -- KG
+RedearSunfish:setTrophyWeight(0.9)
 RedearSunfish:initFishSizeData()
 
 RedearSunfish:addLures(Fishing.lure.Insect, 0.7)
@@ -390,7 +417,9 @@ table.insert(Fishing.fishes, RedearSunfish);
 local YellowPerch = Fishing.FishConfig:new("Base.YellowPerch")
 YellowPerch:setLocation(true, true)    -- River, Lake
 YellowPerch:setMaxLength(30) -- CM
-YellowPerch:setMaxWeight(1.9) -- KG
+YellowPerch:setTrophyLength(30)
+YellowPerch:setMaxWeight(0.3) -- KG
+YellowPerch:setTrophyWeight(1.9)
 YellowPerch:initFishSizeData()
 
 YellowPerch:addLures(Fishing.lure.Insect, 0.7)
@@ -410,7 +439,9 @@ table.insert(Fishing.fishes, YellowPerch);
 local Sauger = Fishing.FishConfig:new("Base.Sauger")
 Sauger:setLocation(true, true)    -- River, Lake
 Sauger:setMaxLength(45) -- CM
-Sauger:setMaxWeight(1.8) -- KG
+Sauger:setTrophyLength(50)
+Sauger:setMaxWeight(1.4) -- KG
+Sauger:setTrophyWeight(1.8)
 Sauger:initFishSizeData()
 
 Sauger:addLures(Fishing.lure.Insect, 0.5)
@@ -430,7 +461,9 @@ table.insert(Fishing.fishes, Sauger);
 local GreenSunfish = Fishing.FishConfig:new("Base.GreenSunfish")
 GreenSunfish:setLocation(true, true)    -- River, Lake
 GreenSunfish:setMaxLength(20) -- CM
+GreenSunfish:setTrophyLength(20) -- CM
 GreenSunfish:setMaxWeight(0.9) -- KG
+GreenSunfish:setTrophyWeight(0.9) -- KG
 GreenSunfish:initFishSizeData()
 
 GreenSunfish:addLures(Fishing.lure.Insect, 0.7)
@@ -449,8 +482,10 @@ table.insert(Fishing.fishes, GreenSunfish);
 
 local Walleye = Fishing.FishConfig:new("Base.Walleye")
 Walleye:setLocation(true, true)    -- River, Lake
-Walleye:setMaxLength(88) -- CM
-Walleye:setMaxWeight(13) -- KG
+Walleye:setMaxLength(80) -- CM
+Walleye:setTrophyLength(88) -- CM
+Walleye:setMaxWeight(9) -- KG
+Walleye:setTrophyWeight(13) -- KG
 Walleye:initFishSizeData()
 
 Walleye:addLures(Fishing.lure.Insect, 0.7)
@@ -469,8 +504,10 @@ table.insert(Fishing.fishes, Walleye);
 
 local FreshwaterDrum = Fishing.FishConfig:new("Base.FreshwaterDrum")
 FreshwaterDrum:setLocation(true, true)    -- River, Lake
-FreshwaterDrum:setMaxLength(95) -- CM
-FreshwaterDrum:setMaxWeight(24.5) -- KG
+FreshwaterDrum:setMaxLength(76) -- CM
+FreshwaterDrum:setTrophyLength(95) -- CM
+FreshwaterDrum:setMaxWeight(4.5) -- KG
+FreshwaterDrum:setTrophyWeight(24.5) -- KG
 FreshwaterDrum:initFishSizeData()
 
 FreshwaterDrum:addLures(Fishing.lure.Insect, 0.1)
@@ -489,8 +526,10 @@ table.insert(Fishing.fishes, FreshwaterDrum);
 
 local BlueCatfish = Fishing.FishConfig:new("Base.BlueCatfish")
 BlueCatfish:setLocation(true, true)    -- River, Lake
-BlueCatfish:setMaxLength(165) -- CM
-BlueCatfish:setMaxWeight(68) -- KG
+BlueCatfish:setMaxLength(117) -- CM
+BlueCatfish:setTrophyLength(165)
+BlueCatfish:setMaxWeight(32) -- KG
+BlueCatfish:setTrophyWeight(68)
 BlueCatfish:initFishSizeData()
 
 BlueCatfish:addLures(Fishing.lure.Insect, 0.1)
@@ -509,8 +548,10 @@ table.insert(Fishing.fishes, BlueCatfish);
 
 local ChannelCatfish = Fishing.FishConfig:new("Base.ChannelCatfish")
 ChannelCatfish:setLocation(true, true)    -- River, Lake
-ChannelCatfish:setMaxLength(80) -- CM
-ChannelCatfish:setMaxWeight(26) -- KG
+ChannelCatfish:setMaxLength(30) -- CM
+ChannelCatfish:setTrophyLength(80)
+ChannelCatfish:setMaxWeight(1.8) -- KG
+ChannelCatfish:setTrophyWeight(26)
 ChannelCatfish:initFishSizeData()
 
 ChannelCatfish:addLures(Fishing.lure.Insect, 0.1)
@@ -530,7 +571,9 @@ table.insert(Fishing.fishes, ChannelCatfish);
 local FlatheadCatfish = Fishing.FishConfig:new("Base.FlatheadCatfish")
 FlatheadCatfish:setLocation(true, true)    -- River, Lake
 FlatheadCatfish:setMaxLength(140) -- CM
-FlatheadCatfish:setMaxWeight(55) -- KG
+FlatheadCatfish:setTrophyLength(147)
+FlatheadCatfish:setMaxWeight(27) -- KG
+FlatheadCatfish:setTrophyWeight(55)
 FlatheadCatfish:initFishSizeData()
 
 FlatheadCatfish:addLures(Fishing.lure.Insect, 0.1)
@@ -550,7 +593,9 @@ table.insert(Fishing.fishes, FlatheadCatfish);
 local Muskellunge = Fishing.FishConfig:new("Base.Muskellunge")
 Muskellunge:setLocation(true, true)    -- River, Lake
 Muskellunge:setMaxLength(101) -- CM
-Muskellunge:setMaxWeight(32) -- KG
+Muskellunge:setTrophyLength(127)
+Muskellunge:setMaxWeight(18) -- KG
+Muskellunge:setTrophyWeight(32)
 Muskellunge:initFishSizeData()
 
 Muskellunge:addLures(Fishing.lure.Insect, 0.1)
@@ -569,8 +614,10 @@ table.insert(Fishing.fishes, Muskellunge);
 
 local AligatorGar = Fishing.FishConfig:new("Base.AligatorGar")
 AligatorGar:setLocation(true, true)    -- River, Lake
-AligatorGar:setMaxLength(243) -- CM
-AligatorGar:setMaxWeight(150) -- KG
+AligatorGar:setMaxLength(180) -- CM
+AligatorGar:setTrophyLength(243)
+AligatorGar:setMaxWeight(45) -- KG
+AligatorGar:setTrophyWeight(150)
 AligatorGar:initFishSizeData()
 
 AligatorGar:addLures(Fishing.lure.Insect, 0.1)
@@ -589,8 +636,10 @@ table.insert(Fishing.fishes, AligatorGar);
 
 local Paddlefish = Fishing.FishConfig:new("Base.Paddlefish")
 Paddlefish:setLocation(true, true)    -- River, Lake
-Paddlefish:setMaxLength(220) -- CM
-Paddlefish:setMaxWeight(90) -- KG
+Paddlefish:setMaxLength(150) -- CM
+Paddlefish:setTrophyLength(220)
+Paddlefish:setMaxWeight(27) -- KG
+Paddlefish:setTrophyWeight(90)
 Paddlefish:initFishSizeData()
 
 Paddlefish:addLures(Fishing.lure.Insect, 0.1)
@@ -672,8 +721,6 @@ table.insert(Fishing.fishNet, "Base.Seaweed")
 table.insert(Fishing.fishNet, "Base.Crayfish")
 table.insert(Fishing.fishNet, "Base.Tadpole")
 
-
-
 Fishing.fishNetWithBait = Fishing.fishNetWithBait or {}
 table.insert(Fishing.fishNetWithBait, "Base.BaitFish")
 table.insert(Fishing.fishNetWithBait, "Base.Tadpole")
@@ -681,7 +728,6 @@ table.insert(Fishing.fishNetWithBait, "Base.Crayfish")
 table.insert(Fishing.fishNetWithBait, "Base.BlueCatfish")
 table.insert(Fishing.fishNetWithBait, "Base.ChannelCatfish")
 table.insert(Fishing.fishNetWithBait, "Base.FlatheadCatfish")
-
 
 --------------------- Item OnCreate functions -------------------
 
@@ -702,7 +748,7 @@ function Fishing.onCreateFish(item)
         return
     end
 
-    local fishSizeData = fishConfig:getFishSizeData(50, 30, 20)
+    local fishSizeData = fishConfig:getFishSizeData(60, 30, 10)
 
     local nutritionFactor = 2.2 * fishSizeData.weight / item:getActualWeight()
     item:setCalories(item:getCalories() * nutritionFactor)
@@ -715,6 +761,11 @@ function Fishing.onCreateFish(item)
     item:setHungChange(item:getBaseHunger())
     item:setActualWeight(fishSizeData.weight * 2.2)   -- weight is kg * 2.2 (in pound)
     item:setCustomWeight(true)
+
+    -- Unlike with self-caught fish, this only shows overall size.
+    if fishConfig.isHaveDifferentSizes then
+        item:setName(getText("IGUI_Fish_" .. fishSizeData.size) .. " " .. getScriptManager():FindItem(fishConfig.itemType):getDisplayName() .. " ");
+    end
 
     if instanceof(item, "Food") then
         if item:getActualWeight() <= 0.6 then

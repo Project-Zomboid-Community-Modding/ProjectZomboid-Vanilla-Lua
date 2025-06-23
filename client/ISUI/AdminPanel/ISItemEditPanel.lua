@@ -30,6 +30,8 @@ local TYPE_BOOLEAN = 4;
 
 function ISItemEditPanel:initElements()
     local elem = self:registerString("IGUI_ItemEditor_ItemType","getFullType", false, false)
+    elem = self:registerString("IGUI_ItemEditor_FileName","getFileName", false, false)
+--     elem = self:registerString("IGUI_ItemEditor_FilePath","getFileAbsPath", "", true, false)
     elem = self:registerString("IGUI_Name","getName", "setName", true)
     elem = self:registerNumber("Tooltip_item_Weight", "getActualWeight", "setActualWeight", 0, false, 3)
     elem.funcOnSave = ISItemEditPanel.onSaveWeight;
@@ -222,7 +224,7 @@ end
 
 function ISItemEditPanel:onSaveCondition()
     if instanceof(self.item, "Clothing") then
-        if (self.item:getCondition() == self.item:getConditionMax() and getPlayer():getRole():haveCapability(Capability.EditItem)) then
+        if (self.item:getCondition() == self.item:getConditionMax() and getPlayer():getRole():hasCapability(Capability.EditItem)) then
             self.item:fullyRestore();
         end
     end

@@ -95,29 +95,29 @@ function ISScoreboard:doAdminButtons()
     self.voipmuteButton.enable = false;
     self.muteButton.enable = false;
 
-    self.kickButton:setVisible(getPlayer():getRole():haveCapability(Capability.KickUser));
-    self.banButton:setVisible(getPlayer():getRole():haveCapability(Capability.BanUnbanUser));
-    if self.banIpButton then self.banIpButton:setVisible(getPlayer():getRole():haveCapability(Capability.BanUnbanUser)); end
-    self.godmodButton:setVisible(getPlayer():getRole():haveCapability(Capability.ToggleGodModEveryone));
-    self.invisibleButton:setVisible(getPlayer():getRole():haveCapability(Capability.ToggleInvisibleEveryone));
-    self.teleportButton:setVisible(getPlayer():getRole():haveCapability(Capability.TeleportToPlayer));
-    self.teleportToYouButton:setVisible(getPlayer():getRole():haveCapability(Capability.TeleportPlayerToAnotherPlayer));
+    self.kickButton:setVisible(getPlayer():getRole():hasCapability(Capability.KickUser));
+    self.banButton:setVisible(getPlayer():getRole():hasCapability(Capability.BanUnbanUser));
+    if self.banIpButton then self.banIpButton:setVisible(getPlayer():getRole():hasCapability(Capability.BanUnbanUser)); end
+    self.godmodButton:setVisible(getPlayer():getRole():hasCapability(Capability.ToggleGodModEveryone));
+    self.invisibleButton:setVisible(getPlayer():getRole():hasCapability(Capability.ToggleInvisibleEveryone));
+    self.teleportButton:setVisible(getPlayer():getRole():hasCapability(Capability.TeleportToPlayer));
+    self.teleportToYouButton:setVisible(getPlayer():getRole():hasCapability(Capability.TeleportPlayerToAnotherPlayer));
 
     if self.selectedPlayer then
         local dy = self.listbox:getYScroll()
 		local username = self.selectedPlayer
         if username ~= getSpecificPlayer(0):getDisplayName() then
-            self.kickButton.enable = getPlayer():getRole():haveCapability(Capability.KickUser);
-            self.banButton.enable = getPlayer():getRole():haveCapability(Capability.BanUnbanUser);
-            self.teleportButton.enable = getPlayer():getRole():haveCapability(Capability.TeleportToPlayer);
-            self.teleportToYouButton.enable = getPlayer():getRole():haveCapability(Capability.TeleportPlayerToAnotherPlayer);
-            self.invisibleButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleInvisibleEveryone);
-            self.godmodButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleGodModEveryone);
+            self.kickButton.enable = getPlayer():getRole():hasCapability(Capability.KickUser);
+            self.banButton.enable = getPlayer():getRole():hasCapability(Capability.BanUnbanUser);
+            self.teleportButton.enable = getPlayer():getRole():hasCapability(Capability.TeleportToPlayer);
+            self.teleportToYouButton.enable = getPlayer():getRole():hasCapability(Capability.TeleportPlayerToAnotherPlayer);
+            self.invisibleButton.enable = getPlayer():getRole():hasCapability(Capability.ToggleInvisibleEveryone);
+            self.godmodButton.enable = getPlayer():getRole():hasCapability(Capability.ToggleGodModEveryone);
             self.voipmuteButton.enable = true;
             self.muteButton.enable = true;
 
             if self.banIpButton then
-                self.banIpButton.enable = getPlayer():getRole():haveCapability(Capability.BanUnbanUser);
+                self.banIpButton.enable = getPlayer():getRole():hasCapability(Capability.BanUnbanUser);
             end
 
             local muted = ISChat.instance:isMuted(username)
@@ -130,8 +130,8 @@ function ISScoreboard:doAdminButtons()
             self.voipmuteButton:setX(self.buttonPos[self.voipmuteButton].x)
             self.voipmuteButton:setY(self.buttonPos[self.voipmuteButton].y)
         else
-            self.invisibleButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleInvisibleHimself);
-            self.godmodButton.enable = getPlayer():getRole():haveCapability(Capability.ToggleGodModHimself);
+            self.invisibleButton.enable = getPlayer():getRole():hasCapability(Capability.ToggleInvisibleHimself);
+            self.godmodButton.enable = getPlayer():getRole():hasCapability(Capability.ToggleGodModHimself);
         end
     end
 end
@@ -151,13 +151,13 @@ function ISScoreboard:onContext(button)
     elseif button.internal == "BANIP" then
         SendCommandToServer("/banuser " .. username .. " -ip");
     elseif button.internal == "GODMOD" then
-        SendCommandToServer("/godmod " .. username);
+        SendCommandToServer("/godmodplayer " .. username);
     elseif button.internal == "INVISIBLE" then
-        SendCommandToServer("/invisible " .. username);
+        SendCommandToServer("/invisibleplayer " .. username);
     elseif button.internal == "TELEPORT" then
         SendCommandToServer("/teleport " .. username);
     elseif button.internal == "TELEPORTTOYOU" then
-        SendCommandToServer("/teleport " .. username .. " \"" .. getPlayer():getDisplayName() .. "\"");
+        SendCommandToServer("/teleportplayer " .. username .. " \"" .. getPlayer():getDisplayName() .. "\"");
     elseif button.internal == "MUTE" then
         ISChat.instance:mute(self.selectedPlayer)
 		self:doAdminButtons()

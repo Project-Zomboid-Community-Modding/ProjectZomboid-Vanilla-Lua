@@ -106,7 +106,7 @@ function ISLightSourceRadialMenu:fillMenuForItem(menu, item)
 		return
 	end
 
-	if item:getFullType() == "Base.Lantern_Hurricane" then
+	if item:getFullType() == "Base.Lantern_Hurricane" or item:hasTag("LitLantern") then
 		local recipe = getScriptManager():getRecipe("Light Hurricane Lantern")
 		if not recipe then return end
 		local numberOfTimes = RecipeManager.getNumberOfTimesRecipeCanBeDone(recipe, playerObj, containerList, item)
@@ -115,7 +115,7 @@ function ISLightSourceRadialMenu:fillMenuForItem(menu, item)
 		return
 	end
 
-	if item:getFullType() == "Base.Lantern_HurricaneLit" then
+	if item:getFullType() == "Base.Lantern_HurricaneLit" or item:hasTag("UnlitLantern") then
 		local recipe = getScriptManager():getRecipe("Extinguish Hurricane Lantern")
 		if not recipe then return end
 		local numberOfTimes = RecipeManager.getNumberOfTimesRecipeCanBeDone(recipe, playerObj, containerList, item)
@@ -161,7 +161,7 @@ function ISLightSourceRadialMenu:fillMenu()
 			if (fullType == "Base.Candle") or (fullType == "Base.CandleLit") then
 				-- Remove duplicate Candle and CandleLit
 				accept = false
-			elseif (fullType == "Base.Lantern_Hurricane") or (fullType == "Base.Lantern_HurricaneLit") then
+			elseif (fullType == "Base.Lantern_Hurricane") or (fullType == "Base.Lantern_HurricaneLit") or item:hasTag("LitLantern") or item:hasTag("UnlitLantern") then
 				-- Remove duplicate Candle and CandleLit
 				accept = false
 			else
@@ -294,12 +294,14 @@ function ISLightSourceRadialMenu.checkKey(key)
 	if not playerObj or playerObj:isDead() then
 		return false
 	end
-	local queue = ISTimedActionQueue.queues[playerObj]
-	if queue and #queue.queue > 0 then
-		return false
-	end
-	if getCell():getDrag(0) then
-		return false
+	if playerObj:isCurrentlyBusy() then
+		local queue = ISTimedActionQueue.queues[playerObj]
+		if queue and #queue.queue > 0 then
+			return false
+		end
+		if getCell():getDrag(0) then
+			return false
+		end
 	end
 	return true
 end

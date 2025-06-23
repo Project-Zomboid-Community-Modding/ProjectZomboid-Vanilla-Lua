@@ -26,6 +26,16 @@ function ISFluidTransferAction:update()
 		self.character:faceThisObject(isoObj);
 	end
 
+	if not isClient() then
+		-- transfer per update
+		local progressAmount = self.amount * self:getJobDelta();
+		local sourceAmountTarget = self.sourceStartAmount - progressAmount;
+		local amountToTransfer = math.max(0, self.source:getFluidContainer():getAmount() - sourceAmountTarget);
+		FluidContainer.Transfer(self.source:getFluidContainer(), self.target:getFluidContainer(), amountToTransfer);
+		self.source:sync()
+		self.target:sync()
+	end
+
 	if self.amount<1.0 then
 		self.character:setMetabolicTarget(Metabolics.LightDomestic)
 	elseif self.amount < 5.0 then
@@ -36,7 +46,7 @@ function ISFluidTransferAction:update()
 end
 
 function ISFluidTransferAction:start()
-	self:setActionAnim(CharacterActionAnims.Pour)
+    self:setActionAnim("MixFluids")
 	local itemA, itemB;
 	if ISFluidUtil.validateContainer(self.source) and instanceof(self.source:getOwner(), "InventoryItem") then
 		itemA = self.source:getOwner();
@@ -47,20 +57,25 @@ function ISFluidTransferAction:start()
 			itemB:setItemHeat(1.0);
 		end
 	end
-	self:setOverrideHandModels(itemA, itemB);
-	self.sound = self.character:playSound("TransferLiquid");
+	self:setOverrideHandModels("BottleCrafted_Ground", "JarCrafted_Ground")
+	if ISFluidUtil.validateContainer(self.target) and instanceof(self.target:getOwner(), "IsoFeedingTrough") then
+		self.sound = self.character:playSound("AnimalFeederAddWater");
+	else
+		self.sound = self.character:playSound("TransferLiquid");
+	end
 end
 
 function ISFluidTransferAction:stop()
 	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
 		self.character:stopOrTriggerSound(self.sound);
-	end
+	end	
 	ISBaseTimedAction.stop(self)
 end
 
 function ISFluidTransferAction:complete()
-	FluidContainer.Transfer(self.source:getFluidContainer(), self.target:getFluidContainer(), self.amount);
-
+	local sourceAmountTarget = self.sourceStartAmount - self.amount;
+	local amountToTransfer = math.max(0, self.source:getFluidContainer():getAmount() - sourceAmountTarget);
+	FluidContainer.Transfer(self.source:getFluidContainer(), self.target:getFluidContainer(), amountToTransfer);
 	self.source:sync()
 	self.target:sync()
 
@@ -108,6 +123,8 @@ function ISFluidTransferAction:new(character, sourceContainer, sourceFluidObject
 
 	o.sourceOwner = o.source:getOwner();
 	o.targetOwner = o.target:getOwner();
+	
+	o.sourceStartAmount = o.source:getFluidContainer():getAmount();
 
 	--[[
 	o.sourceFluidContainer = _source:getFluidContainer();

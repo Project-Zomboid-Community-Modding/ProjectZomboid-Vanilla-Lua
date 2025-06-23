@@ -7,6 +7,7 @@ require "ISUI/ISPanelJoypad"
 ISMap = ISPanelJoypad:derive("ISMap");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
@@ -18,6 +19,11 @@ ISMapWrapper.__index = ISMapWrapper;
 -- created by CartoZed or WorldEd scaled down by this factor.  So one PNG pixel
 -- equals this many game-world squares.
 ISMap.SCALE = 0.666
+
+function ISMapWrapper:instantiate()
+    ISCollapsableWindow.instantiate(self)
+--    self.javaObject:setWantKeyEvents(true)
+end
 
 function ISMapWrapper:new(x, y, width, height)
 	local o = ISCollapsableWindow.new(self, x, y, width, height)
@@ -84,13 +90,28 @@ function ISMap:createChildren()
 
     -- Joypad only
     btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Map_PlaceSymbol"))
-    self.placeSymbBtn = ISButton:new(self.editSymbolsBtn:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_PlaceSymbol"), self, ISMap.onButtonClick);
+    self.placeSymbBtn = ISButton:new(self.scaleBtn:getRight() + UI_BORDER_SPACING, self.ok.y, btnWidth, BUTTON_HGT, getText("IGUI_Map_PlaceSymbol"), self, ISMap.onButtonClick);
     self.placeSymbBtn.internal = "PLACESYMBOL";
     self.placeSymbBtn:initialise();
     self.placeSymbBtn:instantiate();
     self.placeSymbBtn.borderColor = {r=1, g=1, b=1, a=0.4};
 	self.placeSymbBtn:setVisible(false)
     self:addChild(self.placeSymbBtn);
+
+    if self.mapObj:getStashMap() then
+        local texture = getTexture("media/textures/Item_Map.png");
+        btnWidth = UI_BORDER_SPACING*2+texture:getWidth();
+        btnHeight = UI_BORDER_SPACING*2+texture:getHeight();
+        self.revealBtn = ISButton:new(self.width - UI_BORDER_SPACING+1 - btnWidth, self.height - UI_BORDER_SPACING-1 - btnHeight, btnWidth, btnHeight, "", self, ISMap.onButtonClick);
+        self.revealBtn:setImage(texture)
+        self.revealBtn.internal = "REVEAL";
+        self.revealBtn.anchorLeft = false
+        self.revealBtn.anchorRight = true
+        self.revealBtn:initialise();
+        self.revealBtn:instantiate();
+        self.revealBtn.borderColor = {r=1, g=1, b=1, a=0.4};
+        self:addChild(self.revealBtn);
+    end
 end
 
 function ISMap:destroy()
@@ -150,13 +171,6 @@ function ISMap:onButtonClick(button)
         end
     end
     if button.internal == "KEY" then
-        if JoypadState.players[player+1] then
-            if self.mapKey:isVisible() then
-            else
-                self.mapKey:setVisible(true)
-            end
-            return
-        end
         if self.mapKey:isVisible() then
             self.mapKey:undisplay()
             self.mapKey:setVisible(false)
@@ -173,6 +187,10 @@ function ISMap:onButtonClick(button)
     if button.internal == "PLACESYMBOL" then
         -- Joypad only
         self.symbolsUI:onJoypadDownInMap(Joypad.AButton, self.joyfocus)
+    end
+    if button.internal == "REVEAL" then
+        self:copySymbolsToWorldMap()
+        self:revealOnWorldMap()
     end
 end
 
@@ -282,20 +300,23 @@ function ISMap:onRightMouseDown(x, y)
 end
 
 function ISMap:prerender()
-    if self.joyfocus then
-        self:drawRect(0, self.ok:getY() - 4, self.placeSymbBtn:getRight() + 4, self.height - (self.ok:getY() - 4), 1.0, 0.5, 0.5, 0.5)
-    end
+    self.symbolsUI:prerenderMap()
+    MapUtils.renderDarkModeOverlay(self)
 end
 
 function ISMap:render()
 --    ISPanelJoypad.render(self);
 
     if not self.wrap.isCollapsed then
+        if isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
+            self:renderJoypadIcons()
+        end
+
         local stencilBottom = self.ok:getY() - 4 -- don't draw symbols over the buttons
 
         self:setStencilRect(0, 0, self.width, stencilBottom)
 
-        if (self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] ~= nil and not wasMouseActiveMoreRecentlyThanJoypad()) then
+        if (self.playerNum ~= 0) or (getJoypadData(self.playerNum) ~= nil and not wasMouseActiveMoreRecentlyThanJoypad()) then
             self:drawTexture(self.cross, self.width/2-12, self.height/2-12, 1, 1,1,1);
         end
 
@@ -323,11 +344,39 @@ function ISMapWrapper:close()
 end
 
 function ISMap:renderJoypadIcons()
-    local didSymbol = false
-    if (self.playerNum == 0) and (JoypadState.players[self.playerNum+1] == nil or wasMouseActiveMoreRecentlyThanJoypad()) then
-        return didSymbol
+    if (self.playerNum == 0) and (getJoypadData(self.playerNum) == nil or wasMouseActiveMoreRecentlyThanJoypad()) then
+        return
     end
-    return didSymbol
+    if isJoypadFocusOnElementOrDescendant(self.playerNum, self.symbolsUI) then
+        return
+    end
+    self.joypadPromptHgt = math.max(32, FONT_HGT_LARGE)
+    local x = UI_BORDER_SPACING+1
+    local y = self.height - UI_BORDER_SPACING - 1 - self.joypadPromptHgt
+    x = self:renderButtonTextureAndText(Joypad.Texture.BButton, self.ok.title, x, y) + UI_BORDER_SPACING
+    if self.symbolsUI.currentTool then
+        if self.symbolsUI:getJoypadAButtonText() ~= nil then
+            x = self:renderButtonTextureAndText(Joypad.Texture.AButton, self.placeSymbBtn.title, x, y) + UI_BORDER_SPACING
+        end
+    else
+        x = self:renderButtonTextureAndText(Joypad.Texture.YButton, self.showMapKey.title, x, y) + UI_BORDER_SPACING
+        x = self:renderButtonTextureAndText(Joypad.Texture.XButton, self.editSymbolsBtn.title, x, y) + UI_BORDER_SPACING
+        if self.revealBtn then
+            local wh = 32
+            self:drawTexture(Joypad.Texture.AButton, self.revealBtn.x - 5 - wh, self.revealBtn.y + (self.revealBtn.height - wh) / 2, wh, wh, 1.0, 1.0, 1.0, 1.0)
+        end
+    end
+
+    self:renderButtonTextureAndText(Joypad.Texture.LTrigger, getText("IGUI_Map_ZoomOut"), UI_BORDER_SPACING+1, y - 8 - self.joypadPromptHgt)
+    self:renderButtonTextureAndText(Joypad.Texture.RTrigger, getText("IGUI_Map_ZoomIn"), UI_BORDER_SPACING+1, y - 8 - self.joypadPromptHgt - 8 - self.joypadPromptHgt)
+end
+
+function ISMap:renderButtonTextureAndText(texture, text, x, y)
+    local wh = 32
+    self:drawTexture(texture, x, y + (self.joypadPromptHgt - wh) / 2, wh, wh, 1.0, 1.0, 1.0, 1.0)
+    x = x + wh + 5
+    self:drawText(text, x, y + (self.joypadPromptHgt - FONT_HGT_LARGE) / 2, 0.0, 0.0, 0.0, 1.0, UIFont.Large)
+    return x + getTextManager():MeasureStringX(UIFont.Large, text)
 end
 
 function ISMap:update()
@@ -342,8 +391,6 @@ function ISMap:update()
 		self:initMapData()
 		self.mapAPI:resetView()
 	end
-    
-    if not self.character:getInventory():contains(self.mapObj, true) then self.wrap:setVisible(false) end
 
     self:updateButtons();
 end
@@ -374,7 +421,7 @@ function ISMap:updateJoypad()
 	local cx = self.mapAPI:getCenterWorldX()
 	local cy = self.mapAPI:getCenterWorldY()
 
-	if isJoypadLTPressed(self.joyfocus.id, Joypad.LBumper) then
+	if isJoypadLTPressed(self.joyfocus.id) then
 		if not self.LBumperZoom then
 			self.LBumperZoom = self.mapAPI:getZoomF()
 		end
@@ -385,7 +432,7 @@ function ISMap:updateJoypad()
 	else
 		self.LBumperZoom = nil
 	end
-	if isJoypadRTPressed(self.joyfocus.id, Joypad.RBumper) then
+	if isJoypadRTPressed(self.joyfocus.id) then
 		if not self.RBumperZoom then
 			self.RBumperZoom = self.mapAPI:getZoomF()
 		end
@@ -490,24 +537,16 @@ function ISMap:updateButtons()
         self.symbolBtn:setTitle(getText("IGUI_Map_AddSymbol"));
     end
 --]]
+    local isMouse = (self.playerNum == 0) and (getJoypadData(self.playerNum) == nil or wasMouseActiveMoreRecentlyThanJoypad())
+    self.ok:setVisible(isMouse)
+    self.showMapKey:setVisible(isMouse)
+    self.editSymbolsBtn:setVisible(isMouse)
+    self.scaleBtn:setVisible(isMouse)
+    self.placeSymbBtn:setVisible(isMouse)
 end
 
 function ISMap:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-	--self.joypadIndexY = 1
-	--self.joypadIndex = 1
-	--self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
-	--self.joypadButtons[self.joypadIndex]:setJoypadFocused(true)
-	self.scaleBtn:setVisible(false)
-	self.placeSymbBtn:setVisible(true)
-	self.ok:setJoypadButton(Joypad.Texture.BButton)
---	self.ok.textColor = {r=0.0, g=0.0, b=0.0, a=1.0};
-	self.editSymbolsBtn:setJoypadButton(Joypad.Texture.XButton)
---	self.symbolBtn.textColor = {r=0.0, g=0.0, b=0.0, a=1.0};
-	self.placeSymbBtn:setJoypadButton(Joypad.Texture.AButton)
---	self.placeSymbBtn.textColor = {r=0.0, g=0.0, b=0.0, a=1.0};
---	self.removenoteBtn:setJoypadButton(Joypad.Texture.YButton)
---	self.removenoteBtn.textColor = {r=0.0, g=0.0, b=0.0, a=1.0};
 end
 
 function ISMap:onJoypadDown(button, joypadData)
@@ -515,16 +554,37 @@ function ISMap:onJoypadDown(button, joypadData)
 	if button == Joypad.BButton then
 		self.wrap:onKeyRelease(Keyboard.KEY_ESCAPE)
 	end
-	if button == Joypad.XButton then
-		self.editSymbolsBtn:forceClick()
+	if button == Joypad.XButton and self.symbolsUI.currentTool == nil then
+		self:onButtonClick(self.editSymbolsBtn)
 	end
-	if button == Joypad.AButton then
+	if button == Joypad.AButton and self.symbolsUI.currentTool ~= nil then
 		self.symbolsUI:onJoypadDownInMap(button, joypadData)
 --		self.placeSymbBtn:forceClick()
 	end
-	if button == Joypad.YButton then
+	if button == Joypad.AButton and self.symbolsUI.currentTool == nil and self.revealBtn ~= nil then
+		self:onButtonClick(self.revealBtn)
+	end
+	if button == Joypad.YButton and self.symbolsUI.currentTool == nil then
+		self:onButtonClick(self.showMapKey)
 --		self.removenoteBtn:forceClick()
 	end
+end
+
+function ISMap:copySymbolsToWorldMap()
+
+end
+
+function ISMap:revealOnWorldMap()
+    local mapAPI = self.mapAPI
+    local x1 = mapAPI:getMinXInSquares()
+    local y1 = mapAPI:getMinYInSquares()
+    local x2 = mapAPI:getMaxXInSquares()
+    local y2 = mapAPI:getMaxYInSquares()
+    local centerX = (x1 + x2) / 2
+    local centerY = (y1 + y2) / 2
+    local playerObj = self.character
+    ISTimedActionQueue.clear(playerObj)
+    ISTimedActionQueue.add(ISReadWorldMap:new(playerObj, centerX, centerY, self.mapAPI:getZoomF()))
 end
 
 --************************************************************************--

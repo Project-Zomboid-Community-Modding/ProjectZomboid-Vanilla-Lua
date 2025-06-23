@@ -12,10 +12,11 @@ function ISInventoryItem.renderItemIcon(self, _item, _x, _y, _alpha, _w, _h)
     if _item and _item:getTex() then
         local tex = _item:getTex();
         if tex then
-            if _item:getFluidContainer() and _item:getTextureFluidMask() then
+            local fluidContainer = _item:getFluidContainer() or (instanceof(_item:getWorldItem(), "IsoWorldInventoryObject") and _item:getWorldItem():getFluidContainer())
+            if fluidContainer and _item:getTextureFluidMask() then
                 _alpha = 1.0;
             end
-            if _item:getFluidContainer() and _item:getTextureColorMask() then
+            if fluidContainer and _item:getTextureColorMask() then
                 _alpha = 1.0;
             end
             if _w and _h then

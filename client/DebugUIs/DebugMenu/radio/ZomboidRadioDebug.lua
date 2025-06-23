@@ -94,7 +94,7 @@ function ZomboidRadioDebug:createChildren()
     --]]
 
     local btnY, btnWidth = self.broadcastList:getBottom() + UI_BORDER_SPACING, 180
-    _, obj = ISDebugUtils.addButton(self,"script",self.infoList.x,btnY,self.infoList.width,BUTTON_HGT,getText("IGUI_ZomboidRadio_ViewChannelScript"),ZomboidRadioDebug.onViewScript);
+    local _, obj = ISDebugUtils.addButton(self,"script",self.infoList.x,btnY,self.infoList.width,BUTTON_HGT,getText("IGUI_ZomboidRadio_ViewChannelScript"),ZomboidRadioDebug.onViewScript);
     _, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Close"),ZomboidRadioDebug.onClickClose);
     obj:enableCancelColor()
     _, obj = ISDebugUtils.addButton(self,"refresh",obj.x-btnWidth-UI_BORDER_SPACING,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Refresh"),ZomboidRadioDebug.onClickRefresh);

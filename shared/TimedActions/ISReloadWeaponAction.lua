@@ -66,7 +66,7 @@ end
 
 -- This is used by other timed actions.
 function ISReloadWeaponAction.setReloadSpeed(character, rack)
-	local baseReloadSpeed = 1;
+	local baseReloadSpeed = 0.8;
 	if rack then
 		-- reloading skill has less impact on racking, panic does nothing
 		baseReloadSpeed = baseReloadSpeed + (character:getPerkLevel(Perks.Reloading) * 0.04);
@@ -103,7 +103,7 @@ function ISReloadWeaponAction.setReloadSpeed(character, rack)
 	if character:getVehicle() and character:getVehicle():getDriver() == character then
 		baseReloadSpeed = baseReloadSpeed * 0.8;
 	end
-	character:setVariable("ReloadSpeed", baseReloadSpeed * GameTime.getAnimSpeedFix());
+	character:setVariable("ReloadSpeed", baseReloadSpeed);
 end
 
 -- Add some vars we gonna use, either magazine or the bullets
@@ -160,7 +160,17 @@ function ISReloadWeaponAction:serverStart()
 			self.netAction:forceComplete()
 		end
 	end
-	emulateAnimEvent(self.netAction, 2400, "loadFinished", nil)
+	if self.gun:getWeaponReloadType() == "shotgun" then
+		emulateAnimEvent(self.netAction, 833, "loadFinished", nil)
+	elseif self.gun:getWeaponReloadType() == "revolver" then
+		emulateAnimEvent(self.netAction, 950, "loadFinished", nil)
+	elseif self.gun:getWeaponReloadType() == "boltactionnomag" then
+		emulateAnimEvent(self.netAction, 590, "loadFinished", nil)
+	elseif self.gun:getWeaponReloadType() == "doublebarrelshotgun" then
+		emulateAnimEvent(self.netAction, 2500, "loadFinished", nil)
+	else
+		emulateAnimEvent(self.netAction, 1000, "loadFinished", nil)
+	end
 end
 
 function ISReloadWeaponAction:getDuration()
@@ -356,7 +366,13 @@ ISReloadWeaponAction.OnPressReloadButton = function(player, gun)
 end
 
 -- Called when pressing rack (if you rack while having a clip/bullets, we simply remove it and don't reload a new one)
-ISReloadWeaponAction.OnPressRackButton = function(player, gun)
+ISReloadWeaponAction.OnPressRackButton = function(player, gun, shift)
+	if shift and gun:isSelectFire() then
+		log(DebugType.Action, '[ISReloadWeaponAction.OnPressRackButton] '..tostring(player)..' cycled firemode '..tostring(gun))
+		gun:cycleFireMode()
+		return
+	end
+
 	log(DebugType.Action, '[ISReloadWeaponAction.OnPressRackButton] '..tostring(player)..' racks '..tostring(gun))
 	if ISReloadWeaponAction.disableReloading then
 		return;
@@ -371,8 +387,9 @@ ISReloadWeaponAction.OnPressRackButton = function(player, gun)
 	ISTimedActionQueue.add(ISRackFirearm:new(player, gun));
 end
 
-ISReloadWeaponAction.canShoot = function(weapon)
-	if getDebug() and getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo") then
+ISReloadWeaponAction.canShoot = function(player, weapon)
+	if weapon:isSelectFire() and weapon:getFireMode() == "Safe" then return false end
+	if getDebug() and player:isUnlimitedAmmo() then
 		return true;
 	end
 	if weapon:isJammed() then
@@ -396,8 +413,15 @@ ISReloadWeaponAction.attackHook = function(character, chargeDelta, weapon)
 		return;
 	end
 	if weapon:isRanged() and not character:isDoShove() then
-		if ISReloadWeaponAction.canShoot(weapon) then
-			character:playSound(weapon:getSwingSound());
+		if ISReloadWeaponAction.canShoot(character, weapon) then
+			local attackLoop = (weapon:getSwingSound() or "???").."FullAuto"
+			if ("Auto" == weapon:getFireMode()) and (getScriptManager():getGameSound(attackLoop) ~= nil) then
+				if not character:isPlayingAttackLoopSound(attackLoop) then
+					character:startAttackLoopSound(attackLoop);
+				end
+			else
+				character:playSound(weapon:getSwingSound());
+			end
 			local radius = weapon:getSoundRadius() * getSandboxOptions():getOptionByName("FirearmNoiseMultiplier"):getValue();
 			if not character:isOutside() then
 				radius = radius * 0.5
@@ -428,19 +452,24 @@ end
 -- handle ammo removal, new chamber & jam chance
 ISReloadWeaponAction.onShoot = function(player, weapon)
 	if not weapon:isRanged() then return; end
-	MoodlesUI.getInstance():wiggle(MoodleType.Panic);
-	MoodlesUI.getInstance():wiggle(MoodleType.Stress);
-	MoodlesUI.getInstance():wiggle(MoodleType.Drunk);
-	MoodlesUI.getInstance():wiggle(MoodleType.Tired);
-	MoodlesUI.getInstance():wiggle(MoodleType.Endurance);
-	local body = player:getBodyDamage():getBodyParts()
-	for  x = BodyPartType.ToIndex(BodyPartType.Hand_L), BodyPartType.ToIndex(BodyPartType.UpperArm_R), 1 do
-		if body:get(x):getPain() then
-			MoodlesUI.getInstance():wiggle(MoodleType.Pain);
-			break
+
+	-- for the dedicated server
+	if MoodlesUI.getInstance() then
+		MoodlesUI.getInstance():wiggle(MoodleType.Panic);
+		MoodlesUI.getInstance():wiggle(MoodleType.Stress);
+		MoodlesUI.getInstance():wiggle(MoodleType.Drunk);
+		MoodlesUI.getInstance():wiggle(MoodleType.Tired);
+		MoodlesUI.getInstance():wiggle(MoodleType.Endurance);
+		local body = player:getBodyDamage():getBodyParts()
+		for  x = BodyPartType.ToIndex(BodyPartType.Hand_L), BodyPartType.ToIndex(BodyPartType.UpperArm_R), 1 do
+			if body:get(x):getPain() then
+				MoodlesUI.getInstance():wiggle(MoodleType.Pain);
+				break
+			end
 		end
 	end
-	if getDebug() and getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo") then
+
+	if getDebug() and player:isUnlimitedAmmo() then
 		return;
 	end
 
@@ -483,7 +512,7 @@ end
 
 ISReloadWeaponAction.OnPlayerAttackFinished = function(playerObj, weapon)
 	if not playerObj or playerObj:isDead() then return end
-	if getDebug() and getDebugOptions():getBoolean("Cheat.Player.UnlimitedAmmo") then
+	if getDebug() and playerObj:isUnlimitedAmmo() then
 		return;
 	end
 	if weapon and weapon:isRanged() and weapon:isRackAfterShoot() then

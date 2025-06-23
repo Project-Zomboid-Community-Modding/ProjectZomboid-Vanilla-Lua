@@ -77,7 +77,7 @@ tiles["fencing_01_11"] = { self = { "fencing_damaged_01_76" }, left = { "fencing
 
 BrokenFences.getInstance():addBrokenTiles(tiles)
 
-debris = {}
+local debris = {}
 debris.VERSION = 1
 
 -- Short black metal bars
@@ -139,4 +139,3 @@ debris["fencing_01_10"] = debris["fencing_01_8"]
 debris["fencing_01_11"] = debris["fencing_01_8"]
 
 BrokenFences.getInstance():addDebrisTiles(debris)
-

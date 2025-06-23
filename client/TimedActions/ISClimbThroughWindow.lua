@@ -63,7 +63,7 @@ end
 
 function ISClimbThroughWindow:getDeltaModifiers(deltas)
     if not self:isStarted() then
-        deltas:setMaxTurnDelta(2f)
+        deltas:setMaxTurnDelta(2)
     end
 end
 
@@ -71,5 +71,6 @@ function ISClimbThroughWindow:new(character, item, time)
     local o = ISBaseTimedAction.new(self, character)
     o.item = item;
     o.maxTime = time;
+    o.retriggerLastAction = true; -- this is used when we for example eat something and climb through, the eat action is removed, but we store it in IsoPlayer.getTimedActionToRetrigger(), here we say to the queue "relaunch the previous action (eat)", it'll be relaunched at the delta it was saved
     return o;
 end

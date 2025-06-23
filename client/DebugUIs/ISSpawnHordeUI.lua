@@ -64,6 +64,7 @@ function ISSpawnHordeUI:createChildren()
 	self.outfit = ISComboBox:new(self.outfitLbl:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT)
 	self.outfit:initialise()
 	self:addChild(self.outfit)
+	self.outfit:setEditable(true)
 	self.maleOutfits = getAllOutfits(false);
 	self.femaleOutfits = getAllOutfits(true);
 	self.outfit:addOptionWithData(getText("IGUI_None"), nil);
@@ -94,12 +95,14 @@ function ISSpawnHordeUI:createChildren()
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_FakeDead"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_FallOnFront"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Invulnerable"));
-	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Sitting"))
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Sitting"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Recording"));
+
 	y=y+self.boolOptions:getHeight()+UI_BORDER_SPACING
 
-	_,self.healthSliderTitle = ISDebugUtils.addLabel(self,"Health",x,y,getText("IGUI_SpawnHorde_Health")..": ", UIFont.Small, true);
-	_,self.healthSliderLabel = ISDebugUtils.addLabel(self,"Health",self.healthSliderTitle:getRight() + UI_BORDER_SPACING + BUTTON_HGT,y,"1", UIFont.Small, false);
-	_,self.healthSlider = ISDebugUtils.addSlider(self, "health", self.healthSliderLabel:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT, ISSpawnHordeUI.onSliderChange)
+	self.healthSliderTitle = ISDebugUtils.addLabelNoReturnOffset(self,"Health",x,y,getText("IGUI_SpawnHorde_Health")..": ", UIFont.Small, true);
+	self.healthSliderLabel = ISDebugUtils.addLabelNoReturnOffset(self,"Health",self.healthSliderTitle:getRight() + UI_BORDER_SPACING + BUTTON_HGT,y,"1", UIFont.Small, false);
+	self.healthSlider = ISDebugUtils.addSliderNoReturnOffset(self, "health", self.healthSliderLabel:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT, ISSpawnHordeUI.onSliderChange);
 	self.healthSlider.pretext = "Health: ";
 	self.healthSlider.valueLabel = self.healthSliderLabel;
 	self.healthSlider:setValues(0, 2, 0.1, 0.1, true);
@@ -204,6 +207,7 @@ function ISSpawnHordeUI:onSpawn()
 	local isFakeDead = false;
 	local isInvulnerable = false;
 	local isSitting = false;
+	local isRecordingAnims = false;
 	if self.maleOutfits:contains(outfit) and not self.femaleOutfits:contains(outfit) then
 		femaleChance = 0;
 	end
@@ -228,6 +232,10 @@ function ISSpawnHordeUI:onSpawn()
 	if self.boolOptions.selected[6] then
 		isSitting = true;
 	end
+	if self.boolOptions.selected[7] then
+		isRecordingAnims = true;
+	end
+
 	local health = self.healthSlider:getCurrentValue()
 	if isClient() then
 		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -health %s -outfit %s ", self.selectX, self.selectY, self.selectZ, count, radius, tostring(crawler), tostring(isFallOnFront), tostring(isFakeDead), tostring(knockedDown), tostring(isInvulnerable), tostring(health), outfit or ""))
@@ -236,18 +244,28 @@ function ISSpawnHordeUI:onSpawn()
 	for i=1,count do
 		local x = ZombRand(self.selectX-radius, self.selectX+radius+1);
 		local y = ZombRand(self.selectY-radius, self.selectY+radius+1);
-		addZombiesInOutfit(x, y, self.selectZ, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health);
+		addZombiesInOutfit(x, y, self.selectZ, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims);
 	end
 end
 
 function ISSpawnHordeUI:getZombiesNumber()
 	local nbr = self.zombiesNbr:getInternalText();
-	nbr = tonumber(nbr)
+	nbr = tonumber(nbr);
+
+	if not nbr then
+		return 1;
+	end
+
+	if nbr < 1 then
+		return 1;
+	end
+
 	if nbr > 500 then
 	    print("No more than 500 zombies can be spawned at a time to prevent crashing servers etc.")
-	    nbr = 500
+	    nbr = 500;
 	end
-	return tonumber(nbr) or 1;
+
+	return nbr;
 end
 
 function ISSpawnHordeUI:getOutfit()

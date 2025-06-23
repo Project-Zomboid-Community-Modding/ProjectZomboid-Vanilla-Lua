@@ -180,7 +180,7 @@ function ISFactionAddPlayerUI:new(x, y, width, height, faction, player)
     o.faction = faction;
     o.moveWithMouse = true;
     ISFactionAddPlayerUI.instance = o;
-    o.isOwner = faction:isOwner(player:getUsername()) or player:getRole():haveCapability(Capability.FactionCheat);
+    o.isOwner = faction:isOwner(player:getUsername()) or player:getRole():hasCapability(Capability.FactionCheat);
     return o;
 end
 

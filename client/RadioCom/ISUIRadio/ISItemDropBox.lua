@@ -246,7 +246,7 @@ function ISItemDropBox:activateToolTip()
             self.toolTip:addToUIManager();
             self.toolTip:bringToTop()
         else
-            self.toolTip = ISToolTip:new(item);
+            self.toolTip = ISToolTip:new();
             self.toolTip:initialise();
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);

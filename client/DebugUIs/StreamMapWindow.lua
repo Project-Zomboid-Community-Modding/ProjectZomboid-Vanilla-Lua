@@ -2,6 +2,8 @@ require "ISUI/ISCollapsableWindow"
 
 StreamMapWindow = ISCollapsableWindow:derive("StreamMapWindow");
 
+local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
+
 function StreamMapWindow:onMouseDoubleClickOpenObject(item)
 
 
@@ -135,24 +137,24 @@ function StreamMapWindow:createChildren()
     self:addChild(self.renderPanel);
 
     self.objectView = ISScrollingListBox:new(0, th, 200, self.height-th);
+    self.objectView:setFont(getTextManager():getCurrentCodeFont())
     self.objectView:initialise();
     self.objectView.doDrawItem = StreamMapWindow.doDrawItem;
     self.objectView.anchorRight = true;
     self.objectView.anchorBottom = true;
     self:addChild(self.objectView);
-    self.objectView.itemheight = 22;
     self.objectView:setOnMouseDoubleClick(self, StreamMapWindow.onMouseDoubleClickOpenObject);
 
 end
 
 function StreamMapWindow:doDrawItem(y, item, alt)
     if self.selected == item.index then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.2, 0.6, 0.7, 0.8);
+        self:drawRect(0, y, self:getWidth(), self.itemheight-1, 0.2, 0.6, 0.7, 0.8);
 
     end
 
     --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(item.text, 15, (y)+6, 1, 1, 1, 1, UIFont.Code);
+    self:drawText(item.text, 15, y, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
 
@@ -188,10 +190,11 @@ function StreamMapWindow:renderTex()
         local x = translatePointXInOverheadMapToWorld(self:getMouseX(), self.javaObject, self.parent.zoom, self.parent.xpos)
         local y = translatePointYInOverheadMapToWorld(self:getMouseY(), self.javaObject, self.parent.zoom, self.parent.ypos)
         local p = getSpecificPlayer(0)
-        p:setX(x + 0.5)
-        p:setY(y + 0.5)
-        p:setLastX(p:getX())
-        p:setLastY(p:getY())
+        if isClient() then
+            SendCommandToServer("/teleportto " .. tostring(x) .. "," .. tostring(y) .. "," .. tostring(0));
+        else
+            p:teleportTo(x + 0.5, y + 0.5, 0)
+        end
     end
 
     if isKeyPressed(Keyboard.KEY_NEXT) then
@@ -200,6 +203,20 @@ function StreamMapWindow:renderTex()
     if isKeyPressed(Keyboard.KEY_PRIOR) then
         self.parent.level = self.parent.level + 1
     end
+end
+
+function StreamMapWindow:prerender()
+    ISCollapsableWindow.prerender(self)
+    self:checkFontSize()
+end
+
+function StreamMapWindow:checkFontSize()
+    local font = getTextManager():getCurrentCodeFont()
+    local fontHeight = getTextManager():getFontHeight(font)
+    if font == self.objectView.font then return end
+    FONT_HGT_CODE = fontHeight
+    self.objectView:setFont(font, 0)
+    self.objectView.itemheight = FONT_HGT_CODE
 end
 
 function StreamMapWindow:new (x, y, width, height)

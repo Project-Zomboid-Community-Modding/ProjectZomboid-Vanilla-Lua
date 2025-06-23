@@ -180,10 +180,18 @@ SkillBook["Reloading"].maxMultiplier5 = 8;
 
 -- note that the long blade skill books intentionally provide less of a xp multiplier
 SkillBook["LongBlade"] = {};
-SkillBook["LongBlade"].perk = Perks.Reloading;
+SkillBook["LongBlade"].perk = Perks.LongBlade;
 SkillBook["LongBlade"].maxMultiplier1 = 1.5;
 SkillBook["LongBlade"].maxMultiplier2 = 2.5;
 SkillBook["LongBlade"].maxMultiplier3 = 4;
 SkillBook["LongBlade"].maxMultiplier4 = 6;
 SkillBook["LongBlade"].maxMultiplier5 = 8;
+
+SkillBook["Maintenance"] = {};
+SkillBook["Maintenance"].perk = Perks.Maintenance;
+SkillBook["Maintenance"].maxMultiplier1 = 3;
+SkillBook["Maintenance"].maxMultiplier2 = 5;
+SkillBook["Maintenance"].maxMultiplier3 = 8;
+SkillBook["Maintenance"].maxMultiplier4 = 12;
+SkillBook["Maintenance"].maxMultiplier5 = 16;
 

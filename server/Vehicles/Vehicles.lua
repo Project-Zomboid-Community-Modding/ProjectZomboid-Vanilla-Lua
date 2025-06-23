@@ -79,7 +79,7 @@ function Vehicles.ContainerAccess.Seat(vehicle, part, chr)
 	else
 		if not vehicle:isInArea(part:getArea(), chr) then return false end
 		local doorPart = vehicle:getPassengerDoor(seat)
-		if doorPart and doorPart:getDoor() and not doorPart:getDoor():isOpen() then
+		if doorPart and doorPart:getDoor() and not doorPart:getDoor():isOpen() and doorPart:getInventoryItem() then
 			return false
 		end
 		-- Rear seats in a 2-door vehicle for example.
@@ -292,15 +292,7 @@ function Vehicles.Create.Engine(vehicle, part)
 end
 
 function Vehicles.Create.Headlight(vehicle, part)
-	local item = VehicleUtils.createPartInventoryItem(part)
-	-- xOffset,yOffset,distance,intensity,dot,focusing
-	-- NOTE: distance,intensity,focusing values are ignored, instead they are
-	-- set based on part condition.
-	if part:getId() == "HeadlightLeft" then
-		part:createSpotLight(0.5, 2.0, 8.0+ZombRand(16.0), 0.75, 0.96, ZombRand(200))
-	elseif part:getId() == "HeadlightRight" then
-		part:createSpotLight(-0.5, 2.0, 8.0+ZombRand(16.0), 0.75, 0.96, ZombRand(200))
-	end
+	VehicleUtils.initHeadlight(vehicle, part)
 end
 
 function Vehicles.Create.Radio(vehicle, part)
@@ -415,6 +407,8 @@ function Vehicles.Init.Door(vehicle, part)
 end
 
 function Vehicles.Init.Headlight(vehicle, part)
+    -- NOTE: This sets all values to the default, including 'focusing' which used to be modifiable
+	VehicleUtils.initHeadlight(vehicle, part)
 end
 
 function Vehicles.Init.Tire(vehicle, part)
@@ -921,7 +915,6 @@ function Vehicles.UninstallTest.Battery(vehicle, part, chr)
 		return false;
 	end
 	if vehicle:isEngineStarted() or vehicle:isEngineRunning() then
-		print("ENGINE RUNNING YOOO")
 		return false;
 	end
 	return true;
@@ -1075,7 +1068,7 @@ end
 function VehicleUtils.testRecipes(chr, recipes)
 	if not recipes or recipes == "" then return true end
 	for _,recipe in ipairs(recipes:split(";")) do
-		if not chr:isRecipeKnown(recipe) then return false end
+		if not chr:isRecipeActuallyKnown(recipe) then return false end
 	end
 	return true
 end
@@ -1491,6 +1484,32 @@ function VehicleUtils.getPerksTableForChr(perks, chr)
 		end
 	end
 	return ret
+end
+
+function VehicleUtils.initHeadlight(vehicle, part)
+	local item = VehicleUtils.createPartInventoryItem(part)
+	local xOffset = 0.5
+	local yOffset = 2.0
+	local distance = 36
+	local intensity = 0.75
+	local dot = 0.96
+	local focusing = ZombRand(200)
+	-- NOTE: distance,intensity values vary between 50% and 100% of the given value based on part condition.
+	-- NOTE: focusing value is ignored, instead it is set based on part condition.
+    local params = part:getTable("headlight")
+    if params then
+        xOffset = tonumber(params.xOffset) or xOffset
+        yOffset = tonumber(params.yOffset) or yOffset
+        distance = tonumber(params.distance) or distance
+        intensity = tonumber(params.intensity) or intensity
+        dot = tonumber(params.dot) or dot
+        focusing = tonumber(params.focusing) or focusing
+    end
+	if part:getId() == "HeadlightLeft" then
+		part:createSpotLight(xOffset, yOffset, distance, intensity, dot, focusing)
+	elseif part:getId() == "HeadlightRight" then
+		part:createSpotLight(-xOffset, yOffset, distance, intensity, dot, focusing)
+	end
 end
 
 LuaEventManager.AddEvent("OnUseVehicle")

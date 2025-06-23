@@ -47,7 +47,9 @@ function RWMMedia:createChildren()
 end
 
 function RWMMedia:togglePlayMedia()
-    if self:doWalkTo() then
+    -- this is so players with a remote equipped can interact with televisions
+    if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
+    or self:doWalkTo() then
         ISTimedActionQueue.add(ISRadioAction:new("TogglePlayMedia",self.player, self.device ));
     end
 end

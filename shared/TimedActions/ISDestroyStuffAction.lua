@@ -101,12 +101,13 @@ function ISDestroyStuffAction:complete()
     end
 
 	-- we add the items contained inside the item we destroyed to put them randomly on the ground
-	for i=1,self.item:getContainerCount() do
-		local container = self.item:getContainerByIndex(i-1)
-		for j=1,container:getItems():size() do
-			self.item:getSquare():AddWorldInventoryItem(container:getItems():get(j-1), 0.0, 0.0, 0.0)
-		end
-	end
+	self.item:dumpContentsInSquare()
+-- 	for i=1,self.item:getContainerCount() do
+-- 		local container = self.item:getContainerByIndex(i-1)
+-- 		for j=1,container:getItems():size() do
+-- 			self.item:getSquare():AddWorldInventoryItem(container:getItems():get(j-1), 0.0, 0.0, 0.0)
+-- 		end
+-- 	end
 
 	-- corner walls need special handling, so this sets up ordinary walls to work with that handling to simplify things
 	if not self.item:getSquare():getWall(false) == self.item and not self.item:getSquare():getWall(true) == self.item then --no wall

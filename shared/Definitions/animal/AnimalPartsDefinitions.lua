@@ -6,615 +6,717 @@ AnimalPartsDefinitions.animals = AnimalPartsDefinitions.animals or {};
 -------------------
 ----- CHICKEN -----
 -------------------
-AnimalPartsDefinitions.animals["henrhodeisland"] = AnimalPartsDefinitions.animals["henrhodeisland"] or {};
-AnimalPartsDefinitions.animals["henrhodeisland"].parts = AnimalPartsDefinitions.animals["henrhodeisland"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["henrhodeisland"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["henrhodeisland"].parts, {item = "Base.ChickenWhole", nb = 1})
-AnimalPartsDefinitions.animals["henrhodeisland"].bones = AnimalPartsDefinitions.animals["henrhodeisland"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["henrhodeisland"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["henrhodeisland"].noSkeleton = true; -- when butchering a chicken you get a whole chicken, so no skeleton on ground
-AnimalPartsDefinitions.animals["henrhodeisland"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["henrhodeisland"].head = "Base.Chicken_Hen_Brown_Head";
-AnimalPartsDefinitions.animals["henrhodeisland"].xpPerItem = 7;
+local henrhodeisland = AnimalPartsDefinitions.animals["henrhodeisland"] or {};
+henrhodeisland.parts = henrhodeisland.parts or {};
+table.insert(henrhodeisland.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(henrhodeisland.parts, {item = "Base.ChickenWhole", nb = 1})
+henrhodeisland.bones = henrhodeisland.bones or {};
+table.insert(henrhodeisland.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+henrhodeisland.noSkeleton = true; -- when butchering a chicken you get a whole chicken, so no skeleton on ground
+henrhodeisland.feather = "Base.ChickenFeather";
+henrhodeisland.head = "Base.Chicken_Hen_Brown_Head";
+henrhodeisland.skull = "Base.Chicken_Hen_Skull";
+henrhodeisland.xpPerItem = 7;
+AnimalPartsDefinitions.animals["henrhodeisland"] = henrhodeisland;
 
-AnimalPartsDefinitions.animals["cockerelrhodeisland"] = AnimalPartsDefinitions.animals["cockerelrhodeisland"] or {};
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].parts = AnimalPartsDefinitions.animals["cockerelrhodeisland"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cockerelrhodeisland"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["cockerelrhodeisland"].parts, {item = "Base.ChickenWhole", nb = 1})
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].bones = AnimalPartsDefinitions.animals["cockerelrhodeisland"].bones or {};
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].noSkeleton = true;
-table.insert(AnimalPartsDefinitions.animals["cockerelrhodeisland"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].head = "Base.Chicken_Rooster_Head_Brown";
-AnimalPartsDefinitions.animals["cockerelrhodeisland"].xpPerItem = 7;
+local cockerelrhodeisland = AnimalPartsDefinitions.animals["cockerelrhodeisland"] or {};
+cockerelrhodeisland.parts = cockerelrhodeisland.parts or {};
+table.insert(cockerelrhodeisland.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(cockerelrhodeisland.parts, {item = "Base.ChickenWhole", nb = 1})
+cockerelrhodeisland.bones = cockerelrhodeisland.bones or {};
+cockerelrhodeisland.noSkeleton = true;
+table.insert(cockerelrhodeisland.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+cockerelrhodeisland.feather = "Base.ChickenFeather";
+cockerelrhodeisland.head = "Base.Chicken_Rooster_Head_Brown";
+cockerelrhodeisland.skull = "Base.Chicken_Rooster_Skull";
+cockerelrhodeisland.xpPerItem = 7;
+AnimalPartsDefinitions.animals["cockerelrhodeisland"] = cockerelrhodeisland;
 
-AnimalPartsDefinitions.animals["chickrhodeisland"] = AnimalPartsDefinitions.animals["chickrhodeisland"] or {};
-AnimalPartsDefinitions.animals["chickrhodeisland"].parts = AnimalPartsDefinitions.animals["chickrhodeisland"].parts or {};
---table.insert(AnimalPartsDefinitions.animals["chickrhodeisland"].parts, {item = "Base.ChickenFoot", nb = 2})
---table.insert(AnimalPartsDefinitions.animals["chickrhodeisland"].parts, {item = "Base.Chicken", nb = 1})
-AnimalPartsDefinitions.animals["chickrhodeisland"].bones = AnimalPartsDefinitions.animals["chickrhodeisland"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["chickrhodeisland"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-AnimalPartsDefinitions.animals["chickrhodeisland"].noSkeleton = true;
-AnimalPartsDefinitions.animals["chickrhodeisland"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["chickrhodeisland"].head = "Base.Chicken_Chick_Head";
-AnimalPartsDefinitions.animals["chickrhodeisland"].xpPerItem = 3;
+local chickrhodeisland = AnimalPartsDefinitions.animals["chickrhodeisland"] or {};
+chickrhodeisland.parts = chickrhodeisland.parts or {};
+chickrhodeisland.bones = chickrhodeisland.bones or {};
+table.insert(chickrhodeisland.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+chickrhodeisland.noSkeleton = true;
+chickrhodeisland.feather = "Base.ChickenFeather";
+chickrhodeisland.head = "Base.Chicken_Chick_Head";
+chickrhodeisland.skull = "Base.Chicken_Chick_Skull";
+chickrhodeisland.xpPerItem = 3;
+AnimalPartsDefinitions.animals["chickrhodeisland"] = chickrhodeisland;
 
-AnimalPartsDefinitions.animals["henleghorn"] = AnimalPartsDefinitions.animals["henleghorn"] or {};
-AnimalPartsDefinitions.animals["henleghorn"].parts = AnimalPartsDefinitions.animals["henleghorn"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["henleghorn"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["henleghorn"].parts, {item = "Base.ChickenWhole", nb = 1})
-AnimalPartsDefinitions.animals["henleghorn"].bones = AnimalPartsDefinitions.animals["henleghorn"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["henleghorn"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["henleghorn"].noSkeleton = true;
-AnimalPartsDefinitions.animals["henleghorn"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["henleghorn"].head = "Base.Chicken_Hen_White_Head";
-AnimalPartsDefinitions.animals["henleghorn"].xpPerItem = 7;
+local henleghorn = AnimalPartsDefinitions.animals["henleghorn"] or {};
+henleghorn.parts = henleghorn.parts or {};
+table.insert(henleghorn.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(henleghorn.parts, {item = "Base.ChickenWhole", nb = 1})
+henleghorn.bones = henleghorn.bones or {};
+table.insert(henleghorn.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+henleghorn.noSkeleton = true;
+henleghorn.feather = "Base.ChickenFeather";
+henleghorn.head = "Base.Chicken_Hen_White_Head";
+henleghorn.skull = "Base.Chicken_Hen_Skull";
+henleghorn.xpPerItem = 7;
+AnimalPartsDefinitions.animals["henleghorn"] = henleghorn;
 
-AnimalPartsDefinitions.animals["cockerelleghorn"] = AnimalPartsDefinitions.animals["cockerelleghorn"] or {};
-AnimalPartsDefinitions.animals["cockerelleghorn"].parts = AnimalPartsDefinitions.animals["cockerelleghorn"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cockerelleghorn"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["cockerelleghorn"].parts, {item = "Base.ChickenWhole", nb = 1})
-AnimalPartsDefinitions.animals["cockerelleghorn"].bones = AnimalPartsDefinitions.animals["cockerelleghorn"].bones or {};
-AnimalPartsDefinitions.animals["cockerelleghorn"].noSkeleton = true;
-table.insert(AnimalPartsDefinitions.animals["cockerelleghorn"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["cockerelleghorn"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["cockerelleghorn"].head = "Base.Chicken_Rooster_Head_White";
-AnimalPartsDefinitions.animals["cockerelleghorn"].xpPerItem = 7;
+local cockerelleghorn = AnimalPartsDefinitions.animals["cockerelleghorn"] or {};
+cockerelleghorn.parts = cockerelleghorn.parts or {};
+table.insert(cockerelleghorn.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(cockerelleghorn.parts, {item = "Base.ChickenWhole", nb = 1})
+cockerelleghorn.bones = cockerelleghorn.bones or {};
+cockerelleghorn.noSkeleton = true;
+table.insert(cockerelleghorn.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+cockerelleghorn.feather = "Base.ChickenFeather";
+cockerelleghorn.head = "Base.Chicken_Rooster_Head_White";
+cockerelleghorn.skull = "Base.Chicken_Rooster_Skull";
+cockerelleghorn.xpPerItem = 7;
+AnimalPartsDefinitions.animals["cockerelleghorn"] = cockerelleghorn;
 
-AnimalPartsDefinitions.animals["chickleghorn"] = AnimalPartsDefinitions.animals["chickleghorn"] or {};
-AnimalPartsDefinitions.animals["chickleghorn"].parts = AnimalPartsDefinitions.animals["chickleghorn"].parts or {};
---table.insert(AnimalPartsDefinitions.animals["chickleghorn"].parts, {item = "Base.Chicken", nb = 1})
-AnimalPartsDefinitions.animals["chickleghorn"].bones = AnimalPartsDefinitions.animals["chickleghorn"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["chickleghorn"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-AnimalPartsDefinitions.animals["chickleghorn"].noSkeleton = true;
-AnimalPartsDefinitions.animals["chickleghorn"].feather = "Base.ChickenFeather";
-AnimalPartsDefinitions.animals["chickleghorn"].head = "Base.Chicken_Chick_Head";
-AnimalPartsDefinitions.animals["chickleghorn"].xpPerItem = 3;
+local chickleghorn = AnimalPartsDefinitions.animals["chickleghorn"] or {};
+chickleghorn.parts = chickleghorn.parts or {};
+--table.insert(chickleghorn.parts, {item = "Base.Chicken", nb = 1})
+chickleghorn.bones = chickleghorn.bones or {};
+table.insert(chickleghorn.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+chickleghorn.noSkeleton = true;
+chickleghorn.feather = "Base.ChickenFeather";
+chickleghorn.head = "Base.Chicken_Chick_Head";
+chickleghorn.skull = "Base.Chicken_Chick_Skull";
+chickleghorn.xpPerItem = 3;
+AnimalPartsDefinitions.animals["chickleghorn"] = chickleghorn;
 
 -------------------
 ------- COWS ------
 -------------------
+
+local calfparts = {};
+table.insert(calfparts, {item = "Base.Steak", minNb = 5, maxNb = 9})
+table.insert(calfparts, {item = "Base.Beef", minNb = 5, maxNb = 9})
+table.insert(calfparts, {item = "Base.AnimalSinew", minNb = 1, maxNb = 3})
+
+local cowparts = {};
+table.insert(cowparts, {item = "Base.Steak", minNb = 10, maxNb = 18})
+table.insert(cowparts, {item = "Base.Beef", minNb = 10, maxNb = 18})
+table.insert(cowparts, {item = "Base.AnimalSinew", minNb = 3, maxNb = 7})
+
 --- ANGUS
-AnimalPartsDefinitions.animals["cowangus"] = AnimalPartsDefinitions.animals["cowangus"] or {};
-AnimalPartsDefinitions.animals["cowangus"].parts = AnimalPartsDefinitions.animals["cowangus"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowangus"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["cowangus"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["cowangus"].bones = AnimalPartsDefinitions.animals["cowangus"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowangus"].bones, {item = "Base.AnimalBone", minNb = 8, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["cowangus"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["cowangus"].leather = "Base.CowLeather_Angus_Full";
-AnimalPartsDefinitions.animals["cowangus"].head = "Base.Cow_Head_Angus";
-AnimalPartsDefinitions.animals["cowangus"].xpPerItem = 25;
+local cowangus = AnimalPartsDefinitions.animals["cowangus"] or {};
+cowangus.parts = cowangus.parts or cowparts;
+cowangus.bones = cowangus.bones or {};
+table.insert(cowangus.bones, {item = "Base.AnimalBone", minNb = 8, maxNb = 10})
+table.insert(cowangus.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+cowangus.leather = "Base.CowLeather_Angus_Full";
+cowangus.head = "Base.Cow_Head_Angus";
+cowangus.skull = "Base.Cow_Skull";
+cowangus.xpPerItem = 25;
+AnimalPartsDefinitions.animals["cowangus"] = cowangus;
 
-AnimalPartsDefinitions.animals["bullangus"] = AnimalPartsDefinitions.animals["bullangus"] or {};
-AnimalPartsDefinitions.animals["bullangus"].parts = AnimalPartsDefinitions.animals["bullangus"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["bullangus"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["bullangus"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["bullangus"].bones = AnimalPartsDefinitions.animals["bullangus"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["bullangus"].bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["bullangus"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["bullangus"].leather = "Base.CowLeather_Angus_Full";
-AnimalPartsDefinitions.animals["bullangus"].head = "Base.Bull_Head_Angus";
-AnimalPartsDefinitions.animals["bullangus"].xpPerItem = 25;
+local bullangus = AnimalPartsDefinitions.animals["bullangus"] or {};
+bullangus.parts = bullangus.parts or cowparts;
+bullangus.bones = bullangus.bones or {};
+table.insert(bullangus.bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
+table.insert(bullangus.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+bullangus.leather = "Base.CowLeather_Angus_Full";
+bullangus.head = "Base.Bull_Head_Angus";
+bullangus.skull = "Base.Bull_Skull";
+bullangus.xpPerItem = 25;
+AnimalPartsDefinitions.animals["bullangus"] = bullangus;
 
-AnimalPartsDefinitions.animals["cowcalfangus"] = AnimalPartsDefinitions.animals["cowcalfangus"] or {};
-AnimalPartsDefinitions.animals["cowcalfangus"].parts = AnimalPartsDefinitions.animals["cowcalfangus"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfangus"].parts, {item = "Base.Steak", minNb = 3, maxNb = 6})
-table.insert(AnimalPartsDefinitions.animals["cowcalfangus"].parts, {item = "Base.Beef", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["cowcalfangus"].bones = AnimalPartsDefinitions.animals["cowcalfangus"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfangus"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-AnimalPartsDefinitions.animals["cowcalfangus"].leather = "Base.CalfLeather_Angus_Full";
-AnimalPartsDefinitions.animals["cowcalfangus"].head = "Base.Calf_Head_Angus";
-AnimalPartsDefinitions.animals["cowcalfangus"].xpPerItem = 18;
+local cowcalfangus = AnimalPartsDefinitions.animals["cowcalfangus"] or {};
+cowcalfangus.parts = cowcalfangus.parts or calfparts;
+cowcalfangus.bones = cowcalfangus.bones or {};
+table.insert(cowcalfangus.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+cowcalfangus.leather = "Base.CalfLeather_Angus_Full";
+cowcalfangus.head = "Base.Calf_Head_Angus";
+cowcalfangus.skull = "Base.Calf_Skull";
+cowcalfangus.xpPerItem = 18;
+AnimalPartsDefinitions.animals["cowcalfangus"] = cowcalfangus;
 
 --- SIMMENTAL
-AnimalPartsDefinitions.animals["cowsimmental"] = AnimalPartsDefinitions.animals["cowsimmental"] or {};
-AnimalPartsDefinitions.animals["cowsimmental"].parts = AnimalPartsDefinitions.animals["cowsimmental"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowsimmental"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["cowsimmental"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["cowsimmental"].bones = AnimalPartsDefinitions.animals["cowsimmental"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowsimmental"].bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["cowsimmental"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["cowsimmental"].leather = "Base.CowLeather_Simmental_Full";
-AnimalPartsDefinitions.animals["cowsimmental"].head = "Base.Cow_Head_Simmental";
-AnimalPartsDefinitions.animals["cowsimmental"].xpPerItem = 25;
+local cowsimmental = AnimalPartsDefinitions.animals["cowsimmental"] or {};
+cowsimmental.parts = cowsimmental.parts or cowparts;
+cowsimmental.bones = cowsimmental.bones or {};
+table.insert(cowsimmental.bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
+table.insert(cowsimmental.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+cowsimmental.leather = "Base.CowLeather_Simmental_Full";
+cowsimmental.head = "Base.Cow_Head_Simmental";
+cowsimmental.skull = "Base.Cow_Skull";
+cowsimmental.xpPerItem = 25;
+AnimalPartsDefinitions.animals["cowsimmental"] = cowsimmental;
 
-AnimalPartsDefinitions.animals["bullsimmental"] = AnimalPartsDefinitions.animals["bullsimmental"] or {};
-AnimalPartsDefinitions.animals["bullsimmental"].parts = AnimalPartsDefinitions.animals["bullsimmental"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["bullsimmental"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["bullsimmental"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["bullsimmental"].bones = AnimalPartsDefinitions.animals["bullsimmental"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["bullsimmental"].bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["bullsimmental"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["bullsimmental"].leather = "Base.CowLeather_Simmental_Full";
-AnimalPartsDefinitions.animals["bullsimmental"].head = "Base.Bull_Head_Simmental";
-AnimalPartsDefinitions.animals["bullsimmental"].xpPerItem = 25;
+local bullsimmental = AnimalPartsDefinitions.animals["bullsimmental"] or {};
+bullsimmental.parts = bullsimmental.parts or cowparts;
+bullsimmental.bones = bullsimmental.bones or {};
+table.insert(bullsimmental.bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
+table.insert(bullsimmental.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+bullsimmental.leather = "Base.CowLeather_Simmental_Full";
+bullsimmental.head = "Base.Bull_Head_Simmental";
+bullsimmental.skull = "Base.Bull_Skull";
+bullsimmental.xpPerItem = 25;
+AnimalPartsDefinitions.animals["bullsimmental"] = bullsimmental;
 
-AnimalPartsDefinitions.animals["cowcalfsimmental"] = AnimalPartsDefinitions.animals["cowcalfsimmental"] or {};
-AnimalPartsDefinitions.animals["cowcalfsimmental"].parts = AnimalPartsDefinitions.animals["cowcalfsimmental"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfsimmental"].parts, {item = "Base.Steak", minNb = 3, maxNb = 6})
-table.insert(AnimalPartsDefinitions.animals["cowcalfsimmental"].parts, {item = "Base.Beef", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["cowcalfsimmental"].bones = AnimalPartsDefinitions.animals["cowcalfsimmental"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfsimmental"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-AnimalPartsDefinitions.animals["cowcalfsimmental"].leather = "Base.CalfLeather_Simmental_Full";
-AnimalPartsDefinitions.animals["cowcalfsimmental"].head = "Base.Calf_Head_Simmental";
-AnimalPartsDefinitions.animals["cowcalfsimmental"].xpPerItem = 18;
+local cowcalfsimmental = AnimalPartsDefinitions.animals["cowcalfsimmental"] or {};
+cowcalfsimmental.parts = cowcalfsimmental.parts or calfparts;
+cowcalfsimmental.bones = cowcalfsimmental.bones or {};
+table.insert(cowcalfsimmental.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+cowcalfsimmental.leather = "Base.CalfLeather_Simmental_Full";
+cowcalfsimmental.head = "Base.Calf_Head_Simmental";
+cowcalfsimmental.skull = "Base.Calf_Skull";
+cowcalfsimmental.xpPerItem = 18;
+AnimalPartsDefinitions.animals["cowcalfsimmental"] = cowcalfsimmental;
 
 --- HOLSTEIN
-AnimalPartsDefinitions.animals["cowholstein"] = AnimalPartsDefinitions.animals["cowholstein"] or {};
-AnimalPartsDefinitions.animals["cowholstein"].parts = AnimalPartsDefinitions.animals["cowholstein"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowholstein"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["cowholstein"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["cowholstein"].bones = AnimalPartsDefinitions.animals["cowholstein"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowholstein"].bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["cowholstein"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["cowholstein"].leather = "Base.CowLeather_Holstein_Full";
-AnimalPartsDefinitions.animals["cowholstein"].head = "Base.Cow_Head_Holstein";
-AnimalPartsDefinitions.animals["cowholstein"].xpPerItem = 25;
+local cowholstein = AnimalPartsDefinitions.animals["cowholstein"] or {};
+cowholstein.parts = cowholstein.parts or cowparts;
+cowholstein.bones = cowholstein.bones or {};
+table.insert(cowholstein.bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
+table.insert(cowholstein.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+cowholstein.leather = "Base.CowLeather_Holstein_Full";
+cowholstein.head = "Base.Cow_Head_Holstein";
+cowholstein.skull = "Base.Cow_Skull";
+cowholstein.xpPerItem = 25;
+AnimalPartsDefinitions.animals["cowholstein"] = cowholstein;
 
-AnimalPartsDefinitions.animals["bullholstein"] = AnimalPartsDefinitions.animals["bullholstein"] or {};
-AnimalPartsDefinitions.animals["bullholstein"].parts = AnimalPartsDefinitions.animals["bullholstein"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["bullholstein"].parts, {item = "Base.Steak", minNb = 8, maxNb = 15})
-table.insert(AnimalPartsDefinitions.animals["bullholstein"].parts, {item = "Base.Beef", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["bullholstein"].bones = AnimalPartsDefinitions.animals["bullholstein"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["bullholstein"].bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["bullholstein"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["bullholstein"].leather = "Base.CowLeather_Holstein_Full";
-AnimalPartsDefinitions.animals["bullholstein"].head = "Base.Bull_Head_Holstein";
-AnimalPartsDefinitions.animals["bullholstein"].xpPerItem = 25;
+local bullholstein = AnimalPartsDefinitions.animals["bullholstein"] or {};
+bullholstein.parts = bullholstein.parts or cowparts;
+bullholstein.bones = bullholstein.bones or {};
+table.insert(bullholstein.bones, {item = "Base.AnimalBone", minNb = 7, maxNb = 10})
+table.insert(bullholstein.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+bullholstein.leather = "Base.CowLeather_Holstein_Full";
+bullholstein.head = "Base.Bull_Head_Holstein";
+bullholstein.skull = "Base.Bull_Skull";
+bullholstein.xpPerItem = 25;
+AnimalPartsDefinitions.animals["bullholstein"] = bullholstein;
 
-AnimalPartsDefinitions.animals["cowcalfholstein"] = AnimalPartsDefinitions.animals["cowcalfholstein"] or {};
-AnimalPartsDefinitions.animals["cowcalfholstein"].parts = AnimalPartsDefinitions.animals["cowcalfholstein"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfholstein"].parts, {item = "Base.Steak", minNb = 3, maxNb = 6})
-table.insert(AnimalPartsDefinitions.animals["cowcalfholstein"].parts, {item = "Base.Beef", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["cowcalfholstein"].bones = AnimalPartsDefinitions.animals["cowcalfholstein"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["cowcalfholstein"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-AnimalPartsDefinitions.animals["cowcalfholstein"].leather = "Base.CalfLeather_Holstein_Full";
-AnimalPartsDefinitions.animals["cowcalfholstein"].head = "Base.Calf_Head_Holstein";
-AnimalPartsDefinitions.animals["cowcalfholstein"].xpPerItem = 18;
+local cowcalfholstein = AnimalPartsDefinitions.animals["cowcalfholstein"] or {};
+cowcalfholstein.parts = cowcalfholstein.parts or calfparts;
+cowcalfholstein.bones = cowcalfholstein.bones or {};
+table.insert(cowcalfholstein.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+cowcalfholstein.leather = "Base.CalfLeather_Holstein_Full";
+cowcalfholstein.head = "Base.Calf_Head_Holstein";
+cowcalfholstein.skull = "Base.Calf_Skull";
+cowcalfholstein.xpPerItem = 18;
+AnimalPartsDefinitions.animals["cowcalfholstein"] = cowcalfholstein;
 
 -------------------
 ------- PIGS ------
 -------------------
+
+local pigletparts = {};
+table.insert(pigletparts, {item = "Base.PorkChop", minNb = 3, maxNb = 7})
+table.insert(pigletparts, {item = "Base.Pork", minNb = 3, maxNb = 7})
+table.insert(pigletparts, {item = "Base.AnimalSinew", minNb = 1, maxNb = 2})
+
+local pigparts = {};
+table.insert(pigparts, {item = "Base.PorkChop", minNb = 8, maxNb = 13})
+table.insert(pigparts, {item = "Base.Pork", minNb = 8, maxNb = 13})
+table.insert(pigparts, {item = "Base.AnimalSinew", minNb = 3, maxNb = 5})
+
 --- LANDRACE
-AnimalPartsDefinitions.animals["sowlandrace"] = AnimalPartsDefinitions.animals["sowlandrace"] or {};
-AnimalPartsDefinitions.animals["sowlandrace"].parts = AnimalPartsDefinitions.animals["sowlandrace"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["sowlandrace"].parts, {item = "Base.PorkChop", minNb = 6, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["sowlandrace"].parts, {item = "Base.Pork", minNb = 6, maxNb = 10})
-AnimalPartsDefinitions.animals["sowlandrace"].bones = AnimalPartsDefinitions.animals["sowlandrace"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["sowlandrace"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["sowlandrace"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["sowlandrace"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["sowlandrace"].leather = "Base.PigLeather_Landrace_Full";
-AnimalPartsDefinitions.animals["sowlandrace"].head = "Base.Pig_Sow_Head_Pink";
-AnimalPartsDefinitions.animals["sowlandrace"].xpPerItem = 18;
+local sowlandrace = AnimalPartsDefinitions.animals["sowlandrace"] or {};
+sowlandrace.parts = sowlandrace.parts or pigparts;
+sowlandrace.bones = sowlandrace.bones or {};
+table.insert(sowlandrace.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(sowlandrace.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+table.insert(sowlandrace.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+sowlandrace.leather = "Base.PigLeather_Landrace_Full";
+sowlandrace.head = "Base.Pig_Sow_Head_Pink";
+sowlandrace.skull = "Base.Pig_Skull";
+sowlandrace.xpPerItem = 18;
+AnimalPartsDefinitions.animals["sowlandrace"] = sowlandrace;
 
-AnimalPartsDefinitions.animals["boarlandrace"] = AnimalPartsDefinitions.animals["boarlandrace"] or {};
-AnimalPartsDefinitions.animals["boarlandrace"].parts = AnimalPartsDefinitions.animals["boarlandrace"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["boarlandrace"].parts, {item = "Base.PorkChop", minNb = 6, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["boarlandrace"].parts, {item = "Base.Pork", minNb = 6, maxNb = 10})
-AnimalPartsDefinitions.animals["boarlandrace"].bones = AnimalPartsDefinitions.animals["boarlandrace"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["boarlandrace"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["boarlandrace"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["boarlandrace"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["boarlandrace"].leather = "Base.PigLeather_Landrace_Full";
-AnimalPartsDefinitions.animals["boarlandrace"].head = "Base.Pig_Boar_Head_Pink";
-AnimalPartsDefinitions.animals["boarlandrace"].xpPerItem = 18;
+local boarlandrace = AnimalPartsDefinitions.animals["boarlandrace"] or {};
+boarlandrace.parts = boarlandrace.parts or pigparts;
+boarlandrace.bones = boarlandrace.bones or {};
+table.insert(boarlandrace.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(boarlandrace.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+table.insert(boarlandrace.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+boarlandrace.leather = "Base.PigLeather_Landrace_Full";
+boarlandrace.head = "Base.Pig_Boar_Head_Pink";
+boarlandrace.skull = "Base.Pig_Skull";
+boarlandrace.xpPerItem = 18;
+AnimalPartsDefinitions.animals["boarlandrace"] = boarlandrace;
 
-AnimalPartsDefinitions.animals["pigletlandrace"] = AnimalPartsDefinitions.animals["pigletlandrace"] or {};
-AnimalPartsDefinitions.animals["pigletlandrace"].parts = AnimalPartsDefinitions.animals["pigletlandrace"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["pigletlandrace"].parts, {item = "Base.PorkChop", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["pigletlandrace"].parts, {item = "Base.Pork", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["pigletlandrace"].bones = AnimalPartsDefinitions.animals["pigletlandrace"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["pigletlandrace"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["pigletlandrace"].leather = "Base.PigletLeather_Landrace_Full";
-AnimalPartsDefinitions.animals["pigletlandrace"].head = "Base.Pig_Piglet_Head_Pink";
-AnimalPartsDefinitions.animals["pigletlandrace"].xpPerItem = 12;
+local pigletlandrace = AnimalPartsDefinitions.animals["pigletlandrace"] or {};
+pigletlandrace.parts = pigletlandrace.parts or pigletparts;
+pigletlandrace.bones = pigletlandrace.bones or {};
+table.insert(pigletlandrace.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+pigletlandrace.leather = "Base.PigletLeather_Landrace_Full";
+pigletlandrace.head = "Base.Pig_Piglet_Head_Pink";
+pigletlandrace.skull = "Base.Piglet_Skull";
+pigletlandrace.xpPerItem = 12;
+AnimalPartsDefinitions.animals["pigletlandrace"] = pigletlandrace;
 
 --- LARGE BLACK
-AnimalPartsDefinitions.animals["sowlargeblack"] = AnimalPartsDefinitions.animals["sowlargeblack"] or {};
-AnimalPartsDefinitions.animals["sowlargeblack"].parts = AnimalPartsDefinitions.animals["sowlargeblack"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["sowlargeblack"].parts, {item = "Base.PorkChop", minNb = 6, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["sowlargeblack"].parts, {item = "Base.Pork", minNb = 6, maxNb = 10})
-AnimalPartsDefinitions.animals["sowlargeblack"].bones = AnimalPartsDefinitions.animals["sowlargeblack"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["sowlargeblack"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["sowlargeblack"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["sowlargeblack"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["sowlargeblack"].leather = "Base.PigLeather_Black_Full";
-AnimalPartsDefinitions.animals["sowlargeblack"].head = "Base.Pig_Sow_Head_Black";
-AnimalPartsDefinitions.animals["sowlargeblack"].xpPerItem = 18;
+local sowlargeblack = AnimalPartsDefinitions.animals["sowlargeblack"] or {};
+sowlargeblack.parts = sowlargeblack.parts or pigparts;
+sowlargeblack.bones = sowlargeblack.bones or {};
+table.insert(sowlargeblack.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(sowlargeblack.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+table.insert(sowlargeblack.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+sowlargeblack.leather = "Base.PigLeather_Black_Full";
+sowlargeblack.head = "Base.Pig_Sow_Head_Black";
+sowlargeblack.skull = "Base.Pig_Skull";
+sowlargeblack.xpPerItem = 18;
+AnimalPartsDefinitions.animals["sowlargeblack"] = sowlargeblack;
 
-AnimalPartsDefinitions.animals["boarlargeblack"] = AnimalPartsDefinitions.animals["boarlargeblack"] or {};
-AnimalPartsDefinitions.animals["boarlargeblack"].parts = AnimalPartsDefinitions.animals["boarlargeblack"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["boarlargeblack"].parts, {item = "Base.PorkChop", minNb = 6, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["boarlargeblack"].parts, {item = "Base.Pork", minNb = 6, maxNb = 10})
-AnimalPartsDefinitions.animals["boarlargeblack"].bones = AnimalPartsDefinitions.animals["boarlargeblack"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["boarlargeblack"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["boarlargeblack"].bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["boarlargeblack"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["boarlargeblack"].leather = "Base.PigLeather_Black_Full";
-AnimalPartsDefinitions.animals["boarlargeblack"].head = "Base.Pig_Boar_Head_Black";
-AnimalPartsDefinitions.animals["boarlargeblack"].xpPerItem = 18;
+local boarlargeblack = AnimalPartsDefinitions.animals["boarlargeblack"] or {};
+boarlargeblack.parts = boarlargeblack.parts or pigparts;
+boarlargeblack.bones = boarlargeblack.bones or {};
+table.insert(boarlargeblack.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(boarlargeblack.bones, {item = "Base.AnimalBone", minNb = 4, maxNb = 7})
+table.insert(boarlargeblack.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+boarlargeblack.leather = "Base.PigLeather_Black_Full";
+boarlargeblack.head = "Base.Pig_Boar_Head_Black";
+boarlargeblack.skull = "Base.Pig_Skull";
+boarlargeblack.xpPerItem = 18;
+AnimalPartsDefinitions.animals["boarlargeblack"] = boarlargeblack;
 
-AnimalPartsDefinitions.animals["pigletlargeblack"] = AnimalPartsDefinitions.animals["pigletlargeblack"] or {};
-AnimalPartsDefinitions.animals["pigletlargeblack"].parts = AnimalPartsDefinitions.animals["pigletlargeblack"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["pigletlargeblack"].parts, {item = "Base.PorkChop", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["pigletlargeblack"].parts, {item = "Base.Pork", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["pigletlargeblack"].bones = AnimalPartsDefinitions.animals["pigletlargeblack"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["pigletlargeblack"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["pigletlargeblack"].leather = "Base.PigletLeather_Black_Full";
-AnimalPartsDefinitions.animals["pigletlargeblack"].head = "Base.Pig_Piglet_Head_Black";
-AnimalPartsDefinitions.animals["pigletlargeblack"].xpPerItem = 12;
+local pigletlargeblack = AnimalPartsDefinitions.animals["pigletlargeblack"] or {};
+pigletlargeblack.parts = pigletlargeblack.parts or pigletparts;
+pigletlargeblack.bones = pigletlargeblack.bones or {};
+table.insert(pigletlargeblack.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+pigletlargeblack.leather = "Base.PigletLeather_Black_Full";
+pigletlargeblack.head = "Base.Pig_Piglet_Head_Black";
+pigletlargeblack.skull = "Base.Piglet_Skull";
+pigletlargeblack.xpPerItem = 12;
+AnimalPartsDefinitions.animals["pigletlargeblack"] = pigletlargeblack;
 
 -------------------
 ----- TURKEY ------
 -------------------
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"] = AnimalPartsDefinitions.animals["turkeyhenmeleagris"] or {};
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].parts = AnimalPartsDefinitions.animals["turkeyhenmeleagris"].parts or {};
---table.insert(AnimalPartsDefinitions.animals["turkeyhenmeleagris"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["turkeyhenmeleagris"].parts, {item = "Base.TurkeyWhole", nb = 1})
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].bones = AnimalPartsDefinitions.animals["turkeyhenmeleagris"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["turkeyhenmeleagris"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].noSkeleton = true;
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].feather = "Base.TurkeyFeather";
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].head = "Base.Turkey_Hen_Head";
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].xpPerItem = 7;
+local turkeyhenmeleagris = AnimalPartsDefinitions.animals["turkeyhenmeleagris"] or {};
+turkeyhenmeleagris.parts = turkeyhenmeleagris.parts or {};
+--table.insert(turkeyhenmeleagris.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(turkeyhenmeleagris.parts, {item = "Base.TurkeyWhole", nb = 1})
+turkeyhenmeleagris.bones = turkeyhenmeleagris.bones or {};
+table.insert(turkeyhenmeleagris.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+turkeyhenmeleagris.noSkeleton = true;
+turkeyhenmeleagris.feather = "Base.TurkeyFeather";
+turkeyhenmeleagris.head = "Base.Turkey_Hen_Head";
+turkeyhenmeleagris.skull = "Base.Turkey_Skull";
+turkeyhenmeleagris.xpPerItem = 7;
+AnimalPartsDefinitions.animals["turkeyhenmeleagris"] = turkeyhenmeleagris;
 
-AnimalPartsDefinitions.animals["gobblersmeleagris"] = AnimalPartsDefinitions.animals["gobblersmeleagris"] or {};
-AnimalPartsDefinitions.animals["gobblersmeleagris"].parts = AnimalPartsDefinitions.animals["gobblersmeleagris"].parts or {};
---table.insert(AnimalPartsDefinitions.animals["gobblersmeleagris"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["gobblersmeleagris"].parts, {item = "Base.TurkeyWhole", nb = 1})
-AnimalPartsDefinitions.animals["gobblersmeleagris"].bones = AnimalPartsDefinitions.animals["gobblersmeleagris"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["gobblersmeleagris"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
-AnimalPartsDefinitions.animals["gobblersmeleagris"].noSkeleton = true;
-AnimalPartsDefinitions.animals["gobblersmeleagris"].feather = "Base.TurkeyFeather";
-AnimalPartsDefinitions.animals["gobblersmeleagris"].head = "Base.Turkey_Gobbler_Head";
-AnimalPartsDefinitions.animals["gobblersmeleagris"].xpPerItem = 7;
+local gobblersmeleagris = AnimalPartsDefinitions.animals["gobblersmeleagris"] or {};
+gobblersmeleagris.parts = gobblersmeleagris.parts or {};
+--table.insert(gobblersmeleagris.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(gobblersmeleagris.parts, {item = "Base.TurkeyWhole", nb = 1})
+gobblersmeleagris.bones = gobblersmeleagris.bones or {};
+table.insert(gobblersmeleagris.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 6})
+gobblersmeleagris.noSkeleton = true;
+gobblersmeleagris.feather = "Base.TurkeyFeather";
+gobblersmeleagris.head = "Base.Turkey_Gobbler_Head";
+gobblersmeleagris.skull = "Base.Turkey_Skull";
+gobblersmeleagris.xpPerItem = 7;
+AnimalPartsDefinitions.animals["gobblersmeleagris"] = gobblersmeleagris;
 
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"] = AnimalPartsDefinitions.animals["turkeypoultmeleagris"] or {};
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"].parts = AnimalPartsDefinitions.animals["turkeypoultmeleagris"].parts or {};
---table.insert(AnimalPartsDefinitions.animals["turkeypoultmeleagris"].parts, {item = "Base.ChickenFoot", nb = 2})
-table.insert(AnimalPartsDefinitions.animals["turkeypoultmeleagris"].parts, {item = "Base.TurkeyWhole", nb = 1})
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"].bones = AnimalPartsDefinitions.animals["turkeypoultmeleagris"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["turkeyhenmeleagris"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-AnimalPartsDefinitions.animals["turkeyhenmeleagris"].noSkeleton = true;
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"].feather = "Base.TurkeyFeather";
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"].head = "Base.Turkey_Poult_Head";
-AnimalPartsDefinitions.animals["turkeypoultmeleagris"].xpPerItem = 3;
+local turkeypoultmeleagris = AnimalPartsDefinitions.animals["turkeypoultmeleagris"] or {};
+turkeypoultmeleagris.parts = turkeypoultmeleagris.parts or {};
+--table.insert(turkeypoultmeleagris.parts, {item = "Base.ChickenFoot", nb = 2})
+table.insert(turkeypoultmeleagris.parts, {item = "Base.TurkeyWhole", nb = 1})
+turkeypoultmeleagris.bones = turkeypoultmeleagris.bones or {};
+table.insert(turkeyhenmeleagris.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+turkeyhenmeleagris.noSkeleton = true;
+turkeypoultmeleagris.feather = "Base.TurkeyFeather";
+turkeypoultmeleagris.head = "Base.Turkey_Poult_Head";
+turkeypoultmeleagris.skull = "Base.Turkey_PoultSkull";
+turkeypoultmeleagris.xpPerItem = 3;
+AnimalPartsDefinitions.animals["turkeypoultmeleagris"] = turkeypoultmeleagris;
 
 -------------------
 ------ SHEEP ------
 -------------------
+
+local lambparts = {};
+table.insert(lambparts, {item = "Base.MuttonChop", minNb = 4, maxNb = 9})
+table.insert(lambparts, {item = "Base.AnimalSinew", minNb = 1, maxNb = 2})
+
+local sheepparts = {};
+table.insert(sheepparts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
+table.insert(sheepparts, {item = "Base.AnimalSinew", minNb = 3, maxNb = 5})
+
 --- SUFFOLK
-AnimalPartsDefinitions.animals["ewesuffolk"] = AnimalPartsDefinitions.animals["ewesuffolk"] or {};
-AnimalPartsDefinitions.animals["ewesuffolk"].parts = AnimalPartsDefinitions.animals["ewesuffolk"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ewesuffolk"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ewesuffolk"].bones = AnimalPartsDefinitions.animals["ewesuffolk"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ewesuffolk"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ewesuffolk"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ewesuffolk"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ewesuffolk"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ewesuffolk"].head = "Base.Sheep_Ewe_Head_Black";
-AnimalPartsDefinitions.animals["ewesuffolk"].xpPerItem = 10;
+local ewesuffolk = AnimalPartsDefinitions.animals["ewesuffolk"] or {};
+ewesuffolk.parts = ewesuffolk.parts or sheepparts;
+ewesuffolk.bones = ewesuffolk.bones or {};
+table.insert(ewesuffolk.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ewesuffolk.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ewesuffolk.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ewesuffolk.leather = "Base.SheepLeather_Full";
+ewesuffolk.head = "Base.Sheep_Ewe_Head_Black";
+ewesuffolk.skull = "Base.Sheep_Skull";
+ewesuffolk.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ewesuffolk"] = ewesuffolk;
 
-AnimalPartsDefinitions.animals["ramsuffolk"] = AnimalPartsDefinitions.animals["ramsuffolk"] or {};
-AnimalPartsDefinitions.animals["ramsuffolk"].parts = AnimalPartsDefinitions.animals["ramsuffolk"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ramsuffolk"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ramsuffolk"].bones = AnimalPartsDefinitions.animals["ramsuffolk"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ramsuffolk"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ramsuffolk"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ramsuffolk"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ramsuffolk"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ramsuffolk"].head = "Base.Sheep_Ram_Head_Black";
-AnimalPartsDefinitions.animals["ramsuffolk"].xpPerItem = 10;
+local ramsuffolk = AnimalPartsDefinitions.animals["ramsuffolk"] or {};
+ramsuffolk.parts = ramsuffolk.parts or sheepparts;
+ramsuffolk.bones = ramsuffolk.bones or {};
+table.insert(ramsuffolk.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ramsuffolk.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ramsuffolk.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ramsuffolk.leather = "Base.SheepLeather_Full";
+ramsuffolk.head = "Base.Sheep_Ram_Head_Black";
+ramsuffolk.skull = "Base.Ram_Skull";
+ramsuffolk.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ramsuffolk"] = ramsuffolk;
 
-AnimalPartsDefinitions.animals["lambsuffolk"] = AnimalPartsDefinitions.animals["lambsuffolk"] or {};
-AnimalPartsDefinitions.animals["lambsuffolk"].parts = AnimalPartsDefinitions.animals["lambsuffolk"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["lambsuffolk"].parts, {item = "Base.MuttonChop", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["lambsuffolk"].bones = AnimalPartsDefinitions.animals["lambsuffolk"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["lambsuffolk"].bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["lambsuffolk"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["lambsuffolk"].leather = "Base.LambLeather_Full";
-AnimalPartsDefinitions.animals["lambsuffolk"].head = "Base.Sheep_Lamb_Head_Black";
-AnimalPartsDefinitions.animals["lambsuffolk"].xpPerItem = 6;
+local lambsuffolk = AnimalPartsDefinitions.animals["lambsuffolk"] or {};
+lambsuffolk.parts = lambsuffolk.parts or lambparts;
+lambsuffolk.bones = lambsuffolk.bones or {};
+table.insert(lambsuffolk.bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
+table.insert(lambsuffolk.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+lambsuffolk.leather = "Base.LambLeather_Full";
+lambsuffolk.head = "Base.Sheep_Lamb_Head_Black";
+lambsuffolk.skull = "Base.Lamb_Skull";
+lambsuffolk.xpPerItem = 6;
+AnimalPartsDefinitions.animals["lambsuffolk"] = lambsuffolk;
 
 -- RAMBOUILLET
-AnimalPartsDefinitions.animals["ewerambouillet"] = AnimalPartsDefinitions.animals["ewerambouillet"] or {};
-AnimalPartsDefinitions.animals["ewerambouillet"].parts = AnimalPartsDefinitions.animals["ewerambouillet"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ewerambouillet"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ewerambouillet"].bones = AnimalPartsDefinitions.animals["ewerambouillet"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ewerambouillet"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ewerambouillet"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ewerambouillet"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ewerambouillet"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ewerambouillet"].head = "Base.Sheep_Ewe_Head_White";
-AnimalPartsDefinitions.animals["ewerambouillet"].xpPerItem = 10;
+local ewerambouillet = AnimalPartsDefinitions.animals["ewerambouillet"] or {};
+ewerambouillet.parts = ewerambouillet.parts or sheepparts;
+ewerambouillet.bones = ewerambouillet.bones or {};
+table.insert(ewerambouillet.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ewerambouillet.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ewerambouillet.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ewerambouillet.leather = "Base.SheepLeather_Full";
+ewerambouillet.head = "Base.Sheep_Ewe_Head_White";
+ewerambouillet.skull = "Base.Sheep_Skull";
+ewerambouillet.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ewerambouillet"] = ewerambouillet;
 
-AnimalPartsDefinitions.animals["ramrambouillet"] = AnimalPartsDefinitions.animals["ramrambouillet"] or {};
-AnimalPartsDefinitions.animals["ramrambouillet"].parts = AnimalPartsDefinitions.animals["ramrambouillet"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ramrambouillet"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ramrambouillet"].bones = AnimalPartsDefinitions.animals["ramrambouillet"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ramrambouillet"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ramrambouillet"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ramrambouillet"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ramrambouillet"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ramrambouillet"].head = "Base.Sheep_Ram_Head_White";
-AnimalPartsDefinitions.animals["ramrambouillet"].xpPerItem = 10;
+local ramrambouillet = AnimalPartsDefinitions.animals["ramrambouillet"] or {};
+ramrambouillet.parts = ramrambouillet.parts or sheepparts;
+ramrambouillet.bones = ramrambouillet.bones or {};
+table.insert(ramrambouillet.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ramrambouillet.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ramrambouillet.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ramrambouillet.leather = "Base.SheepLeather_Full";
+ramrambouillet.head = "Base.Sheep_Ram_Head_White";
+ramrambouillet.skull = "Base.Ram_Skull";
+ramrambouillet.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ramrambouillet"] = ramrambouillet;
 
-AnimalPartsDefinitions.animals["lambrambouillet"] = AnimalPartsDefinitions.animals["lambrambouillet"] or {};
-AnimalPartsDefinitions.animals["lambrambouillet"].parts = AnimalPartsDefinitions.animals["lambrambouillet"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["lambrambouillet"].parts, {item = "Base.MuttonChop", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["lambrambouillet"].bones = AnimalPartsDefinitions.animals["lambrambouillet"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["lambrambouillet"].bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["lambrambouillet"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["lambrambouillet"].leather = "Base.LambLeather_Full";
-AnimalPartsDefinitions.animals["lambrambouillet"].head = "Base.Sheep_Lamb_Head_White";
-AnimalPartsDefinitions.animals["lambrambouillet"].xpPerItem = 6;
+local lambrambouillet = AnimalPartsDefinitions.animals["lambrambouillet"] or {};
+lambrambouillet.parts = lambrambouillet.parts or lambparts;
+lambrambouillet.bones = lambrambouillet.bones or {};
+table.insert(lambrambouillet.bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
+table.insert(lambrambouillet.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+lambrambouillet.leather = "Base.LambLeather_Full";
+lambrambouillet.head = "Base.Sheep_Lamb_Head_White";
+lambrambouillet.skull = "Base.Lamb_Skull";
+lambrambouillet.xpPerItem = 6;
+AnimalPartsDefinitions.animals["lambrambouillet"] = lambrambouillet;
 
 -- FRIESIAN
-AnimalPartsDefinitions.animals["ewefriesian"] = AnimalPartsDefinitions.animals["ewefriesian"] or {};
-AnimalPartsDefinitions.animals["ewefriesian"].parts = AnimalPartsDefinitions.animals["ewefriesian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ewefriesian"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ewefriesian"].bones = AnimalPartsDefinitions.animals["ewefriesian"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ewefriesian"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ewefriesian"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ewefriesian"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ewefriesian"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ewefriesian"].head = "Base.Sheep_Ewe_Head_White";
-AnimalPartsDefinitions.animals["ewefriesian"].xpPerItem = 10;
+local ewefriesian = AnimalPartsDefinitions.animals["ewefriesian"] or {};
+ewefriesian.parts = ewefriesian.parts or sheepparts;
+ewefriesian.bones = ewefriesian.bones or {};
+table.insert(ewefriesian.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ewefriesian.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ewefriesian.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ewefriesian.leather = "Base.SheepLeather_Full";
+ewefriesian.head = "Base.Sheep_Ewe_Head_White";
+ewefriesian.skull = "Base.Sheep_Skull";
+ewefriesian.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ewefriesian"] = ewefriesian;
 
-AnimalPartsDefinitions.animals["ramfriesian"] = AnimalPartsDefinitions.animals["ramfriesian"] or {};
-AnimalPartsDefinitions.animals["ramfriesian"].parts = AnimalPartsDefinitions.animals["ramfriesian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ramfriesian"].parts, {item = "Base.MuttonChop", minNb = 9, maxNb = 15})
-AnimalPartsDefinitions.animals["ramfriesian"].bones = AnimalPartsDefinitions.animals["ramfriesian"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["ramfriesian"].bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
-table.insert(AnimalPartsDefinitions.animals["ramfriesian"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
-table.insert(AnimalPartsDefinitions.animals["ramfriesian"].bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
-AnimalPartsDefinitions.animals["ramfriesian"].leather = "Base.SheepLeather_Full";
-AnimalPartsDefinitions.animals["ramfriesian"].head = "Base.Sheep_Ram_Head_White";
-AnimalPartsDefinitions.animals["ramfriesian"].xpPerItem = 10;
+local ramfriesian = AnimalPartsDefinitions.animals["ramfriesian"] or {};
+ramfriesian.parts = ramfriesian.parts or sheepparts;
+ramfriesian.bones = ramfriesian.bones or {};
+table.insert(ramfriesian.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
+table.insert(ramfriesian.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 7})
+table.insert(ramfriesian.bones, {item = "Base.LargeAnimalBone", minNb = 1, maxNb = 2})
+ramfriesian.leather = "Base.SheepLeather_Full";
+ramfriesian.head = "Base.Sheep_Ram_Head_White";
+ramfriesian.skull = "Base.Ram_Skull";
+ramfriesian.xpPerItem = 10;
+AnimalPartsDefinitions.animals["ramfriesian"] = ramfriesian;
 
-AnimalPartsDefinitions.animals["lambfriesian"] = AnimalPartsDefinitions.animals["lambfriesian"] or {};
-AnimalPartsDefinitions.animals["lambfriesian"].parts = AnimalPartsDefinitions.animals["lambfriesian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["lambfriesian"].parts, {item = "Base.MuttonChop", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["lambfriesian"].bones = AnimalPartsDefinitions.animals["lambrambouillet"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["lambfriesian"].bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["lambfriesian"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["lambfriesian"].leather = "Base.LambLeather_Full";
-AnimalPartsDefinitions.animals["lambfriesian"].head = "Base.Sheep_Lamb_Head_White";
-AnimalPartsDefinitions.animals["lambfriesian"].xpPerItem = 6;
+local lambfriesian = AnimalPartsDefinitions.animals["lambfriesian"] or {};
+lambfriesian.parts = lambfriesian.parts or lambparts;
+lambfriesian.bones = lambrambouillet.bones or {};
+table.insert(lambfriesian.bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
+table.insert(lambfriesian.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+lambfriesian.leather = "Base.LambLeather_Full";
+lambfriesian.head = "Base.Sheep_Lamb_Head_White";
+lambfriesian.skull = "Base.Lamb_Skull";
+lambfriesian.xpPerItem = 6;
+AnimalPartsDefinitions.animals["lambfriesian"] = lambfriesian;
 
 -------------------
 ------- DEER ------
 -------------------
-AnimalPartsDefinitions.animals["doewhitetailed"] = AnimalPartsDefinitions.animals["doewhitetailed"] or {};
-AnimalPartsDefinitions.animals["doewhitetailed"].parts = AnimalPartsDefinitions.animals["doewhitetailed"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["doewhitetailed"].parts, {item = "Base.Venison", minNb = 8, maxNb = 15})
-AnimalPartsDefinitions.animals["doewhitetailed"].bones = AnimalPartsDefinitions.animals["doewhitetailed"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["doewhitetailed"].bones, {item = "Base.AnimalBone", minNb = 5, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["doewhitetailed"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["doewhitetailed"].leather = "Base.DeerLeather_Full";
-AnimalPartsDefinitions.animals["doewhitetailed"].head = "Base.Deer_Doe_Head";
-AnimalPartsDefinitions.animals["doewhitetailed"].xpPerItem = 25;
 
-AnimalPartsDefinitions.animals["buckwhitetailed"] = AnimalPartsDefinitions.animals["buckwhitetailed"] or {};
-AnimalPartsDefinitions.animals["buckwhitetailed"].parts = AnimalPartsDefinitions.animals["buckwhitetailed"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["buckwhitetailed"].parts, {item = "Base.Venison", minNb = 9, maxNb = 17})
-AnimalPartsDefinitions.animals["buckwhitetailed"].bones = AnimalPartsDefinitions.animals["buckwhitetailed"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["buckwhitetailed"].bones, {item = "Base.AnimalBone", minNb = 5, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["buckwhitetailed"].bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["buckwhitetailed"].leather = "Base.DeerLeather_Full";
-AnimalPartsDefinitions.animals["buckwhitetailed"].head = "Base.Deer_Buck_Head";
-AnimalPartsDefinitions.animals["buckwhitetailed"].xpPerItem = 25;
+local deerparts = {};
+table.insert(deerparts, {item = "Base.Venison", minNb = 10, maxNb = 19})
+table.insert(deerparts, {item = "Base.AnimalSinew", minNb = 3, maxNb = 8})
 
-AnimalPartsDefinitions.animals["fawnwhitetailed"] = AnimalPartsDefinitions.animals["fawnwhitetailed"] or {};
-AnimalPartsDefinitions.animals["fawnwhitetailed"].parts = AnimalPartsDefinitions.animals["fawnwhitetailed"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["fawnwhitetailed"].parts, {item = "Base.Venison", minNb = 2, maxNb = 4})
-AnimalPartsDefinitions.animals["fawnwhitetailed"].bones = AnimalPartsDefinitions.animals["fawnwhitetailed"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["fawnwhitetailed"].bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
-table.insert(AnimalPartsDefinitions.animals["fawnwhitetailed"].bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 5})
-AnimalPartsDefinitions.animals["fawnwhitetailed"].leather = "Base.FawnLeather_Full";
-AnimalPartsDefinitions.animals["fawnwhitetailed"].head = "Base.Deer_Fawn_Head";
-AnimalPartsDefinitions.animals["fawnwhitetailed"].xpPerItem = 18;
+local fawnparts = {};
+table.insert(fawnparts, {item = "Base.Venison", minNb = 5, maxNb = 9})
+table.insert(fawnparts, {item = "Base.AnimalSinew", minNb = 1, maxNb = 3})
+
+local doewhitetailed = AnimalPartsDefinitions.animals["doewhitetailed"] or {};
+doewhitetailed.parts = doewhitetailed.parts or deerparts;
+doewhitetailed.bones = doewhitetailed.bones or {};
+table.insert(doewhitetailed.bones, {item = "Base.AnimalBone", minNb = 5, maxNb = 8})
+table.insert(doewhitetailed.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+doewhitetailed.leather = "Base.DeerLeather_Full";
+doewhitetailed.head = "Base.Deer_Doe_Head";
+lambsuffolk.skull = "Base.DeerDoe_Skull";
+doewhitetailed.xpPerItem = 25;
+AnimalPartsDefinitions.animals["doewhitetailed"] = doewhitetailed;
+
+local buckwhitetailed = AnimalPartsDefinitions.animals["buckwhitetailed"] or {};
+buckwhitetailed.parts = buckwhitetailed.parts or deerparts;
+buckwhitetailed.bones = buckwhitetailed.bones or {};
+table.insert(buckwhitetailed.bones, {item = "Base.AnimalBone", minNb = 5, maxNb = 8})
+table.insert(buckwhitetailed.bones, {item = "Base.LargeAnimalBone", minNb = 3, maxNb = 5})
+buckwhitetailed.leather = "Base.DeerLeather_Full";
+buckwhitetailed.head = "Base.Deer_Buck_Head";
+buckwhitetailed.skull = "Base.DeerStag_Skull";
+buckwhitetailed.xpPerItem = 25;
+AnimalPartsDefinitions.animals["buckwhitetailed"] = buckwhitetailed;
+
+local fawnwhitetailed = AnimalPartsDefinitions.animals["fawnwhitetailed"] or {};
+fawnwhitetailed.parts = fawnwhitetailed.parts or fawnparts;
+fawnwhitetailed.bones = fawnwhitetailed.bones or {};
+table.insert(fawnwhitetailed.bones, {item = "Base.SmallAnimalBone", minNb = 5, maxNb = 10})
+table.insert(fawnwhitetailed.bones, {item = "Base.AnimalBone", minNb = 3, maxNb = 5})
+fawnwhitetailed.leather = "Base.FawnLeather_Full";
+fawnwhitetailed.head = "Base.Deer_Fawn_Head";
+fawnwhitetailed.skull = "Base.DeerFawn_Skull";
+fawnwhitetailed.xpPerItem = 18;
+AnimalPartsDefinitions.animals["fawnwhitetailed"] = fawnwhitetailed;
 
 -------------------
 ----- RABBITS -----
 -------------------
 
+local rabbitspart = {};
+table.insert(rabbitspart, {item = "Base.Rabbitmeat", minNb = 4, maxNb = 7})
+
+local rabbitskitpart = {};
+table.insert(rabbitskitpart, {item = "Base.Rabbitmeat", minNb = 2, maxNb = 4})
+
 -- SWAMP
-AnimalPartsDefinitions.animals["rabdoeswamp"] = AnimalPartsDefinitions.animals["rabdoeswamp"] or {};
-AnimalPartsDefinitions.animals["rabdoeswamp"].parts = AnimalPartsDefinitions.animals["rabdoeswamp"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoeswamp"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabdoeswamp"].bones = AnimalPartsDefinitions.animals["rabdoeswamp"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoeswamp"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabdoeswamp"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabdoeswamp"].head = "Base.Rabbit_Head_Swamp";
-AnimalPartsDefinitions.animals["rabdoeswamp"].xpPerItem = 7;
+local rabdoeswamp = AnimalPartsDefinitions.animals["rabdoeswamp"] or {};
+rabdoeswamp.parts = rabdoeswamp.parts or rabbitspart;
+rabdoeswamp.bones = rabdoeswamp.bones or {};
+table.insert(rabdoeswamp.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
+table.insert(rabdoeswamp.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoeswamp.head = "Base.Rabbit_Head_Swamp";
+rabdoeswamp.skull = "Base.Rabbit_Skull";
+rabdoeswamp.xpPerItem = 7;
+AnimalPartsDefinitions.animals["rabdoeswamp"] = rabdoeswamp;
 
-AnimalPartsDefinitions.animals["rabbuckswamp"] = AnimalPartsDefinitions.animals["rabbuckswamp"] or {};
-AnimalPartsDefinitions.animals["rabbuckswamp"].parts = AnimalPartsDefinitions.animals["rabbuckswamp"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckswamp"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabbuckswamp"].bones = AnimalPartsDefinitions.animals["rabbuckswamp"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckswamp"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabbuckswamp"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabbuckswamp"].head = "Base.Rabbit_Head_Swamp";
-AnimalPartsDefinitions.animals["rabbuckswamp"].xpPerItem = 7;
+local rabbuckswamp = AnimalPartsDefinitions.animals["rabbuckswamp"] or rabdoeswamp;
+AnimalPartsDefinitions.animals["rabbuckswamp"] = rabbuckswamp;
 
-AnimalPartsDefinitions.animals["rabkittenswamp"] = AnimalPartsDefinitions.animals["rabkittenswamp"] or {};
-AnimalPartsDefinitions.animals["rabkittenswamp"].parts = AnimalPartsDefinitions.animals["rabkittenswamp"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittenswamp"].parts, {item = "Base.Rabbitmeat", minNb = 1, maxNb = 3})
-AnimalPartsDefinitions.animals["rabkittenswamp"].bones = AnimalPartsDefinitions.animals["rabkittenswamp"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittenswamp"].bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabkittenswamp"].head = "Base.Rabbit_Kitten_Head_Swamp";
-AnimalPartsDefinitions.animals["rabkittenswamp"].xpPerItem = 3;
+local rabkitten = AnimalPartsDefinitions.animals["rabkitten"] or {};
+rabkitten.parts = rabkitten.parts or rabbitskitpart;
+rabkitten.bones = rabkitten.bones or {};
+table.insert(rabkitten.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkitten.head = "Base.Rabbit_Kitten_Head_Swamp";
+rabkitten.skull = "Base.Rabbit_KittenSkull";
+rabkitten.xpPerItem = 3;
+AnimalPartsDefinitions.animals["rabkitten"] = rabkitten;
 
 -- APPALACHIAN
-AnimalPartsDefinitions.animals["rabdoeappalachian"] = AnimalPartsDefinitions.animals["rabdoeappalachian"] or {};
-AnimalPartsDefinitions.animals["rabdoeappalachian"].parts = AnimalPartsDefinitions.animals["rabdoeappalachian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoeappalachian"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabdoeappalachian"].bones = AnimalPartsDefinitions.animals["rabdoeappalachian"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoeappalachian"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabdoeappalachian"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabdoeappalachian"].head = "Base.Rabbit_Head_Appalachian";
-AnimalPartsDefinitions.animals["rabdoeappalachian"].xpPerItem = 7;
+local rabdoeappalachian = AnimalPartsDefinitions.animals["rabdoeappalachian"] or {};
+rabdoeappalachian.parts = rabdoeappalachian.parts or rabbitspart;
+rabdoeappalachian.bones = rabdoeappalachian.bones or {};
+table.insert(rabdoeappalachian.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
+table.insert(rabdoeappalachian.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoeappalachian.head = "Base.Rabbit_Head_Appalachian";
+rabdoeappalachian.skull = "Base.Rabbit_Skull";
+rabdoeappalachian.xpPerItem = 7;
+AnimalPartsDefinitions.animals["rabdoeappalachian"] = rabdoeappalachian;
 
-AnimalPartsDefinitions.animals["rabbuckappalachian"] = AnimalPartsDefinitions.animals["rabbuckappalachian"] or {};
-AnimalPartsDefinitions.animals["rabbuckappalachian"].parts = AnimalPartsDefinitions.animals["rabbuckappalachian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckappalachian"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabbuckappalachian"].bones = AnimalPartsDefinitions.animals["rabbuckappalachian"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckappalachian"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabbuckappalachian"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabbuckappalachian"].head = "Base.Rabbit_Head_Appalachian";
-AnimalPartsDefinitions.animals["rabbuckappalachian"].xpPerItem = 7;
+local rabbuckappalachian = AnimalPartsDefinitions.animals["rabbuckappalachian"] or rabdoeappalachian;
+AnimalPartsDefinitions.animals["rabbuckappalachian"] = rabbuckappalachian;
 
-AnimalPartsDefinitions.animals["rabkittenappalachian"] = AnimalPartsDefinitions.animals["rabkittenappalachian"] or {};
-AnimalPartsDefinitions.animals["rabkittenappalachian"].parts = AnimalPartsDefinitions.animals["rabkittenappalachian"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittenappalachian"].parts, {item = "Base.Rabbitmeat", minNb = 1, maxNb = 3})
-AnimalPartsDefinitions.animals["rabkittenappalachian"].bones = AnimalPartsDefinitions.animals["rabkittenappalachian"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittenappalachian"].bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabkittenappalachian"].head = "Base.Rabbit_Kitten_Head_Appalachian";
-AnimalPartsDefinitions.animals["rabkittenappalachian"].xpPerItem = 3;
+local rabkittenappalachian = AnimalPartsDefinitions.animals["rabkittenappalachian"] or {};
+rabkittenappalachian.parts = rabkittenappalachian.parts or rabbitskitpart;
+rabkittenappalachian.bones = rabkittenappalachian.bones or {};
+table.insert(rabkittenappalachian.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittenappalachian.head = "Base.Rabbit_Kitten_Head_Appalachian";
+rabkittenappalachian.skull = "Base.Rabbit_KittenSkull";
+rabkittenappalachian.xpPerItem = 3;
+AnimalPartsDefinitions.animals["rabkittenappalachian"] = rabkittenappalachian;
 
 -- COTTON TAIL
-AnimalPartsDefinitions.animals["rabdoecottontail"] = AnimalPartsDefinitions.animals["rabdoecottontail"] or {};
-AnimalPartsDefinitions.animals["rabdoecottontail"].parts = AnimalPartsDefinitions.animals["rabdoecottontail"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoecottontail"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabdoecottontail"].bones = AnimalPartsDefinitions.animals["rabdoecottontail"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabdoecottontail"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabdoecottontail"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabdoecottontail"].head = "Base.Rabbit_Head_CottonTail";
-AnimalPartsDefinitions.animals["rabdoecottontail"].xpPerItem = 7;
+local rabdoecottontail = AnimalPartsDefinitions.animals["rabdoecottontail"] or {};
+rabdoecottontail.parts = rabdoecottontail.parts or rabbitspart;
+rabdoecottontail.bones = rabdoecottontail.bones or {};
+table.insert(rabdoecottontail.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
+table.insert(rabdoecottontail.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoecottontail.head = "Base.Rabbit_Head_CottonTail";
+rabdoecottontail.skull = "Base.Rabbit_Skull";
+rabdoecottontail.xpPerItem = 7;
+AnimalPartsDefinitions.animals["rabdoecottontail"] = rabdoecottontail;
 
-AnimalPartsDefinitions.animals["rabbuckcottontail"] = AnimalPartsDefinitions.animals["rabbuckcottontail"] or {};
-AnimalPartsDefinitions.animals["rabbuckcottontail"].parts = AnimalPartsDefinitions.animals["rabbuckcottontail"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckcottontail"].parts, {item = "Base.Rabbitmeat", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabbuckcottontail"].bones = AnimalPartsDefinitions.animals["rabbuckcottontail"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabbuckcottontail"].bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
-table.insert(AnimalPartsDefinitions.animals["rabbuckcottontail"].bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
-AnimalPartsDefinitions.animals["rabbuckcottontail"].head = "Base.Rabbit_Head_CottonTail";
-AnimalPartsDefinitions.animals["rabbuckcottontail"].xpPerItem = 7;
+local rabbuckcottontail = AnimalPartsDefinitions.animals["rabbuckcottontail"] or rabdoecottontail;
+AnimalPartsDefinitions.animals["rabbuckcottontail"] = rabbuckcottontail;
 
-AnimalPartsDefinitions.animals["rabkittencottontail"] = AnimalPartsDefinitions.animals["rabkittencottontail"] or {};
-AnimalPartsDefinitions.animals["rabkittencottontail"].parts = AnimalPartsDefinitions.animals["rabkittencottontail"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittencottontail"].parts, {item = "Base.Rabbitmeat", minNb = 1, maxNb = 3})
-AnimalPartsDefinitions.animals["rabkittencottontail"].bones = AnimalPartsDefinitions.animals["rabkittencottontail"].bones or {};
-table.insert(AnimalPartsDefinitions.animals["rabkittencottontail"].bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
-AnimalPartsDefinitions.animals["rabkittencottontail"].head = "Base.Rabbit_Kitten_Head_CottonTail";
-AnimalPartsDefinitions.animals["rabkittencottontail"].xpPerItem = 3;
+local rabkittencottontail = AnimalPartsDefinitions.animals["rabkittencottontail"] or {};
+rabkittencottontail.parts = rabkittencottontail.parts or rabbitskitpart;
+rabkittencottontail.bones = rabkittencottontail.bones or {};
+table.insert(rabkittencottontail.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittencottontail.head = "Base.Rabbit_Kitten_Head_CottonTail";
+rabkittencottontail.skull = "Base.Rabbit_KittenSkull";
+rabkittencottontail.xpPerItem = 3;
+AnimalPartsDefinitions.animals["rabkittencottontail"] = rabkittencottontail;
 
 -------------------
 ------ RATS -------
 -------------------
-AnimalPartsDefinitions.animals["ratfemalegrey"] = AnimalPartsDefinitions.animals["ratfemalegrey"] or {};
-AnimalPartsDefinitions.animals["ratfemalegrey"].parts = AnimalPartsDefinitions.animals["ratfemalegrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratfemalegrey"].parts, {item = "Base.DeadRatSkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratfemalegrey"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratfemalegrey"].xpPerItem = 7;
+local ratfemalegrey = AnimalPartsDefinitions.animals["ratfemalegrey"] or {};
+ratfemalegrey.parts = ratfemalegrey.parts or {};
+table.insert(ratfemalegrey.parts, {item = "Base.DeadRatSkinned", nb = 1})
+ratfemalegrey.bones = ratfemalegrey.bones or {};
+table.insert(ratfemalegrey.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+ratfemalegrey.noSkeleton = true;
+ratfemalegrey.xpPerItem = 7;
+AnimalPartsDefinitions.animals["ratfemalegrey"] = ratfemalegrey;
 
-AnimalPartsDefinitions.animals["ratgrey"] = AnimalPartsDefinitions.animals["ratgrey"] or {};
-AnimalPartsDefinitions.animals["ratgrey"].parts = AnimalPartsDefinitions.animals["ratgrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratgrey"].parts, {item = "Base.DeadRatSkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratgrey"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratgrey"].xpPerItem = 7;
+local ratgrey = AnimalPartsDefinitions.animals["ratgrey"] or ratfemalegrey;
+AnimalPartsDefinitions.animals["ratgrey"] = ratgrey;
 
-AnimalPartsDefinitions.animals["ratbabygrey"] = AnimalPartsDefinitions.animals["ratbabygrey"] or {};
-AnimalPartsDefinitions.animals["ratbabygrey"].parts = AnimalPartsDefinitions.animals["ratbabygrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratbabygrey"].parts, {item = "Base.DeadRatBabySkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratbabygrey"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratbabygrey"].xpPerItem = 7;
+local ratbabygrey = AnimalPartsDefinitions.animals["ratbabygrey"] or {};
+ratbabygrey.parts = ratbabygrey.parts or {};
+table.insert(ratbabygrey.parts, {item = "Base.DeadRatBabySkinned", nb = 1})
+ratbabygrey.bones = ratbabygrey.bones or {};
+table.insert(ratbabygrey.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+ratbabygrey.noSkeleton = true;
+ratbabygrey.xpPerItem = 7;
+AnimalPartsDefinitions.animals["ratbabygrey"] = ratbabygrey;
 
-AnimalPartsDefinitions.animals["ratfemalewhite"] = AnimalPartsDefinitions.animals["ratfemalewhite"] or {};
-AnimalPartsDefinitions.animals["ratfemalewhite"].parts = AnimalPartsDefinitions.animals["ratfemalewhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratfemalewhite"].parts, {item = "Base.DeadRatSkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratfemalewhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratfemalewhite"].xpPerItem = 7;
+local ratfemalewhite = AnimalPartsDefinitions.animals["ratfemalewhite"] or {};
+ratfemalewhite.parts = ratfemalewhite.parts or {};
+table.insert(ratfemalewhite.parts, {item = "Base.DeadRatSkinned", nb = 1})
+ratfemalewhite.bones = ratfemalewhite.bones or {};
+table.insert(ratfemalewhite.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+ratfemalewhite.noSkeleton = true;
+ratfemalewhite.xpPerItem = 7;
+AnimalPartsDefinitions.animals["ratfemalewhite"] = ratfemalewhite;
 
-AnimalPartsDefinitions.animals["ratwhite"] = AnimalPartsDefinitions.animals["ratwhite"] or {};
-AnimalPartsDefinitions.animals["ratwhite"].parts = AnimalPartsDefinitions.animals["ratwhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratwhite"].parts, {item = "Base.DeadRatSkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratwhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratwhite"].xpPerItem = 7;
+local ratwhite = AnimalPartsDefinitions.animals["ratwhite"] or ratfemalewhite;
+AnimalPartsDefinitions.animals["ratwhite"] = ratwhite;
 
-AnimalPartsDefinitions.animals["ratbabywhite"] = AnimalPartsDefinitions.animals["ratbabywhite"] or {};
-AnimalPartsDefinitions.animals["ratbabywhite"].parts = AnimalPartsDefinitions.animals["ratbabywhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["ratbabywhite"].parts, {item = "Base.DeadRatBabySkinned", nb = 1})
-AnimalPartsDefinitions.animals["ratbabywhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["ratbabywhite"].xpPerItem = 7;
+local ratbabywhite = AnimalPartsDefinitions.animals["ratbabywhite"] or {};
+ratbabywhite.parts = ratbabywhite.parts or {};
+table.insert(ratbabywhite.parts, {item = "Base.DeadRatBabySkinned", nb = 1})
+ratbabywhite.bones = ratbabywhite.bones or {};
+table.insert(ratbabywhite.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+ratbabywhite.noSkeleton = true;
+ratbabywhite.xpPerItem = 7;
+AnimalPartsDefinitions.animals["ratbabywhite"] = ratbabywhite;
 
 -------------------
 ------ MICE -------
 -------------------
-AnimalPartsDefinitions.animals["mousefemalegolden"] = AnimalPartsDefinitions.animals["mousefemalegolden"] or {};
-AnimalPartsDefinitions.animals["mousefemalegolden"].parts = AnimalPartsDefinitions.animals["mousefemalegolden"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousefemalegolden"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousefemalegolden"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousefemalegolden"].xpPerItem = 5;
+local mousefemalegolden = AnimalPartsDefinitions.animals["mousefemalegolden"] or {};
+mousefemalegolden.parts = mousefemalegolden.parts or {};
+table.insert(mousefemalegolden.parts, {item = "Base.DeadMouseSkinned", nb = 1})
+mousefemalegolden.bones = mousefemalegolden.bones or {};
+table.insert(mousefemalegolden.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousefemalegolden.noSkeleton = true;
+mousefemalegolden.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousefemalegolden"] = mousefemalegolden;
 
-AnimalPartsDefinitions.animals["mousegolden"] = AnimalPartsDefinitions.animals["mousegolden"] or {};
-AnimalPartsDefinitions.animals["mousegolden"].parts = AnimalPartsDefinitions.animals["mousegolden"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousegolden"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousegolden"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousegolden"].xpPerItem = 5;
+local mousegolden = AnimalPartsDefinitions.animals["mousegolden"] or mousefemalegolden;
+AnimalPartsDefinitions.animals["mousegolden"] = mousegolden;
 
-AnimalPartsDefinitions.animals["mousepupsgolden"] = AnimalPartsDefinitions.animals["mousepupsgolden"] or {};
-AnimalPartsDefinitions.animals["mousepupsgolden"].parts = AnimalPartsDefinitions.animals["mousepupsgolden"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousepupsgolden"].parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousepupsgolden"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousepupsgolden"].xpPerItem = 5;
+local mousepupsgolden = AnimalPartsDefinitions.animals["mousepupsgolden"] or {};
+mousepupsgolden.parts = mousepupsgolden.parts or {};
+table.insert(mousepupsgolden.parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
+mousepupsgolden.bones = mousepupsgolden.bones or {};
+table.insert(mousepupsgolden.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousepupsgolden.noSkeleton = true;
+mousepupsgolden.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousepupsgolden"] = mousepupsgolden;
 
-AnimalPartsDefinitions.animals["mousefemaledeer"] = AnimalPartsDefinitions.animals["mousefemaledeer"] or {};
-AnimalPartsDefinitions.animals["mousefemaledeer"].parts = AnimalPartsDefinitions.animals["mousefemaledeer"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousefemaledeer"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousefemaledeer"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousefemaledeer"].xpPerItem = 5;
+local mousefemaledeer = AnimalPartsDefinitions.animals["mousefemaledeer"] or {};
+mousefemaledeer.parts = mousefemaledeer.parts or {};
+table.insert(mousefemaledeer.parts, {item = "Base.DeadMouseSkinned", nb = 1})
+mousefemaledeer.bones = mousefemaledeer.bones or {};
+table.insert(mousefemaledeer.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousefemaledeer.noSkeleton = true;
+mousefemaledeer.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousefemaledeer"] = mousefemaledeer;
 
-AnimalPartsDefinitions.animals["mousedeer"] = AnimalPartsDefinitions.animals["mousedeer"] or {};
-AnimalPartsDefinitions.animals["mousedeer"].parts = AnimalPartsDefinitions.animals["mousedeer"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousedeer"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousedeer"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousedeer"].xpPerItem = 5;
+local mousedeer = AnimalPartsDefinitions.animals["mousedeer"] or mousefemaledeer;
+AnimalPartsDefinitions.animals["mousedeer"] = mousedeer;
 
-AnimalPartsDefinitions.animals["mousepupsdeer"] = AnimalPartsDefinitions.animals["mousepupsdeer"] or {};
-AnimalPartsDefinitions.animals["mousepupsdeer"].parts = AnimalPartsDefinitions.animals["mousepupsdeer"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousepupsdeer"].parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousepupsdeer"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousepupsdeer"].xpPerItem = 5;
+local mousepupsdeer = AnimalPartsDefinitions.animals["mousepupsdeer"] or {};
+mousepupsdeer.parts = mousepupsdeer.parts or {};
+table.insert(mousepupsdeer.parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
+mousepupsdeer.bones = mousepupsdeer.bones or {};
+table.insert(mousepupsdeer.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousepupsdeer.noSkeleton = true;
+mousepupsdeer.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousepupsdeer"] = mousepupsdeer;
 
-AnimalPartsDefinitions.animals["mousefemalewhite"] = AnimalPartsDefinitions.animals["mousefemalewhite"] or {};
-AnimalPartsDefinitions.animals["mousefemalewhite"].parts = AnimalPartsDefinitions.animals["mousefemalewhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousefemalewhite"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousefemalewhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousefemalewhite"].xpPerItem = 5;
+local mousefemalewhite = AnimalPartsDefinitions.animals["mousefemalewhite"] or {};
+mousefemalewhite.parts = mousefemalewhite.parts or {};
+table.insert(mousefemalewhite.parts, {item = "Base.DeadMouseSkinned", nb = 1})
+mousefemalewhite.bones = mousefemalewhite.bones or {};
+table.insert(mousefemalewhite.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousefemalewhite.noSkeleton = true;
+mousefemalewhite.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousefemalewhite"] = mousefemalewhite;
 
-AnimalPartsDefinitions.animals["mousewhite"] = AnimalPartsDefinitions.animals["mousewhite"] or {};
-AnimalPartsDefinitions.animals["mousewhite"].parts = AnimalPartsDefinitions.animals["mousewhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousewhite"].parts, {item = "Base.DeadMouseSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousewhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousewhite"].xpPerItem = 5;
+local mousewhite = AnimalPartsDefinitions.animals["mousewhite"] or mousefemalewhite;
+AnimalPartsDefinitions.animals["mousewhite"] = mousewhite;
 
-AnimalPartsDefinitions.animals["mousepupswhite"] = AnimalPartsDefinitions.animals["mousepupswhite"] or {};
-AnimalPartsDefinitions.animals["mousepupswhite"].parts = AnimalPartsDefinitions.animals["mousepupswhite"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["mousepupswhite"].parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
-AnimalPartsDefinitions.animals["mousepupswhite"].noSkeleton = true;
-AnimalPartsDefinitions.animals["mousepupswhite"].xpPerItem = 5;
+local mousepupswhite = AnimalPartsDefinitions.animals["mousepupswhite"] or {};
+mousepupswhite.parts = mousepupswhite.parts or {};
+table.insert(mousepupswhite.parts, {item = "Base.DeadMousePupsSkinned", nb = 1})
+mousepupswhite.bones = mousepupswhite.bones or {};
+table.insert(mousepupswhite.bones, {item = "Base.SmallAnimalBone", minNb = 1, maxNb = 2})
+mousepupswhite.noSkeleton = true;
+mousepupswhite.xpPerItem = 5;
+AnimalPartsDefinitions.animals["mousepupswhite"] = mousepupswhite;
 
 -------------------
 ----- RACCOON -----
 -------------------
-AnimalPartsDefinitions.animals["raccoonsowgrey"] = AnimalPartsDefinitions.animals["raccoonsowgrey"] or {};
-AnimalPartsDefinitions.animals["raccoonsowgrey"].parts = AnimalPartsDefinitions.animals["raccoonsowgrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["raccoonsowgrey"].parts, {item = "Base.Deer_Doe_Head", nb = 1})
-AnimalPartsDefinitions.animals["raccoonsowgrey"].xpPerItem = 10;
 
-AnimalPartsDefinitions.animals["raccoonboargrey"] = AnimalPartsDefinitions.animals["raccoonboargrey"] or {};
-AnimalPartsDefinitions.animals["raccoonboargrey"].parts = AnimalPartsDefinitions.animals["raccoonboargrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["raccoonboargrey"].parts, {item = "Base.Deer_Buck_Head", nb = 1})
-AnimalPartsDefinitions.animals["raccoonboargrey"].xpPerItem = 10;
+local raccoonkitparts = {};
+table.insert(raccoonkitparts, {item = "Base.Smallanimalmeat", minNb = 3, maxNb = 5})
 
-AnimalPartsDefinitions.animals["raccoonkitgrey"] = AnimalPartsDefinitions.animals["raccoonkitgrey"] or {};
-AnimalPartsDefinitions.animals["raccoonkitgrey"].parts = AnimalPartsDefinitions.animals["raccoonkitgrey"].parts or {};
-table.insert(AnimalPartsDefinitions.animals["raccoonkitgrey"].parts, {item = "Base.Deer_Fawn_Head", nb = 1})
-AnimalPartsDefinitions.animals["raccoonkitgrey"].xpPerItem = 10;
+local raccoonparts = {};
+table.insert(raccoonparts, {item = "Base.Smallanimalmeat", minNb = 5, maxNb = 8})
+
+local raccoonsowgrey = AnimalPartsDefinitions.animals["raccoonsowgrey"] or {};
+raccoonsowgrey.parts = raccoonsowgrey.parts or raccoonparts;
+raccoonsowgrey.bones = raccoonsowgrey.bones or {};
+table.insert(raccoonsowgrey.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+raccoonsowgrey.leather = "Base.RaccoonLeather_Grey_Full";
+raccoonsowgrey.head = "Base.Raccoon_Sow_Head";
+raccoonsowgrey.skull = "Base.Raccoon_Skull";
+raccoonsowgrey.noSkeleton = true;
+raccoonsowgrey.xpPerItem = 10;
+AnimalPartsDefinitions.animals["raccoonsowgrey"] = raccoonsowgrey;
+
+local raccoonboargrey = AnimalPartsDefinitions.animals["raccoonboargrey"] or {};
+raccoonboargrey.parts = raccoonboargrey.parts or raccoonparts;
+raccoonboargrey.bones = raccoonboargrey.bones or {};
+table.insert(raccoonboargrey.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+raccoonboargrey.head = "Base.Raccoon_Boar_Head";
+raccoonboargrey.skull = "Base.Raccoon_Skull";
+raccoonboargrey.leather = "Base.RaccoonLeather_Grey_Full";
+raccoonboargrey.noSkeleton = true;
+raccoonboargrey.xpPerItem = 10;
+AnimalPartsDefinitions.animals["raccoonboargrey"] = raccoonboargrey;
+
+local raccoonkitgrey = AnimalPartsDefinitions.animals["raccoonkitgrey"] or {};
+raccoonkitgrey.parts = raccoonkitgrey.parts or raccoonkitparts;
+raccoonkitgrey.bones = rabkittencottontail.bones or {};
+table.insert(raccoonkitgrey.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 3})
+raccoonkitgrey.leather = "Base.RaccoonLeather_Grey_Full";
+raccoonkitgrey.head = "Base.Raccoon_Kit_Head";
+raccoonkitgrey.skull = "Base.Raccoon_Skull";
+raccoonkitgrey.noSkeleton = true;
+raccoonkitgrey.xpPerItem = 10;
+AnimalPartsDefinitions.animals["raccoonkitgrey"] = raccoonkitgrey;
 
 
 
@@ -627,7 +729,7 @@ AnimalPartsDefinitions.animals["raccoonkitgrey"].xpPerItem = 10;
 --- * the total % is 100, if we roll to give 20 meats, we first check the first in the list, if the baseChance is 10% (i'm not adding the skill/animal stats to simplify here) you'll have 2 of the first meat (prime cut)
 --- * the remaining is then 90%, the remaining meat is 18, we roll the 2nd item, if the baseChance is 30, we'll give 90/30 = 2.7, which means in term of number of meat: 18*0.27 = 4.86 (5) meats of the 2nd category (medium cut)
 --- * we have then 20 - 2 - 5 = 13 meat to give (poor cut)
---- item = the item that'll be given (it's always the same so we can somplify all the cooking recipes)
+--- item = the item that'll be given (it's always the same so we can simplify all the cooking recipes)
 --- baseChance = the base chance of having this item given, it'll be multiplied by butchering skill and stats of the animal
 --- hungerBoost = we take the base hunger of the given item and multiply it by this number (also influenced by animal stats)
 --- baseName = will be the first name of the item, that + extraName will give something like Beef (Prime Cut) (Beef being baseName, extraName being (Prime Cut)
@@ -635,30 +737,42 @@ AnimalPartsDefinitions.animals["raccoonkitgrey"].xpPerItem = 10;
 AnimalPartsDefinitions.meat = {};
 AnimalPartsDefinitions.meat["Base.Beef"] = AnimalPartsDefinitions.meat["Base.Beef"] or {};
 AnimalPartsDefinitions.meat["Base.Beef"].variants = AnimalPartsDefinitions.meat["Base.Beef"].variants or {};
-table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", baseChance = 20, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_PrimeCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", baseChance = 50, hungerBoost = 1.1, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_MediumCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", hungerBoost = 0.7, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
+table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Beef"].variants, {item = "Base.Beef", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Beef", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
+
+AnimalPartsDefinitions.meat["Base.Steak"] = AnimalPartsDefinitions.meat["Base.Steak"] or {};
+AnimalPartsDefinitions.meat["Base.Steak"].variants = AnimalPartsDefinitions.meat["Base.Steak"].variants or {};
+table.insert(AnimalPartsDefinitions.meat["Base.Steak"].variants, {item = "Base.Steak", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Steak", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Steak"].variants, {item = "Base.Steak", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Steak", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Steak"].variants, {item = "Base.Steak", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Steak", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
 
 AnimalPartsDefinitions.meat["Base.Pork"] = AnimalPartsDefinitions.meat["Base.Pork"] or {};
 AnimalPartsDefinitions.meat["Base.Pork"].variants = AnimalPartsDefinitions.meat["Base.Pork"].variants or {};
-table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", baseChance = 20, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_PrimeCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", baseChance = 50, hungerBoost = 1.1, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_MediumCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", hungerBoost = 0.7, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
+table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Pork"].variants, {item = "Base.Pork", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Pork", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
+
+AnimalPartsDefinitions.meat["Base.PorkChop"] = AnimalPartsDefinitions.meat["Base.PorkChop"] or {};
+AnimalPartsDefinitions.meat["Base.PorkChop"].variants = AnimalPartsDefinitions.meat["Base.PorkChop"].variants or {};
+table.insert(AnimalPartsDefinitions.meat["Base.PorkChop"].variants, {item = "Base.PorkChop", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_PorkChop", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.PorkChop"].variants, {item = "Base.PorkChop", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_PorkChop", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.PorkChop"].variants, {item = "Base.PorkChop", hungerBoost = 1, baseName = "IGUI_AnimalMeat_PorkChop", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
 
 AnimalPartsDefinitions.meat["Base.MuttonChop"] = AnimalPartsDefinitions.meat["Base.MuttonChop"] or {};
 AnimalPartsDefinitions.meat["Base.MuttonChop"].variants = AnimalPartsDefinitions.meat["Base.MuttonChop"].variants or {};
-table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", baseChance = 20, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_PrimeCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", baseChance = 50, hungerBoost = 1.1, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_MediumCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", hungerBoost = 0.7, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_PoorCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.MuttonChop"].variants, {item = "Base.MuttonChop", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Mutton", extraName = "IGUI_AnimalMeat_PoorCut"})
 
 AnimalPartsDefinitions.meat["Base.Rabbitmeat"] = AnimalPartsDefinitions.meat["Base.Rabbitmeat"] or {};
 AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants = AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants or {};
-table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", baseChance = 20, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_PrimeCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", baseChance = 50, hungerBoost = 1.1, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_MediumCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", hungerBoost = 0.7, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_PoorCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Rabbitmeat"].variants, {item = "Base.Rabbitmeat", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Rabbit", extraName = "IGUI_AnimalMeat_PoorCut"})
 
 AnimalPartsDefinitions.meat["Base.Venison"] = AnimalPartsDefinitions.meat["Base.Venison"] or {};
 AnimalPartsDefinitions.meat["Base.Venison"].variants = AnimalPartsDefinitions.meat["Base.Venison"].variants or {};
-table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", baseChance = 20, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_PrimeCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", baseChance = 50, hungerBoost = 1.1, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_MediumCut"})
-table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", hungerBoost = 0.7, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last
+table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", baseChance = 20, hungerBoost = 3, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_PrimeCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", baseChance = 50, hungerBoost = 2, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_MediumCut"})
+table.insert(AnimalPartsDefinitions.meat["Base.Venison"].variants, {item = "Base.Venison", hungerBoost = 1, baseName = "IGUI_AnimalMeat_Venison", extraName = "IGUI_AnimalMeat_PoorCut"}) -- no need baseChance here as it's the last

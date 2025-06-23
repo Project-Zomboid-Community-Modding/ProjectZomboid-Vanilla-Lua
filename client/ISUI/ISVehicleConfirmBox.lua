@@ -68,10 +68,10 @@ end
 
 function ISVehicleConfirmBox:new()
 	self.__index = self
-	height = 526
-	width = 375
-	y = (getCore():getScreenHeight() / 2) - (height / 2)
-	x = (getCore():getScreenWidth() / 2) - (width / 2)
+	local height = 526
+	local width = 375
+	local y = (getCore():getScreenHeight() / 2) - (height / 2)
+	local x = (getCore():getScreenWidth() / 2) - (width / 2)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
 	o.texSpiffoWarning = getTexture("media/ui/spiffoWarning.png")

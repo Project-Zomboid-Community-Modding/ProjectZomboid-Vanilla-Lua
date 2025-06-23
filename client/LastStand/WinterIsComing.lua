@@ -123,6 +123,7 @@ end
 
 WinterIsComing.id = "WinterIsComing";
 WinterIsComing.image = "media/lua/client/LastStand/WinterIsComing.png";
+WinterIsComing.video = "WinterIsComing.bik";
 WinterIsComing.gameMode = "Winter is Coming";
 WinterIsComing.world = "Muldraugh, KY";
 WinterIsComing.x = 36 * 300 + 21;

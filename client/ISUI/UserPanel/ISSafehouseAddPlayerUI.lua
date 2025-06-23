@@ -139,10 +139,10 @@ function ISSafehouseAddPlayerUI:onClick(button)
         else
             sendSafehouseChangeOwner(self.safehouse, self.selectedPlayer)
             self.safehouseUI:populateList();
-            self:setVisible(false);
-            self:removeFromUIManager();
-            ISSafehouseAddPlayerUI.instance = nil
         end
+        self:setVisible(false);
+        self:removeFromUIManager();
+        ISSafehouseAddPlayerUI.instance = nil
     end
 end
 
@@ -172,7 +172,7 @@ function ISSafehouseAddPlayerUI:new(x, y, width, height, safehouse, player)
     o.moveWithMouse = true;
     o.scoreboard = nil
     ISSafehouseAddPlayerUI.instance = o;
-    o.isOwner = safehouse:isOwner(player) or player:getRole():haveCapability(Capability.CanSetupSafehouses);
+    o.isOwner = safehouse:isOwner(player) or player:getRole():hasCapability(Capability.CanSetupSafehouses);
     return o;
 end
 

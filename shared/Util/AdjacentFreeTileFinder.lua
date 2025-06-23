@@ -49,7 +49,7 @@ AdjacentFreeTileFinder.privTrySquare = function(src, test, excludeList)
     -- check if test square is in the excludeList
     if excludeList then
         for i, excludeSquare in ipairs(excludeList) do
-            if excludeSquare:getX() == test:getX() and excludeSquare:getY() == test:getY() and excludeSquare:getZ() == test:getZ() then
+            if excludeSquare ~= nil and test ~= nil and excludeSquare:getX() == test:getX() and excludeSquare:getY() == test:getY() and excludeSquare:getZ() == test:getZ() then
                 return false;
             end
         end
@@ -410,23 +410,8 @@ AdjacentFreeTileFinder.privCanStand = function(test)
 
     -- Player can stand on solidtrans squares adjacent to windows.
     if test:Is(IsoFlagType.solidtrans) then
-        local hasWindow = false
-        if test:Is(IsoFlagType.windowW) or test:Is(IsoFlagType.windowN) then
-            hasWindow = true
-        end
-        if not hasWindow then
-            local s = test:getAdjacentSquare(IsoDirections.S)
-            if s and s:Is(IsoFlagType.windowN) then
-                hasWindow = true
-            end
-        end
-        if not hasWindow then
-            local e = test:getAdjacentSquare(IsoDirections.E)
-            if e and e:Is(IsoFlagType.windowW) then
-                hasWindow = true
-            end
-        end
-        if not hasWindow then
+        local hasWindowOrFence = test:isAdjacentToWindow() or test:isAdjacentToHoppable()
+        if not hasWindowOrFence then
             return false
         end
     end

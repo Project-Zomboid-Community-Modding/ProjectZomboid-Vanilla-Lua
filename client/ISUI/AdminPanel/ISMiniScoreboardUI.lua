@@ -54,22 +54,32 @@ end
 function ISMiniScoreboardUI:doPlayerListContextMenu(player, x,y)
     local playerNum = self.admin:getPlayerNum()
     local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY());
-    context:addOption(getText("UI_Scoreboard_Teleport"), self, ISMiniScoreboardUI.onCommand, player, "TELEPORT");
-    context:addOption(getText("UI_Scoreboard_TeleportToYou"), self, ISMiniScoreboardUI.onCommand, player, "TELEPORTTOYOU");
-    context:addOption(getText("UI_Scoreboard_Invisible"), self, ISMiniScoreboardUI.onCommand, player, "INVISIBLE");
-    context:addOption(getText("UI_Scoreboard_GodMod"), self, ISMiniScoreboardUI.onCommand, player, "GODMOD");
-    context:addOption("Check Stats", self, ISMiniScoreboardUI.onCommand, player, "STATS");
+    if self.admin:getRole():hasCapability(Capability.TeleportToPlayer) then
+        context:addOption(getText("UI_Scoreboard_Teleport"), self, ISMiniScoreboardUI.onCommand, player, "TELEPORT");
+    end
+    if self.admin:getRole():hasCapability(Capability.TeleportPlayerToAnotherPlayer) then
+        context:addOption(getText("UI_Scoreboard_TeleportToYou"), self, ISMiniScoreboardUI.onCommand, player, "TELEPORTTOYOU");
+    end
+    if self.admin:getRole():hasCapability(Capability.ToggleInvisibleEveryone) then
+        context:addOption(getText("UI_Scoreboard_Invisible"), self, ISMiniScoreboardUI.onCommand, player, "INVISIBLE");
+    end
+    if self.admin:getRole():hasCapability(Capability.ToggleGodModEveryone) then
+        context:addOption(getText("UI_Scoreboard_GodMod"), self, ISMiniScoreboardUI.onCommand, player, "GODMOD");
+    end
+    if self.admin:getRole():hasCapability(Capability.CanSeePlayersStats) then
+        context:addOption("Check Stats", self, ISMiniScoreboardUI.onCommand, player, "STATS");
+    end
 end
 
 function ISMiniScoreboardUI:onCommand(player, command)
     if command == "TELEPORT" then
         SendCommandToServer("/teleport \"" .. player.displayName .. "\"");
     elseif command == "TELEPORTTOYOU" then
-        SendCommandToServer("/teleport \"" .. player.displayName .. "\" \"" .. self.admin:getDisplayName() .. "\"");
+        SendCommandToServer("/teleportplayer \"" .. player.displayName .. "\" \"" .. self.admin:getDisplayName() .. "\"");
     elseif command == "INVISIBLE" then
-        SendCommandToServer("/invisible \"" .. player.displayName .. "\"");
+        SendCommandToServer("/invisibleplayer \"" .. player.displayName .. "\"");
     elseif command == "GODMOD" or command == "GODMODE" then
-        SendCommandToServer("/godmod \"" .. player.displayName .. "\"");
+        SendCommandToServer("/godmodplayer \"" .. player.displayName .. "\"");
     elseif command == "STATS" then
         local playerObj = getPlayerFromUsername(player.username)
         if not playerObj then return end -- player hasn't been encountered yet

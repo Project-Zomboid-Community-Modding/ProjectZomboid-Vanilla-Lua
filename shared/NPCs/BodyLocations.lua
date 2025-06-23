@@ -18,9 +18,9 @@ group:getOrCreateLocation("MakeUp_Lips")
 group:getOrCreateLocation("Mask")
 group:getOrCreateLocation("MaskEyes")-- Masks that cover eyes, so shouldn't show glasses (Gasmask)
 group:getOrCreateLocation("MaskFull")-- covers face fully (welders mask)
-group:getOrCreateLocation("Underwear")
 group:getOrCreateLocation("UnderwearBottom")
 group:getOrCreateLocation("UnderwearTop")
+group:getOrCreateLocation("Underwear")-- moved above 'top' and 'bottom' underwear
 group:getOrCreateLocation("UnderwearExtra1")
 group:getOrCreateLocation("UnderwearExtra2")
 group:getOrCreateLocation("Hat")
@@ -40,8 +40,9 @@ group:getOrCreateLocation("Shirt") -- Shirt
 group:getOrCreateLocation("RightArm") --chainmail sleeve
 group:getOrCreateLocation("LeftArm") --chainmail sleeve
 
--- Neck-tie needs to be above any shirt
-group:getOrCreateLocation("Neck")
+
+group:getOrCreateLocation("Neck")-- neck model
+group:getOrCreateLocation("Neck_Texture")-- Neck-tie needs to be above any shirt
 
 group:getOrCreateLocation("Necklace") --Necklace, Necklace_Stone
 group:getOrCreateLocation("Necklace_Long") -- Longer Necklaces, NecklaceLong
@@ -60,6 +61,9 @@ group:getOrCreateLocation("Shoes")
 group:getOrCreateLocation("Codpiece")
 group:getOrCreateLocation("ShortsShort") -- short shorts
 group:getOrCreateLocation("ShortPants") --  long shorts, 
+group:getOrCreateLocation("Pants_Skinny") -- Skinny Pants
+group:getOrCreateLocation("Gaiter_Right") -- Gaiter right texture
+group:getOrCreateLocation("Gaiter_Left") -- Gaiter left texture
 group:getOrCreateLocation("Pants") -- Pants
 group:getOrCreateLocation("Skirt") -- Skirt
 group:getOrCreateLocation("Dress") -- Dress (top + skirt) / Robe
@@ -189,6 +193,7 @@ group:setExclusive("LongSkirt", "PantsExtra")
 group:setExclusive("LongSkirt", "ShortPants")
 group:setExclusive("LongSkirt", "ShortsShort")
 group:setExclusive("LongSkirt", "Legs5")
+group:setExclusive("Skirt", "Pants_Skinny")
 
 --Can't wear Skirt and Dresses together
 group:setExclusive("Skirt", "Dress")
@@ -204,6 +209,7 @@ group:setExclusive("Torso1Legs1", "Legs1")
 group:setExclusive("Dress", "Shirt")
 group:setExclusive("Dress", "ShortSleeveShirt")
 group:setExclusive("Dress", "Pants")
+group:setExclusive("Dress", "Pants_Skinny")
 group:setExclusive("Dress", "PantsExtra")
 group:setExclusive("Dress", "ShortPants")
 group:setExclusive("Dress", "ShortsShort")
@@ -213,6 +219,7 @@ group:setExclusive("Dress", "FullTop")
 group:setExclusive("LongDress", "Shirt")
 group:setExclusive("LongDress", "ShortSleeveShirt")
 group:setExclusive("LongDress", "Pants")
+group:setExclusive("LongDress", "Pants_Skinny")
 group:setExclusive("LongDress", "PantsExtra")
 group:setExclusive("LongDress", "ShortPants")
 group:setExclusive("LongDress", "ShortsShort")
@@ -234,6 +241,7 @@ group:setExclusive("FullSuitHead", "JacketHat_Bulky")
 group:setExclusive("FullSuitHead", "Dress")
 group:setExclusive("FullSuitHead", "LongDress")
 group:setExclusive("FullSuitHead", "Pants")
+group:setExclusive("FullSuitHead", "Pants_Skinny")
 group:setExclusive("FullSuitHead", "PantsExtra")
 group:setExclusive("FullSuitHead", "ShortPants")
 group:setExclusive("FullSuitHead", "ShortsShort")
@@ -259,6 +267,7 @@ group:setExclusive("FullSuitHead", "AnkleHolster")
 group:setExclusive("FullSuitHead", "Back")
 group:setExclusive("FullSuitHead", "Scarf")
 
+
 -- Spiffo Suit and Wedding Dress. Can't wear with anything apart from head
 group:setExclusive("FullSuit", "Sweater")
 group:setExclusive("FullSuit", "SweaterHat")
@@ -272,6 +281,7 @@ group:setExclusive("FullSuit", "JacketHat_Bulky")
 group:setExclusive("FullSuit", "Dress")
 group:setExclusive("FullSuit", "LongDress")
 group:setExclusive("FullSuit", "Pants")
+group:setExclusive("FullSuit", "Pants_Skinny")
 group:setExclusive("FullSuit", "PantsExtra")
 group:setExclusive("FullSuit", "ShortPants")
 group:setExclusive("FullSuit", "ShortsShort")
@@ -293,6 +303,7 @@ group:setExclusive("FullSuit", "SCBAnotank")
 group:setExclusive("FullSuit", "ShoulderHolster")
 group:setExclusive("FullSuit", "AnkleHolster")
 
+
 group:setExclusive("FullTop", "Sweater")
 group:setExclusive("FullTop", "SweaterHat")
 group:setExclusive("FullTop", "Jersey")
@@ -302,6 +313,7 @@ group:setExclusive("FullTop", "JacketSuit")
 group:setExclusive("FullTop", "JacketHat")
 group:setExclusive("FullTop", "Jacket_Bulky")
 group:setExclusive("FullTop", "JacketHat_Bulky")
+group:setExclusive("FullTop", "Neck")
 group:setExclusive("FullSuit", "Dress")
 group:setExclusive("FullSuit", "LongDress")
 group:setExclusive("FullTop", "BathRobe")
@@ -321,6 +333,7 @@ group:setExclusive("FullTop", "SCBA")
 group:setExclusive("FullTop", "SCBAnotank")
 group:setExclusive("FullTop", "ShoulderHolster")
 
+
 -- Boilersuit (Coveralls) Can't wear with anything apart from head, and Bullet, hunting and high viz vests.
 group:setExclusive("Boilersuit", "Sweater")
 group:setExclusive("Boilersuit", "SweaterHat")
@@ -334,6 +347,7 @@ group:setExclusive("Boilersuit", "JacketHat_Bulky")
 group:setExclusive("Boilersuit", "Dress")
 group:setExclusive("Boilersuit", "LongDress")
 group:setExclusive("Boilersuit", "Pants")
+group:setExclusive("Boilersuit", "Pants_Skinny")
 group:setExclusive("Boilersuit", "PantsExtra")
 group:setExclusive("Boilersuit", "ShortPants")
 group:setExclusive("Boilersuit", "ShortsShort")
@@ -346,6 +360,7 @@ group:setExclusive("Boilersuit", "FullTop")
 group:setExclusive("Boilersuit", "BodyCostume")
 group:setExclusive("Boilersuit", "FullSuit")
 group:setExclusive("Boilersuit", "FullTop")
+
 
 -- apart from tanktop/tshirt/longjohns, you shouldn't add stuff on top of your bathrobe to avoid clipping
 group:setExclusive("BathRobe", "Sweater")
@@ -368,6 +383,7 @@ group:setExclusive("BathRobe", "SCBA")
 group:setExclusive("BathRobe", "SCBAnotank")
 group:setExclusive("BathRobe", "PantsExtra")
 
+
 -- apart from tanktop/tshirt/longjohns, you shouldn't add stuff on top of your FullRobe to avoid clipping
 group:setExclusive("FullRobe", "Sweater")
 group:setExclusive("FullRobe", "SweaterHat")
@@ -387,6 +403,7 @@ group:setExclusive("FullRobe", "JacketHat_Bulky")
 group:setExclusive("FullRobe", "SCBA")
 group:setExclusive("FullRobe", "SCBAnotank")
 
+
 group:setExclusive("BodyCostume", "Sweater")
 group:setExclusive("BodyCostume", "SweaterHat")
 group:setExclusive("BodyCostume", "TorsoExtra")
@@ -399,13 +416,14 @@ group:setExclusive("BodyCostume", "Boilersuit")
 group:setExclusive("BodyCostume", "Dress")
 group:setExclusive("BodyCostume", "LongDress")
 group:setExclusive("BodyCostume", "Pants")
+group:setExclusive("BodyCostume", "Pants_Skinny")
 group:setExclusive("BodyCostume", "PantsExtra")
 group:setExclusive("BodyCostume", "ShortPants")
 group:setExclusive("BodyCostume", "ShortsShort")
 group:setExclusive("BodyCostume", "FullTop")
 group:setExclusive("BodyCostume", "BathRobe")
 group:setExclusive("BodyCostume", "FullRobe")
-group:setExclusive("BodyCostume", "Neck")
+
 
 -- can't wear hats with padded jacket
 
@@ -484,6 +502,7 @@ group:setExclusive("SweaterHat", "Hat")
 group:setExclusive("SweaterHat", "FullHat")
 group:setExclusive("SweaterHat", "Sweater")
 
+
 -- can't wear maskfull with a hats, maskeyes or masks
 group:setExclusive("MaskFull", "Hat")
 group:setExclusive("MaskFull", "MaskEyes")
@@ -503,6 +522,7 @@ group:setExclusive("Cuirass", "TorsoExtra")
 group:setExclusive("Cuirass", "TorsoExtraVest")
 group:setExclusive("Cuirass", "TorsoExtraVestBullet")
 group:setExclusive("Cuirass", "ShoulderHolster")
+
 
 -- can't wear Jackets and Jacket_Hats with Jacket_Bulky or JacketHat_Bulky or JacketSuits or sweaters
 group:setExclusive("Jacket", "JacketHat")
@@ -526,6 +546,7 @@ group:setExclusive("JacketSuit", "Jacket_Down")
 group:setExclusive("JacketSuit", "Jacket_Bulky")
 group:setExclusive("JacketSuit", "JacketHat")
 group:setExclusive("JacketSuit", "JacketHat_Bulky")
+
 
 --can't wear Jacket Suits with Sweaters, Sweater Hats or TorsoExtraVests or Cuirass
 group:setExclusive("JacketSuit", "Sweater")
@@ -573,15 +594,19 @@ group:setExclusive("SCBAnotank", "SCBA")
 group:setExclusive("SCBA", "Cuirass")
 group:setExclusive("SCBAnotank", "Cuirass")
 
--- can't wear pants with short pants and pantsextra etc
+-- can't wear pants or skinny pants with short pants and pantsextra etc
 group:setExclusive("Pants", "ShortPants")
+group:setExclusive("Pants_Skinny", "ShortPants")
 group:setExclusive("Pants", "ShortsShort")
+group:setExclusive("Pants_Skinny", "ShortsShort")
 group:setExclusive("PantsExtra", "Pants")
+group:setExclusive("PantsExtra", "Pants_Skinny")
 group:setExclusive("PantsExtra", "ShortPants")
 group:setExclusive("PantsExtra", "ShortsShort")
 group:setExclusive("Dress", "LongDress")
 group:setExclusive("Skirt", "LongSkirt")
 group:setExclusive("ShortPants", "ShortsShort")
+group:setExclusive("Pants", "Pants_Skinny")
 
 -- can't wear PantsExtra with Sweater or SweaterHat
 group:setExclusive("PantsExtra", "Sweater")
@@ -659,6 +684,7 @@ group:setHideModel("Cuirass", "FannyPackFront")
 group:setHideModel("BathRobe", "FannyPackFront")
 group:setHideModel("FullRobe", "FannyPackFront")
 group:setHideModel("FullSuit", "FannyPackFront")
+group:setHideModel("FullTop", "FannyPackFront")
 group:setHideModel("JacketHat", "FannyPackFront")
 group:setHideModel("JacketHat_Bulky", "FannyPackFront")
 group:setHideModel("Boilersuit", "FannyPackFront")
@@ -681,6 +707,7 @@ group:setHideModel("JacketHat_Bulky", "FannyPackBack")
 group:setHideModel("Boilersuit", "FannyPackBack")
 group:setHideModel("Sweater", "FannyPackBack")
 group:setHideModel("SweaterHat", "FannyPackBack")
+group:setHideModel("FullTop", "FannyPackBack")
 
 --hiding Necklace and Necklace_Long under these clothes
 group:setHideModel("BathRobe", "Necklace")
@@ -717,6 +744,33 @@ group:setHideModel("TorsoExtraVest", "Necklace")
 group:setHideModel("TorsoExtraVest", "Necklace_Long")
 group:setHideModel("TorsoExtra", "Necklace")
 group:setHideModel("TorsoExtra", "Necklace_Long") 
+
+--hide neck models (ties) under these
+group:setHideModel("Sweater","Neck")
+group:setHideModel("SweaterHat","Neck")
+group:setHideModel("Jersey","Neck")
+group:setHideModel("Jacket","Neck")
+group:setHideModel("Jacket_Down","Neck")
+group:setHideModel("JacketHat","Neck")
+group:setHideModel("Jacket_Bulky","Neck")
+group:setHideModel("JacketHat_Bulky","Neck")
+group:setHideModel("BathRobe","Neck")
+group:setHideModel("FullRobe","Neck")
+group:setHideModel("TorsoExtra","Neck")
+group:setHideModel("FullTop","Neck")
+group:setHideModel("BodyCostume","Neck")
+group:setHideModel("SCBA","Neck")
+group:setHideModel("SCBAnotank","Neck")
+group:setHideModel("Scarf","Neck")
+group:setHideModel("TorsoExtraVest","Neck")
+group:setHideModel("TorsoExtraVestBullet","Neck")
+group:setHideModel("Boilersuit","Neck")
+group:setHideModel("PantsExtra","Neck")
+group:setHideModel("JacketSuit","Neck")
+group:setHideModel("FullSuit","Neck")
+group:setHideModel("FullSuitHead","Neck")
+group:setHideModel("FullSuitHeadSCBA","Neck")
+
 
 -- hiding shoulderholster
 -- use the same attachment name as the body location so the holster and any holstered weapon is hidden as appropriate

@@ -90,7 +90,7 @@ stashMap:addStamp(nil, "Stash_BBurgMap8_Text2", 2613, 5948, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_BBurgMap8_Text3", 2610, 5970, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_BBurgMap8_Text4", 2611, 5992, 0.06, 0.39, 0.17)
 stashMap.spawnTable = "ToolsCache1";
-stashMap:addContainer("ToolsBox",nil,"Base.Toolbox",nil,nil,nil,nil);
+stashMap:addContainer("Toolbox",nil,"Base.Toolbox",nil,nil,nil,nil);
 -- shotgun
 --stashMap.spawnTable = "ShotgunCache1";
 --stashMap:addContainer("ShotgunBox","floors_interior_tilesandwood_01_61",nil,"livingroom",nil,nil,nil);

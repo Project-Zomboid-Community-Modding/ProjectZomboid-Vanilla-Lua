@@ -1,5 +1,3 @@
---There are 3 types of decors. GROUND defines the basic ground, PLANT defines the flowers and grass, TREE defines the tress
---All 3 types must be define here. The location of the features is in WorldGen/features/<ground, plant, tree>/xxxx
 require("WorldGen/WorldGen")
 
 worldgen["features"] = {

@@ -141,12 +141,11 @@ function ISSpawnPointsEditor:onPointDoubleClick(item)
 	local x = point.posX + 0.5
 	local y = point.posY + 0.5
 	local z = point.posZ
-	playerObj:setX(x)
-	playerObj:setY(y)
-	playerObj:setY(z)
-	playerObj:setLastX(x)
-	playerObj:setLastY(y)
-	playerObj:setLastZ(z)
+	if isClient() then
+		SendCommandToServer("/teleportto " .. tostring(x) .. "," .. tostring(y) .. "," .. tostring(z));
+	else
+		playerObj:teleportTo(x, y, z)
+	end
 end
 
 function ISSpawnPointsEditor:PointList_onRightMouseUp(x, y)

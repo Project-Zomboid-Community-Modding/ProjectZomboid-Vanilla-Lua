@@ -55,8 +55,8 @@ function ISBuildRecipePanel:createDynamicChildren()
 
     local column, row;
 
-    self.titleWidget = ISXuiSkin.build(self.xuiSkin, "S_WidgetTitleHeader_Std", ISWidgetTitleHeader, 0, 0, 10, 10, recipe, self.player);
-    self.titleWidget.ignoreLightIcon = true;
+    self.titleWidget = ISXuiSkin.build(self.xuiSkin, "S_WidgetTitleHeader_Std", ISWidgetTitleHeader, 0, 0, 10, 10, recipe, self.player, self.logic);
+    --self.titleWidget.ignoreLightIcon = true;
     self.titleWidget.ignoreSurface = true;
     self.titleWidget:initialise();
     self.titleWidget:instantiate();
@@ -118,6 +118,10 @@ function ISBuildRecipePanel:calculateLayout(_preferredWidth, _preferredHeight)
         self.rootTable:setY(0);
         self.rootTable:calculateLayout(width, height);
 
+        if self.titleWidget then
+            self.titleWidget:setY(0);
+        end
+
         width = math.max(width, self.rootTable:getWidth());
         height = math.max(height, self.rootTable:getHeight());
     end
@@ -173,6 +177,13 @@ function ISBuildRecipePanel:onRebuildItemNodes(_inputItems)
     end
 end
 
+function ISBuildRecipePanel:updateContainers(containers)
+    if self.titleWidget then
+        self.titleWidget:updateLabels();
+        self.titleWidget:updatePropertyIcons();
+        self:calculateLayout(self.width, self.height);
+    end
+end
 
 --************************************************************************--
 --** ISBuildRecipePanel:new

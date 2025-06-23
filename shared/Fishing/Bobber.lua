@@ -347,7 +347,7 @@ Bobber.onFishingActionMPUpdate = function(data)
         bobber.sq = getCell():getGridSquare(squareX, squareY, bobber.z)
         bobber.sq:AddWorldInventoryItem(bobber.item, _bobberX, _bobberY, 0, false)
     end
-    if data.DestroyBobber and self.item then
+    if data.DestroyBobber and bobber.item then
         bobber.item:getWorldItem():removeFromWorld()
         bobber.item:getWorldItem():removeFromSquare()
         bobber.item:getWorldItem():setSquare(nil)

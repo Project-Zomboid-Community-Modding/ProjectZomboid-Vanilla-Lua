@@ -1983,15 +1983,29 @@ function ISCraftingUI:onCraftComplete(completedAction, recipe, container, contai
 end
 
 function ISCraftingUI.ReturnItemsToOriginalContainer(playerObj, items)
-    -- as per Binky's input, disorganized characters don't automatically put stuff back
-    if playerObj:HasTrait("Disorganized") then return end
-
     for _,item in ipairs(items) do
-        if item:getContainer() ~= playerObj:getInventory() then
-            local action = ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), item:getContainer(), nil)
-            action:setAllowMissingItems(true)
-            ISTimedActionQueue.add(action)
-        end
+        ISCraftingUI.ReturnItemToContainer(playerObj, item, item:getContainer())
+--         if item:getContainer() ~= playerObj:getInventory() then
+--             local action = ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), item:getContainer(), nil)
+--             action:setAllowMissingItems(true)
+--             ISTimedActionQueue.add(action)
+--         end
+    end
+end
+
+function ISCraftingUI.ReturnItemToOriginalContainer(playerObj, item)
+    ISCraftingUI.ReturnItemToContainer(playerObj, item, item:getContainer())
+end
+
+function ISCraftingUI.ReturnItemToContainer(playerObj, item, cont)
+    -- as per Binky's input, disorganized characters don't automatically put stuff back
+    if playerObj:HasTrait("Disorganized") or not item then return end
+    if not instanceof(item, "InventoryItem") then return end
+
+    if cont ~= playerObj:getInventory() then
+        local action = ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), cont, nil)
+        action:setAllowMissingItems(true)
+        ISTimedActionQueue.add(action)
     end
 end
 

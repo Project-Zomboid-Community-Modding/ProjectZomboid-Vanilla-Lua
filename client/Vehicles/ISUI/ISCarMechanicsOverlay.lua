@@ -54,6 +54,14 @@ ISCarMechanicsOverlay.CarList["Base.StepVan_Heralds"] = {imgPrefix = "van_", x=1
 ISCarMechanicsOverlay.CarList["Base.StepVanAirportCatering"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van_LectroMax"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van_KnoxDisti"] = {imgPrefix = "van_", x=10,y=0};
+
+-- trailers
+ISCarMechanicsOverlay.CarList["Base.Trailer_Livestock"] = {imgPrefix = "livestocktrailer_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.Trailer_Horsebox"] = {imgPrefix = "horsetrailer_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.Trailer"] = {imgPrefix = "utilitytrailer_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.TrailerAdvert"] = {imgPrefix = "advertisingtrailer_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.TrailerCover"] = {imgPrefix = "utilitytrailer_", x=10,y=0};
+
 -- new b42 cars
 ISCarMechanicsOverlay.CarList["Base.PickUpTruckJPLandscaping"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpVanBuilder"] = {imgPrefix = "truck_", x=10,y=0};
@@ -375,6 +383,9 @@ ISCarMechanicsOverlay.PartList["TruckBed"].vehicles["stationwagon_"] = {x=99,y=4
 ISCarMechanicsOverlay.PartList["TruckBed"].vehicles["suv_"] = {x=92,y=447,x2=199,y2=458};
 ISCarMechanicsOverlay.PartList["TruckBed"].vehicles["offroad_"] = {x=90,y=447,x2=199,y2=460};
 ISCarMechanicsOverlay.PartList["TruckBed"].vehicles["sportscar_"] = {x=98,y=415,x2=196,y2=438};
+--
+ISCarMechanicsOverlay.PartList["TrailerAnimalFood"] = {img="storage_foodcompartment", vehicles = {}};
+ISCarMechanicsOverlay.PartList["TrailerAnimalEggs"] = {img="storage_eggcompartment", vehicles = {}};
 
 for partName,partList in pairs(ISCarMechanicsOverlay.PartList) do
 	if not partList.vehicles then
@@ -393,5 +404,3 @@ ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindshieldRear"]
 ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearLeft"] = {img="window_middle_left"};
 ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList["WindowRearRight"] = {img="window_middle_right"};
 ISCarMechanicsOverlay.CarList["Base.CarStationWagon2"].PartList = ISCarMechanicsOverlay.CarList["Base.CarStationWagon"].PartList;
-
-

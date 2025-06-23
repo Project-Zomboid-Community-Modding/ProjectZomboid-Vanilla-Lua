@@ -21,14 +21,19 @@ function ISScything:start()
 
     self:setActionAnim("scything")
     self:setOverrideHandModels(self.item, nil)
+
+    self.sound = self.character:playSound("ScytheGrass")
 end
 
 function ISScything:stop()
-    ISBaseTimedAction.stop(self);
+    self:stopSound()
     self.item:setJobDelta(0.0);
+
+    ISBaseTimedAction.stop(self);
 end
 
 function ISScything:perform()
+    self:stopSound()
     self.item:setJobDelta(0.0);
 
     ISBaseTimedAction.perform(self);
@@ -73,6 +78,12 @@ function ISScything:getDuration()
         return 1
     end
     return 250
+end
+
+function ISScything:stopSound()
+    if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+        self.character:stopOrTriggerSound(self.sound);
+    end
 end
 
 function ISScything:new (character, item, sq, radius)

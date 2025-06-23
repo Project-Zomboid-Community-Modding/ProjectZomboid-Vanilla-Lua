@@ -76,7 +76,7 @@ debugScenarios.MP1Scenario = {
 			Hearing = 3,
 			ThumpNoChasing = 0,
 			DisableFakeDead = 3,
-			PlayerSpawnZombieRemoval = 1;
+			PlayerSpawnZombieRemoval = 1,
 		}
 	end,
 	onStart = function()

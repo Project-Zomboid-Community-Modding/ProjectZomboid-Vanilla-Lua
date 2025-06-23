@@ -46,16 +46,6 @@ function ISAdminPanelUI:create()
 
     -- the position of all the buttons will be sorted later
 
-    self.dbBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeDB"), self, ISAdminPanelUI.onOptionMouseDown);
-    self.dbBtn.internal = "WHITELIST";
-    self.dbBtn:initialise();
-    self.dbBtn:instantiate();
-    self.dbBtn.borderColor = self.buttonBorderColor;
-    self:addChild(self.dbBtn);
-    if getAccessLevel() == "observer" then
-        self.dbBtn.enable = false;
-    end
-
     self.checkStatsBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_CheckYourStats"), self, ISAdminPanelUI.onOptionMouseDown);
     self.checkStatsBtn.internal = "CHECKSTATS";
     self.checkStatsBtn:initialise();
@@ -76,7 +66,6 @@ function ISAdminPanelUI:create()
     self.itemListBtn:initialise();
     self.itemListBtn:instantiate();
     self.itemListBtn.borderColor = self.buttonBorderColor;
---    self.itemListBtn.tooltip = getText("IGUI_AdminPanel_TooltipEditAdminPower");
     self:addChild(self.itemListBtn);
 
     self.seeOptionsBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeServerOptions"), self, ISAdminPanelUI.onOptionMouseDown);
@@ -84,17 +73,14 @@ function ISAdminPanelUI:create()
     self.seeOptionsBtn:initialise();
     self.seeOptionsBtn:instantiate();
     self.seeOptionsBtn.borderColor = self.buttonBorderColor;
-    self.seeOptionsBtn:setEnable(getPlayer():getRole():haveCapability(Capability.SeePublicServerOptions))
     self:addChild(self.seeOptionsBtn);
 
-    if getPlayer():getRole():haveCapability(Capability.CanSetupNonPVPZone) then
-        self.nonpvpzoneBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_NonPvpZone"), self, ISAdminPanelUI.onOptionMouseDown);
-        self.nonpvpzoneBtn.internal = "NONPVPZONE";
-        self.nonpvpzoneBtn:initialise();
-        self.nonpvpzoneBtn:instantiate();
-        self.nonpvpzoneBtn.borderColor = self.buttonBorderColor;
-        self:addChild(self.nonpvpzoneBtn);
-    end
+    self.nonpvpzoneBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_NonPvpZone"), self, ISAdminPanelUI.onOptionMouseDown);
+    self.nonpvpzoneBtn.internal = "NONPVPZONE";
+    self.nonpvpzoneBtn:initialise();
+    self.nonpvpzoneBtn:instantiate();
+    self.nonpvpzoneBtn.borderColor = self.buttonBorderColor;
+    self:addChild(self.nonpvpzoneBtn);
 
     self.seeFactionBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeFaction") .. " (" .. Faction.getFactions():size() ..")", self, ISAdminPanelUI.onOptionMouseDown);
     self.seeFactionBtn.internal = "SEEFACTIONS";
@@ -110,12 +96,12 @@ function ISAdminPanelUI:create()
     self.seeRolesBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.seeRolesBtn);
 
-    self.seeRolesBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeUsers"), self, ISAdminPanelUI.onOptionMouseDown);
-    self.seeRolesBtn.internal = "SEEUSERS";
-    self.seeRolesBtn:initialise();
-    self.seeRolesBtn:instantiate();
-    self.seeRolesBtn.borderColor = self.buttonBorderColor;
-    self:addChild(self.seeRolesBtn);
+    self.seeUsersBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeUsers"), self, ISAdminPanelUI.onOptionMouseDown);
+    self.seeUsersBtn.internal = "SEEUSERS";
+    self.seeUsersBtn:initialise();
+    self.seeUsersBtn:instantiate();
+    self.seeUsersBtn.borderColor = self.buttonBorderColor;
+    self:addChild(self.seeUsersBtn);
 
     self.seeSafehousesBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeSafehouses") .. " (".. SafeHouse.getSafehouseList():size() .. ")", self, ISAdminPanelUI.onOptionMouseDown);
     self.seeSafehousesBtn.internal = "SEESAFEHOUSES";
@@ -124,14 +110,12 @@ function ISAdminPanelUI:create()
     self.seeSafehousesBtn.borderColor = self.buttonBorderColor;
     self:addChild(self.seeSafehousesBtn);
 
-    if getPlayer():getRole():haveCapability(Capability.CanSetupSafezones) then
-        self.safezoneBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_Safezone"), self, ISAdminPanelUI.onOptionMouseDown);
-        self.safezoneBtn.internal = "SAFEZONE";
-        self.safezoneBtn:initialise();
-        self.safezoneBtn:instantiate();
-        self.safezoneBtn.borderColor = self.buttonBorderColor;
-        self:addChild(self.safezoneBtn);
-    end
+    self.safezoneBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_Safezone"), self, ISAdminPanelUI.onOptionMouseDown);
+    self.safezoneBtn.internal = "SAFEZONE";
+    self.safezoneBtn:initialise();
+    self.safezoneBtn:instantiate();
+    self.safezoneBtn.borderColor = self.buttonBorderColor;
+    self:addChild(self.safezoneBtn);
 
     self.seeTicketsBtn = ISButton:new(x, y, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_SeeTickets"), self, ISAdminPanelUI.onOptionMouseDown);
     self.seeTicketsBtn.internal = "SEETICKETS";
@@ -235,45 +219,50 @@ end
 
 function ISAdminPanelUI:updateButtons()
     local enabled = false;
-    if getAccessLevel() ~= "" then
-        enabled = true;
-    else
-        self:close();
-    end;
-    self.dbBtn.enable = enabled;
-    self.checkStatsBtn.enable = enabled;
-    self.seeOptionsBtn.enable = enabled;
-    self.seeFactionBtn.enable = enabled;
-    self.seeSafehousesBtn.enable = enabled;
-    self.seeTicketsBtn.enable = enabled;
-    self.miniScoreboardBtn.enable = enabled;
-    self.packetCountsBtn.enable = enabled;
-    self.sandboxOptionsBtn.enable = enabled;
-    if getAccessLevel() == "observer" then
-        self.dbBtn.enable = false;
+
+    self.checkStatsBtn.enable = getPlayer():getRole():hasCapability(Capability.CanSeePlayersStats);
+    enabled = enabled or self.checkStatsBtn.enable
+    self.adminPowerBtn.enable = getPlayer():getRole():hasAdminPower();
+    enabled = enabled or self.adminPowerBtn.enable
+    self.itemListBtn.enable = getPlayer():getRole():hasCapability(Capability.AddItem);
+    enabled = enabled or self.itemListBtn.enable
+    self.seeOptionsBtn.enable = getPlayer():getRole():hasCapability(Capability.SeePublicServerOptions);
+    enabled = enabled or self.seeOptionsBtn.enable
+    self.nonpvpzoneBtn.enable = getPlayer():getRole():hasCapability(Capability.CanSetupNonPVPZone);
+    enabled = enabled or self.nonpvpzoneBtn.enable
+    self.seeFactionBtn.enable = getPlayer():getRole():hasCapability(Capability.FactionCheat);
+    enabled = enabled or self.seeFactionBtn.enable
+    self.seeRolesBtn.enable = getPlayer():getRole():hasCapability(Capability.RolesRead);
+    enabled = enabled or self.seeRolesBtn.enable
+    self.seeUsersBtn.enable = getPlayer():getRole():hasCapability(Capability.SeeNetworkUsers);
+    enabled = enabled or self.seeUsersBtn.enable
+    self.seeSafehousesBtn.enable = getPlayer():getRole():hasCapability(Capability.CanSetupSafehouses);
+    enabled = enabled or self.seeSafehousesBtn.enable
+    self.safezoneBtn.enable = getPlayer():getRole():hasCapability(Capability.CanSetupSafehouses);
+    enabled = enabled or self.safezoneBtn.enable
+    self.seeTicketsBtn.enable = getPlayer():getRole():hasCapability(Capability.AnswerTickets);
+    enabled = enabled or self.seeTicketsBtn.enable
+    self.miniScoreboardBtn.enable = getPlayer():getRole():hasCapability(Capability.GetSteamScoreboard);
+    enabled = enabled or self.miniScoreboardBtn.enable
+    self.packetCountsBtn.enable = getPlayer():getRole():hasCapability(Capability.GetStatistic);
+    enabled = enabled or self.packetCountsBtn.enable
+    self.sandboxOptionsBtn.enable = getPlayer():getRole():hasCapability(Capability.SandboxOptions);
+    enabled = enabled or self.sandboxOptionsBtn.enable
+    self.climateOptionsBtn.enable = getPlayer():getRole():hasCapability(Capability.ClimateManager);
+    enabled = enabled or self.climateOptionsBtn.enable
+    self.showStatisticsBtn.enable = getPlayer():getRole():hasCapability(Capability.GetStatistic);
+    enabled = enabled or self.showStatisticsBtn.enable
+    self.pvpLogTool.enable = getPlayer():getRole():hasCapability(Capability.PVPLogTool);
+    enabled = enabled or self.pvpLogTool.enable
+    self.zoneEditor.enable = getPlayer():getRole():hasCapability(Capability.CanSetupSafehouses) or getPlayer():getRole():hasCapability(Capability.CanSetupNonPVPZone);
+    enabled = enabled or self.zoneEditor.enable
+
+    if not enabled then
+        self:close()
     end
-    self.adminPowerBtn.enable = enabled;
-    self.itemListBtn.enable = enabled;
-    self.climateOptionsBtn.enable = enabled;
-    self.showStatisticsBtn.enable = enabled;
-    if self.nonpvpzoneBtn then
-        self.nonpvpzoneBtn.enable = enabled;
-    end;
-    if self.safezoneBtn then
-        self.safezoneBtn.enable = enabled;
-    end
-    self.pvpLogTool = enabled;
 end
 
 function ISAdminPanelUI:onOptionMouseDown(button, x, y)
-    if button.internal == "WHITELIST" then
-        if ISWhitelistViewer.instance then
-            ISWhitelistViewer.instance:closeSelf()
-        end
-        local modal = ISWhitelistViewer:new(50, 200, 1200, 650)
-        modal:initialise();
-        modal:addToUIManager();
-    end
     if button.internal == "ADMINPOWER" then
         if ISAdminPowerUI.instance then
             ISAdminPowerUI.instance:close()
@@ -325,10 +314,22 @@ function ISAdminPanelUI:onOptionMouseDown(button, x, y)
     end
     if button.internal == "SEEROLES" then
         requestRoles()
+        if ISRolesList.instance then
+            ISRolesList.instance:closeModal()
+        end
+        local ui = ISRolesList:new(50,50,600,800, getPlayer());
+        ui:initialise();
+        ui:addToUIManager();
     end
     if button.internal == "SEEUSERS" then
-            requestUsers()
+        requestUsers()
+        if ISUsersList.instance then
+            ISUsersList.instance:closeModal()
         end
+        local ui = ISUsersList:new(50,50,800,600, getPlayer());
+        ui:initialise();
+        ui:addToUIManager();
+    end
     if button.internal == "SEESAFEHOUSES" then
         if ISSafehousesList.instance then
             ISSafehousesList.instance:close()
@@ -373,7 +374,7 @@ function ISAdminPanelUI:onOptionMouseDown(button, x, y)
         if ISPacketCounts.instance then
             ISPacketCounts.instance:closeSelf()
         end
-        local ui = ISPacketCounts:new(50,50,1500,600, getPlayer())
+        local ui = ISPacketCounts:new(50, 50, 570, 630, getPlayer())
         ui:initialise()
         ui:addToUIManager()
     end
@@ -404,7 +405,7 @@ function ISAdminPanelUI:onOptionMouseDown(button, x, y)
         if ISPVPLogToolUI.instance then
             ISPVPLogToolUI.instance:close()
         end
-        local ui = ISPVPLogToolUI:new(50, 50, 500, 320)
+        local ui = ISPVPLogToolUI:new(50, 50, 500, 700)
         ui:initialise()
         ui:addToUIManager()
     end
@@ -448,23 +449,20 @@ end
 Events.OnSafehousesChanged.Add(ISAdminPanelUI.OnSafehousesChanged)
 
 function ISAdminPanelUI.OnRolesReceived()
-    if ISRolesList.instance then
-        ISRolesList.instance:closeModal()
+    if ISAdminPanelUI.instance then
+        ISAdminPanelUI.instance:updateButtons();
     end
-    local ui = ISRolesList:new(50,50,600,600, getPlayer());
-    ui:initialise();
-    ui:addToUIManager();
+    if ISRolesList.instance then
+        ISRolesList.instance:populateList()
+    end
 end
 
 Events.OnRolesReceived.Add(ISAdminPanelUI.OnRolesReceived)
 
 function ISAdminPanelUI.OnNetworkUsersReceived()
     if ISUsersList.instance then
-        ISUsersList.instance:closeModal()
+        ISUsersList.instance:populateList()
     end
-    local ui = ISUsersList:new(50,50,600,600, getPlayer());
-    ui:initialise();
-    ui:addToUIManager();
 end
 
 Events.OnNetworkUsersReceived.Add(ISAdminPanelUI.OnNetworkUsersReceived)

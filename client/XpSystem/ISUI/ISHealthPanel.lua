@@ -147,9 +147,10 @@ function ISHealthPanel:createChildren()
     self.listbox.drawBorder = false
     self.listbox.backgroundColor.a = 0
     self.listbox.drawText = ISHealthPanel.drawText;
+    self.listbox.textRight = 0
     self:addChild(self.listbox)
 
-    self.bodyPartPanel = ISHealthBodyPartPanel:new(self.character, UI_BORDER_SPACING+1-5, UI_BORDER_SPACING+1-9);
+    self.bodyPartPanel = ISHealthBodyPartPanel:new(self.character, UI_BORDER_SPACING+1-7, UI_BORDER_SPACING+1-13);
     self.bodyPartPanel:initialise();
     self.bodyPartPanel:setAlphas(0.0, 1.0, 0.5, 0.0, 0.0)
 --    self.bodyPartPanel:setEnableSelectLines( true, self.bpAnchorX, self.bpAnchorY );
@@ -371,7 +372,7 @@ function ISHealthPanel:update()
             self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
             return
         end
-        if (not self:getDoctor():getRole():haveCapability(Capability.CanMedicalCheat)) and
+        if (not self:getDoctor():getRole():hasCapability(Capability.CanMedicalCheat)) and
                 (not ISHealthPanel.IsCharactersInSameCar(self:getDoctor(), self:getPatient())) and
                 (math.abs(self.otherPlayer:getX() - self.otherPlayerX) > 0.5 or
                 math.abs(self.otherPlayer:getY() - self.otherPlayerY) > 0.5 or
@@ -403,13 +404,11 @@ function ISHealthPanel:update()
     end
     if self:isReallyVisible() then
         self:updateBodyPartList()
-        if self.textRight and self.listbox.textRight then
-            local width = math.max(self.textRight, self.listbox.x + self.listbox.textRight)
-            if width > 0 then
-                width = math.max(width, self.healthPanel:getRight())
-                self:setWidthAndParentWidth(width + UI_BORDER_SPACING+1);
-            end
-        end
+        self.listbox:setWidth(self.width - self.listbox.x - UI_BORDER_SPACING - 1)
+
+        local width = math.max(self.tabtotalwidth, self.healthPanel:getRight(), self.fitness:getRight(), self.listbox.x + self.listbox.textRight)
+        self:setWidthAndParentWidth(width + UI_BORDER_SPACING+1);
+
         self:setHeightAndParentHeight(math.max(self.healthPanel:getBottom(), self.allTextHeight or 0) + FONT_HGT_SMALL + UI_BORDER_SPACING * 2);
 --        self.healthPanel:setX(self:getAbsoluteX());
 --        self.healthPanel:setY(self:getAbsoluteY() + 8);
@@ -470,8 +469,8 @@ function ISHealthPanel:render()
     if isClient() and not self:getPatient():isLocalPlayer() then
         painLevel = self:getPatient():getBodyDamageRemote():getRemotePainLevel()
     end
-    if (self.doctorLevel > 4 or self.character == getPlayer() or ISHealthPanel.cheat) and painLevel > 0 then
-        self:drawText(getText("Moodles_pain_lvl" .. painLevel), x, y, 1, 1, 1, 1, UIFont.Small);
+    if (ISHealthPanel.cheat or (doctor == self.otherPlayer and self.doctorLevel > 4)) and painLevel > 0 then
+        self:drawText(getText("Moodles_Pain_lvl" .. painLevel), x, y, 1, 1, 1, 1, UIFont.Small);
         y = y + fontHgt;
    end
     if self.cheat and self.character:getBodyDamage():getFakeInfectionLevel() > 0 then
@@ -565,7 +564,8 @@ end
 function ISHealthPanel:drawText(str, x, y, r, g, b, a, font)
 	ISUIElement.drawText(self, str, x, y, r, g, b, a, font)
 	local width = getTextManager():MeasureStringX(font or UIFont.Small, str)
-	self.textRight = math.max(self.textRight or 0, x + width)
+    local roundToNearest = 20
+	self.textRight = x + width - math.fmod(x + width, roundToNearest) + roundToNearest*2
 end
 
 function ISHealthBodyPartListBox:doDrawItem(y, item, alt)
@@ -975,6 +975,7 @@ function ISHealthPanel:new (player, x, y, width, height)
     o:noBackground();
     o.abutton = Joypad.Texture.AButton
     o.damagedParts = {}
+    o.tabtotalwidth = width
     ISHealthPanel.instance = o;
     return o;
 end
@@ -1170,7 +1171,8 @@ function HApplyBandage:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#types do
             local item = self:getItemOfType(self.items.ITEMS, types[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option.itemForTexture = item
         end
     end
 end
@@ -1210,7 +1212,11 @@ end
 
 function HRemoveBandage:addToMenu(context)
     if self.bodyPart:bandaged() then
-        context:addOption(getText("ContextMenu_Remove_Bandage"), self, self.onMenuOptionSelected)
+        local option = context:addOption(getText("ContextMenu_Remove_Bandage"), self, self.onMenuOptionSelected)
+        local bandageType = self.bodyPart:getBandageType()
+        if bandageType then
+            option.itemForTexture = instanceItem(bandageType)
+        end
     end
 end
 
@@ -1253,7 +1259,8 @@ function HApplyPoultice:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#types do
             local item = self:getItemOfType(self.items.ITEMS, types[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option.itemForTexture = item
         end
     end
 end
@@ -1320,7 +1327,14 @@ function HDisinfect:new(panel, bodyPart)
 end
 
 function HDisinfect:checkItem(item)
-    if (item:hasComponent(ComponentType.FluidContainer) and item:getFluidContainer():getProperties():getAlcohol() >= 0.4 and (item:getFluidContainer():getAmount() > 0.15)) or (instanceof(item, "DrainableComboItem") and item:getAlcoholPower() == 4.0) then
+    if item:hasComponent(ComponentType.FluidContainer) then
+        local fluidContainer = item:getFluidContainer()
+        if (fluidContainer:getProperties():getAlcohol() / fluidContainer:getAmount() + 0.001 >= 0.4) and (fluidContainer:getAmount() > 0.15) then
+            self:addItem(self.items.ITEMS, item)
+        end
+        return
+    end
+    if item:IsDrainable() and (item:getAlcoholPower() == 4.0) then
         self:addItem(self.items.ITEMS, item)
     end
 end
@@ -1333,7 +1347,8 @@ function HDisinfect:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#types do
             local item = self:getItemOfType(self.items.ITEMS, types[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+            option.itemForTexture = item
         end
     end
 end
@@ -1373,7 +1388,7 @@ function HStitch:checkItem(item)
     if item:getType() == "Needle" or item:hasTag("SewingNeedle") then
         self:addItem(self.items.ITEMS, item)
     end
-    if item:getType() == "Thread" and item:getCurrentUsesFloat() >= 0 then
+    if (item:getType() == "Thread" or item:hasTag"Thread") and item:getCurrentUsesFloat() >= 0 then
         self:addItem(self.items.ITEMS, item)
     end
     if item:getType() == "SutureNeedle" then
@@ -1386,18 +1401,20 @@ function HStitch:addToMenu(context)
         return false
     end
     local needle = self:getItemOfType(self.items.ITEMS, "Base.Needle") or self:getItemOfTag(self.items.ITEMS, "SewingNeedle")
-    local thread = self:getItemOfType(self.items.ITEMS, "Base.Thread")
+    local thread = self:getItemOfType(self.items.ITEMS, "Base.Thread") or self:getItemOfTag(self.items.ITEMS, "Thread")
     local needlePlusThread = self:getItemOfType(self.items.ITEMS, "Base.SutureNeedle")
     if (needle and thread) or needlePlusThread then
         local option = context:addOption(getText("ContextMenu_Stitch"), nil)
         local subMenu = context:getNew(context)
         context:addSubMenu(option, subMenu)
         if needlePlusThread then
-            subMenu:addOption(needlePlusThread:getName(), self, self.onMenuOptionSelected, needlePlusThread:getFullType(), needlePlusThread:getFullType())
+            option = subMenu:addOption(needlePlusThread:getName(), self, self.onMenuOptionSelected, needlePlusThread:getFullType(), needlePlusThread:getFullType())
+            option.itemForTexture = needlePlusThread
         end
         if needle and thread then
             local text = needle:getName() .. " + " .. thread:getName()
-            subMenu:addOption(text, self, self.onMenuOptionSelected, needle:getFullType(), thread:getFullType())
+            option = subMenu:addOption(text, self, self.onMenuOptionSelected, needle:getFullType(), thread:getFullType())
+            option.itemForTexture = needle
         end
     end
 end
@@ -1412,7 +1429,7 @@ function HStitch:dropItems(items)
         return true
     end
     local needle = self:getItemOfType(self.items.ITEMS, "Base.Needle") or self:getItemOfTag(self.items.ITEMS, "SewingNeedle")
-    local thread = self:getItemOfType(self.items.ITEMS, "Base.Thread")
+    local thread = self:getItemOfType(self.items.ITEMS, "Base.Thread") or self:getItemOfTag(self.items.ITEMS, "Thread")
     if needle and thread then
         self:onMenuOptionSelected(needle:getFullType(), thread:getFullType())
         return true
@@ -1503,7 +1520,8 @@ function HRemoveGlass:addToMenu(context)
         if #types > 0 then
             for i=1,#types do
                 local item = self:getItemOfType(self.items.ITEMS, types[i])
-                subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+                option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, types[i])
+                option.itemForTexture = item
             end
         end
         subMenu:addOption(getText("ContextMenu_Hand"), self, self.onMenuOptionSelected, "Hands")
@@ -1531,7 +1549,7 @@ function HRemoveGlass:perform(previousAction, itemType)
     else
         local item = self:getItemOfType(self.items.ITEMS, itemType)
         previousAction = self:toPlayerInventory(item, previousAction)
-        local action = ISRemoveGlass:new(self:getDoctor(), self:getPatient(), self.bodyPart)
+        local action = ISRemoveGlass:new(self:getDoctor(), self:getPatient(), self.bodyPart, false)
         ISTimedActionQueue.addAfter(previousAction, action)
     end
 end
@@ -1577,14 +1595,16 @@ function HSplint:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#splintType do
             local item = self:getItemOfType(self.items.splint, splintType[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, nil, item:getFullType())
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, nil, item:getFullType())
+            option.itemForTexture = item
         end
         if #plankType > 0 and #rippedSheetType > 0 then
             local rippedSheet = self:getItemOfType(self.items.rippedSheet, rippedSheetType[1])
             for i=1,#plankType do
                 local plank = self:getItemOfType(self.items.plank, plankType[i])
                 local text = plank:getName() .. " + " .. rippedSheet:getName()
-                subMenu:addOption(text, self, self.onMenuOptionSelected, rippedSheet:getFullType(), plank:getFullType())
+                option = subMenu:addOption(text, self, self.onMenuOptionSelected, rippedSheet:getFullType(), plank:getFullType())
+                option.itemForTexture = plank
             end
         end
     end
@@ -1654,7 +1674,11 @@ end
 
 function HRemoveSplint:addToMenu(context)
     if (self.bodyPart:HasInjury() or self.bodyPart:stitched() or self.bodyPart:getSplintFactor() > 0) and self.bodyPart:getSplintFactor() > 0 then
-        context:addOption(getText("ContextMenu_Remove_Splint"), self, self.onMenuOptionSelected)
+        local option = context:addOption(getText("ContextMenu_Remove_Splint"), self, self.onMenuOptionSelected)
+        local splintType = self.bodyPart:getSplintItem()
+        if splintType ~= "" then
+            option.itemForTexture = instanceItem(splintType)
+        end
     end
 end
 
@@ -1691,7 +1715,8 @@ function HRemoveBullet:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#types do
             local item = self:getItemOfType(self.items.ITEMS, types[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, item:getFullType())
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, item:getFullType())
+            option.itemForTexture = item
         end
     end
 end
@@ -1740,7 +1765,8 @@ function HCleanBurn:addToMenu(context)
         context:addSubMenu(option, subMenu)
         for i=1,#types do
             local item = self:getItemOfType(self.items.ITEMS, types[i])
-            subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, item:getFullType())
+            option = subMenu:addOption(item:getName(), self, self.onMenuOptionSelected, item:getFullType())
+            option.itemForTexture = item
         end
     end
 end

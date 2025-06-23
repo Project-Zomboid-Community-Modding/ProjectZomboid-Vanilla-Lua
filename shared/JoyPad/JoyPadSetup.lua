@@ -132,6 +132,33 @@ function JoypadData:setActive(isActive)
     self.isActive = isActive
 end
 
+function JoypadData:isFocusOnElementOrDescendant(ui)
+	local focus = self.focus
+	while focus ~= nil do
+		if focus == ui then
+			return true
+		end
+		focus = focus.parent
+	end
+	return false
+end
+
+function JoypadData:startNavigation()
+    self.isDoingNavigation = true
+    self.currentNavigateUI = self.focus
+    if self.currentNavigateUI then
+        self.currentNavigateUI:onJoypadNavigateStart(self)
+    end
+end
+
+function JoypadData:endNavigation()
+    self.isDoingNavigation = false
+    if self.currentNavigateUI then
+        self.currentNavigateUI:onJoypadNavigateEnd(self)
+        self.currentNavigateUI = nil
+    end
+end
+
 function JoypadData:new()
     local o = ISBaseObject.new(self)
     o.id = -1 -- same as controller.id
@@ -144,6 +171,7 @@ function JoypadData:new()
     o.isActive = false
     o.inMainMenu = false
     o.listBox = nil
+    o.isDoingNavigation = false
     return o
 end
 
@@ -163,6 +191,11 @@ end
 function getFocusForPlayer(playerNum)
     local joypadData = JoypadState.players[playerNum+1]
     return joypadData and joypadData.focus or nil;
+end
+
+function isJoypadFocusOnElementOrDescendant(playerNum, ui)
+	local joypadData = JoypadState.players[playerNum+1]
+	return joypadData and joypadData:isFocusOnElementOrDescendant(ui) or nil
 end
 
 function JoypadControllerData:onPauseButtonPressed()
@@ -344,11 +377,35 @@ function JoypadControllerData:onPressButton(button)
         return
     end
 
+    if joypadData.isDoingNavigation then
+        return
+    end
+
     if not joypadData.activeWhilePaused and isGamePaused() then
         return;
     end
 
     joypadData.focus:onJoypadDown(button, joypadData);
+end
+
+function JoypadControllerData:onHoldButton(button, time)
+    local joypadData = self.joypad
+
+    -- This controller isn't assigned to any player or the main menu.
+    if not joypadData then
+        return
+    end
+
+    local delay = 250
+    if joypadData.focus then
+         delay = joypadData.focus:getJoypadNavigateStartDelay()
+    end
+    if button == Joypad.RBumper and time >= delay and not joypadData.isDoingNavigation then
+        if joypadData.focus and not joypadData.focus.disableJoypadNavigation then
+            joypadData:startNavigation()
+        end
+        return
+    end
 end
 
 function JoypadControllerData:onReleaseButton(button)
@@ -359,13 +416,28 @@ function JoypadControllerData:onReleaseButton(button)
         return
     end
 
+    if button == Joypad.RBumper and joypadData.isDoingNavigation then
+        joypadData:endNavigation()
+        return
+    end
+
+    if joypadData.isDoingNavigation then
+        if button == Joypad.LBumper and joypadData.currentNavigateUI ~= nil then
+            joypadData.currentNavigateUI:onJoypadNavigateParent(joypadData)
+        end
+        return
+    end
+
     if not joypadData.player then
+        if joypadData.focus then
+            joypadData.focus:onJoypadButtonReleased(button, joypadData)
+        end
         return
     end
 
     if getPlayerData(joypadData.player) then
         local buts = getButtonPrompts(joypadData.player)
-        buts:onJoypadButtonReleased(button)
+        buts:onJoypadButtonReleased(button, joypadData)
         local wheel = getPlayerBackButtonWheel(joypadData.player)
         if joypadData.focus == wheel then
             wheel:onJoypadButtonReleased(button, joypadData)
@@ -387,6 +459,14 @@ function JoypadControllerData:onReleaseButton(button)
     if button == Joypad.LStickButton or button == Joypad.RStickButton then
         ISJoystickButtonRadialMenu.onJoypadButtonReleased(button, joypadData)
     end
+
+    if joypadData.focus then
+        joypadData.focus:onJoypadButtonReleased(button, joypadData)
+    end
+end
+
+function getJoypadData(playerID)
+	return JoypadState.players[playerID+1];
 end
 
 function getJoypadFocus(playerID)
@@ -452,10 +532,12 @@ function updateJoypadFocus(joypadData)
             uiToString(joypadData.focus))
         local lastfocus = joypadData.lastfocus
         joypadData.lastfocus = nil
+        joypadData.switchingFocusFrom = lastfocus
         if joypadData.focus ~= nil then
             noise("focus in %s", uiToString(joypadData.focus))
             joypadData.focus:onGainJoypadFocus(joypadData);
         end
+        joypadData.switchingFocusFrom = nil
         if lastfocus ~= nil then
             noise("focus out %s", uiToString(lastfocus))
             lastfocus:onLoseJoypadFocus(joypadData);
@@ -503,6 +585,12 @@ function JoypadControllerData:onPressUp()
         return
     end
     local joypadData = self.joypad
+    if joypadData.isDoingNavigation then
+        if joypadData.currentNavigateUI then
+            joypadData.currentNavigateUI:onJoypadNavigateUp(joypadData)
+        end
+        return
+    end
     if joypadData.focus ~= nil then
         if joypadData.focus:isVisible() then
             joypadData.focus:onJoypadDirUp(joypadData);
@@ -542,6 +630,12 @@ function JoypadControllerData:onPressDown()
         return
     end
     local joypadData = self.joypad
+    if joypadData.isDoingNavigation then
+        if joypadData.currentNavigateUI then
+            joypadData.currentNavigateUI:onJoypadNavigateDown(joypadData)
+        end
+        return
+    end
     if joypadData.focus ~= nil then
         if joypadData.focus:isVisible() then
             joypadData.focus:onJoypadDirDown(joypadData);
@@ -579,6 +673,12 @@ function JoypadControllerData:onPressLeft()
         return
     end
     local joypadData = self.joypad
+    if joypadData.isDoingNavigation then
+        if joypadData.currentNavigateUI then
+            joypadData.currentNavigateUI:onJoypadNavigateLeft(joypadData)
+        end
+        return
+    end
     if joypadData.focus ~= nil then
         if joypadData.focus:isVisible() then
             joypadData.focus:onJoypadDirLeft(joypadData);
@@ -616,6 +716,12 @@ function JoypadControllerData:onPressRight()
         return
     end
     local joypadData = self.joypad
+    if joypadData.isDoingNavigation then
+        if joypadData.currentNavigateUI then
+            joypadData.currentNavigateUI:onJoypadNavigateRight(joypadData)
+        end
+        return
+    end
     if joypadData.focus ~= nil then
         if joypadData.focus:isVisible() then
             joypadData.focus:onJoypadDirRight(joypadData);
@@ -776,16 +882,23 @@ function JoypadControllerData:update(time)
         v.timerightproc = 0
     end
 
+    v.pressedTime = v.pressedTime or {}
+
     for n = 0,getButtonCount(i)-1 do
         if v.pressed[n] == nil then v.pressed[n] = true; end
         v.wasPressed[n] = v.pressed[n];
         v.pressed[n] = isJoypadPressed(i, n);
         if v.pressed[n] and not v.wasPressed[n] then
             local button = translateButton(v.id, n)
+            v.pressedTime[n] = time
             v:onPressButton(button)
         elseif v.wasPressed[n] and not v.pressed[n] then
             local button = translateButton(v.id, n)
             v:onReleaseButton(button)
+            v.pressedTime[n] = 0
+        elseif v.pressed[n] then
+            local button = translateButton(v.id, n)
+            v:onHoldButton(button, time - (v.pressedTime[n] or time))
         end
     end
 

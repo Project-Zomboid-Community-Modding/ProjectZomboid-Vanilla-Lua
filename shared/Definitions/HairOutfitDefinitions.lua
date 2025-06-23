@@ -177,6 +177,12 @@ cat.beard = "null:100";
 cat.maleHaircut = "Donny:7;CrewCut:7;FlatTop:7;GreasedBack:7;Fresh:7;Messy:4;MessyCurly:3;Short:4;ShortCurly:4;CentreParting:7;LeftParting:7;RightParting:7;Grungey:4;GrungeyParted:3;OverEye:4;OverLeftEye:4;CentrePartingLong:7;ShortAfroCurly:7";
 cat.haircutColor = "0.83,0.67,0.27:7;0.66,0.52,0.32:7;0.62,0.42,0.17:7;0.61,0.51,0.34:7;0.6,0.44,0.3:6;0.57,0.47,0.35:6;0.44,0.34,0.24:6;0.34,0.26,0.18:6;0.35,0.21,0.13:6;0.22,0.16,0.11:6;0.2,0.19,0.19:6;0.11,0.09,0.09:6;0.75,0.52,0.4:6;0.65,0.36,0.25:6;0.58,0.25,0.25:6;0.52,0.26,0.19:6";
 table.insert(HairOutfitDefinitions.haircutOutfitDefinition, cat);
+local cat = {};
+cat.outfit = "YoungCowpoke";
+cat.beard = "null:100";
+cat.maleHaircut = "Donny:7;CrewCut:7;FlatTop:7;GreasedBack:7;Fresh:7;Messy:4;MessyCurly:3;Short:4;ShortCurly:4;CentreParting:7;LeftParting:7;RightParting:7;Grungey:4;GrungeyParted:3;OverEye:4;OverLeftEye:4;CentrePartingLong:7;ShortAfroCurly:7";
+cat.haircutColor = "0.83,0.67,0.27:7;0.66,0.52,0.32:7;0.62,0.42,0.17:7;0.61,0.51,0.34:7;0.6,0.44,0.3:6;0.57,0.47,0.35:6;0.44,0.34,0.24:6;0.34,0.26,0.18:6;0.35,0.21,0.13:6;0.22,0.16,0.11:6;0.2,0.19,0.19:6;0.11,0.09,0.09:6;0.75,0.52,0.4:6;0.65,0.36,0.25:6;0.58,0.25,0.25:6;0.52,0.26,0.19:6";
+table.insert(HairOutfitDefinitions.haircutOutfitDefinition, cat);
 
 local cat = {};
 cat.outfit = "Aircrew";

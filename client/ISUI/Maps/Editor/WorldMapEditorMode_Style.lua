@@ -762,6 +762,8 @@ function WorldMapStyleEditor_PolygonLayerPanel:createChildren()
 	self.tabs:setHeight(math.max(self.filterPanel:getBottom(), self.fillPanel:getBottom(), self.texturePanel:getBottom()))
 
 	self:shrinkWrap()
+	self:setAnchorLeft(false)
+	self:setAnchorRight(true)
 	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
 	self:setY(UI_BORDER_SPACING)
 end
@@ -793,7 +795,7 @@ function WorldMapStyleEditor_PolygonLayerPanel:onMouseUpOutsideMap(x, y)
 end
 
 function WorldMapStyleEditor_PolygonLayerPanel:onMouseMoveMap(dx, dy)
-	return self.tabs:getActiveView():onMouseMoveMap(x, y)
+	return self.tabs:getActiveView():onMouseMoveMap(dx, dy)
 end
 
 function WorldMapStyleEditor_PolygonLayerPanel:onRightMouseDownMap(x, y)
@@ -828,6 +830,8 @@ function WorldMapStyleEditor_TextureLayerPanel:createChildren()
 	self.tabs:setHeight(math.max(self.fillPanel:getBottom(), self.texturePanel:getBottom()))
 
 	self:shrinkWrap()
+	self:setAnchorLeft(false)
+	self:setAnchorRight(true)
 	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
 	self:setY(UI_BORDER_SPACING)
 end
@@ -859,7 +863,7 @@ function WorldMapStyleEditor_TextureLayerPanel:onMouseUpOutsideMap(x, y)
 end
 
 function WorldMapStyleEditor_TextureLayerPanel:onMouseMoveMap(dx, dy)
-	return self.tabs:getActiveView():onMouseMoveMap(x, y)
+	return self.tabs:getActiveView():onMouseMoveMap(dx, dy)
 end
 
 function WorldMapStyleEditor_TextureLayerPanel:onRightMouseDownMap(x, y)

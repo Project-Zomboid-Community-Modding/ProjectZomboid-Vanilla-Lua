@@ -17,10 +17,11 @@ ISBaseIcon.managedMarkers = {
 	worldMarker	= "worldMarkers",
 };
 
-ISBaseIcon.updateEvents          = {
-	{ method = "updateViewDistance",        tick = 5,     breakTick = false },
-	{ method = "updatePerkLevel",           tick = 20,    breakTick = false },
-	{ method = "updateModifiers",           tick = 30,    breakTick = false },
+ISBaseIcon.updateEvents = {
+	{ method = "updateAlpha",		        tick = 5 },
+	{ method = "updateViewDistance",        tick = 5 },
+	{ method = "updatePerkLevel",           tick = 20 },
+	{ method = "updateModifiers",           tick = 30 },
 };
 -------------------------------------------------
 -------------------------------------------------
@@ -86,54 +87,67 @@ function ISBaseIcon:getGameSpeed()
 end
 -------------------------------------------------
 -------------------------------------------------
---todo: refactor - move grab menu constructor to a new method
+function ISBaseIcon:doGrabSubMenu(_context, _contextOption, _inventory)
+	local contextMenu = _context;
+	local contextOption = _contextOption;
+	local inventory = _inventory;
+	if self.itemObjTable then
+		local itemTable = {};
+		for _, itemObj in pairs(self.itemObjTable) do
+			if itemObj and itemObj:getWorldItem() then
+				table.insert(itemTable, itemObj);
+			end;
+		end;
+		if #itemTable > 1 then
+			contextOption.onSelect = nil
+			local subMenuGrab = ISContextMenu:getNew(contextMenu);
+			contextMenu:addSubMenu(contextOption, subMenuGrab);
+			subMenuGrab:addOption(getText("ContextMenu_Grab_one"), self, self.onClickContext, 0, 0, contextMenu, inventory, {self.itemObj});
+			if #itemTable > 2 then
+				subMenuGrab:addOption(getText("ContextMenu_Grab_half"), self, self.onClickContext, 0, 0, contextMenu, inventory, {unpack(itemTable, 1, math.ceil(#itemTable / 2))});
+			end;
+			subMenuGrab:addOption(getText("ContextMenu_Grab_all"), self, self.onClickContext, 0, 0, contextMenu, inventory, itemTable);
+		end;
+	end;
+end
+
 function ISBaseIcon:doContextMenu(_context)
 	if self.isTrack then return; end
 	if self:getIsSeen() and self:getAlpha() > 0 then
 		self:getGridSquare();
 		if (not self.square) then return; end;
-		--
-		local contextMenu;
-		if _context then
-			local forageSubOption = _context:addOptionOnTop(getText("IGUI_perks_Foraging"), self);
-			contextMenu = ISContextMenu:getNew(_context);
-			contextMenu:addSubMenu(forageSubOption, contextMenu);
-		else
+
+		local contextMenu = _context;
+		if not contextMenu then
 			contextMenu = ISContextMenu.get(self.player, getMouseX(), getMouseY());
-		end
-		--
+		end;
 		if not contextMenu then return; end;
-		--
+
 		local plInventory = self.character:getInventory();
-		local plInventoryHasSpace = (plInventory:getCapacityWeight() <= plInventory:getEffectiveCapacity(self.character));
+		local plInventoryHasSpace = plInventory:getCapacityWeight() <= plInventory:getEffectiveCapacity(self.character);
 		local contextName = getText("IGUI_Pickup").." "..getText("UI_foraging_UnknownItem");
-		--
-		if self.identified then contextName = getText("IGUI_Pickup").." "..self.itemObj:getDisplayName(); end;
-		--
+
+		if self.identified then
+			local displayName = self.itemObj:getDisplayName();
+			if self.itemList and not self.itemList:isEmpty() then
+				if self.itemList:get(0) ~= nil then
+					displayName = self.itemList:get(0):getDisplayName();
+				end;
+			end;
+			if not displayName then
+				displayName = getText("UI_foraging_UnknownItem");
+			end;
+			contextName = getText("IGUI_Pickup").." "..displayName;
+		end;
+
 		local contextOption = contextMenu:addOption(contextName, self, nil, contextMenu, plInventory);
 		local subMenu = ISContextMenu:getNew(contextMenu);
 		local bpList = getPlayerInventory(self.player).backpacks;
-		--
+
 		local plInvOption = subMenu:addOption(getText("ContextMenu_PutInContainer", getText("ContextMenu_MoveToInventory")), self, self.onClickContext, 0, 0, contextMenu, plInventory, {self.itemObj});
+		plInvOption.iconTexture = getTexture("media/ui/Icon_InventoryBasic.png")
 		if plInventory:hasRoomFor(self.character, self.itemObj) and plInventoryHasSpace then
-			if self.itemObjTable then
-				local itemTable = {};
-				for _, itemObj in pairs(self.itemObjTable) do
-					if itemObj and itemObj:getWorldItem() then
-						table.insert(itemTable, itemObj);
-					end;
-				end;
-				if #itemTable > 1 then
-					plInvOption.onSelect = nil
-					local subMenuGrab = ISContextMenu:getNew(contextMenu);
-					contextMenu:addSubMenu(plInvOption, subMenuGrab);
-					subMenuGrab:addOption(getText("ContextMenu_Grab_one"), self, self.onClickContext, 0, 0, contextMenu, plInventory, {self.itemObj});
-					if #itemTable > 2 then
-						subMenuGrab:addOption(getText("ContextMenu_Grab_half"), self, self.onClickContext, 0, 0, contextMenu, plInventory, {unpack(itemTable, 1, math.ceil(#itemTable / 2))});
-					end;
-					subMenuGrab:addOption(getText("ContextMenu_Grab_all"), self, self.onClickContext, 0, 0, contextMenu, plInventory, itemTable);
-				end;
-			end;
+			self:doGrabSubMenu(contextMenu, plInvOption, plInventory);
 		else
 			plInvOption.onSelect = nil;
 			plInvOption.notAvailable = true;
@@ -141,31 +155,14 @@ function ISBaseIcon:doContextMenu(_context)
 		for _, backpack in ipairs(bpList) do
 			local bpItem = backpack and backpack.inventory and backpack.inventory:getContainingItem();
 			if bpItem then
-				if not backpack.inventory:getOnlyAcceptCategory() or (self.itemObj:getCategory() == backpack.inventory:getOnlyAcceptCategory()) then
+				if backpack.inventory:isItemAllowed(self.itemObj) then
 					local backPackOption = subMenu:addOption(getText("ContextMenu_PutInContainer", bpItem:getDisplayName()), self, self.onClickContext, 0, 0, contextMenu, backpack.inventory, {self.itemObj});
+					backPackOption.itemForTexture = bpItem
 					if (not backpack.inventory:hasRoomFor(self.character, self.itemObj)) or (not plInventoryHasSpace) then
 						backPackOption.onSelect = nil;
 						backPackOption.notAvailable = true;
 					else
-						if self.itemObjTable then
-							local itemTable = {};
-							for _, itemObj in pairs(self.itemObjTable) do
-								if itemObj and itemObj:getWorldItem() then
-									table.insert(itemTable, itemObj);
-								end;
-							end;
-							--
-							if #itemTable > 1 then
-								backPackOption.onSelect = nil
-								local subMenuGrab = ISContextMenu:getNew(contextMenu);
-								contextMenu:addSubMenu(backPackOption, subMenuGrab);
-								subMenuGrab:addOption(getText("ContextMenu_Grab_one"), self, self.onClickContext, 0, 0, contextMenu, backpack.inventory, {self.itemObj});
-								if #itemTable > 2 then
-									subMenuGrab:addOption(getText("ContextMenu_Grab_half"), self, self.onClickContext, 0, 0, contextMenu, backpack.inventory, {unpack(itemTable, 1, math.ceil(#itemTable / 2))});
-								end;
-								subMenuGrab:addOption(getText("ContextMenu_Grab_all"), self, self.onClickContext, 0, 0, contextMenu, backpack.inventory, itemTable);
-							end;
-						end;
+						self:doGrabSubMenu(contextMenu, backPackOption, backpack.inventory);
 					end;
 				end;
 			end;
@@ -179,7 +176,7 @@ function ISBaseIcon:doContextMenu(_context)
 			end;
 			contextOption = contextMenu:addOption(contextName, self, self.onClickDiscard, contextMenu);
 		end;
-		--
+
 		triggerEvent("onFillSearchIconContextMenu", contextMenu, self);
 		return false;
 	end;
@@ -199,10 +196,6 @@ function ISBaseIcon:renderAltWorldTexture()
 	local dx, dy = self:getScreenDelta();
 	self:setX(isoToScreenX(self.player, self.xCoord, self.yCoord, self.zCoord) + dx);
 	self:setY(isoToScreenY(self.player, self.xCoord, self.yCoord, self.zCoord) + dy);
-	--local tc = self.textureColor;
-	--for _, texture in ipairs(self.altWorldTexture) do
-	--	self:drawTextureScaled(texture, -(texture:getWidth() / 2 / self.zoom), -(texture:getHeight() / self.zoom), texture:getWidth() / self.zoom, texture:getHeight() / self.zoom, tc.a, tc.r, tc.g, tc.b);  --render world texture
-	--end;
 end
 
 function ISBaseIcon:renderWorldItemTexture()
@@ -211,8 +204,6 @@ function ISBaseIcon:renderWorldItemTexture()
 	local dx, dy = self:getScreenDelta();
 	self:setX(isoToScreenX(self.player, self.xCoord, self.yCoord, self.zCoord) - self.itemTexture:getWidth() / 2 / self.zoom + dx);
 	self:setY(isoToScreenY(self.player, self.xCoord, self.yCoord, self.zCoord) + dy);
-	--local tc = self.textureColor;
-	--self:drawTextureScaled(self.itemTexture, 0, 0, self.itemTexture:getWidth() / self.zoom, self.itemTexture:getHeight() / self.zoom, tc.a, tc.r, tc.g, tc.b);  --render world icon
 end
 
 function ISBaseIcon:renderPinIcon()
@@ -220,19 +211,14 @@ function ISBaseIcon:renderPinIcon()
 	if self.itemTexture and self.identified and self.renderItemTexture then
 		local textureCenter = (self.itemTexture:getWidth() / 1.5 / self.zoom) / 2;
 		local pinCenter = self.width / 2;
-		self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, self.pinAlpha, tc.r, tc.g, tc.b);
-		self:drawTextureScaled(self.itemTexture, (pinCenter - textureCenter), 5 / self.zoom, self.itemTexture:getWidth() / 1.5 / self.zoom, self.itemTexture:getHeight() / 1.5 / self.zoom, self.pinAlpha, tc.r, tc.g, tc.b);
+		self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, self:getAlpha(), tc.r, tc.g, tc.b);
+		self:drawTextureScaled(self.itemTexture, (pinCenter - textureCenter), 5 / self.zoom, self.itemTexture:getWidth() / 1.5 / self.zoom, self.itemTexture:getHeight() / 1.5 / self.zoom, self:getAlpha(), tc.r, tc.g, tc.b);
 		if self.isKnownPoison then
-			self:drawTextureScaled(poisonIcon, pinCenter, 15 / self.zoom, poisonIcon:getWidth() / self.zoom, poisonIcon:getHeight() / self.zoom, self.pinAlpha, tc.r, tc.g, tc.b)
+			self:drawTextureScaled(poisonIcon, pinCenter, 15 / self.zoom, poisonIcon:getWidth() / self.zoom, poisonIcon:getHeight() / self.zoom, self:getAlpha(), tc.r, tc.g, tc.b)
 		end;
 	else
-		self:drawTextureScaled(pinIconUnknown, 0, 0, self.width, self.height, self.pinAlpha, tc.r, tc.g, tc.b);
+		self:drawTextureScaled(pinIconUnknown, 0, 0, self.width, self.height, self:getAlpha(), tc.r, tc.g, tc.b);
 	end;
-	if false then
-		-- Draw the 30-pixel gap between the pin icon and item texture.
-		local wh = 30 / self.zoom
-		self:drawRectBorder(self.width / 2 - wh / 2, self.height, wh, wh, 1, 1, 1, 1)
-	end
 end
 
 function ISBaseIcon:render()
@@ -282,8 +268,9 @@ function ISBaseIcon:isInRangeOfPlayer(_range)
 end
 
 function ISBaseIcon:isInRangeForUpdate()
-	return 	((self.distanceToPlayer <= self.manager.radius and (not self.isDarknessCapped))
-			or  (self.distanceToPlayer <= self.viewDistance));
+	return
+		((self.distanceToPlayer <= self.manager.radius and (not self.isDarknessCapped))
+		or (self.distanceToPlayer <= self.viewDistance));
 end
 -------------------------------------------------
 -------------------------------------------------
@@ -442,19 +429,10 @@ function ISBaseIcon:updateZoom() self.zoom = getCore():getZoom(self.player); end
 function ISBaseIcon:updateAlpha()
 	self.alphaTarget = clamp(1 - self.distanceToPlayer / self.maxRadius, 0, 1);
 	--
-	if self:getAlpha() ~= self.alphaTarget then
-		self:setAlpha(self:getAlpha() + (self.alphaTarget - self:getAlpha()) / 60);
-	end;
-	if self.pinAlpha ~= self.alphaTarget then
-		self.pinAlpha = (self.pinAlpha + (self.alphaTarget - self.pinAlpha ) / 60);
-	end;
+	self:setAlpha(self.alphaTarget);
 	--
 	if self.isoMarker then
-		if self:getIsSeen() then
-			self.isoMarker:setAlpha(self:getAlpha());
-		else
-			self.isoMarker:setAlpha(self:getAlpha() / 2);
-		end;
+		self.isoMarker:setAlpha(self:getAlpha());
 	end;
 	if self:getAlpha() <= 0 then self:reset(); end;
 end
@@ -482,6 +460,7 @@ function ISBaseIcon:initItem()
 				self.itemObj = self.icon.itemObj;
 			elseif self.icon.itemType then
 				self.itemObj = instanceItem(self.icon.itemType);
+				self.icon.itemObj = self.itemObj;
 			else
 				print("[ISBaseIcon][initItem] no item or type for "..self.icon.id);
 			end;
@@ -506,8 +485,8 @@ end
 
 function ISBaseIcon:getItemList()
 	if self.itemDef and (not self.itemList) then
-		if ISSearchManager.iconItems[self.iconID] then
-			self.itemList = ISSearchManager.iconItems[self.iconID];
+		if self.icon.itemList then
+			self.itemList = self.icon.itemList;
 		else
 			self.itemList = ArrayList.new();
 			--
@@ -521,18 +500,17 @@ function ISBaseIcon:getItemList()
 				end;
 			end;
 			--
-			ISSearchManager.iconItems[self.iconID] = self.itemList;
-		end;
-		--
-		for item in iterList(self.itemList) do
-			if item:IsFood() and item:getHerbalistType() and item:getHerbalistType() ~= "" then
-				if item:getPoisonPower() > 0 and self.character:isRecipeActuallyKnown("Herbalist") then
-					self.isKnownPoison = true;
-					break;
-				end;
-			end;
+			self.icon.itemList = self.itemList;
+		end
+	end;
+	--reset the itemObj to be the first item in the new list
+	if self.itemList and not self.itemList:isEmpty() then
+		if self.itemList:get(0) ~= nil then
+			self.itemObj = self.itemList:get(0);
+			self.icon.itemObj = self.itemObj;
 		end;
 	end;
+	self:checkForPoison();
 end
 -------------------------------------------------
 -------------------------------------------------
@@ -604,6 +582,9 @@ end
 
 function ISBaseIcon:updateViewDistance()
 	self.viewDistance = self:doVisionCheck();
+	if ISSearchManager.showDebugVisionRadius and self.isoMarker then
+		self.isoMarker:setCircleSize(self.viewDistance);
+	end;
 end
 
 function ISBaseIcon:updateDistanceToPlayer()
@@ -616,6 +597,7 @@ function ISBaseIcon:removeIsoMarker()
 end
 
 function ISBaseIcon:addIsoMarker()
+	self:updateAlpha();
 	self:updateManagerMarkers();
 	if self.isBeingRemoved then return; end;
 	if not (self.itemObj and self.itemTexture) then self:initItem(); end;
@@ -629,15 +611,15 @@ function ISBaseIcon:addIsoMarker()
 			end;
 			if #altTextures > 0 then
 				if self.itemDef.doIsoMarkerSprite then
-					self.isoMarker = getIsoMarkers():addIsoMarker(self.itemDef.doIsoMarkerSprite, self.square, 1, 1, 1, false, self.itemDef.doIsoMarkerObject);
+					self.isoMarker = getIsoMarkers():addIsoMarker(self.itemDef.doIsoMarkerSprite, self.square, 1, 1, 1, self:getAlpha());
 				else
-					self.isoMarker = getIsoMarkers():addIsoMarker(altTextures, { }, self.square, 1, 1, 1, false, self.itemDef.doIsoMarkerObject);
+					self.isoMarker = getIsoMarkers():addIsoMarker(altTextures, self.square, 1, 1, 1, self:getAlpha());
 				end;
 			else
-				self.isoMarker = getIsoMarkers():addIsoMarker({self.itemTexture:getName()}, {}, self.square, 1, 1, 1, false, false);
+				self.isoMarker = getIsoMarkers():addIsoMarker(self.itemObj, self.square, 1, 1, 1, self:getAlpha(), self.itemRotation);
 			end;
 		else
-			self.isoMarker = getIsoMarkers():addIsoMarker({self.itemTexture:getName()}, {}, self.square, 1, 1, 1, false, false);
+			self.isoMarker = getIsoMarkers():addIsoMarker(self.itemObj, self.square, 1, 1, 1, self:getAlpha(), self.itemRotation);
 		end;
 	end;
 end
@@ -705,6 +687,18 @@ function ISBaseIcon:isNearby()				return self.distanceToPlayer <= self.maxRadius
 function ISBaseIcon:checkIsForageable()     return self.isForageable;                               end;
 -------------------------------------------------
 -------------------------------------------------
+function ISBaseIcon:checkForPoison()
+	if self.isTrack then return; end
+	self.isKnownPoison = false;
+	for item in iterList(self.itemList) do
+		if self.character:isKnownPoison(item) then
+			self.isKnownPoison = true;
+			break;
+		end;
+	end;
+end;
+-------------------------------------------------
+-------------------------------------------------
 function ISBaseIcon:updateManagerMarkers()
 	local manager = self.manager;
 	local managedMarkers = self.managedMarkers;
@@ -749,7 +743,6 @@ function ISBaseIcon:doUpdateEvents(_force)
 	for i, event in ipairs(self.updateEvents) do
 		if (_force or self.updateTick % event.tick == 0) and self[event.method] then
 			self[event.method](self);
-			if event.breakTick then break; end;
 		end;
 	end;
 	--
@@ -795,27 +788,14 @@ end
 -------------------------------------------------
 function ISBaseIcon:findPinOffset()
 	if self.altWorldTexture then
-		-- If a forage icon is drawn without an IsoObject, the texture is drawn above the square center.
-		if not self.itemDef.doIsoMarkerObject then
-			local tallestTexture = 0;
-			for _, texture in ipairs(self.altWorldTexture) do
-				if tallestTexture < texture:getHeight() then tallestTexture = texture:getHeight() end;
-			end;
-			local tileHeight = 32 * Core.getTileScale()
-			self.pinOffset = tileHeight / 2 - tallestTexture;
-			return;
-		end;
-		-- If a forage icon is drawn using an IsoObject, the texture is drawn above the south-east corner of the square.
-		local tallestTexture = 0;
-		for _, texture in ipairs(self.altWorldTexture) do
-			local top = texture:getHeightOrig() - texture:getOffsetY()
-			if tallestTexture < top then tallestTexture = top end;
-		end;
-		local tileHeight = 32 * Core.getTileScale()
-		self.pinOffset = tileHeight - tallestTexture;
+        local tallestTexture = 0;
+        for _, texture in ipairs(self.altWorldTexture) do
+            if tallestTexture < texture:getHeight() then tallestTexture = texture:getHeight() end;
+        end;
+        local tileHeight = 32 * Core.getTileScale()
+        self.pinOffset = tileHeight / 2 - tallestTexture;
 		return;
 	end;
-	-- If a forage icon is drawn without an IsoObject, the texture is drawn above the square center.
 	if self.itemTexture then
 		local tileHeight = 32 * Core.getTileScale()
 		self.pinOffset = tileHeight / 2 - self.itemTexture:getHeight();
@@ -855,7 +835,6 @@ function ISBaseIcon:updateBounce()
 end
 -------------------------------------------------
 -------------------------------------------------
-
 function ISBaseIcon:initGridSquare()
 	local cell = getCell();
 	if cell then
@@ -935,7 +914,6 @@ function ISBaseIcon:new(_manager, _icon)
 	o.texture               = pinIconBlank;
 	o.textureColor          = {r = 1, g = 1, b = 1, a = 0};
 	o.alphaTarget           = 0;
-	o.pinAlpha              = 1;
 
 	o.square                = nil;
 	o.adjacentSquares       = {};
@@ -975,8 +953,6 @@ function ISBaseIcon:new(_manager, _icon)
 	o.posChanges            = 0;
 	o.maxPosChanges         = 10;
 
-	o.itemRotation          = ZombRand(360);
-
 	o.onMouseDoubleClick    = ISBaseIcon.doPickup;
 
 	o.modifiers				= {
@@ -1004,7 +980,6 @@ function ISBaseIcon:new(_manager, _icon)
 	o.itemType              = _icon.itemType;
 	o.itemSize              = _icon.itemSize or 1.0;
 
-	o.isMover               = false;
 	o.moveState             = "idle";
 	o.moveTargetX           = o.xCoord;
 	o.moveTargetY           = o.yCoord;
@@ -1030,6 +1005,8 @@ function ISBaseIcon:new(_manager, _icon)
 	o.bounceSpeed			= 0.1;
 
 	o.canRollForSearchFocus	= false;
+
+	o.itemRotation			= ZombRand(360);
 
 	o:initialise();
 	return o;

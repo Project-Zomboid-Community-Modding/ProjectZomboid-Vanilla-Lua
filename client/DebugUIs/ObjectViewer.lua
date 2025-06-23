@@ -2,6 +2,7 @@ require "ISUI/ISCollapsableWindow"
 
 ObjectViewer = ISCollapsableWindow:derive("ObjectViewer");
 
+local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 
 function ObjectViewer:onRightMouseDownObject(x, y)
     if instanceof(self.parent.obj, "KahluaTableImpl") then
@@ -131,12 +132,7 @@ function ObjectViewer:onMouseDoubleClickOpenObject(item)
                 src:initialise();
                 src:addToUIManager();
             end
-            local p = (getFirstLineOfClosure(item)-1) * 20;
-            p = p - (src:getWidth() / 2);
-            src.sourceView:setScrollHeight(src.sourceView.count * 20);
-            src.sourceView:setYScroll(-p);
-            src.sourceView.selected = getFirstLineOfClosure(item)-1;
-
+            src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
 
     else
@@ -201,36 +197,35 @@ function ObjectViewer:fill()
         local c = getNumClassFields(self.obj);
         for i=0, c-1 do
             local meth = getClassField(self.obj, i);
-if meth.getType then -- is it exposed?
-            local val = KahluaUtil.rawTostring2(getClassFieldVal(self.obj, meth));
-           if(val == nil) then val = "nil" end
-            local s = tabToX(meth:getType():getSimpleName(), 18) .. " " .. tabToX(meth:getName(), 24) .. " " .. tabToX(val, 24);
-            self.objectView:addItem(s, meth);
-else
-        s = type(meth)..' = '..tostring(meth)
-end
+            if meth.getType then -- is it exposed?
+                local val = KahluaUtil.rawTostring2(getClassFieldVal(self.obj, meth));
+                if(val == nil) then val = "nil" end
+                local s = tabToX(meth:getType():getSimpleName(), 18) .. " " .. tabToX(meth:getName(), 24) .. " " .. tabToX(val, 24);
+                self.objectView:addItem(s, meth);
+            else
+                --local s = type(meth)..' = '..tostring(meth)
+            end
         end
 
         c = getNumClassFunctions(self.obj);
         for i=0, c-1 do
             local meth = getClassFunction(self.obj, i);
-if meth.getReturnType and meth:getReturnType().getSimpleName then -- is it exposed?
-            local paramNum = getMethodParameterCount(meth);
-            local params = "";
-            for j=0, paramNum - 1 do
-                params = params .. getMethodParameter(meth, j);
-                if j < paramNum - 2 then
-                    params = params .. ", ";
+            if meth.getReturnType and meth:getReturnType().getSimpleName then -- is it exposed?
+                local paramNum = getMethodParameterCount(meth);
+                local params = "";
+                for j=0, paramNum - 1 do
+                    params = params .. getMethodParameter(meth, j);
+                    if j < paramNum - 2 then
+                        params = params .. ", ";
+                    end
                 end
+                local s = tabToX(meth:getReturnType():getSimpleName(), 18) .. " " .. tabToX(meth:getName(), 24) .. "( " .. params .. " )";
+                s = tabToX(s, 40);
+                self.objectView:addItem(s, meth);
+            else
+                --local s = type(meth)..' = '..tostring(meth)
             end
-            local s = tabToX(meth:getReturnType():getSimpleName(), 18) .. " " .. tabToX(meth:getName(), 24) .. "( " .. params .. " )";
-            s = tabToX(s, 40);
-            self.objectView:addItem(s, meth);
-else
-        s = type(meth)..' = '..tostring(meth)
-end
         end
-
     end
     if bSort then
         self.objectView:sort();
@@ -245,13 +240,13 @@ function ObjectViewer:createChildren()
     local rh = self:resizeWidgetHeight()
 
     self.objectView = ISScrollingListBox:new(0, th, self.width, self.height-th-rh);
+    self.objectView:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.objectView:initialise();
     self.objectView.doDrawItem = ObjectViewer.doDrawItem;
     self.objectView.onMouseWheel = ObjectViewer.onSourceMouseWheel;
     self.objectView.anchorRight = true;
     self.objectView.onRightMouseDown = ObjectViewer.onRightMouseDownObject;
     self.objectView.anchorBottom = true;
-    self.objectView.itemheight = 22;
     self.objectView:setOnMouseDoubleClick(self, ObjectViewer.onMouseDoubleClickOpenObject);
     self:addChild(self.objectView);
 
@@ -275,24 +270,38 @@ function ObjectViewer:createChildren()
 --]]
 end
 
+function ObjectViewer:prerender()
+    ISCollapsableWindow.prerender(self)
+    self:checkFontSize()
+end
+
 function ObjectViewer:doDrawItem(y, item, alt)
     if self.selected == item.index then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.2, 0.6, 0.7, 0.8);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.2, 0.6, 0.7, 0.8);
 
     end
 
     if item.item.key ~= nil and hasDataBreakpoint(self.parent.obj, item.item.key) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.3, 0.8, 0.6, 0.4);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.8, 0.6, 0.4);
     end
     if item.item.key ~= nil and hasDataReadBreakpoint(self.parent.obj, item.item.key) then
-        self:drawRect(0, (y+3), self:getWidth(), self.itemheight-1, 0.3, 0.6, 0.8, 0.4);
+        self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.6, 0.8, 0.4);
     end
 
     --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(item.text, 15, (y)+6, 1, 1, 1, 1, UIFont.Code);
+    self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
 
+end
+
+function ObjectViewer:checkFontSize()
+    local font = getTextManager():getCurrentCodeFont()
+    local fontHeight = getTextManager():getFontHeight(font)
+    if font == self.objectView.font then return end
+    FONT_HGT_CODE = fontHeight
+    self.objectView:setFont(font, 0)
+    self.objectView.itemheight = FONT_HGT_CODE
 end
 
 function ObjectViewer:new (x, y, width, height, obj)

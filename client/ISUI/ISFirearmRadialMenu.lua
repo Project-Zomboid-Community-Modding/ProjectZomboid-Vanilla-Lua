@@ -373,7 +373,7 @@ function ISFirearmRadialMenu.onRepeatRBumper(buttonPrompt)
 	end
 end
 
-function ISFirearmRadialMenu.onJoypadButtonReleased(buttonPrompt, button)
+function ISFirearmRadialMenu.onJoypadButtonReleased(buttonPrompt, button, joypadData)
 	if button == Joypad.RBumper then
 		local rbPressedMS = STATE[buttonPrompt.player+1].rbPressedMS
 		if not rbPressedMS then return end

@@ -71,8 +71,6 @@ function ISSeedActionNew:complete()
 		else
 			plant.owner = self.character:getPlayerNum()
 		end
-
-		print("DUCK", plant.owner)
 	end
 
 	return true;

@@ -4,20 +4,26 @@ local birch_forest = {
             { f = worldgen.features.GROUND.light_grass, p = 1.0 }
         },
         PLANT = {
-            { f = worldgen.features.PLANT.grass_overlay, p = 0.4 },
+            { f = worldgen.features.PLANT.grass_medium, p = 0.3 },
+            { f = worldgen.features.PLANT.grass_high, p = 0.3 },
             { f = worldgen.features.PLANT.generic_plant, p = 0.1 },
             { f = worldgen.features.PLANT.floor_leaves, p = 0.1 },
         },
         TREE = {
-            { f = worldgen.features.TREE.birch, p = 0.25 },
---             { f = worldgen.features.PLANT.stumps, p = 0.0001 }
+            { f = worldgen.features.TREE.birch_jumbo, p = 0.2125 },
+            { f = worldgen.features.TREE.birch, p = 0.0125 },
+            { f = worldgen.features.TREE.hawthorn_jumbo, p = 0.00625 },
+            { f = worldgen.features.TREE.hawthorn, p = 0.00625 },
+            { f = worldgen.features.TREE.yellowwood_jumbo, p = 0.00625 },
+            { f = worldgen.features.TREE.yellowwood, p = 0.00625 },
+            { f = worldgen.features.TREE.stumps, p = 0.001 },
         }
     },
     params = {
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },
         hygrometry = { "DRY", "RAIN" },
-        zombies = 0.005,
+        zombies = 0.001,
         generate = false
     }
 }

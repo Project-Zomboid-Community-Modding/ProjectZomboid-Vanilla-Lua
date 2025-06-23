@@ -4,8 +4,8 @@
 --- DateTime: 11/6/2024 4:48 PM
 ---
 
-WelcomeMessageB42 = {};
-
+local WelcomeVersion = 42.0
+WelcomeMessages = {};
 WelcomeMessageUI = ISCollapsableWindow:derive("WelcomeMessageUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
@@ -14,8 +14,11 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-WelcomeMessageB42.doMsg = function()
-    if getDebug() then
+WelcomeMessages.doMsg = function()
+    --if getDebug() or getCore():getShownWelcomeMessageVersion() >= WelcomeVersion then
+    --    return;
+    --end
+    if getDebug() or getPlayer():getModData().seenWelcome then
         return;
     end
     local panelWidth = (UI_BORDER_SPACING+1)*2 + getTextManager():MeasureStringX(UIFont.Small, getText("- Farm animals need a Livestock Zone, and will never leave it as long as they are safe - even if it's unfenced."))
@@ -26,6 +29,9 @@ WelcomeMessageB42.doMsg = function()
 
     panel:setX((getCore():getScreenWidth() / 2) - (panel.width / 2));
     panel:setY((getCore():getScreenHeight() / 2) - (panel.height / 2));
+    getPlayer():getModData().seenWelcome = true
+    --getCore():setShownWelcomeMessageVersion(WelcomeVersion)
+    --getCore():saveOptions()
 end
 
 function WelcomeMessageUI:new(x, y, width, height)
@@ -91,4 +97,4 @@ function WelcomeMessageUI:render()
 
 end
 
-Events.OnGameStart.Add(WelcomeMessageB42.doMsg);
+Events.OnGameStart.Add(WelcomeMessages.doMsg);

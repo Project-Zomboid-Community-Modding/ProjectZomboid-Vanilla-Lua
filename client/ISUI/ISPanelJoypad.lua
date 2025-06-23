@@ -74,6 +74,41 @@ function ISPanelJoypad:setISButtonForX(button)
     button:setJoypadButton(Joypad.Texture.XButton);
 end
 
+function ISPanelJoypad:clearISButtonA()
+    if self.ISButtonA then
+        self.ISButtonA:clearJoypadButton()
+        self.ISButtonA = nil
+    end
+end
+
+function ISPanelJoypad:clearISButtonB()
+    if self.ISButtonB then
+        self.ISButtonB:clearJoypadButton()
+        self.ISButtonB = nil
+    end
+end
+
+function ISPanelJoypad:clearISButtonX()
+    if self.ISButtonX then
+        self.ISButtonX:clearJoypadButton()
+        self.ISButtonX = nil
+    end
+end
+
+function ISPanelJoypad:clearISButtonY()
+    if self.ISButtonY then
+        self.ISButtonY:clearJoypadButton()
+        self.ISButtonY = nil
+    end
+end
+
+function ISPanelJoypad:clearISButtons()
+    self:clearISButtonA()
+    self:clearISButtonB()
+    self:clearISButtonX()
+    self:clearISButtonY()
+end
+
 function ISPanelJoypad:onJoypadDown(button, joypadData)
     local children = self:getVisibleChildren(self.joypadIndexY)
     local child = children[self.joypadIndex]
@@ -104,6 +139,8 @@ function ISPanelJoypad:onJoypadDown(button, joypadData)
         self.ISButtonX:forceClick();
     elseif button == Joypad.YButton and self.ISButtonY then
         self.ISButtonY:forceClick();
+    else
+        ISUIElement.onJoypadDown(self, button, joypadData)
     end
 end
 
@@ -118,6 +155,46 @@ function ISPanelJoypad:getVisibleChildren(joypadIndexY)
         end
     end
     return children
+end
+
+function ISPanelJoypad:getMinVisibleRow()
+    for i=1,#self.joypadButtonsY do
+        local children = self:getVisibleChildren(i)
+        if #children > 0 then
+            return i
+        end
+    end
+    return -1
+end
+
+function ISPanelJoypad:getMaxVisibleRow()
+    for i=#self.joypadButtonsY,1,-1 do
+        local children = self:getVisibleChildren(i)
+        if #children > 0 then
+            return i
+        end
+    end
+    return -1
+end
+
+function ISPanelJoypad:getPrevVisibleRow(row)
+    for i=row-1,1,-1 do
+        local children = self:getVisibleChildren(i)
+        if #children > 0 then
+            return i
+        end
+    end
+    return -1
+end
+
+function ISPanelJoypad:getNextVisibleRow(row)
+    for i=row+1,#self.joypadButtonsY do
+        local children = self:getVisibleChildren(i)
+        if #children > 0 then
+            return i
+        end
+    end
+    return -1
 end
 
 function ISPanelJoypad:getClosestChild(children, x)
@@ -142,6 +219,8 @@ function ISPanelJoypad:onJoypadDirLeft(joypadData)
         children[self.joypadIndex]:setJoypadFocused(false, joypadData);
         self.joypadIndex = self.joypadIndex - 1;
         children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+    else
+        ISUIElement.onJoypadDirLeft(self, joypadData)
     end
     self:ensureVisible()
 end
@@ -155,6 +234,8 @@ function ISPanelJoypad:onJoypadDirRight(joypadData)
         children[self.joypadIndex]:setJoypadFocused(false, joypadData);
         self.joypadIndex = self.joypadIndex + 1;
         children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+    else
+        ISUIElement.onJoypadDirRight(self, joypadData)
     end
     self:ensureVisible()
 end
@@ -171,9 +252,9 @@ function ISPanelJoypad:onJoypadDirUp(joypadData)
     elseif child and child.isKnob then
         child:onJoypadDirUp(joypadData)
     else
-        if (#self.joypadButtonsY > 0) and (self.joypadIndexY > 1) and (self.joypadIndexY <= #self.joypadButtonsY) then
+        if (#self.joypadButtonsY > 0) and (self.joypadIndexY > self:getMinVisibleRow()) and (self.joypadIndexY <= #self.joypadButtonsY) then
             child:setJoypadFocused(false, joypadData);
-            self.joypadIndexY = self.joypadIndexY - 1;
+            self.joypadIndexY = self:getPrevVisibleRow(self.joypadIndexY);
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
             children = self:getVisibleChildren(self.joypadIndexY)
             self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
@@ -181,6 +262,8 @@ function ISPanelJoypad:onJoypadDirUp(joypadData)
                 self.joypadIndex = #children;
             end
             children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        else
+            ISUIElement.onJoypadDirUp(self, joypadData)
         end
     end
     self:ensureVisible()
@@ -198,9 +281,9 @@ function ISPanelJoypad:onJoypadDirDown(joypadData)
     elseif child and child.isKnob then
         child:onJoypadDirDown(joypadData)
     else
-        if (#self.joypadButtonsY > 0) and (self.joypadIndexY < #self.joypadButtonsY) then
+        if (#self.joypadButtonsY > 0) and (self.joypadIndexY < self:getMaxVisibleRow()) then
             child:setJoypadFocused(false, joypadData);
-            self.joypadIndexY = self.joypadIndexY + 1;
+            self.joypadIndexY = self:getNextVisibleRow(self.joypadIndexY);
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
             children = self:getVisibleChildren(self.joypadIndexY)
             self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
@@ -208,6 +291,8 @@ function ISPanelJoypad:onJoypadDirDown(joypadData)
                 self.joypadIndex = #children;
             end
             children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        else
+            ISUIElement.onJoypadDirDown(self, joypadData)
         end
     end
     self:ensureVisible()
@@ -274,11 +359,14 @@ function ISPanelJoypad:ensureVisible()
     local children = self:getVisibleChildren(self.joypadIndexY)
     local child = children[self.joypadIndex]
     if not child then return end
-    local y = child:getY()
-    if y - 40 < 0 - self:getYScroll() then
+    local y = child:getAbsoluteY() - self:getAbsoluteY() - self:getYScroll()
+    if 40 + child:getHeight() + 40 > self:getHeight() then
+        self:setYScroll(0 - y)
+    elseif y - 40 < 0 - self:getYScroll() then
         self:setYScroll(0 - y + 40)
     elseif y + child:getHeight() + 40 > 0 - self:getYScroll() + self:getHeight() then
-        self:setYScroll(0 - (y + child:getHeight() + 40 - self:getHeight()))
+        local yScroll = 0 - (y + child:getHeight() + 40 - self:getHeight())
+        self:setYScroll(yScroll)
     end
 end
 

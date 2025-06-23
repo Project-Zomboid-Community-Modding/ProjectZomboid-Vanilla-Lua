@@ -54,7 +54,7 @@ function ISClearAshes:getDuration()
 		return 1;
 	end
 
-	return 60;
+	return 60
 end
 
 function ISClearAshes:new(character, ashes)

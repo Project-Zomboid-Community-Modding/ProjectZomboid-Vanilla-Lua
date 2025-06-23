@@ -172,7 +172,7 @@ local function TestRecipe(recipe)
 			end
 		end
 	end
-	if not RecipeManager.IsRecipeValid(recipe, playerObj, null, containers) then
+	if not RecipeManager.IsRecipeValid(recipe, playerObj, nil, containers) then
 		print('  valid=false '..' known='..tostring(playerObj:isRecipeKnown(recipe)))
 		for k=1,#itemText do
 			print(itemText[k])
@@ -197,7 +197,7 @@ local function TestRecipe(recipe)
 			end
 		end
 		
-		local resultItem = RecipeManager.PerformMakeItem(recipe, null, playerObj, containers)
+		RecipeManager.PerformMakeItem(recipe, nil, playerObj, containers)
 	end
 end
 

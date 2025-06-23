@@ -128,8 +128,7 @@ UI.Window = UI.Node{
             end,
             onHover = function(self, state)
                 if state then
-                    self.parent.children.body.javaObj:setVisible(true)
-                    self.parent.children.bottomBar.javaObj:setVisible(true)
+                    self.parent:setCollapsed(false)
                 end
             end
         },
@@ -154,8 +153,8 @@ UI.Window = UI.Node{
                         local w = oldW + dx
                         local h = oldH + dy
                         if (w >= 90 or oldW < w) and (h >= 90 or oldH < h) then
-                            self.parent.parent:setWidth(w)
-                            self.parent.parent:setHeight(h)
+                            self.parent.parent.delayResizeW = w
+                            self.parent.parent.delayResizeH = h
                         end
                     end
                 }
@@ -164,11 +163,16 @@ UI.Window = UI.Node{
     },
     init = function(self)
         if self.isPin then
-            self.children.body:setVisible(false)
-            self.children.bottomBar:setVisible(false)
+            self:setCollapsed(true)
         end
     end,
     renderUpdate = function(self)
+        if tonumber(self.delayResizeW) and tonumber(self.delayResizeH) then
+            self:setWidth(self.delayResizeW)
+            self:setHeight(self.delayResizeH)
+            self.delayResizeW = nil
+            self.delayResizeH = nil
+        end
         if tonumber(self.leftDragX) and tonumber(self.leftDragY) then
             self:setX(self.leftDragX)
             self:setY(self.leftDragY)
@@ -178,8 +182,11 @@ UI.Window = UI.Node{
     end,
     onMouseButtonDownOutside = function(self)
         if self.isPin then
-            self.children.body:setVisible(false)
-            self.children.bottomBar:setVisible(false)
+            self:setCollapsed(true)
         end
+    end,
+    setCollapsed = function(self, collapsed)
+        self.children.body:setVisible(not collapsed)
+        self.children.bottomBar:setVisible(not collapsed)
     end
 }

@@ -60,6 +60,8 @@ function ISPlayerStatsUI:render()
 
     self:updateButtons();
 
+    self:loadPerks();
+
     self:drawText(getText("IGUI_PlayerStats_PlayerStats"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Cred1, getText("IGUI_PlayerStats_PlayerStats")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Cred1);
 
     self:setStencilRect(0,60,self:getWidth(),self:getHeight()-60);
@@ -109,7 +111,6 @@ function ISPlayerStatsUI:render()
         chatMuted = getText("Sandbox_ThumpNoChasing_option2")
     end
     items = {
-        getText("IGUI_PlayerStats_ChatMuted"), chatMuted, self.muteAllBtn,
         getText("IGUI_PlayerStats_UserLogs"), tostring(#self.userlogs), self.userlogBtn,
         getText("IGUI_PlayerStats_WarningPts"), tostring(self.warningPoint), self.warningPointsBtn,
         getText("IGUI_char_Weight") .. ":", tostring(math.floor(self.char:getNutrition():getWeight())), self.weightBtn
@@ -262,17 +263,21 @@ end
 
 function ISPlayerStatsUI:canModifyThis()
     if not isClient() then return true; end
-   return ((self.char:getCurrentSquare() and self.char:isExistInTheWorld()) or not self.char:getCurrentSquare()) and self.admin:getRole():haveCapability(Capability.ModifyDB) and (self.char:getRole():rightLevel() <= self.admin:getRole():rightLevel())
+   return ((self.char:getCurrentSquare() and self.char:isExistInTheWorld()) or not self.char:getCurrentSquare()) and (self.char:getRole():getPosition() <= self.admin:getRole():getPosition())
 end
 
 function ISPlayerStatsUI:updateButtons()
-    local buttonEnable =  getCore():getDebug() or (self.admin:getRole():haveCapability(Capability.CanModifyPlayerStatsInThePlayerStatsUI) and self:canModifyThis());
+    local buttonEnable = false;
+    if isClient() then
+        buttonEnable = (self.admin:getRole():hasCapability(Capability.CanModifyPlayerStatsInThePlayerStatsUI) and self:canModifyThis());
+    else
+        buttonEnable = getCore():getDebug();
+    end
     self.addTraitBtn.enable = buttonEnable;
     self.changeProfession.enable = buttonEnable;
     self.changeForename.enable = buttonEnable;
     self.changeSurname.enable = buttonEnable;
 --    self.addGlobalXP.enable = buttonEnable;
-    self.muteAllBtn.enable = buttonEnable;
     self.addXpBtn.enable = buttonEnable;
     self.addLvlBtn.enable = buttonEnable and (self.selectedPerk ~= nil)
     self.loseLvlBtn.enable = buttonEnable and (self.selectedPerk ~= nil)
@@ -280,8 +285,9 @@ function ISPlayerStatsUI:updateButtons()
     self.manageInvBtn.enable = buttonEnable;
     self.warningPointsBtn.enable = buttonEnable;
     if isClient() then
-        self.changeAccessLvlBtn.enable = (self.admin:getRole():haveCapability(Capability.ModifyDB)) and self:canModifyThis();
+        self.changeAccessLvlBtn.enable = (self.admin:getRole():hasCapability(Capability.ManipulateWhitelist)) and self:canModifyThis();
     end
+    self.weightBtn.enable = buttonEnable;
     self.changeUsernameBtn.enable = buttonEnable;
     for _,image in ipairs(self.traits) do
         self.traitsRemoveButtons[image.label].enable = buttonEnable;
@@ -400,15 +406,6 @@ function ISPlayerStatsUI:create()
     self.addGlobalXP.borderColor = self.buttonBorderColor;
     self.mainPanel:addChild(self.addGlobalXP);
 --]]
-    self.muteAllBtn = ISButton:new(self.buttonOffset, self.height - 30, self.buttonWidth, self.buttonHeight, getText("UI_Scoreboard_Mute"), self, self.onOptionMouseDown);
-    self.muteAllBtn.internal = "MUTEALL";
-    self.muteAllBtn:initialise();
-    self.muteAllBtn:instantiate();
-    self.muteAllBtn:setAnchorLeft(true);
-    self.muteAllBtn:setAnchorTop(false);
-    self.muteAllBtn:setAnchorBottom(true);
-    self.muteAllBtn.borderColor = self.buttonBorderColor;
-    self.mainPanel:addChild(self.muteAllBtn);
 
     self.changeAccessLvlBtn = ISButton:new(self.buttonOffset, self.height - 30, self.buttonWidth, self.buttonHeight, getText("IGUI_PlayerStats_Change"), self, self.onOptionMouseDown);
     self.changeAccessLvlBtn.internal = "CHANGEACCESSLEVEL";
@@ -428,7 +425,12 @@ function ISPlayerStatsUI:create()
     self.userlogBtn:setAnchorTop(false);
     self.userlogBtn:setAnchorBottom(true);
 
-    local allowButton = getCore():getDebug() or self.admin:getRole():haveCapability(Capability.ReadUserLog)
+    local allowButton = false;
+    if isClient() then
+        allowButton = getCore():getDebug() or self.admin:getRole():hasCapability(Capability.ReadUserLog)
+    else
+        allowButton = getCore():getDebug();
+    end
 
     if allowButton then
         self.userlogBtn.enable = false;
@@ -444,7 +446,11 @@ function ISPlayerStatsUI:create()
     self.warningPointsBtn:setAnchorTop(false);
     self.warningPointsBtn:setAnchorBottom(true);
 
-    allowButton = getCore():getDebug() or self.admin:getRole():haveCapability(Capability.AddUserlog)
+    if isClient() then
+        allowButton = getCore():getDebug() or self.admin:getRole():hasCapability(Capability.AddUserlog)
+    else
+        allowButton = getCore():getDebug();
+    end
 
     if allowButton then
         self.warningPointsBtn.enable = false;
@@ -459,6 +465,15 @@ function ISPlayerStatsUI:create()
     self.weightBtn:setAnchorLeft(true);
     self.weightBtn:setAnchorTop(false);
     self.weightBtn:setAnchorBottom(true);
+    if isClient() then
+        allowButton = getCore():getDebug() or self.admin:getRole():hasCapability(Capability.CanModifyPlayerStatsInThePlayerStatsUI)
+    else
+        allowButton = getCore():getDebug();
+    end
+
+    if not allowButton then
+        self.weightBtn.enable = false;
+    end
     self.weightBtn.borderColor = self.buttonBorderColor;
     self.mainPanel:addChild(self.weightBtn);
     

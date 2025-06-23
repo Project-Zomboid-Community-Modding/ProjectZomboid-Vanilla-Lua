@@ -17,7 +17,7 @@ ISEmptyGraves = ISBuildingObject:derive("ISEmptyGraves");
 --**
 --************************************************************************--
 function ISEmptyGraves:create(x, y, z, north, sprite)
-    print("GRAVES CREATES")
+    showDebugInfoInChat("Cursor Create \'ISEmptyGraves\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local cell = getWorld():getCell();
 	self.sq = cell:getGridSquare(x, y, z);
 	self:setInfo(self.sq, north, sprite, cell, "sprite1");
@@ -75,8 +75,8 @@ function ISEmptyGraves:setInfo(square, north, sprite, cell, spriteType)
 end
 
 function ISEmptyGraves:new(sprite, sprite2, northSprite, northSprite2, equipBothHandItem)
-    print("GRAVES NEW")
-	local o = ISBaseTimedAction.new(self, character)
+    showDebugInfoInChat("Cursor New \'ISEmptyGraves\'")
+	local o = ISBuildingObject.new(self)
 	o:init();
 	o:setSprite(sprite);
 	o:setNorthSprite(northSprite);

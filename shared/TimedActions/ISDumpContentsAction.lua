@@ -89,6 +89,9 @@ function ISDumpContentsAction:complete()
 				self.item:setUseDelta(1)
 			end
 		end
+		if instanceof(self.item, "Food") then
+			self.item:setCurrentUses(1)
+		end
 		self.item:UseAndSync();
 	end
 

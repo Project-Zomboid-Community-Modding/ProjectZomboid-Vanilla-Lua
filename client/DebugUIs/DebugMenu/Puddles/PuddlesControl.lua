@@ -149,7 +149,9 @@ function PuddlesControl:prerender()
 
     for k,o in pairs(self.floats) do
         o.tickbox.selected[1] = o.option:isEnableAdmin();
-        o.slider:setCurrentValue(o.option:getAdminValue());
+        -- same value check to prevent puddle update spam if slider value has not actually changed - spurcival
+        local valueSame = math.abs(o.slider:getCurrentValue() - o.option:getAdminValue()) < 0.001;
+        o.slider:setCurrentValue(o.option:getAdminValue(), valueSame);
     end
 
     for k,o in pairs(self.colors) do

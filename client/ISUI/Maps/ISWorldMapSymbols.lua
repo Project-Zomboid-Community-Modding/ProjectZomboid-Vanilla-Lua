@@ -801,7 +801,7 @@ function ISWorldMapSymbols:createChildren()
 	--detect all needed tabs
 	for i,v in ipairs(self.symbolList) do
 		local symbolDef = MapSymbolDefinitions.getInstance():getSymbolById(v)
-		found = false
+		local found = false
 		for _, x in pairs(panelTabs) do
 			if x == symbolDef:getTab() then
 				found = true
@@ -1281,9 +1281,11 @@ end
 
 function ISWorldMapSymbols:onKeyRelease(key)
 	if self.currentTool and self.currentTool:onKeyRelease(key) then
+		self.keyPressConsumed = false
 		return true
 	end
 	if self.keyPressConsumed == true then
+		self.keyPressConsumed = false
 		return true
 	end
 	if key == Keyboard.KEY_ESCAPE then

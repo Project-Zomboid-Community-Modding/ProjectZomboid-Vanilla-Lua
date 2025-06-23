@@ -61,6 +61,11 @@ function ISDebugUtils.addTextEntryBox(_self, _data, _title, _x, _y, _w, _h)
     return entryBox:getY() + entryBox:getHeight(), entryBox;
 end
 
+function ISDebugUtils.addLabelNoReturnOffset(_self, _data, _x, _y, _title, _font, _bLeft)
+    local _, label = ISDebugUtils.addLabel(_self, _data, _x, _y, _title, _font, _bLeft)
+    return label;
+end
+
 function ISDebugUtils.addLabel(_self, _data, _x, _y, _title, _font, _bLeft)
     local FONT_HGT = getTextManager():getFontHeight(_font);
     local label = ISLabel:new(_x, _y, FONT_HGT, _title, 1, 1, 1, 1.0, _font, _bLeft==nil and true or _bLeft);
@@ -85,6 +90,11 @@ function ISDebugUtils.addTickBox(_self, _data, _x, _y, _w, _h, _title, options, 
         tickBox:addOption(v.text);
     end
     return tickBox:getY() + tickBox:getHeight(), tickBox;
+end
+
+function ISDebugUtils.addSliderNoReturnOffset(_self, _data, _x, _y, _w, _h, _func)
+    local _, slider = ISDebugUtils.addSlider(_self, _data, _x, _y, _w, _h, _func);
+    return slider;
 end
 
 function ISDebugUtils.addSlider(_self, _data, _x, _y, _w, _h, _func)

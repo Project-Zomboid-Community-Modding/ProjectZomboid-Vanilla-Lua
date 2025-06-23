@@ -87,12 +87,52 @@ function ISCraftBenchPanel:render()
     if ISEntityUI.drawDebugLines or self.drawDebugLines then
         self:drawRectBorderStatic(0, 0, self.width, self.height, 1.0, 0, 1, 0);
     end
+
+    self:renderJoypadNavigateOverlay(self.player:getPlayerNum())
 end
 
 function ISCraftBenchPanel:update()
     ISBaseComponentPanel.update(self);
 end
 
+function ISCraftBenchPanel:onGainJoypadFocus(joypadData)
+    ISBaseComponentPanel.onGainJoypadFocus(self, joypadData)
+    local handCraftPanel = self.handCraftPanel
+    local recipeCategories = handCraftPanel.recipeCategories.recipeCategoryPanel
+    recipeCategories:setJoypadFocused(true, joypadData)
+end
+
+function ISCraftBenchPanel:onLoseJoypadFocus(joypadData)
+    ISBaseEntityWindow.onLoseJoypadFocus(self, joypadData)
+end
+
+function ISCraftBenchPanel:onJoypadDown(button, joypadData)
+    ISBaseEntityWindow.onJoypadDown(self, button, joypadData)
+end
+
+function ISCraftBenchPanel:onJoypadNavigateStart_Descendant(descendant, joypadData)
+    local handCraftPanel = self.handCraftPanel
+    local recipeCategories = handCraftPanel.recipeCategories.recipeCategoryPanel
+    local recipeFilterPanel = handCraftPanel.recipesPanel.recipeFilterPanel
+    local recipeIconPanel = handCraftPanel.recipesPanel.recipeIconPanel
+    local recipeListPanel = handCraftPanel.recipesPanel.recipeListPanel.recipeListPanel
+    local listOrIconPanel = recipeIconPanel:isVisible() and recipeIconPanel or recipeListPanel
+    local recipePanel = handCraftPanel.recipePanel
+    local inventoryPanel = handCraftPanel.inventoryPanel.itemListBox
+    inventoryPanel.joypadNavigate = { left = recipePanel.inputs }
+    if not inventoryPanel:isReallyVisible() then inventoryPanel = nil end
+    recipeCategories.joypadNavigate = { right = listOrIconPanel }
+    recipeFilterPanel.joypadNavigate = { left = recipeCategories, right = recipePanel.inputs, down = listOrIconPanel }
+    listOrIconPanel.joypadNavigate = { left = recipeCategories,  up = recipeFilterPanel, right = recipePanel.inputs }
+    recipePanel.inputs.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, down = recipePanel.craftControl }
+    recipePanel.craftControl.joypadNavigate = { left = listOrIconPanel, right = inventoryPanel, up = recipePanel.inputs }
+end
+
+function ISCraftBenchPanel:OnCloseWindow()
+    if self.handCraftPanel then
+        self.handCraftPanel:OnCloseWindow();
+    end
+end
 
 --************************************************************************--
 --** ISCraftBenchPanel:new

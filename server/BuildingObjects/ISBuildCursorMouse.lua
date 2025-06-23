@@ -1,7 +1,7 @@
 ISBuildCursorMouse = ISBuildingObject:derive("ISBuildCursorMouse")
 
 function ISBuildCursorMouse:create(x, y, z, north, sprite)
---	getCell():setDrag(nil, self.player)
+    showDebugInfoInChat("Cursor Create \'ISBuildCursorMouse\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	self:hideTooltip();
 	self:onSquareSelected(getWorld():getCell():getGridSquare(x, y, z))
 end
@@ -73,5 +73,6 @@ function ISBuildCursorMouse:new(character, onSquareSelected, isValid)
 	o.player = character:getPlayerNum()
 	o.noNeedHammer = true
 	o.skipBuildAction = true
+	showDebugInfoInChat("Cursor New \'ISBuildCursorMouse\'")
 	return o
 end

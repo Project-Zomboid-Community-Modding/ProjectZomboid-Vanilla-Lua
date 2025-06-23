@@ -38,10 +38,12 @@ function ISMoveablesAction:isValid()
     if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
         --ensure we can reach the object from here (wall, door, window or fence)
         if self.square:isSomethingTo(plSquare) then
-            if (not self:isReachableObjectType()) then
-                self:stop();
-                return false;
-            end;
+            if self.square:isDoorTo(plSquare) and self.square:isDoorBlockedTo(plSquare) then
+                if (not self:isReachableObjectType()) then
+                    self:stop();
+                    return false;
+                end
+            end
         end;
         --ensures another action has not destroyed the object first
         if (self.mode == "scrap" or self.mode == "repair") and (not self:isValidObject()) then
@@ -121,8 +123,9 @@ function ISMoveablesAction:start()
     if self.mode and (self.mode=="scrap" or self.mode=="repair") then
         if self.mode == "scrap" then
             local hc = getCore():getBadHighlitedColor();
-            self.moveProps.object:setHighlightColor(hc);
-            self.moveProps.object:setHighlighted(true, false);
+            self.moveProps.object:setHighlightColor(self.playerNum, hc);
+            self.moveProps.object:setHighlighted(self.playerNum, true, false);
+            ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, true)
         end;
         local isFloor = self.moveProps and self.moveProps.object and self.moveProps.object:isFloor()
         if self.moveProps and self.mode=="scrap" and self.moveProps:startScrapAction(self) then
@@ -146,7 +149,8 @@ end
 
 function ISMoveablesAction:stop()
     if self.mode and self.mode=="scrap" then
-		self.moveProps.object:setHighlighted(false);
+		self.moveProps.object:setHighlighted(self.playerNum, false);
+		ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, false)
 	end
     if self.sound and self.sound ~= 0 then
         self.character:stopOrTriggerSound(self.sound);
@@ -160,7 +164,8 @@ end
 function ISMoveablesAction:perform()
     if self.mode then
         if self.mode=="scrap" then
-		    self.moveProps.object:setHighlighted(false);
+		    self.moveProps.object:setHighlighted(self.playerNum, false);
+		    ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, false)
 		end
 		if self.mode == "pickup" then
             getSoundManager():playUISound("UIObjectMenuObjectPickup")
@@ -215,6 +220,7 @@ end
 
 function ISMoveablesAction:new(character, square, mode, origSpriteName, object, direction, item, moveCursor )
     local o = ISBaseTimedAction.new(self, character)
+    o.playerNum = character:getPlayerNum()
     o.square            = square;
     o.origSpriteName    = origSpriteName;
     o.spriteFrame       = 0;
@@ -246,7 +252,15 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
         o.moveProps = ISMoveableSpriteProps.fromObjectForRepair( object );
     end
     if o.mode == "place" then
-        local _moveProps = ISMoveableSpriteProps.new( item:getWorldSprite() );
+        local worldSpriteName = item:getWorldSprite();
+        local worldSprite = getSprite(worldSpriteName); -- this may be any sprite in a sprite grid, we want the sprite at 0,0 in the grid
+        if worldSprite ~= nil and worldSprite:getSpriteGrid() ~= nil then
+            worldSprite = worldSprite:getSpriteGrid():getSprite(0, 0)
+            if worldSprite ~= nil then
+                worldSpriteName = worldSprite:getName()
+            end
+        end
+        local _moveProps = ISMoveableSpriteProps.new( worldSpriteName );
         local faces = _moveProps:getFaces();
         if faces[direction] then
             _moveProps = ISMoveableSpriteProps.new( faces[direction] );
@@ -256,7 +270,10 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
     if o.mode == "rotate" then
         local _moveProps = ISMoveableSpriteProps.new( object:getSprite():getName() );
         local faces = _moveProps:getFaces();
-        o.moveProps = ISMoveableSpriteProps.new( faces[direction] );
+        if faces[direction] then
+            _moveProps = ISMoveableSpriteProps.new( faces[direction] );
+        end
+        o.moveProps = _moveProps
     end
 
     o.moveCursor        = moveCursor;

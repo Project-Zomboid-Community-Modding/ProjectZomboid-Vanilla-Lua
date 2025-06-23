@@ -2,6 +2,8 @@ require "ISUI/ISPanel"
 
 ISToolTip = ISPanel:derive("ISToolTip");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -19,6 +21,14 @@ end
 
 function ISToolTip:setName(name)
 	self.name = name;
+end
+
+function ISToolTip:setTitle(str)
+	self.name = str;
+end
+
+function ISToolTip:setDescription(str)
+	self.description = str;
 end
 
 function ISToolTip:setContextMenu(contextMenu)
@@ -91,6 +101,9 @@ function ISToolTip:render()
 	elseif self.owner and self.owner.isButton then
 		local ownerRect = { x = self.owner:getAbsoluteX(), y = self.owner:getAbsoluteY(), width = self.owner.width, height = self.owner.height }
 		self:adjustPositionToAvoidOverlap(ownerRect)
+	elseif self.owner and self.owner.Type == "ISSkillProgressBar" then
+		local ownerRect = { x = self.owner:getAbsoluteX(), y = self.owner:getAbsoluteY(), width = self.owner.width, height = self.owner.height }
+		self:adjustPositionToAvoidOverlap(ownerRect)
 	end
 
 	-- big rectangle (our background)
@@ -114,7 +127,7 @@ function ISToolTip:render()
 	
 	-- render a how to rotate message at the bottom if needed
 	if self.footNote then
-		local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
+		local fontHgt = FONT_HGT_SMALL
 		self:drawTextCentre(self.footNote, self:getWidth() / 2, self:getHeight() - fontHgt - 4, 1, 1, 1, 1, UIFont.Small)
 	end
 end
@@ -166,6 +179,10 @@ function ISToolTip:doLayout()
 		if myWidth < noteWidth then myWidth = noteWidth end
 		local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
 		myHeight = myHeight + fontHgt + 4
+	end
+
+	if self.name then
+		myHeight = myHeight + (FONT_HGT_MEDIUM - FONT_HGT_SMALL) + 4
 	end
 
 	self:setWidth(myWidth + 20)
@@ -229,7 +246,7 @@ function ISToolTip:renderContents()
 		end
 		local y = 0
 		if self.name then
-			y = 25
+			y = FONT_HGT_MEDIUM
 		end
 		self.descriptionPanel:setY(self:getAbsoluteY() + y)
 		self.descriptionPanel:prerender()

@@ -8,6 +8,7 @@ Recipe.OnCanPerform = {}
 Recipe.OnCreate = {}
 Recipe.OnGiveXP = {}
 Recipe.OnTest = {}
+Recipe.WeaponParts = {}
 
 local function addExistingItemType(scriptItems, type)
 	local all = getScriptManager():getItemsByType(type)
@@ -23,6 +24,17 @@ function Recipe.OnCreate.HotCuppa(craftRecipeData, character)
 	local result = craftRecipeData:getAllCreatedItems():get(0);
     result:setCooked(true);
     result:setHeat(2.5);
+end
+
+function Recipe.OnCreate.MakeCoffee(craftRecipeData, character)
+	local result = craftRecipeData:getAllCreatedItems():get(0);
+	result:setName(getText("ContextMenu_FoodType_Coffee") .. getText("ContextMenu_EvolvedRecipe_HotDrink"));
+	result:addExtraItem("Base.Coffee2");
+    result:setCooked(true);
+    result:setHeat(2.5);
+    result:setBaseHunger(-0.05);
+    result:setHungChange(-0.05);
+    result:setFatigueChange(-0.25);
 end
 
 function Recipe.GetItemTypes.AnimalBrain(scriptItems)
@@ -126,67 +138,26 @@ end
 
 -- Fill entirely the blowtorch with the remaining propane
 function Recipe.OnCreate.RefillBlowTorch(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
 	local result = craftRecipeData:getAllCreatedItems():get(0);
-    local previousBT = nil;
-    local propaneTank = nil;
---     local oxygenTank = nil;
-    for i=0, items:size()-1 do
-       if items:get(i):getType() == "BlowTorch" then
-           previousBT = items:get(i);
-       elseif items:get(i):getType() == "PropaneTank" then
-           propaneTank = items:get(i);
---        elseif items:get(i):hasTag("OxygenTank") then
---            oxygenTank = items:get(i);
-       end
-    end
-    result:setUsedDelta(previousBT:getCurrentUsesFloat() + result:getUseDelta() * 30);
+    local previousBT = craftRecipeData:getAllConsumedItems():get(0);
+    local propaneTank = craftRecipeData:getAllKeepInputItems():get(0);
+	
+    result:setCurrentUsesFloat(previousBT:getCurrentUsesFloat());
 
-    while result:getCurrentUsesFloat() < 1 and propaneTank:getCurrentUsesFloat() > 0 do
---     while result:getCurrentUsesFloat() < 1 and propaneTank:getCurrentUsesFloat() > 0 and oxygenTank:getCurrentUsesFloat() > 0 do
-        result:setUsedDelta(result:getCurrentUsesFloat() + result:getUseDelta() * 10);
+	-- one blowtorch use is 70g of gas, or 70 propaneTank uses (one g per use)
+    while result:getCurrentUsesFloat() < 1 and propaneTank:getCurrentUses() >= 70 do
+        result:setCurrentUsesFloat(result:getCurrentUsesFloat() + result:getUseDelta());
+		propaneTank:setCurrentUses(propaneTank:getCurrentUses() - 69);
         propaneTank:Use();
---         if oxygenTank then oxygenTank:Use(); end
     end
-
-    if result:getCurrentUsesFloat() > 1 then
-        result:setUsedDelta(1);
-    end
-end
-
--- check when refilling the lighter that lighter is not full and lighter fluid not empty
-function Recipe.OnTest.RefillLighter(item)
-    if item:getType() == "Lighter" then
-        if item:getCurrentUsesFloat() == 1 then return false; end
-    elseif item:getType() == "LighterFluid" then
-        if item:getCurrentUsesFloat() == 0 then return false; end
-    end
-    return true;
 end
 
 -- Fill entirely the lighter with the remaining lighter fluid
 function Recipe.OnCreate.RefillLighter(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
-	local result = craftRecipeData:getAllCreatedItems():get(0);
-    local oldLighter = nil;
-    local lighterFluid = nil;
-    for i=0, items:size()-1 do
-       if items:get(i):getType() == "Lighter" then
-           oldLighter = items:get(i);
-       elseif items:get(i):getType() == "LighterFluid" then
-           lighterFluid = items:get(i);
-       end
-    end
-    result:setUsedDelta(lighterFluid:getCurrentUsesFloat() + result:getUseDelta() * 30);
+	local lighter = craftRecipeData:getAllKeepInputItems():get(0);
+	local lighterFluid = craftRecipeData:getAllConsumedItems():get(0);
 
-    while result:getCurrentUsesFloat() < 1 and lighterFluid:getCurrentUsesFloat() > 0 do
-        result:setUsedDelta(result:getCurrentUsesFloat() + result:getUseDelta() * 30);
-        lighterFluid:Use();
-    end
-
-    if result:getCurrentUsesFloat() > 1 then
-        result:setUsedDelta(1);
-    end
+    lighter:setCurrentUsesFloat(lighterFluid:getCurrentUsesFloat() + 0.3);
 end
 
 -- change result quality depending on your BS skill and the tools used
@@ -236,22 +207,12 @@ function Recipe.OnCreate.TorchBatteryRemoval(craftRecipeData, character)
 	end
 end
 
--- You can't dismantle favorite item
-function Recipe.OnTest.DismantleElectronics(sourceItem, result)
--- 	if sourceItem:hasTag("Screwdriver") then return true end
-    return not sourceItem:isFavorite()
-end
-
 -- When creating item in result box of crafting panel.
 function Recipe.OnCreate.TorchBatteryInsert(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
-	local result = craftRecipeData:getAllCreatedItems():get(0);
-  for i=0, items:size()-1 do
-	-- we found the battery, we change his used delta according to the battery
-	if items:get(i):getType() == "Battery" then
-		result:setUsedDelta(items:get(i):getCurrentUsesFloat());
-	end
-  end
+	local battery = craftRecipeData:getAllConsumedItems():get(0);
+	local flashlight = craftRecipeData:getAllKeepInputItems():get(0);
+
+	flashlight:setUsedDelta(battery:getCurrentUsesFloat());
 end
 
 function Recipe.OnCreate.DismantleFlashlight(craftRecipeData, character)
@@ -271,20 +232,24 @@ function Recipe.OnCreate.DismantleFlashlight(craftRecipeData, character)
 end
 
 function Recipe.OnCreate.InheritColorFromMaterial(craftRecipeData, character)
-	local material = craftRecipeData:getFirstInputItemWithFlag("InheritColor");
+	local material = craftRecipeData:getFirstInputItemWithFlag("InheritColor") or craftRecipeData:getFirstInputFluidWithFlag("InheritColor");
+	if not material then return end
 	local color = material:getColor();
+	local r, g, b = color:getR(), color:getG(), color:getB();
 	local results = craftRecipeData:getAllCreatedItems();
+	if results:isEmpty() then
+        results = craftRecipeData:getAllInputItemsWithFlag("IsNotWorn");
+    end
 
 	for j=0,results:size() - 1 do
 		local result = results:get(j)
-		result:setColor(color);
-		if instanceof(result, "Clothing") or instanceof(result, "InventoryContainer") then
-			local visual = result:getVisual();
-			if visual then
-				local immuColor = ImmutableColor.new(color);
-				visual:setTint(immuColor);
-			end
-		end
+		if result then
+            result:setColorRed(r);
+            result:setColorGreen(g);
+            result:setColorBlue(b);
+		    result:setColor(color);
+		    result:setCustomColor(true);
+        end
     end
 end
 
@@ -309,8 +274,9 @@ end
 
 -- Sawn-off recipe callback, copies modData to the new sawn-off.
 local function tryAttachPart(weapon, part, player)
-	--if part:getMountOn():contains(weapon:getFullType()) then
-	if part:canAttach(player, weapon) then
+	-- set player to nil when calling canAttach so lua callbacks don't check inventory for tools since this part is already attached
+	-- see: Recipe.WeaponParts.hasScrewdriver
+	if part:canAttach(nil, weapon) then
 		weapon:attachWeaponPart(player, part)
 	elseif player then
 		player:getInventory():AddItem(part)
@@ -361,6 +327,7 @@ end
 function Recipe.OnCreate.Make4Bowls(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
 	local results = craftRecipeData:getAllCreatedItems();
+	local dishTypes = {"Pasta", "Rice"};
 	local condition = 10;
     for i=0,items:size() - 1 do
         local item = items:get(i)
@@ -385,9 +352,19 @@ function Recipe.OnCreate.Make4Bowls(craftRecipeData, character)
 							result:addExtraItem(extraItem);
 						end
 					end
-					if item:getDisplayName() then
-						result:setName(getText("Tooltip_food_Bowl", item:getDisplayName()));
+					if not item:isCustomName() and item:getEvolvedRecipeName() then
+						result:setName(getText("Tooltip_food_Bowl", item:getEvolvedRecipeName()));
 						result:setCustomName(true);
+					elseif item:getDisplayName() then
+						local itemName = item:getDisplayName();
+						for k=1, #dishTypes do
+							if string.contains(itemName, dishTypes[k]) then
+								itemName = dishTypes[k];
+								break
+							end
+						end
+						result:setName(getText("Tooltip_food_Bowl", itemName));
+                    	result:setCustomName(true);
 					end
 				else
 					result:setCondition(condition)
@@ -431,6 +408,7 @@ end
 function Recipe.OnCreate.Make2Bowls(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
 	local results = craftRecipeData:getAllCreatedItems();
+	local dishTypes = {"Pasta", "Rice"};
 	local condition = 10;
     for i=0,items:size() - 1 do
         local item = items:get(i)
@@ -440,7 +418,7 @@ function Recipe.OnCreate.Make2Bowls(craftRecipeData, character)
 				local result = results:get(j)
 				if instanceof(result, "Food") then
 					result:setBaseHunger(item:getBaseHunger() / 2);
-					result:setHungChange(item:getBaseHunger() / 2);
+					result:setHungChange(item:getHungChange() / 2);
 					result:setThirstChange(item:getThirstChangeUnmodified() / 2);
 					result:setBoredomChange(item:getBoredomChangeUnmodified() / 2);
 					result:setUnhappyChange(item:getUnhappyChangeUnmodified() / 2);
@@ -450,14 +428,24 @@ function Recipe.OnCreate.Make2Bowls(craftRecipeData, character)
 					result:setCalories(item:getCalories() / 2);
 					result:setTainted(item:isTainted())
 					if item:haveExtraItems() then
-						for i=0,item:getExtraItems():size() - 1 do
-							local extraItem = item:getExtraItems():get(i);
+						for k=0,item:getExtraItems():size() - 1 do
+							local extraItem = item:getExtraItems():get(k);
 							result:addExtraItem(extraItem);
 						end
 					end
-					if item:getDisplayName() then
-						result:setName(getText("Tooltip_food_Bowl", item:getDisplayName()));
+					if not item:isCustomName() and item:getEvolvedRecipeName() then
+						result:setName(getText("Tooltip_food_Bowl", item:getEvolvedRecipeName()));
 						result:setCustomName(true);
+					elseif item:getDisplayName() then
+						local itemName = item:getDisplayName();
+						for k=1, #dishTypes do
+							if string.contains(itemName, dishTypes[k]) then
+								itemName = dishTypes[k];
+								break
+							end
+						end
+						result:setName(getText("Tooltip_food_Bowl", itemName));
+                    	result:setCustomName(true);
 					end
 				else
 					result:setCondition(condition)
@@ -485,7 +473,7 @@ function Recipe.OnCreate.Slice3(craftRecipeData, character)
 				if instanceof(result, "Food") then
 					if item:isBurnt() then result:setBurnt(true) end
 					result:setBaseHunger(item:getBaseHunger() / 3);
-					result:setHungChange(item:getBaseHunger() / 3);
+					result:setHungChange(item:getHungChange() / 3);
 					result:setThirstChange(item:getThirstChangeUnmodified() / 3);
 					result:setBoredomChange(item:getBoredomChangeUnmodified() / 3);
 					result:setUnhappyChange(item:getUnhappyChangeUnmodified() / 3);
@@ -573,12 +561,52 @@ function Recipe.OnCreate.CutFish(craftRecipeData, character)
         end
     end
     if fish then
+		local fishWeight = fish:getActualWeight();
+		local hunger = math.max(fish:getBaseHunger(), fish:getHungChange());
+		local gutWeightMult = 0.1;
+		local roeWeightMult = 0;
+		local roeChance = 10;
+		local fishName = fish:getDisplayName();
+		if not string.contains(fishName, "Small") then
+			local currentMonth = getGameTime():getMonth();
+			if currentMonth == 3 then
+				roeChance = 2;
+			elseif currentMonth == 2 or currentMonth == 4 then
+				roeChance = 4;
+			end
+			if ZombRand(roeChance) == 0 then
+				if string.contains(fishName, "Legendary") then
+					roeWeightMult = 0.15;
+				elseif string.contains(fishName, "Big") then
+					roeWeightMult = 0.1;
+				else
+					roeWeightMult = 0.05;
+				end
+			end
+		end
+		if not fish:isCooked() then
+			local guts = instanceItem("Base.FishGuts");
+			local gutHunger = math.max(guts:getBaseHunger(), guts:getHungChange());
+			guts:setWeight(fishWeight * gutWeightMult);
+			guts:setBaseHunger(gutHunger);
+			guts:setHungChange(gutHunger);
+			character:getInventory():AddItem(guts);
+			sendAddItemToContainer(character:getInventory(), guts);
+			if roeWeightMult ~= 0 then
+				local roe = instanceItem("Base.FishRoeSac");
+				local roeHunger = (hunger * roeWeightMult);
+				roe:setWeight(fishWeight * roeWeightMult);
+				roe:setBaseHunger(roeHunger);
+				roe:setHungChange(roeHunger);
+				character:getInventory():AddItem(roe);
+				sendAddItemToContainer(character:getInventory(), roe);
+			end
+		end
 		for j=0,results:size() - 1 do
 			local result = results:get(j)	
-			local hunger = math.max(fish:getBaseHunger(), fish:getHungChange())
 			result:setBaseHunger(hunger / 2);
 			result:setHungChange(hunger / 2);
-			result:setActualWeight((fish:getActualWeight() * 0.9) / 2)
+			result:setActualWeight((fishWeight * (gutWeightMult + roeWeightMult)) / 2)
 			result:setWeight(result:getActualWeight());
 			result:setCustomWeight(true)
 			result:setCarbohydrates(fish:getCarbohydrates() / 2);
@@ -588,6 +616,132 @@ function Recipe.OnCreate.CutFish(craftRecipeData, character)
 			result:setCooked(fish:isCooked());
 		end
     end
+end
+
+function Recipe.OnCreate.HarvestRoe(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems();
+	local roe = craftRecipeData:getAllCreatedItems():get(0);
+    local roeSac = nil;
+    for i=0,items:size() - 1 do
+        if instanceof(items:get(i), "Food") then
+            roeSac = items:get(i);
+			local roeHunger = roeSac:getBaseHunger();
+            roe:setBaseHunger(roeHunger);
+            roe:setHungChange(roeHunger);
+            roe:setCarbohydrates(roe:getCarbohydrates());
+            roe:setLipids(roe:getLipids());
+            roe:setProteins(roe:getProteins());
+            roe:setCalories(roe:getCalories());
+		end
+    end
+end
+
+-- Copy of canned food recipe but with fish roe instead. Can think up something better later?
+-- Maybe merge multiple fish roe items into single item with larger hunger reduction?
+function Recipe.OnCreate.RoeJar(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems();
+	local result = craftRecipeData:getAllCreatedItems():get(0);
+    result:setBaseHunger(0)
+    result:setHungChange(0)
+    result:setActualWeight(0)
+    result:setCarbohydrates(0)
+    result:setLipids(0)
+    result:setProteins(0)
+    result:setCalories(0)
+    local food = nil;
+    local age = 0;
+    local offAgeMax = 0;
+    local offAge = 0;
+    for i=0,items:size() - 1 do
+        if instanceof(items:get(i), "Food") then
+            food = items:get(i);
+            if not food:hasTag("Salt") then
+                result:setBaseHunger(result:getBaseHunger() + food:getBaseHunger())
+                result:setHungChange(result:getBaseHunger() + food:getBaseHunger())
+                result:setCarbohydrates(result:getCarbohydrates() + food:getCarbohydrates())
+                result:setLipids(result:getLipids() + food:getLipids())
+                result:setProteins(result:getProteins() + food:getProteins())
+                result:setCalories(result:getCalories() + food:getCalories())
+                if food:getAge() > age then age = food:getAge() end
+                offAgeMax = food:getOffAgeMax()
+                offAge = food:getOffAge()
+            end
+        elseif items:get(i):getType() == "JarLid" then
+            local lid = items:get(i)
+            local mData = result:getModData()
+            local skill = character:getPerkLevel(Perks.Cooking)
+            if ZombRand(11) >= skill then
+                mData.LidCondition = (lid:getCondition() - 1)
+            else
+                mData.LidCondition = lid:getCondition()
+            end
+        end
+    end
+    result:setAge(age);
+    result:setOffAgeMax(offAgeMax);
+    result:setOffAge(offAge);
+
+	result:syncItemFields();
+end
+
+function Recipe.OnCreate.OpenRoeJar(craftRecipeData, character)
+	local jar = craftRecipeData:getAllConsumedItems():get(0);
+	local result = craftRecipeData:getAllCreatedItems():get(0);
+	local jarHunger = jar:getBaseHunger();
+    result:setBaseHunger(jarHunger);
+    result:setHungChange(jarHunger);
+    result:setCarbohydrates(jar:getCarbohydrates());
+    result:setLipids(jar:getLipids());
+    result:setProteins(jar:getProteins());
+    result:setCalories(jar:getCalories());
+    local lid = instanceItem("Base.JarLid");
+    local mData = jar:getModData();
+    local cond = mData.LidCondition or 9
+    lid:setCondition(cond)
+    character:getInventory():AddItem(lid);
+	sendAddItemToContainer(character:getInventory(), lid);
+end
+
+-- Detects pot type without the need for extra recipe script stuff.
+function Recipe.OnCreate.MakeSushi(craftRecipeData, character)
+	local potList = {"WaterPotRice", "WaterPotForgedRice", "WaterSaucepanRice", "WaterSaucepanRiceCopper"}
+	local emptyPotList = {"Pot", "PotForged", "Saucepan", "SaucepanCopper"}
+	local items = craftRecipeData:getAllConsumedItems()
+	local recipeInputs = craftRecipeData:getRecipe():getInputs()
+	local riceItem = nil;
+	for i=0,items:size() - 1 do
+		local item = items:get(i)
+		if item:hasTag("RiceRecipe") then
+			riceItem = item
+			break
+		end
+	end
+	if riceItem then
+		local potItem = nil
+		local riceValue = -riceItem:getHungChange()
+		local riceAmount = 0
+		-- This is to get the amount of rice used in the recipe.
+		for i=0,recipeInputs:size()-1 do
+			local recipeInput = recipeInputs:get(i)
+			if recipeInput:isCookedFoodItem() then
+				riceAmount = recipeInput:getAmount()/100
+				break
+			end
+		end
+		local riceName = riceItem:getType()
+		-- Only fires if all the rice is used up.
+		if riceValue-riceAmount <= 0 then
+			for i=1,#potList do
+				if riceName == potList[i] then
+					potItem = instanceItem("Base."..emptyPotList[i])
+					potItem:setCondition(riceItem:getCondition())
+					break
+				end
+			end
+			character:getInventory():AddItem(potItem)
+			sendAddItemToContainer(character:getInventory(), potItem)
+		end
+	end
 end
 
 function Recipe.OnTest.CutFillet(sourceItem, result)
@@ -600,30 +754,27 @@ end
 function Recipe.OnCreate.CutFillet(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
 	local results = craftRecipeData:getAllCreatedItems();
-    local fillet = nil
+    local fillet = nil;
     for i=0,items:size() - 1 do
         if items:get(i):getType() == "FishFillet" then
-            fillet = items:get(i)
+            fillet = items:get(i);
             break
         end
     end
     if fillet then
-        local hunger = math.max(fillet:getBaseHunger(), fillet:getHungChange())
-        fillet:setBaseHunger(hunger * 0.5)
-        fillet:setHungChange(fillet:getBaseHunger())
-        fillet:setActualWeight(fillet:getActualWeight() * 0.5)
-
+        local filletHunger = math.max(fillet:getBaseHunger(), fillet:getHungChange());
+		local filletWeight = fillet:getActualWeight();
 		for j=0,results:size() - 1 do
-			local result = results:get(j)	
-			result:setBaseHunger(fillet:getBaseHunger())
-			result:setHungChange(fillet:getBaseHunger())
-			result:setActualWeight(fillet:getActualWeight())
-			result:setWeight(result:getActualWeight())
-			result:setCustomWeight(true)
-			result:setCarbohydrates(fillet:getCarbohydrates());
-			result:setLipids(fillet:getLipids());
-			result:setProteins(fillet:getProteins());
-			result:setCalories(fillet:getCalories());
+			local result = results:get(j);
+			result:setBaseHunger(filletHunger / 2);
+			result:setHungChange(filletHunger / 2);
+			result:setActualWeight(filletWeight / 2);
+			result:setWeight(filletWeight / 2);
+			result:setCustomWeight(true);
+			result:setCarbohydrates(fillet:getCarbohydrates() / 2);
+			result:setLipids(fillet:getLipids() / 2);
+			result:setProteins(fillet:getProteins() / 2);
+			result:setCalories(fillet:getCalories() / 2);
 		end
     end
 end
@@ -709,6 +860,8 @@ function Recipe.OnCreate.CannedFood(craftRecipeData, character)
     result:setAge(age);
     result:setOffAgeMax(offAgeMax);
     result:setOffAge(offAge);
+
+	result:syncItemFields();
 end
 
 -- set back the age of the food and give the jar back
@@ -728,12 +881,15 @@ function Recipe.OnCreate.OpenCannedFood(craftRecipeData, character)
     result:setCooked(jar:isCooked())
     result:setBurnt(jar:isBurnt())
 
+	result:syncItemFields();
+
     -- character:getInventory():AddItem("Base.EmptyJar");
     local lid = instanceItem("Base.JarLid");
     local mData = jar:getModData()
     local cond = mData.LidCondition or 9
     lid:setCondition(cond)
     character:getInventory():AddItem(lid);
+	sendAddItemToContainer(character:getInventory(), lid);
 
 --    print("you're new food have age " .. result:getAge());
 end
@@ -761,8 +917,9 @@ function Recipe.OnCreate.CreateLogStack(craftRecipeData, character)
     for i = 0, items:size() - 1 do
         item = items:get(i);
         if item then
-            itemType = item:getFullType();
-            if itemType ~= "Base.Log" then
+--             if itemType ~= "Base.Log" then
+            if item:hasTag("Rope") then
+                itemType = item:getFullType();
                 table.insert(ropeItems, itemType);
             end;
         end;
@@ -776,6 +933,19 @@ function Recipe.OnCreate.SplitLogStack(craftRecipeData, character)
     local ropeItems = items:get(0):getModData().ropeItems;
     if ropeItems == nil then
         character:getInventory():AddItem("Base.Rope");
+        character:getInventory():AddItem("Base.Rope");
+    else
+        for i = 1, #ropeItems do
+            character:getInventory():AddItem(ropeItems[i]);
+        end;
+    end
+end
+
+-- give back the single rope used
+function Recipe.OnCreate.SplitFirewoodBundle(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems();
+    local ropeItems = items:get(0):getModData().ropeItems;
+    if ropeItems == nil then
         character:getInventory():AddItem("Base.Rope");
     else
         for i = 1, #ropeItems do
@@ -850,11 +1020,63 @@ function Recipe.GetItemTypes.FishingLine(scriptItems)
 	scriptItems:addAll(getScriptManager():getItemsTag("FishingLine"))
 end
 
-
 function Recipe.OnCreate.OpenEggCarton(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
-	local result = craftRecipeData:getAllCreatedItems():get(0);
-    result:setAge(items:get(0):getAge());
+    local items = craftRecipeData:getAllConsumedItems();
+    local results = craftRecipeData:getAllCreatedItems();
+    local carton = items:get(0);
+    for i=0,results:size() - 1 do
+        local result = results:get(i)
+        result:setAge(carton:getAge());
+        result:setFrozen(carton:isFrozen());
+        result:setFreezingTime(carton:getFreezingTime());
+    end
+end
+
+function Recipe.OnCreate.PutEggsInCarton(craftRecipeData, character)
+    local items = craftRecipeData:getAllConsumedItems()
+    local results = craftRecipeData:getAllCreatedItems()
+    local carton = results:get(0)
+    local freezingTime = 0.0
+    for i=1,items:size() do
+        local item = items:get(i-1)
+        freezingTime = freezingTime + item:getFreezingTime()
+    end
+    freezingTime = freezingTime / items:size()
+    if freezingTime > 0 then
+        carton:setFreezingTime(freezingTime)
+    end
+end
+
+-- Combine hunger/nutrition stats of both eggs for omelette.
+function Recipe.OnCreate.MakeOmelette(craftRecipeData, character)
+    local items = craftRecipeData:getAllConsumedItems();
+    local result = craftRecipeData:getAllCreatedItems():get(0);
+	local eggList = ArrayList.new();
+	local eggHunger = 0;
+	local calories = 0;
+	local carbs = 0;
+	local protein = 0;
+	local lipids = 0;
+	for i=0, items:size() - 1 do
+		local item = items:get(i);
+		if item:hasTag("Egg") then
+			eggList:add(item);
+		end
+	end
+	for j=0, eggList:size() - 1 do
+		local egg = eggList:get(j);
+		eggHunger = eggHunger + egg:getBaseHunger();
+		calories = calories + egg:getCalories();
+		carbs = carbs + egg:getCarbohydrates();
+		protein = protein + egg:getProteins();
+		lipids = lipids + egg:getLipids();
+	end
+	result:setBaseHunger(eggHunger);
+	result:setHungChange(eggHunger);
+	result:setCalories(calories);
+	result:setCarbohydrates(carbs);
+	result:setProteins(protein);
+	result:setLipids(lipids);
 end
 
 --[[ ############# Radio stuff ############## --]]
@@ -871,36 +1093,39 @@ function Recipe.OnCreate.DismantleRadioTwoWay(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
     local success = 50 + (character:getPerkLevel(Perks.Electricity)*5);
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.RadioTransmitter");
+        local item = character:getInventory():AddItem("Base.RadioTransmitter");
+		sendAddItemToContainer(character:getInventory(), item);
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.LightBulbGreen");
+        local item = character:getInventory():AddItem("Base.LightBulbGreen");
+		sendAddItemToContainer(character:getInventory(), item);
     end
     DismantleRadio_OnCreate(craftRecipeData, character);
 end
 
 function Recipe.OnCreate.DismantleRadio(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
+	local resItems = ArrayList.new();
     --TODO adding return items/chance based on selectedItem value
     local success = 50 + (character:getPerkLevel(Perks.Electricity)*5);
     for i=1,ZombRand(1,4) do
         local r = ZombRand(1,4);
         if r==1 then
-            character:getInventory():AddItem("Base.ElectronicsScrap");
+			resItems:add(character:getInventory():AddItem("Base.ElectronicsScrap"));
         elseif r==2 then
-            character:getInventory():AddItem("Base.ElectricWire");
+			resItems:add(character:getInventory():AddItem("Base.ElectricWire"));
         elseif r==3 then
-            character:getInventory():AddItem("Base.AluminumFragments");
+			resItems:add(character:getInventory():AddItem("Base.AluminumFragments"));
         end
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.Amplifier");
+		resItems:add(character:getInventory():AddItem("Base.Amplifier"));
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.LightBulb");
+		resItems:add(character:getInventory():AddItem("Base.LightBulb"));
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.RadioReceiver");
+		resItems:add(character:getInventory():AddItem("Base.RadioReceiver"));
     end
     --if selectedItem then
         --print("Main item "..selectedItem:getName());
@@ -913,39 +1138,48 @@ function Recipe.OnCreate.DismantleRadio(craftRecipeData, character)
             break
         end
     end
+
+	if resItems:size() > 0 then
+		sendAddItemsToContainer(character:getInventory(), resItems);
+	end
 end
 
 function Recipe.OnCreate.DismantleRadioTV(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
 	local result = craftRecipeData:getAllCreatedItems():get(0);
     local success = 50 + (character:getPerkLevel(Perks.Electricity)*5);
+	local resItems = ArrayList.new();
     for i=1,ZombRand(1,6) do
         local r = ZombRand(1,4);
         if r==1 then
-            character:getInventory():AddItem("Base.ElectronicsScrap");
+			resItems:add(character:getInventory():AddItem("Base.ElectronicsScrap"))
         elseif r==2 then
-            character:getInventory():AddItem("Base.ElectricWire");
+			resItems:add(character:getInventory():AddItem("Base.ElectricWire"))
         elseif r==3 then
-            character:getInventory():AddItem("Base.AluminumFragments");
+			resItems:add(character:getInventory():AddItem("Base.AluminumFragments"))
         end
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.Amplifier");
+		resItems:add(character:getInventory():AddItem("Base.Amplifier"))
     end
     if ZombRand(0,100)<success then
-        character:getInventory():AddItem("Base.LightBulb");
+		resItems:add(character:getInventory():AddItem("Base.LightBulb"))
     end
     if selectedItem then
         --print("Main item "..selectedItem:getName());
         if selectedItem:getType()~="TvAntique" then
             if ZombRand(0,100)<success then
-                character:getInventory():AddItem("Base.LightBulbRed");
+				resItems:add(character:getInventory():AddItem("Base.LightBulbRed"))
             end
             if ZombRand(0,100)<success then
-                character:getInventory():AddItem("Base.LightBulbGreen");
+				resItems:add(character:getInventory():AddItem("Base.LightBulbGreen"))
             end
         end
     end
+
+	if resItems:size() > 0 then
+		sendAddItemsToContainer(character:getInventory(), resItems);
+	end
 end
 
 function Recipe.OnGiveXP.DismantleRadio(recipe, ingredients, result, player)
@@ -1008,8 +1242,8 @@ function OnEat_Cigarettes(food, character, percent)
         if bodyDamage:getUnhappynessLevel() < 0 then
             bodyDamage:setUnhappynessLevel(0);
         end
-        stats:setStress(stats:getStress() - 10 * percent);
-        if stats:getStress() < 0 then
+        stats:setStress(stats:getBasicStress() - 10 * percent);
+        if stats:getBasicStress() < 0 then
             stats:setStress(0);
         end
         local reduceSFC = stats:getMaxStressFromCigarettes()
@@ -1050,10 +1284,10 @@ function OnEat_Cigarillo(food, character, percent)
         if bodyDamage:getUnhappynessLevel() < 0 then
             bodyDamage:setUnhappynessLevel(0);
         end
-        stats:setStress(stats:getStress() - 15 * percent);
-        if stats:getStress() < 0 then
-            stats:setStress(0);
-        end
+        stats:setStress(stats:getBasicStress() - 15 * percent);
+--         if stats:getStress() < 0 then
+--             stats:setStress(0);
+--         end
         local reduceSFC = stats:getMaxStressFromCigarettes()
         stats:setStressFromCigarettes(stats:getStressFromCigarettes() - reduceSFC * percent);
         character:setTimeSinceLastSmoke(stats:getStressFromCigarettes() / stats:getMaxStressFromCigarettes());
@@ -1092,10 +1326,10 @@ function OnEat_Cigar(food, character, percent)
         if bodyDamage:getUnhappynessLevel() < 0 then
             bodyDamage:setUnhappynessLevel(0);
         end
-        stats:setStress(stats:getStress() - 40 * percent);
-        if stats:getStress() < 0 then
-            stats:setStress(0);
-        end
+        stats:setStress(stats:getBasicStress() - 40 * percent);
+--         if stats:getStress() < 0 then
+--             stats:setStress(0);
+--         end
         local reduceSFC = stats:getMaxStressFromCigarettes()
         stats:setStressFromCigarettes(stats:getStressFromCigarettes() - reduceSFC * percent);
         character:setTimeSinceLastSmoke(stats:getStressFromCigarettes() / stats:getMaxStressFromCigarettes());
@@ -1134,10 +1368,10 @@ function OnEat_ChewingTobacco(food, character)
         if bodyDamage:getUnhappynessLevel() < 0 then
             bodyDamage:setUnhappynessLevel(0);
         end
-        stats:setStress(stats:getStress() - 10 * percent);
-        if stats:getStress() < 0 then
-            stats:setStress(0);
-        end
+        stats:setStress(stats:getBasicStress() - 10 * percent);
+--         if stats:getStress() < 0 then
+--             stats:setStress(0);
+--         end
         local reduceSFC = stats:getMaxStressFromCigarettes()
         stats:setStressFromCigarettes(stats:getStressFromCigarettes() - reduceSFC * percent);
         character:setTimeSinceLastSmoke(stats:getStressFromCigarettes() / stats:getMaxStressFromCigarettes());
@@ -1225,7 +1459,14 @@ end
 -- Code copied from TimedActions/ISRipClothing.lua
 function Recipe.OnCreate.RipClothing(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
-	local result = craftRecipeData:getAllCreatedItems():get(0);
+-- 	local result = craftRecipeData:getAllCreatedItems():get(0);
+--     result:setName("I should not exist")
+--     -- TODO: fix removing items from player inventory not working
+--     result:Remove();
+-- --     character:removeFromHands(result)
+-- --     character:getInventory():Remove(result);
+-- --     sendRemoveItemFromContainer(character:getInventory(), result);
+
     local item = items:get(0) -- assumes any tool comes after this in recipes.txt
 
     -- either we come from clothingrecipesdefinitions or we simply check number of covered parts by the clothing and add
@@ -1242,6 +1483,7 @@ function Recipe.OnCreate.RipClothing(craftRecipeData, character)
         -- we change this so the number of holes etc impact the yield
         nbrOfCoveredParts = item:getNbrOfCoveredParts() - (item:getHolesNumber() + item:getPatchesNumber());
 --         nbrOfCoveredParts = item:getNbrOfCoveredParts();
+--         character:Say("Parts 1 " .. tostring(nbrOfCoveredParts))
         if nbrOfCoveredParts == 0 then nbrOfCoveredParts = 1 end
         local minMaterial = 2;
         local maxMaterial = nbrOfCoveredParts;
@@ -1255,6 +1497,7 @@ function Recipe.OnCreate.RipClothing(craftRecipeData, character)
             nbr = nbrOfCoveredParts;
         end
         materials[2] = nbr;
+--         character:Say("Parts 2 " .. tostring(nbr))
     
         maxTime = nbrOfCoveredParts * 20;
     else
@@ -1336,46 +1579,63 @@ function Recipe.OnCreate.WashClothing(craftRecipeData, character)
     end
 end
 
--- get the spear, lower its condition according to woodwork perk level
--- also lower the used knife condition
-function Recipe.OnCreate.CreateSpear(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
+-- powder milk
+function Recipe.OnTest.MakeMilkFromPowder(sourceItem)
+	if sourceItem:hasComponent(ComponentType.FluidContainer) then
+		return sourceItem:getFluidContainer():contains(Fluid.Water);
+	else
+		return true;
+	end
+end
+
+function Recipe.OnCreate.MakeMilkFromPowder(craftRecipeData, character)
+	local bucket = craftRecipeData:getAllKeepInputItems():get(0);
+	if bucket then
+		local waterAmount = bucket:getFluidContainer():getSpecificFluidAmount(Fluid.Water);
+		bucket:getFluidContainer():Empty();
+		bucket:getFluidContainer():addFluid(Fluid.AnimalMilk, waterAmount);
+
+
+		bucket:sendSyncEntity(nil)
+	end
+end
+
+--Purify water using tablets
+function Recipe.OnTest.PurifyWater(sourceItem, result)
+    if sourceItem:hasComponent(ComponentType.FluidContainer) then
+        return sourceItem:getFluidContainer():contains(Fluid.TaintedWater);
+    else
+        return true;
+    end
+end
+
+function Recipe.OnCreate.PurifyWater(craftRecipeData, character)
+	local bucket = craftRecipeData:getAllKeepInputItems():get(0);
+	if bucket then
+	    local taintedAmount = bucket:getFluidContainer():getSpecificFluidAmount(Fluid.TaintedWater);
+	    local amount = math.min(taintedAmount, 1.0);
+	    bucket:getFluidContainer():adjustSpecificFluidAmount(Fluid.TaintedWater, (taintedAmount - amount));
+	    bucket:getFluidContainer():addFluid(Fluid.Water, amount);
+
+		bucket:sendSyncEntity(nil)
+	end
+end
+
+function Recipe.OnCreate.CarveSpear(craftRecipeData, character)
+-- 	local items = craftRecipeData:getAllConsumedItems();
 	local result = craftRecipeData:getAllCreatedItems():get(0);
-	-- removed this spear crafting nerf because is was misinterpreted as a bug; the spears now have a greater chance of being damaged on stiking
-	local skill = character:getPerkLevel(Perks.Woodwork)
+	local skill = character:getPerkLevel(Perks.Carving)
     local conditionMax = 2 + skill
     conditionMax = ZombRand(conditionMax, conditionMax + 2)
     conditionMax = math.min(conditionMax, result:getConditionMax())
     conditionMax = math.max(conditionMax, 2)
-    -- if conditionMax > result:getConditionMax() then
-        -- conditionMax = result:getConditionMax();
-    -- end
-    -- if conditionMax < 2 then
-        -- conditionMax = 2;
-    -- end
     result:setCondition(conditionMax)
-
-	local item, itemCategories;
-    for i=0,items:size() - 1 do
-		item = items:get(i);
-		if item then
-			itemCategories = item:getCategories();
-			if (instanceof(item, "HandWeapon") and (itemCategories:contains("SmallBlade") or itemCategories:contains("LongBlade") or itemCategories:contains("Axe") ) )
-			or item:hasTag("SharpKnife") then
-				item:damageCheck(skill, 1, false)
-	-- 		    if ZombRand(item:getConditionLowerChance() + skill) == 0 then items:get(i):setCondition(items:get(i):getCondition() - 1) end
-			end
-		end
---         if items:get(i):getType() == "SharpedStone" and ZombRand(3) == 0 then
---             player:getInventory():Remove(items:get(i))
---         end
-    end
 end
+
 function Recipe.OnCreate.FireHardenSpear(craftRecipeData, character)
 	local items = craftRecipeData:getAllConsumedItems();
 	local result = craftRecipeData:getAllCreatedItems():get(0);
-	-- removed this spear crafting nerf because is was misinterpreted as a bug; the spears now have a greater chance of being damaged on stiking
-	local skill = character:getPerkLevel(Perks.Woodwork)
+	local skill = character:getPerkLevel(Perks.Carving)
     local spear = nil
 
     for i=0,items:size() - 1 do
@@ -1383,18 +1643,12 @@ function Recipe.OnCreate.FireHardenSpear(craftRecipeData, character)
 		    spear = items:get(i)
         end
     end
-
+    result:copyConditionStatesFrom(spear)
     local conditionMax = 2 + skill
     conditionMax = ZombRand(conditionMax, conditionMax + 2)
     conditionMax = math.min(conditionMax, result:getConditionMax())
-    if spear then conditionMax = math.max(conditionMax, spear:getCondition()) end
+--     if spear then conditionMax = math.max(conditionMax, spear:getCondition()) end
     conditionMax = math.max(conditionMax, 2)
-    -- if conditionMax > result:getConditionMax() then
-        -- conditionMax = result:getConditionMax();
-    -- end
-    -- if conditionMax < 2 then
-        -- conditionMax = 2;
-    -- end
     result:setCondition(conditionMax)
 end
 
@@ -1418,7 +1672,7 @@ function Recipe.OnCreate.UpgradeSpear(craftRecipeData, character)
     end
 
     if handle then result:setConditionFrom(handle) end
-    if result:getCondition() < 2 then result:setCondition(2) end
+    if result:getCondition() < 1 then result:setCondition(1) end
 
     if head then result:setHeadConditionFromCondition(head) end
 --     if conditionMax > result:getConditionMax() then
@@ -1542,7 +1796,7 @@ function Recipe.OnCreate.OpenCan(craftRecipeData, character)
 	local chippedStone = false
 	local opener = nil
     for i=0,items:size() - 1 do
-		item = items:get(i)
+		local item = items:get(i)
 		if items:get(i):getType() == "SharpedStone" then
 				chippedStone = true
 	    end
@@ -1626,6 +1880,9 @@ function Recipe.OnCreate.OpenMysteryCan(craftRecipeData, character)
     result:setWorldStaticModel("TinCanEmpty_Ground")
     result:setStaticModel("MysteryCan_Open")
     result:getModData().NoLabel = "true"
+
+	sendAddItemToContainer(character:getInventory(), result);
+	sendServerCommand(character, 'recipe', 'OpenMysteryCan', {itemId = result:getID()})
 end
 
 function Recipe.OnCreate.OpenMysteryCanKnife(craftRecipeData, character)
@@ -1643,6 +1900,7 @@ function Recipe.OnCreate.OpenWaterCan(craftRecipeData, character)
 --     item:setStaticModel("WaterRationCan_Open")
 --     item:getFluidContainer():addFluid(FluidType.Water, 0.3)
     item:getFluidContainer():addFluid(FluidType.Water, 0.3)
+	sendAddItemToContainer(character:getInventory(), item)
 end
 
 function Recipe.OnCreate.OpenWaterCanKnife(craftRecipeData, character)
@@ -1654,16 +1912,14 @@ function Recipe.OnCreate.OpenDentedCan(craftRecipeData, character)
 	local list = Recipe.MysteryCans
 	local emptyType = list[ZombRand(#list)+1]
     local result = character:getInventory():AddItem(emptyType)
-    result:setTexture(getTexture("Item_CannedUnlabeled_Open_Gross"))
---     result:setTexture(getTexture("media/textures/Item_CannedUnlabeled_Open_Gross.png"))
-    result:setWorldStaticModel("DentedCan_Open")
-    result:setStaticModel("DentedCan_Open")
+
+    result:setTexture(getTexture("Item_CannedUnlabeled_Gross"))
+	local _modelName = "DentedCan_Open";
+
     if ZombRand(10) == 4 then
         result:setAge(result:getOffAgeMax())
         result:setRotten(true)
-        result:setTexture(getTexture("Item_CannedUnlabeled_Open_Gross2"))
-        result:setWorldStaticModel("DentedCan_Open_Gross")
-        result:setStaticModel("DentedCan_Open_Gross")
+		_modelName = "DentedCan_Open_Gross";
     elseif ZombRand(10) ~= 4 then
         result:setAge(ZombRand(result:getOffAge(), result:getOffAgeMax()))
     end
@@ -1672,6 +1928,12 @@ function Recipe.OnCreate.OpenDentedCan(craftRecipeData, character)
         result:setPoisonPower(ZombRand(10))
         result:setPoisonDetectionLevel(ZombRand(5))
     end
+
+	result:setStaticModel(_modelName)
+	result:setWorldStaticModel(_modelName)
+
+	sendAddItemToContainer(character:getInventory(), result);
+	sendServerCommand(character, 'recipe', 'OpenDentedCan', { itemId = result:getID(), modelName = _modelName })
 end
 
 function Recipe.OnCreate.OpenDentedCanKnife(items, result, player, selectedItem)
@@ -1683,6 +1945,7 @@ function Recipe.OnCreate.CloseUmbrella(craftRecipeData, character)
 	local item = craftRecipeData:getAllConsumedItems():get(0);
 	local result = craftRecipeData:getAllCreatedItems():get(0);
 	result:setCondition(item:getCondition());
+	result:syncItemFields();
 end
 
 function Recipe.GetItemTypes.DismantleDigitalWatch(scriptItems)
@@ -1706,39 +1969,27 @@ function Recipe.OnCanPerform.CleanMuffin(recipe, playerObj, item)
     return item and not item:isCooked();
 end
 
--- Muffins need to be cooked first
-function Recipe.OnCanPerform.GetMuffin(recipe, playerObj, item)
-    return item and (item:isCooked() or item:isBurnt());
-end
-
 function Recipe.OnCreate.GetMuffin(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
+	local muffinTray = craftRecipeData:getAllConsumedItems():get(0);
 	local results = craftRecipeData:getAllCreatedItems();
-	local muffins = nil;
-    for i=0,items:size() - 1 do
-        if instanceof(items:get(i), "Food") then
-            muffins = items:get(i);
-            break;
-        end
-    end
-	if not muffins then return end
+
 	for i=0,results:size() - 1 do
 		local result = results:get(i)
-		result:setBaseHunger(muffins:getBaseHunger() / 6);
-		result:setHungChange(muffins:getHungChange() / 6);
-		result:setCalories(muffins:getCalories() / 6);
-		result:setProteins(muffins:getProteins() / 6);
-		result:setLipids(muffins:getLipids() / 6);
-		result:setCarbohydrates(muffins:getCarbohydrates() / 6);
+		if instanceof(result, "Food") then
+			result:setBaseHunger(muffinTray:getBaseHunger() / 6);
+			result:setHungChange(muffinTray:getHungChange() / 6);
+			result:setCalories(muffinTray:getCalories() / 6);
+			result:setProteins(muffinTray:getProteins() / 6);
+			result:setLipids(muffinTray:getLipids() / 6);
+			result:setCarbohydrates(muffinTray:getCarbohydrates() / 6);
 
-		-- This gives a bonus. See Food.getHungerChange().
-		result:setCooked(true);
+			-- This gives a bonus. See Food.getHungerChange().
+			result:setCooked(true);
 
-		result:setName(muffins:getDisplayName());
-		result:setCustomName(true);
+			result:setName(muffinTray:getDisplayName());
+			result:setCustomName(true);
+		end
 	end
-	if not character then return end
-    character:getInventory():Remove(muffins);
 end
 
 function Recipe.OnCanPerform.GetBiscuit(recipe, playerObj, item)
@@ -1763,8 +2014,11 @@ function Recipe.OnCreate.GetBiscuit(craftRecipeData, character)
     -- result:setProteins(selectedItem:getProteins() / 6);
     -- result:setLipids(selectedItem:getLipids() / 6);
     -- result:setCarbohydrates(selectedItem:getCarbohydrates() / 6);
+
+	cookie:syncItemFields();
 	if not character then return end
     character:getInventory():Remove(cookie);
+	sendRemoveItemFromContainer(character:getInventory(), cookie);
 end
 
 
@@ -1831,9 +2085,12 @@ function Recipe.OnCreate.SlicePizza(craftRecipeData, character)
 			result:setName(getText("Tooltip_food_Slice", pizza:getDisplayName()));
 			result:setCustomName(true);
 		end
+
+		result:syncItemFields();
 	end
 	if not character then return end
     character:getInventory():Remove(pizza);
+	sendRemoveItemFromContainer(character:getInventory(), pizza);
 end
 
 function Recipe.OnCreate.DynamicMovable(items, result, player, selectedItem)
@@ -1970,6 +2227,7 @@ function Recipe.OnCreate.OpenBeer(craftRecipeData, character)
             items:get(i):getFluidContainer():setCanPlayerEmpty(true);
 			local copy = items:get(i):getFluidContainer():copy();
 			items:get(i):getFluidContainer():copyFluidsFrom(copy);
+			items:get(i):sendSyncEntity(nil)
 			FluidContainer.DisposeContainer(copy);
             break;
         end
@@ -1980,7 +2238,8 @@ function Recipe.OnCreate.OpenChampagne(craftRecipeData, character)
 	local result = craftRecipeData:getAllCreatedItems():get(0);
 	result:setAge(0);
 	if not character then return end
-    character:getInventory():AddItem("Base.Cork");
+    local item = character:getInventory():AddItem("Base.Cork");
+	sendAddItemToContainer(character:getInventory(), item);
 end
 
 function Recipe.OnCreate.OpenBagFrozenFood(craftRecipeData, character)
@@ -2004,7 +2263,7 @@ function Recipe.OnTest.CanAddToPack(item)
 end
 
 function Recipe.OnTest.IsFull(sourceItem)
-	if not instanceof(item, "DrainableComboItem") then return true end
+	if not instanceof(sourceItem, "DrainableComboItem") then return true end
     if sourceItem:hasTag("Packed") then return sourceItem:getCurrentUsesFloat() >= 1 end
 	return true;
 end
@@ -2020,25 +2279,12 @@ function Recipe.OnCreate.AddToPack(craftRecipeData, character)
     end
 end
 
-function Recipe.OnCreate.PurifyWaterContainer(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
-	for i=0, items:size()-1 do
-		local item = items:get(i)
-		if item:isWaterSource() then
-			item:setTaintedWater(false)
-		end
-	end
-end
-
 function Recipe.OnCreate.DrawRandomCard(craftRecipeData, character)
 	if not character then return end
 	local card  = getText(ServerOptions.getRandomCard())
-	if isClient() then
-		local text  = "* " .. character:getUsername().. " " .. getText("IGUI_Draws") .." " .. card .. " *"
-		character:Say(text)
-	else
-		HaloTextHelper.addGoodText(character, card);
-	end
+
+	HaloTextHelper.addGoodText(character, card);
+	sendServerCommand("recipe", "SayText", { onlineID = character:getOnlineID(), type = 4, text = card })
 end
 
 function Recipe.OnCreate.RollOneDice(craftRecipeData, character)
@@ -2046,13 +2292,9 @@ function Recipe.OnCreate.RollOneDice(craftRecipeData, character)
 	local item = craftRecipeData:getAllKeepInputItems():get(0);
 	local dieName = getText(item:getDisplayName())
 	local roll = tostring(ZombRand(6) + 1)
-	if isClient() or isServer() then
-		local text  = "* " .. character:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. roll .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_One") .. " " .. dieName .. " *"
-		character:Say(text)
-	else
-		HaloTextHelper.addGoodText(character, roll);
--- 		HaloTextHelper.addText(character, roll, getCore():getGoodHighlitedColor());
-	end
+
+	HaloTextHelper.addGoodText(character, roll);
+	sendServerCommand("recipe", "SayText", { onlineID = character:getOnlineID(), type = 0, rollText = roll, dieNameText = dieName })
 end
 
 function Recipe.OnCreate.RollDice(craftRecipeData, character)
@@ -2079,14 +2321,11 @@ function Recipe.OnCreate.RollDice(craftRecipeData, character)
 		roll = (ZombRand(10) ) * 10
 		if roll < 10 then roll = 0 + tostring(roll) end
 	end
-	roll= tostring(roll)
-	if isClient() or isServer() then
-		local text  = "* " .. character:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. roll .. " " .. dieName .. " *"
-		character:Say(text)
-	else
-		HaloTextHelper.addGoodText(character, roll);
--- 		HaloTextHelper.addText(character, roll, getCore():getGoodHighlitedColor());
-	end
+
+	roll = tostring(roll)
+
+	HaloTextHelper.addGoodText(character, roll);
+	sendServerCommand("recipe", "SayText", { onlineID = character:getOnlineID(), type = 1, rollText = roll, dieNameText = dieName })
 end
 
 function Recipe.OnCreate.Roll3d6(craftRecipeData, character)
@@ -2094,14 +2333,10 @@ function Recipe.OnCreate.Roll3d6(craftRecipeData, character)
 	local item = craftRecipeData:getAllKeepInputItems():get(0);
 	local dieName = getText("IGUI_With") .. " " .. getText("IGUI_Three") .. " " .. getText(item:getDisplayName())
 	local roll = ZombRand(6) + ZombRand(6) + ZombRand(6) + 4
-	roll= tostring(roll)
-	if isClient() or isServer() then
-		local text  = "* " .. character:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. roll .. " " .. dieName .. " *"
-		character:Say(text)
-	else
-		HaloTextHelper.addGoodText(character, roll);
--- 		HaloTextHelper.addText(character, roll, getCore():getGoodHighlitedColor());
-	end
+	roll = tostring(roll)
+
+	HaloTextHelper.addGoodText(character, roll);
+	sendServerCommand("recipe", "SayText", { onlineID = character:getOnlineID(), rollText = roll, type = 2, dieNameText = dieName })
 end
 
 function Recipe.OnCreate.Rolld100(craftRecipeData, character)
@@ -2109,14 +2344,10 @@ function Recipe.OnCreate.Rolld100(craftRecipeData, character)
 	local item = craftRecipeData:getAllKeepInputItems():get(0);
 	local dieName = getText("IGUI_With") .. " " .. getText("IGUI_Three") .. " " .. getText(item:getDisplayName())
 	local roll = ZombRand(100) + 4
-	roll= tostring(roll)
-	if isClient() or isServer() then
-		local text  = "* " .. character:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. roll .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_PercentileDice") .. " *"
-		character:Say(text)
-	else
-		HaloTextHelper.addGoodText(character, roll);
--- 		HaloTextHelper.addText(character, roll, getCore():getGoodHighlitedColor());
-	end
+	roll = tostring(roll)
+
+	HaloTextHelper.addGoodText(character, roll);
+	sendServerCommand("recipe", "SayText", { onlineID = character:getOnlineID(), type = 3, rollText = roll })
 end
 
 
@@ -2292,7 +2523,7 @@ end
 function Recipe.OnCreate.MeatPatty(craftRecipeData, character)
 	local item = craftRecipeData:getAllConsumedItems():get(0);
 	local result = craftRecipeData:getAllCreatedItems():get(0);
-    result:setCooked(item:getCooked())
+    result:setCooked(item:isCooked())
 end
 
 
@@ -2345,12 +2576,13 @@ function Recipe.OnCreate.GasmaskFilterRemoval(craftRecipeData, character)
 		-- we found the filter, we change his used delta according to the filter
 		if item:hasTag("GasMask") then
 		    if item:getWithoutDrainable() then
-                result:setUsedDelta(item:getCurrentUsesFloat())
+                result:setCurrentUsesFloat(item:getUsedDelta())
                 local isWorn = item:isWorn()
                 if isWorn then character:removeWornItem(item) end
                 character:getInventory():Remove(item)
                 local newItem =  ISClothingExtraAction:createItem(items:get(i), item:getWithoutDrainable())
                 character:getInventory():AddItem(newItem)
+				newItem:setNoFilter()
                 if isWorn then
                     character:setWornItem(newItem:getBodyLocation(), newItem)
                     triggerEvent("OnClothingUpdated", character)
@@ -2358,7 +2590,7 @@ function Recipe.OnCreate.GasmaskFilterRemoval(craftRecipeData, character)
                 end
 		    else
                 item:setNoFilter()
-                result:setUsedDelta(item:getCurrentUsesFloat());
+                result:setCurrentUsesFloat(item:getUsedDelta());
                 -- then we empty the mask used delta (his energy)
                 item:setUsedDelta(0);
             end
@@ -2456,7 +2688,7 @@ function Recipe.OnTest.OxygenTankAttach(sourceItem, result)
 end
 function Recipe.OnCreate.OxygenTankRemoval(craftRecipeData, character)
 	if not character then return end
-	local items = craftRecipeData:getAllConsumedItems();
+	local items = craftRecipeData:getAllKeepInputItems();
 	local result = craftRecipeData:getAllCreatedItems():get(0);
 
 	for i=0, items:size()-1 do
@@ -2505,13 +2737,55 @@ function Recipe.OnCreate.OxygenTankAttach(craftRecipeData, character)
 	end
 end
 
+function Recipe.OnCreate.ScrapJewellery(craftRecipeData, character)
+    if not character then return end
+    local inv = character:getInventory()
+
+	local items = craftRecipeData:getAllConsumedItems()
+	for i=0, items:size()-1 do
+        local item = items:get(i)
+        if item then
+            if item:hasTag("DiamondJewellery") then
+                inv:AddItems("Base.Diamond", 2)
+            end
+            if item:hasTag("2DiamondJewellery") then
+                inv:AddItem("Base.Diamond")
+            end
+            if item:hasTag("EmeraldJewellery") then
+                inv:AddItem("Base.Emerald")
+            end
+            if item:hasTag("2EmeraldJewellery") then
+                inv:AddItems("Base.Emerald", 2)
+            end
+            if item:hasTag("RubyJewellery") then
+                inv:AddItem("Base.Ruby")
+            end
+            if item:hasTag("2RubyJewellery") then
+                inv:AddItems("Base.Ruby", 2)
+            end
+            if item:hasTag("SapphireJewellery") then
+                inv:AddItem("Base.Sapphire")
+            end
+            if item:hasTag("2SapphireJewellery") then
+                inv:AddItems("Base.Sapphire", 2)
+            end
+            if item:hasTag("AmethystJewellery") then
+                inv:AddItem("Base.Amethyst")
+            end
+            if item:hasTag("2AmethystJewellery") then
+                inv:AddItems("Base.Amethyst", 2)
+            end
+        end
+	end
+end
+
 -- These functions are defined to avoid breaking mods.
 DefaultRecipe_OnGiveXP = Recipe.OnGiveXP.Default
 NoXP_OnGiveXP = Recipe.OnGiveXP.None
 CannedFood_OnCreate = Recipe.OnCreate.CannedFood
 CheckTaintedWater_OnTest = Recipe.OnTest.NotTaintedWater
 CloseUmbrella = Recipe.OnCreate.CloseUmbrella
-CreateSpear_OnCreate = Recipe.OnCreate.CreateSpear
+-- CreateSpear_OnCreate = Recipe.OnCreate.CreateSpear
 CutAnimal_OnCreate = Recipe.OnCreate.CutAnimal
 CutFillet_OnCreate = Recipe.OnCreate.CutFillet
 CutFillet_TestIsValid = Recipe.OnTest.CutFillet
@@ -2701,9 +2975,13 @@ function Recipe.OnCreate.ChangeSawblade(craftRecipeData, character)
 --             result:setCondition(result:getConditionMax() * perc)
 --         end
     end
+
+	result:syncItemFields();
+
     if not blade or not tool then return end
     local item = character:getInventory():AddItem(blade:getFullType())
     item:setConditionFrom(tool)
+	sendAddItemToContainer(character:getInventory(), item)
 --         if blade:getConditionMax() == item:getConditionMax() then
 --             item:setCondition(blade:getCondition())
 --         else
@@ -2713,27 +2991,37 @@ function Recipe.OnCreate.ChangeSawblade(craftRecipeData, character)
 --         end
 end
 
-function Recipe.OnCreate.BasicCarveWood(craftRecipeData, character)
+function Recipe.OnCreate.BasicCarving(craftRecipeData, character)
     local carving = character:getPerkLevel(Perks.Carving)
-    Recipe.OnCreate.BasicCondition(craftRecipeData, carving)
+    Recipe.OnCreate.BasicCondition(craftRecipeData, character, carving)
 end
 
 function Recipe.OnCreate.MinorCarving(craftRecipeData, character)
     local carving = character:getPerkLevel(Perks.Carving)
-    Recipe.OnCreate.MinorCondition(craftRecipeData, carving)
+    Recipe.OnCreate.MinorCondition(craftRecipeData, character, carving)
 end
 
 function Recipe.OnCreate.BasicKnapping(craftRecipeData, character)
     local carving = character:getPerkLevel(Perks.FlintKnapping)
-    Recipe.OnCreate.BasicCondition(craftRecipeData, carving)
+    Recipe.OnCreate.BasicCondition(craftRecipeData, character, carving)
 end
 
 function Recipe.OnCreate.MinorKnapping(craftRecipeData, character)
     local carving = character:getPerkLevel(Perks.FlintKnapping)
-    Recipe.OnCreate.MinorCondition(craftRecipeData, carving)
+    Recipe.OnCreate.MinorCondition(craftRecipeData, character, carving)
 end
 
-function Recipe.OnCreate.BasicCondition(craftRecipeData, characterSkill)
+function Recipe.OnCreate.MinorMasonry(craftRecipeData, character)
+    local masonry = character:getPerkLevel(Perks.Masonry)
+    Recipe.OnCreate.MinorCondition(craftRecipeData, character, masonry)
+end
+
+function Recipe.OnCreate.BasicCondition(craftRecipeData, character, characterSkill)
+    if not character then character = craftRecipeData:getPlayer() end
+    if not characterSkill then
+        craftRecipeData:getRecipe():getHighestRelevantSkillLevel(character)
+    end
+
     local results = craftRecipeData:getAllCreatedItems()
     for i=0,results:size() - 1 do
         local result = results:get(i)
@@ -2741,6 +3029,7 @@ function Recipe.OnCreate.BasicCondition(craftRecipeData, characterSkill)
         condPerc = math.max(condPerc, 5)
         condPerc = math.min(condPerc, 100)
         local cond = math.max(result:getConditionMax() * (condPerc/100),1)
+        local cond = math.max(cond,1)
 
         if characterSkill >= 10 then cond = result:getConditionMax() end
 
@@ -2748,7 +3037,12 @@ function Recipe.OnCreate.BasicCondition(craftRecipeData, characterSkill)
     end
 end
 
-function Recipe.OnCreate.MinorCondition(craftRecipeData, characterSkill)
+function Recipe.OnCreate.MinorCondition(craftRecipeData, character, characterSkill)
+    if not character then character = craftRecipeData:getPlayer() end
+    if not characterSkill then
+        craftRecipeData:getRecipe():getHighestRelevantSkillLevel(character)
+    end
+
     local results = craftRecipeData:getAllCreatedItems()
     for i=0,results:size() - 1 do
         local result = results:get(i)
@@ -2818,28 +3112,44 @@ function Recipe.OnCreate.BasicSawMetal(craftRecipeData, character)
 end
 
 function Recipe.OnCreate.BasicGrindMetal(craftRecipeData, character)
-	local items = craftRecipeData:getAllConsumedItems();
-    local skill = math.max(character:getPerkLevel(Perks.MetalWelding),character:getPerkLevel(Perks.Smithing))
-    for i=0,items:size() - 1 do
-        local item = items:get(i)
-        -- chance to reduce condition of the cutting tool
-        if item:hasTag("MetalSaw") or item:hasTag("SmallSaw") or item:hasTag("MetalFile") or item:hasTag("Whetstone") or item:hasTag("File") then
-            item:damageCheck(skill)
-        end
-    end
+-- 	local items = craftRecipeData:getAllConsumedItems();
+--     local skill = math.max(character:getPerkLevel(Perks.MetalWelding),character:getPerkLevel(Perks.Smithing))
+--     for i=0,items:size() - 1 do
+--         local item = items:get(i)
+--         -- chance to reduce condition of the cutting tool
+--         if item:hasTag("MetalSaw") or item:hasTag("SmallSaw") or item:hasTag("MetalFile") or item:hasTag("Whetstone") or item:hasTag("File") then
+--             item:damageCheck(skill)
+--         end
+--     end
 end
 
 function Recipe.OnCreate.SharpenBlade(craftRecipeData, player)
     local item = craftRecipeData:getFirstInputItemWithFlag("IsSharpenable")
+    if not item then item = craftRecipeData:getFirstInputItemWithFlag("IsDamaged") end
     local skill  = math.max(craftRecipeData:getRecipe():getHighestRelevantSkillLevel(player), item:getMaintenanceMod(false, player)/2)
+
+    if not item:hasSharpness() and item:hasHeadCondition() then
+        CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, item, skill, true)
+    elseif not item:hasSharpness() then
+        CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, item, skill)
+    end
+
     Recipe.OnCreate.GenericSharpen(player, item, skill, 1)
 end
 
 function Recipe.OnCreate.SharpenBladePoor(craftRecipeData, player)
     local item = craftRecipeData:getFirstInputItemWithFlag("IsSharpenable")
+    if not item then item = craftRecipeData:getFirstInputItemWithFlag("IsDamaged") end
     local skill  = math.max(craftRecipeData:getRecipe():getHighestRelevantSkillLevel(player), item:getMaintenanceMod(false, player)/2)
     skill = math.max(skill/2 - 1, 0)
     skill = math.floor(skill)
+
+    if not item:hasSharpness() and item:hasHeadCondition() then
+        CraftRecipeCode.GenericFixer(craftRecipeData, player, 0.5, item, skill, true)
+    elseif not item:hasSharpness() then
+        CraftRecipeCode.GenericFixer(craftRecipeData, player, 0.5, item, skill)
+    end
+
     Recipe.OnCreate.GenericSharpen(player, item, skill, 0.5)
 end
 
@@ -2851,6 +3161,7 @@ end
 
 function Recipe.OnCreate.RepairBladeWithGrindstone(craftRecipeData, player)
     local item = craftRecipeData:getFirstInputItemWithFlag("IsSharpenable")
+    local skill  = math.max(craftRecipeData:getRecipe():getHighestRelevantSkillLevel(player), item:getMaintenanceMod(false, player)/2)
     if item:hasHeadCondition() then
         if item:getHeadCondition() < item:getHeadConditionMax() then
            CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, item, nil, true)
@@ -2858,7 +3169,7 @@ function Recipe.OnCreate.RepairBladeWithGrindstone(craftRecipeData, player)
     elseif item:getCondition() < item:getConditionMax() then
         CraftRecipeCode.GenericFixer(craftRecipeData, player, 1, item)
     end
-    if item:getSharpness() < item:getMaxSharpness() then
+    if item:hasSharpness() and item:getSharpness() < item:getMaxSharpness() then
         Recipe.OnCreate.GenericSharpen(player, item, skill, 2)
     end
 end
@@ -2969,8 +3280,19 @@ function Recipe.OnCreate.RemoveGem(craftRecipeData, character)
     if jewelTable.bonusItem then character:getInventory():AddItem(jewelTable.bonusItem) end
 end
 
+-- If the head was rotten, we don't add brain
 function Recipe.OnCreate.SliceAnimalHead(craftRecipeData, character)
 	if not character then return end
+	local items = craftRecipeData:getAllConsumedItems();
+	local head
+	for i=0,items:size() - 1 do
+		if items:get(i):hasTag("AnimalHead") then
+			head = items:get(i)
+		end
+	end
+	if head and head:isRotten() then
+		return;
+	end
 	character:getInventory():AddItem("Base.Animal_Brain");
 end
 
@@ -3154,6 +3476,7 @@ Recipe.JewelTable = {
 function Recipe.OnCreate.EmptyDrainable(craftRecipeData, character)
 	local results = craftRecipeData:getAllCreatedItems()
 	for i=0,results:size() - 1 do
+		local result = results:get(i);
 		if result:getCurrentUses() > 0 then result:setCurrentUses(0) end
 	end
 end
@@ -3179,8 +3502,185 @@ function Recipe.OnCreate.UnpackBox(craftRecipeData, character)
 
 	for i=0, results:size() - 1 do
 		local resultItem = results:get(i);
-		if resultItem:IsDrainable() then
+		if resultItem:IsDrainable() and box:getModData()["drainable" .. i] then
 			resultItem:setCurrentUsesFloat(box:getModData()["drainable" .. i])
 		end
 	end
+end
+
+function Recipe.OnCreate.KnappFlake(craftRecipeData, character)
+    local knapping = character:getPerkLevel(Perks.FlintKnapping)
+    if ZombRand(11) < knapping then
+        local flake = instanceItem("Base.SharpedStone");
+        character:getInventory():AddItem(flake);
+    end
+end
+
+function Recipe.OnCreate.SlightlyMoreDurable(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems()
+
+	for i=0, items:size() - 1 do
+		local item = items:get(i)
+		if item:hasTag("InferiorBinding") then return end
+	end
+
+	local result = craftRecipeData:getAllCreatedItems():get(0)
+	result:setCondition(result:getCondition() + 1)
+end
+
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
+
+function Recipe.WeaponParts.hasScrewdriver(character, weapon, weaponPart)
+	-- canAttach/canDetach for most firearm attachments.
+	-- this needs to return true if character is nil for sawing shotguns to properly transfer parts.
+	-- see: Recipe.OnCreate.ShotgunSawnoff and tryAttachPart
+	return character == nil or character:getInventory():containsTagEval("Screwdriver", predicateNotBroken)
+end
+
+function Recipe.OnCreate.UntieHeadband(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems();
+	local result = craftRecipeData:getAllCreatedItems():get(0)
+    local dirty = false;
+	local item = craftRecipeData:getAllConsumedItems():get(0);
+
+    if instanceof(item, "Clothing") then
+        dirty = item:isDirty() or item:isBloody()
+    end
+    if (not dirty) or (not character) then
+        return
+    end
+
+    character:getInventory():Remove(result)
+    local item2 = instanceItem("Base.LeatherStripsDirty")
+    character:getInventory():AddItem(item2);
+end
+
+
+
+function Recipe.OnCreate.SmeltIronOrSteelSmall(craftRecipeData)
+	Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, 1)
+end
+
+function Recipe.OnCreate.SmeltIronOrSteelMedium(craftRecipeData)
+	Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, 2)
+end
+
+function Recipe.OnCreate.SmeltIronOrSteelMediumPlus(craftRecipeData)
+	Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, 3)
+end
+
+function Recipe.OnCreate.SmeltIronOrSteelLarge(craftRecipeData)
+	Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, 4)
+end
+
+function Recipe.OnCreate.SmeltIronOrSteelIngot(craftRecipeData)
+	Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, 12)
+end
+
+function Recipe.OnCreate.SmeltIronOrSteel(craftRecipeData, add)
+	local items = craftRecipeData:getAllConsumedItems();
+	local uses = 0;
+	for i=0, items:size() - 1 do
+		local item = items:get(i);
+		if item:getType()== "CeramicCrucible"
+				or item:getType()== "CeramicCrucibleSmall" then
+			break;
+		elseif item:getType() == "CeramicCrucible_Iron"
+				or item:getType() == "CeramicCrucibleSmall_Iron"
+				or item:getType() == "CeramicCrucible_Steel"
+				or item:getType() == "CeramicCrucibleSmall_Steel" then
+			uses = item:getCurrentUses();
+			break;
+		end
+	end
+	local result = craftRecipeData:getAllCreatedItems():get(0);
+	local add = math.min(result:getMaxUses(), add + uses);
+	result:setCurrentUses(add);
+end
+
+function Recipe.OnTest.SmeltIronOrSteelSmall(craftRecipeData)
+	return Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, 1)
+end
+
+function Recipe.OnTest.SmeltIronOrSteelMedium(craftRecipeData)
+	return Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, 2)
+end
+
+function Recipe.OnTest.SmeltIronOrSteelMediumPlus(craftRecipeData)
+	return Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, 3)
+end
+
+function Recipe.OnTest.SmeltIronOrSteelLarge(craftRecipeData)
+	return Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, 4)
+end
+
+function Recipe.OnTest.SmeltIronOrSteelIngot(craftRecipeData)
+	return Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, 12)
+end
+
+function Recipe.OnTest.SmeltIronOrSteel(craftRecipeData, add)
+	local items = craftRecipeData:getAllConsumedItems();
+	local crucible;
+	for i=0, items:size() - 1 do
+		local item = items:get(i);
+		if item:getType()== "CeramicCrucible"
+				or item:getType()== "CeramicCrucibleSmall" then
+			return true;
+		elseif item:getType() == "CeramicCrucible_Iron"
+				or item:getType() == "CeramicCrucibleSmall_Iron"
+				or item:getType() == "CeramicCrucible_Steel"
+				or item:getType() == "CeramicCrucibleSmall_Steel" then
+			crucible = item:getCurrentUses();
+			break;
+		end
+	end
+	return (crucible:getCurrentUses() + add) <= crucible:getMaxUses()
+end
+
+function Recipe.OnCreate.SewHideJacket(craftRecipeData, character)
+	local result = craftRecipeData:getAllCreatedItems():get(0);
+	local newVisual = result:getVisual();
+
+	local skill = character:getPerkLevel(Perks.Tailoring);
+
+	if (skill < 6) or (ZombRand(21) >= skill) then
+		newVisual:setBaseTexture(0)
+		newVisual:setTextureChoice(0)
+		return
+	end
+	newVisual:setBaseTexture(1)
+	newVisual:setTextureChoice(1)
+end
+
+function Recipe.OnCreate.PickAramidThread(craftRecipeData, character)
+	local items = craftRecipeData:getAllConsumedItems();
+
+    local item = items:get(0)
+	for i=0, items:size() - 1 do
+		local item = items:get(i)
+		if items:get(i):hasTag("PickAramidThread") then
+            item = items:get(i)
+            break
+        end
+	end
+
+    local nbrOfCoveredParts = 0
+    if item then nbrOfCoveredParts = item:getNbrOfCoveredParts() - (item:getHolesNumber() + item:getPatchesNumber()) end
+    if nbrOfCoveredParts == 0 then nbrOfCoveredParts = 1 end
+
+    local tailoringSkill = (character:getPerkLevel(Perks.Tailoring) / 2)
+    local nbr = ZombRand(nbrOfCoveredParts, (nbrOfCoveredParts * 2) + tailoringSkill);
+    if nbr > nbrOfCoveredParts * 3 then
+        nbr = nbrOfCoveredParts* 3
+    end
+    nbr = math.max(nbr,1)
+    nbr = math.min(nbr,10)
+
+	local result = craftRecipeData:getAllCreatedItems():get(0)
+	result:setCurrentUses(nbr)
+
+    if item:hasTag("Buckles") then character:getInventory():AddItems("Base.Buckle", 2)
+    elseif item:hasTag("Buckle") then character:getInventory():AddItem("Base.Buckle") end
 end

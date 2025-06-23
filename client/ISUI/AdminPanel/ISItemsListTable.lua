@@ -82,6 +82,9 @@ function ISItemsListTable:createChildren()
     self.datas:addColumn("Category", 450+(getCore():getOptionFontSizeReal()*40));
     self.datas:addColumn("DisplayCategory", 650+(getCore():getOptionFontSizeReal()*40))  --resize these based on longest item in contents
     self.datas:addColumn("LootCategory", 850+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
+    self.datas:addColumn("Craft", 970+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
+    self.datas:addColumn("Forage", 1020+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
+    self.datas:addColumn("Loot", 1070+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
     self.datas:setOnMouseDoubleClick(self, ISItemsListTable.addItem);
     self:addChild(self.datas);
 
@@ -167,6 +170,45 @@ function ISItemsListTable:createChildren()
             self:addChild(combo)
             table.insert(self.filterWidgets, combo)
             self.filterWidgetMap[column.name] = combo
+        elseif column.name == "Craft" then
+--             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
+            local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
+            combo.font = UIFont.Medium
+            combo:initialise()
+            combo:instantiate()
+            combo.columnName = column.name
+            combo.target = combo
+            combo.onChange = self.onFilterChange
+            combo.itemsListFilter = self.filterCraft
+            self:addChild(combo)
+            table.insert(self.filterWidgets, combo)
+            self.filterWidgetMap[column.name] = combo
+        elseif column.name == "Forage" then
+--             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
+            local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
+            combo.font = UIFont.Medium
+            combo:initialise()
+            combo:instantiate()
+            combo.columnName = column.name
+            combo.target = combo
+            combo.onChange = self.onFilterChange
+            combo.itemsListFilter = self.filterForage
+            self:addChild(combo)
+            table.insert(self.filterWidgets, combo)
+            self.filterWidgetMap[column.name] = combo
+        elseif column.name == "Loot" then
+--             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
+            local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
+            combo.font = UIFont.Medium
+            combo:initialise()
+            combo:instantiate()
+            combo.columnName = column.name
+            combo.target = combo
+            combo.onChange = self.onFilterChange
+            combo.itemsListFilter = self.filterLoot
+            self:addChild(combo)
+            table.insert(self.filterWidgets, combo)
+            self.filterWidgetMap[column.name] = combo
         else
             local entry = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
             entry.font = UIFont.Medium
@@ -241,6 +283,12 @@ function ISItemsListTable:initList(module)
     local categoryMap = {}
     local displayCategoryMap = {}
     local lootCategoryMap = {}
+--     local craftNames = {}
+--     local craftMap = {}
+--     local forageNames = {}
+--     local forageMap = {}
+--     local lootNames = {}
+--     local lootMap = {}
     for x,v in ipairs(module) do
         self.datas:addItem(v:getDisplayName(), v);
         if not categoryMap[v:getTypeString()] then
@@ -255,6 +303,18 @@ function ISItemsListTable:initList(module)
             lootCategoryMap[getText("Sandbox_" .. v:getLootType() .. "LootNew")] = true
             table.insert(lootCategoryNames, getText("Sandbox_" .. v:getLootType() .. "LootNew"))
         end
+--         if not craftMap[tostring(v:isCraftRecipeProduct())] then
+--             craftMap[tostring(v:isCraftRecipeProduct())] = true
+--             table.insert(craftNames, tostring(v:isCraftRecipeProduct()))
+--         end
+--         if not forageMap[tostring(v:canBeForaged())] then
+--             forageMap[tostring(v:canBeForaged())] = true
+--             table.insert(forageNames, tostring(v:canBeForaged()))
+--         end
+--         if not lootMap[tostring(v:canSpawnAsLoot())] then
+--             lootMap[tostring(v:canSpawnAsLoot())] = true
+--             table.insert(lootNames, tostring(v:canSpawnAsLoot()))
+--         end
         self.totalResult = self.totalResult + 1;
     end
     table.sort(self.datas.items, function(a,b) return not string.sort(a.item:getDisplayName(), b.item:getDisplayName()); end);
@@ -280,6 +340,33 @@ function ISItemsListTable:initList(module)
     for _,lootCategoryName in ipairs(lootCategoryNames) do
         combo:addOption(lootCategoryName)
     end
+
+    local combo = self.filterWidgetMap.Craft
+--     table.sort(craftNames, function(a,b) return not string.sort(a, b) end)
+    combo:addOption("<Any>")
+    combo:addOption("false")
+    combo:addOption("true")
+--     for _,craftName in ipairs(craftNames) do
+--         combo:addOption(craftName)
+--     end
+
+    local combo = self.filterWidgetMap.Forage
+--     table.sort(forageNames, function(a,b) return not string.sort(a, b) end)
+    combo:addOption("<Any>")
+    combo:addOption("false")
+    combo:addOption("true")
+--     for _,forageName in ipairs(forageNames) do
+--         combo:addOption(craftName)
+--     end
+
+    local combo = self.filterWidgetMap.Loot
+--     table.sort(lootNames, function(a,b) return not string.sort(a, b) end)
+    combo:addOption("<Any>")
+    combo:addOption("false")
+    combo:addOption("true")
+--     for _,lootName in ipairs(lootNames) do
+--         combo:addOption(craftName)
+--     end
 end
 
 function ISItemsListTable:update()
@@ -322,6 +409,35 @@ function ISItemsListTable:filterLootCategory(widget, scriptItem)
     return getText("Sandbox_" .. scriptItem:getLootType() .. "LootNew") == widget:getOptionText(widget.selected)
 end
 
+function ISItemsListTable:filterCraft(widget, scriptItem)
+    if widget.selected == 1 then return true end -- Any category
+    local txtToCheck = string.lower(tostring(scriptItem:isCraftRecipeProduct()))
+--     local filterTxt = string.lower(widget:getInternalText())
+getPlayer():Say("1" .. tostring(txtToCheck))
+getPlayer():Say("2" .. tostring(widget:getOptionText(widget.selected)))
+    return txtToCheck == widget:getOptionText(widget.selected)
+--     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
+--     return true
+end
+
+function ISItemsListTable:filterForage(widget, scriptItem)
+    if widget.selected == 1 then return true end -- Any category
+    local txtToCheck = string.lower(tostring(scriptItem:canBeForaged()))
+--     local filterTxt = string.lower(widget:getInternalText())
+    return txtToCheck == widget:getOptionText(widget.selected)
+--     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
+--     return true
+end
+
+function ISItemsListTable:filterLoot(widget, scriptItem)
+    if widget.selected == 1 then return true end -- Any category
+    local txtToCheck = string.lower(tostring(scriptItem:canSpawnAsLoot()))
+--     local filterTxt = string.lower(widget:getInternalText())
+    return txtToCheck == widget:getOptionText(widget.selected)
+--     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
+--     return true
+end
+
 function ISItemsListTable.onFilterChange(widget)
     local datas = widget.parent.datas;
     if not datas.fullList then datas.fullList = datas.items; end
@@ -333,7 +449,7 @@ function ISItemsListTable.onFilterChange(widget)
     for i,v in ipairs(datas.fullList) do -- check every items
         local add = true;
         for j,widget in ipairs(widget.parent.filterWidgets) do -- check every filters
-            if not widget.itemsListFilter(self, widget, v.item) then
+            if not widget.itemsListFilter(nil, widget, v.item) then
                 add = false
                 break
             end
@@ -406,6 +522,32 @@ function ISItemsListTable:drawDatas(y, item, alt)
 
     if item.item:getLootType() ~= nil then
         self:drawText(getText("Sandbox_" .. item.item:getLootType() .. "LootNew"), self.columns[5].size + xoffset, y + 3, 1, 1, 1, a, self.font);
+    end
+
+    local goodR = getCore():getGoodHighlitedColor():getR()
+    local goodG = getCore():getGoodHighlitedColor():getG()
+    local goodB = getCore():getGoodHighlitedColor():getB()
+
+    local badR = getCore():getBadHighlitedColor():getR()
+    local badG = getCore():getBadHighlitedColor():getG()
+    local badB = getCore():getBadHighlitedColor():getB()
+
+    if item.item:isCraftRecipeProduct() then
+        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+    else
+        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+    end
+
+    if item.item:canBeForaged() then
+        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+    else
+        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+    end
+
+    if item.item:canSpawnAsLoot() then
+        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+    else
+        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, badR, badG, badB, a, self.font);
     end
 
 

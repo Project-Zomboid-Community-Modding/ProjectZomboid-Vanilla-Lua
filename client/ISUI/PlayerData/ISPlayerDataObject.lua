@@ -264,10 +264,20 @@ function ISPlayerDataObject:onResolutionChange(oldw, oldh, neww, newh)
         self.playerInventory:setX(self.x1)
         self.playerInventory:setY(self.y1)
 
+        local panel2 = self.playerInventory
+        panel2.javaObject:update()
+        panel2.inventoryPane.nameHeader:setWidth((panel2.inventoryPane.width - panel2.inventoryPane.column2) * 2 / 3)
+        panel2.inventoryPane:onResizeColumn(panel2.inventoryPane.nameHeader)
+
         self.lootInventory:setWidth(self.w2)
         self.lootInventory:setHeight(self.h2)
         self.lootInventory:setX(self.x2)
         self.lootInventory:setY(self.y2)
+
+        panel2 = self.lootInventory
+        panel2.javaObject:update()
+        panel2.inventoryPane.nameHeader:setWidth((panel2.inventoryPane.width - panel2.inventoryPane.column2) * 2 / 3)
+        panel2.inventoryPane:onResizeColumn(panel2.inventoryPane.nameHeader)
 
         self.equipped:setX(self.x1left + 10)
         self.equipped:setY(self.y1top + 10)

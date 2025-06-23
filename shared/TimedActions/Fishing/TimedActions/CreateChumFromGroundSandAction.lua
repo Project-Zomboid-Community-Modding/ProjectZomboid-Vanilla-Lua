@@ -13,19 +13,22 @@ end
 function CreateChumFromGroundSandAction:start()
     self:setActionAnim("Loot")
     self.character:SetVariable("LootPosition", "Low")
+    self.sound = self.character:playSound("MakeChumBase")
 end
 
 function CreateChumFromGroundSandAction:stop()
+    self:stopSound()
     ISBaseTimedAction.stop(self);
 end
 
 function CreateChumFromGroundSandAction:perform()
+    self:stopSound()
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self);
 end
 
 function CreateChumFromGroundSandAction:complete()
-    groundType, _ = ISShovelGroundCursor.GetDirtGravelSand(self.square)
+    local groundType = ISShovelGroundCursor.GetDirtGravelSand(self.square)
     if not (groundType == "sand" and self.character:isRecipeActuallyKnown("MakeChum")) then
         --noise('The action is not available')
         print('The action is not available')
@@ -50,6 +53,12 @@ function CreateChumFromGroundSandAction:getDuration()
         return 1;
     end
     return 200
+end
+
+function CreateChumFromGroundSandAction:stopSound()
+    if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+        self.character:stopOrTriggerSound(self.sound)
+    end
 end
 
 function CreateChumFromGroundSandAction:new(character, square)

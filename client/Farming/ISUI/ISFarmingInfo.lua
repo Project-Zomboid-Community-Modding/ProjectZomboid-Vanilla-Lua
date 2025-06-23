@@ -9,16 +9,14 @@ ISFarmingInfo = ISPanelJoypad:derive("ISFarmingInfo");
 
 local FONT_HGT_NORMAL = getTextManager():getFontHeight(UIFont.Normal)
 
-water_rgb = {["r"]=255.0,["g"]=255.0,["b"]=255.0};
-waterbar_rgb = {["r"]=0.15,["g"]=0.3,["b"]=0.63};
-fertilizer_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
-compost_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
-health_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
-nowateredsince_rgb = {["r"]=255.0,["g"]=255.0,["b"]=255.0};
-disease_rgb = {["0r"]=255.0,["0g"]=255.0,["0b"]=255.0};
-disease = {};
-title_rgb = {["r"]=1.0,["g"]=1.0,["b"]=1.0};
-deb = true;
+local water_rgb = {["r"]=255.0,["g"]=255.0,["b"]=255.0};
+local waterbar_rgb = {["r"]=0.15,["g"]=0.3,["b"]=0.63};
+local fertilizer_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
+local compost_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
+local health_rgb = {["r"]=0.0,["g"]=0.0,["b"]=0.0};
+local nowateredsince_rgb = {["r"]=255.0,["g"]=255.0,["b"]=255.0};
+local disease_rgb = {["0r"]=255.0,["0g"]=255.0,["0b"]=255.0};
+local title_rgb = {["r"]=1.0,["g"]=1.0,["b"]=1.0};
 
 --************************************************************************--
 --** ISPanel:initialise
@@ -36,7 +34,7 @@ function ISFarmingInfo:setPlant(plant)
 end
 
 function ISFarmingInfo:setEnabled(val)
-	self.isEnalbed = val
+	self.isEnabled = val
 end
 
 
@@ -108,7 +106,7 @@ function ISFarmingInfo:render()
         self:drawTextRight(ISFarmingInfo.getCurrentGrowingPhase(self, farmingLevel), self.width - 17, y + pady, 1, 1, 1, 1, UIFont.Normal);
         y = y + lineHgt;
     end
-    if farmingLevel >= 6 or ISFarmingMenu.cheat then
+    if (farmingLevel >= 6 or ISFarmingMenu.cheat) and self.plant:isAlive() then
         self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
         self:drawText(getText("Farming_Next_growing_phase") .. " : ", 13, y + pady, 1, 1, 1, 1, UIFont.Normal);
 --         self:drawText(getText("Farming_Next_growing_phase") .. " : ", 20, y + pady, 1, 1, 1, 1, UIFont.Normal);
@@ -141,7 +139,7 @@ function ISFarmingInfo:render()
     if (ISFarmingMenu.cheat)  then
 --     if((farmingLevel) >= 3 or ISFarmingMenu.cheat)  then
         self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
-        self:drawText(getText("Farming_Fertilized") .. " : ", 20, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
+        self:drawText(getText("Farming_Fertilized") .. " : ", 13, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
         local fertilizer = getText("Farming_Compost_False")
         if self.plant.fertilizer == 1 then fertilizer = getText("Farming_Compost_True")
         elseif self.plant.fertilizer > 1 then fertilizer = getText("Farming_Fertilizer_TooMuch") end
@@ -149,7 +147,7 @@ function ISFarmingInfo:render()
         y = y + lineHgt;
     end
 	self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
-	self:drawText(getText("Farming_Compost") .. " : ", 20, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
+	self:drawText(getText("Farming_Compost") .. " : ", 13, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
 	local compost = getText("Farming_Compost_False")
 	if self.plant.compost then compost = getText("Farming_Compost_True") end
 	self:drawTextRight(compost, self.width - 17, y + pady, compost_rgb["r"], compost_rgb["g"], compost_rgb["b"], 1, UIFont.Normal);
@@ -216,16 +214,18 @@ function ISFarmingInfo:render()
     end
 	-- rect for all info
 -- 	self:drawRectBorder(13, top - 1, self.width - 25, y - top + 2, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	y = y + 5;
-	self:drawText(getText("Farming_Water_levels") .. " :", 13, y, 1, 1, 1, 1);
-	self:drawTextRight(ISFarmingInfo.getWaterLvl(self.plant, farmingLevel), self.width - 12, y, water_rgb["r"], water_rgb["g"], water_rgb["b"], 1, UIFont.normal);
-	y = y + fontHgt + 2;
-	-- show the water bar with at least 4 farming skill
-	if farmingLevel >= 4 then
-		self:drawRect(13, y, self.width - 25, 12, 0.05, 1.0, 1.0, 1.0);
-		self:drawRectBorder(13, y, self.width - 25, 12, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-		self:drawRect(14, y + 1, ISFarmingInfo.getWaterBarWidth(self), 10, 0.7, waterbar_rgb["r"], waterbar_rgb["g"], waterbar_rgb["b"]);
-		y = y + 12
+	if self.plant:isAlive() then
+		y = y + 5;
+		self:drawText(getText("Farming_Water_levels") .. " :", 13, y, 1, 1, 1, 1);
+		self:drawTextRight(ISFarmingInfo.getWaterLvl(self.plant, farmingLevel), self.width - 12, y, water_rgb["r"], water_rgb["g"], water_rgb["b"], 1, UIFont.normal);
+		y = y + fontHgt + 2;
+		-- show the water bar with at least 4 farming skill
+		if farmingLevel >= 4 then
+			self:drawRect(13, y, self.width - 25, 12, 0.05, 1.0, 1.0, 1.0);
+			self:drawRectBorder(13, y, self.width - 25, 12, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+			self:drawRect(14, y + 1, ISFarmingInfo.getWaterBarWidth(self), 10, 0.7, waterbar_rgb["r"], waterbar_rgb["g"], waterbar_rgb["b"]);
+			y = y + 12
+		end
 	end
 	self:setHeightAndParentHeight(y + 8)
 end
@@ -251,13 +251,14 @@ end
 
 
 function ISFarmingInfo:update()
-	if not self.plant:getObject() or not self.plant:isAlive() then
+	if not self.plant:getObject() then
 		self.parent:setVisible(false)
+		return
 	end
-	if not self.isEnalbed then return end
+	if not self.isEnabled then return end
 
 	ISPanelJoypad.update(self)
-	if not self or not self.plant or (self.parent:getIsVisible() and not self:isPlantValid()) or not self.plant:isAlive() then
+	if not self or not self.plant or (self.parent:getIsVisible() and not self:isPlantValid()) then
 		if self.joyfocus then
 			self.joyfocus.focus = nil
 			updateJoypadFocus(self.joyfocus)
@@ -295,9 +296,6 @@ function ISFarmingInfo:onJoypadDown(button, joypadData)
 	if button == Joypad.BButton then
 		self.parent:setVisible(false)
 		joypadData.focus = nil
-		if self.plant:getSquare() then
-			ISFarmingMenu.onJoypadFarming(self.plant:getSquare(), joypadData.player)
-		end
 	end
 end
 

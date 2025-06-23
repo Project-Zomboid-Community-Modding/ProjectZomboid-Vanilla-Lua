@@ -182,7 +182,7 @@ function ISTradingUI:update()
     end
     -- check if an item isn't in player's inventory, then we remove it
     for i,v in ipairs(self.yourOfferDatas.items) do
-       if luautils.haveToBeTransfered(self.player, v.item) then
+       if luautils.haveToBeTransferedWhileTrading(self.player, v.item) then
            self:removeItem(v);
            break;
        end

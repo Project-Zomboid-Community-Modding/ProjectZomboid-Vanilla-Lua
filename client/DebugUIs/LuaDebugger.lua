@@ -98,12 +98,7 @@ DoLuaDebuggerOnBreak = function (file, line)
             src:addToUIManager();
 
         end
-
-        local p = line * 20;
-        p = p - (src:getHeight() / 2);
-        src.sourceView:setScrollHeight(src.sourceView.count * 20);
-        src.sourceView:setYScroll(-p);
-        src.sourceView.selected = line+1;
+        src:scrollToLine(line+1)
         LuaDebugger.instance.threadPanel:fill();
     else
         LuaDebugger.instance.threadPanel:fill();
@@ -158,11 +153,7 @@ DoLuaDebugger = function (f, line)
 
         end
 
-        local p = line * 20;
-        p = p - (src:getWidth() / 2);
-        src.sourceView:setScrollHeight(src.sourceView.count * 20);
-        src.sourceView:setYScroll(-p);
-        src.sourceView.selected = line+1;
+        src:scrollToLine(line+1)
         LuaDebugger.instance.threadPanel:fill();
     else
         LuaDebugger.instance.threadPanel:fill();

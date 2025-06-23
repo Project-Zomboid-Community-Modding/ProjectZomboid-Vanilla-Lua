@@ -82,7 +82,9 @@ function ISSafehousesList:drawDatas(y, item, alt)
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
-        self.parent.teleportBtn.enable = true;
+        if ISSafehousesList.instance.player:getRole():hasCapability(Capability.TeleportToCoordinates) then
+            self.parent.teleportBtn.enable = true;
+        end
         self.parent.viewBtn.enable = true;
         self.parent.selectedSafehouse = item.item;
     end
@@ -103,12 +105,12 @@ function ISSafehousesList:onClick(button)
         self:close()
     end
     if button.internal == "TELEPORT" then
-        self.player:setX(self.selectedSafehouse:getX());
-        self.player:setY(self.selectedSafehouse:getY());
-        self.player:setZ(0);
-        self.player:setLastX(self.selectedSafehouse:getX());
-        self.player:setLastY(self.selectedSafehouse:getY());
-        self.player:setLastZ(0);
+        self.player:teleportTo(self.selectedSafehouse:getX(), self.selectedSafehouse:getY(), 0);
+        if isClient() then
+            SendCommandToServer("/teleportto " .. tostring(self.selectedSafehouse:getX()) .. "," .. tostring(self.selectedSafehouse:getY()) .. ",0");
+        else
+            getPlayer():teleportTo(self.selectedSafehouse:getX(), self.selectedSafehouse:getY(), 0)
+        end
     end
     if button.internal == "VIEW" then
         local safehouseUI = ISSafehouseUI:new(getCore():getScreenWidth() / 2 - 250,getCore():getScreenHeight() / 2 - 225, 500, 450, self.selectedSafehouse, self.player);

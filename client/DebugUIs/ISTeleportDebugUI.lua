@@ -15,6 +15,33 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 --**
 --************************************************************************--
 
+function ISTeleportDebugUI:onCommandEntered()
+	self.parent:onClick(self.parent.yes);
+end
+
+function ISTeleportDebugUI:onOtherKey(key)
+	if key == Keyboard.KEY_ESCAPE then
+		Core.UnfocusActiveTextEntryBox();
+		self.parent:onClick(self.parent.no);
+		return;
+	end;
+	if key == Keyboard.KEY_TAB then
+		local targetEntry;
+		if self.parent.entryX:isFocused() then
+			targetEntry = self.parent.entryY;
+		elseif self.parent.entryY:isFocused() then
+			targetEntry = self.parent.entryZ;
+		elseif self.parent.entryZ:isFocused() then
+			targetEntry = self.parent.entryX;
+		end;
+		if targetEntry then
+			Core.UnfocusActiveTextEntryBox();
+			targetEntry:focus();
+			targetEntry:selectAll();
+		end;
+	end;
+end
+
 function ISTeleportDebugUI:initialise()
 	ISPanelJoypad.initialise(self);
 
@@ -35,6 +62,9 @@ function ISTeleportDebugUI:initialise()
 	self.entryX:initialise();
 	self.entryX:instantiate();
 	self.entryX:setOnlyNumbers(true);
+	self.entryX.onOtherKey = ISTeleportDebugUI.onOtherKey;
+	self.entryX.onCommandEntered = ISTeleportDebugUI.onCommandEntered;
+	self.entryX:focus();
 	self:addChild(self.entryX);
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
@@ -48,6 +78,8 @@ function ISTeleportDebugUI:initialise()
 	self.entryY:initialise();
 	self.entryY:instantiate();
 	self.entryY:setOnlyNumbers(true);
+	self.entryY.onOtherKey = ISTeleportDebugUI.onOtherKey;
+	self.entryY.onCommandEntered = ISTeleportDebugUI.onCommandEntered;
 	self:addChild(self.entryY);
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
@@ -62,6 +94,8 @@ function ISTeleportDebugUI:initialise()
 	self.entryZ:initialise();
 	self.entryZ:instantiate();
 	self.entryZ:setOnlyNumbers(true);
+	self.entryZ.onOtherKey = ISTeleportDebugUI.onOtherKey;
+	self.entryZ.onCommandEntered = ISTeleportDebugUI.onCommandEntered;
 	self:addChild(self.entryZ);
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
@@ -206,10 +240,6 @@ function ISTeleportDebugUI:new(x, y, width, height, player, target, onclick)
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
 	o.width = width;
-	local txtWidth = getTextManager():MeasureStringX(UIFont.Small, text) + 10;
-	if width < txtWidth then
-		o.width = txtWidth;
-	end
 	o.height = height;
 	o.anchorLeft = true;
 	o.anchorRight = true;

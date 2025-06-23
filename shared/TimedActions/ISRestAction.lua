@@ -42,13 +42,24 @@ function ISRestAction:update()
 		if self.useAnimations then
 			-- RJ: Removed this as being an action, this way we can still passively regain endurance and read at the same time
 			if not self.character:isSittingOnFurniture() or self.character:getVariableBoolean("SitOnFurnitureStarted") then
-				self:forceComplete()
+				if isServer() then
+					self.netAction:forceComplete();
+				else
+					self:forceComplete()
+				end
 			end
 		else
-			self.action:setTime(100) -- endurance = 1.0
-			self:setCurrentTime(self.character:getStats():getEndurance() * 100)
+			if not isServer() then
+				self.action:setTime(100) -- endurance = 1.0
+				self:setCurrentTime(self.character:getStats():getEndurance() * 100)
+			end
+
 			if self.character:getStats():getEndurance() >= 1.0 then
-				self:forceComplete()
+				if isServer() then
+					self.netAction:forceComplete();
+				else
+					self:forceComplete()
+				end
 			end
 		end
 	end
@@ -62,7 +73,7 @@ function ISRestAction:start()
 	self.character:setVariable("ExerciseStarted", false);
 	self.character:setVariable("ExerciseEnded", true);
 	self.character:setIsResting(true)
-	self.character:setBed(bed)
+	self.character:setBed(self.bed)
 end
 
 function ISRestAction:stop()
@@ -71,17 +82,37 @@ function ISRestAction:stop()
 	self.character:setBed(nil)
 end
 
+function ISRestAction:animEvent(event, parameter)
+	if isServer() then
+		if event == "update" then
+			self:update();
+		end
+	end
+end
+
+function ISRestAction:serverStart()
+	emulateAnimEvent(self.netAction, 100, "update", nil)
+end
+
+function ISRestAction:serverStop()
+	self:resetResting();
+end
+
 function ISRestAction:perform()
 	ISBaseTimedAction.perform(self);
 end
 
 function ISRestAction:complete()
+	self:resetResting();
+	return true
+end
+
+function ISRestAction:resetResting()
 	self.character:setIsResting(false)
 	self.character:setBed(nil)
 	if isServer() then
-		sendServerCommand(player, 'character', 'rested', { })
+		sendServerCommand(self.character, 'character', 'rested', { })
 	end
-	return true
 end
 
 function ISRestAction:getDuration()

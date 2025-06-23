@@ -9,16 +9,10 @@ AnimalDefinitions.stages["deer"].stages["fawn"].ageToGrow = 2 * 30;
 --AnimalDefinitions.stages["deer"].stages["fawn"].ageToGrow = 2;
 AnimalDefinitions.stages["deer"].stages["fawn"].nextStage = "doe";
 AnimalDefinitions.stages["deer"].stages["fawn"].nextStageMale = "buck";
-AnimalDefinitions.stages["deer"].stages["fawn"].minWeight = 0.1;
-AnimalDefinitions.stages["deer"].stages["fawn"].maxWeight = 0.25;
 AnimalDefinitions.stages["deer"].stages["doe"] = {};
 AnimalDefinitions.stages["deer"].stages["doe"].ageToGrow = 2 * 30;
-AnimalDefinitions.stages["deer"].stages["doe"].minWeight = 0.25;
-AnimalDefinitions.stages["deer"].stages["doe"].maxWeight = 0.5;
 AnimalDefinitions.stages["deer"].stages["buck"] = {};
 AnimalDefinitions.stages["deer"].stages["buck"].ageToGrow = 2 * 30;
-AnimalDefinitions.stages["deer"].stages["buck"].minWeight = 0.25;
-AnimalDefinitions.stages["deer"].stages["buck"].maxWeight = 0.5;
 
 -- genome
 AnimalDefinitions.genome = AnimalDefinitions.genome or {}; -- all the genes this animal will have
@@ -45,6 +39,7 @@ AnimalDefinitions.breeds["deer"].breeds["whitetailed"] = {};
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].name = "whitetailed";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].texture = "DeerDoe";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].textureMale = "DeerStag";
+AnimalDefinitions.breeds["deer"].breeds["whitetailed"].rottenTexture = "DeerStag_Rotting";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].textureBaby = "DeerFawn";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconMale = "Item_DeerMale_Dead";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconFemale = "Item_DeerFemale_Dead";
@@ -52,14 +47,20 @@ AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconBaby = "Item_DeerF
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconMaleDead = "Item_DeerMale_Dead";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconFemaleDead = "Item_DeerFemale_Dead";
 AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconBabyDead = "Item_DeerFawn_Dead";
+AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconMaleSkel = "Item_Skeleton_Deer_Stag";
+AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconFemaleSkel = "Item_Skeleton_Deer_Doe";
+AnimalDefinitions.breeds["deer"].breeds["whitetailed"].invIconBabySkel = "Item_Skeleton_Deer_Fawn";
 
 
 -- animals
 AnimalDefinitions.animals = AnimalDefinitions.animals or {};
+
 AnimalDefinitions.animals["fawn"] = { };
 AnimalDefinitions.animals["fawn"].bodyModel = "DeerFawn";
 AnimalDefinitions.animals["fawn"].bodyModelSkel = "Deer_FawnSkeleton";
 AnimalDefinitions.animals["fawn"].textureSkeleton = "DeerStag_Skeleton";
+AnimalDefinitions.animals["fawn"].textureSkeletonBloody = "DeerStag_Skeleton_Butchered";
+AnimalDefinitions.animals["fawn"].bodyModelSkelNoHead = "DeerFawn_Skeleton_NoHead";
 AnimalDefinitions.animals["fawn"].animset = "fawn";
 AnimalDefinitions.animals["fawn"].animalSize = 0.1;
 AnimalDefinitions.animals["fawn"].modelscript = "DeerFawn";
@@ -83,11 +84,17 @@ AnimalDefinitions.animals["fawn"].canThump = false;
 AnimalDefinitions.animals["fawn"].corpseSize = 5;
 AnimalDefinitions.animals["fawn"].minBlood = 200;
 AnimalDefinitions.animals["fawn"].maxBlood = 600;
+AnimalDefinitions.animals["fawn"].trailerBaseSize = 100;
+AnimalDefinitions.animals["fawn"].minWeight = 15;
+AnimalDefinitions.animals["fawn"].maxWeight = 100;
+AnimalDefinitions.animals["fawn"].wildFleeTimeUntilDeadTimer = 300; -- this will be used as a random timer to make the animal drop dead once you shot him, he'll flee and drop lots of blood before dropping dead, it's lowered by the aiming skill
 
 AnimalDefinitions.animals["doe"] = {};
 AnimalDefinitions.animals["doe"].bodyModel = "DeerDoe";
 AnimalDefinitions.animals["doe"].bodyModelSkel = "Deer_DoeSkeleton";
 AnimalDefinitions.animals["doe"].textureSkeleton = "DeerStag_Skeleton";
+AnimalDefinitions.animals["doe"].textureSkeletonBloody = "DeerStag_Skeleton_Butchered";
+AnimalDefinitions.animals["doe"].bodyModelSkelNoHead = "DeerDoe_Skeleton_NoHead";
 AnimalDefinitions.animals["doe"].animset = "doe";
 AnimalDefinitions.animals["doe"].modelscript = "DeerDoe";
 AnimalDefinitions.animals["doe"].bodyModelHeadless = "DeerDoe_Headless";
@@ -119,11 +126,18 @@ AnimalDefinitions.animals["doe"].canThump = false;
 AnimalDefinitions.animals["doe"].corpseSize = 5;
 AnimalDefinitions.animals["doe"].minBlood = 800;
 AnimalDefinitions.animals["doe"].maxBlood = 2500;
+AnimalDefinitions.animals["doe"].female = true;
+AnimalDefinitions.animals["doe"].trailerBaseSize = 300;
+AnimalDefinitions.animals["doe"].minWeight = 110;
+AnimalDefinitions.animals["doe"].maxWeight = 200;
+AnimalDefinitions.animals["doe"].wildFleeTimeUntilDeadTimer = 700;
 
 AnimalDefinitions.animals["buck"] = {};
 AnimalDefinitions.animals["buck"].bodyModel = "DeerStag";
 AnimalDefinitions.animals["buck"].bodyModelSkel = "Deer_StagSkeleton";
 AnimalDefinitions.animals["buck"].textureSkeleton = "DeerStag_Skeleton";
+AnimalDefinitions.animals["buck"].textureSkeletonBloody = "DeerStag_Skeleton_Butchered";
+AnimalDefinitions.animals["buck"].bodyModelSkelNoHead = "DeerStag_Skeleton_NoHead";
 AnimalDefinitions.animals["buck"].animset = "buck";
 AnimalDefinitions.animals["buck"].modelscript = "DeerStag";
 AnimalDefinitions.animals["buck"].bodyModelHeadless = "DeerStag_Headless";
@@ -154,6 +168,11 @@ AnimalDefinitions.animals["buck"].canThump = false;
 AnimalDefinitions.animals["buck"].corpseSize = AnimalDefinitions.animals["doe"].corpseSize;
 AnimalDefinitions.animals["buck"].minBlood = 800;
 AnimalDefinitions.animals["buck"].maxBlood = 2500;
+AnimalDefinitions.animals["buck"].male = true;
+AnimalDefinitions.animals["buck"].trailerBaseSize = 300;
+AnimalDefinitions.animals["buck"].minWeight = 110;
+AnimalDefinitions.animals["buck"].maxWeight = 200;
+AnimalDefinitions.animals["buck"].wildFleeTimeUntilDeadTimer = 800;
 
 local buck_sounds = {
 	death = { name = "AnimalVoiceBuckDeath", slot = "voice", priority = 100 },

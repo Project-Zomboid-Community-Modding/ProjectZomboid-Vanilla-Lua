@@ -17,6 +17,17 @@ end
 function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
 	if test and ISWorldObjectContextMenu.Test then return true end
 
+	local subMenu;
+	if context.troughSubmenu then
+		subMenu = context.troughSubmenu;
+	--else
+	--	local subOption = context:addOption(getText("ContextMenu_FeedingTrough"), worldobjects, nil);
+	--	subMenu = ISContextMenu:getNew(context);
+	--	context:addSubMenu(subOption, subMenu);
+	--else
+	--	return;
+	end
+
 	local playerObj = getSpecificPlayer(player)
 	local playerInv = playerObj:getInventory()
 
@@ -41,84 +52,27 @@ function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, world
 
 	if luaObject == nil then return false end
 
---	print("found feeding trough")
-
 	if test then return ISWorldObjectContextMenu.setTest() end
 
 	local isoObject = luaObject:getIsoObject()
 
+	-- if don't have our submenu, means we clicked on the slave part of the trough
+	if not subMenu and isoObject:getFluidContainer() then
+		subMenu = ISWorldObjectContextMenu.doFluidContainerMenu(context, isoObject, player);
+	end
+
+	-- if we don't have submenu it means we can't have water currently, only food, still needs to create the submenu
+	if not subMenu then
+		local menuName = ISWorldObjectContextMenu.getMoveableDisplayName(isoObject) or isoObject:getFluidUiName();
+		local subOption = context:addOption(menuName, worldobjects, nil);
+		subMenu = ISContextMenu:getNew(context);
+		context:addSubMenu(subOption, subMenu);
+	end
+
 	local option
 	local tooltip
 
-
-	local subOption = context:addOption(getText("ContextMenu_FeedingTrough"), worldobjects, nil);
-	local subMenu = ISContextMenu:getNew(context);
-	context:addSubMenu(subOption, subMenu);
-
 	subMenu:addOption(getText("ContextMenu_FeedingTrough_Info"), isoObject, ISFeedingTroughMenu.onInfo, playerObj)
-
-	--
-	-- Add water to trough
-	--
-	if isoObject:getWater() < isoObject:getMaxWater() then
-		--local waterItems = playerInv:getAllEvalRecurse(function(item)
-		--	-- or our item have water
-		--	if item:canStoreWater() and item:isWaterSource() and not item:isBroken() and instanceof(item, "DrainableComboItem") and item:getCurrentUsesFloat() > 0 then
-		--		return true
-		--	end
-		--
-		--	return false
-		--end)
-
-		local waterItems = playerObj:getInventory():getAllWaterFluidSources(true);
-
-		local waterOption = subMenu:addOption(getText("ContextMenu_AddWaterFromItem"), worldobjects, nil);
-		local subMenuWater = ISContextMenu:getNew(subMenu);
-		subMenu:addSubMenu(waterOption, subMenuWater);
-
-		if isoObject:getContainer() and not isoObject:getContainer():isEmpty() then
-			local waterOption = subMenuWater:addOption(getText("ContextMenu_FeedingTrough_RemoveItemForWater"), worldobjects, nil);
-			waterOption.notAvailable = true;
-		else
-			if not waterItems:isEmpty() then
-				local alreadyAdded = {};
-
-				if isoObject:getContainer() and not isoObject:getContainer():isEmpty() then
-					waterOption.notAvailable = true;
-					local tooltip = ISWorldObjectContextMenu.addToolTip();
-					tooltip:setName(getText("Tooltip_FeedingTrough_FeedPresent"));
-					waterOption.toolTip = tooltip;
-				else
-					for i=0, waterItems:size() - 1 do
-						local item = waterItems:get(i);
-						local text = item:getFluidContainer():getUiName() .. " (" .. round(item:getFluidContainer():getAmount() * 1000, 2) .. " mL)";
-						if not alreadyAdded[text] then
-							subMenuWater:addOption(text, playerObj, ISFeedingTroughMenu.onAddWater, luaObject, item)
-							alreadyAdded[text] = true;
-						end
-					end
-				end
-
-				-- all will relaunch the action as soon as one item is empty
-				if waterItems:size() > 1 then
-					subMenuWater:addOption(getText("ContextMenu_Eat_All"), playerObj, ISFeedingTroughMenu.onAddWater, luaObject, waterItems:get(0), true)
-				end
-			else
-				local waterOption = subMenuWater:addOption(getText("ContextMenu_NoWaterItemFound"), worldobjects, nil);
-				waterOption.notAvailable = true;
-			end
-		end
-	else
-		local waterOption = subMenu:addOption(getText("ContextMenu_AddWaterFromItem"), worldobjects, nil);
-		waterOption.notAvailable = true;
-		local tooltip = ISWorldObjectContextMenu.addToolTip();
-		tooltip:setName(getText("Tooltip_FeedingTrough_Full"));
-		waterOption.toolTip = tooltip;
-	end
-
-	if isoObject:getWater() > 0 then
-		subMenu:addOption(getText("ContextMenu_FeedingTrough_EmptyWater"), playerObj, ISFeedingTroughMenu.onEmptyWater, isoObject);
-	end
 
 	if AnimalContextMenu.cheat then
 		subMenu:addDebugOption("Add Food", playerObj, ISFeedingTroughMenu.onAddFoodDebug, isoObject);
@@ -138,7 +92,10 @@ ISFeedingTroughMenu.onAddWaterDebug = function(playerObj, isoObject)
 		isoObject:getContainer():removeAllItems();
 	end
 
-	isoObject:setWater(isoObject:getMaxWater());
+	if not isoObject:getFluidContainer() then
+		isoObject:createFluidContainer();
+	end
+	isoObject:addWater(FluidType.TaintedWater, isoObject:getMaxWater());
 
 	isoObject:checkOverlayAfterAnimalEat();
 end
@@ -146,12 +103,18 @@ end
 ISFeedingTroughMenu.onRemoveFoodDebug = function(playerObj, isoObject)
 	isoObject:getContainer():removeAllItems();
 
+	if not isoObject:getFluidContainer() then
+		isoObject:createFluidContainer();
+	end
+
 	isoObject:checkOverlayAfterAnimalEat();
 end
 
 ISFeedingTroughMenu.onAddFoodDebug = function(playerObj, isoObject)
-	isoObject:setWater(0);
-	--print(isoObject, isoObject:getContainer())
+	isoObject:removeFluidContainer();
+	if not isoObject:getContainer() then
+		isoObject:setContainer(ItemContainer.new());
+	end
 
 	isoObject:getContainer():AddItem("Base.AnimalFeedBag")
 	isoObject:getContainer():AddItem("Base.AnimalFeedBag")
@@ -184,5 +147,4 @@ function ISFeedingTroughMenu.isValidAnimalFeed(item)
 	return item:isAnimalFeed() and instanceof(item, "Drainable");
 end
 
-Events.OnFillWorldObjectContextMenu.Add(ISFeedingTroughMenu.OnFillWorldObjectContextMenu)
-
+--Events.OnFillWorldObjectContextMenu.Add(ISFeedingTroughMenu.OnFillWorldObjectContextMenu)
