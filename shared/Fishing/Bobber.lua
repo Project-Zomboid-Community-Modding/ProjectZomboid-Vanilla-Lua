@@ -125,7 +125,7 @@ function Bobber:update()
             self.attractTimer = self.attractTimer - getGameTime():getMultiplier()
             if self.attractTimer <= 0 then
                 if self:attractFish() then
-                    self.fish = Fishing.Fish:new(self.player, self.lure, self:getX(), self:getY())
+                    self.fish = Fishing.Fish:new(self.player, self.lure, self.fishingRod, self:getX(), self:getY())
                     self.nibbleTimer = 360
                 end
                 self.attractTimer = self:getNibbleTime() * 0.8

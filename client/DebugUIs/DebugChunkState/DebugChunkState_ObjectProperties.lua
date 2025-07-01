@@ -43,11 +43,11 @@ function ObjPropsHandler:postrender()
 end
 
 function ObjPropsHandler:addLine(text, arg0, arg1, arg2, arg3, arg4)
-	if type(arg0) == "boolean" or type(arg0) == "table" then arg0 = tostring(arg0) end
-	if type(arg1) == "boolean" or type(arg1) == "table" then arg1 = tostring(arg1) end
-	if type(arg2) == "boolean" or type(arg2) == "table" then arg2 = tostring(arg2) end
-	if type(arg3) == "boolean" or type(arg3) == "table" then arg3 = tostring(arg3) end
-	if type(arg4) == "boolean" or type(arg4) == "table" then arg4 = tostring(arg4) end
+	if type(arg0) == "boolean" or type(arg0) == "table" or type(arg0) == "userdata" or arg0 == nil then arg0 = tostring(arg0) end
+	if type(arg1) == "boolean" or type(arg1) == "table" or type(arg1) == "userdata" or arg1 == nil then arg1 = tostring(arg1) end
+	if type(arg2) == "boolean" or type(arg2) == "table" or type(arg2) == "userdata" or arg2 == nil then arg2 = tostring(arg2) end
+	if type(arg3) == "boolean" or type(arg3) == "table" or type(arg3) == "userdata" or arg3 == nil then arg3 = tostring(arg3) end
+	if type(arg4) == "boolean" or type(arg4) == "table" or type(arg4) == "userdata" or arg4 == nil then arg4 = tostring(arg4) end
 	self:drawText(string.format(text, arg0, arg1, arg2, arg3, arg4), self.addLineX, self.addLineY, 1, 1, 1, 1, UIFont.Small)
 	self.addLineY = self.addLineY + FONT_HGT_SMALL
 end

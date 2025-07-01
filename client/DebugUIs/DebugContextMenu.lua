@@ -167,8 +167,10 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	DebugContextMenu.doDebugCorpseMenu(player, debugMenu, worldobjects, test)
 	DebugContextMenu.doDebugZombieMenu(player, debugMenu, worldobjects, test, square)
 	DebugContextMenu.doDebugAnimalMenu(playerObj, debugMenu, worldobjects, test, square)
-	DebugContextMenu.doDebugPlayerMenu(playerObj, debugMenu, worldobjects)
-	DebugContextMenu.doDebugVehicleMenu(playerObj, debugMenu, worldobjects)
+	if isClient() then
+		DebugContextMenu.doDebugPlayerMenu(playerObj, debugMenu, worldobjects)
+		DebugContextMenu.doDebugVehicleMenu(playerObj, debugMenu, worldobjects)
+	end
 	DebugContextMenu.doSurvivorSwapMenu(player, debugMenu, worldobjects, test)
 
 	DebugContextMenu.doForageMenu(player, debugMenu, worldobjects, test)

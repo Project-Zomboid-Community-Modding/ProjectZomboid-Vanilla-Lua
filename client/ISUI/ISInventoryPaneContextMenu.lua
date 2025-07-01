@@ -2538,7 +2538,7 @@ ISInventoryPaneContextMenu.onCheckMap = function(map, player)
         local action = ISInventoryTransferAction:new(playerObj, map, map:getContainer(), playerObj:getInventory())
         action:setOnComplete(ISInventoryPaneContextMenu.onCheckMap, map, player)
         ISTimedActionQueue.add(action)
-        ISCraftingUI.ReturnItemToOriginalContainer(playerObj, map)
+--         ISCraftingUI.ReturnItemToOriginalContainer(playerObj, map)
         return
     end
 

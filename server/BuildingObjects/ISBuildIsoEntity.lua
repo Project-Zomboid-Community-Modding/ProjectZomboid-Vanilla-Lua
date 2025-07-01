@@ -141,6 +141,7 @@ end
 function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _extendsN, _extendsW)
 	local tileInfoSprite = tileInfo:getSpriteName() and getSprite(tileInfo:getSpriteName());
 	local tileInfoSpriteProps = tileInfoSprite and tileInfoSprite:getProperties();
+	local facing = self:getFace():getFaceName();
 
 	local testCollisions = true;
 	local canBuildOverWater = false;
@@ -148,7 +149,7 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 	-- call onTest
 	if self.objectInfo:getScript():getOnIsValid() then
 		local func = self.objectInfo:getScript():getOnIsValid();
-		local params = {square = square, tileInfo = tileInfo, north = self.north, canBuildOverWater = canBuildOverWater, testCollisions = testCollisions}
+		local params = {square = square, tileInfo = tileInfo, north = self.north, canBuildOverWater = canBuildOverWater, testCollisions = testCollisions, facing = facing}
 
 		if not BaseCraftingLogic.callLuaBool(func, params) then
 			return false;
@@ -703,8 +704,9 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 
 	local result = nil;
 	if self.objectInfo:getScript():getOnCreate() then
+        local facing = self:getFace():getFaceName();
 		local func = self.objectInfo:getScript():getOnCreate();
-		result = BaseCraftingLogic.callLuaObject(func, thumpable);
+		result = BaseCraftingLogic.callLuaObject(func, {thumpable = thumpable, craftRecipeData = self.buildPanelLogic:getRecipeDataInProgress(), character = playerObj, facing = facing});
 	end
 
 	square:RecalcAllWithNeighbours(true);

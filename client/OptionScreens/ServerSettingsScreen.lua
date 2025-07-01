@@ -4504,6 +4504,7 @@ SettingsTable = {
 				settings = {
 					{ name = "Zombies" },
 					{ name = "Distribution" },
+					{ name = "ZombieVoronoiNoise" },
 					{ name = "ZombieRespawn"},
 					{ name = "ZombieMigrate"},
 
@@ -4645,7 +4646,7 @@ SettingsTable = {
 					},
 					{ name = "DaysUntilMaximumDiminishedLoot" },
 					{ name = "MaximumLootedBuildingRooms" },
-					{ name = "UniqueHomeVHS" },
+-- 					{ name = "UniqueHomeVHS" },
 					-- Loot rarity
 					{ name = "FoodLootNew", title = "LootRarity",
                     advancedCombo = {

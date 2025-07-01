@@ -179,7 +179,7 @@ function ISMoveablesAction:perform()
     if self.sound and self.sound ~= 0 then
         self.character:stopOrTriggerSound(self.sound);
     end
-
+    ISMoveableCursor.clearCacheForAllPlayers();
     ISBaseTimedAction.perform(self)
 end
 
@@ -232,7 +232,7 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
         o.moveProps = ISMoveableSpriteProps.fromObject( object );
         if o.moveProps.spriteName ~= origSpriteName then
             --check for attached sprites
-            if o.moveProps.spriteProps:Is("WallNW") or o.moveProps.spriteProps:Is("WallN") or o.moveProps.spriteProps:Is("WallW") then
+            if o.moveProps.spriteProps ~= nil and (o.moveProps.spriteProps:Is("WallNW") or o.moveProps.spriteProps:Is("WallN") or o.moveProps.spriteProps:Is("WallW")) then
                 local sprList = object:getChildSprites();
                 if sprList then
                     local list_size 	= sprList:size();

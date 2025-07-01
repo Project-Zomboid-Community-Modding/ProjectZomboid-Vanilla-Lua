@@ -365,6 +365,22 @@ function composterLvl2Test(param)
     return perkLevel >= 6;
 end
 
+function metalDoorLvl1Test(param)
+    if param.shouldShowAll then return true; end
+    local player = param.player;
+    local perkLevel = player:getPerkLevel(Perks.MetalWelding);
+
+    return perkLevel < 5;
+end
+
+function metalDoorLvl2Test(param)
+    if param.shouldShowAll then return true; end
+    local player = param.player;
+    local perkLevel = player:getPerkLevel(Perks.MetalWelding);
+
+    return perkLevel >= 5;
+end
+
 function metalWallLvl1Test(param)
     if param.shouldShowAll then return true; end
     local player = param.player;

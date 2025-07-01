@@ -126,6 +126,10 @@ function Fishing.FishConfig:setTrophyWeight(weight)
     self.trophyWeight = weight
 end
 
+function Fishing.FishConfig:setPredator(isPredator)
+    self.isPredator = isPredator
+end
+
 function Fishing.FishConfig:addLures(itemTable, chanceCoeff)
     for item, data in pairs(itemTable) do
         self.lure[item] = chanceCoeff * data.chanceModifier
@@ -532,6 +536,8 @@ BlueCatfish:setMaxWeight(32) -- KG
 BlueCatfish:setTrophyWeight(68)
 BlueCatfish:initFishSizeData()
 
+BlueCatfish:setPredator(true)
+
 BlueCatfish:addLures(Fishing.lure.Insect, 0.1)
 BlueCatfish:addLures(Fishing.lure.Minnows, 0.0)
 BlueCatfish:addLures(Fishing.lure.Leeches, 0.1)
@@ -576,6 +582,8 @@ FlatheadCatfish:setMaxWeight(27) -- KG
 FlatheadCatfish:setTrophyWeight(55)
 FlatheadCatfish:initFishSizeData()
 
+FlatheadCatfish:setPredator(true)
+
 FlatheadCatfish:addLures(Fishing.lure.Insect, 0.1)
 FlatheadCatfish:addLures(Fishing.lure.Minnows, 0.0)
 FlatheadCatfish:addLures(Fishing.lure.Leeches, 0.1)
@@ -598,6 +606,8 @@ Muskellunge:setMaxWeight(18) -- KG
 Muskellunge:setTrophyWeight(32)
 Muskellunge:initFishSizeData()
 
+Muskellunge:setPredator(true)
+
 Muskellunge:addLures(Fishing.lure.Insect, 0.1)
 Muskellunge:addLures(Fishing.lure.Minnows, 0.7)
 Muskellunge:addLures(Fishing.lure.Leeches, 0.5)
@@ -619,6 +629,8 @@ AligatorGar:setTrophyLength(243)
 AligatorGar:setMaxWeight(45) -- KG
 AligatorGar:setTrophyWeight(150)
 AligatorGar:initFishSizeData()
+
+AligatorGar:setPredator(true)
 
 AligatorGar:addLures(Fishing.lure.Insect, 0.1)
 AligatorGar:addLures(Fishing.lure.Minnows, 0.7)

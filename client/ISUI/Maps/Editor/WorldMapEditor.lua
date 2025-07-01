@@ -14,7 +14,7 @@ WorldMapEditor = ISUIElement:derive("WorldMapEditor")
 
 function WorldMapEditor:instantiate()
 	self.javaObject = UIWorldMap.new(self)
-	self.mapAPI = self.javaObject:getAPIv1()
+	self.mapAPI = self.javaObject:getAPIv3()
 	self.mapAPI:setMapItem(self.mapItem)
 	self.styleAPI = self.mapAPI:getStyleAPI()
 	self.symbolsAPI = self.mapAPI:getSymbolsAPI()
@@ -26,6 +26,8 @@ function WorldMapEditor:instantiate()
 	self.javaObject:setAnchorRight(self.anchorRight)
 	self.javaObject:setAnchorTop(self.anchorTop)
 	self.javaObject:setAnchorBottom(self.anchorBottom)
+	self.javaObject:setMapEditor(true)
+	self.mapAPI:setMaxZoom(19)
 	self:setWantKeyEvents(true)
 	self.mapAPI:setBoolean("HideUnvisited", false)
 	self.mapAPI:setBoolean("Isometric", false)
@@ -34,7 +36,7 @@ function WorldMapEditor:instantiate()
 end
 
 function WorldMapEditor:createChildren()
-	for _,mode in ipairs({'DataFiles', 'Bounds', 'Style', 'Annotations', 'Maps', 'Stashes'}) do
+	for _,mode in ipairs({'DataFiles', 'Bounds', 'Style', 'Annotations', 'Maps', 'Stashes', 'Streets'}) do
 		self.mode[mode] = _G["WorldMapEditorMode_" .. mode]:new(self)
 		self:addChild(self.mode[mode])
 		self.mode[mode]:setVisible(false)
@@ -84,6 +86,13 @@ function WorldMapEditor:createChildren()
 	button.textColor.a = 0.5
 	self:addChild(button)
 	self.modeButton.Stashes = button
+
+	button = ISButton:new(button:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING, 10, BUTTON_HGT, getText("IGUI_WorldMapEditor_Streets"), self, self.onSwitchMode)
+	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
+	button.mode = "Streets"
+	button.textColor.a = 0.5
+	self:addChild(button)
+	self.modeButton.Streets = button
 
 	button = ISButton:new(UI_BORDER_SPACING, self.height - UI_BORDER_SPACING - BUTTON_HGT, 10, BUTTON_HGT, getText("IGUI_DebugMenu_Exit"), self, self.onExit)
 	button:setAnchorTop(false)

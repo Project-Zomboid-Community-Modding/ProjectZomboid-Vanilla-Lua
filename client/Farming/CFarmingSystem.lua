@@ -167,6 +167,26 @@ local function DoSpecialTooltip1(tooltip, square)
 --         layoutItem:setLabel(getText("Farming_Last_time_watered")..':', 1, 1, 1, 1)
 --         layoutItem:setValue(text, nowateredsince_rgb["r"], nowateredsince_rgb["g"], nowateredsince_rgb["b"], 1)
     end
+	-- Pest Info
+	if ISFarmingMenu.cheat then
+		local seedProps = farming_vegetableconf.props[plant.typeOfSeed]
+		local pestProps = {}
+		for i, v in pairs(seedProps) do
+			local thisProp = tostring(i)
+			if string.contains(thisProp, "Food") or string.contains(thisProp, "Bane") or string.contains(thisProp, "Proof") then
+				table.insert(pestProps, i)
+			end
+		end
+		if #pestProps > 0 then
+			header = layout:addItem()
+			header:setLabel(getText("Farming_Tooltip_PestInfo") .. ": ", 1, 1, 1, 1)
+			for i=1, #pestProps do
+				local propString = "Farming_"..string.upper(string.sub(pestProps[i], 1,1))..string.sub(pestProps[i], 2,-1)
+				text = layout:addItem()
+				text:setLabel(getText(propString), 1, 1, 1, 1)
+			end
+		end
+	end
 
         local y = layout:render(5, 5 + getTextManager():getFontHeight(tooltip:getFont()), tooltip)
         tooltip:setHeight(y + 5)

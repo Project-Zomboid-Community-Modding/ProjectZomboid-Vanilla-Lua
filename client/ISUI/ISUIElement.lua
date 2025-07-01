@@ -399,6 +399,20 @@ function ISUIElement:isPointOver(screenX, screenY)
 	return self.javaObject:isPointOver(screenX, screenY);
 end
 
+function ISUIElement:isMouseOverChild()
+    return self:isPointOverChild(getMouseX(), getMouseY())
+end
+
+function ISUIElement:isPointOverChild(screenX, screenY)
+	local children = self:getChildren()
+	for _,child in pairs(children) do
+		if child:isPointOver(screenX, screenY) then
+			return true
+		end
+	end
+    return false
+end
+
 function ISUIElement:suspendStencil()
 	if self.javaObject == nil then
 		self:instantiate();

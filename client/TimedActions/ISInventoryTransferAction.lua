@@ -378,6 +378,9 @@ function ISInventoryTransferAction:getSoundName()
         return self.item:getDropSound() or "PutItemInBag"
     end
 	if self.destContainer == self.character:getInventory() then
+        if (self.srcContainer ~= nil) and self.srcContainer:getTakeSound() then
+            return self.srcContainer:getTakeSound()
+        end
 		return "StoreItemPlayerInventory"
 	end
 	if self.destContainer:getType() == "trough" and self.item:getAnimalFeedType() == "AnimalFeed" then

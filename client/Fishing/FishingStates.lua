@@ -46,7 +46,7 @@ function Fishing.States.Idle:start()
         return
     end
     if self.manager.fishingRod == nil then
-        self.manager.fishingRod = Fishing.FishingRod:new(self.manager.player)
+        self.manager.fishingRod = Fishing.FishingRod:new(self.manager.player, self.manager.joypad)
     end
     self.manager.player:setFishingStage("Idle")
     self.manager.player:reportEvent("EventFishing")

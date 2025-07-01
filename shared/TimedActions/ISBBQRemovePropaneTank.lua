@@ -45,9 +45,10 @@ function ISBBQRemovePropaneTank:complete()
 	local bbq = self.bbq
 	if bbq and bbq:hasPropaneTank() then
 		local tank = bbq:removePropaneTank()
-		bbq:sendObjectChange('state')
+		if isServer() then
+			self.bbq:sendObjectChange("state")
+		end
 		self.character:getSquare():AddWorldInventoryItem(tank, 0.5, 0.5, 0)
-
 	end
 
 	return true;

@@ -484,6 +484,23 @@ ISFarmingMenu.plantInfo = function(prop)
 			text = text .. " <LINE>" .. getText("Farming_Tooltip_RiskMonth2") .. ": " .. getText("Farming_Tooltip_None");
 		end
 	end
+	if ISFarmingMenu.cheat then
+		local pestInfo = {}
+		for i, v in pairs(prop) do
+			local thisProp = tostring(i)
+			if string.contains(thisProp, "Food") or string.contains(thisProp, "Bane") or string.contains(thisProp, "Proof") then
+				table.insert(pestInfo, i)
+			end
+		end
+		if #pestInfo > 0 then
+			text = text .. " <LINE>" .. getText("Farming_Tooltip_PestInfo").. ": "
+			for i=1, #pestInfo do
+				local thisProp = pestInfo[i]
+				local propString = "Farming_"..string.upper(string.sub(thisProp, 1,1))..string.sub(thisProp, 2,-1)
+				text = text .. getText(propString) .. ((i ~= #pestInfo and ", ") or "")
+			end
+		end
+	end
 	return text
 end
 

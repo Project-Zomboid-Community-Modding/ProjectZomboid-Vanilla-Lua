@@ -565,7 +565,7 @@ function MapSpawnSelect:render()
 	if self.mapPanel:hasSomethingToDisplay() and self.mapPanel.shownInitialLocation then
 		if self.listbox.selected ~= self.selectedMapIndex then
 			self.selectedMapIndex = self.listbox.selected
-			if selectedItem.zoomX ~= nil then -- nil during post-death at a player's location
+			if selectedItem.zoomX ~= nil and not (selectedItem.zoomX == 0 and selectedItem.zoomY == 0 and selectedItem.zoomS == 0) then -- nil during post-death at a player's location
 				self.mapPanel.mapAPI:transitionTo(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
 -- 				self.mapPanel.mapAPI:centerOn(x, y)
 -- 				self.mapPanel.mapAPI:setZoom(scale)
@@ -803,7 +803,7 @@ function MapSpawnSelect:create()
 	self.textEntry.onJoypadDown = self.onJoypadDown_textEntry
 	self.textEntry.onJoypadDirDown = self.onJoypadDirDown_textEntry
 	self:addChild(self.textEntry);
-	local sdf = SimpleDateFormat.new("yyyy-MM-dd_HH-mm-ss");
+	local sdf = SimpleDateFormat.new("yyyy-MM-dd_HH-mm-ss", Locale.ENGLISH);
 	self.textEntry:setText(sdf:format(Calendar.getInstance():getTime()));
 
 	end -- not MainScreen.instance.inGame

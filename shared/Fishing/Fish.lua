@@ -4,7 +4,7 @@ Fishing.Fish = {}
 
 local Fish = Fishing.Fish
 
-function Fish:new(character, lure, x, y)
+function Fish:new(character, lure, fishingRod, x, y)
     local o = {}
     setmetatable(o, self)
     self.__index = self
@@ -13,6 +13,7 @@ function Fish:new(character, lure, x, y)
     o.x = x
     o.y = y
     o.isRiver = Fishing.isRiver(x, y)   --getCell():getGridSquare(x, y, 0):getWater():getFlow() > 0
+	o.fishingRod = fishingRod
     o.lure = lure
     o.fishingLvl = character:getPerkLevel(Perks.Fishing)
 
@@ -63,27 +64,50 @@ function Fish:update(x, y)
 end
 
 
+
 function Fish:getFishByLure()
     local item = nil
+	local isReel = self.fishingRod:getTension() >= 0.1
     local trashFactor = FishSchoolManager.getInstance():getTrashAbundance(self.x, self.y)
     local fishNum = FishSchoolManager.getInstance():getFishAbundance(self.x, self.y)
+	
+	-- Can use skill checks to prevent certain larger species of fish from being caught.
+	local skillSizeLimit = Fishing.Utils.skillSizeLimit[self.fishingLvl]
+	
     if (fishNum == 0.0 and ZombRandFloat(0.0, 4.0) < 0.1 + self.fishingLvl / 20.0) or (fishNum ~= 0 and ZombRandFloat(0.0 + self.fishingLvl / 30.0, 0.5 + self.fishingLvl / 20.0) > trashFactor) then
         local fishes = {}
+		-- This is added to as fish configs are sorted through.
         local baitFactorSum = 0
+		-- Pull info from fishing_properties. Every fish config.
         for _, fishConfig in ipairs(Fishing.fishes) do
-            if self.isRiver and fishConfig.isRiver then
-                if fishConfig.lure[self.lure] ~= nil then
-                    table.insert(fishes, fishConfig)
-                    baitFactorSum = baitFactorSum + fishConfig.lure[self.lure]
-                end
-            elseif not self.isRiver and fishConfig.isLake then
-                if fishConfig.lure[self.lure] ~= nil then
-                    table.insert(fishes, fishConfig)
-                    baitFactorSum = baitFactorSum + fishConfig.lure[self.lure]
+			-- Skill check first, then movement.
+			local canCatch = fishConfig.maxWeight <= skillSizeLimit
+            if fishConfig.isPredator then
+                if not isReel then
+                    canCatch = false
                 end
             end
-        end
 
+			-- Only adds valid fish to baitFactorSum
+			if canCatch then
+				-- Water source check.
+				if self.isRiver and fishConfig.isRiver then
+					-- No mechanism currently in place for 'spinning lures' that disturb the water when reeled.
+					-- IRL these are very attractive to predator fish. Worth investigating?
+					if fishConfig.lure[self.lure] ~= nil then
+						table.insert(fishes, fishConfig)
+						-- Add value of fish species' attraction to bait type.
+						baitFactorSum = baitFactorSum + fishConfig.lure[self.lure]
+					end
+				elseif not self.isRiver and fishConfig.isLake then
+					if fishConfig.lure[self.lure] ~= nil then
+						table.insert(fishes, fishConfig)
+						baitFactorSum = baitFactorSum + fishConfig.lure[self.lure]
+					end
+				end
+			end
+        end
+		-- After this, baitFactorSum should be a value above 0.
         local sum = 0
         local fishNumber = ZombRandFloat(0.0, baitFactorSum)
         for _, fishConfig in ipairs(fishes) do
@@ -120,9 +144,8 @@ function Fish:createFish(fishConfig)
         modelSuffix = "_Little"
     end
 
-	-- TEMP NOTES WILL DELETE LATER
-	-- Placed after modelSuffix to avoid complications.
-	if fishSizeData.size == "Big" then
+	-- Need to be skilled at Fishing to catch Legendary fish.
+	if self.fishingLvl <= 8 and fishSizeData.size == "Big" then
 		-- Can set up something more complex later. Roll a D20 for now!
 		local trophyRoll = ZombRand(20)
 		-- If successful roll, add extra length/weight to current fish.

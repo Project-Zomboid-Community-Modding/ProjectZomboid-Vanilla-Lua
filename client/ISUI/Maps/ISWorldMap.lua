@@ -139,6 +139,9 @@ function WorldMapOptions:getVisibleOptions()
 		table.insert(optionNames, "PlayerNames")
 	end
 	table.insert(optionNames, "Symbols")
+	table.insert(optionNames, "HighlightStreet")
+	table.insert(optionNames, "LargeStreetLabel")
+	table.insert(optionNames, "ShowStreetNames")
 	for _,optionName in ipairs(optionNames) do
 		for i=1,self.map.mapAPI:getOptionCount() do
 			local option = self.map.mapAPI:getOptionByIndex(i-1)
@@ -367,6 +370,7 @@ function ISWorldMap:prerender()
 	self:renderStashMaps()
 	self:positionStashMap()
 	MapUtils.renderDarkModeOverlay(self)
+	self:pickMouseOverStreet()
 end
 
 function ISWorldMap:render()
@@ -623,6 +627,23 @@ function ISWorldMap:getStashMapBounds(stashName)
     end
     self.stashMapBounds[stashName] = bounds
     return bounds
+end
+
+function ISWorldMap:pickMouseOverStreet()
+    local streetsAPI = self.mapAPI:getStreetsAPI()
+    streetsAPI:setMouseOverStreet(nil, 0.0, 0.0)
+    if not self.mapAPI:getBoolean("ShowStreetNames") then return end
+    local mx,my = self:getMouseX(), self:getMouseY()
+   	if self.playerNum and ((self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] ~= nil and not wasMouseActiveMoreRecentlyThanJoypad())) then
+        mx = self:getWidth() / 2
+        my = self:getHeight() / 2
+    end
+    if not streetsAPI:canPickStreet(mx, my) then return end
+    local mouseOverStreet = streetsAPI:pickStreet(mx, my)
+    if not mouseOverStreet then return end
+    local worldX = self.mapAPI:uiToWorldX(mx, my)
+    local worldY = self.mapAPI:uiToWorldY(mx, my)
+    streetsAPI:setMouseOverStreet(mouseOverStreet, worldX, worldY)
 end
 
 -----
@@ -885,7 +906,7 @@ function ISWorldMap:onRightMouseUp(x, y)
 	-- DEV: Apply the style again after reloading ISMapDefinitions.lua
 	option = context:addOption("Reapply Style", self,
 		function(self)
-			MapUtils.initDefaultStyleV1(self)
+			MapUtils.initDefaultStyleV3(self)
 			MapUtils.overlayPaper(self)
 		end)
 
@@ -1004,6 +1025,23 @@ function ISWorldMap:onCenterOnPlayer()
 end
 
 function ISWorldMap:onTogglePyramid()
+    if self.showImagePyramid then
+	    MapUtils.initDefaultStyleV3(self)
+	    MapUtils.overlayPaper(self)
+    else
+        local styleAPI = self.mapAPI:getStyleAPI()
+        styleAPI:clear()
+        local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
+        pyramidLayer:setPyramidFileName("pyramid.zip")
+        --[[
+        self.mapAPI:addImagePyramid("media/maps/Muldraugh, KY/spawnSelectImagePyramid.zip")
+        local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
+        pyramidLayer:setPyramidFileName("spawnSelectImagePyramid.zip")
+        --]]
+        pyramidLayer:addFill(0.0, 255.0, 255.0, 255.0, 255.0)
+    end
+    self.showImagePyramid = not self.showImagePyramid
+--[[
 	if self.mapAPI:getBoolean("ImagePyramid") then
 		self.mapAPI:setBoolean("ImagePyramid", false)
 		self.mapAPI:setBoolean("Features", true)
@@ -1011,6 +1049,7 @@ function ISWorldMap:onTogglePyramid()
 		self.mapAPI:setBoolean("ImagePyramid", true)
 		self.mapAPI:setBoolean("Features", false)
 	end
+ ]]
 end
 
 function ISWorldMap:onZoomInButton()
@@ -1344,6 +1383,7 @@ function ISWorldMap:initDataAndStyle()
 	if MainScreen.instance.inGame then
 		MapUtils.initDefaultMapData(self)
 		mapAPI:setBoundsFromWorld()
+		MapUtils.initDefaultStreetData(self)
 		self.hideUnvisitedAreas = true
 	else
 		-- TEST in main menu
@@ -1353,7 +1393,7 @@ function ISWorldMap:initDataAndStyle()
 		markers:addGridSquareMarker(11342, 6779, 50, 1.0, 1.0, 0.0, 1.0)
 		self.hideUnvisitedAreas = false
 	end
-	MapUtils.initDefaultStyleV1(self)
+	MapUtils.initDefaultStyleV3(self)
 	MapUtils.overlayPaper(self)
 end
 

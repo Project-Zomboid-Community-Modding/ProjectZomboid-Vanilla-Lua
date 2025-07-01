@@ -64,7 +64,6 @@ function ISTeleportDebugUI:initialise()
 	self.entryX:setOnlyNumbers(true);
 	self.entryX.onOtherKey = ISTeleportDebugUI.onOtherKey;
 	self.entryX.onCommandEntered = ISTeleportDebugUI.onCommandEntered;
-	self.entryX:focus();
 	self:addChild(self.entryX);
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
@@ -100,6 +99,32 @@ function ISTeleportDebugUI:initialise()
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
+	self.refresh = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid * 2 + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_DebugMenu_Refresh"), self, ISTeleportDebugUI.onClick);
+	self.refresh.internal = "REFRESH";
+	self.refresh:initialise();
+	self.refresh:instantiate();
+	self.refresh:enableAcceptColor()
+	self:addChild(self.refresh);
+
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
+
+	self.copy = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Save"), self, ISTeleportDebugUI.onClick);
+	self.copy.internal = "COPY";
+	self.copy:initialise();
+	self.copy:instantiate();
+	self.copy:enableAcceptColor()
+	self:addChild(self.copy);
+
+	self.paste = ISButton:new((self:getWidth()+UI_BORDER_SPACING)/2, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Load"), self, ISTeleportDebugUI.onClick);
+	self.paste.internal = "PASTE";
+	self.paste:initialise();
+	self.paste:instantiate();
+	self.paste:enableAcceptColor()
+	self.paste:setOnMouseDoubleClick(self, ISTeleportDebugUI.onDoubleClick)
+	self:addChild(self.paste);
+
+	y = y + BUTTON_HGT + UI_BORDER_SPACING
+
 	self.yes = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid, BUTTON_HGT, getText("UI_Ok"), self, ISTeleportDebugUI.onClick);
 	self.yes.internal = "OK";
 	self.yes:initialise();
@@ -115,6 +140,10 @@ function ISTeleportDebugUI:initialise()
 	self:addChild(self.no);
 
 	self:setHeight(self.no:getBottom()+UI_BORDER_SPACING+1)
+
+	self:bringToTop();
+	self.entryX:focus();
+	self.entryX:selectAll();
 end
 
 function ISTeleportDebugUI:destroy()
@@ -123,7 +152,27 @@ function ISTeleportDebugUI:destroy()
 	self:removeFromUIManager();
 end
 
+function ISTeleportDebugUI:onDoubleClick()
+	if self.internal == "PASTE" then
+		if not self.parent:isValidClipboardCoords() then return; end;
+		self.parent:pasteCoords();
+		self.parent:onClick(self.parent.yes);
+	end;
+end
+
 function ISTeleportDebugUI:onClick(button)
+	if button.internal == "REFRESH" then
+		self:refreshCoords();
+		return;
+	end
+	if button.internal == "COPY" then
+		self:copyCoords();
+		return;
+	end
+	if button.internal == "PASTE" then
+		self:pasteCoords();
+		return;
+	end
 	if button.internal == "CANCEL" then
 		self:destroy();
 		return;
@@ -156,12 +205,20 @@ function ISTeleportDebugUI:prerender()
 end
 
 function ISTeleportDebugUI:updateButtons()
-	self.yes:setEnable(true);
-	self.yes.tooltip = nil;
 	if string.trim(self.entryX:getInternalText()) == "" or string.trim(self.entryY:getInternalText()) == "" or string.trim(self.entryZ:getInternalText()) == "" then
 		self.yes:setEnable(false);
 		self.yes.tooltip = getText("IGUI_TextBox_CantBeEmpty");
+		self.copy:setEnable(false);
+		self.copy.tooltip = getText("IGUI_TextBox_CantBeEmpty");
+	else
+		self.yes:setEnable(true);
+		self.yes.tooltip = nil;
+		self.copy:setEnable(true);
+		self.copy.tooltip = nil;
 	end
+
+	self.paste:setEnable(self:isValidClipboardCoords());
+	self.refresh:setEnable(self:playerHasMoved());
 end
 
 --************************************************************************--
@@ -170,6 +227,64 @@ end
 --************************************************************************--
 function ISTeleportDebugUI:render()
 
+end
+
+function ISTeleportDebugUI:refreshCoords()
+	local x, y, z = self:getPlayerCoords();
+	self.entryX:setText(tostring(x));
+	self.entryY:setText(tostring(y));
+	self.entryZ:setText(tostring(z));
+end
+
+function ISTeleportDebugUI:getPlayerCoords()
+	return round(self.player:getX(), 0), round(self.player:getY(), 0), round(self.player:getZ(), 0);
+end
+
+function ISTeleportDebugUI:playerHasMoved()
+	local x, y, z = self:getPlayerCoords();
+	if self.entryX:getText() == tostring(x) and self.entryY:getText() == tostring(y) and self.entryZ:getText() == tostring(z) then
+		return false;
+	end;
+	return true;
+end
+
+function ISTeleportDebugUI:extractClipboardCoords()
+	local clipboardString = string.gsub(Clipboard.getClipboard(), '[^0-9]', ' - ')
+	local x, y, z = luautils.unpackString(clipboardString, " - ");
+	if z == nil then z = 0; end;
+	return tonumber(x), tonumber(y), tonumber(z);
+end
+
+function ISTeleportDebugUI:isValidClipboardCoords()
+	if Clipboard.getClipboard() ~= "" then
+		local x, y, z = self:extractClipboardCoords();
+		if x ~= nil and y ~= nil and z ~= nil then
+			return true;
+		end;
+	end;
+	return false;
+end
+
+function ISTeleportDebugUI:copyCoords()
+	Clipboard.setClipboard(
+		luautils.packString(
+			{
+				self.entryX:getInternalText(),
+				self.entryY:getInternalText(),
+				self.entryZ:getInternalText()
+			},
+			" - "
+		)
+	);
+end
+
+function ISTeleportDebugUI:pasteCoords()
+	if self:isValidClipboardCoords() then
+		local x, y, z = self:extractClipboardCoords();
+		self.entryX:setText(tostring(round(x, 0)));
+		self.entryY:setText(tostring(round(y, 0)));
+		self.entryZ:setText(tostring(round(z, 0)));
+	end;
 end
 
 function ISTeleportDebugUI:onMouseMove(dx, dy)

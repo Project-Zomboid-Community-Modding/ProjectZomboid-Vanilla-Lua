@@ -1,11 +1,5 @@
 local townhouse = {
     features = {
-        TREE = {
-            { f = worldgen.features.TREE.dogwood_jumbo,    p = 0.1 },
-            { f = worldgen.features.TREE.linden_jumbo,     p = 0.1 },
-            { f = worldgen.features.TREE.silverbell_jumbo, p = 0.25 },
-            { f = worldgen.features.TREE.grass_medium,     p = 0.55 },
-        },
         BUSH = {
             { f = worldgen.features.BUSH.bush_clean, p = 1 },
         },
@@ -32,6 +26,12 @@ local townhouse = {
                 "!blends_natural_01_69",
                 "!blends_natural_01_70",
                 "!blends_natural_01_71",
+            },
+            TREE = {
+                "blends_natural_01_64",
+                "blends_natural_01_69",
+                "blends_natural_01_70",
+                "blends_natural_01_71",
             },
         },
         protected = {

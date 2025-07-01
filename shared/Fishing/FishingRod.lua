@@ -4,7 +4,7 @@ Fishing.FishingRod = {}
 
 local FishingRod = Fishing.FishingRod
 
-function FishingRod:new(player)
+function FishingRod:new(player, joypad)
     local o = {}
     setmetatable(o, self)
     self.__index = self
@@ -36,6 +36,12 @@ function FishingRod:new(player)
 
     o.mpAimX = 0
     o.mpAimY = 0
+
+    o.joypad = joypad
+    o.prevReelValue = 0
+    o.reelDelta = 0
+    o.isGamepadReel = nil
+    o.isGamepadRelease = nil
 
     --o.wheelTimer = 0
     --o.wheelVal = 0
@@ -71,9 +77,7 @@ function FishingRod:getSpawnBobberCoords()
 end
 
 function FishingRod:update()
-    --if self.wheelTimer > 0 then
-    --    self.wheelTimer = self.wheelTimer - (UIManager.getMillisSinceLastRender() / 33.3) / 35
-    --end
+    self.joypad = self.player:getJoypadBind()
 
     if self.spawnBobberDelayTimer > 0 then
         self.spawnBobberDelayTimer = self.spawnBobberDelayTimer - getGameTime():getMultiplier()
@@ -85,6 +89,17 @@ function FishingRod:update()
     end
 
     if self.bobber ~= nil then
+        if self.joypad ~= -1 then
+            local reel, release
+            self.prevReelValue, self.reelDelta, reel, release = Fishing.Utils.isGamepadReelMove(self.joypad, self.prevReelValue)
+            if reel ~= nil then
+                self.isGamepadReel = reel
+            end
+            if release ~= nil then
+                self.isGamepadRelease = release
+            end
+        end
+
         if self:updateLine() then
             self.bobber:update()
         else
@@ -188,8 +203,11 @@ function FishingRod:getTension()
 end
 
 function FishingRod:isReel()
-    -- TODO: add controller support
-    return (isMouseButtonDown(0) and not isMouseButtonDown(1)) --or (self.wheelTimer > 0 and self.wheelVal < 0)
+    if self.joypad == -1 then
+        return (isMouseButtonDown(0) and not isMouseButtonDown(1)) --or (self.wheelTimer > 0 and self.wheelVal < 0)
+    else
+        return self.isGamepadReel
+    end
 end
 
 function FishingRod:reel()
@@ -199,8 +217,11 @@ function FishingRod:reel()
 end
 
 function FishingRod:isReleaseLine()
-    -- TODO: add controller support
-    return isMouseButtonDown(1) --or (self.wheelTimer > 0 and self.wheelVal > 0)
+    if self.joypad == -1 then
+        return isMouseButtonDown(1) --or (self.wheelTimer > 0 and self.wheelVal > 0)
+    else
+        return self.isGamepadRelease
+    end
 end
 
 function FishingRod:releaseLine()

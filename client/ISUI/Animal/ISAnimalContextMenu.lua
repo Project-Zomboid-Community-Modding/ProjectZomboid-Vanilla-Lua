@@ -158,13 +158,15 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
             tooltip:setName(getText("Tooltip_Animal_NeedMoreRope"));
             option.toolTip = tooltip;
         end
+        option.iconTexture = getTexture("Item_Rope2")
         if not animal:getBehavior():canBeAttached() then
             option.iconTexture = getTexture("media/ui/BugIcon.png");
         end
     end
 
     if (animal:getBehavior():canBeAttached() or AnimalContextMenu.cheat) and animal:getData():getAttachedPlayer() then
-        animalSubMenu:addOption(getText("ContextMenu_DetachAnimal"), animal, AnimalContextMenu.onDetachAnimal, playerObj);
+        option = animalSubMenu:addOption(getText("ContextMenu_DetachAnimal"), animal, AnimalContextMenu.onDetachAnimal, playerObj);
+        option.iconTexture = getTexture("Item_Rope2")
     end
 
     if animal:getData():getAttachedTree() then
@@ -172,7 +174,8 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         if instanceof(animal:getData():getAttachedTree(), "IsoTree") then
             text = getText("ContextMenu_DetachAnimalFromTree");
         end
-        animalSubMenu:addOption(text, animal, AnimalContextMenu.onDetachAnimalTree, playerObj);
+        option = animalSubMenu:addOption(text, animal, AnimalContextMenu.onDetachAnimalTree, playerObj);
+        option.iconTexture = getTexture("Item_Rope2")
     end
 
     if animal:getData():getMilkQuantity() > 0.1 and animal:canBeMilked() then
@@ -1107,6 +1110,7 @@ function AnimalContextMenu.attachAnimalToObject(attachAnimalTo, playerObj, world
                 text = getText("ContextMenu_AttachAnimalToTree");
             end
             local attachOption = context:addOption(text, worldobjects, nil);
+            attachOption.iconTexture = getTexture("Item_Rope2")
             local subMenu = ISContextMenu:getNew(context);
             context:addSubMenu(attachOption, subMenu)
 

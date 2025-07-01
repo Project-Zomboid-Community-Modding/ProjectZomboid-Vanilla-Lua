@@ -155,7 +155,9 @@ function ISBarricadeAction:complete()
 				if barricade:getNumPlanks() == 1 then
 					barricade:transmitCompleteItemToClients()
 				else
-					barricade:sendObjectChange('state')
+					if isClient() or isServer() then	 -- FIXME? for MP
+						barricade:sendObjectChange('state')
+					end
 				end
 				sendRemoveItemsFromContainer(player:getInventory(), items);
 				items = player:getInventory():RemoveAll('Nails', 2)

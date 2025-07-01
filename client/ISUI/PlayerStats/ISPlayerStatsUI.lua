@@ -671,6 +671,7 @@ end
 function ISPlayerStatsUI:onAddTrait(button, trait)
     if button.internal == "OK" then
         ISPlayerStatsUI.instance.char:getTraits():add(trait:getType());
+        ISPlayerStatsUI.instance.char:modifyTraitXPBoost(trait:getType(), false);
         SyncXp(ISPlayerStatsUI.instance.char);
         ISPlayerStatsUI.instance:loadTraits();
     end
@@ -754,6 +755,7 @@ end
 
 function ISPlayerStatsUI:onRemoveTrait(button, x, y)
     self.char:getTraits():remove(button.internal);
+    self.char:modifyTraitXPBoost(button.internal, true);
     SyncXp(self.char);
     self:loadTraits();
 end

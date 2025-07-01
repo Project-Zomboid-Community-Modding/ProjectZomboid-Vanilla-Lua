@@ -1177,7 +1177,8 @@ function ISWorldObjectContextMenu.createMenuEntries(fetch, context, player, play
                     if not fetch.thump:haveSheetRope() and (not barricade or barricade:canAddPlank()) and hasHammer and
                             playerInv:containsTypeRecurse("Plank") and playerInv:getItemCountRecurse("Base.Nails") >= 2  then
                         if test == true then return true; end
-                        context:addGetUpOption(getText("ContextMenu_Barricade"), worldobjects, ISWorldObjectContextMenu.onBarricade, fetch.thump, player);
+                        local option = context:addGetUpOption(getText("ContextMenu_Barricade"), worldobjects, ISWorldObjectContextMenu.onBarricade, fetch.thump, player);
+                        option.notAvailable = true
                     end
                     if (barricade and barricade:getNumPlanks() > 0) and hasRemoveBarricadeTool then
                         if test == true then return true; end
@@ -1185,11 +1186,13 @@ function ISWorldObjectContextMenu.createMenuEntries(fetch, context, player, play
                     end
                     if not fetch.thump:haveSheetRope() and not barricade and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) and playerInv:containsTypeRecurse("SheetMetal") then
                         if test == true then return true; end
-                        context:addGetUpOption(getText("ContextMenu_MetalBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarricade, fetch.thump, player);
+                        local option = context:addGetUpOption(getText("ContextMenu_MetalBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarricade, fetch.thump, player);
+                        option.notAvailable = true
                     end
                     if not fetch.thump:haveSheetRope() and not barricade and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) and playerInv:getItemCountRecurse("Base.MetalBar") >= 3 then
                         if test == true then return true; end
-                        context:addGetUpOption(getText("ContextMenu_MetalBarBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarBarricade, fetch.thump, player);
+                        local option = context:addGetUpOption(getText("ContextMenu_MetalBarBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarBarricade, fetch.thump, player);
+                        option.notAvailable = true
                     end
                     if (barricade and barricade:isMetal()) and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) then
                         if test == true then return true; end
@@ -1219,7 +1222,8 @@ function ISWorldObjectContextMenu.createMenuEntries(fetch, context, player, play
             if fetch.window:isBarricadeAllowed() and not fetch.window:haveSheetRope() and (not barricade or barricade:canAddPlank()) and hasHammer and
                     playerInv:containsTypeRecurse("Plank") and playerInv:getItemCountRecurse("Base.Nails") >= 2 then
                 if test == true then return true; end
-                context:addGetUpOption(getText("ContextMenu_Barricade"), worldobjects, ISWorldObjectContextMenu.onBarricade, fetch.window, player);
+                local option = context:addGetUpOption(getText("ContextMenu_Barricade"), worldobjects, ISWorldObjectContextMenu.onBarricade, fetch.window, player);
+                option.notAvailable = true
             end
             -- unbarricade (hammer on 1st hand and window barricaded)
             if (barricade and barricade:getNumPlanks() > 0) and hasRemoveBarricadeTool then
@@ -1228,11 +1232,13 @@ function ISWorldObjectContextMenu.createMenuEntries(fetch, context, player, play
             end
             if not fetch.window:haveSheetRope() and not barricade and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) and playerInv:containsTypeRecurse("SheetMetal") then
                 if test == true then return true; end
-                context:addGetUpOption(getText("ContextMenu_MetalBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarricade, fetch.window, player);
+                local option = context:addGetUpOption(getText("ContextMenu_MetalBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarricade, fetch.window, player);
+                option.notAvailable = true
             end
             if not fetch.window:haveSheetRope() and not barricade and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) and playerInv:getItemCountRecurse("Base.MetalBar") >= 3 then
                 if test == true then return true; end
-                context:addGetUpOption(getText("ContextMenu_MetalBarBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarBarricade, fetch.window, player);
+                local option = context:addGetUpOption(getText("ContextMenu_MetalBarBarricade"), worldobjects, ISWorldObjectContextMenu.onMetalBarBarricade, fetch.window, player);
+                option.notAvailable = true
             end
             if (barricade and barricade:isMetal()) and ISWorldObjectContextMenu.checkBlowTorchForBarricade(playerObj) then
                 if test == true then return true; end

@@ -227,6 +227,25 @@ function ISFarmingInfo:render()
 			y = y + 12
 		end
 	end
+	-- Display pest information in debug with agriculture cheat enabled.
+	if ISFarmingMenu.cheat then
+		local seedProps = farming_vegetableconf.props[self.plant.typeOfSeed];
+		local pestProps = {}
+		for i, v in pairs(seedProps) do
+			local thisProp = tostring(i)
+			if string.contains(thisProp, "Food") or string.contains(thisProp, "Bane") or string.contains(thisProp, "Proof") then
+				table.insert(pestProps, i)
+			end
+		end
+		if #pestProps > 0 then
+			self:drawText(getText("Farming_Tooltip_PestInfo") .. ": ", 13, y + pady, 1, 1, 1, 1)
+			for i=1, #pestProps do
+				local propString = "Farming_"..string.upper(string.sub(pestProps[i], 1,1))..string.sub(pestProps[i], 2,-1)
+				self:drawTextRight(getText(propString), self.width - 17, y + pady, 1, 1, 1, 1, UIFont.Normal);
+				y = y + lineHgt;
+			end
+		end
+	end
 	self:setHeightAndParentHeight(y + 8)
 end
 
@@ -792,6 +811,28 @@ function ISFarmingInfo.getDiseaseName(info)
 		ISFarmingInfo:getGreen(disease_rgb, "0");
 	end
 	return disease;
+end
+
+-- get the color of health if player have more than 2 farming skill (to see the health)
+function ISFarmingInfo.getDiseaseStats(info)
+	if ISFarmingMenu.cheat then
+		local seedProps = farming_vegetableconf.props[info.plant.typeOfSeed];
+		local pestProps = {}
+		for i, v in pairs(seedProps) do
+			local thisProp = tostring(i)
+			if string.contains(thisProp, "Food") or string.contains(thisProp, "Bane") or string.contains(thisProp, "Proof") then
+				table.insert(pestProps, i)
+			end
+		end
+		if #pestProps > 0 then
+			self:drawText(getText("Farming_Tooltip_PestInfo") .. ": ", 13, y + pady, 1, 1, 1, 1)
+			for i=1, #pestProps do
+				local propString = "Farming_"..string.upper(string.sub(pestProps[i], 1,1))..string.sub(pestProps[i], 2,-1)
+				self:drawTextRight(getText(propString), self.width - 17, y + pady, 1, 1, 1, 1, UIFont.Normal);
+				y = y + lineHgt;
+			end
+		end
+	end
 end
 
 function ISFarmingInfo.getLastWatedHour(plant)

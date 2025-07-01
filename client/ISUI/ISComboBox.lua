@@ -62,7 +62,7 @@ function ISComboBoxPopup:prerender()
     end
 --    numVisible = math.max(numVisible, 1)
     self:setScrollHeight(numVisible * self.itemheight)
-    self:setHeight(math.min(numVisible, 8) * self.itemheight)
+    self:setHeight(math.min(numVisible, 9) * self.itemheight)
     self.vscroll:setHeight(self.height)
 
     ISScrollingListBox.prerender(self)
@@ -165,7 +165,7 @@ function ISComboBoxPopup:setComboBox(comboBox)
     end
     self:setYScroll(0)
     self.selected = comboBox.selected
-    self:setHeight(math.min(#comboBox.options, 8) * self.itemheight)
+    self:setHeight(math.min(#comboBox.options, 9) * self.itemheight)
     
     self:setX(comboBox:getAbsoluteX())
     self:setWidth(comboBox:getWidth())

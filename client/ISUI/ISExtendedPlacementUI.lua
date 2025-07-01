@@ -210,6 +210,11 @@ function ISExtendedPlacementUI:onAxisSliderChange(value, slider)
 
     if not self.ignoreSliderValueChange then
         self.worlditem:setExtendedPlacement(true)
+        if slider.internal == "xrot" or slider.internal == "yrot" or slider.internal == "zrot" then
+            self.gizmo = "rotate"
+        else
+            self.gizmo = "translate"
+        end
     end
 end
 
@@ -388,6 +393,18 @@ end
 function ISExtendedPlacementUI:prerender()
     ISCollapsableWindow.prerender(self);
 
+    local worlditem = self.worlditem;
+    if self:isReallyVisible() and worlditem and worlditem:getItem() and worlditem:isExistInTheWorld() then
+        worlditem:getItem():setDoingExtendedPlacement(true)
+        local gizmo = (self.gizmo == "translate") and Gizmos.getInstance():getTranslateGizmo(self.playerNum) or Gizmos.getInstance():getRotateGizmo(self.playerNum)
+        gizmo:setWorldPosition(worlditem:getWorldPosX(), worlditem:getWorldPosY(), worlditem:getWorldPosZ())
+        local item = worlditem:getItem()
+        gizmo:setRotation(item:getWorldXRotation(), item:getWorldYRotation(), item:getWorldZRotation())
+        gizmo:setVisible(true)
+        gizmo:setTable(self)
+        Gizmos.getInstance():setGizmo(self.playerNum, gizmo)
+    end
+
     --self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     --self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
@@ -401,10 +418,21 @@ function ISExtendedPlacementUI:update()
 
     if not self.worlditem or not self.worlditem:isExistInTheWorld() then
         self:close();
+        return
     end
 
     if self.worlditem and self.character:getCurrentSquare() and self.character:getCurrentSquare():DistToProper(self.worlditem:getSquare()) > 3 then
         self:close();
+        return
+    end
+
+    if not isMouseButtonDown(0) and self:isMouseOver() then
+        if self:getMouseY() >= self.sliderxrot.y and self:getMouseY() < self.sliderzrot:getBottom() then
+            self.gizmo = "rotate"
+        end
+        if self:getMouseY() >= self.sliderxmov.y and self:getMouseY() < self.sliderzmov:getBottom() then
+            self.gizmo = "translate"
+        end
     end
     --self:adjust();
 end
@@ -424,7 +452,37 @@ function ISExtendedPlacementUI:onGainJoypadFocus(joypadData)
     self.drawJoypadFocus = true
 end
 
+function ISExtendedPlacementUI:onRotateGizmo(vector3f)
+    if not self.worlditem or not self.worlditem:isExistInTheWorld() then
+        return
+    end
+    local item = self.worlditem:getItem()
+    local rx = vector3f:x() + (vector3f:x() < 0 and 360 or 0)
+    local ry = vector3f:y() + (vector3f:y() < 0 and 360 or 0)
+    local rz = vector3f:z() + (vector3f:z() < 0 and 360 or 0)
+    item:setWorldXRotation(rx)
+    item:setWorldYRotation(ry)
+    item:setWorldZRotation(rz)
+    self:resetSlidersValues()
+end
+
+function ISExtendedPlacementUI:onTranslateGizmo(vector3f)
+    if not self.worlditem or not self.worlditem:isExistInTheWorld() then
+        return
+    end
+    local worlditem = self.worlditem
+    worlditem:setOffX(PZMath.clamp_01(vector3f:x() - worlditem:getX()))
+    worlditem:setOffY(PZMath.clamp_01(vector3f:y() - worlditem:getY()))
+    worlditem:setOffZ(PZMath.clamp_01(vector3f:z() - worlditem:getZ()))
+    self:resetSlidersValues()
+end
+
 function ISExtendedPlacementUI:close()
+    if self.worlditem and self.worlditem:getItem() then
+        self.worlditem:getItem():setDoingExtendedPlacement(false)
+    end
+    Gizmos.getInstance():setGizmo(self.playerNum, null)
+    self:setVisible(false)
     self:removeFromUIManager()
 end
 
@@ -437,9 +495,7 @@ function ISExtendedPlacementUI:new(x, y, character, item)
     if not y then
         y = getCore():getScreenHeight() / 2 - height / 2;
     end
-    local o = ISCollapsableWindow:new(x, y, width, height)
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISCollapsableWindow.new(self, x, y, width, height)
     o.title = item:getItem():getDisplayName();
     o.character = getSpecificPlayer(character)
     o.playerNum = character;
@@ -456,8 +512,10 @@ function ISExtendedPlacementUI:new(x, y, character, item)
     o.originalMovX = luautils.round(o.worlditem:getOffX(), 3);
     o.originalMovY = luautils.round(o.worlditem:getOffY(), 3);
     o.originalMovZ = luautils.round(o.worlditem:getOffZ(), 3);
+    o.gizmo = "translate"
     o:setWantKeyEvents(true)
     o:setResizable(false)
+    ISExtendedPlacementUI.windows[o.playerNum] = o
     return o
 end
 
@@ -471,4 +529,8 @@ function ISExtendedPlacementUI:onKeyRelease(key)
         self:removeFromUIManager();
         return
     end
+end
+
+function ISExtendedPlacementUI.GetWindowForPlayer(playerIndex)
+    return ISExtendedPlacementUI.windows[playerIndex]
 end

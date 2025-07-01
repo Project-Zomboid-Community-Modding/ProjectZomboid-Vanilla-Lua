@@ -1196,7 +1196,6 @@ function ISMoveableSpriteProps:pickUpMoveable( _character, _square, _createItem,
                 --local obj, sprInstance = self:findOnSquare( _square, self.spriteName );
                 self:pickUpMoveableInternal( _character, _square, obj, sprInstance, self.spriteName, _createItem, _forceAllow );
             end
-            ISMoveableCursor.clearCacheForAllPlayers();
             return items;
         end
     end

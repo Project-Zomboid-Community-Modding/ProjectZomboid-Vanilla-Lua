@@ -983,8 +983,6 @@ function CharacterCreationMain:createBeardTypeBtn()
 end
 
 function CharacterCreationMain:createClothingComboDebug(bodyLocation)
-	local x = 0
-	
 	local label = ISLabel:new(0, self.yOffset, BUTTON_HGT, getText("UI_ClothingType_" .. bodyLocation), 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self.clothingPanel:addChild(label)
@@ -992,6 +990,9 @@ function CharacterCreationMain:createClothingComboDebug(bodyLocation)
 	local combo = ISComboBox:new(UI_BORDER_SPACING, self.yOffset, 0, BUTTON_HGT, self, self.onClothingComboSelected, bodyLocation)
 	combo:initialise()
 	combo.pointOnItem = function(_self, _index)
+		if _self.lastIndex == nil then
+			_self.lastIndex = _index
+		end
 		if _self.lastIndex ~= _index then
 			local desc = MainScreen.instance.desc
 			desc:setWornItem(bodyLocation, nil)
@@ -1007,10 +1008,23 @@ function CharacterCreationMain:createClothingComboDebug(bodyLocation)
 			_self.lastIndex = _index
 		end
 	end
+	combo.onMouseMoveOutside = function(_self, _x, _y)
+		local itemType = _self:getOptionData(_self:getSelected())
+		if itemType then
+			-- check to see if character model is already wearing the same piece of clothing
+			local item = instanceItem(itemType)
+			local wornItem = MainScreen.instance.desc:getWornItem(bodyLocation)
+			if (item == nil) ~= (wornItem == nil) or (item ~= nil and wornItem ~= nil and item:getName() ~= wornItem:getName()) then
+				-- either item or wornItem is nil
+				-- or both are not nil and have matching names
+				MainScreen.instance.desc:setWornItem(bodyLocation, item)
+			end
+		end
+		_self.parent.parent.avatarPanel:setSurvivorDesc(MainScreen.instance.desc)
+	end
 	combo.bodyLocation = bodyLocation;
 	self.clothingPanel:addChild(combo)
 	
-	local fontHgt = getTextManager():getFontHeight(self.skinColorLbl.font)
 	local button = ISButton:new(combo:getRight() + UI_BORDER_SPACING, self.yOffset, BUTTON_HGT, BUTTON_HGT, "", self)
 	button:setOnClick(CharacterCreationMain.onClothingColorClicked, bodyLocation)
 	button.internal = color
@@ -1166,15 +1180,13 @@ function CharacterCreationMain:createClothingBtn()
 end
 
 function CharacterCreationMain:createClothingCombo(bodyLocation)
-	local x = 0
-
 	if not self.clothingPanel then return; end
 	
-	local label = ISLabel:new(x, self.yOffset, BUTTON_HGT, getText("UI_ClothingType_" .. bodyLocation), 1, 1, 1, 1, UIFont.Small)
+	local label = ISLabel:new(0, self.yOffset, BUTTON_HGT, getText("UI_ClothingType_" .. bodyLocation), 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self.clothingPanel:addChild(label)
 	
-	local combo = ISComboBox:new(x + UI_BORDER_SPACING, self.yOffset, 0, BUTTON_HGT, self, self.onClothingComboSelected, bodyLocation)
+	local combo = ISComboBox:new(0 + UI_BORDER_SPACING, self.yOffset, 0, BUTTON_HGT, self, self.onClothingComboSelected, bodyLocation)
 	combo:initialise()
 	combo.pointOnItem = function(_self, _index)
 		if _self.lastIndex == nil then
@@ -1194,6 +1206,20 @@ function CharacterCreationMain:createClothingCombo(bodyLocation)
 			_self.parent.parent.avatarPanel:setSurvivorDesc(desc)
 			_self.lastIndex = _index
 		end
+	end
+	combo.onMouseMoveOutside = function(_self, _x, _y)
+		local itemType = _self:getOptionData(_self:getSelected())
+		if itemType then
+			-- check to see if character model is already wearing the same piece of clothing
+			local item = instanceItem(itemType)
+			local wornItem = MainScreen.instance.desc:getWornItem(bodyLocation)
+			if (item == nil) ~= (wornItem == nil) or (item ~= nil and wornItem ~= nil and item:getName() ~= wornItem:getName()) then
+				-- either item or wornItem is nil
+				-- or both are not nil and have matching names
+				MainScreen.instance.desc:setWornItem(bodyLocation, item)
+			end
+		end
+		_self.parent.parent.avatarPanel:setSurvivorDesc(MainScreen.instance.desc)
 	end
 	combo.bodyLocation = bodyLocation;
 	self.clothingPanel:addChild(combo)

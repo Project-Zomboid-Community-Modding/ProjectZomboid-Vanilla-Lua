@@ -947,6 +947,12 @@ group:setHideModel("BathRobe", "Thigh_Left")
 
 -- define alt models used to avoid clipping
 -- use alternative models for the second location when an item is in the first location.
+
+--use alternate bandana mask and balaclava when hoods up on clothes
+group:setAltModel("JacketHat_Bulky", "Mask")
+group:setAltModel("JacketHat", "Mask")
+group:setAltModel("SweaterHat", "Mask")
+
 group:setAltModel("Pants", "Calf_Left")
 group:setAltModel("Pants", "Calf_Right")
 group:setAltModel("PantsExtra", "Calf_Left")

@@ -7,7 +7,6 @@ local farmmix_forest = {
             { f = worldgen.features.TREE.dogwood,        p = 0.5 },
             { f = worldgen.features.TREE.maple_jumbo,    p = 0.3 },
             { f = worldgen.features.TREE.maple,          p = 0.5 },
-
         },
         BUSH = {
             { f = worldgen.features.BUSH.bush_regular, p = 1 },
@@ -37,6 +36,12 @@ local farmmix_forest = {
                 "!blends_natural_01_69",
                 "!blends_natural_01_70",
                 "!blends_natural_01_71",
+            },
+            TREE = {
+                "blends_natural_01_64",
+                "blends_natural_01_69",
+                "blends_natural_01_70",
+                "blends_natural_01_71",
             },
         },
         protected = {

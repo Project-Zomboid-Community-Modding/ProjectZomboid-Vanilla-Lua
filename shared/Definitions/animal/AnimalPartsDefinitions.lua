@@ -509,14 +509,14 @@ AnimalPartsDefinitions.animals["rabdoeswamp"] = rabdoeswamp;
 local rabbuckswamp = AnimalPartsDefinitions.animals["rabbuckswamp"] or rabdoeswamp;
 AnimalPartsDefinitions.animals["rabbuckswamp"] = rabbuckswamp;
 
-local rabkitten = AnimalPartsDefinitions.animals["rabkitten"] or {};
-rabkitten.parts = rabkitten.parts or rabbitskitpart;
-rabkitten.bones = rabkitten.bones or {};
-table.insert(rabkitten.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
-rabkitten.head = "Base.Rabbit_Kitten_Head_Swamp";
-rabkitten.skull = "Base.Rabbit_KittenSkull";
-rabkitten.xpPerItem = 3;
-AnimalPartsDefinitions.animals["rabkitten"] = rabkitten;
+local rabkittenswamp = AnimalPartsDefinitions.animals["rabkittenswamp"] or {};
+rabkittenswamp.parts = rabkittenswamp.parts or rabbitskitpart;
+rabkittenswamp.bones = rabkittenswamp.bones or {};
+table.insert(rabkittenswamp.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittenswamp.head = "Base.Rabbit_Kitten_Head_Swamp";
+rabkittenswamp.skull = "Base.Rabbit_KittenSkull";
+rabkittenswamp.xpPerItem = 3;
+AnimalPartsDefinitions.animals["rabkittenswamp"] = rabkittenswamp;
 
 -- APPALACHIAN
 local rabdoeappalachian = AnimalPartsDefinitions.animals["rabdoeappalachian"] or {};

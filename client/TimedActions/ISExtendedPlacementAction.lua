@@ -17,6 +17,10 @@ function ISExtendedPlacementAction:waitToStart()
 end
 
 function ISExtendedPlacementAction:perform()
+    local old = ISExtendedPlacementUI.GetWindowForPlayer(self.playerNum)
+    if old then
+        old:close()
+    end
 
 	local ui = ISExtendedPlacementUI:new(nil, nil, self.playerNum, self.item)
 	ui:initialise()

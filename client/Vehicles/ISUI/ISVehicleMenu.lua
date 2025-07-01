@@ -1424,7 +1424,7 @@ function ISVehicleMenu.processEnter(playerObj, vehicle, seat)
 			if seat2 then
 				ISVehicleMenu.onEnterAux(playerObj, vehicle, seat2)
 				ISTimedActionQueue.add(ISSwitchVehicleSeat:new(playerObj, seat))
-				local doorPart = vehicle:getPassengerDoor(seat)
+				local doorPart = vehicle:getPassengerDoor(seat2)
                 if doorPart:getDoor():isOpen() then
                     ISTimedActionQueue.add(ISCloseVehicleDoor:new(playerObj, vehicle, doorPart))
                 end
@@ -1492,8 +1492,8 @@ function ISVehicleMenu.processEnter2(playerObj, vehicle, seat)
 			local seat2 = ISVehicleMenu.getBestSwitchSeatEnter(playerObj, vehicle, seat)
 			if seat2 then
 				ISVehicleMenu.onEnterAux(playerObj, vehicle, seat2)
-				ISTimedActionQueue.add(ISSwitchVehicleSeat:new(playerObj, seat))
-				local doorPart = vehicle:getPassengerDoor(seat)
+				ISTimedActionQueue.add(ISSwitchVehicleSeat:new(playerObj, seat2))
+				local doorPart = vehicle:getPassengerDoor(seat2)
                 if doorPart:getDoor():isOpen() then
                     ISTimedActionQueue.add(ISCloseVehicleDoor:new(playerObj, vehicle, doorPart))
                 end

@@ -18,34 +18,89 @@ BuildRecipeCode.windowGlass = {};
 BuildRecipeCode.woodLampPillar = {};
 
 function BuildRecipeCode.barricade.OnIsValid(params)
-    local objects = params.square:getObjects();
-    local door;
+	local tileInfoSprite = params.tileInfo:getSpriteName() and getSprite(params.tileInfo:getSpriteName());
+	local square = params.square
+    if params.facing == "s" then
+        square = getWorld():getCell():getGridSquare(square:getX(), square:getY()+1, square:getZ());
+    elseif params.facing == "e" then
+        square = getWorld():getCell():getGridSquare(square:getX()+1, square:getY(), square:getZ());
+    end
+    local objects = square:getObjects();
 
-	for i = 0,params.square:getObjects():size()-1 do
-        local object = params.square:getObjects():get(i);
-        if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and object:isDoor()) then
-            door = object;
+	for i = 0,objects:size()-1 do
+        local object = objects:get(i);
+        if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+            if (params.facing == "s" or params.facing == "e") and (params.north == object:getNorth()) and not object:getBarricadeOnOppositeSquare() then
+                return true;
+            elseif (params.facing == "n" or params.facing == "w") and (params.north == object:getNorth()) and not object:getBarricadeOnSameSquare() then
+                return true;
+            end
         end
 	end
-
-    if door and door:isBarricadeAllowed() then
-        return true;
-    end
 
     return false;
 end
 
-function BuildRecipeCode.barricade.OnCreate(thumpable, craftRecipeData, character)
+function BuildRecipeCode.barricade.OnIsValidPlanks(params)
+	local tileInfoSprite = params.tileInfo:getSpriteName() and getSprite(params.tileInfo:getSpriteName());
+	local square = params.square
+    if params.facing == "s" then
+        square = getWorld():getCell():getGridSquare(square:getX(), square:getY()+1, square:getZ());
+    elseif params.facing == "e" then
+        square = getWorld():getCell():getGridSquare(square:getX()+1, square:getY(), square:getZ());
+    end
+    local objects = square:getObjects();
+
+	for i = 0,objects:size()-1 do
+         local object = objects:get(i);
+         if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+             if (params.facing == "s" or params.facing == "e") and (not object:getBarricadeOnOppositeSquare() or (object:getBarricadeOnOppositeSquare() and object:getBarricadeOnOppositeSquare():canAddPlank())) then
+                 return true;
+             elseif (params.facing == "n" or params.facing == "w") and (not object:getBarricadeOnSameSquare() or (object:getBarricadeOnSameSquare() and object:getBarricadeOnSameSquare():canAddPlank())) then
+                 return true;
+             end
+         end
+ 	end
+
+    return false;
+end
+
+function BuildRecipeCode.barricade.OnCreate(params)
+    local thumpable = params.thumpable;
+    local craftRecipeData = params.craftRecipeData;
+    local character = params.character;
     local square = thumpable:getSquare();
+    local opposite = false;
+    if params.facing == "s" then
+        opposite = true;
+        square = getWorld():getCell():getGridSquare(square:getX(), square:getY()+1, square:getZ());
+    elseif params.facing == "e" then
+        opposite = true;
+        square = getWorld():getCell():getGridSquare(square:getX()+1, square:getY(), square:getZ());
+    end
 	local objects = square:getObjects();
+	local barricade;
+
 
 	for i=objects:size()-1, 0, -1 do
 		local object = objects:get(i);
-		if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and object:isDoor()) then
-            object:addRandomBarricades();
+		if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow())) then
+            if opposite and object:getBarricadeOnOppositeSquare() and object:getBarricadeOnOppositeSquare():canAddPlank() then
+                barricade = object:getBarricadeOnOppositeSquare();
+                barricade:addPlank(character, craftRecipeData:getAllRecordedConsumedItems():get(0));
+            elseif object:getBarricadeOnSameSquare() and object:getBarricadeOnSameSquare():canAddPlank() then
+                barricade = object:getBarricadeOnSameSquare();
+                barricade:addPlank(character, craftRecipeData:getAllRecordedConsumedItems():get(0));
+            else
+                barricade = object:addBarricadesFromCraftRecipe(character, craftRecipeData:getAllRecordedConsumedItems(), opposite);
+            end
         end
 	end
-	square:transmitRemoveItemFromSquare(thumpable);
+    if thumpable:hasModData() and barricade then
+        local modData = thumpable:getModData();
+        barricade:setModData(modData);
+    end
+	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 end
 
 function BuildRecipeCode.stairs.OnIsValid(params)
@@ -99,11 +154,13 @@ function BuildRecipeCode.stairs.OnIsValid(params)
 	return true;
 end
 
-function BuildRecipeCode.canBePlastered.OnCreate(thumpable)
+function BuildRecipeCode.canBePlastered.OnCreate(params)
+    local thumpable = params.thumpable;
     thumpable:setCanBePlastered(true);
 end
 
-function BuildRecipeCode.stairs.OnCreate(thumpable)
+function BuildRecipeCode.stairs.OnCreate(params)
+    local thumpable = params.thumpable;
 	local topNorth = thumpable:getType() == IsoObjectType.stairsTN;
 	local topWest = thumpable:getType() == IsoObjectType.stairsTW;
 	local middleStair = thumpable:getType() == IsoObjectType.stairsMN or thumpable:getType() == IsoObjectType.stairsMW;
@@ -252,7 +309,8 @@ function BuildRecipeCode.floor.OnIsValid(params)
 	return true;
 end 
 
-function BuildRecipeCode.floor.OnCreate(thumpable)
+function BuildRecipeCode.floor.OnCreate(params)
+    local thumpable = params.thumpable;
 	local square = thumpable:getSquare();
 	local objects = square:getObjects();
 
@@ -327,7 +385,8 @@ function BuildRecipeCode.doorFrame.OnIsValid(params)
 	return true;
 end
 
-function BuildRecipeCode.butcheringHook.OnCreate(thumpable)
+function BuildRecipeCode.butcheringHook.OnCreate(params)
+    local thumpable = params.thumpable;
 	local sq = thumpable:getSquare();
 	local javaObject = IsoButcherHook.new(sq);
 	sq:AddTileObject(javaObject)
@@ -341,7 +400,8 @@ function BuildRecipeCode.butcheringHook.OnCreate(thumpable)
 	return { replaceObject = true, object = javaObject };
 end
 
-function BuildRecipeCode.chickenHutch.OnCreate(thumpable)
+function BuildRecipeCode.chickenHutch.OnCreate(params)
+    local thumpable = params.thumpable;
 	local sprite = thumpable:getSprite():getName();
 	local hutch = nil;
 	for i,v in pairs(HutchDefinitions.hutchs) do
@@ -359,7 +419,8 @@ function BuildRecipeCode.chickenHutch.OnCreate(thumpable)
 	return { replaceObject = true, object = hutch };
 end
 
-function BuildRecipeCode.feedingTrough.OnCreate(thumpable)
+function BuildRecipeCode.feedingTrough.OnCreate(params)
+    local thumpable = params.thumpable;
     local sprite = thumpable:getSprite()
 	local spriteName = sprite:getName();
 	for i,def in pairs(FeedingTroughDef) do
@@ -391,7 +452,8 @@ function BuildRecipeCode.campfire.OnIsValid(params)
 	return true
 end
 
-function BuildRecipeCode.campfire.OnCreate(thumpable)
+function BuildRecipeCode.campfire.OnCreate(params)
+    local thumpable = params.thumpable;
 	local grid = thumpable:getSquare()
 	if not grid then return end
 	-- 	if self:getIsoObjectOnSquare(grid) then return nil end
@@ -406,7 +468,8 @@ function BuildRecipeCode.campfire.OnCreate(thumpable)
 	--return luaObject;
 end
 
-function BuildRecipeCode.composter.OnCreate(thumpable)
+function BuildRecipeCode.composter.OnCreate(params)
+    local thumpable = params.thumpable;
 	local javaObject = IsoCompost.new(getCell(), thumpable:getSquare(), thumpable:getSprite():getName());
 	thumpable:getSquare():AddSpecialObject(javaObject)
 	javaObject:syncCompost()
@@ -415,7 +478,8 @@ function BuildRecipeCode.composter.OnCreate(thumpable)
 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 end
 
-function BuildRecipeCode.windowGlass.OnCreate(thumpable)
+function BuildRecipeCode.windowGlass.OnCreate(params)
+    local thumpable = params.thumpable;
 	local sprite = thumpable:getSprite():getName();
 
 	local window = IsoWindow.new(getCell(), thumpable:getSquare(), thumpable:getSprite(), thumpable:getNorth());
@@ -425,10 +489,9 @@ function BuildRecipeCode.windowGlass.OnCreate(thumpable)
 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 end
 
-function BuildRecipeCode.woodLampPillar.OnCreate(thumpable, craftRecipeData, character)
---     getPlayer():Say("craftRecipeData - " .. tostring(craftRecipeData))
---     getPlayer():Say("character - " .. tostring(character))
---     if not character then character = getSpecificPlayer(0) end
+function BuildRecipeCode.woodLampPillar.OnCreate(params)
+    local thumpable = params.thumpable;
+    local craftRecipeData = params.craftRecipeData;
     local spriteName = thumpable:getSprite():getName();
     local sq = thumpable:getSquare();
     local north = spriteName == "carpentry_02_60"
@@ -477,6 +540,4 @@ function BuildRecipeCode.woodLampPillar.OnCreate(thumpable, craftRecipeData, cha
 -- 	javaObject:transmitCompleteItemToClients()
 
 -- 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
-
-
 end

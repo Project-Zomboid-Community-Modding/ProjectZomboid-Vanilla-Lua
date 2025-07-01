@@ -112,6 +112,15 @@ function ISUnbarricadeAction:complete()
     				sendAddItemToContainer(player:getInventory(), metal);
     			end
     		elseif barricade:isMetalBar() then
+                --[[
+                if barricade:hasModData() then
+                    for k,v in pairs(barricade:getModData()) do
+                    	if luautils.stringStarts(k, "need:") then
+                    		local type = luautils.split(k, ":")[2]
+                    	end
+                    end
+                end
+                ]]--
     			local bar = barricade:removeMetalBar(nil)
     			if bar then
     				player:getInventory():AddItem(bar);
@@ -128,7 +137,9 @@ function ISUnbarricadeAction:complete()
     		else
     			local plank = barricade:removePlank(nil)
     			if barricade:getNumPlanks() > 0 then
-    				barricade:sendObjectChange('state')
+					if (isClient() or isServer()) then
+						barricade:sendObjectChange('state')		-- FIXME? not work in SP
+					end
     			end
     			if plank then
     				player:getInventory():AddItem(plank);

@@ -67,10 +67,12 @@ function FishingManager:removeEventHooks()
 end
 
 function FishingManager:update()
+    self.joypad = self.player:getJoypadBind()
+
     if self.state == self.states["None"] and not Fishing.Utils.isPlayerAimOnWater(self.player, true) then
         self.player:setVariable("FishingFinished", true)
     end
-    if self.state ~= self.states["None"] and (Fishing.Utils.isStopFishingButtonPressed(self.joypad)) then
+    if self.state ~= self.states["None"] and (Fishing.Utils.isStopFishingButtonPressed(self.joypad) or self.player:getCurrentState() ~= FishingState.instance()) then
         if self.state ~= self.states["Idle"] and self.fishingRod ~= nil then
             self.fishingRod:damageLine()
         end

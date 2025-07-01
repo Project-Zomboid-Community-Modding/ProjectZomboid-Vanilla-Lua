@@ -573,16 +573,16 @@ function luautils.isEquipped(_item, _player)
 end
 
 function luautils.split(inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={};
+	if sep == nil then
+		sep = "%s"
+	end
+	local t={};
 	local i=1
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        t[i] = str
-        i = i + 1
-    end
-    return t
+	for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+		t[i] = str
+		i = i + 1
+	end
+	return t
 end
 
 function luautils.getConditionRGB(condition)
@@ -742,4 +742,29 @@ end
 function round(num, idp)
 	local mult = 10^(idp or 0)
 	return math.floor(num * mult + 0.5) / mult
+end
+
+function luautils.packString(stringTable, sep)
+	if stringTable == nil then return; end;
+	if sep == nil then
+		sep = " ";
+	end;
+	local packedString = "";
+	for i, string in pairs(stringTable) do
+		packedString = packedString .. string;
+		if (i ~= #stringTable) then
+			packedString = packedString .. sep;
+		end;
+	end;
+	return packedString;
+end
+
+function luautils.unpackString(text, sep)
+	local stringTable = {};
+	for _, splitString in ipairs(luautils.split(text, sep)) do
+		if splitString ~= string.trim(sep) then
+			stringTable[#stringTable + 1] = splitString;
+		end;
+	end;
+	return unpack(stringTable);
 end

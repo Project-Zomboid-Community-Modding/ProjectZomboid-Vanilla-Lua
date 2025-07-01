@@ -121,7 +121,7 @@ function SCampfireGlobalObject:addFireObject()
 	if not square then return end
 	-- Create a 'permanent' IsoFire object.  It won't spread to adjacent squares but will burn.
 	local fireObj = IsoFire.new(getCell(), square)
-	fireObj:AttachAnim("Fire", "01", 4, IsoFireManager.FireAnimDelay, -16, -78, true, 0, false, 0.7, IsoFireManager.FireTintMod)
+	fireObj:AttachAnim("Fire", "01", IsoFire.NUM_FRAMES_FIRE, IsoFireManager.FireAnimDelay, 1 * Core.getTileScale(), -1 * Core.getTileScale(), true, 0, false, 0.7, IsoFireManager.FireTintMod)
 	square:AddTileObject(fireObj)
 -- 	self:noise('added campfire IsoFire at index='..fireObj:getObjectIndex())
 end

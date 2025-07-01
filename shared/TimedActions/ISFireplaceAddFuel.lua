@@ -66,7 +66,9 @@ function ISFireplaceAddFuel:complete()
 
 	if self.fireplace then
 		self.fireplace:addFuel(self.fuelAmt)
-		self.fireplace:sendObjectChange('state')
+		if isServer() then
+			self.fireplace:sendObjectChange("state")
+		end
 	end
 
 	return true;

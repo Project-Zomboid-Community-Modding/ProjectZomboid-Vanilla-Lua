@@ -639,15 +639,15 @@ function ISZoneDisplay:updateTooltip()
 		self.tooltip:setVisible(false);
 		self.tooltip:setAlwaysOnTop(true);
 	end;
-	if self.tooltip and self:isReallyVisible() then
+	if self.tooltip and self:isReallyVisible() and not self.parent.isCollapsed then
 		if (not self.tooltip:getIsVisible()) then
 			self.tooltip:addToUIManager();
 			self.tooltip:setVisible(true);
 		end;
 		--
-		local tooltipForced = self.parent.tooltipForced;
+		local tooltipForced = self.parent.tooltipForced and not self.parent.isCollapsed;
 		--
-		self.tooltip.followMouse = not tooltipForced
+		self.tooltip.followMouse = not tooltipForced;
 		if tooltipForced then
 			local ui = self.parent and self.parent or self
 			self.tooltip:setX(ui:getAbsoluteX() + self:getWidth());

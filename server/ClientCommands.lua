@@ -247,7 +247,7 @@ end
 Commands.object.emptyTrash = function(player, args)
 	local object = _getTrashCan(args.x, args.y, args.z, args.index)
 	if object then
-		if isServer() then
+		if not isClient() then
 			local container = object:getContainer()
 			while container:getItems():size() > 0 do
 				local item = container:getItems():get(0)
@@ -259,10 +259,10 @@ Commands.object.emptyTrash = function(player, args)
 			if object:getOverlaySprite() then
 				ItemPicker.updateOverlaySprite(object)
 			end
+		else
+			-- sendObjectChange will do all needed logic in SP and for clients	// FIXME: Not work on SP
+			object:sendObjectChange('emptyTrash');
 		end
-
-		-- sendObjectChange will do all needed logic in SP and for clients
-		object:sendObjectChange('emptyTrash');
 	else
 		print('expected trash can')
 	end

@@ -13,7 +13,21 @@ function Fishing.Utils.getAimCoords(player)
     if player:getJoypadBind() == -1 then
         return ISCoordConversion.ToWorld(getMouseXScaled(), getMouseYScaled() + 100, player:getZ())
     else
-        -- TODO: Gamepad support
+        local x = player:getX()
+        local y = player:getY()
+        local dir = player:getDir()
+
+        if     dir == IsoDirections.N  then   x,y = x, y - 6
+        elseif dir == IsoDirections.NE then   x,y = x + 4, y - 4
+        elseif dir == IsoDirections.E  then   x,y = x + 6, y
+        elseif dir == IsoDirections.SE then   x,y = x + 4, y + 4
+        elseif dir == IsoDirections.S  then   x,y = x, y + 6
+        elseif dir == IsoDirections.SW then   x,y = x - 4, y + 4
+        elseif dir == IsoDirections.W  then   x,y = x - 6, y
+        elseif dir == IsoDirections.NW then   x,y = x - 4, y - 4
+        end
+
+        return x, y
     end
 end
 
@@ -31,8 +45,7 @@ function Fishing.Utils.isStopFishingButtonPressed(joypad)
             end
         end
     else
-        return true
-        -- TODO gamepad support
+        return isJoypadPressed(joypad, Joypad.BButton)
     end
     return false
 end
@@ -72,8 +85,46 @@ function Fishing.Utils.isCastButtonPressed(joypad)
     if joypad == -1 then
         return isMouseButtonDown(0)
     else
-        return isJoypadPressed(joypad, getJoypadRightStickButton(joypad))
+        return isJoypadRTPressed(joypad)
     end
+end
+
+function Fishing.Utils.isGamepadReelMove(joypad, prevValue)
+    local x = getJoypadAimingAxisX(joypad)
+    local y = getJoypadAimingAxisY(joypad)
+    local val = math.abs(x) + math.abs(y)
+    if val < 0.85 then
+        return 0, 0, false, false
+    end
+    local angle = math.atan(math.abs(x)/math.abs(y))
+    if x < 0 then
+        angle = angle * -1
+    end
+    if y < 0 then
+        angle = math.pi - angle
+    end
+
+    if prevValue == 0 then
+        return angle - math.pi/2, 0, false, false
+    end
+
+    local delta = (angle - math.pi/2) - prevValue
+    if math.abs(delta) > math.pi then
+        if delta < 0 then
+            delta = delta + 2 * math.pi
+        else
+            delta = delta - 2 * math.pi
+        end
+    end
+
+    local isReel = delta > 0
+    local isRelease = delta < 0
+
+    if delta == 0 then
+        return angle - math.pi/2, delta, nil, nil
+    end
+
+    return angle - math.pi/2, delta, isReel, isRelease
 end
 
 function Fishing.Utils.isNearShore(x, y)
@@ -88,6 +139,19 @@ function Fishing.Utils.isNearShore(x, y)
     end
     return false
 end
+
+Fishing.Utils.skillSizeLimit = {}
+Fishing.Utils.skillSizeLimit[0] = 0.5
+Fishing.Utils.skillSizeLimit[1] = 0.9
+Fishing.Utils.skillSizeLimit[2] = 1
+Fishing.Utils.skillSizeLimit[3] = 1.4
+Fishing.Utils.skillSizeLimit[4] = 1.8
+Fishing.Utils.skillSizeLimit[5] = 2.3
+Fishing.Utils.skillSizeLimit[6] = 4.5
+Fishing.Utils.skillSizeLimit[7] = 9
+Fishing.Utils.skillSizeLimit[8] = 27
+Fishing.Utils.skillSizeLimit[9] = 32
+Fishing.Utils.skillSizeLimit[10] = 45
 
 -- Small, Medium, Big
 Fishing.Utils.fishSizeChancesBySkillLevel = {}
@@ -188,7 +252,6 @@ function Fishing.Utils.getFishNumParams(x, y)
 
     return { value = numberOfFish, coeff = numberOfFishCoeff }
 end
-
 
 ---
 
