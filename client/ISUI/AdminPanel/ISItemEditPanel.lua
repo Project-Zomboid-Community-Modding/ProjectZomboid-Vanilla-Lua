@@ -222,9 +222,10 @@ function ISItemEditPanel:onSaveWeight()
     self.item:setCustomWeight(true);
 end
 
+-- Commented out lines that call on MP role info. - Baph
 function ISItemEditPanel:onSaveCondition()
     if instanceof(self.item, "Clothing") then
-        if (self.item:getCondition() == self.item:getConditionMax() and getPlayer():getRole():hasCapability(Capability.EditItem)) then
+        if (self.item:getCondition() == self.item:getConditionMax() and ((not self.admin:getRole() and not isClient()) or self.admin:getRole():hasCapability(Capability.EditItem))) then
             self.item:fullyRestore();
         end
     end
@@ -232,15 +233,17 @@ function ISItemEditPanel:onSaveCondition()
 end
 
 function ISItemEditPanel:onSaveColor()
-    self.item:getVisual():setTint(ImmutableColor.new(self.item:getColor()));
-    if self.admin:isEquipped(self.item) then
-        self.admin:resetModelNextFrame();
+    if self.item:getVisual() then
+        self.item:getVisual():setTint(ImmutableColor.new(self.item:getR(), self.item:getG(), self.item:getB()));
+        if self.admin:isEquipped(self.item) then
+            self.admin:resetModelNextFrame();
+        end
     end
     self.item:setCustomColor(true);
 end
 
 function ISItemEditPanel:validateColor()
-    return self.item:allowRandomTint();
+    return self.item:isCustomColor() or self.item:allowRandomTint();
 end
 
 function ISItemEditPanel:validateMinRangeRanged()
@@ -377,7 +380,7 @@ function ISItemEditPanel:createChildren()
                     a = c:getAlphaFloat(),
                 }
                 elem.control:initialise();
-                elem.control.backgroundColor = {r = elem.originalValue.r, g = elem.originalValue.g, b = elem.originalValue.b, a = 1};
+                elem.control.backgroundColor = {r = elem.originalValue.r, g = elem.originalValue.g, b = elem.originalValue.b, a = 1.0};
 
                 local colInfo = ColorInfo.new();
                 colInfo:set(elem.originalValue.r, elem.originalValue.g, elem.originalValue.b, 1.0);
@@ -462,6 +465,9 @@ function ISItemEditPanel:saveAll()
                 elseif elem.type==TYPE_COLOR then
                     if elem.originalValue.r ~= elem.control.backgroundColor.r or elem.originalValue.g ~= elem.control.backgroundColor.g or elem.originalValue.b ~= elem.control.backgroundColor.b then
                         local color = Color.new(elem.control.backgroundColor.r, elem.control.backgroundColor.g, elem.control.backgroundColor.b,1);
+	                    self.item:setColorRed(elem.control.backgroundColor.r);
+	                    self.item:setColorGreen(elem.control.backgroundColor.g);
+	                    self.item:setColorBlue(elem.control.backgroundColor.b);
                         self.item[elem.funcSet](self.item, color);
                     end
                 elseif elem.type==TYPE_BOOLEAN then

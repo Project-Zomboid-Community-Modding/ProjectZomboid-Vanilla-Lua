@@ -59,6 +59,7 @@ function ISBBQInsertPropaneTank:complete()
 	if instanceof(self.tank, "IsoWorldInventoryObject") then
 		tank = self.tank:getItem()
 		self.tank:getSquare():transmitRemoveItemFromSquare(self.tank)
+		triggerEvent("OnContainerUpdate")
 	else
 		self.character:removeFromHands(self.tank)
 		self.character:getInventory():Remove(self.tank) -- TODO: server controls inventory

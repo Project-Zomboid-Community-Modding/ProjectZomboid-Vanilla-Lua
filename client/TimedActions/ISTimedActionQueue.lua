@@ -105,8 +105,10 @@ function ISTimedActionQueue:resetQueue()
 end
 
 function ISTimedActionQueue:cancelQueue()
-    for i = 2, #self.queue do
-        self.queue[i]:forceCancel()
+    for i = 1, #self.queue do
+        if not self.queue[i]:isStarted() then
+            self.queue[i]:forceCancel();
+        end
     end
 end
 

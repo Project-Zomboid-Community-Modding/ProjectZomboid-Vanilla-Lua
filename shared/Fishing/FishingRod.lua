@@ -125,7 +125,9 @@ function FishingRod:updateLine()
             self:damageLine()
             if self.rodItem:getModData().fishing_LineCondition <= 0 then
                 self:brokeLine()
-                Fishing.ManagerInstances[self.player:getPlayerNum()]:destroy()
+				if Fishing.ManagerInstances[self.player:getPlayerNum()] then
+					Fishing.ManagerInstances[self.player:getPlayerNum()]:destroy()
+				end
                 return false
             end
         end
@@ -133,7 +135,9 @@ function FishingRod:updateLine()
         if self.highTensionTimer > self.tensionLimit then
             if ZombRand(4) == 0 then
                 self:brokeLine()
-                Fishing.ManagerInstances[self.player:getPlayerNum()]:destroy()
+				if Fishing.ManagerInstances[self.player:getPlayerNum()] then
+					Fishing.ManagerInstances[self.player:getPlayerNum()]:destroy()
+				end
                 return false
             else
                 self:missFish()

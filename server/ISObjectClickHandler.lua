@@ -306,19 +306,18 @@ ISObjectClickHandler.doClick = function (object, x, y)
                 end
             else
                 --print("adding open container.")
-              -- ISTimedActionQueue.add(ISOpenContainerTimedAction:new(getPlayer(), object:getContainer(), 20, x, y));
-                if not object:getContainer():isExplored() then
-
+                -- ISTimedActionQueue.add(ISOpenContainerTimedAction:new(getPlayer(), object:getContainer(), 20, x, y));
+                local container = object:getContainerClickedOn(x, y)
+                if not container:isExplored() then
                     if not isClient() then
-                        ItemPicker.fillContainer(object:getContainer(), playerObj);
+                        ItemPicker.fillContainer(container, playerObj);
                     else
-                        object:getContainer():requestServerItemsForContainer();
+                        container:requestServerItemsForContainer();
                     end
-                    object:getContainer():setExplored(true);
+                    container:setExplored(true);
                 end
                 local panel2 = getPlayerLoot(0);
-
-                panel2:setNewContainer(object:getContainer());
+                panel2:setNewContainer(container);
                 panel2:setVisible(true);
                 panel2.lootAll:setVisible(true);
                 panel2.collapseCounter = 0;

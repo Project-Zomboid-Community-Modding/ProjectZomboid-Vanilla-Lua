@@ -24,10 +24,11 @@ function CPlantGlobalObject:isBadMonth()
 	local prop = farming_vegetableconf.props[self.typeOfSeed]
 	if not prop.badMonth then return false end
     for i = 1, #props.badMonth do
-        if getGameTime():getMonth() == tos.props.badMonth[i] then
+        if getGameTime():getMonth()+1 == tos.props.badMonth[i] then
             return true
         end
     end
+    return false
 end
 
 function CPlantGlobalObject:canHarvest()

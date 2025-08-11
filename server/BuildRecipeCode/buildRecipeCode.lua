@@ -55,14 +55,43 @@ function BuildRecipeCode.barricade.OnIsValidPlanks(params)
          local object = objects:get(i);
          if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
              if (params.facing == "s" or params.facing == "e") and (not object:getBarricadeOnOppositeSquare() or (object:getBarricadeOnOppositeSquare() and object:getBarricadeOnOppositeSquare():canAddPlank())) then
-                 return true;
+				 if params.facing == "s" and object:getNorth() then
+					 return true
+				 end
+				 if params.facing == "e" and not object:getNorth() then
+					 return true
+				 end
              elseif (params.facing == "n" or params.facing == "w") and (not object:getBarricadeOnSameSquare() or (object:getBarricadeOnSameSquare() and object:getBarricadeOnSameSquare():canAddPlank())) then
-                 return true;
+				 if params.facing == "n" and object:getNorth() then
+					 return true
+				 end
+				 if params.facing == "w" and not object:getNorth() then
+					 return true
+				 end
              end
          end
  	end
 
     return false;
+end
+
+function BuildRecipeCode.barricade.TimedActionOnIsValid(params)
+	-- check barricadeTarget to ensure state has not changed since we started (e.g. a player has opened the door)
+	local square = params.square;
+	if params.facing == "s" then
+		square = getWorld():getCell():getGridSquare(square:getX(), square:getY()+1, square:getZ());
+	elseif params.facing == "e" then
+		square = getWorld():getCell():getGridSquare(square:getX()+1, square:getY(), square:getZ());
+	end
+	local objects = square:getObjects();
+	for i = 0,objects:size()-1 do
+		local object = objects:get(i);
+		if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+			return true;
+		end
+	end
+
+	return false;
 end
 
 function BuildRecipeCode.barricade.OnCreate(params)
@@ -87,12 +116,26 @@ function BuildRecipeCode.barricade.OnCreate(params)
 		if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow())) then
             if opposite and object:getBarricadeOnOppositeSquare() and object:getBarricadeOnOppositeSquare():canAddPlank() then
                 barricade = object:getBarricadeOnOppositeSquare();
-                barricade:addPlank(character, craftRecipeData:getAllRecordedConsumedItems():get(0));
+                local plank = craftRecipeData:getAllRecordedConsumedItems() and (not craftRecipeData:getAllRecordedConsumedItems():isEmpty()) and craftRecipeData:getAllRecordedConsumedItems():get(0);
+                if not plank then
+                    barricade:addPlank(character);
+                else
+                    barricade:addPlank(character, plank);
+                end
             elseif object:getBarricadeOnSameSquare() and object:getBarricadeOnSameSquare():canAddPlank() then
                 barricade = object:getBarricadeOnSameSquare();
-                barricade:addPlank(character, craftRecipeData:getAllRecordedConsumedItems():get(0));
+                local plank = craftRecipeData:getAllRecordedConsumedItems() and (not craftRecipeData:getAllRecordedConsumedItems():isEmpty()) and craftRecipeData:getAllRecordedConsumedItems():get(0);
+                if not plank then
+                    barricade:addPlank(character);
+                else
+                    barricade:addPlank(character, plank);
+                end
             else
-                barricade = object:addBarricadesFromCraftRecipe(character, craftRecipeData:getAllRecordedConsumedItems(), opposite);
+                local items = craftRecipeData:getAllRecordedConsumedItems();
+                if not items or items:isEmpty() then
+                    items = ArrayList.new();
+                end
+                barricade = object:addBarricadesFromCraftRecipe(character, items, craftRecipeData, opposite);
             end
         end
 	end
@@ -435,7 +478,9 @@ function BuildRecipeCode.feedingTrough.OnCreate(params)
 			else
 				SFeedingTroughSystem.instance:addTrough(thumpable:getSquare(), def, isNorth, -1, -1)
 			end
-			--thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+            thumpable:removeFromWorld();
+        	thumpable:removeFromSquare();
+			thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 		end
 	end
 

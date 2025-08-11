@@ -12,14 +12,12 @@ local storeKeyBinds = function(...)
     for _, key in pairs({...}) do
         keybind_storage[key] = getCore():getKey(key)
         altkeybind_storage[key] = getCore():getAltKey(key)
-        getCore():addKeyBinding(key, 0)
-        getCore():addAltKeyBinding(key, 0)
+        getCore():addKeyBinding(key, 0, 0, false, false, false)
     end
 end
 local restoreKeyBinds = function(...)
     for _, key in pairs({...}) do
-        getCore():addKeyBinding(key, keybind_storage[key] or getCore():getKey(key))
-        getCore():addAltKeyBinding(key, altkeybind_storage[key] or getCore():getAltKey(key))
+        getCore():addKeyBinding(key, keybind_storage[key] or getCore():getKey(key), 0, false, false, false)
     end
 end
 TutorialTests = {}

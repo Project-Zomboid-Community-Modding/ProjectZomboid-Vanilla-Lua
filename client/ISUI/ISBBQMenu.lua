@@ -25,9 +25,9 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
 			while index >= 0 and index < square:getObjects():size() do
 				local object2 = square:getObjects():get(index)
 				index = square:getNextNonItemObjectIndex(index + 1)
-				if instanceof(object2, "IsoBarbecue") then
+				if object2:isFireInteractionObject() then
 					bbq = object2
-				end
+                end
 			end
 		end
 	end
@@ -53,24 +53,24 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
 		end
 	end
 
-	if bbq:isPropaneBBQ() then
-		if bbq:hasFuel() then
-			if bbq:isLit() then
-				context:addOption(getText("ContextMenu_Turn_Off"), worldobjects, ISBBQMenu.onToggle, player, bbq)
-			else
-				context:addOption(getText("ContextMenu_Turn_On"), worldobjects, ISBBQMenu.onToggle, player, bbq)
-			end
-		end
-		local tank = ISBBQMenu.FindPropaneTank(playerObj, bbq)
-		if tank then
-			context:addOption(getText("ContextMenu_Insert_Propane_Tank"), worldobjects, ISBBQMenu.onInsertPropaneTank, player, bbq, tank)
-		end
-		if bbq:hasPropaneTank() then
-			if test then return ISWorldObjectContextMenu.setTest() end
-			context:addOption(getText("ContextMenu_Remove_Propane_Tank"), worldobjects, ISBBQMenu.onRemovePropaneTank, player, bbq)
-		end
-		return
-	end
+    if bbq:isPropaneBBQ() then
+            if bbq:hasFuel() then
+            if bbq:isLit() then
+                context:addOption(getText("ContextMenu_Turn_Off"), worldobjects, ISBBQMenu.onToggle, player, bbq)
+            else
+                context:addOption(getText("ContextMenu_Turn_On"), worldobjects, ISBBQMenu.onToggle, player, bbq)
+            end
+        end
+        local tank = ISBBQMenu.FindPropaneTank(playerObj, bbq)
+        if tank then
+            context:addOption(getText("ContextMenu_Insert_Propane_Tank"), worldobjects, ISBBQMenu.onInsertPropaneTank, player, bbq, tank)
+        end
+        if bbq:isPropaneBBQ() and bbq:hasPropaneTank() then
+            if test then return ISWorldObjectContextMenu.setTest() end
+            context:addOption(getText("ContextMenu_Remove_Propane_Tank"), worldobjects, ISBBQMenu.onRemovePropaneTank, player, bbq)
+        end
+        return
+    end
 
 	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
 	ISCampingMenu.doAddFuelOption(context, worldobjects, bbq:getFuelAmount(), fuelInfo, bbq, ISBBQAddFuel)

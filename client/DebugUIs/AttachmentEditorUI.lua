@@ -446,7 +446,7 @@ function EditAttachment:onComboAddModel()
 		local modelScript = item.item
 		if self:isVehicleScript(modelScript) then
 			--
-		elseif modelScript and modelScript:getFullType() == scriptName then
+		elseif modelScript:getFullType() == scriptName then
 			return
 		end
 	end
@@ -727,8 +727,7 @@ function EditAttachment:doDrawItem(y, item, alt)
 		self:drawRect(1, y + 1, self:getWidth() - 2, item.height - 2, 0.25, 1.0, 1.0, 1.0)
 	end
 
-	self:drawText(modelScript and modelScript:getName() or "????", x, y, 1, 1, 1, 1, UIFont.Small)
-
+	self:drawText(modelScript:getName(), x, y, 1, 1, 1, 1, UIFont.Small)
 	y = y + FONT_HGT_SMALL
 
 	self:drawRect(x, y, self.width - 4 * 2, 2, 1.0, 0.5, 0.5, 0.5)

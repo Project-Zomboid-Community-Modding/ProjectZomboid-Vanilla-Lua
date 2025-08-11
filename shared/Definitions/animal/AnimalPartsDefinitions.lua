@@ -501,6 +501,7 @@ rabdoeswamp.parts = rabdoeswamp.parts or rabbitspart;
 rabdoeswamp.bones = rabdoeswamp.bones or {};
 table.insert(rabdoeswamp.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
 table.insert(rabdoeswamp.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoeswamp.leather = "Base.RabbitLeather_Full";
 rabdoeswamp.head = "Base.Rabbit_Head_Swamp";
 rabdoeswamp.skull = "Base.Rabbit_Skull";
 rabdoeswamp.xpPerItem = 7;
@@ -513,6 +514,7 @@ local rabkittenswamp = AnimalPartsDefinitions.animals["rabkittenswamp"] or {};
 rabkittenswamp.parts = rabkittenswamp.parts or rabbitskitpart;
 rabkittenswamp.bones = rabkittenswamp.bones or {};
 table.insert(rabkittenswamp.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittenswamp.leather = "Base.RabbitLeather_Full";
 rabkittenswamp.head = "Base.Rabbit_Kitten_Head_Swamp";
 rabkittenswamp.skull = "Base.Rabbit_KittenSkull";
 rabkittenswamp.xpPerItem = 3;
@@ -524,6 +526,7 @@ rabdoeappalachian.parts = rabdoeappalachian.parts or rabbitspart;
 rabdoeappalachian.bones = rabdoeappalachian.bones or {};
 table.insert(rabdoeappalachian.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
 table.insert(rabdoeappalachian.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoeappalachian.leather = "Base.RabbitLeather_Full";
 rabdoeappalachian.head = "Base.Rabbit_Head_Appalachian";
 rabdoeappalachian.skull = "Base.Rabbit_Skull";
 rabdoeappalachian.xpPerItem = 7;
@@ -536,6 +539,7 @@ local rabkittenappalachian = AnimalPartsDefinitions.animals["rabkittenappalachia
 rabkittenappalachian.parts = rabkittenappalachian.parts or rabbitskitpart;
 rabkittenappalachian.bones = rabkittenappalachian.bones or {};
 table.insert(rabkittenappalachian.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittenappalachian.leather = "Base.RabbitLeather_Full";
 rabkittenappalachian.head = "Base.Rabbit_Kitten_Head_Appalachian";
 rabkittenappalachian.skull = "Base.Rabbit_KittenSkull";
 rabkittenappalachian.xpPerItem = 3;
@@ -547,6 +551,7 @@ rabdoecottontail.parts = rabdoecottontail.parts or rabbitspart;
 rabdoecottontail.bones = rabdoecottontail.bones or {};
 table.insert(rabdoecottontail.bones, {item = "Base.SmallAnimalBone", minNb = 4, maxNb = 8})
 table.insert(rabdoecottontail.bones, {item = "Base.AnimalBone", minNb = 0, maxNb = 2})
+rabdoecottontail.leather = "Base.RabbitLeather_Full";
 rabdoecottontail.head = "Base.Rabbit_Head_CottonTail";
 rabdoecottontail.skull = "Base.Rabbit_Skull";
 rabdoecottontail.xpPerItem = 7;
@@ -559,6 +564,7 @@ local rabkittencottontail = AnimalPartsDefinitions.animals["rabkittencottontail"
 rabkittencottontail.parts = rabkittencottontail.parts or rabbitskitpart;
 rabkittencottontail.bones = rabkittencottontail.bones or {};
 table.insert(rabkittencottontail.bones, {item = "Base.SmallAnimalBone", minNb = 3, maxNb = 6})
+rabkittencottontail.leather = "Base.RabbitLeather_Full";
 rabkittencottontail.head = "Base.Rabbit_Kitten_Head_CottonTail";
 rabkittencottontail.skull = "Base.Rabbit_KittenSkull";
 rabkittencottontail.xpPerItem = 3;

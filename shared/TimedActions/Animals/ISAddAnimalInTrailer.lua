@@ -62,6 +62,10 @@ function ISAddAnimalInTrailer:perform()
 end
 
 function ISAddAnimalInTrailer:complete()
+    -- Ensure any elapsed time is handled so Vehicles.Update.TrailerAnimalFood() doesn't
+    -- apply all the elapsed time to the newly-added animal.
+    self.vehicle:updateParts()
+
 	if self.fromHand then
 		self.vehicle:addAnimalFromHandsInTrailer(self.animal, self.character)
 		sendAddAnimalFromHandsInTrailer(self.animal, self.character, self.vehicle)

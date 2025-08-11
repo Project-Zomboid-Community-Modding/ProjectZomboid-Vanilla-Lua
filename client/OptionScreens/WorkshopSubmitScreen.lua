@@ -185,7 +185,7 @@ function Page2:create()
 	self.description.font = UIFont.Medium
 	self.description:initialise()
 	self.description:instantiate()
-	self.description:setEditable(false)
+	self.description:setEditable(true)
 	self.description:setMultipleLine(true)
 	self.description:addScrollBars()
 	self:addChild(self.description)

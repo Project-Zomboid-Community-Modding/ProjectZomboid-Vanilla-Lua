@@ -72,6 +72,14 @@ function ISComboBoxPopup:render()
     ISScrollingListBox.render(self)
     self:drawRectBorderStatic(-1, -1, self:getWidth() + 2, self:getHeight() + 2, 0.8, 1, 1, 1)
 
+    local highlight = (self:isMouseOver() and not self:isMouseOverScrollBar()) and self.mouseoverselected or self.selected
+    if self.parentCombo.joypadFocused then
+        highlight = self.selected
+    end
+    if highlight ~= nil and highlight >= 1 and highlight <= self:size() then
+        self.parentCombo:pointOnItem(highlight)
+    end
+
     if self.tooWide then
         local item = self.tooWide
         local y = self.tooWideY
@@ -102,7 +110,6 @@ function ISComboBoxPopup:doDrawItem(y, item, alt)
     if highlight == item.index then
         local selectColor = self.parentCombo.backgroundColorMouseOver
         self:drawRect(0, (y), self:getWidth(), item.height-1, selectColor.a, selectColor.r, selectColor.g, selectColor.b)
-        self.parentCombo:pointOnItem(highlight)
         local mouseOver = self:isMouseOver() and not self:isMouseOverScrollBar()
         if self.parentCombo.joypadFocused then
             mouseOver = true

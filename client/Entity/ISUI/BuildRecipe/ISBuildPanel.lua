@@ -394,11 +394,7 @@ function ISBuildPanel:createBuildIsoEntity(dontSetDrag)
             self.buildEntity.secondItem = getTool(_recipe:getToolLeft(), inventory);
         end
 
-    	local cheat = self.player:isBuildCheat()
-    	if self.logic and self.logic:isCraftCheat() then
-            cheat = true;
-        end
-
+    	local cheat = self.player:isBuildCheat();
         local canBuild = self.logic:canPerformCurrentRecipe() or cheat;
         
         if self.logic:isCraftActionInProgress() then

@@ -389,8 +389,17 @@ function doesSeasonRecipeExist(recipeName)
 			return true;
 		end
 	end
-	
+
 	return false;
+end
+
+function getSeasonRecipeIcon(recipeName)
+	for typeOfSeed,props in pairs(farming_vegetableconf.props) do
+		if props.seasonRecipe == recipeName then
+            if props.icon and getTexture(props.icon) then return getTexture(props.icon)
+			else return end
+		end
+	end
 end
 
 farming_vegetableconf.props = {};

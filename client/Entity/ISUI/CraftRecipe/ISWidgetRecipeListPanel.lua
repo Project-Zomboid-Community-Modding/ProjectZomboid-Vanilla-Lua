@@ -10,7 +10,7 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_HEADING = getTextManager():getFontHeight(UIFont.Small)
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
-local LIST_ICON_SIZE = math.max(1, 48 * FONT_SCALE)
+local LIST_ICON_SIZE = 32 * ICON_SCALE;
 local LIST_SUBICON_SIZE = 16 * ICON_SCALE
 local LIST_FAVICON_SIZE = 10 * ICON_SCALE
 local LIST_SUBICON_SPACING = 2 * ICON_SCALE
@@ -48,18 +48,17 @@ function ISWidgetRecipeListPanel:createChildren()
             local safeDrawWidth = _self:getWidth() - (_self.vscroll and _self.vscroll:getWidth() or 0);
 
             local cheat = self.player:isBuildCheat()
-            if self.logic and self.logic:isCraftCheat() then
-                cheat = true;
-            end
 
             -- set colours
             local color = {r=1.0, g=1.0, b=1.0, a=1.0};
-            local cachedRecipeInfo = self.logic:getCachedRecipeInfo(craftRecipe)
-            if not cheat then
-                if cachedRecipeInfo and (not cachedRecipeInfo:isValid()) then
-                    color = {r=0.5, g=0.5, b=0.5, a=1.0};
-                elseif cachedRecipeInfo and (not cachedRecipeInfo:isCanPerform()) then
-                    color = {r=0.5, g=0.5, b=0.5, a=1.0};
+            if instanceof(self.logic, "BaseCraftingLogic") then
+                local cachedRecipeInfo = self.logic:getCachedRecipeInfo(craftRecipe)
+                if not cheat then
+                    if cachedRecipeInfo and (not cachedRecipeInfo:isValid()) then
+                        color = {r=0.5, g=0.5, b=0.5, a=1.0};
+                    elseif cachedRecipeInfo and (not cachedRecipeInfo:isCanPerform()) then
+                        color = {r=0.5, g=0.5, b=0.5, a=1.0};
+                    end
                 end
             end
 

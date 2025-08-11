@@ -859,7 +859,7 @@ function ISMoveableSpriteProps:getInfoPanelFlagsGeneral( _square, _object, _play
 end
 
 function ISMoveableSpriteProps:getInfoPanelFlagsPerTile( _square, _object, _player, _mode )
-    InfoPanelFlags.hasItems = InfoPanelFlags.hasItems or (_object and instanceof(_object,"IsoObject") and not self:objectNoContainerOrEmpty( _object ));
+    InfoPanelFlags.hasItems = InfoPanelFlags.hasItems or (_object and instanceof(_object,"IsoObject") and not _object:isObjectNoContainerOrEmpty());
 
     if _mode == "rotate" and self:canRotateDirection() then
         InfoPanelFlags.hasItems = false
@@ -987,16 +987,6 @@ function ISMoveableSpriteProps:isFreeTile( _square )
     return true;
 end
 
-function ISMoveableSpriteProps:objectNoContainerOrEmpty( _object )
-    for i=1,_object:getContainerCount() do
-        local con = _object:getContainerByIndex(i-1)
-        if con and (con:getItems() and not con:getItems():isEmpty()) or not con:isExplored() then
-            return false
-        end
-    end
-    return true;
-end
-
 -- with verify bool it ONLY checks if the current spritegridcache is correct, otherwise it will update the spritegridcache table
 -- returns a bool if spritegrid is correct
 -- for pick up actions _getWorldObjects can be set to include worldobjects
@@ -1021,7 +1011,8 @@ function ISMoveableSpriteProps:getSpriteGridCache( _square, _verifyOnly, _getWor
                     return false;
                 end
 
-                local obj, sprInstance  = false;
+                local obj = false;
+                local sprInstance = nil;
                 if _getWorldObjects then
                     obj, sprInstance = self:findOnSquare( square, spriteForPos:getName() );
                     if not obj then
@@ -1035,12 +1026,13 @@ function ISMoveableSpriteProps:getSpriteGridCache( _square, _verifyOnly, _getWor
                 if not _verifyOnly then
                     table.insert(SpriteGridCache, { square = square, object = obj, sprInstance = sprInstance, sprite = spriteForPos, x = x, y = y } );
                 else
-                    if not (SpriteGridCache[index].square == square
-                            and SpriteGridCache[index].object == obj
-                            and SpriteGridCache[index].sprInstance == sprInstance
-                            and SpriteGridCache[index].sprite == spriteForPos
-                            and SpriteGridCache[index].x == x
-                            and SpriteGridCache[index].y == y) then
+                    if (SpriteGridCache[index].square ~= square
+                            or SpriteGridCache[index].sprite ~= spriteForPos
+                            or SpriteGridCache[index].x ~= x
+                            or SpriteGridCache[index].y ~= y) then
+                        return false;                        
+                    end
+                    if _getWorldObjects and (SpriteGridCache[index].object ~= obj or SpriteGridCache[index].sprInstance ~= sprInstance) then
                         return false;
                     end
                 end
@@ -1110,7 +1102,7 @@ end
 function ISMoveableSpriteProps:canPickUpMoveableInternal( _character, _square, _object, _isMulti )
     local canPickUp = false;
     if self.isMoveable and instanceof(_square,"IsoGridSquare") then
-        canPickUp = not _object and true or self:objectNoContainerOrEmpty( _object );
+        canPickUp = not _object and true or _object:isObjectNoContainerOrEmpty();
         if not _isMulti and canPickUp then
             canPickUp = _character:getInventory():hasRoomFor(_character, self.weight);
         end
@@ -1189,6 +1181,9 @@ function ISMoveableSpriteProps:pickUpMoveable( _character, _square, _createItem,
                     if not spriteGrid then return false; end
 
                     local item 	= self:instanceItem(spriteGrid:getAnchorSprite():getName());
+                    if instanceof(obj, "IsoThumpable") then
+                        self:saveThumpableParameters(item:getModData(), obj);
+                    end
                     _character:getInventory():AddItem(item);
                     sendAddItemToContainer(_character:getInventory(), item);
                 end
@@ -1198,6 +1193,26 @@ function ISMoveableSpriteProps:pickUpMoveable( _character, _square, _createItem,
             end
             return items;
         end
+    end
+end
+
+function ISMoveableSpriteProps:saveThumpableParameters(_table, _object)
+    _table.name = _object:getName() or ""
+    _table.health = _object:getHealth()
+    _table.maxHealth = _object:getMaxHealth()
+    _table.thumpSound = _object:getThumpSound()
+    _table.color = _object:getCustomColor()
+    if _object:getLightSourceRadius() > 0 then
+        _table.lightSource = {
+            radius = _object:getLightSourceRadius(),
+            xoffset = _object:getLightSourceXOffset(),
+            yoffset = _object:getLightSourceYOffset(),
+            life = _object:getLifeLeft(),
+            fuel = _object:getLightSourceFuel(),
+        }
+    end
+    if _object:hasModData() then
+        _table.modData = copyTable(_object:getModData())
     end
 end
 
@@ -1223,14 +1238,7 @@ function ISMoveableSpriteProps:pickUpMoveableInternal( _character, _square, _obj
                 end
             elseif item then
                 if instanceof(_object, "IsoThumpable") then
-                    item:getModData().name = _object:getName() or ""
-                    item:getModData().health = _object:getHealth()
-                    item:getModData().maxHealth = _object:getMaxHealth()
-                    item:getModData().thumpSound = _object:getThumpSound()
-                    item:getModData().color = _object:getCustomColor()
-                    if _object:hasModData() then
-                        item:getModData().modData = copyTable(_object:getModData())
-                    end
+                    self:saveThumpableParameters(item:getModData(), _object);
                 else
                     if _object:hasModData() and _object:getModData().movableData then
                         item:getModData().movableData = copyTable(_object:getModData().movableData)
@@ -2188,7 +2196,15 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
                         if type(modData.color) == "userdata" then
                             obj:setCustomColor(modData.color);
                         end
+                        if modData.lightSource ~= nil then
+                            obj:createLightSource(modData.lightSource.radius, modData.lightSource.xoffset, modData.lightSource.yoffset, 0, 0, modData.lightSource.fuel, nil, nil);
+                            obj:setLifeLeft(modData.lightSource.life);
+                            obj:setHaveFuel(modData.lightSource.life > 0);
+                        end
                     end
+                    
+                    -- call afterRotated in case object was rotated
+                    obj:afterRotated();
                 end
             end
         end
@@ -2283,12 +2299,14 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
 
 
     if obj then
+        local components = self:removeComponentsBeforePlacing(obj) -- hack for feeding trough's FluidContainer
         -- instancing craft workstation things from brush/placed stuff
         -- probably doesn't work properly and will break something but also brush/item spawned workstation tiles need to work
         if obj and not _item:hasComponents() then
             GameEntityFactory.CreateIsoEntityFromCellLoading(obj)
         end
         GameEntityFactory.TransferComponents(_item, obj);
+        self:restoreComponentsAfterPlacing(obj, components)
 --         print("ISMoveableSpriteProps:placeMoveableInternal 21 ", obj)
         _square:AddSpecialObject( obj, insertIndex );
         if isClient() then obj:transmitCompleteItemToServer(); end
@@ -2317,6 +2335,21 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
     IsoGenerator.updateGenerator(_square)
 
     if obj then return obj end
+end
+
+function ISMoveableSpriteProps:removeComponentsBeforePlacing(obj)
+    local components = {}
+    if instanceof(obj, "IsoFeedingTrough") and obj:hasComponent(ComponentType.FluidContainer) then
+        table.insert(components, obj:getFluidContainer())
+        obj:removeFluidContainer() -- NOTE: this frees the FluidContainer component
+    end
+    return components
+end
+
+function ISMoveableSpriteProps:restoreComponentsAfterPlacing(obj, components)
+    if instanceof(obj, "IsoFeedingTrough") and components[1] then
+        obj:createFluidContainer()
+    end
 end
 
 -- returns index of snapface
@@ -2516,6 +2549,15 @@ function ISMoveableSpriteProps:canRotateDirection()
     return false;
 end
 
+function ISMoveableSpriteProps:findOriginalSquare(_gridInfo, _sprite)
+    for i = 1, #_gridInfo do
+        if _gridInfo[i].sprite == _sprite then
+            return _gridInfo[i].square;
+        end
+    end
+    return _gridInfo[1].square; -- fallback
+end
+
 -- the current properties (self) should be the target rotation. _origProps are the properties of the object in the world.
 function ISMoveableSpriteProps:canRotateMoveable( _square, _object, _origProps )
     if self.isMoveable then
@@ -2523,7 +2565,8 @@ function ISMoveableSpriteProps:canRotateMoveable( _square, _object, _origProps )
             if _origProps and _origProps.isMoveable and _origProps.isMultiSprite and self:canRotateMoveableInternal( _square, nil ) then
                 local origGrid = _origProps:getSpriteGridInfo(_square, true); -- get the original's grid with the squares, objects etc retrieved.
                 if origGrid and #origGrid>0 then
-                    local sgrid = self:getSpriteGridInfo(origGrid[1].square, false); -- get the grid of the target rotation, this will have squares but no objects. Its origin is based on the origGrid anchor [1].
+                    local origSquare = self:findOriginalSquare(origGrid, self.sprite);
+                    local sgrid = self:getSpriteGridInfo(origSquare, false); -- get the grid of the target rotation, this will have squares but no objects. Its origin is based on the origGrid anchor [1].
                     if not sgrid then return false; end
 
                     local square = origGrid[1].square
@@ -2535,7 +2578,7 @@ function ISMoveableSpriteProps:canRotateMoveable( _square, _object, _origProps )
                         if origMember.square:Is("IsTableTop") then
                             return false;
                         end
-                        if not self:objectNoContainerOrEmpty( origMember.object ) then
+                        if not origMember.object:isObjectNoContainerOrEmpty() then
                             return false;
                         end
                     end
@@ -2566,7 +2609,7 @@ end
 function ISMoveableSpriteProps:canRotateMoveableInternal( _square, _object )
     self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
     if self.isMoveable and self:hasFaces() then
-        if _object and not self:objectNoContainerOrEmpty( _object ) then
+        if _object and not _object:isObjectNoContainerOrEmpty() then
             return false;
         end
         if self.type == "Object" or self.type == "Vegitation" then
@@ -2592,12 +2635,12 @@ function ISMoveableSpriteProps:rotateMoveable( _character, _square, _origSpriteN
             local origProps = ISMoveableSpriteProps.new( _origSpriteName ); -- get original.
             local origGrid = origProps:getSpriteGridInfo(_square, true);
             if origGrid and #origGrid>0 then
-                local anchorSquare = origGrid[1].square;
+                local anchorSquare = self:findOriginalSquare(origGrid, self.sprite);
 
                 local items = origProps:pickUpMoveable( _character, _square, false, true ); -- pickup orignal. FIXME get a list of temporary items for placeMovable
 
                 -- now place rotation based on anchor square
-                local sgrid = self:getSpriteGridInfo(origGrid[1].square, false); --_square, false);
+                local sgrid = self:getSpriteGridInfo(anchorSquare, false); --_square, false);
                 for i,gridMember in ipairs(sgrid) do
                     self:placeMoveableInternal(  gridMember.square, items[i], gridMember.sprite:getName() )
                 end
@@ -3459,9 +3502,9 @@ end
 function ISMoveableSpriteProps:canScrapObjectInternal(_result, _object)
     self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
     if not _result.containerFull then
-        _result.containerFull = not self:objectNoContainerOrEmpty( self.object );
+        _result.containerFull = not self.object:isObjectNoContainerOrEmpty();
     end
-    local canScrap = not _object or self:objectNoContainerOrEmpty( _object );
+    local canScrap = not _object or _object:isObjectNoContainerOrEmpty();
     if canScrap and self.isTable then
         canScrap = not _object:getSquare():Is("IsTableTop") and _object == self:getTopTable(_object:getSquare());
     end
@@ -3686,9 +3729,9 @@ end
 function ISMoveableSpriteProps:canRepairObjectInternal(_result, _object)
     self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
     if not _result.containerFull then
-        _result.containerFull = not self:objectNoContainerOrEmpty( self.object );
+        _result.containerFull = not self.object:isObjectNoContainerOrEmpty();
     end
-    local canRepair = not _object or self:objectNoContainerOrEmpty( _object );
+    local canRepair = not _object or _object:isObjectNoContainerOrEmpty();
     if canRepair and self.isTable then
         canRepair = not _object:getSquare():Is("IsTableTop") and _object == self:getTopTable(_object:getSquare());
     end

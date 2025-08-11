@@ -83,8 +83,33 @@ end
 function ISTakeGasolineFromVehicle:perform()
 	self.character:stopOrTriggerSound(self.sound)
     self.item:setJobDelta(0)
+	local item = self:nextItem()
+	if item then
+		self:runAgain(item)
+	end
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
+end
+
+function ISTakeGasolineFromVehicle:runAgain(intoItem)
+	if not intoItem then return end
+	-- add the actions after self, in the reverse order
+	ISTimedActionQueue.addAfter(self, ISTakeGasolineFromVehicle:new(self.character, self.part, intoItem, self.otherItems))
+	ISTimedActionQueue.addAfter(self, ISEquipWeaponAction:new(self.character, intoItem, 50, false, false));
+	if (intoItem:getContainer() ~= self.character:getInventory()) then
+		ISTimedActionQueue.addAfter(self, ISInventoryTransferAction:new(self.character, intoItem, intoItem:getContainer(), self.character:getInventory()))
+	end
+end
+
+function ISTakeGasolineFromVehicle:nextItem()
+	if not self.otherItems then return nil end
+	while #self.otherItems > 0 do
+		local item = table.remove(self.otherItems, 1)
+		if (item and item:getFluidContainer():getFreeCapacity() > 0) and self.character:getInventory():contains(item, true) then
+			return item
+		end
+	end
+	return nil
 end
 
 function ISTakeGasolineFromVehicle:complete()
@@ -122,11 +147,12 @@ function ISTakeGasolineFromVehicle:getDuration()
 	return take * 50
 end
 
-function ISTakeGasolineFromVehicle:new(character, part, item)
+function ISTakeGasolineFromVehicle:new(character, part, item, otherItems)
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = part:getVehicle()
 	o.part = part
 	o.item = item
+	o.otherItems = otherItems
 	o.fluidCont = o.item:getFluidContainer();
 	o.maxTime = o:getDuration();
 	return o

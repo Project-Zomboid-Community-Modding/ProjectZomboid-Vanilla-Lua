@@ -109,7 +109,18 @@ function ISSetKeybindDialog:onMouseButtonDown(btn)
 end
 
 function ISSetKeybindDialog:onKeyRelease(key)
-	MainOptions.keyPressHandler(key)
+	local isShiftDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) or Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+	local isCtrlDown = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) or Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+	local isAltDown = Keyboard.isKeyDown(Keyboard.KEY_LMENU) or Keyboard.isKeyDown(Keyboard.KEY_RMENU);
+	-- only allow one modifier
+	if isShiftDown and (isCtrlDown or isAltDown) then
+		isCtrlDown = false;
+		isAltDown = false;
+	end
+	if isCtrlDown and isAltDown then
+		isAltDown = false;
+	end
+	MainOptions.keyPressHandler(key, isShiftDown, isCtrlDown, isAltDown)
 end
 
 function ISSetKeybindDialog:new(keybindName, isModBind)

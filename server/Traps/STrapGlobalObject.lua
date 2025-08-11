@@ -192,6 +192,18 @@ function STrapGlobalObject:removeBait(character)
     end
 end
 
+function STrapGlobalObject:clearAnimalAndChangeSprite()
+    self.animalHour = 0;
+    self.animal = {};
+    -- change the sprite of the item
+    local trapObject = self:getIsoObject();
+    if trapObject then
+        trapObject:setSprite(self.openSprite);
+        trapObject:transmitUpdatedSpriteToClients()
+        self:toObject(trapObject, true)
+    end
+end
+
 function STrapGlobalObject:addAliveAnimal(character)
     local animalStr = self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)];
     local breed  = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)];
@@ -233,7 +245,9 @@ function STrapGlobalObject:addAliveAnimal(character)
 
     if animal:isDead() then
         self.animal.canBeAlive = false;
-        return self:removeAnimal(character);
+        self:removeAnimalCorpse(character, animal);
+        self:clearAnimalAndChangeSprite();
+        return;
     end
 
     animal:addToWorld();
@@ -257,72 +271,107 @@ function STrapGlobalObject:addAliveAnimal(character)
     animal:removeFromSquare();
     animal:setSquare(nil);
 
-    self.animalHour = 0;
-    self.animal = {};
-    -- change the sprite of the item
-    local trapObject = self:getIsoObject();
-    if trapObject then
-        trapObject:setSprite(self.openSprite);
-        trapObject:transmitUpdatedSpriteToClients()
-        self:toObject(trapObject, true)
-    end
+    self:clearAnimalAndChangeSprite();
 end
 
 function STrapGlobalObject:removeAnimal(character)
+    local isoAnimal = nil
     if character then
         if self.animal.canBeAlive then
             return self:addAliveAnimal(character);
         end
-        if not self.animal.item then
-            return;
-        end
-        local item = instanceItem(self.animal.item)
-        -- Randomize the hunger reduction of the animal
-        local size = ZombRand(self.animal.minSize, self.animal.maxSize);
-        local xp = size / 3;
-        if xp < 3 then
-            xp = 3;
-        end
-        -- give xp only if you are the one who placed this trap);
-        if self.player == character:getUsername() then
-            addXp(character, Perks.Trapping, xp);
-        end
-
-        local typicalSize  = item:getBaseHunger() * -100;
-        local statsModifier = size / typicalSize;
-
-        -- Set the animal's stats depending on the random size
-        item:setBaseHunger(item:getBaseHunger() * statsModifier);
-        item:setHungChange(item:getHungChange() * statsModifier);
-
-        local actualWeight = item:getActualWeight() * statsModifier;
-        item:setActualWeight(actualWeight);
-        item:setWeight(actualWeight);
-        item:setCustomWeight(true);
-
-        item:setCarbohydrates(item:getCarbohydrates() * statsModifier);
-        item:setLipids(item:getLipids() * statsModifier);
-        item:setProteins(item:getProteins() * statsModifier);
-        item:setCalories(item:getCalories() * statsModifier);
-
-        if isServer() then
-            character:getInventory():AddItem(item);
-            sendAddItemToContainer(character:getInventory(), item);
-        else
-            character:getInventory():AddItem(item)
+        if self.animal.aliveAnimals ~= nil and #self.animal.aliveAnimals > 0 then
+            -- Create a dead IsoAnimal, then store it in a new Base.AnimalCorpse item.
+            local animalType = self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]
+            local breedName  = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)]
+            isoAnimal = IsoAnimal.new(getCell(), character:getX(), character:getY(), character:getZ(), animalType, breedName)
+            self:removeAnimalCorpse(character, isoAnimal)
+        elseif self.animal.item ~= nil then
+            -- There is no IsoAnimal (ex Squirrel). Create a Food item instead.
+            self:removeAnimalItem(character)
         end
     end
-    self.animalHour = 0;
-    self.animal = {};
-    -- change the sprite of the item
-    local trapObject = self:getIsoObject();
-    if trapObject then
-        trapObject:setSprite(self.openSprite);
-        trapObject:transmitUpdatedSpriteToClients()
-        self:toObject(trapObject, true)
+    self:clearAnimalAndChangeSprite();
+end
+
+function STrapGlobalObject:removeAnimalCorpse(character, isoAnimal)
+    if not character then return end
+    if not isoAnimal then return end
+
+    local wasCorpseAlready = true
+    local addToSquareAndWorld = false
+    local isoDeadBody = IsoDeadBody.new(isoAnimal, wasCorpseAlready, addToSquareAndWorld)
+    local item = isoDeadBody:getItem()
+
+    -- Randomize the hunger reduction of the animal
+    local size = ZombRand(self.animal.minSize, self.animal.maxSize);
+    local xp = size / 3;
+    if xp < 3 then
+        xp = 3;
+    end
+    -- give xp only if you are the one who placed this trap);
+    if self.player == character:getUsername() then
+        addXp(character, Perks.Trapping, xp);
+    end
+
+    -- Set the animal's stats depending on the random size
+    -- FIXME: I don't know if these are needed.
+    local typicalSize  = item:getBaseHunger() * -100;
+    local statsModifier = size / typicalSize;
+    item:setBaseHunger(item:getBaseHunger() * statsModifier);
+    item:setHungChange(item:getHungChange() * statsModifier);
+    item:setCarbohydrates(item:getCarbohydrates() * statsModifier);
+    item:setLipids(item:getLipids() * statsModifier);
+    item:setProteins(item:getProteins() * statsModifier);
+    item:setCalories(item:getCalories() * statsModifier);
+
+    if isServer() then
+        character:getInventory():AddItem(item);
+        sendAddItemToContainer(character:getInventory(), item);
+    else
+        character:getInventory():AddItem(item)
     end
 end
 
+function STrapGlobalObject:removeAnimalItem(character)
+    if not character then return end
+    if not self.animal.item then return end
+    local item = instanceItem(self.animal.item)
+    -- Randomize the hunger reduction of the animal
+    local size = ZombRand(self.animal.minSize, self.animal.maxSize);
+    local xp = size / 3;
+    if xp < 3 then
+        xp = 3;
+    end
+    -- give xp only if you are the one who placed this trap);
+    if self.player == character:getUsername() then
+        addXp(character, Perks.Trapping, xp);
+    end
+
+    local typicalSize  = item:getBaseHunger() * -100;
+    local statsModifier = size / typicalSize;
+
+    -- Set the animal's stats depending on the random size
+    item:setBaseHunger(item:getBaseHunger() * statsModifier);
+    item:setHungChange(item:getHungChange() * statsModifier);
+
+    local actualWeight = item:getActualWeight() * statsModifier;
+    item:setActualWeight(actualWeight);
+    item:setWeight(actualWeight);
+    item:setCustomWeight(true);
+
+    item:setCarbohydrates(item:getCarbohydrates() * statsModifier);
+    item:setLipids(item:getLipids() * statsModifier);
+    item:setProteins(item:getProteins() * statsModifier);
+    item:setCalories(item:getCalories() * statsModifier);
+
+    if isServer() then
+        character:getInventory():AddItem(item);
+        sendAddItemToContainer(character:getInventory(), item);
+    else
+        character:getInventory():AddItem(item)
+    end
+end
 
 function STrapGlobalObject:testForAnimal(zoneType, animalsList)
     for _, v in ipairs(TrapAnimals) do

@@ -94,6 +94,23 @@ end
 function ISMoveablesAction:update()
     if self.mode and (self.mode=="scrap" or self.mode=="repair") and self.moveProps and self.moveProps.object then
         self.character:faceThisObject(self.moveProps.object);
+        --[[ Commented out as part of the fix for disassembling TVs -Soul Filcher
+		if self.deviceData then
+			-- Turn off TV. Fix for SPIF-3373. Also probably good safety practice lol
+			local tv = self.deviceData
+			if tv:getIsTurnedOn() then
+				print("DEBUG: Turning the TV Off.")
+				tv:setIsTurnedOn(false)
+			end
+			local ui = UIManager.getUI()
+			for i=0, ui:size()-1 do
+				local element = ui:get(i)
+				if element:getUIName() == "ISRadioWindow" then
+					print("DEBUG: ISRadioWindow element removed.")
+					UIManager.RemoveElement(element)
+				end
+			end
+		end ]]--
     else
         self.character:faceLocation(self.square:getX(), self.square:getY());
     end
@@ -126,7 +143,7 @@ function ISMoveablesAction:start()
             self.moveProps.object:setHighlightColor(self.playerNum, hc);
             self.moveProps.object:setHighlighted(self.playerNum, true, false);
             ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, true)
-        end;
+        end
         local isFloor = self.moveProps and self.moveProps.object and self.moveProps.object:isFloor()
         if self.moveProps and self.mode=="scrap" and self.moveProps:startScrapAction(self) then
             -- Hack for scrapping curtains
@@ -144,13 +161,18 @@ function ISMoveablesAction:start()
     if self.moveCursor then
         self.moveCursor:clearCache()
     end
-
 end
 
 function ISMoveablesAction:stop()
     if self.mode and self.mode=="scrap" then
 		self.moveProps.object:setHighlighted(self.playerNum, false);
 		ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, false)
+		if self.deviceData then
+            local device = self.deviceData;
+            if device:getIsTurnedOn() then
+                device:setIsTurnedOn(false);
+            end
+        end
 	end
     if self.sound and self.sound ~= 0 then
         self.character:stopOrTriggerSound(self.sound);
@@ -246,6 +268,9 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
                     end;
                 end;
             end;
+			if instanceof(o.moveProps.object, "WaveSignalDevice") and o.moveProps.object:getDeviceData() then
+				o.deviceData = o.moveProps.object:getDeviceData()
+			end
         end
     end
     if (o.mode == "repair") then

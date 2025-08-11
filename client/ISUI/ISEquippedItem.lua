@@ -42,29 +42,29 @@ function ISEquippedItem:prerender()
 	if self.inventory ~= nil and self.inventory:getIsVisible() then
 		self.invBtn:setImage(self.inventoryTextureOn);
 	else
-		self.invBtn:setImage(self.inventoryTexture);
+		self.invBtn:setImage(self.inventoryTextureOff);
     end
     if getPlayerZoneUI(0) and getPlayerZoneUI(0):getIsVisible() then
         self.zoneBtn:setImage(self.zoneIconOn);
     else
-        self.zoneBtn:setImage(self.zoneIcon);
+        self.zoneBtn:setImage(self.zoneIconOff);
     end
     if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance then
         self.craftingBtn:setImage(self.craftingIconOn);
     else
-        self.craftingBtn:setImage(self.craftingIcon);
+        self.craftingBtn:setImage(self.craftingIconOff);
     end
 
     if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance then
         self.buildBtn:setImage(self.moveableIconBuildOn);
     else
-        self.buildBtn:setImage(self.moveableIconBuild);
+        self.buildBtn:setImage(self.moveableIconBuildOff);
     end
 
     if getPlayerInfoPanel(0) and getPlayerInfoPanel(0):getIsVisible() then
         self.healthBtn:setImage(self.heartIconOn);
     else
-        self.healthBtn:setImage(self.heartIcon);
+        self.healthBtn:setImage(self.heartIconOff);
     end
 
     if self.movableBtn:isMouseOver() then
@@ -100,7 +100,7 @@ function ISEquippedItem:prerender()
         if ISSearchManager.players[self.chr] and ISSearchManager.players[self.chr].isSearchMode then
             self.searchBtn:setImage(self.searchIconOn);
         else
-            self.searchBtn:setImage(self.searchIcon);
+            self.searchBtn:setImage(self.searchIconOff);
         end;
     end;
     ----
@@ -124,7 +124,7 @@ function ISEquippedItem:prerender()
         if ISDebugMenu.instance then
             self.debugBtn:setImage(self.debugIconOn);
         else
-            self.debugBtn:setImage(self.debugIcon);
+            self.debugBtn:setImage(self.debugIconOff);
         end
     end
     
@@ -132,7 +132,7 @@ function ISEquippedItem:prerender()
         if ISUserPanelUI.instance then
             self.clientBtn:setImage(self.clientIconOn);
         else
-            self.clientBtn:setImage(self.clientIcon);
+            self.clientBtn:setImage(self.clientIconOff);
         end
     end
     
@@ -148,7 +148,7 @@ function ISEquippedItem:prerender()
         if ISAdminPanelUI.instance then
             self.adminBtn:setImage(self.adminIconOn)
         else
-            self.adminBtn:setImage(self.adminIcon)
+            self.adminBtn:setImage(self.adminIconOff)
         end
     end
 
@@ -171,19 +171,20 @@ function ISEquippedItem:prerender()
             if war:getState():name() == "Claimed" then
                 self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
                 self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small)
-                self.warManagerBtn:setImage(self.warInactive)
+                self.warManagerBtn:setImage(self.warIconOff)
             end
 
             if war:getState():name() == "Accepted" then
                 self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
                 self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1,UIFont.Small)
+                -- TODO - make war button flash off and on when war is about to start
                 self.warManagerBtn:setImage(self.warSoon)
             end
 
             if war:getState():name() == "Started" then
                 self:drawTexture(self.lockTexture, warX + UI_BORDER_SPACING, warY + UI_BORDER_SPACING, 1,1,1,1)
                 self:drawText(tostring(war:getTime()), warX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, warY + UI_BORDER_SPACING, 1,1,1,1,UIFont.Small)
-                self.warManagerBtn:setImage(self.warActive)
+                self.warManagerBtn:setImage(self.warIconOn)
             end
         else
             self.warManagerBtn:setVisible(false)
@@ -221,11 +222,11 @@ function ISEquippedItem:prerender()
                     self.radialIcon:setValue(self.safety:getToggle() / toggleTimeMax);
 
                     if self.safety:isEnabled() then
-                        self.radialIcon:setTexture(self.offTexture);
-                        self.safetyBtn:setImage(self.onTexture);
+                        self.radialIcon:setTexture(self.safetyOff);
+                        self.safetyBtn:setImage(self.safetyOn);
                     else
-                        self.radialIcon:setTexture(self.onTexture);
-                        self.safetyBtn:setImage(self.offTexture);
+                        self.radialIcon:setTexture(self.safetyOn);
+                        self.safetyBtn:setImage(self.safetyOff);
                     end
 
                     self:drawText(tostring(math.ceil(self.safety:getToggle())), safetyX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
@@ -236,11 +237,11 @@ function ISEquippedItem:prerender()
                     self.radialIcon:setValue(1 - self.safety:getCooldown() / cooldownTimerMax);
 
                     if self.safety:isEnabled() then
-                        self.radialIcon:setTexture(self.onTexture);
-                        self.safetyBtn:setImage(self.onTexture);
+                        self.radialIcon:setTexture(self.safetyOn);
+                        self.safetyBtn:setImage(self.safetyOn);
                     else
-                        self.radialIcon:setTexture(self.offTexture);
-                        self.safetyBtn:setImage(self.offTexture);
+                        self.radialIcon:setTexture(self.safetyOff);
+                        self.safetyBtn:setImage(self.safetyOff);
                     end
 
                     self:drawText(tostring(math.ceil(self.safety:getCooldown())), safetyX + self.lockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
@@ -248,9 +249,9 @@ function ISEquippedItem:prerender()
                 end
             elseif not isNonPvpZone then
                 if self.safety:isEnabled() then
-                    self.safetyBtn:setImage(self.onTexture);
+                    self.safetyBtn:setImage(self.safetyOn);
                 else
-                    self.safetyBtn:setImage(self.offTexture);
+                    self.safetyBtn:setImage(self.safetyOff);
                 end
             end
         end
@@ -627,19 +628,19 @@ function ISEquippedItem:new (x, y, width, height, chr)
 	o.handMainTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/HandMain_Off_" .. TEXTURE_WIDTH .. ".png");
 	o.HandSecondaryTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/HandSecondary_Off_" .. TEXTURE_WIDTH .. ".png");
     --inventory
-	o.inventoryTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_Off_" .. TEXTURE_WIDTH .. ".png");
-	o.inventoryTextureOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_On_" .. TEXTURE_WIDTH .. ".png");
+    o.inventoryTextureOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_On_" .. TEXTURE_WIDTH .. ".png");
+	o.inventoryTextureOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Inventory_Off_" .. TEXTURE_WIDTH .. ".png");
     --health
-    o.heartIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Heart_Off_" .. TEXTURE_WIDTH .. ".png");
     o.heartIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Heart_On_" .. TEXTURE_WIDTH .. ".png");
+    o.heartIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Heart_Off_" .. TEXTURE_WIDTH .. ".png");
     --crafting
-    o.craftingIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Carpentry_Off_" .. TEXTURE_WIDTH .. ".png");
     o.craftingIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Carpentry_On_" .. TEXTURE_WIDTH .. ".png");
+    o.craftingIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Carpentry_Off_" .. TEXTURE_WIDTH .. ".png");
     --building
-    o.moveableIconBuild = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Build_Off_" .. TEXTURE_WIDTH .. ".png");
     o.moveableIconBuildOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Build_On_" .. TEXTURE_WIDTH .. ".png");
-    --move furniture
-    o.movableIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_On_" .. TEXTURE_WIDTH .. ".png");
+    o.moveableIconBuildOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Build_Off_" .. TEXTURE_WIDTH .. ".png");
+    --movable
+    o.movableIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_On_" .. TEXTURE_WIDTH .. ".png");
     o.movableIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Off_" .. TEXTURE_WIDTH .. ".png");
     o.movableIconPickup = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Pickup_" .. TEXTURE_WIDTH .. ".png");
     o.movableIconPlace = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Place_" .. TEXTURE_WIDTH .. ".png");
@@ -647,29 +648,32 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.movableIconScrap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Disassemble_" .. TEXTURE_WIDTH .. ".png");
     o.moveableIconRepair = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Furniture_Repair_" .. TEXTURE_WIDTH .. ".png");
     --investigate area
-    o.searchIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Search_Off_" .. TEXTURE_WIDTH .. ".png");
     o.searchIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Search_On_" .. TEXTURE_WIDTH .. ".png");
+    o.searchIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Search_Off_" .. TEXTURE_WIDTH .. ".png");
     --designated zones
-    o.zoneIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_Off_" .. TEXTURE_WIDTH .. ".png");
     o.zoneIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png");
+    o.zoneIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_Off_" .. TEXTURE_WIDTH .. ".png");
     --map
-    o.mapIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_Off_" .. TEXTURE_WIDTH .. ".png");
     o.mapIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png");
+    o.mapIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_Off_" .. TEXTURE_WIDTH .. ".png");
     --debug
-    o.debugIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_Off_" .. TEXTURE_WIDTH .. ".png");
     o.debugIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_On_" .. TEXTURE_WIDTH .. ".png");
-
-    o.clientIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.debugIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_Off_" .. TEXTURE_WIDTH .. ".png");
+    --client
     o.clientIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_On_" .. TEXTURE_WIDTH .. ".png");
-    o.adminIcon = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Admin_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.clientIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    --admin
     o.adminIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Admin_Icon_On_" .. TEXTURE_WIDTH .. ".png");
-    o.warActive = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Inactive_" .. TEXTURE_WIDTH .. ".png");
-    o.warInactive = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Active_" .. TEXTURE_WIDTH .. ".png");
+    o.adminIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Admin_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    --war
+    o.warIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Icon_On_" .. TEXTURE_WIDTH .. ".png");
+    o.warIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
+    --safety
+    o.safetyOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_On_" .. TEXTURE_WIDTH .. ".png");
+    o.safetyOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_Off_" .. TEXTURE_WIDTH .. ".png");
+
     o.warSoon = getTexture("media/ui/war_soon.png");
     o.lockTexture = getTexture("media/ui/pvpicon_clock.png");
-
-    o.offTexture = getTexture("media/ui/pvpicon_on.png"); --getTexture("media/ui/SafetyOFF.png");
-    o.onTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyON.png");
     o.disableTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyDISABLE.png");
     o.healthIconOscillatorLevel = 0.0;
     o.healthIconOscillator = 0.0;
@@ -741,7 +745,7 @@ function ISEquippedItem:initialise()
 
         -- inv btn
         self.invBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.invBtn:setImage(self.inventoryTexture);
+        self.invBtn:setImage(self.inventoryTextureOff);
         self.invBtn.internal = "INVENTORY";
         self.invBtn:initialise();
         self.invBtn:instantiate();
@@ -755,7 +759,7 @@ function ISEquippedItem:initialise()
 
         -- health btn
         self.healthBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.healthBtn:setImage(self.heartIcon);
+        self.healthBtn:setImage(self.heartIconOff);
         self.healthBtn.internal = "HEALTH";
         self.healthBtn:initialise();
         self.healthBtn:instantiate();
@@ -769,7 +773,7 @@ function ISEquippedItem:initialise()
 
         -- crafting button
         self.craftingBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.craftingBtn:setImage(self.craftingIcon);
+        self.craftingBtn:setImage(self.craftingIconOff);
         self.craftingBtn.internal = "CRAFTING";
         self.craftingBtn:initialise();
         self.craftingBtn:instantiate();
@@ -783,7 +787,7 @@ function ISEquippedItem:initialise()
 
         -- building button
         self.buildBtn = ISButton:new(5, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.buildBtn:setImage(self.moveableIconBuild);
+        self.buildBtn:setImage(self.moveableIconBuildOff);
         self.buildBtn.internal = "BUILD";
         self.buildBtn:initialise();
         self.buildBtn:instantiate();
@@ -797,7 +801,7 @@ function ISEquippedItem:initialise()
 
         -- moveable button
         self.movableBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_WIDTH, "", self, ISEquippedItem.onOptionMouseDown);
-        self.movableBtn:setImage(self.movableIcon);
+        self.movableBtn:setImage(self.movableIconOn);
         self.movableBtn.internal = "MOVABLE";
         self.movableBtn:initialise();
         self.movableBtn:instantiate();
@@ -820,7 +824,7 @@ function ISEquippedItem:initialise()
 
         -- search button
         self.searchBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.searchBtn:setImage(self.searchIcon);
+        self.searchBtn:setImage(self.searchIconOff);
         self.searchBtn.internal = "SEARCH";
         self.searchBtn:initialise();
         self.searchBtn:instantiate();
@@ -834,7 +838,7 @@ function ISEquippedItem:initialise()
 
         -- animal zone button
         self.zoneBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-        self.zoneBtn:setImage(self.zoneIcon);
+        self.zoneBtn:setImage(self.zoneIconOff);
         self.zoneBtn.internal = "ZONE";
         self.zoneBtn:initialise();
         self.zoneBtn:instantiate();
@@ -869,7 +873,7 @@ function ISEquippedItem:initialise()
 
         if getCore():getDebug() or (ISDebugMenu.forceEnable and not isClient()) then
             self.debugBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-            self.debugBtn:setImage(self.debugIcon);
+            self.debugBtn:setImage(self.debugIconOff);
             self.debugBtn.internal = "DEBUG";
             self.debugBtn:initialise();
             self.debugBtn:instantiate();
@@ -881,7 +885,7 @@ function ISEquippedItem:initialise()
             self:addMouseOverToolTipItem(self.debugBtn, getText("IGUI_DebugMenu"));
 
             self:setHeight(self.debugBtn:getBottom())
-            y = self.debugBtn:getY() + self.debugIcon:getHeightOrig() + 5
+            y = self.debugBtn:getY() + self.debugIconOff:getHeightOrig() + 5
         elseif self.mapBtn then
             self:setHeight(self.mapBtn:getBottom());
         elseif self.searchBtn then
@@ -911,7 +915,7 @@ function ISEquippedItem:initialise()
         end
         if isClient() then
             self.clientBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-            self.clientBtn:setImage(self.clientIcon);
+            self.clientBtn:setImage(self.clientIconOff);
             self.clientBtn.internal = "USERPANEL";
             self.clientBtn:initialise();
             self.clientBtn:instantiate();
@@ -922,10 +926,10 @@ function ISEquippedItem:initialise()
             self:addChild(self.clientBtn);
     
             self:setHeight(self.clientBtn:getBottom())
-            y = y + self.clientIcon:getHeightOrig() + 5
+            y = y + self.clientIconOff:getHeightOrig() + 5
 
             self.adminBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-            self.adminBtn:setImage(self.adminIcon);
+            self.adminBtn:setImage(self.adminIconOff);
             self.adminBtn.internal = "ADMINPANEL";
             self.adminBtn:initialise();
             self.adminBtn:instantiate();
@@ -936,12 +940,10 @@ function ISEquippedItem:initialise()
             self:addChild(self.adminBtn);
 
             self:setHeight(self.adminBtn:getBottom())
-            y = y + self.adminIcon:getHeightOrig() + 5
+            y = y + self.adminIconOff:getHeightOrig() + 5
 
-            self.warManagerBtnX = 5
-            self.warManagerBtnY = y
             self.warManagerBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
-            self.warManagerBtn:setImage(self.warSoon);
+            self.warManagerBtn:setImage(self.warIconOff);
             self.warManagerBtn.internal = "WARMANAGERPANEL";
             self.warManagerBtn:initialise();
             self.warManagerBtn:instantiate();
@@ -952,7 +954,7 @@ function ISEquippedItem:initialise()
             self:addChild(self.warManagerBtn);
 
             self:setHeight(self.warManagerBtn:getBottom())
-            y = self.warManagerBtn:getY() + self.warActive:getHeightOrig() + 5
+            y = self.warManagerBtn:getY() + self.warIconOn:getHeightOrig() + 5
         end
     end
 
@@ -1090,7 +1092,7 @@ function ISMoveablesIconPopup:render()
 
     local x = 0
     local y = 0
-    local tex = self.owner.movableIcon
+    local tex = self.owner.movableIconOn
     self:drawTexture(tex, x, y+((TEXTURE_WIDTH-TEXTURE_HEIGHT)/2), 1, 1, 1, 1)
 
     if mode == "pickup" then

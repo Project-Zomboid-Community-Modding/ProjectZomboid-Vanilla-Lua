@@ -22,16 +22,19 @@ function WorldMapEditorMode_Streets:createChildren()
 	local buttonPadding = UI_BORDER_SPACING*2
 	local button = ISButton:new(UI_BORDER_SPACING, UI_BORDER_SPACING*2+BUTTON_HGT, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_CreateStreet"), self, self.onCreateStreet)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
-	self:addChild(button)
+    button.tooltip = getText("IGUI_WorldMapEditor_CreateStreet_tt")
+    self:addChild(button)
 	self.buttonCreateStreet = button
 
 	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_EditStreet"), self, self.onSelectStreet)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
+	button.tooltip = getText("IGUI_WorldMapEditor_EditStreet_tt")
 	self:addChild(button)
 	self.buttonEditStreet = button
 
 	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_RemoveStreet"), self, self.onRemoveStreet)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
+	button.tooltip = getText("IGUI_WorldMapEditor_RemoveStreet_tt")
 	self:addChild(button)
 	self.buttonRemoveStreet = button
 
@@ -64,6 +67,7 @@ function WorldMapEditorMode_Streets:createChildren()
 
 	button = ISButton:new(UI_BORDER_SPACING, self.mapDirList:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SaveStreets"), self, self.onSaveStreets)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
+	button.tooltip = getText("IGUI_WorldMapEditor_SaveStreets_tt")
 	self:addChild(button)
 end
 
@@ -152,7 +156,11 @@ function WorldMapEditorMode_Streets:renderStreetPoints(street)
         local uiX = self.mapAPI:worldToUIX(worldX, worldY)
         local uiY = self.mapAPI:worldToUIY(worldX, worldY)
         if i-1 == self:pickStreetPoint(street, mx, my) then
-            self.editor:drawRect(uiX - 5, uiY - 5, 10, 10, 1.0, 0.0, 255/255, 244/255)
+            if isCtrlKeyDown() and (i > 1) and (i < street:getNumPoints()) then
+                self.editor:drawRect(uiX - 5, uiY - 5, 10, 10, 1.0, 1.0, 0.0, 0.0) -- split street
+            else
+                self.editor:drawRect(uiX - 5, uiY - 5, 10, 10, 1.0, 0.0, 255/255, 244/255)
+            end
         elseif i==1 then
             self.editor:drawRect(uiX - 5, uiY - 5, 10, 10, 1.0, 0.0, 0.0, 1.0)
         else
@@ -326,7 +334,9 @@ end
 function WorldMapEditorMode_Streets:onRightMouseDown(x, y)
 	if self.mode == "Create" then
 		if self.editorStreet then
-            self.editorAPI:addStreet(self.editorStreet)
+            if self.editorStreet:getNumPoints() > 1 then
+                self.editorAPI:addStreet(self.editorStreet)
+            end
             self.editorStreet = nil
         end
 		return true

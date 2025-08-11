@@ -38,6 +38,24 @@ function StashUtil:addStamp(symbol,text,mapX,mapY,r,g,b)
     table.insert(self.annotations, annotation);
 end
 
+function StashUtil:addStampV2(symbol,text,mapX,mapY,anchorX,anchorY,rotation,r,g,b)
+    if not self.annotations then
+        self.annotations = {};
+    end
+    local annotation = {};
+    annotation.symbol = symbol;
+    annotation.text = text;
+    annotation.x = mapX;
+    annotation.y = mapY;
+    annotation.anchorX = anchorX;
+    annotation.anchorY = anchorY;
+    annotation.rotation = rotation;
+    annotation.r = r;
+    annotation.g = g;
+    annotation.b = b;
+    table.insert(self.annotations, annotation);
+end
+
 function StashUtil:addContainer(containerType,containerSprite,containerItem,room,x,y,z)
     if not self.containers then
         self.containers = {};

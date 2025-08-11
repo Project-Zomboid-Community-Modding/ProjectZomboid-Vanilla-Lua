@@ -222,7 +222,7 @@ function WorldMapEditorMode_Stashes:onLoadStash()
 				symbol:setScale(ISMap.SCALE)
 			end
 			if annotation.text then
-				local symbol = self.symbolsAPI:addUntranslatedText(annotation.text, UIFont.Handwritten, annotation.x, annotation.y)
+				local symbol = self.symbolsAPI:addUntranslatedText(annotation.text, self.symbolsAPI:getDefaultLayerID(), annotation.x, annotation.y)
 				symbol:setRGBA(annotation.r, annotation.g, annotation.b, 1.0)
 				symbol:setAnchor(0.0, 0.0)
 				symbol:setScale(ISMap.SCALE)

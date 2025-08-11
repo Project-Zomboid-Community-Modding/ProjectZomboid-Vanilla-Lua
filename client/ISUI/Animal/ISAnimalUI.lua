@@ -11,6 +11,7 @@ require "ISUI/ISUI3DModel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+local UI_BORDER_SPACING = 10
 
 ISAnimalUI = ISCollapsableWindowJoypad:derive("ISAnimalUI");
 ISAnimalUI.maxDist = 5;
@@ -205,7 +206,7 @@ function ISAnimalUI:render()
     y = y + FONT_HGT_SMALL + 4;
 
     if self.animal:attackOtherMales() then
-        self:drawTextRight(getText("IGUI_Animal_AttackOtherMales"), self.xOffset, y, 1,0.2,0.2,1, UIFont.Small);
+        self:drawTextCentre(getText("IGUI_Animal_AttackOtherMales"), self.width / 2, y, 1,0.2,0.2,1, UIFont.Small);
         y = y + FONT_HGT_SMALL + 4;
     end
 
@@ -412,7 +413,7 @@ end
 function ISAnimalUI:create()
 
     self.avatarX = 25
-    self.avatarY = 25
+    self.avatarY = self:titleBarHeight() + UI_BORDER_SPACING
     self.avatarWidth = self.avatarDefinition.avatarWidth or 128;
     self.avatarHeight = self.avatarDefinition.avatarHeight or 128
     self.avatarPanel = ISCharacterScreenAvatar:new(self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight)

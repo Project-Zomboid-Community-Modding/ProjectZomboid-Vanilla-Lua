@@ -61,6 +61,7 @@ end
 
 function ISPlaceCarBatteryChargerAction:new(character, charger)
 	local o = ISBaseTimedAction.new(self, character)
+	o.character = character
 	o.maxTime = o:getDuration()
 	o.charger = charger
 	return o

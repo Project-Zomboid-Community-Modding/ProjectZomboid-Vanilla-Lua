@@ -29,6 +29,9 @@ end
 function Fishing.States.None:stop()
 end
 
+function Fishing.States.None:destroy()
+end
+
 Fishing.States.Idle = {}
 function Fishing.States.Idle:new(manager)
     local o = {}
@@ -67,6 +70,9 @@ end
 function Fishing.States.Idle:stop()
 end
 
+function Fishing.States.Idle:destroy()
+end
+
 
 
 Fishing.States.Cast = {}
@@ -95,6 +101,12 @@ end
 
 function Fishing.States.Cast:stop()
     self.manager.player:stopOrTriggerSound(self.sound)
+end
+
+function Fishing.States.Cast:destroy()
+    if self.sound ~= nil then
+        self.manager.player:stopOrTriggerSound(self.sound)
+    end
 end
 
 
@@ -148,6 +160,14 @@ end
 function Fishing.States.Wait:stop()
     if self.sound ~= nil then
         self.manager.player:stopOrTriggerSound(self.sound)
+        self.reelSoundStarted = false
+    end
+end
+
+function Fishing.States.Wait:destroy()
+    if self.sound ~= nil then
+        self.manager.player:stopOrTriggerSound(self.sound)
+        self.sound = nil
         self.reelSoundStarted = false
     end
 end
@@ -206,7 +226,17 @@ function Fishing.States.ReelIn:update()
 end
 
 function Fishing.States.ReelIn:stop()
-    self.manager.player:stopOrTriggerSound(self.sound)
+    if self.sound ~= nil then
+        self.manager.player:stopOrTriggerSound(self.sound)
+        self.sound = nil
+    end
+end
+
+function Fishing.States.ReelIn:destroy()
+    if self.sound ~= nil then
+        self.manager.player:stopOrTriggerSound(self.sound)
+        self.sound = nil
+    end
 end
 
 
@@ -251,6 +281,9 @@ end
 function Fishing.States.ReelOut:stop()
 end
 
+function Fishing.States.ReelOut:destroy()
+end
+
 
 
 Fishing.States.PickupFish = {}
@@ -289,4 +322,7 @@ function Fishing.States.PickupFish:update()
 end
 
 function Fishing.States.PickupFish:stop()
+end
+
+function Fishing.States.PickupFish:destroy()
 end

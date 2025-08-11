@@ -81,17 +81,20 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
         local craftRecipe = _recipe;
         if craftRecipe and craftRecipe:getIconTexture() then
             local a,r,g,b = 1.0,1.0,1.0,1.0;
-            local info = self.logic:getCachedRecipeInfo(craftRecipe); -- self:getRecipeDrawData(_recipe);
-            if info and (not info:isValid()) then
-                r = 0.3;
-                g = 0.25;
-                b = 0.25;
-                a = 0.5;
-            elseif info and (not info:isCanPerform()) then
-                r = 0.5;
-                g = 0.5;
-                b = 0.5;
+            if instanceof(self.logic, "BaseCraftingLogic") then
+                local info = self.logic:getCachedRecipeInfo(craftRecipe); -- self:getRecipeDrawData(_recipe);
+                if info and (not info:isValid()) then
+                    r = 0.3;
+                    g = 0.25;
+                    b = 0.25;
+                    a = 0.5;
+                elseif info and (not info:isCanPerform()) then
+                    r = 0.5;
+                    g = 0.5;
+                    b = 0.5;
+                end
             end
+            
             _self:drawTextureScaledAspect(craftRecipe:getIconTexture(), _x, _y, _width, _height,  a, r, g, b);
 
             -- favourite button
@@ -293,7 +296,11 @@ function ISWidgetRecipesPanel:new(x, y, width, height, player, craftBench, isoOb
     setmetatable(o, self)
     self.__index = self
 
-    o.tooltipLogic = HandcraftLogic.new(player, craftBench, isoObject);
+    if instanceof(craftBench, "CraftBench") then
+        o.tooltipLogic = HandcraftLogic.new(player, craftBench, isoObject);
+    else
+        o.tooltipLogic = HandcraftLogic.new(player, null, isoObject);
+    end
     o.player = player;
     o.logic = logic;
     o.callbackTarget = callbackTarget;

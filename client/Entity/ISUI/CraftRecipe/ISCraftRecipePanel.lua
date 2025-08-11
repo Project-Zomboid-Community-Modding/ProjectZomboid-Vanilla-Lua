@@ -36,9 +36,7 @@ function ISCraftRecipePanel:createChildren()
 
     self:addChild(self.overlayPanel);
 
-    if self.recipe then
-        self:createDynamicChildren();
-    end
+    self:createDynamicChildren();
 end
 
 function ISCraftRecipePanel:createDynamicChildren()
@@ -118,14 +116,18 @@ function ISCraftRecipePanel:calculateLayout(_preferredWidth, _preferredHeight)
         self.rootTable:setY(0);
         self.rootTable:calculateLayout(width, height);
 
-        self.titleWidget:setY(0);
+        if self.titleWidget then
+            self.titleWidget:setY(0);
+        end
 
         width = math.max(width, self.rootTable:getWidth());
         height = math.max(height, self.rootTable:getHeight());
     end
 
-    self.overlayPanel:setWidth(width);
-    self.overlayPanel:setHeight(height);
+    if self.overlayPanel then
+        self.overlayPanel:setWidth(width);
+        self.overlayPanel:setHeight(height);
+    end
 
     --print(width)
     self:setWidth(width);

@@ -76,7 +76,16 @@ function ISPlace3DItemCursor:isValid(square)
     if not luautils.walkAdjTest(self.chr, square) then
         return false
     end
-	if square:getTotalWeightOfItemsOnFloor() >= 50 then
+    local totalWeight = 0
+    if self.placeAll then
+        for _,item in ipairs(self.items) do
+            totalWeight = totalWeight + item:getUnequippedWeight()
+        end
+    else
+        local item = self.items[1]
+        totalWeight = totalWeight + item:getUnequippedWeight()
+    end
+	if square:getTotalWeightOfItemsOnFloor() + totalWeight >= 50 then
 		return false
 	end
     if not square:isCouldSee(self.chr:getPlayerNum()) then

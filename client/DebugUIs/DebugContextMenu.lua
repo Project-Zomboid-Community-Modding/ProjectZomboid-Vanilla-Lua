@@ -1191,7 +1191,7 @@ DebugContextMenu.addRZSDebugMenu = function(context, square, playerObj)
 		return;
 	end
     -- Fixed for using the debug zone spawning story on fences inappropriately
-    if square:hasFenceInVicinty()  then
+    if square:hasFenceInVicinity()  then
 	    local mainOption = context:addOption(getText("IGUI_DebugContext_RandomizedZoneStoryFenceVicinity"), nil, nil);
         mainOption.notAvailable = true;
 	    return;

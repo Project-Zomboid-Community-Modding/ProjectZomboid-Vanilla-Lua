@@ -1038,6 +1038,22 @@ function CharacterCreationMain:createClothingComboDebug(bodyLocation)
 	
 	local comboTexture = ISComboBox:new(combo:getRight() + UI_BORDER_SPACING, self.yOffset, self.clothingTextureComboWidth, BUTTON_HGT, self, self.onClothingTextureComboSelected, bodyLocation)
 	comboTexture:initialise()
+	comboTexture.pointOnItem = function(_self, _index)
+        if _self.lastIndex ~= _index then
+            local textureName = _self:getOptionData(_index)
+            local bodyLocation = _self.onChangeArgs[1]
+            local item = MainScreen.instance.desc:getWornItem(bodyLocation)
+            if textureName and item then
+                if item:getClothingItem():hasModel() then
+                    item:getVisual():setTextureChoice(_index - 1)
+                else
+                    item:getVisual():setBaseTexture(_index - 1)
+                end
+            end
+            _self.parent.parent.avatarPanel:setSurvivorDesc(MainScreen.instance.desc)
+            _self.lastIndex = _index
+        end
+    end
 	self.clothingPanel:addChild(comboTexture)
 	
 	self.clothingComboLabel = self.clothingComboLabel or {};
@@ -1233,6 +1249,22 @@ function CharacterCreationMain:createClothingCombo(bodyLocation)
 	
 	local comboTexture = ISComboBox:new(combo:getRight() + UI_BORDER_SPACING, self.yOffset, self.clothingTextureComboWidth, BUTTON_HGT, self, self.onClothingTextureComboSelected, bodyLocation)
 	comboTexture:initialise()
+	comboTexture.pointOnItem = function(_self, _index)
+        if _self.lastIndex ~= _index then
+            local textureName = _self:getOptionData(_index)
+            local bodyLocation = _self.onChangeArgs[1]
+            local item = MainScreen.instance.desc:getWornItem(bodyLocation)
+            if textureName and item then
+                if item:getClothingItem():hasModel() then
+                    item:getVisual():setTextureChoice(_index - 1)
+                else
+                    item:getVisual():setBaseTexture(_index - 1)
+                end
+            end
+            _self.parent.parent.avatarPanel:setSurvivorDesc(MainScreen.instance.desc)
+            _self.lastIndex = _index
+        end
+    end
 	self.clothingPanel:addChild(comboTexture)
 	
 	self.clothingCombo = self.clothingCombo or {}
@@ -1269,9 +1301,7 @@ function CharacterCreationMain:arrangeClothingUI()
 	self.comboWid = math.min(300, self.clothingPanel.width - (maxLabelWidth + UI_BORDER_SPACING + UI_BORDER_SPACING + self.clothingTextureComboWidth + scrollBarW))
 	self.comboWid = math.max(self.comboWid, 50)
 	local totalWidth = maxLabelWidth + UI_BORDER_SPACING + self.comboWid + UI_BORDER_SPACING + self.clothingTextureComboWidth
-	--	local labelRight = math.max(UI_BORDER_SPACING + maxLabelWidth, (self.clothingPanel.width - totalWidth) / 2)
 	local labelRight = maxLabelWidth
-
 
 	local nonComboWidth = self.clothingPanel.width - labelRight - UI_BORDER_SPACING - scrollBarOffset
 
@@ -1282,28 +1312,46 @@ function CharacterCreationMain:arrangeClothingUI()
 		self.randomizeOutfitBtn:setX(self.outfitCombo:getRight() + UI_BORDER_SPACING)
 	end
 
+    self.labelRight = labelRight
+    self.nonComboWidth = nonComboWidth
 	for bodyLocation,combo in pairs(self.clothingCombo) do
-		local label = self.clothingComboLabel[bodyLocation]
-		label:setX(labelRight - label.width)
-		combo:setWidth(self.comboWid)
-		combo:setX(labelRight + UI_BORDER_SPACING)
-
-		local rightSideElements = 0
-		if self.clothingColorBtn[bodyLocation]:isVisible() then
-			rightSideElements = self.clothingColorBtn[bodyLocation]:getWidth() + UI_BORDER_SPACING
-		elseif self.clothingTextureCombo[bodyLocation]:isVisible() then
-			rightSideElements = self.clothingTextureCombo[bodyLocation]:getWidth() + UI_BORDER_SPACING
-		elseif self.outfitLbl == label and self.randomizeOutfitBtn then
-			rightSideElements = self.randomizeOutfitBtn:getWidth() + UI_BORDER_SPACING
-		end
-
-		combo:setWidth(math.min(300, nonComboWidth - rightSideElements))
-		self.clothingColorBtn[bodyLocation]:setX(combo:getRight() + UI_BORDER_SPACING)
-		self.clothingTextureCombo[bodyLocation]:setX(combo:getRight() + UI_BORDER_SPACING)
-		if self.clothingDecalCombo and self.clothingDecalCombo[bodyLocation] then
-			self.clothingDecalCombo[bodyLocation]:setX(combo:getRight() + UI_BORDER_SPACING)
-		end
+        self:arrangeClothingRightSideElements(bodyLocation)
 	end
+end
+
+function CharacterCreationMain:arrangeClothingRightSideElements(bodyLocation)
+    if not self.labelRight then return end
+    local label = self.clothingComboLabel[bodyLocation]
+    local combo = self.clothingCombo[bodyLocation]
+    local labelRight = self.labelRight
+    local nonComboWidth = self.nonComboWidth
+    label:setX(labelRight - label.width)
+    combo:setWidth(self.comboWid)
+    combo:setX(labelRight + UI_BORDER_SPACING)
+
+    local rightSideElements = 0
+    if self.clothingColorBtn[bodyLocation]:isVisible() then
+        rightSideElements = self.clothingColorBtn[bodyLocation]:getWidth() + UI_BORDER_SPACING
+    end
+    if self.clothingTextureCombo[bodyLocation]:isVisible() then
+        rightSideElements = rightSideElements + self.clothingTextureCombo[bodyLocation]:getWidth() + UI_BORDER_SPACING
+    elseif self.outfitLbl == label and self.randomizeOutfitBtn then
+        rightSideElements = self.randomizeOutfitBtn:getWidth() + UI_BORDER_SPACING
+    end
+
+    combo:setWidth(math.min(300, nonComboWidth - rightSideElements))
+    local rightOf = combo
+    if self.clothingColorBtn[bodyLocation]:isVisible() then
+        self.clothingColorBtn[bodyLocation]:setX(rightOf:getRight() + UI_BORDER_SPACING)
+        rightOf = self.clothingColorBtn[bodyLocation]
+    end
+    if self.clothingTextureCombo[bodyLocation]:isVisible() then
+        self.clothingTextureCombo[bodyLocation]:setX(rightOf:getRight() + UI_BORDER_SPACING)
+        rightOf = self.clothingTextureCombo[bodyLocation]
+    end
+    if self.clothingDecalCombo and self.clothingDecalCombo[bodyLocation] then
+        self.clothingDecalCombo[bodyLocation]:setX(rightOf:getRight() + UI_BORDER_SPACING)
+    end
 end
 
 function CharacterCreationMain:debugClothingDefinitions()
@@ -1529,6 +1577,7 @@ function CharacterCreationMain:updateColorButton(bodyLocation, clothing)
 		local color = clothing:getVisual():getTint(clothing:getClothingItem())
 		self.clothingColorBtn[bodyLocation].backgroundColor = {r = color:getRedFloat(), g = color:getGreenFloat(), b = color:getBlueFloat(), a = 1}
 	end
+    self:arrangeClothingRightSideElements(bodyLocation)
 end
 
 function CharacterCreationMain:updateClothingTextureCombo(bodyLocation, clothing)
@@ -1549,6 +1598,7 @@ function CharacterCreationMain:updateClothingTextureCombo(bodyLocation, clothing
 			end
 		end
 	end
+    self:arrangeClothingRightSideElements(bodyLocation)
 end
 
 function CharacterCreationMain:initClothingDebug()
@@ -1758,6 +1808,9 @@ function CharacterCreationMain:disableBtn()
 					combo.selected = combo:find(function(text, data, fullType)
 						return data == fullType
 					end, item:getFullType())
+					if combo.selected == -1 then
+                        combo.selected = 1
+                    end
 					clothingItem = item:getVisual():getClothingItem()
 				end
 				local textureChoices = clothingItem and (clothingItem:hasModel() and clothingItem:getTextureChoices() or clothingItem:getBaseTextures())
@@ -1991,7 +2044,12 @@ function CharacterCreationMain:dressWithDefinitions(definition, resetWornItems)
 			if itemType then
 				local item = instanceItem(itemType)
 				if item then
-					desc:setWornItem(bodyLocation, item)
+                    if self.clothingDebugCreated then
+                        local location = item:IsClothing() and item:getBodyLocation() or item:canBeEquipped()
+					    desc:setWornItem(location, item)
+                    else
+					    desc:setWornItem(bodyLocation, item)
+					end
 				end
 			end
 		end
@@ -2099,6 +2157,7 @@ function CharacterCreationMain:onOutfitSelected(combo)
 	desc:dressInNamedOutfit(outfitName)
 	self.avatarPanel:setSurvivorDesc(desc)
 	self:disableBtn()
+	self:arrangeClothingUI()
 end
 
 function CharacterCreationMain:onRandomizeOutfitClicked()

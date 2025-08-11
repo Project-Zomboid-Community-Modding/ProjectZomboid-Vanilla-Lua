@@ -170,6 +170,10 @@ function ISCraftInventoryPanel:populate()
     if not inputFilterData then
         return;
     end
+
+    if self.isResourceItemSlot then
+        self.itemSlot = self.logic:getManualSelectItemSlot();
+    end
     
     local selectedInventoryItem = nil;
     if self.itemListBox.items and self.itemListBox.selected and self.itemListBox.selected > 0 then
@@ -178,9 +182,17 @@ function ISCraftInventoryPanel:populate()
     
     self.itemListBox:clear()
 
-    self.inputScriptFilter = self.logic:getManualSelectInputScriptFilter();
-    local nodes = self.inputScriptFilter and self.logic:getInputItemNodesForInput(self.inputScriptFilter) or self.logic:getInputItemNodes();
-    local allInputItems = self.inputScriptFilter and self.inputScriptFilter:getPossibleInputItems();
+    local nodes = nil;    
+    local allInputItems = nil;
+    if self.isResourceItemSlot and self.showCurrentContents then
+        self.inputScriptFilter = nil;
+        nodes = self.logic:getResourceItemNodes();
+        allInputItems = nil;
+    else 
+        self.inputScriptFilter = self.logic:getManualSelectInputScriptFilter();
+        nodes = self.inputScriptFilter and self.logic:getInputItemNodesForInput(self.inputScriptFilter) or self.logic:getInputItemNodes();
+        allInputItems = self.inputScriptFilter and self.inputScriptFilter:getPossibleInputItems();
+    end
 
     --if nodes:size()==0 then
     --    local header = self:createListHeader("Items");
@@ -210,8 +222,14 @@ function ISCraftInventoryPanel:populate()
         end
     end
     
-    local header = self:createListHeader(getText("IGUI_CraftUI_AvailableItems"));
+    local header = nil;
+    if self.isResourceItemSlot and self.showCurrentContents then
+        header = self:createListHeader(getText("IGUI_CraftUI_AlreadyContainsItems"));
+    else
+        header = self:createListHeader(getText("IGUI_CraftUI_AvailableItems"));
+    end
     self.itemListBox:addItem(header.name, header);
+    
     local addedItemNames = {}
     local itemHeader = nil;
     
@@ -458,9 +476,16 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
 
         self:drawText( data.text, dx, dy, 1, 1, 1, 1.0, self.font);
     else
-        if data.inventoryItem and self.logic:getRecipeData():containsInputItem(data.inventoryItem) then
-            local c = data.isUsedItems and self.colYellow or self.colGood;
-            self:drawRect(2, (y), width, self.itemheight - 1, 0.5, c.r, c.g, c.b);
+        if self.target.isResourceItemSlot and self.target.showCurrentContents then
+            if data.node and data.node:getFirstMatchedInputScript() == nil then
+                local c = self.colBad;
+                self:drawRect(2, (y), width, self.itemheight - 1, 0.5, c.r, c.g, c.b);
+            end
+        else
+            if data.inventoryItem and self.logic:getRecipeData():containsInputItem(data.inventoryItem) then
+                local c = data.isUsedItems and self.colYellow or self.colGood;
+                self:drawRect(2, (y), width, self.itemheight - 1, 0.5, c.r, c.g, c.b);
+            end
         end
         dx = 10;
         if data.inventoryItem then
@@ -511,22 +536,37 @@ function ISCraftInventoryPanel:onListSelected(_item)
             self.isDirty = true;
         else
             if _item.inventoryItem then
-                if self.logic:getRecipeData():containsInputItem(_item.inventoryItem) then
-                    --remove the item - called on logic instead of cacheddata to trigger helper events - spurcival
-                    self.logic:removeInputItem(_item.inventoryItem);
-                    if _item.isUsedItems then
-                        -- try to steal item
-                        self.logic:offerInputItem(_item.inventoryItem);
-                        self.isDirty = true;
-                    end
-                else
-                    --try and add the item to a input - called on logic instead of cacheddata to trigger helper events - spurcival
-                    self.logic:offerInputItem(_item.inventoryItem);
-                end
+                self:onListItemClicked(_item);
             end
         end
     else
         --
+    end
+end
+
+function ISCraftInventoryPanel:onListItemClicked(_item)
+    if self.itemSlot then
+        if self.itemSlot:getResource():containsItem(_item.inventoryItem) then
+            -- remove
+            ISEntityUI.ItemSlotRemoveSingleItem( self.player, self.entity, self.itemSlot, _item.inventoryItem );
+        else
+            -- try to add
+            ISEntityUI.ItemSlotAddItems( self.player, self.entity, self.itemSlot, { _item.inventoryItem } );
+        end
+    else
+        -- basic craftstation logic
+        if self.logic:getRecipeData():containsInputItem(_item.inventoryItem) then
+            --remove the item - called on logic instead of cacheddata to trigger helper events - spurcival
+            self.logic:removeInputItem(_item.inventoryItem);
+            if _item.isUsedItems then
+                -- try to steal item
+                self.logic:offerInputItem(_item.inventoryItem);
+                self.isDirty = true;
+            end
+        else
+            --try and add the item to a input - called on logic instead of cacheddata to trigger helper events - spurcival
+            self.logic:offerInputItem(_item.inventoryItem);
+        end
     end
 end
 
@@ -560,6 +600,9 @@ function ISCraftInventoryPanel:new(x, y, width, height, player, logic)
 
     o.inputScriptFilter = nil;
     o.unavailablesExpanded = false;
+    
+    o.isResourceItemSlot = false; -- true if this ISCraftInventoryPanel relates to a Resource ISItemSlot
+    o.showCurrentContents = false; -- true if this ISCraftInventoryPanel should show the current contents of a Resource IsItemSlot
     
     o.margin = 5;
     o.minimumWidth = 256;

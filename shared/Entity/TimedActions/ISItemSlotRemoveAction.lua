@@ -26,7 +26,7 @@ function ISItemSlotRemoveAction:start()
     if self.itemSlot then
         self.itemSlot.actionRemove = self;
     end
-    self.item = self.resource:peekItem();
+    self.item = self.targetItem or self.resource:peekItem();
     self.maxTime = 30+(self.item:getWeight()*3);
 	self:setActionAnim("Loot");
 	self:setAnimVariable("LootPosition", "");
@@ -58,10 +58,17 @@ function ISItemSlotRemoveAction:perform()
 end
 
 function ISItemSlotRemoveAction:complete()
-	self.item = self.resource:pollItem();
+	local removedItem = nil;
+	if self.targetItem then
+		removedItem = self.resource:removeItem(self.targetItem);
+	else
+		removedItem = self.resource:pollItem();
+	end
 
-	self.character:getInventory():AddItem(self.item);
-	sendAddItemToContainer(self.character:getInventory(), self.item);
+	if removedItem then
+		self.character:getInventory():AddItem(removedItem);
+		sendAddItemToContainer(self.character:getInventory(), removedItem);
+	end
 
 	return true
 end
@@ -70,11 +77,12 @@ function ISItemSlotRemoveAction:getDuration()
 	return 30; --todo base on weight?
 end
 
-function ISItemSlotRemoveAction:new(character, entity, resource)
+function ISItemSlotRemoveAction:new(character, entity, resource, item)
 	local o = ISBaseTimedAction.new(self, character)
 	o.entity = entity
 	o.resource = resource;
     o.itemSlot = nil;
+	o.targetItem = item;
 	o.maxTime = o:getDuration()
 	return o
 end

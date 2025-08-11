@@ -218,6 +218,7 @@ function ISDesignationZoneAnimalZoneUI:initialise()
     self.ok:initialise();
     self.ok:instantiate();
     self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:enableCancelColor()
     self:addChild(self.ok);
 
     self.reloadBtn = ISButton:new(self.ok:getRight() - btnWid - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Reload"), self, ISDesignationZoneAnimalZoneUI.onClick);

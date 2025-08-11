@@ -49,6 +49,7 @@ function ISBBQRemovePropaneTank:complete()
 			self.bbq:sendObjectChange("state")
 		end
 		self.character:getSquare():AddWorldInventoryItem(tank, 0.5, 0.5, 0)
+		triggerEvent("OnContainerUpdate")
 	end
 
 	return true;

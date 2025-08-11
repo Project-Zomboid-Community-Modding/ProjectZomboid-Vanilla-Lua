@@ -119,7 +119,7 @@ end
 
 -----
 
--- Panel that displays WorldMapBaseStyle filter
+-- Panel that displays WorldMapBaseStyleLayer filter
 WorldMapStyleEditor_FilterPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_FilterPanel")
 
 function WorldMapStyleEditor_FilterPanel:createChildren()
@@ -736,7 +736,7 @@ end
 
 -----
 
--- A panel displayed when a WorldMapStyleLayer with a WorldMapPolygonStyle is selected.
+-- A panel displayed when a WorldMapPolygonStyleLayer is selected.
 WorldMapStyleEditor_PolygonLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_PolygonLayerPanel")
 
 function WorldMapStyleEditor_PolygonLayerPanel:createChildren()
@@ -809,7 +809,206 @@ end
 
 -----
 
--- A panel displayed when a WorldMapStyleLayer with a WorldMapTextureStyle is selected.
+-- Panel for editing WorldMapPyramidStyleLayer properties
+WorldMapStyleEditor_PyramidPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_PyramidPanel")
+
+function WorldMapStyleEditor_PyramidPanel:createChildren()
+	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("IGUI_WorldMapEditor_FileName")..":", 1, 1, 1, 1, UIFont.Small, true)
+	self:addChild(label)
+	self.fileEntry = ISTextEntryBox:new("", label:getRight() + UI_BORDER_SPACING, label.y, self.width - label:getRight() - UI_BORDER_SPACING*2-1, BUTTON_HGT)
+	self.fileEntry.onCommandEntered = function(entry) self:onFileEntered() end
+	self:addChild(self.fileEntry)
+
+	self:setHeight(self.fileEntry:getBottom())
+end
+
+function WorldMapStyleEditor_PyramidPanel:populateList(layer)
+	WorldMapStyleEditor_TabPanel.populateList(self, layer)
+	self.fileEntry:setText(layer:getPyramidFileName())
+end
+
+function WorldMapStyleEditor_PyramidPanel:onFileEntered()
+	self.layer:setPyramidFileName(self.fileEntry:getText())
+end
+
+function WorldMapStyleEditor_PyramidPanel:new(width, editorMode)
+	local o = WorldMapStyleEditor_TabPanel.new(self, width, editorMode)
+	return o
+end
+
+-----
+
+-- A panel displayed when a WorldMapPyramidStyleLayer is selected.
+WorldMapStyleEditor_PyramidLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_PyramidLayerPanel")
+
+function WorldMapStyleEditor_PyramidLayerPanel:createChildren()
+	self.tabs = ISTabPanel:new(0, 0, 250+(getCore():getOptionFontSizeReal()*50), 100)
+	self.tabs:setEqualTabWidth(false)
+	self:addChild(self.tabs)
+
+	self.pyramidPanel = WorldMapStyleEditor_PyramidPanel:new(self.tabs.width, self.editorMode)
+	self.pyramidPanel:initialise()
+	self.pyramidPanel:instantiate()
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Pyramid"), self.pyramidPanel)
+
+	self.fillPanel = WorldMapStyleEditor_ColorStopsPanel:new(self.tabs.width, self.editorMode)
+	self.fillPanel:initialise()
+	self.fillPanel:instantiate()
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Fill"), self.fillPanel)
+
+	self.tabs:setHeight(math.max(self.pyramidPanel:getBottom(), self.fillPanel:getBottom()))
+
+	self:shrinkWrap()
+	self:setAnchorLeft(false)
+	self:setAnchorRight(true)
+	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
+	self:setY(UI_BORDER_SPACING)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:display(layer)
+	WorldMapStyleEditor.display(self, layer)
+	self.pyramidPanel:populateList(layer)
+	self.fillPanel:populateList(layer)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:undisplay()
+	WorldMapStyleEditor.undisplay(self)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:render()
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:onMouseDownMap(x, y)
+	return self.tabs:getActiveView():onMouseDownMap(x, y)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:onMouseUpMap(x, y)
+	return self.tabs:getActiveView():onMouseUpMap(x, y)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:onMouseUpOutsideMap(x, y)
+	return self.tabs:getActiveView():onMouseUpOutsideMap(x, y)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:onMouseMoveMap(dx, dy)
+	return self.tabs:getActiveView():onMouseMoveMap(dx, dy)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:onRightMouseDownMap(x, y)
+	return self.tabs:getActiveView():onRightMouseDownMap(x, y)
+end
+
+function WorldMapStyleEditor_PyramidLayerPanel:new(editorMode)
+	local o = WorldMapStyleEditor.new(self, editorMode)
+	return o
+end
+
+-----
+
+-- Panel for editing WorldMapTextStyleLayer properties
+WorldMapStyleEditor_TextPanel = WorldMapStyleEditor_TabPanel:derive("WorldMapStyleEditor_TextPanel")
+
+function WorldMapStyleEditor_TextPanel:createChildren()
+	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("IGUI_WorldMapEditor_Font")..":", 1, 1, 1, 1, UIFont.Small, true)
+	self:addChild(label)
+	self.fontCombo = ISComboBox:new(label:getRight() + UI_BORDER_SPACING, label.y, self.width - label:getRight() - UI_BORDER_SPACING*2-1, FONT_HGT_SMALL + 2 * 2, self, self.onFontSelected)
+	self:addChild(self.fontCombo)
+
+	self:setHeight(self.fontCombo:getBottom())
+end
+
+function WorldMapStyleEditor_TextPanel:populateList(layer)
+	WorldMapStyleEditor_TabPanel.populateList(self, layer)
+	self.fontCombo:clear()
+	local fontList = getTextManager():getAllFonts(ArrayList.new())
+	for i=1,fontList:size() do
+        local font = fontList:get(i-1)
+        self.fontCombo:addOptionWithData(font:name(), font)
+        if font == layer:getFont() then
+            self.fontCombo.selected = i
+        end
+    end
+end
+
+function WorldMapStyleEditor_TextPanel:onFontSelected()
+    self.layer:setFont(self.fontCombo:getOptionData(self.fontCombo.selected))
+end
+
+function WorldMapStyleEditor_TextPanel:new(width, editorMode)
+	local o = WorldMapStyleEditor_TabPanel.new(self, width, editorMode)
+	return o
+end
+
+-----
+
+-- A panel displayed when a WorldMapTextStyleLayer is selected.
+WorldMapStyleEditor_TextLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_TextLayerPanel")
+
+function WorldMapStyleEditor_TextLayerPanel:createChildren()
+	self.tabs = ISTabPanel:new(0, 0, 250+(getCore():getOptionFontSizeReal()*50), 100)
+	self.tabs:setEqualTabWidth(false)
+	self:addChild(self.tabs)
+
+	self.textPanel = WorldMapStyleEditor_TextPanel:new(self.tabs.width, self.editorMode)
+	self.textPanel:initialise()
+	self.textPanel:instantiate()
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Text"), self.textPanel)
+
+	self.fillPanel = WorldMapStyleEditor_ColorStopsPanel:new(self.tabs.width, self.editorMode)
+	self.fillPanel:initialise()
+	self.fillPanel:instantiate()
+	self.tabs:addView(getText("IGUI_WorldMapEditor_Fill"), self.fillPanel)
+
+	self.tabs:setHeight(math.max(self.fillPanel:getBottom()))
+
+	self:shrinkWrap()
+	self:setAnchorLeft(false)
+	self:setAnchorRight(true)
+	self:setX(getCore():getScreenWidth() - UI_BORDER_SPACING - self.width)
+	self:setY(UI_BORDER_SPACING)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:display(layer)
+	WorldMapStyleEditor.display(self, layer)
+	self.textPanel:populateList(layer)
+	self.fillPanel:populateList(layer)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:undisplay()
+	WorldMapStyleEditor.undisplay(self)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:render()
+end
+
+function WorldMapStyleEditor_TextLayerPanel:onMouseDownMap(x, y)
+	return self.tabs:getActiveView():onMouseDownMap(x, y)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:onMouseUpMap(x, y)
+	return self.tabs:getActiveView():onMouseUpMap(x, y)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:onMouseUpOutsideMap(x, y)
+	return self.tabs:getActiveView():onMouseUpOutsideMap(x, y)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:onMouseMoveMap(dx, dy)
+	return self.tabs:getActiveView():onMouseMoveMap(dx, dy)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:onRightMouseDownMap(x, y)
+	return self.tabs:getActiveView():onRightMouseDownMap(x, y)
+end
+
+function WorldMapStyleEditor_TextLayerPanel:new(editorMode)
+	local o = WorldMapStyleEditor.new(self, editorMode)
+	return o
+end
+
+-----
+
+-- A panel displayed when a WorldMapTextureStyleLayer is selected.
 WorldMapStyleEditor_TextureLayerPanel = WorldMapStyleEditor:derive("WorldMapStyleEditor_TextureLayerPanel")
 
 function WorldMapStyleEditor_TextureLayerPanel:createChildren()
@@ -892,8 +1091,10 @@ function WorldMapEditorMode_Style:createChildren()
 	self.layerType = ISComboBox:new(UI_BORDER_SPACING, self.layerNameEntry:getBottom() + UI_BORDER_SPACING, 200, BUTTON_HGT, self, self.onChangeLayerType)
 	self:addChild(self.layerType)
 	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_None"), nil)
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Pyramid"), "Pyramid")
 	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Line"), "Line")
 	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Polygon"), "Polygon")
+	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Texture"), "Text")
 	self.layerType:addOptionWithData(getText("IGUI_WorldMapEditor_Texture"), "Texture")
 
 	local label = ISLabel:new(self.listbox.x, self.layerType:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, getText("IGUI_WorldMapEditor_MinZoom") .. ":", 0, 0, 0, 1, UIFont.Small, true)
@@ -906,7 +1107,7 @@ function WorldMapEditorMode_Style:createChildren()
 	self.editors = {}
 	self.currentEditor = nil
 
-	for _,type in ipairs({'Polygon', 'Texture'}) do
+	for _,type in ipairs({'Polygon', 'Pyramid', 'Text', 'Texture'}) do
 		self.editors[type] = _G["WorldMapStyleEditor_" .. type .. "LayerPanel"]:new(self)
 		self:addChild(self.editors[type])
 		self.editors[type]:setVisible(false)
@@ -1006,6 +1207,10 @@ function WorldMapEditorMode_Style:onAdd()
 		layer = self.styleAPI:newLineLayer(layerId)
 	elseif typeStr == "Polygon" then
 		layer = self.styleAPI:newPolygonLayer(layerId)
+	elseif typeStr == "Pyramid" then
+		layer = self.styleAPI:newPyramidLayer(layerId)
+	elseif typeStr == "Text" then
+        layer = self.styleAPI:newTextLayer(layerId)
 	elseif typeStr == "Texture" then
 		layer = self.styleAPI:newTextureLayer(layerId)
 		local x1 = self.mapAPI:getCenterWorldX() - 100
@@ -1097,8 +1302,18 @@ function WorldMapEditorMode_Style:generateLuaScript()
 		script = string.format("%slayer:setMinZoom(%.2f)\n", script, layer:getMinZoom())
 		if layer:getTypeString() == "Line" then
 			script = string.format("%slayer:setFilter(\"%s\", \"%s\")\n", script, layer:getFilterKey(), layer:getFilterValue())
+		    script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
+		    script = string.format("%s%s", script, self:generateLuaScript_TextureStops(layer))
 		elseif layer:getTypeString() == "Polygon" then
 			script = string.format("%slayer:setFilter(\"%s\", \"%s\")\n", script, layer:getFilterKey(), layer:getFilterValue())
+		    script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
+		    script = string.format("%s%s", script, self:generateLuaScript_TextureStops(layer))
+		elseif layer:getTypeString() == "Pyramid" then
+			script = string.format("%slayer:setPyramidFileName(\"%s\")\n", script, layer:getPyramidFileName())
+		    script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
+		elseif layer:getTypeString() == "Text" then
+		    script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
+		    -- TODO: scale stops
 		elseif layer:getTypeString() == "Texture" then
 			local x1 = layer:getMinXInSquares()
 			local y1 = layer:getMinYInSquares()
@@ -1107,9 +1322,9 @@ function WorldMapEditorMode_Style:generateLuaScript()
 			script = string.format("%slayer:setBoundsInSquares(%d, %d, %d, %d)\n", script, x1, y1, x2, y2)
 			script = string.format("%slayer:setTile(%s)\n", script, layer:isTile() and "true" or "false")
 			script = string.format("%slayer:setUseWorldBounds(%s)\n", script, layer:isUseWorldBounds() and "true" or "false")
+		    script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
+		    script = string.format("%s%s", script, self:generateLuaScript_TextureStops(layer))
 		end
-		script = string.format("%s%s", script, self:generateLuaScript_FillStops(layer))
-		script = string.format("%s%s", script, self:generateLuaScript_TextureStops(layer))
 		script = script .. "\n"
 	end
 	return script

@@ -184,7 +184,7 @@ function SFarmingSystem:changeHealth()
 
             local badMultiplier = 1
             -- bad seasons kill crops
-            if seasons and luaObject.exterior and  luaObject:isBadMonth() and not luaObject:isBadMonthHardy() then
+            if seasons and luaObject.exterior and luaObject:isBadMonth() and not luaObject:isBadMonthHardy() then
                 luaObject.cursed = true
             end
             if seasons and luaObject.exterior and getClimateManager():getSeasonName() == "Winter" and not luaObject:isColdHardy() then

@@ -470,17 +470,14 @@ ISVehiclePartMenu.onTakeFuelNew = function(worldobjects, part, fuelContainerList
 	if playerObj:getVehicle() then
 		ISVehicleMenu.onExit(playerObj)
 	end
-	if not fuelContainerList then
-		fuelContainerList = {};
-		table.insert(fuelContainerList, fuelContainer);
-	end	
+	if not fuelContainer and #fuelContainerList > 1 then
+		fuelContainer = table.remove(fuelContainerList, 1)
+	end
 	ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
-	for i,item in ipairs(fuelContainerList) do
-		if item and part:getContainerContentAmount() > 0 then
-			ISVehiclePartMenu.toPlayerInventory(playerObj, item)
-			ISInventoryPaneContextMenu.equipWeapon(item, false, false, playerObj:getPlayerNum())
-			ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, item))
-		end
+	if fuelContainer and part:getContainerContentAmount() > 0 then
+		ISVehiclePartMenu.toPlayerInventory(playerObj, fuelContainer)
+		ISInventoryPaneContextMenu.equipWeapon(fuelContainer, false, false, playerObj:getPlayerNum())
+		ISTimedActionQueue.add(ISTakeGasolineFromVehicle:new(playerObj, part, fuelContainer, fuelContainerList))
 	end
 end
 
@@ -562,16 +559,13 @@ ISVehiclePartMenu.onAddFuelNew = function(worldobjects, part, fuelContainerList,
 	if playerObj:getVehicle() then
 		ISVehicleMenu.onExit(playerObj)
 	end
-	if not fuelContainerList then
-		fuelContainerList = {};
-		table.insert(fuelContainerList, fuelContainer);
-	end	
+	if not fuelContainer and #fuelContainerList > 1 then
+		fuelContainer = table.remove(fuelContainerList, 1)
+	end
 	ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
-	for i,item in ipairs(fuelContainerList) do
-		if item and part:getContainerContentAmount() < part:getContainerCapacity() then
-			ISVehiclePartMenu.toPlayerInventory(playerObj, item)
-			ISInventoryPaneContextMenu.equipWeapon(item, true, false, playerObj:getPlayerNum())
-			ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, item))
-		end
+	if fuelContainer and part:getContainerContentAmount() < part:getContainerCapacity() then
+		ISVehiclePartMenu.toPlayerInventory(playerObj, fuelContainer)
+		ISInventoryPaneContextMenu.equipWeapon(fuelContainer, true, false, playerObj:getPlayerNum())
+		ISTimedActionQueue.add(ISAddGasolineToVehicle:new(playerObj, part, fuelContainer, fuelContainerList))
 	end
 end

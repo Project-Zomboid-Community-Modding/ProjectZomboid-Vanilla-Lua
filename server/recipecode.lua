@@ -519,6 +519,7 @@ function Recipe.OnCreate.Slice5(craftRecipeData, character)
 	for j=0,results:size() - 1 do
 		local result = results:get(j)
 		if instanceof(result, "Food") then
+            if wholeItem:isCooked() then result:setCooked(true) end
 			if wholeItem:isBurnt() then result:setBurnt(true) end
 			result:setBaseHunger(wholeItem:getBaseHunger() / 5);
 			result:setHungChange(wholeItem:getHungChange() / 5);
@@ -2661,7 +2662,7 @@ function Recipe.OnCreate.WornGasmaskFilterInsert(craftRecipeData, character)
   end
 end
 function Recipe.OnTest.GasmaskFilterNotFull(sourceItem, result)
-	if sourceItem:hasTag("GasmaskFilter") then
+	if sourceItem:hasTag("GasmaskFilter") or sourceItem:hasTag("RespiratorFilter") then
 		return sourceItem:getCurrentUsesFloat() < 1.0
 	end
 	return true

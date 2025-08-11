@@ -11,11 +11,195 @@ ISMiniMapTitleBar = ISPanel:derive("ISMiniMapTitleBar")
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local TERRAIN_IMAGE = false
+
+-----
+
+ISMiniMapOptionsPanel = ISCollapsableWindowJoypad:derive("ISMiniMapOptionsPanel")
+
+function ISMiniMapOptionsPanel:onTickBox(index, selected, option)
+	if option:getName() == "ColorblindPatterns" then
+		getCore():setOptionColorblindPatterns(selected)
+		return
+	end
+	option:setValue(selected)
+end
+
+function ISMiniMapOptionsPanel:onCommandEntered(entry, option)
+	option:parse(entry:getText())
+end
+
+function ISMiniMapOptionsPanel:createChildren()
+	local entryHgt = BUTTON_HGT
+
+	local x = UI_BORDER_SPACING+1
+	local y = self:titleBarHeight() + 6
+
+	self.doubleBoxes = {}
+	self.tickBoxes = {}
+
+	self.showAllOptions = false
+	if getDebug() or (isClient() and (getAccessLevel() == "admin")) then
+--		self.showAllOptions = true
+	end
+
+	local maxHeight = getCore():getScreenHeight() - 100
+
+	self.joypadButtonsY = {}
+	self.joypadIndex = 1
+	self.joypadIndexY = 1
+
+	local maxWidth = 0
+
+	local visibleOptions = self:getVisibleOptions()
+	for i,option in ipairs(visibleOptions) do
+		if option:getType() == "boolean" then
+			local tickBox = ISTickBox:new(x, y, self.width, entryHgt, "", self, self.onTickBox, option)
+			tickBox:initialise()
+			local text = getTextOrNull("IGUI_MapOption_" .. option:getName()) or option:getName()
+			tickBox:addOption(text, option)
+			tickBox:setSelected(1, option:getValue())
+			tickBox:setWidthToFit()
+			self:addChild(tickBox)
+			maxWidth = math.max(maxWidth, tickBox:getRight())
+			table.insert(self.tickBoxes, i, tickBox)
+			self:insertNewLineOfButtons(tickBox)
+			y = y + entryHgt + 6
+		end
+		if option:getType() == "double" then
+			local text = getTextOrNull("IGUI_MapOption_" .. option:getName()) or option:getName()
+			local label = ISLabel:new(x, y, entryHgt, text, 1, 1, 1, 1, UIFont.Small, true)
+			self:addChild(label)
+			local entry = ISTextEntryBox:new("", label:getRight()+4, y, 100, entryHgt)
+			entry.onCommandEntered = function(self) self.parent:onCommandEntered(entry, option) end
+			self:addChild(entry)
+			entry:setOnlyNumbers(true)
+			maxWidth = math.max(maxWidth, entry:getRight())
+			table.insert(self.doubleBoxes, i, entry)
+			self:insertNewLineOfButtons(entry)
+			y = y + entryHgt + 6
+		end
+		if y + entryHgt + 6 >= maxHeight then
+			x = x + maxWidth
+			y = self:titleBarHeight() + 6
+			maxWidth = 0
+		end
+	end
+
+	local width = 0
+	local height = 0
+	for _,child in pairs(self:getChildren()) do
+		width = math.max(width, child:getRight())
+		height = math.max(height, child:getBottom())
+	end
+	self:setWidth(width + UI_BORDER_SPACING + 1)
+	self:setHeight(height + self:resizeWidgetHeight())
+
+	self.screenHeight = getCore():getScreenHeight()
+end
+
+function ISMiniMapOptionsPanel:getVisibleOptions()
+	local result = {}
+	if self.showAllOptions then
+		for i=1,self.map.mapAPI:getOptionCount() do
+			local option = self.map.mapAPI:getOptionByIndex(i-1)
+			if isClient() or not self:isMultiplayerOption(option:getName()) then
+				table.insert(result, option)
+			end
+		end
+		return result;
+	end
+	local optionNames = {}
+	table.insert(optionNames, "Isometric")
+	table.insert(optionNames, "Symbols")
+	if TERRAIN_IMAGE then
+	    table.insert(optionNames, "TerrainImage")
+	end
+	for _,optionName in ipairs(optionNames) do
+		for i=1,self.map.mapAPI:getOptionCount() do
+			local option = self.map.mapAPI:getOptionByIndex(i-1)
+			if optionName == option:getName() then
+				table.insert(result, option)
+				break
+			end
+		end
+	end
+	return result
+end
+
+function ISMiniMapOptionsPanel:isMultiplayerOption(optionName)
+	return optionName == "RemotePlayers" or optionName == "PlayerNames"
+end
+
+function ISMiniMapOptionsPanel:synchUI()
+	local showAllOptions = false
+	if getDebug() or (isClient() and (getAccessLevel() == "admin")) then
+		showAllOptions = true
+	end
+	if showAllOptions ~= self.showAllOptions or self.screenHeight ~= getCore():getScreenHeight() then
+		local children = {}
+		for k,v in pairs(self:getChildren()) do
+			table.insert(children, v)
+		end
+		for _,child in ipairs(children) do
+			self:removeChild(child)
+		end
+		self:createChildren()
+	end
+
+	local visibleOptions = self:getVisibleOptions()
+	for i,option in ipairs(visibleOptions) do
+		if option:getType() == "boolean" then
+			self.tickBoxes[i]:setSelected(1, option:getValue())
+		end
+		if option:getType() == "double" then
+			self.doubleBoxes[i]:setText(option:getValueAsString())
+		end
+	end
+end
+
+function ISMiniMapOptionsPanel:onMouseDownOutside(x, y)
+	if self:isMouseOver() then
+		return -- click in ISTextEntryBox
+	end
+	if self.parent.parent.bottomPanel:isMouseOver() then
+		return
+	end
+	self:setVisible(false)
+	if self.joyfocus then
+		setJoypadFocus(joypadData.player, self.parent.parent)
+	end
+end
+
+function ISMiniMapOptionsPanel:onGainJoypadFocus(joypadData)
+	ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
+	self:restoreJoypadFocus()
+end
+
+function ISMiniMapOptionsPanel:onJoypadDown(button, joypadData)
+	if button == Joypad.BButton then
+		self:setVisible(false)
+		setJoypadFocus(joypadData.player, self.parent.parent)
+		return
+	end
+	ISCollapsableWindowJoypad.onJoypadDown(self, button, joypadData)
+end
+
+function ISMiniMapOptionsPanel:new(x, y, width, height, map)
+	local o = ISCollapsableWindowJoypad.new(self, x, y, width, height)
+	o.backgroundColor = {r=0, g=0, b=0, a=1.0}
+	o.resizable = false
+	o.map = map
+	return o
+end
+
+-----
 
 function ISMiniMapInner:instantiate()
 	self.javaObject = UIWorldMap.new(self)
-	self.mapAPI = self.javaObject:getAPIv1()
+	self.mapAPI = self.javaObject:getAPIv3()
 	self.mapAPI:setMapItem(MapItem.getSingleton())
+	self.mapAPI:setMaxZoom(20)
 	self.javaObject:setX(self.x)
 	self.javaObject:setY(self.y)
 	self.javaObject:setWidth(self.width)
@@ -29,6 +213,10 @@ end
 
 function ISMiniMapInner:prerender()
 	MapUtils.renderDarkModeOverlay(self)
+	if TERRAIN_IMAGE then
+	    self:checkTerrainImage()
+	end
+    self.mapAPI:getSymbolsAPIv2():initDefaultAnnotations() -- only needed when the map editor changed things
 end
 
 function ISMiniMapInner:prerenderHack()
@@ -121,6 +309,36 @@ function ISMiniMapInner:onRightMouseUpOutside(x, y)
 	self.rightMouseDown = false
 end
 
+if TERRAIN_IMAGE then
+
+function ISMiniMapInner:checkTerrainImage()
+    if self.isTerrainImage ~= self.mapAPI:getBoolean("TerrainImage") then
+        self:onToggleTerrainImage()
+    end
+end
+
+function ISMiniMapInner:onToggleTerrainImage()
+    self.isTerrainImage = not self.isTerrainImage
+    if self.isTerrainImage then
+	    self:showTerrainImage()
+    else
+	    MapUtils.initDefaultStyleV1(self)
+    end
+    self.mapAPI:setBoolean("TerrainImage", self.isTerrainImage)
+end
+
+function ISMiniMapInner:showTerrainImage()
+    self.mapAPI:setBoolean("ImagePyramid", true)
+    local styleAPI = self.mapAPI:getStyleAPI()
+    styleAPI:clear()
+    local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
+    pyramidLayer:setPyramidFileName("pyramid.zip")
+    pyramidLayer:addFill(0.0, 255.0, 255.0, 255.0, 255.0)
+    MapUtils.initDefaultTextLayersV3(self)
+end
+
+end -- TERRAIN_IMAGE
+
 function ISMiniMapInner:onTeleport(worldX, worldY)
 	local playerObj = getSpecificPlayer(0)
 	if not playerObj then return end
@@ -210,12 +428,13 @@ function ISMiniMapOuter:createChildren()
 
 	local btnWid = BUTTON_HGT
 	local btnHgt = BUTTON_HGT
+	local btnX = (self.inner.width - btnWid * 5 - UI_BORDER_SPACING * 4) / 2
 
 	self.bottomPanel = ISPanel:new(self.borderSize, self.inner:getBottom() + 1, self.inner.width, btnHgt+UI_BORDER_SPACING*2+2)
 	self:addChild(self.bottomPanel)
 	self.bottomPanel:setVisible(false)
 
-	self.button1 = ISButton:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, btnWid, btnHgt, "M", self, ISMiniMapOuter.onButton1)
+	self.button1 = ISButton:new(btnX, UI_BORDER_SPACING+1, btnWid, btnHgt, "M", self, ISMiniMapOuter.onButton1)
 	self.button1.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button1)
 
@@ -229,15 +448,13 @@ function ISMiniMapOuter:createChildren()
 	self.button3:setRepeatWhilePressed(ISMiniMapOuter.onButton3)
 	self.bottomPanel:addChild(self.button3)
 
-	self.button4 = ISButton:new(self.button3:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "~", self, ISMiniMapOuter.onButton4)
+	self.button4 = ISButton:new(self.button3:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "", self, ISMiniMapOuter.onButton4)
+	self.button4:setImage(getTexture("media/ui/inventoryPanes/Button_Settings.png"))
+	self.button4:forceImageSize(FONT_HGT_SMALL, FONT_HGT_SMALL)
 	self.button4.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button4)
 
-	self.button5 = ISButton:new(self.button4:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "S", self, ISMiniMapOuter.onButton5)
-	self.button5.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
-	self.bottomPanel:addChild(self.button5)
-
-	self.button6 = ISButton:new(self.button5:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "X", self, ISMiniMapOuter.onButton6)
+	self.button6 = ISButton:new(self.button4:getRight() + UI_BORDER_SPACING, self.button1.y, btnWid, btnHgt, "X", self, ISMiniMapOuter.onButton6)
 	self.button6.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	self.bottomPanel:addChild(self.button6)
 
@@ -250,7 +467,7 @@ function ISMiniMapOuter:prerender()
 --	ISPanelJoypad.prerender(self)
 	self:setPosition()
 
-	if self.joyfocus or (not self.inner.dragging and self:isMouseOver()) or self.titleBar:isMouseOver() or self.titleBar.dragging then
+	if self.joyfocus or (not (self.inner.dragging and self.inner.dragMoved) and self:isMouseOver()) or self.titleBar:isMouseOver() or self.titleBar.dragging then
 		self:setAdornmentsVisible(true)
 	else
 		self:setAdornmentsVisible(false)
@@ -372,11 +589,28 @@ function ISMiniMapOuter:onButton3()
 end
 
 function ISMiniMapOuter:onButton4()
-	self.inner.mapAPI:setBoolean("Isometric", not self.inner.mapAPI:getBoolean("Isometric"))
+    self:onToggleOptionsPanel()
 end
 
-function ISMiniMapOuter:onButton5()
-	self.inner.mapAPI:setBoolean("Symbols", not self.inner.mapAPI:getBoolean("Symbols"))
+function ISMiniMapOuter:onToggleOptionsPanel()
+--	self.inner.mapAPI:setBoolean("Isometric", not self.inner.mapAPI:getBoolean("Isometric"))
+	if self.optionsUI == nil then
+		local ui = ISMiniMapOptionsPanel:new(0, self.y, 200, 200, self.inner)
+		self.inner:addChild(ui)
+		ui:setVisible(false)
+		self.optionsUI = ui
+	end
+	if self.optionsUI:isVisible() then
+		self.optionsUI:setVisible(false)
+		return
+	end
+	self.optionsUI:synchUI()
+	self.optionsUI:setX(0)
+	self.optionsUI:setY(self.inner:getHeight() - self.optionsUI.height)
+	self.optionsUI:setVisible(true)
+	if JoypadState.players[self.playerNum+1] then
+		setJoypadFocus(self.playerNum, self.optionsUI)
+	end
 end
 
 function ISMiniMapOuter:onButton6()
@@ -390,6 +624,9 @@ function ISMiniMapOuter:saveSettings()
 	settings:setDouble("MiniMap.Zoom", mapAPI:getZoomF())
 	settings:setBoolean("MiniMap.Isometric", mapAPI:getBoolean("Isometric"))
 	settings:setBoolean("MiniMap.ShowSymbols", mapAPI:getBoolean("Symbols"))
+	if TERRAIN_IMAGE then
+	    settings:setBoolean("MiniMap.TerrainImage", mapAPI:getBoolean("TerrainImage"))
+	end
 	settings:save()
 end
 
@@ -401,9 +638,19 @@ function ISMiniMapOuter:restoreSettings()
 	local zoom = settings:getDouble("MiniMap.Zoom", 0.0)
 	local isometric = settings:getBoolean("MiniMap.Isometric")
 	local showSymbols = settings:getBoolean("MiniMap.ShowSymbols")
+	if TERRAIN_IMAGE then
+	    local terrainImage = settings:getBoolean("MiniMap.TerrainImage")
+	end
+	self.inner.isTerrainImage = terrainImage
 	mapAPI:setZoom(zoom)
 	mapAPI:setBoolean("Isometric", isometric)
 	mapAPI:setBoolean("Symbols", showSymbols)
+	if TERRAIN_IMAGE then
+	    mapAPI:setBoolean("TerrainImage", terrainImage)
+        if terrainImage then
+            self.inner:showTerrainImage()
+        end
+	end
 end
 
 function ISMiniMapOuter:onGainJoypadFocus(joypadData)
@@ -507,6 +754,7 @@ function ISMiniMap.InitPlayer(playerNum)
 	end
 	INNER.mapAPI:setBoolean("Symbols", false)
 	INNER.mapAPI:setBoolean("MiniMapSymbols", true)
+	INNER.mapAPI:setBoolean("ImagePyramid", false)
 
 	MapUtils.initDefaultStyleV1(INNER)
 

@@ -31,7 +31,8 @@ function Fishing.Utils.getAimCoords(player)
     end
 end
 
-Fishing.Utils.stopFishingKeysKeyboard = { "Forward", "Left", "Backward", "Right", "Melee", "CancelAction" }
+Fishing.Utils.stopFishingKeysKeyboard = { "Forward", "Left", "Backward", "Right", "Melee", "CancelAction"}
+
 function Fishing.Utils.isStopFishingButtonPressed(joypad)
     if joypad == -1 then
         for _, key in ipairs(Fishing.Utils.stopFishingKeysKeyboard) do
@@ -48,6 +49,20 @@ function Fishing.Utils.isStopFishingButtonPressed(joypad)
         return isJoypadPressed(joypad, Joypad.BButton)
     end
     return false
+end
+
+-- Fix for SPIF-3279. Eats hotbar inputs when rod is out and fishing.
+Fishing.Utils.hotbarKeys = {"Hotbar 1", "Hotbar 2", "Hotbar 3", "Hotbar 4", "Hotbar 5", "Hotbar 6", "Hotbar 7", "Hotbar 8"}
+function Fishing.Utils.hotbarStopper()
+    for _, key in ipairs(Fishing.Utils.hotbarKeys) do
+        if isKeyPressed(key) then
+            if getCore():getKey(key) then
+                GameKeyboard.eatKeyPress(getCore():getKey(key))
+            elseif getCore():getAltKey(key) then
+                GameKeyboard.eatKeyPress(getCore():getAltKey(key))
+            end
+        end
+    end
 end
 
 function Fishing.Utils.isPlayerAimOnWater(player, autoAim)
@@ -141,12 +156,12 @@ function Fishing.Utils.isNearShore(x, y)
 end
 
 Fishing.Utils.skillSizeLimit = {}
-Fishing.Utils.skillSizeLimit[0] = 0.5
-Fishing.Utils.skillSizeLimit[1] = 0.9
-Fishing.Utils.skillSizeLimit[2] = 1
-Fishing.Utils.skillSizeLimit[3] = 1.4
-Fishing.Utils.skillSizeLimit[4] = 1.8
-Fishing.Utils.skillSizeLimit[5] = 2.3
+Fishing.Utils.skillSizeLimit[0] = 1.4
+Fishing.Utils.skillSizeLimit[1] = 1.5
+Fishing.Utils.skillSizeLimit[2] = 1.9
+Fishing.Utils.skillSizeLimit[3] = 2.2
+Fishing.Utils.skillSizeLimit[4] = 2.3
+Fishing.Utils.skillSizeLimit[5] = 2.8
 Fishing.Utils.skillSizeLimit[6] = 4.5
 Fishing.Utils.skillSizeLimit[7] = 9
 Fishing.Utils.skillSizeLimit[8] = 27

@@ -130,6 +130,10 @@ function Fishing.FishConfig:setPredator(isPredator)
     self.isPredator = isPredator
 end
 
+function Fishing.FishConfig:setWeightFactor(number)
+    self.weightFactor = number
+end
+
 function Fishing.FishConfig:addLures(itemTable, chanceCoeff)
     for item, data in pairs(itemTable) do
         self.lure[item] = chanceCoeff * data.chanceModifier
@@ -223,8 +227,9 @@ local LargemouthBass = Fishing.FishConfig:new("Base.LargemouthBass")
 LargemouthBass:setLocation(true, true)    -- River, Lake
 LargemouthBass:setMaxLength(51) -- CM
 LargemouthBass:setTrophyLength(75)
-LargemouthBass:setMaxWeight(2.3) -- KG
+LargemouthBass:setMaxWeight(2.8) -- KG
 LargemouthBass:setTrophyWeight(10)
+LargemouthBass:setWeightFactor(2)
 LargemouthBass:initFishSizeData()
 
 LargemouthBass:addLures(Fishing.lure.Insect, 0.3)
@@ -245,8 +250,9 @@ local SmallmouthBass = Fishing.FishConfig:new("Base.SmallmouthBass")
 SmallmouthBass:setLocation(true, true)    -- River, Lake
 SmallmouthBass:setMaxLength(41) -- CM
 SmallmouthBass:setTrophyLength(55)
-SmallmouthBass:setMaxWeight(1.8) -- KG
+SmallmouthBass:setMaxWeight(2.3) -- KG
 SmallmouthBass:setTrophyWeight(5)
+SmallmouthBass:setWeightFactor(2)
 SmallmouthBass:initFishSizeData()
 
 SmallmouthBass:addLures(Fishing.lure.Insect, 0.3)
@@ -267,8 +273,9 @@ local WhiteBass = Fishing.FishConfig:new("Base.WhiteBass")
 WhiteBass:setLocation(true, true)    -- River, Lake
 WhiteBass:setMaxLength(38) -- CM
 WhiteBass:setTrophyLength(40)
-WhiteBass:setMaxWeight(1) -- KG
+WhiteBass:setMaxWeight(1.5) -- KG
 WhiteBass:setTrophyWeight(3)
+WhiteBass:setWeightFactor(2)
 WhiteBass:initFishSizeData()
 
 WhiteBass:addLures(Fishing.lure.Insect, 0.3)
@@ -289,8 +296,9 @@ local SpottedBass = Fishing.FishConfig:new("Base.SpottedBass")
 SpottedBass:setLocation(true, true)    -- River, Lake
 SpottedBass:setMaxLength(38) -- CM
 SpottedBass:setTrophyLength(45)
-SpottedBass:setMaxWeight(1.3) -- KG
+SpottedBass:setMaxWeight(1.8) -- KG
 SpottedBass:setTrophyWeight(5)
+SpottedBass:setWeightFactor(2)
 SpottedBass:initFishSizeData()
 
 SpottedBass:addLures(Fishing.lure.Insect, 0.3)
@@ -314,6 +322,7 @@ StripedBass:setMaxLength(76) -- CM
 StripedBass:setTrophyLength(90)
 StripedBass:setMaxWeight(9) -- KG
 StripedBass:setTrophyWeight(15)
+StripedBass:setWeightFactor(4)
 StripedBass:initFishSizeData()
 
 StripedBass:addLures(Fishing.lure.Insect, 0.1)
@@ -334,8 +343,9 @@ local Bluegill = Fishing.FishConfig:new("Base.Bluegill")
 Bluegill:setLocation(true, true)    -- River, Lake
 Bluegill:setMaxLength(20) -- CM
 Bluegill:setTrophyLength(35)
-Bluegill:setMaxWeight(0.9) -- KG
+Bluegill:setMaxWeight(1.4) -- KG
 Bluegill:setTrophyWeight(1.2)
+Bluegill:setWeightFactor(2)
 Bluegill:initFishSizeData()
 
 Bluegill:addLures(Fishing.lure.Insect, 0.5)
@@ -356,8 +366,9 @@ local WhiteCrappie = Fishing.FishConfig:new("Base.WhiteCrappie")
 WhiteCrappie:setLocation(true, true)    -- River, Lake
 WhiteCrappie:setMaxLength(30) -- CM
 WhiteCrappie:setTrophyLength(24)
-WhiteCrappie:setMaxWeight(0.4) -- KG
+WhiteCrappie:setMaxWeight(1.0) -- KG
 WhiteCrappie:setTrophyWeight(2.5)
+WhiteCrappie:setWeightFactor(2)
 WhiteCrappie:initFishSizeData()
 
 WhiteCrappie:addLures(Fishing.lure.Insect, 0.1)
@@ -378,8 +389,9 @@ local BlackCrappie = Fishing.FishConfig:new("Base.BlackCrappie")
 BlackCrappie:setLocation(true, true)    -- River, Lake
 BlackCrappie:setMaxLength(25) -- CM
 BlackCrappie:setTrophyLength(28)
-BlackCrappie:setMaxWeight(0.4) -- KG
+BlackCrappie:setMaxWeight(1.0) -- KG
 BlackCrappie:setTrophyWeight(2.7)
+BlackCrappie:setWeightFactor(2)
 BlackCrappie:initFishSizeData()
 
 BlackCrappie:addLures(Fishing.lure.Insect, 0.1)
@@ -400,8 +412,9 @@ local RedearSunfish = Fishing.FishConfig:new("Base.RedearSunfish")
 RedearSunfish:setLocation(true, true)    -- River, Lake
 RedearSunfish:setMaxLength(20) -- CM
 RedearSunfish:setTrophyLength(24)
-RedearSunfish:setMaxWeight(0.9) -- KG
+RedearSunfish:setMaxWeight(1.4) -- KG
 RedearSunfish:setTrophyWeight(0.9)
+RedearSunfish:setWeightFactor(2)
 RedearSunfish:initFishSizeData()
 
 RedearSunfish:addLures(Fishing.lure.Insect, 0.7)
@@ -422,8 +435,9 @@ local YellowPerch = Fishing.FishConfig:new("Base.YellowPerch")
 YellowPerch:setLocation(true, true)    -- River, Lake
 YellowPerch:setMaxLength(30) -- CM
 YellowPerch:setTrophyLength(30)
-YellowPerch:setMaxWeight(0.3) -- KG
+YellowPerch:setMaxWeight(1.0) -- KG
 YellowPerch:setTrophyWeight(1.9)
+YellowPerch:setWeightFactor(2)
 YellowPerch:initFishSizeData()
 
 YellowPerch:addLures(Fishing.lure.Insect, 0.7)
@@ -444,8 +458,9 @@ local Sauger = Fishing.FishConfig:new("Base.Sauger")
 Sauger:setLocation(true, true)    -- River, Lake
 Sauger:setMaxLength(45) -- CM
 Sauger:setTrophyLength(50)
-Sauger:setMaxWeight(1.4) -- KG
+Sauger:setMaxWeight(1.9) -- KG
 Sauger:setTrophyWeight(1.8)
+Sauger:setWeightFactor(2)
 Sauger:initFishSizeData()
 
 Sauger:addLures(Fishing.lure.Insect, 0.5)
@@ -466,8 +481,9 @@ local GreenSunfish = Fishing.FishConfig:new("Base.GreenSunfish")
 GreenSunfish:setLocation(true, true)    -- River, Lake
 GreenSunfish:setMaxLength(20) -- CM
 GreenSunfish:setTrophyLength(20) -- CM
-GreenSunfish:setMaxWeight(0.9) -- KG
+GreenSunfish:setMaxWeight(1.4) -- KG
 GreenSunfish:setTrophyWeight(0.9) -- KG
+GreenSunfish:setWeightFactor(2)
 GreenSunfish:initFishSizeData()
 
 GreenSunfish:addLures(Fishing.lure.Insect, 0.7)
@@ -490,6 +506,7 @@ Walleye:setMaxLength(80) -- CM
 Walleye:setTrophyLength(88) -- CM
 Walleye:setMaxWeight(9) -- KG
 Walleye:setTrophyWeight(13) -- KG
+Walleye:setWeightFactor(4)
 Walleye:initFishSizeData()
 
 Walleye:addLures(Fishing.lure.Insect, 0.7)
@@ -512,6 +529,7 @@ FreshwaterDrum:setMaxLength(76) -- CM
 FreshwaterDrum:setTrophyLength(95) -- CM
 FreshwaterDrum:setMaxWeight(4.5) -- KG
 FreshwaterDrum:setTrophyWeight(24.5) -- KG
+FreshwaterDrum:setWeightFactor(4)
 FreshwaterDrum:initFishSizeData()
 
 FreshwaterDrum:addLures(Fishing.lure.Insect, 0.1)
@@ -534,6 +552,7 @@ BlueCatfish:setMaxLength(117) -- CM
 BlueCatfish:setTrophyLength(165)
 BlueCatfish:setMaxWeight(32) -- KG
 BlueCatfish:setTrophyWeight(68)
+BlueCatfish:setWeightFactor(6)
 BlueCatfish:initFishSizeData()
 
 BlueCatfish:setPredator(true)
@@ -556,8 +575,9 @@ local ChannelCatfish = Fishing.FishConfig:new("Base.ChannelCatfish")
 ChannelCatfish:setLocation(true, true)    -- River, Lake
 ChannelCatfish:setMaxLength(30) -- CM
 ChannelCatfish:setTrophyLength(80)
-ChannelCatfish:setMaxWeight(1.8) -- KG
+ChannelCatfish:setMaxWeight(2.3) -- KG
 ChannelCatfish:setTrophyWeight(26)
+ChannelCatfish:setWeightFactor(6)
 ChannelCatfish:initFishSizeData()
 
 ChannelCatfish:addLures(Fishing.lure.Insect, 0.1)
@@ -580,6 +600,7 @@ FlatheadCatfish:setMaxLength(140) -- CM
 FlatheadCatfish:setTrophyLength(147)
 FlatheadCatfish:setMaxWeight(27) -- KG
 FlatheadCatfish:setTrophyWeight(55)
+FlatheadCatfish:setWeightFactor(6)
 FlatheadCatfish:initFishSizeData()
 
 FlatheadCatfish:setPredator(true)
@@ -604,6 +625,7 @@ Muskellunge:setMaxLength(101) -- CM
 Muskellunge:setTrophyLength(127)
 Muskellunge:setMaxWeight(18) -- KG
 Muskellunge:setTrophyWeight(32)
+Muskellunge:setWeightFactor(6)
 Muskellunge:initFishSizeData()
 
 Muskellunge:setPredator(true)
@@ -628,6 +650,7 @@ AligatorGar:setMaxLength(180) -- CM
 AligatorGar:setTrophyLength(243)
 AligatorGar:setMaxWeight(45) -- KG
 AligatorGar:setTrophyWeight(150)
+AligatorGar:setWeightFactor(6)
 AligatorGar:initFishSizeData()
 
 AligatorGar:setPredator(true)
@@ -652,6 +675,7 @@ Paddlefish:setMaxLength(150) -- CM
 Paddlefish:setTrophyLength(220)
 Paddlefish:setMaxWeight(27) -- KG
 Paddlefish:setTrophyWeight(90)
+Paddlefish:setWeightFactor(6)
 Paddlefish:initFishSizeData()
 
 Paddlefish:addLures(Fishing.lure.Insect, 0.1)
@@ -671,6 +695,7 @@ local BaitFish = Fishing.FishConfig:new("Base.BaitFish")
 BaitFish:setLocation(true, true)    -- River, Lake
 BaitFish:setMaxLength(10) -- CM
 BaitFish:setMaxWeight(0.05) -- KG
+BaitFish:setWeightFactor(6)
 BaitFish.minLength = 5
 BaitFish:initFishSizeData()
 BaitFish.isHaveDifferentSizes = false
@@ -769,10 +794,26 @@ function Fishing.onCreateFish(item)
     item:setProteins(item:getProteins() * nutritionFactor)
     item:setWorldScale(fishSizeData.length / 100.0)
 
-    item:setBaseHunger(-fishSizeData.weight / 6)
-    item:setHungChange(item:getBaseHunger())
+	local hungerFactor = fishSizeData.weight / fishConfig.weightFactor
+	-- If fish is not bait, then min hunger should be 5 regardless of size. Same as in Fish.lua
+	if fishConfig.itemType ~= "BaitFish" then
+		if hungerFactor > 0.05 then
+			item:setBaseHunger(-hungerFactor)
+		else
+			item:setBaseHunger(-0.05)
+		end
+    else
+        item:setBaseHunger(-hungerFactor)
+	end
+	item:setHungChange(item:getBaseHunger())
     item:setActualWeight(fishSizeData.weight * 2.2)   -- weight is kg * 2.2 (in pound)
     item:setCustomWeight(true)
+
+	-- Large species of fish sometimes reach the weight cap while still at "Medium".
+	-- This changes their size to "Big"
+	if item:getActualWeight() >= 45 and fishSizeData.size ~= "Big" then
+		fishSizeData.size = "Big"
+	end
 
     -- Unlike with self-caught fish, this only shows overall size.
     if fishConfig.isHaveDifferentSizes then

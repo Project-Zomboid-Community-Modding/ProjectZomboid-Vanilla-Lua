@@ -11,12 +11,66 @@ local MOUSE_OVER = 1;
 local MOUSE_ITEM_VALID = 2;
 local MOUSE_ITEM_INVALID = 3;
 
+local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
+local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
+local SELECT_INPUT_BUTTON_SIZE = 16 * ICON_SCALE;
+local STATUS_ICON_SIZE = 12 * ICON_SCALE;
+
 function ISItemSlot:initialise()
     ISPanel.initialise(self)
 end
 
 function ISItemSlot:createChildren()
+    if self.showSelectInputsButton then
+        -- draw manual input button
+        self.selectInputButton =ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, SELECT_INPUT_BUTTON_SIZE, SELECT_INPUT_BUTTON_SIZE, nil);
 
+        self.selectInputButton.image = self.textureSwapInput;
+        self.selectInputButton.borderColor = {r=0, g=0, b=0, a=0};
+        self.selectInputButton.backgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
+        self.selectInputButton.backgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};
+        self.selectInputButton.textureColor = {r=0, g=0, b=0, a=1};
+
+        self.selectInputButton.target = self;
+        self.selectInputButton.onclick = self.onSelectInputsButton;
+        self.selectInputButton:initialise();
+        self.selectInputButton:instantiate();
+        self:addChild(self.selectInputButton)
+    end
+end
+
+function ISItemSlot:onSelectInputsButton()
+    if self.functionTarget and self.onSelectInputsButtonClicked then
+        self.onSelectInputsButtonClicked(self.functionTarget, self);
+    end
+end
+
+function ISItemSlot:setSelectInputsButtonActive(_active)
+    if self.selectInputButton then
+        if _active then
+            -- lock our button to active visual
+            self.selectInputButton.backgroundColor = self.selectInputButtonBackgroundColorMouseOver;
+            self.selectInputButton.backgroundColorMouseOver = self.selectInputButtonBackgroundColor;
+            self.selectInputButton.textureColor = self.selectInputButtonTextureColorMouseOver;
+            self.selectInputButton.textureColorMouseOver = self.selectInputButtonTextureColor;
+        else
+            -- revert button to normal colour
+            self.selectInputButton.backgroundColor = self.selectInputButtonBackgroundColor;
+            self.selectInputButton.backgroundColorMouseOver = self.selectInputButtonBackgroundColorMouseOver;
+            self.selectInputButton.textureColor = self.selectInputButtonTextureColor;
+            self.selectInputButton.textureColorMouseOver = self.selectInputButtonTextureColorMouseOver;
+        end
+    end
+end
+
+function ISItemSlot:calculateLayout(_preferredWidth, _preferredHeight)
+    if self.selectInputButton then
+        -- set selectInputButton pos
+        local x = self:getWidth() - SELECT_INPUT_BUTTON_SIZE;
+        local y = 0
+        self.selectInputButton:setX(x);
+        self.selectInputButton:setY(y);
+    end
 end
 
 function ISItemSlot:prerender()
@@ -25,9 +79,7 @@ function ISItemSlot:prerender()
     if self.toolTip and not self:isMouseOver() then
         self:deactivateToolTip();
     end
-end
 
-function ISItemSlot:render()
     local c = self.boxOccupied and self.backgroundColor or self.backgroundEmpty;
     local c2 = self.borderColor;
 
@@ -72,6 +124,18 @@ function ISItemSlot:render()
             self:drawRect(0, self:getHeight()-h, self:getWidth(), h, c.a, c.r, c.g, c.b);
         end
     end
+    
+    if self.drawProgress then
+        local delta = self.progressDelta or 0;
+        if self.resource and self.resource:getProgress()>0 then
+            delta = self.resource:getProgress();
+        end
+        if delta > 0 and delta<=1 then
+            local w = self:getWidth() * delta;
+            c = self.progressColor;
+            self:drawRect(0, 0, w, self:getHeight(), c.a, c.r, c.g, c.b);
+        end
+    end
 
     local x,y,w,h=4,4,self:getWidth()-8,self:getHeight()-8;
     if self.background and self.drawInnerBorder then
@@ -81,15 +145,25 @@ function ISItemSlot:render()
         self:drawTextureScaled(self.backDropTex, x, y, w, h, self.backDropTexCol.a, self.backDropTexCol.r, self.backDropTexCol.g, self.backDropTexCol.b);
     end
 
+    local itemRendered = true;
     if not self.hideItem then
         if self.storedItem then
             ISInventoryItem.renderItemIcon(self, self.storedItem, x, y, 1.0, w, h);
+        elseif self.storedScriptItem then
+            ISInventoryItem.renderScriptItemIcon(self, self.storedScriptItem, x, y, 1.0, w, h)
         elseif self.storedItemTex then
             self:drawTextureScaled(self.storedItemTex, x, y, w, h, 1.0, 1.0, 1.0, 1.0);
+        else
+            itemRendered = false;
         end
     end
 
-    local a = (self.storedItem or self.storedItemTex) and 1.0 or 0.4;
+    if self.showPreviewItem and not itemRendered and self.inputScript then
+        local item = self.inputScript:getPossibleInputItems():get(0);
+        ISInventoryItem.renderScriptItemIcon(self, item, x, y, 0.2, w, h)
+    end
+    
+    local a = (self.storedItem or self.storedItemTex or self.storedScriptItem) and 1.0 or 0.4;
     if self.actionAdd or self.actionRemove then
         a = 1.0;
     end
@@ -118,22 +192,30 @@ function ISItemSlot:render()
         end
     end
 
-    if self.resource and self.drawProgress and self.resource:getProgress()>0 then
-        local delta = self.resource:getProgress();
-        if delta > 0 and delta<=1 then
-            local h = (self:getHeight()-8) * delta;
-            c = self.progressColor;
-            self:drawRect(4, self:getHeight()-4-h, 4, h, c.a, c.r, c.g, c.b);
-        end
-        self:drawRectBorder(4, 4, 4, self:getHeight()-8, a, c2.r, c2.g, c2.b);
-    end
-
     a = origA;
+    y = self:getHeight();
     if self.resource and self.renderItemCount then
         x = self:getWidth()/2;
         y = self:getHeight() - 16;
+        local satisfiedAmount = self.resource:getItemUses(self.inputScript);
         local s = tostring(self.resource:storedSize());
         c2 = self.countColor;
+        
+        if self.renderItemCapacity then
+            local maxCount = self.resource:getItemCapacity();
+            s = tostring(satisfiedAmount) .. "/" .. tostring(maxCount);
+        elseif self.renderRequiredItemCount then
+            local requiredAmount = 0;
+            if self.inputScript then
+                local containsItem = self.resource:peekItem() and self.inputScript:containsItem(self.resource:peekItem():getScriptItem()) or false;
+                satisfiedAmount = containsItem and satisfiedAmount or 0;
+                requiredAmount = self.resource:peekItem() and self.inputScript:getAmount(self.resource:peekItem():getFullType()) or self.inputScript:getIntAmount();
+            end
+            s = tostring(satisfiedAmount) .. "/" .. tostring(requiredAmount);
+            if satisfiedAmount < requiredAmount or requiredAmount == 0 then
+                c2 = self.countInvalidColor;
+            end
+        end
 
         self:drawTextCentre(s, x-1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
         self:drawTextCentre(s, x-1, y-1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
@@ -141,6 +223,19 @@ function ISItemSlot:render()
         self:drawTextCentre(s, x+1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
 
         self:drawTextCentre(s, x, y, c2.r, c2.g, c2.b, a, UIFont.Small);
+        
+        y = y + getTextManager():getFontHeight(UIFont.Small);
+    end
+
+    if #self.statusIcons > 0 then
+        local iconSpacing = 2 * ICON_SCALE;
+        x = (self:getWidth() - (STATUS_ICON_SIZE * #self.statusIcons) - (iconSpacing * (#self.statusIcons-1))) / 2;
+        y = y + iconSpacing;
+        
+        for i = 1, #self.statusIcons do
+            self:drawTextureScaled(self.statusIcons[i], x, y, STATUS_ICON_SIZE, STATUS_ICON_SIZE, 1.0, 1.0, 1.0, 1.0);
+            x = x + STATUS_ICON_SIZE + iconSpacing;
+        end
     end
 end
 
@@ -186,6 +281,7 @@ end
 
 function ISItemSlot:hasValidItemInDrag()
     if not self.mouseEnabled then return false end
+    if not self.allowDrop then return false end
 
     local verifyFunc = self.onVerifyItem or self.defaultVerifyItem;
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
@@ -266,6 +362,10 @@ function ISItemSlot:onMouseUp(x, y)
             return;
         end
 
+        if not self.allowDrop then
+            return;
+        end
+
         local items = collectMouseDragItems(self, self.onVerifyItem or self.defaultVerifyItem);
 
         if #items == 0 then
@@ -300,6 +400,10 @@ function ISItemSlot:onRightMouseUp(x, y)
             --return;
         --end
         if self.resource and self.resource:isFull() then
+            return;
+        end
+
+        if not self.allowDrop then
             return;
         end
 
@@ -375,11 +479,16 @@ end
 function ISItemSlot:setStoredItem( _item )
     -- set stored item
     if self.storeItem == true then
-        if self.storedItem~=_item then
+        local itemCount = self.resource and self.resource:getItemAmount() or 0;
+        if self.storedItem~=_item or self.itemCount ~= itemCount then
             self.storedItem = _item;
+            self.itemCount = itemCount;
             if self.toolTip then
                 self:deactivateToolTip();
                 self:activateToolTip();
+            end
+            if self.onStoredItemChanged then
+                self.onStoredItemChanged(self.functionTarget, self)
             end
         end
     end
@@ -392,17 +501,17 @@ function ISItemSlot:setStoredItem( _item )
     end
 end
 
---[[
-function ISItemSlot:setStoredItemFake( _itemTex )
-    if _itemTex then
+function ISItemSlot:setStoredScriptItem( _item )
+    if _item then
         self.boxOccupied = true;
-        self.storedItemTex = _itemTex;
+        self.storedScriptItem = _item;
+        self.storedItemTex = _item:getNormalTexture();
     else
         self.boxOccupied = false;
+        self.storedScriptItem = nil;
         self.storedItemTex = nil;
     end
 end
---]]
 
 function ISItemSlot:setBackDropTex( _tex, _a, _r, _g, _b )
     self.backDropTex = _tex;
@@ -431,13 +540,7 @@ function ISItemSlot:activateToolTip()
             self.toolTip:addToUIManager();
             self.toolTip:bringToTop()
         else
-            if self.resource or self.storedItem then
-                self.toolTip = ISToolTipInv:new(self.resource or self.storedItem);
-                self.toolTip:initialise();
-                self.toolTip:addToUIManager();
-                self.toolTip:setOwner(self);
-                self.toolTip:setCharacter(self.character);
-            elseif self.toolTipText or (self.boxOccupied and self.toolTipTextItem) or (self:isLocked() and self.toolTipTextLocked) then
+            if self.toolTipText or (self.boxOccupied and self.toolTipTextItem) or (self:isLocked() and self.toolTipTextLocked) then
                 self.toolTip = ISToolTip:new();
                 self.toolTip:initialise();
                 self.toolTip:addToUIManager();
@@ -450,8 +553,22 @@ function ISItemSlot:activateToolTip()
                     self.toolTip.description = self.toolTipTextLocked;
                 end
                 self.toolTip:doLayout();
+            else
+                self.toolTip = ISToolTipItemSlot:new(self);
+                self.toolTip:initialise();
+                self.toolTip:addToUIManager();
+                self.toolTip:setOwner(self);
+                self.toolTip:setCharacter(self.character);
             end
         end
+    end
+end
+
+ISItemSlot.drawTooltip = function(_itemSlot, _tooltip)
+    if _itemSlot.resource then
+        _itemSlot.resource:DoTooltip(_tooltip);
+    elseif _itemSlot.storedItem then
+        _itemSlot.storedItem:DoTooltip(_tooltip);
     end
 end
 
@@ -478,6 +595,10 @@ function ISItemSlot:setResource(_resource)
     end
 end
 
+function ISItemSlot:getResource()
+    return self.resource;
+end
+
 function ISItemSlot:isLocked()
     return self.locked or (self.resource and self.resource:isLocked());
 end
@@ -486,8 +607,30 @@ function ISItemSlot:setLocked(_b)
     self.locked = _b;
 end
 
+function ISItemSlot:setStatusIcons(_iconTextureArray)
+    if _iconTextureArray == nil then
+        self.statusIcons = {};
+        return;
+    end
+    
+    -- check for changes
+    local requiresRebuild = #self.statusIcons ~= _iconTextureArray:size();
+    for i = 1, #self.statusIcons do
+        if not _iconTextureArray:contains(self.statusIcons[i]) then
+            requiresRebuild = true;            
+        end
+    end
+
+    if requiresRebuild then
+        self.statusIcons = {};
+        for i = 0, _iconTextureArray:size()-1 do
+            table.insert(self.statusIcons, _iconTextureArray:get(i));
+        end
+    end
+end
+
 --todo remove slot from params or trigger setSlot
-function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, onItemRemove, onVerifyItem, onBoxClicked)
+function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, onItemRemove, onVerifyItem, onBoxClicked, onSelectInputsButtonClicked)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -511,8 +654,11 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     o.progressColor = {r=0.8, g=0.8, b=0.2, a=1 };
 
     o.renderItemCount = true;
+    o.renderItemCapacity = false;
+    o.renderRequiredItemCount = false;
+    o.maxItemCount = nil;
     o.countColor = {r=1.0, g=1.0, b=1.0, a=1.0};
-    --o.countInvalidColor = {r=255/255, g=70/255, b=70/255, a=1.0};
+    o.countInvalidColor = {r=1.0, g=0.27, b=0.27, a=1.0};
 
     o.drawBorderLocked = false;
     o.borderLockedColor = {r=1.0, g=1.0, b=0.8, a=1};
@@ -527,14 +673,19 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     o.anchorBottom = false;
     o.mouseOverState = MOUSE_NONE;
     o.boxOccupied = false;
-
+    
     -- functions that can be overriden/customized
     o.functionTarget = target;
     o.onItemDropped = onItemDropped; --when items dragged under mouse are dropped in box
     o.onBoxClicked = onBoxClicked;
     o.onVerifyItem = onVerifyItem; --when items are checked to see if box can accept
     o.onItemRemove = onItemRemove; --when item gets removed in default 'boxClicked'
+    o.onSelectInputsButtonClicked = onSelectInputsButtonClicked; -- swap button to open the slot transfer panel
+    o.onStoredItemChanged = nil; -- called when stored item changes
     --end
+    
+    o.showSelectInputsButton = false;
+    
     o.character = nil;
     o.resource = resource; --slotcontroller slot
     --o.resourceIO = ResourceIO.Any; --todo remove instead do borders with style
@@ -558,13 +709,28 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     --tooltip when box isLocked
     o.toolTipTextLocked = false;
     o.bBlinkBorder = false;
+    
+    -- CraftLogic stuff
+    o.inputScript = nil;
+    o.showPreviewItem = false;
 
     o.borderColorOrig = o.borderColor;
     if o.resource and o.resource:getChannel()~=ResourceChannel.NO_CHANNEL then
         o.borderColor = colorToTable(o.resource:getChannel():getColor());
     end
 
+    o.textureSwapInput = getTexture("media/ui/Entity/BTN_Swap_Icon_48x48.png");
+    o.textureMissingInput = getTexture("media/ui/Entity/BTN_Missing_Icon_48x48.png");
+    o.selectInputButtonBackgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
+    o.selectInputButtonBackgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};
+    o.selectInputButtonTextureColor = {r=0, g=0, b=0, a=1};
+    o.selectInputButtonTextureColorMouseOver = {r=0.909, g=0.929, b=0.78, a=1};
+
+    o.allowDrop = true;
     o.drawProgress = false;
+    o.progressDelta = 0;
+    
+    o.statusIcons = {};
 
     return o
 end

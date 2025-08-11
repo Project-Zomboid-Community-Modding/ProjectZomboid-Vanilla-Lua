@@ -8,6 +8,9 @@ ISAddFuelAction = ISBaseTimedAction:derive("ISAddFuelAction");
 
 function ISAddFuelAction:isValid()
 	self.campfire:updateFromIsoObject()
+	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(self.campfire:getSquare())
+	if (campfire.fuelAmt + self.fuelAmt) > getCampingFuelMax() then return false end
+
 	if isClient() and self.item then
         return self.campfire:getObject() and
             self.character:getInventory():containsID(self.item:getID())

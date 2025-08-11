@@ -883,7 +883,7 @@ function ISHutchUI:onCleanFloor()
     if luautils.walkAdj(self.chr, self.hutch:getEntrySq()) then
         local water = self.chr:getInventory():getFirstWaterFluidSources(true, true)
         local bleach = self.chr:getInventory():getFirstCleaningFluidSources()
-        local mop = self.chr:getInventory():getAllTagEval("CleanStains", predicateNotBroken):get(0)
+        local mop = self.chr:getInventory():getFirstTagEvalRecurse("CleanStains", predicateNotBroken)
         ISWorldObjectContextMenu.equip(self.chr, self.chr:getPrimaryHandItem(), mop, true, false)
         ISTimedActionQueue.add(ISHutchCleanFloor:new(self.chr, self.hutch, water, mop, bleach))
     end

@@ -96,7 +96,10 @@ end
 
 function ISDuplicateKeybindDialog:assignKey(keyText, keybind, key)
 	keyText.keyCode = key
-	keyText.btn:setTitle(getKeyName(key))
+	keyText.shift = self.shift;
+	keyText.ctrl = self.ctrl;
+	keyText.alt = self.alt;
+	keyText.btn:setTitle(MainOptions.getKeyPrefix(keyText) .. getKeyName(key))
 	MainOptions.instance:onKeybindChanged(keybind, key)
 	MainOptions.instance.gameOptions.changed = true
 end
@@ -128,7 +131,7 @@ function ISDuplicateKeybindDialog:nextDuplicate()
 	end
 end
 
-function ISDuplicateKeybindDialog:new(key, keybindName, keybind2Name)
+function ISDuplicateKeybindDialog:new(key, keybindName, keybind2Name, shift, ctrl, alt)
 	local width = 500
 	local height = LABEL_HGT*2+BUTTON_HGT*3+UI_BORDER_SPACING*5+2
 	local x = (getCore():getScreenWidth() - width) / 2
@@ -138,6 +141,9 @@ function ISDuplicateKeybindDialog:new(key, keybindName, keybind2Name)
 	setmetatable(o, self)
 	self.__index = self
 	o.key = key
+	o.shift = shift;
+	o.ctrl = ctrl;
+	o.alt = alt;
 	o.keybindName = keybindName
 	o.keybind2Name = keybind2Name
 	return o

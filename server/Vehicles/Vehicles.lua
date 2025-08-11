@@ -1403,9 +1403,9 @@ function VehicleUtils.UninstallPart(part, chr)
 	if ZombRand(100) < success then
 		chr:addMechanicsItem(part:getInventoryItem():getID() .. part:getVehicle():getMechanicalID() .. "0", part, getGameTime():getCalender():getTimeInMillis());
 		local content = part:getContainerContentAmount();
+		item:setItemCapacity(content);
 		part:setInventoryItem(nil);
 		chr:getInventory():AddItem(item);
-		item:setItemCapacity(content);
 		if keyvalues and keyvalues.complete then
 			VehicleUtils.callLua(keyvalues.complete, part:getVehicle(), part, item);
 		end

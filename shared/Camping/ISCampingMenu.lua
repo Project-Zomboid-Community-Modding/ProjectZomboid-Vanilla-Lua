@@ -181,6 +181,11 @@ function ISCampingMenu.doAddFuelOption(context, worldobjects, currentFuel, fuelI
 			option = subMenuFuel:addActionsOption(getText("ContextMenu_AllWithCount", numItems), ISCampingMenu.onAddAllFuel, target, timedAction, currentFuel)
 			option.toolTip = ISWorldObjectContextMenu.addToolTip()
 			option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(duration))
+            if ( currentFuel + duration ) > getCampingFuelMax() then
+                option.notAvailable = true;
+                option.toolTip = ISWorldObjectContextMenu.addToolTip();
+                option.toolTip.description = getText("ContextMenu_Fuel_Full3");
+            end
 		end
 	end
 
@@ -197,14 +202,29 @@ function ISCampingMenu.doAddFuelOption(context, worldobjects, currentFuel, fuelI
 			option = subMenu:addActionsOption(getText("ContextMenu_One"), ISCampingMenu.onAddFuel, target, item:getFullType(), timedAction, currentFuel)
 			option.toolTip = ISWorldObjectContextMenu.addToolTip()
 			option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(item)))
+            if ( currentFuel + ISCampingMenu.getFuelDurationForItem(item) ) > getCampingFuelMax() then
+                option.notAvailable = true;
+                option.toolTip = ISWorldObjectContextMenu.addToolTip();
+                option.toolTip.description = getText("ContextMenu_Fuel_Full3");
+            end
 
 			option = subMenu:addActionsOption(getText("ContextMenu_AllWithCount", count), ISCampingMenu.onAddMultipleFuel, target, item:getFullType(), timedAction, currentFuel)
 			option.toolTip = ISWorldObjectContextMenu.addToolTip()
 			option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(item) * count))
+            if ( currentFuel + (ISCampingMenu.getFuelDurationForItem(item) * count) ) > getCampingFuelMax() then
+                option.notAvailable = true;
+                option.toolTip = ISWorldObjectContextMenu.addToolTip();
+                option.toolTip.description = getText("ContextMenu_Fuel_Full3");
+            end
 		else
 			option = subMenuFuel:addActionsOption(label, ISCampingMenu.onAddFuel, target, item:getFullType(), timedAction, currentFuel)
 			option.toolTip = ISWorldObjectContextMenu.addToolTip()
 			option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(ISCampingMenu.getFuelDurationForItem(item)))
+            if ( currentFuel + ISCampingMenu.getFuelDurationForItem(item) ) > getCampingFuelMax() then
+                option.notAvailable = true;
+                option.toolTip = ISWorldObjectContextMenu.addToolTip();
+                option.toolTip.description = getText("ContextMenu_Fuel_Full3");
+            end
 		end
 	end
 	return true
@@ -235,7 +255,7 @@ function ISCampingMenu.doLightFireOption(playerObj, context, worldobjects, hasFu
 			for _,item in ipairs(fuelInfo.starters) do
 				option = subMenu:addActionsOption(label..' + '..item:getName(), ISCampingMenu.onLightFromLiterature, v:getFullType(), item, target, tinderAction)
 				option.toolTip = ISWorldObjectContextMenu.addToolTip()
-				option.toolTip.description = getText("IGUI_BBQ_FuelAmount", round(fuelAmt,2) )
+				option.toolTip.description = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(round(fuelAmt,2)))
 			end
 		end
 	end
@@ -275,6 +295,12 @@ ISCampingMenu.doCampingMenu = function(player, context, worldobjects, test)
 		tooltip.description = getText("ContextMenu_CampfireKit_tooltip")
 		disabledOption.toolTip = tooltip
 		disabledOption.isDisabled = true;
+
+		local disabledOption2 = context:addOption(getText("ContextMenu_Firetiles"));
+		local tooltip = ISWorldObjectContextMenu.addToolTip()
+		tooltip.description = getText("ContextMenu_Firetiles_tooltip")
+		disabledOption2.toolTip = tooltip
+		disabledOption2.isDisabled = true;
 	end
 	-- TODO: the preceding section is to be removed in build 43.
 

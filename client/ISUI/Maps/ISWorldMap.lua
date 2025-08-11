@@ -9,9 +9,9 @@ require "ISUI/Maps/ISWorldMapKey"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local TERRAIN_IMAGE = getDebug()
 
 -----
 
@@ -130,6 +130,7 @@ function WorldMapOptions:getVisibleOptions()
 				table.insert(result, option)
 			end
 		end
+        table.sort(result, function(a,b) return not string.sort(a:getName(), b:getName()) end)
 		return result;
 	end
 	local optionNames = {}
@@ -142,6 +143,10 @@ function WorldMapOptions:getVisibleOptions()
 	table.insert(optionNames, "HighlightStreet")
 	table.insert(optionNames, "LargeStreetLabel")
 	table.insert(optionNames, "ShowStreetNames")
+	table.insert(optionNames, "MapLabels")
+	if TERRAIN_IMAGE then
+	    table.insert(optionNames, "TerrainImage")
+	end
 	for _,optionName in ipairs(optionNames) do
 		for i=1,self.map.mapAPI:getOptionCount() do
 			local option = self.map.mapAPI:getOptionByIndex(i-1)
@@ -306,7 +311,9 @@ function ISWorldMap:createChildren()
 
 	local buttons = {}
 
-	self.optionBtn = ISButton:new(0, 0, btnSize, btnSize, getText("UI_mainscreen_option"), self, self.onChangeOptions)
+	self.optionBtn = ISButton:new(0, 0, btnSize, btnSize, "", self, self.onChangeOptions)
+	self.optionBtn:setImage(getTexture("media/ui/inventoryPanes/Button_Settings.png"))
+	self.optionBtn:forceImageSize(self.texViewTerrainImage:getWidth(), self.texViewTerrainImage:getHeight())
 	self.buttonPanel:addChild(self.optionBtn)
 	table.insert(buttons, self.optionBtn)
 
@@ -318,12 +325,12 @@ function ISWorldMap:createChildren()
 	self.buttonPanel:addChild(self.zoomOutButton)
 	table.insert(buttons, self.zoomOutButton)
 
-	if getDebug() then
-		self.pyramidBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self, self.onTogglePyramid)
-		self.pyramidBtn:setImage(self.texViewPyramid)
-		self.buttonPanel:addChild(self.pyramidBtn)
-		table.insert(buttons, self.pyramidBtn)
-	end
+    if TERRAIN_IMAGE then
+        self.terrainBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self, self.onToggleTerrainImage)
+        self.terrainBtn:setImage(self.texViewTerrainImage)
+        self.buttonPanel:addChild(self.terrainBtn)
+        table.insert(buttons, self.terrainBtn)
+    end
 
 	self.perspectiveBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self, self.onChangePerspective)
 	self.perspectiveBtn:setImage(self.isometric and self.texViewIsometric or self.texViewOrthographic)
@@ -361,6 +368,7 @@ end
 
 function ISWorldMap:prerender()
 	ISPanelJoypad.prerender(self)
+    self.mapAPI:getSymbolsAPIv2():initDefaultAnnotations() -- only needed when the map editor changed things
 	self.symbolsUI:prerenderMap()
 	if self.mapAPI:getBoolean("ColorblindPatterns") ~= getCore():getOptionColorblindPatterns() then
 		MapUtils.initDefaultStyleV1(self)
@@ -371,6 +379,9 @@ function ISWorldMap:prerender()
 	self:positionStashMap()
 	MapUtils.renderDarkModeOverlay(self)
 	self:pickMouseOverStreet()
+	if TERRAIN_IMAGE then
+	    self:checkTerrainImage()
+	end
 end
 
 function ISWorldMap:render()
@@ -633,10 +644,13 @@ function ISWorldMap:pickMouseOverStreet()
     local streetsAPI = self.mapAPI:getStreetsAPI()
     streetsAPI:setMouseOverStreet(nil, 0.0, 0.0)
     if not self.mapAPI:getBoolean("ShowStreetNames") then return end
+    if self.symbolsUI.currentTool then return end -- don't highlight streets when editing symbols, it's distracting
     local mx,my = self:getMouseX(), self:getMouseY()
    	if self.playerNum and ((self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] ~= nil and not wasMouseActiveMoreRecentlyThanJoypad())) then
         mx = self:getWidth() / 2
         my = self:getHeight() / 2
+    elseif self:isMouseOverChild() then
+        return
     end
     if not streetsAPI:canPickStreet(mx, my) then return end
     local mouseOverStreet = streetsAPI:pickStreet(mx, my)
@@ -1024,33 +1038,35 @@ function ISWorldMap:onCenterOnPlayer()
 	self.mapAPI:transitionTo(self.character:getX(), self.character:getY(), self.mapAPI:getZoomF())
 end
 
-function ISWorldMap:onTogglePyramid()
-    if self.showImagePyramid then
+if TERRAIN_IMAGE then
+
+function ISWorldMap:checkTerrainImage()
+    if self.isTerrainImage ~= self.mapAPI:getBoolean("TerrainImage") then
+        self:onToggleTerrainImage()
+    end
+end
+
+function ISWorldMap:onToggleTerrainImage()
+    self.isTerrainImage = not self.isTerrainImage
+    if self.isTerrainImage then
+	    self:showTerrainImage()
+    else
 	    MapUtils.initDefaultStyleV3(self)
 	    MapUtils.overlayPaper(self)
-    else
-        local styleAPI = self.mapAPI:getStyleAPI()
-        styleAPI:clear()
-        local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
-        pyramidLayer:setPyramidFileName("pyramid.zip")
-        --[[
-        self.mapAPI:addImagePyramid("media/maps/Muldraugh, KY/spawnSelectImagePyramid.zip")
-        local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
-        pyramidLayer:setPyramidFileName("spawnSelectImagePyramid.zip")
-        --]]
-        pyramidLayer:addFill(0.0, 255.0, 255.0, 255.0, 255.0)
     end
-    self.showImagePyramid = not self.showImagePyramid
---[[
-	if self.mapAPI:getBoolean("ImagePyramid") then
-		self.mapAPI:setBoolean("ImagePyramid", false)
-		self.mapAPI:setBoolean("Features", true)
-	else
-		self.mapAPI:setBoolean("ImagePyramid", true)
-		self.mapAPI:setBoolean("Features", false)
-	end
- ]]
+    self.mapAPI:setBoolean("TerrainImage", self.isTerrainImage)
 end
+
+function ISWorldMap:showTerrainImage()
+    local styleAPI = self.mapAPI:getStyleAPI()
+    styleAPI:clear()
+    local pyramidLayer = styleAPI:newPyramidLayer("pyramid")
+    pyramidLayer:setPyramidFileName("pyramid.zip")
+    pyramidLayer:addFill(0.0, 255.0, 255.0, 255.0, 255.0)
+    MapUtils.initDefaultTextLayersV3(self)
+end
+
+end -- TERRAIN_IMAGE
 
 function ISWorldMap:onZoomInButton()
 	self.mapAPI:zoomAt(self.width / 2, self.height / 2, -2)
@@ -1249,6 +1265,12 @@ function ISWorldMap:updateJoypad()
 		y = getJoypadMovementAxisY(self.joyfocus.id)
 		if (y > -0.5 and y < 0.5) then y = 0 end
 	end
+	if self.symbolsUI.currentTool == self.symbolsUI.tools.RotateAnnotation then
+        if self.symbolsUI.currentTool.dragging then
+            x = 0
+            y = 0
+        end
+    end
 	if x ~= 0 then
 		if not self.povXms then
 			self.povXms = currentTimeMs
@@ -1353,12 +1375,19 @@ function ISWorldMap:saveSettings()
 	settings:setDouble("WorldMap.CenterY", self.mapAPI:getCenterWorldY())
 	settings:setDouble("WorldMap.Zoom", self.mapAPI:getZoomF())
 	settings:setBoolean("WorldMap.Isometric", self.mapAPI:getBoolean("Isometric"))
+	settings:setBoolean("WorldMap.ShowPrintMedia", self.showPrintMedia == true)
 	settings:setBoolean("WorldMap.ShowSymbolsUI", self.symbolsUI:isVisible())
+	if TERRAIN_IMAGE then
+	    settings:setBoolean("WorldMap.TerrainImage", self.mapAPI:getBoolean("TerrainImage"))
+	end
 	settings:save()
 end
 
 function ISWorldMap:restoreSettings()
 	if not MainScreen.instance or not MainScreen.instance.inGame then return end
+	if TERRAIN_IMAGE then
+        self.isTerrainImage = false
+    end
 	local settings = WorldMapSettings.getInstance()
 	if settings:getFileVersion() ~= 1 then return end
 	local centerX = settings:getDouble("WorldMap.CenterX", 0.0)
@@ -1366,6 +1395,7 @@ function ISWorldMap:restoreSettings()
 	local zoom = settings:getDouble("WorldMap.Zoom", 0.0)
 	if zoom == 0.0 then return end -- ISMiniMap loaded settings for the first time
 	local isometric = settings:getBoolean("WorldMap.Isometric")
+	self.showPrintMedia = settings:getBoolean("WorldMap.ShowPrintMedia")
 	local showSymbolsUI = settings:getBoolean("WorldMap.ShowSymbolsUI")
 	self.mapAPI:centerOn(centerX, centerY)
 	self.mapAPI:setZoom(zoom)
@@ -1376,6 +1406,14 @@ function ISWorldMap:restoreSettings()
 	end
 	self.symbolsUI:setVisible(showSymbolsUI)
 	self.keyUI:setVisible(showSymbolsUI)
+	if TERRAIN_IMAGE then
+	    local terrainImage = settings:getBoolean("WorldMap.TerrainImage")
+	    self.isTerrainImage = terrainImage
+	    self.mapAPI:setBoolean("TerrainImage", terrainImage)
+        if terrainImage then
+            self:showTerrainImage()
+        end
+	end
 end
 
 function ISWorldMap:initDataAndStyle()
@@ -1395,6 +1433,7 @@ function ISWorldMap:initDataAndStyle()
 	end
 	MapUtils.initDefaultStyleV3(self)
 	MapUtils.overlayPaper(self)
+	mapAPI:getSymbolsAPIv2():initDefaultAnnotations()
 end
 
 function ISWorldMap:new(x, y, width, height)
@@ -1414,7 +1453,7 @@ function ISWorldMap:new(x, y, width, height)
 	o.cross = getTexture("media/ui/LootableMaps/mapCross.png")
 	o.texViewIsometric = getTexture("media/textures/worldMap/ViewIsometric.png")
 	o.texViewOrthographic = getTexture("media/textures/worldMap/ViewOrtho.png")
-	o.texViewPyramid = getTexture("media/textures/worldMap/ViewPyramid.png")
+	o.texViewTerrainImage = getTexture("media/textures/worldMap/ViewPyramid.png")
 	return o
 end
 

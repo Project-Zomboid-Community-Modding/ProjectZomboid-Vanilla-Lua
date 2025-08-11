@@ -86,6 +86,7 @@ AnimalDefinitions.animals["turkeypoult"].stages = AnimalDefinitions.stages["turk
 AnimalDefinitions.animals["turkeypoult"].breeds = copyTable(AnimalDefinitions.breeds["turkey"].breeds);
 AnimalDefinitions.animals["turkeypoult"].alwaysFleeHumans = false;
 AnimalDefinitions.animals["turkeypoult"].canBePicked = true;
+AnimalDefinitions.animals["turkeypoult"].canBeKilledWithoutWeapon = true;
 AnimalDefinitions.animals["turkeypoult"].minEnclosureSize = 20;
 AnimalDefinitions.animals["turkeypoult"].wanderMul = 200;
 AnimalDefinitions.animals["turkeypoult"].hutches = "hutchhen,hutchturkey";

@@ -376,6 +376,10 @@ ISCraftingUI.sortByName = function(a,b)
     return string.sort(b.recipe:getName(), a.recipe:getName());
 end
 
+ISCraftingUI.sortByTranslationName = function(a,b)
+    return string.sort(b.recipe:getTranslationName(), a.recipe:getTranslationName());
+end
+
 function ISCraftingUI:getContainers()
     if not self.character then return end
     -- get all the surrounding inventory of the player, gonna check for the item in them too
@@ -1722,6 +1726,11 @@ ISCraftingUI.onPressKey = function(key)
     if getCore():isKey("Crafting UI", key) then
         -- since old crafting is deprecated, we open the new crafting interface instead
         ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
+--         ISCraftingUI.toggleCraftingUI();
+    end
+    if getCore():isKey("Building UI", key) then
+        -- since old crafting is deprecated, we open the new crafting interface instead
+        ISEntityUI.OpenBuildWindow(getSpecificPlayer(0), nil);
 --         ISCraftingUI.toggleCraftingUI();
     end
 end

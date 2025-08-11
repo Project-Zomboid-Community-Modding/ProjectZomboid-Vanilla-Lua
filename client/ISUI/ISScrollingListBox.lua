@@ -277,6 +277,9 @@ end
 
 function ISScrollingListBox:doDrawItem(y, item, alt)
 	if not item.height then item.height = self.itemheight end -- compatibililty
+    if (y + self:getYScroll() + self.itemheight < 0) or (y + self:getYScroll() >= self.height) then
+        return y + item.height
+    end
 	if self.selected == item.index then
 		self:drawSelection(0, y, self:getWidth(), item.height-1);
 	elseif (self.mouseoverselected == item.index) and self:isMouseOver() and not self:isMouseOverScrollBar() then

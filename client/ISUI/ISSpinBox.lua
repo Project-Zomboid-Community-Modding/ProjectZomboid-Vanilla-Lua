@@ -39,6 +39,14 @@ function ISSpinBox:onButton(button)
 	end
 end
 
+function ISSpinBox:onMouseWheel(delta)
+    if delta > 0 then
+        self:onButton(self.leftButton)
+    else
+        self:onButton(self.rightButton)
+    end
+end
+
 function ISSpinBox:prerender()
 	self.leftButton:setEnable(self.selected > 1)
 	self.rightButton:setEnable(self.selected < #self.options)
@@ -83,9 +91,7 @@ function ISSpinBox:render()
 end
 
 function ISSpinBox:new(x, y, width, height, target, targetFunc)
-	local o = ISPanel:new(x, y, width, height)
-	setmetatable(o, self)
-	self.__index = self
+	local o = ISPanel.new(self, x, y, width, height)
 	o.backgroundColor = {r=0, g=0, b=0, a=1}
 	o.borderColor = {r=1, g=1, b=1, a=0.5}
 	o.options = {}

@@ -13,7 +13,7 @@ end
 Events.OnGameStart.Add(Fishing.Handler.OnGameStart)
 
 function Fishing.Handler.onEquipPrimary(player, inventoryItem)
-    if player:isLocal() and not player:isAiming() then
+    if player:isLocal() then
         Fishing.Handler.handleFishing(player, inventoryItem)
     end
 end

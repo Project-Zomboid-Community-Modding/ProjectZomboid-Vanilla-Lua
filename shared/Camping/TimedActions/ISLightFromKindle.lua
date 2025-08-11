@@ -85,6 +85,8 @@ function ISLightFromKindle:start()
     end
 	self.item:setJobType(campingText.lightCampfire);
 	self.item:setJobDelta(0.0);
+	self:setActionAnim("LightFire_KnotchedPlank")
+    self:setOverrideHandModels("TreeBranchCrafting");
 	self.sound = self.character:playSound("CampfireLight")
 end
 

@@ -64,6 +64,7 @@ function WorldMapEditorMode:new(editor)
 	o.editor = editor
 	o.mapUI = editor
 	o.mapAPI = editor.mapAPI
+	o.streetsAPI = editor.streetsAPI
 	o.styleAPI = editor.styleAPI
 	o.symbolsAPI = editor.symbolsAPI
 	return o

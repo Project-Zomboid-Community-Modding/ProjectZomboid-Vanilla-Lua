@@ -280,10 +280,13 @@ function ISInventoryTransferAction:start()
         -- Hack: The put_down breed sound will be played by IsoGridSquare.AddWorldInventoryItem().
     elseif not ISInventoryTransferAction.putSound or not self.character:getEmitter():isPlaying(ISInventoryTransferAction.putSound) then
         -- Players with the Deaf trait don't play sounds.  In multiplayer, we mustn't send multiple sounds to other clients.
-        ISInventoryTransferAction.putSoundContainer = self.destContainer
-        if ISInventoryTransferAction.putSoundTime + ISInventoryTransferAction.putSoundDelay < getTimestamp() then
-            ISInventoryTransferAction.putSoundTime = getTimestamp()
-            ISInventoryTransferAction.putSound = self.character:getEmitter():playSound(self:getSoundName())
+        local soundName = self:getTransferStartSoundName()
+        if soundName then
+            ISInventoryTransferAction.putSoundContainer = self.destContainer
+            if ISInventoryTransferAction.putSoundTime + ISInventoryTransferAction.putSoundDelay < getTimestamp() then
+                ISInventoryTransferAction.putSoundTime = getTimestamp()
+                ISInventoryTransferAction.putSound = self.character:getEmitter():playSound(soundName)
+            end
         end
     end
 --    end
@@ -368,7 +371,10 @@ function ISInventoryTransferAction:playDestContainerCloseSound()
 --]]
 end
 
-function ISInventoryTransferAction:getSoundName()
+function ISInventoryTransferAction:getTransferStartSoundName()
+    if self.srcContainer ~= nil and self.srcContainer:getTakeSound() ~= nil then
+        return self.srcContainer:getTakeSound()
+    end
     if not self.destContainer then return "PutItemInBag" end
     if (self.destContainer:getType() == "floor") and ((self.item:getType() == "CorpseMale") or (self.item:getType() == "CorpseFemale")) then
         return self.item:getDropSound() or "PutItemInBag"
@@ -386,7 +392,12 @@ function ISInventoryTransferAction:getSoundName()
 	if self.destContainer:getType() == "trough" and self.item:getAnimalFeedType() == "AnimalFeed" then
 		return "AnimalFeederAddFeed"
 	end
-	return self.destContainer:getPutSound() or "PutItemInBag"
+	return "PutItemInBag"
+end
+
+function ISInventoryTransferAction:getTransferCompleteSoundName()
+    if not self.destContainer then return nil end
+	return self.destContainer:getPutSound()
 end
 
 function ISInventoryTransferAction:stop()
@@ -631,6 +642,11 @@ function ISInventoryTransferAction:transferItem(item)
 			ItemPicker.updateOverlaySprite(self.destContainer:getParent())
 		end
 	end
+
+    local soundName = self:getTransferCompleteSoundName()
+    if soundName ~= nil and not self.character:getEmitter():isPlaying(soundName) then
+        self.character:getEmitter():playSound(soundName)
+    end
 end
 
 function ISInventoryTransferAction:setOnComplete(func, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)

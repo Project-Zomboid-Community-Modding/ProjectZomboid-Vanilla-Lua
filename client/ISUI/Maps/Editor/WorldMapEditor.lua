@@ -16,8 +16,9 @@ function WorldMapEditor:instantiate()
 	self.javaObject = UIWorldMap.new(self)
 	self.mapAPI = self.javaObject:getAPIv3()
 	self.mapAPI:setMapItem(self.mapItem)
+	self.streetsAPI = self.mapAPI:getStreetsAPI()
 	self.styleAPI = self.mapAPI:getStyleAPI()
-	self.symbolsAPI = self.mapAPI:getSymbolsAPI()
+	self.symbolsAPI = self.mapAPI:getSymbolsAPIv2()
 	self.javaObject:setX(self.x)
 	self.javaObject:setY(self.y)
 	self.javaObject:setWidth(self.width)
@@ -219,6 +220,9 @@ function WorldMapEditor:onKeyPress(key)
 		self:close()
 		return
 	end
+    if key == Keyboard.KEY_I then
+        self.mapAPI:setBoolean("Isometric", not self.mapAPI:getBoolean("Isometric"))
+    end
 end
 
 function WorldMapEditor:onKeyRelease(key)

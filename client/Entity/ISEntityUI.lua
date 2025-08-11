@@ -35,14 +35,10 @@ function ISEntityUI.WalkToEntity( _player, _entity, _dist )
 end
 
 function ISEntityUI.ItemSlotRemoveSingleItem( _player, _entity, _itemSlot, _item )
-    if true then
-        --TODO disabled, sort if we still need this
-        return;
-    end
-    if _item and _player and _player:getInventory() then
-        _player:getInventory():AddItem(_item);
-    elseif _item then
-        log(DebugType.CraftLogic, "no player or player inventory.")
+    if ISEntityUI.WalkToEntity( _player, _entity) then
+        local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource, _item)
+        action.itemSlot = _itemSlot
+        ISTimedActionQueue.add(action);
     end
 end
 
@@ -383,7 +379,7 @@ local function createWindow(_player, _windowInstance, _isoObject)
     local width = 0;
     local height = 0;
     
-    local windowKey = _windowInstance.xuiStyleName or "Default";
+    local windowKey = _windowInstance.xuiStyleName or (_windowInstance.entity and _windowInstance.entity:getName()) or "Default";
     
     -- close all other entity windows - we only allow one open at the moment. - spurcival
     ISEntityUI.CloseWindows();
@@ -475,7 +471,7 @@ function ISEntityUI.OpenWindow(_player, _entity)
 end
 
 function ISEntityUI.OnCloseWindow(_window)
-    local windowKey = _window.xuiStyleName or "Default";
+    local windowKey = _window.xuiStyleName or (_window.entity and _window.entity:getName()) or "Default";
     if _window and _window.playerNum and ISEntityUI.players[_window.playerNum] and ISEntityUI.players[_window.playerNum].windows[windowKey] then
         if not ISEntityUI.players[_window.playerNum].windows[windowKey].instance then
             log(DebugType.CraftLogic, "No window instance found!");
@@ -537,17 +533,19 @@ function ISEntityUI.CloseWindows()
     end
 end
 
-function ISEntityUI.OpenBuildWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface)
+function ISEntityUI.OpenBuildWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface, recipe)
     local windowInstance = ISXuiSkin.build(skin, "BuildWindow", ISBuildWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
+
+    if recipe then windowInstance.BuildPanel.logic:setRecipe(recipe) end;
 end
 
 --****************************************************
 -- Main entry for opening non-entity Craft windows
 --****************************************************
-function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface)
+function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface, recipe, itemString)
     if (not _isoObject) and (not _ignoreFindSurface) then
-    -- reduced the radius because only adjacent squares will pass as valid for ISOGridSQuare canReachTo tests.
+    -- reduced the radius because only adjacent squares will pass as valid for ISOGridSquare canReachTo tests.
     -- we probably need to restrict crafting to adjacent square anyways because of all the edge case permutations that would emerge otherwise
         _isoObject = ISEntityUI.FindCraftSurface(_player, 1);
 --         _isoObject = ISEntityUI.FindCraftSurface(_player, 4);
@@ -557,6 +555,17 @@ function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ig
     local windowStyle = "HandcraftWindow"; --ISEntityUI.GetWindowStyleName(_entity);
     local windowInstance = ISXuiSkin.build(skin, windowStyle, ISHandcraftWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
+    windowInstance:bringToTop()
+
+    if recipe then windowInstance.handCraftPanel.logic:setRecipe(recipe) end;
+
+    if itemString then
+        windowInstance.handCraftPanel._filterString = itemString;
+        windowInstance.handCraftPanel._filterMode = "InputName";
+        windowInstance.handCraftPanel:filterRecipeList();
+        windowInstance.handCraftPanel.recipesPanel.recipeFilterPanel.filterTypeCombo:setSelected(2)
+        windowInstance.handCraftPanel.recipesPanel.recipeFilterPanel.entryBox:setText(itemString)
+    end
 
 --     if _isoObject  and getCore():getOptionDoContainerOutline() then
 --         _isoObject:setOutlineHighlight(true);
@@ -588,7 +597,6 @@ function ISEntityUI.FindCraftSurface(_player, _radius)
                             local obj = objects:get(i);
                             -- note that using this specific function is technically redundant, in that it also checks square canReachTo square, but for the sake of consistency still using it
                             if _player:canUseAsGenericCraftingSurface(obj) then return obj end
---                             if obj:isGenericCraftingSurface() then return obj end
                         end
                     end
                     done[square] = true;

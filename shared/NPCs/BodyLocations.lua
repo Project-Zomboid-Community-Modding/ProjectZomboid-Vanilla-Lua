@@ -632,6 +632,9 @@ group:setExclusive("ForeArm_Right", "RightWrist")
 group:setExclusive("HandsLeft", "LeftArm")
 group:setExclusive("HandsRight", "RightArm")
 
+--can't wear neck textures with neck models (2d and 3d ties)
+group:setExclusive("Neck", "Neck_Texture")
+
 
 -- Backwards compatibility
 group:getLocation("Tshirt"):addAlias("Top")
@@ -766,7 +769,7 @@ group:setHideModel("TorsoExtraVest","Neck")
 group:setHideModel("TorsoExtraVestBullet","Neck")
 group:setHideModel("Boilersuit","Neck")
 group:setHideModel("PantsExtra","Neck")
-group:setHideModel("JacketSuit","Neck")
+--group:setHideModel("JacketSuit","Neck") --so 3d model Ties can be seen with suits
 group:setHideModel("FullSuit","Neck")
 group:setHideModel("FullSuitHead","Neck")
 group:setHideModel("FullSuitHeadSCBA","Neck")

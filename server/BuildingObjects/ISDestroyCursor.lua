@@ -296,7 +296,7 @@ function ISDestroyCursor:canDestroy(object)
 		if luautils.stringStarts(spriteName, 'd_') then return false end
 		if luautils.stringStarts(spriteName, 'e_') then return false end
 		if luautils.stringStarts(spriteName, 'f_') then return false end
-		if luautils.stringStarts(spriteName, 'vegetation_') and not luautils.stringStarts(spriteName, 'vegetation_indoor') then return false end
+		if luautils.stringStarts(spriteName, 'vegetation_') and not (luautils.stringStarts(spriteName, 'vegetation_indoor') or luautils.stringStarts(spriteName, "vegetation_drying")) then return false end
 
 		if luautils.stringStarts(spriteName, 'trash_01') then return false end
 		if luautils.stringStarts(spriteName, 'street_curbs') then return false end

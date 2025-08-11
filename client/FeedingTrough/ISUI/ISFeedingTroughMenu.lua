@@ -72,7 +72,8 @@ function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, world
 	local option
 	local tooltip
 
-	subMenu:addOption(getText("ContextMenu_FeedingTrough_Info"), isoObject, ISFeedingTroughMenu.onInfo, playerObj)
+	option = subMenu:addOption(getText("ContextMenu_FeedingTrough_Info"), isoObject, ISFeedingTroughMenu.onInfo, playerObj)
+	option.iconTexture = getTexture("media/ui/inventoryPanes/Button_Info.png")
 
 	if AnimalContextMenu.cheat then
 		subMenu:addDebugOption("Add Food", playerObj, ISFeedingTroughMenu.onAddFoodDebug, isoObject);

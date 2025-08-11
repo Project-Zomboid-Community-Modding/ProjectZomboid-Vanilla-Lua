@@ -67,6 +67,8 @@ function ISBBQLightFromKindle:start()
 	self.item:setJobDelta(0.0);
 	self.plank:setJobType(campingText.lightCampfire);
 	self.plank:setJobDelta(0.0);
+	self:setActionAnim("LightFire_KnotchedPlank_Stood")
+    self:setOverrideHandModels("TreeBranchCrafting");
 	self.sound = self.character:playSound("BBQRegularLight")
 end
 

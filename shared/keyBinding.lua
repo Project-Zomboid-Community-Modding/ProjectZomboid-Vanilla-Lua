@@ -143,6 +143,10 @@ bind.value = "Crafting UI";
 bind.key = Keyboard.KEY_B -- 48;
 table.insert(keyBinding, bind);
 bind = {};
+bind.value = "Building UI";
+bind.key = Keyboard.KEY_NONE; -- not bound
+table.insert(keyBinding, bind);
+bind = {};
 bind.value = "Main Menu";
 bind.key = Keyboard.KEY_ESCAPE;
 table.insert(keyBinding, bind);

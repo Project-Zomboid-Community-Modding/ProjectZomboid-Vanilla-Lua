@@ -260,11 +260,7 @@ function ISWidgetBuildControl:prerender()
         --end
     --else
     if self.buttonCraft then
-        local cheat = self.player:isBuildCheat()
-        if self.logic and self.logic:isCraftCheat() then
-            cheat = true;
-        end
-
+        local cheat = self.player:isBuildCheat();
         local canBuild = self.logic:cachedCanPerformCurrentRecipe() or cheat;
 
         if self.logic:isCraftActionInProgress() then

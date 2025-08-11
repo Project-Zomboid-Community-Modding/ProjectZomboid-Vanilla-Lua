@@ -169,6 +169,24 @@ function DoTileBuilding(draggingItem, isRender, x, y, z, square)
 	if isRender then
 		-- we first call the isValid function of our item
 		draggingItem.canBeBuild = draggingItem:isValid(square, draggingItem.north)
+
+		if not draggingItem.canBeBuild then
+			local nSprite = draggingItem.nSprite
+			local canBeBuild = false
+			for ii = 1, 4 do
+				draggingItem.nSprite = ii
+				draggingItem:getSprite()
+				canBeBuild = draggingItem:isValid(square, draggingItem.north)
+				if canBeBuild then
+					draggingItem.canBeBuild = true
+					break
+				end
+			end
+			if not draggingItem.canBeBuild then
+				draggingItem.nSprite = nSprite
+			end
+		end
+
 		-- we call the render function of our item, because for stairs (for example), we drag only 1 item : the 1st part of the stairs
 		-- so in the :render function is ISWoodenStair, we gonna display the 2 other part of the stairs, depending on his direction
 		draggingItem:render(x, y, z, square)
@@ -225,6 +243,7 @@ function ISBuildingObject:tryBuild(x, y, z)
 			-- farmingPlot doesn't need another action
 			self:create(x, y, z, self.north, self:getSprite());
 			self:onActionComplete();
+			return nil;
 		else
 			if not self.noNeedHammer and not ISBuildMenu.cheat then
 				local hammer = playerInv:getFirstTagEvalRecurse("Hammer", predicateNotBroken)
@@ -282,7 +301,10 @@ function ISBuildingObject:tryBuild(x, y, z)
 	else
 		print("ISBuildingObject -> tryBuild - cannot walkTo target")
 		self:onActionComplete();
+		return nil;
 	end
+	
+	return buildAction;
 end
 
 function ISBuildingObject:onActionComplete()
@@ -380,10 +402,7 @@ function ISBuildingObject:haveMaterial(square)
     end
 	local playerInv = playerObj:getInventory()
 
-    local cheat = playerObj:isBuildCheat()
-    if self.logic and self.logic:isCraftCheat() then
-        cheat = true;
-    end
+    local cheat = playerObj:isBuildCheat();
     if ISBuildMenu and ISBuildMenu.cheat then
         cheat = true;
     end

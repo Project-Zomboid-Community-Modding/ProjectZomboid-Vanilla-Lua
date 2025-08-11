@@ -40,10 +40,22 @@ function ISBuildAction:isReachableThroughWindowOrDoor(_square)
 end
 
 function ISBuildAction:isValid()
+    local valid = true;
+    
     if not self.item.noNeedHammer and self.hammer then
-        return self.hammer:getCondition() > 0;
+        valid = self.hammer:getCondition() > 0;
     end
-    return true;
+
+    if self.onIsValid then
+        local func = self.onIsValid;
+        local facing = self.item:getFace():getFaceName();
+        local params = { square = self.square, facing = facing }
+        if not BaseCraftingLogic.callLuaBool(func, params) then
+            valid = false;
+        end
+    end
+
+    return valid;
 
     -- TODO RJ: This is done in the ISBuildIsoEntity:walkTo
     --local plSquare = self.character:getSquare();

@@ -61,8 +61,8 @@ function ISUninstallVehiclePart:complete()
     		item:getDeviceData():cloneDevicePresets(presets)
     	end
     	if ZombRand(100) < success then
-    		self.part:setInventoryItem(nil)
-    		item:setItemCapacity(self.part:getContainerContentAmount());
+			item:setItemCapacity(self.part:getContainerContentAmount());
+			self.part:setInventoryItem(nil)
     		local tbl = self.part:getTable("uninstall")
     		if tbl and tbl.complete then
         		VehicleUtils.callLua(tbl.complete, self.vehicle, self.part, item)

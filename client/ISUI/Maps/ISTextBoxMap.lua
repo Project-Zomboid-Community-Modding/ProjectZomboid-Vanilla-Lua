@@ -2,33 +2,27 @@
 --**              	  ROBERT JOHNSON                       **
 --***********************************************************
 
+require('ISUI/ISCollapsableWindowJoypad')
+require('ISUI/Maps/ISMapSymbolZoomPanel')
+
 ISTextBoxMap = ISCollapsableWindowJoypad:derive("ISTextBoxMap");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-
---************************************************************************--
---** ISTextBoxMap:initialise
---**
---************************************************************************--
+local UI_BORDER_SPACING = 10
 
 function ISTextBoxMap:createChildren()
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
+	local fontHgt = FONT_HGT_SMALL
 	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, "Ok") + 12
 	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, "Cancel") + 12
 	local buttonWid = math.max(math.max(buttonWid1, buttonWid2), 100)
 	local buttonHgt = math.max(fontHgt + 6, 25)
-	local padBottom = 10
+	local padBottom = UI_BORDER_SPACING
     local btnHgt2 = 20
     local btnPad = 5
 
     local inv = self.character and self.character:getInventory() or nil
 
     self.colorButtonInfo = {
-        -- { item="Pen", colorInfo=ColorInfo.new(0, 0, 0, 1), tooltip=getText("Tooltip_Map_NeedBlackPen") },
-        -- { item="Pencil", colorInfo=ColorInfo.new(0.2, 0.2, 0.2, 1), tooltip=getText("Tooltip_Map_NeedPencil") },
-        -- { item="RedPen", colorInfo=ColorInfo.new(1, 0, 0, 1), tooltip=getText("Tooltip_Map_NeedRedPen") },
-        -- { item="BluePen", colorInfo=ColorInfo.new(0, 0, 1, 1), tooltip=getText("Tooltip_Map_NeedBluePen") },
-		-- { item="GreenPen", colorInfo=ColorInfo.new(0, 1, 0, 0), tooltip=getText("Tooltip_Map_NeedGreenPen") },
         { item="Pen", colorInfo=ColorInfo.new(0.129, 0.129, 0.129, 1), tooltip=getText("Tooltip_Map_NeedBlackPen") },
         { item="Pencil", colorInfo=ColorInfo.new(0.2, 0.2, 0.2, 1), tooltip=getText("Tooltip_Map_NeedPencil") },
         { item="RedPen", colorInfo=ColorInfo.new(0.65, 0.054, 0.054, 1), tooltip=getText("Tooltip_Map_NeedRedPen") },
@@ -37,10 +31,10 @@ function ISTextBoxMap:createChildren()
     }
 
     self.colorButtons = {}
-    local buttonX = 20
-    local buttonY = self:titleBarHeight() + FONT_HGT_SMALL + 10
+    local buttonX = UI_BORDER_SPACING
+    local buttonY = self:titleBarHeight() + UI_BORDER_SPACING
     local column = 0
-    local columns = math.floor((self.width - 20 * 2) / (btnHgt2 + btnPad))
+    local columns = math.floor((self.width - UI_BORDER_SPACING * 2) / (btnHgt2 + btnPad))
     local colorButtons = {}
     for _,info in ipairs(self.colorButtonInfo) do
         local colorBtn = ISButton:new(buttonX, buttonY, btnHgt2, btnHgt2, "", self, ISTextBoxMap.onClick)
@@ -60,7 +54,7 @@ function ISTextBoxMap:createChildren()
         buttonX = buttonX + btnHgt2 + btnPad
         column = column + 1
         if column == columns then
-            buttonX = 20
+            buttonX = UI_BORDER_SPACING
             buttonY = buttonY + btnHgt2 + btnPad
             column = 0
             self:insertNewListOfButtons(colorButtons)
@@ -81,10 +75,20 @@ function ISTextBoxMap:createChildren()
         end
     end
 
+    local y = buttonY + btnHgt2 + UI_BORDER_SPACING
+
+    local tickBox = ISTickBox:new(UI_BORDER_SPACING, y, 50, buttonHgt, "", self, self.onUseLayerColor)
+    self:addChild(tickBox)
+    tickBox:addOption(getText("IGUI_TextBoxMap_UseLayerColor"))
+    tickBox:setWidthToFit()
+    tickBox:setVisible(false)
+    self:insertNewLineOfButtons(tickBox)
+    self.layerColorTickBox = tickBox
+
     self.fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
     local inset = 2
     local height = inset + self.fontHgt + inset
-    self.entry = ISTextEntryBox:new(self.defaultEntryText, 20, buttonY + btnHgt2 + 10, self:getWidth() - 20 * 2, height);
+    self.entry = ISTextEntryBox:new(self.defaultEntryText, UI_BORDER_SPACING, y, self:getWidth() - UI_BORDER_SPACING * 2, height);
     self.entry.backgroundColor = {r = 1, g = 1, b = 1, a = 0.3};
     self.entry.font = UIFont.Medium
     self.entry.onCommandEntered = function(self) self.parent.onCommandEntered(self.parent) end
@@ -94,18 +98,64 @@ function ISTextBoxMap:createChildren()
     self:addChild(self.entry);
     self:insertNewLineOfButtons(self.entry)
 
-    self.tickBox = ISTickBox:new(self.entry.x, self.entry:getBottom() + 10, 20, FONT_HGT_SMALL + 4, "", nil, nil)
-    self.tickBox.choicesColor = { r = 1, g = 1, b = 1, a = 1 }
-    self:addChild(self.tickBox)
-    self.tickBox:addOption(getText("IGUI_TextBoxMap_IsTranslation"))
-    self.tickBox:setWidthToFit()
-    self.tickBox:setVisible(false)
+    self.fontPicker = ISComboBox:new(UI_BORDER_SPACING, self.entry:getBottom() + UI_BORDER_SPACING, self.width - UI_BORDER_SPACING * 2, FONT_HGT_SMALL + 2 * 2, self, self.onFontSelected)
+    self:addChild(self.fontPicker)
+    self.fontPicker:setVisible(false)
+    for i=1,self.styleAPI:getLayerCount() do
+		local layer = self.styleAPI:getLayerByIndex(i-1)
+		if layer:getTypeString() == "Text" then
+            self.fontPicker:addOptionWithData(layer:getID(), layer:getID())
+        end
+    end
+
+    local tickBox = ISTickBox:new(self.entry.x, self.entry:getBottom() + UI_BORDER_SPACING, UI_BORDER_SPACING, FONT_HGT_SMALL + 4, "", nil, nil)
+    tickBox.choicesColor = { r = 1, g = 1, b = 1, a = 1 }
+    self:addChild(tickBox)
+    tickBox:addOption(getText("IGUI_TextBoxMap_IsTranslation"))
+    tickBox:setWidthToFit()
+    tickBox:setVisible(false)
+    self.tickBox = tickBox
+    self:insertNewLineOfButtons(tickBox)
+
+    tickBox = ISTickBox:new(self.entry.x, self.entry:getBottom() + UI_BORDER_SPACING, UI_BORDER_SPACING, FONT_HGT_SMALL + 4, "", nil, nil)
+    tickBox.choicesColor = { r = 1, g = 1, b = 1, a = 1 }
+    self:addChild(tickBox)
+    tickBox:addOption(getText("IGUI_TextBoxMap_MatchPerspective"))
+    tickBox:setWidthToFit()
+    tickBox:setVisible(false)
+    self.tickBoxPerspective = tickBox
+    self:insertNewLineOfButtons(tickBox)
+
+    local sliderIconWidth = FONT_HGT_SMALL
+    local sliderValueWidth = getTextManager():MeasureStringX(UIFont.Small, "10.00")
+    self.sliderScale = ISSliderPanel:new(UI_BORDER_SPACING + sliderIconWidth + 5, self.entry:getBottom() + UI_BORDER_SPACING, self.entry.width - sliderValueWidth - UI_BORDER_SPACING - sliderIconWidth - 5, FONT_HGT_SMALL, self, self.onScaleChange);
+    self.sliderScale:initialise()
+    self.sliderScale:instantiate()
+	self.sliderScale:setValues(20, 1000.0, 1, 10)
+    self.sliderScale:setCurrentValue(0, true)
+    self:addChild(self.sliderScale)
+    self.sliderScale:setVisible(false)
+    self:insertNewLineOfButtons(self.sliderScale)
+
+    self.sliderRotation = ISSliderPanel:new(UI_BORDER_SPACING + sliderIconWidth + 5, self.entry:getBottom() + UI_BORDER_SPACING, self.entry.width - sliderValueWidth - UI_BORDER_SPACING - sliderIconWidth - 5, FONT_HGT_SMALL, self, self.onRotationChange);
+    self.sliderRotation:initialise()
+    self.sliderRotation:instantiate()
+	self.sliderRotation:setValues(0.0, 360.0, 1.0, 5.0)
+    self.sliderRotation:setCurrentValue(0, true)
+    self:addChild(self.sliderRotation)
+    self.sliderRotation:setVisible(false)
+    self:insertNewLineOfButtons(self.sliderRotation)
+
+    self.zoomPanel = ISMapSymbolZoomPanel:new(0, 0, self.width, FONT_HGT_SMALL + 2 * 2)
+    self:addChild(self.zoomPanel)
+    self.zoomPanel:setVisible(false)
 
     self.yes = ISButton:new((self:getWidth() / 2)  - 5 - buttonWid, self.entry:getBottom() + 10, buttonWid, buttonHgt, getText("UI_Ok"), self, ISTextBoxMap.onClick);
     self.yes.internal = "OK";
     self.yes:initialise();
     self.yes:instantiate();
     self.yes.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.yes:enableAcceptColor()
     self:addChild(self.yes);
 
     self.no = ISButton:new((self:getWidth() / 2) + 5, self.entry:getBottom() + 10, buttonWid, buttonHgt, getText("UI_Cancel"), self, ISTextBoxMap.onClick);
@@ -113,6 +163,7 @@ function ISTextBoxMap:createChildren()
     self.no:initialise();
     self.no:instantiate();
     self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     self.entry.javaObject:setTextColor(self.currentColor);
@@ -152,6 +203,27 @@ function ISTextBoxMap:destroy()
 	end
 end
 
+function ISTextBoxMap:setUseLayerColor(b)
+    self.layerColorTickBox:setSelected(1, b == true)
+    self.useLayerColor = b
+end
+
+function ISTextBoxMap:onUseLayerColor()
+    self.useLayerColor = self.layerColorTickBox:isSelected(1)
+end
+
+function ISTextBoxMap:onFontSelected()
+    self.chosenFont = self.fontPicker:getOptionData(self.fontPicker.selected)
+end
+
+function ISTextBoxMap:onScaleChange(value, slider)
+    self.scale = value / 100
+end
+
+function ISTextBoxMap:onRotationChange(value, slider)
+    self.rotation = value
+end
+
 function ISTextBoxMap:onClick(button)
     if button.internal == "COLOR" then
         for _,colorBtn in ipairs(self.colorButtons) do
@@ -160,6 +232,7 @@ function ISTextBoxMap:onClick(button)
         button.borderColor.a = 1.0
         self.currentColor = button.buttonInfo.colorInfo;
         self.entry.javaObject:setTextColor(self.currentColor);
+        self:setUseLayerColor(false)
         if self.joyfocus then
             self:setJoypadFocus(self.entry, self.joyfocus)
         else
@@ -176,20 +249,20 @@ end
 function ISTextBoxMap:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawTextCentre(self.text, self:getWidth() / 2, self:titleBarHeight(), 1, 1, 1, 1, UIFont.Small);
+	self:drawTextCentre(self.text, self:getWidth() / 2, 1, 1, 1, 1, 1, UIFont.Small);
 
 	if self.joyfocus then
 		local dy = math.max(FONT_HGT_SMALL, 20) + 2 * 2
 		self:drawRect(0, self.height, self.width, dy, 1, 0.25, 0.25, 0.25);
 --		self:drawRectBorder(-dx, 0, dx, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 		self:drawTextureScaled(Joypad.Texture.DPad, 20, self.height + 2, dy - 4, dy - 4, 1, 1, 1, 1)
-		self:drawText(getText("IGUI_TextBox_Navigate"), 20 + 24, self.height + (dy - FONT_HGT_SMALL) / 2, 1, 1, 1, 1)
+		self:drawText(getText("IGUI_TextBox_Navigate"), 20 + dy + 4, self.height + (dy - FONT_HGT_SMALL) / 2, 1, 1, 1, 1)
 
 		if self.joypadIndexY == 0 then
 
-		elseif self.joypadIndexY == #self.joypadButtonsY then
+		elseif self.joypadIndexY == 2 then
 			self:drawTextureScaled(Joypad.Texture.AButton, self.width / 2, self.height + 2, dy - 4, dy - 4, 1, 1, 1, 1)
-			self:drawText(getText("IGUI_TextBox_Edit"), self.width / 2 + 24, self.height + (dy - FONT_HGT_SMALL) / 2, 1, 1, 1, 1)
+			self:drawText(getText("IGUI_TextBox_Edit"), self.width / 2 + dy + 4, self.height + (dy - FONT_HGT_SMALL) / 2, 1, 1, 1, 1)
 		end
 	end
 
@@ -262,24 +335,102 @@ function ISTextBoxMap:selectColor(r, g, b)
 	end
 end
 
+function ISTextBoxMap:showUseLayerColor(use)
+    self.layerColorTickBox:setVisible(true)
+    self:setUseLayerColor(use)
+    self:layoutWidgets()
+end
+
+function ISTextBoxMap:showFontPicker(layerID)
+	self.fontPicker:setVisible(true)
+	self.fontPicker:selectData(layerID)
+	self.chosenFont = layerID
+	self:layoutWidgets()
+end
+
 function ISTextBoxMap:showTranslationTickBox(isTranslation)
 	self.tickBox:setVisible(true)
 	self.tickBox:setSelected(1, isTranslation == true)
-	self.yes:setY(self.tickBox:getBottom() + 10)
-	self.no:setY(self.tickBox:getBottom() + 10)
-	self:setHeight(self.yes:getBottom() + 10)
+	self:layoutWidgets()
+end
+
+function ISTextBoxMap:showMatchPerspectiveTickBox(matchPerspective)
+	self.tickBoxPerspective:setVisible(true)
+	self.tickBoxPerspective:setSelected(1, matchPerspective == true)
+	self:layoutWidgets()
+end
+
+function ISTextBoxMap:showScaleSlider(scale)
+	self.sliderScale:setVisible(true)
+	self.sliderScale:setCurrentValue(scale * 100, true)
+	self.scale = scale
+	self:layoutWidgets()
+end
+
+function ISTextBoxMap:showRotationSlider(degrees)
+	self.sliderRotation:setVisible(true)
+	self.sliderRotation:setCurrentValue(degrees, true)
+	self.rotation = degrees
+	self:layoutWidgets()
+end
+
+function ISTextBoxMap:showZoomPanel(minZoomF, maxZoomF)
+	self.zoomPanel:setVisible(true)
+	self.zoomPanel:setMinMaxZoom(minZoomF, maxZoomF)
+	self:layoutWidgets()
+end
+
+function ISTextBoxMap:layoutWidgets()
+    if self.layerColorTickBox:isVisible() then
+        self.entry:setY(self.layerColorTickBox:getBottom() + UI_BORDER_SPACING)
+    end
+    local y = self.entry:getBottom() + UI_BORDER_SPACING
+    if self.fontPicker:isVisible() then
+        self.fontPicker:setY(y)
+        y = self.fontPicker:getBottom() + UI_BORDER_SPACING
+    end
+    if self.tickBox:isVisible() then
+        self.tickBox:setY(y)
+        y = self.tickBox:getBottom() + UI_BORDER_SPACING
+    end
+    if self.tickBoxPerspective:isVisible() then
+        self.tickBoxPerspective:setY(y)
+        y = self.tickBoxPerspective:getBottom() + UI_BORDER_SPACING
+    end
+    if self.sliderScale:isVisible() then
+        self.sliderScale:setY(y)
+        y = self.sliderScale:getBottom() + UI_BORDER_SPACING
+    end
+    if self.sliderRotation:isVisible() then
+        self.sliderRotation:setY(y)
+        y = self.sliderRotation:getBottom() + UI_BORDER_SPACING
+    end
+    if self.zoomPanel:isVisible() then
+        self.zoomPanel:setY(y)
+        y = self.zoomPanel:getBottom() + UI_BORDER_SPACING
+    end
+	self.yes:setY(y)
+	self.no:setY(y)
+	self:setHeight(self.yes:getBottom() + UI_BORDER_SPACING)
 end
 
 function ISTextBoxMap:isTranslation()
 	return self.tickBox:isSelected(1)
 end
 
---************************************************************************--
---** ISTextBoxMap:render
---**
---************************************************************************--
-function ISTextBoxMap:render()
+function ISTextBoxMap:isMatchPerspective()
+	return self.tickBoxPerspective:isSelected(1)
+end
 
+function ISTextBoxMap:render()
+    if self.sliderScale:isVisible() then
+        self:drawTextureScaled(getTexture("media/textures/worldMap/Tool_Scale.png"), UI_BORDER_SPACING, self.sliderScale.y, FONT_HGT_SMALL, FONT_HGT_SMALL, 1, 1, 1, 1)
+        self:drawText(string.format("%.2f", self.sliderScale:getCurrentValue() / 100), self.sliderScale:getRight() + UI_BORDER_SPACING, self.sliderScale.y, 1, 1, 1, 1)
+    end
+    if self.sliderRotation:isVisible() then
+        self:drawTextureScaled(getTexture("media/textures/worldMap/Tool_Rotate.png"), UI_BORDER_SPACING, self.sliderRotation.y, FONT_HGT_SMALL, FONT_HGT_SMALL, 1, 1, 1, 1)
+        self:drawText(string.format("%d", self.sliderRotation:getCurrentValue()), self.sliderRotation:getRight() + UI_BORDER_SPACING, self.sliderRotation.y, 1, 1, 1, 1)
+    end
 end
 
 function ISTextBoxMap:onGainJoypadFocus(joypadData)
@@ -341,10 +492,6 @@ function ISTextBoxMap:onJoypadDirUp(joypadData)
 	ISCollapsableWindowJoypad.onJoypadDirUp(self, joypadData)
 end
 
---************************************************************************--
---** ISTextBoxMap:new
---**
---************************************************************************--
 function ISTextBoxMap:new(x, y, width, height, text, defaultEntryText, target, onclick, player, param1, param2, param3, param4)
 	local o = {}
 	x = math.min(x, getCore():getScreenWidth() - width)
@@ -386,6 +533,9 @@ function ISTextBoxMap:new(x, y, width, height, text, defaultEntryText, target, o
 	o.text = text;
 	o.target = target;
 	o.mapUI = target.mapUI;
+	o.mapAPI = o.mapUI.javaObject:getAPIv3()
+	o.styleAPI = o.mapAPI:getStyleAPI()
+	o.symbolsAPI = o.mapAPI:getSymbolsAPIv2()
 	o.symbolsUI = target.symbolsUI;
 	o.onclick = onclick;
 	o.player = player

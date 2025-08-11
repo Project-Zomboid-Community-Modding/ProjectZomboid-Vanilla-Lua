@@ -63,25 +63,16 @@ function ISWidgetRecipeFilterPanel:createChildren()
     self.searchHackLabel:instantiate();
     self:addChild(self.searchHackLabel);
 
-    self.buttonGrid = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT_SEARCH, BUTTON_HGT_SEARCH, nil)
+    self.buttonViewMode = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT_SEARCH, BUTTON_HGT_SEARCH, nil)
     --self.buttonPrev.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
-    self.buttonGrid.image = getTexture("media/ui/craftingMenus/Icon_Grid.png");
-    self.buttonGrid.target = self;
-    self.buttonGrid.onclick = ISWidgetRecipeFilterPanel.onButtonClick;
-    self.buttonGrid.enable = true;
-    self.buttonGrid:initialise();
-    self.buttonGrid:instantiate();
-    self:addChild(self.buttonGrid);
-
-    self.buttonList = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT_SEARCH, BUTTON_HGT_SEARCH, nil)
-    --self.buttonPrev.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
-    self.buttonList.image = getTexture("media/ui/craftingMenus/Icon_List.png");
-    self.buttonList.target = self;
-    self.buttonList.onclick = ISWidgetRecipeFilterPanel.onButtonClick;
-    self.buttonList.enable = true;
-    self.buttonList:initialise();
-    self.buttonList:instantiate();
-    self:addChild(self.buttonList);
+    self.buttonViewMode.image = self.iconGrid;
+    self.buttonViewMode.target = self;
+    self.buttonViewMode.onclick = ISWidgetRecipeFilterPanel.onButtonClick;
+    self.buttonViewMode.enable = true;
+    self.buttonViewMode:initialise();
+    self.buttonViewMode:instantiate();
+    self:addChild(self.buttonViewMode);
+    self:updateViewModeButton();
 
     if self.showAllVersionTickbox then
         self.tickbox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTickBox, 0, 0, 15, FONT_HGT_SMALL, "tickbox", self, ISWidgetRecipeFilterPanel.OnShowAllClick)
@@ -99,17 +90,26 @@ function ISWidgetRecipeFilterPanel:createChildren()
     self.joypadIndex = 1
     
     if self.filterTypeCombo and self.sortCombo then
-        self:insertNewLineOfButtons(self.entryBox, self.filterTypeCombo, self.sortCombo, self.buttonGrid, self.buttonList)
+        self:insertNewLineOfButtons(self.entryBox, self.filterTypeCombo, self.sortCombo, self.buttonViewMode)
     elseif self.filterTypeCombo then
-        self:insertNewLineOfButtons(self.entryBox, self.filterTypeCombo, self.buttonGrid, self.buttonList)
+        self:insertNewLineOfButtons(self.entryBox, self.filterTypeCombo, self.buttonViewMode)
     elseif self.sortCombo then
-        self:insertNewLineOfButtons(self.entryBox, self.sortCombo, self.buttonGrid, self.buttonList)
+        self:insertNewLineOfButtons(self.entryBox, self.sortCombo, self.buttonViewMode)
     else
-        self:insertNewLineOfButtons(self.entryBox, self.buttonGrid, self.buttonList)
+        self:insertNewLineOfButtons(self.entryBox, self.buttonViewMode)
     end
 
     if self.showAllVersionTickbox then
         self:insertNewLineOfButtons(self.tickbox)
+    end
+end
+
+function ISWidgetRecipeFilterPanel:updateViewModeButton()
+    local viewMode = self.callbackTarget.logic:getSelectedRecipeStyle();
+    if (viewMode == "grid") then
+        self.buttonViewMode.image = self.iconList;
+    else
+        self.buttonViewMode.image = self.iconGrid;
     end
 end
 
@@ -153,11 +153,14 @@ function ISWidgetRecipeFilterPanel:OnShowAllClick(clickedOption, enabled)
 end
 
 function ISWidgetRecipeFilterPanel:onButtonClick(_button)
-    if self.buttonGrid and _button==self.buttonGrid then
-        self.callbackTarget:setRecipeListMode(false);
-    elseif self.buttonList and _button==self.buttonList then
-        self.callbackTarget:setRecipeListMode(true);
+    if _button == self.buttonViewMode then
+        if self.callbackTarget.logic:getSelectedRecipeStyle() == "grid" then
+            self.callbackTarget:setRecipeListMode(true);
+        else
+            self.callbackTarget:setRecipeListMode(false);
+        end
     end
+    self:updateViewModeButton();
 end
 
 function ISWidgetRecipeFilterPanel:OnClickFilterType(box)
@@ -207,7 +210,7 @@ function ISWidgetRecipeFilterPanel:calculateLayout(_preferredWidth, _preferredHe
     height = math.max(height, testHeight);
 
     local entryBoxWidth = getTextManager():MeasureStringX(UIFont.NewSmall, self.searchHackLabel.name) + ((UI_BORDER_SPACING+1)*2);
-    local testWidth = self.margin + entryBoxWidth + (self.buttonGrid:getWidth() + UI_BORDER_SPACING+1 + self.buttonList:getWidth() + UI_BORDER_SPACING+1) + self.margin;
+    local testWidth = self.margin + entryBoxWidth + (self.buttonViewMode:getWidth() + UI_BORDER_SPACING+1) + self.margin;
     if self.filterTypeCombo then
         testWidth = testWidth +  self.filterTypeCombo:getWidth() + ((UI_BORDER_SPACING+1));
     end
@@ -215,12 +218,9 @@ function ISWidgetRecipeFilterPanel:calculateLayout(_preferredWidth, _preferredHe
     width = math.max(width, testWidth);
     
     -- view toggle
-    local buttonX = width - (self.buttonGrid:getWidth() + UI_BORDER_SPACING+1 + self.buttonList:getWidth() + UI_BORDER_SPACING+1);
-    self.buttonGrid:setX(buttonX);
-    self.buttonGrid:setY(UI_BORDER_SPACING+1);
-
-    self.buttonList:setX(buttonX + self.buttonGrid:getWidth() + UI_BORDER_SPACING+1);
-    self.buttonList:setY(UI_BORDER_SPACING+1);
+    local buttonX = width - (self.buttonViewMode:getWidth() + UI_BORDER_SPACING+1);
+    self.buttonViewMode:setX(buttonX);
+    self.buttonViewMode:setY(UI_BORDER_SPACING+1);
 
     local searchWidth = buttonX - ((UI_BORDER_SPACING+1)*2);
     if self.filterTypeCombo then
@@ -327,6 +327,9 @@ function ISWidgetRecipeFilterPanel:new(x, y, width, height, callbackTarget)
     o.isAutoFill = false;
     o.isAutoFillX = false;
     o.isAutoFillY = false;
+    
+    o.iconGrid = getTexture("media/ui/craftingMenus/Icon_Grid.png");
+    o.iconList = getTexture("media/ui/craftingMenus/Icon_List.png");
 
     return o
 end

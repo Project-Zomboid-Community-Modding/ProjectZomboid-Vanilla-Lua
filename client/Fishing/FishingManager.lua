@@ -68,7 +68,10 @@ end
 
 function FishingManager:update()
     self.joypad = self.player:getJoypadBind()
-
+	-- Stops players from putting rods on their backs when reeling, casting, etc.
+	if self.fishingRod then
+		Fishing.Utils.hotbarStopper()
+	end
     if self.state == self.states["None"] and not Fishing.Utils.isPlayerAimOnWater(self.player, true) then
         self.player:setVariable("FishingFinished", true)
     end
@@ -110,6 +113,9 @@ end
 
 function FishingManager:destroy()
     self:disable()
+    if self.state then
+        self.state:destroy() -- stop sounds
+    end
     self:removeEventHooks()
     self.tensionUI:removeFromUIManager()
 

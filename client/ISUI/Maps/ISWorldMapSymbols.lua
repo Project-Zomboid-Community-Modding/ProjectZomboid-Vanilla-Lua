@@ -7,7 +7,6 @@ require "ISUI/Maps/ISMap"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.SdfCaveat)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -89,6 +88,7 @@ function ISWorldMapSymbolTool:new(symbolsUI)
 	o.symbolsUI = symbolsUI -- ISWorldMapSymbols
 	o.mapUI = symbolsUI.mapUI -- UIElement with javaObject=UIWorldMap
 	o.mapAPI = symbolsUI.mapAPI
+	o.styleAPI = symbolsUI.styleAPI
 	o.symbolsAPI = symbolsUI.symbolsAPI
 	return o
 end
@@ -186,18 +186,44 @@ end
 function ISWorldMapSymbolTool_AddNote:addNote(x, y)
 	self.symbolsUI.noteX = self.mapAPI:uiToWorldX(x, y)
 	self.symbolsUI.noteY = self.mapAPI:uiToWorldY(x, y)
+	local applyZoom = true
+	local scale = ISMap.SCALE
+	if applyZoom then
+        scale = scale * self.mapAPI:getWorldScale()
+    end
+    local anchorY = 0.5
+	local layerID = self.symbolsAPI:getDefaultTextLayerID()
+	local layer = self.styleAPI:getLayerByName(layerID)
+	local font = layer:getFont()
+	local FONT_HGT = getTextManager():getFontHeight(font) * scale
 	local mx = self.mapUI:getAbsoluteX() + x
-	local my = self.mapUI:getAbsoluteY() + y + FONT_HGT_HANDWRITTEN * ISMap.SCALE * self.mapAPI:getWorldScale()
+	local my = self.mapUI:getAbsoluteY() + y + FONT_HGT * (1 - anchorY)
 	local playerNum = self.symbolsUI.character and self.symbolsUI.playerNum or nil
-	self.modal = ISTextBoxMap:new(mx, my, 350, 180, getText("IGUI_Map_AddNote"), "", self, self.onAddNote, playerNum)
+	local defaultText = ""
+	if self.mapUI.javaObject:isMapEditor() then
+        defaultText = "MapLabel_XXX"
+    end
+	self.modal = ISTextBoxMap:new(mx, my, 350, 180, getText("IGUI_Map_AddNote"), defaultText, self, self.onNoteAdded, playerNum)
 	self.modal:initialise()
 	self.modal.noEmpty = true
 	self.modal:addToUIManager()
 	self.modal:setAlwaysOnTop(true)
 	self.modal:selectColor(self.symbolsUI.currentColor:getR(), self.symbolsUI.currentColor:getG(), self.symbolsUI.currentColor:getB())
-	if self.symbolsUI.showTranslationOption then
-		self.modal:showTranslationTickBox(self.showTranslationOption == true)
+	if self.mapUI.javaObject:isMapEditor() then
+        self.modal:showUseLayerColor(true)
+	    self.modal:showFontPicker(layerID)
 	end
+	if self.symbolsUI.showTranslationOption then
+		self.modal:showTranslationTickBox(self.symbolsUI.showTranslationOption == true)
+	end
+    self.modal:showMatchPerspectiveTickBox(self.mapUI.javaObject:isMapEditor())
+    self.modal:showRotationSlider(0.0)
+    self.modal:showScaleSlider(ISMap.SCALE)
+--[[
+    if self.mapUI.javaObject:isMapEditor() then
+        self.modal:showZoomPanel(0.0, 24.0)
+    end
+ ]]
 	self.modal.entry:focus()
 	self.modal.maxChars = 45
 	if self.mapUI.joyfocus then
@@ -211,17 +237,22 @@ function ISWorldMapSymbolTool_AddNote:render()
 	else
 		local color = self.symbolsUI.currentColor
 		local r,g,b = color:getR(),color:getG(),color:getB()
+		local matchPerspective = false
+		local applyZoom = true
+		local layerID = self.symbolsAPI:getDefaultTextLayerID()
 		if (self.symbolsUI.playerNum ~= 0) or (JoypadState.players[self.symbolsUI.playerNum+1] and not wasMouseActiveMoreRecentlyThanJoypad()) then
-			self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, getText("IGUI_Map_AddNote"), self.mapUI.width / 2, self.mapUI.height / 2,
-					ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
+			self.mapUI.javaObject:DrawTextSdfRotated(layerID, getText("IGUI_Map_AddNote"), self.mapUI.width / 2, self.mapUI.height / 2,
+			        0.5, 0.5, 0.0,
+					ISMap.SCALE * self.mapAPI:getWorldScale(), matchPerspective, applyZoom, r, g, b, 1)
 		else
-			self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, getText("IGUI_Map_AddNote"), self:getMouseX(), self:getMouseY(),
-					ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
+			self.mapUI.javaObject:DrawTextSdfRotated(layerID, getText("IGUI_Map_AddNote"), self:getMouseX(), self:getMouseY(),
+			        0.5, 0.5, 0.0,
+					ISMap.SCALE * self.mapAPI:getWorldScale(), matchPerspective, applyZoom, r, g, b, 1)
 		end
 	end
 end
 
-function ISWorldMapSymbolTool_AddNote:onAddNote(button, playerNum)
+function ISWorldMapSymbolTool_AddNote:onNoteAdded(button, playerNum)
 	self.modal = nil
 	if button.internal == "OK" then
 		local text = string.trim(button.parent.entry:getText())
@@ -233,27 +264,37 @@ function ISWorldMapSymbolTool_AddNote:onAddNote(button, playerNum)
 		newNote.r = button.parent.currentColor:getR()
 		newNote.g = button.parent.currentColor:getG()
 		newNote.b = button.parent.currentColor:getB()
+		newNote.a = 1.0
+		if button.parent.useLayerColor then
+            newNote.r = 0
+            newNote.g = 0
+            newNote.b = 0
+            newNote.a = 0
+        end
 		local textSymbol
+        local layerID = button.parent.chosenFont or self.symbolsAPI:getDefaultTextLayerID()
+        local font = self.styleAPI:getLayerByName(layerID):getFont()
+        local FONT_HGT = getTextManager():getFontHeight(font)
 		if button.parent:isTranslation() then
-			textSymbol = self.symbolsAPI:addUntranslatedText(newNote.text, UIFont.SdfCaveat, newNote.x, newNote.y)
+			textSymbol = self.symbolsAPI:addUntranslatedText(newNote.text, layerID, newNote.x, newNote.y)
 		else
-			textSymbol = self.symbolsAPI:addTranslatedText(newNote.text, UIFont.SdfCaveat, newNote.x, newNote.y)
+			textSymbol = self.symbolsAPI:addTranslatedText(newNote.text, layerID, newNote.x, newNote.y)
 		end
-		textSymbol:setRGBA(newNote.r, newNote.g, newNote.b, 1.0)
-		textSymbol:setAnchor(0.0, 0.0)
-		textSymbol:setScale(ISMap.SCALE)
+		textSymbol:setRGBA(newNote.r, newNote.g, newNote.b, newNote.a)
+		textSymbol:setAnchor(0.5, 0.5)
+		textSymbol:setScale(button.parent.scale or ISMap.SCALE)
+		textSymbol:setRotation(button.parent.rotation or 0.0)
+		textSymbol:setMatchPerspective(button.parent:isMatchPerspective())
+		textSymbol:setMinZoom(button.parent.minZoom or 0.0)
+		textSymbol:setMaxZoom(button.parent.maxZoom or 24.0)
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddNote")
 		end
 		-- Center on the edited symbol
 		local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
 		if isJoypad then
-			local width = getTextManager():MeasureStringX(UIFont.SdfCaveat, text) * ISMap.SCALE * self.mapAPI:getWorldScale()
-			local height = FONT_HGT_HANDWRITTEN * ISMap.SCALE * self.mapAPI:getWorldScale()
-			local uiX = self.mapAPI:worldToUIX(newNote.x, newNote.y) + width / 2
-			local uiY = self.mapAPI:worldToUIY(newNote.x, newNote.y) + height / 2
-			local worldX = self.mapAPI:uiToWorldX(uiX, uiY)
-			local worldY = self.mapAPI:uiToWorldY(uiX, uiY)
+			local worldX = newNote.x
+			local worldY = newNote.y
 			self.mapAPI:centerOn(worldX, worldY)
 		end
 	end
@@ -285,46 +326,72 @@ end
 
 -----
 
-ISWorldMapSymbolTool_EditNote = ISWorldMapSymbolTool:derive("ISWorldMapSymbolTool_EditNote")
+ISWorldMapSymbolTool_EditAnnotation = ISWorldMapSymbolTool:derive("ISWorldMapSymbolTool_EditAnnotation")
 
-function ISWorldMapSymbolTool_EditNote:activate()
+function ISWorldMapSymbolTool_EditAnnotation:activate()
 end
 
-function ISWorldMapSymbolTool_EditNote:deactivate()
+function ISWorldMapSymbolTool_EditAnnotation:deactivate()
 	if self.modal then
 		self.modal.no:forceClick()
 		self.modal = nil
 	end
 end
 
-function ISWorldMapSymbolTool_EditNote:onMouseDown(x, y)
-	if not self.symbolsUI.mouseOverNote then return false end
-	if self.modal then return end
-	self:editNote(x, y)
-	return true
+function ISWorldMapSymbolTool_EditAnnotation:onMouseDown(x, y)
+	if self.modal then return false end
+	if self.symbolsUI.mouseOverNote then
+	    self:editNote(x, y)
+	    return true
+	end
+	if self.symbolsUI.mouseOverSymbol then
+	    self:editSymbol(x, y)
+	    return true
+	end
+	return false
 end
 
-function ISWorldMapSymbolTool_EditNote:editNote(x, y)
+function ISWorldMapSymbolTool_EditAnnotation:editNote(x, y)
 	local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverNote)
 	symbol:setVisible(false) -- HIDE THE SYMBOL BEING EDITED
-	local uiX = symbol:getDisplayX()
-	local uiY = symbol:getDisplayY()
-	self.symbolsUI.noteX = self.mapAPI:uiToWorldX(uiX, uiY)
-	self.symbolsUI.noteY = self.mapAPI:uiToWorldY(uiX, uiY)
+    local uiX = self.mapAPI:worldToUIX(symbol:getWorldX(), symbol:getWorldY())
+    local uiY = self.mapAPI:worldToUIY(symbol:getWorldX(), symbol:getWorldY())
+    self.symbolsUI.noteX = symbol:getWorldX()
+    self.symbolsUI.noteY = symbol:getWorldY()
+	local layerID = symbol:getLayerID()
+    local symbolH = symbol:getDisplayHeight()
 	local mx = self.mapUI:getAbsoluteX() + uiX
-	local my = self.mapUI:getAbsoluteY() + uiY + FONT_HGT_HANDWRITTEN * ISMap.SCALE * self.mapAPI:getWorldScale()
+	local my = self.mapUI:getAbsoluteY() + uiY + symbolH * (1 - symbol:getAnchorY())
 	local playerNum = self.symbolsUI.character and self.symbolsUI.playerNum or nil
 	local isTranslation = symbol:getUntranslatedText() ~= nil
 	local text = symbol:getUntranslatedText() or symbol:getTranslatedText()
-	self.modal = ISTextBoxMap:new(mx, my, 350, 180, getText("IGUI_Map_EditNote"), text, self, self.onEditNote, playerNum, symbol)
+	if not self.symbolsUI.showTranslationOption then
+        text = symbol:getTranslatedText()
+    end
+	self.modal = ISTextBoxMap:new(mx, my, 350, 180, getText("IGUI_Map_EditNote"), text, self, self.onNoteEdited, playerNum, symbol)
 	self.modal:initialise()
 	self.modal.noEmpty = true
 	self.modal:addToUIManager()
 	self.modal:setAlwaysOnTop(true)
 	self.modal:selectColor(symbol:getRed(), symbol:getGreen(), symbol:getBlue())
+	self.modal.symbol = symbol
+	if self.mapUI.javaObject:isMapEditor() then
+        self.modal:showUseLayerColor(not symbol:hasCustomColor())
+	    self.modal:showFontPicker(layerID)
+	end
 	if self.symbolsUI.showTranslationOption then
 		self.modal:showTranslationTickBox(isTranslation)
 	end
+    self.modal:showMatchPerspectiveTickBox(symbol:isMatchPerspective())
+    local scale = symbol:getScale()
+    if scale < 0 then scale = 1.0 end
+    self.modal:showScaleSlider(scale)
+    self.modal:showRotationSlider(symbol:getRotation())
+--[[
+    if self.mapUI.javaObject:isMapEditor() then
+        self.modal:showZoomPanel(symbol:getMinZoom(), symbol:getMaxZoom())
+    end
+ ]]
 	self.modal.entry:focus()
 	self.modal.maxChars = 45
 	if self.mapUI.joyfocus then
@@ -332,19 +399,52 @@ function ISWorldMapSymbolTool_EditNote:editNote(x, y)
 	end
 end
 
-function ISWorldMapSymbolTool_EditNote:onMouseUp(x, y)
+function ISWorldMapSymbolTool_EditAnnotation:editSymbol(x, y)
+	local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverSymbol)
+	symbol:setVisible(false) -- HIDE THE SYMBOL BEING EDITED
+    local symbolID = symbol:getSymbolID()
+    local symbolDef = MapSymbolDefinitions.getInstance():getSymbolById(symbolID)
+    local uiX = self.mapAPI:worldToUIX(symbol:getWorldX(), symbol:getWorldY())
+    local uiY = self.mapAPI:worldToUIY(symbol:getWorldX(), symbol:getWorldY())
+    self.symbolsUI.noteX = symbol:getWorldX()
+    self.symbolsUI.noteY = symbol:getWorldY()
+	local mx = self.mapUI:getAbsoluteX() + uiX
+	local my = self.mapUI:getAbsoluteY() + uiY + symbolDef:getHeight() / 2 * symbol:getDisplayScale()
+	local playerNum = self.symbolsUI.character and self.symbolsUI.playerNum or nil
+	self.modal = ISMapSymbolDialog:new(mx, my, 350, 180, getText("IGUI_Map_EditSymbol"), self, self.onSymbolEdited, playerNum, symbol)
+	self.modal:initialise()
+	self.modal:addToUIManager()
+	self.modal:setAlwaysOnTop(true)
+	self.modal:selectColor(symbol:getRed(), symbol:getGreen(), symbol:getBlue())
+	self.modal.symbol = symbol
+    self.modal:showMatchPerspectiveTickBox(symbol:isMatchPerspective())
+    local scale = symbol:getScale()
+    if scale < 0 then scale = 1.0 end
+    self.modal:showScaleSlider(scale)
+    self.modal:showRotationSlider(symbol:getRotation())
+--[[
+    if self.mapUI.javaObject:isMapEditor() then
+        self.modal:showZoomPanel(symbol:getMinZoom(), symbol:getMaxZoom())
+    end
+ ]]
+	if self.mapUI.joyfocus then
+		self.mapUI.joyfocus.focus = self.modal
+	end
+end
+
+function ISWorldMapSymbolTool_EditAnnotation:onMouseUp(x, y)
 	return false
 end
 
-function ISWorldMapSymbolTool_EditNote:render()
+function ISWorldMapSymbolTool_EditAnnotation:render()
 	if self.modal == nil then
-		self.symbolsUI:checkTextForEditMouse()
-		self.symbolsUI:checkTextForEditJoypad()
+		self.symbolsUI:checkAnnotationForEditMouse()
+		self.symbolsUI:checkAnnotationForEditJoypad()
 	end
 	self.symbolsUI:renderNoteBeingAddedOrEdited(self.modal)
 end
 
-function ISWorldMapSymbolTool_EditNote:onEditNote(button, symbol)
+function ISWorldMapSymbolTool_EditAnnotation:onNoteEdited(button, symbol)
 	self.modal = nil
 	symbol:setVisible(true) -- SHOW THE SYMBOL BEING EDITED
 	if button.internal == "OK" then
@@ -352,12 +452,22 @@ function ISWorldMapSymbolTool_EditNote:onEditNote(button, symbol)
 		if text == "" then return end
 		symbol:setPosition(self.symbolsUI.noteX, self.symbolsUI.noteY)
 		local color = button.parent.currentColor
-		symbol:setRGBA(color:getR(), color:getG(), color:getB(), 1.0)
+		if button.parent.useLayerColor then
+            symbol:setRGBA(0, 0, 0, 0)
+        else
+		    symbol:setRGBA(color:getR(), color:getG(), color:getB(), 1.0)
+		end
 		if button.parent:isTranslation() then
 			symbol:setUntranslatedText(text)
 		else
 			symbol:setTranslatedText(text)
 		end
+        symbol:setLayerID(button.parent.chosenFont or symbol:getLayerID())
+        symbol:setScale(button.parent.scale or symbol:getScale())
+        symbol:setRotation(button.parent.rotation or symbol:getRotation())
+		symbol:setMatchPerspective(button.parent:isMatchPerspective())
+		symbol:setMinZoom(button.parent.minZoom or 0.0)
+		symbol:setMaxZoom(button.parent.maxZoom or 24.0)
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddNote")
 		end
@@ -376,7 +486,37 @@ function ISWorldMapSymbolTool_EditNote:onEditNote(button, symbol)
 	end
 end
 
-function ISWorldMapSymbolTool_EditNote:onJoypadDownInMap(button, joypadData)
+function ISWorldMapSymbolTool_EditAnnotation:onSymbolEdited(button, symbol)
+	self.modal = nil
+	symbol:setVisible(true) -- SHOW THE SYMBOL BEING EDITED
+	if button.internal == "OK" then
+		symbol:setPosition(self.symbolsUI.noteX, self.symbolsUI.noteY)
+		local color = button.parent.currentColor
+		symbol:setRGBA(color:getR(), color:getG(), color:getB(), 1.0)
+        symbol:setScale(button.parent.scale or symbol:getScale())
+        symbol:setRotation(button.parent.rotation or symbol:getRotation())
+		symbol:setMatchPerspective(button.parent:isMatchPerspective())
+		symbol:setMinZoom(button.parent.minZoom or 0.0)
+		symbol:setMaxZoom(button.parent.maxZoom or 24.0)
+		if self.symbolsUI.character then
+			self.symbolsUI.character:playSoundLocal("MapAddSymbol")
+		end
+		if isClient() then
+			self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
+		end
+    end
+	-- Center on the edited symbol
+	local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
+	if isJoypad then
+		local uiX = symbol:getDisplayX() + symbol:getDisplayWidth() / 2
+		local uiY = symbol:getDisplayY() + symbol:getDisplayHeight() / 2
+		local worldX = self.mapAPI:uiToWorldX(uiX, uiY)
+		local worldY = self.mapAPI:uiToWorldY(uiX, uiY)
+		self.mapAPI:centerOn(worldX, worldY)
+	end
+end
+
+function ISWorldMapSymbolTool_EditAnnotation:onJoypadDownInMap(button, joypadData)
 	if button == Joypad.AButton then
 		if self.symbolsUI.mouseOverNote then
 			if self.mapAPI:getZoomF() > 16.5 then
@@ -391,17 +531,32 @@ function ISWorldMapSymbolTool_EditNote:onJoypadDownInMap(button, joypadData)
 			self:editNote(self.mapUI.width / 2, self.mapUI.height / 2)
 			self.modal.entry:onJoypadDown(Joypad.AButton, joypadData)
 		end
+		if self.symbolsUI.mouseOverSymbol then
+			if self.mapAPI:getZoomF() > 16.5 then
+				self.mapAPI:setZoom(16.5)
+			end
+			local symbol = self.symbolsAPI:getSymbolByIndex(self.symbolsUI.mouseOverSymbol)
+			local uiX = symbol:getDisplayX() + 150
+			local uiY = symbol:getDisplayY() + 200
+			local worldX = self.mapAPI:uiToWorldX(uiX, uiY)
+			local worldY = self.mapAPI:uiToWorldY(uiX, uiY)
+			self.mapAPI:centerOn(worldX, worldY)
+			self:editSymbol(self.mapUI.width / 2, self.mapUI.height / 2)
+		end
 	end
 end
 
-function ISWorldMapSymbolTool_EditNote:getJoypadAButtonText()
+function ISWorldMapSymbolTool_EditAnnotation:getJoypadAButtonText()
 	if self.symbolsUI.mouseOverNote then
 		return getText("IGUI_Map_EditNote")
+	end
+	if self.symbolsUI.mouseOverSymbol then
+		return getText("IGUI_Map_EditSymbol")
 	end
 	return nil
 end
 
-function ISWorldMapSymbolTool_EditNote:new(symbolsUI)
+function ISWorldMapSymbolTool_EditAnnotation:new(symbolsUI)
 	local o = ISWorldMapSymbolTool.new(self, symbolsUI)
 	return o
 end
@@ -414,16 +569,15 @@ function ISWorldMapSymbolTool_MoveAnnotation:activate()
 end
 
 function ISWorldMapSymbolTool_MoveAnnotation:deactivate()
-	if self.dragging then
-		self.dragging:setPosition(self.originalX, self.originalY)
-		self.dragging = nil
-	end
+	self:cancelDrag()
 end
 
 function ISWorldMapSymbolTool_MoveAnnotation:onMouseDown(x, y)
 	local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
 	if not index then return false end
 	self.dragging = self.symbolsAPI:getSymbolByIndex(index)
+	self.originalSymbol = self.dragging
+	self.isCopying = false
 	self.originalX = self.dragging:getWorldX()
 	self.originalY = self.dragging:getWorldY()
 	self.deltaX = self.originalX - self.mapAPI:uiToWorldX(x, y)
@@ -472,8 +626,31 @@ function ISWorldMapSymbolTool_MoveAnnotation:onKeyRelease(key)
 	return false
 end
 
+function ISWorldMapSymbolTool_MoveAnnotation:checkCopying()
+    if not self.dragging then return end
+    if isShiftKeyDown() then
+        if not self.isCopying then
+            self.dragging = self.dragging:createCopy()
+	        self.originalSymbol:setPosition(self.originalX, self.originalY)
+	        self.isCopying = true
+        end
+    else
+        if self.isCopying then
+            self.originalSymbol:setPosition(self.dragging:getWorldX(), self.dragging:getWorldY())
+            self.symbolsAPI:removeSymbol(self.dragging)
+            self.dragging = self.originalSymbol
+            self.isCopying = false
+        end
+    end
+end
+
 function ISWorldMapSymbolTool_MoveAnnotation:cancelDrag()
 	if not self.dragging then return false end
+	if self.isCopying then
+        self.symbolsAPI:removeSymbol(self.dragging)
+        self.dragging = self.originalSymbol
+        self.isCopying = false
+    end
 	self.dragging:setPosition(self.originalX, self.originalY)
 	self.dragging = nil
 	return true
@@ -482,7 +659,7 @@ end
 function ISWorldMapSymbolTool_MoveAnnotation:render()
 	self.symbolsUI:checkAnnotationForMoveMouse()
 	self.symbolsUI:checkAnnotationForMoveJoypad()
-
+    self:checkCopying()
 	if self.dragging then
 		-- Using a controller.
 		if (self.symbolsUI.playerNum == 0) and (not JoypadState.players[self.symbolsUI.playerNum+1] or wasMouseActiveMoreRecentlyThanJoypad()) then return end
@@ -532,19 +709,216 @@ end
 
 -----
 
+ISWorldMapSymbolTool_RotateAnnotation = ISWorldMapSymbolTool:derive("ISWorldMapSymbolTool_RotateAnnotation")
+
+function ISWorldMapSymbolTool_RotateAnnotation:activate()
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:deactivate()
+	if self.dragging then
+		self.dragging:setRotation(self.originalRotation)
+		self.dragging = nil
+	end
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onMouseDown(x, y)
+	local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
+	if not index then return false end
+	self.dragging = self.symbolsAPI:getSymbolByIndex(index)
+	self.originalRotation = self.dragging:getRotation()
+	self.startAngle = self:getAngleTo(self:getMouseX(), self:getMouseY())
+	self.clickX = x
+	self.clickY = y
+	return true
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onMouseUp(x, y)
+	if self.dragging then
+		if isClient() and self.dragging:isShared() then
+			self.symbolsAPI:sendModifySymbol(self.dragging)
+			self.dragging:setRotation(self.originalRotation)
+		end
+		self.dragging = nil
+		if self.symbolsUI.character then
+			self.symbolsUI.character:playSoundLocal("MapAddSymbol")
+		end
+		return true
+	end
+	return false
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onMouseMove(dx, dy)
+	if not self.dragging then return false end
+	local mx = self:getMouseX()
+	local my = self:getMouseY()
+	local degrees = self:getAngleTo(mx, my) - self.startAngle + self.originalRotation
+	self.dragging:setRotation(degrees)
+	return true
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:getAngleTo(mx, my)
+	local worldX = self.dragging:getWorldX()
+	local worldY = self.dragging:getWorldY()
+	local pointOfRotationX = self.mapAPI:worldToUIX(worldX, worldY)
+	local pointOfRotationY = self.mapAPI:worldToUIY(worldX, worldY)
+	local dx = mx - pointOfRotationX;
+	local dy = my - pointOfRotationY;
+	local degrees = 360 - (PZMath.radToDeg(Vector2.getDirection(dx, dy)))
+	return degrees
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onRightMouseDown(x, y)
+	return self:cancelDrag()
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:zeroRotation()
+    if self.dragging then
+        self.dragging:setRotation(0.0)
+        return true
+    end
+    local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
+    if not index then return false end
+    local symbol = self.symbolsAPI:getSymbolByIndex(index)
+    symbol:setRotation(0.0)
+    if self.symbolsUI.character then
+        self.symbolsUI.character:playSoundLocal(symbol:isText() and "MapAddNote" or "MapAddSymbol")
+    end
+    if isClient() then
+        self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
+    end
+end
+
+
+function ISWorldMapSymbolTool_RotateAnnotation:onKeyPress(key)
+	if key == Keyboard.KEY_ESCAPE then
+		return self:cancelDrag()
+	end
+    if key == Keyboard.KEY_Z then
+        self:zeroRotation()
+        return true
+    end
+	return false
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onKeyRelease(key)
+	if key == Keyboard.KEY_ESCAPE then -- Actually controller 'B' button
+		return self:cancelDrag()
+	end
+	return false
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:cancelDrag()
+	if not self.dragging then return false end
+	self.dragging:setRotation(self.originalRotation)
+	self.dragging = nil
+	return true
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:render()
+	self.symbolsUI:checkAnnotationForMoveMouse()
+	self.symbolsUI:checkAnnotationForMoveJoypad()
+
+	if self.dragging then
+		-- Using a controller.
+		if (self.symbolsUI.playerNum == 0) and (not getJoypadData(self.symbolsUI.playerNum) or wasMouseActiveMoreRecentlyThanJoypad()) then return end
+		local ms = UIManager.getMillisSinceLastRender()
+        local axisX = getJoypadMovementAxisX(self.mapUI.joyfocus.id)
+        local axisY = getJoypadMovementAxisY(self.mapUI.joyfocus.id)
+        if (math.abs(axisX) > 0.75 or math.abs(axisY) > 0.75) then
+            self.rotateAccumulator = (self.rotateAccumulator or 0.0) + ms
+            if self.rotateAccumulator > 0.5 then
+                local radians = Vector2.getDirection(axisX, axisY) + math.pi / 2
+                self.dragging:setRotation(360 - PZMath.radToDeg(radians))
+            end
+        else
+            self.rotateAccumulator = 0.0
+        end
+        local povX = getControllerPovX(self.mapUI.joyfocus.id)
+        if povX < 0 then
+            self.dragging:setRotation(self.dragging:getRotation() + (ms / 45))
+        elseif povX > 0 then
+            self.dragging:setRotation(self.dragging:getRotation() - (ms / 45))
+        end
+	end
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:onJoypadDownInMap(button, joypadData)
+	if button == Joypad.AButton then
+		if self.dragging then
+			if isClient() and self.dragging:isShared() then
+				self.symbolsAPI:sendModifySymbol(self.dragging)
+			end
+			self.dragging = nil
+			if self.symbolsUI.character then
+				self.symbolsUI.character:playSoundLocal("MapAddSymbol")
+			end
+			return
+		end
+		local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
+		if not index then return end
+		self.dragging = self.symbolsAPI:getSymbolByIndex(index)
+		self.originalX = self.dragging:getWorldX()
+		self.originalY = self.dragging:getWorldY()
+		local x,y = self.mapUI.width / 2, self.mapUI.height / 2
+		self.deltaX = self.originalX - self.mapAPI:uiToWorldX(x, y)
+		self.deltaY = self.originalY - self.mapAPI:uiToWorldY(x, y)
+	end
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:getJoypadAButtonText()
+	if self.dragging then
+		return getText("IGUI_Map_PlaceSymbol")
+	end
+	if self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol then
+		return getText("IGUI_Map_RotateElement")
+	end
+	return nil
+end
+
+function ISWorldMapSymbolTool_RotateAnnotation:new(symbolsUI)
+	local o = ISWorldMapSymbolTool.new(self, symbolsUI)
+	return o
+end
+
+-----
+
 ISWorldMapSymbolTool_RemoveAnnotation = ISWorldMapSymbolTool:derive("ISWorldMapSymbolTool_RemoveAnnotation")
 
 function ISWorldMapSymbolTool_RemoveAnnotation:activate()
 end
 
 function ISWorldMapSymbolTool_RemoveAnnotation:deactivate()
+    if self.modal and self.modal:isReallyVisible() then
+        self.modal:close()
+        self.modal = nil
+    end
 end
 
 function ISWorldMapSymbolTool_RemoveAnnotation:onMouseDown(x, y)
+    if self.mapUI.javaObject:isMapEditor() then
+        return false
+    end
 	return self:removeAnnotation()
 end
 
 function ISWorldMapSymbolTool_RemoveAnnotation:onMouseUp(x, y)
+    if self.mapUI.javaObject:isMapEditor() and (self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol) then
+        local text
+        local symbolIndex = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
+		local symbol = self.symbolsAPI:getSymbolByIndex(symbolIndex)
+        if symbol:isText() then
+		    text = string.format('Remove symbol "%s"?', symbol:getTranslatedText():gsub("\n", ""):gsub("<br>", ""))
+        elseif symbol:isTexture() then
+		    text = string.format('Remove symbol "%s"?', symbol:getSymbolID())
+        else
+            text = "Remove mystery annotation?"
+        end
+        local modal = ISModalRichText:new(0, 0, 380, 120, text, true, self, self.onConfirmRemoveAnnotation, self.playerNum, symbolIndex)
+        modal:initialise()
+        modal:addToUIManager()
+        modal:setAlwaysOnTop(true)
+        self.modal = modal
+    end
 	return false
 end
 
@@ -564,6 +938,14 @@ function ISWorldMapSymbolTool_RemoveAnnotation:getJoypadAButtonText()
 		return getText("IGUI_Map_RemoveElement")
 	end
 	return nil
+end
+
+function ISWorldMapSymbolTool_RemoveAnnotation:onConfirmRemoveAnnotation(button, symbolIndex)
+    if button.internal == "YES" then
+		self.symbolsAPI:removeSymbolByIndex(symbolIndex)
+		self.symbolsUI.mouseOverNote = nil
+		self.symbolsUI.mouseOverSymbol = nil
+    end
 end
 
 function ISWorldMapSymbolTool_RemoveAnnotation:removeAnnotation()
@@ -726,7 +1108,7 @@ function ISWorldMapSymbolsTabPanel:onJoypadDown(button, joypadData)
 	end
 end
 
-function ISWorldMapSymbolsTabPanel:setJoypadFocused(focused)
+function ISWorldMapSymbolsTabPanel:setJoypadFocused(focused, joypadData)
 	self.joypadFocused = focused;
 end
 
@@ -740,10 +1122,10 @@ end
 
 function ISWorldMapSymbols:createChildren()
 	local btnWid = self.width - UI_BORDER_SPACING*2-2
-	local btnWidCol = (self.width - UI_BORDER_SPACING*6-2)/5
+	local colorColumns = 5
+	local btnWidCol = (self.width - UI_BORDER_SPACING * 6 - 2) / colorColumns
 	local btnHgt = BUTTON_HGT
 	local btnPad = UI_BORDER_SPACING
-	local columns = 8
 
 	self:populateSymbolList()
 
@@ -775,7 +1157,7 @@ function ISWorldMapSymbols:createChildren()
 		end
 		buttonX = buttonX + btnWidCol + btnPad
 		column = column + 1
-		if column == columns then
+		if column == colorColumns then
 			buttonX = UI_BORDER_SPACING
 			buttonY = buttonY + btnHgt + btnPad
 			column = 0
@@ -815,6 +1197,14 @@ function ISWorldMapSymbols:createChildren()
 	--for each tab needed, fill it with the buttons in that tab
 	for i,v in ipairs(panelTabs) do
 		local tab = ISPanelJoypad:new(0, 0, self.panel.width, self.panel.height-BUTTON_HGT);
+		tab.onGainJoypadFocus = function(_self, joypadData)
+            ISPanelJoypad.onGainJoypadFocus(_self, joypadData)
+            _self:restoreJoypadFocus(joypadData)
+        end
+		tab.onLoseJoypadFocus = function(_self, joypadData)
+            ISPanelJoypad.onLoseJoypadFocus(_self, joypadData)
+            _self:clearJoypadFocus(joypadData)
+        end
 		tab.onJoypadDown = function(self, button, joypadData)
 			if button == Joypad.BButton then
 				setJoypadFocus(joypadData.player, self.parent.parent)
@@ -831,6 +1221,7 @@ function ISWorldMapSymbols:createChildren()
 		self.panel:addView(getText("IGUI_Map_Tab"..panelTabs[i]), tab)
 
 		local symbolButtons = {}
+	    local columns = 8
 		column = 0
 		x = UI_BORDER_SPACING+1
 		y = UI_BORDER_SPACING+1
@@ -869,7 +1260,7 @@ function ISWorldMapSymbols:createChildren()
 		tab.joypadIndexY = math.floor(#tab.joypadButtonsY / 2)
 		tab.joypadButtons = tab.joypadButtonsY[tab.joypadIndexY]
 		tab.joypadIndex = math.ceil(#tab.joypadButtons / 2)
-		tab.joypadButtons[tab.joypadIndex]:setJoypadFocused(true)
+--		tab.joypadButtons[tab.joypadIndex]:setJoypadFocused(true)
 	end
 
 
@@ -889,7 +1280,7 @@ function ISWorldMapSymbols:createChildren()
 	self:addChild(self.addNoteBtn)
 	y = y + btnHgt + btnPad
 
-	self.editNoteBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_EditNote"), self, ISWorldMapSymbols.onButtonClick)
+	self.editNoteBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_EditElement"), self, ISWorldMapSymbols.onButtonClick)
 	self.editNoteBtn.internal = "EDITNOTE"
 	self.editNoteBtn:initialise()
 	self.editNoteBtn:instantiate()
@@ -904,7 +1295,18 @@ function ISWorldMapSymbols:createChildren()
 	self.moveBtn:instantiate()
 	self.moveBtn.borderColor.a = 0.0
 --	self.moveBtn.borderColor = {r=1, g=1, b=1, a=0.4}
+    self.moveBtn.tooltip = getText("IGUI_Map_MoveElement_tt")
 	self:addChild(self.moveBtn)
+	y = y + btnHgt + btnPad
+
+	self.rotateBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_RotateElement"), self, ISWorldMapSymbols.onButtonClick)
+	self.rotateBtn.internal = "ROTATE"
+	self.rotateBtn:initialise()
+	self.rotateBtn:instantiate()
+	self.rotateBtn.borderColor.a = 0.0
+--	self.rotateBtn.borderColor = {r=1, g=1, b=1, a=0.4}
+    self.rotateBtn.tooltip = getText("IGUI_Map_RotateElement_tt")
+	self:addChild(self.rotateBtn)
 	y = y + btnHgt + btnPad
 
 	self.removeBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_RemoveElement"), self, ISWorldMapSymbols.onButtonClick)
@@ -984,6 +1386,7 @@ function ISWorldMapSymbols:checkInventory()
 	self.addNoteBtn.enable = canWrite
 	self.editNoteBtn.enable = canWrite and canErase
 	self.moveBtn.enable = canWrite and canErase
+	self.rotateBtn.enable = canWrite and canErase
 	self.removeBtn.enable = canErase
 
 	if canWrite then
@@ -994,10 +1397,12 @@ function ISWorldMapSymbols:checkInventory()
 
 	if canWrite and canErase then
 		self.editNoteBtn.tooltip = nil
-		self.moveBtn.tooltip = nil
+		self.moveBtn.tooltip = getText("IGUI_Map_MoveElement_tt")
+		self.rotateBtn.tooltip = getText("IGUI_Map_RotateElement_tt")
 	else
 		self.editNoteBtn.tooltip = getText("Tooltip_Map_CantEdit")
 		self.moveBtn.tooltip = getText("Tooltip_Map_CantEdit")
+		self.rotateBtn.tooltip = getText("Tooltip_Map_CantEdit")
 	end
 	-- illiterate  characters cannot read or write notes
 	if illiterate then
@@ -1019,10 +1424,13 @@ function ISWorldMapSymbols:checkInventory()
 	if self.currentTool == self.tools.AddNote and not canWrite then
 		self:setCurrentTool(nil)
 	end
-	if self.currentTool == self.tools.EditNote and not (canWrite and canErase) then
+	if self.currentTool == self.tools.EditAnnotation and not (canWrite and canErase) then
 		self:setCurrentTool(nil)
 	end
 	if self.currentTool == self.tools.MoveAnnotation and not (canWrite and canErase) then
+		self:setCurrentTool(nil)
+	end
+	if self.currentTool == self.tools.RotateAnnotation and not (canWrite and canErase) then
 		self:setCurrentTool(nil)
 	end
 	if self.currentTool == self.tools.RemoveAnnotation and not canErase then
@@ -1051,8 +1459,9 @@ function ISWorldMapSymbols:initTools()
 	self.tools = {}
 	self.tools.AddSymbol = ISWorldMapSymbolTool_AddSymbol:new(self)
 	self.tools.AddNote = ISWorldMapSymbolTool_AddNote:new(self)
-	self.tools.EditNote = ISWorldMapSymbolTool_EditNote:new(self)
+	self.tools.EditAnnotation = ISWorldMapSymbolTool_EditAnnotation:new(self)
 	self.tools.MoveAnnotation = ISWorldMapSymbolTool_MoveAnnotation:new(self)
+	self.tools.RotateAnnotation = ISWorldMapSymbolTool_RotateAnnotation:new(self)
 	self.tools.RemoveAnnotation = ISWorldMapSymbolTool_RemoveAnnotation:new(self)
 	if isClient() then
 		self.tools.Sharing = ISWorldMapSymbolTool_Sharing:new(self)
@@ -1068,6 +1477,7 @@ function ISWorldMapSymbols:setCurrentTool(tool)
 	if self.currentTool then
 		self.currentTool:activate()
 	end
+    self.symbolsAPI:setUserEditing(self.currentTool ~= nil)
 end
 
 function ISWorldMapSymbols:toggleTool(tool)
@@ -1103,8 +1513,9 @@ function ISWorldMapSymbols:prerender()
 	end
 
 	self.addNoteBtn.borderColor.a = (self.currentTool == self.tools.AddNote) and 1 or 0
-	self.editNoteBtn.borderColor.a = (self.currentTool == self.tools.EditNote) and 1 or 0
+	self.editNoteBtn.borderColor.a = (self.currentTool == self.tools.EditAnnotation) and 1 or 0
 	self.moveBtn.borderColor.a = (self.currentTool == self.tools.MoveAnnotation) and 1 or 0
+	self.rotateBtn.borderColor.a = (self.currentTool == self.tools.RotateAnnotation) and 1 or 0
 	self.removeBtn.borderColor.a = (self.currentTool == self.tools.RemoveAnnotation) and 1 or 0
 	if self.sharingBtn then
 		self.sharingBtn.borderColor.a = (self.currentTool == self.tools.Sharing) and 1 or 0
@@ -1123,26 +1534,63 @@ function ISWorldMapSymbols:render()
 end
 
 function ISWorldMapSymbols:renderSymbol(symbol, x, y)
+    local degrees = 0.0
+    local bMatchPerspective = false
+    local bApplyZoom = false
+    self:renderSymbolAux(symbol, x, y, degrees, ISMap.SCALE * self.mapAPI:getWorldScale(), bMatchPerspective, bApplyZoom)
+end
+
+function ISWorldMapSymbols:renderSymbolAux(symbol, x, y, degrees, scale, bMatchPerspective, bApplyZoom)
 	if not symbol then return end
-	local scale = ISMap.SCALE * self.mapAPI:getWorldScale()
 	local sym = symbol
-	local symW = 20 / 2 * scale
-	local symH = 20 / 2 * scale
-	self.mapUI.javaObject:DrawSymbol(sym.image, x-symW, y-symH,
-		20 * scale, 20 * scale,
-		1, sym.textureColor.r, sym.textureColor.g, sym.textureColor.b)
+	self.mapUI.javaObject:DrawSymbol(sym.image, x, y,
+		20, 20, degrees, scale, bMatchPerspective, bApplyZoom,
+		sym.textureColor.r, sym.textureColor.g, sym.textureColor.b, sym.textureColor.a)
 end
 
 function ISWorldMapSymbols:renderNoteBeingAddedOrEdited(modal)
 	if not modal or not modal:isReallyVisible() then
 		return
 	end
-	local mx = modal.x - self.mapUI:getAbsoluteX()
-	local my = modal.y - self.mapUI:getAbsoluteY() - FONT_HGT_HANDWRITTEN * ISMap.SCALE * self.mapAPI:getWorldScale()
-	self.noteX = self.mapAPI:uiToWorldX(mx, my)
-	self.noteY = self.mapAPI:uiToWorldY(mx, my)
-	local color = modal.currentColor
-	local r,g,b = color:getR(),color:getG(),color:getB()
+    local symbol = modal.symbol -- is nil when creating a new symbol
+    local scale = modal.scale
+    local degrees = modal.rotation or 0.0
+    local bMatchPerspective = modal:isMatchPerspective()
+    local bApplyZoom = true
+    local minZoom = modal.minZoom or 0.0
+    local maxZoom = modal.maxZoom or 24.0
+    if symbol and symbol:isTexture() then
+        local symbolID = symbol:getSymbolID()
+        local symbolDef = MapSymbolDefinitions.getInstance():getSymbolById(symbolID)
+        local texturePath = symbolDef:getTexturePath()
+        local color = modal.currentColor
+        local r,g,b = color:getR(),color:getG(),color:getB()
+        local a = 1.0
+        if self.mapAPI:getZoomF() < minZoom or self.mapAPI:getZoomF() > maxZoom then
+            a = 0.25
+        end
+        local symbolTbl = { image = getTexture(texturePath), textureColor = { r = r, g = g, b = b, a = a } }
+        if bApplyZoom then
+            scale = scale * self.mapAPI:getWorldScale()
+        end
+        local pointOfRotationX = modal.x - self.mapUI:getAbsoluteX()
+        local pointOfRotationY = modal.y - symbolDef:getHeight() * symbol:getAnchorY() * scale - self.mapUI:getAbsoluteY()
+        self.noteX = self.mapAPI:uiToWorldX(pointOfRotationX, pointOfRotationY)
+        self.noteY = self.mapAPI:uiToWorldY(pointOfRotationX, pointOfRotationY)
+        self:renderSymbolAux(symbolTbl, pointOfRotationX, pointOfRotationY, degrees, scale, bMatchPerspective, bApplyZoom)
+        return
+    end
+    local anchorX,anchorY = 0.5,0.5
+    if symbol then
+        anchorX = symbol:getAnchorX()
+        anchorY = symbol:getAnchorY()
+--        degrees = symbol:getRotation()
+--        bMatchPerspective = symbol:isMatchPerspective()
+        bApplyZoom = symbol:isApplyZoom()
+    end
+	local layerID = self.symbolsAPI:getDefaultLayerID()
+    if symbol then layerID = symbol:getLayerID() end
+    layerID = modal.chosenFont or layerID
 	local text = modal.entry:getText()
 	if OnScreenKeyboard.IsVisible() then
 		text = OnScreenKeyboard.GetCurrentText()
@@ -1150,9 +1598,26 @@ function ISWorldMapSymbols:renderNoteBeingAddedOrEdited(modal)
 	if modal:isTranslation() then
 		text = getText(text)
 	end
-	self.mapUI.javaObject:DrawTextSdf(UIFont.SdfCaveat, text,
-			self.mapAPI:worldToUIX(self.noteX, self.noteY), self.mapAPI:worldToUIY(self.noteX, self.noteY),
-			ISMap.SCALE * self.mapAPI:getWorldScale(), r, g, b, 1)
+    scale = self.symbolsAPI:getDisplayScale(layerID, scale, bApplyZoom)
+    local symbolH = self.symbolsAPI:getTextLayoutHeight(text, layerID) * scale
+	local mx = modal.x - self.mapUI:getAbsoluteX()
+	local my = modal.y - self.mapUI:getAbsoluteY() - symbolH * (1 - anchorY)
+	self.noteX = self.mapAPI:uiToWorldX(mx, my)
+	self.noteY = self.mapAPI:uiToWorldY(mx, my)
+	local color = modal.currentColor
+	local r,g,b = color:getR(),color:getG(),color:getB()
+	local a = 1.0
+	if modal.useLayerColor then
+        r,g,b,a = 0,0,0,0
+    end
+--[[
+    if self.mapAPI:getZoomF() < minZoom or self.mapAPI:getZoomF() > maxZoom then
+        a = 0.25
+    end
+ ]]
+	self.mapUI.javaObject:DrawTextSdfRotated(layerID, text,
+			mx, my, anchorX, anchorY, degrees,
+			scale, bMatchPerspective, bApplyZoom, r, g, b, a)
 end
 
 function ISWorldMapSymbols:onMouseDownMap(x, y)
@@ -1223,7 +1688,7 @@ function ISWorldMapSymbols:onButtonClick(button)
 	end
 	if button.internal == "EDITNOTE" then
 		self.selectedSymbol = nil
-		self:toggleTool(self.tools.EditNote)
+		self:toggleTool(self.tools.EditAnnotation)
 		if self.joyfocus then
 			button:setJoypadFocused(false)
 			setJoypadFocus(self.playerNum, self.mapUI)
@@ -1232,6 +1697,14 @@ function ISWorldMapSymbols:onButtonClick(button)
 	if button.internal == "MOVE" then
 		self.selectedSymbol = nil
 		self:toggleTool(self.tools.MoveAnnotation)
+		if self.joyfocus then
+			button:setJoypadFocused(false)
+			setJoypadFocus(self.playerNum, self.mapUI)
+		end
+	end
+	if button.internal == "ROTATE" then
+		self.selectedSymbol = nil
+		self:toggleTool(self.tools.RotateAnnotation)
 		if self.joyfocus then
 			button:setJoypadFocused(false)
 			setJoypadFocus(self.playerNum, self.mapUI)
@@ -1323,6 +1796,11 @@ local function filterShare(symbol)
 	return symbol ~= nil
 end
 
+local function filterEdit(symbol)
+	if isClient() and not symbol:canClientModify() then return false end
+	return symbol ~= nil
+end
+
 local function filterText(symbol)
 	if isClient() and not symbol:canClientModify() then return false end
 	return symbol ~= nil and symbol:isText()
@@ -1353,14 +1831,14 @@ function ISWorldMapSymbols:checkAnnotationForRemoveJoypad()
 	self:hitTestAnnotations(self.mapUI.width / 2, self.mapUI.height / 2, "remove", filterAny)
 end
 
-function ISWorldMapSymbols:checkTextForEditMouse()
+function ISWorldMapSymbols:checkAnnotationForEditMouse()
 	if (self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] and not wasMouseActiveMoreRecentlyThanJoypad()) then return end
-	self:hitTestAnnotations(self.mapUI:getMouseX(), self.mapUI:getMouseY(), "edit", filterText)
+	self:hitTestAnnotations(self.mapUI:getMouseX(), self.mapUI:getMouseY(), "edit", filterEdit)
 end
 
-function ISWorldMapSymbols:checkTextForEditJoypad()
+function ISWorldMapSymbols:checkAnnotationForEditJoypad()
 	if (self.playerNum == 0) and (JoypadState.players[self.playerNum+1] == nil or wasMouseActiveMoreRecentlyThanJoypad()) then return end
-	self:hitTestAnnotations(self.mapUI.width / 2, self.mapUI.height / 2, "edit", filterText)
+	self:hitTestAnnotations(self.mapUI.width / 2, self.mapUI.height / 2, "edit", filterEdit)
 end
 
 function ISWorldMapSymbols:checkAnnotationForSharingMouse()
@@ -1393,6 +1871,10 @@ function ISWorldMapSymbols:hitTestAnnotations(x, y, mode, filter)
 end
 
 function ISWorldMapSymbols:renderSymbolOutline(symbol, r, g, b)
+    local a = 1.0
+    local thickness = 2.0
+    symbol:renderOutline(r, g, b, a, thickness)
+--[[
 	local x = symbol:getDisplayX()
 	local y = symbol:getDisplayY()
 	local w = symbol:getDisplayWidth()
@@ -1409,6 +1891,7 @@ function ISWorldMapSymbols:renderSymbolOutline(symbol, r, g, b)
 
 	self.mapUI:drawRectBorder(x - 1, y - 1, w + 2, h + 2, 1, r, g, b)
 	self.mapUI:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, r, g, b)
+--]]
 end
 
 function ISWorldMapSymbols:onGainJoypadFocus(joypadData)
@@ -1416,7 +1899,7 @@ function ISWorldMapSymbols:onGainJoypadFocus(joypadData)
 	self.joypadIndexY = 2
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
 	self.joypadIndex = 1
-	self.joypadButtons[self.joypadIndex]:setJoypadFocused(true)
+	self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
 --	self.removeBtn:setJoypadButton(Joypad.Texture.XButton)
 end
 
@@ -1465,7 +1948,8 @@ function ISWorldMapSymbols:new(x, y, width, height, mapUI)
 	o.selectedSymbol = nil
 	o.symbolList = {}
 	o.mapUI = mapUI -- ISUIElement with javaObject=UIWorldMap
-	o.mapAPI = mapUI.javaObject:getAPIv2()
+	o.mapAPI = mapUI.javaObject:getAPIv3()
+	o.styleAPI = o.mapAPI:getStyleAPI()
 	o.symbolsAPI = o.mapAPI:getSymbolsAPIv2()
 	o.buttonList = {}
 	o.character = mapUI.character

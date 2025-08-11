@@ -116,7 +116,7 @@ function ISCheatPanelUI:addAdminPowerOptions()
     end);
 
     self:addOption("IGUI_CheatPanel_AnimalExtraValues", IsoAnimal.isExtraValues(), function(self, selected)
-        IsoAnimal.toggleExtraValues();
+        IsoAnimal.setExtraValues(selected)
     end);
 
     self.tickBox:setWidthToFit()

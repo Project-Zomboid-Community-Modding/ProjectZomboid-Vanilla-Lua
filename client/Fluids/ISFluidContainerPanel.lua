@@ -416,6 +416,17 @@ function ISFluidContainerPanel:getContainerOwner()
     return nil;
 end
 
+function ISFluidContainerPanel:getContainerOwnerObject()
+    local itemOrObject = self:getContainerOwner()
+    if instanceof(itemOrObject, "InventoryItem") then
+        return itemOrObject:getContainer() -- player inventory
+    end
+    if instanceof(itemOrObject, "IsoObject") then
+        return itemOrObject:getSquare()
+    end
+    return nil
+end
+
 function ISFluidContainerPanel:getIsoObjectTextures()
     self.textureList = {};
 

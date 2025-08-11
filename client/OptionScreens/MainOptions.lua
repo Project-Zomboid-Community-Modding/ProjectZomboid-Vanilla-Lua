@@ -645,15 +645,8 @@ function MainOptions:create()
 		local fileOutput = getFileWriter("keysB42.ini", true, false)
 		fileOutput:write("VERSION="..tostring(MainOptions.KEYS_VERSION).."\r\n")
 		for i,v in ipairs(MainOptions.keyText) do
-			-- if it's a label (like [Player Visual])
 			if not v.isModBind then
-				if v.value then
-					fileOutput:write(v.value .. "\r\n")
-				else
-					fileOutput:write(v.txt:getName() .. "=" .. v.keyCode .."/"..v.altCode .. "\r\n")
-					getCore():addKeyBinding(v.txt:getName(), v.keyCode)
-					getCore():addAltKeyBinding(v.txt:getName(), v.altCode)
-				end
+				MainOptions.writeKey(v, fileOutput);
 			end
 		end
 		fileOutput:close()
@@ -2796,7 +2789,7 @@ function MainOptions:addKeybindingPanel()
 			label:setTranslation(getText("UI_optionscreen_binding_" .. v.value));
 			self.mainPanel:addChild(label);
 
-			local btn = ISButton:new(x + UI_BORDER_SPACING, y+self.addY, self.keyButtonWidth, BUTTON_HGT, getKeyName(tonumber(v.key)), self, MainOptions.onKeyBindingBtnPress);
+			local btn = ISButton:new(x + UI_BORDER_SPACING, y+self.addY, self.keyButtonWidth, BUTTON_HGT, MainOptions.getKeyPrefix(v) .. getKeyName(tonumber(v.key)), self, MainOptions.onKeyBindingBtnPress);
 			btn.internal = v.value;
 			btn:initialise();
 			btn:instantiate();
@@ -2805,7 +2798,10 @@ function MainOptions:addKeybindingPanel()
 
 			keyTextElement.txt = label;
 			keyTextElement.keyCode = tonumber(v.key) or 0
-			keyTextElement.altCode = tonumber(v.alt) or 0
+			keyTextElement.altCode = tonumber(v.altCode) or 0
+			keyTextElement.shift = v.shift;
+			keyTextElement.ctrl = v.ctrl;
+			keyTextElement.alt = v.alt;
 			keyTextElement.btn = btn;
 			keyTextElement.left = left
 			table.insert(MainOptions.keyText, keyTextElement);
@@ -3786,6 +3782,8 @@ function MainOptions:addModOptionsPanel()
 				keyTextElement.defaultKeyCode = tonumber(option.defaultkey) or 0
 				keyTextElement.altCode = 0
 				keyTextElement.btn = btn
+				keyTextElement.shift = option.shift
+				keyTextElement.ctrl = option.ctrl
 				keyTextElement.left = true
 				keyTextElement.isModBind = true
 				table.insert(MainOptions.keyText, keyTextElement)
@@ -4107,7 +4105,7 @@ function MainOptions:onKeyboardLayoutChanged()
 	Keyboard.initKeyNames()
 	for k,v in ipairs(MainOptions.keyText) do
 		if not v.value then
-			v.btn:setTitle(getKeyName(v.keyCode));
+			v.btn:setTitle(MainOptions.getKeyPrefix(v) .. getKeyName(v.keyCode));
 		end
 	end
 end
@@ -4246,7 +4244,7 @@ function MainOptions:onMouseWheelCurrentTab(del)
 end
 
 MainOptions.KEYS_VERSION1 = 1 -- Build 41
-MainOptions.KEYS_VERSION = MainOptions.KEYS_VERSION1
+MainOptions.KEYS_VERSION = 2
 
 function MainOptions.upgradeKeysIni(name, key, defaultKey, version)
 	if (version < MainOptions.KEYS_VERSION1) and (key ~= defaultKey) then
@@ -4268,13 +4266,16 @@ function MainOptions.loadKeys()
 	for i=1, #keyBinding do
 		bind = {}
 		bind.key = keyBinding[i].key
-		bind.alt = keyBinding[i].alt
+		bind.altCode = keyBinding[i].alt or 0;
 		bind.value = keyBinding[i].value
+		bind.shift = keyBinding[i].shift or false;
+		bind.ctrl = keyBinding[i].ctrl or false;
+		bind.alt = keyBinding[i].altKey or false;
 		-- if we have a alternate key but no main then make the alt the main.
 		-- this will help parts of the code that use getCore():getKey() to see if a binding exists.
-		if bind.alt and not bind.key then
-			bind.key = bind.alt
-			bind.alt = nil
+		if bind.altCode and not bind.key then
+			bind.key = bind.altCode
+			bind.altCode = nil
 		end
 		
 		if not luautils.stringStarts(keyBinding[i].value, "[") then
@@ -4291,19 +4292,13 @@ function MainOptions.loadKeys()
 					bindNbr = 30;
 				end
             end
-            getCore():addKeyBinding(bind.value, bindNbr)
+            getCore():addKeyBinding(bind.value, bindNbr, bind.altCode, bind.shift, bind.ctrl, bind.alt)
             bind.key = bindNbr;
             table.insert(MainOptions.keys, bind)
             if getTextManager():MeasureStringX(UIFont.Small, bind.value) > MainOptions.keyBindingLength then
 				MainOptions.keyBindingLength = getTextManager():MeasureStringX(UIFont.Small, bind.value)
 			end
 			knownKeys[bind.value] = bind
-
-			-- add the alt key binding
-			if bind.alt then
-				getCore():addAltKeyBinding(bind.value, tonumber(bind.alt))
-				bind.alt = tonumber(bind.alt);
-			end
         else
             table.insert(MainOptions.keys, bind)
         end
@@ -4332,6 +4327,41 @@ function MainOptions.loadKeys()
 			if splittedLine[1] == "VERSION" then
 				version = tonumber(splittedLine[2]) or 0;
 			end
+			if version >= 2 then -- new loading of keys
+				local name = splittedLine[1];
+				local keyBind = 0;
+				local altCode = 0;
+				local shift = false;
+				local ctrl = false;
+				local alt = false;
+				local fullVals = string.split(splittedLine[2], ";");
+				if knownKeys[name] then
+					for i,fullVal in ipairs(fullVals) do
+						local key, value = unpack(string.split(fullVal, ":"));
+						if key == "key" then
+							keyBind = tonumber(value);
+						end
+						if key == "altCode" then
+							altCode = tonumber(value);
+						end
+						if key == "shift" and value == "true" then
+							shift = true;
+						end
+						if key == "ctrl" and value == "true" then
+							ctrl = true;
+						end
+						if key == "alt" and value == "true" then
+							alt = true;
+						end
+					end
+					knownKeys[name].key = keyBind
+					knownKeys[name].altCode = altCode;
+					knownKeys[name].shift = shift;
+					knownKeys[name].ctrl = ctrl;
+					knownKeys[name].alt = alt;
+					getCore():addKeyBinding(name, keyBind, altCode, shift, ctrl, alt)
+				end
+			end
 			if splittedLine[1] and splittedLine[2] and string.match(splittedLine[2], "/") then
 				local name = splittedLine[1]
 				local keyBind, alternateKeyBind = unpack(string.split(splittedLine[2], "/"))
@@ -4341,42 +4371,20 @@ function MainOptions.loadKeys()
 					keyBind = MainOptions.upgradeKeysIni(name, keyBind, knownKeys[name].key, version)
 					-- ignore obsolete bindings, override the default key
 					knownKeys[name].key = keyBind
-					getCore():addKeyBinding(name, keyBind)
-					if alternateKeyBind then
-						knownKeys[name].alt = alternateKeyBind
-						getCore():addAltKeyBinding(name, alternateKeyBind)
-					end
+					getCore():addKeyBinding(name, keyBind, alternateKeyBind, false, false, false)
 				end
 			end
 		end
 	end
 	
 	local reload = false;
-	
-	-- update keys for new clothing panel
---	if getCore():getOptionUpdateSafetyButton() then
---		getCore():addKeyBinding("Toggle Clothing Protection Panel", Keyboard.KEY_P);
---		getCore():addKeyBinding("Aim", Keyboard.KEY_LCONTROL);
---		for i,v in ipairs(MainOptions.keys) do
---			if v.value == "Crouch" then
---				print("found crouch")
---				v.key = getCore():getKey("Crouch");
---			end
---			if v.value == "Aim" then
---				print("found aim")
---				v.key = getCore():getKey("Aim");
---			end
---		end
---		reload = true;
---		getCore():setOptionUpdateSneakButton(false);
---		getCore():saveOptions();
---	end
+
 	-- update keys for new sneak anim & clothing panel
 	if getCore():getOptionUpdateSneakButton() then
-		getCore():addKeyBinding("Toggle Clothing Protection Panel", Keyboard.KEY_P);
-		getCore():addKeyBinding("Toggle Safety", Keyboard.KEY_G);
-		getCore():addKeyBinding("Crouch", Keyboard.KEY_C);
-		getCore():addKeyBinding("Aim", Keyboard.KEY_LCONTROL);
+		getCore():addKeyBinding("Toggle Clothing Protection Panel", Keyboard.KEY_P, 0, false, false, false);
+		getCore():addKeyBinding("Toggle Safety", Keyboard.KEY_G, 0, false, false, false);
+		getCore():addKeyBinding("Crouch", Keyboard.KEY_C, 0, false, false, false);
+		getCore():addKeyBinding("Aim", Keyboard.KEY_LCONTROL, 0, false, false, false);
 		for i,v in ipairs(MainOptions.keys) do
 			if v.value == "Toggle Safety" then
 				v.key = getCore():getKey("Toggle Safety");
@@ -4398,7 +4406,7 @@ function MainOptions.loadKeys()
 
 	-- force the change of vehicle horn if it's equal to Toggle Health Panel
 	if getCore():getKey("Toggle Health Panel") == getCore():getKey("VehicleHorn") then
-		getCore():addKeyBinding("VehicleHorn", getCore():getKey("Shout"));
+		getCore():addKeyBinding("VehicleHorn", getCore():getKey("Shout"), 0, false, false, false);
 		for i,v in ipairs(MainOptions.keys) do
 			if v.value == "VehicleHorn" then
 				v.key = getCore():getKey("VehicleHorn");
@@ -4457,6 +4465,20 @@ function MainOptions:onKeyBindingBtnPress(button, x, y)
 	MainOptions.setKeybindDialog = modal
 end
 
+function MainOptions.getKeyPrefix(bind)
+	local txt = "";
+	if bind.shift then
+		txt = "SHIFT + ";
+	end
+	if bind.ctrl then
+		txt = "CTRL + ";
+	end
+	if bind.alt then
+		txt = "ALT + ";
+	end
+	return txt;
+end
+
 function MainOptions:onOptionMouseDown(button, x, y)
 	-- if we back we gonna reinit all our key binding
 	if button.internal == "BACK" then
@@ -4467,7 +4489,7 @@ function MainOptions:onOptionMouseDown(button, x, y)
 		for o,l in ipairs(MainOptions.keyText) do
 			-- text
 			if not l.value then
-				l.btn:setTitle(getKeyName(l.keyCode));
+				l.btn:setTitle(MainOptions.getKeyPrefix(l) .. getKeyName(l.keyCode));
 			end
 		end
 		self:close()
@@ -4484,16 +4506,38 @@ MainOptions.saveKeys = function()
 	local fileOutput = getFileWriter("keysB42.ini", true, false)
 	fileOutput:write("VERSION="..tostring(MainOptions.KEYS_VERSION).."\r\n")
 	for i,v in ipairs(MainOptions.keyText) do
-		-- if it's a label (like [Player Visual])
-		if v.value then
-			fileOutput:write(v.value .. "\r\n")
-		else
-			fileOutput:write(v.txt:getName() .. "=" .. v.keyCode .."/"..v.altCode .. "\r\n")
-			getCore():addKeyBinding(v.txt:getName(), v.keyCode)
-			getCore():addAltKeyBinding(v.txt:getName(), v.altCode)
-		end
+		MainOptions.writeKey(v, fileOutput);
 	end
 	fileOutput:close()
+end
+
+MainOptions.writeKey = function(value, fileOutput)
+	-- if it's a label (like [Player Visual])
+	if value.value then
+		fileOutput:write(value.value .. "\r\n")
+	else
+		local name = value.txt:getName();
+		local bindNb = value.keyCode;
+		local altCode = value.altCode;
+		local shift = value.shift;
+		local ctrl = value.ctrl;
+		local alt = value.alt;
+		local txt = value.txt:getName() .. "=" .. "key:" .. bindNb;
+		if altCode > 0 then
+			txt = txt .. ";altCode:" .. altCode;
+		end
+		if shift then
+			txt = txt .. ";shift:true";
+		end
+		if ctrl then
+			txt = txt .. ";ctrl:true";
+		end
+		if alt then
+			txt = txt .. ";alt:true";
+		end
+		fileOutput:write(txt .. "\r\n")
+		getCore():addKeyBinding(value.txt:getName(), value.keyCode, altCode, shift or false, ctrl or false, alt or false)
+	end
 end
 
 function MainOptions:apply(closeAfter)
@@ -4549,7 +4593,7 @@ function MainOptions:close()
 	end
 end
 
-function MainOptions.keyPressHandler(key)
+function MainOptions.keyPressHandler(key, shift, ctrl, alt)
 	if MainOptions.setKeybindDialog and key > 0 then
 		local keybindName = MainOptions.setKeybindDialog.keybindName
 		MainOptions.setKeybindDialog:destroy()
@@ -4561,8 +4605,8 @@ function MainOptions.keyPressHandler(key)
 			if not v.value then
 				if v.txt:getName() == keybindName then -- get our current btn pressed
 					keyBinded = v;
-				elseif key == v.keyCode then -- if the key you pressed is the same as another
-					local modal = ISDuplicateKeybindDialog:new(key, keybindName, v.txt:getName())
+				elseif key == v.keyCode and shift == v.shift and ctrl == v.ctrl and alt == v.alt then -- if the key you pressed is the same as another
+					local modal = ISDuplicateKeybindDialog:new(key, keybindName, v.txt:getName(), shift, ctrl, alt)
 					modal:initialise();
 					modal:addToUIManager();
 					modal:setAlwaysOnTop(true)
@@ -4574,7 +4618,10 @@ function MainOptions.keyPressHandler(key)
 		end
 		if not error then
 			keyBinded.keyCode = key;
-			keyBinded.btn:setTitle(getKeyName(key));
+			keyBinded.shift = shift;
+			keyBinded.ctrl = ctrl;
+			keyBinded.alt = alt;
+			keyBinded.btn:setTitle(MainOptions.getKeyPrefix(keyBinded) .. getKeyName(key));
 			MainOptions.instance:onKeybindChanged(keybindName, key)
 			MainOptions.instance.gameOptions.changed = true
 		end

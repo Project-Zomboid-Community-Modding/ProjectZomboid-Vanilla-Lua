@@ -44,7 +44,7 @@ function ISPlaceTrap:perform()
 end
 
 function ISPlaceTrap:complete()
-	local trap = IsoTrap.new(self.weapon, self.square:getCell(), self.square);
+	local trap = IsoTrap.new(self.character, self.weapon, self.square:getCell(), self.square);
 	self.square:AddTileObject(trap);
 	trap:transmitCompleteItemToClients();
 

@@ -1356,7 +1356,10 @@ SpecialLootSpawns.OnCreateRecipeClipping = function(item)
 	local recipe = list[roll]
 	local recipeName = Translator.getRecipeName(recipe)
 	local itemName = getText(item:getDisplayName())
-    item:getModData().teachedRecipe = recipe
+    local recipes = ArrayList.new();
+    recipes:add(recipe);
+    item:setTeachedRecipes(recipes);
+--     item:getModData().teachedRecipe = recipe
     local text = itemName .. ": " .. recipeName
 	item:setName(text)
 end
@@ -1384,7 +1387,10 @@ SpecialLootSpawns.CreateSchematic = function(item, list, multipleChance)
         local recipe = list[roll]
         local recipeName = Translator.getRecipeName(recipe)
         local itemName = getText(item:getDisplayName())
-        item:getModData().teachedRecipe = recipe
+        local recipes = ArrayList.new();
+        recipes:add(recipe);
+        item:setTeachedRecipes(recipes);
+--         item:getModData().teachedRecipe = recipe
         local text = itemName .. ": " .. recipeName
         item:setName(text)
     end

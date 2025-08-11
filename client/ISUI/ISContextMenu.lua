@@ -412,9 +412,25 @@ function ISContextMenu:render()
 				self:drawRect(0, y, self.width, self.itemHgt, 0.1, 0.05, 0.05, 0.05);
 				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
 				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
-				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
                 if k.subOption ~= nil then
-                    self:drawTextRight(">", self.width - 4, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+                end
+			elseif k.badColor then
+				self:drawRect(0, y, self.width, self.itemHgt, 0.8, 0.5, 0.5, 0.5);
+				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+                if k.subOption ~= nil then
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+                end
+			elseif k.goodColor then
+				self:drawRect(0, y, self.width, self.itemHgt, 0.8, 0.5, 0.5, 0.5);
+				self:drawRectBorder(0, y, self.width, self.itemHgt, 0.15, 0.9, 0.9, 1);
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 0.85, self.font);
+                if k.subOption ~= nil then
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), self.font);
                 end
 			else
 				self:drawRect(0, y, self.width, self.itemHgt, 0.8, 0.5, 0.5, 0.5);
@@ -474,10 +490,68 @@ function ISContextMenu:render()
 				end
 			elseif k.notAvailable then
 				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
-				self:drawText(k.name, textForIconShift, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
 
                 if k.subOption ~= nil then
-                    self:drawTextRight(">", self.width - 4, y+textDY, 1, 0.2, 0.2, 0.85, self.font);
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+                end
+			elseif k.badColor then
+                if self.blinkOption == k.name then
+                    if not self.blinkAlpha then
+                        self.blinkAlpha = 1;
+                        self.blinkAlphaIncrease = false;
+                    end
+
+                    if not self.blinkAlphaIncrease then
+                        self.blinkAlpha = self.blinkAlpha - 0.1 * (UIManager.getMillisSinceLastRender() / 33.3);
+                        if self.blinkAlpha < 0 then
+                            self.blinkAlpha = 0;
+                            self.blinkAlphaIncrease = true;
+                        end
+                    else
+                        self.blinkAlpha = self.blinkAlpha + 0.1 * (UIManager.getMillisSinceLastRender() / 33.3);
+                        if self.blinkAlpha > 1 then
+                            self.blinkAlpha = 1;
+                            self.blinkAlphaIncrease = false;
+                        end
+                    end
+
+                    self:drawRect(0, y, self.width, self.itemHgt, self.blinkAlpha, 1, 1, 1);
+                end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+
+                if k.subOption ~= nil then
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 0.85, self.font);
+                end
+			elseif k.goodColor then
+                if self.blinkOption == k.name then
+                    if not self.blinkAlpha then
+                        self.blinkAlpha = 1;
+                        self.blinkAlphaIncrease = false;
+                    end
+
+                    if not self.blinkAlphaIncrease then
+                        self.blinkAlpha = self.blinkAlpha - 0.1 * (UIManager.getMillisSinceLastRender() / 33.3);
+                        if self.blinkAlpha < 0 then
+                            self.blinkAlpha = 0;
+                            self.blinkAlphaIncrease = true;
+                        end
+                    else
+                        self.blinkAlpha = self.blinkAlpha + 0.1 * (UIManager.getMillisSinceLastRender() / 33.3);
+                        if self.blinkAlpha > 1 then
+                            self.blinkAlpha = 1;
+                            self.blinkAlphaIncrease = false;
+                        end
+                    end
+
+                    self:drawRect(0, y, self.width, self.itemHgt, self.blinkAlpha, 1, 1, 1);
+                end
+				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
+				self:drawText(k.name, textForIconShift, y+textDY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 0.85, self.font);
+
+                if k.subOption ~= nil then
+                    self:drawTextRight(">", self.width - 4, y+textDY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 0.85, self.font);
                 end
             else
                 if self.blinkOption == k.name then

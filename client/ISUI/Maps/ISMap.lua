@@ -8,7 +8,6 @@ ISMap = ISPanelJoypad:derive("ISMap");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-local FONT_HGT_HANDWRITTEN = getTextManager():getFontHeight(UIFont.Handwritten)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
 
@@ -57,6 +56,7 @@ function ISMap:createChildren()
     self.mapKey:setVisible(false)
 
     local btnWidth = UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("UI_Close"))
+    btnWidth = math.max(btnWidth, UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")))
     self.ok = ISButton:new(UI_BORDER_SPACING+1, self.height - BUTTON_HGT - UI_BORDER_SPACING - 1, btnWidth, BUTTON_HGT, getText("UI_Close"), self, ISMap.onButtonClick);
     self.ok.internal = "OK";
     self.ok:initialise();
@@ -497,6 +497,7 @@ function ISMap:updateButtons()
     if text then
         self.placeSymbBtn.enable = true
         self.placeSymbBtn:setTitle(text)
+        self.placeSymbBtn:setWidthToTitle(self.placeSymbBtn.width)
     else
         self.placeSymbBtn.enable = false
     end

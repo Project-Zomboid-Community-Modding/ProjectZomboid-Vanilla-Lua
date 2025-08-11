@@ -31,6 +31,8 @@ end
 -- ISLiteratureUI.SetItemHidden('Base.SmithingMag3', true)
 -- ISLiteratureUI.SetItemHidden('Base.SmithingMag4', true)
 
+
+
 ISLiteratureUI.SetItemHidden('Base.CarrotBagSeed2_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.BroccoliBagSeed2_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.RedRadishBagSeed2_Empty', true)
@@ -39,22 +41,55 @@ ISLiteratureUI.SetItemHidden('Base.TomatoBagSeed2_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.PotatoBagSeed2_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.CabbageBagSeed2_Empty', true)
 
+ISLiteratureUI.SetItemHidden('Base.BarleyBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.BasilBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.BellPepperBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.BlackSageBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.BroadleafPlantainBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.CauliflowerBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.ChamomileBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.ChivesBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.CilantroBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.CommonMallowBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.ComfreyBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.CornBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.CucumberBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.FlaxBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.GarlicBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.GreenpeasBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.HabaneroBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.HempBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.HopsBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.JalapenoBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.KaleBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.LavenderBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.LeekBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.LemonGrassBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.LettuceBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.MarigoldBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.MintBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.OnionBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.OreganoBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.ParsleyBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.PoppyBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.PumpkinBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.RoseBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.RosemaryBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.RyeBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.SageBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.SoybeansBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.SpinachBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.SugarBeetBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.SunflowerBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.SweetPotatoBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.ThymeBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.TobaccoBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.TurnipBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.WatermelonBagSeed_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.WheatBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.WildGarlicBagSeed_Empty', true)
+ISLiteratureUI.SetItemHidden('Base.ZucchiniBagSeed_Empty', true)
+
 
 -----
 
@@ -64,34 +99,54 @@ function ISLiteratureList:doDrawItem(y, item, alt)
 		self:drawRect(0, y, self:getWidth(), item.height-1, 0.3, 0.7, 0.35, 0.15)
 	end
 --]]
-
+	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
+    local showUnknownRecipes
+--     print("ShowUnknownRecipes = " .. tostring(showUnknownRecipes))
+    if metaKnowledge == 1 then showUnknownRecipes = true end
 	local r,g,b,a = 0.5,0.5,0.5,1.0
 	local itemPadY = (item.height - self.fontHgt) / 2
 	local texture
+	local known = false
 	if type(item.item) ~= "string" then -- not a recipe
 		texture = item.item:getNormalTexture()
 		local skillBook = SkillBook[item.item:getSkillTrained()]
 		if skillBook then
 			if (item.item:getNumberOfPages() > 0) and (self.character:getAlreadyReadPages(item.item:getFullName()) == item.item:getNumberOfPages()) then
 				r,g,b = 1.0,1.0,1.0
+				known = true
 			elseif item.item:getMaxLevelTrained() <= self.character:getPerkLevel(skillBook.perk) + 1 then
 				-- The book hasn't been read, but the character has the skill levels.
 				r,g,b = 1.0,1.0,1.0
+				known = true
 			end
 		else
 			if self.character:getAlreadyReadBook():contains(item.item:getFullName()) then
 				r,g,b = 1.0,1.0,1.0
+				known = true
 			elseif (item.item:getTeachedRecipes() ~= nil) and self.character:getKnownRecipes():containsAll(item.item:getTeachedRecipes()) then
 				r,g,b = 1.0,1.0,1.0
+				known = true
 			end
 		end
 	else -- recipe, we handle this differently
 		if self.character:getKnownRecipes():contains(item.item) then
-			r,g,b = 1.0,1.0,1.0
+            if self.character:isFavouriteRecipe(item.item) then
+			    r,g,b = getCore():getGoodHighlitedColor():getR(),getCore():getGoodHighlitedColor():getG(),getCore():getGoodHighlitedColor():getB()
+				known = true
+            else
+			    r,g,b = 1.0,1.0,1.0
+				known = true
+            end
 		end
+        if getSandboxOptions():getOptionByName("SeeNotLearntRecipe"):getValue() == true then showUnknownRecipes = true end
+        local icon = getRecipeIcon(item.item)
+        if icon then texture = icon end
 	end
-	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
-	if r ~= 1 and metaKnowledge == 3 then
+
+    local showMeta = metaKnowledge ~= 3
+    if showUnknownRecipes then showMeta = true end
+
+	if known == false and not showMeta then
 		return y
 	end
 	if item.height == 0 then
@@ -111,7 +166,7 @@ function ISLiteratureList:doDrawItem(y, item, alt)
             self:drawTextureScaledAspect(texture,6,y+(item.height-texHeight)/2,32,32,a,1,1,1)
         end
     end
-    if r == 1 or metaKnowledge == 1 then
+    if known or metaKnowledge == 1 or showUnknownRecipes then
         self:drawText(Translator.getRecipeName(item.text), 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
     else
         self:drawText("???", 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
@@ -184,7 +239,8 @@ function ISLiteratureGrowingList:doDrawItem(y, item, alt)
 --     local typeOfSeed = item.text
     local prop = farming_vegetableconf.props[item.text]
     if not prop then return y end
-    if prop.seasonRecipe and not self.character:isRecipeActuallyKnown(prop.seasonRecipe) then return y end
+    if not prop.seasonRecipe then return y end
+    if not self.character:isRecipeActuallyKnown(prop.seasonRecipe) then return y end
 
     local text = (getText("Farming_" .. item.text));
     text = text .. "<LINE>" .. ISFarmingMenu.plantInfo(prop)
@@ -301,6 +357,8 @@ function ISLiteratureUI:createChildren()
 	listbox3.itemheight = BUTTON_HGT
 	self.tabs:addView(getText("IGUI_LiteratureUI_Recipes"), listbox3)
 	self.listbox3 = listbox3
+
+	self.listbox3:setOnMouseDownFunction(self, self.onRecipeSelected, self)
 
 	-- RECORDED MEDIA
 
@@ -434,6 +492,7 @@ end
 function ISLiteratureUI:setMediaLists(scriptItems)
 	local categories = getZomboidRadio():getRecordedMedia():getCategories()
 	for i=1,categories:size() do
+        self.listboxMedia[i]:clear()
 		local category = categories:get(i-1)
 		self.listboxMedia[i].scriptItem = scriptItems[category] and scriptItems[category][1] or nil
 		local mediaType = RecordedMedia.getMediaTypeForCategory(category)
@@ -461,7 +520,7 @@ end
 
 function ISLiteratureUI:prerender()
 	ISCollapsableWindowJoypad.prerender(self)
-	
+
 	local infoPanel = getPlayerInfoPanel(self.playerNum)
 	if not infoPanel or (self.owner ~= infoPanel.charScreen) then
 		-- Player UI was destroyed
@@ -522,6 +581,35 @@ function ISLiteratureUI:onJoypadDirDown(button)
 	listbox:ensureVisible(row)
 end
 
+function ISLiteratureUI:onRecipeSelected(recipe)
+--     print("Recipe " .. tostring(recipe))
+--     print("self " .. tostring(self))
+--     print("listbox " .. tostring(listbox))
+    local showMeta = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue() ~= 3
+    local showAllRecipes = getSandboxOptions():getOptionByName("SeeNotLearntRecipe"):getValue() == true and showMeta
+
+    local actuallyKnown = self.character:isRecipeActuallyKnown(recipe)
+    local craftRecipe = getScriptManager():getCraftRecipe(recipe)
+    if not craftRecipe then craftRecipe = getScriptManager():getBuildableRecipe(recipe) end
+    local knowCraftRecipe = craftRecipe and actuallyKnown
+    local showCraftRecipe = knowCraftRecipe or showAllRecipes
+
+    if craftRecipe and showCraftRecipe == true then
+        if craftRecipe:isBuildableRecipe() then
+            ISEntityUI.OpenBuildWindow( self.character, nil, "*", false, craftRecipe)
+            return
+        else
+            ISEntityUI.OpenHandcraftWindow( self.character, nil, "*", false, craftRecipe)
+            return
+        end
+    end
+
+    -- evaluate for growing seasons doesSeasonRecipeExist(recipeName)
+    if actuallyKnown and doesSeasonRecipeExist(recipe) then
+	    self.tabs:activateView("Agriculture")
+    end
+end
+
 function ISLiteratureUI:new(x, y, width, height, character, owner)
 	local o = ISCollapsableWindowJoypad.new(self, x, y, width, height)
 	o:setTitle(getText("IGUI_LiteratureUI_Title"))
@@ -529,4 +617,32 @@ function ISLiteratureUI:new(x, y, width, height, character, owner)
 	o.playerNum = character:getPlayerNum()
 	o.owner = owner
 	return o
-end	
+end
+
+ISLiteratureUI.miscRecipes = {
+	["Basic Mechanics"] = {tooltip = "Tooltip_Recipe_Basic_Mechanics", icon = "Item_Wrench" },
+	["Intermediate Mechanics"] = {tooltip = "Tooltip_Recipe_Intermediate_Mechanics", icon = "Item_Wrench" },
+	["Advanced Mechanics"] = {tooltip = "Tooltip_Recipe_Advanced_Mechanics", icon = "Item_Wrench" },
+	["Herbalist"] = {tooltip = "Tooltip_Recipe_Herbalist", icon = "media/ui/Traits/trait_herbalist.png" },
+	["Generator"] = {tooltip = "Tooltip_Recipe_Generator", icon = "Item_Generator" },
+}
+
+function doesMiscRecipeExist(recipeName)
+    if not recipeName then return false end;
+    local exists = ISLiteratureUI.miscRecipes[recipeName] ~= nil
+	return ISLiteratureUI.miscRecipes[recipeName] ~= nil;
+end
+
+function getMiscRecipeIcon(recipeName)
+    if doesMiscRecipeExist(recipeName) and ISLiteratureUI.miscRecipes[recipeName].icon then return getTexture(ISLiteratureUI.miscRecipes[recipeName].icon) end
+end
+
+function getRecipeIcon(recipeName)
+    if getMiscRecipeIcon(recipeName) then return getMiscRecipeIcon(recipeName) end
+    if getSeasonRecipeIcon(recipeName) then return getSeasonRecipeIcon(recipeName) end
+    local craftRecipe = getScriptManager():getCraftRecipe(recipeName)
+    if craftRecipe and craftRecipe:getIconTexture() then return craftRecipe:getIconTexture() end
+    local buildRecipe = getScriptManager():getBuildableRecipe(recipeName)
+    if buildRecipe and buildRecipe:getIconTexture() then return buildRecipe:getIconTexture() end
+    return
+end

@@ -8,13 +8,16 @@ ISConsolidateDrainable = ISBaseTimedAction:derive("ISConsolidateDrainable");
 
 function ISConsolidateDrainable:isValid()
     if isClient() and self.intoItem and self.drainable then
-        return self.character:getInventory():containsID(self.intoItem:getID()) and self.character:getInventory():containsID(self.drainable:getID())
+        return self.character:getInventory():containsID(self.intoItem:getID()) and (self.character:getInventory():containsID(self.drainable:getID() or (self.otherItems and #self.otherItems > 0)))
     else
-        return self.character:getInventory():contains(self.intoItem) and self.character:getInventory():contains(self.drainable);
+        return self.character:getInventory():contains(self.intoItem) and (self.character:getInventory():contains(self.drainable) or (self.otherItems and #self.otherItems > 0));
     end
 end
 
 function ISConsolidateDrainable:update()
+	if self.drainable:getCurrentUsesFloat() <= 0 then
+		self:forceComplete()
+	end
 	self.drainable:setJobDelta(self:getJobDelta());
 	self.intoItem:setJobDelta(self:getJobDelta());
 	local fromDelta = self.fromStart + (self.fromTarget - self.fromStart) * self:getJobDelta()

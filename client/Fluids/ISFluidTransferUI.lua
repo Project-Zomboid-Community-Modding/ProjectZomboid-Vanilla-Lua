@@ -107,7 +107,7 @@ function ISFluidTransferUI:createChildren()
     y = y + FONT_HGT_SMALL + textOffsetS;
 
     local panelY = y;
-    local containerLeft = self.source or self.container:getFluidContainer():isEmpty();
+    local containerLeft = self.source or not self.container:getFluidContainer():isEmpty();
 
     self.panelLeftText = getText("Fluid_Source");
     self.panelLeft = ISFluidContainerPanel:new(UI_BORDER_SPACING+1, panelY, self.player, containerLeft and self.container or nil, true, true, self.isIsoPanel);
@@ -294,10 +294,30 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
 
     local from = self.panelLeft:getContainer();
     local to = self.panelRight:getContainer();
+    local fromOwnerDiff = false;
+    local toOwnerDiff = false;
 
     --if items are moved from inventory or isoobject no longer valid, close panel.
-    if (from and not ISFluidUtil.validateContainer(self.panelLeft.container)) or (to and not ISFluidUtil.validateContainer(self.panelRight.container)) then
+    if from and self.fromPreviousOwner ~= nil and self.fromPreviousOwner ~= self.panelLeft:getContainerOwnerObject() then
+        fromOwnerDiff = true
+    end
+    if to and self.toPreviousOwner ~= nil and self.toPreviousOwner ~= self.panelRight:getContainerOwnerObject() then
+        toOwnerDiff = true
+    end
+
+    if (from and not ISFluidUtil.validateContainer(self.panelLeft.container)) or (to and not ISFluidUtil.validateContainer(self.panelRight.container)) or fromOwnerDiff or toOwnerDiff then
         self:close();
+    end
+
+    if from then
+        self.fromPreviousOwner = self.panelLeft:getContainerOwnerObject()
+    else
+        self.fromPreviousOwner = nil
+    end
+    if to then
+        self.toPreviousOwner = self.panelRight:getContainerOwnerObject()
+    else
+        self.toPreviousOwner = nil
     end
 
     self.panelLeft.fluidBar:resetRatioNew();
@@ -482,6 +502,11 @@ function ISFluidTransferUI:onButton(_btn)
         self.panelRight:setX(self.panelRightX);
         self.panelRight:setIsLeft(false);
 
+        -- swap previous owners, otherwise window will close on pressing swap button
+        local to = self.toPreviousOwner
+        self.toPreviousOwner = self.fromPreviousOwner
+        self.fromPreviousOwner = to
+
         self:validatePanel();
         self:arrangePanels();
     elseif _btn.internal=="CLOSE" then
@@ -577,5 +602,7 @@ function ISFluidTransferUI:new(x, y, width, height, _player, _container, source)
     o.errorDefault = "";
     -- The right shoulder button is used for navigation, and also to choose the target container.
     o.disableJoypadNavigation = true;
+    o.toPreviousOwner = nil
+    o.fromPreviousOwner = nil
     return o;
 end

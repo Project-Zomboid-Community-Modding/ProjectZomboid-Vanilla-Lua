@@ -216,6 +216,10 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 	self.context = ISContextMenu.get(self.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
 	local option;
 	
+	local wrench = ISVehicleMechanics:getWrench(self.chr)
+	local screwdriver = ISVehicleMechanics:getScrewdriver(self.chr)
+	local tirePump = ISVehicleMechanics:getTirePump(self.chr)
+	
 	if part:getItemType() and not part:getItemType():isEmpty() then
 		if part:getInventoryItem() then
 			local fixingList = FixingManager.getFixes(part:getInventoryItem());
@@ -290,7 +294,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 		if part:getContainerContentAmount() >= part:getContainerCapacity() + 5 then
 			option.notAvailable = true
 		end
-		if not self.chr:getInventory():contains("TirePump", true) then
+		if not tirePump then
 			option.notAvailable = true
 			local tooltip = ISToolTip:new();
 			tooltip:initialise();
@@ -320,7 +324,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 	end
 	
 	if part:getId() == "Engine" and not VehicleUtils.RequiredKeyNotFound(part, self.chr) then
-		if part:getCondition() > 10 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():contains("Wrench") then
+		if part:getCondition() > 10 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and wrench then
 			option = self.context:addOption(getText("IGUI_TakeEngineParts"), playerObj, ISVehicleMechanics.onTakeEngineParts, part);
 			self:doMenuTooltip(part, option, "takeengineparts");
 		else
@@ -328,7 +332,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 			self:doMenuTooltip(part, option, "takeengineparts");
 			option.notAvailable = true;
 		end
-		if part:getCondition() < 100 and self.chr:getInventory():getNumberOfItem("EngineParts", false, true) > 0 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():containsTypeRecurse("Wrench") then
+		if part:getCondition() < 100 and self.chr:getInventory():getNumberOfItem("EngineParts", false, true) > 0 and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and wrench then
 			local option = self.context:addOption(getText("IGUI_RepairEngine"), playerObj, ISVehicleMechanics.onRepairEngine, part);
 			self:doMenuTooltip(part, option, "repairengine");
 		else
@@ -339,7 +343,7 @@ function ISVehicleMechanics:doPartContextMenu(part, x,y)
 	end
 	
 	if part:getId() == "lightbar" then
-		if part:getCondition() < 100 and self.chr:getInventory():containsTag("Lightbar") and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and self.chr:getInventory():containsTag("Screwdriver") then
+		if part:getCondition() < 100 and self.chr:getInventory():containsTag("Lightbar") and self.chr:getPerkLevel(Perks.Mechanics) >= part:getVehicle():getScript():getEngineRepairLevel() and screwdriver then
 			local option = self.context:addOption(getText("ContextMenu_Repair"), playerObj, ISVehicleMechanics.onRepairLightbar, part);
 			self:doMenuTooltip(part, option, "repairlightbar");
 		else
@@ -632,6 +636,11 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 	tooltip.description = getText("Tooltip_craft_Needs") .. " : <LINE>";
 	option.toolTip = tooltip;
 	local keyvalues = part:getTable(lua);
+	
+	local wrench = ISVehicleMechanics:getWrench(self.chr)
+	local screwdriver = ISVehicleMechanics:getScrewdriver(self.chr)
+	local tirePump = ISVehicleMechanics:getTirePump(self.chr)
+	
 	-- repair engines tooltip
 	if lua == "takeengineparts" then
 		local rgb = ISVehicleMechanics.ghs;
@@ -647,7 +656,7 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 		end
 		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
 		rgb = ISVehicleMechanics.ghs;
-		if not self.chr:getInventory():contains("Wrench") then
+		if not wrench then
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Wrench") .. " 0/1 <LINE>";
 		else
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Wrench") .. " 1/1 <LINE>";
@@ -667,7 +676,7 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 		end
 		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
 		rgb = ISVehicleMechanics.ghs;
-		if not self.chr:getInventory():contains("Wrench") then
+		if not wrench then
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Wrench") .. " 0/1 <LINE>";
 		else
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Wrench") .. " 1/1 <LINE>";
@@ -690,7 +699,7 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 		end
 		tooltip.description = tooltip.description .. " " .. rgb .. getText("IGUI_perks_Mechanics") .. " " .. self.chr:getPerkLevel(Perks.Mechanics) .. "/" .. part:getVehicle():getScript():getEngineRepairLevel() .. " <LINE>";
 		rgb = ISVehicleMechanics.ghs;
-		if not self.chr:getInventory():contains("Screwdriver") then
+		if not screwdriver then
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.bhs .. getItemDisplayName("Base.Screwdriver") .. " 0/1 <LINE>";
 		else
 			tooltip.description = tooltip.description .. " " .. ISVehicleMechanics.ghs .. getItemDisplayName("Base.Screwdriver") .. " 1/1 <LINE>";
@@ -1548,6 +1557,18 @@ ISVehicleMechanics.OnMechanicActionDone = function(chr, success)
 		if success then ui:startFlashGreen()
 		else ui:startFlashRed() end
 	end
+end
+
+function ISVehicleMechanics:getWrench(player)
+	return player:getInventory():getFirstTypeEvalRecurse("Wrench", predicateNotBroken)
+end
+
+function ISVehicleMechanics:getScrewdriver(player)
+	return player:getInventory():getFirstTagEvalRecurse("Screwdriver", predicateNotBroken)
+end
+
+function ISVehicleMechanics:getTirePump(player)
+	return player:getInventory():getFirstTypeRecurse("TirePump")
 end
 
 Events.OnMechanicActionDone.Add(ISVehicleMechanics.OnMechanicActionDone);

@@ -141,7 +141,7 @@ end
 
 function RWMGridPower:render()
     ISPanel.render(self);
-    if self.deviceData then
+    if self.deviceData and self.device:getSquare() then
         local x = self.toggleOnOffButton:getX()+self.toggleOnOffButton:getWidth()+UI_BORDER_SPACING
         local y = (self.height - FONT_HGT_SMALL) / 2
         if self.deviceData:canBePoweredHere() then

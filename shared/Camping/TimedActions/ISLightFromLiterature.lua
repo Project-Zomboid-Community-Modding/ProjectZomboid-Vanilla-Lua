@@ -60,7 +60,7 @@ function ISLightFromLiterature:perform()
 end
 
 function ISLightFromLiterature:complete()
-    self.item:UseAndSync();
+    self.item:Use(true);
 	self.lighter:UseAndSync();
 
 	local fuelAmt = self.fuelAmt

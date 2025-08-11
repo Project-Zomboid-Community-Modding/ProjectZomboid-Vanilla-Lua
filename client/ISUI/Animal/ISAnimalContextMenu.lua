@@ -29,6 +29,7 @@ AnimalContextMenu.doInventoryMenu = function(player, context, animalInv, test)
 
     AnimalContextMenu.doFeedFromHandMenu(playerObj, animal, context);
     AnimalContextMenu.doWaterAnimalMenu(context, animal, playerObj)
+    AnimalContextMenu.doKillAnimalMenu(playerObj, animalInv, context)
 
     if AnimalContextMenu.cheat then
         context:addDebugOption(getText("ContextMenu_SetAnimalHungry"), animal, AnimalContextMenu.onSetHungry, playerObj);
@@ -115,6 +116,23 @@ AnimalContextMenu.onFeedAnimalFood = function(player, animal, food)
     end
 end
 
+-- Called for animals carried by the player.
+AnimalContextMenu.doKillAnimalMenu = function(playerObj, animalInv, context)
+    local animal = animalInv:getAnimal()
+    if animal:canBeKilledWithoutWeapon() then
+        local option = context:addOption(getText("ContextMenu_KillAnimal"), animalInv, AnimalContextMenu.onKillAnimal, playerObj)
+        local tooltip = ISWorldObjectContextMenu.addToolTip()
+        tooltip:setName(getText("Tooltip_Animal_KillWithoutWeapon"))
+        option.toolTip = tooltip
+    else
+        local option = context:addOption(getText("ContextMenu_KillAnimal"), animalInv, AnimalContextMenu.onKillAnimal, playerObj)
+        option.notAvailable = true
+        local tooltip = ISWorldObjectContextMenu.addToolTip()
+        tooltip:setName(getText("Tooltip_Animal_NoWeapon"))
+        option.toolTip = tooltip
+    end
+end
+
 AnimalContextMenu.doMenu = function(player, context, animal, test)
     if animal:isOnHook() then return; end
     local playerObj = getSpecificPlayer(player);
@@ -126,6 +144,13 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
 
     local text = animal:getFullName()
     local animalOption = context:addOption(text, nil, nil);
+    animalOption.iconTexture = animal:getInventoryIconTexture()
+    animalOption.onHighlightParams = { animal }
+    animalOption.onHighlight = function(_option, _menu, _isHighlighted, _animal)
+        _animal:setOutlineHighlight(_menu.player, true)
+        _animal:setOutlineHighlightCol(_menu.player, 1, 1, 1, 1)
+        _menu.highlightedOption = nil -- call every render()
+    end
     local animalSubMenu = ISContextMenu:getNew(context);
     context:addSubMenu(animalOption, animalSubMenu);
 
@@ -135,6 +160,7 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
     else
         option = animalSubMenu:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
     end
+    option.iconTexture = getTexture("media/ui/inventoryPanes/Button_Info.png")
     if not AnimalContextMenu.cheat and animal:getCurrentSquare():DistToProper(playerObj) > ISAnimalUI.maxDist then
         option.notAvailable = true;
         local tooltip = ISWorldObjectContextMenu.addToolTip();
@@ -261,6 +287,7 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
 
     if animal:canBePicked(playerObj) then
         local pickOption = animalSubMenu:addOption(getText("ContextMenu_PickUpAnimal", animal:getFullName()), animal, AnimalContextMenu.onPickupAnimal, playerObj);
+        pickOption.iconTexture = getTexture("media/ui/AnimalActions_Grab.png")
         --if not animal:canBePicked(playerObj) then
         --    if AnimalContextMenu.cheat or playerObj:isUnlimitedCarry() or playerObj:isGhostMode() then
         --        animalSubMenu:removeLastOption();
@@ -295,6 +322,7 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
 
     if animal:canBePet() then
         local option = animalSubMenu:addOption(getText("ContextMenu_PetAnimal"), animal, AnimalContextMenu.onPetAnimal, playerObj);
+        option.iconTexture = getTexture("media/ui/AnimalActions_Pet.png")
         if not animal:petTimerDone() and AnimalContextMenu.cheat then
             --option.notAvailable = true;
             local txt = "";
@@ -316,8 +344,13 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
 
     if not animal:isWild() then
         local weapon = playerInv:getAllTagEval("KillAnimal", predicateNotBroken);
-        if weapon and not weapon:isEmpty() then
-            animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
+        if animal:canBeKilledWithoutWeapon() or (weapon and not weapon:isEmpty()) then
+            local option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
+            if animal:canBeKilledWithoutWeapon() then
+                local tooltip = ISWorldObjectContextMenu.addToolTip();
+                tooltip:setName(getText("Tooltip_Animal_KillWithoutWeapon"));
+                option.toolTip = tooltip;
+            end
         else
             local option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
             option.notAvailable = true;
@@ -379,6 +412,8 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         debugSubMenu:addDebugOption("Set Stress", animal, AnimalContextMenu.onDebugSetStress, player);
 
         debugSubMenu:addDebugOption("Full Acceptance", animal, AnimalContextMenu.onDebugSetAcceptance, playerObj, 100);
+
+        debugSubMenu:addDebugOption("Attack Player", animal, AnimalContextMenu.onDebugAttackPlayer, playerObj);
 
         debugSubMenu:addDebugOption("Kill", animal, AnimalContextMenu.onKill, playerObj);
 
@@ -609,6 +644,14 @@ AnimalContextMenu.onDebugSetAcceptance = function(animal, playerObj, acceptance)
                 "acceptance", acceptance)
     else
         animal:setDebugAcceptance(playerObj, acceptance)
+    end
+end
+
+AnimalContextMenu.onDebugAttackPlayer = function(animal, playerObj)
+    if isClient() then
+        -- TODO
+    else
+        animal:getBehavior():goAttack(playerObj)
     end
 end
 
@@ -1065,7 +1108,18 @@ end
 AnimalContextMenu.doDesignationZoneMenu = function(context, zone, playerObj)
     local option = context:addOption(getText("ContextMenu_Animal_CheckZone", zone:getName()), zone, AnimalContextMenu.onCheckZone, playerObj);
     local TEXTURE_WIDTH = 48
+    if not playerObj:isSeeDesignationZone() then
+        playerObj:resetSelectedZonesForHighlight()
+        local connectedZones = DesignationZoneAnimal.getAllDZones(nil, zone, nil)
+        for i=1,connectedZones:size() do
+            playerObj:addSelectedZoneForHighlight(connectedZones:get(i-1):getId())
+        end
+    end
     option.iconTexture = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png")
+    option.onHighlightParams = { playerObj, playerObj:isSeeDesignationZone() }
+    option.onHighlight = function(_option, _menu, _isHighlighted, _playerObj, _isSeeDesignationZone)
+        _playerObj:setSeeDesignationZone(_isHighlighted or _isSeeDesignationZone)
+    end
 end
 
 AnimalContextMenu.onCheckZone = function(zone, playerObj)
@@ -1080,20 +1134,36 @@ AnimalContextMenu.onCheckZone = function(zone, playerObj)
 end
 
 AnimalContextMenu.onKillAnimal = function(animal, playerObj)
+    local animalOrItem = animal
+    if instanceof(animal, "AnimalInventoryItem") then
+        animal = animal:getAnimal()
+    end
     local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_KillAnimal_Confirm", animal:getFullName()), true, nil, AnimalContextMenu.onKillAnimalConfirm);
     modal:initialise()
     modal:addToUIManager()
-    modal.animal = animal;
+    modal.animal = animalOrItem;
     modal.playerObj = playerObj;
 end
 
 function AnimalContextMenu:onKillAnimalConfirm(button)
     if button.internal == "YES" then
-        local player = button.parent.playerObj;
-        local weapon = player:getInventory():getAllTagEval("KillAnimal", predicateNotBroken):get(0);
-        ISWorldObjectContextMenu.equip(player, player:getPrimaryHandItem(), weapon, true, weapon:isTwoHandWeapon())
-        if luautils.walkAdj(player, button.parent.animal:getSquare()) then
-            ISTimedActionQueue.add(ISKillAnimal:new(player, button.parent.animal))
+        local playerObj = button.parent.playerObj;
+        local animal = button.parent.animal
+        if instanceof(animal, "AnimalInventoryItem") then
+            local animalItem = animal
+            animal = animalItem:getAnimal()
+            if animal:canBeKilledWithoutWeapon() then
+                ISTimedActionQueue.add(ISKillAnimalInInventory:new(playerObj, animalItem))
+                return
+            end
+            ISInventoryPaneContextMenu.dropItem(animalItem, playerObj:getPlayerNum())
+        end
+        if not animal:canBeKilledWithoutWeapon() then
+            local weapon = playerObj:getInventory():getAllTagEval("KillAnimal", predicateNotBroken):get(0);
+            ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), weapon, true, weapon:isTwoHandWeapon())
+        end
+        if luautils.walkAdj(playerObj, animal:getSquare()) then
+            ISTimedActionQueue.add(ISKillAnimal:new(playerObj, animal))
         end
     end
 end

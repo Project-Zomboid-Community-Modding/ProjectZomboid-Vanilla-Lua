@@ -744,29 +744,30 @@ function CharacterCreationProfession:addTrait(trait)
     self:repopulateTraitLists()
 end
 
+-- This was commented out due to presumed lack of utility but it suddenly became useful again! - Baph
+-- SPIF-3028 is fixed by letting this function run its course after picking a profession.
 function CharacterCreationProfession:doTestForMutuallyExclusiveTraits(trait, isRemovingTrait)
-    --for i = 0, trait:getMutuallyExclusiveTraits():size() - 1 do
-    --    --
-    --	local exclusiveTrait = trait:getMutuallyExclusiveTraits():get(i);
-    --    exclusiveTrait = TraitFactory.getTrait(exclusiveTrait);
-    --	if exclusiveTrait:isFree() then
-    --		-- nothing
-    --	elseif isRemovingTrait and not self:isTraitExcluded(exclusiveTrait) then
-    --        -- add the previously removed exclusive trait to the available ones
-    --        if exclusiveTrait:getCost() > 0 then
-    --            self.listboxTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
-    --        else
-    --            self.listboxBadTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
-    --        end
-    --    elseif not isRemovingTrait then
-    --        -- remove from our available traits list the exclusive ones
-    --        if exclusiveTrait:getCost() > 0 then
-    --            self.listboxTrait:removeMatchingItems(exclusiveTrait:getLabel());
-    --        else
-    --            self.listboxBadTrait:removeMatchingItems(exclusiveTrait:getLabel());
-    --        end;
-    --    end;
-    --end;
+    for i = 0, trait:getMutuallyExclusiveTraits():size() - 1 do
+    	local exclusiveTrait = trait:getMutuallyExclusiveTraits():get(i);
+        exclusiveTrait = TraitFactory.getTrait(exclusiveTrait);
+    	if exclusiveTrait:isFree() then
+    		-- nothing
+    	elseif isRemovingTrait and not self:isTraitExcluded(exclusiveTrait) then
+            -- add the previously removed exclusive trait to the available ones
+            if exclusiveTrait:getCost() > 0 then
+                self.listboxTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
+            else
+                self.listboxBadTrait:addUniqueItem(exclusiveTrait:getLabel(), exclusiveTrait, exclusiveTrait:getDescription());
+            end
+        elseif not isRemovingTrait then
+            -- remove from our available traits list the exclusive ones
+            if exclusiveTrait:getCost() > 0 then
+                self.listboxTrait:removeMatchingItems(exclusiveTrait:getLabel());
+            else
+                self.listboxBadTrait:removeMatchingItems(exclusiveTrait:getLabel());
+            end
+        end
+    end
 end
 
 function CharacterCreationProfession:isTraitExcluded(trait)

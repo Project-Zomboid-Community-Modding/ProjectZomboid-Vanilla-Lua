@@ -133,6 +133,7 @@ function ISGarmentUI:doPatch(fabric, thread, needle, part, context, submenu)
 	end
 
 	local option = submenu:addOption(fabric:getDisplayName(), self.chr, ISInventoryPaneContextMenu.repairClothing, self.clothing, part, fabric, thread, needle)
+	option.itemForTexture = fabric
 	local tooltip = ISInventoryPaneContextMenu.addToolTip();
 	if self.clothing:canFullyRestore(self.chr, part, fabric) then
 		tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. self.chr:getPerkLevel(Perks.Tailoring) .. " <LINE>" .. ISGarmentUI.ghs .. getText("Tooltip_FullyRestore");
@@ -148,10 +149,12 @@ function ISGarmentUI:doPatch(fabric, thread, needle, part, context, submenu)
 	if(self.chr:getInventory():getItemCount(fabric:getType(), true) > 1) then
 		if hole and (self.clothing:getHolesNumber() > 1) then
 			allOption = submenu:addOption(allText, self.chr, ISInventoryPaneContextMenu.repairAllClothing, self.clothing, self.parts, fabric, thread, needle, true)
+			allOption.itemForTexture = fabric
 			allTooltip.description = getText("Tooltip_PatchAllHoles") .. fabric:getDisplayName();
 			allOption.toolTip = allTooltip;
 		elseif not hole and not patch and (ISGarmentUI:getPaddablePartsNumber(self.clothing, self.parts) > 1) then
 			allOption = submenu:addOption(allText, self.chr, ISInventoryPaneContextMenu.repairAllClothing, self.clothing, self.parts, fabric, thread, needle, false)
+			allOption.itemForTexture = fabric
 			allTooltip.description = getText("Tooltip_AddPaddingToAll") .. fabric:getDisplayName();
 			allOption.toolTip = allTooltip;
 		end

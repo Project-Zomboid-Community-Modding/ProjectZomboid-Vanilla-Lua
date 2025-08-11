@@ -69,7 +69,7 @@ function CharacterCreationAvatar:onTurnChar(button, x, y)
 end
 
 function CharacterCreationAvatar:onAnimSelected(combo)
---	self.avatarPanel:setState(combo:getOptionData(combo.selected))
+	self.avatarPanel:setState(nil)
 	self.avatarPanel:reportEvent(combo:getOptionData(combo.selected))
 end
 

@@ -151,6 +151,15 @@ function ISWidgetTitleHeader:createChildren()
             self:addChild(self.tooltipLabel);
         end
 
+
+        local color = self.colGood;
+        if self.recipe:requiresSpecificWorkstation() and self.logic and not self.logic:hasRequiredWorkstation() then color = self.colBad end
+        self.specificWorkstationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "", color.r, color.g, color.b, color.a, UIFont.NewSmall, true);
+        self.specificWorkstationLabel.text = "";
+        self.specificWorkstationLabel:initialise();
+        self.specificWorkstationLabel:instantiate();
+        self:addChild(self.specificWorkstationLabel);
+
         if self.player and self.recipe:getRequiredSkillCount()>0 then
             for i=0,self.recipe:getRequiredSkillCount()-1 do
                 local requiredSkill = self.recipe:getRequiredSkill(i);
@@ -238,7 +247,7 @@ function ISWidgetTitleHeader:updateLabels()
         self.errorLabel:setVisible(false);
     end
 
-    if self.player and self.recipe and self.recipe:couldBenefitFromRecipeAtHand(self.player) then
+    if self.player and self.recipe and self.recipe:couldBenefitFromRecipeAtHand(self.player) and not self.recipe:characterHasRequiredSkills(self.player) then
         local text
         if self.recipe:validateBenefitFromRecipeAtHand(self.player, self.logic:getContainers()) then
              text = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand")
@@ -252,6 +261,32 @@ function ISWidgetTitleHeader:updateLabels()
     else
         self.recipeBenefitLabel:setVisible(false);
         self.recipeBenefitLabel.active = false
+    end
+
+    if self.recipe:requiresSpecificWorkstation() then
+        self.specificWorkstationLabel.text = tostring(self.recipe:getTags())
+
+        local text = getText("IGUI_CraftingWindow_RequiresA");
+        local moreThanOne = self.recipe:getTags():size() > 1
+        for i=0, self.recipe:getTags():size()-1 do
+            local tag = self.recipe:getTags():get(i)
+            text = text .. " " .. getText("IGUI_CraftingWindow_" .. tag)
+            if moreThanOne and i < self.recipe:getTags():size()-1 then
+                if i < self.recipe:getTags():size()-2 then
+                    text = text .. ","
+                else
+                    text = text .. " " .. getText("IGUI_CraftingWindow_Or")
+                end
+            end
+        end
+        text = text .. "."
+        self.specificWorkstationLabel.text = text
+
+        self.specificWorkstationLabel:setVisible(true);
+        self.specificWorkstationLabel.active = true
+    else
+        self.specificWorkstationLabel:setVisible(false);
+        self.specificWorkstationLabel.active = false
     end
 
     if self.recipe and self.player and self.needToBeLearnIcon and self.needToBeLearnIcon.mouseovertext then
@@ -339,7 +374,18 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     end
     if self.timeLabel then
         labelsHeight = labelsHeight + labelSpacing + self.timeLabel:getHeight();
-    end    
+    end
+    if self.specificWorkstationLabel and self.specificWorkstationLabel:isVisible() then
+        local labelWidth = width - (self.paddingLeft + self.marginLeft + self.paddingRight + self.marginRight);
+        if self.icon then
+            labelWidth = labelWidth - (spacing + self.icon:getWidth() + spacing);
+        end
+
+        local wrappedText = getTextManager():WrapText(self.specificWorkstationLabel.font, self.specificWorkstationLabel.text, labelWidth)
+        self.specificWorkstationLabel:setName(wrappedText);
+        self.specificWorkstationLabel:setHeightToName(0);
+        labelsHeight = labelsHeight + labelSpacing + self.specificWorkstationLabel:getHeight();
+    end
     if #self.requiredSkillList > 0 then
         labelsHeight = labelsHeight + labelSpacing;
         for i = 1, #self.requiredSkillList do
@@ -413,6 +459,14 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
     if self.favouritesIcon then
         self.favouritesIcon:setX(self.icon:getX() - (self.favouritesIcon:getWidth()/3));
         self.favouritesIcon:setY(self.icon:getY() + self.icon:getHeight() - (self.favouritesIcon:getHeight()*(2/3)));
+    end
+
+    if self.specificWorkstationLabel and self.specificWorkstationLabel:isVisible() then
+        y = y + labelSpacing;
+        self.specificWorkstationLabel:setX(self.titleLabel:getX());
+        self.specificWorkstationLabel.originalX = self.specificWorkstationLabel:getX();
+        self.specificWorkstationLabel:setY(y);
+        y = y + self.specificWorkstationLabel:getHeight();
     end
 
     if #self.requiredSkillList > 0 then

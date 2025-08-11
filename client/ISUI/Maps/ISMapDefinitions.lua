@@ -53,6 +53,101 @@ function MapUtils.initDefaultStreetData(mapUI)
 	end
 end
 
+function MapUtils.initDirectoryAnnotations(mapUI, directory)
+	local file = directory..'/worldmap-annotations.lua'
+	if fileExists(file) then
+		local annotationFunction = reloadLuaFile(file)
+		if type(annotationFunction) == "function" then
+            annotationFunction(mapUI)
+        end
+	end
+end
+
+function MapUtils.initDefaultAnnotations(mapUI)
+	-- Add data from highest priority (mods) to lowest priority (vanilla)
+	local dirs = getLotDirectories()
+	for i=1,dirs:size() do
+		MapUtils.initDirectoryAnnotations(mapUI, 'media/maps/'..dirs:get(i-1))
+	end
+end
+
+function MapUtils.initDefaultTextLayersV3(mapUI)
+	local mapAPI = mapUI.javaObject:getAPIv3()
+	local styleAPI = mapAPI:getStyleAPI()
+
+    local layer = styleAPI:newTextLayer("text-note")
+    layer:setFont(UIFont.Handwritten)
+    layer:setLineHeight(40)
+    layer:addFill(0.0, 0.0, 0.0, 0.0, 255.0)
+
+    layer = styleAPI:newTextLayer("text-street")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(48)
+    layer:addFill(13.0, 255.0, 255.0, 255.0, 0.0)
+    layer:addFill(13.5, 255.0, 255.0, 255.0, 255.0)
+
+    layer = styleAPI:newTextLayer("text-building")
+    layer:setFont(UIFont.SdfBoldItalic)
+    layer:setLineHeight(48)
+    layer:addFill(13.0, 255.0, 255.0, 255.0, 0.0)
+    layer:addFill(13.5, 255.0, 255.0, 255.0, 255.0)
+    layer:addFill(16.5, 255.0, 255.0, 255.0, 255.0)
+    layer:addFill(17.0, 255.0, 255.0, 255.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-place")
+    layer:setFont(UIFont.SdfBoldItalic)
+    layer:setLineHeight(48)
+    layer:addFill(13.0, 255.0, 255.0, 255.0, 0.0)
+    layer:addFill(13.5, 255.0, 255.0, 255.0, 255.0)
+    layer:addFill(16.5, 255.0, 255.0, 255.0, 255.0)
+    layer:addFill(17.0, 255.0, 255.0, 255.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-town")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(48)
+    layer:addFill(0.0, 0.0, 0.0, 0.0, 255.0)
+    layer:addFill(13.0, 0.0, 0.0, 0.0, 255.0)
+    layer:addFill(13.5, 0.0, 0.0, 0.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-forest")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(32)
+    layer:addFill(0.0, 15.0, 99.0, 43.0, 255.0)
+    layer:addFill(13.0, 15.0, 99.0, 43.0, 255.0)
+    layer:addFill(13.5, 15.0, 99.0, 43.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-water-small")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(32)
+    layer:addFill(0.0, 4.0, 48.0, 125.0, 255.0)
+    layer:addFill(16.0, 4.0, 48.0, 125.0, 255.0)
+    layer:addFill(16.5, 4.0, 48.0, 125.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-water-medium")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(32)
+    layer:addFill(0.0, 4.0, 48.0, 125.0, 255.0)
+    layer:addFill(14.5, 4.0, 48.0, 125.0, 255.0)
+    layer:addFill(15.0, 4.0, 48.0, 125.0, 0.0)
+
+    layer = styleAPI:newTextLayer("text-water-nofade")
+    layer:setFont(UIFont.SdfBold)
+    layer:setLineHeight(32)
+    layer:addFill(0.0, 4.0, 48.0, 125.0, 255.0)
+
+    -- CH / CN / JP / KO / PL / RU / TH languages don't use the SDF fonts that EN does.
+    if getTextManager():isUsingNonEnglishFonts() then
+        styleAPI:getLayerByName("text-street"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-building"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-place"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-town"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-forest"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-water-small"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-water-medium"):setFont(UIFont.Medium)
+        styleAPI:getLayerByName("text-water-nofade"):setFont(UIFont.Medium)
+    end
+end
+
 local MINZ = 0
 local MAXZ = 24
 local MINZ_BUILDINGS = 13
@@ -65,6 +160,9 @@ function MapUtils.initDefaultStyleV1(mapUI)
 
 	local ColorblindPatterns = getCore():getOptionColorblindPatterns()
 	mapAPI:setBoolean("ColorblindPatterns", ColorblindPatterns)
+
+    -- The default changed from false to true when street names were added.
+	mapAPI:setBoolean("ImagePyramid", false)
 
 	local r,g,b = 219/255, 215/255, 192/255
 	mapAPI:setBackgroundRGBA(r, g, b, 1.0)
@@ -235,6 +333,8 @@ function MapUtils.initDefaultStyleV3(mapUI)
 	local mapAPI = mapUI.javaObject:getAPIv3()
 	local styleAPI = mapAPI:getStyleAPI()
 
+	mapAPI:setBoolean("ImagePyramid", true)
+
 	local ignoreForestFeatures = false
 	if ignoreForestFeatures then
     	styleAPI:removeLayerById("forest")
@@ -251,6 +351,8 @@ function MapUtils.initDefaultStyleV3(mapUI)
     local index1 = styleAPI:indexOfLayer("pyramid-forest")
     local index2 = styleAPI:indexOfLayer("forest")
     styleAPI:moveLayer(index1, index2 + 1)
+
+    MapUtils.initDefaultTextLayersV3(mapUI)
 end
 
 function MapUtils.overlayPaper(mapUI)
@@ -265,12 +367,17 @@ function MapUtils.overlayPaper(mapUI)
 	layer:setBoundsInSquares(x1, y1, x2, y2)
 	layer:setTile(true)
 	layer:setUseWorldBounds(true)
-	layer:addFill(14.00, 128, 128, 128, 0)
-	layer:addFill(15.00, 128, 128, 128, 32)
-	layer:addFill(15.00, 255, 255, 255, 32)
-	layer:addTexture(0.00, "media/white.png")
-	layer:addTexture(15.00, "media/white.png")
-	layer:addTexture(15.00, "media/textures/worldMap/Paper.png")
+	if false then
+        layer:addFill(0.00, 255, 255, 255, 32)
+        layer:addTexture(0.00, "media/textures/worldMap/Paper.png")
+    else
+        layer:addFill(14.00, 128, 128, 128, 0)
+        layer:addFill(15.00, 128, 128, 128, 32)
+        layer:addFill(15.00, 255, 255, 255, 32)
+        layer:addTexture(0.00, "media/white.png")
+        layer:addTexture(15.00, "media/white.png")
+        layer:addTexture(15.00, "media/textures/worldMap/Paper.png")
+    end
 end
 
 function MapUtils.revealKnownArea(mapUI)

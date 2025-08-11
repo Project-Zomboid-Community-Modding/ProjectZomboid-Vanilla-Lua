@@ -49,14 +49,12 @@ function ISAddTakeDispenserBottle:complete()
 		elseif facing == IsoDirections.W then
 			sprite = "location_business_office_generic_01_60";		
 		end
-		local newdispenser = IsoObject.new(getCell(), self.square, sprite);
-		self.square:AddTileObject(newdispenser);
-		newdispenser:transmitCompleteItemToClients()
-		self.square:RecalcProperties();
+		local newdispenser = self.square:addWorkstationEntity("WaterDispenserNoBottle", sprite)
+		newdispenser:sync()
 	else
 		-- REMOVE OBJECT --
-		self.waterdispenser:getSquare():transmitRemoveItemFromSquare(self.waterdispenser)
-		self.waterdispenser:getSquare():RemoveTileObject(self.waterdispenser)
+		self.square:transmitRemoveItemFromSquare(self.waterdispenser)
+		self.square:RemoveTileObject(self.waterdispenser)
 		-- ADD OBJECT --
 		local facing = self.waterdispenser:getFacing();
 		local sprite = "location_business_office_generic_01_48";

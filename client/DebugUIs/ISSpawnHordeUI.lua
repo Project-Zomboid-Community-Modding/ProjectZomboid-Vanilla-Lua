@@ -48,8 +48,17 @@ function ISSpawnHordeUI:createChildren()
 	self.radius:instantiate();
 	self.radius:setOnlyNumbers(true);
 	self:addChild(self.radius);
-
 	farX = math.max(farX, self.radius:getRight())
+
+	self.heightOffsetLbl = ISLabel:new(self.radius:getRight() + UI_BORDER_SPACING, y, BUTTON_HGT, getText("IGUI_SpawnHorde_HeightOffset")..": " ,1,1,1,1, UIFont.Small, true);
+	self:addChild(self.heightOffsetLbl);
+
+	self.heightOffset = ISTextEntryBox:new("0.0", self.heightOffsetLbl:getRight()+UI_BORDER_SPACING, y, 100, BUTTON_HGT);
+	self.heightOffset:initialise();
+	self.heightOffset:instantiate();
+	self.heightOffset:setOnlyNumbers(true);
+	self:addChild(self.heightOffset);
+	farX = math.max(farX, self.heightOffset:getRight())
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
 	
 	self.outfitLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieOutfit")..": " ,1,1,1,1,UIFont.Small, true);
@@ -195,9 +204,15 @@ function ISSpawnHordeUI:getRadius()
 	return (tonumber(radius) or 1) - 1;
 end
 
+function ISSpawnHordeUI:getHeightOffset()
+	local heightOffset = self.heightOffset:getInternalText();
+	return (tonumber(heightOffset) or 0);
+end
+
 function ISSpawnHordeUI:onSpawn()
 	local count = self:getZombiesNumber()
 	local radius = self:getRadius();
+	local heightOffset = self:getHeightOffset();
 	local outfit = self:getOutfit();
 	-- force female or male chance if you've selected a outfit that's only for male or female
 	local femaleChance = nil;
@@ -244,7 +259,8 @@ function ISSpawnHordeUI:onSpawn()
 	for i=1,count do
 		local x = ZombRand(self.selectX-radius, self.selectX+radius+1);
 		local y = ZombRand(self.selectY-radius, self.selectY+radius+1);
-		addZombiesInOutfit(x, y, self.selectZ, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims);
+		local z = self.selectZ;
+		addZombiesInOutfit(x, y, z, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims, heightOffset);
 	end
 end
 

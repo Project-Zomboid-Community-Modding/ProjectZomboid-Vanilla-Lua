@@ -81,9 +81,37 @@ function ISBuildIsoEntity:getHealth()
 	return self.objectInfo:getScript():getSkillBaseHealth() + buildUtil.getWoodHealth(self);
 end
 
+function ISBuildIsoEntity:renderFloorGrid(x, y, z)
+	if not self.drawFloorGrid then
+		return;
+	end
+	
+	local floorCursorSprite = self:getFloorCursorSprite();
+	local colorGood = getCore():getGoodHighlitedColor();
+	local colorBad = getCore():getBadHighlitedColor();
+	
+	local face = self:getFace();
+	if face then
+		for xx=0,face:getWidth()-1 do
+			for yy=0,face:getHeight()-1 do
+				local square = getCell():getGridSquare(x + xx, y + yy, z);
+				local tileInfo = face:getTileInfo(xx, yy, 0);
+				--local tileInfoSprite = tileInfo and tileInfo:getSpriteName() and getSprite(tileInfo:getSpriteName());
+				local hc = colorBad;
+				if square and tileInfo then --and tileInfoSprite then
+					hc = self:isValidPerSquare(square, tileInfo, true, yy > 0, xx > 0) and colorGood or colorBad;
+				end
+				floorCursorSprite:RenderGhostTileColor(x + xx, y + yy, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
+			end
+		end
+	end
+end
+
 function ISBuildIsoEntity:render(x, y, z, square)
 	local valid = self:isValid(square);
-
+	
+	self:renderFloorGrid(x, y, z);
+	
 	local face = self:getFace();
 	if not face then
 		self.tileSprite:RenderGhostTileRed(x, y, z);
@@ -476,10 +504,7 @@ function ISBuildIsoEntity:create(x, y, z, north, sprite)
     showDebugInfoInChat("Cursor Create \'ISBuildIsoEntity\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local playerObj = self.character
 
-	local cheat = self.character:isBuildCheat()
-	if self.buildPanelLogic and self.buildPanelLogic:isCraftCheat() then
-        cheat = true;
-    end
+	local cheat = self.character:isBuildCheat();
 
 	if isServer() then
         self.buildPanelLogic:startCraftAction(nil);
@@ -706,7 +731,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 	if self.objectInfo:getScript():getOnCreate() then
         local facing = self:getFace():getFaceName();
 		local func = self.objectInfo:getScript():getOnCreate();
-		result = BaseCraftingLogic.callLuaObject(func, {thumpable = thumpable, craftRecipeData = self.buildPanelLogic:getRecipeDataInProgress(), character = playerObj, facing = facing});
+		result = BaseCraftingLogic.callLuaObject(func, {thumpable = thumpable, craftRecipeData = self.buildPanelLogic:getRecipeData(), character = playerObj, facing = facing});
 	end
 
 	square:RecalcAllWithNeighbours(true);
@@ -821,6 +846,18 @@ function ISBuildIsoEntity:onTimedActionStart(action)
 	action:setOverrideHandModels(self.buildPanelLogic:getModelHandOne(), self.buildPanelLogic:getModelHandTwo());
 end
 
+function ISBuildIsoEntity:tryBuild(x, y, z)
+	local buildAction = ISBuildingObject.tryBuild(self, x, y, z);
+	if buildAction and self.objectInfo:getScript():getTimedActionOnIsValid() then
+		buildAction.onIsValid = self.objectInfo:getScript():getTimedActionOnIsValid();
+	end
+end
+
+function ISBuildIsoEntity:onObjectLeftMouseButtonDown(object, x, y)
+    -- Disable clicks on objects, to prevent the loot window being displayed
+    return true
+end
+
 --************************************************************************--
 --** ISBuildIsoEntity:new
 --************************************************************************--
@@ -841,7 +878,7 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	o.name = objectInfo:getName();
 	o.objectInfo = objectInfo;
 	o.craftRecipe = objectInfo:getRecipe() and objectInfo:getRecipe():getCraftRecipe() or false;
-
+	
 	if isServer() or isClient() then
 		o.buildPanelLogic = BuildLogic.new(character, nil, nil);
 		o.buildPanelLogic:setContainers(o.containers);
@@ -907,6 +944,9 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	o.canBeLockedByPadlock = objectInfo:getScript():getCanBePadlocked();
 
 	o.blockBuild = false;
+	
+	o.drawFloorGrid = true;
+	
     showDebugInfoInChat("Cursor New \'ISBuildIsoEntity\'")
 	return o;
 end

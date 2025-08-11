@@ -21,6 +21,11 @@ local function predicateNotEmpty(item)
 	return item:getCurrentUsesFloat() > 0
 end
 
+local sortRecipes = function (a, b)
+    -- sort alphabetically.
+    return a.name < b.name
+end
+
 -- MAIN METHOD FOR CREATING RIGHT CLICK CONTEXT MENU FOR INVENTORY ITEMS
 ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, items, x, y, origin)
     if getCore():getGameMode() == "Tutorial" then
@@ -218,8 +223,8 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         if ISInventoryPaneContextMenu.startWith(testItem:getType(), "CarBattery") and testItem:getType() ~= "CarBatteryCharger" then
             tests.carBattery = testItem;
         end
-        if testItem:getType() == "CarBatteryCharger" then
-            tests.carBatteryCharger = testItem;
+        if testItem:hasComponent(ComponentType.ContextMenuConfig) then
+            tests.componentOption = testItem;
         end
         if testItem:IsMap() then
             tests.map = testItem;
@@ -608,7 +613,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         end
     elseif tests.corpse then
         if not playerObj:isHandItem(tests.corpse) then
-            local option = context:addOption(getText("ContextMenu_Grab_Corpse"), playerObj, ISInventoryPaneContextMenu.equipHeavyItem, tests.corpse);
+            local option = context:addOption(getText("ContextMenu_Grab_Corpse"), playerObj, ISInventoryPaneContextMenu.grabCorpseItem, tests.corpse);
             if playerObj:getVehicle() then
                 option.notAvailable = true
                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
@@ -957,32 +962,36 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         option.iconTexture = getTexture("Item_Pencil")
     end
 
---	local tests.carBatteryCharger = playerObj:getInventory():getItemFromType("CarBatteryCharger")
-	if tests.carBatteryCharger then
-		context:addOption(getText("ContextMenu_CarBatteryCharger_Place"), playerObj, ISInventoryPaneContextMenu.onPlaceCarBatteryCharger, tests.carBatteryCharger)
+	if tests.componentOption then
+		ISInventoryPaneContextMenu.doContextConfigOptions(context, tests.componentOption, playerObj);
     end
 
---     local testScript = tests.scriptChecks
+    if c == 1 and tests.scriptChecks and tests.scriptChecks:getUsedInRecipes(playerObj):size() > 0 then
+        local text = getText("ContextMenu_ShowCraftRecipesUsed")
+--         ISInventoryPaneContextMenu.doRecipeList(context, text, recipeItem, tests.scriptChecks:getUsedInRecipes(playerObj), playerObj, false)
+        ISInventoryPaneContextMenu.doRecipeListForItem(context, text, tests.scriptChecks, playerObj)
+    end
 
     if getDebugOptions():getBoolean("UI.UIShowResearchableEtc") then
         -- debug information regarding basic information on how anitem can be sourced
         if c == 1 and tests.scriptChecks and isDebugEnabled() then
+            local option
             if tests.scriptChecks:isCraftRecipeProduct() then
                 context:addDebugOption(getText("Can be produced by a craft recipe"))
             else
-                local option = context:addDebugOption(getText("Cannot be produced by a craft recipe"));
+                option = context:addDebugOption(getText("Cannot be produced by a craft recipe"));
                 option.notAvailable = true;
             end
             if tests.scriptChecks:canBeForaged() then
                 context:addDebugOption(getText("Can be foraged"))
             else
-                local option = context:addDebugOption(getText("Cannot be foraged"));
+                option = context:addDebugOption(getText("Cannot be foraged"));
                 option.notAvailable = true;
             end
             if tests.scriptChecks:canSpawnAsLoot() then
                 context:addDebugOption(getText("Can spawn as loot"))
             else
-                local option = context:addDebugOption(getText("Cannot spawn as loot"));
+                option = context:addDebugOption(getText("Cannot spawn as loot"));
                 option.notAvailable = true;
             end
         end
@@ -990,23 +999,24 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         if c == 1 and tests.scriptChecks and tests.scriptChecks:hasResearchableRecipes() and isDebugEnabled() then
             local recipes = tests.scriptChecks:getResearchableRecipes()
             for i=0, recipes:size()-1 do
-                local recipe = recipes:get(i)
-                local craftRecipe = getScriptManager():getCraftRecipe(recipe)
-                if craftRecipe then
-                    local known = recipe and playerObj:isRecipeActuallyKnown(craftRecipe)
-                    local canLearn = (not known) and recipe and craftRecipe:canResearch(playerObj, true)
+--                 local recipe = recipes:get(i)
+--                 local craftRecipe = getScriptManager():getCraftRecipe(recipes:get(i))
+                if getScriptManager():getCraftRecipe(recipes:get(i)) then
+                    local known = recipe and playerObj:isRecipeActuallyKnown(getScriptManager():getCraftRecipe(recipes:get(i)))
+                    local canLearn = (not known) and recipe and getScriptManager():getCraftRecipe(recipes:get(i)):canResearch(playerObj, true)
                     local text = getText("Researchable Recipe")
                     if known then text = text .. getText("(Known)") end
                     if canLearn then text = text .. getText("(Can Learn)") end
                     local postText = ""
-                    if craftRecipe:getResearchSkillLevel() > 0 then
-                        postText = craftRecipe:generateDebugText(playerObj)
+                    if getScriptManager():getCraftRecipe(recipes:get(i)):getResearchSkillLevel() > 0 then
+                        postText = getScriptManager():getCraftRecipe(recipes:get(i)):generateDebugText(playerObj)
                     end
-                    context:addDebugOption(text .. ": " .. tostring(recipe) .. postText)
+                    context:addDebugOption(text .. ": " .. tostring(recipes:get(i)) .. postText)
                 end
             end
         end
-        -- debug information about what recipes it can be used in
+
+--         debug information about what recipes it can be used in
         if c == 1 and tests.scriptChecks and tests.scriptChecks:isUsedInRecipes() and isDebugEnabled() then
             local number = tests.scriptChecks:getUsedInRecipes():size();
             local text = "Show Recipes Used In (" .. tostring(number) .. ")"
@@ -1020,7 +1030,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
                 if craftRecipe then
                     local known = recipe and playerObj:isRecipeActuallyKnown(craftRecipe)
                     local text = ""
-                    if known then text = getText("(Known) ") end
+                    if known then text = "(" .. getText("ContextMenu_Known") .. ") " end
                     usedMenu:addOption(text .. tostring(recipe))
                 end
             end
@@ -1109,6 +1119,7 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
 	local picturebook = false
 	local recentlyRead = false
 	local uninteresting = false
+	local recipeItem = false
 	for i,k in ipairs(actualItems) do
         if playerObj:getTraits():isIlliterate() and (k:hasTag("Picturebook") and not k:hasTag("Picture")) and playerObj:tooDarkToRead() then
 --         if playerObj:getTraits():isIlliterate() and (k:hasTag("Picturebook") and not k:hasTag("Picture")) and playerObj:getSquare():getLightLevel(player) < 0.43 then
@@ -1151,6 +1162,7 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
 		if k:hasTag("Picturebook") then picturebook = true end
 		if k:hasTag("Uninteresting") then uninteresting = true end
 		if k:getModData().literatureTitle and playerObj:isLiteratureRead(k:getModData().literatureTitle) then recentlyRead = true end
+	    if k:getTeachedRecipes() and k:getTeachedRecipes():size() > 0 then recipeItem = k end
 		break
     end
     local readOption
@@ -1191,6 +1203,212 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
         tooltip.description = getText("ContextMenu_NoOptionSleeping");
         readOption.toolTip = tooltip;
     end
+    if recipeItem then
+        local canRead = (recipeItem:hasTag("Picturebook") or recipeItem:hasTag("Picture") or not playerObj:getTraits():isIlliterate())
+        local SeeARecipe = getSandboxOptions():getOptionByName("SeeNotLearntRecipe"):getValue() == true or recipeItem:getKnownRecipes(playerObj):size() > 0
+--         local hasBrowsableRecipe = recipeItem:containsCraftOrBuildRecipe() -- or recipeItem:containsGrowingSeason()
+        if canRead and SeeARecipe then
+--         if recipeItem and hasBrowsableRecipe and canRead and SeeARecipe then
+            local text = getText("ContextMenu_ShowKnownRecipes")
+            local recipeList
+            if getSandboxOptions():getOptionByName("SeeNotLearntRecipe"):getValue() == true then
+                recipeList = recipeItem:getTeachedRecipes()
+                text = getText("ContextMenu_ShowRecipes")
+            else recipeList = recipeItem:getKnownRecipes(playerObj) end
+            ISInventoryPaneContextMenu.doRecipeList(context, text, recipeItem, recipeList, playerObj, true)
+        end
+--         if recipeItem and recipeItem:containsGrowingSeason() and canRead and recipeItem:getKnownRecipes(playerObj):size() > 0 then
+--             local usedOption = context:addOption(getText("ContextMenu_ShowGrowingSeasons"), playerObj, ISInventoryPaneContextMenu.showGrowingSeasons)
+--             if playerObj:tooDarkToRead() then
+--                 usedOption.notAvailable = true
+--                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
+--                 tooltip.description = getText("ContextMenu_TooDark");
+--                 usedOption.toolTip = tooltip;
+--             end
+--         end
+--         if recipeItem and recipeItem:getKnownMiscRecipes(playerObj):size() > 0 and canRead and SeeARecipe then
+-- --             local usedOption = context:addOption(getText("ContextMenu_ShowMiscRecipes"), context, ISInventoryPaneContextMenu.doMiscRecipeList, usedOption, recipeItem:getKnownMiscRecipes(playerObj), playerObj)
+--             if playerObj:tooDarkToRead() then
+--                 local usedOption = context:addOption(getText("ContextMenu_ShowMiscRecipes"), context, ISInventoryPaneContextMenu.doMiscRecipeList, usedOption, recipeItem:getKnownMiscRecipes(playerObj), playerObj)
+--                 usedOption.notAvailable = true
+--                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
+--                 tooltip.description = getText("ContextMenu_TooDark");
+--                 usedOption.toolTip = tooltip;
+--             else
+--                 local usedOption = context:addOption(getText("ContextMenu_ShowMiscRecipes"), context, ISInventoryPaneContextMenu.doMiscRecipeList, usedOption, recipeItem:getKnownMiscRecipes(playerObj), playerObj)
+--                 local usedMenu =  ISContextMenu:getNew(context)
+--                 context:addSubMenu(usedOption, usedMenu)
+--                 local recipes = recipeItem:getKnownMiscRecipes(playerObj)
+--                 for i=0, recipes:size()-1 do
+--                     local recipe = recipes:get(i);
+-- --                     print("Recipe " .. tostring(recipe))
+-- --                     print("Tooltip " .. tostring(getText(ISLiteratureUI.miscRecipes[recipe].tooltip)))
+-- --                     if ISLiteratureUI.miscRecipes.recipe and ISLiteratureUI.miscRecipes[recipe].tooltip then
+--                         local newOption =  usedMenu:addOption(getText(Translator.getRecipeName(recipe)) .. ": " .. getText(ISLiteratureUI.miscRecipes[recipe].tooltip));
+-- --                         local tooltip = ISInventoryPaneContextMenu.addToolTip();
+-- --                         tooltip.description = getText(getText(ISLiteratureUI.miscRecipes[recipe].tooltip));
+-- --                         newOption.toolTip = tooltip;
+--                 end
+--             end
+--         end
+    end
+end
+
+function ISInventoryPaneContextMenu.showGrowingSeasons(playerObj)
+    ISPlayerData[playerObj:getPlayerNum()+1].characterInfo.charScreen:onShowLiterature()
+    ISPlayerData[playerObj:getPlayerNum()+1].characterInfo.charScreen.literatureUI.tabs:activateView("Agriculture")
+end
+
+function ISInventoryPaneContextMenu.doRecipeList(context, text, recipeItem, recipes, playerObj, isLiterature)
+    local usedOption = context:addOption(text, recipeItem, nil);
+    if isLiterature and playerObj:tooDarkToRead() then
+        usedOption.notAvailable = true
+        local tooltip = ISInventoryPaneContextMenu.addToolTip();
+        tooltip.description = getText("ContextMenu_TooDark");
+        usedOption.toolTip = tooltip;
+        return;
+    end
+    local usedMenu =  ISContextMenu:getNew(context)
+    context:addSubMenu(usedOption, usedMenu)
+    local favRecipeList = {}
+    local otherRecipeList = {}
+    local badRecipeList = {}
+    for i=0, recipes:size()-1 do
+        local recipe = recipes:get(i)
+        print("Recipe 1 " .. tostring(recipe))
+        local craftRecipe = getScriptManager():getCraftRecipe(recipe)
+        local buildRecipe = getScriptManager():getBuildableRecipe(recipe)
+        if craftRecipe then
+            if craftRecipe:isFavourite(playerObj) then
+                table.insert(favRecipeList, recipe)
+            elseif (craftRecipe:characterHasRequiredSkills(playerObj) or craftRecipe:couldBenefitFromRecipeAtHand(playerObj))
+            and (playerObj:isRecipeActuallyKnown(craftRecipe) or not craftRecipe:needToBeLearn()) then
+                table.insert(otherRecipeList, recipe)
+            else
+                table.insert(badRecipeList, recipe)
+            end
+        elseif buildRecipe then
+            if buildRecipe:isFavourite(playerObj) then
+                table.insert(favRecipeList, recipe)
+            elseif (buildRecipe:characterHasRequiredSkills(playerObj) or buildRecipe:couldBenefitFromRecipeAtHand(playerObj))
+            and (playerObj:isRecipeActuallyKnown(buildRecipe) or not buildRecipe:needToBeLearn()) then
+                table.insert(otherRecipeList, recipe)
+            else
+                table.insert(badRecipeList, recipe)
+            end
+        else
+            if playerObj:isRecipeActuallyKnown(recipes:get(i)) then
+                table.insert(otherRecipeList, recipes:get(i))
+            else
+                table.insert(badRecipeList, recipe)
+            end
+        end
+    end
+--     table.sort(favRecipeList, function(a, b) return string.sort(b:getTranslationName(), a:getTranslationName()) end);
+--     table.sort(otherRecipeList, function(a, b) return string.sort(b:getTranslationName(), a:getTranslationName()) end);
+--     table.sort(badRecipeList, function(a, b) return string.sort(b:getTranslationName(), a:getTranslationName()) end);
+    table.sort(favRecipeList, function(a, b) return string.sort(Translator.getRecipeName(b), Translator.getRecipeName(a)) end);
+    table.sort(otherRecipeList, function(a, b) return string.sort(Translator.getRecipeName(b), Translator.getRecipeName(a)) end);
+    table.sort(badRecipeList, function(a, b) return string.sort(Translator.getRecipeName(b), Translator.getRecipeName(a)) end);
+
+    for i, v in pairs(favRecipeList) do
+        local subOption
+        local buildRecipe = getScriptManager():getBuildableRecipe(v)
+        local craftRecipe = getScriptManager():getCraftRecipe(v)
+        if buildRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenBuildWindow, nil, "*", false, buildRecipe )
+--             if buildRecipe:getIconTexture() then
+--                 subOption.iconTexture = buildRecipe:getIconTexture()
+--             end
+        elseif craftRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenHandcraftWindow, nil, "*", false, craftRecipe )
+--             if craftRecipe:getIconTexture() then
+--                 subOption.iconTexture = craftRecipe:getIconTexture()
+--             end
+        end
+        if subOption and getRecipeIcon(v) then
+             subOption.iconTexture = getRecipeIcon(v)
+        end
+        subOption.goodColor = true
+    end
+
+    for i, v in pairs(otherRecipeList) do
+        local subOption
+        local buildRecipe = getScriptManager():getBuildableRecipe(v)
+        local craftRecipe = getScriptManager():getCraftRecipe(v)
+        if buildRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenBuildWindow, nil, "*", false, buildRecipe )
+--             if buildRecipe:getIconTexture() then
+--                 subOption.iconTexture = buildRecipe:getIconTexture()
+--             end
+        elseif craftRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenHandcraftWindow, nil, "*", false, craftRecipe )
+--             if craftRecipe:getIconTexture() then
+--                 subOption.iconTexture = craftRecipe:getIconTexture()
+--             end
+        elseif doesSeasonRecipeExist(v) then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISInventoryPaneContextMenu.showGrowingSeasons)
+--             if getSeasonRecipeIcon(v) then
+--                 subOption.iconTexture = getSeasonRecipeIcon(v)
+--             end
+        elseif doesMiscRecipeExist(v) then
+            subOption =  usedMenu:addOption(getText(Translator.getRecipeName(v))) --  .. ": " .. getText(ISLiteratureUI.miscRecipes[v].tooltip));
+            if ISLiteratureUI.miscRecipes[v] and ISLiteratureUI.miscRecipes[v].tooltip then
+                local tooltip = ISInventoryPaneContextMenu.addToolTip();
+                tooltip.description = getText(ISLiteratureUI.miscRecipes[v].tooltip);
+                subOption.toolTip = tooltip;
+            end
+--             if ISLiteratureUI.miscRecipes[v] and ISLiteratureUI.miscRecipes[v].icon and getTexture(ISLiteratureUI.miscRecipes[v].icon) then
+--                 subOption.iconTexture = getTexture(ISLiteratureUI.miscRecipes[v].icon)
+--             end
+        end
+        if subOption and getRecipeIcon(v) then
+             subOption.iconTexture = getRecipeIcon(v)
+        end
+    end
+
+    for i, v in pairs(badRecipeList) do
+        local subOption
+        local buildRecipe = getScriptManager():getBuildableRecipe(v)
+        local craftRecipe = getScriptManager():getCraftRecipe(v)
+        if buildRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenBuildWindow, nil, "*", false, buildRecipe )
+--             if buildRecipe:getIconTexture() then
+--                 subOption.iconTexture = buildRecipe:getIconTexture()
+--             end
+            subOption.badColor = true
+        elseif craftRecipe then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISEntityUI.OpenHandcraftWindow, nil, "*", false, craftRecipe )
+--             if craftRecipe:getIconTexture() then
+--                 subOption.iconTexture = craftRecipe:getIconTexture()
+--             end
+            subOption.badColor = true
+        elseif doesSeasonRecipeExist(v) then
+            subOption = usedMenu:addOption(Translator.getRecipeName(v), playerObj, ISInventoryPaneContextMenu.showGrowingSeasons)
+            subOption.badColor = true
+--             if getSeasonRecipeIcon(v) then
+--                 subOption.iconTexture = getSeasonRecipeIcon(v)
+--             end
+        elseif doesMiscRecipeExist(v) then
+            subOption =  usedMenu:addOption(getText(Translator.getRecipeName(v))) -- .. ": " .. getText(ISLiteratureUI.miscRecipes[v].tooltip));
+            if ISLiteratureUI.miscRecipes[v] and ISLiteratureUI.miscRecipes[v].tooltip then
+                local tooltip = ISInventoryPaneContextMenu.addToolTip();
+                tooltip.description = getText(ISLiteratureUI.miscRecipes[v].tooltip);
+                subOption.toolTip = tooltip;
+            end
+--             if ISLiteratureUI.miscRecipes[v] and ISLiteratureUI.miscRecipes[v].icon and getTexture(ISLiteratureUI.miscRecipes[v].icon) then
+--                 subOption.iconTexture = getTexture(ISLiteratureUI.miscRecipes[v].icon)
+--             end
+            subOption.badColor = true
+        end
+        if subOption and getRecipeIcon(v) then
+             subOption.iconTexture = getRecipeIcon(v)
+        end
+    end
+end
+
+function ISInventoryPaneContextMenu.doRecipeListForItem(context, text, recipeItem, playerObj)
+    local usedOption = context:addOption(text, playerObj, ISEntityUI.OpenHandcraftWindow, nil, "*", false, nil, recipeItem:getDisplayName());
 end
     
 function ISInventoryPaneContextMenu.doBandageMenu(context, items, player)
@@ -4221,6 +4439,19 @@ ISInventoryPaneContextMenu.equipHeavyItem = function(playerObj, item)
     ISTimedActionQueue.add(ISEquipHeavyItem:new(playerObj, item));
 end
 
+ ISInventoryPaneContextMenu.grabCorpseItem = function(playerObj, item)
+     if not luautils.walkToContainer(item:getContainer(), playerObj:getPlayerNum()) then
+         return
+     end
+     if playerObj:getPrimaryHandItem() then
+         ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getPrimaryHandItem(), 50));
+     end
+     if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem() ~= playerObj:getPrimaryHandItem() then
+         ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getSecondaryHandItem(), 50));
+     end
+     ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, item));
+ end
+
 ISInventoryPaneContextMenu.onMakeUp = function(makeup, playerObj)
     local playerNum = playerObj:getPlayerNum()
     if ISMakeUpUI.windows[playerNum+1] then
@@ -4598,5 +4829,34 @@ ISInventoryPaneContextMenu.onResearchRecipe = function(item, playerObj)
         ISTimedActionQueue.add(ISResearchRecipe:new(playerObj, item))
         ISCraftingUI.ReturnItemToOriginalContainer(playerObj, item)
     end -- the player will research all researchble recipes in one-go
+end
+
+ISInventoryPaneContextMenu.doContextConfigOptions = function(context, item, playerObj)
+	local contextConfig = item:getComponent(ComponentType.ContextMenuConfig);
+    if not contextConfig then return self end;
+    local entries = contextConfig:getEntries();
+
+    if entries and entries:size() > 0 then
+        for i = 0, entries:size()-1 do
+            local entry = entries:get(i);
+            local textRef = getText("ContextMenu_" .. entry:getMenu());
+            local customFunction = entry:getCustomFunction();
+            local option = nil;
+            if customFunction then
+            	option = context:addOption(textRef, customFunction, ISInventoryPaneContextMenu.onCustomFunction, item, playerObj, entry:getExtraParam());
+            end
+            local timedAction = entry:getTimedAction();
+            if timedAction then
+            	option = context:addOption(textRef, timedAction, ISWorldObjectContextMenu.onTimedAction, item, playerObj, entry:getExtraParam());
+            end
+            if option and entry:getIcon() and getTexture(entry:getIcon()) then
+            	option.iconTexture = getTexture(entry:getIcon());
+            end
+        end
+    end
+end
+
+function ISInventoryPaneContextMenu.onCustomFunction(customFunction, item, playerObj, param)
+	assert(loadstring('return '..customFunction..'(...)'))(item, playerObj, param);
 end
 

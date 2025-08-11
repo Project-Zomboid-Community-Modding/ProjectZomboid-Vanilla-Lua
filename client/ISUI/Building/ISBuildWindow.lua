@@ -19,11 +19,12 @@ end
 
 
 function ISBuildWindow:isKeyConsumed(key)
-    return key == Keyboard.KEY_ESCAPE
+    return key == Keyboard.KEY_ESCAPE or getCore():isKey("Building UI", key)
+--     return key == Keyboard.KEY_ESCAPE
 end
 
 function ISBuildWindow:onKeyRelease(key)
-    if self:isVisible() and key == Keyboard.KEY_ESCAPE then
+    if self:isVisible() and (key == Keyboard.KEY_ESCAPE or getCore():isKey("Building UI", key)) then
         self:close()
         self:removeFromUIManager();
         return

@@ -112,19 +112,40 @@ end
 
 function BoxPanel:onTextEntered(entry, id)
 	local objectName = self.scene.selectedObjectName
+	local xMin = self.scene:java1("getBoxMinExtents", objectName)
+	local xMax = self.scene:java1("getBoxMaxExtents", objectName)
+
 	if id == "xMin" then
-		self.scene:java1("getBoxMinExtents", objectName):setComponent(0, tonumber(entry:getText()))
+		xMin:setComponent(0, tonumber(entry:getText()))
 	elseif id == "xMax" then
-		self.scene:java1("getBoxMaxExtents", objectName):setComponent(0, tonumber(entry:getText()))
+		xMax:setComponent(0, tonumber(entry:getText()))
 	elseif id == "yMin" then
-		self.scene:java1("getBoxMinExtents", objectName):setComponent(1, tonumber(entry:getText()))
+		xMin:setComponent(1, tonumber(entry:getText()))
 	elseif id == "yMax" then
-		self.scene:java1("getBoxMaxExtents", objectName):setComponent(1, tonumber(entry:getText()))
+		xMax:setComponent(1, tonumber(entry:getText()))
 	elseif id == "zMin" then
-		self.scene:java1("getBoxMinExtents", objectName):setComponent(2, tonumber(entry:getText()))
+		xMin:setComponent(2, tonumber(entry:getText()))
 	elseif id == "zMax" then
-		self.scene:java1("getBoxMaxExtents", objectName):setComponent(2, tonumber(entry:getText()))
+		xMax:setComponent(2, tonumber(entry:getText()))
 	end
+
+	--check to see if Min is greater than Max, and if so, swap the two.
+	if xMin:x() > xMax:x() then
+		local temp = xMax:x()
+		xMax:setComponent(0, tonumber(xMin:x()))
+		xMin:setComponent(0, tonumber(temp))
+	end
+	if xMin:y() > xMax:y() then
+		local temp = xMax:y()
+		xMax:setComponent(1, tonumber(xMin:y()))
+		xMin:setComponent(1, tonumber(temp))
+	end
+	if xMin:z() > xMax:z() then
+		local temp = xMax:z()
+		xMax:setComponent(2, tonumber(xMin:z()))
+		xMin:setComponent(2, tonumber(temp))
+	end
+
 	self.editor:updateGeometryFile()
 end
 
