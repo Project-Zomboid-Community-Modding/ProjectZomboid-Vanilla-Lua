@@ -115,6 +115,7 @@ function ISCraftInventoryPanel:createChildren()
     self.itemListBox.doDrawItem = ISCraftInventoryPanel.drawListItem;
     self.itemListBox.target = self;
     self.itemListBox.onmousedown = ISCraftInventoryPanel.onListSelected;
+    self.itemListBox.onmousedblclick = ISCraftInventoryPanel.onListDoubleClick;
     self.itemListBox.drawBorder = true;
 
     self:addChild(self.itemListBox);
@@ -309,51 +310,93 @@ function ISCraftInventoryPanel:populate()
         end
     end
     
-    -- unavailables
+    -- unavailable items
     if allInputItems then
         local header = self:createListHeader(getText("IGUI_CraftUI_PossibleItems"), true);
         header.isUnavailableItemsHeader = true;
         self.itemListBox:addItem(header.name, header);
 
+        local acceptsAnyItem = self.inputScriptFilter and self.inputScriptFilter:isAcceptsAnyItem();
         if self.unavailablesExpanded then
-            local addedPairs = {};
-            local index = 0;
-            local inputItems = {}
-            for i = 0, allInputItems:size()-1 do
-                local inputItem = allInputItems:get(i);
-                local found = false;
-                for j = 0, nodes:size()-1 do
-                    if nodes:get(j):getScriptItem() == inputItem then
-                        found = true;
+            if acceptsAnyItem then
+                local item = {};
+                item.isHeader = false;
+                item.isNode = false;
+                item.node = nil;
+                item.script = nil;
+                item.inventoryItem = nil;
+                item.index = 0;
+                item.name = tostring(0)..":"..getText("IGUI_CraftUI_AnyItem");
+                item.text = getText("IGUI_CraftUI_AnyItem");
+                item.textWidth = getTextManager():MeasureStringX(UIFont.Small, item.text);
+                item.isUnavailable = true;
+                self.itemListBox:addItem(item.name, item)
+            else
+                local addedPairs = {};
+                local index = 0;
+                local inputItems = {}
+                for i = 0, allInputItems:size()-1 do
+                    local inputItem = allInputItems:get(i);
+                    local found = false;
+                    for j = 0, nodes:size()-1 do
+                        if nodes:get(j):getScriptItem() == inputItem then
+                            found = true;
+                        end
                     end
-                end
-                
-                -- also check against already added items
-                if not found then
-                    if addedPairs[inputItem:getDisplayName()] ~= nil then
-                        for _,iconTexture in ipairs(addedPairs[inputItem:getDisplayName()]) do
-                            local inputItemTextureName = inputItem:getNormalTexture():getName();
-                            if iconTexture == inputItemTextureName then
-                                found = true;
-                                break;
+
+                    -- also check against already added items
+                    if not found then
+                        if addedPairs[inputItem:getDisplayName()] ~= nil then
+                            for _,iconTexture in ipairs(addedPairs[inputItem:getDisplayName()]) do
+                                local inputItemTextureName = inputItem:getNormalTexture():getName();
+                                if iconTexture == inputItemTextureName then
+                                    found = true;
+                                    break;
+                                end
                             end
                         end
                     end
-                end
-                
-                if not found then
-                    table.insert(inputItems, inputItem)
-                    
-                    if addedPairs[inputItem:getDisplayName()] == nil then
-                        addedPairs[inputItem:getDisplayName()] = {};
+
+                    if not found then
+                        table.insert(inputItems, inputItem)
+
+                        if addedPairs[inputItem:getDisplayName()] == nil then
+                            addedPairs[inputItem:getDisplayName()] = {};
+                        end
+                        table.insert(addedPairs[inputItem:getDisplayName()], inputItem:getNormalTexture():getName());
                     end
-                    table.insert(addedPairs[inputItem:getDisplayName()], inputItem:getNormalTexture():getName());
+                end
+                table.sort(inputItems, function(a,b) return not string.sort(a:getDisplayName(), b:getDisplayName()) end)
+                for index,inputItem in ipairs(inputItems) do
+                    item = self:createUnavailableListItemEntry(inputItem, index)
+                    self.itemListBox:addItem(item.name, item)
                 end
             end
-            table.sort(inputItems, function(a,b) return not string.sort(a:getDisplayName(), b:getDisplayName()) end)
-            for index,inputItem in ipairs(inputItems) do
-                item = self:createUnavailableListItemEntry(inputItem, index)
-                self.itemListBox:addItem(item.name, item)
+        end
+    end
+    
+    -- unavailable fluids
+    if self.inputScriptFilter and self.inputScriptFilter:hasConsumeFromItem() and self.inputScriptFilter:getConsumeFromItemScript():getResourceType() == ResourceType.Fluid then
+        local allInputFluids = self.inputScriptFilter:getConsumeFromItemScript():getPossibleInputFluids();
+        if not allInputFluids:isEmpty() then
+            local header = self:createListHeader(getText("IGUI_CraftUI_PossibleFluids"), true);
+            header.isUnavailableFluidsHeader = true;
+            self.itemListBox:addItem(header.name, header);
+            
+            local addedFluids = {}
+            if self.unavailableFluidsExpanded then
+                for i = 0, allInputFluids:size()-1 do
+                    local inputFluid = allInputFluids:get(i);
+                    local found = false;
+                    for _,value in pairs(addedFluids) do
+                        if inputFluid:getDisplayName() == value then found = true; break; end
+                    end
+                    if not found then
+                        item = self:createUnavailableListFluidEntry(inputFluid, i)
+                        self.itemListBox:addItem(item.name, item)
+                        table.insert(addedFluids, inputFluid:getDisplayName());
+                    end
+                end
             end
         end
     end
@@ -428,6 +471,30 @@ function ISCraftInventoryPanel:createUnavailableListItemEntry(_item, _index)
     return item;
 end
 
+function ISCraftInventoryPanel:createUnavailableListFluidEntry(_fluid, _index)
+    local fluid = {};
+
+    fluid.isHeader = false;
+    fluid.isNode = false;
+    fluid.node = nil;
+    fluid.script = nil;
+    fluid.inventoryItem = nil;
+    fluid.fluid = _fluid;
+    fluid.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
+    local c = _fluid:getColor();
+    fluid.iconColor = {};
+    fluid.iconColor.r = c:getRedFloat();
+    fluid.iconColor.g = c:getGreenFloat();
+    fluid.iconColor.b = c:getBlueFloat();
+    fluid.index = _index;
+    fluid.name = tostring(_index)..":".._fluid:getFluidTypeString();
+    fluid.text = _fluid:getDisplayName();
+    fluid.textWidth = getTextManager():MeasureStringX(UIFont.Small, fluid.text);
+    fluid.isUnavailable = true;
+
+    return fluid;
+end
+
 function ISCraftInventoryPanel:drawListItem(y, item, alt)
     local a = 1.0;
 
@@ -452,9 +519,9 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
 
         if data.hasExpandArrow then
             --dx = dx - 36;
-
             local iconTexture = getTexture("media/ui/Entity/Icon_ExpandArrow_Closed_48x48.png");
-            if self.target.unavailablesExpanded then
+            if (data.isUnavailableItemsHeader and self.target.unavailablesExpanded) 
+            or (data.isUnavailableFluidsHeader and self.target.unavailableFluidsExpanded) then
                 iconTexture = getTexture("media/ui/Entity/Icon_ExpandArrow_Open_48x48.png");
             end
 
@@ -492,6 +559,8 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
             ISInventoryItem.renderItemIcon(self, data.inventoryItem, dx, y+2, 1.0, self.itemheight-4, self.itemheight-4);
         elseif data.isUnavailable and data.script then
             ISInventoryItem.renderScriptItemIcon(self, data.script, dx, y+2, 0.5, self.itemheight-4, self.itemheight-4);
+        elseif data.iconTexture then
+            self:drawTextureScaledAspect(data.iconTexture, dx, y+2, self.itemheight-4, self.itemheight-4, 1, data.iconColor.r, data.iconColor.g, data.iconColor.b);
         end
         dx = dx + self.itemheight + 16;
         dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
@@ -514,29 +583,118 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
     return y + self.itemheight;
 end
 
+function ISCraftInventoryPanel:onListDoubleClick(_item)
+    if instanceof(self.logic, "CraftLogicUILogic") then
+        return;
+    end
+    local previousText = self.selectedItem.name;
+    local wasNode = self.selectedItem.isNode;
+    local maxIndex = 0;
+    local minIndex = 0;
+    if wasNode then
+        self.selectedItem.node:setExpandedUsed(true)
+        self.selectedItem.node:setExpandedAvailable(true)
+    end
+    local previousSelected = self.itemListBox.selected;
+    self.selectedItem = _item;
+    self:populate();
+    self.logic:clearManualInputsFor(self.logic:getRecipeData():getDataForInputScript(self.logic:getManualSelectInputScriptFilter()));
+    if wasNode then
+        for i = 0, #self.itemListBox.items do
+            if self.itemListBox.items[i] and self.itemListBox.items[i].text == previousText then
+                minIndex = i + 1;
+                break;
+            end
+        end
+        for i = minIndex + 1, #self.itemListBox.items + 1 do
+            if not self.itemListBox.items[i] or not self.itemListBox.items[i].item or not self.itemListBox.items[i].item.inventoryItem then
+                maxIndex = i - 1;
+                break;
+            end
+        end
+        for i = minIndex, maxIndex do
+            if self.itemListBox.items[i] and self.itemListBox.items[i].item then
+                self:onListItemClicked(self.itemListBox.items[i].item);
+            end
+        end
+        return;
+    end
+
+    for i = previousSelected - 1, 0, -1 do
+        if not self.itemListBox.items[i] or not self.itemListBox.items[i].item or not self.itemListBox.items[i].item.inventoryItem then
+            minIndex = i + 1;
+            break;
+        end
+    end
+
+    for i = previousSelected, #self.itemListBox.items + 1 do
+        if not self.itemListBox.items[i] or not self.itemListBox.items[i].item or not self.itemListBox.items[i].item.inventoryItem then
+            maxIndex = i - 1;
+            break;
+        end
+    end
+
+    for i = minIndex, maxIndex do
+        self:onListItemClicked(self.itemListBox.items[i].item);
+    end
+end
+
 function ISCraftInventoryPanel:onListSelected(_item)
     self.selectedItem = _item;
 
+    local isShiftDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) or Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    local isCtrlDown = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) or Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
     if self.selectedItem then
-        --print("selected = "..tostring(self.itemListBox.selected));
         if self.selectedItem.isHeader then
             if self.selectedItem.isUnavailableItemsHeader then
                 self.unavailablesExpanded = not self.unavailablesExpanded;
                 self.isDirty = true;
+            end            
+            if self.selectedItem.isUnavailableFluidsHeader then
+                self.unavailableFluidsExpanded = not self.unavailableFluidsExpanded;
+                self.isDirty = true;
             end
             --currently do nothing
         elseif self.selectedItem.isNode then
-            
-            --if self.selectedItem.isUsedItems then -- for now we are opening up the used and avail drawers at the same time as it seems to be more useful - spurcival
+            if isCtrlDown and not instanceof(self.logic, "CraftLogicUILogic") then
+                local previousSelected = self.itemListBox.selected;
+                self.selectedItem.node:setExpandedUsed(true)
+                self.selectedItem.node:setExpandedAvailable(true)
+                self:populate();
+                self.logic:clearManualInputsFor(self.logic:getRecipeData():getDataForInputScript(self.logic:getManualSelectInputScriptFilter()));
+                for i = previousSelected + 1, #self.itemListBox.items + 1 do
+                    if self.itemListBox.items[i] and self.itemListBox.items[i].item and self.itemListBox.items[i].item.inventoryItem then
+                        self:onListItemClicked(self.itemListBox.items[i].item);
+                    else
+                        break;
+                    end
+                end
+            else
                 self.selectedItem.node:toggleExpandedUsed()
-            --else
                 self.selectedItem.node:toggleExpandedAvailable()
-            --end
-            
-            self.isDirty = true;
+                self.isDirty = true;
+            end
+
         else
             if _item.inventoryItem then
                 self:onListItemClicked(_item);
+                if not self.previousSelected or not isShiftDown then
+                    self.previousSelected = self.itemListBox.selected;
+                end
+                if isShiftDown and not instanceof(self.logic, "CraftLogicUILogic") then
+                    self.logic:clearManualInputsFor(self.logic:getRecipeData():getDataForInputScript(self.logic:getManualSelectInputScriptFilter()));
+                    local startIndex = self.itemListBox.selected;
+                    local endIndex = self.previousSelected;
+                    if startIndex > endIndex then
+                        startIndex = self.previousSelected;
+                        endIndex = self.itemListBox.selected;
+                    end
+                    for i = startIndex, endIndex do
+                        if self.itemListBox.items[i].item.inventoryItem then
+                            self:onListItemClicked(self.itemListBox.items[i].item);
+                        end
+                    end
+                end
             end
         end
     else
@@ -551,7 +709,7 @@ function ISCraftInventoryPanel:onListItemClicked(_item)
             ISEntityUI.ItemSlotRemoveSingleItem( self.player, self.entity, self.itemSlot, _item.inventoryItem );
         else
             -- try to add
-            ISEntityUI.ItemSlotAddItems( self.player, self.entity, self.itemSlot, { _item.inventoryItem } );
+            ISCraftLogicPanel.ItemSlotAddItems( self.player, self.entity, self.itemSlot, { _item.inventoryItem }, self.logic:getCraftLogic() );
         end
     else
         -- basic craftstation logic
@@ -600,6 +758,7 @@ function ISCraftInventoryPanel:new(x, y, width, height, player, logic)
 
     o.inputScriptFilter = nil;
     o.unavailablesExpanded = false;
+    o.unavailableFluidsExpanded = false;
     
     o.isResourceItemSlot = false; -- true if this ISCraftInventoryPanel relates to a Resource ISItemSlot
     o.showCurrentContents = false; -- true if this ISCraftInventoryPanel should show the current contents of a Resource IsItemSlot

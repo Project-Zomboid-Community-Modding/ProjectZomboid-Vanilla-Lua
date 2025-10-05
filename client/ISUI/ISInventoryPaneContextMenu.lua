@@ -3,6 +3,7 @@
 --***********************************************************
 
 require "ISUI/ISToolTip"
+ require "TimedActions/ISInventoryTransferUtil"
 
 ISInventoryPaneContextMenu = {}
 ISInventoryPaneContextMenu.tooltipPool = {}
@@ -105,10 +106,19 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     tests.animalCorpse = nil;
     tests.keyOrigin = nil;
     tests.scriptChecks = nil;
+    tests.unwanted = nil;
     tests.researchableRecipes = nil;
     tests.usedInRecipes = nil;
+    tests.inventoryItem = nil;
 --     tests.favouriteRecipeInput = nil;
 
+	-- For dropping stuff out of vehicle doors/windows.
+	local vehicleTest = {}
+	vehicleTest.inVehicle = nil;
+	vehicleTest.hasDoor = nil;
+	vehicleTest.doorOpen = nil;
+	vehicleTest.hasWindow = nil;
+	vehicleTest.windowOpen = nil;
 
     local playerObj = getSpecificPlayer(player)
     local playerInv = playerObj:getInventory()
@@ -141,8 +151,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
             tests.canBeRenamed = testItem;
         end
         if instanceof(testItem, "AnimalInventoryItem") then
-            AnimalContextMenu.doInventoryMenu(player, context, testItem)
-            return;
+            return AnimalContextMenu.doInventoryMenu(player, context, testItem)
         end
         if testItem:getClothingItemExtraOption() then
             tests.clothingItemExtra = testItem;
@@ -153,6 +162,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         if (isDebugEnabled() or isAdmin()) and testItem:hasOrigin() then
             tests.keyOrigin = testItem;
         end
+        if testItem and testItem:getScriptItem() then tests.isUnwanted = testItem end
         local scriptItem = testItem:getScriptItem()
         if scriptItem then
             -- this is used to seeing if an item can be crafted, foraged, found as loot or not for debug purposes
@@ -167,10 +177,14 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
 --                 tests.usedInRecipes = testItem
 --             end
         end
+        if instanceof(testItem, "InventoryItem") then
+            tests.inventoryItem = testItem
+        end
+
 		if not testItem:isCanBandage() then
 			tests.isAllBandage = false;
 		end
-        if testItem:getCategory() ~= "Food" or testItem:getScriptItem():isCantEat() then
+        if testItem:getCategory() ~= "Food" or (testItem:getScriptItem():isCantEat() and not testItem:getScriptItem():getOpeningRecipe()) then
             tests.isAllFood = false;
         end
         if testItem:hasTag("isSeed") then
@@ -278,7 +292,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         if instanceof(testItem, "AlarmClock") or instanceof(testItem, "AlarmClockClothing") then
             tests.alarmClock = testItem;
         end
-        if instanceof(testItem, "Food")  then -- Check if it's a recipe from the evolved recipe and have at least 3 ingredient, so we can name them
+        if instanceof(testItem, "Food") then -- Check if it's a recipe from the evolved recipe and have at least 3 ingredient, so we can name them
             for i=0,getEvolvedRecipes():size()-1 do
                 local evoRecipeTest = getEvolvedRecipes():get(i);
                 if evoRecipeTest:isResultItem(testItem) and testItem:haveExtraItems() and testItem:getExtraItems():size() >= 3 then
@@ -324,7 +338,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         if not instanceof(testItem, "Literature") and ISInventoryPaneContextMenu.canReplaceStoreWater(testItem) then
             tests.pourOnGround = testItem
         end
-        tests.evorecipe = RecipeManager.getEvolvedRecipe(testItem, playerObj, containerList, true);
+        if not testItem:isNoRecipes(playerObj) then tests.evorecipe = RecipeManager.getEvolvedRecipe(testItem, playerObj, containerList, true) end;
         if tests.evorecipe then
             tests.baseItem = testItem;
         end
@@ -344,6 +358,29 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         end
 
     end
+
+	-- If a player is in a vehicle, the door or window needs to be open for them to drop items on the floor outside.
+	if playerObj:getVehicle() then
+		vehicleTest.inVehicle = true
+		local vehicle = playerObj:getVehicle()
+		local seatPart = vehicle:getSeat(playerObj)
+		local doorPart = vehicle:getPassengerDoor(seatPart)
+		local windowPart = VehicleUtils.getChildWindow(doorPart)
+		if doorPart and doorPart:getDoor() then
+			vehicleTest.hasDoor = true
+			local door = doorPart:getDoor()
+			if door:isOpen() then
+				vehicleTest.doorOpen = true
+			end
+		end
+		if windowPart and windowPart:getWindow() then
+			vehicleTest.hasWindow = true
+			window = windowPart:getWindow()
+			if window:isOpen() then
+				vehicleTest.windowOpen = true
+			end
+		end
+	end
 
     triggerEvent("OnPreFillInventoryObjectContextMenu", player, context, items);
 
@@ -518,8 +555,11 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     end
 
     if not tests.inPlayerInv and playerObj:getJoypadBind() ~= -1 then
-        ISInventoryPaneContextMenu.doStoveMenu(context, player)
-        ISInventoryPaneContextMenu.doTrashCanMenu(context, player)
+        if loot.controlsUI then
+            loot.controlsUI:handleJoypadContextMenu(context)
+        end
+--        ISInventoryPaneContextMenu.doStoveMenu(context, player)
+--        ISInventoryPaneContextMenu.doTrashCanMenu(context, player)
     end
 
     if tests.canBeEquippedBack then
@@ -561,7 +601,25 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
             cmdCount = cmdCount + 1
         end
         if cmdCount == 1 then
-            if hungerNotZero > 0 then
+            local openingRecipe
+            if foodItems[1]:getOpeningRecipe() then openingRecipe = foodItems[1]:getOpeningRecipe() end
+            if openingRecipe and getScriptManager():getCraftRecipe(openingRecipe) then
+                openingRecipe = getScriptManager():getCraftRecipe(openingRecipe)
+            else
+                openingRecipe = nil
+            end
+            if openingRecipe then
+                local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
+                local logic = HandcraftLogic.new(playerObj, nil, nil);
+
+                logic:setContainers(containers);
+                logic:setRecipeFromContextClick(openingRecipe, foodItems[1]);
+                if not logic:canPerformCurrentRecipe() then
+                    openingRecipe = nil
+                end
+            end
+            if hungerNotZero > 0 or openingRecipe then
+                if openingRecipe then cmd = getText("ContextMenu_OpenAndEat") end
                 local eatOption = context:addOption(cmd, items, nil)
                 if #foodItems == 1 then
                     eatOption.itemForTexture = foodItems[1]
@@ -575,24 +633,24 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
                 else
                     local subMenuEat = context:getNew(context)
                     context:addSubMenu(eatOption, subMenuEat)
-                    local option = subMenuEat:addOption(getText("ContextMenu_Eat_All"), items, ISInventoryPaneContextMenu.onEatItems, 1, player)
+                    local option = subMenuEat:addOption(getText("ContextMenu_Eat_All"), items, ISInventoryPaneContextMenu.onEatItems, 1, player, openingRecipe, 100)
                     -- ISInventoryPaneContextMenu.addEatTooltip(option, foodItems, 1.0) -- commented out as the information provided can be confusing
 					-- this it to prevent eating smaller portions of food then their hunger value allows
 					local baseHunger = (math.abs(( foodItems[1]:getBaseHunger() * 100 ) )) +.001
 					local hungerChange = (math.abs(( foodItems[1]:getHungerChange() * 100 ) )) +.001
 					--print("Base Hunger" .. tostring(baseHunger))
 					--print("Hunger Change" .. tostring(hungerChange))
-					if (hungerChange >= 2 ) and ( hungerChange >= baseHunger/2 ) then
+					if ((hungerChange >= 2 ) and ( hungerChange >= baseHunger/2 )) or openingRecipe  then
 						--print(tostring(baseHunger >= 2))
 						--print(tostring(hungerChange >= baseHunger/2))
-						option = subMenuEat:addOption(getText("ContextMenu_Eat_Half"), items, ISInventoryPaneContextMenu.onEatItems, 0.5, player)
+						option = subMenuEat:addOption(getText("ContextMenu_Eat_Half"), items, ISInventoryPaneContextMenu.onEatItems, 0.5, player, openingRecipe, 50)
 						-- ISInventoryPaneContextMenu.addEatTooltip(option, foodItems, 0.5) -- commented out as the information provided can be confusing
 					end
 					-- if baseHunger >= 4 and ( hungerChange >= baseHunger/4 ) then
-					if (hungerChange >= 4) and (hungerChange >= baseHunger/4) then
+					if ((hungerChange >= 4) and (hungerChange >= baseHunger/4)) or openingRecipe  then
 						--print(tostring(baseHunger >= 4))
 						--print(tostring(hungerChange >= baseHunger/4))
-						option = subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), items, ISInventoryPaneContextMenu.onEatItems, 0.25, player)
+						option = subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), items, ISInventoryPaneContextMenu.onEatItems, 0.25, player, openingRecipe, 25)
 						-- ISInventoryPaneContextMenu.addEatTooltip(option, foodItems, 0.25) -- commented out as the information provided can be confusing
 					end
                 end
@@ -803,7 +861,8 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         for i,k in ipairs( pillsItems) do
 			if k:getCustomMenuOption() then cmd = k:getCustomMenuOption() end
         end
-		context:addOption(cmd, items, ISInventoryPaneContextMenu.onPillsItems, player);
+-- 		context:addOption(cmd, items, ISInventoryPaneContextMenu.onPillsItems, player);
+        ISInventoryPaneContextMenu.doPillsMenu(context, items, player, cmd)
     end
 	-- if tests.isAllLiterature and not getSpecificPlayer(player):getTraits():isIlliterate() then
 	if tests.isAllLiterature then
@@ -878,12 +937,21 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     if tests.makeup then
         ISInventoryPaneContextMenu.doMakeUpMenu(context, tests.makeup, playerObj)
     end
-    if isInPlayerInventory and addDropOption and playerObj:getJoypadBind() == -1 and
-            not ISInventoryPaneContextMenu.isAllFav(items)
-            --and not ISInventoryPaneContextMenu.isAllNoDropMoveable(items)
-    then
-        context:addOption(getText("ContextMenu_Drop"), items, ISInventoryPaneContextMenu.onDropItems, player);
-    end
+
+	-- Modified to block the option if a player is in a vehicle with closed doors & windows.
+	if isInPlayerInventory and addDropOption and playerObj:getJoypadBind() == -1 and not ISInventoryPaneContextMenu.isAllFav(items) then
+		local drop = context:addOption(getText("ContextMenu_Drop"), items, ISInventoryPaneContextMenu.onDropItems, player);
+		if vehicleTest.inVehicle then
+			if vehicleTest.hasDoor and not vehicleTest.doorOpen then
+				if vehicleTest.hasWindow and not vehicleTest.windowOpen then
+					drop.notAvailable = true
+					local tooltip = ISInventoryPaneContextMenu.addToolTip();
+					tooltip.description = getText("ContextMenu_DropFromVehicle");
+					drop.toolTip = tooltip;
+				end
+			end
+		end
+	end
 
     ISInventoryPaneContextMenu.doPlace3DItemOption(items, playerObj, context)
 
@@ -966,10 +1034,40 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
 		ISInventoryPaneContextMenu.doContextConfigOptions(context, tests.componentOption, playerObj);
     end
 
+    if tests.inventoryItem then
+       if tests.inventoryItem:isNoRecipes(playerObj) then
+            local option = context:addOption(getText("ContextMenu_UnsetNoRecipes"), moveItems, ISInventoryPaneContextMenu.onNoRecipes, tests.inventoryItem, false, playerObj)
+            --            option.iconTexture = getTexture("media/ui/FavoriteStarUnchecked.png")
+       else
+            local option = context:addOption(getText("ContextMenu_SetNoRecipes"), moveItems, ISInventoryPaneContextMenu.onNoRecipes, tests.inventoryItem, true, playerObj)
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_SetNoRecipes_tooltip");
+            option.toolTip = tooltip;
+--            option.iconTexture = getTexture("media/ui/FavoriteStarChecked.png")
+       end
+    end
+
+    if tests.isUnwanted then
+        if tests.isUnwanted:isUnwanted(playerObj) then
+            local option = context:addOption(getText("ContextMenu_Wanted"), tests.isUnwanted, ISInventoryPaneContextMenu.onWanted, playerObj)
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_Wanted_tooltip");
+            option.toolTip = tooltip;
+        else
+            local option = context:addOption(getText("ContextMenu_Unwanted"), tests.isUnwanted, ISInventoryPaneContextMenu.onUnwanted, playerObj)
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_Unwanted_tooltip");
+            option.toolTip = tooltip;
+        end
+    end
+
     if c == 1 and tests.scriptChecks and tests.scriptChecks:getUsedInRecipes(playerObj):size() > 0 then
-        local text = getText("ContextMenu_ShowCraftRecipesUsed")
 --         ISInventoryPaneContextMenu.doRecipeList(context, text, recipeItem, tests.scriptChecks:getUsedInRecipes(playerObj), playerObj, false)
-        ISInventoryPaneContextMenu.doRecipeListForItem(context, text, tests.scriptChecks, playerObj)
+        ISInventoryPaneContextMenu.doRecipeListForItem(context, getText("ContextMenu_ShowCraftRecipesUsed"), tests.scriptChecks, playerObj)
+    end
+
+    if c == 1 and tests.scriptChecks and tests.scriptChecks:isUsedInBuildRecipes(playerObj) then
+        ISInventoryPaneContextMenu.doBuildRecipeListForItem(context, getText("ContextMenu_ShowBuildRecipesUsed"), tests.scriptChecks, playerObj)
     end
 
     if getDebugOptions():getBoolean("UI.UIShowResearchableEtc") then
@@ -1027,8 +1125,16 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
             for i=0, recipes:size()-1 do
                 local recipe = recipes:get(i)
                 local craftRecipe = getScriptManager():getCraftRecipe(recipe)
+                local buildRecipe
                 if craftRecipe then
                     local known = recipe and playerObj:isRecipeActuallyKnown(craftRecipe)
+                    local text = ""
+                    if known then text = "(" .. getText("ContextMenu_Known") .. ") " end
+                    usedMenu:addOption(text .. tostring(recipe))
+                end
+                if not craftRecipe then buildRecipe = getScriptManager():getBuildableRecipe(recipe) end
+                if buildRecipe then
+                    local known = recipe and playerObj:isRecipeActuallyKnown(buildRecipe)
                     local text = ""
                     if known then text = "(" .. getText("ContextMenu_Known") .. ") " end
                     usedMenu:addOption(text .. tostring(recipe))
@@ -1049,7 +1155,7 @@ ISInventoryPaneContextMenu.createMenuNoItems = function(playerNum, isLoot, x, y)
 
     if ISInventoryPaneContextMenu.dontCreateMenu then return end
 
-    if UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then return end
+    if isGamePaused() then return end
 
     local playerObj = getSpecificPlayer(playerNum)
     
@@ -1060,8 +1166,11 @@ ISInventoryPaneContextMenu.createMenuNoItems = function(playerNum, isLoot, x, y)
     triggerEvent("OnPreFillInventoryContextMenuNoItems", playerNum, context, isLoot)
 
     if isLoot and playerObj:getJoypadBind() ~= -1 then
-        ISInventoryPaneContextMenu.doStoveMenu(context, playerNum)
-        ISInventoryPaneContextMenu.doTrashCanMenu(context, playerNum)
+        if loot.controlsUI then
+            loot.controlsUI:handleJoypadContextMenu(context)
+        end
+--        ISInventoryPaneContextMenu.doStoveMenu(context, playerNum)
+--        ISInventoryPaneContextMenu.doTrashCanMenu(context, playerNum)
     end
 
     triggerEvent("OnFillInventoryContextMenuNoItems", playerNum, context, isLoot)
@@ -1254,6 +1363,41 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
     end
 end
 
+function ISInventoryPaneContextMenu.doPillsMenu(context, items, player, cmd)
+	local playerObj = getSpecificPlayer(player)
+	local actualItems = ISInventoryPane.getActualItems(items)
+
+	local pillsOption = context:addOption(cmd, items, ISInventoryPaneContextMenu.onPillsItems, player);
+    if actualItems[1] and actualItems[1]:getRequireInHandOrInventory() then
+        local list = actualItems[1]:getRequireInHandOrInventory();
+        local found = false;
+        local required = "";
+        if actualItems[1]:hasTag("Smokable") and playerObj:getVehicle() and playerObj:getVehicle():canLightSmoke(playerObj) then found = true end
+        if actualItems[1]:hasTag("Smokable") and not found then
+           found = ISInventoryPaneContextMenu.hasOpenFlame(playerObj)
+        end
+        if not found then
+            for i=0,list:size()-1 do
+                local fullType = moduleDotType(actualItems[1]:getModule(), list:get(i))
+                if playerObj:getInventory():getFirstTypeEvalRecurse(fullType, predicateNotEmpty) then
+                    found = true;
+                    break;
+                end
+                required = required .. getItemNameFromFullType(fullType);
+                if i < list:size()-1 then
+                    required = required .. "/";
+                end
+            end
+        end
+        if not found then
+            pillsOption.notAvailable = true
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_Require", required);
+            pillsOption.toolTip = tooltip;
+        end
+    end
+end
+
 function ISInventoryPaneContextMenu.showGrowingSeasons(playerObj)
     ISPlayerData[playerObj:getPlayerNum()+1].characterInfo.charScreen:onShowLiterature()
     ISPlayerData[playerObj:getPlayerNum()+1].characterInfo.charScreen.literatureUI.tabs:activateView("Agriculture")
@@ -1275,7 +1419,6 @@ function ISInventoryPaneContextMenu.doRecipeList(context, text, recipeItem, reci
     local badRecipeList = {}
     for i=0, recipes:size()-1 do
         local recipe = recipes:get(i)
-        print("Recipe 1 " .. tostring(recipe))
         local craftRecipe = getScriptManager():getCraftRecipe(recipe)
         local buildRecipe = getScriptManager():getBuildableRecipe(recipe)
         if craftRecipe then
@@ -1409,6 +1552,10 @@ end
 
 function ISInventoryPaneContextMenu.doRecipeListForItem(context, text, recipeItem, playerObj)
     local usedOption = context:addOption(text, playerObj, ISEntityUI.OpenHandcraftWindow, nil, "*", false, nil, recipeItem:getDisplayName());
+end
+
+function ISInventoryPaneContextMenu.doBuildRecipeListForItem(context, text, recipeItem, playerObj)
+    local usedOption = context:addOption(text, playerObj, ISEntityUI.OpenBuildWindow, nil, "*", false, nil, recipeItem:getDisplayName());
 end
     
 function ISInventoryPaneContextMenu.doBandageMenu(context, items, player)
@@ -2024,13 +2171,12 @@ end
 function ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item, preventTransferWorldObjects)
 	if instanceof(item, "InventoryItem") then
 		if luautils.haveToBeTransfered(playerObj, item) then
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory()))
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory()))
 		end
     elseif instanceof(item, "IsoWorldInventoryObject") then
         if luautils.walkAdj(playerObj, item:getSquare()) then
             if not preventTransferWorldObjects then
-                local playerInv = getPlayerInventory(playerObj:getIndex()).inventory;
-                ISInventoryPaneContextMenu.transferItems({item:getItem()}, playerInv, playerObj:getIndex())
+                ISInventoryPaneContextMenu.transferItemsToPlayer({ item:getItem()}, playerObj:getIndex())
             end
         end
 	elseif instanceof(item, "ArrayList") then
@@ -2038,7 +2184,7 @@ function ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item, preventTra
 		for i=1,items:size() do
 			local item = items:get(i-1)
 			if luautils.haveToBeTransfered(playerObj, item) then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory()))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory()))
 			end
 		end
 	end
@@ -2372,9 +2518,12 @@ ISInventoryPaneContextMenu.OnResetRemoteControlID = function(item, player)
     item:syncItemFields();
 end
 
-ISInventoryPaneContextMenu.onDrinkFluid = function(item, percent, playerObj)
+ISInventoryPaneContextMenu.onDrinkFluid = function(item, percent, playerObj, openingRecipe)
 	-- if food isn't in main inventory, put it there first.
 	ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
+	if openingRecipe then
+        ISInventoryPaneContextMenu.OnNewCraft(item, openingRecipe, playerObj:getPlayerNum(), false)
+    end
 
 	-- now remove a mask
 	local mask = ISInventoryPaneContextMenu.getEatingMask(playerObj, true)
@@ -2388,10 +2537,33 @@ ISInventoryPaneContextMenu.onDrinkFluid = function(item, percent, playerObj)
 end
 
 ISInventoryPaneContextMenu.doDrinkFluidMenu = function(playerObj, fluidContainer, context)
+    if not fluidContainer or not fluidContainer:getFluidContainer() then return end
+    local openingRecipe
+    if not instanceof(fluidContainer, "IsoWorldInventoryObject") then openingRecipe = fluidContainer:getOpeningRecipe() end
+    if not instanceof(fluidContainer, "IsoWorldInventoryObject") and not fluidContainer:isSealed() then openingRecipe = nil end
+    if openingRecipe and getScriptManager():getCraftRecipe(openingRecipe) then
+        openingRecipe = getScriptManager():getCraftRecipe(openingRecipe)
+    else
+        openingRecipe = nil
+    end
+    if openingRecipe then
+        local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
+        local logic = HandcraftLogic.new(playerObj, nil, nil);
+
+        logic:setContainers(containers);
+        logic:setRecipeFromContextClick(openingRecipe, fluidContainer);
+        if not logic:canPerformCurrentRecipe() then
+            openingRecipe = nil
+        end
+    end
+
     local cmd = fluidContainer:getCustomMenuOption() or getText("ContextMenu_Drink");
+    if openingRecipe then
+        cmd = fluidContainer:getCustomMenuOption() or getText("ContextMenu_OpenAndDrink");
+    end
     local eatOption = context:addOption(cmd, fluidContainer, nil);
 	
-	if not fluidContainer:getFluidContainer():canPlayerEmpty() then
+	if not fluidContainer:getFluidContainer():canPlayerEmpty() and not openingRecipe then
 		local tooltip = ISInventoryPaneContextMenu.addToolTip();
 		eatOption.notAvailable = true;
 		tooltip.description = getText("Tooltip_item_sealed");
@@ -2409,7 +2581,7 @@ ISInventoryPaneContextMenu.doDrinkFluidMenu = function(playerObj, fluidContainer
 	else
 		local subMenuEat = context:getNew(context)
 		context:addSubMenu(eatOption, subMenuEat)
-		local option = subMenuEat:addOption(getText("ContextMenu_Eat_All"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 1, playerObj)
+		local option = subMenuEat:addOption(getText("ContextMenu_Eat_All"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 1, playerObj, openingRecipe)
 		
         local capacity = fluidContainer:getFluidContainer():getCapacity()
         local amount = fluidContainer:getFluidContainer():getAmount()
@@ -2423,14 +2595,14 @@ ISInventoryPaneContextMenu.doDrinkFluidMenu = function(playerObj, fluidContainer
 		if (baseThirst >= 0.5 ) then
 -- 						--print(tostring(baseHunger >= 2))
 -- 						--print(tostring(hungerChange >= baseHunger/2))
-			option = subMenuEat:addOption(getText("ContextMenu_Eat_Half"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 0.5, playerObj)
+			option = subMenuEat:addOption(getText("ContextMenu_Eat_Half"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 0.5, playerObj, openingRecipe)
 -- 						-- ISInventoryPaneContextMenu.addEatTooltip(option, foodItems, 0.5) -- commented out as the information provided can be confusing
 		end
 -- 		if (ratio => 0.25 ) then
 		if (baseThirst >= 0.25) then
 -- 						--print(tostring(baseHunger >= 4))
 -- 						--print(tostring(hungerChange >= baseHunger/4))
-			option = subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 0.25, playerObj)
+			option = subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), fluidContainer, ISInventoryPaneContextMenu.onDrinkFluid, 0.25, playerObj, openingRecipe)
 -- 						-- ISInventoryPaneContextMenu.addEatTooltip(option, foodItems, 0.25) -- commented out as the information provided can be confusing
 		end
 	end
@@ -2455,7 +2627,10 @@ ISInventoryPaneContextMenu.doDrinkForThirstMenu = function(context, playerObj, w
     option.toolTip = tooltip
 end
 
-ISInventoryPaneContextMenu.onDrinkForThirst = function(waterContainer, playerObj, percent)
+ISInventoryPaneContextMenu.onDrinkForThirst = function(waterContainer, playerObj, percent, openingRecipe)
+	if openingRecipe then
+        ISInventoryPaneContextMenu.OnNewCraft(item, openingRecipe, playerObj:getPlayerNum(), false)
+    end
     --getPlayer():Say("Units - " .. tostring(percent))
     ISInventoryPaneContextMenu.transferIfNeeded(playerObj, waterContainer)
 	-- now remove a mask
@@ -2470,11 +2645,11 @@ ISInventoryPaneContextMenu.onAddItemInEvoRecipe = function(recipe, baseItem, use
     local playerObj = getSpecificPlayer(player);
     local returnToContainer = {};
     if not playerObj:getInventory():contains(usedItem) then -- take the item if it's not in our inventory
-        ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, usedItem,usedItem:getContainer(), playerObj:getInventory(), nil));
+        ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, usedItem,usedItem:getContainer(), playerObj:getInventory(), nil));
         table.insert(returnToContainer, usedItem);
     end
     if not playerObj:getInventory():contains(baseItem) then -- take the base item if it's not in our inventory
-        ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, baseItem, baseItem:getContainer(), playerObj:getInventory(), nil));
+        ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, baseItem, baseItem:getContainer(), playerObj:getInventory(), nil));
         table.insert(returnToContainer, baseItem);
     end
     ISTimedActionQueue.add(ISAddItemInRecipe:new(playerObj, recipe, baseItem, usedItem));
@@ -2571,8 +2746,8 @@ ISInventoryPaneContextMenu.addFixerSubOption = function(brokenObject, player, fi
             tooltip.description = tooltip.description .. " <LINE>" .. ISInventoryPaneContextMenu.ghs .. globalItem:getName() .. " " .. uses .. "/" .. fixing:getGlobalItem():getNumberOfUse() .. " <LINE> ";
         else
             local name = fixing:getGlobalItem():getFixerName();
-            if getItem(fixing:getModule():getName() .. "." .. fixing:getGlobalItem():getFixerName()) then
-                name = getItemName(fixing:getModule():getName() .. "." .. fixing:getGlobalItem():getFixerName());
+            if getItem(fixing:getGlobalItem():getFixerName()) then
+               	name = getItemName(fixing:getGlobalItem():getFixerName());
             end
             tooltip.description = tooltip.description .. " <LINE>" .. ISInventoryPaneContextMenu.bhs .. name .. " " .. uses .. "/" .. fixing:getGlobalItem():getNumberOfUse() .. " <LINE> ";
             fixOption.notAvailable = true
@@ -2696,7 +2871,7 @@ ISInventoryPaneContextMenu.onStopAlarm = function(alarm, player)
 	end
     if alarm:isInPlayerInventory() or luautils.walkAdj(playerObj, sq) then
         if not alarm:getWorldItem() and (alarm:getContainer() ~= playerObj:getInventory()) then
-            ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, alarm, alarm:getContainer(), playerObj:getInventory()))
+            ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, alarm, alarm:getContainer(), playerObj:getInventory()))
         end
         if (alarm:getWorldItem()) then
             ISTimedActionQueue.add(ISStopAlarmClockAction:new(playerObj, alarm:getWorldItem()));
@@ -2709,7 +2884,7 @@ end
 ISInventoryPaneContextMenu.onSetAlarm = function(alarm, player)
     local playerObj = getSpecificPlayer(player);
     if not alarm:getWorldItem() and (alarm:getContainer() ~= playerObj:getInventory()) then
-        local action = ISInventoryTransferAction:new(playerObj, alarm, alarm:getContainer(), playerObj:getInventory())
+        local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, alarm, alarm:getContainer(), playerObj:getInventory())
         action:setOnComplete(ISInventoryPaneContextMenu.onSetAlarm, alarm, player)
         ISTimedActionQueue.add(action)
         return
@@ -2753,7 +2928,7 @@ end
 ISInventoryPaneContextMenu.onCheckMap = function(map, player)
     local playerObj = getSpecificPlayer(player)
     if luautils.haveToBeTransfered(playerObj, map) then
-        local action = ISInventoryTransferAction:new(playerObj, map, map:getContainer(), playerObj:getInventory())
+        local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, map, map:getContainer(), playerObj:getInventory())
         action:setOnComplete(ISInventoryPaneContextMenu.onCheckMap, map, player)
         ISTimedActionQueue.add(action)
 --         ISCraftingUI.ReturnItemToOriginalContainer(playerObj, map)
@@ -2993,7 +3168,7 @@ ISInventoryPaneContextMenu.onPutItems = function(items, player)
 				end
 				doWalk = false
 			end
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, k, k:getContainer(), playerLoot))
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k, k:getContainer(), playerLoot))
 		end
 	end
 end
@@ -3071,7 +3246,7 @@ ISInventoryPaneContextMenu.onMoveItemsTo = function(items, dest, player)
         if playerObj:isEquipped(item) then
             ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50));
         end
-        ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), dest))
+        ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), dest))
     end
 end
 
@@ -3683,7 +3858,7 @@ ISInventoryPaneContextMenu.addToolTip = function()
 	return tooltip;
 end
 
-ISInventoryPaneContextMenu.OnNewCraft = function(selectedItem, recipe, player, all)
+ISInventoryPaneContextMenu.OnNewCraft = function(selectedItem, recipe, player, all, eatPercentage)
  	local playerObj = getSpecificPlayer(player)
  	local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
 	local logic = HandcraftLogic.new(playerObj, nil, nil);
@@ -3712,7 +3887,7 @@ ISInventoryPaneContextMenu.OnNewCraft = function(selectedItem, recipe, player, a
             for i=1,items:size() do
                 local item = items:get(i-1)
                 if item:getContainer() ~= playerObj:getInventory() then
-                    ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory(), nil))
+                    ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory(), nil))
                     if itemsToReturn:contains(item) then
                         table.insert(returnToContainer, item)
                     end
@@ -3724,7 +3899,7 @@ ISInventoryPaneContextMenu.OnNewCraft = function(selectedItem, recipe, player, a
             end
         end
 
-        local action = ISEntityUI.HandcraftStart( playerObj, logic, false, true);
+        local action = ISEntityUI.HandcraftStart( playerObj, logic, false, true, eatPercentage);
         if action then
             print("=========== starting craft ===========")
             if not all then action:setOnComplete(ISInventoryPaneContextMenu.OnNewCraftComplete, logic); end
@@ -3796,7 +3971,7 @@ ISInventoryPaneContextMenu.OnCraft = function(selectedItem, recipe, player, all)
 		for i=1,items:size() do
 			local item = items:get(i-1)
 			if item:getContainer() ~= playerObj:getInventory() then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory(), nil))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory(), nil))
 				table.insert(returnToContainer, item)
 			end
 		end
@@ -3863,7 +4038,7 @@ ISInventoryPaneContextMenu.OnCraftComplete = function(completedAction, recipe, p
 		for i=1,items:size() do
 			local item = items:get(i-1)
 			if item:getContainer() ~= playerObj:getInventory() then
-				local action = ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory(), nil)
+				local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory(), nil)
 				if not action.ignoreAction then
 					ISTimedActionQueue.addAfter(previousAction, action)
 					previousAction = action
@@ -3879,7 +4054,7 @@ ISInventoryPaneContextMenu.OnCraftComplete = function(completedAction, recipe, p
     ISCraftingUI.ReturnItemsToOriginalContainer(playerObj, returnToContainer)
 end
 
-ISInventoryPaneContextMenu.eatItem = function(item, percentage, player)
+ISInventoryPaneContextMenu.eatItem = function(item, percentage, player, openingRecipe, eatPercentage)
 --	if not player then
     local playerObj = getSpecificPlayer(player);
 --	end
@@ -3933,8 +4108,13 @@ ISInventoryPaneContextMenu.eatItem = function(item, percentage, player)
 
 		if not itemRequired then return end
 	end
-    -- Then eat it.
-    ISTimedActionQueue.add(ISEatFoodAction:new(playerObj, item, percentage));
+    -- do the opening recipe if needed
+    if eatPercentage and openingRecipe then
+        ISInventoryPaneContextMenu.OnNewCraft(item, openingRecipe, playerObj:getPlayerNum(), false, eatPercentage)
+    else
+        -- Then eat it.
+        ISTimedActionQueue.add(ISEatFoodAction:new(playerObj, item, percentage));
+    end
 
     if mask then ISTimedActionQueue.add(ISWearClothing:new(playerObj, mask, 50)) end
     if itemRequired and instanceof(itemRequired, "InventoryItem") then
@@ -4067,10 +4247,10 @@ end
 
 -- Function that goes through all items selected and eats them.
 -- eat only 1 of the item list
-ISInventoryPaneContextMenu.onEatItems = function(items, percentage, player)
+ISInventoryPaneContextMenu.onEatItems = function(items, percentage, player, openingRecipe, eatPercentage)
 	items = ISInventoryPane.getActualItems(items)
 	for i,k in ipairs(items) do
-		ISInventoryPaneContextMenu.eatItem(k, percentage, player)
+		ISInventoryPaneContextMenu.eatItem(k, percentage, player, openingRecipe, eatPercentage)
 		break
     end
 end
@@ -4099,33 +4279,10 @@ ISInventoryPaneContextMenu.onUpgradeWeapon = function(weapon, part, player)
     ISTimedActionQueue.add(ISUpgradeWeapon:new(player, weapon, part));
 end
 
+-- Rewrote to skip vehicle checks since that's being done above - Baph
 ISInventoryPaneContextMenu.onDropItems = function(items, player)
 	local playerObj = getSpecificPlayer(player)
-
-    local noVehicle = true
-    local vehicleNoWindow = true
-    local vehicleWindowOpen = true
-
-    local vehicle = playerObj:getVehicle()
-
-    if vehicle ~= nil then
-        noVehicle = false
-        local seat = vehicle:getSeat(playerObj)
-        local door = vehicle:getPassengerDoor(seat)
-        local windowPart = VehicleUtils.getChildWindow(door)
-        if windowPart and (not windowPart:getItemType() or windowPart:getInventoryItem()) then
-            vehicleNoWindow = false
-            local window = windowPart:getWindow()
-            if window:isOpenable() and not window:isOpen() then
-                vehicleWindowOpen = false
-            end
-        end
-    end
-
-    if not (noVehicle or vehicleNoWindow or vehicleWindowOpen) then return end
-
 	items = ISInventoryPane.getActualItems(items)
---	ISInventoryPaneContextMenu.transferItems(items, playerObj:getInventory(), player, true)
 	for _,item in ipairs(items) do
 		if not item:isFavorite() then
 			ISInventoryPaneContextMenu.dropItem(item, player)
@@ -4155,60 +4312,129 @@ ISInventoryPaneContextMenu.dropItem = function(item, player)
     if item:getType() == "CandleLit" and item:isEquipped() then
         ISInventoryPaneContextMenu.litCandleExtinguish(item, player)
     end
-    if (item:getType() == "Lantern_HurricaneLit" or item:hasTag(LitLantern)) and item:isEquipped() then
+    if (item:getType() == "Lantern_HurricaneLit" or item:hasTag(ItemTag.LIT_LANTERN)) and item:isEquipped() then
         ISInventoryPaneContextMenu.hurricaneLanternExtinguish(item, player)
     end
 
-	if not playerObj:isHandItem(item) then
-		local hotbar = getPlayerHotbar(player)
-		if hotbar and hotbar:isItemAttached(item) then
-			hotbar:removeItem(item, true)
-		else
-			ISInventoryPaneContextMenu.unequipItem(item, player)
+    playerObj:removeAttachedItem(item)
+    ISInventoryPaneContextMenu.unequipItem(item, player)
+
+	-- Special action for dropping items outside of vehicles. If not in vehicle then do normal transfer action.
+	if playerObj:getVehicle() then
+		local vehicle = playerObj:getVehicle()
+		local seatPart = vehicle:getSeat(playerObj)
+		if vehicle:getPassengerDoor(seatPart) then
+			local door = vehicle:getPassengerDoor(seatPart)
+			local dropSquare = vehicle:getSquareForArea(door:getArea())
+			ISTimedActionQueue.add(ISDropVehicleItemAction:new(playerObj, item, vehicle, door, dropSquare))
 		end
+	else
+		ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), ISInventoryPage.floorContainer[player + 1]))
 	end
-	
-	if true then
-		-- Don't transfer items to the player's inventory first, since doing so
-		-- breaks ISInventoryTransferAction's multi-item transfer thing.
-		ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), ISInventoryPage.floorContainer[player + 1]))
-		return
-	end
-	-- if item isn't in main inventory, put it there first.
-	ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
-    ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), ISInventoryPage.floorContainer[player + 1]));
 end
 
-ISInventoryPaneContextMenu.onGrabItems = function(items, player)
-	local playerInv = getPlayerInventory(player).inventory;
-	ISInventoryPaneContextMenu.transferItems(items, playerInv, player)
-end
+ ISInventoryPaneContextMenu.transferItemToPlayer = function(item, player, dontWalk)
+     local playerObj = getSpecificPlayer(player)
+     local playerInv = getPlayerInventory(playerObj:getIndex()).inventory;
+     if item:getContainer() ~= playerInv and item:getContainer() ~= nil then
+         if not dontWalk then
+             if not luautils.walkToContainer(item:getContainer(), player) then
+                 return
+             end
+             dontWalk = true
+         end
 
-ISInventoryPaneContextMenu.transferItems = function(items, playerInv, player, dontWalk)
-	local playerObj = getSpecificPlayer(player)
-	items = ISInventoryPane.getActualItems(items)
-	for i,k in ipairs(items) do
-		if k:getContainer() ~= playerInv and k:getContainer() ~= nil then
-			if not dontWalk then
-				if not luautils.walkToContainer(k:getContainer(), player) then
-					return
-				end
-				dontWalk = true
-			end
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, k, k:getContainer(), playerInv))
-		end
-	end
-end
+         if (item:isHumanCorpse()) then
+             ISInventoryPaneContextMenu.grabCorpseItem(playerObj, item)
+             return
+         end
+
+         if item:isForceDropHeavyItem() then
+             ISInventoryPaneContextMenu.equipHeavyItem(playerObj, item)
+             return
+         end
+
+         ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerInv))
+     end
+ end
+
+ ISInventoryPaneContextMenu.onGrabItems = function(items, player)
+     items = ISInventoryPane.getActualItems(items)
+     local playerObj = getSpecificPlayer(player)
+     local playerInv = getPlayerInventory(player).inventory;
+     local doWalk = true
+     for i,k in ipairs(items) do
+         if not instanceof(k, "InventoryItem") then
+             local count = #k.items
+             for i2=2,count do
+                 local k2 = k.items[i2]
+                 if k2:getContainer() ~= playerInv then
+                     if doWalk then
+                         if not luautils.walkToContainer(k2:getContainer(), player) then
+                             return
+                         end
+                         doWalk = false
+                     end
+
+                     if k:isHumanCorpse() then
+                         ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, k))
+                         return;
+                     end
+
+                     ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k2, k2:getContainer(), playerInv))
+                 end
+             end
+         elseif k:getContainer() ~= playerInv then
+             if doWalk then
+                 if not luautils.walkToContainer(k:getContainer(), player) then
+                     return
+                 end
+                 doWalk = false
+             end
+
+             if k:isHumanCorpse() then
+                 ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, k))
+                 return;
+             end
+
+             ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k, k:getContainer(), playerInv))
+         end
+     end
+ end
+
+ ISInventoryPaneContextMenu.onGrabOneItems = function(items, player)
+     items = ISInventoryPane.getActualItems(items)
+     local playerObj = getSpecificPlayer(player);
+     local playerInv = getPlayerInventory(player).inventory;
+     for i,k in ipairs(items) do
+         if k:getContainer() ~= playerInv then
+             if not luautils.walkToContainer(k:getContainer(), player) then
+                 return
+             end
+
+             if k:isHumanCorpse() then
+                 ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, k))
+                 return;
+             end
+
+             ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k, k:getContainer(), playerInv));
+             return;
+         end
+     end
+ end
 
 ISInventoryPaneContextMenu.onGrabHalfItems = function(items, player)
+    items = ISInventoryPane.getActualItems(items)
 	local playerObj = getSpecificPlayer(player)
 	local playerInv = getPlayerInventory(player).inventory;
 	local doWalk = true
-	for i,k in ipairs(items) do
+    local count = math.floor((#items) / 2)
+	for i=1,count do
+        local k = items[i]
 		if not instanceof(k, "InventoryItem") then
-			local count = math.floor((#k.items - 1) / 2)
+			local count2 = math.floor((#k.items) / 2)
 			-- first in a list is a dummy duplicate, so ignore it.
-			for i2=1,count do
+			for i2=1,count2 do
 				local k2 = k.items[i2+1]
 				if k2:getContainer() ~= playerInv then
 					if doWalk then
@@ -4217,17 +4443,29 @@ ISInventoryPaneContextMenu.onGrabHalfItems = function(items, player)
 						end
 						doWalk = false
 					end
-					ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, k2, k2:getContainer(), playerInv))
+
+                    if k:isHumanCorpse() then
+                        ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, k))
+                        return;
+                    end
+
+					ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k2, k2:getContainer(), playerInv))
 				end
 			end
 		elseif k:getContainer() ~= playerInv then
 			if doWalk then
-				if not luautils.walkToContainer(k2:getContainer(), player) then
+				if not luautils.walkToContainer(k:getContainer(), player) then
 					return
 				end
 				doWalk = false
 			end
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, k, k:getContainer(), playerInv))
+
+            if k:isHumanCorpse() then
+                ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, k))
+                return;
+            end
+
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, k, k:getContainer(), playerInv))
 		end
 	end
 end
@@ -4237,21 +4475,6 @@ ISInventoryPaneContextMenu.onEditItem = function(items, player, item)
     --ui:initialise();
     --ui:addToUIManager();
     ISItemEditorUI.OpenPanel(player, item);
-end
-
-ISInventoryPaneContextMenu.onGrabOneItems = function(items, player)
-	items = ISInventoryPane.getActualItems(items)
-    local playerObj = getSpecificPlayer(player);
-    local playerInv = getPlayerInventory(player).inventory;
-	for i,k in ipairs(items) do
-		if k:getContainer() ~= playerInv then
-			if not luautils.walkToContainer(k:getContainer(), player) then
-				return
-			end
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, k, k:getContainer(), playerInv));
-			return;
-		end
-	end
 end
 
 -- Crowley
@@ -4427,6 +4650,11 @@ end
  end
 
 ISInventoryPaneContextMenu.equipHeavyItem = function(playerObj, item)
+    if item:isHumanCorpse() then
+        ISInventoryPaneContextMenu.grabCorpseItem(playerObj, item)
+        return
+    end
+
     if not luautils.walkToContainer(item:getContainer(), playerObj:getPlayerNum()) then
         return
     end
@@ -4436,7 +4664,8 @@ ISInventoryPaneContextMenu.equipHeavyItem = function(playerObj, item)
     if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem() ~= playerObj:getPrimaryHandItem() then
         ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getSecondaryHandItem(), 50));
     end
-    ISTimedActionQueue.add(ISEquipHeavyItem:new(playerObj, item));
+
+    ISTimedActionQueue.add(ISEquipHeavyItem:new(playerObj, item))
 end
 
  ISInventoryPaneContextMenu.grabCorpseItem = function(playerObj, item)
@@ -4529,7 +4758,7 @@ function ISInventoryPaneContextMenu.doEvorecipeMenu(context, items, player, evor
             if instanceof(evoItem, "Food") then
                 if evoItem:isSpice() then
                     extraInfo = getText("ContextMenu_EvolvedRecipe_Spice");
-                elseif evoItem:getPoisonLevelForRecipe() then
+                elseif evoItem:getPoisonLevelForRecipe() and evoItem:isPoison() then
                     if evoItem:getHerbalistType() and evoItem:getHerbalistType() ~= "" and getSpecificPlayer(player):isRecipeActuallyKnown("Herbalist") then
                         extraInfo = getText("ContextMenu_EvolvedRecipe_Poison");
                     end
@@ -4545,15 +4774,15 @@ function ISInventoryPaneContextMenu.doEvorecipeMenu(context, items, player, evor
                     else
                         listOfAddedItems[evoItem:getType()] = use;
                     end
-                end				
-				-- addition to disable bleach griefing in MP
-				if SandboxVars.EnablePoisoning == 3 and evoItem and evoItem:getType() == "Bleach" then
-					disablePoison = true;
-				end
-				-- for disabling poison for servers
-				if evoItem and evoItem:isPoison() and disablePoison then
-					evoItem = nil;
-				end
+                end
+                -- addition to disable bleach griefing in MP
+                if SandboxVars.EnablePoisoning == 3 and evoItem and evoItem:getType() == "Bleach" then
+                    disablePoison = true;
+                end
+                -- for disabling poison for servers
+                if evoItem and evoItem:isPoison() and disablePoison then
+                    evoItem = nil;
+                end
             elseif evoItem:getScriptItem():isSpice() then
                     extraInfo = getText("ContextMenu_EvolvedRecipe_Spice");
             end
@@ -4818,7 +5047,7 @@ ISInventoryPaneContextMenu.onDebugCloneItem = function(item, player)
     local playerObj = getSpecificPlayer(player);
     if playerObj and itemDestination and itemDestination:hasRoomFor(playerObj, cloneItem) then
         playerObj:getInventory():addItem(cloneItem);
-        ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, cloneItem, playerObj:getInventory(), itemDestination, 1));
+        ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, cloneItem, playerObj:getInventory(), itemDestination, 1));
     end;
 end
 
@@ -4833,6 +5062,7 @@ end
 
 ISInventoryPaneContextMenu.doContextConfigOptions = function(context, item, playerObj)
 	local contextConfig = item:getComponent(ComponentType.ContextMenuConfig);
+	if instanceof(item, "Moveable") then return end;
     if not contextConfig then return self end;
     local entries = contextConfig:getEntries();
 
@@ -4859,4 +5089,19 @@ end
 function ISInventoryPaneContextMenu.onCustomFunction(customFunction, item, playerObj, param)
 	assert(loadstring('return '..customFunction..'(...)'))(item, playerObj, param);
 end
+
+ISInventoryPaneContextMenu.onNoRecipes = function(items, item2, boolean, player)
+    for i,item in ipairs(items) do
+        item:setNoRecipes(player, boolean);
+    end
+end
+
+ISInventoryPaneContextMenu.onWanted = function(item, player)
+    item:setUnwanted(player, false)
+end
+
+ISInventoryPaneContextMenu.onUnwanted = function(item, player)
+    item:setUnwanted(player, true)
+end
+
 

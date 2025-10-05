@@ -3,6 +3,7 @@
 --***********************************************************
 
 require "ISUI/ISCollapsableWindow"
+require "TimedActions/ISInventoryTransferUtil"
 
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
@@ -312,7 +313,7 @@ function ISCraftingUI:transferItems()
         table.insert(result, item)
         if not recipe:isCanBeDoneFromFloor() then
             if item:getContainer() ~= self.character:getInventory() then
-                ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, item, item:getContainer(), self.character:getInventory(), nil));
+                ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(self.character, item, item:getContainer(), self.character:getInventory(), nil));
             end
         end
     end
@@ -1891,7 +1892,7 @@ function ISCraftingUI:addItemInEvolvedRecipe(button)
 --    if itemFound then
         local returnToContainer = {};
         if not self.character:getInventory():contains(button.item) then -- take the item if it's not in our inventory
-            ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, button.item, button.item:getContainer(), self.character:getInventory(), nil));
+            ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(self.character, button.item, button.item:getContainer(), self.character:getInventory(), nil));
             table.insert(returnToContainer, button.item)
         end
 
@@ -1900,7 +1901,7 @@ function ISCraftingUI:addItemInEvolvedRecipe(button)
             baseItem = self.character:getInventory():getItemFromType(button.baseItem:getFullName(), true, true);
         end
         if not self.character:getInventory():contains(baseItem) then -- take the base item if it's not in our inventory
-            ISTimedActionQueue.add(ISInventoryTransferAction:new(self.character, baseItem, baseItem:getContainer(), self.character:getInventory(), nil));
+            ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(self.character, baseItem, baseItem:getContainer(), self.character:getInventory(), nil));
             table.insert(returnToContainer, baseItem)
         end
         ISTimedActionQueue.add(ISAddItemInRecipe:new(self.character, button.recipe, baseItem, button.item));
@@ -1978,7 +1979,7 @@ function ISCraftingUI:onCraftComplete(completedAction, recipe, container, contai
         for i=1,items:size() do
             local item = items:get(i-1)
             if item:getContainer() ~= self.character:getInventory() then
-                local action = ISInventoryTransferAction:new(self.character, item, item:getContainer(), self.character:getInventory(), nil)
+                local action = ISInventoryTransferUtil.newInventoryTransferAction(self.character, item, item:getContainer(), self.character:getInventory(), nil)
                 ISTimedActionQueue.addAfter(previousAction, action)
                 previousAction = action
                 table.insert(returnToContainer, item)
@@ -2012,7 +2013,7 @@ function ISCraftingUI.ReturnItemToContainer(playerObj, item, cont)
     if not instanceof(item, "InventoryItem") then return end
 
     if cont ~= playerObj:getInventory() then
-        local action = ISInventoryTransferAction:new(playerObj, item, playerObj:getInventory(), cont, nil)
+        local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerObj:getInventory(), cont, nil)
         action:setAllowMissingItems(true)
         ISTimedActionQueue.add(action)
     end

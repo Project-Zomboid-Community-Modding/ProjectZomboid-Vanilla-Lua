@@ -183,6 +183,9 @@ end
 
 -- Our AnimSet trigger various event, we hook them here. Check LoadHandgun.xml for example.
 function ISReloadWeaponAction:animEvent(event, parameter)
+    if event == 'rackingFinished' then
+        self:forceComplete()
+    end
 	-- Loading clip is done, we're moving to racking if needed
 	if event == 'loadFinished' then
 		if not isClient() then
@@ -240,6 +243,11 @@ function ISReloadWeaponAction:loadAmmo()
 				if self.gun:haveChamber() and not self.gun:isRoundChambered() then
 					ISTimedActionQueue.addAfter(self, ISRackFirearm:new(self.character, self.gun))
 				end
+                if self.gun:needToBeClosedOnceReload() then
+                    self:setAnimVariable("isLoading", false);
+                    self:setAnimVariable("isRacking", true);
+                    return;
+                end
 			end
 			if isServer() then
 				self.netAction:forceComplete()
@@ -430,7 +438,6 @@ ISReloadWeaponAction.attackHook = function(character, chargeDelta, weapon)
 			--	radius = radius / 1.8;
 			--end
 			character:addWorldSoundUnlessInvisible(radius, weapon:getSoundVolume(), true);
-			character:startMuzzleFlash()
 			character:DoAttack(0);
 		else
 			character:DoAttack(0);

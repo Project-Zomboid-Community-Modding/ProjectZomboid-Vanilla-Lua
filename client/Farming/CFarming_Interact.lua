@@ -87,7 +87,7 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     local digPlow = item:hasTag("DigPlow")
     local hasCuttingTool = item:hasTag("CutPlant")
     local pickaxe = item:hasTag("PickAxe")
-    local stoneMaul = item:hasTag("StoneMaul") or item:hasTag("Maul")
+    local stoneMaul = item:hasTag("StoneMaul")
     local sledge = item:hasTag("Sledgehammer")
     local hammer = item:hasTag("Hammer")
     local scythe = item:hasTag("Scythe")
@@ -130,7 +130,7 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
 
                     local props = sprite:getProperties()
                     local customName = props:Is("CustomName") and props:Val("CustomName") or nil
-                    if pickaxe and customName == "Small Stump" then
+                    if pickaxe and (customName == "Small Stump" or customName == "Stump") then
                         player:setIsFarming(true)
                         ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(player, v));
                         return

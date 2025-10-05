@@ -135,17 +135,17 @@ function ISBackButtonWheel:onCommand(command)
 		getPlayerInfoPanel(self.playerNum):addToUIManager()
 		focus = getPlayerInfoPanel(self.playerNum).panel:getActiveView()
 	elseif command == "Building" and not isPaused then
-		local entityUI = ISEntityUI.players[self.playerNum]
-		if entityUI and entityUI.instance and entityUI.instance.xuiStyleName == "BuildWindow" then
-			ISEntityUI.players[self.playerNum].instance:close()
+		local entityUI = ISEntityUI.GetWindowInstance(self.playerNum, "BuildWindow");
+		if entityUI then
+			entityUI:close()
 		else
 			ISEntityUI.OpenBuildWindow(playerObj, nil, "*")
 		end
 		return
 	elseif command == "Crafting" and not isPaused then
-		local entityUI = ISEntityUI.players[self.playerNum]
-		if entityUI and entityUI.instance and entityUI.instance.xuiStyleName == "HandcraftWindow" then
-			entityUI.instance:close()
+		local entityUI = ISEntityUI.GetWindowInstance(self.playerNum, "HandcraftWindow");
+		if entityUI then
+			entityUI:close()
 		else
 			ISEntityUI.OpenHandcraftWindow(playerObj, nil, "*")
 		end

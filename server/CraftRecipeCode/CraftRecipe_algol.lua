@@ -403,7 +403,7 @@ function CraftRecipeCode.GenericFixer(craftRecipeData, player, factor, item, ski
     local timesRepaired = item:getHaveBeenRepaired()
     if head then
         timesRepaired = item:getTimesHeadRepaired()
-        item:getTimesHeadRepaired(timesRepaired + 1)
+        item:setTimesHeadRepaired(timesRepaired + 1)
     else
         item:setHaveBeenRepaired(timesRepaired + 1)
     end
@@ -433,6 +433,7 @@ function CraftRecipeCode.GenericFixer(craftRecipeData, player, factor, item, ski
         item:syncItemFields()
         return
     end
+    if timesRepaired < 1 then timesRepaired = 1 end
     local percentFixed = (factor * 10 * (1/timesRepaired) + math.min(skill * 5, 25))/100
     local amountFixed
     if head then

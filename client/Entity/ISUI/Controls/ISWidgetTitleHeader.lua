@@ -295,7 +295,7 @@ function ISWidgetTitleHeader:updateLabels()
         elseif self.recipeBenefitLabel and self.recipeBenefitLabel.active then
             self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand");
         elseif self.recipe:couldBenefitFromRecipeAtHand(self.player) then
-            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand2");
+            self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand");
         else
             self.needToBeLearnIcon.mouseovertext = getText("IGUI_CraftingWindow_RecipeKnown");
         end
@@ -404,7 +404,10 @@ function ISWidgetTitleHeader:calculateLayout(_preferredWidth, _preferredHeight)
         labelsHeight = labelsHeight + labelSpacing + self.recipeBenefitLabel:getHeight();
     end
     if self.errorLabel and self.errorLabel:isVisible() then
-        local errorLabelWidth = width - (self.paddingLeft + self.marginLeft + self.paddingRight + self.marginRight);
+        local errorLabelWidth = width - (self.paddingLeft + self.marginLeft + self.paddingRight + self.marginRight) - spacing;
+        if self.favouritesIcon then
+            errorLabelWidth = errorLabelWidth - (self.favouritesIcon:getWidth()/3);
+        end
         if self.icon then
             errorLabelWidth = errorLabelWidth - (spacing + self.icon:getWidth() + spacing);
         end

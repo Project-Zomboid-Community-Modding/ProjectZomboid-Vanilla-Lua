@@ -8,8 +8,8 @@ require "ISUI/ISMouseDrag"
 require "ISUI/ISInventoryItem"
 require "TimedActions/ISTimedActionQueue"
 require "TimedActions/ISEatFoodAction"
-
-
+require "BodyDragging/corpseStorageCheck"
+require "TimedActions/ISInventoryTransferUtil"
 
 ISInventoryPane = ISPanel:derive("ISInventoryPane");
 
@@ -17,6 +17,12 @@ ISInventoryPane.MAX_ITEMS_IN_STACK_TO_RENDER = 50
 ISInventoryPane.ghc = getCore():getGoodHighlitedColor()
 
 local favoriteRecipeInputStarSize = 12
+local normalTextColor = {r=0.7, g=0.7, b=0.7, a=1.0}
+local unwantedTextColor = {r=0.5, g=0.5, b=0.5, a=0.65}
+
+local function predicateNotEmpty(item)
+	return item:getCurrentUsesFloat() > 0
+end
 
 --************************************************************************--
 --** ISInventoryPane:initialise
@@ -149,10 +155,6 @@ function ISInventoryPane:onContext(button)
     if button.mode == "grab" then
         local k = self.items[self.buttonOption];
         local items = ISInventoryPane.getActualItems({k})
-        if isForceDropHeavyItem(items[1]) then
-            ISInventoryPaneContextMenu.equipHeavyItem(playerObj, items[1])
-            return
-        end
         ISInventoryPaneContextMenu.onGrabItems(items, self.player)
     end
     if button.mode == "grab1" then
@@ -659,13 +661,19 @@ function ISInventoryPane:transferItemsByWeight(items, container)
 		self:sortItemsByType(items)
 		self:sortItemsByWeight(items)
 	end
+
 	for _,item in ipairs(items) do
 		if not container:isItemAllowed(item) then
 			-- 
 		elseif container:getType() == "floor" then
 			ISInventoryPaneContextMenu.dropItem(item, self.player)
 		else
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), container))
+            if corpseStorageCheck.isPlayerGrabbingCorpseItem(self.player, item, container) then
+			    ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, item))
+                break
+            end
+
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), container))
 		end
 	end
 end
@@ -707,11 +715,13 @@ function ISInventoryPane:lootAll()
 	if luautils.walkToContainer(self.inventory, self.player) then
 		for i = 0, it:size()-1 do
 			local item = it:get(i);
-			if isForceDropHeavyItem(item) then
-				heavyItem = item
-			else
-				table.insert(items, item)
-			end
+			if not item:isUnwanted(playerObj) then
+                if isForceDropHeavyItem(item) then
+                    heavyItem = item
+                else
+                    table.insert(items, item)
+                end
+            end
 		end
 		if heavyItem and it:size() == 1 then
 			ISInventoryPaneContextMenu.equipHeavyItem(playerObj, heavyItem)
@@ -962,15 +972,15 @@ function ISInventoryPane:doContextualDblClick(item)
 		elseif item:getCondition() > 0 then
 			ISInventoryPaneContextMenu.equipWeapon(item, true, item:isTwoHandWeapon(), self.player);
 		end
-	end
-	if instanceof(item, "Clothing") then
+-- 	end
+	elseif instanceof(item, "Clothing") then
 		if playerObj:isEquipped(item) then
 			ISInventoryPaneContextMenu.onUnEquip({item}, self.player);
 		else
 			ISInventoryPaneContextMenu.onWearItems({item}, self.player);
 		end
-	end
-	if instanceof(item, "InventoryContainer") and item:canBeEquipped() ~= nil and item:canBeEquipped() ~= "" then
+-- 	end
+	elseif instanceof(item, "InventoryContainer") and item:canBeEquipped() ~= nil and item:canBeEquipped() ~= "" then
 		if playerObj:isEquipped(item) then
 			ISInventoryPaneContextMenu.onUnEquip({item}, self.player);
 		else
@@ -982,13 +992,107 @@ function ISInventoryPane:doContextualDblClick(item)
 		else
 			ISInventoryPaneContextMenu.equipWeapon(item, false, false, self.player);
 		end
-	end
-	if instanceof(item, "Food") and item:getHungChange() < 0 and not item:getScriptItem():isCantEat() then
+-- 	end
+	elseif instanceof(item, "Food") and item:getHungChange() < 0 and not item:getScriptItem():isCantEat() then
         -- if playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 or playerObj:getNutrition():getCalories() < 1000 then
         if playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 then
             ISInventoryPaneContextMenu.onEatItems({item}, 1, self.player);
         end
+    elseif instanceof(item, "Food") and item:getOpeningRecipe() and playerObj:getMoodles():getMoodleLevel(MoodleType.FoodEaten) < 3 then
+        local openingRecipe = item:getOpeningRecipe()
+        if openingRecipe and getScriptManager():getCraftRecipe(openingRecipe) then
+            openingRecipe = getScriptManager():getCraftRecipe(openingRecipe)
+        else
+            openingRecipe = nil
+        end
+        if openingRecipe then
+            local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
+            local logic = HandcraftLogic.new(playerObj, nil, nil);
 
+            logic:setContainers(containers);
+            logic:setRecipeFromContextClick(openingRecipe, item);
+            if not logic:canPerformCurrentRecipe() then
+                openingRecipe = nil
+            end
+        end
+        if openingRecipe then
+            ISInventoryPaneContextMenu.onEatItems({item}, 1, self.player, openingRecipe, 100);
+        end
+    elseif instanceof(item, "DrainableComboItem") and (ISInventoryPaneContextMenu.startWith(item:getType(), "Pills") or item:hasTag("Pills") or item:hasTag("Consumable")) and not item:hasTag("ShowPoison") then
+-- 	    ISTimedActionQueue.add(ISTakePillAction:new(playerObj, item));
+        if not item:getRequireInHandOrInventory() then
+	        ISInventoryPaneContextMenu.takePill(item, self.player);
+        else
+            local list = item:getRequireInHandOrInventory();
+            local found = false;
+            if item:hasTag("Smokable") and playerObj:getVehicle() and playerObj:getVehicle():canLightSmoke(playerObj) then found = true end
+            if item:hasTag("Smokable") and not found then
+               found = ISInventoryPaneContextMenu.hasOpenFlame(playerObj)
+            end
+            if not found then
+                for i=0,list:size()-1 do
+                    local fullType = moduleDotType(item:getModule(), list:get(i))
+                    if playerObj:getInventory():getFirstTypeEvalRecurse(fullType, predicateNotEmpty) then
+                        found = true;
+                        break;
+                    end
+                end
+            end
+            if found then
+	            ISInventoryPaneContextMenu.takePill(item, self.player);
+            end
+        end
+    elseif item:getFluidContainer() and item:getFluidContainer():getPrimaryFluid():isCategory(FluidCategory.Beverage) and (not item:getFluidContainer():isEmpty())  and (not item:getFluidContainer():isTaintedStatusKnown()) then
+        if not item:isSealed() then
+            ISInventoryPaneContextMenu.onDrinkFluid(item, 1, playerObj)
+        else
+            local openingRecipe = item:getOpeningRecipe()
+            if openingRecipe and getScriptManager():getCraftRecipe(openingRecipe) then
+                openingRecipe = getScriptManager():getCraftRecipe(openingRecipe)
+            else
+                openingRecipe = nil
+            end
+            if openingRecipe then
+                local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
+                local logic = HandcraftLogic.new(playerObj, nil, nil);
+
+                logic:setContainers(containers);
+                logic:setRecipeFromContextClick(openingRecipe, item);
+                if not logic:canPerformCurrentRecipe() then
+                    openingRecipe = nil
+                end
+            end
+            if openingRecipe then
+                ISInventoryPaneContextMenu.onDrinkFluid(item, 1, playerObj, openingRecipe)
+            end
+        end
+    elseif (item:isWaterSource() or (item:getFluidContainer() and item:getFluidContainer():getPrimaryFluid() and (item:getFluidContainer():getPrimaryFluid():getFluidTypeString() == "Water" or item:getFluidContainer():getPrimaryFluid():getFluidTypeString() == "CarbonatedWater"))) and playerObj:getStats():getThirst() > 0.1  and (not item:getFluidContainer():isTaintedStatusKnown()) then
+        local thirst = playerObj:getStats():getThirst()
+        local units = math.min((thirst * 2), item:getFluidContainer():getFluidAmount())
+        local percent = units / item:getFluidContainer():getFluidAmount();
+        if not item:isSealed() then
+            ISInventoryPaneContextMenu.onDrinkFluid(item, percent, playerObj)
+        else
+            local openingRecipe = item:getOpeningRecipe()
+            if openingRecipe and getScriptManager():getCraftRecipe(openingRecipe) then
+                openingRecipe = getScriptManager():getCraftRecipe(openingRecipe)
+            else
+                openingRecipe = nil
+            end
+            if openingRecipe then
+                local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
+                local logic = HandcraftLogic.new(playerObj, nil, nil);
+
+                logic:setContainers(containers);
+                logic:setRecipeFromContextClick(openingRecipe, item);
+                if not logic:canPerformCurrentRecipe() then
+                    openingRecipe = nil
+                end
+            end
+            if openingRecipe then
+                ISInventoryPaneContextMenu.onDrinkFluid(item, percent, playerObj, openingRecipe)
+            end
+        end
 	end
 end
 
@@ -1018,17 +1122,21 @@ function ISInventoryPane:onMouseDoubleClick(x, y)
 			if item.items then
 				for k, v in ipairs(item.items) do
 					if k ~= 1 and v:getContainer() ~= playerInv then
-						if isForceDropHeavyItem(v) then
-							ISInventoryPaneContextMenu.equipHeavyItem(playerObj, v)
-							break
-						end
 						if doWalk then
 							if not luautils.walkToContainer(v:getContainer(), self.player) then
 								break
 							end
 							doWalk = false
 						end
-						ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, v, v:getContainer(), playerInv))
+                        if v:isHumanCorpse() then
+                            ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, v))
+                            break
+                        end
+                        if isForceDropHeavyItem(v) then
+                            ISInventoryPaneContextMenu.equipHeavyItem(playerObj, v)
+                            break
+                        end
+						ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, v, v:getContainer(), playerInv))
                         if instanceof(v, "Clothing") and not v:isBroken() and shiftHeld then
                             ISTimedActionQueue.add(ISWearClothing:new(playerObj, v))
                         end
@@ -1043,7 +1151,7 @@ function ISInventoryPane:onMouseDoubleClick(x, y)
 			if isForceDropHeavyItem(item) then
 				ISInventoryPaneContextMenu.equipHeavyItem(playerObj, item)
 			elseif luautils.walkToContainer(item:getContainer(), self.player) then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerInv))
+                ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerInv))
 			end
 		elseif item and item:getContainer() == playerInv then -- double click do some basic action, equip weapon/wear clothing...
 			self:doContextualDblClick(item);
@@ -1420,11 +1528,13 @@ function ISInventoryPane:doContextOnJoypadSelected()
 	else
     	menu = ISInventoryPaneContextMenu.createMenu(self.player, isInInv, contextMenuItems, self:getAbsoluteX()+64, self:getAbsoluteY()+8+(self.joyselection*self.itemHgt)+self:getYScroll());
 	end
-    menu.origin = self.inventoryPage;
-    menu.mouseOver = 1;
-	if menu.numOptions > 1 then
-    	setJoypadFocus(self.player, menu)
-	end
+    if menu then
+        menu.origin = self.inventoryPage
+        menu.mouseOver = 1
+        if menu.numOptions > 1 then
+            setJoypadFocus(self.player, menu)
+        end
+    end
 end
 
 function ISInventoryPane:onRightMouseUp(x, y)
@@ -1642,6 +1752,7 @@ function ISInventoryPane:prerender()
 		self:renderdetails(false);
 	end
 
+    self.vscroll:setHeight(self.height)
 	self:updateScrollbars();
 
 end
@@ -1974,7 +2085,7 @@ function ISInventoryPane:refreshContainer()
 			add = false;
 		end
 		if add then
-			local itemName = item:getName();
+			local itemName = item:getName(playerObj);
 			if item:IsFood() and item:getHerbalistType() and item:getHerbalistType() ~= "" then
 				if playerObj:isRecipeActuallyKnown("Herbalist") then
 					if item:getHerbalistType() == "Berry" then
@@ -1994,7 +2105,7 @@ function ISInventoryPane:refreshContainer()
 				if itemName ~= item:getDisplayName() then
 					item:setName(itemName);
 				end
-				itemName = item:getName()
+				itemName = item:getName(playerObj)
 			end
 			local equipped = false
 			local inHotbar = false
@@ -2077,6 +2188,9 @@ function ISInventoryPane:refreshContainer()
     end
 
     self:updateWorldObjectHighlight();
+
+    self.refreshContainerCount = (self.refreshContainerCount or 0) + 1
+    if self.refreshContainerCount > 10000 then self.refreshContainerCount = 0 end
 end
 
 
@@ -2099,6 +2213,11 @@ function ISInventoryPane:renderdetails(doDragged)
     if doDragged and self.dragging ~= nil and self.dragStarted then
         self.draggedItems:update()
         checkDraggedItems = true
+    end
+
+    if (self.itemsToHighlight ~= nil) and ((self.itemsToHighlightOwner == nil) or (not self.itemsToHighlightOwner:isReallyVisible())) then
+        self.itemsToHighlightOwner = nil
+        self.itemsToHighlight = nil
     end
 
     if not doDragged then
@@ -2250,7 +2369,7 @@ function ISInventoryPane:renderdetails(doDragged)
                         if instanceof(item, "Food") and(item:isTainted() and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue()) or player:isKnownPoison(item) or item:hasTag("ShowPoison") then
                             self:drawTexture(self.poisonIcon, texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
-                        if self:isLiteratureRead(player, item) then
+                        if self:isLiteratureRead(player, item) or item:hasBeenSeen(player) or item:hasBeenHeard(player) then
                             self:drawTexture(getTexture("media/ui/Tick_Mark-10.png"), texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
                         local fluidContainer = item:getFluidContainer() or (item:getWorldItem() and item:getWorldItem():getFluidContainer());
@@ -2260,6 +2379,8 @@ function ISInventoryPane:renderdetails(doDragged)
                         if item:isFavorite() then
                             self:drawTexture(self.favoriteStar, texOffsetX, texOffsetY+auxDXY, 1, 1, 1, 1);
 --                         end
+                        elseif item:isNoRecipes(player) then
+                            self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB());
                         elseif item:isFavouriteRecipeInput(player) then
                             self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
 --                             self:drawTexture(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
@@ -2273,15 +2394,36 @@ function ISInventoryPane:renderdetails(doDragged)
 						if player:isEquipped(item) then
 							self:drawTexture(self.equippedItemIcon, texOffsetX+auxDXY+16, texOffsetY+auxDXY, 1, 1, 1, 1);
                         end
+						if not self.hotbar then
+							self.hotbar = getPlayerHotbar(self.player);
+						end
+						if not player:isEquipped(item) and self.hotbar and self.hotbar:isInHotbar(item) then
+							self:drawTexture(self.equippedInHotbar, texOffsetX+auxDXY, texOffsetY+auxDXY, 1, 1, 1, 1);
+						end
                         if item:isBroken() then
                             self:drawTexture(self.brokenItemIcon, texOffsetX+auxDXY+16, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
                         if instanceof(item, "Food") and item:isFrozen() then
                             self:drawTexture(self.frozenItemIcon, texOffsetX+auxDXY+16, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
+--                         if instanceof(item, "Food") and(item:isTainted() and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue()) or player:isKnownPoison(item) or item:hasTag("ShowPoison") then
+--                             self:drawTexture(self.poisonIcon, texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
+--                         end
+                        if self:isLiteratureRead(player, item) or item:hasBeenSeen(player) or item:hasBeenHeard(player) then
+                            self:drawTexture(getTexture("media/ui/Tick_Mark-10.png"), texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
+                        end
+                        if instanceof(item, "Food") and(item:isTainted() and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue()) or player:isKnownPoison(item) or item:hasTag("ShowPoison") then
+                            self:drawTexture(self.poisonIcon, 10+16+xoff+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
+                        end
+                        local fluidContainer = item:getFluidContainer() or (item:getWorldItem() and item:getWorldItem():getFluidContainer());
+						if fluidContainer ~= nil and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1)) then
+							self:drawTexture(self.poisonIcon, (10+auxDXY+xoff), (y*self.itemHgt)+self.headerHgt+auxDXY-1+yoff, 1, 1, 1, 1);
+						end
                         if item:isFavorite() then
                             self:drawTexture(self.favoriteStar, texOffsetX+auxDXY+19, texOffsetY+auxDXY-1, 1, 1, 1, 1);
 --                         end
+                        elseif item:isNoRecipes(player) then
+                            self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB());
                         elseif item:isFavouriteRecipeInput(player) then
                             self:drawTextureScaled(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
 --                             self:drawTexture(self.favoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1);
@@ -2426,13 +2568,19 @@ function ISInventoryPane:renderdetails(doDragged)
                 end
                -- print("trace:i");
 
+                if self.itemsToHighlight ~= nil and self.itemsToHighlight[item] == true then
+                    self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.20, 1.0, 1.0, 1.0);
+                end
+
 				local textDY = (self.itemHgt - self.fontHgt) / 2
 
                 --~ 				local redDetail = false;
-                local itemName = item:getName();
+                local itemName = item:getName(getSpecificPlayer(self.player));
 --                 if unstableScriptNameSpam then
 --                     itemName = itemName .. " - " .. item:getFullType()
 --                 end
+                local textColor = normalTextColor
+                if item:isUnwanted(getSpecificPlayer(self.player)) then textColor = unwantedTextColor end
                 if count == 1 then
 
 					-- if we're dragging something and want to put it in a container wich is full
@@ -2446,9 +2594,9 @@ function ISInventoryPane:renderdetails(doDragged)
 							end
 						else
 							if v.count > 2 then
-								self:drawText(itemName.." ("..(v.count-1)..")", self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, 0.7, 0.7, 0.7, 1.0, self.font);
+								self:drawText(itemName.." ("..(v.count-1)..")", self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 							else
-								self:drawText(itemName, self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, 0.7, 0.7, 0.7, 1.0, self.font);
+								self:drawText(itemName, self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 							end
 						end
 					else
@@ -2459,9 +2607,9 @@ function ISInventoryPane:renderdetails(doDragged)
 						if clipX < clipX2 and clipY < clipY2 then
 						self:setStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
 						if v.count > 2 then
-							self:drawText(itemName.." ("..(v.count-1)..")", self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, 0.7, 0.7, 0.7, 1.0, self.font);
+							self:drawText(itemName.." ("..(v.count-1)..")", self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 						else
-							self:drawText(itemName, self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, 0.7, 0.7, 0.7, 1.0, self.font);
+							self:drawText(itemName, self.column2+8+xoff, (y*self.itemHgt)+self.headerHgt+textDY+yoff, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 						end
 						self:clearStencilRect()
 						self:repaintStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
@@ -2642,11 +2790,11 @@ function ISInventoryPane:drawItemDetails(item, y, xoff, yoff, red)
 				local text = getText("IGUI_invpanel_Nutrition") .. ":"
 				self:drawTextAndProgressBar(text, (-hunger) / 1.0, xoff, top, fgText, fgBar)
 			else
-				self:drawText(item:getName(), 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font);
+				self:drawText(item:getName(getSpecificPlayer(self.player)), 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font);
 			end
 		end
    else
-		self:drawText(item:getName(), 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font);
+		self:drawText(item:getName(getSpecificPlayer(self.player)), 40 + 30 + xoff, top + (self.itemHgt - self.fontHgt) / 2, fgText.a, fgText.r, fgText.g, fgText.b, self.font);
    end
 end
 
@@ -2764,6 +2912,17 @@ function ISInventoryPane:onInventoryFontChanged()
     self.contextButton2:setHeight(self.itemHgt)
     self.contextButton3:setHeight(self.itemHgt)
 end
+
+function ISInventoryPane:setItemsToHighlight(owner, itemTable)
+    if itemTable then
+        self.itemsToHighlightOwner = owner
+        self.itemsToHighlight = itemTable
+    elseif self.itemsToHighlightOwner == owner then
+        self.itemsToHighlightOwner = nil
+        self.itemsToHighlight = nil
+    end
+end
+
 
 --************************************************************************--
 --** ISInventoryPane:new

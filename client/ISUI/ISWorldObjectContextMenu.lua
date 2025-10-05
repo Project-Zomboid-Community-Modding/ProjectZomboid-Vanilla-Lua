@@ -1,3 +1,5 @@
+require "TimedActions/ISInventoryTransferUtil"
+
 ISWorldObjectContextMenu = {}
 ISWorldObjectContextMenu.fetchVars = {}
 ISWorldObjectContextMenu.fetchSquares = {}
@@ -657,7 +659,7 @@ ISWorldObjectContextMenu.doAddFuelGenerator = function(worldobjects, generator, 
 	end
 	if luautils.walkAdj(playerObj, generator:getSquare()) then
 		for i,item in ipairs(fuelContainerList) do
-			if generator:getFuel() < 100 then
+			if generator:getFuelPercentage() < 100 then
 				ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), item, true, false);
 				ISTimedActionQueue.add(ISAddFuel:new(playerObj, generator, item, 70 + (item:getFluidContainer():getAmount() * 40)));
 			end
@@ -880,7 +882,7 @@ ISWorldObjectContextMenu.onRestPathFailed = function(playerObj, bed, action)
 	if adjacent ~= nil then
 		action:setRunActionsAfterFailing(true)
 --		action:addAfter(ISRestAction:new(playerObj, bed, false)) -- 2nd
-		action:addAfter(ISSitOnGround:new(playerObj)) -- 2nd
+		action:addAfter(ISSitOnGround:new(playerObj, bed)) -- 2nd
 		if adjacent ~= playerObj:getCurrentSquare() then
 			action:addAfter(ISWalkToTimedAction:new(playerObj, adjacent)) -- 1st
 		end
@@ -1417,7 +1419,7 @@ ISWorldObjectContextMenu.onGrabWItem = function(worldobjects, WItem, player)
     if WItem:getSquare() and luautils.walkAdj(playerObj, WItem:getSquare()) then
 		local time = ISWorldObjectContextMenu.grabItemTime(playerObj, WItem)
 		if isClient() then
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
 		else
 			ISTimedActionQueue.add(ISGrabItemAction:new(playerObj, WItem, time))
 		end
@@ -1432,7 +1434,7 @@ ISWorldObjectContextMenu.onGrabHalfWItems = function(worldobjects, WItems, playe
 		local count = 0
 		for _,WItem in ipairs(WItems) do
 			if isClient() then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
 			else
 				ISTimedActionQueue.add(ISGrabItemAction:new(playerObj, WItem, time))
 			end
@@ -1449,7 +1451,7 @@ ISWorldObjectContextMenu.onGrabAllWItems = function(worldobjects, WItems, player
 		local time = ISWorldObjectContextMenu.grabItemTime(playerObj, WItem)
 		for _,WItem in ipairs(WItems) do
 			if isClient() then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, WItem:getItem(), WItem:getItem():getContainer(), playerObj:getInventory()));
 			else
 				ISTimedActionQueue.add(ISGrabItemAction:new(playerObj, WItem, time))
 			end
@@ -1636,15 +1638,13 @@ ISWorldObjectContextMenu.onBurnCorpse = function(worldobjects, player, corpse)
     local playerObj = getSpecificPlayer(player)
     local playerInv = playerObj:getInventory()
     if corpse:getSquare() and luautils.walkAdj(playerObj, corpse:getSquare()) then
-        if playerInv:containsTagRecurse("StartFire") then
-            ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), playerInv:getFirstTagRecurse("StartFire"), true, false)
-        elseif playerInv:containsTypeRecurse("Lighter") then
-            ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), playerInv:getFirstTypeRecurse("Lighter"), true, false)
-        elseif playerObj:getInventory():containsTypeRecurse("Matches") then
-            ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), playerInv:getFirstTypeRecurse("Matches"), true, false)
-        end
-        ISWorldObjectContextMenu.equip(playerObj, playerObj:getSecondaryHandItem(), playerInv:getFirstEvalRecurse(predicatePetrol), false, false)
-        ISTimedActionQueue.add(ISBurnCorpseAction:new(playerObj, corpse));
+		local fire = playerInv:getFirstTagRecurse("StartFire") or playerInv:getFirstTypeRecurse("Lighter") or playerInv:getFirstTypeRecurse("Matches")
+		if not fire then return end
+		fire = ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), fire, true, false)
+		local petrol = ISWorldObjectContextMenu.equip(playerObj, playerObj:getSecondaryHandItem(), predicatePetrol, false, false)
+		if fire and petrol then
+			ISTimedActionQueue.add(ISBurnCorpseAction:new(playerObj, corpse, fire, petrol));
+		end
     end
 end
 
@@ -2384,7 +2384,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, item)
 			ISTimedActionQueue.add(ISTakeWaterAction:new(playerObj, item, waterObject, waterObject:isTaintedWater()));
 			if returnToContainer and (returnToContainer ~= playerInv) then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, playerInv, returnToContainer))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 			end
 		elseif item:canStoreWater() and item:isWaterSource() then -- second case, a bottle contain some water, we just fill it
 			if not didWalk and (not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true)) then
@@ -2397,7 +2397,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, item)
 			ISTimedActionQueue.add(ISTakeWaterAction:new(playerObj, item, waterObject, waterObject:isTaintedWater()));
 			if returnToContainer then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, playerInv, returnToContainer))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 			end
 		elseif item:getFluidContainer() then --Fluid item
 			if not didWalk and (not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true)) then
@@ -2408,7 +2408,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, item)
 			ISTimedActionQueue.add(ISTakeWaterAction:new(playerObj, item, waterObject, waterObject:isTaintedWater()));
 			if returnToContainer and (returnToContainer ~= playerInv) then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, playerInv, returnToContainer))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 			end			
 		end
 	end
@@ -2436,7 +2436,7 @@ ISWorldObjectContextMenu.onTakeFuelNew = function(worldobjects, fuelObject, fuel
 		ISInventoryPaneContextMenu.equipWeapon(item, false, false, playerObj:getPlayerNum())
 		ISTimedActionQueue.add(ISTakeFuel:new(playerObj, fuelObject, item))
 		if returnToContainer and (returnToContainer ~= playerInv) then
-			ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, playerInv, returnToContainer))
+			ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 		end
 	end
 end
@@ -2966,7 +2966,7 @@ end
 
 function ISWorldObjectContextMenu.transferIfNeeded(playerObj, item)
 	if luautils.haveToBeTransfered(playerObj, item) then
-		ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory()))
+		ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory()))
 	end
 end
 
@@ -3374,9 +3374,9 @@ end
 
 ISWorldObjectContextMenu.doSheetRopeOptions = function(_context, _object, _worldobjects, _player, _playerObj, _playerInv, _hasHammer, _test)
 	local object = _object;
-	if object ~= nil then
-		local playerAboveGround = _playerObj:getCurrentSquare():getZ() > 0;
-		local objectAboveGround = object:getSquare():getZ() > 0;
+	if object ~= nil and _playerObj:getCurrentSquare() ~= nil then
+		local playerAboveGround = _playerObj:getCurrentSquare():getZ() > _playerObj:getCurrentSquare():getChunk():getMinLevel();
+		local objectAboveGround = object:getSquare():getZ() > object:getSquare():getChunk():getMinLevel();
 		local hasCorrectTools = object:getSprite():getProperties():Is("TieSheetRope") or (_playerInv:containsTypeRecurse("Nails") and _hasHammer);
 		local sheetRopeCountIsValid = object:countAddSheetRope() > 0;
 		if object:canAddSheetRope()

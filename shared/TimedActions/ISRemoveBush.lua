@@ -46,11 +46,11 @@ function ISRemoveBush:start()
     self.weapon = self.character:getPrimaryHandItem()
 	addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), 20, 10)
 	if self.weapon then
-		if self.weapon:getScriptItem():getCategories():contains("Axe") then
+		if self.weapon:getScriptItem():containsWeaponCategory("Axe") then
 			self:setActionAnim("RemoveBushAxe")
-		elseif self.weapon:getScriptItem():getCategories():contains("LongBlade") then
+		elseif self.weapon:getScriptItem():containsWeaponCategory("LongBlade") then
 			self:setActionAnim("RemoveBushLongBlade")
-		elseif self.weapon:getScriptItem():getCategories():contains("SmallBlade") then
+		elseif self.weapon:getScriptItem():containsWeaponCategory("SmallBlade") then
 			self:setActionAnim("RemoveBushKnife")
 		else
 			self:setActionAnim("RemoveBush")

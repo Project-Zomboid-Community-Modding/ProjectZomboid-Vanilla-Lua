@@ -41,6 +41,7 @@ function ISWidgetCraftLogicOutputProgress:createDynamicChildren()
         self.progressItems.resourceType = ResourceType.Item;
         self.progressItems.interactiveMode = false;
         self.progressItems.drawProgress = true;
+        self.progressItems.renderItemCount = true;
         self.progressItems.drawTooltip = function(_itemSlot, _tooltip) self.logic:doProgressSlotTooltip(_itemSlot, _tooltip); end;
         self.progressItems:initialise();
         self.progressItems:instantiate()
@@ -57,16 +58,18 @@ function ISWidgetCraftLogicOutputProgress:createDynamicChildren()
     self:addChild(self.entityIconWidget);
     
     -- Middle Row - Outputs
-    local outputItems = self.outputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.outputsGroupName, ArrayList.new(), ResourceIO.Output, ResourceType.Item) or ArrayList.new();
-    if outputItems:size() > 0 then
+    local outputResourceItems = self.outputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.outputsGroupName, ArrayList.new(), ResourceIO.Output, ResourceType.Item) or ArrayList.new();
+    if outputResourceItems:size() > 0 then
         self.outputItems = ISXuiSkin.build(self.xuiSkin, "S_ItemSlotPanel_CompletedCraftLogic", ISItemSlotPanel, 0, 0, 10, 10, self.player, self.entity, nil, nil);
         self.outputItems.resourceType = ResourceType.Item;
         self.outputItems.interactiveMode = true;
         self.outputItems.allowDrop = false;
+        self.outputItems.functionTarget = self;
+        self.outputItems.onItemSlotContentsChanged = ISWidgetCraftLogicOutputProgress.onItemSlotContentsChanged;
         self.outputItems:initialise();
         self.outputItems:instantiate()
 
-        self.outputItems:addResources(outputItems, "S_ItemSlot_Output");
+        self.outputItems:addResources(outputResourceItems, "S_ItemSlot_Output");
 
         self:addChild(self.outputItems);
     end
@@ -169,30 +172,40 @@ end
 function ISWidgetCraftLogicOutputProgress:update()
     ISPanel.update(self);
 
-    if self.craftInProgress ~= self.craftLogicComponent:isRunning() then
-        self.craftInProgress = self.craftLogicComponent:isRunning();
+    if self.craftInProgress ~= self.craftLogicComponent:getActiveCraftCount() then
+        self.craftInProgress = self.craftLogicComponent:getActiveCraftCount();
         self:updateProgressItems();
     end
 
     local progressSlots = self.progressItems:getItemSlots();
     for i = 1, #progressSlots do
-        progressSlots[i].progressDelta = self.craftLogicComponent:getProgress()
-        progressSlots[i]:setStatusIcons(self.logic:getStatusIconsForItemInProgress(i))
+        progressSlots[i].progressDelta = self.craftLogicComponent:getProgress(progressSlots[i].craftRecipeData)
+        progressSlots[i]:setStatusIcons(self.logic:getStatusIconsForItemInProgress(progressSlots[i].storedItem, progressSlots[i].craftRecipeData))
     end
 end
 
 function ISWidgetCraftLogicOutputProgress:updateProgressItems()
     self.progressItems:removeAllSlots();
+    
     local progressItems = self.logic:getItemsInProgress();
-    for i = 0, progressItems:size()-1 do
-        self.progressItems:addDisplayInventoryItem(progressItems:get(i), "S_ItemSlot_InputAux");
-    end
+    local itemCount = 0;
+
+    for craftRecipeData,subTable in pairs(progressItems) do
+        for item,count in pairs(subTable) do
+            local slot = self.progressItems:addDisplayItem(item, "S_ItemSlot_InputAux");
+            slot.overrideItemCount = count;
+            slot.craftRecipeData = craftRecipeData;
+            itemCount = itemCount + 1;
+        end        
+    end    
 
     local recipeInputs = self.recipe:getInputs();
-    local unfilledCount = recipeInputs:size() - progressItems:size();
+    local unfilledCount = recipeInputs:size() - itemCount;
     for i = 1, unfilledCount do
         self.progressItems:addDisplayEmptySlot("S_ItemSlot_OutputAux");
     end
+    
+    self:rebuildOutputSlots();
     
     self:calculateLayout(self.width, self.height);
 end
@@ -201,13 +214,26 @@ function ISWidgetCraftLogicOutputProgress:takeAllOutputs()
     if ISEntityUI.WalkToEntity( self.player, self.entity) then
         local outputSlots = self.outputItems:getItemSlots();
         for i = 1, #outputSlots do
-            for j = 0, outputSlots[i].resource:getItemAmount()-1 do
-                local action = ISItemSlotRemoveAction:new(self.player, self.entity, outputSlots[i].resource)
-                action.itemSlot = outputSlots[i];
-                ISTimedActionQueue.add(action);
-            end
+            self.outputItems:onItemSlotRemoveItems(outputSlots[i], false, false);
         end
     end
+end
+
+function ISWidgetCraftLogicOutputProgress:rebuildOutputSlots()
+    -- update outputs
+    if self.outputItems then
+        self.outputItems:removeAllSlots();
+        local outputResourceItems = self.outputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.outputsGroupName, ArrayList.new(), ResourceIO.Output, ResourceType.Item) or ArrayList.new();
+        self.outputItems:addResources(outputResourceItems, "S_ItemSlot_Output");
+    end
+end
+
+function ISWidgetCraftLogicOutputProgress:onItemSlotContentsChanged( _itemSlot )
+    self.logic:onResourceSlotContentsChanged();
+end
+
+function ISWidgetCraftLogicOutputProgress:onResourceSlotContentsChanged()
+    self:calculateLayout(self.width, self.height);
 end
     
 --************************************************************************--
@@ -231,7 +257,7 @@ function ISWidgetCraftLogicOutputProgress:new(x, y, width, height, player, logic
 
     o.entityIconSize = 48 * ICON_SCALE;
 
-    o.craftInProgress = false;
+    o.craftInProgress = 0;
 
     o.elementSpacing = 0;
     

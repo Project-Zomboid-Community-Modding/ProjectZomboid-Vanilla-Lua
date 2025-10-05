@@ -3,18 +3,16 @@ require "TimedActions/ISBaseTimedAction"
 ISBurnCorpseAction = ISBaseTimedAction:derive("ISBurnCorpseAction");
 
 function ISBurnCorpseAction:isValid()
-    if self.corpse:getStaticMovingObjectIndex() < 0 then
+    if self.corpse:getStaticMovingObjectIndex() < 0 or
+            not self.lighter or not self.petrol or
+            not self.character:isPrimaryHandItem(self.lighter) or
+            not self.character:isSecondaryHandItem(self.petrol) or
+            self.petrol:getFluidContainer():getAmount() < ZomboidGlobals.BurnCorpsePetrolAmount then
         return false
     end
-    if not self.lighter then
-        self.lighter = self.character:getPrimaryHandItem();
-    end
-    if not self.petrol then
-        self.petrol = self.character:getSecondaryHandItem();
-    end
-    if isClient() and self.petrol and self.lighter then
+    if isClient() then
         return self.character:getInventory():containsID(self.petrol:getID()) and self.character:getInventory():containsID(self.lighter:getID());
-    elseif self.petrol and self.lighter then
+    else
         return self.character:getInventory():contains(self.petrol) and self.character:getInventory():contains(self.lighter);
     end
 end
@@ -62,14 +60,6 @@ end
 
 function ISBurnCorpseAction:complete()
     self.character:burnCorpse(self.corpse);
-
-    if not self.lighter then
-        self.lighter = self.character:getPrimaryHandItem();
-    end
-    if not self.petrol then
-        self.petrol = self.character:getSecondaryHandItem();
-    end
-
     self.petrol:getFluidContainer():adjustAmount(self.petrol:getFluidContainer():getAmount() - ZomboidGlobals.BurnCorpsePetrolAmount);
     self.lighter:UseAndSync();
 
@@ -83,9 +73,11 @@ function ISBurnCorpseAction:getDuration()
     return 110
 end
 
-function ISBurnCorpseAction:new (character, corpse)
+function ISBurnCorpseAction:new (character, corpse, lighter, petrol)
     local o = ISBaseTimedAction.new(self, character)
     o.corpse = corpse;
     o.maxTime = o:getDuration();
+    o.lighter = lighter
+    o.petrol = petrol
     return o
 end

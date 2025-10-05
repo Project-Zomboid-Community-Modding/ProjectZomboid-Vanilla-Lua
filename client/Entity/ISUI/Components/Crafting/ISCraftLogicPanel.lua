@@ -69,6 +69,9 @@ end
 
 function ISCraftLogicPanel:onResourceSlotContentsChanged()
     self:updateContainers();
+    if self.recipePanel then self.recipePanel:onResourceSlotContentsChanged(); end
+    self:calculateLayout(self.width, self.height);
+    self:xuiRecalculateLayout();
 end
 
 --handle is resource:size()==0
@@ -470,6 +473,28 @@ end
 function ISCraftLogicPanel:OnCloseWindow()
     if self.logic:shouldShowManualSelectInputs() then
         self:onShowManualSelectChanged(false);
+    end
+end
+
+function ISCraftLogicPanel:onItemSlotAddItems( _itemSlot, _itemList )
+    ISCraftLogicPanel.ItemSlotAddItems( self.player, self.entity, _itemSlot, _itemList, self.logic:getCraftLogic() )
+end
+
+function ISCraftLogicPanel.ItemSlotAddItems( _player, _entity, _itemSlot, _itemList, _component )
+    if #_itemList>0 and ISEntityUI.WalkToEntity( _player, _entity) then
+        for index,item in ipairs(_itemList) do
+            local maxItems = math.min(_itemSlot.resource:getFreeItemCapacity(), math.max(0, _component:getFreeOutputSlotCount() - _itemSlot.resource:storedSize()));
+            if index<=maxItems then
+                local action = ISItemSlotAddAction:new(_player, _entity, item, _itemSlot.resource)
+                action.itemSlot = _itemSlot;
+                action.component = _component;
+                action.canAddItem = function(_self)
+                    local freeSlots = _self.component:getFreeOutputSlotCount() - _self.resource:storedSize();
+                    return freeSlots > 0;
+                end
+                ISTimedActionQueue.add(action);
+            end
+        end
     end
 end
 

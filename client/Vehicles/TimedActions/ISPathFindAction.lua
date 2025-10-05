@@ -36,6 +36,7 @@ end
 
 function ISPathFindAction:start()
 	self.action:setPathfinding(true);
+	self.action:setAllowedWhileDraggingCorpses(true);
 	if self.goal[1] == 'LocationF' then
 		self.character:getPathFindBehavior2():pathToLocationF(self.goal[2], self.goal[3], self.goal[4])
 	end

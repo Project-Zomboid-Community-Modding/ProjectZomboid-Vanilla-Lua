@@ -4,10 +4,10 @@
 
 require "ISUI/ISButton"
 require "ISUI/ISComboBox"
-require "ISUI/ISPanel"
+require "ISUI/ISPanelJoypad"
 require "ISUI/ISUI3DModel"
 
-CharacterCreationAvatar = ISPanel:derive("CharacterCreationAvatar")
+CharacterCreationAvatar = ISPanelJoypad:derive("CharacterCreationAvatar")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -49,12 +49,19 @@ function CharacterCreationAvatar:createChildren()
 	self.animCombo:addOptionWithData(getText("IGUI_anim_Walk"), "EventWalk")
 	self.animCombo:addOptionWithData(getText("IGUI_anim_Run"), "EventRun")
 	self.animCombo.selected = 1
+
+	self:insertNewLineOfButtons(self.animCombo)
 end
 
 function CharacterCreationAvatar:prerender()
-	ISPanel.prerender(self)
+	ISPanelJoypad.prerender(self)
 	self:drawRectBorder(self.avatarPanel.x - 2, self.avatarPanel.y - 2, self.avatarPanel.width + 4, self.avatarPanel.height + 4, 1, 0.3, 0.3, 0.3);
 	self:drawTextureScaled(self.avatarBackgroundTexture, self.avatarPanel.x, self.avatarPanel.y, self.avatarPanel.width, self.avatarPanel.height, 1, 0.4, 0.4, 0.4);
+end
+
+function CharacterCreationAvatar:render()
+    ISPanelJoypad.render(self)
+    self:renderJoypadFocus(-3, -3, self.width + 6, self.height + 6)
 end
 
 function CharacterCreationAvatar:onTurnChar(button, x, y)
@@ -108,8 +115,31 @@ function CharacterCreationAvatar:rescaleAvatarViewer()
 	self.animCombo:setY(self.avatarPanel:getBottom() + UI_BORDER_SPACING+2)
 end
 
+function CharacterCreationAvatar:onJoypadDown(button, joyadData)
+	if button == Joypad.BButton and not self:isFocusOnControl() then
+		joypadData.focus = self.parent
+		updateJoypadFocus(joypadData)
+	else
+		ISPanelJoypad.onJoypadDown(self, button, joypadData)
+	end
+end
+
+function CharacterCreationAvatar:onJoypadDirLeft(joyadData)
+    self.turnRightButton:forceClick()
+end
+
+function CharacterCreationAvatar:onJoypadDirRight(joyadData)
+    self.turnLeftButton:forceClick()
+end
+
+function CharacterCreationAvatar:onGainJoypadFocus(joyadData)
+    self.joypadIndexY = 1
+    self.joypadIndex = 1
+    self:restoreJoypadFocus(joypadData)
+end
+
 function CharacterCreationAvatar:new(x, y, width, height)
-	local o = ISPanel.new(self, x, y, width, height)
+	local o = ISPanelJoypad.new(self, x, y, width, height)
 	o.direction = IsoDirections.E
 	return o
 end

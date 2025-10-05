@@ -1954,6 +1954,28 @@ function MainScreen:doCredits()
 
 end
 
+function MainScreen:onKeyRelease(key)
+    if self.inGame then return end
+    if key ~= Keyboard.KEY_ESCAPE and key ~= Keyboard.KEY_RETURN then return end
+    if UIManager.isModalVisible() then return end
+    local uis = {
+        { self.charCreationMain },
+        { self.charCreationProfession },
+        { self.loadScreen },
+        { self.mainOptions },
+        { self.mapSpawnSelect },
+        { self.modSelect },
+        { self.soloScreen },
+        { self.worldSelect }
+    }
+    for _,ui in ipairs(uis) do
+        if ui[1] ~= nil and ui[1]:isReallyVisible() and ui[1].onKeyRelease ~= nil then
+            ui[1]:onKeyRelease(key)
+            break
+        end
+    end
+end
+
 function MainScreen:new (inGame)
 	-- using a virtual 100 height res for doing the UI, so it resizes properly on different rez's.
 	MainScreen.StaticHeight = 100;
@@ -2099,6 +2121,9 @@ ToggleEscapeMenu = function (key)
 				JoypadState.restoreAllFocus()
 			end
 		end
+   end
+   if MainScreen.instance ~= nil then
+       MainScreen.instance:onKeyRelease(key)
    end
 end
 

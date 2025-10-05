@@ -5,7 +5,7 @@ end
 
 debugScenarios.BobKateHouse = {
     name = "Bob Kate House Start",
-    world = "MuldraughPOT",
+    world = "Muldraugh, KY",
     --startLoc = {x=12025, y=2592, z=0 },
     startLoc = {x=12367, y=1952, z=0 },
      --  startLoc = {x=12289, y=1244, z=0 },

@@ -81,6 +81,7 @@ function ISHandcraftAction:start()
 	self.logic = HandcraftLogic.new(self.character, self.craftBench, self.isoObject);
 	self.logic:setContainers(self.containers);
 	self.logic:setRecipe(self.craftRecipe);
+	self.logic:setTargetVariableInputRatio(self.variableInputRatio);
 	if self.manualInputs then
 		self.logic:setManualSelectInputs(true);
 		self.logic:clearManualInputs();
@@ -106,6 +107,10 @@ function ISHandcraftAction:start()
 			self.items = self.logic:getRecipeData():getAllInputItems()
 		end
 	end
+
+	if self.eatPercentage > 0 and self.logic:getRecipeData() then
+        self.logic:getRecipeData():setEatPercentage(self.eatPercentage)
+    end
 	
 	self:clearItemsProgressBar(true);
 	
@@ -247,6 +252,8 @@ function ISHandcraftAction.FromLogicMultiple(handcraftLogic)
 	local craftBench = handcraftLogic:getCraftBench();
 	local containers = handcraftLogic:getContainers();
 	local craftRecipe = handcraftLogic:getRecipe();
+	local craftData = handcraftLogic:getRecipeData();
+	local variableInputRatio = craftData and craftData:getVariableInputRatio() or 1;
 	local manualInputs = false;
 	if handcraftLogic:isManualSelectInputs() then
 		manualInputs = {};
@@ -268,18 +275,20 @@ function ISHandcraftAction.FromLogicMultiple(handcraftLogic)
 --         end
     end
 
-	local action = ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, nil, recipeAtHandItem);
+	local action = ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, nil, recipeAtHandItem, variableInputRatio);
 
 	return action;
 end
 
-function ISHandcraftAction.FromLogic(handcraftLogic)
+function ISHandcraftAction.FromLogic(handcraftLogic, eatPercentage)
 	log(DebugType.CraftLogic, "Creating handcraft action from logic, manual = "..tostring(handcraftLogic:isManualSelectInputs()))
 	local character = handcraftLogic:getPlayer();
 	local isoObject = handcraftLogic:getIsoObject();
 	local craftBench = handcraftLogic:getCraftBench();
     local containers = handcraftLogic:getContainers();
 	local craftRecipe = handcraftLogic:getRecipe();
+	local craftData = handcraftLogic:getRecipeData();
+	local variableInputRatio = craftData and craftData:getVariableInputRatio() or 1;
 	local manualInputs = false;
 	if handcraftLogic:isManualSelectInputs() then
 		manualInputs = {};
@@ -311,12 +320,12 @@ function ISHandcraftAction.FromLogic(handcraftLogic)
 --         end
     end
 
-	local action = ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, items, recipeAtHandItem);
+	local action = ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, items, recipeAtHandItem, variableInputRatio, eatPercentage);
 
 	return action;
 end
 
-function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, items, recipeItem)
+function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, items, recipeItem, variableInputRatio, eatPercentage)
 	log(DebugType.CraftLogic, "Creating handcraft action")
 	local o = ISBaseTimedAction.new(self, character);
 
@@ -340,5 +349,7 @@ function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, cr
 
 	o.items = items;
 	o.recipeItem = recipeItem;
+	o.variableInputRatio = variableInputRatio or 1;
+	o.eatPercentage = eatPercentage or 0;
 	return o
 end

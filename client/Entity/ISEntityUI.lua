@@ -14,7 +14,8 @@
 
 ISEntityUI = {};
 ISEntityUI.drawDebugLines = false;
-ISEntityUI.players = {};
+ISEntityUI.players = nil;
+ISEntityUI.enableLog = false;
 
 ISEntityUI.isoPanelWalkToDist = 3;
 
@@ -42,12 +43,20 @@ function ISEntityUI.ItemSlotRemoveSingleItem( _player, _entity, _itemSlot, _item
     end
 end
 
-function ISEntityUI.ItemSlotRemoveItems( _player, _entity, _itemSlot )
+function ISEntityUI.ItemSlotRemoveItems( _player, _entity, _itemSlot, _items )
     if ISEntityUI.WalkToEntity( _player, _entity) then
-        for i=0,_itemSlot.resource:getItemAmount()-1 do
-            local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource)
-            action.itemSlot = _itemSlot
-            ISTimedActionQueue.add(action);
+        if _items then
+            for i=0, _items:size()-1 do
+                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource, _items:get(i))
+                action.itemSlot = _itemSlot
+                ISTimedActionQueue.add(action);
+            end
+        else
+            for i=0,_itemSlot.resource:getItemAmount()-1 do
+                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource)
+                action.itemSlot = _itemSlot
+                ISTimedActionQueue.add(action);
+            end
         end
     end
 end
@@ -109,7 +118,7 @@ function ISEntityUI.GenericCraftStart( _player, _entity, _component, _funcCanSta
     end
 end
 
-function ISEntityUI.HandcraftStart( _player, _handcraftLogic, force, addToQueue ) --_recipeData, _craftBench, _isoObject)
+function ISEntityUI.HandcraftStart( _player, _handcraftLogic, force, addToQueue, eatPercentage ) --_recipeData, _craftBench, _isoObject)
     if (not _player) or (not _handcraftLogic) then --or (not _craftBench) then
         log(DebugType.CraftLogic, "Invalid parameters for ISEntityUI.HandcraftStart");
         log(DebugType.CraftLogic, "params-><required:"..tostring(_player).."><required:"..tostring(_handcraftLogic)..">"); --.."><optional:"..tostring(_craftBench).."><optional:"..tostring(_isoObject))
@@ -127,7 +136,7 @@ function ISEntityUI.HandcraftStart( _player, _handcraftLogic, force, addToQueue 
     end
 
     if (not _handcraftLogic:getRecipe():isAnySurfaceCraft()) or (_handcraftLogic:getIsoObject() and ISEntityUI.WalkToEntity( _player, _handcraftLogic:getIsoObject())) then
-        local action = ISHandcraftAction.FromLogic(_handcraftLogic); --:new(_player, _recipeData, _craftBench, _isoObject)
+        local action = ISHandcraftAction.FromLogic(_handcraftLogic, eatPercentage); --:new(_player, _recipeData, _craftBench, _isoObject)
         action.force = force
         if addToQueue then
             ISTimedActionQueue.add(action);
@@ -379,10 +388,14 @@ local function createWindow(_player, _windowInstance, _isoObject)
     local width = 0;
     local height = 0;
     
+    local locked = false;
+    
     local windowKey = _windowInstance.xuiStyleName or (_windowInstance.entity and _windowInstance.entity:getName()) or "Default";
     
     -- close all other entity windows - we only allow one open at the moment. - spurcival
     ISEntityUI.CloseWindows();
+    
+    ISEntityUI.EnsurePlayers();
 
     if ISEntityUI.players[playerNum] and ISEntityUI.players[playerNum].windows[windowKey] then
         if ISEntityUI.players[playerNum].windows[windowKey].instance then
@@ -397,6 +410,9 @@ local function createWindow(_player, _windowInstance, _isoObject)
             width = ISEntityUI.players[playerNum].windows[windowKey].width;
             height = ISEntityUI.players[playerNum].windows[windowKey].height;
         end
+        if ISEntityUI.players[playerNum].windows[windowKey].locked then
+            locked = true;
+        end
     else
         ISEntityUI.players[playerNum] = ISEntityUI.players[playerNum] or {};
         ISEntityUI.players[playerNum].windows = ISEntityUI.players[playerNum].windows or {};
@@ -408,6 +424,7 @@ local function createWindow(_player, _windowInstance, _isoObject)
     _windowInstance:setX(x);
     _windowInstance:setY(y);
     _windowInstance:setVisible(true);
+    if locked then _windowInstance:toggleLock() end
     if _windowInstance.calculateLayout then
         _windowInstance:calculateLayout(width,height);
     end
@@ -471,6 +488,9 @@ function ISEntityUI.OpenWindow(_player, _entity)
 end
 
 function ISEntityUI.OnCloseWindow(_window)
+    ISEntityUI.EnsurePlayers();
+    ISEntityUI.StoreWindowPrefs(_window);
+    
     local windowKey = _window.xuiStyleName or (_window.entity and _window.entity:getName()) or "Default";
     if _window and _window.playerNum and ISEntityUI.players[_window.playerNum] and ISEntityUI.players[_window.playerNum].windows[windowKey] then
         if not ISEntityUI.players[_window.playerNum].windows[windowKey].instance then
@@ -479,10 +499,6 @@ function ISEntityUI.OnCloseWindow(_window)
         end
 
         if ISEntityUI.players[_window.playerNum].windows[windowKey].instance==_window then
-            ISEntityUI.players[_window.playerNum].windows[windowKey].x = _window:getX();
-            ISEntityUI.players[_window.playerNum].windows[windowKey].y = _window:getY();
-            ISEntityUI.players[_window.playerNum].windows[windowKey].width = _window:getWidth();
-            ISEntityUI.players[_window.playerNum].windows[windowKey].height = _window:getHeight();
             ISEntityUI.players[_window.playerNum].windows[windowKey].playerObj = nil;
             ISEntityUI.players[_window.playerNum].windows[windowKey].entityObj = nil;
             ISEntityUI.players[_window.playerNum].windows[windowKey].instance = nil;
@@ -491,6 +507,23 @@ function ISEntityUI.OnCloseWindow(_window)
         end
     else
         log(DebugType.CraftLogic, "Window nil or playerNum missing!");
+    end
+end
+
+function ISEntityUI.StoreWindowPrefs(_window)
+    local windowKey = _window.xuiStyleName or (_window.entity and _window.entity:getName()) or "Default";
+    if _window and _window.playerNum and ISEntityUI.players[_window.playerNum] and ISEntityUI.players[_window.playerNum].windows[windowKey] then
+        if ISEntityUI.players[_window.playerNum].windows[windowKey].instance==_window then
+            ISEntityUI.players[_window.playerNum].windows[windowKey].x = _window:getX();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].y = _window:getY();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].width = _window:getWidth();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].height = _window:getHeight();
+            ISEntityUI.players[_window.playerNum].windows[windowKey].locked = _window.locked;
+        else
+            log(DebugType.CraftLogic, "Failed: Trying to save window prefs for incorrect instance.");
+        end
+    else
+        log(DebugType.CraftLogic, "Failed: Trying to save window prefs - window nil or playerNum missing.");
     end
 end
 
@@ -505,6 +538,7 @@ function ISEntityUI.CanPlayerUseEntity(_player, _entity)
 end
 
 function ISEntityUI.GetReloadTable()
+    ISEntityUI.EnsurePlayers();
     local t = {};
     for k,v in pairs(ISEntityUI.players) do
         if v.windows then
@@ -522,6 +556,7 @@ function ISEntityUI.GetReloadTable()
 end
 
 function ISEntityUI.CloseWindows()
+    ISEntityUI.EnsurePlayers();
     for k,v in pairs(ISEntityUI.players) do
         if v.windows then
             for kk,vv in pairs(v.windows) do
@@ -533,11 +568,22 @@ function ISEntityUI.CloseWindows()
     end
 end
 
-function ISEntityUI.OpenBuildWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface, recipe)
+function ISEntityUI.OpenBuildWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface, recipe, itemString)
     local windowInstance = ISXuiSkin.build(skin, "BuildWindow", ISBuildWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
 
     if recipe then windowInstance.BuildPanel.logic:setRecipe(recipe) end;
+
+    if itemString then
+        windowInstance.BuildPanel._filterString = itemString;
+        windowInstance.BuildPanel._filterMode = "InputName";
+        windowInstance.BuildPanel:filterRecipeList();
+        windowInstance.BuildPanel.recipesPanel.recipeFilterPanel.filterTypeCombo:setSelected(2)
+        windowInstance.BuildPanel.recipesPanel.recipeFilterPanel.entryBox:setText(itemString)
+        if windowInstance.BuildPanel.logic:getRecipeList() and windowInstance.BuildPanel.logic:getRecipeList():get(0) then
+            windowInstance.BuildPanel.logic:setRecipe(windowInstance.BuildPanel.logic:getRecipeList():get(0))
+        end
+    end
 end
 
 --****************************************************
@@ -565,6 +611,9 @@ function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ig
         windowInstance.handCraftPanel:filterRecipeList();
         windowInstance.handCraftPanel.recipesPanel.recipeFilterPanel.filterTypeCombo:setSelected(2)
         windowInstance.handCraftPanel.recipesPanel.recipeFilterPanel.entryBox:setText(itemString)
+        if windowInstance.handCraftPanel.logic:getRecipeList() and windowInstance.handCraftPanel.logic:getRecipeList():get(0) then
+            windowInstance.handCraftPanel.logic:setRecipe(windowInstance.handCraftPanel.logic:getRecipeList():get(0))
+        end
     end
 
 --     if _isoObject  and getCore():getOptionDoContainerOutline() then
@@ -607,3 +656,93 @@ function ISEntityUI.FindCraftSurface(_player, _radius)
 
     return nil;
 end
+
+ISEntityUI.IsWindowOpen = function(_playerNum, _windowKey)
+    ISEntityUI.EnsurePlayers();
+    return ISEntityUI.players[_playerNum] and ISEntityUI.players[_playerNum].windows[_windowKey] and ISEntityUI.players[_playerNum].windows[_windowKey].instance;
+end
+
+ISEntityUI.GetWindowInstance = function(_playerNum, _windowKey)
+    if ISEntityUI.IsWindowOpen(_playerNum, _windowKey) then
+        return ISEntityUI.players[_playerNum].windows[_windowKey].instance;
+    end
+    return nil;
+end
+
+ISEntityUI.EnsurePlayers = function()
+    if ISEntityUI.players == nil then
+        ISEntityUI.ReadIni();
+    end
+end
+
+ISEntityUI.ReadIni = function()
+    ISEntityUI.players = {}
+    if getCore():getGameMode() == "Tutorial" then return; end
+    local reader = getFileReader("entityLayout.ini", true)
+    local currentPlayer = nil;
+    local currentWindowKey = nil;
+    while true do
+        local line = reader:readLine();
+        if line == nil then
+            reader:close();
+            break;
+        end
+        line = string.trim(line)
+        if line == "" then
+            -- ignore blank line
+        elseif luautils.stringStarts(line, "player") then
+            local values = string.split(line, ":");
+            currentPlayer = tonumber(values[2]);
+            ISEntityUI.players[currentPlayer] = {};
+            ISEntityUI.players[currentPlayer].windows = {};
+            if ISEntityUI.enableLog then print("created player: "..currentPlayer) end
+        elseif luautils.stringStarts(line, "windowKey") then
+            local values = string.split(line, ":");
+            currentWindowKey = values[2];
+            ISEntityUI.players[currentPlayer].windows[currentWindowKey] = {};
+            if ISEntityUI.enableLog then print("created windowKey: "..currentWindowKey.." for player: "..currentPlayer) end
+        else
+            local values = string.split(line, "=");
+            if values[1] == "x" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].x = tonumber(values[2]); end    
+            if values[1] == "y" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].y = tonumber(values[2]); end    
+            if values[1] == "width" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].width = tonumber(values[2]); end    
+            if values[1] == "height" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].height = tonumber(values[2]); end    
+            if values[1] == "locked" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].locked = (values[2]=="true" and true or false); end
+            if ISEntityUI.enableLog then print("created entry: "..values[1].."="..values[2].." under windowKey: "..currentWindowKey.." for player: "..currentPlayer) end
+        end
+    end
+end
+
+ISEntityUI.WriteIni = function()
+    if getCore():getGameMode() == "Tutorial" then return; end
+    if ISEntityUI.enableLog then print('layout: writing ini file') end
+    local writer = getFileWriter("entityLayout.ini", true, false);
+    
+    for playerNum, windows in pairs(ISEntityUI.players) do
+        writer:write("player:"..tostring(playerNum).."\r\n");
+        for windowKey,data in pairs(windows.windows) do
+            writer:write("windowKey:"..windowKey.."\r\n");
+            writer:write("x="..tostring(data.x).."\r\n");
+            writer:write("y="..tostring(data.y).."\r\n");
+            writer:write("width="..tostring(data.width).."\r\n");
+            writer:write("height="..tostring(data.height).."\r\n");
+            writer:write("locked="..(data.locked == true and "true" or "false").."\r\n");
+        end
+    end    
+    
+    writer:close();
+end
+
+ISEntityUI.OnSave = function()
+    ISEntityUI.EnsurePlayers();
+    for _,player in pairs(ISEntityUI.players) do
+        for _,window in pairs(player.windows) do
+            if window.instance then
+                ISEntityUI.StoreWindowPrefs(window.instance);
+            end
+        end
+    end
+    ISEntityUI.WriteIni();
+end
+
+Events.OnPostSave.Add(ISEntityUI.OnSave)

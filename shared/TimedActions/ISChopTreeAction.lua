@@ -6,7 +6,7 @@ function ISChopTreeAction:isValid()
 	return self.tree ~= nil and self.tree:getObjectIndex() >= 0 and
 	        self.character:isEnduranceSufficientForAction() and
 			self.character:getPrimaryHandItem() ~= nil and
-            self.character:getPrimaryHandItem():getScriptItem():getCategories():contains("Axe")
+            self.character:getPrimaryHandItem():getScriptItem():containsWeaponCategory("Axe")
 end
 
 function ISChopTreeAction:waitToStart()

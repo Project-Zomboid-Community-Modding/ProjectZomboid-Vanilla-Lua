@@ -81,6 +81,10 @@ function ISDPadWheels.showAnimalZoneUI(playerNum)
     ISAnimalZoneFirstInfo.showUI(playerNum, false);
 end
 
+function ISDPadWheels.showBuildingRoomsEditor(playerNum)
+    ISBuildingRoomsEditor.Show()
+end
+
 function ISDPadWheels.onDisplayRight(joypadData)
 	local isPaused = UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0
 	if isPaused then return end
@@ -99,6 +103,9 @@ function ISDPadWheels.onDisplayRight(joypadData)
 		menu:addSlice(getText("IGUI_MiniMap_Focus"), getTexture("media/textures/worldMap/Map_On.png"), ISMiniMap.FocusMiniMap, playerIndex)
 	end
 	menu:addSlice(getText("IGUI_Zone_Name"), getTexture("media/ui/Sidebar/64/AnimalZone_On_64.png"), ISDPadWheels.showAnimalZoneUI, playerIndex)
+	if playerIndex == 0 then
+	    menu:addSlice(getText("IGUI_BuildingRoomsEditor_Title"), getTexture("media/ui/Sidebar/64/BuildingRoomsEditor_64.png"), ISDPadWheels.showBuildingRoomsEditor, playerIndex)
+	end
 	menu:addSlice(getText("UI_optionscreen_binding_Toggle Survival Guide"), getTexture("media/ui/emotes/shrug.png"), ISDPadWheels.showSurvGuide, playerIndex)
 
 	menu:setX(getPlayerScreenLeft(playerIndex) + getPlayerScreenWidth(playerIndex) / 2 - menu:getWidth() / 2)

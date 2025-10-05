@@ -7,6 +7,21 @@
 --
 
 ISTrapMenu = {};
+local isBait = function(itemType)
+    for _, data in ipairs(TrapAnimals) do
+        if data.baits and data.baits[itemType] then return true end
+    end
+    return false
+end
+
+local baitPredicate = function(item)
+    return instanceof(item, "Food") and
+            (item:getHungerChange() <= -0.05 or isBait(item:getFullType())) and
+            not item:isCooked() and
+            not item:haveExtraItems() and
+            (item:getCustomMenuOption() ~= "Drink")
+end
+
 
 ISTrapMenu.doTrapMenu = function(player, context, worldobjects, test)
     local placeTrap = false;
@@ -53,13 +68,12 @@ ISTrapMenu.doTrapMenu = function(player, context, worldobjects, test)
                 return false
             end
 
+            local validItems = playerInv:getAllEval(baitPredicate)
             local alreadyAddedItems = {};
             local items = {}
-            for i = 0, playerInv:getItems():size() - 1 do
-                local vItem = playerInv:getItems():get(i);
-                if instanceof(vItem, "Food") and (vItem:getHungerChange() <= -0.05 or isBait(vItem:getFullType())) and not vItem:isCooked() and
-                        not alreadyAddedItems[vItem:getName()] and not vItem:haveExtraItems() and
-                        (vItem:getCustomMenuOption() ~= "Drink") then
+            for i = 0, validItems:size() - 1 do
+                local vItem = validItems:get(i);
+                if not alreadyAddedItems[vItem:getName()]then
                     table.insert(items, vItem)
                     alreadyAddedItems[vItem:getName()] = true;
                 end

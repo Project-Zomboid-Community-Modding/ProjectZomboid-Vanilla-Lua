@@ -38,11 +38,7 @@ function ModInfoPanel:render()
         local w = self.thumbnailPreviewImage:getWidth() * (h / self.thumbnailPreviewImage:getHeight())
         self:drawTextureScaledAspect(self.thumbnailPreviewImage, (self.width - w)/2, self.thumbnailPanel:getBottom() + 16, w, h, 1, 1, 1, 1)
     end
-    if self.joyfocus then
-        self:drawCustomRectBorder(1, 1, self:getWidth()-2, self:getHeight()-2, 0.2, 0.9, 0.2, 1)
-    elseif self.joypadFocused then
-        self:drawCustomRectBorder(1, 1, self:getWidth()-2, self:getHeight()-2, 0.2, 1, 1, 0.4)
-    end
+	self:renderJoypadFocus()
 end
 
 function ModInfoPanel:recalcSize()
@@ -118,7 +114,6 @@ end
 function ModInfoPanel:onJoypadDown(button, joypadData)
     if button == Joypad.BButton then
         joypadData.focus = self.parent
-        self.parent.joypadIndex = self.ID
         updateJoypadFocus(joypadData)
     end
 end

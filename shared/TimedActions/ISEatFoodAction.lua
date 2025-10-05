@@ -39,7 +39,7 @@ function ISEatFoodAction:update()
 --        self.eatAudio = getSoundManager():PlayWorldSoundWav( self.eatSound, self.character:getCurrentSquare(), 0.5, 2, 0.5, true);
     end
 	local eatType = self.item:getEatType()
-	if self.useUtensil and (eatType == "can" or eatType == "candrink") and self:isEatingRemaining(self.item) then
+	if self.useUtensil and (eatType == "Can" or eatType == "Candrink") and self:isEatingRemaining(self.item) then
 		if not self.playedScrapeSound and (self:getJobDelta() >= 0.7) then
 			self.scrapeSound = self.character:playSound("ScrapeCannedFood")
 			self.playedScrapeSound = true
@@ -73,11 +73,7 @@ function ISEatFoodAction:start()
 	if self.item:getEatType() and self.item:getEatType() ~= "" then
 		-- for can or 2handed, add a fork or a spoon if we have them otherwise we'll use default eat action
 		-- use 2handforced if you don't want this to happen (like eating a burger..)
-		if self.item:getEatType() == "can" or self.item:getEatType() == "candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "plate" or self.item:getEatType() == "2handbowl" then
--- 			local playerInv = self.character:getInventory()
--- 			local spoon = playerInv:getFirstTagEvalRecurse("Spoon", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Spoon", predicateNotBroken);
--- 			local fork = playerInv:getFirstTagEvalRecurse("Fork", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Fork", predicateNotBroken);
-
+		if self.item:getEatType() == "Can" or self.item:getEatType() == "Candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "Plate" or self.item:getEatType() == "2handbowl" then
 			if self.item:getEatType() == "2handbowl" and self.spoon then
 				self:setAnimVariable("FoodType", "2handbowl");
 				secondItem = self.spoon;
@@ -85,7 +81,7 @@ function ISEatFoodAction:start()
 				self:setAnimVariable("FoodType", "bowl");
 			else
 				secondItem = self.fork or self.spoon;
-				if self.item:getEatType() == "plate" then
+				if self.item:getEatType() == "Plate" then
 				    if secondItem then
 						self:setAnimVariable("FoodType", "plate");
 					else
@@ -94,18 +90,18 @@ function ISEatFoodAction:start()
 				elseif self.item:getEatType() == "2hand" then
 					self:setAnimVariable("FoodType", "2hand");
 				elseif self.item:getEatType() == "plate" then
-					self:setAnimVariable("FoodType", "plate");
-				elseif self.item:getEatType() == "candrink" then
+					self:setAnimVariable("FoodType", "Plate");
+				elseif self.item:getEatType() == "Candrink" then
 				    if secondItem then
 						self:setAnimVariable("FoodType", "can"); 
 					else
 						self:setAnimVariable("FoodType", "drink");
 					end
-				elseif self.item:getEatType() == "popcan" then
+				elseif self.item:getEatType() == "Popcan" then
 					self:setAnimVariable("FoodType", "drink");
-				elseif self.item:getEatType() == "eatsmall" then
+				elseif self.item:getEatType() == "EatSmall" then
 					self:setAnimVariable("FoodType", "EatSmall");
-				elseif self.item:getEatType() == "eatbox"  then
+				elseif self.item:getEatType() == "EatBox"  then
 					self:setAnimVariable("FoodType", "eatBox");
 				end
 			end
@@ -115,7 +111,7 @@ function ISEatFoodAction:start()
 	end
 -- 	if secondItem then self.useUtensil = true end
 	self:setOverrideHandModels(secondItem, self.item);
-	if self.item:getEatType() == "Pot" then
+	if self.item:getEatType() == "Pot" or self.item:getEatType() == "PotForged" then
 		self:setOverrideHandModels(self.item, nil);
 	end
 	if self.item:getCustomMenuOption() == getText("ContextMenu_Drink") and self.item:getEatType() ~= "2handbowl" then
@@ -259,20 +255,13 @@ end
 function ISEatFoodAction:getSecondItem()
     local secondItem = nil;
     if self.item:getEatType() and self.item:getEatType() ~= "" then
+        if self.item:getEatType() == "2handbowl" and self.spoon then
+                return self.spoon;
+        end
         -- for can or 2handed, add a fork or a spoon if we have them otherwise we'll use default eat action
         -- use 2handforced if you don't want this to happen (like eating a burger..)
-        if self.item:getEatType() == "can" or self.item:getEatType() == "candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "plate" or self.item:getEatType() == "2handbowl" then
---             local playerInv = self.character:getInventory()
---             local spoon = playerInv:getFirstTagEvalRecurse("Spoon", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Spoon", predicateNotBroken);
---             local fork = playerInv:getFirstTagEvalRecurse("Fork", predicateNotBroken) or playerInv:getFirstTypeEvalRecurse("Base.Fork", predicateNotBroken);
-
-            if self.item:getEatType() == "2handbowl" and self.spoon then
-                secondItem = self.spoon;
-            elseif self.item:getEatType() == "2handbowl" then
-                --
-            else
-                secondItem = self.fork or self.spoon;
-            end
+        if self.item:getEatType() == "Can" or self.item:getEatType() == "Candrink" or self.item:getEatType() == "2hand" or self.item:getEatType() == "Plate" then
+            secondItem = self.fork or self.spoon;
             if secondItem and isDebugEnabled() then
                 print("IMPORTANT: player is eating with a utensil and will benefit better unhappiness/boredom values.")
                 print("IMPORTANT: however if the food being eaten has no boredom or unhappiness effects then eating with a utensil will have no effect on that")

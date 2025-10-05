@@ -408,6 +408,8 @@ end
 
 function Vehicles.Init.Headlight(vehicle, part)
     -- NOTE: This sets all values to the default, including 'focusing' which used to be modifiable
+    -- NOTE: modified as it was spawning new headlights in vehicles if they had been removed, and the vehicle has been unloaded and then loaded
+    if part:getInventoryItem() == nil then return end
 	VehicleUtils.initHeadlight(vehicle, part)
 end
 

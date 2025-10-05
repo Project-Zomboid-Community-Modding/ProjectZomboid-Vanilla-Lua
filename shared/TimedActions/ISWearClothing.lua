@@ -7,7 +7,9 @@ require "TimedActions/ISBaseTimedAction"
 ISWearClothing = ISBaseTimedAction:derive("ISWearClothing");
 
 function ISWearClothing:isValid()
-    if not self.item or self.item:isBroken() then return false end
+    if not self.item or self.item:isBroken() then
+        return false
+    end
 
     if isClient() and self.item then
         return true
@@ -57,6 +59,7 @@ function ISWearClothing:start()
 	end
 
 	if self:isAlreadyEquipped(self.item) then
+        print("IS ALREADY EQUIPPED")
 		self:forceComplete()
 		return
 	end
@@ -72,6 +75,7 @@ function ISWearClothing:start()
 	end
 	self.character:reportEvent("EventWearClothing");
 	self.sound = self.character:playSound("RummageInInventory")
+	self.soundNoTrigger = true
 end
 
 function ISWearClothing:stop()
@@ -101,6 +105,7 @@ end
 
 function ISWearClothing:complete()
 	if self:isAlreadyEquipped(self.item) then
+        print("IS ALREADY EQUIPPED")
 		return false;
 	end
 
@@ -111,11 +116,10 @@ function ISWearClothing:complete()
 		end
 		self.character:setPrimaryHandItem(self.item)
 	end
-
 	if (instanceof(self.item, "InventoryContainer") or self.item:hasTag("Wearable")) and self.item:canBeEquipped() ~= "" then
 		self.character:removeFromHands(self.item);
 		self.character:setWornItem(self.item:canBeEquipped(), self.item);
-	elseif self.item:getCategory() == "Clothing" then
+	elseif self.item:getCategory() == "Clothing" or self.item:getCategory() == "AlarmClock" then
 		if self.item:getBodyLocation() ~= "" then
 			self.character:setWornItem(self.item:getBodyLocation(), self.item);
 
@@ -149,7 +153,11 @@ end
 
 function ISWearClothing:stopSound()
 	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
-		self.character:stopOrTriggerSound(self.sound)
+        if self.soundNoTrigger then
+            self.character:getEmitter():stopSound(self.sound)
+        else
+		    self.character:stopOrTriggerSound(self.sound)
+        end
 	end
 end
 

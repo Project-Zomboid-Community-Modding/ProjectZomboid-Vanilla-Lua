@@ -329,7 +329,7 @@ function ISDestroyStuffAction:getDuration()
 end
 
 function ISDestroyStuffAction:new(character, item, cornerCounter)
-    print('DESTROYING STUFF _ NEW')
+--     print('DESTROYING STUFF _ NEW')
 	local o = ISBaseTimedAction.new(self, character)
 	o.item = item;
 	o.cornerCounter = -1;

@@ -659,7 +659,7 @@ function DepthRectTool:addDefaultFloorPlane()
 	self:java3("setPolygonPoint", objectName, 3, Vector2f.new(-1 + fudge, 1 - fudge))
 	-- Reduce the depth slightly to fix an observed clipping issue on the edge of a bed shadow.
 	-- Bed was okay, but Large Plastic Table lost a row of shadow pixels between tiles.
---	self:java1("getObjectTranslation", objectName):setComponent(1, 0.0125)
+	self:java1("getObjectTranslation", objectName):setComponent(1, 0.0125)
 end
 
 function DepthRectTool:removeDefaultFloorPlane()

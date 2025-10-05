@@ -13400,6 +13400,16 @@ local distributionTable = {
 		},
 	},
 	
+	movierentalxxx = {
+		isShop = true,
+		shelves = {
+			procedural = true,
+			procList = {
+				{name="MagazineRackAdult", min=0, max=99},
+			}
+		},
+	},
+	
 	musicstore = {
 		isShop = true,
 		cardboardbox = {

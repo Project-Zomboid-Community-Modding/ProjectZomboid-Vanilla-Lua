@@ -87,11 +87,10 @@ function ISLightFromKindle:start()
 	self.item:setJobDelta(0.0);
 	self:setActionAnim("LightFire_KnotchedPlank")
     self:setOverrideHandModels("TreeBranchCrafting");
-	self.sound = self.character:playSound("CampfireLight")
 end
 
 function ISLightFromKindle:stop()
-	self.character:stopOrTriggerSound(self.sound)
+	self:stopSound()
 	if self.item then
 		self.item:setJobDelta(0.0);
 	end
@@ -101,7 +100,7 @@ function ISLightFromKindle:stop()
 end
 
 function ISLightFromKindle:perform()
-	self.character:stopOrTriggerSound(self.sound)
+	self:stopSound()
 	if self.item and self.item:getContainer() then
 		self.item:getContainer():setDrawDirty(true);
 		self.item:setJobDelta(0.0);
@@ -151,6 +150,13 @@ function ISLightFromKindle:getDuration()
         return 1;
     end
     return 1500;
+end
+
+function ISLightFromKindle:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound)
+	end
+    self.character:getEmitter():stopOrTriggerSoundByName("MakeFireNotchedPlank")
 end
 
 function ISLightFromKindle:new(character, plank, item, campfire)

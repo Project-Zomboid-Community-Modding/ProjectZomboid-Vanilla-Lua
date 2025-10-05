@@ -4,8 +4,20 @@
 
 ISWalkToCursor = ISBuildingObject:derive("ISWalkToCursor")
 
+local blockedPathfindingStates = {
+    [ClimbOverFenceState.instance()] = true,
+    [ClimbOverWallState.instance()] = true,
+    [ClimbSheetRopeState.instance()] = true,
+    [ClimbDownSheetRopeState.instance()] = true,
+    [ClimbThroughWindowState.instance()] = true,
+};
 
 function ISWalkToCursor:create(x, y, z, north, sprite)
+    -- prevents clicking walk-to during certain event states.
+    if (blockedPathfindingStates[self.character:getCurrentState()]) then
+        showDebugInfoInChat("Cursor Create \'ISWalkToCursor\' blocked by state " .. tostring(self.character:getCurrentState()));
+        return false;
+    end;
     showDebugInfoInChat("Cursor Create \'ISWalkToCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local square = getWorld():getCell():getGridSquare(x, y, z)
 	ISTimedActionQueue.clear(self.character)

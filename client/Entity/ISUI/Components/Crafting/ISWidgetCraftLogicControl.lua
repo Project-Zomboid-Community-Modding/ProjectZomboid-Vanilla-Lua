@@ -75,17 +75,32 @@ function ISWidgetCraftLogicControl:createChildren()
     self:addChild(self.buttonLess);
 
     self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, getText("IGUI_CraftingWindow_Craft"))
-    --self.buttonPrev.image = getTexture("ArrowLeft");
     self.buttonCraft.font = UIFont.Small;
     self.buttonCraft.target = self;
     self.buttonCraft.onclick = ISWidgetCraftLogicControl.onButtonClick;
     self.buttonCraft.enable = true;
     self.buttonCraft:initialise();
     self.buttonCraft:instantiate();
-    --self.buttonCraft.originalTitle = self.buttonCraft.title;
     self:addChild(self.buttonCraft);
 
-    self.origButtonHeight = self.buttonCraft:getHeight();
+    self.buttonCancel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, getText("IGUI_CraftingWindow_Cancel"))
+    self.buttonCancel.font = UIFont.Small;
+    self.buttonCancel.target = self;
+    self.buttonCancel.onclick = ISWidgetCraftLogicControl.onButtonClick;
+    self.buttonCancel.enable = true;
+    self.buttonCancel.tooltip = getText("IGUI_CraftingWindow_Cancel_Warning");
+    self.buttonCancel:initialise();
+    self.buttonCancel:instantiate();
+    self:addChild(self.buttonCancel);
+
+    local craftBenchSounds = self.entity:getComponent(ComponentType.CraftBenchSounds)
+    if craftBenchSounds ~= nil then
+        local soundName = craftBenchSounds:getSoundName("StartCraft", nil)
+        if soundName ~= nil and soundName ~= "" then
+            self.buttonCraft:setSound('activate', nil);
+            self.buttonCancel:setSound('activate', nil);
+        end
+    end
 
     self.boxHeight = self.height;
 
@@ -104,7 +119,8 @@ function ISWidgetCraftLogicControl:calculateLayout(_preferredWidth, _preferredHe
         minHeight = minHeight + self.entryBox:getHeight() + self.margin;
     end
     
-    minHeight = minHeight + self.buttonCraft:getHeight();
+    minHeight = minHeight + self.buttonCraft:getHeight() + self.margin;
+    minHeight = minHeight + self.buttonCancel:getHeight();
 
     if self.allowBatchCraft then
         minWidth = minWidth + self.buttonLess:getWidth() + self.margin;
@@ -181,8 +197,12 @@ function ISWidgetCraftLogicControl:calculateLayout(_preferredWidth, _preferredHe
     self.buttonCraft:setX(x);
     self.buttonCraft:setWidth(width-(self.margin*2));
     self.buttonCraft:setY(y);
-
-    y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;
+    y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;    
+    
+    self.buttonCancel:setX(x);
+    self.buttonCancel:setWidth(width-(self.margin*2));
+    self.buttonCancel:setY(y);
+    y = self.buttonCancel:getY() + self.buttonCancel:getHeight() + self.margin;
     
     self.boxHeight = y;
 
@@ -197,6 +217,7 @@ function ISWidgetCraftLogicControl:calculateLayout(_preferredWidth, _preferredHe
         self:insertNewLineOfButtons(self.buttonLess, self.buttonMore, self.buttonMax)
     end
     self:insertNewLineOfButtons(self.buttonCraft)
+    self:insertNewLineOfButtons(self.buttonCancel)
 end
 
 function ISWidgetCraftLogicControl:onResize()
@@ -208,25 +229,15 @@ function ISWidgetCraftLogicControl:prerender()
         self:drawRectStatic(0, 0, self.width, self.boxHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
         self:drawRectBorderStatic(0, 0, self.width, self.boxHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     end
-
-    if self.logic:getCraftLogic():getStartMode()==StartMode.Manual then
-        if self.buttonCraft then
-            self.buttonCraft:setVisible(true);
-        end
-    else
-        if self.buttonCraft then
-            self.buttonCraft:setVisible(false);
-        end
+    
+    if self.buttonCraft then
+        self.buttonCraft:setVisible(self.logic:getCraftLogic():getStartMode()==StartMode.Manual);
+        self.buttonCraft.enable = self.logic:cachedCanStart(self.player);
     end
-
-    if self.logic and self.logic:getCraftLogic():isRunning() then
-        if self.buttonCraft then
-            self.buttonCraft.enable = false;
-        end
-    else
-        if self.buttonCraft then
-            self.buttonCraft.enable = self.logic:cachedCanStart(self.player);
-        end
+    
+    if self.buttonCancel then 
+        self.buttonCancel:setVisible(self.logic:getCraftLogic():getStartMode()==StartMode.Manual);
+        self.buttonCancel.enable = self.logic:getCraftLogic():isRunning();
     end
 end
 
@@ -242,6 +253,11 @@ end
 function ISWidgetCraftLogicControl:onButtonClick(_button)
     if self.buttonCraft and _button==self.buttonCraft then
         self:startCraft(false);
+    end    
+    if self.buttonCancel and _button==self.buttonCancel then
+        if self.logic:getCraftLogic():isRunning() then
+            self:cancelCraft();
+        end
     end
     if self.buttonMax and _button==self.buttonMax then
         local amount = self.logic:getPossibleCraftCount(false);
@@ -296,6 +312,19 @@ function ISWidgetCraftLogicControl:startCraft(force)
         end
         ISEntityUI.GenericCraftStart(self.player, self.entity, self.logic:getCraftLogic(), funcCanStart, funcStart);
     end
+end
+
+function ISWidgetCraftLogicControl:cancelCraft()
+    local funcCanStop = function(_player, _entity, _component)
+        if not _component:getStartMode()==StartMode.Manual then
+            return false;
+        end
+        return true;
+    end
+    local funcStop = function(_player, _entity, _component)
+        _component:stop(_player);
+    end
+    ISEntityUI.GenericCraftStart(self.player, self.entity, self.logic:getCraftLogic(), funcCanStop, funcStop);
 end
 
 function ISWidgetCraftLogicControl.onTextChange(box)

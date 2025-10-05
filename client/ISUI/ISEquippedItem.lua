@@ -49,13 +49,13 @@ function ISEquippedItem:prerender()
     else
         self.zoneBtn:setImage(self.zoneIconOff);
     end
-    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance then
+    if ISEntityUI.IsWindowOpen(self.chr:getPlayerNum(), "HandcraftWindow") then
         self.craftingBtn:setImage(self.craftingIconOn);
     else
         self.craftingBtn:setImage(self.craftingIconOff);
     end
 
-    if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance then
+    if ISEntityUI.IsWindowOpen(self.chr:getPlayerNum(), "BuildWindow") then
         self.buildBtn:setImage(self.moveableIconBuildOn);
     else
         self.buildBtn:setImage(self.moveableIconBuildOff);
@@ -104,6 +104,16 @@ function ISEquippedItem:prerender()
         end;
     end;
     ----
+
+    if self.metaPopup then
+        if self.zoneBtn:isMouseOver() then
+            self.metaPopup:setVisible(true)
+        elseif self.metaPopup:isMouseOver() then
+            --
+        else
+            self.metaPopup:setVisible(false)
+        end
+    end
 
     if self.mapPopup then
         -- The check for ISWorldMap_instance:isVisible() is to prevent the popup becoming visible again
@@ -432,7 +442,7 @@ function ISEquippedItem:render()
     end
 
 	if ISEquippedItem.text then
-		self:drawText(ISEquippedItem.text, 50,0,1,1,1,1,UIFont.Medium);
+		self:drawText(ISEquippedItem.text, self:getRight(), 0, 1,1,1,1, UIFont.Medium);
     end
 
     self:checkToolTip();
@@ -465,8 +475,8 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             focus = self.infopanel.panel:getActiveView()
         end
     elseif button.internal == "CRAFTING" then
-        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance then
-            ISEntityUI.players[self.chr:getPlayerNum()].windows["HandcraftWindow"].instance:close();
+        if ISEntityUI.IsWindowOpen(self.chr:getPlayerNum(), "HandcraftWindow") then
+            ISEntityUI.GetWindowInstance(self.chr:getPlayerNum(), "HandcraftWindow"):close();
         else
             if isKeyDown(Keyboard.KEY_LMENU) then
                 ISEntityUI.OpenHandcraftWindow(self.chr, nil, "*");
@@ -523,8 +533,8 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             modal:addToUIManager();
         end
     elseif button.internal == "BUILD" then
-        if ISEntityUI.players[self.chr:getPlayerNum()] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"] and ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance then
-            ISEntityUI.players[self.chr:getPlayerNum()].windows["BuildWindow"].instance:close();
+        if ISEntityUI.IsWindowOpen(self.chr:getPlayerNum(), "BuildWindow") then
+            ISEntityUI.GetWindowInstance(self.chr:getPlayerNum(), "BuildWindow"):close();
         else
             ISEntityUI.OpenBuildWindow(self.chr, nil, "*");
         end
@@ -849,6 +859,13 @@ function ISEquippedItem:initialise()
         self:addMouseOverToolTipItem(self.zoneBtn, getText("IGUI_Zone_Name") );
 
         y = self.zoneBtn:getBottom() + UI_BORDER_SPACING + 5
+
+--[[
+        self.metaPopup = ISMetaPopup:new(10 + self.zoneBtn:getX(), 10 + self.zoneBtn:getY(), TEXTURE_WIDTH * 2, TEXTURE_HEIGHT)
+        self.metaPopup.owner = self
+        self.metaPopup:addToUIManager()
+        self.metaPopup:setVisible(false)
+--]]
 
         if ISWorldMap.IsAllowed() then
             self.mapBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
@@ -1234,6 +1251,72 @@ function ISMapPopup:new(x, y, width, height)
     o.texMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
     o.texMiniMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
 
+    return o
+end
+-----
+
+ISMetaPopup = ISPanel:derive("ISMetaPopup")
+
+function ISMetaPopup:prerender()
+    self:setAlwaysOnTop(true)
+end
+
+function ISMetaPopup:render()
+    local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
+
+    local boxWidth = math.max(
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Zone_Name")) + UI_BORDER_SPACING*2,
+            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BuildingRoomsEditor_Title")) + UI_BORDER_SPACING*2,
+            self.width
+    )
+
+    self:drawRect(0, 0, boxWidth, self.height + fontHgt + 2 * 2, 0.80, 0, 0, 0)
+
+    local index = math.floor(self:getMouseX() / TEXTURE_WIDTH)
+    if index > 0 then
+        self:drawRect(index * TEXTURE_WIDTH, 0, TEXTURE_WIDTH, self.height, 0.15, 1, 1, 1)
+    end
+
+    local texts = { getText("IGUI_Zone_Name"), getText("IGUI_BuildingRoomsEditor_Title")}
+    local text = texts[index+1]
+    self:drawText(text, UI_BORDER_SPACING, self.height + 2, 1.0, 0.85, 0.05, 1.0, UIFont.Small)
+
+    local x = 0
+    local y = 0
+
+    local tex = self.texAnimalZone
+    self:drawTextureScaled(tex, x, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
+
+    tex = self.texRoomEditor
+    self:drawTextureScaled(tex, x + TEXTURE_WIDTH, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
+end
+
+function ISMetaPopup:onMouseDown(x, y)
+    return true
+end
+
+function ISMetaPopup:onMouseUp(x, y)
+    self:setVisible(false)
+    local playerNum = self.owner.chr:getPlayerNum()
+    local index = math.floor(x / TEXTURE_WIDTH)
+    local mode = nil
+    if index == 0 then
+        ISDesignationZonePanel.toggleZoneUI(playerNum)
+        if getPlayerZoneUI(playerNum) and getPlayerZoneUI(playerNum):isVisible() then
+            focus = getPlayerZoneUI(playerNum)
+        end
+        ISAnimalZoneFirstInfo.showUI(playerNum, false)
+    elseif index == 1 then
+        ISBuildingRoomsEditor.Show()
+    end
+    return true
+end
+
+function ISMetaPopup:new(x, y, width, height)
+    setTextureWidth()
+    local o = ISPanel.new(self, x, y, width, height)
+    o.texAnimalZone = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png")
+    o.texRoomEditor = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/BuildingRoomsEditor_" .. TEXTURE_WIDTH .. ".png")
     return o
 end
 

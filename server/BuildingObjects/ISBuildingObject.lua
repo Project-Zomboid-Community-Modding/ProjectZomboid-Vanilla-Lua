@@ -3,9 +3,8 @@
 --** Class wich help you to drag an item over the world, it display a ghost render of the item
 --** You can either press R or let the left mouse btn down and drag the mouse around to rotate the item                     **
 --***********************************************************
-
-
 require "ISBaseObject"
+require "TimedActions/ISInventoryTransferUtil"
 
 ISBuildingObject = ISBaseObject:derive("ISBuildingObject");
 
@@ -169,8 +168,7 @@ function DoTileBuilding(draggingItem, isRender, x, y, z, square)
 	if isRender then
 		-- we first call the isValid function of our item
 		draggingItem.canBeBuild = draggingItem:isValid(square, draggingItem.north)
-
-		if not draggingItem.canBeBuild then
+		if not draggingItem.canBeBuild and (draggingItem.craftRecipe and draggingItem.craftRecipe:hasTag("autorotate")) then
 			local nSprite = draggingItem.nSprite
 			local canBeBuild = false
 			for ii = 1, 4 do
@@ -253,7 +251,7 @@ function ISBuildingObject:tryBuild(x, y, z)
 			end
 			if self.equipBothHandItem then
 				if luautils.haveToBeTransfered(playerObj, self.equipBothHandItem) then
-					ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, self.equipBothHandItem, self.equipBothHandItem:getContainer(), playerInv));
+					ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, self.equipBothHandItem, self.equipBothHandItem:getContainer(), playerInv));
 				end
 				ISInventoryPaneContextMenu.equipWeapon(self.equipBothHandItem, true, true, self.player)
 			end

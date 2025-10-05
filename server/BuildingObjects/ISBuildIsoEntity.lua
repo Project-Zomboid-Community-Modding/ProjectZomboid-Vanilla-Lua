@@ -858,6 +858,10 @@ function ISBuildIsoEntity:onObjectLeftMouseButtonDown(object, x, y)
     return true
 end
 
+function ISBuildIsoEntity:updateManualInputs(_logic)
+	self.buildPanelLogic:copyManualInputsFrom(_logic);
+end
+
 --************************************************************************--
 --** ISBuildIsoEntity:new
 --************************************************************************--
@@ -879,14 +883,12 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	o.objectInfo = objectInfo;
 	o.craftRecipe = objectInfo:getRecipe() and objectInfo:getRecipe():getCraftRecipe() or false;
 	
-	if isServer() or isClient() then
-		o.buildPanelLogic = BuildLogic.new(character, nil, nil);
+	o.buildPanelLogic = logic;
+	if not o.buildPanelLogic then
+		o.buildPanelLogic =	BuildLogic.new(character, nil, nil);
 		o.buildPanelLogic:setContainers(o.containers);
-	else
-		o.buildPanelLogic = logic;
+		o.buildPanelLogic:setRecipe(o.craftRecipe)
 	end
-
-	o.buildPanelLogic:setRecipe(o.craftRecipe)
 
 	o.isThumpable = objectInfo:getScript():getIsThumpable() or false;
 	o.dontNeedFrame = objectInfo:getScript():getDontNeedFrame() or false;
@@ -944,10 +946,10 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	o.canBeLockedByPadlock = objectInfo:getScript():getCanBePadlocked();
 
 	o.blockBuild = false;
-	
+
 	o.drawFloorGrid = true;
-	
-    showDebugInfoInChat("Cursor New \'ISBuildIsoEntity\'")
+
+	showDebugInfoInChat("Cursor New \'ISBuildIsoEntity\'")
 	return o;
 end
 

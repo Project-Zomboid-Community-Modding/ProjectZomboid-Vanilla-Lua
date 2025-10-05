@@ -59,22 +59,16 @@ function ISTiledIconPanel:createChildren()
     self:addChild(self.tiledIconListBox);
 
     if self.enableSearchBox then
-    self.entryBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTextEntryBox, "", 0, 0, 100, BUTTON_HGT);
-    self.entryBox.font = UIFont.Small;
-    self.entryBox:initialise();
-    self.entryBox:instantiate();
-    self.entryBox.onTextChange = ISTiledIconPanel.onTextChange;
-    self.entryBox.target = self;
-    self.entryBox:setClearButton(true);
-    self:addChild(self.entryBox);
-
-    self.searchHackLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, self.searchInfoText, 0.3, 0.3, 0.3, 1, UIFont.Small, true)
-    --self.searchHackLabel.center = true;
-    --self.searchHackLabel.textColor = self.textColor;
-    self.searchHackLabel:initialise();
-    self.searchHackLabel:instantiate();
-    self:addChild(self.searchHackLabel);
-end
+        self.entryBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTextEntryBox, "", 0, 0, 100, BUTTON_HGT);
+        self.entryBox.font = UIFont.Small;
+        self.entryBox:initialise();
+        self.entryBox:instantiate();
+        self.entryBox.onTextChange = ISTiledIconPanel.onTextChange;
+        self.entryBox.target = self;
+        self.entryBox:setClearButton(true);
+        self.entryBox:setPlaceholderText(self.searchInfoText)
+        self:addChild(self.entryBox);
+    end
 end
 
 function ISTiledIconPanel:calculateLayout(_preferredWidth, _preferredHeight)
@@ -119,15 +113,9 @@ function ISTiledIconPanel:calculateLayout(_preferredWidth, _preferredHeight)
     end
 
     if self.entryBox then
-    self.entryBox:setX(UI_BORDER_SPACING+1);
-    self.entryBox:setY(height-UI_BORDER_SPACING-1-self.entryBox:getHeight())
-    self.entryBox:setWidth(width-(UI_BORDER_SPACING+1)*2);
-
-    self.searchHackLabel:setX(self.entryBox:getX()+4);
-    self.searchHackLabel.originalX = self.searchHackLabel:getX();
-    local y = self.entryBox:getY() + (self.entryBox:getHeight()/2);
-    y = y - self.searchHackLabel:getHeight()/2;
-    self.searchHackLabel:setY(y);
+        self.entryBox:setX(UI_BORDER_SPACING+1);
+        self.entryBox:setY(height-UI_BORDER_SPACING-1-self.entryBox:getHeight())
+        self.entryBox:setWidth(width-(UI_BORDER_SPACING+1)*2);
     end
 
     self:setWidth(width);
@@ -141,14 +129,6 @@ end
 
 function ISTiledIconPanel:prerender()
     ISPanel.prerender(self);
-
-    if self.entryBox then
-    if self.entryBox:isFocused() or (self.entryBox:getText() and #self.entryBox:getText()>0) then
-        self.searchHackLabel:setVisible(false);
-    else
-        self.searchHackLabel:setVisible(true);
-    end
-end
 end
 
 function ISTiledIconPanel:render()
@@ -260,10 +240,7 @@ function ISTiledIconPanel:setDataList(_dataList)
 end
 
 function ISTiledIconPanel:setSearchInfoText(_text)
-    self.searchInfoText = _text;
-    if self.searchHackLabel then
-        self.searchHackLabel:setName(self.searchInfoText);
-    end
+    self.entryBox:setPlaceholderText(_text)
 end
 
 function ISTiledIconPanel:setSelectedData(_data)

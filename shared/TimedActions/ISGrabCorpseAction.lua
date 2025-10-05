@@ -81,7 +81,7 @@ function ISGrabCorpseAction:complete()
     end
 
     self.corpseBody:getModData()["lastPlayerGrabbed"] = playerID;
-    self.character:pickUpCorpse(self.corpseBody);
+    self.character:pickUpCorpse(self.corpseBody, "BwdDrag");
 
     return true;
 end

@@ -329,7 +329,7 @@ end
 
 function FishingRod:missFish()
     self.rodItem:getModData().fishing_Lure = nil
-    self.rodItem:setName(getText(self.rodItem:getScriptItem():getDisplayName()))
+    self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
     self.bobber.fish = nil
 end
 
@@ -340,13 +340,13 @@ function FishingRod:consumeLure(isTrash)
             local chance = ZombRand(30 * (self.skillLevel + 1))
             if chance == 0 and not isTrash then
                 self.rodItem:getModData().fishing_Lure = nil
-                self.rodItem:setName(getText(self.rodItem:getScriptItem():getDisplayName()))
+                self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
             end
         else
             local chance = ZombRand(20)
             if chance > self.skillLevel and not isTrash then
                 self.rodItem:getModData().fishing_Lure = nil
-                self.rodItem:setName(getText(self.rodItem:getScriptItem():getDisplayName()))
+                self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
             end
         end
     end

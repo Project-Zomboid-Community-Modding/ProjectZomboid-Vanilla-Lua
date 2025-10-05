@@ -48,6 +48,8 @@ StoryClutter.BarnClutter = {
     "Base.IronBandSmall",
     "Base.HandAxe_Old",
     "Base.Axe_Old",
+    "Base.LargeHook",
+    "Base.AnimalMilkPowder",
 }
 
 -- residential bathrooms, used for Randomized Residential Buildings
@@ -575,6 +577,7 @@ StoryClutter.GarageStorageClutter = {
     "Base.HandAxe",
     "Base.Sledgehammer",
     "Base.Sledgehammer2",
+    "Base.LargeHook",
 }
 
 StoryClutter.GigamartClutter = {
@@ -951,6 +954,9 @@ StoryClutter.KitchenCounterClutter = {
     "Base.Postcard",
     "Base.Whetstone",
     "Base.Coffee2",
+    "Base.BookCooking1",
+    "Base.BookCooking2",
+    "Base.BookCooking3",
 }
 
 -- residential kitchen sinks, used for Randomized Residential Buildings

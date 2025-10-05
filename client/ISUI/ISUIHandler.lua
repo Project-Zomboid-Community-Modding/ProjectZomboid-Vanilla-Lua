@@ -41,54 +41,58 @@ end
 --end
 
 ISUIHandler.onKeyStartPressed = function(key)
+    if not getCore():isKey("VehicleRadialMenu", key) and
+            not getCore():isKey("AnimalRadialMenu", key) then
+        return
+    end
 	local playerObj = getSpecificPlayer(0)
 	if not playerObj then return end
 	if playerObj:isDead() then return end
-	if getCore():isKey("VehicleRadialMenu", key) and playerObj then
-		-- 'V' can be 'Toggle UI' when outside a vehicle
-		if getCore():isKey("Toggle UI", key) and getCore():getGameMode() ~= "Tutorial" and not ISVehicleMenu.getVehicleToInteractWith(playerObj) and not AnimalContextMenu.getAnimalToInteractWith(playerObj) then
-			return
-		end
-		if ISVehicleMenu.getVehicleToInteractWith(playerObj) then
+	local vehicle = ISVehicleMenu.getVehicleToInteractWith(playerObj)
+	local animal = AnimalContextMenu.getAnimalToInteractWith(playerObj)
+    -- 'V' can be 'Toggle UI' when outside a vehicle
+    if getCore():isKey("Toggle UI", key) and getCore():getGameMode() ~= "Tutorial" and not vehicle and not animal then
+        return
+    end
+	if getCore():isKey("VehicleRadialMenu", key) then
+		if vehicle then
 			ISVehicleMenu.showRadialMenu(playerObj)
 			return;
 		end
 	end
-	if getCore():isKey("AnimalRadialMenu", key) and playerObj then
-		-- 'V' can be 'Toggle UI' when outside a vehicle
-		if getCore():isKey("Toggle UI", key) and getCore():getGameMode() ~= "Tutorial" and not AnimalContextMenu.getAnimalToInteractWith(playerObj) then
-			return
-		end
+	if getCore():isKey("AnimalRadialMenu", key) then
 		AnimalContextMenu.showRadialMenu(playerObj)
 		return;
 	end
 end
 
 ISUIHandler.onKeyPressed = function(key)
+    if not getCore():isKey("VehicleRadialMenu", key) and
+            not getCore():isKey("AnimalRadialMenu", key) and
+            not getCore():isKey("Toggle UI", key) then
+        return
+    end
 	local playerObj = getSpecificPlayer(0)
-	if getCore():isKey("VehicleRadialMenu", key) and playerObj then
-		-- 'V' can be 'Toggle UI' when outside a vehicle
-		if getCore():isKey("Toggle UI", key) and not ISVehicleMenu.getVehicleToInteractWith(playerObj) and not AnimalContextMenu.getAnimalToInteractWith(playerObj) then
-			ISUIHandler.toggleUI()
-			return
-		end
+	if not playerObj then return end
+	local vehicle = ISVehicleMenu.getVehicleToInteractWith(playerObj)
+	local animal = AnimalContextMenu.getAnimalToInteractWith(playerObj)
+    -- 'V' can be 'Toggle UI' when outside a vehicle
+    if getCore():isKey("Toggle UI", key) and getCore():getGameMode() ~= "Tutorial" and not vehicle and not animal then
+        ISUIHandler.toggleUI()
+        return
+    end
+	if getCore():isKey("VehicleRadialMenu", key) then
 		if playerObj:isDead() then return end
 		if not getCore():getOptionRadialMenuKeyToggle() then
 			-- Hide radial menu when 'V' is released.
 			local menu = getPlayerRadialMenu(0)
-			if menu:isReallyVisible() and ISVehicleMenu.getVehicleToInteractWith(playerObj) then
+			if menu:isReallyVisible() and vehicle then
 				ISVehicleMenu.showRadialMenu(playerObj)
 				return;
 			end
 		end
-		return
 	end
-	if getCore():isKey("AnimalRadialMenu", key) and playerObj then
-		-- 'V' can be 'Toggle UI' when outside a vehicle
-		if getCore():isKey("Toggle UI", key) and not AnimalContextMenu.getAnimalToInteractWith(playerObj) then
-			ISUIHandler.toggleUI()
-			return
-		end
+	if getCore():isKey("AnimalRadialMenu", key) then
 		if playerObj:isDead() then return end
 		if not getCore():getOptionRadialMenuKeyToggle() then
 			-- Hide radial menu when 'V' is released.
@@ -99,15 +103,6 @@ ISUIHandler.onKeyPressed = function(key)
 			end
 		end
 		return
-	end
-	if getCore():isKey("Toggle UI", key) and playerObj and getCore():getGameMode() ~= "Tutorial" then
-		ISUIHandler.toggleUI();
-
---        getGameTime():thunderStart();
---        getGameTime():doThunder();
---        getAmbientStreamManager():addRandomAmbient();
---        getAmbientStreamManager():doGunEvent();
-
 	end
 --    if getCore():isKey("Show Ping", key) and isClient() then
 --        ISUIHandler.showPing();

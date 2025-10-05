@@ -69,11 +69,10 @@ function ISBBQLightFromKindle:start()
 	self.plank:setJobDelta(0.0);
 	self:setActionAnim("LightFire_KnotchedPlank_Stood")
     self:setOverrideHandModels("TreeBranchCrafting");
-	self.sound = self.character:playSound("BBQRegularLight")
 end
 
 function ISBBQLightFromKindle:stop()
-	self.character:stopOrTriggerSound(self.sound)
+	self:stopSound()
 	if self.item then
 		self.item:setJobDelta(0.0);
 	end
@@ -82,7 +81,7 @@ function ISBBQLightFromKindle:stop()
 end
 
 function ISBBQLightFromKindle:perform()
-	self.character:stopOrTriggerSound(self.sound)
+	self:stopSound()
 	if self.item then
 		self.item:getContainer():setDrawDirty(true);
 		self.item:setJobDelta(0.0);
@@ -133,6 +132,13 @@ function ISBBQLightFromKindle:getDuration()
 		return 1;
 	end
 	return 1500
+end
+
+function ISBBQLightFromKindle:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound)
+	end
+    self.character:getEmitter():stopOrTriggerSoundByName("MakeFireNotchedPlank")
 end
 
 function ISBBQLightFromKindle:new(character, plank, item, bbq)

@@ -587,6 +587,13 @@ function ISUIElement:getIsCaptured()
 	return self.javaObject:isCapture();
 end
 
+function ISUIElement:isCapture()
+	if self.javaObject == nil then
+		self:instantiate();
+	end
+	return self.javaObject:isCapture();
+end
+
 --************************************************************************--
 --** ISUIElement:setFollowGameWorld
 --**
@@ -845,27 +852,28 @@ end
 function ISUIElement:renderJoypadNavigateOverlay(playerNum)
 	local joypadData = JoypadState.players[playerNum+1] or JoypadState.getMainMenuJoypad() or CoopCharacterCreation.getJoypad()
 	if joypadData == nil or not joypadData.isDoingNavigation or joypadData.currentNavigateUI == nil then
+        self.joypadNavigatePrevRect = nil
 		return
 	end
 	if not joypadData:isFocusOnElementOrDescendant(self) then
+        self.joypadNavigatePrevRect = nil
 		return
 	end
 
 	self:repaintStencilRect(0, 0, self.width, self.height)
 
-	local child = joypadData.currentNavigateUI
-	local x = child:getAbsoluteX() - self:getAbsoluteX()
-	local y = child:getAbsoluteY() - self:getAbsoluteY()
-	local w,h = child.width, child.height
+	local current = joypadData.currentNavigateUI
+	local x = current:getAbsoluteX() - self:getAbsoluteX()
+	local y = current:getAbsoluteY() - self:getAbsoluteY()
+	local w,h = current.width, current.height
 	local jn = self.joypadNavigate
-	if child ~= self or jn == nil or not (jn.left or jn.right or jn.up or jn.down) then
-		self:drawRect(x, y, w, h, 0.5, 1.0, 1.0, 1.0)
+	if current ~= self or jn == nil or not (jn.left or jn.right or jn.up or jn.down) then
+		self:renderJoypadNavigateCurrent(x, y, w, h)
 	else
-		self:drawRectBorderStatic(x, y, w, h, 0.5, 1.0, 1.0, 1.0)
-		self:drawRectBorderStatic(x + 1, y + 1, w - 2, h - 2, 0.5, 1.0, 1.0, 1.0)
+        self:renderJoypadNavigateSelf()
 	end
 
-	jn = child.joypadNavigate
+	jn = current.joypadNavigate
 	if jn == nil then return end
 
 	self:renderJoypadNavigateHighlight(joypadData, jn.left)
@@ -888,6 +896,68 @@ function ISUIElement:renderJoypadNavigateOverlay(playerNum)
 	end
 end
 
+function ISUIElement:renderJoypadNavigateCurrent(x, y, w, h)
+    local x1,y1,w1,h1 = x,y,w,h
+    local pr = self.joypadNavigatePrevRect
+    if pr == nil then
+        local dw,dh = w * 0.05, h * 0.05
+        self.joypadNavigateTransition = { x1 = x + dw, y1 = y + dh, w1 = w - dw * 2, h1 = h - dh * 2, x2 = x, y2 = y, w2 = w, h2 = h, elapsed = 0 }
+    elseif (pr.x ~= x) or (pr.y ~= y) then
+        self.joypadNavigateTransition = { x1 = pr.x, y1 = pr.y, w1 = pr.w, h1 = pr.h, x2 = x, y2 = y, w2 = w, h2 = h, elapsed = 0 }
+    end
+    if self.joypadNavigateTransition ~= nil then
+        local nt = self.joypadNavigateTransition
+        local duration = 50
+        if nt.elapsed < duration then
+            x1 = PZMath.lerp(nt.x1, nt.x2, nt.elapsed / duration)
+            y1 = PZMath.lerp(nt.y1, nt.y2, nt.elapsed / duration)
+            w1 = PZMath.lerp(nt.w1, nt.w2, nt.elapsed / duration)
+            h1 = PZMath.lerp(nt.h1, nt.h2, nt.elapsed / duration)
+            nt.elapsed = nt.elapsed + UIManager.getMillisSinceLastRender()
+        else
+            self.joypadNavigateTransition = nil
+        end
+    end
+    self:drawRect(x1, y1, w1, h1, 0.5, 1.0, 1.0, 1.0)
+    self.joypadNavigatePrevRect = self.joypadNavigatePrevRect or {}
+    self.joypadNavigatePrevRect.x = x
+    self.joypadNavigatePrevRect.y = y
+    self.joypadNavigatePrevRect.w = w
+    self.joypadNavigatePrevRect.h = h
+end
+
+function ISUIElement:renderJoypadNavigateSelf()
+    local x,y,w,h = 0,0,self.width,self.height
+    local x1,y1,w1,h1 = x,y,w,h
+    local pr = self.joypadNavigatePrevRect
+    if pr == nil then
+        local dw,dh = w * 0.05, h * 0.05
+        self.joypadNavigateTransition = { x1 = x + dw, y1 = y + dh, w1 = w - dw * 2, h1 = h - dh * 2, x2 = x, y2 = y, w2 = w, h2 = h, elapsed = 0 }
+    elseif (pr.x ~= x) or (pr.y ~= y) then
+        self.joypadNavigateTransition = { x1 = pr.x, y1 = pr.y, w1 = pr.w, h1 = pr.h, x2 = x, y2 = y, w2 = w, h2 = h, elapsed = 0 }
+    end
+    if self.joypadNavigateTransition ~= nil then
+        local nt = self.joypadNavigateTransition
+        local duration = 50
+        if nt.elapsed < duration then
+            x1 = PZMath.lerp(nt.x1, nt.x2, nt.elapsed / duration)
+            y1 = PZMath.lerp(nt.y1, nt.y2, nt.elapsed / duration)
+            w1 = PZMath.lerp(nt.w1, nt.w2, nt.elapsed / duration)
+            h1 = PZMath.lerp(nt.h1, nt.h2, nt.elapsed / duration)
+            nt.elapsed = nt.elapsed + UIManager.getMillisSinceLastRender()
+        else
+            self.joypadNavigateTransition = nil
+        end
+    end
+    self:drawRectBorderStatic(x1, y1, w1, h1, 0.5, 1.0, 1.0, 1.0)
+    self:drawRectBorderStatic(x1 + 1, y1 + 1, w1 - 2, h1 - 2, 0.5, 1.0, 1.0, 1.0)
+    self.joypadNavigatePrevRect = self.joypadNavigatePrevRect or {}
+    self.joypadNavigatePrevRect.x = x
+    self.joypadNavigatePrevRect.y = y
+    self.joypadNavigatePrevRect.w = w
+    self.joypadNavigatePrevRect.h = h
+end
+
 function ISUIElement:renderJoypadNavigateHighlight(joypadData, child)
 	if not child then return end
 	local x = child:getAbsoluteX() - self:getAbsoluteX()
@@ -904,6 +974,15 @@ function ISUIElement:renderJoypadNavigateTexture(joypadData, child, texture)
 	local w,h = child.width, child.height
 	local texW,texH = 64,64
 	self:drawTextureScaledAspect(Joypad.Texture[texture], x + w / 2 - texW / 2, y + h / 2 - texH / 2, texW, texH, 1.0, 1.0, 1.0, 1.0)
+end
+
+function ISUIElement:isDescendant(ui)
+    if not ui then return false end
+    while ui ~= nil do
+        if ui.parent == self then return true end
+        ui = ui.parent
+    end
+    return false
 end
 
 --************************************************************************--

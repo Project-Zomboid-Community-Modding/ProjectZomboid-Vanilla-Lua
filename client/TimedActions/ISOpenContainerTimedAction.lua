@@ -50,14 +50,14 @@ function ISOpenContainerTimedAction:perform()
         panel2:setVisible(true);
         panel2:initialise();
         panel2:addToUIManager();
-        panel2.lootAll:setVisible(true);
+--         panel2.lootAll:setVisible(true);
 
     else
         local panel2 = ISContainerPanelInstance;
 
         panel2:setNewContainer(self.container);
         panel2:setVisible(true);
-        panel2.lootAll:setVisible(true);
+--         panel2.lootAll:setVisible(true);
         panel2.collapseCounter = 0;
         if panel2.isCollapsed then
             panel2.isCollapsed = false;

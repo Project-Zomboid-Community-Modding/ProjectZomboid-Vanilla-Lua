@@ -143,12 +143,22 @@ fishingNet.checkTrap = function(player, trap, hours)
                 item:setProteins(item:getProteins() * nutritionFactor)
                 item:setWorldScale(fishSizeData.length / 100.0)
 
-                item:setBaseHunger(-fishSizeData.weight / 6)
+				local hungerFactor = fishSizeData.weight / fishConfig.weightFactor
+				-- If fish is not bait, then min hunger should be 5 regardless of size. Same as in Fish.lua
+				if fishConfig.itemType ~= "BaitFish" then
+					if hungerFactor > 0.05 then
+						item:setBaseHunger(-hungerFactor)
+					else
+						item:setBaseHunger(-0.05)
+					end
+				else
+					item:setBaseHunger(-hungerFactor)
+				end
                 item:setHungChange(item:getBaseHunger())
                 item:setActualWeight(fishSizeData.weight * 2.2)   -- weight is kg * 2.2 (in pound)
                 item:setCustomWeight(true)
 
-                if not Recipe.OnTest.CutFish(item) then
+                if not RecipeCodeOnTest.cutFish(item) then
                     item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
                 end
 

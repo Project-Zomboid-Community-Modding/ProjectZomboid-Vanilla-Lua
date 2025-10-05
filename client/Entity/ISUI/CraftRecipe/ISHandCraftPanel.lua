@@ -85,6 +85,7 @@ function ISHandCraftPanel:createRecipesColumn()
     --self.recipeColumn = self.rootTable:addColumnFill(nil);
 
     self.recipesPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipesPanel, 0, 0, 10, 10, self.player, self.craftBench, self.isoObject, self.logic, self);
+    self.recipesPanel.needSortCombo = true;
     self.recipesPanel.needFilterCombo = true;
     --self.recipesPanel.expandToFitTooltip = true;
     self.recipesPanel.wrapTooltipText = true;
@@ -191,6 +192,7 @@ function ISHandCraftPanel:update()
             self.parent.isoObject = self.isoObject;
             self.logic:setIsoObject(self.isoObject);
             self.updateTimer = 0;
+            self:updateContainers(true);
         end
     end
 
@@ -210,25 +212,27 @@ function ISHandCraftPanel:update()
 end
 
 function ISHandCraftPanel:refreshRecipeList()
-    self:updateContainers();
-
-    if self.recipeQuery then
-        self.logic:setRecipes(CraftRecipeManager.queryRecipes(self.recipeQuery));
-    else
-        self.logic:setRecipes(self.craftBench:getRecipes());
-    end
-    if getDebugOptions():getBoolean("Cheat.Recipe.SeeAll") then
-        self.logic:setRecipes(ScriptManager.instance:getAllCraftRecipes())
+    if self:updateContainers() then
+        if self.recipeQuery then
+            self.logic:setRecipes(CraftRecipeManager.queryRecipes(self.recipeQuery));
+        else
+            self.logic:setRecipes(self.craftBench:getRecipes());
+        end
+        if getDebugOptions():getBoolean("Cheat.Recipe.SeeAll") then
+            self.logic:setRecipes(ScriptManager.instance:getAllCraftRecipes())
+        end
     end
 end
 
-function ISHandCraftPanel:updateContainers()
+function ISHandCraftPanel:updateContainers(_forceRefresh)
     local containers = ISInventoryPaneContextMenu.getContainers(self.player);
-    self.logic:setContainers(containers);
-    self.tooltipLogic:setContainers(containers);
-    self.recipesPanel:updateContainers(containers);
-    self.recipePanel:updateContainers(containers);
-    self.inventoryPanel:updateContainers(containers);
+    if self.logic:setContainers(containers) or _forceRefresh then
+        self.tooltipLogic:setContainers(containers);
+        self.recipesPanel:updateContainers(containers);
+        self.inventoryPanel:updateContainers(containers);
+        return true;
+    end
+    return false;
 end
 
 function ISHandCraftPanel:updateTooltip()

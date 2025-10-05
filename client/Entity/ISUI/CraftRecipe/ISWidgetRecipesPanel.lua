@@ -46,10 +46,11 @@ end
 
 function ISWidgetRecipesPanel:createRecipeFilterPanel(_parentTable)
     self.recipeFilterPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipeFilterPanel, 0, 0, 10, 10, self.callbackTarget);
-    self.recipeFilterPanel.searchInfoText = getText("IGUI_CraftingWindow_SearchRecipes");
+    self.recipeFilterPanel:setSearchInfoText(getText("IGUI_CraftingWindow_SearchRecipes"));
     self.recipeFilterPanel.showAllVersionTickbox = self.showAllVersionTickbox;
     self.recipeFilterPanel.needFilterCombo = self.needFilterCombo;
     self.recipeFilterPanel.needSortCombo = self.needSortCombo;
+    self.recipeFilterPanel.showFilterByOutputItem = self.showFilterByOutputItem;
     self.recipeFilterPanel:initialise();
     self.recipeFilterPanel:instantiate();
 
@@ -127,6 +128,25 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
     self.recipeIconPanel.render = function(_self)
         ISTiledIconPanel.render(_self)
         _self:renderJoypadFocus()
+
+        -- show no recipes tooltip
+        if _self.dataList:isEmpty() then
+            local tooltipStr = getText("IGUI_CraftingWindow_NoRecipes");
+            local stringWidth = getTextManager():MeasureStringX(UIFont.Small, tooltipStr);
+            local stringHeight = getTextManager():MeasureStringY(UIFont.Small, tooltipStr);
+            local x = (_self.tiledIconListBox:getWidth() - stringWidth) / 2;
+            local y = (_self.tiledIconListBox:getHeight() - stringHeight) / 2;
+            local padding = 20;
+            local boxX, boxY = math.max(0, _self.tiledIconListBox:getX() + x - padding), math.max(0, _self.tiledIconListBox:getY() + y - padding);
+            local boxWidth, boxHeight = math.min(padding + stringWidth + padding, _self.tiledIconListBox:getWidth() - x), math.min(padding + stringHeight + padding, _self.tiledIconListBox:getHeight() - y);
+
+            _self:drawRect(boxX, boxY, boxWidth, boxHeight, 1, 0, 0, 0);
+            _self:drawRectBorder(boxX, boxY, boxWidth, boxHeight, _self.borderColor.a, _self.borderColor.r, _self.borderColor.g, _self.borderColor.b);
+
+            local x = _self.tiledIconListBox:getX() + ((_self.tiledIconListBox:getWidth() - getTextManager():MeasureStringX(UIFont.Small, tooltipStr)) / 2);
+            local y = _self.tiledIconListBox:getY() + ((_self.tiledIconListBox:getHeight() - getTextManager():MeasureStringY(UIFont.Small, tooltipStr)) / 2);
+            _self:drawText(tooltipStr, x, y, 1.0, 1.0, 1.0, 1.0, UIFont.Small);
+        end
     end
 
     self.recipeIconPanel.hasConflictWithJoypadNavigateStart = function(_self)
@@ -312,6 +332,10 @@ function ISWidgetRecipesPanel:new(x, y, width, height, player, craftBench, isoOb
 
     o.expandToFitTooltip = false;
     o.wrapTooltipText = false;
+    
+    o.needFilterCombo = false;
+    o.needSortCombo = false;
+    o.showFilterByOutputItem = true;
     
     return o
 end

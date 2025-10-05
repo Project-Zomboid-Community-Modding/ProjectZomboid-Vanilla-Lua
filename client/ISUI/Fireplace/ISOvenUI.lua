@@ -1,9 +1,11 @@
-require "ISUI/ISPanelJoypad"
 --***********************************************************
 --**              	  ROBERT JOHNSON                       **
 --***********************************************************
 
+require "ISUI/ISPanelJoypad"
+
 ISOvenUI = ISPanelJoypad:derive("ISOvenUI");
+ISOvenUI.instance = {};
 ISOvenUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
@@ -54,7 +56,7 @@ function ISOvenUI:initialise()
     self.ok:setSound("activate", "ToggleStove")
     self:addChild(self.ok);
 
-    self.close = ISButton:new(self:getWidth() - btnWid - 10, self.tempType:getBottom() + 10, btnWid, btnHgt, getText("UI_Cancel"), self, ISOvenUI.onClick);
+    self.close = ISButton:new(self:getWidth() - btnWid - 10, self.tempType:getBottom() + 10, btnWid, btnHgt, getText("UI_Close"), self, ISOvenUI.onClick);
     self.close.internal = "CLOSE";
     self.close:initialise();
     self.close:instantiate();
@@ -179,6 +181,12 @@ function ISOvenUI:onClick(button)
     end
 end
 
+function ISOvenUI:close()
+    self:removeFromUIManager()
+    self:setVisible(false)
+    ISOvenUI.instance[self.playerNum+1] = nil
+end
+
 function ISOvenUI:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     self.joypadIndexY = 1
@@ -221,6 +229,7 @@ function ISOvenUI:new(x, y, width, height, oven, character)
     o.width = width;
     o.height = height;
     o.character = character;
+    o.playerNum = player;
     o.oven = oven;
     o.moveWithMouse = true;
     o.knobTex = getTexture("media/ui/Knobs/KnobDial.png");
@@ -228,5 +237,6 @@ function ISOvenUI:new(x, y, width, height, oven, character)
     o.anchorRight = true;
     o.anchorTop = true;
     o.anchorBottom = true;
+    ISOvenUI.instance[player+1] = o;
     return o;
 end

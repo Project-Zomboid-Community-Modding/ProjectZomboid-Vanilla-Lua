@@ -437,7 +437,8 @@ ProceduralDistributions.list = {
 			"HandDrill", 4,
 			"Hatchet_Bone", 1,
 			"HatchetHead_Bone", 1,
-			"LargeHook", 1,
+			-- LargeHook boosted for Testing
+			"LargeHook", 4,
 			"LargeKnife", 1,
 			"OldDrill", 1,
 			"ShortBat", 2,
@@ -854,7 +855,8 @@ ProceduralDistributions.list = {
 			"FiberglassTape", 8,
 			"HeavyChain", 10,
 			"HeavyChain_Hook", 2,
-			"LargeHook", 4,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"NutsBolts", 10,
 			"Oxygen_Tank", 2,
 			"Propane_Refill", 2,
@@ -926,7 +928,8 @@ ProceduralDistributions.list = {
 			"FiberglassTape", 4,
 			"HeavyChain", 10,
 			"HeavyChain_Hook", 2,
-			"LargeHook", 4,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LightBulbBox", 1,
 			"NutsBolts", 10,
 			"Oxygen_Tank", 2,
@@ -8843,7 +8846,8 @@ ProceduralDistributions.list = {
 			"HeavyChain", 8,
 			"HeavyChain_Hook", 1,
 			"Jack", 4,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 10,
 			"LugWrench", 20,
 			"LugWrench", 10,
 			"Pliers", 20,
@@ -15071,8 +15075,9 @@ ProceduralDistributions.list = {
 			"HeavyChain", 10,
 			"HeavyChain", 10,
 			"HeavyChain_Hook", 6,
+			-- LargeHook boosted for Testing
+			"LargeHook", 50,
 			"LargeHook", 20,
-			"LargeHook", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -15679,7 +15684,8 @@ ProceduralDistributions.list = {
 			"IronBarQuarter", 8,
 			"Jack", 2,
 			"Kneepad_Left_Workman", 4,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 10,
 			"LightBulb", 10,
 			"LightBulbBox", 1,
 			"LugWrench", 8,
@@ -17382,7 +17388,8 @@ ProceduralDistributions.list = {
 			"HandScytheForged", 1,
 			"HandShovel", 10,
 			"HeavyChain", 8,
-			"LargeHook", 1,
+			-- LargeHook boosted for Testing
+			"LargeHook", 8,
 			"LargeKnife", 1,
 			"LeafRake", 10,
 			"LugWrench", 4,
@@ -20620,7 +20627,8 @@ ProceduralDistributions.list = {
 			"Funnel", 10,
 			"HandDrill", 4,
 			"Jack", 2,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LugWrench", 8,
 			"MetalworkingChisel", 4,
 			"MetalworkingPliers", 0.5,
@@ -20703,7 +20711,8 @@ ProceduralDistributions.list = {
 			"Hammer", 8,
 			"HeavyChain", 4,
 			"HandAxe", 4,
-			"LargeHook", 1,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LugWrench", 4,
 			"Mov_RoadBarrier", 4,
 			"Mov_RoadCone", 4,
@@ -22321,7 +22330,8 @@ ProceduralDistributions.list = {
 			"HeavyChain", 4,
 			"HeavyChain_Hook", 0.5,
 			"Jack", 4,
-			"LargeHook", 0.5,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LugWrench", 1,
 			"MetalworkingChisel", 1,
 			"MetalworkingPunch", 1,
@@ -31944,7 +31954,8 @@ ProceduralDistributions.list = {
 			"HeavyChain", 10,
 			"HeavyChain_Hook", 2,
 			"Jack", 2,
-			"LargeHook", 6,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LugWrench", 4,
 			"Screwdriver", 10,
 			"TireIron", 4,
@@ -31997,6 +32008,23 @@ ProceduralDistributions.list = {
 				"Splinters", 20,
 				"Splinters", 10,
 				"Splinters", 10,
+			}
+		}
+	},
+
+	MagazineRackAdult = {
+		rolls = 4,
+		items = {
+			"HottieZ", 50,
+			"HottieZ", 20,
+			"HottieZ", 20,
+			"HottieZ", 10,
+			"HottieZ", 10,
+		},
+		junk = {
+			rolls = 1,
+			items = {
+
 			}
 		}
 	},
@@ -32776,7 +32804,8 @@ ProceduralDistributions.list = {
 			"IronBarQuarter", 8,
 			"Jack", 2,
 			"Kneepad_Left_Workman", 4,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 50,
 			"LugWrench", 4,
 			"MetalworkingChisel", 4,
 			"MetalworkingPliers", 0.5,
@@ -32872,7 +32901,8 @@ ProceduralDistributions.list = {
 			"HeavyChain_Hook", 1,
 			"Jack", 2,
 			"Kneepad_Left_Workman", 4,
-			"LargeHook", 1,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LightbarRedBlue", 0.5,
 			"LightbarRed", 1,
 			"LightbarYellow", 1,
@@ -36387,7 +36417,8 @@ ProceduralDistributions.list = {
 			"Funnel", 10,
 			"HandDrill", 4,
 			"Jack", 2,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 20,
 			"LugWrench", 8,
 			"MetalworkingChisel", 4,
 			"MetalworkingPliers", 0.5,
@@ -45634,7 +45665,8 @@ ProceduralDistributions.list = {
 			"HeavyChain_Hook", 1,
 			"Jack", 2,
 			"Kneepad_Left_Workman", 4,
-			"LargeHook", 2,
+			-- LargeHook boosted for Testing
+			"LargeHook", 50,
 			"LugWrench", 8,
 			"MetalworkingChisel", 4,
 			"MetalworkingPliers", 0.5,

@@ -124,10 +124,6 @@ function MainPanel:onLoseJoypadFocus(joypadData)
     ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
 end
 
-function MainPanel:onJoypadDirRight(joypadData)
-    joypadData.focus = self.parent.richText
-end
-
 function MainPanel:onJoypadBeforeDeactivate(joypadData)
     self.parent:onJoypadBeforeDeactivate(joypadData)
 end
@@ -163,11 +159,6 @@ end
 
 function RichText:onJoypadDirDown(joypadData)
 	self:setYScroll(self:getYScroll() - 50)
-end
-
-function RichText:onJoypadDirLeft(joypadData)
-	self:setYScroll(0)
-	joypadData.focus = self.parent.mainPanel
 end
 
 function RichText:onJoypadBeforeDeactivate(joypadData)
@@ -796,6 +787,9 @@ function NewGameScreen:render()
     self.richText.text = text;
     self.richText:paginate();
     self:drawRectBorder( self.richText:getX(), self.richText:getY(), self.richText:getWidth(), self.richText:getHeight(), 0.3, 1, 1, 1);
+
+    local playerNum = 0
+    self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function NewGameScreen:prerender()
@@ -1009,24 +1003,32 @@ function NewGameScreen:onResetLua(reason)
     end
 end
 
+function NewGameScreen:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	self.mainPanel.joypadNavigate = { right = self.richText }
+	self.richText.joypadNavigate = { left = self.mainPanel }
+end
+
 function NewGameScreen:onJoypadBeforeDeactivate(joypadData)
 	self.backButton:clearJoypadButton()
 	self.nextButton:clearJoypadButton()
 --	self:clearJoypadFocus()
 end
 
+function NewGameScreen:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.nextButton:forceClick()
+        return
+    end
+end
+
 function NewGameScreen:new (x, y, width, height)
-	local o = {}
-	--o.data = {}
-	o = ISPanelJoypad:new(x, y, width, height);
-	setmetatable(o, self)
-	self.__index = self
-	o.x = x;
-	o.y = y;
+	local o = ISPanelJoypad.new(self, x, y, width, height);
 	o.backgroundColor = {r=0, g=0, b=0, a=0.8};
 	o.borderColor = {r=1, g=1, b=1, a=0.2};
-	o.width = width;
-	o.height = height;
 	o.anchorLeft = true;
 	o.anchorRight = false;
 	o.anchorTop = true;

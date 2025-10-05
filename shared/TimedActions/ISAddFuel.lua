@@ -7,7 +7,7 @@ require "TimedActions/ISBaseTimedAction"
 ISAddFuel = ISBaseTimedAction:derive("ISAddFuel");
 
 function ISAddFuel:isValid()
-	if self.generator:getFuel() >= 100 then ISBaseTimedAction.stop(self) end
+	if self.generator:getFuelPercentage() >= 100 then ISBaseTimedAction.stop(self) end
 	return self.generator:getObjectIndex() ~= -1 and
 		self.character:isPrimaryHandItem(self.petrol) or self.character:isSecondaryHandItem(self.petrol)
 end
@@ -49,13 +49,14 @@ function ISAddFuel:perform()
 end
 
 function ISAddFuel:complete()
-	local endFuel = 0;
-	while self.fluidCont and self.fluidCont:getAmount() >= 0.098 and self.generator:getFuel() + endFuel < 100 do
-		local amount = self.fluidCont:getAmount() - 0.1;
-		self.fluidCont:adjustAmount(amount);
-		endFuel = endFuel + 1;
-	end
-
+	--local endFuel = 0;
+	--while self.fluidCont and self.fluidCont:getAmount() >= 0.098 and self.generator:getFuel() + endFuel < 100 do
+	--	local amount = self.fluidCont:getAmount() - 0.1;
+	--	self.fluidCont:adjustAmount(amount);
+	--	endFuel = endFuel + 1;
+	--end
+	local endFuel = math.min(self.fluidCont:getAmount(), self.generator:getMaxFuel() - self.generator:getFuel())
+	self.fluidCont:adjustAmount(self.fluidCont:getAmount() - endFuel)
 	self.petrol:syncItemFields()
 	self.generator:setFuel(self.generator:getFuel() + endFuel)
 	self.generator:sync()

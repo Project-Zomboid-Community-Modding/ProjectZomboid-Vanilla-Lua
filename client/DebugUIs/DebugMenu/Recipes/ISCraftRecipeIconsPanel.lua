@@ -25,7 +25,7 @@ function ISCraftRecipeIconsPanel:createChildren()
     local LEFT_BAR_WIDTH = 400+(getCore():getOptionFontSizeReal()*50);
 
     self.iconPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTiledIconPanel, 0, 0, 10, 10, self.player, nil, self);
-    self.iconPanel.searchInfoText = getText("IGUI_DebugMenu_Search");
+    self.iconPanel:setSearchInfoText(getText("IGUI_DebugMenu_Search"));
     -- for render the '_self' context is the ISTiledIconListBox
     self.iconPanel.onRenderTile = function(_self, _recipe, _x, _y, _width, _height, _mouseover)
         if _recipe and _recipe:getIconTexture() then

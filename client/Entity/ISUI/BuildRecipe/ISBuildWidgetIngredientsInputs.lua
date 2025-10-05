@@ -6,6 +6,7 @@ require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
+local TOGGLE_HGT = getTextManager():getFontHeight(UIFont.Medium);
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISBuildWidgetIngredientsInputs = ISPanelJoypad:derive("ISBuildWidgetIngredientsInputs");
@@ -34,6 +35,19 @@ function ISBuildWidgetIngredientsInputs:createChildren()
     self.inputsLabel:initialise();
     self.inputsLabel:instantiate();
     self:addChild(self.inputsLabel);
+
+    -- manual inputs toggle
+    local fontHeight = -1; -- <=0 sets label initial height to font
+    self.autoLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_ManualSelect"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
+    self.autoLabel:initialise();
+    self.autoLabel:instantiate();
+    self:addChild(self.autoLabel);
+    
+    self.autoToggle = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetAutoToggle, 0, 0, TOGGLE_HGT, TOGGLE_HGT, true, self, ISBuildWidgetIngredientsInputs.onAutoToggled);
+    self.autoToggle.toggleState = self.logic:isManualSelectInputs();
+    self.autoToggle:initialise();
+    self.autoToggle:instantiate();
+    self:addChild(self.autoToggle);
     
     self.inputs = {};
     
@@ -57,7 +71,6 @@ function ISBuildWidgetIngredientsInputs:addInput(_inputScript)
     if _inputScript:isKeep() then
         -- set keep flag
     end
-    input.displayAsOutput = true;
     input:initialise();
     input:instantiate();
     self:addChild(input);
@@ -104,6 +117,17 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     self.inputsLabel:setX(x);
     self.inputsLabel.originalX = self.inputsLabel:getX();
     self.inputsLabel:setY(y);
+    
+    local toggleX = width - self.margin - self.autoToggle:getWidth();
+    local toggleY = self.margin;
+    self.autoToggle:setX(toggleX);
+    self.autoToggle.originalX = self.autoToggle:getX();
+    self.autoToggle:setY(toggleY);
+    
+    toggleX = toggleX - self.margin - self.autoLabel:getWidth();
+    self.autoLabel:setX(toggleX);
+    self.autoLabel.originalX = self.autoLabel:getX();
+    self.autoLabel:setY(toggleY);
 
     local joypadData = JoypadState.players[self.player:getPlayerNum()+1]
     local oldIndexY = math.max(self.joypadIndexY, 1)
@@ -196,6 +220,16 @@ end
 function ISBuildWidgetIngredientsInputs:onLoseJoypadFocus(joypadData)
     ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
     self:clearJoypadFocus(joypadData)
+end
+
+function ISBuildWidgetIngredientsInputs:onManualSelectChanged(_manualSelect)
+    self.autoToggle.toggleState = _manualSelect;
+    self:xuiRecalculateLayout();
+end
+
+function ISBuildWidgetIngredientsInputs:onAutoToggled(_newState)
+    self.logic:setManualSelectInputs(_newState);
+    self.logic:setLastManualInputMode(_newState);
 end
 
 --************************************************************************--

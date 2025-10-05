@@ -148,6 +148,7 @@ end
 
 function ISCraftRecipePanel:update()
     ISPanel.update(self);
+    self:updateTitleWidget();
 end
 
 function ISCraftRecipePanel:setOverlayVisible(_b)
@@ -183,7 +184,7 @@ function ISCraftRecipePanel:onInputsChanged()
     end
 end
 
-function ISCraftRecipePanel:updateContainers(containers)
+function ISCraftRecipePanel:updateTitleWidget()
     if self.titleWidget then
         self.titleWidget:updateLabels();
         self.titleWidget:updatePropertyIcons();

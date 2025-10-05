@@ -12,7 +12,7 @@ function ISSpawnHordeUI:createChildren()
 	local x = UI_BORDER_SPACING+1
 	local btnWid = 100
 	local y = self:titleBarHeight() + UI_BORDER_SPACING
-	
+
 	ISCollapsableWindow.createChildren(self)
 
 	local pickedSquareText = getText("IGUI_SpawnHorde_PickedSquare") .. ": " .. self.selectX .. ", " .. self.selectY .. ", " .. self.selectZ
@@ -28,7 +28,7 @@ function ISSpawnHordeUI:createChildren()
 
 	local farX = self.pickNewSq:getRight()
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
-	
+
 	self.zombiesNbrLabel = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieNumber")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.zombiesNbrLabel);
 
@@ -39,10 +39,10 @@ function ISSpawnHordeUI:createChildren()
 	self:addChild(self.zombiesNbr);
 	farX = math.max(farX, self.zombiesNbr:getRight())
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
-	
+
 	self.radiusLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_Radius")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.radiusLbl);
-	
+
 	self.radius = ISTextEntryBox:new("1", self.radiusLbl:getRight()+UI_BORDER_SPACING, y, 100, BUTTON_HGT);
 	self.radius:initialise();
 	self.radius:instantiate();
@@ -60,7 +60,7 @@ function ISSpawnHordeUI:createChildren()
 	self:addChild(self.heightOffset);
 	farX = math.max(farX, self.heightOffset:getRight())
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
-	
+
 	self.outfitLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieOutfit")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.outfitLbl);
 
@@ -69,7 +69,7 @@ function ISSpawnHordeUI:createChildren()
 --	self.outfit:instantiate();
 --	self.outfit:setClearButton(true);
 --	self:addChild(self.outfit);
-	
+
 	self.outfit = ISComboBox:new(self.outfitLbl:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT)
 	self.outfit:initialise()
 	self:addChild(self.outfit)
@@ -92,10 +92,10 @@ function ISSpawnHordeUI:createChildren()
 
 	farX = math.max(farX, self.outfit:getRight())
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
-	
+
 	--self.crawlerLbl = ISLabel:new(10, y, 10, "Crawler" ,1,1,1,1,UIFont.Small, true);
 	--self:addChild(self.crawlerLbl);
-	
+
 	self.boolOptions = ISTickBox:new(x, y, 200, BUTTON_HGT, "", self, ISSpawnHordeUI.onBoolOptionsChange);
 	self.boolOptions:initialise()
 	self:addChild(self.boolOptions)
@@ -124,7 +124,8 @@ function ISSpawnHordeUI:createChildren()
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_StashDebug_Spawn")),
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DebugMenu_Close")),
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveZombies")),
-			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveBodies"))
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveBodies")),
+			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SpawnHorde_RemoveAllZombies"))
 	)
 
 	farX = math.max(farX, buttonWid*2 + UI_BORDER_SPACING*2)
@@ -150,6 +151,7 @@ function ISSpawnHordeUI:createChildren()
 	self.removezombies = ISButton:new(self.add.x, self.add.y - BUTTON_HGT - UI_BORDER_SPACING, buttonWid, BUTTON_HGT, getText("IGUI_SpawnHorde_RemoveZombies"), self, ISSpawnHordeUI.onRemoveZombies);
 	self.removezombies.anchorTop = false
 	self.removezombies.anchorBottom = true
+	self.removezombies:setTooltip("Tip: Hold down Shift to remove all loaded zombies.")
 	self.removezombies:initialise();
 	self.removezombies:instantiate();
 	self.removezombies.borderColor = {r=1, g=1, b=1, a=0.1};
@@ -291,9 +293,17 @@ end
 function ISSpawnHordeUI:onRemoveZombies()
 	local radius = self:getRadius() + 1;
 	if isClient() then
-		SendCommandToServer(string.format("/removezombies -x %d -y %d -z %d -radius %d", self.selectX, self.selectY, self.selectZ, radius))
-		return
+        if self.isShiftDown then
+            AdminContextMenu.OnRemoveAllZombiesClient();
+        else
+            SendCommandToServer(string.format("/removezombies -x %d -y %d -z %d -radius %d", self.selectX, self.selectY, self.selectZ, radius));
+        end;
+		return;
 	end
+    if self.isShiftDown then
+        DebugContextMenu.OnRemoveAllZombies();
+        return;
+    end;
 	for x=self.selectX-radius, self.selectX + radius do
 		for y=self.selectY-radius, self.selectY + radius do
 			local sq = getCell():getGridSquare(x,y,self.selectZ);
@@ -351,6 +361,16 @@ end
 
 function ISSpawnHordeUI:prerender()
 	ISCollapsableWindow.prerender(self);
+    self.isShiftDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) or Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    if self.isShiftDown then
+        self.removezombies:setTitle(getText("IGUI_SpawnHorde_RemoveAllZombies"));
+        local BHC = getCore():getBadHighlitedColor()
+        local r, g, b = BHC:getR(), BHC:getG(), BHC:getB();
+        self.removezombies:setBackgroundColorMouseOverRGBA(r, g, b, 1);
+    else
+        self.removezombies:setTitle(getText("IGUI_SpawnHorde_RemoveZombies"));
+        self.removezombies:setBackgroundColorMouseOverRGBA(0.3, 0.3, 0.3, 1);
+    end
 	local radius = (self:getRadius() + 1);
 	if self.marker and (self.marker:getSize() ~= radius) then
 		self.marker:setSize(radius)
@@ -416,5 +436,6 @@ function ISSpawnHordeUI:new(x, y, character, square)
 	o.anchorTop = true;
 	o.anchorBottom = true;
 	o:addMarker(square, 1);
-	return o;
+    o.isShiftDown = false;
+    return o;
 end

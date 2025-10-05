@@ -35,10 +35,7 @@ end
 function CharacterCreationMainCharacterPanel:render()
 	ISPanelJoypad.render(self)
 	self:clearStencilRect()
-	if self.joyfocus then
-		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
-		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
-	end
+	self:renderJoypadFocus(-3, -3, self.width + 6, self.height + 6)
 end
 
 function CharacterCreationMainCharacterPanel:positionRelativeToScrollBar()
@@ -99,18 +96,11 @@ function CharacterCreationMainCharacterPanel:onJoypadDown(button, joypadData)
 	end
 end
 
-function CharacterCreationMainCharacterPanel:onJoypadDirLeft(joypadData)
-	ISPanelJoypad.onJoypadDirLeft(self, joypadData)
-end
-
 function CharacterCreationMainCharacterPanel:onJoypadDirRight(joypadData)
 	local children = self:getVisibleChildren(self.joypadIndexY)
 	local child = children[self.joypadIndex]
 	if child and child.isSlider then
 		ISPanelJoypad.onJoypadDirRight(self, joypadData)
-	else
-		joypadData.focus = self.parent.clothingPanel
-		updateJoypadFocus(joypadData)
 	end
 end
 
@@ -173,24 +163,6 @@ function CharacterCreationMainPresetPanel:onJoypadDirUp(joypadData)
 		joypadData.focus = self.parent.characterPanel
 		updateJoypadFocus(joypadData)
 	end
-end
-
-function CharacterCreationMainPresetPanel:onJoypadDirLeft(joypadData)
-	if self.joypadIndex == 1 then
-		joypadData.focus = self.parent
-		updateJoypadFocus(joypadData)
-		return
-	end
-	ISPanelJoypad.onJoypadDirLeft(self, button, joypadData)
-end
-
-function CharacterCreationMainPresetPanel:onJoypadDirRight(joypadData)
-	if self.joypadIndex == 3 then
-		joypadData.focus = self.parent
-		updateJoypadFocus(joypadData)
-		return
-	end
-	ISPanelJoypad.onJoypadDirRight(self, button, joypadData)
 end
 
 -- -- -- -- --
@@ -1090,10 +1062,7 @@ end
 function ClothingPanel:render()
 	ISPanelJoypad.render(self)
 	self:clearStencilRect()
-	if self.joyfocus then
-		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
-		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
-	end
+	self:renderJoypadFocus(-3, -3, self.width + 6, self.height + 6)
 end
 
 function ClothingPanel:tryRemoveChild(child)
@@ -1134,19 +1103,6 @@ function ClothingPanel:onJoypadDown(button, joypadData)
 	else
 		ISPanelJoypad.onJoypadDown(self, button, joypadData)
 	end
-end
-
-function ClothingPanel:onJoypadDirLeft(joypadData)
-	if self.joypadIndex == 1 then
-		joypadData.focus = self.parent.characterPanel
-		updateJoypadFocus(joypadData)
-	else
-		ISPanelJoypad.onJoypadDirLeft(self, joypadData)
-	end
-end
-
-function ClothingPanel:onJoypadDirRight(joypadData)
-	ISPanelJoypad.onJoypadDirRight(self, joypadData)
 end
 
 function ClothingPanel:new(x, y, width, height)
@@ -2381,23 +2337,24 @@ function CharacterCreationMain:prerender()
 	self.deleteBuildButton:setEnable(self.savedBuilds.options[self.savedBuilds.selected] ~= nil)
 end
 
+function CharacterCreationMain:render()
+	ISPanel.render(self)
+	local playerNum = 0
+	self:renderJoypadNavigateOverlay(playerNum)
+end
+
 function CharacterCreationMain:onGainJoypadFocus(joypadData)
---	local oldFocus = self:getJoypadFocus()
-	ISPanelJoypad.onGainJoypadFocus(self, joypadData);
-	self:setISButtonForA(self.playButton);
-	self:setISButtonForB(self.backButton);
-	self:setISButtonForY(self.randomButton);
-	-- init all the button for the controller
-	self:loadJoypadButtons(joypadData);
---[[
-	if not oldFocus or not oldFocus:isVisible() then
-		self:clearJoypadFocus(joypadData)
-		self.joypadIndexY = #self.joypadButtonsY;
-		self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
-		self.joypadIndex = #self.joypadButtons;
-		self.playButton:setJoypadFocused(true);
+    if self:isDescendant(joypadData.switchingFocusFrom) then
+        ISPanelJoypad.onGainJoypadFocus(self, joypadData);
+        self:setISButtonForA(self.playButton);
+        self:setISButtonForB(self.backButton);
+        self:setISButtonForY(self.randomButton);
+        self:loadJoypadButtons(joypadData);
+    else
+        self:loadJoypadButtons(joypadData);
+        joypadData.focus = self.characterPanel
+        updateJoypadFocus(joypadData)
 	end
---]]
 end
 
 function CharacterCreationMain:onLoseJoypadFocus(joypadData)
@@ -2428,19 +2385,17 @@ function CharacterCreationMain:setJoypadFocusedYButton(focused)
 end
 --]]
 
-function CharacterCreationMain:onJoypadDirLeft(joypadData)
-	joypadData.focus = self.presetPanel
-	updateJoypadFocus(joypadData)
+function CharacterCreationMain:onJoypadNavigateStart(joypadData)
+	self:onJoypadNavigateStart_Descendant(nil, joypadData)
 end
 
-function CharacterCreationMain:onJoypadDirRight(joypadData)
-	joypadData.focus = self.presetPanel
-	updateJoypadFocus(joypadData)
-end
-
-function CharacterCreationMain:onJoypadDirUp(joypadData)
-	joypadData.focus = self.characterPanel
-	updateJoypadFocus(joypadData)
+function CharacterCreationMain:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	self.joypadNavigate = { left = self.presetPanel, up = self.characterPanel }
+	local avatar = self.avatarPanel
+	avatar.joypadNavigate = { left = self.characterPanel, right = self.clothingPanel, parent = self }
+	self.characterPanel.joypadNavigate = { right = avatar, down = self.presetPanel, parent = self }
+	self.clothingPanel.joypadNavigate = { left = avatar, parent = self }
+	self.presetPanel.joypadNavigate = { up = self.characterPanel, parent = self }
 end
 
 function CharacterCreationMain:loadJoypadButtons(joypadData)
@@ -2544,10 +2499,23 @@ function CharacterCreationMain:showColorPicker(picker)
 	if MainScreen.instance:isReallyVisible() then
 		MainScreen.instance:removeChild(picker)
 		MainScreen.instance:addChild(picker)
+		picker:setCapture(true)
 	else
 		picker:removeFromUIManager()
 		picker:addToUIManager()
+		picker:setCapture(false)
 	end
+end
+
+function CharacterCreationMain:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.playButton:forceClick()
+        return
+    end
 end
 
 function CharacterCreationMain:new (x, y, width, height)

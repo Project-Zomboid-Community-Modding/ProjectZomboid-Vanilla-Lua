@@ -59,7 +59,7 @@ function ISPickAxeGroundCoverItem:perform()
 	local xp = false
 	if self.objectType then
 		local trashItem
-		if self.objectType == "Small Stump" then trashItem = "Base.UnusableWood" end
+		if self.objectType == "Small Stump" or self.objectType == "Stump" then trashItem = "Base.UnusableWood" end
 -- 		if self.objectType == "bigRock" or self.objectType == "bigRockTwigs" then trashItem = "Base.LargeStone" end
 -- 		if self.objectType == "flatRock" then trashItem = "Base.FlatStone" end
         if (string.find(tostring(self.objectType), "ironOre") ~= nil) then

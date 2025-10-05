@@ -35,10 +35,18 @@ function ISItemSlotRemoveAction:start()
 	if self.item:getStaticModel() then
 		self:setOverrideHandModels(nil, self.item:getStaticModel())
 	end
+    local craftBenchSounds = self.entity:getComponent(ComponentType.CraftBenchSounds)
+    if craftBenchSounds ~= nil then
+        local soundName = craftBenchSounds:getSoundName("RemoveInput", nil)
+        if soundName ~= nil and soundName ~= "" then
+            self.sound = self.character:playSound(soundName)
+        end
+    end
 end
 
 function ISItemSlotRemoveAction:stop()
     ISBaseTimedAction.stop(self);
+    self:stopSound()
     if self.item ~= nil then
         self.item:setJobDelta(0.0);
 	end
@@ -48,6 +56,7 @@ function ISItemSlotRemoveAction:stop()
 end
 
 function ISItemSlotRemoveAction:perform()
+    self:stopSound()
     if self.item then
 		ISInventoryPage.dirtyUI()
     end
@@ -75,6 +84,12 @@ end
 
 function ISItemSlotRemoveAction:getDuration()
 	return 30; --todo base on weight?
+end
+
+function ISItemSlotRemoveAction:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound)
+	end
 end
 
 function ISItemSlotRemoveAction:new(character, entity, resource, item)

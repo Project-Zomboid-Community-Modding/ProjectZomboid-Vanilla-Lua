@@ -57,7 +57,7 @@ AdminContextMenu.doMenu = function(player, context, worldobjects, test)
     noiseSubMenu:addOption("Radius: 200", square, AdminContextMenu.onMakeNoise, playerObj, 200, 100);
     noiseSubMenu:addOption("Radius: 500", square, AdminContextMenu.onMakeNoise, playerObj, 500, 100);
 
-    subMenu:addOption("Remove all zombies", nil, AdminContextMenu.OnRemoveAllZombiesClient)
+    subMenu:addOption(getText("IGUI_SpawnHorde_RemoveAllZombies"), nil, AdminContextMenu.OnRemoveAllZombiesClient)
 
     local vehicle = square:getVehicleContainer()
     if vehicle ~= nil then

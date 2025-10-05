@@ -97,6 +97,15 @@ function ISFluidTransferUI:createChildren()
 
     y = y + FONT_HGT_MEDIUM + textOffsetM + textOffsetS;
 
+    self.fluidTitleText = "";
+    self.fluidTitleLabel = ISLabel:new (0, y, FONT_HGT_SMALL, self.fluidTitleText, 1, 1, 1, 1.0, UIFont.Small, true);
+    self.fluidTitleLabel.center = true;
+    self.fluidTitleLabel:initialise();
+    self.fluidTitleLabel:instantiate();
+    self:addChild(self.fluidTitleLabel);
+
+    y = y + FONT_HGT_SMALL;
+
     self.errorText = "";
     self.errorLabel = ISLabel:new (0, y, FONT_HGT_SMALL, self.errorText, 0.8, 0, 0, 1.0, UIFont.Small, true);
     self.errorLabel.center = true;
@@ -202,6 +211,7 @@ function ISFluidTransferUI:createChildren()
     y = self.btnClose:getBottom() + UI_BORDER_SPACING + 1
 
     self.titleLabel:setX(x/2);
+    self.fluidTitleLabel:setX(x/2);
     self.errorLabel:setX(x/2);
     self.errorLabel.originalX = x/2;
     self.maxTransferLabel:setX(x/2);
@@ -294,6 +304,14 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
 
     local from = self.panelLeft:getContainer();
     local to = self.panelRight:getContainer();
+
+    if from and from:getPrimaryFluid() then
+        self.fluidTitleLabel:setName((from:getUiName()):gsub("%b()$",""))
+    else
+        self.fluidTitleLabel:setName("")
+    end
+
+
     local fromOwnerDiff = false;
     local toOwnerDiff = false;
 
@@ -440,6 +458,7 @@ function ISFluidTransferUI:arrangePanels()
     self:setWidth(self.panelRight:getRight() + pad+1)
     self.panelRightX = self.panelRight:getX()
     self.titleLabel:setX(self.width / 2)
+    self.fluidTitleLabel:setX(self.width / 2)
     self.errorLabel:setX(self.width / 2)
 
     local btnWidth = (self.width - UI_BORDER_SPACING*3 - 2)/2
@@ -591,7 +610,7 @@ function ISFluidTransferUI:new(x, y, width, height, _player, _container, source)
     o.player = _player;
     o.playerNum = o.player:getPlayerNum();
     o.container = _container;
-	o.source = source;
+    o.source = source;
     --o.owner = _container:getOwner();
     o.isIsoPanel = not (o.container:isItem() or o.container:isResource()); --instanceof(_container:getOwner(), "IsoObject");
     --o.tempContainer = FluidContainer.new();

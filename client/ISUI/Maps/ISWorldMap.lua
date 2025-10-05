@@ -143,7 +143,7 @@ function WorldMapOptions:getVisibleOptions()
 	table.insert(optionNames, "HighlightStreet")
 	table.insert(optionNames, "LargeStreetLabel")
 	table.insert(optionNames, "ShowStreetNames")
-	table.insert(optionNames, "MapLabels")
+	table.insert(optionNames, "PlaceNames")
 	if TERRAIN_IMAGE then
 	    table.insert(optionNames, "TerrainImage")
 	end
@@ -156,6 +156,7 @@ function WorldMapOptions:getVisibleOptions()
 			end
 		end
 	end
+    table.sort(result, function(a,b) return not string.sort(a:getName(), b:getName()) end)
 	return result
 end
 
@@ -993,7 +994,7 @@ end
 function ISWorldMap:onConfirmForget(button)
 	self.forgetUI = nil
 	if button.internal ~= "YES" then return end
-	self.mapAPI:getSymbolsAPI():clear()
+	self.mapAPI:getSymbolsAPI():clearUserAnnotations()
 	WorldMapVisited.getInstance():forget()
 end
 
@@ -1373,13 +1374,19 @@ function ISWorldMap:saveSettings()
 	local settings = WorldMapSettings.getInstance()
 	settings:setDouble("WorldMap.CenterX", self.mapAPI:getCenterWorldX())
 	settings:setDouble("WorldMap.CenterY", self.mapAPI:getCenterWorldY())
-	settings:setDouble("WorldMap.Zoom", self.mapAPI:getZoomF())
+	settings:setBoolean("WorldMap.HighlightStreet", self.mapAPI:getBoolean("HighlightStreet"))
 	settings:setBoolean("WorldMap.Isometric", self.mapAPI:getBoolean("Isometric"))
+	settings:setBoolean("WorldMap.LargeStreetLabel", self.mapAPI:getBoolean("LargeStreetLabel"))
+	settings:setBoolean("WorldMap.PlaceNames", self.mapAPI:getBoolean("PlaceNames"))
+	settings:setBoolean("WorldMap.Players", self.mapAPI:getBoolean("Players"))
 	settings:setBoolean("WorldMap.ShowPrintMedia", self.showPrintMedia == true)
+	settings:setBoolean("WorldMap.ShowStreetNames", self.mapAPI:getBoolean("ShowStreetNames"))
 	settings:setBoolean("WorldMap.ShowSymbolsUI", self.symbolsUI:isVisible())
+	settings:setBoolean("WorldMap.Symbols", self.mapAPI:getBoolean("Symbols"))
 	if TERRAIN_IMAGE then
 	    settings:setBoolean("WorldMap.TerrainImage", self.mapAPI:getBoolean("TerrainImage"))
 	end
+	settings:setDouble("WorldMap.Zoom", self.mapAPI:getZoomF())
 	settings:save()
 end
 
@@ -1404,6 +1411,12 @@ function ISWorldMap:restoreSettings()
 		self.mapAPI:setBoolean("ImagePyramid", true)
 		self.mapAPI:setBoolean("Features", false)
 	end
+	self.mapAPI:setBoolean("HighlightStreet", settings:getBoolean("WorldMap.HighlightStreet"))
+	self.mapAPI:setBoolean("LargeStreetLabel", settings:getBoolean("WorldMap.LargeStreetLabel"))
+	self.mapAPI:setBoolean("PlaceNames", settings:getBoolean("WorldMap.PlaceNames"))
+	self.mapAPI:setBoolean("Players", settings:getBoolean("WorldMap.Players"))
+	self.mapAPI:setBoolean("ShowStreetNames", settings:getBoolean("WorldMap.ShowStreetNames"))
+	self.mapAPI:setBoolean("Symbols", settings:getBoolean("WorldMap.Symbols"))
 	self.symbolsUI:setVisible(showSymbolsUI)
 	self.keyUI:setVisible(showSymbolsUI)
 	if TERRAIN_IMAGE then

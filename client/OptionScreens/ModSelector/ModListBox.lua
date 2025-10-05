@@ -15,11 +15,10 @@ local GHC = getCore():getGoodHighlitedColor()
 local BHC = getCore():getBadHighlitedColor()
 
 function ModListBox:new(x, y, width, height, model)
-    local o = ISScrollingListBox:new(x, y, width, height)
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISScrollingListBox.new(self, x, y, width, height)
     o.backgroundColor = {r=0, g=0, b=0, a=0.3}
     o.borderColor = {r=1, g=1, b=1, a=0.2}
+    o:setOnMouseDownFunction(o, ModListBox.onSelectItem)
     o.boxSize = BUTTON_HGT
     o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png")
     o.cantTexture = getTexture("media/ui/inventoryPanes/Tickbox_Cross.png")
@@ -66,9 +65,15 @@ function ModListBox:onMouseDown(x, y)
             self.model:setFavorite(self.mouseOverFavoriteButton.item.modId, not self.mouseOverFavoriteButton.item.favorite)
         else
             self.selected = row
-            self.parent.parent.modInfoPanel:updateView(self.items[row].item.modInfo)
+            if self.onmousedown then
+                self.onmousedown(self.target, self.items[self.selected].item)
+            end
         end
     end
+end
+
+function ModListBox:onSelectItem(item)
+    self.parent.parent.modInfoPanel:updateView(item.modInfo)
 end
 
 function ModListBox:getSelectedModData()
@@ -265,6 +270,9 @@ function ModListBox:onJoypadDown(button, joypadData)
         if (#self.items > 0) and (self.selected ~= -1) then
             self.model:forceActivateMods(self.items[self.selected].item.modInfo, not self.items[self.selected].item.isActive)
         end
+    elseif button == Joypad.BButton then
+        joypadData.focus = self.parent.parent
+        updateJoypadFocus(joypadData)
     elseif button == Joypad.XButton then
         if (#self.items > 0) and (self.selected ~= -1) then
             self.model:setFavorite(self.items[self.selected].item.modId, not self.items[self.selected].item.favorite)

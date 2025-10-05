@@ -27,13 +27,14 @@ function ISTeleportDebugUI:onOtherKey(key)
 	end;
 	if key == Keyboard.KEY_TAB then
 		local targetEntry;
-		if self.parent.entryX:isFocused() then
-			targetEntry = self.parent.entryY;
-		elseif self.parent.entryY:isFocused() then
-			targetEntry = self.parent.entryZ;
-		elseif self.parent.entryZ:isFocused() then
-			targetEntry = self.parent.entryX;
-		end;
+        local doReverse = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) or Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        if self.parent.entryX:isFocused() then
+            targetEntry = doReverse and self.parent.entryZ or self.parent.entryY;
+        elseif self.parent.entryY:isFocused() then
+            targetEntry = doReverse and self.parent.entryX or self.parent.entryZ;
+        elseif self.parent.entryZ:isFocused() then
+            targetEntry = doReverse and self.parent.entryY or self.parent.entryX;
+        end;
 		if targetEntry then
 			Core.UnfocusActiveTextEntryBox();
 			targetEntry:focus();
@@ -71,7 +72,7 @@ function ISTeleportDebugUI:initialise()
 	local label = ISLabel:new((self:getWidth() / 3) - 15, y, BUTTON_HGT, "Y:", 1, 1, 1, 1, UIFont.Small)
 	label:initialise()
 	self:addChild(label)
-	
+
 	self.entryY = ISTextEntryBox:new(round(self.player:getY(), 0) .. "", (self:getWidth() / 3), y, (self:getWidth() / 2) - 20, BUTTON_HGT);
 	self.entryY.font = UIFont.Small
 	self.entryY:initialise();
@@ -108,14 +109,14 @@ function ISTeleportDebugUI:initialise()
 
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	self.copy = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Save"), self, ISTeleportDebugUI.onClick);
+	self.copy = ISButton:new((self:getWidth()-UI_BORDER_SPACING)/2 - buttonWid, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Copy"), self, ISTeleportDebugUI.onClick);
 	self.copy.internal = "COPY";
 	self.copy:initialise();
 	self.copy:instantiate();
 	self.copy:enableAcceptColor()
 	self:addChild(self.copy);
 
-	self.paste = ISButton:new((self:getWidth()+UI_BORDER_SPACING)/2, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Load"), self, ISTeleportDebugUI.onClick);
+	self.paste = ISButton:new((self:getWidth()+UI_BORDER_SPACING)/2, y, buttonWid, BUTTON_HGT, getText("IGUI_DebugMenu_Paste"), self, ISTeleportDebugUI.onClick);
 	self.paste.internal = "PASTE";
 	self.paste:initialise();
 	self.paste:instantiate();
@@ -191,16 +192,16 @@ function ISTeleportDebugUI:prerender()
 	self.entryX.backgroundColor.a = 0.8
 	self.entryY.backgroundColor.a = 0.8
 	self.entryZ.backgroundColor.a = 0.8
-	
+
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-	
+
 	local th = self:titleBarHeight()
 	self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, th - 2, 1, 1, 1, 1);
-	
+
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	
+
 	self:drawTextCentre(getText("IGUI_GameStats_Teleport"), self:getWidth() / 2, UI_BORDER_SPACING+th+1, 1, 1, 1, 1, UIFont.NewLarge);
-	
+
 	self:updateButtons();
 end
 

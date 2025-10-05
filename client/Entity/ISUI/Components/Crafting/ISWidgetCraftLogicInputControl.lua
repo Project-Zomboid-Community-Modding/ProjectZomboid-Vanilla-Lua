@@ -21,8 +21,8 @@ end
 
 function ISWidgetCraftLogicInputControl:createDynamicChildren()
     -- Inputs - Items
-    local inputItems = self.inputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.inputsGroupName, ArrayList.new(), ResourceIO.Input, ResourceType.Item) or ArrayList.new();
-    if inputItems:size() > 0 then
+    local inputResourceItems = self.inputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.inputsGroupName, ArrayList.new(), ResourceIO.Input, ResourceType.Item) or ArrayList.new();
+    if inputResourceItems:size() > 0 then
         self.inputItems = ISXuiSkin.build(self.xuiSkin, "S_ItemSlotPanel_InputsCraftLogic", ISItemSlotPanel, 0, 0, 10, 10, self.player, self.entity, self.logic, nil, nil);
         self.inputItems.resourceType = ResourceType.Item;
         self.inputItems.interactiveMode = true;
@@ -52,7 +52,7 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
         end
     end
     
-    if hasTools and inputItems:size() > 0 then
+    if hasTools and inputResourceItems:size() > 0 then
         self.inputTools = ISXuiSkin.build(self.xuiSkin, "S_ItemSlotPanel_ToolsCraftLogic", ISItemSlotPanel, 0, 0, 10, 10, self.player, self.entity, self.logic, nil, nil);
         self.inputTools.resourceType = ResourceType.Item;
         self.inputTools.interactiveMode = true;
@@ -65,19 +65,26 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
         local recipeInput = recipeInputs:get(i);
         local itemSlot = nil;
         if showToolsSeparate and (recipeInput:isTool() or recipeInput:isKeep()) then
-            itemSlot = self.inputTools:addResource(inputItems:get(i), "S_ItemSlot_Input");
+            itemSlot = self.inputTools:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
         else
-            itemSlot = self.inputItems:addResource(inputItems:get(i), "S_ItemSlot_Input");
+            itemSlot = self.inputItems:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
+            itemSlot.onItemDropped = ISCraftLogicPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
         end
         itemSlot.inputScript = recipeInput;
         itemSlot.showPreviewItem = true;
     end
-    local missingSlotCount = inputItems:size() - recipeInputs:size();
+    local missingSlotCount = inputResourceItems:size() - recipeInputs:size();
     for i = 1, missingSlotCount do
-        local itemSlot = self.inputItems:addResource(inputItems:get(i), "S_ItemSlot_Input");
-        
+        local itemSlot = self.inputItems:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
+        itemSlot.onItemDropped = ISCraftLogicPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
     end
-    
+
+    -- Inputs - Full Label
+    local badColor = getCore():getBadHighlitedColor()
+    self.inputsFullLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, -1, getText("EC_CraftLogic_Inputs_Full"), badColor:getR(), badColor:getG(), badColor:getB(), 1, UIFont.Small, true);
+    self.inputsFullLabel:initialise();
+    self.inputsFullLabel:instantiate();
+    self:addChild(self.inputsFullLabel);
 
     -- Control
     self.controlWidget = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetCraftLogicControl, 0, 0, 10, 10, self.player, self.logic, self.entity);
@@ -95,6 +102,7 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
         self.outputItems.isOutput = true;
         self.outputItems.resourceType = ResourceType.Item;
         self.outputItems.interactiveMode = false;
+        self.outputItems.renderItemCount = true;
         self.outputItems.drawTooltip = function(_itemSlot, _tooltip) self.logic:doPreviewSlotTooltip(_itemSlot, _tooltip); end;
         self.outputItems:initialise();
         self.outputItems:instantiate();        
@@ -104,7 +112,7 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
     self:updateOutputItems();
     
     -- Outputs - Duration
-    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, -1, "Time Required:", 1, 1, 1, 1, UIFont.Small, true);
+    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, -1, getText("EC_CraftLogic_Duration_Unknown"), 1, 1, 1, 1, UIFont.Small, true);
     self.durationLabel:initialise();
     self.durationLabel:instantiate();    
     self:addChild(self.durationLabel);
@@ -122,7 +130,7 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
             self.durationLabel:setName(text)
             self.durationLabel:setHeightToName(0)
         else
-            self.durationLabel:setName("Time Required: ??")
+            self.durationLabel:setName(getText("EC_CraftLogic_Duration_Unknown"));
         end
     end
 end
@@ -143,22 +151,24 @@ function ISWidgetCraftLogicInputControl:calculateLayout(_preferredWidth, _prefer
     -- get min width for each element
     local inputItemsMinW = self.inputItems and self.inputItems:getWidth() or 0;
     local inputToolsMinW = self.inputTools and self.inputTools:getWidth() or 0;
+    local inputFullLabelMinW = self.inputsFullLabel and self.inputsFullLabel:getWidth() or 0;
     local outputItemsMinW = self.outputItems and self.outputItems:getWidth() or 0;
     local durationLabelMinW = self.durationLabel:getWidth();
     local controlWidgetMinW = self.controlWidget:getWidth();
 
     local controlColWidth = math.max(durationLabelMinW, controlWidgetMinW);
-    local minimumWidth = (math.max(inputItemsMinW, inputToolsMinW, outputItemsMinW) * 2) + math.max(durationLabelMinW, controlWidgetMinW) + (self.elementSpacing * 2);
+    local minimumWidth = (math.max(inputItemsMinW, inputToolsMinW, outputItemsMinW, inputFullLabelMinW) * 2) + math.max(durationLabelMinW, controlWidgetMinW) + (self.elementSpacing * 2);
     width = math.max(width, minimumWidth);
     
     -- get min height for each element
     local inputItemsMinH = self.inputItems and self.inputItems:getHeight() or 0;
     local inputToolsMinH = self.inputTools and self.inputTools:getHeight() or 0;
+    local inputFullLabelMinH = self.inputsFullLabel and self.inputsFullLabel:getHeight() or 0;
     local outputItemsMinH = self.outputItems and self.outputItems:getHeight() or 0;
     local durationLabelMinH = self.durationLabel:getHeight();
     local controlWidgetMinH = self.controlWidget:getHeight();
 
-    local inputColHeight = inputItemsMinH + inputToolsMinH + self.elementSpacing;
+    local inputColHeight = inputItemsMinH + self.elementSpacing + inputToolsMinH + self.elementSpacing + inputFullLabelMinH;
     local controlColHeight = durationLabelMinH + controlWidgetMinH + self.elementSpacing;
     local minimumHeight = math.max(inputColHeight, controlColHeight, outputItemsMinH) + self.marginTop + self.marginBottom;
     height = math.max(height, minimumHeight);
@@ -181,11 +191,18 @@ function ISWidgetCraftLogicInputControl:calculateLayout(_preferredWidth, _prefer
     if self.inputItems then 
         self.inputItems:setX(x); 
         self.inputItems:setY(y);
-        y = y + self.elementSpacing;
+        y = y + self.inputItems:getHeight() + self.elementSpacing;
     end
     if self.inputTools then 
         self.inputTools:setX(x); 
-        self.inputTools:setY(y); 
+        self.inputTools:setY(y);
+        y = y + self.inputTools:getHeight() + self.elementSpacing;
+    end
+    if self.inputsFullLabel then
+        local labelX = x + (sideColWidth - self.inputsFullLabel:getWidth())/2;
+        local labelY = y - self.elementSpacing - self.inputsFullLabel:getHeight();
+        self.inputsFullLabel:setX(labelX);
+        self.inputsFullLabel:setY(labelY);
     end
     
     x = x + sideColWidth + self.elementSpacing;
@@ -244,6 +261,9 @@ end
 
 function ISWidgetCraftLogicInputControl:onItemSlotContentsChanged( _itemSlot )
     self.logic:onResourceSlotContentsChanged();
+end
+
+function ISWidgetCraftLogicInputControl:onResourceSlotContentsChanged()
     self:updateOutputItems();
     self.controlWidget:onInputsChanged();
     self:calculateLayout(self.width, self.height);
@@ -253,15 +273,29 @@ function ISWidgetCraftLogicInputControl:updateOutputItems()
     -- update output teaser
     self.outputItems:removeAllSlots();
     local outputItems = self.logic:getOutputItems();
-    for i = 0, outputItems:size()-1 do
-        self.outputItems:addDisplayItem(outputItems:get(i), "S_ItemSlot_OutputAux");
+    local itemCount = 0
+    self.outputItemCount = 0;
+    for item,count in pairs(outputItems) do
+        local slot = self.outputItems:addDisplayItem(item, "S_ItemSlot_OutputAux");
+        slot.overrideItemCount = count;
+        self.outputItemCount = self.outputItemCount + count;
+        itemCount = itemCount + 1;
     end
     
     local recipeOutputs = self.recipe:getOutputs();
-    local unfilledCount = recipeOutputs:size() - outputItems:size();
+    local unfilledCount = recipeOutputs:size() - itemCount;
     for i = 1, unfilledCount do
         self.outputItems:addDisplayEmptySlot("S_ItemSlot_OutputAux");
     end
+
+    -- SET INPUTS FULL VISIBILITY
+    --self.inputsFullLabel:setVisible(self.logic:getCraftLogic():getFreeOutputSlotCount() <= self.outputItemCount); -- this is the more correct way of doing this - but using the method below for now, as its only used for 1:1 drying - spurcival
+    local resourceCount = 0;
+    local inputResourceItems = self.inputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.inputsGroupName, ArrayList.new(), ResourceIO.Input, ResourceType.Item) or ArrayList.new();
+    for i = 0, inputResourceItems:size()-1 do
+        resourceCount = resourceCount + inputResourceItems:get(i):getItemAmount();
+    end
+    self.inputsFullLabel:setVisible(self.logic:getCraftLogic():getFreeOutputSlotCount() <= resourceCount);
 end
 
 function ISWidgetCraftLogicInputControl:onRecipeChanged()
@@ -319,6 +353,7 @@ function ISWidgetCraftLogicInputControl:new(x, y, width, height, player, logic)
     }
     
     o.backgroundColor = { r=1.0, g=1.0, b=1.0, a=0.2 };
+    o.outputItemCount = 0;
 
     return o
 end

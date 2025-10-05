@@ -298,7 +298,7 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
     -- depending on the time passed since death we lower the food nb/ratio
     local deathAge = carcass:getModData()["deathAge"] or 0;
     if deathAge > 12 then -- give 12h before starting to lower it
-        local delta = deathAge/30;
+        local delta = deathAge / 13;
         minNb = minNb / delta;
         maxNb = maxNb / delta;
         meatRatio = meatRatio / delta;
@@ -561,6 +561,7 @@ function ButcheringUtil.createAnimalForHook(hook, newCorpse)
     local animal = IsoAnimal.new(getCell(), hook:getSquare():getX(), hook:getSquare():getY(), hook:getSquare():getZ(), modData["AnimalType"], modData["AnimalBreed"]);
     if newCorpse then
         modData["originalSize"] = newCorpse:getAnimalSize();
+        modData["deathTime"] = newCorpse:getDeathTime();
     end
     animal:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
     if modData["animalSize"] < animal:getData():getSize() then
@@ -587,6 +588,7 @@ function ButcheringUtil.onRemoveCorpseFromHook(hook, animal)
         body:setX(animal:getX());
         body:setY(animal:getY());
         body:setZ(hook:getZ());
+        body:setDeathTime(animal:getModData().deathTime or getGameTime():getWorldAgeHours())
 
         if animal:getModData()["skeleton"] == "true" then
             body:changeRotStage(2); -- switch to a bloody skeleton

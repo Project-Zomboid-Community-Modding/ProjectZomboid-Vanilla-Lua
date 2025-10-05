@@ -290,6 +290,7 @@ function luautils.walkToContainer(container, playerNum)
 	if container:getType() == "floor" then
 		return true
 	end
+
 	local playerObj = getSpecificPlayer(playerNum)
 	if container:getParent() and not container:getVehiclePart() and container:getParent():getSquare():DistToProper(playerObj:getCurrentSquare()) < 2 then
 		return true;

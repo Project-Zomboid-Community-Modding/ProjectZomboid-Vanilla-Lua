@@ -62,7 +62,7 @@ function AIAttachLureAction:complete()
 
     local defaultName = self.rod:getScriptItem():getDisplayName()
 
-    self.rod:setName(getText(defaultName) .. " " .. getText("UI_AttachLure_With") .. " " .. self.lure:getDisplayName())
+    self.rod:setName(Translator.getText(defaultName) .. " " .. getText("UI_AttachLure_With") .. " " .. self.lure:getDisplayName())
 
     self.rod:getModData().fishing_Lure = self.lure:getFullType()
 

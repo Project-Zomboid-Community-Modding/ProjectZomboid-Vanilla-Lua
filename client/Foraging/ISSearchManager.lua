@@ -174,7 +174,7 @@ function ISSearchManager:renderDebugInfo()
 				y = y + 15;
 				icon:drawTextCentre(tostring(k).." = "..tostring(v), 0, y, 1, 1, 1, 1, UIFont.NewSmall);
 			end;
-	end;
+		end;
 	end;
 	if ISSearchManager.showDebugLocations then
 		for iconID, icon in pairs(self.forageIcons) do

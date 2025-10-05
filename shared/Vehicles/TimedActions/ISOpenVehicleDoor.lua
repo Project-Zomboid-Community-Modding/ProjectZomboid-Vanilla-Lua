@@ -23,8 +23,8 @@ end
 
 function ISOpenVehicleDoor:update()
 	self.character:PlayAnim("Idle")
+	--	if self.door:isAnimationFinished() then
 	if self.character:getSpriteDef():isFinished() then
---	if self.door:isAnimationFinished() then
 		self:forceComplete()
 	end
 end
@@ -34,6 +34,7 @@ function ISOpenVehicleDoor:start()
 	self.vehicle:playPartAnim(self.part, "Open")
 	self.vehicle:playPartSound(self.part, self.character, "Open")
 	self.action:setOverrideAnimation(true)
+	self.action:setAllowedWhileDraggingCorpses(true)
 	if self.seat then
 		self.vehicle:playPassengerAnim(self.seat, "openDoor", self.character)
 	else

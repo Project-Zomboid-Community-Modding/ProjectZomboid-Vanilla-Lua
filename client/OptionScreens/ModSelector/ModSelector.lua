@@ -133,12 +133,23 @@ function ModSelector:create()
     self.helpButton:ignoreWidthChange();
     self.helpButton:ignoreHeightChange();
     self:addChild(self.helpButton);
+
+    self.joypadIndexY = 2
+    self.joypadIndex = 1
+    self:insertNewLineOfButtons(self.helpButton)
+    self:insertNewLineOfButtons(self.backButton, self.mapOrderbtn, self.modOrderbtn, self.acceptButton)
 end
 
 function ModSelector:prerender()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
     ISPanelJoypad.prerender(self)
     self:drawTextCentre(getText("UI_mods_SelectMods"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title)
+end
+
+function ModSelector:render()
+    ISPanelJoypad.render(self)
+    local playerNum = 0
+    self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function ModSelector:onResolutionChange()
@@ -247,9 +258,7 @@ function ModSelector:onAccept()
 
     self:setVisible(false)
     if self.joyfocus then
-        if self.joypadIndex ~= 0 then
-            self.children[self.joypadIndex]:setJoypadFocused(false, self.joyfocus)
-        end
+        self:clearJoypadFocus()
         self.joyfocus.focus = self.returnToUI
         updateJoypadFocus(self.joyfocus)
     end
@@ -278,117 +287,43 @@ function ModSelector:setNewGame()
     self.model.isNewGame = true
 end
 
+function ModSelector:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.acceptButton:forceClick()
+        return
+    end
+end
+
 ---------------------------
 
 function ModSelector:onGainJoypadFocus(joypadData)
-    if self.joypadIndex == 0 then
-        self.joypadIndex = self.modListPanel.ID
-    end
-    self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+    self:restoreJoypadFocus(joypadData)
+    self:setISButtonForB(self.backButton)
 end
 
-function ModSelector:onJoypadDown(button, joypadData)
-    local child = self.children[self.joypadIndex]
-
-    if button == Joypad.AButton and child and (child.isButton or child.isTickBox) then
-        child:forceClick()
-        return
-    end
-    if button == Joypad.AButton and child == self.modInfoPanel then
-        joypadData.focus = self.modInfoPanel
-        updateJoypadFocus(joypadData)
-        return
-    end
-    if button == Joypad.AButton and child == self.modListPanel then
-        joypadData.focus = self.modListPanel
-        updateJoypadFocus(joypadData)
-        if #self.modListPanel.modList.items ~= 0 then
-            self.modInfoPanel:updateView(self.modListPanel.modList.items[1].item.modInfo)
-        end
-        return
-    end
-    if button == Joypad.BButton then
-    end
+function ModSelector:onLoseJoypadFocus(joypadData)
+    self.backButton:clearJoypadButton()
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
 end
 
-function ModSelector:onJoypadDirUp(joypadData)
-    self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-    if self.joypadIndex == self.mapOrderbtn.ID or self.joypadIndex == self.modOrderbtn.ID or self.joypadIndex == self.acceptButton.ID then
-        if self.modInfoPanel:getIsVisible() then
-            self.joypadIndex = self.modInfoPanel.ID
-        else
-            self.joypadIndex = self.modListPanel.ID
-        end
-    elseif self.joypadIndex == self.modInfoPanel.ID then
-        self.joypadIndex = self.helpButton.ID
-    elseif self.joypadIndex == self.backButton.ID or self.joypadIndex == self.presetPanel.ID then
-        self.joypadIndex = self.modListPanel.ID
-    elseif self.joypadIndex == self.modListPanel.ID then
-        self.joypadIndex = self.helpButton.ID
-    end
-    self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
+function ModSelector:onJoypadNavigateStart(joypadData)
+    self:onJoypadNavigateStart_Descendant(nil, joypadData)
 end
 
-function ModSelector:onJoypadDirDown(joypadData)
-    self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-    if self.joypadIndex == self.helpButton.ID then
-        if self.modInfoPanel:getIsVisible() then
-            self.joypadIndex = self.modInfoPanel.ID
-        else
-            self.joypadIndex = self.modListPanel.ID
-        end
-    elseif self.joypadIndex == self.modInfoPanel.ID then
-        self.joypadIndex = self.acceptButton.ID
-    elseif self.joypadIndex == self.modListPanel.ID then
-        self.joypadIndex = self.backButton.ID
+function ModSelector:onJoypadNavigateStart_Descendant(descendant, joypadData)
+    self.joypadNavigate = { left = self.presetPanel, up = self.modListPanel.modList }
+    local infoPanel = self.modInfoPanel:isVisible() and self.modInfoPanel or nil
+    self.modListPanel.filterPanel.joypadNavigate = { down = self.modListPanel.modList, parent = self }
+    self.modListPanel.modList.joypadNavigate = { right = infoPanel, up = self.modListPanel.filterPanel, down = self.presetPanel, parent = self }
+    if infoPanel then
+        infoPanel.joypadNavigate = { left = self.modListPanel.modList, down = self.presetPanel, parent = self }
     end
-    self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-end
-
-
-function ModSelector:onJoypadDirLeft(joypadData)
-    self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-    if self.joypadIndex == self.mapOrderbtn.ID then
-        joypadData.focus = self.presetPanel
-        self.presetPanel.joypadIndex = self.presetPanel.childrenLine[#self.presetPanel.childrenLine].ID
-        self.presetPanel.childrenIndex = #self.presetPanel.childrenLine
-        updateJoypadFocus(joypadData)
-    elseif self.joypadIndex == self.acceptButton.ID then
-        self.joypadIndex = self.modOrderbtn.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif self.joypadIndex == self.modOrderbtn.ID then
-        self.joypadIndex = self.mapOrderbtn.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif self.joypadIndex == self.backButton.ID then
-        self.joypadIndex = self.acceptButton.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif self.joypadIndex == self.modInfoPanel.ID then
-        self.joypadIndex = self.modListPanel.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    end
-end
-
-function ModSelector:onJoypadDirRight(joypadData)
-    self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-    if self.joypadIndex == self.backButton.ID then
-        joypadData.focus = self.presetPanel
-        self.presetPanel.joypadIndex = self.presetPanel.childrenLine[1].ID
-        self.presetPanel.childrenIndex = 1
-        updateJoypadFocus(joypadData)
-    elseif self.joypadIndex == self.mapOrderbtn.ID then
-        self.joypadIndex = self.modOrderbtn.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif self.joypadIndex == self.modOrderbtn.ID then
-        self.joypadIndex = self.acceptButton.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif self.joypadIndex == self.acceptButton.ID then
-        self.joypadIndex = self.backButton.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    elseif (self.joypadIndex == self.modListPanel.ID) and self.modInfoPanel:getIsVisible() then
-        self.joypadIndex = self.modInfoPanel.ID
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    end
+    self.presetPanel.joypadNavigate = { up = self.modListPanel.modList, parent = self }
 end
 
 ---------------------------

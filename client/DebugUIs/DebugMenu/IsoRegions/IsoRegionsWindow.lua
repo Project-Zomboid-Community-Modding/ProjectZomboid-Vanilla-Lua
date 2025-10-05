@@ -118,6 +118,10 @@ function IsoRegionsWindow.onKeyStartPressed(_key)
         if _key==19 then
             IsoRegionsWindow.instance:rotate();
         end
+        if _key == Keyboard.KEY_C then
+            IsoRegionsWindow.instance.xpos = getSpecificPlayer(0):getX()
+            IsoRegionsWindow.instance.ypos = getSpecificPlayer(0):getY()
+        end
     end
 end
 

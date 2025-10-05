@@ -499,8 +499,9 @@ function DebugContextMenu.doDebugZombieMenu(player, context, worldobjects, test,
 	if isClient() then
 		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllZombiesClient)
 		subMenu:addOption("Add Zombie", player, DebugContextMenu.OnAddZombieClient, player)
-		subMenu:addOption("Horde Manager", square, AdminContextMenu.onHordeManager, playerObj)
+        subMenu:addOption("Horde Manager", square, AdminContextMenu.onHordeManager, playerObj)
 	else
+        subMenu:addOption("Horde Manager", square, AdminContextMenu.onHordeManager, playerObj)
 		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllZombies)
 	end
 
@@ -989,7 +990,7 @@ local function OnGeneratorSetFuel2(target, button, obj)
 	if button.internal == "OK" then
 		local text = button.parent.entry:getText()
 		if tonumber(text) then
-			local compost = math.min(tonumber(text), 100.0)
+			local compost = math.min(tonumber(text), obj:getMaxFuel())
 			compost = math.max(compost, 0.0)
 			obj:setFuel(compost)
 		end
@@ -997,7 +998,8 @@ local function OnGeneratorSetFuel2(target, button, obj)
 end
 
 function DebugContextMenu.OnGeneratorSetFuel(obj)
-	local modal = ISTextBox:new(0, 0, 280, 180, "Fuel (0-100):", tostring(obj:getFuel()), nil, OnGeneratorSetFuel2, nil, obj)
+	local max = luautils.round(obj:getMaxFuel(), 2)
+	local modal = ISTextBox:new(0, 0, 280, 180, "Fuel (0-".. max .. "):", tostring(obj:getFuel()), nil, OnGeneratorSetFuel2, nil, obj)
 	modal:initialise()
 	modal:addToUIManager()
 end
@@ -1171,7 +1173,7 @@ DebugContextMenu.addRVSDebugMenu = function(context, square, playerObj)
 		local valid = false;
 		for j=0,zones:size()-1 do
 			local zone = zones:get(j);
-			if rvs:isValid(zone, square:getChunk(), true) then
+			if (zone:getType() == "Nav") and rvs:isValid(zone, square:getChunk(), true) then
 				valid = true;
 				break;
 			end

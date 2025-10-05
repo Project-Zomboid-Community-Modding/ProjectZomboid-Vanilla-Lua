@@ -61,7 +61,7 @@ function ISDrinkFluidAction:start()
 	self.item:setJobDelta(0.0);
     if self.item:getEatType() then
         self:setAnimVariable("FoodType", self.item:getEatType());
-        if self.item:getEatType() == "Pot" then
+        if self.item:getEatType() == "Pot" or self.item:getEatType() == "PotForged" then
             self:setOverrideHandModels(self.item, nil);
         end
     else

@@ -45,8 +45,8 @@ end
 function AIRemoveLureAction:complete()
     log(DebugType.Action, '[ClientCommands.fishing.removeLure] '..tostring(self.character)..' rod '..tostring(self.rod))
 
-    local defaultName = self.rod:getScriptItem():getName()
-    self.rod:setName(getText(defaultName))
+    local defaultName = self.rod:getScriptItem():getDisplayName()
+    self.rod:setName(Translator.getText(defaultName))
 
     local lure = nil
     local lureId = -1

@@ -31,6 +31,10 @@ function ISColorPicker:render()
 end
 
 function ISColorPicker:onMouseDown(x, y)
+    if self:isCapture() and not self:isMouseOver() then
+        self:onMouseDownOutside(x, y)
+        return
+    end
 	self.mouseDown = true
 	self:onMouseMove(0, 0)
 	return true

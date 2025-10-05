@@ -44,8 +44,8 @@ ZomboidGlobals = {
     FoodSicknessDecrease = 0.0015,
 	
 	BurnCorpsePetrolAmount = 0.1,
-	CleanBloodBleachAmount = 0.25,
-	CleanGraffitiPetrolAmount = 1.25,
+	CleanBloodBleachAmount = 0.24999,
+	CleanGraffitiPetrolAmount = 1.24999,
 	LightFromPetrolAmount = 0.1,
 
 	farmingFluidContainerMillilitresPerUse = 200,

@@ -261,7 +261,7 @@ function ISTickBox:addOption(name, data, texture)
 	table.insert(self.options, name);
     self.textures[self.optionCount] = texture;
 	self.optionData[self.optionCount] = data;
-	self.optionsIndex[self.optionCount] =  name;
+	self.optionsIndex[self.optionCount] = name;
 	self.optionCount = self.optionCount + 1;
 	self:setHeight(#self.options * (self.itemHgt + UI_BORDER_SPACING) - UI_BORDER_SPACING);
 	if self.autoWidth then

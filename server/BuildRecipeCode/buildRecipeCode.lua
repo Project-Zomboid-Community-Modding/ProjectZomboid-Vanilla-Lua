@@ -586,3 +586,21 @@ function BuildRecipeCode.woodLampPillar.OnCreate(params)
 
 -- 	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
 end
+
+BuildRecipeCode.barrelOven = {}
+
+function BuildRecipeCode.barrelOven.OnCreate(params)
+    local thumpable = params.thumpable;
+	local sq = thumpable:getSquare();
+	local sprite = thumpable:getSprite():getName();
+    local javaObject = IsoFireplace.new( getCell(), sq, getSprite(sprite) );
+	sq:AddTileObject(javaObject)
+
+	if thumpable:getSquare() ~= nil then
+		thumpable:removeFromWorld();
+		thumpable:removeFromSquare();
+		thumpable:setSquare(nil);
+	end
+
+	return { replaceObject = true, object = javaObject };
+end

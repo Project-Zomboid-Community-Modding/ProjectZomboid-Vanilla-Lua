@@ -22,10 +22,12 @@ end
 
 function ISSitOnGround:start()
 	self.character:reportEvent("EventSitOnGround")
+	if self.bed then self.character:setBed(self.bed) end
 end
 
 function ISSitOnGround:stop()
     ISBaseTimedAction.stop(self)
+	self.character:setBed(nil)
 end
 
 function ISSitOnGround:perform()
@@ -40,9 +42,10 @@ function ISSitOnGround:getDuration()
 	return -1
 end
 
-function ISSitOnGround:new(character)
+function ISSitOnGround:new(character, bed)
 	local o = ISBaseTimedAction.new(self, character)
 	o.maxTime = o:getDuration()
 	o.useProgressBar = false
+	o.bed = bed
 	return o
 end

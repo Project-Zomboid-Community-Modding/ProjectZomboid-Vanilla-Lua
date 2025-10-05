@@ -34,6 +34,8 @@ function ISUnequipAction:start()
 		self.character:reportEvent("EventWearClothing");
 		if not self.item:getUnequipSound() then
 			self.sound = self.character:playSound("RummageInInventory")
+			-- FIXME: RummageInInventory uses ActionProgressPercent but doesn't stop playing when it is set to 100.
+			self.soundNoTrigger = true
 		end
 	elseif self.item:IsInventoryContainer() and self.item:canBeEquipped() ~= "" then
 		self:setActionAnim("WearClothing");
@@ -49,7 +51,11 @@ end
 
 function ISUnequipAction:stop()
 	if self.sound then
-		self.character:stopOrTriggerSound(self.sound)
+        if self.soundNoTrigger then
+            self.character:stopSound(self.sound)
+        else
+		    self.character:stopOrTriggerSound(self.sound)
+        end
 	end
     self.item:setJobDelta(0.0);
     ISBaseTimedAction.stop(self);
@@ -69,7 +75,9 @@ end
 function ISUnequipAction:perform()
 	if self.sound then
 		if self.item:getUnequipSound() == "CorpseDrop" then
-		else
+		elseif self.soundNoTrigger then
+            self.character:getEmitter():stopSound(self.sound)
+        else
 			self.character:stopOrTriggerSound(self.sound)
 		end
 	end

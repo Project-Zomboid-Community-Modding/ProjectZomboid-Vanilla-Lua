@@ -2,6 +2,8 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
+require "TimedActions/ISInventoryTransferUtil"
+
 ISVehicleMenu = {}
 
 local function predicateWeldingMask(item)
@@ -600,15 +602,16 @@ function ISVehicleMenu.FillMenuOutsideVehicle(player, context, vehicle, test)
 --	context:addOption("Vehicle Info", playerObj, ISVehicleMenu.onInfo, vehicle)
 	ISVehicleMenu.FillPartMenu(player, context, nil, vehicle);
 	
-	context:addOption(getText("ContextMenu_VehicleMechanics"), playerObj, ISVehicleMenu.onMechanic, vehicle);
+	-- context:addOption(getText("ContextMenu_VehicleMechanics"), playerObj, ISVehicleMenu.onMechanic, vehicle);
 	
 	local part = vehicle:getClosestWindow(playerObj);
+	--[[
 	if part then
 		local window = part:getWindow()
 		if not window:isDestroyed() and not window:isOpen() then
 			context:addOption(getText("ContextMenu_Vehicle_Smashwindow", getText("IGUI_VehiclePart" .. part:getId())), playerObj, ISVehiclePartMenu.onSmashWindow, part)
 		end
-	end
+	end ]]--
 	
 	-- remove burnt vehicles
 	if string.match(vehicle:getScript():getName(), "Burnt") or string.match(vehicle:getScript():getName(), "Smashed") then
@@ -1320,7 +1323,7 @@ function ISVehicleMenu.transferSeatItems(player, vehicle, part, otherPart, desir
 			remainingSpace = remainingSpace - item:getUnequippedWeight()
 			movedWeight = movedWeight + item:getUnequippedWeight()
 			if not testOnly then
-				ISTimedActionQueue.add(ISInventoryTransferAction:new(player, item, part:getItemContainer(), otherPart:getItemContainer(), 10))
+				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(player, item, part:getItemContainer(), otherPart:getItemContainer(), 10))
 			end
 		end
 	end

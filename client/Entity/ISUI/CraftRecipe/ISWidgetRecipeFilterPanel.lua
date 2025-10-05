@@ -29,6 +29,7 @@ function ISWidgetRecipeFilterPanel:createChildren()
     self.entryBox.target = self;
     self.entryBox:setClearButton(true);
     self.entryBox.javaObject:setCentreVertically(true);
+    self.entryBox:setPlaceholderText(self.searchInfoText);
     --self.entryBox:focus();
     self:addChild(self.entryBox);
 
@@ -45,6 +46,13 @@ function ISWidgetRecipeFilterPanel:createChildren()
     end
 
     if self.needSortCombo then
+        local fontHeight = -1; -- <=0 sets label initial height to font
+        self.sortComboLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_Sort_Name"), 0.9, 0.9, 0.9, 0.9, UIFont.NewSmall, true)
+        self.sortComboLabel.textColor = self.textColor;
+        self.sortComboLabel:initialise();
+        self.sortComboLabel:instantiate();
+        self:addChild(self.sortComboLabel);
+        
         self.sortCombo = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISComboBox, 0, 0, 10, BUTTON_HGT_SEARCH, self, ISWidgetRecipeFilterPanel.OnClickSortType);
         self.sortCombo.font = UIFont.NewSmall;
         self.sortCombo:initialise();
@@ -55,13 +63,6 @@ function ISWidgetRecipeFilterPanel:createChildren()
 
         self:populateSortList();
     end
-
-    self.searchHackLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, self.searchInfoText, 0.3, 0.3, 0.3, 1, UIFont.NewSmall, true)
-    --self.searchHackLabel.center = true;
-    --self.searchHackLabel.textColor = self.textColor;
-    self.searchHackLabel:initialise();
-    self.searchHackLabel:instantiate();
-    self:addChild(self.searchHackLabel);
 
     self.buttonViewMode = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT_SEARCH, BUTTON_HGT_SEARCH, nil)
     --self.buttonPrev.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
@@ -118,7 +119,9 @@ function ISWidgetRecipeFilterPanel:populateComboList()
     
     self.filterTypeCombo:addOptionWithData(getText("IGUI_FilterType_RecipeName"), "RecipeName")
     self.filterTypeCombo:addOptionWithData(getText("IGUI_FilterType_InputName"), "InputName")
-    self.filterTypeCombo:addOptionWithData(getText("IGUI_FilterType_OutputName"), "OutputName")
+    if self.showFilterByOutputItem then
+        self.filterTypeCombo:addOptionWithData(getText("IGUI_FilterType_OutputName"), "OutputName")
+    end
 
     local tooltipMap = {};
     tooltipMap[getText("IGUI_FilterType_RecipeName")] = getText("IGUI_FilterType_RecipeNameTooltip");
@@ -203,60 +206,75 @@ function ISWidgetRecipeFilterPanel:calculateLayout(_preferredWidth, _preferredHe
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
     local testHeight = self.entryBox:getHeight()+(self.margin*2);
+    if self.sortCombo and self.sortComboLabel then
+        testHeight = testHeight + math.max(self.sortCombo:getHeight(), self.sortComboLabel:getHeight()) + 3;
+    end
     if self.tickbox then
         testHeight = testHeight + self.tickbox:getHeight() + 3;
     end
     
     height = math.max(height, testHeight);
 
-    local entryBoxWidth = getTextManager():MeasureStringX(UIFont.NewSmall, self.searchHackLabel.name) + ((UI_BORDER_SPACING+1)*2);
+    local entryBoxWidth = getTextManager():MeasureStringX(UIFont.NewSmall, self.entryBox:getPlaceholderText() or "") + ((UI_BORDER_SPACING+1)*2);
     local testWidth = self.margin + entryBoxWidth + (self.buttonViewMode:getWidth() + UI_BORDER_SPACING+1) + self.margin;
+
+    if self.filterTypeCombo and self.sortCombo then
+        -- line up combos for aesthetics
+        local filterWidth = self.filterTypeCombo:getWidth() + UI_BORDER_SPACING+1 + self.buttonViewMode:getWidth();
+        local bestWidth = math.max(filterWidth, self.sortCombo:getWidth());
+        self.filterTypeCombo:setWidth(bestWidth - (UI_BORDER_SPACING+1 + self.buttonViewMode:getWidth()));
+        self.sortCombo:setWidth(bestWidth);
+    end
+    
     if self.filterTypeCombo then
-        testWidth = testWidth +  self.filterTypeCombo:getWidth() + ((UI_BORDER_SPACING+1));
+        testWidth = testWidth + self.filterTypeCombo:getWidth() + ((UI_BORDER_SPACING+1));
     end
     
     width = math.max(width, testWidth);
     
+    local y = UI_BORDER_SPACING + 1;
+    
     -- view toggle
     local buttonX = width - (self.buttonViewMode:getWidth() + UI_BORDER_SPACING+1);
     self.buttonViewMode:setX(buttonX);
-    self.buttonViewMode:setY(UI_BORDER_SPACING+1);
+    self.buttonViewMode:setY(y);
 
     local searchWidth = buttonX - ((UI_BORDER_SPACING+1)*2);
     if self.filterTypeCombo then
         searchWidth = searchWidth - (self.filterTypeCombo:getWidth() + UI_BORDER_SPACING);
-    end    
-    if self.sortCombo then
-        searchWidth = searchWidth - (self.sortCombo:getWidth() + UI_BORDER_SPACING);
     end
 
     -- filter combo
-    local comboX = UI_BORDER_SPACING+1 + searchWidth + UI_BORDER_SPACING;
     if self.filterTypeCombo then
+        local comboX = UI_BORDER_SPACING+1 + searchWidth + UI_BORDER_SPACING;
         self.filterTypeCombo:setX(comboX)
-        self.filterTypeCombo:setY(UI_BORDER_SPACING+1)
-        comboX = comboX + self.filterTypeCombo:getWidth() + UI_BORDER_SPACING;
-    end
-    -- sort combo
-    if self.sortCombo then
-        self.sortCombo:setX(comboX)
-        self.sortCombo:setY(UI_BORDER_SPACING+1)
+        self.filterTypeCombo:setY(y)
     end
 
     -- search
     self.entryBox:setX(UI_BORDER_SPACING+1);
     self.entryBox:setY(UI_BORDER_SPACING+1)
     self.entryBox:setWidth(searchWidth);
+    
+    y = y + math.max(self.buttonViewMode:getHeight(), self.entryBox:getHeight(), self.filterTypeCombo and self.filterTypeCombo:getHeight() or 0) + 3;
 
-    self.searchHackLabel:setX(self.entryBox:getX()+4);
-    self.searchHackLabel.originalX = self.searchHackLabel:getX();
-    local y = self.entryBox:getY() + (self.entryBox:getHeight()/2);
-    y = y - self.searchHackLabel:getHeight()/2;
-    self.searchHackLabel:setY(y);
-
+    -- sort combo label
+    if self.sortCombo and self.sortComboLabel then
+        local comboX = self.filterTypeCombo and self.filterTypeCombo:getX() or (width - (self.sortCombo:getWidth() + UI_BORDER_SPACING+1));
+        self.sortCombo:setX(comboX);
+        self.sortCombo:setY(y);
+        
+        local x = comboX - (self.sortComboLabel:getWidth() + UI_BORDER_SPACING+1);
+        self.sortComboLabel:setX(x);
+        self.sortComboLabel:setY(y + ((self.sortCombo:getHeight() - self.sortComboLabel:getHeight())/2));
+    
+        y = y + math.max(self.sortCombo:getHeight() ,self.sortComboLabel:getHeight()) + 3;
+    end    
+    
+    -- tickbox
     if self.tickbox then
-        self.tickbox:setX(self.entryBox:getX())
-        self.tickbox:setY(self.entryBox:getY() + self.entryBox:getHeight() + 3)
+        self.tickbox:setX(UI_BORDER_SPACING+1)
+        self.tickbox:setY(y)
     end
 
     self:setWidth(width);
@@ -269,12 +287,6 @@ end
 
 function ISWidgetRecipeFilterPanel:prerender()
     ISPanelJoypad.prerender(self);
-    
-    if self.entryBox:isFocused() or (self.entryBox:getText() and #self.entryBox:getText()>0) then
-        self.searchHackLabel:setVisible(false);
-    else
-        self.searchHackLabel:setVisible(true);
-    end
 end
 
 function ISWidgetRecipeFilterPanel:render()
@@ -297,6 +309,13 @@ function ISWidgetRecipeFilterPanel:onLoseJoypadFocus(joypadData)
     ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
     self.entryBox:unfocus()
     self:clearJoypadFocus()
+end
+
+function ISWidgetRecipeFilterPanel:setSearchInfoText(_text)
+    self.searchInfoText = _text
+    if self.entryBox then
+        self.entryBox:setPlaceholderText(_text)
+    end
 end
 
 --************************************************************************--
@@ -322,6 +341,10 @@ function ISWidgetRecipeFilterPanel:new(x, y, width, height, callbackTarget)
     o.margin = UI_BORDER_SPACING;
 
     o.autoFillContents = false;
+    
+    o.needFilterCombo = false;
+    o.needSortCombo = false;
+    o.showFilterByOutputItem = true;
 
     -- these may or may not be used by a parent control while calculating layout:
     o.isAutoFill = false;

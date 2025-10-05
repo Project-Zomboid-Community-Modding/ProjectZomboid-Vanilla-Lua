@@ -26,6 +26,7 @@ function ISCloseVehicleDoor:start()
 	self.vehicle:playPartAnim(self.part, "Close")
 	self.vehicle:playPartSound(self.part, self.character, "Close")
 	self.action:setOverrideAnimation(true)
+	self.action:setAllowedWhileDraggingCorpses(true)
 	if self.seat then
 		self.vehicle:playPassengerAnim(self.seat, "closeDoor", self.character)
 	else

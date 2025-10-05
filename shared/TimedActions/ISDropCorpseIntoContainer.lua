@@ -20,8 +20,15 @@ function ISDropCorpseIntoContainer:isValid()
 end
 
 function ISDropCorpseIntoContainer:start()
+    self.action:setAllowedWhileDraggingCorpses(true)
+    self.action:setTime(4)
+end
+
+function ISDropCorpseIntoContainer:perform()
     local player = self.character
     player:throwGrappledIntoInventory(self.targetContainer)
+
+    ISBaseTimedAction.perform(self)
 end
 
 function ISDropCorpseIntoContainer:new(character, targetContainer)
@@ -29,7 +36,7 @@ function ISDropCorpseIntoContainer:new(character, targetContainer)
     setmetatable(o, self)
     self.__index = self
     o.character = character;
-    o.maxTime = -1;
+    o.maxTime = 0;
     o.targetContainer = targetContainer;
 
     return o

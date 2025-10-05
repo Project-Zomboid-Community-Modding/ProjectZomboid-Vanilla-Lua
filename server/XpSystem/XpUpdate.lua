@@ -29,7 +29,7 @@ xpUpdate.onPlayerMove = function(player)
 	--local searching = false;
 	if manager and manager.isSearchMode then searching = true end
 	-- aiming while moving, gain nimble xp (move faster in aiming mode)
-	if player:isAiming() and xpUpdate.randXp() and (xpUpdate.lastX ~= x or xpUpdate.lastY ~= y) then --the extra check is to prevent afking to grind nimble, the character must have moved to get the skill
+	if player:isAiming() and xpUpdate.randXp() and (xpUpdate.lastX ~= x or xpUpdate.lastY ~= y) and not player:getVehicle() then --the extra check is to prevent afking to grind nimble, the character must have moved to get the skill
 		addXp(player, Perks.Nimble, 1)
 	end
 	-- if you're walking with a lot of stuff, you may gain in Strength
@@ -86,22 +86,22 @@ xpUpdate.onWeaponHitXp = function(owner, weapon, hitObject, damage, hitCount)
 	end
 	-- add either blunt or blade xp (blade xp's perk name is Axe)
 	if hitCount > 0 and not weapon:isRanged() then
-		if weapon:getScriptItem():getCategories():contains("Axe") then
+		if weapon:getScriptItem():containsWeaponCategory("Axe") then
 		    addXp(owner, Perks.Axe, exp)
 		end
-		if weapon:getScriptItem():getCategories():contains("Blunt") then
+		if weapon:getScriptItem():containsWeaponCategory("Blunt") then
 		    addXp(owner, Perks.Blunt, exp)
 		end
-		if weapon:getScriptItem():getCategories():contains("Spear") then
+		if weapon:getScriptItem():containsWeaponCategory("Spear") then
 		    addXp(owner, Perks.Spear, exp)
 		end
-		if weapon:getScriptItem():getCategories():contains("LongBlade") then
+		if weapon:getScriptItem():containsWeaponCategory("LongBlade") then
 		    addXp(owner, Perks.LongBlade, exp)
 		end
-		if weapon:getScriptItem():getCategories():contains("SmallBlade") then
+		if weapon:getScriptItem():containsWeaponCategory("SmallBlade") then
 		    addXp(owner, Perks.SmallBlade, exp)
 		end
-		if weapon:getScriptItem():getCategories():contains("SmallBlunt") then
+		if weapon:getScriptItem():containsWeaponCategory("SmallBlunt") then
 		    addXp(owner, Perks.SmallBlunt, exp)
 		end
 	end
@@ -129,9 +129,10 @@ xpUpdate.displayCharacterInfo = function(key)
 	end
 	if not getPlayerData(0) then return end
 	if getCore():isKey("Crafting UI", key) then
-		if ISEntityUI.players[0] and ISEntityUI.players[0].windows["HandcraftWindow"] and ISEntityUI.players[0].windows["HandcraftWindow"].instance then
-			ISEntityUI.players[0].windows["HandcraftWindow"].instance:close();
-			ISEntityUI.players[0].windows["HandcraftWindow"].instance:removeFromUIManager();
+		local windowInstance = ISEntityUI.GetWindowInstance(0, "HandcraftWindow");
+		if windowInstance then
+			windowInstance:close();
+			windowInstance:removeFromUIManager();
 		else
 			ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
 		end
@@ -231,6 +232,31 @@ xpUpdate.levelPerk = function(owner, perk, level, addBuffer)
 		end
 	end
 
+    -- learn all the growing seasons at Farming 10
+	if perk == Perks.Farming and level > 9 then
+        for typeOfSeed,props in pairs(farming_vegetableconf.props) do
+            if props.seasonRecipe then
+                owner:learnRecipe(props.seasonRecipe)
+            end
+        end
+    end
+    -- learn Mechanics recipes at high levels of Mechanics
+	if perk == Perks.Mechanics then
+	    if level > 9 then
+           owner:learnRecipe("Advanced Mechanics")
+        end
+	    if level > 8 then
+            owner:learnRecipe("Intermediate Mechanics")
+        end
+	    if level > 7 then
+           owner:learnRecipe("Basic Mechanics")
+        end
+    end
+    -- learn Generator at Electrical 3
+    if perk == Perks.Electricity and level > 2 then
+        owner:learnRecipe("Generator")
+    end
+
 	-- we reset the xp multiplier for this perk
 --	owner:getXp():getMultiplierMap():remove(perk);
 
@@ -302,6 +328,32 @@ xpUpdate.onNewGame = function(playerObj, square)
 	playerObj:getFitness():init();
 end
 
+xpUpdate.onLoad = function()
+	local playerObj = getSpecificPlayer(0)
+    -- learn all the growing seasons at Farming 10
+	if playerObj:getPerkLevel(Perks.Farming) > 9 then
+        for typeOfSeed,props in pairs(farming_vegetableconf.props) do
+            if props.seasonRecipe then
+                playerObj:learnRecipe(props.seasonRecipe)
+            end
+        end
+    end
+    -- learn Mechanics recipes at high levels of Mechanics
+    if playerObj:getPerkLevel(Perks.Mechanics) > 9 then
+       playerObj:learnRecipe("Advanced Mechanics")
+    end
+    if playerObj:getPerkLevel(Perks.Mechanics) > 8 then
+        playerObj:learnRecipe("Intermediate Mechanics")
+    end
+    if playerObj:getPerkLevel(Perks.Mechanics) > 7 then
+       playerObj:learnRecipe("Basic Mechanics")
+    end
+    -- learn Generator at Electrical 3
+    if playerObj:getPerkLevel(Perks.Mechanics) > 2 then
+        playerObj:learnRecipe("Generator")
+    end
+end
+
 Events.EveryTenMinutes.Add(xpUpdate.everyTenMinutes);
 
 Events.OnPlayerMove.Add(xpUpdate.onPlayerMove);
@@ -319,3 +371,5 @@ Events.AddXP.Add(xpUpdate.addXp);
 Events.LevelPerk.Add(xpUpdate.levelPerk);
 
 Events.OnNewGame.Add(xpUpdate.onNewGame);
+
+Events.OnLoad.Add(xpUpdate.onLoad);

@@ -1,4 +1,5 @@
 require "ISUI/ISPanelJoypad"
+require "TimedActions/ISInventoryTransferUtil"
 
 ISHealthPanel = ISPanelJoypad:derive("ISHealthPanel");
 ISHealthPanel.cheat = false or getDebug();
@@ -194,7 +195,7 @@ end
 
 function ISHealthPanel:toPlayerInventory(playerObj, item, bodyPart)
     if item:getContainer() ~= playerObj:getInventory() then
-        local action = ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory())
+        local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory())
         ISTimedActionQueue.add(action)
         -- FIXME: ISHealthPanel.actions never gets cleared
         self.actions = self.actions or {}
@@ -1129,7 +1130,7 @@ end
 
 function BaseHandler:toPlayerInventory(item, previousAction)
     if item:getContainer() ~= self:getDoctor():getInventory() then
-        local action = ISInventoryTransferAction:new(self:getDoctor(), item, item:getContainer(), self:getDoctor():getInventory())
+        local action = ISInventoryTransferUtil.newInventoryTransferAction(self:getDoctor(), item, item:getContainer(), self:getDoctor():getInventory())
         ISTimedActionQueue.addAfter(previousAction, action)
         -- FIXME: ISHealthPanel.actions never gets cleared
         self.panel.actions = self.panel.actions or {}

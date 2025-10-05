@@ -37,7 +37,15 @@ function ISBBQAddFuel:start()
 	self.item:setJobDelta(0.0);
 	self:setActionAnim("Loot")
 	self.character:SetVariable("LootPosition", "Mid")
-	self.sound = self.character:playSound("BBQRegularAddFuel")
+	local soundName = "BBQRegularAddFuel"
+    local craftBenchSounds = self.fireplace:getComponent(ComponentType.CraftBenchSounds)
+    if craftBenchSounds ~= nil then
+        local soundName2 = craftBenchSounds:getSoundName("AddFuel", nil)
+        if soundName2 ~= nil and soundName2 ~= "" then
+            soundName = soundName2
+        end
+    end
+	self.sound = self.character:playSound(soundName)
 end
 
 function ISBBQAddFuel:stop()

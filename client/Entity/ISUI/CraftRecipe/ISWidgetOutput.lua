@@ -95,12 +95,14 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
     end
 
     -- set qty label
+    self.primary.label:setName(self.primary.amountStr);
     local x = self.iconBorderSizeX - (self.margin*2) - self.primary.label:getWidth();
     local y = self.iconBorderSizeY - self.margin - self.primary.label:getHeight();
     self.primary.label:setX(x);
     self.primary.label.originalX = self.primary.label:getX();
     self.primary.label:setY(y);
     if self.secondary then
+        self.primary.label:setName(self.primary.amountStr);
         x = self.iconBorderSizeX - (self.margin*2) - self.secondary.label:getWidth();
         self.secondary.label:setX(x);
         self.secondary.label.originalX = self.secondary.label:getX();
@@ -174,7 +176,10 @@ function ISWidgetOutput:createScriptValues(_script)
     table.cycleIcons = false;
     if _script:getResourceType()==ResourceType.Item then
         table.amount = _script:getIntAmount();
-        table.amountStr = tostring(round(table.amount,2));
+        table.maxAmount = _script:getIntMaxAmount();
+        table.variableInputRatio = _script:isVariableAmount() and self.logic:getVariableInputRatio() or 1;
+        local outputAmount = math.min(table.amount * table.variableInputRatio, table.maxAmount);
+        table.amountStr = tostring(round(outputAmount,2));
         table.outputObjects = _script:getPossibleResultItems();
         if table.outputObjects:size()>0 then
             table.iconTexture = table.outputObjects:get(0):getNormalTexture();
@@ -182,12 +187,16 @@ function ISWidgetOutput:createScriptValues(_script)
         end
     elseif _script:getResourceType()==ResourceType.Fluid then
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
+        table.variableInputRatio = _script:isVariableAmount() and self.logic:getVariableInputRatio() or 1;
         table.amountStr = tostring(round(table.amount,2)).."L";
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
         table.outputObjects = _script:getPossibleResultFluids();
         --table.cycleIcons = table.outputObjects:size() > 1;
     elseif _script:getResourceType()==ResourceType.Energy then
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
+        table.variableInputRatio = _script:isVariableAmount() and self.logic:getVariableInputRatio() or 1;
         table.amountStr = tostring(Temperature.getRoundedDisplayTemperature(table.amount))..Temperature.getTemperaturePostfix();
         table.outputObjects = _script:getPossibleResultEnergies();
         if table.outputObjects:size()>0 then
@@ -232,6 +241,7 @@ end
 function ISWidgetOutput:updateScriptValues(_table)
     local index = 0;
     local oldIconText = _table.iconText;
+    local oldQtyText = _table.amountStr;
     if _table.script:getResourceType()==ResourceType.Item then
         if _table.cycleIcons then
             local playerIndex = self.player:getPlayerNum();
@@ -268,6 +278,13 @@ function ISWidgetOutput:updateScriptValues(_table)
         _table.iconText = energy:getDisplayName();
     end
 
+    local variableInputRatio = _table.script:isVariableAmount() and self.logic:getVariableInputRatio() or 1;
+    if variableInputRatio ~= _table.variableInputRatio then
+        _table.variableInputRatio = variableInputRatio;
+        local outputAmount = math.min(_table.amount * _table.variableInputRatio, _table.maxAmount);
+        _table.amountStr = tostring(round(outputAmount,2));
+    end
+
     if _table.icon then
         _table.icon.texture = _table.iconTexture;
         _table.icon.backgroundColor.r = _table.iconColor.r;
@@ -279,7 +296,8 @@ function ISWidgetOutput:updateScriptValues(_table)
         end
     end
 
-    if _table.itemNameLabel and oldIconText ~= _table.iconText then
+    if (_table.itemNameLabel and oldIconText ~= _table.iconText) or
+        (_table.label and oldQtyText ~= _table.amountStr) then
         self.editedLabels = true;
     end
 end

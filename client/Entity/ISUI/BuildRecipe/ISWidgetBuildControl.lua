@@ -285,6 +285,7 @@ end
 
 function ISWidgetBuildControl:onAutoToggled(_newState)
     self.logic:setManualSelectInputs(_newState);
+    self.logic:setLastManualInputMode(_newState);
     --self:triggerEvent(ISWidgetBuildControl.onAutoToggled, self, _newState);
 end
 
@@ -305,6 +306,8 @@ end
 
 function ISWidgetBuildControl:startBuild(force)
     ISBuildWindow.instance:createBuildIsoEntity();
+    ISBuildWindow.instance:updateManualInputs();
+    self.logic:updateManualInputAllowedItemTypes();
 end
 
 function ISWidgetBuildControl:onHandcraftActionComplete()

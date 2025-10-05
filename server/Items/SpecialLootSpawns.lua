@@ -4,6 +4,7 @@ SpecialLootSpawns = SpecialLootSpawns or {}
 SpecialLootSpawns.OnCreateStockCertificate = function(item)
     if not item then return; end;
 	local text = getText(item:getDisplayName()) .. ": "
+    item:getModData().collectibleKey = text
 	if ZombRand(2) == 0 then
 		text = text .. getText("IGUI_" .. SpecialLootSpawns.StockCertificate1[ZombRand(#SpecialLootSpawns.StockCertificate1)+1])
 		item:setTexture(getTexture("media/textures/Item_StockCertificate2.png"))
@@ -94,6 +95,7 @@ SpecialLootSpawns.OnCreatePhoto = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "Photo_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = photo
 end
 SpecialLootSpawns.OnCreatePhoto_Secret = function(item)
     if not item then return; end;
@@ -103,6 +105,7 @@ SpecialLootSpawns.OnCreatePhoto_Secret = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "SecretPhoto_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = photo
 end
 SpecialLootSpawns.OnCreatePhoto_Racy = function(item)
     if not item then return; end;
@@ -112,6 +115,7 @@ SpecialLootSpawns.OnCreatePhoto_Racy = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "SecretPhoto_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = photo
 end
 SpecialLootSpawns.OnCreatePhoto_VeryOld = function(item)
     if not item then return; end;
@@ -125,6 +129,7 @@ SpecialLootSpawns.OnCreatePhoto_VeryOld = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "VeryOldPhoto_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = photo
 end
 
 -- BOOKS
@@ -861,6 +866,7 @@ SpecialLootSpawns.OnCreateOldNewspaper = function(item)
  	local bookList = PrintMediaDefinitions.OldNewspapers
  	local text = getText(item:getDisplayName()) .. ": " .. getText("IGUI_NewspaperTitle_" .. bookList[ZombRand(#bookList)+1])
  	item:setName(text)
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreateRecentNewspaper = function(item)
@@ -1111,6 +1117,7 @@ SpecialLootSpawns.OnCreateLocket = function(item)
 --     local title = getText("IGUI_Photo_" .. photo)
     local text = getText("IGUI_LocketText", getText(item:getScriptItem():getDisplayName()), title)
 	item:setName(text)
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreateDoodle = function(item)
@@ -1121,6 +1128,7 @@ SpecialLootSpawns.OnCreateDoodle = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "Doodle_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreateDoodleKids = function(item)
@@ -1131,6 +1139,7 @@ SpecialLootSpawns.OnCreateDoodleKids = function(item)
     local text = getText("IGUI_PhotoOf", getText(item:getScriptItem():getDisplayName()), title)
     item:setName(text)
     item:getModData().literatureTitle = "Doodle_" .. photo .. tostring(ZombRand(1000000))
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreateGasMask = function(item)
@@ -1329,6 +1338,7 @@ SpecialLootSpawns.OnCreateDogTag_Pet = function(item)
 	local text = getText(item:getDisplayName()) .. ": "
     text = text .. getText("IGUI_PetName_" .. SpecialLootSpawns.DogTags[ZombRand(#SpecialLootSpawns.DogTags)+1])
 	item:setName(text)
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreatePostcard = function(item)
@@ -1338,6 +1348,7 @@ SpecialLootSpawns.OnCreatePostcard = function(item)
     text = getText("IGUI_PostcardFrom", getText(item:getScriptItem():getDisplayName()), text)
 	item:setName(text)
     item:getModData().literatureTitle = "IGUI_Postcard_" .. card
+    item:getModData().collectibleKey = text
 end
 
 SpecialLootSpawns.OnCreateSnowGlobe = function(item)
@@ -1346,6 +1357,7 @@ SpecialLootSpawns.OnCreateSnowGlobe = function(item)
     local text = getText("IGUI_Photo_" .. orb)
     text = getText("IGUI_SnowGlobeOf", getText(item:getScriptItem():getDisplayName()), text)
 	item:setName(text)
+    item:getModData().collectibleKey = text
 end
 
 -- RECIPES
@@ -1362,6 +1374,7 @@ SpecialLootSpawns.OnCreateRecipeClipping = function(item)
 --     item:getModData().teachedRecipe = recipe
     local text = itemName .. ": " .. recipeName
 	item:setName(text)
+    item:getModData().collectibleKey = text
 end
 
 -- Modify a book to teach recipe according to a list, can have multiple teached recipes.
@@ -1393,6 +1406,7 @@ SpecialLootSpawns.CreateSchematic = function(item, list, multipleChance)
 --         item:getModData().teachedRecipe = recipe
         local text = itemName .. ": " .. recipeName
         item:setName(text)
+        item:getModData().collectibleKey = text
     end
 end
 SpecialLootSpawns.OnCreateExplosivesSchematic = function(item)
@@ -1424,3 +1438,8 @@ SpecialLootSpawns.OnCreateChildsPictureBook = function(item)
     if not item then return end
     SpecialLootSpawns.OnCreateSpecialBook(item, "ChildsPicture_Special")
 end
+SpecialLootSpawns.OnCreateRecipeMagazine = function(item)
+    item:getModData().literatureTitle = item:getFullType()
+end
+
+

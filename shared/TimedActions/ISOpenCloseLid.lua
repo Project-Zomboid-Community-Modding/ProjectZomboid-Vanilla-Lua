@@ -47,10 +47,14 @@ function ISOpenCloseLid:complete()
 	if self.barrel:hasComponent(ComponentType.FluidContainer) then
 		tempCont = self.barrel:getFluidContainer():copy();
 	end
+    local health = self.barrel:getHealth();
+    local maxHealth = self.barrel:getMaxHealth();
 	self.square:transmitRemoveItemFromSquare(self.barrel);
 	self.square:RemoveTileObject(self.barrel);
 
 	local newbarrel = self.square:addWorkstationEntity(newName, self.sprite)
+	newbarrel:setMaxHealth(maxHealth);
+	newbarrel:setHealth(health);
 	if newbarrel and tempCont and newbarrel:hasComponent(ComponentType.FluidContainer) then
 		newbarrel:getFluidContainer():copyFluidsFrom(tempCont)
 		FluidContainer.DisposeContainer(tempCont)

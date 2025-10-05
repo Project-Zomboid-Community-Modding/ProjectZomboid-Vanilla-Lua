@@ -52,7 +52,7 @@ function ISGeneratorInfoWindow.getRichText(object, displayStats)
 		end
 		return text
 	end
-	local fuel = math.ceil(object:getFuel())
+	local fuel = math.ceil(object:getFuelPercentage())
 	local condition = object:getCondition()
 	local text = getText("IGUI_Generator_FuelAmount", fuel) .. " <LINE> " .. getText("IGUI_Generator_Condition", condition) .. " <LINE> "
 	if object:isActivated() then
@@ -62,8 +62,8 @@ function ISGeneratorInfoWindow.getRichText(object, displayStats)
 		for i=0,items:size()-1 do
 			text = text .. "   " .. items:get(i) .. " <LINE> ";
 		end
-		text = text .. getText("IGUI_Generator_TypeGas") .. " (0.02 L/h) <LINE> "
-		text = text .. getText("IGUI_Total") .. ": " .. luautils.round(object:getTotalPowerUsing(), 3) .. " L/h <LINE> ";
+		text = text .. getText("IGUI_Generator_TypeGas") .. " (" .. object:getBasePowerConsumptionString()..") <LINE> "
+		text = text .. getText("IGUI_Total") .. ": " .. object:getTotalPowerUsingString() .. " <LINE> ";
 	end
 	if square and not square:isOutside() and square:getBuilding() then
 		text = text .. " <LINE> <RED> " .. getText("IGUI_Generator_IsToxic")

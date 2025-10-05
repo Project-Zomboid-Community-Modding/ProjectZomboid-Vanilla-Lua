@@ -34,6 +34,7 @@ AnimalContextMenu.doInventoryMenu = function(player, context, animalInv, test)
     if AnimalContextMenu.cheat then
         context:addDebugOption(getText("ContextMenu_SetAnimalHungry"), animal, AnimalContextMenu.onSetHungry, playerObj);
     end
+    return context
 end
 
 AnimalContextMenu.doFeedFromHandMenu = function(playerObj, animal, context)
@@ -1143,6 +1144,11 @@ AnimalContextMenu.onKillAnimal = function(animal, playerObj)
     modal:addToUIManager()
     modal.animal = animalOrItem;
     modal.playerObj = playerObj;
+    local player = playerObj:getPlayerNum()
+    if JoypadState.players[player+1] then
+        modal.prevFocus = JoypadState.players[player+1].focus
+        setJoypadFocus(player, modal)
+    end
 end
 
 function AnimalContextMenu:onKillAnimalConfirm(button)

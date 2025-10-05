@@ -37,19 +37,26 @@ function ContextMenuCode.AddDispenserBottle(context, param)
     end
 end
 
-function ContextMenuCode.BatteryLightSourceInteraction(context, option, lightSource, playerObj, param)
-    local player = playerObj:getPlayerNum();
-    local playerInv = playerObj:getInventory();
+function ContextMenuCode.BatteryLightSourceInteraction(context, param)
+    local option = param.option;
+    local playerObj = param.playerObj;
+    local player = param.playerObj:getPlayerNum();
+    local playerInv = param.playerObj:getInventory();
+    local lightSource = param.entity;
+
+    local subMenu = ISContextMenu:getNew(context)
+    context:addSubMenu(option, subMenu)
+
                 if (lightSource:getLightSourceFuel() and lightSource:haveFuel()) or not lightSource:getLightSourceFuel() then
                     if lightSource:isLightSourceOn() then
-                        context:addGetUpOption(getText("ContextMenu_Turn_Off"), lightSource, ISWorldObjectContextMenu.onToggleThumpableLight, player);
+                        subMenu:addGetUpOption(getText("ContextMenu_Turn_Off"), lightSource, ISWorldObjectContextMenu.onToggleThumpableLight, player);
                     elseif lightSource:getLifeLeft() > 0 then
-                        context:addGetUpOption(getText("ContextMenu_Turn_On"), lightSource, ISWorldObjectContextMenu.onToggleThumpableLight, player);
+                        subMenu:addGetUpOption(getText("ContextMenu_Turn_On"), lightSource, ISWorldObjectContextMenu.onToggleThumpableLight, player);
                     end
                 end
                 if lightSource:getLightSourceFuel() and playerInv:containsWithModule(lightSource:getLightSourceFuel(), true) then
-                    local fuelOption = context:addOption(getText("ContextMenu_Insert_Fuel"), worldobjects, nil)
-                    local subMenuFuel = ISContextMenu:getNew(context)
+                    local fuelOption = subMenu:addOption(getText("ContextMenu_Insert_Fuel"), worldobjects, nil)
+                    local subMenuFuel = ISContextMenu:getNew(subMenu)
                     context:addSubMenu(fuelOption, subMenuFuel)
                     local fuelList = playerInv:FindAll(lightSource:getLightSourceFuel())
                     for n = 0,fuelList:size()-1 do
@@ -64,7 +71,7 @@ function ContextMenuCode.BatteryLightSourceInteraction(context, option, lightSou
                     end
                 end
                 if lightSource:getLightSourceFuel() and lightSource:haveFuel() then
-                    local removeOption = context:addGetUpOption(getText("ContextMenu_Remove_Battery"), lightSource, ISWorldObjectContextMenu.onRemoveFuel, player);
+                    local removeOption = subMenu:addGetUpOption(getText("ContextMenu_Remove_Battery"), lightSource, ISWorldObjectContextMenu.onRemoveFuel, player);
                     if playerObj:DistToSquared(lightSource:getX() + 0.5, lightSource:getY() + 0.5) < 2 * 2 then
                         local item = ScriptManager.instance:getItem(lightSource:getLightSourceFuel())
                         local tooltip = ISWorldObjectContextMenu.addToolTip()
@@ -163,8 +170,26 @@ function ContextMenuCode.TakeBricks(context, entity, character, param)
 	end	
 end
 
+function ContextMenuCode.TakeHay(context, entity, character, param)
+	if luautils.walkAdj(character, entity:getSquare(), false) then
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.HayTuft", 20));
+	end
+end
+
+function ContextMenuCode.TakeHayDouble(context, entity, character, param)
+	if luautils.walkAdj(character, entity:getSquare(), false) then
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.HayTuft", 40));
+	end
+end
+
 function ContextMenuCode.TakeGoldBars(context, entity, character, param)
 	if luautils.walkAdj(character, entity:getSquare(), false) then
 		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), "location_military_knox_01_0", "Base.GoldBar", 30));
+	end
+end
+
+function ContextMenuCode.TakeLogs(context, entity, character, param)
+	if luautils.walkAdj(character, entity:getSquare(), false) then
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.Log", 10));
 	end
 end

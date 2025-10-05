@@ -42,6 +42,7 @@ end
 function ISWalkToTimedAction:start()
     --print ("ISWalkToTimedAction: Calling pathfind method.");
     self.action:setPathfinding(true);
+    self.action:setAllowedWhileDraggingCorpses(true);
     self.character:getPathFindBehavior2():pathToLocation(self.location:getX(), self.location:getY(), self.location:getZ());
     --self.action:Pathfind(getPlayer(), self.location:getX(), self.location:getY(), self.location:getZ());
 end

@@ -1518,6 +1518,30 @@ function MainOptions:addDisplayPanel()
 	end
 	self.gameOptions:add(gameOption)
 
+	----- View Cone Opacity -----
+	local viewConeOpacity = self:addSlider(splitpoint, y, comboWidth, getText("UI_optionscreen_view_cone_opacity"), 0, 5, 1, 3);
+
+	gameOption = GameOption:new('viewConeOpacity', viewConeOpacity)
+	function gameOption.storeCurrentValue(self)
+		self.originalValue = getPerformance():getViewConeOpacity()
+	end
+	function gameOption.restoreOriginalValue(self)
+		getPerformance():setViewConeOpacity(self.originalValue)
+	end
+	function gameOption.toUI(self)
+		local value = getPerformance():getViewConeOpacity()
+		self.control:setCurrentValue(value)
+		self.control.label:setName(string.format("%.2f", value))
+	end
+	function gameOption.onChange(self, value)
+		getPerformance():setViewConeOpacity(value)
+		self.control.label:setName(string.format("%i", value))
+	end
+	function gameOption.apply(self)
+		getPerformance():setViewConeOpacity(self.control:getCurrentValue())
+	end
+	self.gameOptions:add(gameOption)
+
 	----- Fog QUALITY -----
 	local newfog = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_fog_quality"), {getText("UI_High"), getText("UI_Medium"), getText("UI_optionscreen_legacy")}, 1);
 
@@ -3835,6 +3859,7 @@ function MainOptions:onObjHighlightColor(button)
     local colorInfo = ColorInfo.new(color.r, color.g, color.b, 1)
     self.colorPicker2:setInitialColor(colorInfo);
     self:addChild(self.colorPicker2)
+    self.colorPicker2:setCapture(true)
     self.colorPicker2:setVisible(true);
     self.colorPicker2:bringToTop();
     local joypadData = JoypadState.getMainMenuJoypad()
@@ -3856,6 +3881,7 @@ function MainOptions:onWorldItemHighlightColor(button)
     local colorInfo = ColorInfo.new(color.r, color.g, color.b, 1)
     self.colorPicker2:setInitialColor(colorInfo);
     self:addChild(self.colorPicker2)
+    self.colorPicker2:setCapture(true)
     self.colorPicker2:setVisible(true);
     self.colorPicker2:bringToTop();
     local joypadData = JoypadState.getMainMenuJoypad()
@@ -3899,6 +3925,7 @@ function MainOptions:onModColorPick(button)
 	local colorInfo = ColorInfo.new(color.r, color.g, color.b, 1)
 	button.colorPicker:setInitialColor(colorInfo);
 	self:addChild(button.colorPicker)
+    button.colorPicker:setCapture(true)
 	button.colorPicker:setVisible(true);
 	button.colorPicker:bringToTop();
 	local joypadData = JoypadState.getMainMenuJoypad()
@@ -3920,6 +3947,7 @@ function MainOptions:onMPColor(button)
     local colorInfo = ColorInfo.new(color.r, color.g, color.b, 1)
     self.colorPicker:setInitialColor(colorInfo);
     self:addChild(self.colorPicker)
+    self.colorPicker:setCapture(true)
     self.colorPicker:bringToTop();
     local joypadData = JoypadState.getMainMenuJoypad()
     if joypadData then
@@ -3941,6 +3969,7 @@ function MainOptions:onGoodHighlightColor(button)
 	self.colorPicker3:setInitialColor(colorInfo);
 	self:addChild(self.colorPicker3)
 	self.colorPicker3:setVisible(true);
+    self.colorPicker3:setCapture(true)
 	self.colorPicker3:bringToTop();
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if joypadData then
@@ -3962,6 +3991,7 @@ function MainOptions:onBadHighlightColor(button)
 	self.colorPicker4:setInitialColor(colorInfo);
 	self:addChild(self.colorPicker4)
 	self.colorPicker4:setVisible(true);
+    self.colorPicker4:setCapture(true)
 	self.colorPicker4:bringToTop();
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if joypadData then
@@ -3983,6 +4013,7 @@ function MainOptions:onTargetColor(button)
 	self.colorPicker5:setInitialColor(colorInfo);
 	self:addChild(self.colorPicker5)
 	self.colorPicker5:setVisible(true);
+    self.colorPicker5:setCapture(true)
 	self.colorPicker5:bringToTop();
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if joypadData then
@@ -4004,6 +4035,7 @@ function MainOptions:onNoTargetColor(button)
 	self.colorPicker5:setInitialColor(colorInfo);
 	self:addChild(self.colorPicker5)
 	self.colorPicker5:setVisible(true);
+    self.colorPicker5:setCapture(true)
 	self.colorPicker5:bringToTop();
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if joypadData then
@@ -4926,6 +4958,17 @@ function MainOptions:onJoypadBeforeDeactivate(joypadData)
 	self.backButton:clearJoypadButton()
 	self.saveButton:clearJoypadButton()
 	self.joyfocus = nil
+end
+
+function MainOptions:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.acceptButton:forceClick()
+        return
+    end
 end
 
 function MainOptions:new (x, y, width, height)

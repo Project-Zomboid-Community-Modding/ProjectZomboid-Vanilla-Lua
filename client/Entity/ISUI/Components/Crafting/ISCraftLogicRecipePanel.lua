@@ -173,18 +173,16 @@ function ISCraftLogicRecipePanel:onInputsChanged()
     end
 end
 
-function ISCraftLogicRecipePanel:updateContainers(containers)
-    if self.titleWidget then
-        self.titleWidget:updateLabels();
-        self.titleWidget:updatePropertyIcons();
-        self:calculateLayout(self.width, self.height);
-    end
-end
-
 function ISCraftLogicRecipePanel:onGainJoypadFocus(joypadData)
     ISPanel.onGainJoypadFocus(self, joypadData)
     joypadData.focus = self.inputs
     updateJoypadFocus(joypadData)
+end
+
+function ISCraftLogicRecipePanel:onResourceSlotContentsChanged()
+    if self.inputControlWidget then self.inputControlWidget:onResourceSlotContentsChanged(); end
+    if self.outputProgressWidget then self.outputProgressWidget:onResourceSlotContentsChanged(); end
+    self:calculateLayout(self.width, self.height);
 end
 
 --************************************************************************--

@@ -323,8 +323,8 @@ Tutorial1.Init = function()
     getCore():setCollideZombies(false);
     
     ISReloadWeaponAction.disableReloading = true;
-    getPlayerInventory(0).transferAll:setVisible(false);
-    getPlayerLoot(0).lootAll:setVisible(false);
+--     getPlayerInventory(0).transferAll:setVisible(false);
+--     getPlayerLoot(0).lootAll:setVisible(false);
     
     if SurvivalGuideManager.instance then
         SurvivalGuideManager.instance.panel:setVisible(false);

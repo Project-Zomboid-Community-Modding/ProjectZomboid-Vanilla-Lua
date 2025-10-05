@@ -1271,7 +1271,7 @@ SpecialLootSpawns.Postcards = {
     "LakeBaikal",
     "Mongolia",
     "theBritishMuseum",
-    "Galleriadell'Accademia",
+    "GalleriadellAccademia",
     "theNationalNaturalHistoryMuseum",
     "theNationalNaturalHistoryMuseum",
     "theZocalo",

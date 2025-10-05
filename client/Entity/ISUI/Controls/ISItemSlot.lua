@@ -194,37 +194,44 @@ function ISItemSlot:prerender()
 
     a = origA;
     y = self:getHeight();
-    if self.resource and self.renderItemCount then
+    if self.renderItemCount then
         x = self:getWidth()/2;
         y = self:getHeight() - 16;
-        local satisfiedAmount = self.resource:getItemUses(self.inputScript);
-        local s = tostring(self.resource:storedSize());
         c2 = self.countColor;
         
-        if self.renderItemCapacity then
-            local maxCount = self.resource:getItemCapacity();
-            s = tostring(satisfiedAmount) .. "/" .. tostring(maxCount);
-        elseif self.renderRequiredItemCount then
-            local requiredAmount = 0;
-            if self.inputScript then
-                local containsItem = self.resource:peekItem() and self.inputScript:containsItem(self.resource:peekItem():getScriptItem()) or false;
-                satisfiedAmount = containsItem and satisfiedAmount or 0;
-                requiredAmount = self.resource:peekItem() and self.inputScript:getAmount(self.resource:peekItem():getFullType()) or self.inputScript:getIntAmount();
-            end
-            s = tostring(satisfiedAmount) .. "/" .. tostring(requiredAmount);
-            if satisfiedAmount < requiredAmount or requiredAmount == 0 then
-                c2 = self.countInvalidColor;
+        local s = nil;
+        if self.overrideItemCount then
+            s = tostring(self.overrideItemCount);
+        elseif self.resource then
+            local satisfiedAmount = self.resource:getItemUses(self.inputScript);
+            --s = tostring(self.resource:storedSize());
+            s = tostring(self.itemCount);
+                        
+            if self.renderRequiredItemCount then
+                local maxCount = self.resource:getItemCapacity();
+                local requiredAmount = 0;
+                if self.inputScript then
+                    local containsItem = self.resource:peekItem() and self.inputScript:containsItem(self.resource:peekItem():getScriptItem()) or false;
+                    satisfiedAmount = containsItem and satisfiedAmount or 0;
+                    requiredAmount = self.resource:peekItem() and self.inputScript:getAmount(self.resource:peekItem():getFullType()) or 0;
+                end
+                if satisfiedAmount < requiredAmount or requiredAmount == 0 then
+                    c2 = self.countInvalidColor;
+                end
+                s = tostring(self.itemCount) .. "/" .. tostring(maxCount);
             end
         end
 
-        self:drawTextCentre(s, x-1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
-        self:drawTextCentre(s, x-1, y-1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
-        self:drawTextCentre(s, x+1, y-1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
-        self:drawTextCentre(s, x+1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
-
-        self:drawTextCentre(s, x, y, c2.r, c2.g, c2.b, a, UIFont.Small);
-        
-        y = y + getTextManager():getFontHeight(UIFont.Small);
+        if s then
+            self:drawTextCentre(s, x-1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
+            self:drawTextCentre(s, x-1, y-1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
+            self:drawTextCentre(s, x+1, y-1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
+            self:drawTextCentre(s, x+1, y+1, 0.0, 0.0, 0.0, 1.0, UIFont.Small);
+    
+            self:drawTextCentre(s, x, y, c2.r, c2.g, c2.b, a, UIFont.Small);
+    
+            y = y + getTextManager():getFontHeight(UIFont.Small);
+        end
     end
 
     if #self.statusIcons > 0 then
@@ -268,7 +275,19 @@ end
 function ISItemSlot:update()
     --get storeditem from slot
     if self.resource then
-        self:setStoredItem( self.resource:peekItem() );
+        if self.itemTypeFilter then
+            local itemCount = self.resource:getItemAmount(self.itemTypeFilter);
+            if self.itemCount ~= itemCount then
+                local scriptItem = itemCount > 0 and self.itemTypeFilter or nil;
+                self:setStoredScriptItem(scriptItem);
+                self.itemCount = itemCount;
+                if self.onStoredItemChanged then
+                    self.onStoredItemChanged(self.functionTarget, self)
+                end
+            end
+        else
+            self:setStoredItem( self.resource:peekItem() );
+        end
     end
 end
 
@@ -444,7 +463,7 @@ function ISItemSlot:boxClicked( _isRightClick, _isShift )
         local list = ArrayList.new();
         if not _isRightClick then --TODO THESE ARE CURRENTLY BROKEN
             if not _isShift then
-                list = self.resource:removeAllItems(list);
+                list = self.resource:removeAllItems(list, self.itemTypeFilter);
             else
                 -- remove items from all slots with ResourceType.Item and same ResourceIO as this slot
                 local fabricator = self.resource:getFabricator();
@@ -654,7 +673,6 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     o.progressColor = {r=0.8, g=0.8, b=0.2, a=1 };
 
     o.renderItemCount = true;
-    o.renderItemCapacity = false;
     o.renderRequiredItemCount = false;
     o.maxItemCount = nil;
     o.countColor = {r=1.0, g=1.0, b=1.0, a=1.0};
@@ -731,6 +749,9 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     o.progressDelta = 0;
     
     o.statusIcons = {};
+    
+    o.itemTypeFilter = nil;
+    o.itemCount = 0;
 
     return o
 end

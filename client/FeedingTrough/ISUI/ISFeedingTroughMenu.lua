@@ -117,8 +117,7 @@ ISFeedingTroughMenu.onAddFoodDebug = function(playerObj, isoObject)
 		isoObject:setContainer(ItemContainer.new());
 	end
 
-	isoObject:getContainer():AddItem("Base.AnimalFeedBag")
-	isoObject:getContainer():AddItem("Base.AnimalFeedBag")
+	isoObject:getContainer():addItems(ItemKey.Drainable.ANIMAL_FEED_BAG, 2)
 
 	isoObject:checkOverlayAfterAnimalEat();
 end

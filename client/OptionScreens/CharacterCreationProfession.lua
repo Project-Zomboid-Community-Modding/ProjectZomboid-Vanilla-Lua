@@ -39,16 +39,6 @@ function CharacterCreationProfessionListBox:onJoypadDown(button, joypadData)
     end
 end
 
-function CharacterCreationProfessionListBox:onJoypadDirLeft(joypadData)
-    joypadData.focus = self.joyfocusLeft
-    updateJoypadFocus(joypadData)
-end
-
-function CharacterCreationProfessionListBox:onJoypadDirRight(joypadData)
-    joypadData.focus = self.joyfocusRight
-    updateJoypadFocus(joypadData)
-end
-
 function CharacterCreationProfessionListBox:onJoypadBeforeDeactivate(joypadData)
     self.parent:onJoypadBeforeDeactivate(joypadData)
 end
@@ -59,10 +49,7 @@ end
 
 function CharacterCreationProfessionPresetPanel:render()
     ISPanelJoypad.render(self)
-    if self.joyfocus then
-        self:drawRectBorder(0 - 4, 0 - 4, self:getWidth() + 4 + 4, self:getHeight() + 4 + 4, 0.4, 0.2, 1.0, 1.0)
-        self:drawRectBorder(0 - 3, 0 - 3, self:getWidth() + 3 + 3, self:getHeight() + 3 + 3, 0.4, 0.2, 1.0, 1.0)
-    end
+    self:renderJoypadFocus(-4, -4, self.width + 8, self.height + 8)
 end
 
 function CharacterCreationProfessionPresetPanel:onGainJoypadFocus(joypadData)
@@ -87,29 +74,14 @@ function CharacterCreationProfessionPresetPanel:onJoypadDown(button, joypadData)
 end
 
 function CharacterCreationProfessionPresetPanel:onJoypadDirUp(joypadData)
-    if self:isFocusOnControl() then
-        ISPanelJoypad.onJoypadDirUp(self, joypadData)
-    else
-        joypadData.focus = self.parent.listboxProf
-        updateJoypadFocus(joypadData)
-    end
+    ISPanelJoypad.onJoypadDirUp(self, joypadData)
 end
 
 function CharacterCreationProfessionPresetPanel:onJoypadDirLeft(joypadData)
-    if self.joypadIndex == 1 then
-        joypadData.focus = self.parent
-        updateJoypadFocus(joypadData)
-        return
-    end
     ISPanelJoypad.onJoypadDirLeft(self, button, joypadData)
 end
 
 function CharacterCreationProfessionPresetPanel:onJoypadDirRight(joypadData)
-    if self.joypadIndex == 3 then
-        joypadData.focus = self.parent
-        updateJoypadFocus(joypadData)
-        return
-    end
     ISPanelJoypad.onJoypadDirRight(self, button, joypadData)
 end
 
@@ -932,6 +904,9 @@ function CharacterCreationProfession:render()
             self.tooltipRichText:paginate()
         end
     end
+
+	local playerNum = 0
+	self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function CharacterCreationProfession:PointToSpend()
@@ -1201,13 +1176,16 @@ function CharacterCreationProfession.initWorld()
 end
 
 function CharacterCreationProfession:onGainJoypadFocus(joypadData)
-    --    print("character profession gain focus");
-    ISPanelJoypad.onGainJoypadFocus(self, joypadData);
-    self:setISButtonForA(self.playButton);
-    self:setISButtonForB(self.backButton);
-    self:setISButtonForY(self.randomButton);
-    self:setISButtonForX(self.resetButton);
-    --    self.listboxProf.selected = -1;
+    if self:isDescendant(joypadData.switchingFocusFrom) then
+        ISPanelJoypad.onGainJoypadFocus(self, joypadData);
+        self:setISButtonForA(self.playButton);
+        self:setISButtonForB(self.backButton);
+        self:setISButtonForY(self.randomButton);
+        self:setISButtonForX(self.resetButton);
+    else
+        joypadData.focus = self.listboxProf
+        updateJoypadFocus(joypadData)
+    end
 end
 
 function CharacterCreationProfession:onLoseJoypadFocus(joypadData)
@@ -1224,18 +1202,25 @@ function CharacterCreationProfession:onJoypadBeforeDeactivate(joypadData)
 end
 
 function CharacterCreationProfession:onJoypadDirUp(joypadData)
-    joypadData.focus = self.listboxProf
-    updateJoypadFocus(joypadData)
 end
 
 function CharacterCreationProfession:onJoypadDirLeft(joypadData)
-    joypadData.focus = self.presetPanel
-    updateJoypadFocus(joypadData)
 end
 
 function CharacterCreationProfession:onJoypadDirRight(joypadData)
-    joypadData.focus = self.presetPanel
-    updateJoypadFocus(joypadData)
+end
+
+function CharacterCreationProfession:onJoypadNavigateStart(joypadData)
+	self:onJoypadNavigateStart_Descendant(nil, joypadData)
+end
+
+function CharacterCreationProfession:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	self.joypadNavigate = { left = self.presetPanel, up = self.listboxProf }
+	self.listboxProf.joypadNavigate = { right = self.listboxTrait, down = self.presetPanel, parent = self }
+	self.listboxTrait.joypadNavigate = { left = self.listboxProf, right = self.listboxTraitSelected, down = self.listboxBadTrait, parent = self }
+	self.listboxBadTrait.joypadNavigate = { left = self.listboxProf, right = self.listboxTraitSelected, up = self.listboxTrait, parent = self }
+	self.listboxTraitSelected.joypadNavigate = { left = self.listboxTrait, parent = self }
+	self.presetPanel.joypadNavigate = { up = self.listboxProf, parent = self }
 end
 
 function CharacterCreationProfession:onResolutionChange(oldw, oldh, neww, newh)
@@ -1252,6 +1237,17 @@ function CharacterCreationProfession:onResolutionChange(oldw, oldh, neww, newh)
     self:setY((screenHgt - h) / 2)
     self:recalcSize()
 
+end
+
+function CharacterCreationProfession:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.playButton:forceClick()
+        return
+    end
 end
 
 function CharacterCreationProfession:new(x, y, width, height)

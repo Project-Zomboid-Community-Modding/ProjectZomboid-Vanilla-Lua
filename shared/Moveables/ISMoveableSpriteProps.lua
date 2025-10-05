@@ -182,7 +182,7 @@ function ISMoveableSpriteProps.new( _sprite )
                         s.rawWeight = s.weight*10;
                     end
                 end
-
+                
                 s.isMultiSprite     = s.sprite:getSpriteGrid()~=nil;
                 s.isForceSingleItem = props:Is("ForceSingleItem") or false;
 			end
@@ -1244,6 +1244,14 @@ function ISMoveableSpriteProps:pickUpMoveableInternal( _character, _square, _obj
                         item:getModData().movableData = copyTable(_object:getModData().movableData)
                     end
 
+                    for i = 0, _object:getContainerCount()-1 do
+                        if _object:getContainerByIndex(i) and _object:getContainerByIndex(i):getCustomName() then
+                            local cont = _object:getContainerByIndex(i)
+                            local key = cont:getType() .. "_customContainerName"
+                            item:getModData()[key] = _object:getContainerByIndex(i):getCustomName()
+                        end
+                    end
+
                     if _object:hasModData() and _object:getModData().itemCondition then
                         item:setConditionMax(_object:getModData().itemCondition.max);
                         item:setCondition(_object:getModData().itemCondition.value);
@@ -1770,7 +1778,7 @@ function ISMoveableSpriteProps:placeMoveableViaCursor( _character, _square, _ori
     end
 end
 
-function ISMoveableSpriteProps:placeMoveable( _character, _square, _origSpriteName )
+function ISMoveableSpriteProps:placeMoveable( _character, _square, _origSpriteName, _forceAllow )
     if self.isMoveable and instanceof(_character,"IsoGameCharacter") and instanceof(_square,"IsoGridSquare") then
         if self.isMultiSprite then
             local spriteGrid = self.sprite:getSpriteGrid();
@@ -1842,7 +1850,7 @@ function ISMoveableSpriteProps:placeMoveable( _character, _square, _origSpriteNa
             ISMoveableCursor.clearCacheForAllPlayers();
         else
             local item = self:findInInventory( _character, _origSpriteName );
-            if item  and self:canPlaceMoveableInternal( _character, _square, item ) then
+            if item  and (self:canPlaceMoveableInternal( _character, _square, item ) or _forceAllow) then
                 self:placeMoveableInternal( _square, item, self.spriteName )
                 _character:getInventory():Remove(item);
                 sendRemoveItemFromContainer(_character:getInventory(), item);
@@ -1991,9 +1999,11 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
             end
         end
     else
+
         local itemSprite = _spriteName;
         local sprite = getSprite( itemSprite );
         local props = sprite and sprite:getProperties();
+        local blockStyleSolid = props and (props:Is(IsoFlagType.solid) or props:Is(IsoFlagType.solidtrans)) or false;
         local currentSurface = self:getTotalTableHeight(_square);
         if self.isMoveable and self.isTableTop and (not self.ignoreSurfaceSnap) then -- and self.facing ~= nil then		-- face correction when possible for items that are supposed to be on tables (like sinks)
             local faces = self:getFaces();
@@ -2106,8 +2116,7 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
         elseif self.isoType == "IsoMultiMedia" then
             obj = IsoMultiMedia.new( getCell(), _square, getSprite(itemSprite) );
         else
---             print("ISMoveableSpriteProps:placeMoveableInternal 3 ", obj)
-            local blockStyleSolid = props and (props:Is(IsoFlagType.solid) or props:Is(IsoFlagType.solidtrans)) or false;
+--             local blockStyleSolid = props and (props:Is(IsoFlagType.solid) or props:Is(IsoFlagType.solidtrans)) or false;
 
             if props and TileIsoObjectType == IsoObjectType.lightswitch then
                 if props:Is("streetlight") then
@@ -2207,6 +2216,7 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
                     obj:afterRotated();
                 end
             end
+
         end
 
 --         print("ISMoveableSpriteProps:placeMoveableInternal 10 ", obj)
@@ -2228,6 +2238,16 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
 
         if obj and _item and _item:hasModData() and _item:getModData().movableData then
             obj:getModData().movableData = copyTable(_item:getModData().movableData);
+        end
+
+        for i = 0, obj:getContainerCount()-1 do
+            if obj:getContainerByIndex(i)  then
+                local cont = obj:getContainerByIndex(i)
+                local key = cont:getType() .. "_customContainerName"
+                if _item and _item:hasModData() and _item:getModData()[key] then
+                    obj:getModData()[key] = _item:getModData()[key]
+                end
+            end
         end
 
         --fix for radio vehicle parts having condition
@@ -2278,6 +2298,11 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
             --obj:createLightSource(10, 5, 5, 0, 0, nil, nil, _character);
             --end
         end
+        -- fix for some moveable objects becoming zombie invulnerable when placed
+        if obj and blockStyleSolid and (not instanceof(obj,"IsoThumpable")) and (not obj:isMovedThumpable()) then
+           obj:setMovedThumpable(true)
+        end
+
     end
 
     if self.type == "FloorRug" and _square:getObjects() then
@@ -2631,8 +2656,8 @@ end
 
 function ISMoveableSpriteProps:rotateMoveable( _character, _square, _origSpriteName )
     if self.isMoveable then
+        local origProps = ISMoveableSpriteProps.new( _origSpriteName ); -- get original.        
         if self.isMultiSprite then
-            local origProps = ISMoveableSpriteProps.new( _origSpriteName ); -- get original.
             local origGrid = origProps:getSpriteGridInfo(_square, true);
             if origGrid and #origGrid>0 then
                 local anchorSquare = self:findOriginalSquare(origGrid, self.sprite);
@@ -2643,12 +2668,13 @@ function ISMoveableSpriteProps:rotateMoveable( _character, _square, _origSpriteN
                 local sgrid = self:getSpriteGridInfo(anchorSquare, false); --_square, false);
                 for i,gridMember in ipairs(sgrid) do
                     self:placeMoveableInternal(  gridMember.square, items[i], gridMember.sprite:getName() )
-                end
+                end                
                 ISMoveableCursor.clearCacheForAllPlayers();
-            end
+            end        
         else
-            self:rotateMoveableInternal( _character, _square, _origSpriteName );
-        end
+            origProps:pickUpMoveable( _character, _square, true, true ); -- pickup orignal.
+            self:placeMoveable(_character, _square, _origSpriteName, true);
+        end         
     end
 end
 
@@ -3613,6 +3639,7 @@ function ISMoveableSpriteProps:getScrapSound( _character )
     if self.canScrap and self.isFromObject and self.object:getSquare() then
         local scrapDef =  ISMoveableDefinitions:getInstance().getScrapDefinition( self.material );
         if scrapDef then
+            if scrapDef.sound == "Hammering" then return end -- sound is played by the action/Hammering animation.
             if scrapDef.isWav then
 --                return getSoundManager():PlayWorldSoundWav(scrapDef.sound, _character:getCurrentSquare(), 0, 15, 2, true);
                 return _character:playSound(scrapDef.sound)
@@ -4153,9 +4180,6 @@ function ISMoveableSpriteProps.OnDynamicMovableRecipe(_sprite, _recipe, _item, _
                 if scrapDef.perk then
                     _recipe:setXpPerk(scrapDef.perk);
                 end
-
-                _recipe:setOnCreate("Recipe.OnCreate.DynamicMovable");
-                _recipe:setOnXP("Recipe.OnGiveXP.DynamicMovable");
 
                 if scrapDef.recipeAnimNode then
                     _recipe:setAnimNode(scrapDef.recipeAnimNode)

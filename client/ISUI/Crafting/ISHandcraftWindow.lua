@@ -6,7 +6,7 @@
 require "ISUI/ISCollapsableWindow"
 
 ISHandcraftWindow = ISCollapsableWindow:derive("ISHandcraftWindow");
-
+ISHandcraftWindow.autoCloseDistance = 1.5;
 
 function ISHandcraftWindow:initialise()
     ISCollapsableWindow.initialise(self);
@@ -31,6 +31,26 @@ function ISHandcraftWindow:createChildren()
     self.windowHeader:instantiate();
     self:addChild(self.windowHeader);
 
+    -- lock button
+    local th = self:titleBarHeight()
+    local buttonHeight = th-2
+    local x = self.width - ((buttonHeight - 1) * 2) - 1;
+    self.lockButton = ISButton:new(x, 0, buttonHeight, buttonHeight, "", self, ISHandcraftWindow.toggleLock);
+    self.lockButton.anchorRight = false;
+    self.lockButton.anchorLeft = false;
+    self.lockButton:initialise();
+    self.lockButton.borderColor.a = 0.0;
+    self.lockButton.backgroundColor.a = 0;
+    self.lockButton.backgroundColorMouseOver.a = 0;
+    if self.locked then
+        self.lockButton:setImage(self.lockedButtonTexture);
+    else
+        self.lockButton:setImage(self.unlockedButtonTexture);
+    end
+    self.lockButton:setUIName(getText("Lock"));
+    self:addChild(self.lockButton);
+    self.lockButton:setVisible(true);
+    
     self.handCraftPanel = ISXuiSkin.build(self.xuiSkin, nil, ISHandCraftPanel, 0, 0, 10, 10, self.player, nil, self.isoObject);
     if self.queryOverride then
         self.handCraftPanel.recipeQuery = self.queryOverride;
@@ -120,11 +140,18 @@ function ISHandcraftWindow:calculateLayout(_preferredWidth, _preferredHeight)
 
     self.dirtyLayout = false;
 
-    if self.pinButton then
-        self.pinButton:setX(width - 3 - self.pinButton:getWidth())
+    x = width - 3;
+    if self.pinButton and self.collapseButton then
+        x = x - self.pinButton:getWidth();
     end
-    if self.collapseButton then
-        self.collapseButton:setX(width - 3 - self.collapseButton:getWidth())
+    if self.pinButton and self.collapseButton then
+        self.pinButton:setX(x);
+        self.collapseButton:setX(x);
+        x = x - 3;
+    end
+    if self.lockButton then
+        x = x - self.lockButton:getWidth();
+        self.lockButton:setX(x);
     end
 end
 
@@ -216,6 +243,9 @@ function ISHandcraftWindow:update()
         end
     else
         valid = self.player;
+        if not self.locked then
+            valid = valid and ISHandcraftWindow.autoCloseDistance and self.originalSquare:DistToProper(self.player:getSquare()) <= ISHandcraftWindow.autoCloseDistance;
+        end
     end
     
     if self.hasClosedWindowInstance then --to prevent occasional double calling of close due to a call in self.update.
@@ -227,6 +257,16 @@ function ISHandcraftWindow:update()
     end
     
     return valid;
+end
+
+function ISHandcraftWindow:toggleLock()
+    self.originalSquare = self.player:getSquare();
+    self.locked = not self.locked;
+    if self.locked then
+        self.lockButton:setImage(self.lockedButtonTexture);
+    else
+        self.lockButton:setImage(self.unlockedButtonTexture);
+    end
 end
 
 function ISHandcraftWindow:close()
@@ -355,6 +395,11 @@ function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOver
     o.isoObject = isoObject;
     o.queryOverride = queryOverride;
     o.isoObjectInProximity = true;
+    
+    o.locked = false;
+    o.lockedButtonTexture = getTexture("media/ui/inventoryPanes/Button_Lock.png");
+    o.unlockedButtonTexture = getTexture("media/ui/inventoryPanes/Button_LockOpen.png");
+    o.originalSquare = player:getSquare();
     
     o.resizable = true;
     o.enableHeader = true;

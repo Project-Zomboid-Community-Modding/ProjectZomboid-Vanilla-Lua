@@ -265,6 +265,38 @@ function ISScrollingListBox:size()
 	return self.count;
 end
 
+function ISScrollingListBox:setTextColorRGBA(r, g, b, a)
+    self.textColor = {r=r, g=g, b=b, a=a}
+end
+
+function ISScrollingListBox:setSelectedTextColorRGBA(r, g, b, a)
+    self.selectedTextColor = {r=r, g=g, b=b, a=a}
+end
+
+function ISScrollingListBox:setItemTextColorRGBA(index, r, g, b, a)
+    local item = self.items[index]
+    if not item then return end
+    item.textColor = {r=r, g=g, b=b, a=a}
+end
+
+function ISScrollingListBox:setItemSelectedTextColorRGBA(index, r, g, b, a)
+    local item = self.items[index]
+    if not item then return end
+    item.selectedTextColor = {r=r, g=g, b=b, a=a}
+end
+
+function ISScrollingListBox:setItemTextColorToDefault(index)
+    local item = self.items[index]
+    if not item then return end
+    item.textColor = nil
+end
+
+function ISScrollingListBox:setItemSelectedTextColorToDefault(index)
+    local item = self.items[index]
+    if not item then return end
+    item.selectedTextColor = nil
+end
+
 function ISScrollingListBox:setOnMouseDownFunction(target, onmousedown)
 	self.onmousedown = onmousedown;
 	self.target = target;
@@ -277,17 +309,22 @@ end
 
 function ISScrollingListBox:doDrawItem(y, item, alt)
 	if not item.height then item.height = self.itemheight end -- compatibililty
+	if item.height <= 0 then
+        return y + item.height
+    end
     if (y + self:getYScroll() + self.itemheight < 0) or (y + self:getYScroll() >= self.height) then
         return y + item.height
     end
+	local textColor = item.textColor or self.textColor
 	if self.selected == item.index then
 		self:drawSelection(0, y, self:getWidth(), item.height-1);
+		textColor = item.selectedTextColor or self.selectedTextColor
 	elseif (self.mouseoverselected == item.index) and self:isMouseOver() and not self:isMouseOverScrollBar() then
 		self:drawMouseOverHighlight(0, y, self:getWidth(), item.height-1);
 	end
 	self:drawRectBorder(0, (y), self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	local itemPadY = self.itemPadY or (item.height - self.fontHgt) / 2
-	self:drawText(item.text, 15, (y)+itemPadY, 0.9, 0.9, 0.9, 0.9, self.font);
+	self:drawText(item.text, 15, (y)+itemPadY, textColor.r, textColor.g, textColor.b, textColor.a, self.font);
 	y = y + item.height;
 	return y;
 end
@@ -644,7 +681,7 @@ function ISScrollingListBox:onJoypadDown(button, joypadData)
 		joypadData.focus = self.joypadParent;
 		updateJoypadFocus(joypadData);
 	else
-		ISPanelJoypad.onJoypadDown(self, button);
+		ISPanelJoypad.onJoypadDown(self, button, joypadData);
 	end
 end
 
@@ -699,6 +736,8 @@ function ISScrollingListBox:new (x, y, width, height)
 	o.listHeaderColor = {r=0.4, g=0.4, b=0.4, a=0.3};
 	o.selectionColor = {r=0.7, g=0.35, b=0.15, a=0.3}
 	o.mouseOverHighlightColor = {r=1.0, g=1.0, b=1.0, a=0.1}
+	o.textColor = {r=0.9, g=0.9, b=0.9, a=0.9}
+	o.selectedTextColor = {r=0.9, g=0.9, b=0.9, a=0.9}
 	-- Since these were broken before, don't draw them by default
 	o.altBgColor = nil
 	o.drawBorder = false

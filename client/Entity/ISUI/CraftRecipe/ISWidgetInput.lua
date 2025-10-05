@@ -86,7 +86,7 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local topMargin = self.displayAsOutput and 0 or self.selectInputButtonSize / 2;
+    local topMargin = self.logic:isManualSelectInputs() and self.selectInputButtonSize / 2 or 0;
     local spacing = self.margin;
     local labelHeight = math.max(self.primary.label:getHeight(), self.labelIconSize);
     local minHeight = topMargin + self.iconBorderSizeY + spacing + labelHeight + self.margin;
@@ -179,7 +179,7 @@ function ISWidgetInput:prerender()
     end
     
     -- border the main icon
-    local topMargin = self.displayAsOutput and 0 or self.selectInputButtonSize / 2;
+    local topMargin = self.primary.selectInputButton:isVisible() and self.selectInputButtonSize / 2 or 0;
     self:drawRectStatic(0, topMargin, self.iconBorderSizeX, self.iconBorderSizeY, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorderStatic(0, topMargin, self.iconBorderSizeX, self.iconBorderSizeY, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
@@ -208,7 +208,11 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
     table.cycleIcons = false;
     if _script:getResourceType()==ResourceType.Item then
         table.amount = _script:getIntAmount();
+        table.maxAmount = _script:getIntMaxAmount();
         table.amountStr = tostring(round(table.amount,2));
+        if _script:isVariableAmount() then
+            table.amountStr = table.amountStr .. "-" .. tostring(round(table.maxAmount,2));
+        end
 
         --table.inputObjects = _script:getPossibleInputItems();
         table.inputObjects = self.logic:getSatisfiedInputItems(_script);
@@ -293,26 +297,19 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
         table.itemNameLabel:initialise();
         table.itemNameLabel:instantiate();
         self:addChild(table.itemNameLabel);
-
-        if not self.displayAsOutput then
-            -- draw manual input button
-            table.selectInputButton =ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, self.selectInputButtonSize, self.selectInputButtonSize, nil);
-            
-            table.selectInputButton.image = self.textureSwapInput;
-            --table.selectInputButton.textureBackground = self.textureButtonBG;
-            table.selectInputButton.borderColor = {r=0, g=0, b=0, a=0};
-            table.selectInputButton.backgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
-            table.selectInputButton.backgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};
-            table.selectInputButton.textureColor = {r=0, g=0, b=0, a=1};
-            --table.selectInputButton.textureColorMouseOver = {r=0.909, g=0.929, b=0.78, a=1};
-            
-            table.selectInputButton.target = self;
---            table.selectInputButton.onclick = ISWidgetInput.onSelectInputsClicked;
---            table.selectInputButton.enable = true;
-            table.selectInputButton:initialise();
-            table.selectInputButton:instantiate();
-            self:addChild(table.selectInputButton)
-        end
+        
+        -- draw manual input button
+        table.selectInputButton =ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, self.selectInputButtonSize, self.selectInputButtonSize, nil);
+        table.selectInputButton.image = self.textureSwapInput;
+        table.selectInputButton.borderColor = {r=0, g=0, b=0, a=0};
+        table.selectInputButton.backgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
+        table.selectInputButton.backgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};
+        table.selectInputButton.textureColor = {r=0, g=0, b=0, a=1};
+        table.selectInputButton.target = self;
+        table.selectInputButton:initialise();
+        table.selectInputButton:instantiate();
+        self:addChild(table.selectInputButton)
+        table.selectInputButton:setVisible(self.logic:isManualSelectInputs());
     end
 
     return table;
@@ -399,7 +396,8 @@ function ISWidgetInput:updateScriptValues(_table)
         _table.iconColor.r = c:getRedFloat();
         _table.iconColor.g = c:getGreenFloat();
         _table.iconColor.b = c:getBlueFloat();
-        _table.iconText = fluid:getDisplayName();
+        _table.iconText = _table.script:getInputFluidFilterDisplayName() or fluid:getDisplayName();
+        _table.tooltipText = _table.script:getInputFluidFilterTooltip();
         _table.inputFullName = fluid:getFluidTypeString();
     elseif _table.script:getResourceType()==ResourceType.Energy then
         if _table.cycleIcons then
@@ -423,7 +421,7 @@ function ISWidgetInput:updateScriptValues(_table)
         _table.icon.backgroundColor.b = _table.iconColor.b;
 
         if _table.iconText then
-            local text = _table.iconText
+            local text = _table.tooltipText or _table.iconText
 --             if _table.script:isBaseItem() then
 --                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsBaseItem")
 --             end
@@ -532,8 +530,9 @@ function ISWidgetInput:updateValues()
     if self.logic then
         satisfied = self.logic:isInputSatisfied(self.inputScript);
     end
-
+    
     if self.primary.selectInputButton then
+        self.primary.selectInputButton:setVisible(self.logic:isManualSelectInputs());
         self.primary.selectInputButton.image = satisfied and self.textureSwapInput or self.textureMissingInput;
     end
     
@@ -553,11 +552,9 @@ function ISWidgetInput:updateValues()
     
     if self.logic and self.interactiveMode and self.inputScript:getResourceType()==ResourceType.Item then
         if self.logic:isManualSelectInputs() then
-            self.editedLabels = true;
-            
             local inputItem = self.logic:getRecipeData():getFirstManualInputFor(self.inputScript);
             if inputItem then
-                self.primary.icon:setMouseOverText(inputItem:getDisplayName());
+                self.primary.icon:setMouseOverText(self.primary.tooltipText or inputItem:getDisplayName());
                 if self.primary.itemNameLabel then
                     self.primary.iconText = inputItem:getDisplayName();
                 end
@@ -566,41 +563,45 @@ function ISWidgetInput:updateValues()
                     self.primary.icon.texture = inputItem:getScriptItem():getNormalTexture();
                 end
             end
-            local amount = self.primary.inputFullName and self.inputScript:getAmount(self.primary.inputFullName) or self.inputScript:getIntAmount();
-            local satisfiedAmount = self.logic:getInputCount(self.inputScript);
-            if self.primary.label.amountValue~=amount or self.primary.label.satisfiedValue~=satisfiedAmount then
-                if not self.primary.isKeep and self.primary.inputItem and self.primary.inputItem:getTypeString() == "Drainable" and not self.inputScript:isItemCount() then
-                    self.iconConsumed.texture = self.textureUsed;
-                    self.iconConsumed.mouseovertext = getText("IGUI_CraftingWindow_WillBeConsume", tostring(amount));
-                end
-                if not self.displayAsOutput then
-                    local item = inputItem and inputItem:getScriptItem() or self.primary.inputItem;
-                    if self.inputScript:isUsesPartialItem(item) then
-                        if inputItem and not self.logic:getRecipeData():getDataForInputScript(self.inputScript):isInputItemsSatisfied() then 
-                            self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount).." "..getText("Attributes_Type_Uses"));                        
+        end
+        
+        local amount = self.primary.inputFullName and self.inputScript:getAmount(self.primary.inputFullName) or self.inputScript:getIntAmount();
+        local maxAmount = self.primary.inputFullName and self.inputScript:getMaxAmount(self.primary.inputFullName) or self.inputScript:getIntMaxAmount();
+        local satisfiedAmount = self.logic:getInputCount(self.inputScript);
+        
+        if self.primary.label.amountValue~=maxAmount or self.primary.label.satisfiedValue~=satisfiedAmount then
+            self.editedLabels = true;
+            if not self.primary.isKeep and self.primary.inputItem and self.primary.inputItem:getTypeString() == "Drainable" and not self.inputScript:isItemCount() then
+                self.iconConsumed.texture = self.textureUsed;
+                self.iconConsumed.mouseovertext = getText("IGUI_CraftingWindow_WillBeConsume", tostring(amount));
+            end
+            if not self.displayAsOutput then
+                local inputItem = self.logic:getRecipeData():getFirstManualInputFor(self.inputScript);
+                local item = inputItem and inputItem:getScriptItem() or self.primary.inputItem;
+                if self.inputScript:isUsesPartialItem(item) then
+                    if inputItem and not self.logic:getRecipeData():getDataForInputScript(self.inputScript):isInputItemsSatisfied() then 
+                        self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(maxAmount).." "..getText("Attributes_Type_Uses"));                        
+                    else
+                        if self.primary.script:isVariableAmount() then
+                            self.primary.label:setName(tostring(amount).."-"..tostring(maxAmount).." "..getText("Attributes_Type_Uses"));
                         else
                             self.primary.label:setName(tostring(amount).." "..getText("Attributes_Type_Uses"));
                         end
-                    else
-                        self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount));
                     end
-                    
+                else
+                    self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(maxAmount));
                 end
-                self.primary.label.amountValue = amount;
-                self.primary.label.satisfiedValue = satisfiedAmount;
+                
             end
-            if satisfiedAmount>0 and satisfiedAmount<amount then
-                self.primary.label.textColor = self.colPartial;
-                self.borderColor = self.colPartial;
-            elseif satisfiedAmount<amount then
-                self.primary.icon.backgroundColor.a = 0.25;
-            end
-        else
-            self.primary.label.satisfiedValue = -1;
-            if self.primary.amountStr ~= self.primary.label.name then
-                self.primary.label:setName(tostring(self.primary.amountStr));
-                self.editedLabels = true;
-            end
+            self.primary.label.amountValue = maxAmount;
+            self.primary.label.satisfiedValue = satisfiedAmount;
+        end
+
+        if satisfiedAmount>0 and satisfiedAmount<amount then
+            self.primary.label.textColor = self.colPartial;
+            self.borderColor = self.colPartial;
+        elseif satisfiedAmount<amount then
+            self.primary.icon.backgroundColor.a = 0.25;
         end
 
         if self.editedLabels then

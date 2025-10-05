@@ -523,7 +523,7 @@ function InventoryUseStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
-        getPlayerLoot(0).lootAll:setVisible(false);
+--         getPlayerLoot(0).lootAll:setVisible(false);
     end
     ISInventoryPaneContextMenu.dontCreateMenu = false;
     Tutorial1.contextMenuEat = true;
@@ -789,7 +789,7 @@ function FightStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
-        getPlayerLoot(0).lootAll:setVisible(false);
+--         getPlayerLoot(0).lootAll:setVisible(false);
     end
     
     FightStep:spawnMom();
@@ -1083,7 +1083,7 @@ function SneakStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
-        getPlayerLoot(0).lootAll:setVisible(false);
+--         getPlayerLoot(0).lootAll:setVisible(false);
         getPlayer():setZombieKills(1);
     end
     

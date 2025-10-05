@@ -29,7 +29,7 @@ CDDA.OnGameStart = function()
 		else
 			i = i + 1;
 			print(tile);
-			tile:explode();
+	        IsoFireManager.explode(getCell(), tile, 100000)
 		end
 	end
 end

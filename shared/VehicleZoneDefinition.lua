@@ -347,7 +347,7 @@ VehicleZoneDistribution.airportshuttle.spawnRate = 32;
 -- airport service vehicles
 VehicleZoneDistribution.airportservice = {};
 VehicleZoneDistribution.airportservice.vehicles = {};
-VehicleZoneDistribution.airportservice.vehicles["Base.Base.PickUpTruckLightsAirport"] = {index = -1, spawnChance = 20};
+VehicleZoneDistribution.airportservice.vehicles["Base.PickUpTruckLightsAirport"] = {index = -1, spawnChance = 20};
 VehicleZoneDistribution.airportservice.vehicles["Base.PickUpTruckLightsAirportSecurity"] = {index = -1, spawnChance = 20};
 VehicleZoneDistribution.airportservice.vehicles["Base.StepVanAirportCatering"] = {index = -1, spawnChance = 20};
 VehicleZoneDistribution.airportservice.vehicles["Base.VanSeatsAirportShuttle"] = {index = -1, spawnChance = 20};
@@ -566,3 +566,12 @@ VehicleZoneDistribution.evacuee.vehicles["Base.SUV"] = {index = -1, spawnChance 
 VehicleZoneDistribution.evacuee.baseVehicleQuality = 1.1;
 VehicleZoneDistribution.evacuee.chanceToSpawnSpecial = 0;
 VehicleZoneDistribution.evacuee.chanceToSpawnNormal = 0;
+
+-- for racecars
+VehicleZoneDistribution.racecar = {};
+VehicleZoneDistribution.racecar.vehicles = {};
+VehicleZoneDistribution.racecar.vehicles["Base.RaceCarBurnt"] = {index = -1, spawnChance = 100};
+VehicleZoneDistribution.racecar.baseVehicleQuality = 1.1;
+VehicleZoneDistribution.racecar.chanceToSpawnSpecial = 0;
+VehicleZoneDistribution.racecar.chanceToSpawnNormal = 0;
+VehicleZoneDistribution.racecar.chanceToSpawnKey = 100;

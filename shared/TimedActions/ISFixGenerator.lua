@@ -3,6 +3,7 @@
 --***********************************************************
 
 require "TimedActions/ISBaseTimedAction"
+require "TimedActions/ISInventoryTransferUtil"
 
 ISFixGenerator = ISBaseTimedAction:derive("ISFixGenerator");
 
@@ -42,7 +43,7 @@ function ISFixGenerator:continueFixing()
 		if scrapItem then
 			local previousAction = self
 			if scrapItem:getContainer() ~= self.character:getInventory() then
-				local action = ISInventoryTransferAction:new(self.character, scrapItem, scrapItem:getContainer(), self.character:getInventory(), nil)
+				local action = ISInventoryTransferUtil.newInventoryTransferAction(self.character, scrapItem, scrapItem:getContainer(), self.character:getInventory(), nil)
 				ISTimedActionQueue.addAfter(self, action)
 				previousAction = action
 			end

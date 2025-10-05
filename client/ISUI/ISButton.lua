@@ -11,6 +11,15 @@ function ISButton:initialise()
 	ISPanel.initialise(self);
 end
 
+function ISButton:setVisible(visible)
+    ISPanel.setVisible(self, visible)
+    if visible then
+        self.mouseOver = self:isMouseOver()
+    else
+        self.mouseOver = false
+    end
+end
+
 --************************************************************************--
 --** ISButton:onMouseMove
 --**

@@ -289,6 +289,8 @@ function ISInventoryTransferAction:start()
             end
         end
     end
+    self.loopSound = self.character:getEmitter():playSound("RummageInInventory")
+    self.loopSoundNoTrigger = true
 --    end
 
 	if isClient() then
@@ -304,11 +306,11 @@ function ISInventoryTransferAction:playSourceContainerOpenSound()
 	-- Play this once at the start of a (possibly multi-item) transfer
 	if self.sourceContainerOpened == self.srcContainer then return end
 	self.sourceContainerOpened = self.srcContainer
+--[[ -- ISInventoryPage does this at request of noiseworks people
 	if self.srcContainer ~= nil and self.srcContainer:getType() == "stove" then
 		self.sourceContainerOpenSound = self.character:getEmitter():playSound("StoveDoorOpen")
 		return
 	end
---[[ -- ISInventoryPage does this at request of noiseworks people
 	-- If the destination container has no sound, play the source container sound
 	if self.destContainer == nil or self.destContainer:getOpenSound() == nil then
 		if self.srcContainer ~= nil and self.srcContainer:getOpenSound() ~= nil then
@@ -324,11 +326,11 @@ function ISInventoryTransferAction:playSourceContainerCloseSound()
 --		self.character:getEmitter():setParameterValueByName(self.sourceContainerOpenSound, "ActionProgressPercent", 100.0)
 		self.character:getEmitter():stopOrTriggerSound(self.sourceContainerOpenSound)
 	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
 	if self.srcContainer ~= nil and self.srcContainer:getType() == "stove" then
 		self.character:getEmitter():playSound("StoveDoorClose")
 		return
 	end
---[[ -- ISInventoryPage does this at request of noiseworks people
 	-- If the destination container has no sound, play the source container sound
 	if self.destContainer == nil or self.destContainer:getCloseSound() == nil then
 		if self.srcContainer ~= nil and self.srcContainer:getCloseSound() ~= nil then
@@ -343,10 +345,10 @@ function ISInventoryTransferAction:playDestContainerOpenSound()
 	-- Play this once at the start of a (possibly multi-item) transfer
 	if self.destContainerOpened == self.destContainer then return end
 	self.destContainerOpened = self.destContainer
+--[[ -- ISInventoryPage does this at request of noiseworks people
 	if self.destContainer ~= nil and self.destContainer:getType() == "stove" then
 		self.destContainerOpenSound = self.character:getEmitter():playSound("StoveDoorOpen")
 	end
---[[ -- ISInventoryPage does this at request of noiseworks people
 	if self.destContainer ~= nil and self.destContainer:getOpenSound() ~= nil then
 		local soundName = self.destContainer:getOpenSound()
 		self.destContainerOpenSound = self.character:getEmitter():playSound(soundName)
@@ -359,10 +361,10 @@ function ISInventoryTransferAction:playDestContainerCloseSound()
 --		self.character:getEmitter():setParameterValueByName(self.destContainerOpenSound, "ActionProgressPercent", 100.0)
 		self.character:getEmitter():stopOrTriggerSound(self.destContainerOpenSound)
 	end
+--[[ -- ISInventoryPage does this at request of noiseworks people
 	if self.destContainer ~= nil and self.destContainer:getType() == "stove" then
 		self.character:getEmitter():playSound("StoveDoorClose")
 	end
---[[ -- ISInventoryPage does this at request of noiseworks people
 	-- If the destination container has no sound, play the source container sound
 	if self.destContainer ~= nil and self.destContainer:getCloseSound() ~= nil then
 		local soundName = self.destContainer:getCloseSound()
@@ -375,34 +377,48 @@ function ISInventoryTransferAction:getTransferStartSoundName()
     if self.srcContainer ~= nil and self.srcContainer:getTakeSound() ~= nil then
         return self.srcContainer:getTakeSound()
     end
-    if not self.destContainer then return "PutItemInBag" end
+    if not self.destContainer then return nil end
+--[[
     if (self.destContainer:getType() == "floor") and ((self.item:getType() == "CorpseMale") or (self.item:getType() == "CorpseFemale")) then
         return self.item:getDropSound() or "PutItemInBag"
     end
+--]]
     if (self.destContainer:getType() == "floor") and (self.item:getType() == "CorpseAnimal") then
         -- breed-specific sounds
-        return self.item:getDropSound() or "PutItemInBag"
+        return self.item:getDropSound()
     end
-	if self.destContainer == self.character:getInventory() then
-        if (self.srcContainer ~= nil) and self.srcContainer:getTakeSound() then
-            return self.srcContainer:getTakeSound()
-        end
-		return "StoreItemPlayerInventory"
-	end
 	if self.destContainer:getType() == "trough" and self.item:getAnimalFeedType() == "AnimalFeed" then
 		return "AnimalFeederAddFeed"
 	end
-	return "PutItemInBag"
+	return nil
 end
 
 function ISInventoryTransferAction:getTransferCompleteSoundName()
-    if not self.destContainer then return nil end
-	return self.destContainer:getPutSound()
+    if self.destContainer ~= nil and self.destContainer:getPutSound() ~= nil then
+	    return self.destContainer:getPutSound()
+    end
+	if self.destContainer == self.character:getInventory() then
+		return "StoreItemPlayerInventory"
+	end
+    return nil
+end
+
+function ISInventoryTransferAction:stopLoopingSound()
+    if self.loopSound then
+        -- FIXME: RummageInInventory uses ActionProgressPercent but doesn't stop playing when it is set to 100.
+        if self.loopSoundNoTrigger then
+	        self.character:getEmitter():stopSound(self.loopSound)
+        else
+	        self.character:getEmitter():stopOrTriggerSound(self.loopSound)
+        end
+	    self.loopSound = nil
+	end
 end
 
 function ISInventoryTransferAction:stop()
 	self:playSourceContainerCloseSound()
 	self:playDestContainerCloseSound()
+	self:stopLoopingSound()
 	self.item:setJobDelta(0.0);
 	if self.action then
 		self.action:setLoopedAction(false);
@@ -481,6 +497,7 @@ function ISInventoryTransferAction:perform()
 	else
 		self:playSourceContainerCloseSound()
 		self:playDestContainerCloseSound()
+	    self:stopLoopingSound()
 
 		self.action:stopTimedActionAnim();
 		self.action:setLoopedAction(false);

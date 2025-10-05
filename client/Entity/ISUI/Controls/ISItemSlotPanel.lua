@@ -19,10 +19,22 @@ function ISItemSlotPanel:createChildren()
 
     local styleCell = self.styleCell or "S_TableLayoutCell_ItemSlot";
     self.tableLayout = ISXuiSkin.build(self.xuiSkin, nil, ISTableLayout, 0, 0, 10, 10, nil, nil, styleCell);
-    self.tableLayout:addRowFill(nil);
     self.tableLayout:initialise();
     self.tableLayout:instantiate();
     self:setElement(self.tableLayout);
+end
+
+function ISItemSlotPanel:addLayoutCell()
+    local columnIndex = #self.itemSlots % self.maxColumns;
+    local rowIndex = math.floor(#self.itemSlots / self.maxColumns);
+    if columnIndex == 0 then
+        rowIndex = self.tableLayout:addRowFill(nil):index();
+    end
+    if rowIndex == 0 then
+        columnIndex = self.tableLayout:addColumnFill(nil):index();
+    end
+    
+    return columnIndex, rowIndex;
 end
 
 function ISItemSlotPanel:addResources(_resources, _styleItemSlot)
@@ -35,12 +47,19 @@ function ISItemSlotPanel:addResources(_resources, _styleItemSlot)
     end
 
     for i=0,_resources:size()-1 do
-        self:addResource(_resources:get(i), _styleItemSlot)
+        -- always filter by item - add a slot per slot item
+        local resource = _resources:get(i);
+        local uniqueItems = resource:getUniqueItems();
+        local uniqueItemCount = not resource:isEmpty() and uniqueItems:size() or 1;
+        for j = 0, uniqueItemCount-1 do
+            local itemTypeFilter = not uniqueItems:isEmpty() and uniqueItems:get(j) or nil;
+            self:addResource(resource, _styleItemSlot, itemTypeFilter);
+        end
     end
 
 end
 
-function ISItemSlotPanel:addResource(_resourceItem, _styleItemSlot)
+function ISItemSlotPanel:addResource(_resourceItem, _styleItemSlot, _itemTypeFilter)
     if not self.javaObject then
         print("ISItemSlotPanel.addResources failed, must instantiate first.")
     end
@@ -49,9 +68,7 @@ function ISItemSlotPanel:addResource(_resourceItem, _styleItemSlot)
         print("ISItemSlotPanel -> resource is nil")
         return;
     end
-
-    local columnIndex = self.tableLayout:addColumnFill(nil):index();
-
+    
     local style = _styleItemSlot or "S_ItemSlot_Locked";
     local itemSlot = ISXuiSkin.build(self.xuiSkin, style, ISItemSlot, 0, 0, SLOT_SIZE, SLOT_SIZE, _resourceItem);
     itemSlot.drawProgress = self.drawProgress;
@@ -68,12 +85,14 @@ function ISItemSlotPanel:addResource(_resourceItem, _styleItemSlot)
     if self.drawTooltip then
         itemSlot.drawTooltip = self.drawTooltip;
     end
+    itemSlot.itemTypeFilter = _itemTypeFilter;
     itemSlot:initialise();
     itemSlot:instantiate();
     itemSlot:setCharacter(self.player);
     itemSlot:setResource( _resourceItem );
     
-    self.tableLayout:setElement(columnIndex, 0, itemSlot);
+    local columnIndex, rowIndex = self:addLayoutCell();
+    self.tableLayout:setElement(columnIndex, rowIndex, itemSlot);
     table.insert(self.itemSlots, itemSlot);
     
     return itemSlot;
@@ -93,7 +112,7 @@ function ISItemSlotPanel:addDisplayInventoryItem(_item, _styleItemSlot)
         return;
     end
 
-    local columnIndex = self.tableLayout:addColumnFill(nil):index();
+    local columnIndex, rowIndex = self:addLayoutCell();
 
     local style = _styleItemSlot or "S_ItemSlot_Locked";
     local itemSlot = ISXuiSkin.build(self.xuiSkin, style, ISItemSlot, 0, 0, SLOT_SIZE, SLOT_SIZE);
@@ -105,8 +124,10 @@ function ISItemSlotPanel:addDisplayInventoryItem(_item, _styleItemSlot)
     itemSlot:instantiate();
     itemSlot:setCharacter(self.player);
     itemSlot:setStoredItem( _item );
-    self.tableLayout:setElement(columnIndex, 0, itemSlot);
+    self.tableLayout:setElement(columnIndex, rowIndex, itemSlot);
     table.insert(self.itemSlots, itemSlot);
+    
+    return itemSlot;
 end
 
 function ISItemSlotPanel:addDisplayItem(_item, _styleItemSlot)
@@ -119,8 +140,8 @@ function ISItemSlotPanel:addDisplayItem(_item, _styleItemSlot)
         return;
     end
 
-    local columnIndex = self.tableLayout:addColumnFill(nil):index();
-
+    local columnIndex, rowIndex = self:addLayoutCell();
+    
     local style = _styleItemSlot or "S_ItemSlot_Locked";
     local itemSlot = ISXuiSkin.build(self.xuiSkin, style, ISItemSlot, 0, 0, SLOT_SIZE, SLOT_SIZE);
     itemSlot.drawProgress = self.drawProgress;
@@ -131,16 +152,18 @@ function ISItemSlotPanel:addDisplayItem(_item, _styleItemSlot)
     itemSlot:instantiate();
     itemSlot:setCharacter(self.player);
     itemSlot:setStoredScriptItem( _item );
-    self.tableLayout:setElement(columnIndex, 0, itemSlot);
+    self.tableLayout:setElement(columnIndex, rowIndex, itemSlot);
     table.insert(self.itemSlots, itemSlot);
+    
+    return itemSlot;
 end
 
 function ISItemSlotPanel:addDisplayEmptySlot(_styleItemSlot)
     if not self.javaObject then
         print("ISItemSlotPanel.addResources failed, must instantiate first.")
     end
-    
-    local columnIndex = self.tableLayout:addColumnFill(nil):index();
+
+    local columnIndex, rowIndex = self:addLayoutCell();
 
     local style = _styleItemSlot or "S_ItemSlot_Locked";
     local itemSlot = ISXuiSkin.build(self.xuiSkin, style, ISItemSlot, 0, 0, SLOT_SIZE, SLOT_SIZE);
@@ -151,8 +174,10 @@ function ISItemSlotPanel:addDisplayEmptySlot(_styleItemSlot)
     itemSlot:initialise();
     itemSlot:instantiate();
     itemSlot:setCharacter(self.player);
-    self.tableLayout:setElement(columnIndex, 0, itemSlot);
+    self.tableLayout:setElement(columnIndex, rowIndex, itemSlot);
     table.insert(self.itemSlots, itemSlot);
+    
+    return itemSlot
 end
 
 function ISItemSlotPanel:onResize()
@@ -181,7 +206,12 @@ function ISItemSlotPanel:onItemSlotRemoveSingleItem( _itemSlot, _item )
 end
 
 function ISItemSlotPanel:onItemSlotRemoveItems( _itemSlot, _isRightClick, _isShift )
-    ISEntityUI.ItemSlotRemoveItems( self.player, self.entity, _itemSlot );
+    if _itemSlot.itemTypeFilter then
+        local items = _itemSlot.resource:getStoredItemsOfType(_itemSlot.itemTypeFilter);
+        ISEntityUI.ItemSlotRemoveItems( self.player, self.entity, _itemSlot, items );
+    else
+        ISEntityUI.ItemSlotRemoveItems( self.player, self.entity, _itemSlot );
+    end
 end
 
 function ISItemSlotPanel:onItemSlotAddItems( _itemSlot, _itemList )
@@ -190,7 +220,6 @@ end
 
 function ISItemSlotPanel:removeAllSlots()
     self.tableLayout:clearTable();
-    self.tableLayout:addRowFill(nil);
     table.wipe(self.itemSlots);
 end
 
@@ -237,6 +266,7 @@ function ISItemSlotPanel:new (x, y, width, height, player, entity, logic, _style
     o.drawProgress = false;
     
     o.showSelectInputsButton = false;
+    o.maxColumns = 4;
 
     return o
 end

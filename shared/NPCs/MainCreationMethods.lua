@@ -579,6 +579,8 @@ BaseGameCharacterDetails.DoTraits = function()
 
 	local inventive = TraitFactory.addTrait("Inventive", getText("UI_trait_Inventive"), 2, getText("UI_trait_InventiveDesc"), false);
 
+	local crafty = TraitFactory.addTrait("Crafty", getText("UI_trait_Crafty"), 3, getText("UI_trait_CraftyDesc"), false);
+
 	--TraitFactory.addTrait("Dismantler", getText("UI_trait_Dismantler"), 2, getText("UI_trait_DismantlerDesc"), false);
 	
 	
@@ -654,6 +656,8 @@ BaseGameCharacterDetails.DoTraits = function()
     TraitFactory.setMutualExclusive("Desensitized", "Claustrophobic");
     TraitFactory.setMutualExclusive("Desensitized", "AdrenalineJunkie");
     TraitFactory.setMutualExclusive("IronGut", "WeakStomach");
+    TraitFactory.setMutualExclusive("Crafty", "FastLearner");
+    TraitFactory.setMutualExclusive("Crafty", "SlowLearner");
 
     -- disabled as now wilderness knowledge doesn't teach growing seasons
 --     TraitFactory.setMutualExclusive("Herbalist", "WildernessKnowledge");
@@ -4941,6 +4945,8 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Strathairn");
     SurvivorFactory.addSurname("Volovodov");
     SurvivorFactory.addSurname("Lennox");
+    SurvivorFactory.addSurname("Arseneau");
+    SurvivorFactory.addSurname("Harber");
 end
 
 BaseGameCharacterDetails.DoFemaleForename = function()

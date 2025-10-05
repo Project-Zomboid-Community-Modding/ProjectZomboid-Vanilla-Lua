@@ -1,8 +1,11 @@
-require "ISUI/ISPanelJoypad"
---***********************************************************--**              	  ROBERT JOHNSON                       **
+--***********************************************************
+--**              	  ROBERT JOHNSON                       **
 --***********************************************************
 
+require "ISUI/ISPanelJoypad"
+
 ISMicrowaveUI = ISPanelJoypad:derive("ISMicrowaveUI");
+ISMicrowaveUI.instance = {};
 ISMicrowaveUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
@@ -42,7 +45,7 @@ function ISMicrowaveUI:initialise()
     self.ok:setSound("activate", nil)
     self:addChild(self.ok);
 
-    self.close = ISButton:new(self:getWidth() - btnWid - 10, self.timerKnob:getBottom() + 20, btnWid, btnHgt, getText("UI_Cancel"), self, ISMicrowaveUI.onClick);
+    self.close = ISButton:new(self:getWidth() - btnWid - 10, self.timerKnob:getBottom() + 20, btnWid, btnHgt, getText("UI_Close"), self, ISMicrowaveUI.onClick);
     self.close.internal = "CLOSE";
     self.close:initialise();
     self.close:instantiate();
@@ -144,6 +147,12 @@ function ISMicrowaveUI:onClick(button)
     end
 end
 
+function ISMicrowaveUI:close()
+    self:removeFromUIManager()
+    self:setVisible(false)
+    ISMicrowaveUI.instance[self.playerNum+1] = nil
+end
+
 function ISMicrowaveUI:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     self.joypadIndexY = 1
@@ -186,11 +195,13 @@ function ISMicrowaveUI:new(x, y, width, height, oven, character)
     o.width = width;
     o.height = height;
     o.character = character;
+    o.playerNum = player;
     o.oven = oven;
     o.moveWithMouse = true;
 	o.anchorLeft = true;
     o.anchorRight = true;
     o.anchorTop = true;
     o.anchorBottom = true;
+    ISMicrowaveUI.instance[player+1] = o;
     return o;
 end

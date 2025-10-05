@@ -148,6 +148,7 @@ end
 
 function ISBuildRecipePanel:update()
     ISPanel.update(self);
+    self:updateTitleWidget();
 end
 
 function ISBuildRecipePanel:setOverlayVisible(_b)
@@ -177,13 +178,20 @@ function ISBuildRecipePanel:onRebuildItemNodes(_inputItems)
     end
 end
 
-function ISBuildRecipePanel:updateContainers(containers)
+function ISBuildRecipePanel:updateTitleWidget()
     if self.titleWidget then
         self.titleWidget:updateLabels();
         self.titleWidget:updatePropertyIcons();
         self:calculateLayout(self.width, self.height);
     end
 end
+
+function ISBuildRecipePanel:onManualSelectChanged(_manualSelectInputs)
+    if self.inputs then
+        self.inputs:onManualSelectChanged(_manualSelectInputs);
+    end
+end
+
 
 --************************************************************************--
 --** ISBuildRecipePanel:new
@@ -204,6 +212,7 @@ function ISBuildRecipePanel:new(x, y, width, height, player, logic, recipeData, 
     o.logic = logic;
     o.logic:addEventListener("onRecipeChanged", o.onRecipeChanged, o);
     o.logic:addEventListener("onRebuildInputItemNodes", o.onRebuildItemNodes, o);
+    o.logic:addEventListener("onManualSelectChanged", o.onManualSelectChanged, o);
 
     o.margin = 0;
     o.minimumWidth = 350;

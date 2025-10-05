@@ -319,7 +319,7 @@ ISObjectClickHandler.doClick = function (object, x, y)
                 local panel2 = getPlayerLoot(0);
                 panel2:setNewContainer(container);
                 panel2:setVisible(true);
-                panel2.lootAll:setVisible(true);
+--                 panel2.lootAll:setVisible(true);
                 panel2.collapseCounter = 0;
                 if panel2.isCollapsed then
                     panel2.isCollapsed = false;

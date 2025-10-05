@@ -17,9 +17,8 @@ ModSelector.ModListPanel = ISPanelJoypad:derive("ModListPanel")
 local ModListPanel = ModSelector.ModListPanel
 
 function ModListPanel:new(x, y, width, height, model)
-    local o = ISPanelJoypad:new(x, y, width, height)
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISPanelJoypad.new(self, x, y, width, height)
+    o:noBackground()
     o.model = model
     o.joypadListFocus = true
     return o
@@ -61,14 +60,34 @@ end
 
 function ModListPanel:prerender()
     ISPanelJoypad.prerender(self)
-    if self.joypadFocused then
-        self:drawCustomRectBorder(1, 1, self:getWidth()-2, self:getHeight()-2, 0.2, 1, 1, 0.4)
-    end
 end
 
 function ModListPanel:createChildren()
+    self.filterPanel = ISPanelJoypad:new(0, 0, self:getWidth(), 50)
+    self.filterPanel.render = function(_self)
+        ISPanelJoypad.render(_self)
+        _self:renderJoypadFocus()
+    end
+    self.filterPanel.onGainJoypadFocus = function(_self, _joypadData)
+        ISPanelJoypad.onGainJoypadFocus(_self, _joypadData)
+        _self:restoreJoypadFocus(_joypadData)
+    end
+    self.filterPanel.onLoseJoypadFocus = function(_self, _joypadData)
+        ISPanelJoypad.onLoseJoypadFocus(_self, _joypadData)
+        _self:clearJoypadFocus(_joypadData)
+    end
+    self.filterPanel.onJoypadDown = function(_self, _button, _joypadData)
+        if _button == Joypad.BButton and not _self:isFocusOnControl() then
+            _joypadData.focus = self.parent
+            updateJoypadFocus(_joypadData)
+            return
+        end
+        ISPanelJoypad.onJoypadDown(_self, _button, _joypadData)
+    end
+    self:addChild(self.filterPanel)
+
     local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, LABEL_HGT, getText("UI_modselector_filter"), 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
-    self:addChild(label)
+    self.filterPanel:addChild(label)
 
     self.filterCombo = ISComboBox:new(label:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING+1, math.min(200, self.width/2.0 - label:getRight()), BUTTON_HGT, self, self.updateView)
     self.filterCombo:initialise()
@@ -76,10 +95,10 @@ function ModListPanel:createChildren()
         self.filterCombo:addOption(getText(type))
     end
     self.filterCombo.selected = 1
-    self:addChild(self.filterCombo)
+    self.filterPanel:addChild(self.filterCombo)
 
     label = ISLabel:new(self.width/2, UI_BORDER_SPACING+1, LABEL_HGT, getText("UI_sandbox_searchEntryBoxWord") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
-    self:addChild(label)
+    self.filterPanel:addChild(label)
     self.searchLabel = label
 
     self.searchEntry = ISTextEntryBox:new("", label:getRight() + UI_BORDER_SPACING, UI_BORDER_SPACING+1, self.width - UI_BORDER_SPACING*2 - label:getRight() - 1, BUTTON_HGT)
@@ -88,14 +107,14 @@ function ModListPanel:createChildren()
     self.searchEntry.setText = ModListPanel.setText
     self.searchEntry:initialise()
     self.searchEntry:instantiate()
-    self:addChild(self.searchEntry)
+    self.filterPanel:addChild(self.searchEntry)
 
     local tickboxWidth = BUTTON_HGT + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_modselector_showEnabledMods"))
     self.enabledModsTickbox = ISTickBox:new(UI_BORDER_SPACING+1, self.filterCombo:getBottom() + UI_BORDER_SPACING, tickboxWidth, BUTTON_HGT, "", self, self.updateView);
     self.enabledModsTickbox:initialise();
     self.enabledModsTickbox:instantiate();
     self.enabledModsTickbox:addOption(getText("UI_modselector_showEnabledMods"));
-    self:addChild(self.enabledModsTickbox);
+    self.filterPanel:addChild(self.enabledModsTickbox);
 
     --[[
     tickboxWidth = BUTTON_HGT + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_modselector_showUnsupportedMods"))
@@ -110,9 +129,17 @@ function ModListPanel:createChildren()
     self.favoriteButton.internal = "Favorite"
     self.favoriteButton:initialise()
     self.favoriteButton:instantiate()
-    self:addChild(self.favoriteButton)
+    self.filterPanel:addChild(self.favoriteButton)
 
-    self.modList = ModSelector.ModListBox:new(0, self.favoriteButton:getBottom() + UI_BORDER_SPACING, self.width, self.height - self.favoriteButton:getBottom() - UI_BORDER_SPACING, self.model)
+    self.filterPanel:setHeight(self.favoriteButton:getBottom() + UI_BORDER_SPACING)
+
+    self.filterPanel.joypadIndexY = 1
+    self.filterPanel.joypadIndex = 1
+    self.filterPanel:insertNewLineOfButtons(self.filterCombo, self.searchEntry)
+    self.filterPanel:insertNewLineOfButtons(self.enabledModsTickbox, self.favoriteButton)
+
+    self.modList = ModSelector.ModListBox:new(0, self.filterPanel:getBottom() + UI_BORDER_SPACING, self.width, self.height - self.filterPanel:getBottom() - UI_BORDER_SPACING, self.model)
+    self.modList.drawBorder = true;
     self.modList:initialise();
     self.modList:instantiate();
     self:addChild(self.modList)
@@ -193,139 +220,3 @@ end
 function ModListPanel:setJoypadFocused(val)
     self.joypadFocused = val
 end
-
-
-function ModListPanel:onJoypadDirUp(joypadData)
-    if self.joypadListFocus then
-        self.modList:onJoypadDirUp(joypadData)
-        if self.modList.selected ~= -1 then
-            self.parent.modInfoPanel:updateView(self.modList.items[self.modList.selected].item.modInfo)
-        end
-    else
-        local child = self.children[self.joypadIndex]
-        if child and child.isCombobox and child.expanded then
-            child:onJoypadDirUp(joypadData)
-            return
-        else
-            self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-            if self.joypadIndex == self.favoriteButton.ID then
-                self.joypadIndex = self.searchEntry.ID
-            elseif self.joypadIndex == self.enabledModsTickbox.ID then
-                self.joypadIndex = self.filterCombo.ID
---            elseif self.joypadIndex == self.unsupportedModsTickbox.ID then
---                self.joypadIndex = self.filterCombo.ID
-            end
-            self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-        end
-    end
-end
-
-function ModListPanel:onJoypadDirDown(joypadData)
-    if self.joypadListFocus then
-        self.modList:onJoypadDirDown(joypadData)
-        if self.modList.selected ~= -1 then
-            self.parent.modInfoPanel:updateView(self.modList.items[self.modList.selected].item.modInfo)
-        end
-    else
-        local child = self.children[self.joypadIndex]
-        if child and child.isCombobox and child.expanded then
-            child:onJoypadDirDown(joypadData)
-            return
-        else
-            self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-            if self.joypadIndex == self.filterCombo.ID then
-                self.joypadIndex = self.enabledModsTickbox.ID
-            elseif self.joypadIndex == self.searchEntry.ID then
-                self.joypadIndex = self.favoriteButton.ID
-            end
-            self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-        end
-    end
-end
-
-function ModListPanel:onJoypadDirLeft(joypadData)
-    if not self.joypadListFocus then
-        self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-        if self.joypadIndex == self.favoriteButton.ID then
---            self.joypadIndex = self.unsupportedModsTickbox.ID
---        elseif self.joypadIndex == self.unsupportedModsTickbox.ID then
-            self.joypadIndex = self.enabledModsTickbox.ID
-        elseif self.joypadIndex == self.searchEntry.ID then
-            self.joypadIndex = self.filterCombo.ID
-        end
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    end
-end
-
-function ModListPanel:onJoypadDirRight(joypadData)
-    if not self.joypadListFocus then
-        self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-        if self.joypadIndex == self.filterCombo.ID then
-            self.joypadIndex = self.searchEntry.ID
-        elseif self.joypadIndex == self.enabledModsTickbox.ID then
---            self.joypadIndex = self.unsupportedModsTickbox.ID
---        elseif self.joypadIndex == self.unsupportedModsTickbox.ID then
-            self.joypadIndex = self.favoriteButton.ID
-        end
-        self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-    end
-end
-
-
-function ModListPanel:onGainJoypadFocus(joypadData)
-    ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-    if self.joypadIndex == 0 then
-        self.joypadIndex = self.modList.ID
-        self.joypadListFocus = true
-    end
-    if self.searchEntry.joypadFocused then
-        self.searchEntry:setJoypadFocused(false)
-    end
-    self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-end
-
-function ModListPanel:onLoseJoypadFocus(joypadData)
-    self.joypadIndex = 0
-end
-
-function ModListPanel:onJoypadDown(button, joypadData)
-    if self.joypadListFocus then
-        if button == Joypad.AButton or button == Joypad.XButton then
-            self.modList:onJoypadDown(button, joypadData)
-        end
-        if button == Joypad.BButton then
-            self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-            self.joyfocus.focus = self.parent
-            self.parent.joypadIndex = self.ID
-            updateJoypadFocus(self.joyfocus)
-            self.joyfocus = nil
-        end
-        if button == Joypad.YButton then
-            self.joypadListFocus = false
-            self.joypadIndex = self.filterCombo.ID
-            self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
-        end
-    else
-        local child = self.children[self.joypadIndex]
-        if button == Joypad.AButton then
-            if child and (child.isButton or child.isTickBox or child.isCombobox) then
-                child:forceClick()
-                return
-            end
-            if self.joypadIndex == self.searchEntry.ID then
-                child:onJoypadDown(button, joypadData)
-            end
-        end
-        if button == Joypad.BButton and child and child.isCombobox and child.expanded then
-            child.expanded = false
-            child:hidePopup()
-            return
-        end
-        if button == Joypad.BButton then
-            self.joypadListFocus = true
-            self.children[self.joypadIndex]:setJoypadFocused(false, joypadData)
-        end
-    end
-end
-
-

@@ -269,8 +269,8 @@ Commands.recipe.OpenMysteryCan = function(args)
     local item = getPlayer():getInventory():getItemWithID(args.itemId)
     if item ~= nil then
         item:setTexture(getTexture("Item_CannedUnlabeled_Open"))
-        item:setWorldStaticModel("TinCanEmpty_Ground")
-        item:setStaticModel("MysteryCan_Open")
+        item:setWorldStaticModel(ModelKey.TIN_CAN_EMPTY)
+        item:setStaticModel(ModelKey.MYSTERY_CAN_OPEN)
         item:getModData().NoLabel = "true"
     end
 end
@@ -289,12 +289,11 @@ Commands.recipe.SayText = function(args)
     if player ~= nil then
         local text = ""
         if args.type == 0 then -- RollOneDice
-            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_One") .. " " .. args.dieNameText .. " *"
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. args.diceNameText .. " *"
         elseif args.type == 1 or args.type == 2 then -- RollDice or Roll3d6
-            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. args.dieNameText .. " *"
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. args.diceNameText .. " *"
         elseif args.type == 3 then -- Rolld100
-            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_PercentileDice") .. " *"
-        elseif args.type == 4 then --DrawRandomCard
+            text = "* " .. player:getUsername().. " " .. getText("IGUI_Rolls") .. " " .. args.rollText .. " " .. getText("IGUI_With") .. " " .. getText("IGUI_PercentileDice") .. " *"        elseif args.type == 4 then --DrawRandomCard
             text = "* " .. player:getUsername().. " " .. getText("IGUI_Draws") .." " .. args.text .. " *"
         elseif args.type == 5 then --ISResearchRecipe
             if player:isLocalPlayer() then

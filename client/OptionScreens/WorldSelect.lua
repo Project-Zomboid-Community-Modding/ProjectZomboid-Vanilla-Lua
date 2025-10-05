@@ -406,6 +406,17 @@ function WorldSelect:create()
 	self.maxYSlider:setCurrentValue(250)
 end
 
+function WorldSelect:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.nextButton:forceClick()
+        return
+    end
+end
+
 function WorldSelect:new(x, y, width, height)
 	local o = ISPanelJoypad.new(self, x, y, width, height)
 	o.previousScreen = 'NewGameScreen'

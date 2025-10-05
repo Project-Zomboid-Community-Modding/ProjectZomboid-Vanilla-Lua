@@ -42,7 +42,7 @@ function ISChallenge2VariousItemWindow:create()
 	self:createItemButton(y, "Base.Plank", 30)
 
 	y = y + 30;
-	self:createItemButton(y, "Base.Nails", 10)
+	self:createItemButton(y, "Base.Nails", 10, 5)
 
 	y = y + 30;
 	self:createItemButton(y, "Base.Saw", 40)
@@ -67,7 +67,7 @@ function ISChallenge2VariousItemWindow:create()
 	self:loadJoypadButtons()
 end
 
-function ISChallenge2VariousItemWindow:createItemButton(y, itemType, cost)
+function ISChallenge2VariousItemWindow:createItemButton(y, itemType, cost, amount)
 	local item = ScriptManager.instance:getItem(itemType)
 	local label = nil
 	if item:getCount() > 1 then
@@ -77,6 +77,7 @@ function ISChallenge2VariousItemWindow:createItemButton(y, itemType, cost)
 	end
 	local button = ISButton:new(16, y, 100, 25, label, self, ISChallenge2VariousItemWindow.onOptionMouseDown);
 	button:initialise();
+	button.amount = amount or 1;
 	button.internal = "item";
 	button.item = itemType;
 	button.cost = cost;
@@ -92,7 +93,7 @@ function ISChallenge2VariousItemWindow:onOptionMouseDown(button, x, y)
 	-- manage the item
 	if button.internal == "item" then
 		Challenge2.playersMoney[self.playerId] = Challenge2.playersMoney[self.playerId] - button.cost;
-		self.char:getInventory():AddItem(button.item);
+		self.char:getInventory():AddItems(button.item, button.amount);
 	end
 	ISChallenge2UpgradeTab.instance[self.playerId]:reloadButtons();
 end

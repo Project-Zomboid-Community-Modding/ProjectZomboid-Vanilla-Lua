@@ -247,6 +247,10 @@ ProfessionVehicles.VanMechanic = {
     "Base.StepVan_CompleteRepairShop",  "Base.StepVan_LouisvilleMotorShop", "Base.VanBrewsterHarbin", "Base.VanMooreMechanics", "Base.VanPlattAuto", },
     LAA = { "Base.VanMobileMechanics", },
 }
+ProfessionVehicles.RaceCarBurnt = {
+    General = { "Base.RaceCarBurnt", "Base.RaceCar12", "Base.RaceCar34", "Base.RaceCar58", },
+    Alternate = { "Base.RaceCarBurnt", },
+}
 
 
 ProfessionVehicles.PickUpVanBuilder = ProfessionVehicles.VanBuilder
@@ -328,6 +332,10 @@ ProfessionVehicles.UniqueVehicles = {
     "Base.VanSeats_Space",
     "Base.VanSeats_Trippy",
     "Base.VanSeats_Valkyrie",
+
+    "Base.RaceCar12",
+    "Base.RaceCar34",
+    "Base.RaceCar58",
 }
 
 Events.OnSpawnVehicleStart.Add(ProfessionVehicles.CheckSwap)

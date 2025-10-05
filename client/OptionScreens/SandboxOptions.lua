@@ -48,20 +48,7 @@ function SandboxOptionsScreenListBox:onJoypadDown(button, joypadData)
     if button == Joypad.BButton then
         joypadData.focus = self.parent
         updateJoypadFocus(joypadData)
-    elseif button == Joypad.YButton then
-        joypadData.focus = self.parent.searchEntry
-        updateJoypadFocus(joypadData)
     end
-end
-
-function SandboxOptionsScreenListBox:onJoypadDirLeft(joypadData)
-    joypadData.focus = self.parent.presetPanel
-    updateJoypadFocus(joypadData)
-end
-
-function SandboxOptionsScreenListBox:onJoypadDirRight(joypadData)
-    joypadData.focus = self.parent.currentPanel
-    updateJoypadFocus(joypadData)
 end
 
 -- -- -- -- --
@@ -170,6 +157,7 @@ function SandboxOptionsScreenPanel:render()
     if self.isGroupBoxContentsPanel then
         self:repaintStencilRect(0, 0, self.width, self.height)
     end
+    self:renderJoypadFocus()
 end
 
 function SandboxOptionsScreenPanel:onMouseWheel(del)
@@ -254,9 +242,6 @@ function SandboxOptionsScreenPanel:onJoypadDown(button, joypadData)
     if button == Joypad.BButton and not self:isFocusOnControl() then
         joypadData.focus = self.parent
         updateJoypadFocus(joypadData)
-    elseif button == Joypad.YButton then
-        joypadData.focus = self.parent.searchEntry
-        updateJoypadFocus(joypadData)
     else
         local children = self:getVisibleChildren(self.joypadIndexY)
         local child = children[self.joypadIndex]
@@ -265,20 +250,6 @@ function SandboxOptionsScreenPanel:onJoypadDown(button, joypadData)
         end
 
         ISPanelJoypad.onJoypadDown(self, button, joypadData)
-    end
-end
-
-function SandboxOptionsScreenPanel:onJoypadDirLeft(joypadData)
-    if not self:isFocusOnControl() then
-        joypadData.focus = self.parent.listbox
-        updateJoypadFocus(joypadData)
-    end
-end
-
-function SandboxOptionsScreenPanel:onJoypadDirRight(joypadData)
-    if not self:isFocusOnControl() then
-        joypadData.focus = self.parent.presetPanel
-        updateJoypadFocus(joypadData)
     end
 end
 
@@ -398,6 +369,11 @@ end
 
 -- -- -- -- --
 
+function SandboxOptionsScreenPresetPanel:render()
+    ISPanelJoypad.render(self)
+    self:renderJoypadFocus(-2, -2, self.width + 4, self.height + 4)
+end
+
 function SandboxOptionsScreenPresetPanel:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     if self.joypadButtons[self.joypadIndex] then
@@ -414,43 +390,10 @@ function SandboxOptionsScreenPresetPanel:onJoypadDown(button, joypadData)
     if button == Joypad.BButton and not self:isFocusOnControl() then
         joypadData.focus = self.parent
         updateJoypadFocus(joypadData)
-    elseif button == Joypad.YButton then
-        joypadData.focus = self.parent.searchEntry
-        updateJoypadFocus(joypadData)
-    else
-        ISPanelJoypad.onJoypadDown(self, button, joypadData)
-    end
-end
-
-function SandboxOptionsScreenPresetPanel:onJoypadDirUp(joypadData)
-    if self:isFocusOnControl() then
-        ISPanelJoypad.onJoypadDirUp(self, joypadData)
-    else
-        joypadData.focus = self.parent.listbox
-        updateJoypadFocus(joypadData)
-    end
-end
-
-function SandboxOptionsScreenPresetPanel:onJoypadDirLeft(joypadData)
-    if self.joypadIndex == 1 then
-        joypadData.focus = self.parent
-        updateJoypadFocus(joypadData)
         return
     end
-    ISPanelJoypad.onJoypadDirLeft(self, joypadData)
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
 end
-
-function SandboxOptionsScreenPresetPanel:onJoypadDirRight(joypadData)
-    if self.joypadIndex == #self.joypadButtons then
-        joypadData.focus = self.parent.advancedCheckBox
-        updateJoypadFocus(joypadData)
-        self.parent.advancedCheckBox:setJoypadFocused(true, joypadData)
-        return
-    end
-    ISPanelJoypad.onJoypadDirRight(self, joypadData)
-end
-
-
 
 -- -- -- -- --
 
@@ -534,32 +477,6 @@ function SandboxOptionsScreen:create()
     self.advancedCheckBox:addOption(getText("Sandbox_Advanced"))
     self.advancedCheckBox.selected[1] = false
     self.advancedCheckBox.tooltip = getText("Sandbox_Advanced_tooltip")
-    self.advancedCheckBox.onJoypadDirRight = function(_self, joypadData)
-        joypadData.focus = _self.parent.parent
-        updateJoypadFocus(joypadData)
-        _self:setJoypadFocused(false)
-    end
-    self.advancedCheckBox.onJoypadDirUp = function(_self, joypadData)
-        joypadData.focus = _self.parent.parent
-        updateJoypadFocus(joypadData)
-        _self:setJoypadFocused(false)
-    end
-    self.advancedCheckBox.onJoypadDirLeft = function(_self, joypadData)
-        joypadData.focus = _self.parent
-        updateJoypadFocus(joypadData)
-        _self:setJoypadFocused(false)
-    end
-    self.advancedCheckBox.onJoypadDown = function(_self, button, joypadData)
-        if button == Joypad.AButton then
-            _self.joypadIndex = 1
-            _self:forceClick()
-        end
-        if button == Joypad.YButton then
-            joypadData.focus = _self.parent.parent.searchEntry
-            updateJoypadFocus(joypadData)
-            _self:setJoypadFocused(false)
-        end
-    end
     self.presetPanel:addChild(self.advancedCheckBox)
 
     if getDebug() then
@@ -575,7 +492,7 @@ function SandboxOptionsScreen:create()
     self.presetPanel:setWidth(self.advancedCheckBox:getRight()+getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_Advanced")))
     self.presetPanel:setX(self.width / 2 - self.presetPanel:getWidth() / 2)
 
-    self.presetPanel:insertNewLineOfButtons(self.presetList, self.savePresetButton, self.deletePresetButton, self.devPresetButton)
+    self.presetPanel:insertNewLineOfButtons(self.presetList, self.savePresetButton, self.deletePresetButton, self.devPresetButton, self.advancedCheckBox)
     self.presetPanel.joypadIndex = 1
     self.presetPanel.joypadIndexY = 1
 
@@ -1079,23 +996,8 @@ end
 
 function SandboxOptionsScreen:render()
     ISPanelJoypad.render(self)
-
-    if self.listbox.joyfocus then
-        local ui = self.listbox
-        self:drawRectBorder(ui:getX(), ui:getY(), ui:getWidth(), ui:getHeight(), 0.4, 0.2, 1.0, 1.0)
-        self:drawRectBorder(ui:getX()+1, ui:getY()+1, ui:getWidth()-2, ui:getHeight()-2, 0.4, 0.2, 1.0, 1.0)
-    elseif self.currentPanel.joyfocus then
-        local ui = self.currentPanel
-        self:drawRectBorder(ui:getX(), ui:getY(), ui:getWidth(), ui:getHeight(), 0.4, 0.2, 1.0, 1.0)
-        self:drawRectBorder(ui:getX()+1, ui:getY()+1, ui:getWidth()-2, ui:getHeight()-2, 0.4, 0.2, 1.0, 1.0)
-    elseif self.presetPanel.joyfocus then
-        local ui = self.presetPanel
-        self:drawRectBorder(ui:getX() - 4, ui:getY() - 4, ui:getWidth() + 4 + 3, ui:getHeight() + 4 + 3, 0.4, 0.2, 1.0, 1.0)
-        self:drawRectBorder(ui:getX() - 3, ui:getY() - 3, ui:getWidth() + 3 + 2, ui:getHeight() + 4 + 2, 0.4, 0.2, 1.0, 1.0)
-    end
-    if self.searchEntry.isJoypad then
-        self:drawTextureScaled(Joypad.Texture.YButton, self.width - UI_BORDER_SPACING-JOYPAD_TEX_SIZE, self.searchEntry:getY() + (self.searchEntry.height-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1, 1, 1, 1)
-    end
+    local playerNum = 0
+    self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function SandboxOptionsScreen:setSandboxVars()
@@ -1268,7 +1170,7 @@ function SandboxOptionsScreen:onGainJoypadFocus(joypadData)
         joypadData.focus = self.listbox
         updateJoypadFocus(joypadData)
     end
-    self.searchEntry:setWidth(self.width - UI_BORDER_SPACING*3 - JOYPAD_TEX_SIZE - 1)
+    self.searchEntry:setWidth(self.width - (UI_BORDER_SPACING+1) * 2)
     self.searchEntry.isJoypad = true
 end
 
@@ -1279,28 +1181,20 @@ function SandboxOptionsScreen:onLoseJoypadFocus(joypadData)
     self.ISButtonY = nil
 end
 
-function SandboxOptionsScreen:onJoypadDirUp(joypadData)
-    joypadData.focus = self.listbox
-    updateJoypadFocus(joypadData)
-end
-
-function SandboxOptionsScreen:onJoypadDirLeft(joypadData)
-    joypadData.focus = self.advancedCheckBox
-    updateJoypadFocus(joypadData)
-    self.advancedCheckBox:setJoypadFocused(true, joypadData)
-end
-
-function SandboxOptionsScreen:onJoypadDirRight(joypadData)
-    joypadData.focus = self.presetPanel
-    updateJoypadFocus(joypadData)
-end
-
 function SandboxOptionsScreen:onJoypadDown(button, joypadData)
     ISPanelJoypad.onJoypadDown(self, button, joypadData)
-    if button == Joypad.YButton then
-        joypadData.focus = self.searchEntry
-        updateJoypadFocus(joypadData)
-    end
+end
+
+function SandboxOptionsScreen:onJoypadNavigateStart(joypadData)
+    self:onJoypadNavigateStart_Descendant(nil, joypadData)
+end
+
+function SandboxOptionsScreen:onJoypadNavigateStart_Descendant(descendant, joypadData)
+    self.joypadNavigate = { left = self.listbox, up = self.currentPanel, down = self.presetPanel }
+    self.searchEntry.joypadNavigate = { left = self.listbox, down = self.currentPanel, parent = self }
+    self.listbox.joypadNavigate = { right = self.currentPanel, up = self.searchEntry, down = self.presetPanel, parent = self }
+    self.currentPanel.joypadNavigate = { left = self.listbox, up = self.searchEntry, down = self.presetPanel, parent = self }
+    self.presetPanel.joypadNavigate = { left = self.listbox, up = self.currentPanel, parent = self }
 end
 
 function SandboxOptionsScreen:new(x, y, width, height)

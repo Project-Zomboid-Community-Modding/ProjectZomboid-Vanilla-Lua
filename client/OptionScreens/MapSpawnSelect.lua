@@ -69,6 +69,12 @@ function MapSpawnSelectImage:prerender()
 	end
 end
 
+function MapSpawnSelectImage:render()
+	ISUIElement.render(self)
+	self:renderJoypadFocus()
+	self:updateJoypad()
+end
+
 function MapSpawnSelectImage:onMouseDown(x, y)
 	self.dragging = true
 	self.dragMoved = false
@@ -120,6 +126,116 @@ function MapSpawnSelectImage:onMouseWheel(del)
 	return true
 end
 
+-- From ISWorldMap
+function MapSpawnSelectImage:updateJoypad()
+	local currentTimeMs = getTimestampMs()
+	self.updateMS = self.updateMS or currentTimeMs
+	local dt = currentTimeMs - self.updateMS
+	self.updateMS = currentTimeMs
+
+	if self.joyfocus == nil then return end
+	if self.joyfocus.isDoingNavigation then return end
+
+	local cx = self.mapAPI:getCenterWorldX()
+	local cy = self.mapAPI:getCenterWorldY()
+
+	if isJoypadLTPressed(self.joyfocus.id) then
+		if not self.LBumperZoom then
+			self.LBumperZoom = self.mapAPI:getZoomF()
+		end
+		if self.LBumperZoom >= self.mapAPI:getZoomF() then
+			self.LBumperZoom = self.mapAPI:getZoomF() - 1.0
+			self.mapAPI:zoomAt(self.width / 2, self.height / 2, 2)
+		end
+	else
+		self.LBumperZoom = nil
+	end
+	if isJoypadRTPressed(self.joyfocus.id) then
+		if not self.RBumperZoom then
+			self.RBumperZoom = self.mapAPI:getZoomF()
+		end
+		if self.RBumperZoom <= self.mapAPI:getZoomF() then
+			self.RBumperZoom = self.mapAPI:getZoomF() + 1.0
+			self.mapAPI:zoomAt(self.width / 2, self.height / 2, -2)
+		end
+	else
+		self.RBumperZoom = nil
+	end
+
+	local x = getControllerPovX(self.joyfocus.id);
+	local y = getControllerPovY(self.joyfocus.id);
+	if x == 0 then
+		x = getJoypadMovementAxisX(self.joyfocus.id)
+		if (x > -0.5 and x < 0.5) then x = 0 end
+	end
+	if y == 0 then
+		y = getJoypadMovementAxisY(self.joyfocus.id)
+		if (y > -0.5 and y < 0.5) then y = 0 end
+	end
+	if x ~= 0 then
+		if not self.povXms then
+			self.povXms = currentTimeMs
+		else
+			if currentTimeMs - self.povXms <= 150 then
+				x = 0
+			end
+		end
+	else
+		self.povXms = nil
+	end
+	if y ~= 0 then
+		if not self.povYms then
+			self.povYms = currentTimeMs
+		else
+			if currentTimeMs - self.povYms <= 150 then
+				y = 0
+			end
+		end
+	else
+		self.povYms = nil
+	end
+	if self.mapAPI:getBoolean("Isometric") then
+		if x ~= 0 and y ~= 0 then
+			if x > 0 and y > 0 then
+				y = 0
+			elseif x < 0 and y < 0 then
+				y = 0
+			else
+				x = 0
+			end
+		elseif x ~= 0 then
+			y = -x
+		elseif y ~= 0 then
+			x = y
+		end
+	end
+	if x~=0 or y ~= 0 then
+		local scale = self.mapAPI:getWorldScale()
+		local scrollDelta = (dt / 1000) * (500 / scale)
+		local snap = 1
+		if x < 0 then
+			cx = math.floor((cx + scrollDelta * x) / snap) * snap
+		elseif x > 0 then
+			cx = math.ceil((cx + scrollDelta * x) / snap) * snap
+		end
+		if y < 0 then
+			cy = math.floor((cy + scrollDelta * y) / snap) * snap
+		elseif y > 0 then
+			cy = math.ceil((cy + scrollDelta * y) / snap) * snap
+		end
+		self.mapAPI:centerOn(cx, cy)
+	end
+end
+
+function MapSpawnSelectImage:onJoypadDown(button, joypadData)
+	if button == Joypad.AButton then
+		self.parent.nextButton:forceClick()
+	end
+	if button == Joypad.BButton then
+		self.parent.backButton:forceClick()
+	end
+end
+
 function MapSpawnSelectImage:clear()
 	self.mapAPI:clearData()
 	self.mapAPI:clearImages()
@@ -154,31 +270,11 @@ MapSpawnSelectListBox = ISScrollingListBox:derive("MapSpawnSelectListBox")
 
 function MapSpawnSelectListBox:render()
 	ISScrollingListBox.render(self)
---	self:drawRectBorder(self.listbox:getX(), self.listbox:getY(), self.listbox:getWidth(), self.listbox:getHeight(), 0.9, 0.4, 0.4, 0.4)
-	if self.joyfocus then
-		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
-		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
-	end
 end
 
 function MapSpawnSelectListBox:onMouseDown(x, y)
 	ISScrollingListBox.onMouseDown(self, x, y)
 	self.parent.selectedMapIndex = nil
-end
-
-function MapSpawnSelectListBox:onJoypadDirUp(joypadData)
-	if self.selected == 1 and self.parent.textEntry and self.parent.textEntry:isVisible() then
-		self.parent.textEntry:focus()
-		joypadData.focus = self.parent.textEntry
-		updateJoypadFocus(joypadData)
-		return
-	end
-	ISScrollingListBox.onJoypadDirUp(self, joypadData)
-end
-
-function MapSpawnSelectListBox:onJoypadDirRight(joypadData)
-	joypadData.focus = self.parent.richText
-	updateJoypadFocus(joypadData)
 end
 
 function MapSpawnSelectListBox:onJoypadBeforeDeactivate(joypadData)
@@ -221,14 +317,65 @@ function MapSpawnSelectInfoPanel:onJoypadDirDown(joypadData)
 	self:setYScroll(self:getYScroll() - 48)
 end
 
-function MapSpawnSelectInfoPanel:onJoypadDirLeft(joypadData)
-	self:setYScroll(0)
-	joypadData.focus = self.parent.listbox
-	updateJoypadFocus(joypadData)
-end
-
 function MapSpawnSelectInfoPanel:onJoypadBeforeDeactivate(joypadData)
 	self.parent:onJoypadBeforeDeactivate(joypadData)
+end
+
+-----
+
+MapSpawnSelectSeedPanel = ISPanelJoypad:derive("MapSpawnSelectSeedPanel")
+
+function MapSpawnSelectSeedPanel:createChildren()
+	self.seedLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING / 2, BUTTON_HGT, getText("UI_advWorld_seed_label") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
+	self.seedLabel:initialise()
+	self.seedLabel:instantiate()
+	self.seedLabel:setAnchorsTBLR(true, false, true, false)
+	self:addChild(self.seedLabel)
+
+	self.seedTextBox = ISTextEntryBox:new("", self.seedLabel:getWidth() + UI_BORDER_SPACING * 2, self.seedLabel.y, 150, BUTTON_HGT)
+	self.seedTextBox.font = UIFont.Small
+	self.seedTextBox:initialise()
+	self.seedTextBox:instantiate()
+	self.seedTextBox:setOnlyText(true)
+	self.seedTextBox:setMaxTextLength(16)
+	self.seedTextBox:setAnchorsTBLR(true, false, true, false)
+	self:addChild(self.seedTextBox)
+
+	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
+	self.randomButton = ISButton:new(self.seedTextBox:getRight() + UI_BORDER_SPACING, self.seedLabel.y, btnWidth, BUTTON_HGT, getText("UI_advWorld_random_btn"), self, self.generateNewSeed)
+	self.randomButton:initialise()
+	self.randomButton:instantiate()
+	self.randomButton:setAnchorsTBLR(true, false, true, false)
+	self.randomButton:setEnable(true) -- sets the hard-coded border color
+	self:addChild(self.randomButton)
+
+	self.joypadIndexY = 1
+	self.joypadIndex = 1
+	self:insertNewLineOfButtons(self.seedTextBox, self.randomButton)
+end
+
+function MapSpawnSelectSeedPanel:render()
+	ISPanelJoypad.render(self)
+	self:renderJoypadFocus()
+end
+function MapSpawnSelectSeedPanel:generateNewSeed()
+	self.parent:generateNewSeed()
+end
+
+function MapSpawnSelectSeedPanel:onGainJoypadFocus(joypadData)
+	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+	self:restoreJoypadFocus(joypadData)
+end
+
+function MapSpawnSelectSeedPanel:onLoseJoypadFocus(joypadData)
+	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+	self:clearJoypadFocus(joypadData)
+end
+
+function MapSpawnSelectSeedPanel:new(x, y, width, height)
+	local o = ISPanelJoypad.new(self, x, y, width, height)
+	return o
 end
 
 -----
@@ -562,6 +709,9 @@ function MapSpawnSelect:render()
 	self.richText:paginate();
 	self:drawRectBorder( self.richText.x, self.richText.y, self.richText:getWidth(), self.richText:getHeight(), 0.3, 1, 1, 1);
 
+	local playerNum = 0
+	self:renderJoypadNavigateOverlay(playerNum)
+
 	if self.mapPanel:hasSomethingToDisplay() and self.mapPanel.shownInitialLocation then
 		if self.listbox.selected ~= self.selectedMapIndex then
 			self.selectedMapIndex = self.listbox.selected
@@ -633,8 +783,9 @@ function MapSpawnSelect:recalculateMapSize()
 	self.mapPanel:setHeight(WORLD_MAP_H)
 
 	local isMap = (WORLD_MAP_W > 0) and 2 or 1 --if map exists, isMap = 2. this is used in multiplying UI_BORDER_SPACING below
+    local listboxWidth = self.width - self.listbox.x - UI_BORDER_SPACING * isMap - WORLD_MAP_W - 1
 
-	self.listbox:setWidth(self.width - self.listbox.x - UI_BORDER_SPACING*isMap - WORLD_MAP_W - 1)
+	self.listbox:setWidth(listboxWidth)
 	self.richText:setWidth(self.listbox.width)
 
 	if not MainScreen.instance.inGame then
@@ -706,6 +857,7 @@ end
 
 function MapSpawnSelect:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
+    self.listbox:setJoypadFocused(true, joypadData)
     joypadData.focus = self.listbox
     updateJoypadFocus(joypadData)
     self.listbox:setISButtonForA(self.nextButton)
@@ -723,18 +875,16 @@ function MapSpawnSelect:onJoypadBeforeDeactivate(joypadData)
 	self.joyfocus = nil
 end
 
-function MapSpawnSelect:onJoypadDown_textEntry(button, joypadData)
-	if button == Joypad.BButton then
-		self:unfocus()
-		self.parent.backButton:forceClick()
-		return
+function MapSpawnSelect:onJoypadNavigateStart_Descendant(descendant, joypadData)
+	if self.textEntry then
+		self.textEntry.joypadNavigate = { down = self.listbox }
 	end
-	ISTextEntryBox.onJoypadDown(self, button, joypadData)
-end
-
-function MapSpawnSelect:onJoypadDirDown_textEntry(joypadData)
-	self:unfocus()
-	joypadData.focus = self.parent.listbox
+	self.listbox.joypadNavigate = { right = self.mapPanel, up = self.textEntry, down = self.richText }
+	self.richText.joypadNavigate = { right = self.mapPanel, up = self.listbox, down = self.seedPanel }
+	if self.seedPanel then
+		self.seedPanel.joypadNavigate = { up = self.richText }
+	end
+	self.mapPanel.joypadNavigate = { left = self.listbox }
 end
 
 function MapSpawnSelect:onResolutionChange(oldw, oldh, neww, newh)
@@ -780,42 +930,30 @@ function MapSpawnSelect:create()
 	self.mapPanel:setAnchorRight(true);
 	self:addChild(self.mapPanel)
 
-	if not MainScreen.instance.inGame then -- don't show savefile entry in splitscreen
+    if not MainScreen.instance.inGame then -- don't show savefile entry in splitscreen
+        self.textEntryLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE, FONT_HGT_MEDIUM+6, getText("UI_mapselecter_savename"), 1, 1, 1, 1, UIFont.Medium, true);
+        self.textEntryLabel:initialise();
+        self.textEntryLabel:instantiate();
+        self.textEntryLabel:setAnchorLeft(true);
+        self.textEntryLabel:setAnchorRight(true);
+        self.textEntryLabel:setAnchorTop(false);
+        self.textEntryLabel:setAnchorBottom(false);
+        self:addChild(self.textEntryLabel);
 
-	self.textEntryLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING*2+1 + FONT_HGT_TITLE, FONT_HGT_MEDIUM+6, getText("UI_mapselecter_savename"), 1, 1, 1, 1, UIFont.Medium, true);
-	self.textEntryLabel:initialise();
-	self.textEntryLabel:instantiate();
-	self.textEntryLabel:setAnchorLeft(true);
-	self.textEntryLabel:setAnchorRight(true);
-	self.textEntryLabel:setAnchorTop(false);
-	self.textEntryLabel:setAnchorBottom(false);
-	self:addChild(self.textEntryLabel);
-
-	local inset = 6
-	self.textEntry = ISTextEntryBox:new("", self.textEntryLabel:getRight() + UI_BORDER_SPACING, self.textEntryLabel.y + (self.textEntryLabel.height - (FONT_HGT_MEDIUM + inset)) / 2, self.width-(self.textEntryLabel:getRight() + UI_BORDER_SPACING) - UI_BORDER_SPACING-1, FONT_HGT_MEDIUM + inset);
-	self.textEntry.font = UIFont.Medium
-	self.textEntry:initialise();
-	self.textEntry:instantiate();
-	self.textEntry:setAnchorLeft(true);
-	self.textEntry:setAnchorRight(true);
-	self.textEntry:setAnchorTop(true);
-	self.textEntry:setAnchorBottom(false);
-	self.textEntry.onJoypadDown = self.onJoypadDown_textEntry
-	self.textEntry.onJoypadDirDown = self.onJoypadDirDown_textEntry
-	self:addChild(self.textEntry);
-	local sdf = SimpleDateFormat.new("yyyy-MM-dd_HH-mm-ss", Locale.ENGLISH);
-	self.textEntry:setText(sdf:format(Calendar.getInstance():getTime()));
-
-	end -- not MainScreen.instance.inGame
-
---	self.listbox = ISScrollingListBox:new(padX, titleHgt, self.width-padX*2, self.height-btnPadY-btnHgt-24-titleHgt)
---	self.listbox:initialise()
---	self.listbox:setAnchorRight(true)
---	self.listbox:setAnchorBottom(true)
---	self.listbox.doDrawItem = MapSpawnSelect.doDrawItem
---	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
---	self:addChild(self.listbox)
-
+        local inset = 6
+        self.textEntry = ISTextEntryBox:new("", self.textEntryLabel:getRight() + UI_BORDER_SPACING, self.textEntryLabel.y + (self.textEntryLabel.height - (FONT_HGT_MEDIUM + inset)) / 2, self.width-(self.textEntryLabel:getRight() + UI_BORDER_SPACING) - UI_BORDER_SPACING-1, FONT_HGT_MEDIUM + inset);
+        self.textEntry.font = UIFont.Medium
+        self.textEntry:initialise();
+        self.textEntry:instantiate();
+        self.textEntry:setAnchorLeft(true);
+        self.textEntry:setAnchorRight(true);
+        self.textEntry:setAnchorTop(true);
+        self.textEntry:setAnchorBottom(false);
+        self.textEntry.onCommandEntered = function(entry) entry:unfocus(); GameKeyboard.eatKeyPress(Keyboard.KEY_RETURN) end
+        self:addChild(self.textEntry);
+        local sdf = SimpleDateFormat.new("yyyy-MM-dd_HH-mm-ss", Locale.ENGLISH);
+        self.textEntry:setText(sdf:format(Calendar.getInstance():getTime()));
+	end
 
 	self.listbox = MapSpawnSelectListBox:new(UI_BORDER_SPACING+1, self.startY, (self.width - UI_BORDER_SPACING*3 - 2) / 4, (FONT_HGT_LARGE+6)*10);
 	self.listbox:initialise();
@@ -845,35 +983,14 @@ function MapSpawnSelect:create()
 	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
     if not MainScreen.instance.inGame then -- don't show seed in splitscreen
 		--local advPanelHeight = UI_BORDER_SPACING*4 + BUTTON_HGT*3 + 2
-		self.seedPanel = ISPanel:new(self.listbox.x,self.richText:getBottom() + UI_BORDER_SPACING, self.listbox.width, advPanelHeight)
+        self.seedPanel = MapSpawnSelectSeedPanel:new(self.listbox.x,self.richText:getBottom() + UI_BORDER_SPACING, self.listbox.width, advPanelHeight - UI_BORDER_SPACING)
 		self.seedPanel:initialise()
 		self.seedPanel:instantiate()
 		self.seedPanel:setAnchorsTBLR(false, true, true, false)
 		self.seedPanel.backgroundColor  = {r=0, g=0, b=0, a=0.5};
 		self:addChild(self.seedPanel)
-
-		self.seedLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("UI_advWorld_seed_label") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
-		self.seedLabel:initialise()
-		self.seedLabel:instantiate()
-		self.seedLabel:setAnchorsTBLR(true, false, true, false)
-		self.seedPanel:addChild(self.seedLabel)
-
-		local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
-		self.randomButton = ISButton:new(self.seedPanel:getRight() - btnWidth - UI_BORDER_SPACING*2 - 2, self.seedLabel.y, btnWidth, BUTTON_HGT, getText("UI_advWorld_random_btn"), self, self.generateNewSeed)
-		self.randomButton:initialise()
-		self.randomButton:instantiate()
-		self.randomButton:setAnchorsTBLR(true, false, false, true)
-		self.randomButton:setEnable(true) -- sets the hard-coded border color
-		self.seedPanel:addChild(self.randomButton)
-
-		self.seedTextBox = ISTextEntryBox:new("", self.seedLabel:getRight() + UI_BORDER_SPACING, self.seedLabel.y, self.randomButton.x - self.seedLabel:getRight() - UI_BORDER_SPACING*2, BUTTON_HGT)
-		self.seedTextBox.font = UIFont.Small
-		self.seedTextBox:initialise()
-		self.seedTextBox:instantiate()
-		self.seedTextBox:setOnlyText(true)
-		self.seedTextBox:setMaxTextLength(16)
-		self.seedTextBox:setAnchorsTBLR(true, true, true, true)
-		self.seedPanel:addChild(self.seedTextBox)
+        self.seedTextBox = self.seedPanel.seedTextBox
+        self.randomButton = self.seedPanel.randomButton
     end -- not MainScreen.instance.inGame
 
 	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
@@ -898,6 +1015,17 @@ function MapSpawnSelect:create()
 	self.nextButton:setAnchorBottom(true)
 	self.nextButton:enableAcceptColor()
 	self:addChild(self.nextButton)
+end
+
+function MapSpawnSelect:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.nextButton:forceClick()
+        return
+    end
 end
 
 function MapSpawnSelect:new(x, y, width, height)

@@ -6,141 +6,121 @@
 -- Location IDs must match BodyLocation= and CanBeEquipped= values in items.txt.
 local group = BodyLocations.getGroup("Human")
 
-group:getOrCreateLocation("Bandage")
-group:getOrCreateLocation("Wound")
-group:getOrCreateLocation("BeltExtra") -- used for holster, empty texture items
-group:getOrCreateLocation("Belt") -- empty texture items used for belt/utility belt
-group:getOrCreateLocation("BellyButton") --Belly Button Jewellery
-group:getOrCreateLocation("MakeUp_FullFace")
-group:getOrCreateLocation("MakeUp_Eyes")
-group:getOrCreateLocation("MakeUp_EyesShadow")
-group:getOrCreateLocation("MakeUp_Lips")
-group:getOrCreateLocation("Mask")
-group:getOrCreateLocation("MaskEyes")-- Masks that cover eyes, so shouldn't show glasses (Gasmask)
-group:getOrCreateLocation("MaskFull")-- covers face fully (welders mask)
-group:getOrCreateLocation("UnderwearBottom")
-group:getOrCreateLocation("UnderwearTop")
-group:getOrCreateLocation("Underwear")-- moved above 'top' and 'bottom' underwear
-group:getOrCreateLocation("UnderwearExtra1")
-group:getOrCreateLocation("UnderwearExtra2")
-group:getOrCreateLocation("Hat")
-group:getOrCreateLocation("FullHat") -- NBC Mask.. Should unequip everything head related (masks, glasses..)
-group:getOrCreateLocation("Ears") --mainly earrings
-group:getOrCreateLocation("EarTop") --earring at top of ear
-group:getOrCreateLocation("Nose") --Nosestud, nosering
-group:getOrCreateLocation("Torso1") -- Longjohns top
-group:getOrCreateLocation("Torso1Legs1") -- Longjohns (top + bottom)
-
-group:getOrCreateLocation("TankTop") -- TankTop (goes under tshirt or shirt)
-group:getOrCreateLocation("Tshirt") -- TShirt/Vest (goes under shirt)
-group:getOrCreateLocation("ShortSleeveShirt") -- ShortSleeveShirt So watches can be worn with short sleeve Shirts
-group:getOrCreateLocation("LeftWrist") --Watches and Bracelets
-group:getOrCreateLocation("RightWrist") --Watches and Bracelets
-group:getOrCreateLocation("Shirt") -- Shirt
-group:getOrCreateLocation("RightArm") --chainmail sleeve
-group:getOrCreateLocation("LeftArm") --chainmail sleeve
-
-
-group:getOrCreateLocation("Neck")-- neck model
-group:getOrCreateLocation("Neck_Texture")-- Neck-tie needs to be above any shirt
-
-group:getOrCreateLocation("Necklace") --Necklace, Necklace_Stone
-group:getOrCreateLocation("Necklace_Long") -- Longer Necklaces, NecklaceLong
-group:getOrCreateLocation("Right_MiddleFinger")
-group:getOrCreateLocation("Left_MiddleFinger")
-group:getOrCreateLocation("Left_RingFinger")
-group:getOrCreateLocation("Right_RingFinger")
-group:getOrCreateLocation("Hands")
-group:getOrCreateLocation("HandsLeft")
-group:getOrCreateLocation("HandsRight")
-group:getOrCreateLocation("Calf_Left_Texture") --shinpad textures
-group:getOrCreateLocation("Calf_Right_Texture") --shinpad textures
-group:getOrCreateLocation("Socks")
-group:getOrCreateLocation("Legs1") -- Longjohns bottom and skinny trousers
-group:getOrCreateLocation("Shoes")
-group:getOrCreateLocation("Codpiece")
-group:getOrCreateLocation("ShortsShort") -- short shorts
-group:getOrCreateLocation("ShortPants") --  long shorts, 
-group:getOrCreateLocation("Pants_Skinny") -- Skinny Pants
-group:getOrCreateLocation("Gaiter_Right") -- Gaiter right texture
-group:getOrCreateLocation("Gaiter_Left") -- Gaiter left texture
-group:getOrCreateLocation("Pants") -- Pants
-group:getOrCreateLocation("Skirt") -- Skirt
-group:getOrCreateLocation("Dress") -- Dress (top + skirt) / Robe
-group:getOrCreateLocation("Legs5") -- Unused
-group:getOrCreateLocation("ForeArm_Left") -- Left Vambraces
-group:getOrCreateLocation("ForeArm_Right") -- Right Vambraces
-group:getOrCreateLocation("LongSkirt") -- Skirt
-group:getOrCreateLocation("LongDress") -- Dress (top + skirt) / Robe
-group:getOrCreateLocation("VestTexture") --waistcoats texture
-group:getOrCreateLocation("BodyCostume") -- Body Costume like spiffo suit or wedding dress
-group:getOrCreateLocation("SportShoulderpad") --Football shoulderpads
-group:getOrCreateLocation("Gorget") --Gorget
-group:getOrCreateLocation("Jersey") --Football Jersey
-group:getOrCreateLocation("Sweater") -- Sweater
-group:getOrCreateLocation("SweaterHat") -- Hoodie UP
-group:getOrCreateLocation("PantsExtra") -- Dungarees
-group:getOrCreateLocation("Jacket") -- Jacket
-group:getOrCreateLocation("Jacket_Down") -- Poncho hood down
-group:getOrCreateLocation("Jacket_Bulky") --SuitJacket, Padded Jacket hood down, wedding suit
-group:getOrCreateLocation("JacketHat") --  Poncho UP (can't wear hat with them)
-group:getOrCreateLocation("JacketHat_Bulky") --Padded jacket (hood up)(can't wear hat with them)
-group:getOrCreateLocation("JacketSuit") --Formal jackets (Jacket Suit and Wedding Jacket)
-group:getOrCreateLocation("FullSuit") -- Diverse full suit, head gear still can be wear with it (Spiffo suit and wedding dress)
-group:getOrCreateLocation("Boilersuit") -- Coveralls
-group:getOrCreateLocation("FullSuitHead") -- Cover everything (hazmat)
-group:getOrCreateLocation("FullSuitHeadSCBA") -- Cover everything (hazmat)
-group:getOrCreateLocation("Knee_Left") -- Left Knee
-group:getOrCreateLocation("Knee_Right") -- Right Knee
-group:getOrCreateLocation("Calf_Left") -- Left Greaves 
-group:getOrCreateLocation("Calf_Right") -- Right Greaves
-group:getOrCreateLocation("Thigh_Left") --Left Thigh armour
-group:getOrCreateLocation("Thigh_Right") --Right Thigh armour
-group:getOrCreateLocation("SportShoulderpadOnTop") --Football shoulderpads on top of other clothes
-group:getOrCreateLocation("ShoulderpadRight") --Right only shoulderpad
-group:getOrCreateLocation("ShoulderpadLeft") --Left only shoulderpad
-group:getOrCreateLocation("Elbow_Left") --Left elbow pads
-group:getOrCreateLocation("Elbow_Right") --Right elbow pads
-group:getOrCreateLocation("FullTop") -- unequip all top item (except tshirt/vest) (including hat/mask, for ghillie_top for example)
-group:getOrCreateLocation("BathRobe") -- Need to avoid having coat/any textured models on top of it
-group:getOrCreateLocation("FannyPackFront")
-group:getOrCreateLocation("FannyPackBack")
-group:getOrCreateLocation("Webbing")
-group:getOrCreateLocation("SCBA")
-group:getOrCreateLocation("SCBAnotank")
-group:getOrCreateLocation("AmmoStrap")
-group:getOrCreateLocation("ShoulderHolster")
-group:getOrCreateLocation("AnkleHolster")
-
---group:getOrCreateLocation("LeftHand")
---group:getOrCreateLocation("RightHand")
-
---Apron
-group:getOrCreateLocation("TorsoExtra")
-
--- Bullet, Hunting and High Viz vests
-group:getOrCreateLocation("TorsoExtraVest")
-group:getOrCreateLocation("TorsoExtraVestBullet")
-
---Cuirass, similar to vests but with an ALT model
-group:getOrCreateLocation("Cuirass")
-
--- Spiffo tail is a separate item
-group:getOrCreateLocation("Tail")
-
---Judges Robe acts like poncho or BathRobe but hiding more
-group:getOrCreateLocation("FullRobe")
-
--- Backpacks
-group:getOrCreateLocation("Back")
-
-group:getOrCreateLocation("LeftEye") --currently for eyepatch left
-group:getOrCreateLocation("RightEye") --currently for eyepatch right
-
-group:getOrCreateLocation("Eyes") -- need to be on top because of special UV
-group:getOrCreateLocation("Scarf") -- need to be on top of everything!
-
-group:getOrCreateLocation("ZedDmg")
+group:getOrCreateLocation(ItemBodyLocation.BANDAGE)
+group:getOrCreateLocation(ItemBodyLocation.WOUND)
+group:getOrCreateLocation(ItemBodyLocation.BELT_EXTRA) -- used for holster, empty texture items
+group:getOrCreateLocation(ItemBodyLocation.BELT) -- empty texture items used for belt/utility belt
+group:getOrCreateLocation(ItemBodyLocation.BELLY_BUTTON)
+group:getOrCreateLocation(ItemBodyLocation.MAKE_UP_FULL_FACE)
+group:getOrCreateLocation(ItemBodyLocation.MAKE_UP_EYES)
+group:getOrCreateLocation(ItemBodyLocation.MAKE_UP_EYES_SHADOW)
+group:getOrCreateLocation(ItemBodyLocation.MAKE_UP_LIPS)
+group:getOrCreateLocation(ItemBodyLocation.MASK)
+group:getOrCreateLocation(ItemBodyLocation.MASK_EYES)-- Masks that cover eyes, so shouldn't show glasses (Gasmask)
+group:getOrCreateLocation(ItemBodyLocation.MASK_FULL)-- covers face fully (welders mask)
+group:getOrCreateLocation(ItemBodyLocation.UNDERWEAR_BOTTOM)
+group:getOrCreateLocation(ItemBodyLocation.UNDERWEAR_TOP)
+group:getOrCreateLocation(ItemBodyLocation.UNDERWEAR)-- moved above 'top' and 'bottom' underwear
+group:getOrCreateLocation(ItemBodyLocation.UNDERWEAR_EXTRA1)
+group:getOrCreateLocation(ItemBodyLocation.UNDERWEAR_EXTRA2)
+group:getOrCreateLocation(ItemBodyLocation.HAT)
+group:getOrCreateLocation(ItemBodyLocation.FULL_HAT) -- NBC Mask.. Should unequip everything head related (masks, glasses..)
+group:getOrCreateLocation(ItemBodyLocation.EARS) --mainly earrings
+group:getOrCreateLocation(ItemBodyLocation.EAR_TOP) --earring at top of ear
+group:getOrCreateLocation(ItemBodyLocation.NOSE) --Nosestud, nosering
+group:getOrCreateLocation(ItemBodyLocation.TORSO1) -- Longjohns top
+group:getOrCreateLocation(ItemBodyLocation.TORSO1LEGS1) -- Longjohns (top + bottom)
+group:getOrCreateLocation(ItemBodyLocation.TANK_TOP) -- TankTop (goes under tshirt or shirt)
+group:getOrCreateLocation(ItemBodyLocation.TSHIRT) -- TShirt/Vest (goes under shirt)
+group:getOrCreateLocation(ItemBodyLocation.SHORT_SLEEVE_SHIRT) -- ShortSleeveShirt So watches can be worn with short sleeve Shirts
+group:getOrCreateLocation(ItemBodyLocation.LEFT_WRIST) --Watches and Bracelets
+group:getOrCreateLocation(ItemBodyLocation.RIGHT_WRIST) --Watches and Bracelets
+group:getOrCreateLocation(ItemBodyLocation.SHIRT) -- Shirt
+group:getOrCreateLocation(ItemBodyLocation.RIGHT_ARM) --chainmail sleeve
+group:getOrCreateLocation(ItemBodyLocation.LEFT_ARM) --chainmail sleeve
+group:getOrCreateLocation(ItemBodyLocation.NECK)-- neck model
+group:getOrCreateLocation(ItemBodyLocation.NECK_TEXTURE)-- Neck-tie needs to be above any shirt
+group:getOrCreateLocation(ItemBodyLocation.NECKLACE) --Necklace, Necklace_Stone
+group:getOrCreateLocation(ItemBodyLocation.NECKLACE_LONG) -- Longer Necklaces, NecklaceLong
+group:getOrCreateLocation(ItemBodyLocation.RIGHT_MIDDLE_FINGER)
+group:getOrCreateLocation(ItemBodyLocation.LEFT_MIDDLE_FINGER)
+group:getOrCreateLocation(ItemBodyLocation.LEFT_RING_FINGER)
+group:getOrCreateLocation(ItemBodyLocation.RIGHT_RING_FINGER)
+group:getOrCreateLocation(ItemBodyLocation.HANDS)
+group:getOrCreateLocation(ItemBodyLocation.HANDS_LEFT)
+group:getOrCreateLocation(ItemBodyLocation.HANDS_RIGHT)
+group:getOrCreateLocation(ItemBodyLocation.CALF_LEFT_TEXTURE) --shinpad textures
+group:getOrCreateLocation(ItemBodyLocation.CALF_RIGHT_TEXTURE) --shinpad textures
+group:getOrCreateLocation(ItemBodyLocation.SOCKS)
+group:getOrCreateLocation(ItemBodyLocation.LEGS1) -- Longjohns bottom and skinny trousers
+group:getOrCreateLocation(ItemBodyLocation.SHOES)
+group:getOrCreateLocation(ItemBodyLocation.CODPIECE)
+group:getOrCreateLocation(ItemBodyLocation.SHORTS_SHORT) -- short shorts
+group:getOrCreateLocation(ItemBodyLocation.SHORT_PANTS) --  long shorts,
+group:getOrCreateLocation(ItemBodyLocation.PANTS_SKINNY) -- Skinny Pants
+group:getOrCreateLocation(ItemBodyLocation.GAITER_RIGHT) -- Gaiter right texture
+group:getOrCreateLocation(ItemBodyLocation.GAITER_LEFT) -- Gaiter left texture
+group:getOrCreateLocation(ItemBodyLocation.PANTS) -- Pants
+group:getOrCreateLocation(ItemBodyLocation.SKIRT) -- Skirt
+group:getOrCreateLocation(ItemBodyLocation.DRESS) -- Dress (top + skirt) / Robe
+group:getOrCreateLocation(ItemBodyLocation.LEGS5) -- Unused
+group:getOrCreateLocation(ItemBodyLocation.FORE_ARM_LEFT) -- Left Vambraces
+group:getOrCreateLocation(ItemBodyLocation.FORE_ARM_RIGHT) -- Right Vambraces
+group:getOrCreateLocation(ItemBodyLocation.LONG_SKIRT) -- Skirt
+group:getOrCreateLocation(ItemBodyLocation.LONG_DRESS) -- Dress (top + skirt) / Robe
+group:getOrCreateLocation(ItemBodyLocation.VEST_TEXTURE) --waistcoats texture
+group:getOrCreateLocation(ItemBodyLocation.BODY_COSTUME) -- Body Costume like spiffo suit or wedding dress
+group:getOrCreateLocation(ItemBodyLocation.SPORT_SHOULDERPAD) --Football shoulderpads
+group:getOrCreateLocation(ItemBodyLocation.GORGET) --Gorget
+group:getOrCreateLocation(ItemBodyLocation.JERSEY) --Football Jersey
+group:getOrCreateLocation(ItemBodyLocation.SWEATER) -- Sweater
+group:getOrCreateLocation(ItemBodyLocation.SWEATER_HAT) -- Hoodie UP
+group:getOrCreateLocation(ItemBodyLocation.PANTS_EXTRA) -- Dungarees
+group:getOrCreateLocation(ItemBodyLocation.JACKET) -- Jacket
+group:getOrCreateLocation(ItemBodyLocation.JACKET_DOWN) -- Poncho hood down
+group:getOrCreateLocation(ItemBodyLocation.JACKET_BULKY) --SuitJacket, Padded Jacket hood down, wedding suit
+group:getOrCreateLocation(ItemBodyLocation.JACKET_HAT) --  Poncho UP (can't wear hat with them)
+group:getOrCreateLocation(ItemBodyLocation.JACKET_HAT_BULKY) --Padded jacket (hood up)(can't wear hat with them)
+group:getOrCreateLocation(ItemBodyLocation.JACKET_SUIT) --Formal jackets (Jacket Suit and Wedding Jacket)
+group:getOrCreateLocation(ItemBodyLocation.FULL_SUIT) -- Diverse full suit, head gear still can be wear with it (Spiffo suit and wedding dress)
+group:getOrCreateLocation(ItemBodyLocation.BOILERSUIT) -- Coveralls
+group:getOrCreateLocation(ItemBodyLocation.FULL_SUIT_HEAD) -- Cover everything (hazmat)
+group:getOrCreateLocation(ItemBodyLocation.FULL_SUIT_HEAD_SCBA) -- Cover everything (hazmat)
+group:getOrCreateLocation(ItemBodyLocation.KNEE_LEFT) -- Left Knee
+group:getOrCreateLocation(ItemBodyLocation.KNEE_RIGHT) -- Right Knee
+group:getOrCreateLocation(ItemBodyLocation.CALF_LEFT) -- Left Greaves
+group:getOrCreateLocation(ItemBodyLocation.CALF_RIGHT) -- Right Greaves
+group:getOrCreateLocation(ItemBodyLocation.THIGH_LEFT) --Left Thigh armour
+group:getOrCreateLocation(ItemBodyLocation.THIGH_RIGHT) --Right Thigh armour
+group:getOrCreateLocation(ItemBodyLocation.SPORT_SHOULDERPAD_ON_TOP) --Football shoulderpads on top of other clothes
+group:getOrCreateLocation(ItemBodyLocation.SHOULDERPAD_RIGHT) --Right only shoulderpad
+group:getOrCreateLocation(ItemBodyLocation.SHOULDERPAD_LEFT) --Left only shoulderpad
+group:getOrCreateLocation(ItemBodyLocation.ELBOW_LEFT) --Left elbow pads
+group:getOrCreateLocation(ItemBodyLocation.ELBOW_RIGHT) --Right elbow pads
+group:getOrCreateLocation(ItemBodyLocation.FULL_TOP) -- unequip all top item (except tshirt/vest) (including hat/mask, for ghillie_top for example)
+group:getOrCreateLocation(ItemBodyLocation.BATH_ROBE) -- Need to avoid having coat/any textured models on top of it
+group:getOrCreateLocation(ItemBodyLocation.FANNY_PACK_FRONT)
+group:getOrCreateLocation(ItemBodyLocation.FANNY_PACK_BACK)
+group:getOrCreateLocation(ItemBodyLocation.WEBBING)
+group:getOrCreateLocation(ItemBodyLocation.SCBA)
+group:getOrCreateLocation(ItemBodyLocation.SCBANOTANK)
+group:getOrCreateLocation(ItemBodyLocation.AMMO_STRAP)
+group:getOrCreateLocation(ItemBodyLocation.SHOULDER_HOLSTER)
+group:getOrCreateLocation(ItemBodyLocation.ANKLE_HOLSTER)
+--group:getOrCreateLocation(ItemBodyLocation.LEFT_HAND)
+--group:getOrCreateLocation(ItemBodyLocation.RIGHT_HAND)
+group:getOrCreateLocation(ItemBodyLocation.TORSO_EXTRA)
+group:getOrCreateLocation(ItemBodyLocation.TORSO_EXTRA_VEST)
+group:getOrCreateLocation(ItemBodyLocation.TORSO_EXTRA_VEST_BULLET)
+group:getOrCreateLocation(ItemBodyLocation.CUIRASS)
+group:getOrCreateLocation(ItemBodyLocation.TAIL)
+group:getOrCreateLocation(ItemBodyLocation.FULL_ROBE)
+group:getOrCreateLocation(ItemBodyLocation.BACK)
+group:getOrCreateLocation(ItemBodyLocation.LEFT_EYE) --currently for eyepatch left
+group:getOrCreateLocation(ItemBodyLocation.RIGHT_EYE) --currently for eyepatch right
+group:getOrCreateLocation(ItemBodyLocation.EYES) -- need to be on top because of special UV
+group:getOrCreateLocation(ItemBodyLocation.SCARF) -- need to be on top of everything!
+group:getOrCreateLocation(ItemBodyLocation.ZED_DMG)
 
 -- underwear
 --group:setExclusive("Underwear", "UnderwearTop")

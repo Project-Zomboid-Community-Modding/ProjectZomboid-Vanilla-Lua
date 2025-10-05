@@ -195,6 +195,7 @@ end
 function STrapGlobalObject:clearAnimalAndChangeSprite()
     self.animalHour = 0;
     self.animal = {};
+    self.animalAliveHour = 0
     -- change the sprite of the item
     local trapObject = self:getIsoObject();
     if trapObject then
@@ -439,6 +440,7 @@ function STrapGlobalObject:setAnimal(animal)
     end
     self.animal = animal
     self.animalHour = 0
+    self.animalAliveHour = 0
     self:removeBait()
     -- change the sprite of the item
     local trapObject = self:getIsoObject()
@@ -611,11 +613,22 @@ function STrapGlobalObject.SpawnDestroyItems(trapType, square, object)
                 if v=="Base.Twine" then
                     spawnItem:setUsedDelta(spawnItem:getUseDelta());
                 end
+                if v=="Base.Wire" then
+                    local roll1 = (ZombRand(5)+1)
+                    local roll2 = (ZombRand(5)+1)
+                    spawnItem:setUsedDelta(math.min(roll1, roll2)/10);
+                end
             end
         else
             local spawnItem = square:AddWorldInventoryItem(item, ZombRand(0.1, 0.5), ZombRand(0.1, 0.5), 0);
             if item=="Base.Twine" then
                 spawnItem:setUsedDelta(spawnItem:getUseDelta());
+            end
+
+            if item=="Base.Wire" then
+                local roll1 = (ZombRand(5)+1)
+                local roll2 = (ZombRand(5)+1)
+                spawnItem:setUsedDelta(math.min(roll1, roll2)/10);
             end
         end
     else

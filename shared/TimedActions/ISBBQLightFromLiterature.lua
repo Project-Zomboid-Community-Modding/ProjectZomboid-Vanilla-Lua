@@ -40,7 +40,15 @@ function ISBBQLightFromLiterature:start()
 	self.item:setJobDelta(0.0)
 	self:setActionAnim("Loot")
 	self.character:SetVariable("LootPosition", "Mid")
-	self.sound = self.character:playSound("BBQRegularLight")
+	local soundName = "BBQRegularLight"
+    local craftBenchSounds = self.bbq:getComponent(ComponentType.CraftBenchSounds)
+    if craftBenchSounds ~= nil then
+        local soundName2 = craftBenchSounds:getSoundName("LightFire", nil)
+        if soundName2 ~= nil and soundName2 ~= "" then
+            soundName = soundName2
+        end
+    end
+	self.sound = self.character:playSound(soundName)
 end
 
 function ISBBQLightFromLiterature:stop()

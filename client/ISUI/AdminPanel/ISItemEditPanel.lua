@@ -41,7 +41,14 @@ function ISItemEditPanel:initElements()
     elem = self:registerColor("IGUI_Color", "getColor", "setColor")
     elem.funcValidate = ISItemEditPanel.validateColor;
     elem.funcOnSave = ISItemEditPanel.onSaveColor;
+    --isClothing
+    elem = self:registerNumber("Tooltip_clothing_bloody", "getBloodLevel", "setBloodLevel", 0, 1, 1)
+    elem.funcValidate = ISItemEditPanel.validateClothing;
+    elem = self:registerNumber("Tooltip_clothing_dirty", "getDirtyness", "setDirtyness", 0, 1, 1)
+    elem.funcValidate = ISItemEditPanel.validateClothing;
     --isWeapon
+    elem = self:registerNumber("Tooltip_weapon_Sharpness", "getSharpness", "setSharpness", 0, 1, 1)
+    elem.funcValidate = ISItemEditPanel.validateWeapon;
     elem = self:registerNumber("IGUI_ItemEditor_MinDmg", "getMinDamage", "setMinDamage", 0, false, 3)
     elem.funcValidate = ISItemEditPanel.validateWeapon;
     elem = self:registerNumber("IGUI_ItemEditor_MaxDmg", "getMaxDamage", "setMaxDamage", 0, false, 3)
@@ -260,6 +267,10 @@ end
 
 function ISItemEditPanel:validateFood()
     return self.isFood;
+end
+
+function ISItemEditPanel:validateClothing()
+    return self.isClothing;
 end
 
 function ISItemEditPanel:validateDrainable()
@@ -490,6 +501,7 @@ function ISItemEditPanel:saveAll()
             end
         end
     end
+	self.item:getContainer():setDrawDirty(true);
 end
 
 function ISItemEditPanel:onColor(button)
@@ -526,6 +538,7 @@ function ISItemEditPanel:new(x, y, width, height, admin, item)
     o.isWeapon = instanceof(item, "HandWeapon");
     o.isFood = instanceof(item, "Food");
     o.isDrainable = instanceof(item, "DrainableComboItem");
+    o.isClothing = instanceof(item, "Clothing");
 
     o.elems = {};
 

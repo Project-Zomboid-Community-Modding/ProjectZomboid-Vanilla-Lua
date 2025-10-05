@@ -247,7 +247,7 @@ end
 function OnBreak.HandleSpade(item, player)
     OnBreak.GroundHandler(item, player, "Base.Splinters")
     OnBreak.HeadHandler(item, player, "Base.SpadeHead")
-    OnBreak.HandleHandler(item, player, "Base.Base.GardenToolHandle_Broken", false)
+    OnBreak.HandleHandler(item, player, "Base.GardenToolHandle_Broken", false)
 end
 
 function OnBreak.HuntingKnife(item, player)
@@ -469,6 +469,18 @@ end
 function OnBreak.SpearStoneLong(item, player)
     OnBreak.GroundHandler(item, player, "Base.Splinters")
     OnBreak.HeadHandler(item, player, "Base.StoneBladeLong", true)
+    OnBreak.HandleHandler(item, player, "Base.LongStick_Broken",false)
+end
+
+function OnBreak.SpearBone(item, player)
+    OnBreak.GroundHandler(item, player, "Base.Splinters")
+    OnBreak.HeadHandler(item, player, "Base.SharpBoneFragment", true)
+    OnBreak.HandleHandler(item, player, "Base.LongStick_Broken", false)
+end
+
+function OnBreak.SpearBoneLong(item, player)
+    OnBreak.GroundHandler(item, player, "Base.Splinters")
+    OnBreak.HeadHandler(item, player, "Base.SharpBone_Long", true)
     OnBreak.HandleHandler(item, player, "Base.LongStick_Broken",false)
 end
 

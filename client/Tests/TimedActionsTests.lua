@@ -291,10 +291,10 @@ Tests.burn_corpse = {
 		local corpseItem = instanceItem("Base.CorpseMale")
 		square:AddWorldInventoryItem(corpseItem, 0.5, 0.5, 0)
 		local corpse = square:getStaticMovingObjects():get(0)
-		newPrimaryItem("Base.Lighter")
-		newSecondaryItem("Base.PetrolCan")
+		local fire = newPrimaryItem("Base.Lighter")
+		local gas = newSecondaryItem("Base.PetrolCan")
 		luautils.walkAdj(PLAYER_OBJ, square)
-		ISTimedActionQueue.add(ISBurnCorpseAction:new(PLAYER_OBJ, corpse))
+		ISTimedActionQueue.add(ISBurnCorpseAction:new(PLAYER_OBJ, corpse, fire, gas))
 	end
 }
 

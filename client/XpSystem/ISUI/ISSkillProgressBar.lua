@@ -82,9 +82,9 @@ function ISSkillProgressBar:updateTooltip(lvlSelected)
 		self.message = self.message .. " <LINE> " .. xpSystemText.locked;
     end
 	self.message = self.message .. " <LINE><LINE> " .. getText("IGUI_perks_"..self.perk:getName().."_Description")
-	local failtext = "IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1
-	if getText("IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1) ~= failtext then
-		self.message = self.message .. " <LINE><LINE> " .. getText("IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1)
+	local levelText = getTextOrNull("IGUI_perks_"..self.perk:getName().."_Description"..lvlSelected+1)
+	if levelText ~= nil and levelText ~= "" then
+		self.message = self.message .. " <LINE><LINE> " .. levelText
 	end
     local xpBoost = self.char:getXp():getPerkBoost(self.perk:getType());
     local percentage = nil;

@@ -414,6 +414,7 @@ end
 
 function ISWidgetHandCraftControl:onAutoToggled(_newState)
     self.logic:setManualSelectInputs(_newState);
+    self.logic:setLastManualInputMode(_newState);
     --self:triggerEvent(ISWidgetHandCraftControl.onAutoToggled, self, _newState);
 end
 
@@ -506,6 +507,8 @@ function ISWidgetHandCraftControl:startHandcraft(force)
     --    end
     --end
 
+    self.logic:updateManualInputAllowedItemTypes();
+    
     local actions = ISEntityUI.HandcraftStartMultiple(self.player, self.logic, force, self.craftTimes, false );
     if not actions then return; end
     for k,action in ipairs(actions) do
@@ -530,12 +533,12 @@ end
 
 function ISWidgetHandCraftControl:onHandcraftActionComplete()
     log(DebugType.CraftLogic, "ISWidgetHandCraftControl -> Craft action completed")
-    self.logic:stopCraftAction();
 
     if self.craftTimes then
         self.craftTimes = self.craftTimes - 1;
         if self.craftTimes <= 0 then
             self.craftTimes = nil;
+            self.logic:stopCraftAction();
         else
             self:setCraftQuantity(self.craftTimes);
             --self.slider:setCurrentValue( self.craftTimes, false );
@@ -543,6 +546,7 @@ function ISWidgetHandCraftControl:onHandcraftActionComplete()
     end
 
     if not self.craftTimes then
+        self.logic:stopCraftAction();
         ISCraftingUI.ReturnItemsToOriginalContainer(self.player, self.returnToContainer)
         --self.logic:stopCraftAction();
     end

@@ -73,7 +73,7 @@ function ISEquipWeaponAction:stop()
 end
 
 function isForceDropHeavyItem(item)
-    return (item ~= nil) and (item:getType() == "Generator" or item:getType() == "CorpseMale" or item:getType() == "CorpseFemale" or item:hasTag("HeavyItem") or item:getType() == "Animal")
+    return (item ~= nil) and (item:isForceDropHeavyItem())
 end
 
 function forceDropHeavyItems(character)

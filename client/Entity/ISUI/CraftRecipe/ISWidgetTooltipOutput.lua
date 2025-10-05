@@ -139,7 +139,11 @@ function ISWidgetTooltipOutput:createScriptValues(_script)
     table.cycleIcons = false;
     if _script:getResourceType()==ResourceType.Item then
         table.amount = _script:getIntAmount();
+        table.maxAmount = _script:getIntMaxAmount();
         table.amountStr = tostring(round(table.amount,2));
+        if _script:isVariableAmount() then
+            table.amountStr = table.amountStr .. "-" .. tostring(round(table.maxAmount,2));
+        end
         table.outputObjects = _script:getPossibleResultItems();
         if table.outputObjects:size()>0 then
             table.iconTexture = table.outputObjects:get(0):getNormalTexture();
@@ -147,12 +151,14 @@ function ISWidgetTooltipOutput:createScriptValues(_script)
         end
     elseif _script:getResourceType()==ResourceType.Fluid then
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
         table.amountStr = tostring(round(table.amount,2)).."L";
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
         table.outputObjects = _script:getPossibleResultFluids();
         table.cycleIcons = table.outputObjects:size() > 1;
     elseif _script:getResourceType()==ResourceType.Energy then
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
         table.amountStr = tostring(Temperature.getRoundedDisplayTemperature(table.amount))..Temperature.getTemperaturePostfix();
         table.outputObjects = _script:getPossibleResultEnergies();
         if table.outputObjects:size()>0 then

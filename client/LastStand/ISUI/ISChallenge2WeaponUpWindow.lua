@@ -47,17 +47,17 @@ function ISChallenge2WeaponUpWindow:create()
 	-- PISTOL + AMMO
 	y = y + 30;
 	self:createItemButton(16, y, "Base.Pistol", 300, "Base.9mmClip")
-	self:createItemButton(120, y, "Base.Bullets9mm", 60)
+	self:createItemButton(120, y, "Base.Bullets9mm", 60, nil, 5)
 
 	-- SHOTGUN + AMMO
 	y = y + 30;
 	self:createItemButton(16, y, "Base.Shotgun", 500)
-	self:createItemButton(120, y, "Base.ShotgunShells", 90)
+	self:createItemButton(120, y, "Base.ShotgunShells", 90, nil, 6)
 
 	self:loadJoypadButtons()
 end
 
-function ISChallenge2WeaponUpWindow:createItemButton(x, y, itemType, cost, itemType2)
+function ISChallenge2WeaponUpWindow:createItemButton(x, y, itemType, cost, itemType2, amount)
 	local item = ScriptManager.instance:getItem(itemType)
 	local label = nil
 	if item:getCount() > 1 then
@@ -68,6 +68,7 @@ function ISChallenge2WeaponUpWindow:createItemButton(x, y, itemType, cost, itemT
 	local button = ISButton:new(x, y, 100, 25, label, self, ISChallenge2WeaponUpWindow.onOptionMouseDown);
 	button:initialise();
 	button.internal = "item";
+	button.amount = amount or 1;
 	button.item = itemType;
 	button.item2 = itemType2;
 	button.cost = cost;
@@ -83,9 +84,9 @@ function ISChallenge2WeaponUpWindow:onOptionMouseDown(button, x, y)
 	-- manage the item
 	if button.internal == "item" then
 		Challenge2.playersMoney[self.playerId] = Challenge2.playersMoney[self.playerId] - button.cost;
-		self.char:getInventory():AddItem(button.item);
+		self.char:getInventory():AddItems(button.item, button.amount);
 		if button.item2 then
-			self.char:getInventory():AddItem(button.item2);
+			self.char:getInventory():AddItems(button.item2, button.amount);
 		end
 	end
 	ISChallenge2UpgradeTab.instance[self.playerId]:reloadButtons();

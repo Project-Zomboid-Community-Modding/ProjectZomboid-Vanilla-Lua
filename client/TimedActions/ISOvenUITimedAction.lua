@@ -22,19 +22,26 @@ function ISOvenUITimedAction:stop()
 end
 
 function ISOvenUITimedAction:perform()
-	local ui
     ISBaseTimedAction.perform(self);
+
+	local player = self.character:getPlayerNum()
+	local ui
     if self.mcwave then
+        if ISMicrowaveUI.instance and ISMicrowaveUI.instance[player+1] then
+            ISMicrowaveUI.instance[player+1].close:forceClick()
+        end
         ui = ISMicrowaveUI:new(0,0,430,280, self.mcwave, self.character);
         ui:initialise();
         ui:addToUIManager();
     else
+        if ISOvenUI.instance and ISOvenUI.instance[player+1] then
+            ISOvenUI.instance[player+1].close:forceClick()
+        end
         ui = ISOvenUI:new(0,0,430,310, self.stove, self.character);
         ui:initialise();
         ui:addToUIManager();
     end
-	local player = self.character:getPlayerNum()
-	
+
     if JoypadState.players[player+1] then
         ui.prevFocus = JoypadState.players[player+1].focus
         setJoypadFocus(player, ui)

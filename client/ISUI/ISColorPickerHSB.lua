@@ -163,6 +163,10 @@ function ISColorPickerHSB:onSliderChange(value, slider)
 end
 
 function ISColorPickerHSB:onMouseDown(x, y)
+    if self:isCapture() and not self:isMouseOver() then
+        self:onMouseDownOutside(x, y)
+        return
+    end
 	if x > self.colorBlockX and x < (self.colorBlockX + COLORBOX_HGT) and y > UI_BORDER_SPACING + 1 and y < (UI_BORDER_SPACING + COLORBOX_HGT) then
 		self.mouseDownInColorBox = true;
 		self:onMouseDownColorBox(x, y)

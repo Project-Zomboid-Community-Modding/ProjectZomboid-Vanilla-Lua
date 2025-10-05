@@ -19,7 +19,7 @@ function ISItemSlotAddAction:update()
 end
 
 function ISItemSlotAddAction:start()
-	if self.resource:isFull() then
+	if not self:canStart() then
 		self:stop();
 		return;
 	end
@@ -35,10 +35,18 @@ function ISItemSlotAddAction:start()
 	if self.item:getStaticModel() then
 		self:setOverrideHandModels(nil, self.item:getStaticModel())
 	end
+    local craftBenchSounds = self.entity:getComponent(ComponentType.CraftBenchSounds)
+    if craftBenchSounds ~= nil then
+        local soundName = craftBenchSounds:getSoundName("AddInput", nil)
+        if soundName ~= nil and soundName ~= "" then
+            self.sound = self.character:playSound(soundName)
+        end
+    end
 end
 
 function ISItemSlotAddAction:stop()
     ISBaseTimedAction.stop(self);
+    self:stopSound()
     if self.item ~= nil then
         self.item:setJobDelta(0.0);
 	end
@@ -48,6 +56,7 @@ function ISItemSlotAddAction:stop()
 end
 
 function ISItemSlotAddAction:perform()
+    self:stopSound()
     if self.item then
 		self.item:setJobDelta(0.0);
 		if self.item:getContainer() and self.item:getContainer().setDrawDirty then
@@ -62,12 +71,34 @@ function ISItemSlotAddAction:perform()
 end
 
 function ISItemSlotAddAction:complete()
+	if self.canAddItem and not self.canAddItem(self) then
+		return false;
+	end
+	
 	self.resource:offerItem(self.item);
 	return true
 end
 
 function ISItemSlotAddAction:getDuration()
 	return 30+(self.item:getWeight()*3); --todo temp value, needs proper value consistent with other actions
+end
+
+function ISItemSlotAddAction:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound)
+	end
+end
+
+function ISItemSlotAddAction:canStart()
+	if self.resource:isFull() then
+		return false;
+	end	
+	
+	if self.canAddItem and not self.canAddItem(self) then
+		return false;
+	end
+	
+	return true;
 end
 
 function ISItemSlotAddAction:new(character, entity, item, resource)
@@ -77,5 +108,9 @@ function ISItemSlotAddAction:new(character, entity, item, resource)
 	o.resource = resource;
     o.itemSlot = nil;
 	o.maxTime = o:getDuration();
+	
+	-- overide-able functions
+	o.canAddItem = nil;
+	
 	return o
 end

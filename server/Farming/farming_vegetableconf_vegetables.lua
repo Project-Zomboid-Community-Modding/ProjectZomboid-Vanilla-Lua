@@ -639,7 +639,7 @@ farming_vegetableconf.props["Strawberryplant"] = {
 }
 
 farming_vegetableconf.props["SugarBeets"] = {
-    icon = "Item_Radish",
+    icon = "Item_SugarBeets",
     texture = "vegetation_farming_01b_46",
 --     waterLvl = 45,
     waterLvl = 40,

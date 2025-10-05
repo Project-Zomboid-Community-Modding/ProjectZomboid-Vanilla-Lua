@@ -36,16 +36,20 @@ end
 
 function ISTakeBricks:complete()
 
-	self.square:transmitRemoveItemFromSquare(self.pallet)
-	self.square:RemoveTileObject(self.pallet)
+    if self.pallet:getContainer() and not self.pallet:getContainer():isEmpty() then
+        local items = self.pallet:dumpContentsInSquare();
+    end
+    self.pallet:getSquare():transmitRemoveItemFromSquare(self.pallet)
 
 	local bricks = self.character:getInventory():AddItems(self.item, self.amount);
 	sendAddItemsToContainer(self.character:getInventory(), bricks);
 
-	local newPallet = IsoObject.new(getCell(), self.square, self.sprite);
-	self.square:AddTileObject(newPallet);
-	newPallet:transmitCompleteItemToClients()
-	self.square:RecalcProperties();
+    if self.sprite then
+	    local newPallet = IsoObject.new(getCell(), self.square, self.sprite);
+	    self.square:AddTileObject(newPallet);
+	    newPallet:transmitCompleteItemToClients()
+	    self.square:RecalcProperties();
+	end
 
     return true;
 end

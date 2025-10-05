@@ -335,17 +335,7 @@ Events.OnCreatePlayer.Add(ISSearchWindow.createUI);
 Events.OnPlayerDeath.Add(ISSearchWindow.destroyUI);
 
 function ISSearchWindow.OnFillWorldObjectContextMenu(_player, _context)
-	local character = getSpecificPlayer(_player);
-	local searchWindow = ISSearchWindow.players[character];
-	if SafeHouse.isSafehouseAllowLoot(character:getSquare(), character) then
-		if searchWindow then
-			if not searchWindow:getIsVisible() then
-				_context:addOption(getText("UI_investigate_area_window_show"), character, ISSearchWindow.toggleWindow);
-			else
-				_context:addOption(getText("UI_investigate_area_window_hide"), character, ISSearchWindow.toggleWindow);
-			end
-		end
-	end
+    --No need to have in in right click options
 end
 
 Events.OnFillWorldObjectContextMenu.Add(ISSearchWindow.OnFillWorldObjectContextMenu);

@@ -2,18 +2,17 @@
 --**                      Aiteron                          **
 --***********************************************************
 
-require "ISUI/ISUIElement"
+require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
 
-ModListPresets = ISUIElement:derive("ModListPresets")
+ModListPresets = ISPanelJoypad:derive("ModListPresets")
 
 function ModListPresets:new(x, y, width, height, model)
-    local o = ISUIElement:new(x, y, width, height)
-    setmetatable(o, self)
-    self.__index = self
+    local o = ISPanelJoypad.new(self, x, y, width, height)
+    o:noBackground()
     o.model = model
     o.childrenLine = {}
     o.childrenIndex = 1
@@ -97,11 +96,19 @@ function ModListPresets:createChildren()
     self:addChild(self.addPresetButton);
     self.addPresetButton:setWidthToTitle()
     self.addPresetButton:setX(self.sharePresetButton:getRight() + UI_BORDER_SPACING)
+
+    self.joypadIndexY = 1
+    self.joypadIndex = 1
+    self:insertNewLineOfButtons(self.presetCombo, self.savePresetButton, self.delPresetButton, self.sharePresetButton, self.addPresetButton)
+end
+
+function ModListPresets:render()
+    ISPanelJoypad.render(self)
+    self:renderJoypadFocus()
 end
 
 function ModListPresets:addChild(child)
-    ISUIElement.addChild(self, child)
-    table.insert(self.childrenLine, child)
+    ISPanelJoypad.addChild(self, child)
 end
 
 function ModListPresets:updateView()
@@ -286,69 +293,21 @@ function ModListPresets:choosePreset(combo)
     end
 end
 
-function ModListPresets:onJoypadDown(button, joypadData)
-    local child = self.children[self.joypadIndex]
-
-    if button == Joypad.AButton and child and (child.isButton or child.isCombobox) then
-        child:forceClick()
-        return
-    end
-    if button == Joypad.BButton and child and child.isCombobox and child.expanded then
-        child.expanded = false
-        child:hidePopup()
-        return
-    end
-end
-
-
-function ModListPresets:onJoypadDirUp(joypadData)
-    local child = self.children[self.joypadIndex]
-    if child and child.isCombobox and child.expanded then
-        child:onJoypadDirUp(joypadData)
-        return
-    end
-    self.childrenLine[self.childrenIndex]:setJoypadFocused(false, joypadData)
-    self.joyfocus.focus = self.parent
-    self.parent.joypadIndex = self.parent.modListPanel.ID
-    updateJoypadFocus(self.joyfocus)
-end
-
-function ModListPresets:onJoypadDirDown(joypadData)
-    local child = self.children[self.joypadIndex]
-    if child and child.isCombobox and child.expanded then
-        child:onJoypadDirDown(joypadData)
-    end
-end
-
 function ModListPresets:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-    self.children[self.joypadIndex]:setJoypadFocused(true, joypadData)
+	self:restoreJoypadFocus(joypadData)
 end
 
-function ModListPresets:onJoypadDirLeft(joypadData)
-    if self.childrenIndex > 1 then
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(false, joypadData);
-        self.childrenIndex = self.childrenIndex - 1
-        self.joypadIndex = self.childrenLine[self.childrenIndex].ID
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(true, joypadData);
-    else
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(false, joypadData)
-        self.joyfocus.focus = self.parent
-        self.parent.joypadIndex = self.parent.backButton.ID
-        updateJoypadFocus(self.joyfocus)
-    end
+function ModListPresets:onLoseJoypadFocus(joypadData)
+    ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+	self:clearJoypadFocus(joypadData)
 end
 
-function ModListPresets:onJoypadDirRight(joypadData)
-    if self.childrenIndex < #self.childrenLine then
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(false, joypadData);
-        self.childrenIndex = self.childrenIndex + 1
-        self.joypadIndex = self.childrenLine[self.childrenIndex].ID
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(true, joypadData);
-    else
-        self.childrenLine[self.childrenIndex]:setJoypadFocused(false, joypadData)
-        self.joyfocus.focus = self.parent
-        self.parent.joypadIndex = self.parent.mapOrderbtn.ID
-        updateJoypadFocus(self.joyfocus)
+function ModListPresets:onJoypadDown(button, joypadData)
+    if button == Joypad.BButton and not self:isFocusOnControl() then
+        joypadData.focus = self.parent
+        updateJoypadFocus(joypadData)
+        return
     end
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
 end

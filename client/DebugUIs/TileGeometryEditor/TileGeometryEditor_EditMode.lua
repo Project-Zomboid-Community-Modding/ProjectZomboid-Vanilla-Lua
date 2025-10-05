@@ -764,6 +764,11 @@ function TileGeometryEditor_EditMode_Geometry:createChildren()
 	self.belowList:addChild(button7)
 	self.button7 = button7
 
+	local button8 = ISButton:new(0, button6:getBottom() + UI_BORDER_SPACING, self.belowList.width, BUTTON_HGT, "RECALC SHADOWS", self, self.onRecalculateShadows)
+	button8:setTooltip("Affects the entire selected tileset.")
+	self.belowList:addChild(button8)
+	self.button8 = button8
+
 	self.boxPanel = BoxPanel:new(self.listBox:getRight() + UI_BORDER_SPACING, self.listBox:getY(), 10, 10, self.editor)
 	self.editor:addChild(self.boxPanel)
 
@@ -832,6 +837,7 @@ function TileGeometryEditor_EditMode_Geometry:prerenderEditor()
 	local isGeometry = self.scene:isPolygonObject(self.scene.selectedObjectName)
 	self.button6:setEnable(isGeometry and self:java0("getDrawGeometry"))
 	self.button7:setEnable(self.listBox.selected > 1)
+	self.button8:setEnable(canEdit)
 end
 
 function TileGeometryEditor_EditMode_Geometry:renderTileName()
@@ -1147,6 +1153,12 @@ function TileGeometryEditor_EditMode_Geometry:onRemoveGeometry()
 	self:setGeometryList()
 	self.listBox.selected = selected
 	self:updateGeometryFile()
+end
+
+function TileGeometryEditor_EditMode_Geometry:onRecalculateShadows()
+    local selectedTile = self.tilePicker.listBox:getSingleSelectedTile()
+    local depthTexture = TileDepthTextureManager.getInstance():getTexture(self.editor.modID, self.tilePicker.listBox.tileset, selectedTile.index)
+    depthTexture:getTileset():recalculateShadowDepth()
 end
 
 function TileGeometryEditor_EditMode_Geometry:onGeometryToPixels(objectName)

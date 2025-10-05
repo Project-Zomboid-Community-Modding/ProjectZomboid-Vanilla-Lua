@@ -15,6 +15,7 @@ function ISDropCorpseAction:update()
 end
 
 function ISDropCorpseAction:start()
+    self.action:setAllowedWhileDraggingCorpses(true)
     -- Let go of dragged corpse
     self.character:setDoGrappleLetGo();
 end

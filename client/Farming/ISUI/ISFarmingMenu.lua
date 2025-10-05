@@ -1001,7 +1001,7 @@ function ISFarmingMenu:doSeedMenu(context, plant, sq, playerObj)
                 local text = scriptItem:getDisplayName()
                 if seasons and cheat then
                     for j = 1, #seedProperties.props.sowMonth do
-                        if getGameTime():getMonth() == seedProperties.props.sowMonth[j] then
+                        if getGameTime():getMonth() + 1 == seedProperties.props.sowMonth[j] then
                             inSeason = true
                             break
                         end
@@ -1009,7 +1009,7 @@ function ISFarmingMenu:doSeedMenu(context, plant, sq, playerObj)
                     if inSeason then
                         if seedProperties.props.bestMonth then
                             for j = 1, #seedProperties.props.bestMonth do
-                                if getGameTime():getMonth() == seedProperties.props.bestMonth[j] then
+                                if getGameTime():getMonth() + 1 == seedProperties.props.bestMonth[j] then
                                     bestMonth = true
                                     break
                                 end
@@ -1017,7 +1017,7 @@ function ISFarmingMenu:doSeedMenu(context, plant, sq, playerObj)
                         end
                         if not bestMonth and seedProperties.props.riskMonth then
                             for j = 1, #seedProperties.props.riskMonth do
-                                if getGameTime():getMonth() == seedProperties.props.riskMonth[j] then
+                                if getGameTime():getMonth() + 1 == seedProperties.props.riskMonth[j] then
                                     riskMonth = true
                                     break
                                 end

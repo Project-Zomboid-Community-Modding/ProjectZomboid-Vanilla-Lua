@@ -2,6 +2,8 @@
 --**                    THE INDIE STONE                    **
 --***********************************************************
 
+require "TimedActions/ISInventoryTransferUtil"
+
 ISVehiclePartMenu = {}
 
 local function predicateNotBroken(item)
@@ -106,7 +108,7 @@ end
 
 function ISVehiclePartMenu.toPlayerInventory(playerObj, item)
 	if item and item:getContainer() and item:getContainer() ~= playerObj:getInventory() then
-		local action = ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory())
+		local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory())
 		ISTimedActionQueue.add(action)
 	end
 end
@@ -114,7 +116,7 @@ end
 function ISVehiclePartMenu.toPlayerInventoryTag(playerObj, tag)
 	local item = playerObj:getInventory():getFirstTagEvalRecurse(tag, predicateNotBroken)
 	if item and item:getContainer() and item:getContainer() ~= playerObj:getInventory() then
-		local action = ISInventoryTransferAction:new(playerObj, item, item:getContainer(), playerObj:getInventory())
+		local action = ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, item:getContainer(), playerObj:getInventory())
 		ISTimedActionQueue.add(action)
 	end
 end

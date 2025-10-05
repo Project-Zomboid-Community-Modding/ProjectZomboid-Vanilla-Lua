@@ -40,7 +40,7 @@ zoom = 1.34
 
 --    print("createInventoryInterface player="..self.id);
     panel2.player = self.id;
-    panel2.transferAll:setVisible(true);
+--     panel2.transferAll:setVisible(true);
     self.playerInventory = panel2;
     self.playerInventory.player = self.id;
     if not isMouse then
@@ -68,7 +68,7 @@ zoom = 1.34
         panel3.inventoryPane.nameHeader:setWidth((panel3.inventoryPane.width - panel3.inventoryPane.column2) * 2 / 3)
         panel3.inventoryPane:onResizeColumn(panel3.inventoryPane.nameHeader)
     end
-    panel3.lootAll:setVisible(true);
+--     panel3.lootAll:setVisible(true);
 
     UIManager.setPlayerInventory(self.id, self.playerInventory.javaObject, self.lootInventory.javaObject)
 

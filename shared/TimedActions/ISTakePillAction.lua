@@ -6,6 +6,10 @@ require "TimedActions/ISBaseTimedAction"
 
 ISTakePillAction = ISBaseTimedAction:derive("ISTakePillAction");
 
+local function predicateNotEmpty(item)
+	return item:getCurrentUsesFloat() > 0
+end
+
 function ISTakePillAction:isValid()
     if isClient() and self.item then
         return self.character:getInventory():containsID(self.item:getID());
@@ -30,6 +34,13 @@ function ISTakePillAction:start()
 	if isClient() and self.item then
 		self.item = self.character:getInventory():getItemById(self.item:getID())
 	end
+
+	-- fromRelaunch is added in ISTimedAction to not consume stuff again when we relaunch the action
+	if not self.fromRelaunch and self.item:getRequireInHandOrInventory() and not (self.carLighter or self.openFlame) then
+        local lighter = self:getRequiredItem()
+        lighter:setUsedDelta(lighter:getCurrentUsesFloat() - lighter:getUseDelta())
+	end
+
 	if self.item:getCustomMenuOption() then
 		self.item:setJobType(self.item:getCustomMenuOption())
 	else
@@ -64,10 +75,26 @@ function ISTakePillAction:complete()
 	return true
 end
 
+function ISTakePillAction:getRequiredItem()
+	if not self.item:getRequireInHandOrInventory() then
+		return
+	end
+	local types = self.item:getRequireInHandOrInventory()
+	for i=1,types:size() do
+		local fullType = moduleDotType(self.item:getModule(), types:get(i-1))
+		local item2 = self.character:getInventory():getFirstTypeEvalRecurse(fullType, predicateNotEmpty)
+		if item2 then
+			return item2
+		end
+	end
+	return nil
+end
+
 function ISTakePillAction:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
+	if self.item:getEatTime() and self.item:getEatTime() > 0 then return self.item:getEatTime() end
 	return 165
 end
 
@@ -79,5 +106,8 @@ function ISTakePillAction:new (character, item)
 	o.stopOnAim = false;
 	o.maxTime = o:getDuration();
     o.isEating = true;
+    o.carLighter = item:hasTag("Smokable") and character:getVehicle() and character:getVehicle():canLightSmoke(character)
+    o.openFlame = false;
+    if item:hasTag("Smokable") then o.openFlame = ISInventoryPaneContextMenu.hasOpenFlame(character) end
 	return o
 end

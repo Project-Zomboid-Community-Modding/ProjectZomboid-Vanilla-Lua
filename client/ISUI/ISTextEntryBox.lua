@@ -59,6 +59,10 @@ function ISTextEntryBox:instantiate()
 	self.javaObject:setAnchorTop(self.anchorTop);
 	self.javaObject:setAnchorBottom(self.anchorBottom);
 	self.javaObject:setEditable(true);
+	if self.placeholderText then
+	    self.javaObject:setPlaceholderText(self.placeholderText)
+	    self.placeholderText = nil
+    end
 	-- This forces the cursor to the end of the line
 	self.javaObject:SetText(self.title);
 
@@ -118,6 +122,25 @@ end
 
 function ISTextEntryBox:setTextRGBA(r, g, b, a)
     self.javaObject:setTextRGBA(r, g, b, a)
+end
+
+function ISTextEntryBox:setPlaceholderText(str)
+    if self.javaObject then
+        self.javaObject:setPlaceholderText(str)
+    else
+        self.placeholderText = str
+    end
+end
+
+function ISTextEntryBox:getPlaceholderText()
+    if self.javaObject then
+        return self.javaObject:getPlaceholderText()
+    end
+    return self.placeholderText
+end
+
+function ISTextEntryBox:setPlaceholderTextRGBA(r, g, b, a)
+    self.javaObject:setPlaceholderTextRGBA(r, g, b, a)
 end
 
 function ISTextEntryBox:onPressDown()
@@ -317,6 +340,7 @@ function ISTextEntryBox:new (title, x, y, width, height)
 	o.fade = UITransition.new()
 	o.font = UIFont.Small
     o.currentText = title;
+    o.placeholderText = nil
 	return o
 end
 

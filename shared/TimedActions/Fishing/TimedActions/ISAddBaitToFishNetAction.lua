@@ -42,7 +42,7 @@ function ISAddBaitToFishNetAction:perform()
 end
 
 function ISAddBaitToFishNetAction:complete()
-    fishingNet.setBait(self.fishNet, self.bait:getModData()["ChumForce"])
+    fishingNet.setBait(self.fishNet, self.bait:getHungChange() * -100);
 
     self.character:getInventory():Remove(self.bait);
     sendRemoveItemFromContainer(self.character:getInventory(), self.bait);

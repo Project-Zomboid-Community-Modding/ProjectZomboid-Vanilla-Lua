@@ -820,11 +820,10 @@ function Fishing.onCreateFish(item)
         item:setName(getText("IGUI_Fish_" .. fishSizeData.size) .. " " .. getScriptManager():FindItem(fishConfig.itemType):getDisplayName() .. " ");
     end
 
-    if instanceof(item, "Food") then
-        if item:getActualWeight() <= 0.6 then
-            item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
-        end
+    if not RecipeCodeOnTest.cutFish(item) then
+        item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
     end
+
 end
 
 function Fishing.onCreateFishingRod(item)

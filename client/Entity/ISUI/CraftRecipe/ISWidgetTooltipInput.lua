@@ -148,7 +148,11 @@ function ISWidgetTooltipInput:createScriptValues(_script)
     table.cycleIcons = false;
     if _script:getResourceType()==ResourceType.Item then
         table.amount = _script:getIntAmount();
+        table.maxAmount = _script:getIntMaxAmount();
         table.amountStr = tostring(round(table.amount,2));
+        if _script:isVariableAmount() then
+            table.amountStr = table.amountStr .. "-" .. tostring(round(table.maxAmount,2));
+        end
         table.inputObjects = _script:getPossibleInputItems();
         if table.inputObjects:size()>0 then
             table.iconTexture = table.inputObjects:get(0):getNormalTexture();
@@ -157,6 +161,7 @@ function ISWidgetTooltipInput:createScriptValues(_script)
         end
     elseif _script:getResourceType()==ResourceType.Fluid then
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
         table.amountStr = tostring(round(table.amount,2)).."L";
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
         table.inputObjects = _script:getPossibleInputFluids();
@@ -170,6 +175,7 @@ function ISWidgetTooltipInput:createScriptValues(_script)
             table.isKeep = false; --not displaying 'keep' for energies for now
         --end
         table.amount = _script:getAmount();
+        table.maxAmount = _script:getMaxAmount();
         table.amountStr = tostring(Temperature.getRoundedDisplayTemperature(table.amount))..Temperature.getTemperaturePostfix();
         table.inputObjects = _script:getPossibleInputEnergies();
         if table.inputObjects:size()>0 then
@@ -375,12 +381,13 @@ function ISWidgetTooltipInput:updateValues()
         if self.logic:isManualSelectInputs() then
             self.editedLabels = true;
             local amount = self.inputScript:getIntAmount();
+            local maxAmount = self.inputScript:getIntMaxAmount();
             local satisfiedAmount = self.logic:getInputCount(self.inputScript);
-            if self.primary.label.amountValue~=amount or self.primary.label.satisfiedValue~=satisfiedAmount then
+            if self.primary.label.amountValue~=maxAmount or self.primary.label.satisfiedValue~=satisfiedAmount then
                 if not self.displayAsOutput then
-                    self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(amount));
+                    self.primary.label:setName(tostring(satisfiedAmount).."/"..tostring(maxAmount));
                 end
-                self.primary.label.amountValue = amount;
+                self.primary.label.amountValue = maxAmount;
                 self.primary.label.satisfiedValue = satisfiedAmount;
             end
             if satisfiedAmount>0 and satisfiedAmount<amount then

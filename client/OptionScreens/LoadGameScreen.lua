@@ -11,10 +11,12 @@ require "defines"
 LoadGameScreen = ISPanelJoypad:derive("LoadGameScreen");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_HGT_TITLE = getTextManager():getFontHeight(UIFont.Title)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local ENTRY_HGT = FONT_HGT_MEDIUM + 2 * 2
 local JOYPAD_TEX_SIZE = 32
 
 -- -- -- -- --
@@ -254,6 +256,7 @@ function ConfigPanel:createChildren()
 		combo:addOptionWithData("map_zone.bin", "DeleteMapZoneBin")
 		combo:addOptionWithData("map_t.bin", "DeleteMapTBin")
 		combo:addOptionWithData("players.db", "DeletePlayersDB")
+		combo:addOptionWithData("player_buildings.bin", "DeletePlayerBuildingsBin")
 		combo:addOptionWithData("reanimated.bin", "DeleteReanimatedBin")
 		combo:addOptionWithData("vehicles.db", "DeleteVehiclesDB")
 		combo:addOptionWithData("z_outfits.bin", "DeleteZOutfitsBin")
@@ -491,19 +494,18 @@ function LoadGameScreen:hasChoices()
 end
 
 function LoadGameScreen:create()
-	self.searchLabel = ISLabel:new(UI_BORDER_SPACING+1, self.startY, BUTTON_HGT, getText("UI_sandbox_searchEntryBoxWord") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
+	self.searchLabel = ISLabel:new(UI_BORDER_SPACING+1, self.startY, ENTRY_HGT, getText("UI_sandbox_searchEntryBoxWord") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
 	self:addChild(self.searchLabel)
 
-	self.searchEntry = ISTextEntryBox:new("", self.searchLabel:getRight() + UI_BORDER_SPACING, self.startY, self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1, BUTTON_HGT)
+	self.searchEntry = ISTextEntryBox:new("", self.searchLabel:getRight() + UI_BORDER_SPACING, self.startY, self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1, ENTRY_HGT)
 	self.searchEntry.font = UIFont.Medium
 	self.searchEntry.onTextChange = LoadGameScreen.onSearchTextChange
 	self.searchEntry.setText = LoadGameScreen.searchSetText
-	self.searchEntry.onJoypadDown = self.onJoypadDownSearchEntry
 	self.searchEntry:initialise()
 	self.searchEntry:instantiate()
 	self:addChild(self.searchEntry)
 
-	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING+1, self.startY+UI_BORDER_SPACING+BUTTON_HGT, (self.width - UI_BORDER_SPACING*3 - 2) / 2, self.height - UI_BORDER_SPACING*3 - BUTTON_HGT*2 - self.startY - 1);
+	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING+1, self.startY+UI_BORDER_SPACING+ENTRY_HGT, (self.width - UI_BORDER_SPACING*3 - 2) / 2, self.height - UI_BORDER_SPACING*3 - BUTTON_HGT - ENTRY_HGT - self.startY - 1);
 	self.listbox:initialise();
 	self.listbox:instantiate();
 	self.listbox:setAnchorLeft(true);
@@ -518,7 +520,6 @@ function LoadGameScreen:create()
 	self.listbox.onGainJoypadFocus = self.onGainJoypadFocus_child
 	self.listbox.onLoseJoypadFocus = self.onLoseJoypadFocus_child
 	self.listbox.onJoypadBeforeDeactivate = self.onJoypadBeforeDeactivate_child
-	self.listbox.onJoypadDirRight = self.onJoypadDirRight_child
 	self.listbox.onJoypadDown = self.onJoypadDown_listbox
 	self:addChild(self.listbox);
 
@@ -531,7 +532,6 @@ function LoadGameScreen:create()
 	self.configPanel:addScrollBars()
 	self.configPanel.onGainJoypadFocus = self.onGainJoypadFocus_child
 	self.configPanel.onLoseJoypadFocus = self.onLoseJoypadFocus_child
-	self.configPanel.onJoypadDirRight = self.onJoypadDirRight_child
 	self.configPanel.onJoypadBeforeDeactivate = self.onJoypadBeforeDeactivate_child
 	self:addChild(self.configPanel)
 	self.configPanel:setVisible(false)
@@ -539,7 +539,6 @@ function LoadGameScreen:create()
 	local x = self.listbox:getRight() + UI_BORDER_SPACING
 	self.infoPanel = SaveInfoPanel:new(x, self.listbox.y, self.width - UI_BORDER_SPACING - x - 1, self.listbox.height)
 	self.infoPanel.onGainJoypadFocus = self.onGainJoypadFocus_child
-	self.infoPanel.onJoypadDirLeft = self.onJoypadDirLeft_child
 	self.infoPanel:initialise()
 	self.infoPanel:instantiate()
 	self.infoPanel:setAnchorLeft(false)
@@ -677,6 +676,8 @@ function LoadGameScreen:render()
         self.configButton:setVisible(true);
         self.deleteButton:setVisible(true);
     end
+	local playerNum = 0
+	self:renderJoypadNavigateOverlay(playerNum)
 end
 
 function LoadGameScreen:prerender()
@@ -684,10 +685,6 @@ function LoadGameScreen:prerender()
 	ISPanel.prerender(self);
 
 	self:drawTextCentre(getText("UI_LoadGameScreen_title"), self.width / 2, 10, 1, 1, 1, 1, UIFont.Title);
-
-	if self.listbox.joypadFocused then
-		self:drawTextureScaled(Joypad.Texture.LBumper, UI_BORDER_SPACING+1, self.searchLabel:getY()+(self.searchLabel.height-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1, 1, 1, 1)
-	end
 
 	self:disableBtn()
 end
@@ -735,6 +732,7 @@ function LoadGameScreen:onOptionMouseDown(button, x, y)
 		self.modal = ISModalDialog:new((getCore():getScreenWidth() / 2) - 130, (getCore():getScreenHeight() / 2) - 60, 260, 120, getText("UI_worldscreen_deletesave"), true, self, LoadGameScreen.onDeleteModalClick);
 		self.modal:initialise();
 		self.modal:addToUIManager();
+		self.modal:setCapture(true)
 		if self.joyfocus then
 			self.joyfocus.focus = self.modal;
 			updateJoypadFocus(self.joyfocus);
@@ -815,18 +813,10 @@ function LoadGameScreen:onGainJoypadFocus(joypadData)
 		joypadData.focus = self.configPanel;
     end
 
-	self.searchLabel:setX(JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2+1)
-	self.searchEntry:setX(self.searchLabel:getRight() + UI_BORDER_SPACING)
-	self.searchEntry:setWidth(self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1)
-
     updateJoypadFocus(joypadData);
 end
 
 function LoadGameScreen:onJoypadBeforeDeactivate(joypadData)
-	self.searchLabel:setX(UI_BORDER_SPACING+1)
-	self.searchEntry:setX(self.searchLabel:getRight() + UI_BORDER_SPACING)
-	self.searchEntry:setWidth(self.width - self.searchLabel:getRight() - UI_BORDER_SPACING*2 - 1)
-
 	self.playButton:clearJoypadButton()
 	self.backButton:clearJoypadButton()
 	self.configButton:clearJoypadButton()
@@ -861,41 +851,14 @@ function LoadGameScreen:onJoypadBeforeDeactivate_child(joypadData)
 	self.parent:onJoypadBeforeDeactivate(joypadData)
 end
 
-function LoadGameScreen:onJoypadDirLeft_child(joypadData)
-	joypadData.focus = self.parent.listbox:isVisible() and self.parent.listbox or self.parent.configPanel
-	updateJoypadFocus(joypadData)
-end
-
-function LoadGameScreen:onJoypadDirRight_child(joypadData)
-	local children = self:getVisibleChildren(self.joypadIndexY)
-	if #children > 0 and self.joypadIndex ~= #children then
-		ISPanelJoypad.onJoypadDirRight(self)
-		return
-	end
-	self.parent.listbox.joypadFocused = false
-	joypadData.focus = self.parent.infoPanel
-	updateJoypadFocus(joypadData)
-end
-
 function LoadGameScreen:onJoypadDown_listbox(button, joypadData)
-	if button == Joypad.LBumper then
-		self.joypadFocused = false
-		joypadData.focus = self.parent.searchEntry
-		updateJoypadFocus(joypadData)
-	else
-		ISScrollingListBox.onJoypadDown(self, button, joypadData)
-	end
+    ISScrollingListBox.onJoypadDown(self, button, joypadData)
 end
 
-function LoadGameScreen:onJoypadDownSearchEntry(button, joypadData)
-	ISTextEntryBox.onJoypadDown(self, button, joypadData)
-	if button == Joypad.BButton and self.joyfocus then
-		self.joypadFocused = false
-		self.joyfocus.focus = self.parent.listbox;
-		self.parent.listbox.joypadFocused = true;
-		updateJoypadFocus(self.joyfocus);
-		self:unfocus()
-	end
+function LoadGameScreen:onJoypadNavigateStart_Descendant(descendant, button, joypadData)
+	self.listbox.joypadNavigate = { right = self.infoPanel, up = self.searchEntry }
+	self.infoPanel.joypadNavigate = { left = self.listbox, up = self.searchEntry }
+	self.searchEntry.joypadNavigate = { down = self.listbox }
 end
 
 function LoadGameScreen:getChallenge(item)
@@ -983,6 +946,17 @@ function LoadGameScreen:onResolutionChange(oldw, oldh, neww, newh)
 	self.infoPanel:setWidth(self.width - UI_BORDER_SPACING - x)
 	self.searchEntry:setWidth(self.width - self.searchEntry.x - UI_BORDER_SPACING - 1)
 	self.searchEntry:setHeight(BUTTON_HGT)
+end
+
+function LoadGameScreen:onKeyRelease(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self.backButton:forceClick()
+        return
+    end
+    if key == Keyboard.KEY_RETURN then
+        self.playButton:forceClick()
+        return
+    end
 end
 
 function LoadGameScreen:new(x, y, width, height)

@@ -61,7 +61,10 @@ function AnimalsPanel:render()
     local text = getText("IGUI_DesignationZone_InHutch")
     local rgb = 0.8
     for _,button in ipairs(self.ui.animalbuttons) do
-        if button.animal:getHutch() then
+        if instanceof(button.animal, "IsoDeadBody") then
+            local textX = button:isVisible() and button:getRight() or button:getX()
+            self:drawText(getText("IGUI_DesignationZone_Dead"), textX + 20, button:getY() + (button:getHeight() - FONT_HGT_SMALL) / 2, rgb, rgb, rgb, 1.0, UIFont.Small)
+        elseif button.animal:getHutch() then
             local textX = button:isVisible() and button:getRight() or button:getX()
             self:drawText(text, textX + 20, button:getY() + (button:getHeight() - FONT_HGT_SMALL) / 2, rgb, rgb, rgb, 1.0, UIFont.Small)
         end
@@ -91,7 +94,9 @@ function AnimalsPanel:highlightAnimal()
     if row >= 1 and row <= #self.ui.animalbuttons then
         animal = self.ui.animalbuttons[row].animal
     end
-    if animal ~= nil and animal:getHutch() then
+    if animal ~= nil and instanceof(animal, "IsoDeadBody") then
+
+    elseif animal ~= nil and animal:getHutch() then
         animal = nil
     end
     if self.mouseOverAnimal and (animal ~= self.mouseOverAnimal) then
@@ -101,7 +106,11 @@ function AnimalsPanel:highlightAnimal()
     if self.mouseOverAnimal then
 --        self.mouseOverAnimal:setHighlighted(self.ui.playerNum, true)
         self.mouseOverAnimal:setOutlineHighlight(self.ui.playerNum, true)
-        self.mouseOverAnimal:setOutlineHighlightCol(1.0, 1.0, 1.0, 1.0)
+        if instanceof(self.mouseOverAnimal, "IsoDeadBody") then
+            self.mouseOverAnimal:setOutlineHighlightCol(getCore():getBadHighlitedColor())
+        else
+            self.mouseOverAnimal:setOutlineHighlightCol(1.0, 1.0, 1.0, 1.0)
+        end
     end
 end
 
@@ -279,12 +288,21 @@ function ISDesignationZoneAnimalZoneUI:prerender()
         nbOfAnimals = nbOfAnimals + hutch:getAnimalInside():size()
     end
     self:drawText(getText("IGUI_DesignationZone_Animals") .. nbOfAnimals, 10, z, 1,1,1,1,UIFont.NewSmall);
-    z = z + FONT_HGT_SMALL + 5;
 
     if self.nbOfAnimals ~= nbOfAnimals then
         self:updateAnimals();
         self.nbOfAnimals = nbOfAnimals
     end
+
+    local nbOfCorpses = self.zone:getCorpsesConnected():size()
+    if self.nbOfCorpses ~= nbOfCorpses then
+        self:updateAnimals();
+        self.nbOfCorpses = nbOfCorpses
+    end
+    local x = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DesignationZone_Animals") .. nbOfAnimals) + 60
+    self:drawText(getText("IGUI_DesignationZone_Corpses") .. nbOfCorpses, x, z, 1,1,1,1, UIFont.Small);
+
+    z = z + FONT_HGT_SMALL + 5;
 
     self.updateTick = self.updateTick - UIManager.getMillisSinceLastRender();
     if self.updateTick <= 0 then
@@ -351,6 +369,7 @@ function ISDesignationZoneAnimalZoneUI:updateAnimals()
     -- sort by alphabetical order because i'm nice like that
     local animalListSorted = {};
     local animals = self.zone:getAnimalsConnected()
+    local corpses = self.zone:getCorpsesConnected()
     local hutches = self.zone:getHutchsConnected()
     for i=1,hutches:size() do
         local hutch = hutches:get(i-1)
@@ -361,6 +380,12 @@ function ISDesignationZoneAnimalZoneUI:updateAnimals()
     end
 
     table.sort(animalListSorted, function(a,b) return not string.sort(a:getFullName(), b:getFullName()) end)
+
+    local corpsesListSorted = {}
+    for i=1,corpses:size() do
+        table.insert(corpsesListSorted, corpses:get(i-1));
+    end
+    table.sort(corpsesListSorted, function(a,b) return not string.sort(a:getCustomName(), b:getCustomName()) end)
 
     self.animalbuttons = {};
     self.animalLabels = {};
@@ -406,6 +431,43 @@ function ISDesignationZoneAnimalZoneUI:updateAnimals()
         --    self.animalbuttons[i+1]:setY(z-8)
         --end
         z = z + self.itemHgt;
+    end
+
+    local badColor = getCore():getBadHighlitedColor()
+    for i,v in ipairs(corpsesListSorted) do
+        -- These buttons aren't visible but are used for positioning the "dead" text
+        local btn = buttonForAnimal[v]
+        if btn then
+            btn:setY(z + self.itemPadY)
+        else
+            btn = ISButton:new(0, z + self.itemPadY, btnWid, btnHgt, getText("IGUI_Animal_Info"), self, ISDesignationZoneAnimalZoneUI.onClick)
+            btn.internal = "INFO"
+            btn.animal = v
+            btn:initialise()
+            btn:instantiate()
+            btn.borderColor = {r=1, g=1, b=1, a=0.1}
+        end
+        btn:setVisible(false)
+        self.animalPanel:addChild(btn)
+        table.insert(self.animalbuttons, btn)
+
+        local txt = v:getCustomName()
+        local label = labelForAnimal[v]
+        if label then
+            label:setY(z + self.itemPadY)
+            label:setName(txt)
+            label:setVisible(true)
+        else
+            label = ISLabel:new(10, z + self.itemPadY, btnHgt, txt, badColor:getR(), badColor:getG(), badColor:getB(), 1, UIFont.Small, true)
+            label.animal = v
+        end
+        self.animalPanel:addChild(label)
+        table.insert(self.animalLabels, label)
+        local width = getTextManager():MeasureStringX(UIFont.Small, txt) + 30
+        if width > maxwidth then
+            maxwidth = width
+        end
+        z = z + self.itemHgt
     end
 
     for i,v in ipairs(self.animalbuttons) do

@@ -76,7 +76,7 @@ return {
     MetaEvent = 2,
     SleepingEvent = 1,
     GeneratorSpawning = 4,
-    GeneratorFuelConsumption = 1.0,
+    GeneratorFuelConsumption = 0.1,
     GeneratorTileRange = 40,
     GeneratorVerticalPowerRange = 8,
     SurvivorHouseChance = 3,

@@ -238,7 +238,7 @@ table.insert(tiles, {
 
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---[[
+
 -- six tile bends, tall metal pole fence
 
 -- bent north, no corner
@@ -657,7 +657,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_180", "fencing_damaged_05_181", "fencing_damaged_05_179", "fencing_damaged_05_177", "fencing_damaged_05_178", "fencing_damaged_05_176"},
+    collapsed         =   {"fencing_damaged_05_180", "fencing_damaged_05_176", "fencing_damaged_05_179", "fencing_damaged_05_178", "fencing_damaged_05_177", "fencing_damaged_05_181"},
 });
 
 -- bent west, corner
@@ -671,7 +671,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_180", "fencing_damaged_05_181", "fencing_damaged_05_179", "fencing_damaged_05_177", "fencing_damaged_05_178", "fencing_damaged_05_176"},
+    collapsed         =   {"fencing_damaged_05_180", "fencing_damaged_05_176", "fencing_damaged_05_179", "fencing_damaged_05_178", "fencing_damaged_05_177", "fencing_damaged_05_181"},
 });
 
 -- bent east, no corner
@@ -685,7 +685,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_229", "fencing_damaged_05_226", "fencing_damaged_05_228", "fencing_damaged_05_224", "fencing_damaged_05_227", "fencing_damaged_05_225"},
+    collapsed         =   {"fencing_damaged_05_224", "fencing_damaged_05_225", "fencing_damaged_05_228", "fencing_damaged_05_229", "fencing_damaged_05_227", "fencing_damaged_05_226"},
 });
 
 -- bent east, corner
@@ -699,7 +699,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_229", "fencing_damaged_05_226", "fencing_damaged_05_228", "fencing_damaged_05_224", "fencing_damaged_05_227", "fencing_damaged_05_225"},
+    collapsed         =   {"fencing_damaged_05_224", "fencing_damaged_05_225", "fencing_damaged_05_228", "fencing_damaged_05_229", "fencing_damaged_05_227", "fencing_damaged_05_226"},
 });
 
 
@@ -822,123 +822,7 @@ table.insert(tiles, {
 
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---four tile bends, tall metal divider fence
-
--- bent north, no corner
-table.insert(tiles, {
-    dir               = "N",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_80", "fencing_01_81", "fencing_01_80", "fencing_01_81"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_184", "fencing_damaged_05_185", "fencing_damaged_05_186", "fencing_damaged_05_187"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_192", "fencing_damaged_05_193", "fencing_damaged_05_194", "fencing_damaged_05_195"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_188", "fencing_damaged_05_189", "fencing_damaged_05_190", "fencing_damaged_05_191"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 2,
-    collapsedSizeY    = 3,
-    collapsed         =   {"fencing_damaged_05_200", "fencing_damaged_05_202", "fencing_damaged_05_204", "fencing_damaged_05_201", "fencing_damaged_05_205", "fencing_damaged_05_203"},
-});
-
--- bent north, corner
-table.insert(tiles, {
-    dir               = "N",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_84", "fencing_01_81", "fencing_01_80", "fencing_01_81"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_184", "fencing_damaged_05_185", "fencing_damaged_05_186", "fencing_damaged_05_187"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_192", "fencing_damaged_05_193", "fencing_damaged_05_194", "fencing_damaged_05_195"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_188", "fencing_damaged_05_189", "fencing_damaged_05_190", "fencing_damaged_05_191"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 2,
-    collapsedSizeY    = 3,
-    collapsed         =   {"fencing_damaged_05_200", "fencing_damaged_05_202", "fencing_damaged_05_204", "fencing_damaged_05_201", "fencing_damaged_05_205", "fencing_damaged_05_203"},
-});
-
--- bent south, no corner
-table.insert(tiles, {
-    dir               = "S",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_80", "fencing_01_81", "fencing_01_80", "fencing_01_81"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_152", "fencing_damaged_05_153", "fencing_damaged_05_154", "fencing_damaged_05_155"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_164", "fencing_damaged_05_165", "fencing_damaged_05_166", "fencing_damaged_05_167"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_160", "fencing_damaged_05_161", "fencing_damaged_05_162", "fencing_damaged_05_163"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 2,
-    collapsedSizeY    = 3,
-    collapsed         =   {"fencing_damaged_05_147", "fencing_damaged_05_149", "fencing_damaged_05_145", "fencing_damaged_05_148", "fencing_damaged_05_146", "fencing_damaged_05_144"},
-});
-
--- bent south, corner
-table.insert(tiles, {
-    dir               = "S",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_84", "fencing_01_81", "fencing_01_80", "fencing_01_81"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_152", "fencing_damaged_05_153", "fencing_damaged_05_154", "fencing_damaged_05_155"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_164", "fencing_damaged_05_165", "fencing_damaged_05_166", "fencing_damaged_05_167"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_160", "fencing_damaged_05_161", "fencing_damaged_05_162", "fencing_damaged_05_163"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 2,
-    collapsedSizeY    = 3,
-    collapsed         =   {"fencing_damaged_05_147", "fencing_damaged_05_149", "fencing_damaged_05_145", "fencing_damaged_05_148", "fencing_damaged_05_146", "fencing_damaged_05_144"},
-});
-
--- bent west, no corner
-table.insert(tiles, {
-    dir               = "W",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_83", "fencing_01_82", "fencing_01_83", "fencing_01_82"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_159", "fencing_damaged_05_158", "fencing_damaged_05_157", "fencing_damaged_05_156"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_175", "fencing_damaged_05_174", "fencing_damaged_05_173", "fencing_damaged_05_172"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_171", "fencing_damaged_05_170", "fencing_damaged_05_169", "fencing_damaged_05_168"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 3,
-    collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_179", "fencing_damaged_05_177", "fencing_damaged_05_180", "fencing_damaged_05_176", "fencing_damaged_05_181", "fencing_damaged_05_178"},
-});
-
--- bent west, corner
-table.insert(tiles, {
-    dir               = "W",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_84", "fencing_01_82", "fencing_01_83", "fencing_01_82"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_159", "fencing_damaged_05_158", "fencing_damaged_05_157", "fencing_damaged_05_156"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_175", "fencing_damaged_05_174", "fencing_damaged_05_173", "fencing_damaged_05_172"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_171", "fencing_damaged_05_170", "fencing_damaged_05_169", "fencing_damaged_05_168"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 3,
-    collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_179", "fencing_damaged_05_177", "fencing_damaged_05_180", "fencing_damaged_05_176", "fencing_damaged_05_181", "fencing_damaged_05_178"},
-});
-
--- bent east, no corner
-table.insert(tiles, {
-    dir               = "E",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_83", "fencing_01_82", "fencing_01_83", "fencing_01_82"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_211", "fencing_damaged_05_210", "fencing_damaged_05_209", "fencing_damaged_05_208"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_215", "fencing_damaged_05_214", "fencing_damaged_05_213", "fencing_damaged_05_212"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_223", "fencing_damaged_05_222", "fencing_damaged_05_221", "fencing_damaged_05_220"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 3,
-    collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_226", "fencing_damaged_05_224", "fencing_damaged_05_227", "fencing_damaged_05_225", "fencing_damaged_05_228", "fencing_damaged_05_229"},
-});
-
--- bent east, corner
-table.insert(tiles, {
-    dir               = "E",
-    health            = 100,
-    stages            =   {{ stage = 0, tiles = {"fencing_01_84", "fencing_01_82", "fencing_01_83", "fencing_01_82"} },
-                           { stage = 1, tiles = {"fencing_damaged_05_211", "fencing_damaged_05_210", "fencing_damaged_05_209", "fencing_damaged_05_208"} },
-                           { stage = 2, tiles = {"fencing_damaged_05_215", "fencing_damaged_05_214", "fencing_damaged_05_213", "fencing_damaged_05_212"} },
-                           { stage = 3, tiles = {"fencing_damaged_05_223", "fencing_damaged_05_222", "fencing_damaged_05_221", "fencing_damaged_05_220"} } },
-    collapsedOffset   = 1,
-    collapsedSizeX    = 3,
-    collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_05_226", "fencing_damaged_05_224", "fencing_damaged_05_227", "fencing_damaged_05_225", "fencing_damaged_05_228", "fencing_damaged_05_229"},
-});
-
--- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- six tile bends, tall metal divider fence
+-- six tile bends, tall barbed metal divider fence
 
 -- bent north, no corner
 table.insert(tiles, {
@@ -1035,7 +919,7 @@ table.insert(tiles, {
     collapsedOffset   = 2,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_125", "fencing_damaged_06_123", "fencing_damaged_06_122", "fencing_damaged_06_120", "fencing_damaged_06_121", "fencing_damaged_06_126"},
+    collapsed         =   {"fencing_damaged_06_125", "fencing_damaged_06_123", "fencing_damaged_06_120", "fencing_damaged_06_124", "fencing_damaged_06_121", "fencing_damaged_06_122"},
 });
 
 -- bent east, corner
@@ -1049,12 +933,12 @@ table.insert(tiles, {
     collapsedOffset   = 2,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_125", "fencing_damaged_06_123", "fencing_damaged_06_122", "fencing_damaged_06_120", "fencing_damaged_06_121", "fencing_damaged_06_126"},
+    collapsed         =   {"fencing_damaged_06_125", "fencing_damaged_06_123", "fencing_damaged_06_120", "fencing_damaged_06_124", "fencing_damaged_06_121", "fencing_damaged_06_122"},
 });
 
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---four tile bends, tall metal divider fence
+--four tile bends, tall barbed metal divider fence
 
 -- bent north, no corner
 table.insert(tiles, {
@@ -1123,7 +1007,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_180", "fencing_damaged_06_181", "fencing_damaged_06_179", "fencing_damaged_06_177", "fencing_damaged_06_178", "fencing_damaged_06_176"},
+    collapsed         =   {"fencing_damaged_06_180", "fencing_damaged_06_176", "fencing_damaged_06_179", "fencing_damaged_06_178", "fencing_damaged_06_177", "fencing_damaged_06_181"},
 });
 
 -- bent west, corner
@@ -1137,7 +1021,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_180", "fencing_damaged_06_181", "fencing_damaged_06_179", "fencing_damaged_06_177", "fencing_damaged_06_178", "fencing_damaged_06_176"},
+    collapsed         =   {"fencing_damaged_06_180", "fencing_damaged_06_176", "fencing_damaged_06_179", "fencing_damaged_06_178", "fencing_damaged_06_177", "fencing_damaged_06_181"},
 });
 
 -- bent east, no corner
@@ -1151,7 +1035,7 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_229", "fencing_damaged_06_226", "fencing_damaged_06_228", "fencing_damaged_06_224", "fencing_damaged_06_227", "fencing_damaged_06_225"},
+    collapsed         =   {"fencing_damaged_06_224", "fencing_damaged_06_225", "fencing_damaged_06_228", "fencing_damaged_06_229", "fencing_damaged_06_227", "fencing_damaged_06_226"},
 });
 
 -- bent east, corner
@@ -1165,10 +1049,10 @@ table.insert(tiles, {
     collapsedOffset   = 1,
     collapsedSizeX    = 3,
     collapsedSizeY    = 2,
-    collapsed         =   {"fencing_damaged_06_229", "fencing_damaged_06_226", "fencing_damaged_06_228", "fencing_damaged_06_224", "fencing_damaged_06_227", "fencing_damaged_06_225"},
+    collapsed         =   {"fencing_damaged_06_224", "fencing_damaged_06_225", "fencing_damaged_06_228", "fencing_damaged_06_229", "fencing_damaged_06_227", "fencing_damaged_06_226"},
 });
 
---]]
+
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 3 tile wooden straight fence
@@ -1289,7 +1173,6 @@ table.insert(tiles, {
     debris            = debrisTilesWoodCurvedFence,
 });
 
-
 -- bent west, no corner 2
 table.insert(tiles, {
     dir               = "W",
@@ -1306,8 +1189,8 @@ table.insert(tiles, {
     dir               = "W",
     health            = 100,
     stages            =   {{ stage = 0, tiles = {"fencing_01_12", "fencing_01_10", "fencing_01_11"} },
-                           { stage = 1, tiles = {"fencing_damaged_03_46", "fencing_damaged_03_44", "fencing_damaged_03_53"} },
-                           { stage = 2, tiles = {"fencing_damaged_01_70", "fencing_damaged_01_76", "fencing_damaged_01_77"} } },
+                           { stage = 1, tiles = {"fencing_damaged_03_45", "fencing_damaged_03_44", "fencing_damaged_03_43"} },
+                           { stage = 2, tiles = {"fencing_damaged_01_69", "fencing_damaged_01_68", "fencing_damaged_01_67"} } },
     doSmashCollapse   = false,
     debris            = debrisTilesWoodCurvedFence,
 });
@@ -1339,8 +1222,8 @@ table.insert(tiles, {
     dir               = "E",
     health            = 100,
     stages            =   {{ stage = 0, tiles = {"fencing_01_12", "fencing_01_10", "fencing_01_11"} },
-                           { stage = 1, tiles = {"fencing_damaged_03_46", "fencing_damaged_03_44", "fencing_damaged_03_53"} },
-                           { stage = 2, tiles = {"fencing_damaged_01_70", "fencing_damaged_01_76", "fencing_damaged_01_77"} } },
+                           { stage = 1, tiles = {"fencing_damaged_03_45", "fencing_damaged_03_44", "fencing_damaged_03_43"} },
+                           { stage = 2, tiles = {"fencing_damaged_01_69", "fencing_damaged_01_68", "fencing_damaged_01_67"} } },
     doSmashCollapse   = false,
     debris            = debrisTilesWoodCurvedFence,
 });
@@ -1367,14 +1250,13 @@ table.insert(tiles, {
     debris            = debrisTilesWoodCurvedFence,
 });
 
-
 -- bent north, corner
 table.insert(tiles, {
     dir               = "N",
     health            = 100,
     stages            =   {{ stage = 0, tiles = {"fencing_01_12", "fencing_01_9", "fencing_01_8"} },
-                           { stage = 1, tiles = {"fencing_damaged_03_70", "fencing_damaged_03_41", "fencing_damaged_03_42"} },
-                           { stage = 2, tiles = {"fencing_damaged_01_46", "fencing_damaged_01_73", "fencing_damaged_01_72"} } },
+                           { stage = 1, tiles = {"fencing_damaged_03_40", "fencing_damaged_03_41", "fencing_damaged_03_42"} },
+                           { stage = 2, tiles = {"fencing_damaged_01_64", "fencing_damaged_01_73", "fencing_damaged_01_66"} } },
     doSmashCollapse   = false,
     debris            = debrisTilesWoodCurvedFence,
 });
@@ -1406,8 +1288,8 @@ table.insert(tiles, {
     dir               = "S",
     health            = 100,
     stages            =   {{ stage = 0, tiles = {"fencing_01_12", "fencing_01_9", "fencing_01_8"} },
-                           { stage = 1, tiles = {"fencing_damaged_03_70", "fencing_damaged_03_41", "fencing_damaged_03_42"} },
-                           { stage = 2, tiles = {"fencing_damaged_01_46", "fencing_damaged_01_73", "fencing_damaged_01_72"} } },
+                           { stage = 1, tiles = {"fencing_damaged_03_40", "fencing_damaged_03_41", "fencing_damaged_03_42"} },
+                           { stage = 2, tiles = {"fencing_damaged_01_64", "fencing_damaged_01_73", "fencing_damaged_01_66"} } },
     doSmashCollapse   = false,
     debris            = debrisTilesWoodCurvedFence,
 });

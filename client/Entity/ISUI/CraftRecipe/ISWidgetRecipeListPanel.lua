@@ -281,8 +281,40 @@ function ISWidgetRecipeListPanel:prerender()
 end
 
 function ISWidgetRecipeListPanel:render()
+    -- process pending selected data
+    if self.pendingSelectedData and self.recipeListPanel and self.recipeListPanel.items then
+        for i = 1, #self.recipeListPanel.items do
+            if self.recipeListPanel.items[i].item == self.pendingSelectedData then
+                self.recipeListPanel.selected = i;
+                self.recipeListPanel:ensureVisible(i);
+                break;
+            end
+        end
+        self.pendingSelectedData = nil;
+    end
+    
     ISPanel.render(self);
     self:renderJoypadFocus()
+
+    -- show no recipes tooltip
+    if #self.recipeListPanel.items == 0 then
+        self:clearStencilRect();
+        local tooltipStr = getText("IGUI_CraftingWindow_NoRecipes");
+        local stringWidth = getTextManager():MeasureStringX(UIFont.Small, tooltipStr);
+        local stringHeight = getTextManager():MeasureStringY(UIFont.Small, tooltipStr);
+        local x = (self.recipeListPanel:getWidth() - stringWidth) / 2;
+        local y = (self.recipeListPanel:getHeight() - stringHeight) / 2;
+        local padding = 20;
+        local boxX, boxY = math.max(0, self.recipeListPanel:getX() + x - padding), math.max(0, self.recipeListPanel:getY() + y - padding);
+        local boxWidth, boxHeight = math.min(padding + stringWidth + padding, self.recipeListPanel:getWidth() - x), math.min(padding + stringHeight + padding, self.recipeListPanel:getHeight() - y);
+    
+        self:drawRect(boxX, boxY, boxWidth, boxHeight, 1, 0, 0, 0);
+        self:drawRectBorder(boxX, boxY, boxWidth, boxHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        
+        local x = self.recipeListPanel:getX() + ((self.recipeListPanel:getWidth() - getTextManager():MeasureStringX(UIFont.Small, tooltipStr)) / 2);
+        local y = self.recipeListPanel:getY() + ((self.recipeListPanel:getHeight() - getTextManager():MeasureStringY(UIFont.Small, tooltipStr)) / 2);
+        self:drawText(tooltipStr, x, y, 1.0, 1.0, 1.0, 1.0, UIFont.Small);
+    end
 end
 
 function ISWidgetRecipeListPanel:update()
@@ -290,13 +322,7 @@ function ISWidgetRecipeListPanel:update()
 end
 
 function ISWidgetRecipeListPanel:setSelectedData(_recipe)
-    for i = 1, #self.recipeListPanel.items do
-        if self.recipeListPanel.items[i].item == _recipe then
-            self.recipeListPanel.selected = i;
-            self.recipeListPanel:ensureVisible(i);
-            break;
-        end
-    end
+    self.pendingSelectedData = _recipe; -- we defer this, as sometimes the list has not yet been rendered when this is called, and we need those cached heights. - spurcival
 end
 
 function ISWidgetRecipeListPanel:setDataList(_recipeList)
@@ -321,6 +347,10 @@ function ISWidgetRecipeListPanel:setDataList(_recipeList)
                 currentRecipeFound = true;
             end
         end
+    end
+
+    if not currentRecipeFound then
+        self.recipeListPanel.selected = -1;
     end
     
     --if not currentRecipeFound and #self.recipeListPanel.items > 0 then

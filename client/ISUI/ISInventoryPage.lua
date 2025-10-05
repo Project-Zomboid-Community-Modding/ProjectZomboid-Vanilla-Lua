@@ -8,6 +8,8 @@ require "ISUI/ISInventoryPane"
 require "ISUI/ISResizeWidget"
 require "ISUI/ISMouseDrag"
 require "ISUI/ISLayoutManager"
+require "ISUI/InventoryWindow/ISInventoryWindowContainerControls"
+require "ISUI/LootWindow/ISLootWindowContainerControls"
 
 require "Definitions/ContainerButtonIcons"
 
@@ -17,9 +19,49 @@ ISInventoryPage = ISPanel:derive("ISInventoryPage");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local MAXIMUM_RENAME_LENGTH = 28
 
 ISInventoryPage.bagSoundDelay = 0.5
 ISInventoryPage.bagSoundTime = 0
+
+-----
+
+ISInventoryPageContainerButtonPanel = ISPanel:derive("ISInventoryPageContainerButtonPanel")
+
+function ISInventoryPageContainerButtonPanel:prerender()
+    ISPanel.prerender(self)
+    self:setStencilRect(0, 0, self.width, self.height)
+end
+
+function ISInventoryPageContainerButtonPanel:render()
+    ISPanel.render(self)
+    self:clearStencilRect()
+    self:repaintStencilRect(0, 0, self.width, self.height)
+end
+
+function ISInventoryPageContainerButtonPanel:keepSelectedButtonVisible()
+    local scrollHeight = self:getScrollHeight()
+    if scrollHeight > self:getHeight() then
+        self:setScrollChildren(true)
+        local button = self.parent.selectedButton
+        local buttonY = button:getY() + self:getYScroll()
+        if button ~= nil and buttonY <= 20 then
+            self:setYScroll(-button.y + 20)
+        elseif button ~= nil and buttonY + button:getHeight() + 20 > self.height then
+            self:setYScroll((self.height - button.height) - button.y - 20)
+        end
+    else
+        self:setYScroll(0.0)
+    end
+end
+
+
+function ISInventoryPageContainerButtonPanel:new(x, y, w, h)
+    local o = ISPanel.new(self, x, y, w, h)
+    return o
+end
+
+-----
 
 --************************************************************************--
 --** ISInventoryPage:initialise
@@ -71,6 +113,7 @@ function ISInventoryPage:createChildren()
 
 	-- FIXME: It is wrong to have both self.transferAll and ISInventoryPage.transferAll (button and function with the same name).
 
+--[[
     local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_invpage_Transfer_all"))
     local weightWid = getTextManager():MeasureStringX(UIFont.Small, "9999.99 / 9999")
     self.transferAll = ISButton:new(self.width - 1 - buttonHeight - buttonOffset - weightWid - textButtonOffset - textWid, 0, textWid, buttonHeight, getText("IGUI_invpage_Transfer_all"), self, ISInventoryPage.transferAll);
@@ -80,8 +123,21 @@ function ISInventoryPage:createChildren()
     self.transferAll.backgroundColorMouseOver.a = 0.7;
     self:addChild(self.transferAll);
     self.transferAll:setVisible(false);
+ ]]
 
-    if not self.onCharacter then
+    if self.onCharacter then
+        self.controlsUI = ISInventoryWindowContainerControls:new(self)
+        self.controlsUI.anchorRight = true
+        self.controlsUI.anchorTop = false
+        self.controlsUI.anchorBottom = true
+        self:addChild(self.controlsUI)
+    else
+        self.controlsUI = ISLootWindowContainerControls:new(self)
+        self.controlsUI.anchorRight = true
+        self.controlsUI.anchorTop = false
+        self.controlsUI.anchorBottom = true
+        self:addChild(self.controlsUI)
+
         self.lootAll = ISButton:new(1 + (buttonHeight+buttonOffset)*2, 1, 50, buttonHeight, getText("IGUI_invpage_Loot_all"), self, ISInventoryPage.lootAll);
         self.lootAll:initialise();
         self.lootAll.borderColor.a = 0.0;
@@ -89,113 +145,112 @@ function ISInventoryPage:createChildren()
         self.lootAll.backgroundColorMouseOver.a = 0.7;
         self:addChild(self.lootAll);
         self.lootAll:setVisible(false);
-        
-        self.removeAll = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("IGUI_invpage_RemoveAll"), self, ISInventoryPage.removeAll);
-        self.removeAll:initialise();
-        self.removeAll.borderColor.a = 0.0;
-        self.removeAll.backgroundColor.a = 0.0;
-        self.removeAll.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.removeAll);
-        self.removeAll:setVisible(false);
+--
+--         self.removeAll = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("IGUI_invpage_RemoveAll"), self, ISInventoryPage.removeAll);
+--         self.removeAll:initialise();
+--         self.removeAll.borderColor.a = 0.0;
+--         self.removeAll.backgroundColor.a = 0.0;
+--         self.removeAll.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.removeAll);
+--         self.removeAll:setVisible(false);
 
-        self.toggleStove = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.toggleStove);
-        self.toggleStove:initialise();
-        self.toggleStove.borderColor.a = 0.0;
-        self.toggleStove.backgroundColor.a = 0.0;
-        self.toggleStove.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.toggleStove);
-        self.toggleStove:setVisible(false);
+--         self.toggleStove = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.toggleStove);
+--         self.toggleStove:initialise();
+--         self.toggleStove.borderColor.a = 0.0;
+--         self.toggleStove.backgroundColor.a = 0.0;
+--         self.toggleStove.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.toggleStove);
+--         self.toggleStove:setVisible(false);
 
-        self.switchOutfit = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_SwitchOutfit"), self, ISInventoryPage.switchOutfit);
-        self.switchOutfit:initialise();
-        self.switchOutfit.borderColor.a = 0.0;
-        self.switchOutfit.backgroundColor.a = 0.0;
-        self.switchOutfit.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.switchOutfit);
-        self.switchOutfit:setVisible(false);
-
-        self.storeOutfit = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_StoreOutfit"), self, ISInventoryPage.switchOutfit);
-        self.storeOutfit:initialise();
-        self.storeOutfit.borderColor.a = 0.0;
-        self.storeOutfit.backgroundColor.a = 0.0;
-        self.storeOutfit.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.storeOutfit);
-        self.storeOutfit:setVisible(false);
-
-        self.wearOutfit = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_WearOutfit"), self, ISInventoryPage.switchOutfit);
-        self.wearOutfit:initialise();
-        self.wearOutfit.borderColor.a = 0.0;
-        self.wearOutfit.backgroundColor.a = 0.0;
-        self.wearOutfit.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.wearOutfit);
-        self.wearOutfit:setVisible(false);
-
-        self.wearAll = ISButton:new(self.switchOutfit:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_WearAll"), self, ISInventoryPage.wearAll);
-        self.wearAll:initialise();
-        self.wearAll.borderColor.a = 0.0;
-        self.wearAll.backgroundColor.a = 0.0;
-        self.wearAll.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.wearAll);
-        self.wearAll:setVisible(false);
-
---         self.fireTileInfo = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 200, buttonHeight, getText("IGUI_BBQ_FuelAmount"), self) -- , ISInventoryPage.displayFireTileInfo);
---         self.fireTileInfo:initialise();
---         self.fireTileInfo.borderColor.a = 0.0;
---         self.fireTileInfo.backgroundColor.a = 0.0;
---         self.fireTileInfo.backgroundColorMouseOver.a = 0.7;
---         self:addChild(self.fireTileInfo);
---         self.fireTileInfo:setVisible(false);
-
-        self.propaneTileToggle = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.togglePropaneTile);
-        self.propaneTileToggle:initialise();
-        self.propaneTileToggle.borderColor.a = 0.0;
-        self.propaneTileToggle.backgroundColor.a = 0.0;
-        self.propaneTileToggle.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.propaneTileToggle);
-        self.propaneTileToggle:setVisible(false);
-
-        self.removePropaneTileTank = ISButton:new(self.propaneTileToggle:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Remove_Propane_Tank"), self, ISInventoryPage.removePropaneTileTank);
-        self.removePropaneTileTank:initialise();
-        self.removePropaneTileTank.borderColor.a = 0.0;
-        self.removePropaneTileTank.backgroundColor.a = 0.0;
-        self.removePropaneTileTank.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.removePropaneTileTank);
-        self.removePropaneTileTank:setVisible(false);
-
-        self.addPropaneTileTank = ISButton:new(self.propaneTileToggle:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Insert_Propane_Tank"), self, ISInventoryPage.addPropaneTileTank);
---         self.addPropaneTileTank = ISButton:new(self.removePropaneTileTank:getRight() + buttonOffset, 1, 50, buttonHeight, getText("ContextMenu_Insert_Propane_Tank"), self, ISInventoryPage.addPropaneTileTank);
-        self.addPropaneTileTank:initialise();
-        self.addPropaneTileTank.borderColor.a = 0.0;
-        self.addPropaneTileTank.backgroundColor.a = 0.0;
-        self.addPropaneTileTank.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.addPropaneTileTank);
-        self.addPropaneTileTank:setVisible(false);
-
-        self.addFuel = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_DestroyForFuel"), self, ISInventoryPage.addFuelOption);
-        self.addFuel:initialise();
-        self.addFuel.borderColor.a = 0.0;
-        self.addFuel.backgroundColor.a = 0.0;
-        self.addFuel.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.addFuel);
-        self.addFuel:setVisible(false);
-
-        self.putOut = ISButton:new(self.addFuel:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Put_out_fire"), self, ISInventoryPage.putOut);
-        self.putOut:initialise();
-        self.putOut.borderColor.a = 0.0;
-        self.putOut.backgroundColor.a = 0.0;
-        self.putOut.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.putOut);
-        self.putOut:setVisible(false);
-
-        self.lightFire = ISButton:new(self.addFuel:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Light_fire"), self, ISInventoryPage.lightFireOption);
-        self.lightFire:initialise();
-        self.lightFire.borderColor.a = 0.0;
-        self.lightFire.backgroundColor.a = 0.0;
-        self.lightFire.backgroundColorMouseOver.a = 0.7;
-        self:addChild(self.lightFire);
-        self.lightFire:setVisible(false);
+--         self.closeTrunk = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("IGUI_CloseTrunk"), self, ISInventoryPage.closeTrunk);
+--         self.closeTrunk:initialise();
+--         self.closeTrunk.borderColor.a = 0.0;
+--         self.closeTrunk.backgroundColor.a = 0.0;
+--         self.closeTrunk.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.closeTrunk);
+--         self.closeTrunk:setVisible(false);
+--
+--         self.lockTrunk = ISButton:new(self.closeTrunk:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("IGUI_LockTrunk"), self, ISInventoryPage.lockTrunk);
+--         self.lockTrunk:initialise();
+--         self.lockTrunk.borderColor.a = 0.0;
+--         self.lockTrunk.backgroundColor.a = 0.0;
+--         self.lockTrunk.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.lockTrunk);
+--         self.lockTrunk:setVisible(false);
+--
+--         self.switchOutfit = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_SwitchOutfit"), self, ISInventoryPage.switchOutfit);
+--         self.switchOutfit:initialise();
+--         self.switchOutfit.borderColor.a = 0.0;
+--         self.switchOutfit.backgroundColor.a = 0.0;
+--         self.switchOutfit.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.switchOutfit);
+--         self.switchOutfit:setVisible(false);
+--
+--         self.wearAll = ISButton:new(self.switchOutfit:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_WearAll"), self, ISInventoryPage.wearAll);
+--         self.wearAll:initialise();
+--         self.wearAll.borderColor.a = 0.0;
+--         self.wearAll.backgroundColor.a = 0.0;
+--         self.wearAll.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.wearAll);
+--         self.wearAll:setVisible(false);
+--
+--         self.propaneTileToggle = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Turn_On"), self, ISInventoryPage.togglePropaneTile);
+--         self.propaneTileToggle:initialise();
+--         self.propaneTileToggle.borderColor.a = 0.0;
+--         self.propaneTileToggle.backgroundColor.a = 0.0;
+--         self.propaneTileToggle.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.propaneTileToggle);
+--         self.propaneTileToggle:setVisible(false);
+--
+--         self.removePropaneTileTank = ISButton:new(self.propaneTileToggle:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Remove_Propane_Tank"), self, ISInventoryPage.removePropaneTileTank);
+--         self.removePropaneTileTank:initialise();
+--         self.removePropaneTileTank.borderColor.a = 0.0;
+--         self.removePropaneTileTank.backgroundColor.a = 0.0;
+--         self.removePropaneTileTank.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.removePropaneTileTank);
+--         self.removePropaneTileTank:setVisible(false);
+--
+--         self.addPropaneTileTank = ISButton:new(self.propaneTileToggle:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Insert_Propane_Tank"), self, ISInventoryPage.addPropaneTileTank);
+--         self.addPropaneTileTank:initialise();
+--         self.addPropaneTileTank.borderColor.a = 0.0;
+--         self.addPropaneTileTank.backgroundColor.a = 0.0;
+--         self.addPropaneTileTank.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.addPropaneTileTank);
+--         self.addPropaneTileTank:setVisible(false);
+--
+--         self.addFuel = ISButton:new(self.lootAll:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_DestroyForFuel"), self, ISInventoryPage.addFuelOption);
+--         self.addFuel:initialise();
+--         self.addFuel.borderColor.a = 0.0;
+--         self.addFuel.backgroundColor.a = 0.0;
+--         self.addFuel.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.addFuel);
+--         self.addFuel:setVisible(false);
+--
+--         self.putOut = ISButton:new(self.addFuel:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Put_out_fire"), self, ISInventoryPage.putOut);
+--         self.putOut:initialise();
+--         self.putOut.borderColor.a = 0.0;
+--         self.putOut.backgroundColor.a = 0.0;
+--         self.putOut.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.putOut);
+--         self.putOut:setVisible(false);
+--
+--         self.lightFire = ISButton:new(self.addFuel:getRight() + textButtonOffset, 1, 50, buttonHeight, getText("ContextMenu_Light_fire"), self, ISInventoryPage.lightFireOption);
+--         self.lightFire:initialise();
+--         self.lightFire.borderColor.a = 0.0;
+--         self.lightFire.backgroundColor.a = 0.0;
+--         self.lightFire.backgroundColorMouseOver.a = 0.7;
+--         self:addChild(self.lightFire);
+--         self.lightFire:setVisible(false);
 
     end
+
+    self.containerButtonPanel = ISInventoryPageContainerButtonPanel:new(self.width - self.buttonSize, titleBarHeight, self.buttonSize, self.inventoryPane.height)
+    self.containerButtonPanel:noBackground()
+    self.containerButtonPanel.anchorLeft = false
+    self.containerButtonPanel.anchorRight = true
+    self.containerButtonPanel.anchorBottom = true
+    self.containerButtonPanel:initialise()
+    self:addChild(self.containerButtonPanel)
 
     --	local filter = ISRadioOption:new(0, 15, 150, 150, "Filter", self, ISInventoryPage.onChangeFilter);
 --	filter:addOption("All");
@@ -371,182 +426,43 @@ function ISInventoryPage:toggleStove()
 	TurnOnOff[className].toggle(object)
 end
 
-function ISInventoryPage:switchOutfit()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local mannequin = self.inventoryPane.inventory:getParent()
-	if not mannequin then return end
-
-	local playerObj = getSpecificPlayer(self.player)
-	if playerObj:getVehicle() then return end
-
-	if luautils.walkAdj(playerObj, mannequin:getSquare()) then
-
-	    local wornItemsPlayer = playerObj:getWornItems()
-
-        for i=0,wornItemsPlayer:size()-1 do
-            local item = wornItemsPlayer:get(i):getItem();
-            if item and item:getDisplayName() ~= null then
-                if (item:IsClothing() and item:isWorn()) or (instanceof(item, "InventoryContainer") and item:isEquipped()) then
-                    ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
-                end
---                 if item:IsClothing() and item:isWorn() then
---                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
---                 elseif instanceof(item, "InventoryContainer") and item:isEquipped() then
---                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
---                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
---                 end
-            end
-        end
-
-        for i=0,mannequin:getWornItems():size()-1 do
-            local item = mannequin:getWornItems():get(i):getItem();
-            if item and item:getDisplayName() ~= null then
-                ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
-                ISTimedActionQueue.add(ISWearClothing:new(playerObj, item, 50))
-            end
-        end
-
-        for i=0,wornItemsPlayer:size()-1 do
-            local item = wornItemsPlayer:get(i):getItem();
-            if item and item:getDisplayName() ~= null then
-                ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
---                 if item:IsClothing() and item:isWorn() then
---                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
---                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
---                 elseif instanceof(item, "InventoryContainer") and item:isEquipped() then
---                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
---                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
---                 end
-            end
-        end
-	end
-end
-
--- function ISInventoryPage:displayFireTileInfo()
+-- function ISInventoryPage:closeTrunk()
 -- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
 -- 		return
 -- 	end
 --
 -- 	local object = self.inventoryPane.inventory:getParent()
 -- 	if not object then return end
--- 	ISBBQMenu.onDisplayInfo(nil, self.player, object)
+-- 	if not instanceof(object, "BaseVehicle") then  return end
+-- 	local doorPart = object:getUseablePart(getSpecificPlayer(self.player))
+-- 	local isTrunkDoor
+--     if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then
+--         isTrunkDoor = doorPart:getId() == "TrunkDoor" or doorPart:getId() == "DoorRear"
+--     end
+--     if not isTrunkDoor then return end
+-- 	ISTimedActionQueue.add(ISCloseVehicleDoor:new(getSpecificPlayer(self.player), object, doorPart))
 -- end
-
-function ISInventoryPage:togglePropaneTile()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	ISBBQMenu.onToggle(nil, self.player, object, nil)
-end
-
-function ISInventoryPage:addPropaneTileTank()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	local playerObj = getSpecificPlayer(self.player)
-    local tank = ISBBQMenu.FindPropaneTank(playerObj, object)
-	if not tank then return end
-	ISBBQMenu.onInsertPropaneTank(nil, self.player, object, tank)
-end
-
-function ISInventoryPage:removePropaneTileTank()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	ISBBQMenu.onRemovePropaneTank(nil, self.player, object, nil)
-end
-
-function ISInventoryPage:addFuelOption()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
-	local playerObj = getSpecificPlayer(self.player)
-	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
-	local fuelAmount = 0
-	if campfire then
-        fuelAmount = campfire.fuelAmt or 0
-    else
-        fuelAmount = object:getFuelAmount()
-    end
-    if fuelAmount >= getCampingFuelMax() then
-        self.addFuel:setTitle("ContextMenu_Fuel_Full2")
-    elseif table.isempty(fuelInfo.fuelList) then
-        self.addFuel:setTitle("ContextMenu_No_Fuel")
-    end
-    local x = self:getX() + self.lootAll:getRight() + ((1 + (5-getCore():getOptionFontSizeReal())*2) * 3)
-    local y = self:getY() + self.lootAll:getY() -- - (self.addFuel:getHeight()/2)
-    local context = ISContextMenu.get(self.player, x, y)
-    if (y < 0) then y = 0 end
-
-	if campfire then
-	    ISCampingMenu.doAddFuelOption(context, worldobjects, fuelAmount, fuelInfo, campfire, ISAddFuelAction)
-    else
-	    ISCampingMenu.doAddFuelOption(context, worldobjects, fuelAmount, fuelInfo, object, ISBBQAddFuel)
-    end
-end
-
-function ISInventoryPage:putOut()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
-	local playerObj = getSpecificPlayer(self.player)
-    if campfire and campfire.isLit then
-        if ISCampingMenu.walkToCampfire(playerObj, campfire:getSquare()) then
-            ISTimedActionQueue.add(ISPutOutCampfireAction:new(playerObj, campfire));
-        end
-    else
-	    ISBBQMenu.onExtinguish(nil, self.player, object)
-    end
-end
-
-function ISInventoryPage:lightFireOption()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local object = self.inventoryPane.inventory:getParent()
-	if not object then return end
-	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
-	local playerObj = getSpecificPlayer(self.player)
-	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
-	local fuelAmount = 0
-	if campfire then
-        fuelAmount = campfire.fuelAmt or 0
-    else
-        fuelAmount = object:getFuelAmount()
-    end
-    local x = self:getX() + self.addFuel:getRight() + ((1 + (5-getCore():getOptionFontSizeReal())*2) * 3)
-    local y = self:getY() + self.addFuel:getY() -- - (self.addFuel:getHeight()/2)
-    if (y < 0) then y = 0 end
-    local context = ISContextMenu.get(self.player, x, y)
-    if campfire then
-        ISCampingMenu.doLightFireOption(playerObj, context, worldobjects, fuelAmount > 0, fuelInfo, campfire, ISLightFromPetrol, ISLightFromLiterature, ISLightFromKindle)
-    else
-        ISCampingMenu.doLightFireOption(playerObj, context, nil, object:hasFuel(), fuelInfo, object, ISBBQLightFromPetrol, ISBBQLightFromLiterature, ISBBQLightFromKindle)
-	end
-end
-
--- function ISInventoryPage:storeOutfit()
+--
+-- function ISInventoryPage:lockTrunk()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	if not instanceof(object, "BaseVehicle") then  return end
+-- 	local doorPart = object:getUseablePart(getSpecificPlayer(self.player))
+-- 	local isTrunkDoor
+--     if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then
+--         isTrunkDoor = doorPart:getId() == "TrunkDoor" or doorPart:getId() == "DoorRear"
+--     end
+--     if not isTrunkDoor then return end
+--     if not object:canLockDoor(doorPart, getSpecificPlayer(self.player)) then return end
+-- 	ISTimedActionQueue.add(ISCloseVehicleDoor:new(getSpecificPlayer(self.player), object, doorPart))
+-- 	ISTimedActionQueue.add(ISLockVehicleDoor:new(getSpecificPlayer(self.player), doorPart))
+-- end
+--
+-- function ISInventoryPage:switchOutfit()
 -- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
 -- 		return
 -- 	end
@@ -566,218 +482,294 @@ end
 --             if item and item:getDisplayName() ~= null then
 --                 if (item:IsClothing() and item:isWorn()) or (instanceof(item, "InventoryContainer") and item:isEquipped()) then
 --                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
---                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
 --                 end
+-- --                 if item:IsClothing() and item:isWorn() then
+-- --                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
+-- --                 elseif instanceof(item, "InventoryContainer") and item:isEquipped() then
+-- --                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
+-- --                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
+-- --                 end
+--             end
+--         end
+--
+--         for i=0,mannequin:getWornItems():size()-1 do
+--             local item = mannequin:getWornItems():get(i):getItem();
+--             if item and item:getDisplayName() ~= null then
+--                 ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
+--                 ISTimedActionQueue.add(ISWearClothing:new(playerObj, item, 50))
+--             end
+--         end
+--
+--         for i=0,wornItemsPlayer:size()-1 do
+--             local item = wornItemsPlayer:get(i):getItem();
+--             if item and item:getDisplayName() ~= null then
+--                 ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
+-- --                 if item:IsClothing() and item:isWorn() then
+-- --                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
+-- --                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
+-- --                 elseif instanceof(item, "InventoryContainer") and item:isEquipped() then
+-- --                     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 50))
+-- --                     ISTimedActionQueue.add(ISInventoryTransferAction:new(playerObj, item, item:getContainer(), mannequin:getContainer()))
+-- --                 end
+--             end
+--         end
+-- 	end
+-- end
+--
+-- function ISInventoryPage:displayFireTileInfo()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	ISBBQMenu.onDisplayInfo(nil, self.player, object)
+-- end
+--
+-- function ISInventoryPage:togglePropaneTile()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	ISBBQMenu.onToggle(nil, self.player, object, nil)
+-- end
+--
+-- function ISInventoryPage:addPropaneTileTank()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	local playerObj = getSpecificPlayer(self.player)
+--     local tank = ISBBQMenu.FindPropaneTank(playerObj, object)
+-- 	if not tank then return end
+-- 	ISBBQMenu.onInsertPropaneTank(nil, self.player, object, tank)
+-- end
+--
+-- function ISInventoryPage:removePropaneTileTank()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	ISBBQMenu.onRemovePropaneTank(nil, self.player, object, nil)
+-- end
+
+-- function ISInventoryPage:addFuelOption()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
+-- 	local playerObj = getSpecificPlayer(self.player)
+-- 	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
+-- 	local fuelAmount = 0
+-- 	if campfire then
+--         fuelAmount = campfire.fuelAmt or 0
+--     else
+--         fuelAmount = object:getFuelAmount()
+--     end
+-- --     if fuelAmount >= getCampingFuelMax() then
+-- --         self.addFuel:setTitle(getText("ContextMenu_Fuel_Full2"))
+-- --     elseif table.isempty(fuelInfo.fuelList) then
+-- --         self.addFuel:setTitle(getText("ContextMenu_No_Fuel"))
+-- --     end
+--     local x = self:getX() + self.lootAll:getRight() + ((1 + (5-getCore():getOptionFontSizeReal())*2) * 3)
+--     local y = self:getY() + self.lootAll:getY() -- - (self.addFuel:getHeight()/2)
+--     local context = ISContextMenu.get(self.player, x, y)
+--     if (y < 0) then y = 0 end
+--
+-- 	if campfire then
+-- 	    ISCampingMenu.doAddFuelOption(context, nil, fuelAmount, fuelInfo, campfire, ISAddFuelAction, playerObj)
+--     else
+-- 	    ISCampingMenu.doAddFuelOption(context, nil, fuelAmount, fuelInfo, object, ISBBQAddFuel, playerObj)
+--     end
+-- end
+--
+-- function ISInventoryPage:putOut()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
+-- 	local playerObj = getSpecificPlayer(self.player)
+--     if campfire and campfire.isLit then
+--         if ISCampingMenu.walkToCampfire(playerObj, campfire:getSquare()) then
+--             ISTimedActionQueue.add(ISPutOutCampfireAction:new(playerObj, campfire));
+--         end
+--     else
+-- 	    ISBBQMenu.onExtinguish(nil, self.player, object)
+--     end
+-- end
+--
+-- function ISInventoryPage:lightFireOption()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local object = self.inventoryPane.inventory:getParent()
+-- 	if not object then return end
+-- 	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(object:getSquare())
+-- 	local playerObj = getSpecificPlayer(self.player)
+-- 	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
+-- 	local fuelAmount = 0
+-- 	if campfire then
+--         fuelAmount = campfire.fuelAmt or 0
+--     else
+--         fuelAmount = object:getFuelAmount()
+--     end
+--     local x = self:getX() + self.addFuel:getRight() + ((1 + (5-getCore():getOptionFontSizeReal())*2) * 3)
+--     local y = self:getY() + self.addFuel:getY() -- - (self.addFuel:getHeight()/2)
+--     if (y < 0) then y = 0 end
+--     local context = ISContextMenu.get(self.player, x, y)
+--     if campfire then
+--         ISCampingMenu.doLightFireOption(playerObj, context, nil, fuelAmount > 0, fuelInfo, campfire, ISLightFromPetrol, ISLightFromLiterature, ISLightFromKindle)
+--     else
+--         ISCampingMenu.doLightFireOption(playerObj, context, nil, object:hasFuel(), fuelInfo, object, ISBBQLightFromPetrol, ISBBQLightFromLiterature, ISBBQLightFromKindle)
+-- 	end
+-- end
+
+-- function ISInventoryPage:wearAll()
+-- 	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
+-- 		return
+-- 	end
+--
+-- 	local mannequin = self.inventoryPane.inventory:getParent()
+-- 	if not mannequin then return end
+--
+-- 	local playerObj = getSpecificPlayer(self.player)
+-- 	if playerObj:getVehicle() then return end
+--
+-- 	if luautils.walkAdj(playerObj, mannequin:getSquare()) then
+--
+--         for i=0,mannequin:getWornItems():size()-1 do
+--             local item = mannequin:getWornItems():get(i):getItem();
+--             if item and item:getDisplayName() ~= null then
+--                 ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
+--                 ISTimedActionQueue.add(ISWearClothing:new(playerObj, item, 50))
 --             end
 --         end
 -- 	end
 -- end
 
-function ISInventoryPage:wearAll()
-	if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-		return
-	end
-
-	local mannequin = self.inventoryPane.inventory:getParent()
-	if not mannequin then return end
-
-	local playerObj = getSpecificPlayer(self.player)
-	if playerObj:getVehicle() then return end
-
-	if luautils.walkAdj(playerObj, mannequin:getSquare()) then
-
-        for i=0,mannequin:getWornItems():size()-1 do
-            local item = mannequin:getWornItems():get(i):getItem();
-            if item and item:getDisplayName() ~= null then
-                ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
-                ISTimedActionQueue.add(ISWearClothing:new(playerObj, item, 50))
-            end
-        end
-	end
-end
-
-function ISInventoryPage:syncToggleStove()
-	if self.onCharacter then return end
-	local isVisible = self.toggleStove:getIsVisible()
-	local shouldBeVisible = false
-	local stove = nil
-	if self.inventoryPane.inventory then
-		stove = self.inventoryPane.inventory:getParent()
-		if stove then
-			local className = stove:getObjectName()
-			if TurnOnOff[className] and TurnOnOff[className].isPowered(stove) then
-				shouldBeVisible = true
-			end
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible and getCore():getGameMode() ~= "Tutorial" then
-		self.toggleStove:setVisible(shouldBeVisible)
-	end
-	if shouldBeVisible then
-		local className = stove:getObjectName()
-		if TurnOnOff[className].isActivated(stove) then
-			self.toggleStove:setTitle(getText("ContextMenu_Turn_Off"))
-		else
-			self.toggleStove:setTitle(getText("ContextMenu_Turn_On"))
-		end
-	end
-end
-
-function ISInventoryPage:syncSwitchOutfit()
-	if self.onCharacter then return end
-	local isVisible = self.switchOutfit:getIsVisible()
-	local shouldBeVisible = false
-	local mannequin = nil
-    local playerObj = getSpecificPlayer(self.player)
-	if self.inventoryPane.inventory then
-		mannequin = self.inventoryPane.inventory:getParent()
-	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()>0 then
-			shouldBeVisible = true
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.switchOutfit:setVisible(shouldBeVisible)
-	end
-end
-
-function ISInventoryPage:syncStoreOutfit()
-	if self.onCharacter then return end
-	local isVisible = self.storeOutfit:getIsVisible()
-	local shouldBeVisible = false
-	local mannequin = nil
-    local playerObj = getSpecificPlayer(self.player)
-	if self.inventoryPane.inventory then
-		mannequin = self.inventoryPane.inventory:getParent()
-	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()<1 and playerObj:getWornItems():size()>0 then
-			shouldBeVisible = true
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.storeOutfit:setVisible(shouldBeVisible)
-	end
-end
-
-function ISInventoryPage:syncWearOutfit()
-	if self.onCharacter then return end
-	local isVisible = self.wearOutfit:getIsVisible()
-	local shouldBeVisible = false
-	local mannequin = nil
-    local playerObj = getSpecificPlayer(self.player)
-	if self.inventoryPane.inventory then
-		mannequin = self.inventoryPane.inventory:getParent()
-	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()<1 then
-			shouldBeVisible = true
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.wearOutfit:setVisible(shouldBeVisible)
-	end
-end
-
-function ISInventoryPage:syncWearAll()
-	if self.onCharacter then return end
-	local isVisible = self.wearAll:getIsVisible()
-	local shouldBeVisible = false
-	local mannequin = nil
-    local playerObj = getSpecificPlayer(self.player)
-	if self.inventoryPane.inventory then
-		mannequin = self.inventoryPane.inventory:getParent()
-	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()>0 then
-			shouldBeVisible = true
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.wearAll:setVisible(shouldBeVisible)
-	end
-end
-
--- function ISInventoryPage:syncSetFireTileInfo()
+-- function ISInventoryPage:syncToggleStove()
 -- 	if self.onCharacter then return end
--- 	local isVisible = self.fireTileInfo:getIsVisible()
+-- 	local isVisible = self.toggleStove:getIsVisible()
 -- 	local shouldBeVisible = false
--- 	local fireTile = nil
--- 	local campfire = nil
--- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
--- 		fireTile = self.inventoryPane.inventory:getParent()
--- 		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(fireTile:getSquare())
--- 		local text
--- 		if campfire then
+-- 	local stove = nil
+-- 	if self.inventoryPane.inventory then
+-- 		stove = self.inventoryPane.inventory:getParent()
+-- 		if stove then
+-- 			local className = stove:getObjectName()
+-- 			if TurnOnOff[className] and TurnOnOff[className].isPowered(stove) then
+-- 				shouldBeVisible = true
+-- 			end
+-- 		end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible and getCore():getGameMode() ~= "Tutorial" then
+-- 		self.toggleStove:setVisible(shouldBeVisible)
+-- 	end
+-- 	if shouldBeVisible then
+-- 		local className = stove:getObjectName()
+-- 		if TurnOnOff[className].isActivated(stove) then
+-- 			self.toggleStove:setTitle(getText("ContextMenu_Turn_Off"))
+-- 		else
+-- 			self.toggleStove:setTitle(getText("ContextMenu_Turn_On"))
+-- 		end
+-- 	end
+-- end
+
+-- function ISInventoryPage:syncCloseTrunk()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.closeTrunk:getIsVisible()
+-- 	local shouldBeVisible = false
+--     local playerObj = getSpecificPlayer(self.player)
+-- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent()  and instanceof(self.inventoryPane.inventory:getParent(), "BaseVehicle")then
+--         local doorPart = self.inventoryPane.inventory:getParent():getUseablePart(playerObj)
+--         local isTrunkDoor
+--         if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then
+--             isTrunkDoor = doorPart:getId() == "TrunkDoor" or doorPart:getId() == "DoorRear"
+--         end
+--         if isTrunkDoor then shouldBeVisible = true end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible and getCore():getGameMode() ~= "Tutorial" then
+-- 		self.closeTrunk:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
+-- function ISInventoryPage:syncLockTrunk()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.lockTrunk:getIsVisible()
+-- 	local shouldBeVisible = false
+--     local playerObj = getSpecificPlayer(self.player)
+-- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent()  and instanceof(self.inventoryPane.inventory:getParent(), "BaseVehicle")then
+--         local doorPart = self.inventoryPane.inventory:getParent():getUseablePart(playerObj)
+--         local isTrunkDoor
+--         if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then
+--             isTrunkDoor = doorPart:getId() == "TrunkDoor" or doorPart:getId() == "DoorRear"
+--         end
+--         if isTrunkDoor and  self.inventoryPane.inventory:getParent():canLockDoor(doorPart, getSpecificPlayer(self.player)) then shouldBeVisible = true end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible and getCore():getGameMode() ~= "Tutorial" then
+-- 		self.lockTrunk:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
+-- function ISInventoryPage:syncSwitchOutfit()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.switchOutfit:getIsVisible()
+-- 	local shouldBeVisible = false
+-- 	local mannequin = nil
+--     local playerObj = getSpecificPlayer(self.player)
+-- 	if self.inventoryPane.inventory then
+-- 		mannequin = self.inventoryPane.inventory:getParent()
+-- 	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()>0 then
 -- 			shouldBeVisible = true
---             local fireState;
---             if campfire.isLit then
---                 fireState = getText("IGUI_Fireplace_Burning")
---             else
---                 fireState = getText("IGUI_Fireplace_Unlit")
---             end
---             local text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(luautils.round(campfire.fuelAmt))) .. " (" .. fireState .. ")"
---             self.fireTileInfo:setTitle(text)
--- 	    elseif fireTile and fireTile:isFireInteractionObject() then
+-- 			self.switchOutfit:setTitle(getText("ContextMenu_SwitchOutfit"))
+-- 	    elseif instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()<1 and playerObj:getWornItems():size()>0 then
 -- 			shouldBeVisible = true
---             local fireState;
---             if fireTile:isLit() then
---                 fireState = getText("IGUI_Fireplace_Burning")
---             elseif fireTile:isSmouldering() then
---                 fireState = getText("IGUI_Fireplace_Smouldering")
---             else
---                 fireState = getText("IGUI_Fireplace_Unlit")
---             end
---             local text
---             if fireTile:isPropaneBBQ() and not fireTile:hasPropaneTank() then
---                 text = getText("IGUI_BBQ_NeedsPropaneTank")
---             else
---                 text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(fireTile:getFuelAmount())) .. " (" .. fireState .. ")"
---             end
---             self.fireTileInfo:setTitle(text)
+-- 			self.switchOutfit:setTitle(getText("ContextMenu_StoreOutfit"))
+-- 	    elseif instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()<1 then
+-- 			shouldBeVisible = true
+-- 			self.switchOutfit:setTitle(getText("ContextMenu_WearOutfit"))
 -- 		end
 -- 	end
 -- 	local containerButton
@@ -791,101 +783,128 @@ end
 -- 		shouldBeVisible = false
 -- 	end
 -- 	if isVisible ~= shouldBeVisible then
--- 		self.fireTileInfo:setVisible(shouldBeVisible)
+-- 		self.switchOutfit:setVisible(shouldBeVisible)
 -- 	end
 -- end
-
-function ISInventoryPage:syncPropaneTileToggle()
-	if self.onCharacter then return end
-	local isVisible = self.propaneTileToggle:getIsVisible()
-	local shouldBeVisible = false
-	local fireTile = nil
-	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
-		fireTile = self.inventoryPane.inventory:getParent()
-	    if fireTile and fireTile:isPropaneBBQ() and fireTile:hasFuel() then
--- 	    if fireTile then
-			shouldBeVisible = true
-            local text
-            if fireTile:isLit() then
-                text = getText("ContextMenu_Turn_Off")
-            else
-                text = getText("ContextMenu_Turn_On")
-            end
-            self.propaneTileToggle:setTitle(text)
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.propaneTileToggle:setVisible(shouldBeVisible)
-	end
-end
-
-function ISInventoryPage:syncRemovePropaneTileTank()
-	if self.onCharacter then return end
-	local isVisible = self.removePropaneTileTank:getIsVisible()
-	local shouldBeVisible = false
-	local fireTile = nil
-	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
-		fireTile = self.inventoryPane.inventory:getParent()
-	    if fireTile and fireTile:isPropaneBBQ() and fireTile:hasPropaneTank() then
-			shouldBeVisible = true
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.removePropaneTileTank:setVisible(shouldBeVisible)
-	end
-end
-
-function ISInventoryPage:syncAddPropaneTileTank()
-	if self.onCharacter then return end
-	local isVisible = self.addPropaneTileTank:getIsVisible()
-	local shouldBeVisible = false
-	local fireTile = nil
-    local playerObj = getSpecificPlayer(self.player)
-	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
-		fireTile = self.inventoryPane.inventory:getParent()
-        if fireTile and fireTile:isPropaneBBQ() and (not fireTile:hasPropaneTank()) and ISBBQMenu.FindPropaneTank(playerObj, fireTile) then
---         if fireTile and fireTile:isPropaneBBQ() and ISBBQMenu.FindPropaneTank(playerObj, fireTile) then
-			shouldBeVisible = true
-			if fireTile:hasPropaneTank() then
-                shouldBeVisible = false
-            end
-		end
-	end
-	local containerButton
-	for _,cb in ipairs(self.backpacks) do
-		if cb.inventory == self.inventoryPane.inventory then
-			containerButton = cb
-			break
-		end
-	end
-	if not containerButton then
-		shouldBeVisible = false
-	end
-	if isVisible ~= shouldBeVisible then
-		self.addPropaneTileTank:setVisible(shouldBeVisible)
-	end
-end
-
+--
+-- function ISInventoryPage:syncWearAll()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.wearAll:getIsVisible()
+-- 	local shouldBeVisible = false
+-- 	local mannequin = nil
+--     local playerObj = getSpecificPlayer(self.player)
+-- 	if self.inventoryPane.inventory then
+-- 		mannequin = self.inventoryPane.inventory:getParent()
+-- 	    if instanceof(mannequin, "IsoMannequin") and mannequin:getWornItems():size()>0 and playerObj:getWornItems():size()>0 then
+-- 			shouldBeVisible = true
+-- 		end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible then
+-- 		self.wearAll:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
+-- function ISInventoryPage:syncPropaneTileToggle()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.propaneTileToggle:getIsVisible()
+-- 	local shouldBeVisible = false
+-- 	local fireTile = nil
+-- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
+-- 		fireTile = self.inventoryPane.inventory:getParent()
+-- 	    if fireTile and fireTile:isPropaneBBQ() and fireTile:hasFuel() then
+-- -- 	    if fireTile then
+-- 			shouldBeVisible = true
+--             local text
+--             if fireTile:isLit() then
+--                 text = getText("ContextMenu_Turn_Off")
+--             else
+--                 text = getText("ContextMenu_Turn_On")
+--             end
+--             self.propaneTileToggle:setTitle(text)
+-- 		end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible then
+-- 		self.propaneTileToggle:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
+-- function ISInventoryPage:syncRemovePropaneTileTank()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.removePropaneTileTank:getIsVisible()
+-- 	local shouldBeVisible = false
+-- 	local fireTile = nil
+-- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
+-- 		fireTile = self.inventoryPane.inventory:getParent()
+-- 	    if fireTile and fireTile:isPropaneBBQ() and fireTile:hasPropaneTank() then
+-- 			shouldBeVisible = true
+-- 		end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible then
+-- 		self.removePropaneTileTank:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
+-- function ISInventoryPage:syncAddPropaneTileTank()
+-- 	if self.onCharacter then return end
+-- 	local isVisible = self.addPropaneTileTank:getIsVisible()
+-- 	local shouldBeVisible = false
+-- 	local fireTile = nil
+--     local playerObj = getSpecificPlayer(self.player)
+-- 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
+-- 		fireTile = self.inventoryPane.inventory:getParent()
+--         if fireTile and fireTile:isPropaneBBQ() and (not fireTile:hasPropaneTank()) and ISBBQMenu.FindPropaneTank(playerObj, fireTile) then
+-- --         if fireTile and fireTile:isPropaneBBQ() and ISBBQMenu.FindPropaneTank(playerObj, fireTile) then
+-- 			shouldBeVisible = true
+-- 			if fireTile:hasPropaneTank() then
+--                 shouldBeVisible = false
+--             end
+-- 		end
+-- 	end
+-- 	local containerButton
+-- 	for _,cb in ipairs(self.backpacks) do
+-- 		if cb.inventory == self.inventoryPane.inventory then
+-- 			containerButton = cb
+-- 			break
+-- 		end
+-- 	end
+-- 	if not containerButton then
+-- 		shouldBeVisible = false
+-- 	end
+-- 	if isVisible ~= shouldBeVisible then
+-- 		self.addPropaneTileTank:setVisible(shouldBeVisible)
+-- 	end
+-- end
+--
 function ISInventoryPage:syncAddFuel()
 	if self.onCharacter then return end
 	local isVisible = self.addFuel:getIsVisible()
@@ -894,25 +913,18 @@ function ISInventoryPage:syncAddFuel()
 	local fireTile = nil
 	local campfire = nil
     local playerObj = getSpecificPlayer(self.player)
-	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
 		fireTile = self.inventoryPane.inventory:getParent()
 		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(fireTile:getSquare())
 		if campfire then
 			shouldBeVisible = true
-			local fuelAmt = campfire.fuelAmt or 0
-			if (fuelAmt) >= getCampingFuelMax() then
-	            self.addFuel:setTitle(getText("ContextMenu_Fuel_Full2"))
-            elseif table.isempty(fuelInfo.fuelList) then
-	            self.addFuel:setTitle(getText("ContextMenu_No_Fuel"))
-            end
+-- 			local fuelAmt = campfire.fuelAmt or 0
+-- 			if (fuelAmt) >= getCampingFuelMax() then
+--             end
         elseif fireTile and fireTile:isFireInteractionObject() and (not fireTile:isPropaneBBQ()) then
 			shouldBeVisible = true
-			if fireTile:getFuelAmount() >= getCampingFuelMax() then
-	            self.addFuel:setTitle(getText("ContextMenu_Fuel_Full2"))
-            elseif table.isempty(fuelInfo.fuelList) then
-	            self.addFuel:setTitle(getText("ContextMenu_No_Fuel"))
-            end
+-- 			if fireTile:getFuelAmount() >= getCampingFuelMax() then
+--             end
 		end
 	end
 	local containerButton
@@ -937,7 +949,6 @@ function ISInventoryPage:syncPutOut()
 	local fireTile = nil
 	local campfire = nil
     local playerObj = getSpecificPlayer(self.player)
-	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
 		fireTile = self.inventoryPane.inventory:getParent()
 		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(fireTile:getSquare())
@@ -971,27 +982,15 @@ function ISInventoryPage:syncLightFire()
 	local fireTile = nil
 	local campfire = nil
     local playerObj = getSpecificPlayer(self.player)
-	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
+	local hasFuel
 	if self.inventoryPane.inventory and self.inventoryPane.inventory:getParent() then
 		fireTile = self.inventoryPane.inventory:getParent()
 		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(fireTile:getSquare())
 		if campfire and not campfire.isLit then
-            if not table.isempty(fuelInfo.starters) and hasFuel and fuelInfo.petrol then
-			    shouldBeVisible = true
-            elseif not table.isempty(fuelInfo.starters) and not table.isempty(fuelInfo.tinder) then
-			    shouldBeVisible = true
-            elseif fuelInfo.percedWood and hasFuel and playerObj:getStats():getEndurance() > 0 then
-			    shouldBeVisible = true
-            end
+			shouldBeVisible = true
 
         elseif fireTile and fireTile:isFireInteractionObject() and (not fireTile:isPropaneBBQ()) and (not fireTile:isLit()) then
-            if not table.isempty(fuelInfo.starters) and hasFuel and fuelInfo.petrol then
-			    shouldBeVisible = true
-            elseif not table.isempty(fuelInfo.starters) and not table.isempty(fuelInfo.tinder) then
-			    shouldBeVisible = true
-            elseif fuelInfo.percedWood and hasFuel and playerObj:getStats():getEndurance() > 0 then
-			    shouldBeVisible = true
-            end
+			shouldBeVisible = true
 		end
 	end
 	local containerButton
@@ -1140,7 +1139,7 @@ function ISInventoryPage:update()
 
     if not self.onCharacter then
         -- add "remove all" button for trash can/bins
-        self.removeAll:setVisible(self:isRemoveButtonVisible())
+--         self.removeAll:setVisible(self:isRemoveButtonVisible())
 
         local playerObj = getSpecificPlayer(self.player)
         if self.lastDir ~= playerObj:getDir() then
@@ -1168,18 +1167,26 @@ function ISInventoryPage:update()
         end
     end
 
-	self:syncToggleStove()
-	self:syncSwitchOutfit()
-	self:syncStoreOutfit()
-	self:syncWearOutfit()
-	self:syncWearAll()
--- 	self:syncSetFireTileInfo()
-	self:syncPropaneTileToggle()
-	self:syncRemovePropaneTileTank()
-	self:syncAddPropaneTileTank()
-	self:syncAddFuel()
-	self:syncLightFire()
-	self:syncPutOut()
+    if self.controlsUI then
+        self.controlsUI:arrange()
+        self.inventoryPane:setHeight(self.height - self.inventoryPane.y - self.resizeWidget.height - self.controlsUI.height)
+        self.inventoryPane:setY(self:titleBarHeight())
+    end
+    self.containerButtonPanel:setHeight(self.inventoryPane.height)
+    self.containerButtonPanel:setY(self.inventoryPane.y)
+    self.containerButtonPanel:setScrollHeight(self.backpacks[#self.backpacks]:getBottom())
+
+-- 	self:syncToggleStove()
+-- 	self:syncCloseTrunk()
+-- 	self:syncLockTrunk()
+-- 	self:syncSwitchOutfit()
+-- 	self:syncWearAll()
+-- 	self:syncPropaneTileToggle()
+-- 	self:syncRemovePropaneTileTank()
+-- 	self:syncAddPropaneTileTank()
+-- 	self:syncAddFuel()
+-- 	self:syncLightFire()
+-- 	self:syncPutOut()
 	self:updateContainerOpenCloseSounds()
 end
 
@@ -1269,7 +1276,7 @@ function ISInventoryPage:prerender()
 
     if not self.isCollapsed then
         -- Draw border for backpack area...
-        self:drawRect(self:getWidth()-self.buttonSize, titleBarHeight, self.buttonSize, height-titleBarHeight-7,  self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+        self:drawRect(self:getWidth()-self.buttonSize, titleBarHeight, self.buttonSize, self.inventoryPane.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     end
 
 --~ 	if not self.title then
@@ -1322,6 +1329,7 @@ function ISInventoryPage:prerender()
 	self:drawTextRight(weightLabel, self.pinButton:getX()-buttonOffset, 0, 1,1,1,1);
 
     local weightWid = getTextManager():MeasureStringX(UIFont.Small, "9999.99 / 9999") + 30;
+--[[
     if not self.onCharacter or self.width < 370 then
         self.transferAll:setVisible(false)
     elseif "Tutorial" ~= getCore():getGameMode() then
@@ -1333,7 +1341,8 @@ function ISInventoryPage:prerender()
     local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_invpage_Transfer_all"))
 
     self.transferAll:setX(self.width - 1 - buttonHeight - buttonOffset - weightWid - textButtonOffset - textWid)
-    
+ ]]
+
     if self.title and not self.onCharacter then
         local fontHgt = getTextManager():getFontHeight(self.font)
         local text = self.title
@@ -1350,7 +1359,7 @@ function ISInventoryPage:prerender()
 --                 end
                 text = text .. ": " .. (ISCampingMenu.timeString(luautils.round(campfire.fuelAmt))) -- .. " (" .. fireState .. ")"
             elseif fireTile and fireTile:isFireInteractionObject() then
-                shouldBeVisible = true
+                shouldBeVisible = truev
 --                 local fireState;
 --                 if fireTile:isLit() then
 --                     fireState = getText("IGUI_Fireplace_Burning")
@@ -1375,6 +1384,8 @@ function ISInventoryPage:prerender()
 
     -- self:drawRectBorder(self:getWidth()-32, 15, 32, self:getHeight()-16-6, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:setStencilRect(0,0,self.width+1, height);
+
+    self.containerButtonPanel:keepSelectedButtonVisible()
 
     local playerObj = getSpecificPlayer(self.player)
     if playerObj and playerObj:isInvPageDirty() then
@@ -1416,7 +1427,9 @@ function ISInventoryPage:close()
 		playerObj:setBannedAttacking(false)
 	end
     self.inventoryPane:clearWorldObjectHighlights();
-    if not self:playContainerCloseSound(self.inventoryPane.inventory) then
+    if self:playContainerCloseSound(self.inventoryPane.inventory) then
+        self.selectedContainerForSound = nil
+    else
         getSoundManager():playUISound("UIActivateButton")
     end
 end
@@ -1652,11 +1665,14 @@ function ISInventoryPage:render()
     end
     -- Draw backpack border over backpacks....
     if not self.isCollapsed then
-        self:drawRectBorder(self:getWidth()-self.buttonSize, titleBarHeight - 1, self.buttonSize, height-titleBarHeight-7, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        self:drawRectBorder(self:getWidth()-self.buttonSize, self.inventoryPane.y, self.buttonSize, self.inventoryPane.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         --self:drawRect(0, 0, self.width-32, self.height, 1, 1, 1, 1);
         self:drawRectBorder(0, height-rh, self:getWidth(), rh, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         self:drawTextureScaled(self.statusbarbkg, 1,  height-rh+1, self:getWidth() - 2, rh-2, 1, 1, 1, 1);
         self:drawTextureScaled(self.resizeimage, self:getWidth()-rh+1, height-rh+1, rh-2, rh-2, 1, 1, 1, 1);
+        if self.controlsUI and self.controlsUI:isVisible() then
+            self:drawRectBorder(self.controlsUI.x, self.controlsUI.y, self.controlsUI.width, self.controlsUI.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        end
     end
 
     self:clearStencilRect();
@@ -1826,18 +1842,17 @@ function ISInventoryPage:setNewContainer(inventory)
 		end
 	end
 
-	self:syncToggleStove()
-	self:syncSwitchOutfit()
-	self:syncStoreOutfit()
-	self:syncWearOutfit()
-	self:syncWearAll()
--- 	self:syncSetFireTileInfo()
-	self:syncPropaneTileToggle()
-	self:syncRemovePropaneTileTank()
-	self:syncAddPropaneTileTank()
-	self:syncAddFuel()
-	self:syncLightFire()
-	self:syncPutOut()
+-- 	self:syncToggleStove()
+-- 	self:syncCloseTrunk()
+-- 	self:syncLockTrunk()
+-- 	self:syncSwitchOutfit()
+-- 	self:syncWearAll()
+-- 	self:syncPropaneTileToggle()
+-- 	self:syncRemovePropaneTileTank()
+-- 	self:syncAddPropaneTileTank()
+-- 	self:syncAddFuel()
+-- 	self:syncLightFire()
+-- 	self:syncPutOut()
 end
 
 function ISInventoryPage:selectButtonForContainer(container)
@@ -2032,10 +2047,17 @@ function ISInventoryPage:onMouseWheel(del)
 	end
 	local currentIndex = self:getCurrentBackpackIndex()
 	local unlockedIndex = -1
+
+    -- When the container buttons aren't all visible, don't wrap scrolling when rapidly using the mousewheel.
+	local ms = getTimestampMs()
+	self.lastMouseWheelMS = self.lastMouseWheelMS or 0
+	local wrap = (self.containerButtonPanel.height > self.containerButtonPanel:getScrollHeight()) or (ms - self.lastMouseWheelMS > 750)
+	self.lastMouseWheelMS = ms
+
 	if del < 0 then
-		unlockedIndex = self:prevUnlockedContainer(currentIndex, true)
+		unlockedIndex = self:prevUnlockedContainer(currentIndex, wrap)
 	else
-		unlockedIndex = self:nextUnlockedContainer(currentIndex, true)
+		unlockedIndex = self:nextUnlockedContainer(currentIndex, wrap)
 	end
 	if unlockedIndex ~= -1 then
 		local playerObj = getSpecificPlayer(self.player)
@@ -2081,13 +2103,13 @@ end
 function ISInventoryPage:onBackpackMouseUp(x, y)
 	if not self.pressed and not ISMouseDrag.dragging then return end
 	ISButton.onMouseUp(self, x, y)
-	local page = self.parent
+	local page = self.parent.parent
 	if page:dropItemsInContainer(self) then return end
 	page:onBackpackClick(self)
 end
 
 function ISInventoryPage:onBackpackRightMouseDown(x, y)
-	local page = self.parent
+	local page = self.parent.parent
 	local container = self.inventory
 	local item = container:getContainingItem()
 	local context = ISContextMenu.get(page.player, getMouseX(), getMouseY())
@@ -2099,10 +2121,15 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
 			setJoypadFocus(page.player, context)
 		end
 		return
+    elseif not instanceof(container:getParent(), "BaseVehicle") and not (container:getType() == "inventorymale" or container:getType() == "inventoryfemale" or container:getType() == "floor") then
+        if SafeHouse.isSafehouseAllowInteract(container:getParent():getSquare(), getSpecificPlayer(page.player)) then
+            context:addOption(getText("ContextMenu_RenameBag"), container, ISInventoryPage.onRenameContainer, page.player);
+            if not ISLootZed.cheat and not isAdmin() then return end
+        end
 	end
     if ISLootZed.cheat or isAdmin() then
         local playerObj = getSpecificPlayer(page.player)
-        if not instanceof(container:getParent(), "BaseVehicle") and not (container:getType() == "inventorymale" or container:getType() == "inventoryfemale") then
+        if not instanceof(container:getParent(), "BaseVehicle") and not (container:getType() == "inventorymale" or container:getType() == "inventoryfemale" or container:getType() == "floor") then
             context:addOption("Refill container", container, function(container, playerObj)
                 if container:getSourceGrid() then
                     if isClient() then
@@ -2178,8 +2205,8 @@ function ISInventoryPage:addContainerButton(container, texture, name, tooltip)
     local titleBarHeight = self:titleBarHeight()
 	local playerObj = getSpecificPlayer(self.player)
 	local c = #self.backpacks + 1
-	local x = self.width - self.buttonSize
-	local y = ((c - 1) * self.buttonSize) + titleBarHeight - 1
+	local x = 0
+	local y = ((c - 1) * self.buttonSize) - 1
 	local button
 	if #self.buttonPool > 0 then
 		button = table.remove(self.buttonPool, 1)
@@ -2219,7 +2246,7 @@ function ISInventoryPage:addContainerButton(container, texture, name, tooltip)
 	end
 	button.name = name
 	button.tooltip = tooltip
-	self:addChild(button)
+	self.containerButtonPanel:addChild(button)
 	self.backpacks[c] = button
 	return button
 end
@@ -2256,7 +2283,7 @@ function ISInventoryPage:refreshBackpacks()
 
 	self.buttonPool = self.buttonPool or {}
 	for i,v in ipairs(self.backpacks) do
-		self:removeChild(v)
+		self.containerButtonPanel:removeChild(v)
 		table.insert(self.buttonPool, i, v)
 	end
 
@@ -2459,6 +2486,7 @@ function ISInventoryPage:refreshBackpacks()
 					    end
 					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
 						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or "!Needs IGUI_ContainerTitle defined for: " .. container:getType()
+						if container:getCustomName() then title = container:getCustomName() end
 -- 						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or ""
                         -- changed to include tooltips outside of the player inventory because some people want it
 						containerButton = self:addContainerButton(container, nil, title, title)
@@ -2607,20 +2635,61 @@ function ISInventoryPage:refreshBackpacks()
 
 	self:updateItemCount()
 
-    self:syncToggleStove()
-	self:syncSwitchOutfit()
-	self:syncStoreOutfit()
-	self:syncWearOutfit()
-	self:syncWearAll()
--- 	self:syncSetFireTileInfo()
-	self:syncPropaneTileToggle()
-	self:syncRemovePropaneTileTank()
-	self:syncAddPropaneTileTank()
-	self:syncAddFuel()
-	self:syncLightFire()
-	self:syncPutOut()
+	if self.controlsUI then
+        self.controlsUI:arrange()
+        self.inventoryPane:setHeight(self.height - self.inventoryPane.y - self.resizeWidget.height - self.controlsUI.height)
+    end
+    self.containerButtonPanel:setHeight(self.inventoryPane.height)
+    self.containerButtonPanel:setY(self.inventoryPane.y)
+    self.containerButtonPanel:setScrollHeight(self.backpacks[#self.backpacks]:getBottom())
+
+--     self:syncToggleStove()
+-- 	self:syncCloseTrunk()
+-- 	self:syncLockTrunk()
+-- 	self:syncSwitchOutfit()
+-- 	self:syncWearAll()
+-- 	self:syncPropaneTileToggle()
+-- 	self:syncRemovePropaneTileTank()
+-- 	self:syncAddPropaneTileTank()
+-- 	self:syncAddFuel()
+-- 	self:syncLightFire()
+-- 	self:syncPutOut()
 
 	triggerEvent("OnRefreshInventoryWindowContainers", self, "end")
+end
+
+ISInventoryPage.onRenameContainer = function(container, player)
+    local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or container:getType()
+    if container:getCustomName() then title = container:getCustomName() end
+    local modal = ISTextBox:new(0, 0, 280, 180, getText("ContextMenu_NameThisContainer"), title, nil, ISInventoryPage.onRenameContainerClick, player, getSpecificPlayer(player), container);
+    modal:initialise();
+    modal:addToUIManager();
+    if JoypadState.players[player+1] then
+        setJoypadFocus(player, modal)
+    end
+end
+
+function ISInventoryPage:onRenameContainerClick(button, player, container)
+    local playerNum = player:getPlayerNum()
+    if button.internal == "OK" then
+		local length = button.parent.entry:getInternalText():len()
+        if button.parent.entry:getText() and button.parent.entry:getText() ~= "" then
+			if length <= MAXIMUM_RENAME_LENGTH then
+                print("OKAY! " .. button.parent.entry:getText())
+				container:setCustomName(button.parent.entry:getText());
+				local pdata = getPlayerData(playerNum);
+				pdata.playerInventory:refreshBackpacks();
+				pdata.lootInventory:refreshBackpacks();
+			else
+				-- player:Say(getText("IGUI_PlayerText_ItemNameTooLong", MAXIMUM_RENAME_LENGTH));
+				HaloTextHelper.addBadText(player, getText("IGUI_PlayerText_ItemNameTooLong", MAXIMUM_RENAME_LENGTH));
+-- 				HaloTextHelper.addText(player, getText("IGUI_PlayerText_ItemNameTooLong", MAXIMUM_RENAME_LENGTH), getCore():getGoodHighlitedColor());
+			end
+        end
+    end
+    if JoypadState.players[playerNum+1] then
+        setJoypadFocus(playerNum, getPlayerInventory(playerNum))
+    end
 end
 
 --************************************************************************--
@@ -2769,12 +2838,14 @@ function ISInventoryPage:onInventoryContainerSizeChanged()
 	self.buttonSize = sizes[getCore():getOptionInventoryContainerSize()]
 	self.minimumWidth = 256 + self.buttonSize
 	self.inventoryPane:setWidth(self.width - self.buttonSize)
+	self.containerButtonPanel:setWidth(self.buttonSize)
+	self.containerButtonPanel:setX(self.width - self.buttonSize)
 	for _,button in ipairs(self.buttonPool) do
 		button:setWidth(self.buttonSize)
 		button:setHeight(self.buttonSize)
 		button:forceImageSize(math.min(self.buttonSize - 2, 32), math.min(self.buttonSize - 2, 32))
 	end
-	local y = self:titleBarHeight() - 1
+	local y = -1
 	for _,button in ipairs(self.backpacks) do
 		button:setX(self.width - self.buttonSize)
 		button:setY(y)

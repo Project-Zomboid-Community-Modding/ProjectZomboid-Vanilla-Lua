@@ -12,6 +12,11 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local SCROLL_BAR_WIDTH = 13
 
+local sortRecipes = function (a, b)
+    -- sort alphabetically.
+    return a:getName() < b:getName()
+end
+
 --************************************************************************--
 --** ISPanel:initialise
 --**
@@ -36,6 +41,7 @@ function ISCharacterInfo:createChildren()
 	end
 
 	table.sort(self.sorted, function(a,b)
+
 		if a:isPassiv() then
 			local dbg = 1
 		end
@@ -58,12 +64,10 @@ function ISCharacterInfo:createChildren()
 		self:addChild(collapseButton);
 	end
 
-	--for i,parentPerk in ipairs(self.sorted) do
-	--	local perkList = self.perks[parentPerk:getType()]
-	--	for ind, perk in ipairs(perkList) do
-	--
-	--	end
-	--end
+	for i,parentPerk in ipairs(self.sorted) do
+		local perkList = self.perks[parentPerk:getType()]
+        table.sort(perkList, sortRecipes);
+    end
 
 end
 

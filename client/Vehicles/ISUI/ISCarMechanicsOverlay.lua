@@ -36,6 +36,9 @@ ISCarMechanicsOverlay.CarList["Base.PickUpTruckLightsAirportSecurity"] = {imgPre
 ISCarMechanicsOverlay.CarList["Base.PickUpTruck"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruck_Camo"] = {imgPrefix = "truck_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.PickUpTruckMccoy"] = {imgPrefix = "truck_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.RaceCar12"] = {imgPrefix = "racecar_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.RaceCar34"] = {imgPrefix = "racecar_", x=10,y=0};
+ISCarMechanicsOverlay.CarList["Base.RaceCar58"] = {imgPrefix = "racecar_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.Van"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanOvoFarm"] = {imgPrefix = "van_", x=10,y=0};
 ISCarMechanicsOverlay.CarList["Base.VanSpiffo"] = {imgPrefix = "van_", x=10,y=0};
