@@ -53,7 +53,6 @@ function MultiplayerUI:create()
     self.backButton.internal = "BACK";
     self.backButton:initialise();
     self.backButton:instantiate();
-    --self.backButton.font = UIFont.Large;
     self.backButton:enableCancelColor()
     self:addChild(self.backButton);
 
@@ -77,15 +76,9 @@ function MultiplayerUI:create()
 
     self.tabs = ISMPTabPanel:new(0, 0, 500, 32);
     self.tabs:initialise();
---     self.tabs.onMouseDown = self.onMouseDown_Tabs;
---     self.tabs.onMouseUp = function(x,y) end
---    self.tabs.target = self;
---     self.tabs:setEqualTabWidth(false)
     self.tabs.tabPadX = 6
     self.tabs.tabHeight = tabHeight
     self.tabs.tabWidth = math.max(tabWidth1, tabWidth2)
-    --self.tabs:setCenterTabs(true)
-    --self.tabs.tabHeight = 200
     self:addChild(self.tabs);
 
     self.leftFavoritesPanel = ISPanel:new(0, 0, 0, 0);
@@ -159,7 +152,6 @@ function MultiplayerUI:create()
     self.accountList.doDrawItem = function(_self, _y, _item, _alt) return MultiplayerUI.drawAccountListItem(_self, _y, _item, _alt) end
     self.accountList:setOnMouseDownFunction(self, self.onSelectAccount)
     self.accountList.onMouseDoubleClick = MultiplayerUI.onDoubleClickAccount;
-    --self.accountList.onRightMouseUp = ISRolesList.onRightMouse;
     self.accountList.drawBorder = true;
     self.accountList.useStencilForChildren = true
     self.accountList.parent = self;
@@ -288,8 +280,6 @@ function MultiplayerUI:create()
 
     self:refreshList();
 
---    self.tabs:activateView(getText("UI_servers_publicServer"))
-
     self:onResolutionChange(0, 0, self.width, self.height)
 
     self.created = true
@@ -330,8 +320,6 @@ function MultiplayerUI:drawAccountListItem(y, item, alt)
     local offline = self.parent.parent.parent.ui_offline
     local subitem_first = self.parent.parent.parent.ui_subitem_first
     local subitem_other = self.parent.parent.parent.ui_subitem_other
-    --    self.parent.selectedFaction = nil;
-   -- self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     local leftSpace = 0;
     if item.item.type == "account" or item.item.type == "new_account" then
         leftSpace = 65;
@@ -353,8 +341,6 @@ function MultiplayerUI:drawAccountListItem(y, item, alt)
         self:drawTextureScaled(icon, 25, y + (item.height - SERVER_ICON_SIZE) / 2, SERVER_ICON_SIZE, SERVER_ICON_SIZE, 1, 1, 1, 1);
         self:clearStencilRect()
         self:repaintStencilRect(0,0,self:getWidth(), self:getHeight())
-        --self:drawTextureScaled(ui_icon_bg, 25, y + 4, SERVER_ICON_SIZE, SERVER_ICON_SIZE, 1, 1, 1, 1);
-        --self:drawTextCentre(getTwoLetters(server:getName()), 46, y + 12, 1,1,1, a, UIFont.Large);
         -- OnlineStatus
         if server:isResponded() then
             self:drawTextureScaled(online, 53, y + 32, 15, 15, 1, 1, 1, 1);
@@ -496,7 +482,6 @@ function MultiplayerUI:drawInternetListItem(y, item, alt)
     end
 
     -- RJ: the filters you select on top are now done in java (GameClient.sortBrowserList)
-
     self.parent.parent.parent.serversInList = true;
 
     local a = 0.9;
@@ -537,8 +522,6 @@ function MultiplayerUI:drawInternetListItem(y, item, alt)
     -- Icon
     self:drawTextureScaled(icon, ICON_X, y + iconOffsetY, SERVER_ICON_SIZE, SERVER_ICON_SIZE, 1, 1, 1, 1);
     self:drawTextCentre(getTwoLetters(item.text), ICON_X + 21, y + (item.height - FONT_HGT_LARGE) / 2, 1,1,1, a, UIFont.Large);
-    -- FeatureStatus
-    --self:drawTextureScaled(online, 124, y + 32, 15, 15, 1, 1, 1, 1);
 
     -- Name
     SERVER_INFO_WIDTH = self:getWidth() - playerColumnWid - pingColumnWid;
@@ -572,8 +555,6 @@ function MultiplayerUI:drawInternetListItem(y, item, alt)
 
     -- Version
     if item.item:getVersion() and item.item:getVersion() ~= "" then
-        --self:drawText("|", SERVERNAME_X + 150, y + 30, 1, 1, 1, a, UIFont.NewSmall);
-        --self:drawText("V "..item.item:getVersion(), SERVERNAME_X + 158, y + 30, 1, 1, 1, a, UIFont.NewSmall);
         self:drawTextRight("V ".. item.item:getVersion(), SERVER_INFO_WIDTH - 18 - (INFO_ICON_WIDTH * 3) - 8, y + 30, 1, 1, 1, a, UIFont.NewSmall);
     end
 
@@ -648,13 +629,6 @@ function MultiplayerUI:selectInternetServer(server)
     local lines = splitString(server:getName(), 36)
     self.selectedInternetServerName1 = lines[0]
     self.selectedInternetServerName2 = lines[1]
-
-    --if getSteamModeActive() and server.isResponded() then
-    --    steamRequestServerDetails(server:getIp(), server:getPort())
-    --end
-    --if server:getIp() and server:getIp() ~= "" and server:getPort() then
-    --    steamRequestServerDetails(server:getIp(), server:getPort())
-    --end
 end
 
 function MultiplayerUI:onDoubleClickInternetList(server)
@@ -867,23 +841,6 @@ MultiplayerUI.done = false;
 function MultiplayerUI:analyzeServerData(server)
     server:setFeatured(self:getServerFeatured(server) ~= nil);
 
-    -- RJ: it's just for me to run some heavier test on the server list
-    --if #self.serverList > 20000 or MultiplayerUI.done then
-    --    return;
-    --end
-    --for i=0, 10 do
-    --    local newServer = Server.new();
-    --    newServer:setName(server:getName() .. " " .. i)
-    --    newServer:setIp(server:getIp());
-    --    newServer:setPlayers(server:getPlayers())
-    --    newServer:setMaxPlayers(server:getMaxPlayers())
-    --    newServer:setOpen(server:isOpen());
-    --    newServer:setPasswordProtected(server:isPasswordProtected());
-    --    newServer:setVersion(server:getVersion());
-    --    self.serverList[newServer:getName()] = newServer;
-    --end
-    --self.internetList:addItem(server:getName(), server);
-    --self.serverList[server:getName()] = server;
     if not server:isPublic() then
         return;
     end
@@ -900,8 +857,6 @@ function MultiplayerUI:analyzeServerData(server)
     end
 
     self.listChanged = true; -- this is so we can fire the sort if needed
-    --MultiplayerUI.done = true;
-    --self:sortInternetList();
 end
 
 function MultiplayerUI:serverInfoBluePanelHeight()
@@ -916,8 +871,6 @@ function MultiplayerUI:onResolutionChange(oldw, oldh, neww, newh)
 
     local rightPanelWidth = 481
     local rightPanelLeftSpace = 7
-    local serverInfoBluePanelHeight = 128
-
 
     if self.width < 1600 then
         self.tabs:setX(math.max(10, self.width*0.1648))
@@ -1056,11 +1009,7 @@ function MultiplayerUI:onResolutionChange(oldw, oldh, neww, newh)
 end
 
 function MultiplayerUI:prerender()
-    local bannerHeight = self.rightPanelInternal:getWidth() * 251 / 954
-    local serverInfoBluePanelHeight = self:serverInfoBluePanelHeight()
-    local rightBottomPanelY = self.rightPanelInternal:getY()+bannerHeight+serverInfoBluePanelHeight
     -- Bottom Background
-    --self:drawTextureScaled(self.default_bottom_background, self.rightPanelInternal:getX()+1, rightBottomPanelY, self.rightPanelInternal:getWidth()-1, self.rightPanelInternal:getHeight() - bannerHeight-serverInfoBluePanelHeight, 1, 1, 1, 1);
     local timeFromLastUpdate = getTimestamp() - (MultiplayerUI.startRefreshTime or 0)
     local refreshTime = 60;
     if getDebug() then
@@ -1084,7 +1033,6 @@ function MultiplayerUI:render()
     local serverInfoBluePanelHeight = self:serverInfoBluePanelHeight()
     local serverIconUICircleSize = bannerHeight * 105 / 120
     local bannerRight = self.rightPanelInternal:getX()+self.rightPanelInternal:getWidth()
-    local rightBottomPanelY = self.rightPanelInternal:getY()+bannerHeight+serverInfoBluePanelHeight
     if self.rightPanel:isVisible() then
         -- Banner
         self:drawTextureScaled(self.default_banner, self.rightPanelInternal:getX()+1, self.rightPanelInternal:getY()+1, self.rightPanelInternal:getWidth()-1, bannerHeight, 1, 1, 1, 1);
@@ -1219,7 +1167,6 @@ function MultiplayerUI:updateListSort()
 end
 
 function MultiplayerUI:sortInternetList()
-
     -- RJ: done this in java as it's wayyyy faster for big list sorting
     -- we gonna send a list of the filters we have, so java will filter it, no need to keep a full list for the render
     local filterTable = {};
@@ -1235,34 +1182,6 @@ function MultiplayerUI:sortInternetList()
     self.internetList:clear();
     for i,v in pairs(newList) do
         self.internetList:addItem(i, v);
-    end
-    --table.sort(self.internetList.items, function(a, b)
-    --    return self:sortServerList(a, b)
-    --end)
-end
-
--- RJ: Deprecated, java looks like way faster, still keeping it here for now just in case
-function MultiplayerUI:sortServerList(a, b)
-    if self.sortType == "name" then
-        if self.sortDown then
-            return a.item:getName() > b.item:getName();
-        else
-            return a.item:getName() < b.item:getName();
-        end
-    end
-    if self.sortType == "player" then
-        if self.sortDown then
-            return tonumber(a.item:getPlayers()) > tonumber(b.item:getPlayers());
-        else
-            return tonumber(a.item:getPlayers()) < tonumber(b.item:getPlayers());
-        end
-    end
-    if self.sortType == "ping" then
-        if self.sortDown then
-            return tonumber(a.item:getPing()) > tonumber(b.item:getPing());
-        else
-            return tonumber(a.item:getPing()) < tonumber(b.item:getPing());
-        end
     end
 end
 
@@ -1308,9 +1227,6 @@ function MultiplayerUI:renderSortButtons()
     self.buttonSortPing:setWidth(self.internetList:getWidth() - PING_SEPARATOR);
     self.buttonSortPing:setY(self.buttonSortName:getY());
     self.buttonSortPing:setHeight(self.buttonSortName:getHeight());
-
-    -- draw the border around our buttons
-    --self:drawRectBorder(self.buttonSortName:getX(), self.buttonSortName:getY(), self.buttonSortName:getWidth(), self.buttonSortName:getHeight(), 0.5, self.internetList.borderColor.r, self.internetList.borderColor.g, self.internetList.borderColor.b);
 end
 
 function MultiplayerUI:onMouseDown_Tabs(x, y)
@@ -1379,11 +1295,6 @@ function MultiplayerUI:connectFromBrowser(server)
             return;
         end
         -- add the server to our favourite
-        --addServerToAccountList(server)
-        --self:refreshList()
-        --local item = self:getServerFeatured(server)
-        --self:onSelectAccount(item)
-        -- create the account
         self.modal = ISMPEditAccount:new(self, server, nil);
         self.modal:initialise()
         self.modal:addToUIManager()
@@ -1403,7 +1314,6 @@ function MultiplayerUI:checkServerIsPwdProtected(server, connectAfter, addToFavA
         favServer = favServer.server;
     end
 
-    --if (favServer and not favServer:isPasswordProtected()) and not self.selectedInternetServer:isPasswordProtected() then
     -- we check that the selected server isn't password protected
     if not self.selectedInternetServer:isPasswordProtected() and (not server or server:getServerPassword()) then
         return false;
@@ -1430,11 +1340,9 @@ function MultiplayerUI:checkServerIsPwdProtected(server, connectAfter, addToFavA
 end
 
 function MultiplayerUI.ServerPinged(ip, users)
-
 end
 
 function MultiplayerUI.OnSteamServerResponded(serverIndex)
-    --print('OnSteamServerResponded ' .. tostring(serverIndex))
     if MultiplayerUI.serverCount == 0 then
         MultiplayerUI.serverCount = steamRequestInternetServersCount()
     end
@@ -1446,12 +1354,10 @@ function MultiplayerUI.OnSteamServerResponded(serverIndex)
     if server and MultiplayerUI.instance then
         server:setResponded(true)
         MultiplayerUI.instance:analyzeServerData(server)
-        --steamRequestServerRules(server:getIp(), server:getPort())
     end
 end
 
 function MultiplayerUI.OnSteamServerResponded2(host, port, server2)
-    --print('OnSteamServerResponded2 ' .. host .. ' ' .. tostring(port))
     local self = MultiplayerUI.instance
     for i,v in ipairs(self.accountList.items) do
         if v.item.type == "server" and v.item.server:getIp2() == host and v.item.server:getPort() == port then
@@ -1491,7 +1397,6 @@ function MultiplayerUI.OnSteamServerFailedToRespond2(host, port)
 end
 
 function MultiplayerUI.OnSteamRulesRefreshComplete(host, port, rules)
-    --print('OnSteamRulesRefreshComplete ' .. host .. ' ' .. tostring(port))
     local self = MultiplayerUI.instance
     for i,v in ipairs(self.accountList.items) do
         if v.item.type == "server" and v.item.server:getIp2() == host and v.item.server:getPort() == port then

@@ -27,7 +27,9 @@ function ISPlace3DItemCursor:create(x, y, z, north, sprite)
                 if self.chr:isEquipped(v) then
                     ISTimedActionQueue.add(ISUnequipAction:new(self.chr, v, 1));
                 end
-                ISTimedActionQueue.add(ISDropWorldItemAction:new(self.chr, v, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, #self.items > 1));
+                local action = ISDropWorldItemAction:new(self.chr, v, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, #self.items > 1)
+                action.isPlaceItem = true
+                ISTimedActionQueue.add(action)
             end
         end
     else
@@ -36,7 +38,9 @@ function ISPlace3DItemCursor:create(x, y, z, north, sprite)
             if self.chr:isEquipped(item) then
                 ISTimedActionQueue.add(ISUnequipAction:new(self.chr, item, 1));
             end
-            ISTimedActionQueue.add(ISDropWorldItemAction:new(self.chr, item, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, false));
+            local action = ISDropWorldItemAction:new(self.chr, item, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, false)
+            action.isPlaceItem = true
+            ISTimedActionQueue.add(action)
         end
         if #self.items > 0 then
             getCell():setDrag(self, self.chr:getPlayerNum())

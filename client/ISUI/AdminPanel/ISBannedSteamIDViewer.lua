@@ -3,7 +3,6 @@ ISBannedSteamIDViewer.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
@@ -86,7 +85,6 @@ function ISBannedSteamIDViewer:initialise()
     self:addChild(self.refreshBtn);
 
     self:getBannedSteamIDs();
-
 end
 
 function ISBannedSteamIDViewer:getBannedSteamIDs()

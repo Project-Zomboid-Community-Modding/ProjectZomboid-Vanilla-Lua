@@ -416,9 +416,7 @@ function ISUIElement:recalcSize()
 		self:instantiate();
 	end
 	return self.javaObject:onResize();
-
 end
-
 
 function ISUIElement:onResize()
 	self.x = self:getX()
@@ -862,7 +860,6 @@ function ISUIElement:instantiate()
 end
 
 function ISUIElement:createChildren()
-
 end
 
 function ISUIElement:drawTextureAllPoint(texture, tlx, tly, trx, try, brx, bry, blx, bly, r,g,b,a)
@@ -1246,7 +1243,6 @@ function ISUIElement:addChild(otherElement)
 		ISUIElement.IDMax = ISUIElement.IDMax + 1;
 	end
 	self.children[otherElement.ID] = otherElement;
-	----print("Adding child control to parent.");
 	self.javaObject:AddChild(otherElement.javaObject);
 	otherElement.parent = self;
 end
@@ -1258,10 +1254,8 @@ function ISUIElement:removeChild(otherElement)
 	end
 
 	self.children[otherElement.ID] = nil;
---	--print("Attempting to remove: "..otherElement.javaObject);
 
 	if(otherElement.javaObject ~= nil) then
-	--	--print("Calling to remove: "..otherElement.javaObject);
 		self.javaObject:RemoveChild(otherElement.javaObject);
 	end
 end
@@ -1447,7 +1441,6 @@ function ISUIElement:getScrollWithParent()
     end
 
     return self.javaObject:getScrollWithParent();
-
 end
 
 
@@ -1462,7 +1455,6 @@ function ISUIElement:setYScroll(y)
     if -y < 0 then
         y = 0;
     end
-   -- print("setting scroll to "..y)
 	self.javaObject:setYScroll(y);
 
     self:updateScrollbars();
@@ -1649,9 +1641,6 @@ function ISUIElement:new (x, y, width, height)
    setmetatable(o, self)
    self.__index = self
 
-   local maxY = getCore():getScreenHeight();
-   local maxX = getCore():getScreenWidth();
-
 	-- The following is required to make Xui work:
 	x = x or 0;
 	y = y or 0;
@@ -1659,8 +1648,8 @@ function ISUIElement:new (x, y, width, height)
 	height = height or 0;
 	-- end Xui fix.
 
-   o.x = x -- math.max(0, math.min(x, maxX - width));
-   o.y = y -- math.max(0, math.min(y, maxY - height));
+   o.x = x
+   o.y = y
    o.width = width;
    o.height = height;
    o.anchorLeft = true;

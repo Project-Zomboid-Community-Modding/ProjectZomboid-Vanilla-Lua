@@ -28,20 +28,13 @@ local function removeAllButFloor(x, y, z)
 	end
 end
 
-local function removeObjectWithSprite(x, y, z, spriteName)
-	local isoObject = getObjectWithSprite(x, y, z, spriteName)
-	if not isoObject then return end
-	isoObject:getSquare():transmitRemoveItemFromSquare(isoObject)
-end
-
 local function testNewObject(x, y, z, spriteName)
-	local isoObject = newObject(x, y, z, spriteName)
---	MapObjects.debugNewChunk(math.floor(x / 10), math.floor(y / 10))
+	newObject(x, y, z, spriteName)
 	MapObjects.debugLoadChunk(math.floor(x / 10), math.floor(y / 10))
 end
 
 local function testLoadObject(x, y, z, spriteName)
-	local isoObject = newObject(x, y, z, spriteName)
+	newObject(x, y, z, spriteName)
 	MapObjects.debugLoadChunk(math.floor(x / 10), math.floor(y / 10))
 end
 
@@ -131,7 +124,6 @@ end
 
 function MapObjectTestFarming()
 	local x,y,z = getPlayer():getX(),getPlayer():getY(),getPlayer():getZ()
-	local square = getCell():getGridSquare(x, y, z)
 
 	-- Plow
 	removeAllButFloor(x, y, z)
@@ -157,7 +149,6 @@ function MapObjectTestFarming()
 	local isoObject = getObjectWithSprite(x, y, z, "vegetation_farming_01_13")
 	expectNotNull(isoObject)
 	expectIsoObjectClass(isoObject, "IsoObject")
-	-- isoObject:getName() is a random non-tomato plant
 	expectModData(isoObject:getModData(), {
 		hasSeed = false,
 		hasVegetable = false,
@@ -234,122 +225,4 @@ function MapObjectTestFarming()
 		typeOfSeed = "Tomato"
 	})
 	expectGlobalObject(x, y, z, CFarmingSystem.instance)
-end
-
-function MapObjectTestRainBarrel()
-	-- RJ Not needed anymore, all will be done via the entities
-	if true then return; end
-	local x,y,z = getPlayer():getX(),getPlayer():getY(),getPlayer():getZ()
-	local square = getCell():getGridSquare(x, y, z)
-
-	-- Plain IsoObject -> IsoThumpable, MapObjects.loadNewChunk()
-	
-	-- NewLargeEmpty
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
---	RainBarrelSystem.instance:removeLuaObjectAt(x, y, z)
-	testNewObject(x, y, z, "carpentry_02_52")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_52")
-	expectNotNull(isoObject)
-	expectIsoObjectClass(isoObject, "IsoThumpable")
-	expectIsoObjectName(isoObject, "Rain Collector Barrel")
-	expectModData(isoObject:getModData(), {
-		waterMax = RainCollectorBarrel.largeWaterMax
-	})
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
-
-	-- NewSmallFull
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testNewObject(x, y, z, "carpentry_02_55")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_55")
-	expectNotNull(isoObject)
-	expectIsoObjectClass(isoObject, "IsoThumpable")
-	expectIsoObjectName(isoObject, "Rain Collector Barrel")
-	expectModData(isoObject:getModData(), {
-		waterMax = RainCollectorBarrel.smallWaterMax
-	})
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
-
-	-- Plain IsoObject -> IsoThumpable, MapObjects.loadGridSquare()
-
-	-- NewLargeEmpty
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testLoadObject(x, y, z, "carpentry_02_52")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_52")
-	expectNotNull(isoObject)
-	expectIsoObjectClass(isoObject, "IsoThumpable")
-	expectIsoObjectName(isoObject, "Rain Collector Barrel")
-	expectModData(isoObject:getModData(), {
-		waterMax = RainCollectorBarrel.largeWaterMax
-	})
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
-
-	-- NewSmallFull
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testNewObject(x, y, z, "carpentry_02_55")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_55")
-	expectNotNull(isoObject)
-	expectIsoObjectClass(isoObject, "IsoThumpable")
-	expectIsoObjectName(isoObject, "Rain Collector Barrel")
-	expectModData(isoObject:getModData(), {
-		waterMax = RainCollectorBarrel.smallWaterMax
-	})
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
-
-	-- OnObjectAboutToBeRemoved
-	-- NewSmallFull
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testNewObject(x, y, z, "carpentry_02_55")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_55")
-	expectNotNull(isoObject)
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
-	square:transmitRemoveItemFromSquare(isoObject)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-
-	-- OnWaterAmountChanged
-	-- NewSmallEmpty -> full
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testNewObject(x, y, z, "carpentry_02_54")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_54")
-	isoObject:emptyFluid();
-	isoObject:addFluid(FluidType.Water, RainCollectorBarrel.smallWaterMax)
-	expectModData(isoObject:getModData(), {
-		waterAmount = RainCollectorBarrel.smallWaterMax,
-	})
-	expectIsoObjectSprite(isoObject, "carpentry_02_55")
-
-	-- Sync existing luaObject with isoObject
-	-- NewLargeFull -> no water
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	testNewObject(x, y, z, "carpentry_02_53")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_53")
-	local luaObject = SRainBarrelSystem.instance:getLuaObjectAt(x, y, z)
-	luaObject.waterAmount = 0
-	MapObjects.debugLoadChunk(math.floor(x / 10), math.floor(y / 10))
-	expectModData(isoObject:getModData(), {
-		waterAmount = 0,
-	})
-	expectIsoObjectSprite(isoObject, "carpentry_02_52")
-
-	-- Carpentry
-	-- NewSmallFull -> empty
-	removeAllButFloor(x, y, z)
-	expectGlobalObjectNull(x, y, z, CRainBarrelSystem.instance)
-	local buildingObj = RainCollectorBarrel:new(0, "carpentry_02_55", RainCollectorBarrel.smallWaterMax)
-	buildingObj:create(x, y, z, false, "carpentry_02_55")
-	local isoObject = getObjectWithSprite(x, y, z, "carpentry_02_54") -- SPRITE SHOULD HAVE CHANGED TO 'EMPTY'
-	expectNotNull(isoObject)
-	expectIsoObjectClass(isoObject, "IsoThumpable")
-	expectIsoObjectName(isoObject, "Rain Collector Barrel")
-	expectModData(isoObject:getModData(), {
-		waterAmount = 0,
-		waterMax = RainCollectorBarrel.smallWaterMax
-	})
-	expectGlobalObject(x, y, z, CRainBarrelSystem.instance)
 end

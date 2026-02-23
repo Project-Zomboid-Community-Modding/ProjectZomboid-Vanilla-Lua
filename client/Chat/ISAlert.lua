@@ -41,10 +41,6 @@ function ISAlert:prerender()
         end
 end
 
---function ISAlert:render()
---    ISUIElement.render(self);
---end
-
 function ISAlert:initialise()
     ISUIElement.initialise(self);
 end

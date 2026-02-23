@@ -16,63 +16,6 @@ function ISAddSafeZoneUI:highlightZone(_x1, _x2, _y1, _y2, _fullHighlight)
 	local b = (self.notIntersecting and 1) or 0;
 	local a = 0.9;
 	addAreaHighlight(_x1, _y1, _x2, _y2, 0, r, g, b, a)
---[[
-	if _fullHighlight then
-		for xVal = _x1, _x2 do
-			for yVal = _y1, _y2 do
-				local sqObj = getCell():getOrCreateGridSquare(xVal,yVal,0);
-				if sqObj then
-					for n = 0,sqObj:getObjects():size()-1 do
-						local obj = sqObj:getObjects():get(n);
-						obj:setHighlighted(true);
-						obj:setHighlightColor(r,g,b,a);
-					end;
-				end;
-			end;
-		end;
-	else
-		for xVal = _x1, _x2 do
-			local yVal1 = _y1;
-			local yVal2 = _y2;
-			local sqObj1 = getCell():getOrCreateGridSquare(xVal,yVal1,0);
-			local sqObj2 = getCell():getOrCreateGridSquare(xVal,yVal2,0);
-			if sqObj1 then
-				for n = 0,sqObj1:getObjects():size()-1 do
-					local obj = sqObj1:getObjects():get(n);
-					obj:setHighlighted(true);
-					obj:setHighlightColor(r,g,b,a);
-				end;
-			end;
-			if sqObj2 then
-				for n = 0,sqObj2:getObjects():size()-1 do
-					local obj = sqObj2:getObjects():get(n);
-					obj:setHighlighted(true);
-					obj:setHighlightColor(r,g,b,a);
-				end;
-			end;
-		end;
-		for yVal = _y1, _y2 do
-			local xVal1 = _x1;
-			local xVal2 = _x2;
-			local sqObj1 = getCell():getOrCreateGridSquare(xVal1,yVal,0);
-			local sqObj2 = getCell():getOrCreateGridSquare(xVal2,yVal,0);
-			if sqObj1 then
-				for n = 0,sqObj1:getObjects():size()-1 do
-					local obj = sqObj1:getObjects():get(n);
-					obj:setHighlighted(true);
-					obj:setHighlightColor(r,g,b,a);
-				end;
-			end;
-			if sqObj2 then
-				for n = 0,sqObj2:getObjects():size()-1 do
-					local obj = sqObj2:getObjects():get(n);
-					obj:setHighlighted(true);
-					obj:setHighlightColor(r,g,b,a);
-				end;
-			end;
-		end;
-	end;
---]]
 end
 
 local function setSafehouseData(_title, _owner, _x, _y, _w, _h)

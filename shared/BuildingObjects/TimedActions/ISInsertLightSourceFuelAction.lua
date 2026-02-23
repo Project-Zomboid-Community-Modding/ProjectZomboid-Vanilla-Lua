@@ -44,7 +44,7 @@ function ISInsertLightSourceFuelAction:complete()
 		local fuel = instanceItem(self.fuel:getFullType())
 		fuel:setUsedDelta(self.fuel:getCurrentUsesFloat())
 		local previous = self.lightSource:insertNewFuel(fuel, nil)
-		self.lightSource:sendObjectChange('lightSource')
+		self.lightSource:sendObjectChange(IsoObjectChange.LIGHT_SOURCE)
 		self.character:getInventory():Remove(self.fuel)
 		sendRemoveItemFromContainer(self.character:getInventory(), self.fuel);
 		if previous then

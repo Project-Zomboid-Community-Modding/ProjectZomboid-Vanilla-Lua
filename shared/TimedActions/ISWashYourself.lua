@@ -14,7 +14,6 @@ end
 function ISWashYourself:start()
 	self:setActionAnim("WashFace")
 	self:setOverrideHandModels(nil, nil)
-	self.sound = self.character:playSound("WashYourself")
 	self.character:reportEvent("EventWashClothing");
 end
 
@@ -127,6 +126,13 @@ function ISWashYourself:complete()
 	end
 
 	return true
+end
+
+function ISWashYourself:animEvent(event, parameter)
+    if event == 'PlayWashSound' then
+        self:stopSound()
+        self.sound = self.character:playSound("WashYourself")
+    end
 end
 
 function ISWashYourself:getDuration()

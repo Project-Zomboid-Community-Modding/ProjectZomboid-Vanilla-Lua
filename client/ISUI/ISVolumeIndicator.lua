@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 
 ISVolumeIndicator = ISPanel:derive("ISVolumeIndicator")
 
-
 function ISVolumeIndicator:prerender()
 	ISPanel.prerender(self)
 	getCore():setTestingMicrophone(true)
@@ -23,7 +22,6 @@ function ISVolumeIndicator:render()
 	local sliderPadX = 1
 	local sliderPadY = 4
 	padX = padX + (self:getWidth() - padX * 2 - oneTenth * 10) / 2
-	local sliderX = padX + oneTenth * self.volume - sliderWidth / 2
 	local rgb1 = 0.1 + 0.1 * self.fade:fraction()
 	local rgb2 = 0.3 + 0.1 * self.fade:fraction()
 	self:drawRect(2, sliderPadY, padX - sliderPadX - 2, self:getHeight() - sliderPadY * 2,
@@ -56,9 +54,7 @@ function ISVolumeIndicator:render()
 	if ( not self.serverVOIPEnable ) then
 		self:drawText("Warning! Server disabled VOIP function.", 5, 1, 1, 0.5, 0.5, 1);
 	end
-
 end
-
 
 function ISVolumeIndicator:new(x, y, width, height, target, targetFunc)
 	local o = ISPanel:new(x, y, width, height)

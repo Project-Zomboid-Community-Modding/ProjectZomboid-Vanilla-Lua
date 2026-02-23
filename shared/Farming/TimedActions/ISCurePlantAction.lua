@@ -84,12 +84,13 @@ function ISCurePlantAction:getDuration()
 	return self.maxTime;
 end
 
-function ISCurePlantAction:new(character, item, uses, plant, maxTime, cure)
+function ISCurePlantAction:new(character, item, uses, plant, maxTimeInit, cure)
 	local o = ISBaseTimedAction.new(self, character);
 	o.character = character;
 	o.item = item;
 	o.uses = uses;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.cure = cure
 	if character:isTimedActionInstant() then
 		o.maxTime = 1;

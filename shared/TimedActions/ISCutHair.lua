@@ -102,10 +102,11 @@ function ISCutHair:getDuration()
 	return self.maxTime
 end
 
-function ISCutHair:new(character, hairStyle, item, maxTime)
+function ISCutHair:new(character, hairStyle, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
 	o.hairStyle = hairStyle or "";
 	o.item = item;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	return o;
 end

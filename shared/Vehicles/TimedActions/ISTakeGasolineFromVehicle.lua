@@ -109,8 +109,12 @@ function ISTakeGasolineFromVehicle:nextItem()
 end
 
 function ISTakeGasolineFromVehicle:complete()
-	self.fluidCont:adjustAmount(self.itemTarget)
-   	if self.vehicle then
+	if not predicateEmptyPetrol(self.item) then
+		self.fluidCont:adjustAmount(self.itemTarget)
+	else
+		self.fluidCont:addFluid(Fluid.Petrol, self.itemTarget)
+	end
+	if self.vehicle then
    		if not self.part then
    			print('no such part ',self.part)
    			return false

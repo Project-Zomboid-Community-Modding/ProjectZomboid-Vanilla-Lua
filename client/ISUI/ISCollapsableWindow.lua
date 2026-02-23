@@ -7,7 +7,6 @@ require "ISUI/ISMouseDrag"
 require "defines"
 
 ISCollapsableWindow = ISPanel:derive("ISCollapsableWindow");
---ISCollapsableWindow.viewList = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
@@ -29,8 +28,6 @@ function ISCollapsableWindow:createChildren()
 	local titleBarHeight = self:titleBarHeight()
 	local buttonHeight = titleBarHeight-2 --minus the 1 pixel border, and icon buttons are square
 	local buttonOffset = 1 + (5-getCore():getOptionFontSizeReal())*2
-	local textButtonOffset = buttonOffset * 3
-
 
 	-- Do corner x + y widget
 	local rh = self:resizeWidgetHeight()
@@ -61,7 +58,6 @@ function ISCollapsableWindow:createChildren()
 	self.closeButton.backgroundColor.a = 0;
 	self.closeButton.backgroundColorMouseOver.a = 0;
 	self.closeButton:setImage(self.closeButtonTexture);
-	--self.closeButton:forceImageSize(th-6, th-6);
 	self:addChild(self.closeButton);
 
     self.infoButton = ISButton:new(1 + buttonHeight + buttonOffset, 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.onInfo);
@@ -73,23 +69,17 @@ function ISCollapsableWindow:createChildren()
     self:addChild(self.infoButton);
     self.infoButton:setVisible(false);
 
-	--  --print("adding pin button");
 	self.pinButton = ISButton:new(self.width - 1 - buttonHeight, 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.pin);
 	self.pinButton.anchorRight = true;
 	self.pinButton.anchorLeft = false;
-	--  --print("initialising pin button");
 	self.pinButton:initialise();
 	self.pinButton.borderColor.a = 0.0;
 	self.pinButton.backgroundColor.a = 0;
 	self.pinButton.backgroundColorMouseOver.a = 0;
-	-- --print("setting pin button image");
 	self.pinButton:setImage(self.pinButtonTexture);
-	--  --print("adding pin button to panel");
 	self:addChild(self.pinButton);
-	--  --print("set pin button invisible.");
 	self.pinButton:setVisible(false);
 
-	-- --print("adding collapse button");
 	self.collapseButton = ISButton:new(self.pinButton:getX(), 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.collapse);
 	self.collapseButton.anchorRight = true;
 	self.collapseButton.anchorLeft = false;
@@ -187,7 +177,6 @@ end
 
 
 function ISCollapsableWindow:render()
-
 	local height = self:getHeight();
 	local th = self:titleBarHeight()
 	if self.isCollapsed then
@@ -221,7 +210,6 @@ function ISCollapsableWindow:onMouseMove(dx, dy)
 		self:setX(self.x + dx);
 		self:setY(self.y + dy);
 		self:bringToTop();
-		--ISMouseDrag.dragView = self;
 	end
     if not isMouseButtonDown(0) and not isMouseButtonDown(1) and not isMouseButtonDown(2) then
     	self:uncollapse();
@@ -252,10 +240,8 @@ function ISCollapsableWindow:onMouseMoveOutside(dx, dy)
 		local bDo = true;
 
 		if self.collapseCounter > 20 and not self.isCollapsed and bDo then
-
 			self.isCollapsed = true;
 			self:setMaxDrawHeight(self:titleBarHeight());
-
 		end
 	end
 end
@@ -296,7 +282,6 @@ end
 function ISCollapsableWindow:addView(view)
 	view:setX(0);
 	view:setY(self:titleBarHeight()); -- below title bar
---	view:initialise();
 	self:addChild(view);
 	view:setVisible(true);
 	table.insert(self.viewList, view);
@@ -380,7 +365,6 @@ end
 
 function ISCollapsableWindow:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

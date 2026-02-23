@@ -14,7 +14,6 @@ function ISWidgetCraftDebug:createChildren()
     if getDebug() then
         local style = self.styleButton or "S_Button_DebugCraft";
         self.buttonDebug = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 150, FONT_HGT_SMALL+8, "debug craft")
-        --self.buttonRepair.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
         self.buttonDebug.target = self;
         self.buttonDebug.onclick = ISWidgetCraftDebug.onButtonClick;
         self.buttonDebug.enable = true;
@@ -68,7 +67,6 @@ function ISWidgetCraftDebug:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetCraftDebug:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -98,7 +96,6 @@ function ISWidgetCraftDebug:onButtonClick(_button)
 end
 
 function ISWidgetCraftDebug:onStartDebug()
-    print("onStartDebug callback not set...")
     return false;
 end
 

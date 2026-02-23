@@ -19,23 +19,6 @@ function RWMGeneral:initialise()
 end
 
 function RWMGeneral:createChildren()
-    --[[
-    self.labelName = ISLabel:new(4,2,self.fontheight+2,"device",1,1,1,1,UIFont.Small, true);
-    self:addChild(self.labelName);
-
-    self.descriptionPanel = ISRichTextPanel:new(0, 0, 260, 0);
-    self.descriptionPanel.marginRight = 0
-    self.descriptionPanel:setMargins(2, 2, 4, 4);
-    self.descriptionPanel:initialise();
-    self.descriptionPanel:instantiate();
-    self.descriptionPanel:noBackground();
-    self.descriptionPanel.backgroundColor = {r=1, g=0, b=0, a=0.3};
-    self.descriptionPanel.borderColor = {r=1, g=1, b=1, a=0.1};
-    --self.descriptionPanel:setMargins(2, 2, 4, 4);
-    self.descriptionPanel.autosetheight = true;
-    --self.descriptionPanel:setY(self:getAbsoluteY() + y);
-    --self.descriptionPanel:setX();
-    --]]
 end
 
 function RWMGeneral:clear()
@@ -49,7 +32,6 @@ function RWMGeneral:readFromObject( _player, _deviceObject, _deviceData, _device
         return false;
     end
 
-    --self.itemTexture = self.device:getTexture();
     if self.deviceType == "InventoryItem" and self.device.getTexture then
         self.itemTexture = self.device:getTexture();
         self.isoTexture = false;
@@ -67,11 +49,7 @@ function RWMGeneral:readFromObject( _player, _deviceObject, _deviceData, _device
     elseif self.deviceType == "IsoObject" and self.device.getSprite and self.device:getSprite() and self.device:getSprite():getName() then
         self.itemTexture = getTexture(self.device:getSprite():getName());
         self.isoTexture = true;
-    else
-        --self:clear();
-        --return false;
     end
---    self.itemName = self.device:getName();
 
     self:setInfoLines()
 
@@ -99,7 +77,6 @@ function RWMGeneral:setInfoLines()
                 local channelName = zomboidRadio:getChannelName(self.deviceData:getChannel()) or getText("IGUI_RadioUknownChannel");
                 self:addInfoLine(getText("IGUI_RadioChannel")..":   ", channelName);
             end
-            --self:addInfoLine("Device: ", self.deviceData:getDeviceName());
             self:addInfoLine(getText("IGUI_RadioFrequency")..":   ", tostring(self.deviceData:getChannel()/1000).." MHz");
             self:addInfoLine(getText("IGUI_RadioFreqRange")..":   ", tostring(self.deviceData:getMinChannelRange()/1000).." MHz - " .. tostring(self.deviceData:getMaxChannelRange()/1000).." MHz");
             self:addInfoLine(getText("IGUI_RadioTwoway")..":   ", self.deviceData:getIsTwoWay() and getText("IGUI_RadioYes") or getText("IGUI_RadioNo"));
@@ -128,22 +105,17 @@ end
 
 function RWMGeneral:prerender()
     ISPanel.prerender(self);
-    --ISUIElement:drawTextureScaled(texture, x, y, w, h, a, r, g, b)
 end
 
 
 function RWMGeneral:render()
-    --ISUIElement:drawTextureScaledAspect(texture, x, y, w, h, a, r, g, b)
     ISPanel.render(self);
-        --self:drawRect(0, 0, self.width, self.height, 0.5, 0.0, 1.0, 0.0)
-        --self:drawRectBorder(0, 0, self.width, self.height, 0.9, 0.0, 1.0, 0.0)
     if self.itemTexture then
         -- texture box
         self:drawRect(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, 1.0, 0.0, 0.0, 0.0)
         self:drawRectBorder(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, 1.0, 0.8, 0.8, 0.8)
         -- texture
         self:drawTextureScaledAspect2(self.itemTexture, UI_BORDER_SPACING+3, UI_BORDER_SPACING+3, BUTTON_HGT-4, BUTTON_HGT-4, 1.0, 1.0, 1.0, 1.0)
-        --self:drawTexture(self.itemTexture, 4+self.itemTexture:getOffsetX(), self.fontheight+4+self.itemTexture:getOffsetY(), 1.0, 1.0, 1.0, 1.0);
     end
 
     local x, y = columnWidth + BUTTON_HGT + UI_BORDER_SPACING*2 + 1,UI_BORDER_SPACING+1;
@@ -152,20 +124,11 @@ function RWMGeneral:render()
         self:drawTextRight(v.prefix, x, y+(ii*(self.fontheight)), 1,1,1,1, UIFont.Small);
         self:drawText(v.line, x, y+(ii*(self.fontheight)), 1,1,1,1, UIFont.Small);
     end
-
-    --self.descriptionPanel:setY(self:getAbsoluteY() + self.fontheight+4)
-    --self.descriptionPanel:setX(self:getAbsoluteX() + 4 + 32 + 4);
-        --local dm = ISRichTextPanel.drawMargins;
-        --ISRichTextPanel.drawMargins = true;
-    --self.descriptionPanel:prerender();
-    --self.descriptionPanel:render();
-        --ISRichTextPanel.drawMargins = dm;
 end
 
 
 function RWMGeneral:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = RWMPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

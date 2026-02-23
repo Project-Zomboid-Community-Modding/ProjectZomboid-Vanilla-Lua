@@ -31,18 +31,14 @@ function ISAnimDebugMonitor:createChildren()
     ISCollapsableWindow.createChildren(self);
 
     local x, y = UI_BORDER_SPACING+1, self:titleBarHeight()+UI_BORDER_SPACING;
-    local obj;
 
     ISDebugUtils.initHorzBars(self,x,self.width-x*2);
-
-    --self.buttons = {"Show layers","Active nodes", "Anim tracks", "Show variables", "Show floats"};
 
     local widthFull = self.width-x*2
     local widthHalf = (widthFull - UI_BORDER_SPACING)/2
     local widthQuarter = (widthHalf - UI_BORDER_SPACING)/2
 
     local xmarg = 10;
-    local bw = (self.width-(xmarg*3))/2;
 
     y, self.buttonToggleMonitor = ISDebugUtils.addButton(self,"toggle_monitor",x,y,widthFull,BUTTON_HGT,getText("IGUI_AnimDebugMonitor_ToggleMonitor"),ISAnimDebugMonitor.onClick);
     y = y+UI_BORDER_SPACING;
@@ -124,13 +120,10 @@ function ISAnimDebugMonitor:createChildren()
 
     self.floatPlotter:setHorzLine(0.125,{r=0.05, g=0.05, b=0.05, a=1});
     self.floatPlotter:setHorzLine(0.25,{r=0.1, g=0.1, b=0.1, a=1});
-    --self.charts[i]:setHorzLine(0.30,{r=0.1, g=0.1, b=0.1, a=1});
     self.floatPlotter:setHorzLine(0.375,{r=0.05, g=0.05, b=0.05, a=1});
     self.floatPlotter:setHorzLine(0.50,{r=0.2, g=0.2, b=0.2, a=1});
-    --self.charts[i]:setHorzLine(0.60,{r=0.1, g=0.1, b=0.1, a=1});
     self.floatPlotter:setHorzLine(0.625,{r=0.05, g=0.05, b=0.05, a=1});
     self.floatPlotter:setHorzLine(0.75,{r=0.1, g=0.1, b=0.1, a=1});
-    --self.charts[i]:setHorzLine(0.80,{r=0.1, g=0.1, b=0.1, a=1});
     self.floatPlotter:setHorzLine(0.875,{r=0.05, g=0.05, b=0.05, a=1});
     self:addChild(self.floatPlotter);
 
@@ -139,22 +132,6 @@ function ISAnimDebugMonitor:createChildren()
     y = ISDebugUtils.addHorzBar(self,y+UI_BORDER_SPACING)+UI_BORDER_SPACING+1;
 
     local h = BUTTON_HGT*6;
-    --[[
-    self.subPanel = ISAnimLoggerOutput:new(10, y, self.width-20, h);
-    self.subPanel:initialise();
-    self.subPanel:instantiate();
-    self.subPanel:setAnchorRight(true);
-    self.subPanel:setAnchorLeft(true);
-    self.subPanel:setAnchorTop(true);
-    self.subPanel:setAnchorBottom(true);
-    self.subPanel.moveWithMouse = true;
-    self.subPanel.doStencilRender = true;
-    self.subPanel:addScrollBars();
-    self.subPanel.vscroll:setVisible(true);
-    self:addChild(self.subPanel);
-    self.subPanel:setScrollChildren(true);
-    self.subPanel.onMouseWheel = ISDebugUtils.onMouseWheel;
-    --]]
 
     self.richtext = ISRichTextPanel:new(x, y, widthFull, h);
     self.richtext:initialise();
@@ -162,7 +139,6 @@ function ISAnimDebugMonitor:createChildren()
     self:addChild(self.richtext);
 
     self.richtext.backgroundColor = {r=0, g=0, b=0, a=1};
-    --self.richtext.background = false;
     self.richtext.autosetheight = false;
     self.richtext.clip = true
     self.richtext:addScrollBars();
@@ -173,7 +149,6 @@ function ISAnimDebugMonitor:createChildren()
 
     y = y+h+UI_BORDER_SPACING+1;
     self:setHeight(y)
-    --self:setHeight(y);
 
     self:toggleEditEnabled(false);
 
@@ -206,8 +181,6 @@ function ISAnimDebugMonitor:toggleEditEnabled(_b)
     self.entryBoxValue:setEditable(_b);
     self.buttonClearVar:setEnable(_b);
     self.buttonSetVar:setEnable(_b);
-    --self.comboVars.selected = 1;
-    --self.comboFloats.selected = 1;
     if _b then
         self:colorButtons()
     end
@@ -216,27 +189,6 @@ end
 function ISAnimDebugMonitor:onClick(_button)
     if self.buttonToggleMonitor==_button then
         local char = getPlayer();
-        local smallestDist = 100000;
-    --  for x=-5,5 do
-      --      for y=-5,5 do
-        --        local sq = getCell():getGridSquare(char:getX() + x,char:getY() + y,char:getZ());
-          --      for i=0,sq:getMovingObjects():size()-1 do
-            --        local moving = sq:getMovingObjects():get(i);
-              --      if instanceof(moving, "IsoZombie") then
---
-  --                      local dist = char:DistTo(getPlayer());
---
-  --                      if(dist < smallestDist) then
-    --                        char = moving;
-      --                      smallestDist = dist;
-        --                end
---
-  --                  end
-    --            end
-      --          if instanceof(char, "IsoZombie") then break; end
-        --    end
-          --  if instanceof(char, "IsoZombie") then break; end
-        --end
 
         self.monitor = char:getDebugMonitor();
         if self.monitor then
@@ -245,7 +197,6 @@ function ISAnimDebugMonitor:onClick(_button)
 
             self:toggleEditEnabled(false);
 
-            --self.subPanel:clear();
             self:clearLog();
             self.floatPlotter:setData(nil);
         else
@@ -255,7 +206,6 @@ function ISAnimDebugMonitor:onClick(_button)
             self:toggleEditEnabled(true);
         end
         char:setDebugMonitor(self.monitor);
-        --self.subPanel:setMonitor(self.monitor);
         return;
     elseif self.buttonClearVar==_button then
         local sel = self.comboVars.options[self.comboVars.selected];
@@ -463,11 +413,8 @@ end
 function ISAnimDebugMonitor:clear()
 end
 
-
-
 function ISAnimDebugMonitor:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -500,12 +447,3 @@ function ISAnimDebugMonitor:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
-
---[[
-if enabled then
-    Events.OnCustomUIKey.Add(ISAnimDebugMonitor.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(ISAnimDebugMonitor.OnKeepKeyDown);
-    Events.OnClimateTickDebug.Add(ISAnimDebugMonitor.OnClimateTickDebug);
-    Events.OnThunderEvent.Add(ISAnimDebugMonitor.OnThunderEvent);
-    --Events.OnObjectLeftMouseButtonUp.Add(ISAnimDebugMonitor.onMouseButtonUp);
-end--]]

@@ -137,32 +137,12 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 			lineImageHeight = h + 0;
 		end
 
-		if self.images[self.imageCount] == nil then
-			--print("Could not find texture")
-		end
 		self.imageX[self.imageCount] = x+IMAGE_PAD;
 		self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2;
 		self.imageW[self.imageCount] = w;
 		self.imageH[self.imageCount] = h;
 		self.imageCount = self.imageCount + 1;
 		x = x + w + IMAGE_PAD*2;
---[[
-		local newY = math.max(y + (h / 2) - 7, y)
-
-		for c,v in ipairs(self.lines) do
-			if self.lineY[c] == y then
-				self.lineY[c] = newY
-			end
-		end
-
-		for c,v in ipairs(self.imageY) do
-			if self.imageY[c] == y then
-				self.imageY[c] = newY;
-			end
-		end
-
-		y = newY
---]]
 	end
 
 	if string.find(command, "IMAGECENTRE:") ~= nil then
@@ -190,9 +170,6 @@ function ISRichTextLayout:processCommand(command, x, y, lineImageHeight, lineHei
 			lineImageHeight = (h / 2) + 16
 		end
 
-		if self.images[self.imageCount] == nil then
-			--print("Could not find texture")
-		end
 		local mx = (self.width - self.marginLeft - self.marginRight) / 2
 		self.imageX[self.imageCount] = mx - (w/2)
 		self.imageY[self.imageCount] = y

@@ -12,7 +12,6 @@ function ISPlayerStatsSuspicionActivityUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsSuspicionActivityUI:setVisible(visible)
     self.javaObject:setVisible(visible);
     for _,v in ipairs(self.windows) do
@@ -21,7 +20,6 @@ function ISPlayerStatsSuspicionActivityUI:setVisible(visible)
 end
 
 function ISPlayerStatsSuspicionActivityUI:render()
-
     self:drawText(self.username .. " suspicion points", self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, self.username .. " suspicion points") / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
 
     self:drawRectBorder(0,0, self.width, self.height,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
@@ -34,7 +32,6 @@ function ISPlayerStatsSuspicionActivityUI:render()
 end
 
 function ISPlayerStatsSuspicionActivityUI:create()
-
     self.points = ISScrollingListBox:new(UI_BORDER_SPACING + 1, FONT_HGT_MEDIUM + UI_BORDER_SPACING * 2 + 1 + BUTTON_HGT, self.width - (UI_BORDER_SPACING + 1) * 2, self.height - FONT_HGT_MEDIUM-UI_BORDER_SPACING * 4 - 2 - BUTTON_HGT * 2);
     self.points:initialise();
     self.points:instantiate();

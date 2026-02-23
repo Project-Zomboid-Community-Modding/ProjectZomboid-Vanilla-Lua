@@ -5,9 +5,7 @@ LuaThreadWindow = ISPanel:derive("LuaThreadWindow");
 local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
-
 function LuaThreadWindow:onMouseDoubleClickCallframe(item)
-
     local f = getFilenameOfCallframe(item.call);
     if f ~= nil then
         local src = nil;
@@ -21,32 +19,22 @@ function LuaThreadWindow:onMouseDoubleClickCallframe(item)
             SourceWindow.map[f] = src;
             src:initialise();
             src:addToUIManager();
-
-
         end
         src:scrollToLine(item.line+1)
     end
 end
 
 function LuaThreadWindow:onMouseDoubleClickObject(item)
-
     if instanceof (item, "KahluaTableImpl") then
         local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
-
         src:initialise();
         src:addToUIManager();
-
     elseif instanceof (item, "String") then
-
     elseif instanceof (item, "Class") then
-
     elseif instanceof (item, "Method") then
-
     elseif instanceof (item, "Double") then
-
     elseif instanceof (item, "Boolean") then
     elseif instanceof (item, "LuaClosure") then
-
         local f = getFilenameOfClosure(item);
         if f ~= nil then
             local src = nil;
@@ -56,7 +44,6 @@ function LuaThreadWindow:onMouseDoubleClickObject(item)
                 src:removeFromUIManager();
                 src:addToUIManager();
             else
-
                 src = SourceWindow:new(getCore():getScreenWidth() / 2, 0, 600, 600, f);
                 SourceWindow.map[f] = src;
                 src:initialise();
@@ -64,34 +51,21 @@ function LuaThreadWindow:onMouseDoubleClickObject(item)
             end
             src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
-
     elseif instanceof (item, "Texture") then
-
         local src = TextureWindow:new(getCore():getScreenWidth() / 2, 0, item:getWidth(), item:getHeight(), item);
-
         src:initialise();
         src:addToUIManager();
-
     else
         local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
-
         src:initialise();
         src:addToUIManager();
-
     end
-
 end
 
 function LuaThreadWindow:onMouseDoubleClickMeta(item)
-
-
-        local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item.data);
-
-        src:initialise();
-        src:addToUIManager();
-
-
-
+    local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item.data);
+    src:initialise();
+    src:addToUIManager();
 end
 
 function LuaThreadWindow:fill()
@@ -198,35 +172,17 @@ function LuaThreadWindow:createChildren()
     self:addChild(self.callframeStack);
     self:fill();
     self.width = oldw;
---[[
-    -- Do corner x + y widget
-    local resizeWidget = ISResizeWidget:new(self.width-10, self.height-10, 10, 10, self);
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget = resizeWidget;
-
-    -- Do bottom y widget
-    resizeWidget = ISResizeWidget:new(0, self.height-10, self.width-10, 10, self, true);
-    resizeWidget.anchorRight = true;
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget2 = resizeWidget;
---]]
-    end
-
+end
 
 function LuaThreadWindow:doDrawItem(y, item, alt)
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight-1, 0.3, 0.7, 0.35, 0.15);
-
     end
+
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 0.9, 0.9, 0.9, 0.9, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function LuaThreadWindow:onResize(width, height)
@@ -278,17 +234,14 @@ function LuaThreadWindow:render()
     local oldw = self.width;
     self.width =  self.width * 0.7
 
-   -- self:drawText("META NODES", 8+ (self.width/2), 8+(self.height/3), 0.9, 0.9, 0.9, 0.9, UIFont.Medium);
     self:drawText("OBJECT STACK", 8, (self.height/3), 0.9, 0.9, 0.9, 0.9, UIFont.Medium);
     self:drawText("CALLSTACK", 8 + (self.width/2), 0, 0.9, 0.9, 0.9, 0.9, UIFont.Medium);
     self:drawText("LOCALS", 8, 0, 0.9, 0.9, 0.9, 0.9, UIFont.Medium);
     self.width = oldw;
-
 end
 
 function LuaThreadWindow:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

@@ -31,7 +31,6 @@ function ISAlarmClockDialog:initialise()
     self.button1m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button1m);
 
-    --
     self.button2p = ISButton:new(((self:getWidth() + btnGap)/2), buttonsY, btnWid, BUTTON_HGT, "^", self, ISAlarmClockDialog.onClick);
     self.button2p.internal = "MINPLUS";
     self.button2p:initialise();
@@ -58,7 +57,6 @@ function ISAlarmClockDialog:initialise()
     self.setAlarm:setWidthToFit()
     self.setAlarm:setX((self.width - self.setAlarm.width) / 2)
 
-    --
     self.ok = ISButton:new((self:getWidth() - 100) / 2, self.setAlarm:getBottom() + UI_BORDER_SPACING, 100, BUTTON_HGT, getText("UI_Ok"), self, ISAlarmClockDialog.onClick);
     self.ok.internal = "OK";
     self.ok:initialise();

@@ -65,8 +65,6 @@ function ISToolTipItemSlot:render()
         if self.itemSlot then self.itemSlot:drawTooltip(self.tooltip) end;
         self.tooltip:setMeasureOnly(false)
 
-        -- clampy x, y
-
         local myCore = getCore();
         local maxX = myCore:getScreenWidth();
         local maxY = myCore:getScreenHeight();
@@ -95,7 +93,6 @@ function ISToolTipItemSlot:render()
         if self.itemSlot then self.itemSlot:drawTooltip(self.tooltip) end;
     end
 end
-
 
 function ISToolTipItemSlot:adjustPositionToAvoidOverlap(avoidRect)
     local myRect = { x = self.x, y = self.y, width = self.width, height = self.height }

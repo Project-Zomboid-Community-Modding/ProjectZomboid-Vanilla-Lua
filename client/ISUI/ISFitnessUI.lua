@@ -3,7 +3,6 @@ ISFitnessUI.instance = {};
 ISFitnessUI.enduranceLevelThreshold = 2;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -53,18 +52,6 @@ function ISFitnessUI:initialise()
 	self.close:instantiate();
 	self.close.borderColor = self.buttonBorderColor;
 	self:addChild(self.close);
-
-	-- reset values, DEBUG ONLY!
---	self.resetBtn = ISButton:new(self.close.x - btnWid - 2, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Reset Val", self, ISFitnessUI.onClick);
---	self.resetBtn.internal = "RESETVALUES";
---	self.resetBtn.anchorLeft = false
---	self.resetBtn.anchorRight = true
---	self.resetBtn.anchorTop = false
---	self.resetBtn.anchorBottom = true
---	self.resetBtn:initialise();
---	self.resetBtn:instantiate();
---	self.resetBtn.borderColor = self.buttonBorderColor;
---	self:addChild(self.resetBtn);
 	
 	-- exercises type
 	self.exercises = ISRadioButtons:new(UI_BORDER_SPACING + 1, 50, 120, 20, self, ISFitnessUI.clickedExe)
@@ -139,7 +126,6 @@ function ISFitnessUI:onClickTime(button)
 end
 
 function ISFitnessUI:clickedExe(buttons, index)
-	
 	for i=1,#self.exercises.options do
 		if self.exercises:isSelected(i) then
 			self.selectedExe = self.exercises:getOptionData(i);
@@ -147,12 +133,6 @@ function ISFitnessUI:clickedExe(buttons, index)
 			return;
 		end
 	end
---	self:updateButtons();
---	self:updateLures();
---	self.usingSpear = false;
---	if WeaponType.getWeaponType(self.selectedRod) == WeaponType.spear then
---		self.usingSpear = true;
---	end
 end
 
 function ISFitnessUI:updateExercises()
@@ -161,15 +141,12 @@ function ISFitnessUI:updateExercises()
 	for i,v in pairs(FitnessExercises.exercisesType) do
 		self:addExerciseToList(i, v);
 	end
-
-	
 end
 
 function ISFitnessUI:selectedNewExercise()
 	self.exeData = FitnessExercises.exercisesType[self.selectedExe];
 	self.tooltipLbl.text = "";
 	if self.exeData.tooltip then
---		self.tooltipLbl:setName(self.exeData.tooltip);
 		self.tooltipLbl.text = self.exeData.tooltip;
 	end
 	if self.exeData.stiffness then
@@ -183,12 +160,7 @@ function ISFitnessUI:selectedNewExercise()
 				self.tooltipLbl.text = self.tooltipLbl.text .. " <LINE> " .. getText("IGUI_Fitness_AbsStiffness");
 			end
 		end
---		print(stiffnessTable, stiffnessTable[1], stiffnessTable[2]);
 	end
---	if self.exeData.stiffness == "legs" then
---		self.tooltipLbl.text = self.tooltipLbl.text .. getText("IGUI_Fitness_LegsStiffness");
---	end
---	self.currentRegularity = self.player:getFitness():getRegularity(self.selectedExe);
 	self.tooltipLbl:paginate();
 end
 
@@ -209,7 +181,6 @@ function ISFitnessUI:render()
 	self:updateButtons(currentAction);
 	
 	if getDebug() then
---		self:drawText("Current exe Regularity: " .. round(self.currentRegularity, 4), 10, 10, 1,1,1,1, UIFont.Small);
 		self:drawText("Stiffness in " .. self.fitness:getCurrentExeStiffnessTimer(self.exeData.stiffness) .. " (" .. self.fitness:getCurrentExeStiffnessInc(self.exeData.stiffness) .. ")", 10, 22, 1,1,1,1, UIFont.Small);
 	end
 	
@@ -224,9 +195,6 @@ function ISFitnessUI:getCurrentRegularity()
 end
 
 function ISFitnessUI:prerender()
-	local z = 20;
-	local splitPoint = 100;
-	local x = 10;
 	self:drawRect(0, 0, self:getWidth(), self:getHeight(), self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self:getWidth(), self:getHeight(), self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	self:drawTextCentre(getText("ContextMenu_Fitness"), self:getWidth()/2, self.titleY, 1,1,1,1, UIFont.Medium);
@@ -270,14 +238,6 @@ function ISFitnessUI:updateButtons(currentAction)
 	if self.player:isClimbing() then
 		self.ok.enable = false;
 	end
-	--    self.ok.enable = false;
-	--    self.cancel.enable = false;
-	--
-	--    self.ok.tooltip = nil;
-	--    if not self.canFishDistance then
-	--        self.ok.enable = false;
-	--        self.ok.tooltip = getText("IGUI_GetCloserToWater");
-	--    end
 end
 
 -- equip needed items for fitness (dumbbell..) and unequip unwanted items (weapons, bags..)

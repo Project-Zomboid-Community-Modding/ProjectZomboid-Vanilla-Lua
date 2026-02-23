@@ -4,9 +4,14 @@ ISBBQAddFuel = ISBaseTimedAction:derive("ISBBQAddFuel");
 
 function ISBBQAddFuel:isValid()
     if self.fireplace:getFuelAmount() + self.fuelAmt > getCampingFuelMax() then return end
-    if isClient() and self.item then
-        return self.fireplace:getObjectIndex() ~= -1 and
-            self.character:getInventory():containsID(self.item:getID())
+    if isClient() then
+        if self.item == nil or self.fireplace:getObjectIndex() == -1 then return false end
+        if self.character:getInventory():containsID(self.item:getID()) then
+            return true
+        else
+            self:forceComplete()
+            return false
+        end
     else
         return self.fireplace:getObjectIndex() ~= -1 and
             self.character:getInventory():contains(self.item)
@@ -75,7 +80,7 @@ function ISBBQAddFuel:complete()
 
 	if self.fireplace then
 		self.fireplace:addFuel(self.fuelAmt)
-		self.fireplace:sendObjectChange('state')
+		self.fireplace:sendObjectChange(IsoObjectChange.STATE)
 	end
 
 	return true;

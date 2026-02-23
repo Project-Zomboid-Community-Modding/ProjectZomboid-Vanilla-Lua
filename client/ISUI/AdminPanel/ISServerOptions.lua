@@ -13,9 +13,7 @@ function ISServerOptions:initialise()
     self:create();
 end
 
-
 function ISServerOptions:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -174,7 +172,6 @@ function ISServerOptions:drawDatas(y, item, alt)
     else
         self:drawTextRight(dataString, self.width - 13 - UI_BORDER_SPACING, y+3, 1, 1, 1, a, self.font);
     end
-
 
     return y + self.itemheight;
 end

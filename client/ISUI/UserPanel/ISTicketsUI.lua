@@ -46,7 +46,6 @@ function ISTicketsUI:initialise()
     self:addChild(self.addTicketBtn);
 
     self:getTickets();
-
 end
 
 function ISTicketsUI:getTickets()
@@ -88,13 +87,10 @@ function ISTicketsUI:drawDatas(y, item, alt)
     local a = 0.9;
     local answerHeight = 0;
 
---    self.parent.selectedFaction = nil;
     self:drawRectBorder(0, (y), self:getWidth(), item.height, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), item.height, 0.3, 0.7, 0.35, 0.15);
---        self.parent.viewBtn.enable = true;
---        self.parent.selectedFaction = item.item;
     end
 
     local ticket = item.item.ticket
@@ -104,7 +100,6 @@ function ISTicketsUI:drawDatas(y, item, alt)
 
     if ticket:getAnswer() then
         answerHeight = math.max(item.item.richText2:getHeight() + 6, self.itemheight)
---        self:drawText("Answer", 30, y + 2 + messageHeight, 1, 1, 1, a, self.font);
         item.item.richText2:render(UI_BORDER_SPACING*2, y + messageHeight+3, self)
         self:drawRect(0, (y + messageHeight), self:getWidth(), answerHeight, 0.15, 1, 1, 1);
     end

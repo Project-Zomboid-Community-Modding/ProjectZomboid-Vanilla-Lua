@@ -23,7 +23,6 @@ function ISWidgetComponentHeader:createChildren()
 
     local titleStr = self.componentUiStyle and self.componentUiStyle:getDisplayName() or "";
 
-    --self.title = ISLabel:new(0, 0, FONT_HGT_SMALL, titleStr, 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     local fontHeight = -1; -- <=0 sets label initial height to font
     local style = self.styleLabel or "S_Label_ComponentHeaderTitle";
     self.title = ISXuiSkin.build(self.xuiSkin, style, ISLabel, 0, 0, fontHeight, titleStr, 1.0, 1.0, 1.0, 1, UIFont.Small, true);
@@ -74,8 +73,6 @@ function ISWidgetComponentHeader:onResize()
 end
 
 function ISWidgetComponentHeader:prerender()
-    --ISPanel.prerender(self);
-
 	if self.background then
 		self:drawRectStatic(self.margin, self.margin, self.width - (self.margin*2), self.height - (self.margin*2), self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
         if self.textureBackground then
@@ -103,7 +100,6 @@ function ISWidgetComponentHeader:new (x, y, width, height, player, entity, compo
     self.__index = self
     o.player = player;
     o.entity = entity;
-    --o.entityConfig = entityConfig;
     o.component = component;
     o.componentUiStyle = componentUiStyle;
 
@@ -113,9 +109,7 @@ function ISWidgetComponentHeader:new (x, y, width, height, player, entity, compo
     o.padding = 3;
     o.margin = 5;
     o.enableIcon = true;
-    --o.iconSize = 24;
-
-    o.textureBackground = nil; --getTexture("media/ui/Panel_TitleBar.png");
+    o.textureBackground = nil;
 
     return o
 end

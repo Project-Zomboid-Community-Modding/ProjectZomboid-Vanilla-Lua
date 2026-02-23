@@ -15,7 +15,6 @@ function ISEnergySlotPanel:createChildren()
     else
         self.tableLayout:addColumnFill(nil);
     end
-    --self.tableLayout:addRow("S_Row_Fill");
     self.tableLayout:initialise();
     self.tableLayout:instantiate();
     self:setElement(self.tableLayout);
@@ -63,7 +62,6 @@ function ISEnergySlotPanel:addResource(_resourceEnergy, _styleEnergySlot, _style
 end
 
 function ISEnergySlotPanel:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -73,12 +71,6 @@ end
 
 function ISEnergySlotPanel:render()
     ISGroupBox.render(self);
-
-    --[[
-    if true then
-        self:drawRectBorderStatic(0, 0, self.width, self.height, 1.0, 1, 0, 0);
-    end
-    --]]
 end
 
 function ISEnergySlotPanel:update()

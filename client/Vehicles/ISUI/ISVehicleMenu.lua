@@ -352,6 +352,10 @@ function ISVehicleMenu.showRadialMenuOutside(playerObj)
 		end
 
 		ISVehicleMenu.doTowingMenu(playerObj, vehicle, menu)
+
+        if ISWashVehicle.hasBlood(vehicle) and ISWashVehicle.getWaterAmountForPlayer(playerObj) then
+			menu:addSlice(getText("ContextMenu_Vehicle_Wash"), getTexture("Item_WaterDrop"), ISVehicleMenu.onWash, playerObj, vehicle)
+        end
 	end
 
 	if menu:isEmpty() then return end
@@ -651,9 +655,9 @@ function ISVehicleMenu.FillMenuOutsideVehicle(player, context, vehicle, test)
 		local waterAvailable = ISWashVehicle.getWaterAmountForPlayer(playerObj);
 		option.notAvailable = waterAvailable <= 0
 		if waterAvailable <= 1.0 then
-			toolTip.description = toolTip.description .. " <BR> " .. getText("Tooltip_Vehicle_WashWaterRequired2");
+			toolTip.description = toolTip.description .. " <BR> " .. getText("Tooltip_Vehicle_WashWaterRequired2", round(waterAvailable, 2));
 		else
-			toolTip.description = toolTip.description .. " <BR> " .. getText("Tooltip_Vehicle_WashWaterRequired3", waterAvailable);
+			toolTip.description = toolTip.description .. " <BR> " .. getText("Tooltip_Vehicle_WashWaterRequired3", round(waterAvailable, 2));
 		end
 		option.toolTip = toolTip;
 	end

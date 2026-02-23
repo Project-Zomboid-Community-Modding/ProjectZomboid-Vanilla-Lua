@@ -21,7 +21,6 @@ end
 
 function doTutorialInit()
     if getCore():getGameMode() == "Tutorial" then
---        print(" initialising tut");
         getGameTime():setTimeOfDay(globalTutorial.hourOfDay);
         getGameTime():setMinutesPerDay(60 * 24);
         globalTutorial.Init();
@@ -30,18 +29,12 @@ function doTutorialInit()
 end
 
 function savePlayerInFile(player)
-
 end
 
 function doTutorialCreatePlayer(id)
---    print(id);
-
-    -- print(p);
     local pl = getSpecificPlayer(id);
 
     if getCore():getGameMode() == "Tutorial" then
---        print("Creating player for tut");
-
         globalTutorial.AddPlayer(pl);
     end
 

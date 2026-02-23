@@ -128,7 +128,6 @@ function ISXuiTableLayout:createChildren()
 end
 
 function ISXuiTableLayout:onResize(_width, _height)
-    --ISCollapsableWindow.onResize(self)
     self:calculateLayout();
 end
 
@@ -315,15 +314,6 @@ function ISXuiTableLayout:prerender()
                 end
             end
 
-            --[[
-            if self.drawGrid then
-                bo = self.gridColor;
-                if bo and bo.a>0 then
-                    self:drawRectBorder(dx, dy, dw, dh, bo.a, bo.r, bo.g, bo.b);
-                end
-            end
-            --]]
-
             if column.drawBorder then
                 bo = column.borderColor;
             elseif row.drawBorder then
@@ -397,7 +387,6 @@ function ISXuiTableLayout:new(x, y, width, height, columns, rows)
     if rows and columns and rows>0 and columns>0 then
         for y=0,rows-1 do
             for x=0,columns-1 do
-                --local index = x + (y*columns);
                 table.insert(o.cells, false);
             end
         end

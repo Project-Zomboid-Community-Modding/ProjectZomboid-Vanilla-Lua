@@ -61,7 +61,6 @@ function ISContextMenu:onMouseUp(x, y)
 		end
 	end
 	if self.mouseOver ~= -1 and self:getIsVisible() then
-		--print("calling option : " .. self.options[self.mouseOver].name);
 		-- we call the function if we have one
 		local option = self.options[self.mouseOver]
 		if option ~= nil and option.onSelect ~= nil and not option.notAvailable and not option.isDisabled then
@@ -243,7 +242,6 @@ end
 function ISContextMenu:onJoypadDown(button)
     if button == Joypad.AButton then
         if self.mouseOver > 0 and self:getIsVisible() then
-            --print("calling option : " .. self.options[self.mouseOver].name);
             -- we call the function if we have one
             local option = self.options[self.mouseOver]
             if option ~= nil and option.onSelect == nil  and option.subOption ~= nil then
@@ -263,14 +261,6 @@ function ISContextMenu:onJoypadDown(button)
         end
     end
     if button == Joypad.BButton then
-        --[[
-        if self:isOptionSingleMenu() then
-            if self.parent then
-                self:displayAncestor(self.parent)
-                return
-            end
-        end
-        --]]
         self:closeAll()
     end
 end
@@ -311,7 +301,7 @@ function ISContextMenu:prerender()
 		getCore():setDisplayCursor(true);
 	end
 	if self:isEmpty() then
-		self:setX(100000); -- cheap hack for now ��
+		self:setX(100000); -- cheap hack for now
 		return;
 	end
 
@@ -364,7 +354,6 @@ function ISContextMenu:render()
 
 	for i,k in ipairs(self.options) do
         if k.disable then return; end
-		local sub = nil;
 		if y + self:getYScroll() < 0 then
 			-- off the top
 			offTop = true
@@ -410,16 +399,6 @@ function ISContextMenu:render()
 				self:renderOptionTextureOrColor(k, iconShiftX, y + iconShiftY, iconSize, iconSize)
 				self:drawText(k.name, textForIconShift, y+textDY, 1, 1, 1, 1, self.font);
 			end
---~ 			if k.textDisplay then
---~ 			if ISContextMenu.toolTip ~= nil then
---~ 				ISContextMenu.toolTip:removeFromUIManager();
---~ 				ISContextMenu.toolTip:setVisible(false);
---~ 				ISContextMenu.toolTip = nil;
---~ 			elseif k.toolTip and not self:isMouseOut() then
---~ 				ISContextMenu.toolTip = k.toolTip;
---~ 				ISContextMenu.toolTip:setVisible(true);
---~ 				ISContextMenu.toolTip:addToUIManager();
---~ 			end
 
 			local isMouseOut = self:isMouseOut()
 			if JoypadState.players[self.player+1] and not self.joyfocus then
@@ -432,8 +411,7 @@ function ISContextMenu:render()
 				self:showTooltip(k)
 				showTooltip = true
 			end
---~ 				self:drawText(k.textDisplay, self:getMouseX(), self:getMouseY(), 1, 1, 1, 1, UIFont.Normal);
---~ 			end
+
 			if k.isDefaultOption then
 				self:drawText("<", backArrowDX, y + textDY, 1, 0.8, 0.8, 0.9, self.font);
 			end
@@ -591,7 +569,6 @@ function ISContextMenu:render()
 	if self.toolTip then
         self.toolTip:setContextMenu(self);
         self.toolTip:setVisible(true);
---~ 		self:drawText(displayText, self:getMouseX(), self:getMouseY(), 1, 1, 1, 1, UIFont.Normal);
 	end
 
 	local ww = textForIconShift + highestWid + 24 + getTextManager():MeasureStringX(self.font, ">") + 4;
@@ -624,7 +601,6 @@ end
 function ISContextMenu:calcHeight()
 	local itemsHgt = (self.numOptions - 1) * self.itemHgt
 	local screenHgt = getCore():getScreenHeight()
---	screenHgt = 200
 	if itemsHgt + self.padTopBottom * 2 > screenHgt then
 		local numVisibleItems = math.floor((screenHgt - self.padTopBottom * 2 - self.scrollIndicatorHgt * 2) / self.itemHgt)
 		self.scrollAreaHeight = numVisibleItems * self.itemHgt
@@ -647,7 +623,6 @@ function ISContextMenu:calcWidth()
 	end
 	local iconSize = self.itemHgt - 12
 	local iconShiftX = 2
-	local iconShiftY = 6
 	local textForIconShift = iconSize + iconShiftX*2 + 2
 	return math.max(textForIconShift + maxWidth + 24 + getTextManager():MeasureStringX(self.font, ">") + 4, 100)
 end
@@ -929,7 +904,6 @@ end
 function ISContextMenu:addDebugOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	local option = self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10);
 	option.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
--- 	option.iconTexture = getTexture("media/ui/BugIcon.png");
 	option.color = nil;
 	if getDebugOptions():getBoolean("UI.HideDebugContextMenuOptions") then
 		self:removeLastOption()
@@ -938,7 +912,6 @@ function ISContextMenu:addDebugOption(name, target, onSelect, param1, param2, pa
 end
 
 function ISContextMenu:addOptionOnTop(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
-	
 	local newOptions = {};
 	for i,v in ipairs(self.options) do
 		v.id = v.id + 1;
@@ -957,7 +930,6 @@ end
 
 function ISContextMenu:insertOptionAfter(prevOptionName, name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	if #self.options == 0 then
-		print("ERROR: prev option not found: " .. prevOptionName)
 		return self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	end
 	local index = 1
@@ -970,7 +942,6 @@ function ISContextMenu:insertOptionAfter(prevOptionName, name, target, onSelect,
 		end
 	end
 	if not isFound then
-		print("ERROR: prev option not found: " .. prevOptionName)
 		return self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	end
 	for i = #self.options, index+1, -1 do
@@ -993,7 +964,6 @@ end
 
 function ISContextMenu:insertOptionBefore(nextOptionName, name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	if #self.options == 0 then
-		print("ERROR: next option not found: " .. nextOptionName)
 		return self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	end
 	local index = 1
@@ -1006,7 +976,6 @@ function ISContextMenu:insertOptionBefore(nextOptionName, name, target, onSelect
 		end
 	end
 	if not isFound then
-		print("ERROR: next option not found: " .. nextOptionName)
 		return self:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
 	end
 
@@ -1155,7 +1124,6 @@ end
 
 function ISContextMenu:new (x, y, width, height, zoom)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

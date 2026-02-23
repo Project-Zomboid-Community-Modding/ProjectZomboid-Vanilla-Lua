@@ -96,7 +96,7 @@ local function ReplaceExistingObject(isoObject)
 
 
 	for i,v in ipairs(objToRemove) do
-		square:transmitRemoveItemFromSquare(v, false)
+		v:getSquare():transmitRemoveItemFromSquare(v, false)
 		v:getSquare():RemoveTileObject(v, false);
 	end
 

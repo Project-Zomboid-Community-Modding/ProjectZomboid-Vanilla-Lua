@@ -1,7 +1,6 @@
 require "ISUI/ISCollapsableWindow"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 
 ISFeedingTroughUI = ISCollapsableWindow:derive("ISFeedingTroughUI");
@@ -77,29 +76,8 @@ function ISFeedingTroughUI:render()
     end
     self.labelLinkedTo:setName(text);
 
-    --if self.item:getSquare():getIsoWorldRegion() and self.item:getSquare():getIsoWorldRegion():isEnclosed() then
-    --    self:drawTextRight(getText("IGUI_FeedingTroughUI_Enclosure"), x, y, 1,1,1,1, UIFont.Small);
-    --    self:drawText(self.item:getSquare():getIsoWorldRegion():getSquareSize() .. "", x + 10, y, 1,1,1,0.5, UIFont.Small);
-    --else
-    --    self:drawTextRight(getText("IGUI_FeedingTroughUI_Enclosure"), x, y, 1,1,1,1, UIFont.Small);
-    --    self:drawText(getText("IGUI_FeedingTroughUI_EnclosureNotFound"), x + 10, y, 1,1,1,0.5, UIFont.Small);
-    --end
-    --y = y + FONT_HGT_MEDIUM;
-
-
---    if not self.item:getAllFeedingTypes():isEmpty() then
     self.labelFeed:setName(tostring(round(self.item:getCurrentFeedAmount(), 2)));
---        for i=0, self.item:getAllFeedingTypes():size() - 1 do
---            local type = self.item:getAllFeedingTypes():get(i);
---            self:drawTextRight(getText("ContextMenu_FoodType_" .. type), x + 10, y, 1,1,1,1, UIFont.Small);
---            self:drawText(self.item:getFeedAmount(type) .. "", x + 20, y, 1,1,1,0.5, UIFont.Small);
---            y = y + FONT_HGT_MEDIUM;
---        end
---    end
---
---    if self.item:getWater() > 0 then
-        self.labelWater:setName(round(self.item:getWater(), 2) * 1000 .. " / " .. self.item:getMaxWater() * 1000 .. " mL");
---    end
+    self.labelWater:setName(round(self.item:getWater(), 2) * 1000 .. " / " .. self.item:getMaxWater() * 1000 .. " mL");
 
     self:shrinkWrap(UI_BORDER_SPACING + 1, UI_BORDER_SPACING + 1, function(_child)
         return self.javaObject:getControls():indexOf(_child.javaObject) >= self.ignoreChildren
@@ -123,7 +101,6 @@ end
 
 function ISFeedingTroughUI:new(x, y, width, height, trough, player)
     local o = ISCollapsableWindow.new(self, x, y, width, height);
---    o:noBackground();
     o.title = getText("ContextMenu_FeedingTrough")
     o.item = trough;
     o.chr = player;

@@ -93,7 +93,6 @@ function ISEnergyBar:activateToolTip()
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
             self.toolTip:setCharacter(self.player);
-            --self.toolTip:doLayout();
         end
     end
 end
@@ -108,7 +107,6 @@ end
 
 function ISEnergyBar:new (x, y, width, height, player, resource)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

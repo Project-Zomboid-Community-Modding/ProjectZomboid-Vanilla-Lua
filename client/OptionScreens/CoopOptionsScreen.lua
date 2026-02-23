@@ -25,7 +25,6 @@ CoopConnection = {
     memory = 4096
 };
 
-
 function CoopOptionsScreenPanel:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
 	if self.parent.accountNameEntry:isVisible() then
@@ -63,7 +62,6 @@ function CoopOptionsScreenPanel:onJoypadDown(button, joypadData)
     end
 end
 
-
 function CoopOptionsScreen:initialise()
     ISPanel.initialise(self);
 end
@@ -82,7 +80,6 @@ end
 
 function CoopOptionsScreen:new(x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -224,7 +221,7 @@ function CoopOptionsScreen:create()
     self.statusTextY = UI_BORDER_SPACING + 1 + FONT_HGT_LARGE + 30
 
     self.serverProgressBar = ISProgressBar:new (20, self.statusTextY+FONT_HGT_LARGE+10, self.width-40, 25, "", UIFont.Small);
-    self.serverProgressBar.progressColor = namedColorToTable("ProgressYellow"); --{r=1.0, g=0.95, b=0.4, a=1};
+    self.serverProgressBar.progressColor = namedColorToTable("ProgressYellow");
     self.serverProgressBar.progressTexture = self.horzTexture;
     self.serverProgressBar.forceIt = true;
     self.serverProgressBar:initialise();
@@ -246,14 +243,6 @@ function CoopOptionsScreen:create()
 end
 
 function CoopOptionsScreen:render()
---    self.playButton:setVisible(false);
---    self.deleteButton:setVisible(false);
---~     self.newButton:setX(self.width - 126);
---    if false then --self.listbox.items[self.listbox.selected] then
---        self.playButton:setVisible(true);
---        self.deleteButton:setVisible(true);
---~         self.newButton:setX(self.playButton.x - 110);
---    end
 end
 
 function CoopOptionsScreen:prerender()
@@ -437,7 +426,6 @@ function CoopOptionsScreen:onDeleteWorldStep2(button, joypadData)
     end
     if button.internal == "NO" then return end
     local folder = self:getServerSaveFolder(CoopConnection.servername)
-    print('deleting coop server folder ' .. folder)
     if folder then
         deleteSave(folder)
         deleteSave(folder .. "_player")
@@ -472,7 +460,6 @@ function CoopOptionsScreen:onDeletePlayerStep2(button, joypadData)
         updateJoypadFocus(joypadData)
     end
     if button.internal == "NO" then return end
-    print('deleting coop player ' .. self.accountNameEntry:getText())
     local folder = self:getPlayerSaveFolder(CoopConnection.servername)
     deletePlayerFromDatabase(self:getServerSaveFolder(CoopConnection.servername), self.accountNameEntry:getText(),CoopConnection.servername)
     if folder then
@@ -637,9 +624,6 @@ function CoopOptionsScreen:onJoypadDirUp(joypadData)
 end
 
 function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
-     -- print("onCoopServerMessage");
-     -- print(tag);
-     -- print(payload);
     if tag == "status" and CoopOptionsScreen.instance ~= nil then
         local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Count")," ")[1];
         if luautils.stringStarts(payload, itemsCountTemplate) then
@@ -679,7 +663,6 @@ function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
     end
 
     if tag == "login-attempt" and payload == CoopConnection.username then
-        -- print("connection approved");
         CoopServer:sendMessage("approve-login-attempt", payload);
     end
 

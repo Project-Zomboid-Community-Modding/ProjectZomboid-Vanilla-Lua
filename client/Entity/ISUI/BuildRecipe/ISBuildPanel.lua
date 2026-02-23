@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local UI_BORDER_SPACING = 10
-
 ISBuildPanel = ISPanel:derive("ISBuildPanel");
 
 function ISBuildPanel:initialise()
@@ -35,20 +33,7 @@ function ISBuildPanel:createChildren()
     
     self:updateContainers();
 
-    --if self.recipeQuery then
-    --    self.logic:setRecipes(CraftRecipeManager.queryRecipes(self.recipeQuery));
-    --else
-    --    self.logic:setRecipes(self.craftBench:getRecipes());
-    --end
-
-    --local list = self.logic:getAllBuildableRecipes();
-    --self.logic:setRecipes(list);
-    --
-    ---- TODO RJ: There's probably a smarter way of doing this, but somehow it's not called during the build of BuildPanel compared to the HandCraftPanel?
-    --self.logic:setRecipe(self.recipesPanel.recipeListPanel.recipeListPanel.items[self.recipesPanel.recipeListPanel.recipeListPanel.selected].item);
-
     self:refreshList();
-    --self.recipesPanel.recipeListPanel.recipeListPanel.selected = 0;
 end
 
 function ISBuildPanel:refreshList()
@@ -129,7 +114,6 @@ function ISBuildPanel:createRecipeCategoryColumn()
     self.categoryColumn = self.rootTable:addColumn(nil);
 
     self.recipeCategories = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipeCategories, 0, 0, 10, 10);
-    --self.recipeCategories.autoWidth = true;
     self.recipeCategories.callbackTarget = self;
     self.recipeCategories:initialise();
     self.recipeCategories:instantiate();
@@ -152,7 +136,7 @@ function ISBuildPanel:createRecipesColumn()
     self.recipesPanel.needSortCombo = true;
     self.recipesPanel.needFilterCombo = true;
     self.recipesPanel.showFilterByOutputItem = false;
-    --self.recipesPanel.expandToFitTooltip = true;
+    self.recipesPanel.showAllCraftFilterTickBox = false;
     self.recipesPanel.wrapTooltipText = true;
     self.recipesPanel.isBuildMenu = true;
     self.recipesPanel.ignoreSurface = true;
@@ -164,15 +148,6 @@ function ISBuildPanel:createRecipesColumn()
     self.rootTable:setElement(self.recipeColumn:index(), 0, self.recipesPanel);
     self.rootTable:cell(self.recipeColumn:index(), 0).padding = 0;
 end
-
---function ISBuildPanel:createRecipePanel(_parentTable)
---    self.recipeInfoPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISRecipeListItem, 0, 0, 10, 10, self.player, self.logic); --, self.logic:getRecipeData(), self.craftBench, self.isoObject);
---    self.recipeInfoPanel:initialise();
---    self.recipeInfoPanel:instantiate();
---
---    self.recipeInfoPanelRow = _parentTable:addRowFill(nil);
---    _parentTable:setElement(0, self.recipeInfoPanelRow:index(), self.recipeInfoPanel);
---end
 
 function ISBuildPanel:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
@@ -197,11 +172,6 @@ end
 
 function ISBuildPanel:prerender()
     ISPanel.prerender(self);
-
-    -- update scrollbars
-    --if self.recipeCategoryPanel then
-    --    self.recipeCategoryPanel.vscroll:setHeight(self.recipeCategoryPanel.height);
-    --end
 end
 
 function ISBuildPanel:render()
@@ -293,9 +263,6 @@ end
 
 function ISBuildPanel:onRecipeChanged(_recipe)
     self.recipesPanel:onRecipeChanged(_recipe);
-
-    --self:createBuildIsoEntity();
-    --print("ISBuildPanel -> set recipe and calling recalculate layout");
 end
 
 function ISBuildPanel:setRecipeFilter(_filterString, _filterMode)
@@ -329,37 +296,6 @@ function ISBuildPanel:onCategoryChanged(_category)
     self:ReselectRecipeOrFirst(self.logic:getLastSelectedRecipe());
     self:onRecipeChanged(self.logic:getRecipe());
 end
-
---[[
-function ISBuildPanel:populateCategoryList()
-    self.recipeCategoryPanel:clear();
-    self.recipeCategoryPanel:addItem("-- ALL --", "");
-    --self.recipeCategoryPanel:addItem("Favourites", "*");
-    
-    local currentCategoryFilterFound = self.selectedCategory == "";
-
-    if self.selectedCategory == "*" then
-        self.recipeCategoryPanel.selected = 2;
-        currentCategoryFilterFound = true;
-    end
-
-    local categories = self.logic:getCategoryList();
-    for i = 0, categories:size()-1 do
-        local categoryNameCapitalised = string.upper(string.sub(categories:get(i), 1, 1)) .. string.sub(categories:get(i), 2, string.len(categories:get(i)));
-        local item = self.recipeCategoryPanel:addItem(categoryNameCapitalised, categories:get(i));
-
-        if categories:get(i) == self.selectedCategory then
-            self.recipeCategoryPanel.selected = item.itemindex;
-            currentCategoryFilterFound = true;
-        end
-    end
-
-    if not currentCategoryFilterFound then
-        -- reset filter
-        self:onCategoryChanged("");
-    end
-end
---]]
 
 function ISBuildPanel:onUpdateContainers()
     -- if we are dragging, backfill inputs
@@ -475,7 +411,6 @@ function ISBuildPanel:OnCloseWindow()
 end
 
 function ISBuildPanel:onStopCraft()
-    --print("Calling listener ISBuildPanel.onStopCraft")
     self:updateContainers();
     self.logic:sortRecipeList();
     self.logic:refresh();
@@ -490,8 +425,6 @@ function ISBuildPanel:getCategoryList()
 end
 
 function ISBuildPanel.SetDragItem(item, playerNum)
-    -- TODO RJ: For now i'm setting invisible as i didn't figured out yet why the stencil isn't updated once i pin the window again...
-    
     local windowKey = "BuildWindow";
     if not ISEntityUI.IsWindowOpen(playerNum, windowKey) then return; end
 
@@ -501,22 +434,12 @@ function ISBuildPanel.SetDragItem(item, playerNum)
             setJoypadFocus(playerNum, nil)
         end
         windowInstance:setVisible(false)
-        --windowInstance.isCollapsed = true;
-        --windowInstance:setMaxDrawHeight(windowInstance:titleBarHeight());
     else
         windowInstance.originalSquare = windowInstance.player:getSquare();
         windowInstance:setVisible(true)
        if JoypadState.players[playerNum+1] then
             JoypadState.players[playerNum+1].focus = windowInstance
        end
-        --windowInstance:pin();
-        --windowInstance.pin = true;
-        --windowInstance.collapseButton:setVisible(true);
-        --windowInstance.pinButton:setVisible(false);
-        --windowInstance.collapseButton:bringToTop();
-        --windowInstance.isCollapsed = false;
-        --windowInstance:setDrawFrame(true);
-        --windowInstance.clearStentil = false;
     end
 end
 
@@ -530,13 +453,11 @@ function ISBuildPanel:new(x, y, width, height, player, craftBench, isoObject, re
     o.logic = BuildLogic.new(player, craftBench, isoObject);
     o.logic:addEventListener("onUpdateContainers", o.onUpdateContainers, o);
     o.logic:addEventListener("onRecipeChanged", o.onRecipeChanged, o);
-    --o.logic:addEventListener("onSetRecipeList", o.onSetRecipeList, o);
     o.logic:addEventListener("onUpdateRecipeList", o.onUpdateRecipeList, o);
     o.logic:addEventListener("onShowManualSelectChanged", o.onShowManualSelectChanged, o);
     o.logic:addEventListener("onManualSelectChanged", o.onManualSelectChanged, o);
     o.logic:addEventListener("onStopCraft", o.onStopCraft, o);
-    
-    --o.margin = 5;
+
     o.player = player;
     o.craftBench = craftBench;
     o.isoObject = isoObject;
@@ -555,9 +476,6 @@ function ISBuildPanel:new(x, y, width, height, player, craftBench, isoObject, re
     
     ISBuildWindow.instance = o;
     o.windowInstance = ISEntityUI.GetWindowInstance(player, "BuildWindow");
-    
-    --local test = getScriptManager():getAllRecipes();
-    --print("Recipe count: "..tostring(test:size()))
 
     return o;
 end

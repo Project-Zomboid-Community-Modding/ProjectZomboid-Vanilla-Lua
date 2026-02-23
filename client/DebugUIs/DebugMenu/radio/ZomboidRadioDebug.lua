@@ -7,10 +7,6 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-local function roundstring(_val)
-    return tostring(ISDebugUtils.roundNum(_val,2));
-end
-
 function ZomboidRadioDebug.OnOpenPanel()
     if isClient() then
         return;
@@ -75,19 +71,6 @@ function ZomboidRadioDebug:createChildren()
     self.broadcastList.drawBorder = true;
     self:addChild(self.broadcastList);
 
-    --[[
-    self.infoList = ISScrollingListBox:new(220, 50, 400, self.height - 100);
-    self.infoList:initialise();
-    self.infoList:instantiate();
-    self.infoList.itemheight = 22;
-    self.infoList.selected = 0;
-    self.infoList.joypadParent = self;
-    self.infoList.font = UIFont.NewSmall;
-    self.infoList.doDrawItem = self.drawInfoList;
-    self.infoList.drawBorder = true;
-    self:addChild(self.infoList);
-    --]]
-
     local btnY, btnWidth = self.broadcastList:getBottom() + UI_BORDER_SPACING, 180
     local _, obj = ISDebugUtils.addButton(self,"script",self.infoList.x,btnY,self.infoList.width,BUTTON_HGT,getText("IGUI_ZomboidRadio_ViewChannelScript"),ZomboidRadioDebug.onViewScript);
     _, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Close"),ZomboidRadioDebug.onClickClose);
@@ -128,8 +111,7 @@ function ZomboidRadioDebug:populateList(_force)
     for i=0, channels:size()-1 do
         local channel = channels:get(i);
 
-        local prefix = channel:GetFrequency();
-        local name = channel:GetName(); -- prefix .. " : " .. channel:GetName();
+        local name = channel:GetName();
 
         self.channelsList:addItem(name, channel);
     end
@@ -144,10 +126,6 @@ function ZomboidRadioDebug:drawChannelList(y, item, alt)
     local a = 0.9;
 
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
-    --[[if item.item:getIndexOffset()<0 then
-        self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 0.80, 0.80, 0.80);
-    end--]]
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
@@ -221,7 +199,6 @@ function ZomboidRadioDebug:drawBroadcastList(y, item, alt)
 
     return y + self.itemheight;
 end
-
 
 function ZomboidRadioDebug:prerender()
     ISPanel.prerender(self);

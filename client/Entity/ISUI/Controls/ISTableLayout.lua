@@ -63,7 +63,7 @@ function ISTableLayout:setElement(_column, _row, _element)
         return;
     end
     if _element then
-        local cell = self:cell(_column, _row); --self:ensureCell(_column, _row);
+        local cell = self:cell(_column, _row);
         if cell then
             if cell.element then
                 ISUIElement.removeChild(self, cell.element);
@@ -72,7 +72,6 @@ function ISTableLayout:setElement(_column, _row, _element)
             ISUIElement.addChild(self, _element);
             cell.minimumWidth = 0;
             cell.minimumHeight = 0;
-            --self.dirtyLayout = true;
         end
     else
         local index = _column + (_row*self:columnCount());
@@ -80,8 +79,6 @@ function ISTableLayout:setElement(_column, _row, _element)
             ISUIElement.removeChild(self, self.cells[index+1].element);
             self.cells[index+1].element = nil;
         end
-        --self.cells[index+1] = false;
-        --self.dirtyLayout = true;
     end
 end
 
@@ -207,7 +204,6 @@ function ISTableLayout:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISTableLayout:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -227,8 +223,6 @@ function ISTableLayout:render()
             end
         end
     end
-
-    --self:drawRectBorderStatic(0, 0, self.width, self.height, 1.0, 0, 0, 1);
 end
 
 function ISTableLayout:update()
@@ -238,8 +232,6 @@ end
 function ISTableLayout:createTable(columns, rows)
     self.columns = {};
     self.rows = {};
-    --self.cells = {};
-    --o.cellPadding = 0;
 
     columns = math.max(1, columns or 1);
     rows = math.max(1, rows or 1);
@@ -292,8 +284,6 @@ function ISTableLayout:ensureCells()
             if not cell then
                 cell = ISXuiSkin.build(self.xuiSkin, self.styleCell, ISTableLayoutCell, cx, cy, self);
             end
-            --cell.padding = self.cellPadding;
-            --cell:initialise();
             table.insert(cells, cell);
         end
     end
@@ -421,8 +411,6 @@ function ISTableLayoutCell:new(_columnIndex, _rowIndex, _parent)
     o.minimumHeight = 0;
     o.padding = 0;
     o.visible = true;
-
-    --ISXuiSkin.RegisterXuiSkinFunctions(o, true);
 
 	return o;
 end

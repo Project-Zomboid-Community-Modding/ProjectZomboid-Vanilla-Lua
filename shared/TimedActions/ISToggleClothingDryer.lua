@@ -25,7 +25,7 @@ end
 function ISToggleClothingDryer:complete()
 	if not self.object then return false end
 	self.object:setActivated(not self.object:isActivated())
-	self.object:sendObjectChange("dryer.state")
+	self.object:sendObjectChange(IsoObjectChange.DRYER_STATE)
 	return true
 end
 

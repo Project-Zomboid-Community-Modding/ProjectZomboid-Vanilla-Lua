@@ -75,13 +75,7 @@ end
 function ISSafehouseAddPlayerUI:drawPlayers(y, item, alt)
     local a = 0.9;
 
---    self.parent.addPlayer.enable = false;
---    self.parent.selectedPlayer = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
---    self:drawRect(100, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(170, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(240, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
@@ -117,10 +111,6 @@ function ISSafehouseAddPlayerUI:onClick(button)
     end
     if button.internal == "ADDPLAYER" then
         if not self.changeOwnership then
---            self.safehouse:addPlayer(self.selectedPlayer);
---            self.addPlayer.enable = false;
---            self:populateList();
---            self.safehouseUI:populateList();
             local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_InvitationSent",self.selectedPlayer), false, nil, nil);
             modal:initialise()
             modal:addToUIManager()

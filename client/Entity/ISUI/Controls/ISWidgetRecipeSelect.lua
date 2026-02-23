@@ -60,7 +60,6 @@ function ISWidgetRecipeSelect:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetRecipeSelect:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

@@ -18,11 +18,9 @@ function RWM:prerender()
     ISPanel.prerender(self);
 end
 
-
 function RWM:render()
     ISPanel.render(self);
 end
-
 
 function RWM:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);

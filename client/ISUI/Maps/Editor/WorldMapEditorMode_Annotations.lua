@@ -173,8 +173,6 @@ function WorldMapEditorMode_Annotations:onLoadMap()
 	self.mapAPI:setBoolean("OutlineStreets", false)
 	self.mapAPI:setBoolean("ShowStreetNames", true)
 	self.mapAPI:getStreetsAPI():clearStreetData()
---	self.streetsAPI:addStreetData('media/maps/'..dirName..'/streets.xml')
---	self.streetsAPI:getEditorAPI():setStreetData('media/maps/'..dirName..'/streets.xml')
 
     self.symbolsAPI:clear()
 	MapUtils.initDirectoryAnnotations(self.mapUI, 'media/maps/'..dirName)

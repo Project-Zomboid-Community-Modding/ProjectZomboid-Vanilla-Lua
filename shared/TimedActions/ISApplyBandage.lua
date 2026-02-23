@@ -7,14 +7,17 @@ function ISApplyBandage:isValid()
 		return false
 	end
     if self.item then
-        if isClient() and self.item then
-            return self.character:getInventory():containsID(self.item:getID())
+        if isClient() then
+            return self.itemWasPresent
         else
             return self.character:getInventory():contains(self.item)
         end
     else
-        if not self.bodyPart:bandaged() then return false end
-        return true
+        if isClient() then
+            return self.wasBandaged
+        else
+            return self.bodyPart:bandaged()
+        end
     end
 end
 
@@ -117,7 +120,7 @@ function ISApplyBandage:complete()
                 sendAddItemToContainer(self.character:getInventory(), bandage);
             end
 
-            if self.bodyPart:getBandageLife() <= 0 then
+            if self.bodyPart:getBandageLife() <= 0 and not bandage:hasTag(ItemTag.REUSABLE_BANDAGE) then
                 bandage:UseAndSync();
             end
         end
@@ -162,6 +165,8 @@ function ISApplyBandage:new(character, otherPlayer, item, bodyPart, doIt)
     o.bandagedPlayerX = otherPlayer:getX();
     o.bandagedPlayerY = otherPlayer:getY();
     o.maxTime = o:getDuration();
+    o.wasBandaged = o.bodyPart:bandaged()
+    o.itemWasPresent = item ~= nil
     if character:isTimedActionInstant() then
         o.doctorLevel = 10;
     end

@@ -12,7 +12,6 @@ ISAnimalUI.btnOffset = 210;
 ISAnimalAvatar = ISUI3DModel:derive("ISAnimalAvatar")
 
 function ISAnimalUI:prerender()
---    print("animaluiprerender", self.animal:getVehicle())
     if not self.animal or (not self.animal:isExistInTheWorld() and not self.animal:getHutch() and not self.animal:getVehicle() and not self.animal:isHeld()) or self.animal:getHealth() <= 0 then
         self:close();
     end
@@ -29,9 +28,6 @@ function ISAnimalUI:prerender()
     end
     ISCollapsableWindowJoypad.prerender(self)
 
---    self.avatarPanel:setZoom(6 * self.animal:getData():getSize());
---    self.avatarPanel:setXOffset(-0.1 * self.animal:getData():getSize());
---    self.avatarPanel:setYOffset(-0.22 * self.animal:getData():getSize());
     self.avatarPanel:setZoom(self.avatarDefinition.zoom * self.animal:getData():getSize());
     self.avatarPanel:setXOffset(self.avatarDefinition.xoffset * self.animal:getData():getSize());
     self.avatarPanel:setYOffset(self.avatarDefinition.yoffset * self.animal:getData():getSize());
@@ -155,12 +151,7 @@ function ISAnimalUI:render()
             else
                 self:drawTextRight(getText("IGUI_Animal_Pregnant"), self.xOffset, y, 1,1,1,1, UIFont.Small);
                 if self.animal:getData():isPregnant() then
-                    --if AnimalContextMenu.cheat then
-                    --    self:drawText(self.animal:getData():getPregnancyTime() .. "/" .. self.animal:getData():getPregnantPeriod(), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                    --else
-                        self:drawText(self:getPregnantText(), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                        --self:drawText(getText("IGUI_True"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                    --end
+                    self:drawText(self:getPregnantText(), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
                 else
                     self:drawText(getText("IGUI_No"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
                 end
@@ -168,27 +159,25 @@ function ISAnimalUI:render()
             y = y + FONT_HGT_SMALL + 4;
             -- mating season
             if not self.animal:isBaby() and (self.skillLvl > 4 or AnimalContextMenu.cheat) then
-                --if self.animal:getData():getLastPregnancyPeriod() or self.animal:haveMatingSeason() then
-                    self:drawTextRight(getText("IGUI_Animal_MatingSeason"), self.xOffset, y, 1,1,1,1, UIFont.Small);
-                    if self.animal:getData():getLastPregnancyPeriod() then
-                        local text = "";
-                        if AnimalContextMenu.cheat then
-                            text = " ( " .. self.animal:getData():getLastPregnancyPeriod() .. " days)";
-                        end
-                        self:drawText(getText("IGUI_Animal_TooSoonForBaby") .. text, self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                    else
-                        if self.animal:getData():getDaysSurvived() >= self.animal:getMinAgeForBaby() then
-                            if self.animal:isInMatingSeason() then
-                                self:drawText(getText("IGUI_Yes"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                            else
-                                self:drawText(getText("IGUI_No"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                            end
-                        else
-                            self:drawText(getText("IGUI_Animal_TooYoungForBaby"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-                        end
+                self:drawTextRight(getText("IGUI_Animal_MatingSeason"), self.xOffset, y, 1,1,1,1, UIFont.Small);
+                if self.animal:getData():getLastPregnancyPeriod() then
+                    local text = "";
+                    if AnimalContextMenu.cheat then
+                        text = " ( " .. self.animal:getData():getLastPregnancyPeriod() .. " days)";
                     end
-                    y = y + FONT_HGT_SMALL + 4;
-                --end
+                    self:drawText(getText("IGUI_Animal_TooSoonForBaby") .. text, self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
+                else
+                    if self.animal:getData():getDaysSurvived() >= self.animal:getMinAgeForBaby() then
+                        if self.animal:isInMatingSeason() then
+                            self:drawText(getText("IGUI_Yes"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
+                        else
+                            self:drawText(getText("IGUI_No"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
+                        end
+                    else
+                        self:drawText(getText("IGUI_Animal_TooYoungForBaby"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
+                    end
+                end
+                y = y + FONT_HGT_SMALL + 4;
             end
         end
     end
@@ -235,24 +224,21 @@ function ISAnimalUI:render()
     end
     y = y + FONT_HGT_SMALL + 4;
 
-    -- show list of this animal's babies, only in debug for now?
-    --if AnimalContextMenu.cheat then
-        if self.animal:getBabies() and not self.animal:getBabies():isEmpty() and self.animal:getCurrentSquare() then
-            self:drawTextRight(getText("IGUI_Animal_Babies"), self.xOffset, y, 1,1,1,1, UIFont.Small);
-            for i=0,self.animal:getBabies():size()-1 do
-                local baby = self.animal:getBabies():get(i);
-                if not baby then
-                    break;
-                end
-                local r,g,b = 1,1,1;
-                if (self.animal:getDZone() ~= baby:getDZone() and (self.animal:getCurrentSquare():DistToProper(baby) > 10) or not baby:isExistInTheWorld()) then
-                    r,g,b = 1,0.2,0.2;
-                end
-                self:drawText("- " .. baby:getFullName(), self.xOffset + 10, y, r,g,b,0.5, UIFont.Small);
-                y = y + FONT_HGT_SMALL + 4;
+    if self.animal:getBabies() and not self.animal:getBabies():isEmpty() and self.animal:getCurrentSquare() then
+        self:drawTextRight(getText("IGUI_Animal_Babies"), self.xOffset, y, 1,1,1,1, UIFont.Small);
+        for i=0,self.animal:getBabies():size()-1 do
+            local baby = self.animal:getBabies():get(i);
+            if not baby then
+                break;
             end
+            local r,g,b = 1,1,1;
+            if (self.animal:getDZone() ~= baby:getDZone() and (self.animal:getCurrentSquare():DistToProper(baby) > 10) or not baby:isExistInTheWorld()) then
+                r,g,b = 1,0.2,0.2;
+            end
+            self:drawText("- " .. baby:getFullName(), self.xOffset + 10, y, r,g,b,0.5, UIFont.Small);
+            y = y + FONT_HGT_SMALL + 4;
         end
-    --end
+    end
 
     -- somehow baby lost his mom, debug stuff for now, might stay in?
     if self.animal:isBaby() and self.animal:needMom() and (not self.animal:getMother() or not self.animal:getMother():isExistInTheWorld()) then
@@ -261,6 +247,7 @@ function ISAnimalUI:render()
             y = y + FONT_HGT_SMALL + 4;
         end
     end
+
     if AnimalContextMenu.cheat then
         if self.animal:isBaby() and self.animal:getMother() then
             self:drawTextRight("Mother", self.xOffset, y, 1,1,1,1, UIFont.Small);
@@ -278,9 +265,6 @@ function ISAnimalUI:render()
             y = y + FONT_HGT_SMALL + 4;
         elseif self.animal:hasUdder() and self.animal:getData():getMilkQuantity() > 0.1 then
             local text = self:getUdderText(AnimalContextMenu.cheat, self.skillLvl);
-            --if AnimalContextMenu.cheat then
-            --    text = text .. " / " .. round(self.animal:getData():getMaxMilkActual(), 2) .. " (max: " .. round(self.animal:getData():getMaxMilk(), 2) .. ")";
-            --end
             self:drawTextRight(getText("IGUI_Animal_Udder"), self.xOffset, y, 1,1,1,1, UIFont.Small);
             self:drawText(text, self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
             local width = getTextManager():MeasureStringX(UIFont.Small, text) + 20;
@@ -313,24 +297,6 @@ function ISAnimalUI:render()
         y = y + FONT_HGT_SMALL + 4;
     end
 
-    --self:drawTextRight(getText("IGUI_Animal_AttachedTo"), self.xOffset, y, 1,1,1,1, UIFont.Small);
-    --if self.animal:getData():getAttachedPlayer() then
-    --    local nameText = self.animal:getData():getAttachedPlayer():getDescriptor():getForename().." "..self.animal:getData():getAttachedPlayer():getDescriptor():getSurname()
-    --    self:drawText(nameText, self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-    --    self.attachAnimalBtn.title = getText("ContextMenu_DetachAnimalSimple");
-    --else
-    --    self.attachAnimalBtn.title = getText("ContextMenu_AttachAnimalSimple");
-    --    local nbOfRopes = self.chr:getInventory():getNumberOfItem("Base.Rope");
-    --    -- disable the button if no cheat or not enough rope
-    --    self.attachAnimalBtn.enable = (nbOfRopes > self.chr:getAttachedAnimals():size());
-    --    if AnimalContextMenu.cheat then
-    --        self.attachAnimalBtn.enable = true;
-    --    end
-    --end
-    --self.attachAnimalBtn:setX(self.xOffset + ISAnimalUI.btnOffset);
-    --self.attachAnimalBtn:setY(y + 2);
-    --y = y + FONT_HGT_SMALL + 4;
-
     if self.animal:shouldAnimalStressAboveGround() then
         self:drawTextRight(getText("IGUI_Animal_StressAboveGround"), self.xOffset, y, 1,0.2,0.2,1, UIFont.Small);
         y = y + FONT_HGT_SMALL + 4;
@@ -355,19 +321,12 @@ function ISAnimalUI:render()
 
     if AnimalContextMenu.cheat then
         local playerAcceptance = self.animal:getPlayerAcceptance(self.chr);
-        local zoneAcceptance = self.animal:getZoneAcceptance();
 
         if playerAcceptance then
             self:drawTextRight(getText("IGUI_Animal_PlayerAcceptance"), self.xOffset, y, 1,1,1,1, UIFont.Small);
             self:drawText(playerAcceptance .. "", self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
             y = y + FONT_HGT_SMALL + 4;
         end
-
-        --if zoneAcceptance then
-        --    self:drawTextRight(getText("IGUI_Animal_ZoneAcceptance"), self.xOffset, y, 1,1,1,1, UIFont.Small);
-        --    self:drawText(zoneAcceptance .. "", self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
-        --    y = y + FONT_HGT_SMALL + 4;
-        --end
     end
 
     self:renderJoypadFocus()
@@ -403,7 +362,6 @@ function ISAnimalUI:close()
 end
 
 function ISAnimalUI:create()
-
     self.avatarX = 25
     self.avatarY = self:titleBarHeight() + UI_BORDER_SPACING
     self.avatarWidth = self.avatarDefinition.avatarWidth or 128;
@@ -442,13 +400,6 @@ function ISAnimalUI:create()
     self.feedBtn:setVisible(false);
     self:addChild(self.feedBtn);
 
-    --self.attachAnimalBtn = ISButton:new(0,0, btnWid, btnHgt, getText("ContextMenu_AttachAnimalSimple"), self, ISAnimalUI.attachAnimal);
-    --self.attachAnimalBtn:initialise();
-    --self.attachAnimalBtn:instantiate();
-    --self.attachAnimalBtn.borderColor = {r=1, g=1, b=1, a=0.1};
-    --self.attachAnimalBtn:setVisible(true);
-    --self:addChild(self.attachAnimalBtn);
---
     self.milkAnimalBtn = ISButton:new(0,0, btnWid, btnHgt, "Milk Animal", self, ISAnimalUI.onMilkAnimal);
     self.milkAnimalBtn:initialise();
     self.milkAnimalBtn:instantiate();
@@ -665,7 +616,6 @@ end
 
 function ISAnimalUI:new(x, y, width, height, animal, player)
     local o = ISCollapsableWindowJoypad.new(self, x, y, width, height);
---    o:noBackground();
     o.animal = animal;
     o.chr = player;
     o.playerNum = player:getPlayerNum();

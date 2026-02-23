@@ -2,6 +2,7 @@ require "ISUI/ISPanel"
 
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local UI_BORDER_SPACING = 10
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local MIN_LIST_BOX_WIDTH = 125 * FONT_SCALE;
 
 ISWidgetRecipeCategories = ISPanel:derive("ISWidgetRecipeCategories");
@@ -16,9 +17,8 @@ function ISWidgetRecipeCategories:createChildren()
     self.recipeCategoryPanel = ISScrollingListBox:new(0, 0, self.listBoxWidth or MIN_LIST_BOX_WIDTH, 0);
     self.recipeCategoryPanel:initialise();
     self.recipeCategoryPanel:instantiate();
-    self.recipeCategoryPanel.itemheight = ISCraftingUI.smallFontHeight + UI_BORDER_SPACING;
+    self.recipeCategoryPanel.itemheight = FONT_HGT_SMALL + UI_BORDER_SPACING;
     self.recipeCategoryPanel.selected = 0;
-    --self.recipeCategoryPanel.joypadParent = self;
     self.recipeCategoryPanel.font = UIFont.Small
     self.recipeCategoryPanel.drawBorder = true
     self.recipeCategoryPanel:setOnMouseDownFunction(self, self.onCategoryChanged);
@@ -95,7 +95,6 @@ function ISWidgetRecipeCategories:populateCategoryList()
         currentCategoryFilterFound = true;
     end
 
-    --local categories = self.logic:getCategoryList();
     local categories = self.callbackTarget:getCategoryList();
     for i = 0, categories:size()-1 do
         local categoryNameCapitalised = string.upper(string.sub(categories:get(i), 1, 1)) .. string.sub(categories:get(i), 2, string.len(categories:get(i)));

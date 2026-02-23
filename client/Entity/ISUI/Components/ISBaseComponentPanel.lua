@@ -76,38 +76,15 @@ function ISBaseComponentPanel:getUiIcon()
     return nil;
 end
 
---[[
-function ISBaseComponentPanel:new(x, y, width, height, player, entity, component, componentUiStyle)
-	local o = ISPanel:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
-    o.background = false;
-    --o.margin = 5;
-    o.player = player;
-    o.entity = entity;
-    o.component = component;
-    o.componentUiStyle = componentUiStyle;
-    o.minimumWidth = 0;
-    o.minimumHeight = 0;
-
-    o.enableHeader = true;
-    return o
-end
---]]
-
---[[ TEMP HACK, See ISRecipeLogicPanel.lua --]]
-
 function ISBaseComponentPanel:new (x, y, width, height, player, entity, component, componentUiStyle)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
-    --o:setBucket(true);
     return ISBaseComponentPanel.table_constructor(o, x, y, width, height, player, entity, component, componentUiStyle);
 end
 
 function ISBaseComponentPanel.table_constructor(o, x, y, width, height, player, entity, component, componentUiStyle)
     o.background = false;
-    --o.margin = 5;
     o.player = player;
     o.entity = entity;
     o.component = component;

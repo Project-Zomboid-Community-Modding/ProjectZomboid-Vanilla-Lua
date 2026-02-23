@@ -33,9 +33,6 @@ function ISMiniMapOptionsPanel:createChildren()
 	self.tickBoxes = {}
 
 	self.showAllOptions = false
-	if getDebug() or (isClient() and (getAccessLevel() == "admin")) then
---		self.showAllOptions = true
-	end
 
 	local maxHeight = getCore():getScreenHeight() - 100
 
@@ -353,9 +350,7 @@ end
 
 function ISMiniMapTitleBar:prerender()
 	local th = self:titleBarHeight()
---	self:drawRect(0, 0, self:getWidth(), th - 1, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
 	self:drawTextureScaled(self.titlebarbkg, 1, 1, self:getWidth() - 2, th - 2, 1, 1, 1, 1)
---	self:drawRectBorder(0, 0, self:getWidth(), 0, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 end
 
 function ISMiniMapTitleBar:titleBarHeight()
@@ -581,7 +576,6 @@ function ISMiniMapOuter:onButton4()
 end
 
 function ISMiniMapOuter:onToggleOptionsPanel()
---	self.inner.mapAPI:setBoolean("Isometric", not self.inner.mapAPI:getBoolean("Isometric"))
 	if self.optionsUI == nil then
 		local ui = ISMiniMapOptionsPanel:new(0, self.y, 200, 200, self.inner)
 		self.inner:addChild(ui)
@@ -711,12 +705,6 @@ function ISMiniMap.InitPlayer(playerNum)
 
 	local dirs = getLotDirectories()
 	for i=1,dirs:size() do
---[[
-		local file = 'media/maps/'..dirs:get(i-1)..'/worldmap-forest.xml'
-		if fileExists(file) then
-			INNER.mapAPI:addData(file)
-		end
---]]
 		local file = 'media/maps/'..dirs:get(i-1)..'/worldmap.xml'
 		if fileExists(file) then
 			INNER.mapAPI:addData(file)

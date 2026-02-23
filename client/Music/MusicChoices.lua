@@ -1,12 +1,8 @@
-
 MusicChoices = {
-
     drama = 0,
     last = "",
 
     compareByDrama = function (a, b)
-        --   SurvivorSelector.contextwith = with;
-        -- SurvivorSelector.contextagainst = against;
         local totala = math.abs(MusicChoices.drama - a.scores.drama) - a.scores.bias;
         local totalb = math.abs(MusicChoices.drama - b.scores.drama) - b.scores.bias;
         if MusicChoices.last == a.file then
@@ -24,8 +20,6 @@ MusicChoices = {
     end,
 
     compareByAmbientDrama = function (a, b)
-        --   SurvivorSelector.contextwith = with;
-        -- SurvivorSelector.contextagainst = against;
         local totala = math.abs(MusicChoices.drama - a.scores.drama);
         local totalb = math.abs(MusicChoices.drama - b.scores.drama);
         if MusicChoices.last == a.file then
@@ -90,7 +84,6 @@ MusicChoices = {
     end,
 
     choices = {
-
         {
             file="OldMusic_alone",
             scores = {
@@ -98,8 +91,6 @@ MusicChoices = {
                 bias = 5,
             }
         },
-
-
         {
             file="OldMusic_long_ambient",
             scores = {
@@ -107,7 +98,6 @@ MusicChoices = {
                 bias = 4,
             }
         },
-
         {
             file="OldMusic_barricading",
             scores = {
@@ -288,7 +278,6 @@ MusicChoices = {
     },
 
     ambient = {
-
         {
             file="AmbientMusic_RhythmicAmbient",
             scores = {
@@ -334,7 +323,6 @@ MusicChoices = {
     },
 
     remasteredchoices = {
-
         {
 
             file="NewMusic_32",

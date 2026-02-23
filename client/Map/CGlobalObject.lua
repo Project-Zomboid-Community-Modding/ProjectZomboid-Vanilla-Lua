@@ -21,7 +21,6 @@ function CGlobalObject:new(luaSystem, globalObject)
 	o.x = globalObject:getX()
 	o.y = globalObject:getY()
 	o.z = globalObject:getZ()
---	o:fromModData(isoObject:getModData())
 	return o
 end
 

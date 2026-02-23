@@ -36,10 +36,6 @@ for i = 1, 14 do --add new entries by changing this number
     SurvivalGuideEntries.addSurvivalGuideEntry(i);
 end
 
-
 -- We don't it once it's boot 'cause we need some translation
 SurvivalGuideEntries.addEntry11 = function()
---    SurvivalGuideEntries.addSurvivalGuideEntry(getText("SurvivalGuide_entrie11title"),
---        getText("SurvivalGuide_entrie11txt", getKeyName(getCore():getKey("Crouch")),getKeyName(getCore():getKey("Sprint")),getKeyName(getCore():getKey("Run"))),
---        getText("SurvivalGuide_entrie11moreinfo", getKeyName(getCore():getKey("Sprint")), getKeyName(getCore():getKey("Toggle Clothing Protection Panel"))));
 end

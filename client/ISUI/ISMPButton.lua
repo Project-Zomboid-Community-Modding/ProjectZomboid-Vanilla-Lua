@@ -22,7 +22,6 @@ function ISMPButton:setJoypadFocused(focused)
 end
 
 function ISMPButton:onMouseUp(x, y)
-
     if not self:getIsVisible() then
         return;
     end
@@ -37,9 +36,7 @@ function ISMPButton:onMouseUp(x, y)
     if self.enable and (process or self.allowMouseUpProcessing) then
         getSoundManager():playUISound(self.sounds.activate)
         self.onclick(self.target, self, self.onClickArgs[1], self.onClickArgs[2], self.onClickArgs[3], self.onClickArgs[4]);
-	    --print(self.title);
     end
-
 end
 
 function ISMPButton:onMouseUpOutside(x, y)
@@ -156,9 +153,7 @@ function ISMPButton:setOverlayText(text)
 end
 
 function ISMPButton:render()
---    print("btn:render")
 	if self.image ~= nil then
---        print("btn:image")
         local alpha = self.textureColor.a;
         if self.blinkImage then
             if not self.blinkImageAlpha then
@@ -429,9 +424,7 @@ function ISMPButton:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISMPButton:new (x, y, width, height, title, clicktarget, onclick, onmousedown, allowMouseUpProcessing)
-
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self

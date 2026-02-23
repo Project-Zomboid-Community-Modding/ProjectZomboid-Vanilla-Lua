@@ -7,6 +7,9 @@ function ISUnloadBulletsFromFirearm:isValid()
 end
 
 function ISUnloadBulletsFromFirearm:start()
+	if isClient() then
+		self.gun = self.character:getInventory():getItemById(self.gun:getID())
+	end
 	self.gun:setJobType(getText("IGUI_JobType_UnloadBulletsFromFirearm"))
 	self:setActionAnim(CharacterActionAnims.Reload)
 	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
@@ -33,8 +36,8 @@ end
 
 function ISUnloadBulletsFromFirearm:serverStart()
 	self:initVars()
-	emulateAnimEvent(self.netAction, 500, "playReloadSound", nil)
-	emulateAnimEvent(self.netAction, 2300, "unloadFinished", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "playReloadSound", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 2300), "unloadFinished", nil)
 end
 
 function ISUnloadBulletsFromFirearm:getDuration()

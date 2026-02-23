@@ -48,8 +48,6 @@ function CInsertMagazine:invoke()
 	ISTimedActionQueue.add(ISInsertMagazine:new(self.character, weapon, magazine))
 end
 
-
-
 local CEjectMagazine = BaseCommand:derive("CEjectMagazine")
 
 function CEjectMagazine:new(frm)
@@ -73,8 +71,6 @@ function CEjectMagazine:invoke()
 	if not weapon:isContainsClip() then return end
 	ISTimedActionQueue.add(ISEjectMagazine:new(self.character, weapon))
 end
-
-
 
 local CLoadBulletsInMagazine = BaseCommand:derive("CLoadBulletsInMagazine")
 
@@ -190,8 +186,6 @@ function CUnloadRounds:invoke()
 	ISTimedActionQueue.add(ISUnloadBulletsFromFirearm:new(self.character, weapon, false))
 end
 
-
-
 local CRack = BaseCommand:derive("CRack")
 
 function CRack:new(frm)
@@ -225,8 +219,6 @@ function CRack:invoke()
 	if not ISReloadWeaponAction.canRack(weapon) then return end
 	ISTimedActionQueue.add(ISRackFirearm:new(self.character, weapon))
 end
-
-
 
 function ISFirearmRadialMenu:center()
 	local menu = getPlayerRadialMenu(self.playerNum)
@@ -298,8 +290,6 @@ function ISFirearmRadialMenu:new(character)
 	return o
 end
 
-
-
 function ISFirearmRadialMenu.checkWeapon(playerObj)
 	local weapon = playerObj:getPrimaryHandItem()
 	if not weapon then return false end
@@ -308,10 +298,7 @@ function ISFirearmRadialMenu.checkWeapon(playerObj)
 	return true
 end
 
-
-
 function ISFirearmRadialMenu.getBestLBButtonAction(buttonPrompt)
---	buttonPrompt:setLBPrompt("RACK", nil, buttonPrompt.player)
 	return false
 end
 
@@ -381,14 +368,7 @@ function ISFirearmRadialMenu.onJoypadButtonReleased(buttonPrompt, button, joypad
 end
 
 function ISFirearmRadialMenu.checkKey(key)
-	if not getCore():isKey("ReloadWeapon", key) then
-		return false
-	end
 	local playerObj = getSpecificPlayer(0)
-	if playerObj:getPrimaryHandItem() and playerObj:getPrimaryHandItem():isSharpenable() then
-        ISFirearmRadialMenu.sharpenWeapon(playerObj:getPrimaryHandItem(), playerObj)
-		return false
-	end
 	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then
 		return false
 	end
@@ -400,6 +380,13 @@ function ISFirearmRadialMenu.checkKey(key)
 		return false
 	end
 	if getCell():getDrag(0) then
+		return false
+	end
+	if getCore():isKey("SharpenWeapon", key) and playerObj:getPrimaryHandItem() and playerObj:getPrimaryHandItem():isSharpenable() then
+        ISFirearmRadialMenu.sharpenWeapon(playerObj:getPrimaryHandItem(), playerObj)
+		return false
+	end
+	if not getCore():isKey("ReloadWeapon", key) then
 		return false
 	end
 	return true

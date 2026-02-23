@@ -255,10 +255,6 @@ Tutorial1.Init = function()
     Tutorial1.addBarricade(195, 194, 0);
     Tutorial1.addBarricade(197, 199, 0);
 
-    -- add trash can to block player when killing mom
---    local sq = getSquare(169, 157, 0);
---    sq:AddTileObject(IsoObject.getNew(sq, "street_decoration_01_26", nil, false));
-
     -- lock needed doors
     Tutorial1.lockDoor(131, 181, 0)
     SneakStep.fenceGate = Tutorial1.lockDoor(169, 145, 0)
@@ -277,11 +273,6 @@ Tutorial1.Init = function()
     addVehicleDebug("Base.TaxiBurnt", IsoDirections.N, -1, getSquare(169, 155, 0));
 
     Tutorial1.marker = getWorldMarkers();
-
-    -- open some doors
---    Tutorial1.openDoor(103, 124, 0, true)
---    Tutorial1.openDoor(106, 124, 0, true)
---    Tutorial1.openDoor(131, 181, 0, false)
     
     if JoypadState.players[1] then
         Tutorial1.joypad = true;
@@ -323,15 +314,12 @@ Tutorial1.Init = function()
     getCore():setCollideZombies(false);
     
     ISReloadWeaponAction.disableReloading = true;
---     getPlayerInventory(0).transferAll:setVisible(false);
---     getPlayerLoot(0).lootAll:setVisible(false);
     
     if SurvivalGuideManager.instance then
         SurvivalGuideManager.instance.panel:setVisible(false);
     end
 
     Events.OnTick.Add(Tutorial1.Tick)
---    Tutorial1.FillContainers();
 end
 
 Tutorial1.openDoor = function(x,y,z, north)
@@ -386,7 +374,6 @@ Tutorial1.addBarricade = function(x, y, z)
             if instanceof(o, "IsoWindow") then
                 -- 3 or 4 barricades block light and vision, making building interiors too dark for some player's liking. SPIF-1071
                 o:addBarricadesDebug(2, false);
---                o:addBarricadesDebug(ZombRand(2,5), false);
                 break;
             end
             if instanceof(o, "IsoDoor") then
@@ -481,10 +468,6 @@ function Tutorial1.removeFences()
 end
 
 function Tutorial1.replaceFence(sq, north)
---    local sprite = "walls_exterior_wooden_01_24"
---    if north then
---        sprite = "walls_exterior_wooden_01_25"
---    end
     if not sq then return end;
     for i=0, sq:getObjects():size()-1 do
         local obj = sq:getObjects():get(i);
@@ -494,21 +477,12 @@ function Tutorial1.replaceFence(sq, north)
             sq:RemoveTileObject(obj);
             return;
         end
---        if obj:getType() == IsoObjectType.doorW then
---            local newFence = IsoThumpable.new(getCell(), sq, "fencing_01_58", north, ISWoodenWall:new("fencing_01_58", "fencing_01_58", nil));
---            local newFence = IsoThumpable.new(getCell(), sq, sprite, north, ISWoodenWall:new(sprite, sprite, nil));
---            sq:AddTileObject(newFence);
---            sq:RemoveTileObject(obj);
---        end
     end
 end
     
 Tutorial1.name = "Tutorial1";
---Tutorial1.description = "Prepare for a short, sharp dose of Zomboid. Deadheads are approaching from every angle.\nYou're going to check out, and soon, but just how long can you resist the horde?\nReady that shotgun...";
 Tutorial1.image = "media/lua/LastStand/Challenge1.png";
 Tutorial1.world = "challengemaps/Tutorial";
 Tutorial1.x = 157;
 Tutorial1.y = 157;
 Tutorial1.hourOfDay = 20;
---Tutorial1.cratePositions = { {"weapons3", "crate", 151, 152, 0},{"weapons2", "crate", 142, 148, 0}, {"weapons1", "crate", 147+3, 151+3, 1}, {"medicine", "crate", 156+3, 144+3, 1}, {"carpentry", "crate", 135, 179, 0}, {"carpentry", "crate", 157, 151, 0}, {"carpentry", "crate", 158, 151, 0}}
---Events.OnChallengeQuery.Add(Tutorial1.Add)

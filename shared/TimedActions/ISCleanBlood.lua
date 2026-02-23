@@ -101,6 +101,7 @@ function ISCleanBlood:complete()
     local cleaner = self.cleaner;
     if cleaner then
 		cleaner:getFluidContainer():adjustAmount(cleaner:getFluidContainer():getAmount() - ZomboidGlobals.CleanBloodBleachAmount);
+		cleaner:syncItemFields()
     end
     self.square:removeBlood(false, false);
     self.square:removeGrime();

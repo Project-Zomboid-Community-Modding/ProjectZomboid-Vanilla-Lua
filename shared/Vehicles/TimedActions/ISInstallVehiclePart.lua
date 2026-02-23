@@ -92,19 +92,19 @@ function ISInstallVehiclePart:complete()
     				VehicleUtils.callLua(tbl.complete, self.vehicle, self.part)
     			end
     			self.vehicle:transmitPartItem(self.part)
-    			self.character:sendObjectChange('mechanicActionDone', { success = true})
+    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
     			self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
     		elseif ZombRand(100) < failure then
     			self.item:setCondition(self.item:getCondition() - ZombRand(5,10));
     			self.character:getInventory():AddItem(self.item);
     			sendAddItemToContainer(self.character:getInventory(), self.item);
     			playServerSound("PZ_MetalSnap", self.character:getCurrentSquare());
-    			self.character:sendObjectChange('mechanicActionDone', { success = false})
+    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
     			addXp(self.character, Perks.Mechanics, 1);
     		else
     			self.character:getInventory():AddItem(self.item);
     			sendAddItemToContainer(self.character:getInventory(), self.item);
-    			self.character:sendObjectChange('mechanicActionDone', { success = false})
+    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
     			addXp(self.character, Perks.Mechanics, 1);
     		end
     	else
@@ -121,12 +121,13 @@ function ISInstallVehiclePart:getDuration()
 	return self.maxTime;
 end
 
-function ISInstallVehiclePart:new(character, part, item, maxTime)
+function ISInstallVehiclePart:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = part:getVehicle()
 	o.part = part
 	o.item = item
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.jobType = getText("Tooltip_Vehicle_Installing", item:getDisplayName());
 	return o
 end

@@ -14,7 +14,6 @@ function ISItemDropBox:prerender()
     ISPanel.prerender(self);
 end
 
-
 function ISItemDropBox:render()
     ISPanel.render(self);
 
@@ -257,6 +256,7 @@ function ISItemDropBox:activateToolTip()
         end
     end
 end
+
 function ISItemDropBox:deactivateToolTip()
     if self.toolTip then
         self.toolTip:removeFromUIManager();
@@ -286,7 +286,6 @@ function ISItemDropBox:setInvalidHighlight( _b, _a, _r, _g, _b, _a2, _r2, _g2, _
         self.borderColorHLInv = {r=_r2, g=_g2, b=_b2, a=_a2};
     end
 end
-
 
 function ISItemDropBox:new (x, y, width, height, storeItem, target, onItemDropped, onItemRemove, onVerifyItem, onDragSelf)
     local o = ISPanel:new(x, y, width, height);

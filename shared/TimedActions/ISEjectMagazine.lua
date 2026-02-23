@@ -45,7 +45,7 @@ end
 
 function ISEjectMagazine:serverStart()
 	self:initVars()
-	emulateAnimEventOnce(self.netAction, 1200, "unloadFinished", nil)
+	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1200), "unloadFinished", nil)
 end
 
 function ISEjectMagazine:getDuration()

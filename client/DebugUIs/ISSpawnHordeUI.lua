@@ -64,12 +64,6 @@ function ISSpawnHordeUI:createChildren()
 	self.outfitLbl = ISLabel:new(x, y, BUTTON_HGT, getText("IGUI_SpawnHorde_ZombieOutfit")..": " ,1,1,1,1,UIFont.Small, true);
 	self:addChild(self.outfitLbl);
 
---	self.outfit = ISTextEntryBox:new("", self.outfitLbl.x, self.outfitLbl.y + 15, 100, 20);
---	self.outfit:initialise();
---	self.outfit:instantiate();
---	self.outfit:setClearButton(true);
---	self:addChild(self.outfit);
-
 	self.outfit = ISComboBox:new(self.outfitLbl:getRight() + UI_BORDER_SPACING, y, 200, BUTTON_HGT)
 	self.outfit:initialise()
 	self:addChild(self.outfit)
@@ -93,9 +87,6 @@ function ISSpawnHordeUI:createChildren()
 	farX = math.max(farX, self.outfit:getRight())
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	--self.crawlerLbl = ISLabel:new(10, y, 10, "Crawler" ,1,1,1,1,UIFont.Small, true);
-	--self:addChild(self.crawlerLbl);
-
 	self.boolOptions = ISTickBox:new(x, y, 200, BUTTON_HGT, "", self, ISSpawnHordeUI.onBoolOptionsChange);
 	self.boolOptions:initialise()
 	self:addChild(self.boolOptions)
@@ -106,6 +97,7 @@ function ISSpawnHordeUI:createChildren()
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Invulnerable"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Sitting"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Recording"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Ragdolling"));
 
 	y=y+self.boolOptions:getHeight()+UI_BORDER_SPACING
 
@@ -197,10 +189,6 @@ function ISSpawnHordeUI:onSliderChange(_newval, _slider)
 	end
 end
 
---function ISSpawnHordeUI:update()
---	ISCollapsableWindow.update(self);
---end
-
 function ISSpawnHordeUI:getRadius()
 	local radius = self.radius:getInternalText();
 	return (tonumber(radius) or 1) - 1;
@@ -225,6 +213,7 @@ function ISSpawnHordeUI:onSpawn()
 	local isInvulnerable = false;
 	local isSitting = false;
 	local isRecordingAnims = false;
+	local isRagdolling = false;
 	if self.maleOutfits:contains(outfit) and not self.femaleOutfits:contains(outfit) then
 		femaleChance = 0;
 	end
@@ -252,6 +241,9 @@ function ISSpawnHordeUI:onSpawn()
 	if self.boolOptions.selected[7] then
 		isRecordingAnims = true;
 	end
+    if self.boolOptions.selected[8] then
+        isRagdolling = true;
+    end
 
 	local health = self.healthSlider:getCurrentValue()
 	if isClient() then
@@ -262,7 +254,7 @@ function ISSpawnHordeUI:onSpawn()
 		local x = ZombRand(self.selectX-radius, self.selectX+radius+1);
 		local y = ZombRand(self.selectY-radius, self.selectY+radius+1);
 		local z = self.selectZ;
-		addZombiesInOutfit(x, y, z, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims, heightOffset);
+		addZombiesInOutfit(x, y, z, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims, heightOffset, isRagdolling);
 	end
 end
 
@@ -330,15 +322,17 @@ function ISSpawnHordeUI:onRemoveBodies()
 			for y = self.selectY - radius, self.selectY + radius+1 do
 				if IsoUtils.DistanceTo(self.selectX, self.selectY, x+0.5, y+0.5) <= radius then
 					local sq = cell:getGridSquare(x, y, self.selectZ)
-					local bodies = {}
-					for i=0, sq:getStaticMovingObjects():size()-1 do
-						if instanceof(sq:getStaticMovingObjects():get(i), "IsoDeadBody") then
-							table.insert(bodies, sq:getStaticMovingObjects():get(i))
-						end
-					end
-					for i, body in ipairs(bodies) do
-						sq:removeCorpse(body, false);
-					end
+					if sq then
+                        local bodies = {}
+                        for i=0, sq:getStaticMovingObjects():size()-1 do
+                            if instanceof(sq:getStaticMovingObjects():get(i), "IsoDeadBody") then
+                                table.insert(bodies, sq:getStaticMovingObjects():get(i))
+                            end
+                        end
+                        for i, body in ipairs(bodies) do
+                            sq:removeCorpse(body, false);
+                        end
+                    end
 				end
 			end
 		end

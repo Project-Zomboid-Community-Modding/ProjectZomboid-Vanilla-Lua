@@ -13,7 +13,6 @@ function ISMakeUpUI:createChildren()
 	local btnWid = 100
 	local btnHgt = FONT_HGT_SMALL + 6
 	local comboHgt = FONT_HGT_SMALL + 6
-	local padBottom = 20
 	local titleBarHeight = self:titleBarHeight()
 	local avatarBorderSize = 2
 
@@ -70,7 +69,6 @@ function ISMakeUpUI:createChildren()
 	self.add.borderColor = {r=1, g=1, b=1, a=0.1};
 	self.add.enable = false;
 	self.leftPanel:addChild(self.add);
-	
 	
 	self.removeMakeupLbl = ISLabel:new(0, 0, FONT_HGT_MEDIUM, getText("IGUI_RemoveMakeUp"), 1, 1, 1, 1, UIFont.Medium, true)
 	self.rightPanel:addChild(self.removeMakeupLbl);

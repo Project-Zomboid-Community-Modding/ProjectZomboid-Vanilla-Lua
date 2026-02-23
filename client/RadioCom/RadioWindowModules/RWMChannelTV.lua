@@ -114,8 +114,6 @@ function RWMChannelTV:update()
     if self.comboBox and self.comboBox.expanded == true and self.lastModeExpanded == false then
         local a,b = self.comboBox:getY()+self.comboBox:getHeight()+UI_BORDER_SPACING+1, self.tuneInButton:getY()+self.tuneInButton:getHeight()+UI_BORDER_SPACING+1;
         self:setHeight( a > b and a or b);
-        --self:setHeight(self.comboBox:getY()+self.comboBox:getHeight()+5);
-        --print("height: ",( a > b and a or b) );
         if self.parent then
             self.parent:calculateHeights();
         end
@@ -192,15 +190,19 @@ function RWMChannelTV:getAPrompt()
     end
     return nil;
 end
+
 function RWMChannelTV:getBPrompt()
     return nil;
 end
+
 function RWMChannelTV:getXPrompt()
     return nil;
 end
+
 function RWMChannelTV:getYPrompt()
     return nil;
 end
+
 function RWMChannelTV:getRBPrompt()
     if self.focusElement == self.comboBox then
         return getText("IGUI_RadioDeselectChannelList");
@@ -208,7 +210,6 @@ function RWMChannelTV:getRBPrompt()
         return getText("IGUI_RadioSelectChannelList");
     end
 end
-
 
 function RWMChannelTV:new (x, y, width, height )
     local o = RWMPanel:new(x, y, width, height);

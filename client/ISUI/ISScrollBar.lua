@@ -60,9 +60,6 @@ function ISScrollBar:refresh()
 		local sh = self.parent:getScrollHeight();
 
 		if(sh > self.parent:getScrollAreaHeight()) then
-
-			--print(-self.parent:getYScroll());
-			--print(sh - self.parent:getHeight());
 			if -self.parent:getYScroll() > sh - self.parent:getScrollAreaHeight() then
 				self.parent:setYScroll(-(sh - self.parent:getScrollAreaHeight()));
 			end
@@ -201,7 +198,6 @@ function ISScrollBar:updatePos()
 
 			local yscroll = -self.parent:getYScroll();
 
-			--self.parent:setYScroll(-(self.pos * (sh - self.parent:getHeight())));
 			self.pos = yscroll / (sh - dif);
 
 			if(self.pos < 0) then
@@ -270,7 +266,6 @@ function ISScrollBar:onMouseMove(dx, dy)
 end
 
 function ISScrollBar:instantiate()
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	if self.vertical then
 		self.anchorLeft = false;
@@ -389,9 +384,6 @@ function ISScrollBar:render()
 			if self.doSetStencil then
 				self:clearStencilRect()
 			end
-			if self.doRepaintStencil then
---				self:repaintStencilRect(0, 0, self.width, self.height)
-			end
 		else
 			self.barx = 0
 			self.bary = 0
@@ -403,7 +395,6 @@ end
 
 function ISScrollBar:new (parent, vertical)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(0, 0, 0, 0);
 	setmetatable(o, self)
 	self.__index = self

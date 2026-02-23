@@ -241,7 +241,6 @@ function ModListBox:doDrawItem(y, item, alt)
     return y
 end
 
-
 function ModListBox:setJoypadFocused(focused, joypadData)
     if focused then
         if self.selected == -1 then
@@ -259,7 +258,6 @@ function ModListBox:setJoypadFocused(focused, joypadData)
     end
     self.joypadFocused = focused;
 end
-
 
 function ModListBox:onJoypadDown(button, joypadData)
     if button == Joypad.AButton then

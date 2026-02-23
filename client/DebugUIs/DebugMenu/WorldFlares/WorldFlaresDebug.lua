@@ -147,8 +147,6 @@ function WorldFlaresDebug:createChildren()
 end
 
 function WorldFlaresDebug:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
-    --local v = _tickbox.customData;
-    --v.lua.cheat = not v.lua.cheat;
     print("index = "..tostring(_index))
     print("selected = "..tostring(_selected))
     print("arg1 = "..tostring(_arg1))
@@ -175,7 +173,6 @@ function WorldFlaresDebug:onSliderChange(_newVal, _slider)
     if _slider.customData=="int_b" then
         self.colInt.b = _newVal;
     end
-
 end
 
 function WorldFlaresDebug:onClickDeleteFlares()
@@ -207,7 +204,6 @@ function WorldFlaresDebug:onClickClose()
 end
 
 function WorldFlaresDebug:OnFlaresListMouseDown(item)
-    --self:populateInfoList(item);
     self.flareID = item:getId();
 end
 
@@ -241,20 +237,13 @@ function WorldFlaresDebug:drawFlaresList(y, item, alt)
 
     local flare = item.item;
 
-    --drawRect( x, y, w, h, a, r, g, b)
     local alpha = 1.0;
     local c = flare:getColor():getExterior();
     self:drawRect( self:getWidth()-62, (y+2), 20, self.itemheight - 6, alpha, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
     c = flare:getColor():getInterior();
     self:drawRect( self:getWidth()-40, (y+2), 20, self.itemheight - 6, alpha, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
 
-    --local prefix = item.item:getIndexOffset()==0 and "TODAY" or tostring(item.item:getIndexOffset());
-    --self:drawText( prefix .. " :: " .. item.item:getName(), 10, y + 2, 1, 1, 1, a, self.font);
-    --if item.item:isHasFog() then
-    --    self:drawText( item.text .. " (F)", 10, y + 2, 0.8, 1, 0.75, a, self.font);
-    --else
-        self:drawText( item.text, 10, y + 2, 1, 1, 1, a, self.font);
-    --end
+    self:drawText( item.text, 10, y + 2, 1, 1, 1, a, self.font);
 
     return y + self.itemheight;
 end

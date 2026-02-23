@@ -37,10 +37,6 @@ function ISModalDialog:initialise()
 		self.ok:enableAcceptColor()
 		self:addChild(self.ok);
 	end
---	if UIManager.getSpeedControls() then
---		UIManager.getSpeedControls():SetCurrentGameSpeed(0);
---		UIManager.setShowPausedMessage(false);
---	end
 end
 
 function ISModalDialog:destroy()
@@ -128,7 +124,6 @@ function ISModalDialog:onMouseMove(dx, dy)
         self:setX(self.x + dx);
         self:setY(self.y + dy);
         self:bringToTop();
-        --ISMouseDrag.dragView = self;
     end
 end
 
@@ -162,38 +157,6 @@ end
 
 function ISModalDialog:onJoypadDown(button)
 	ISPanelJoypad.onJoypadDown(self, button)
---[[
-    if button == Joypad.AButton then
-        if self.yesno then
-            self.yes.player = self.player;
-            self.yes.onclick(self.yes.target, self.yes);
-        else
-            self.ok.onclick(self.ok.target, self.ok);
-        end
-        if self.player ~= nil then
-            setJoypadFocus(self.player, self.prevFocus);
-        elseif self.joyfocus and self.joyfocus.focus == self then
-            self.joyfocus.focus = self.prevFocus
-            updateJoypadFocus(self.joyfocus)
-        end
-        self:destroy();
-    end
-    if button == Joypad.BButton then
-        if self.yesno then
-            self.no.player = self.player;
-            self.no.onclick(self.no.target, self.no);
-        else
-            self.ok.onclick(self.ok.target, self.ok);
-        end
-       if self.player ~= nil then
-            setJoypadFocus(self.player, self.prevFocus);
-        elseif self.joyfocus and self.joyfocus.focus == self then
-            self.joyfocus.focus = self.prevFocus
-            updateJoypadFocus(self.joyfocus)
-       end
-        self:destroy();
-    end
---]]
 end
 
 function ISModalDialog:render()

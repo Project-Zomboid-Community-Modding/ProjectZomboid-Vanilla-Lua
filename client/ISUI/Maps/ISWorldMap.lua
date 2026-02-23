@@ -373,6 +373,9 @@ function ISWorldMap:prerender()
 	if TERRAIN_IMAGE then
 	    self:checkTerrainImage()
 	end
+    if not ISWorldMap.instance then
+        ISWorldMap.instance = self;
+    end
 end
 
 function ISWorldMap:render()
@@ -542,7 +545,6 @@ function ISWorldMap:onMouseUpPrintMedia()
         win.children.bottomButtons.children["revealOnMap"..i]:setVisible(false)
     end
     win.javaObj:setAlwaysOnTop(true)
---        win:centerOnScreen(self.playerNum)
 
     if getJoypadData(self.playerNum) then
         ISAtomUIJoypad.Apply(win)
@@ -726,9 +728,6 @@ end
 
 function ISWorldMap:onMouseUpStashMap()
     if not self.mouseOverStashMap then return false end
---    if self.stashMapUI and not UIManager.getUI():contains(self.stashMapUI.javaObj) then
---        self.stashMapUI = nil
---    end
     self:closeStashMap()
     local bounds = self.mouseOverStashMap.bounds
     local x1 = self.mapAPI:worldToUIX(bounds.x1, bounds.y1)
@@ -796,7 +795,6 @@ function ISWorldMap:positionStashMap()
     self.stashMapUI:setY(minY)
     self.stashMapUI:setWidth(width)
     self.stashMapUI:setHeight(height)
---    self.stashMapUI.javaObject:scaleWidthToHeight()
     if true or changed then
         self.stashMapUI.mapAPI:resetView()
         local zoom = self.stashMapUI.mapAPI:getBaseZoom()
@@ -1183,6 +1181,9 @@ function ISWorldMap:close()
 	if self.character then
 		self.character:playSoundLocal("MapClose")
 	end
+    if ISWorldMap.instance then
+        ISWorldMap.instance = nil;
+    end
 end
 
 function ISWorldMap:isKeyConsumed(key)
@@ -1217,11 +1218,6 @@ function ISWorldMap:onKeyRelease(key)
 			self:onToggleSymbols()
 		end
 	end
---[[
-	if key == Keyboard.KEY_X then
-		self:close()
-	end
---]]
 end
 
 function ISWorldMap:updateJoypad()
@@ -1498,7 +1494,6 @@ function ISWorldMap.ShowWorldMap(playerNum, centerX, centerY, zoom)
 		ISWorldMap_instance = ISWorldMap:new(INSET, INSET, getCore():getScreenWidth() - INSET * 2, getCore():getScreenHeight() - INSET * 2)
 		ISWorldMap_instance:initialise()
 		ISWorldMap_instance:instantiate()
---		ISWorldMap_instance:setAlwaysOnTop(true) -- Breaks context menu
 		ISWorldMap_instance.character = getSpecificPlayer(playerNum)
 		ISWorldMap_instance.playerNum = playerNum
 		ISWorldMap_instance.symbolsUI.character = getSpecificPlayer(playerNum)
@@ -1591,7 +1586,6 @@ function ISWorldMap.ToggleWorldMap(playerNum)
 		-- kludge to allow for vehicle interior lights
 		if not (playerObj:getVehicle() and playerObj:getVehicle():getBatteryCharge() > 0) then 
 			HaloTextHelper.addBadText(playerObj, getText("ContextMenu_TooDark"));
--- 			HaloTextHelper.addText(playerObj, getText("ContextMenu_TooDark"), getCore():getGoodHighlitedColor());
 			return
 		end
 	end
@@ -1629,7 +1623,7 @@ function ISWorldMap.checkKey(key)
 	end
 	if MainScreen.instance and not MainScreen.instance.inGame then
 		-- For debugging the map in the main menu without starting a game.
-		return false -- getDebug()
+		return false
 	end
 	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then
 		return false
@@ -1638,22 +1632,7 @@ function ISWorldMap.checkKey(key)
 	if not playerObj or playerObj:isDead() then
 		return false
 	end
-	-- -- check for light if the map needing light sandbox setting is enabled	
-	-- if ISWorldMap.NeedsLight() and playerObj:getSquare():getLightLevel(playerObj:getPlayerNum()) < 0.43 then
-		-- -- kludge to allow for vehicle interior lights
-		-- if not (playerObj:getVehicle() and playerObj:getVehicle():getBatteryCharge() > 0) then 
-			-- return false
-		-- end
-	-- end
---[[
-	local queue = ISTimedActionQueue.queues[playerObj]
-	if queue and #queue.queue > 0 then
-		return false
-	end
-	if getCell():getDrag(0) then
-		return false
-	end
---]]
+
 	return true
 end
 
@@ -1697,7 +1676,6 @@ function ISWorldMap.onKeyKeepPressed(key)
 		radialMenu:center()
 		radialMenu:addToUIManager()
 		if JoypadState.players[playerNum+1] then
---			menu:setHideWhenButtonReleased(Joypad.RBumper)
 			setJoypadFocus(playerNum, radialMenu)
 			getSpecificPlayer(playerNum):setJoypadIgnoreAimUntilCentered(true)
 		end
@@ -1706,11 +1684,7 @@ end
 
 function ISWorldMap.onKeyReleased(key)
 	if not ISWorldMap.checkKey(key) then return end
---[[
-	if not KEYSTATE.keyPressedMS then
-		return
-	end
---]]
+
 	if MainScreen.instance and not MainScreen.instance.inGame then
 		-- For debugging the map in the main menu without starting a game.
 		ISWorldMap.ToggleWorldMap(0)

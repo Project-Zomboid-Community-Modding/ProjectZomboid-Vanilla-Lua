@@ -151,7 +151,7 @@ function BuildRecipeCode.barricade.OnCreate(params)
             if created then
                 barricade:transmitCompleteItemToClients()
             else
-                barricade:sendObjectChange('state')
+                barricade:sendObjectChange(IsoObjectChange.STATE)
             end
         end
         return { objectAlreadyTransmitted = true };
@@ -315,7 +315,7 @@ function BuildRecipeCode.stairs.OnCreate(params)
         while zI >= 0 do
             local obj2 = IsoThumpable.new(getCell(), sq, pillarSprite, topNorth, {});
     		sq:AddSpecialObject(obj2);
-    		obj2:transmitCompleteItemToServer();
+    		obj2:transmitCompleteItemToClients();
             sq:RecalcAllWithNeighbours(true);
 
     		if sq:TreatAsSolidFloor() then
@@ -335,11 +335,8 @@ function BuildRecipeCode.stairs.OnCreate(params)
 end 
 
 function BuildRecipeCode.floor.OnIsValid(params)
-	if params.square:getZ() > 0 then
-		local below = getCell():getGridSquare(params.square:getX(), params.square:getY(), params.square:getZ() - 1)
-		if below and below:HasStairs() then
-			return false
-		end
+	if params.square:HasStairsBelow() then
+		return false
 	end
 
 	local tileInfoSprite = params.tileInfo:getSpriteName();
@@ -528,12 +525,13 @@ end
 
 function BuildRecipeCode.composter.OnCreate(params)
     local thumpable = params.thumpable;
-	local javaObject = IsoCompost.new(getCell(), thumpable:getSquare(), thumpable:getSprite():getName());
-	thumpable:getSquare():AddSpecialObject(javaObject)
-	javaObject:syncCompost()
-	javaObject:setMovedThumpable(true)
+    local javaObject = IsoCompost.new(getCell(), thumpable:getSquare(), thumpable:getSprite():getName());
+    thumpable:getSquare():AddSpecialObject(javaObject)
+    javaObject:syncCompost()
+    javaObject:setMovedThumpable(true)
+    thumpable:getSquare():RemoveTileObject(thumpable)
 
-	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+    return { objectAlreadyTransmitted = true }
 end
 
 function BuildRecipeCode.windowGlass.OnCreate(params)

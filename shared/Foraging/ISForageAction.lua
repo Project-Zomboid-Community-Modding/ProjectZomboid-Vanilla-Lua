@@ -26,6 +26,7 @@ function ISForageAction:start()
 	self.action:setUseProgressBar(false);
     self:setActionAnim("Forage");
     self:setOverrideHandModels(nil, nil);
+	self.character:playSound("ForagingPickup")
 end
 
 function ISForageAction:perform()
@@ -78,18 +79,24 @@ end
 
 function ISForageAction:complete()
 	-- add the items to player inventory
-	local itemList;
+	local itemList
 	if isServer() then
-	    itemList = ArrayList.new();
-        for _, type in pairs(self.itemTypeList) do
-            itemList:add(instanceItem(type));
-        end;
+		itemList = ArrayList.new()
+		for _, data in pairs(self.itemDataList) do
+			local item = instanceItem(data.type)
+			if instanceof(item, "Food") then
+				item:setPoisonPower(data.poisonPower)
+				item:setPoisonDetectionLevel(data.poisonDetectionLevel)
+			end
+			itemList:add(item)
+		end
 	else
-	    itemList = self.forageIcon.itemList or ArrayList.new();
+		itemList = self.forageIcon.itemList or ArrayList.new()
 	end
+
 	forageSystem.addOrDropItems(self.character, self.targetContainer, itemList)
 
-	return true;
+	return true
 end
 
 function ISForageAction:getDuration()
@@ -99,11 +106,11 @@ function ISForageAction:getDuration()
     return 50;
 end
 
-function ISForageAction:new(character, iconID, itemTypeList, targetContainer, itemType)
+function ISForageAction:new(character, iconID, itemDataList, targetContainer, itemType)
 	local o = ISBaseTimedAction.new(self, character);
 	o.targetContainer = targetContainer;
 	o.itemType = itemType;
-	o.itemTypeList = itemTypeList;
+	o.itemDataList = itemDataList;
 	--
 	if not isServer() then
 		o.iconID = iconID;

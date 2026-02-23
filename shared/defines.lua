@@ -27,6 +27,7 @@ ZomboidGlobals = {
 	StressFromSoundsMultiplier = 0.00002,
 	StressFromBiteOrScratch = 0.00005,
 	StressFromHemophobic = 0.0000003333,
+	StressFromDiscomfort = 0.00000013,
 
 	AngerDecrease = 0.0001,
 
@@ -41,8 +42,7 @@ ZomboidGlobals = {
     PoisonLevelDecrease = 0.0010,
     PoisonHealthReduction = 0.0465,
     FoodSicknessDecrease = 0.0015,
-    SicknessDecrease = 0.0015,
-	
+
 	BurnCorpsePetrolAmount = 0.1,
 	CleanBloodBleachAmount = 0.24999,
 	CleanGraffitiPetrolAmount = 1.24999,
@@ -53,6 +53,8 @@ ZomboidGlobals = {
 
 	IdleIncrease = 0.0005,
 	IdleDecrease = 0.0060,
+
+	VehicleDiscomfortWhenOverEncumbered = 0.25,
 }
 
 ZombiePopulationMultiplier = {}

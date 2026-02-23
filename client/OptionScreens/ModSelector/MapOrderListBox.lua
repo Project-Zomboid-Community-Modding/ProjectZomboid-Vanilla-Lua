@@ -16,7 +16,6 @@ function MapOrderListBox:new(x, y, width, height)
     return o
 end
 
-
 function MapOrderListBox:onMouseDown(x, y)
     if #self.items == 0 then return end
     local row = self:rowAt(x, y)

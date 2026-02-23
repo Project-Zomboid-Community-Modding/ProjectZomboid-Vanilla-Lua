@@ -31,23 +31,6 @@ function RWMGridPower:createChildren()
     self.toggleOnOffButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
     self.toggleOnOffButton:setSound("activate", nil)
     self:addChild(self.toggleOnOffButton);
-
-    --[[
-    xoff = xoff + (self.toggleOnOffButton:getX()-xoff) + self.toggleOnOffButton:getWidth();
-
-    self.itemDropBox = ISItemDropBox:new (xoff+10, 4, self.height-8, self.height-8, false, self, RWMGridPower.addBattery, RWMGridPower.removeBattery, RWMGridPower.verifyItem, nil );
-    self.itemDropBox:initialise();
-    self.itemDropBox:setBackDropTex( getTexture("Item_Battery"), 0.2, 1,1,1 );
-    self.itemDropBox:setDoBackDropTex( true );
-    self.itemDropBox:setToolTip( true, "Drag a battery in here, or rightclick to remove it." );
-    self:addChild(self.itemDropBox);
-
-    xoff = xoff + (self.itemDropBox:getX()-xoff) + self.itemDropBox:getWidth();
-
-    self.batteryStatus = ISBatteryStatusDisplay:new ( xoff+10, 4, self.width-(20+ xoff), self.height-8, true);
-    self.batteryStatus:initialise();
-    self:addChild(self.batteryStatus);
-    --]]
 end
 
 function RWMGridPower:toggleOnOff()
@@ -58,39 +41,8 @@ function RWMGridPower:toggleOnOff()
     end
 end
 
---[[
-function RWMGridPower:removeBattery()
-    ISTimedActionQueue.add(ISRadioAction:new("RemoveBattery",self.player, self.device ));
-end
-
-function RWMGridPower:addBattery( _items )
-    local item;
-    local pbuff = 0;
-
-    for _,i in ipairs(_items) do
-        if i:getDelta() > pbuff then
-            item = i;
-            pbuff = i:getDelta()
-        end
-    end
-
-    if item then
-        ISTimedActionQueue.add(ISRadioAction:new("AddBattery",self.player, self.device, item ));
-    end
-end
-
-function RWMGridPower:verifyItem( _item )
-    if _item:getFullType() == "Base.Battery" then
-        return true;
-    end
-end
---]]
-
 function RWMGridPower:clear()
     RWMPanel.clear(self);
-    --self.player = nil;
-    --self.device = nil;
-    --self.deviceData = nil;
 end
 
 function RWMGridPower:readFromObject( _player, _deviceObject, _deviceData, _deviceType )
@@ -98,11 +50,6 @@ function RWMGridPower:readFromObject( _player, _deviceObject, _deviceData, _devi
         return false;
     end
     return RWMPanel.readFromObject(self, _player, _deviceObject, _deviceData, _deviceType );
-    --self.player = _player;
-    --self.device = _deviceObject;
-    --self.deviceData = _deviceData;
-
-    --self.stateCache = { isOn = self.device:IsTurnedOn(),  }
 end
 
 function RWMGridPower:update()
@@ -117,16 +64,6 @@ function RWMGridPower:update()
         else
             self.toggleOnOffButton:setTitle(getText("ContextMenu_Turn_On"));
         end
-
-        --[[
-        self.batteryStatus:setPower( self.deviceData:getPower() );
-
-        if self.deviceData:getHasBattery() then
-            self.itemDropBox:setStoredItemFake( self.batteryTex );
-        else
-            self.itemDropBox:setStoredItemFake( nil );
-        end
-        --]]
     end
 end
 
@@ -161,16 +98,18 @@ function RWMGridPower:getAPrompt()
         return getText("ContextMenu_Turn_On");
     end
 end
+
 function RWMGridPower:getBPrompt()
     return nil;
 end
+
 function RWMGridPower:getXPrompt()
     return nil;
 end
+
 function RWMGridPower:getYPrompt()
     return nil;
 end
-
 
 function RWMGridPower:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);
@@ -187,8 +126,6 @@ function RWMGridPower:new (x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
-    --o.batteryTex = getTexture("Item_Battery");
     return o
 end
 

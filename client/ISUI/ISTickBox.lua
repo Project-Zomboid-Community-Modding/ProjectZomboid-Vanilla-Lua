@@ -84,8 +84,6 @@ function ISTickBox:render()
             self:drawRect(self.leftMargin, y+boxDY, self.boxSize, self.boxSize, 1.0, 0.3, 0.3, 0.3);
         end
 
-
-
       	if self.selected[c] == true then
 			self:drawTextureScaled(self.tickTexture, self.leftMargin + 2, y+boxDY+2, self.boxSize-4, self.boxSize-4, 1, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
 		end
@@ -196,11 +194,9 @@ function ISTickBox:onMouseMove(dx, dy)
 	local x = self:getMouseX();
 	local y = self:getMouseY();
 	if x >= 0 and y >= 0 and x<=self.width and y <= self.height then
-		--local totalHgt = #self.options * (self.itemHgt + UI_BORDER_SPACING)
 		if math.fmod(y, self.itemHgt+UI_BORDER_SPACING) >= self.itemHgt then
 			self.mouseOverOption = 0;
 		else
-			--y = y - (self.height - totalHgt) / 2
 			y = y / (self.itemHgt+UI_BORDER_SPACING);
 			y = math.floor(y + 1);
 			self.mouseOverOption = y;

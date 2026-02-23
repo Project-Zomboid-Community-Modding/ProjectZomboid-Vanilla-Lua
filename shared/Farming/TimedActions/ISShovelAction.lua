@@ -57,8 +57,7 @@ function ISShovelAction:perform()
 end
 
 function ISShovelAction:complete()
-
-
+	self.plant = SFarmingSystem.instance:getLuaObjectAt(self.plant.x, self.plant.y, self.plant.z);
     if self.plant:getSquare() then
         local sq = self.plant:getSquare()
         -- we remove grass and vegetation from the square
@@ -68,9 +67,7 @@ function ISShovelAction:complete()
             sq:removeGrass()
         end
     end
-
-	local plant = SFarmingSystem.instance:getLuaObjectAt(self.plant.x, self.plant.y, self.plant.z);
-	SFarmingSystem.instance:removePlant(plant);
+	SFarmingSystem.instance:removePlant(self.plant);
 	return true;
 end
 
@@ -78,12 +75,13 @@ function ISShovelAction:getDuration()
 	return self.maxTime;
 end
 
-function ISShovelAction:new (character, item, plant, maxTime)
+function ISShovelAction:new (character, item, plant, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character);
 	o.character = character;
 	o.item = item;
     o.plant = plant;
-	o.maxTime = maxTime;
+    o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
     o.caloriesModifier = 4;
 	return o
 end

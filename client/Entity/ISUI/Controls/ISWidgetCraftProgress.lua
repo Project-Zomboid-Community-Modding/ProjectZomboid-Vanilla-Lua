@@ -1,7 +1,4 @@
-
 require "ISUI/ISPanel"
-
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
 
 ISWidgetCraftProgress = ISPanel:derive("ISWidgetCraftProgress");
 
@@ -14,8 +11,6 @@ function ISWidgetCraftProgress:createChildren()
 
     local style = self.styleBar or "S_ProgressBar_Craft";
     self.progressBar = ISXuiSkin.build(self.xuiSkin, style, ISProgressBar, 0, 0, 150, 20, false, UIFont.Small);
-    --self.progressBar.progressColor = namedColorToTable("ProgressYellow"); --{r=1.0, g=0.95, b=0.4, a=1};
-    --self.progressBar.progressTexture = self.horzTexture;
     self.progressBar:initialise();
     self.progressBar:instantiate();
     self:addChild(self.progressBar);
@@ -56,7 +51,6 @@ function ISWidgetCraftProgress:calculateLayout(_preferredWidth, _preferredHeight
 end
 
 function ISWidgetCraftProgress:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

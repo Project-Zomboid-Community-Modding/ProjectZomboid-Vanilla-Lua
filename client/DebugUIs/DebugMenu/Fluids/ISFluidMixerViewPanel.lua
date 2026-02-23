@@ -10,7 +10,6 @@ function ISFluidMixerViewPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISFluidMixerViewPanel:createChildren()
     ISPanel.createChildren(self);
 
@@ -83,7 +82,6 @@ function ISFluidMixerViewPanel:createChildren()
     self.slider:instantiate();
     self.slider.valueLabel = false;
     self.slider:setCurrentValue( 0, true );
-    --self.slider.customData = _data;
     self:addChild(self.slider);
 
     y = self:incY(y, self.slider, UI_BORDER_SPACING);
@@ -138,7 +136,6 @@ function ISFluidMixerViewPanel:onResize(_width, _height)
     self.fluidBar:setX(self.width-self.fluidBar:getWidth() - UI_BORDER_SPACING-1);
     self.fluidBar:setHeight(self.height - UI_BORDER_SPACING*2-2);
 
-    --local midWidth = self.width - x - 10;
     self.slider:setWidth(midWidth);
     self.slider:paginate();
     self.amountBox:setWidth(midWidth);
@@ -199,7 +196,6 @@ function ISFluidMixerViewPanel:addItem(item)
     if not playerObj or playerObj:isDead() then return end
     if isClient() then
         print("cannot perform this function on client atm");
-        --SendCommandToServer("/additem \"" .. playerObj:getDisplayName() .. "\" \"" .. luautils.trim(item:getFullName()) .. "\"")
     else
         local item = instanceItem(item)
         local fc = item:getFluidContainer();
@@ -260,7 +256,6 @@ function ISFluidMixerViewPanel:populate()
     end
 
     if self.list.items and #self.list.items>0 then
-        --print("SELECTING ELEMENT")
         self.list.selected = 1;
         self:onFluidListSelected(self.list.items[self.list.selected].item);
     end
@@ -285,20 +280,11 @@ function ISFluidMixerViewPanel:drawFluidListItem(y, item, alt)
 
     if item.item.name then
         local drawY = y + (self.itemheight/4) - (FONT_HGT_SMALL /2) + 2;
-        --local c = item.item.color;
         if item.item.fluid:getFluidType()==FluidType.Modded then
-            --r,g,b = Colors.CornFlowerBlue:getRedFloat(), Colors.CornFlowerBlue:getGreenFloat(), Colors.CornFlowerBlue:getBlueFloat();
             self:drawText( "[M] "..item.item.name, x, drawY, self.modColor.r, self.modColor.g, self.modColor.b, 1.0, self.font);
         else
             self:drawText( item.item.name, x, drawY, 1, 1, 1, 1.0, self.font);
         end
-        --[[
-        if item.item.vanilla then
-            self:drawText( item.item.name, x, drawY, 1, 1, 1, 1.0, self.font);
-        else
-            self:drawText( "[MODDED] "..item.item.name, x, drawY, 0.8, 0.8, 1, 1.0, self.font);
-        end
-        --]]
     end
     if item.item.fulltype then
         local drawY = y + ((self.itemheight/4)*3) - (FONT_HGT_SMALL /2) - 1;
@@ -326,9 +312,6 @@ function ISFluidMixerViewPanel:onFluidListSelected(_item)
             self.createItemButton:setTitle(getText("IGUI_Fluids_Mixer_Disabled"));
             self.warningLabel:setName(getText("IGUI_Fluids_Mixer_CannotMixClient"));
         end
-        --self.fluidPanel:setFluid(self.selectedFluidItem.fluid);
-    else
-        --self.fluidPanel:setFluid(nil);
     end
 end
 
@@ -355,6 +338,5 @@ function ISFluidMixerViewPanel:new (x, y, width, height, player)
     o.playerNum = player:getPlayerNum();
     o.searchText = "";
     o.canMix = true;
-    --o.modColor = namedColorToTable("CornFlowerBlue");
 	return o
 end

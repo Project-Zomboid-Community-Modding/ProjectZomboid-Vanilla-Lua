@@ -249,10 +249,6 @@ end
 function PopupColorEdit:prerender()
     ISPanel.prerender(self);
 
-    --[[for k,o in pairs(self.floats) do
-        o.slider:setCurrentValue(o.option:getAdminValue());
-    end--]]
-
     local o = self.optionControls;
     local c = self.global:getAdminValue():getExterior();
     o.sliderR_ext:setCurrentValue(c:getRedFloat(), true);
@@ -279,8 +275,6 @@ function PopupColorEdit:prerender()
     o.colorboxAlpha_int.backgroundColor.b = c:getAlphaFloat();
 
     local s = o;
-    --self.global:setAdminValue(s.sliderR_ext:getCurrentValue(),s.sliderG_ext:getCurrentValue(),s.sliderB_ext:getCurrentValue(),s.sliderA_ext:getCurrentValue(),
-        --s.sliderR_int:getCurrentValue(),s.sliderG_int:getCurrentValue(),s.sliderB_int:getCurrentValue(),s.sliderA_int:getCurrentValue());
     if self.firstRun then
         self.firstRun = false;
         s.labelR_ext:setName(s.sliderR_ext.pretext..ISDebugUtils.printval(s.sliderR_ext:getCurrentValue(),3));

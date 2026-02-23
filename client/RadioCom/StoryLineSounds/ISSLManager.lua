@@ -37,6 +37,5 @@ function ISSLManager:new (x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     return o
 end

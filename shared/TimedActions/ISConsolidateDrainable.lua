@@ -4,22 +4,48 @@ ISConsolidateDrainable = ISBaseTimedAction:derive("ISConsolidateDrainable");
 
 function ISConsolidateDrainable:isValid()
     if isClient() and self.intoItem and self.drainable then
-        return self.character:getInventory():containsID(self.intoItem:getID()) and (self.character:getInventory():containsID(self.drainable:getID() or (self.otherItems and #self.otherItems > 0)))
+        return self.character:getInventory():containsID(self.intoItem:getID()) and (self.character:getInventory():containsID(self.drainable:getID()) or (self.otherItems and #self.otherItems > 0))
     else
         return self.character:getInventory():contains(self.intoItem) and (self.character:getInventory():contains(self.drainable) or (self.otherItems and #self.otherItems > 0));
     end
 end
 
 function ISConsolidateDrainable:update()
-	if self.drainable:getCurrentUsesFloat() <= 0 then
-		self:forceComplete()
+	local progress
+	if isServer() then
+		progress = self.netAction:getProgress();
+	else
+		progress = self:getJobDelta();
 	end
-	self.drainable:setJobDelta(self:getJobDelta());
-	self.intoItem:setJobDelta(self:getJobDelta());
-	local fromDelta = self.fromStart + (self.fromTarget - self.fromStart) * self:getJobDelta()
-	self.drainable:setUsedDelta(fromDelta)
-	local intoDelta = self.intoStart + (self.intoTarget - self.intoStart) * self:getJobDelta()
-	self.intoItem:setUsedDelta(intoDelta)
+    if not isServer() then
+	    self.drainable:setJobDelta(progress);
+	    self.intoItem:setJobDelta(progress);
+    end
+    if not isClient() then
+	    if self.drainable:getCurrentUsesFloat() <= 0 then
+		    self:forceComplete();
+	    end
+	    local fromDelta = self.fromStart + (self.fromTarget - self.fromStart) * progress;
+	    self.drainable:setUsedDelta(fromDelta);
+	    local intoDelta = self.intoStart + (self.intoTarget - self.intoStart) * progress;
+	    self.intoItem:setUsedDelta(intoDelta);
+	    if isServer() then
+	        sendItemStats(self.intoItem);
+	        sendItemStats(self.drainable);
+        end
+    end
+end
+
+function ISConsolidateDrainable:animEvent(event, parameter)
+	if isServer() then
+		if event == "update" then
+			self:update();
+		end
+	end
+end
+
+function ISConsolidateDrainable:serverStart()
+	emulateAnimEvent(self.netAction, self:getDuration(), "update", nil);
 end
 
 function ISConsolidateDrainable:start()
@@ -77,30 +103,7 @@ function ISConsolidateDrainable:nextItem()
 	return nil
 end
 
-function ISConsolidateDrainable:serverStop()
-	--self.item:setUsedDelta(self.startUsedDelta + self.netAction:getProgress()*(self.endUsedDelta - self.startUsedDelta));
-	--sendItemStats(self.item)
-	local fromDelta = self.fromStart + (self.fromTarget - self.fromStart) * self.netAction:getProgress()
-	self.drainable:setUsedDelta(fromDelta)
-	sendItemStats(self.drainable)
-	local intoDelta = self.intoStart + (self.intoTarget - self.intoStart) * self.netAction:getProgress()
-	self.intoItem:setUsedDelta(intoDelta)
-	sendItemStats(self.intoItem)
-end
-
 function ISConsolidateDrainable:complete()
-	local fromDelta = self.fromStart + (self.fromTarget - self.fromStart)
-	self.drainable:setUsedDelta(fromDelta)
-	sendItemStats(self.drainable)
-	local intoDelta = self.intoStart + (self.intoTarget - self.intoStart)
-	self.intoItem:setUsedDelta(intoDelta)
-	sendItemStats(self.intoItem)
---[[
-	if self.intoItem:getCurrentUsesFloat() > self.intoStart and self.drainable:isTaintedWater() then
-		self.intoItem:setTaintedWater(true);
-		self.intoItem:syncItemFields();
-	end
-]]--
 	if self.drainable:getCurrentUsesFloat() <= 0.0001 then
 		self.drainable:UseAndSync()
 		self.drainable = nil

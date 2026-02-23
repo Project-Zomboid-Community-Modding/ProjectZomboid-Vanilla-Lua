@@ -52,7 +52,7 @@ end
 
 function RWMMedia:removeMedia()
     if self:doWalkTo() then
-        ISTimedActionQueue.add(ISRadioAction:new("RemoveMedia",self.player, self.device ));
+        ISTimedActionQueue.add(ISDeviceMediaAction:new(self.player, true, nil, ISDeviceBatteryAction:getDeviceDataParameter(self.player, self.device, self.deviceType) ));
     end
 end
 
@@ -75,7 +75,7 @@ end
 
 function RWMMedia:addMediaAux(item)
     if self:doWalkTo() then
-        ISTimedActionQueue.add(ISRadioAction:new("AddMedia",self.player, self.device, item ));
+        ISTimedActionQueue.add(ISDeviceMediaAction:new(self.player, false, item, ISDeviceBatteryAction:getDeviceDataParameter(self.player, self.device, self.deviceType) ));
     end
 end
 
@@ -200,7 +200,6 @@ function RWMMedia:prerender()
     ISPanel.prerender(self);
 end
 
-
 function RWMMedia:render()
     ISPanel.render(self);
 end
@@ -276,13 +275,14 @@ function RWMMedia:getBPrompt()
     end
     return nil;
 end
+
 function RWMMedia:getXPrompt()
     return nil;
 end
+
 function RWMMedia:getYPrompt()
     return nil;
 end
-
 
 function RWMMedia:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);

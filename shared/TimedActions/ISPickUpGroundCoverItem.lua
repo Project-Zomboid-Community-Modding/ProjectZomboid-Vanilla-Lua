@@ -20,9 +20,11 @@ function ISPickUpGroundCoverItem:start()
 	self:setActionAnim("Loot")
 	self.character:SetVariable("LootPosition", "Low")
 	self:setOverrideHandModels(nil, nil)
+	self.sound = self.character:playSound("CraftStonesRemove")
 end
 
 function ISPickUpGroundCoverItem:stop()
+    self:stopSound()
     ISBaseTimedAction.stop(self)
 end
 
@@ -43,6 +45,7 @@ end
 
 
 function ISPickUpGroundCoverItem:perform()
+    self:stopSound()
     ISInventoryPage.renderDirty = true
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self)
@@ -132,6 +135,12 @@ ISPickUpGroundCoverItem.grabItemTime2 = function(playerObj, trashItemWeight)
 	end
 
 	return maxTime;
+end
+
+function ISPickUpGroundCoverItem:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:getEmitter():stopOrTriggerSound(self.sound);
+	end
 end
 
 function ISPickUpGroundCoverItem:getDuration()

@@ -14,7 +14,6 @@ function ISWindow:initialise()
 end
 
 function ISWindow:onMouseUp(x, y)
-
 	if(self.resizing) then
 		self:setCapture(false);
 	end
@@ -29,7 +28,6 @@ function ISWindow:onMouseDown(x, y)
 		self.mDownY = y;
 		self:setCapture(true);
 	end
-
 end
 
 function ISWindow:onMouseMove(dx, dy)
@@ -37,7 +35,6 @@ function ISWindow:onMouseMove(dx, dy)
 		self:setWidth(self:getWidth()+dx);
 		self:setHeight(self:getHeight()+dy);
 	end
-
 end
 
 function ISWindow:onMouseMoveOutside(dx, dy)
@@ -45,7 +42,6 @@ function ISWindow:onMouseMoveOutside(dx, dy)
 		self:setWidth(self:getWidth()+dx);
 		self:setHeight(self:getHeight()+dy);
 	end
-
 end
 
 function ISWindow:getClientLeft()
@@ -112,7 +108,6 @@ end
 
 function ISWindow:new (title, x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self

@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
-
 ISTiledIconListBox = ISPanel:derive("ISTiledIconListBox");
 
 function ISTiledIconListBox:initialise()
@@ -11,7 +9,6 @@ end
 function ISTiledIconListBox:createChildren()
     ISPanel.createChildren(self);
 
-    --self:setCapture(true);
     self:calculateTiles();
 end
 
@@ -34,7 +31,6 @@ function ISTiledIconListBox:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISTiledIconListBox:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -194,7 +190,6 @@ function ISTiledIconListBox:onMouseWheel(_del)
     if self.onPageScrolled then
         self:onPageScrolled(self.currentPage);
     end
-    --print("scrolwheel del = "..tostring(_del)..", page = "..tostring(self.currentPage).."/"..tostring(self.pages));
     return true;
 end
 
@@ -211,7 +206,6 @@ function ISTiledIconListBox:getCurrentPage()
 end
 
 function ISTiledIconListBox:pageChanged()
-    --self.lastMouseOverTile = -1;
     self.lastMouseOverTile = self:getTileIndexForCoordinate(self:getMouseX(), self:getMouseY());
     triggerMouseOver(self);
     if self.onPageChanged then
@@ -230,7 +224,6 @@ function ISTiledIconListBox:focusPageOnSelectedTile()
                 if self.selectedTileData==self.dataArrayList:get(i) then
                     local page = math.floor(i/self.tileCount);
                     if self.currentPage~=page then
-                        --print("------ RECALC PAGE: "..tostring(page)..", i="..tostring(i)..", tileCnt="..tostring(self.tileCount));
                         self.currentPage = page;
                         self:pageChanged();
                     end
@@ -300,9 +293,6 @@ function ISTiledIconListBox:new (x, y, width, height, dataList)
     setmetatable(o, self)
     self.__index = self
 
-    --o.background = false;
-
-    --o.fullrecipeList = recipeList;
     o.dataArrayList = dataList;
 
     o.currentPage = 0;
@@ -332,7 +322,6 @@ function ISTiledIconListBox:new (x, y, width, height, dataList)
     o.tileMarginY = 4 * ICON_SCALE;
 
     o.minimumColumns = 6;
---     o.minimumColumns = 5;
     o.minimumRows = 1;
 
     o.margin = 5;

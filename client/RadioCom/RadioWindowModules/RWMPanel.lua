@@ -53,38 +53,10 @@ function RWMPanel:doWalkTo()
 end
 
 function RWMPanel:setFocus(_playerNum, _radioParent, _parent)
-    --print("setFocus RMWPanel");
     self.playerNum = _playerNum;
     self.radioParent = _radioParent;
     self.wrapParent = _parent;
-    --setJoypadFocus(self.playerNum, self);
 end
-
---[[
-function RWMPanel:onGainJoypadFocus(joypadData)
-    self.wrapParent.drawJoypadFocus = true;
-end
-
-function RWMPanel:onLoseJoypadFocus(joypadData)
-    self.wrapParent.drawJoypadFocus = false;
-end
-
-function RWMPanel:onJoypadDirUp()
-    self.radioParent:focusNext(true);
-end
-
-function RWMPanel:onJoypadDirDown()
-    self.radioParent:focusNext(false);
-end
-
-function RWMPanel:onJoypadDirLeft()
-    self.wrapParent:setExpanded(false);
-end
-
-function RWMPanel:onJoypadDirRight()
-    self.wrapParent:setExpanded(true);
-end
---]]
 
 function RWMPanel:clearJoypadFocus(joypadData)
 end
@@ -108,14 +80,6 @@ end
 function RWMPanel:isValidPrompt()
     return (self.player and self.device and self.deviceData)
 end
---[[
-function RWMPanel:getLBPrompt()
-    return "Release focus";
-end
-function RWMPanel:getRBPrompt()
-    return "Select outer";
-end
---]]
 
 function RWMPanel:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);
@@ -133,7 +97,6 @@ function RWMPanel:new (x, y, width, height)
     o.anchorTop = true;
     o.anchorBottom = false;
     o.overrideBPrompt = true;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     return o
 end
 

@@ -27,7 +27,6 @@ function RecipeUtils.CreateSourceItem1(recipe, source, sourceFullType, options)
 end
 
 function RecipeUtils.CreateSourceItem2(recipe, source, sourceFullType, options, result)
-	local playerObj = getPlayer()
 	local item = nil
 	if sourceFullType == "Water" then
 		for i=1,source:getCount() do
@@ -54,7 +53,6 @@ function RecipeUtils.CreateSourceItem2(recipe, source, sourceFullType, options, 
 end
 
 function RecipeUtils.CreateSourceItem(recipe, source, sourceFullType, options, result)
-	local playerObj = getPlayer()
 	if sourceFullType == "Water" then
 		RecipeUtils.CreateSourceItem2(recipe, source, sourceFullType, options, result)
 	elseif source:isDestroy() then
@@ -82,10 +80,6 @@ local function getAvailableItemCount(source, sourceFullType, availableItems)
 	end
 	return count
 end
-
--- options.NoDuplicateKeep = true|false
--- options.AvailableItemsAll = result of RecipeManager.getAvailableItemsAll()
--- options.MaxItemsPerSource = N
 
 function RecipeUtils.CreateSourceItems(recipe, options, result)
 	for j=1,recipe:getSource():size() do

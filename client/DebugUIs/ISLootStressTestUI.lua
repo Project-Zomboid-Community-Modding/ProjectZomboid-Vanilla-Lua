@@ -5,7 +5,6 @@ ISLootStreetTestUI = ISCollapsableWindow:derive("ISLootStreetTestUI");
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local SCROLL_BAR_WIDTH = 13
 
 local TICK_BOX_LABEL_WIDTH = UI_BORDER_SPACING*3 + 1 + BUTTON_HGT + math.max(
 		getTextManager():MeasureStringX(UIFont.Small, getText("Sandbox_LootOther")),
@@ -40,7 +39,6 @@ function ISLootStreetTestUI:createChildren()
 
 	self.town:addOption("Muldraugh")
 	self.town:addOption("Westpoint")
-	--	self.town:addOption("Rosewood")
 
 	self.houseType = ISComboBox:new(self.town:getRight() + UI_BORDER_SPACING, self.town.y, buttonWid, BUTTON_HGT)
 	self.houseType.font = UIFont.Small
@@ -64,8 +62,6 @@ function ISLootStreetTestUI:createChildren()
 	self:addChild(self.onlyjunk);
 
 	self.lootType = ISTickBox:new(UI_BORDER_SPACING+1, self.town.y + BUTTON_HGT + UI_BORDER_SPACING, 100, BUTTON_HGT, "")
-	--self.lootType.anchorLeft = false
-	--self.lootType.anchorRight = true
 	self.lootType:initialise()
 	self.lootType:addOption(getText("Sandbox_LootOther"), "other")
 	self.lootType:addOption(getText("Sandbox_LootFood"), "food")

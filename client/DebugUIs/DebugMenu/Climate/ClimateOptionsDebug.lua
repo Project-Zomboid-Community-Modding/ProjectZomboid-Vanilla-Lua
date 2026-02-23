@@ -32,12 +32,10 @@ function ClimateOptionsDebug:createChildren()
     obj.center = true;
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    --print("w = "..tostring(w))
     for i=0,clim:getFloatMax()-1 do
         v = clim:getClimateFloat(i);
         vName = v:getName()
         y, obj = self:addFloatOption(getText("IGUI_ClimateOptions_"..vName),v,x,y,w)
-        --print(v:getName());
         y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
@@ -49,7 +47,6 @@ function ClimateOptionsDebug:createChildren()
         v = clim:getClimateColor(i);
         vName = v:getName()
         y, obj = self:addColorOption(getText("IGUI_ClimateOptions_"..vName),v,x,y,w)
-        --print(v:getName());
         y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
@@ -61,13 +58,8 @@ function ClimateOptionsDebug:createChildren()
         v = clim:getClimateBool(i);
         vName = v:getName()
         y, obj = self:addBoolOption(getText("IGUI_ClimateOptions_"..vName),v,x,y,w)
-        --print(v:getName());
         y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
-
-    --print("VAL = "..tostring(ClimateManager.FLOAT_PRECIPITATION_INTENSITY));
-    --self:addButton("test1",20,20,100,20,"test1");
-    --y, obj = self:addButton("test2",20,800,100,20,"test2");
 
     self:setScrollHeight(y+1);
 end
@@ -236,7 +228,6 @@ function ClimateOptionsDebug:addColorOption(_id,_color,_x,_y,_w)
 
     return y>y3 and y or y3;
 end
-
 
 function ClimateOptionsDebug:prerender()
     ISDebugSubPanelBase.prerender(self);

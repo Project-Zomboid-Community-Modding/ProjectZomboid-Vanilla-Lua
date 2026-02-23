@@ -40,7 +40,6 @@ function ISGeneratorInfoWindow:setObject(object)
 	self.panel:setTexture(object:getTextureName())
 	self.fuel = object:getFuel()
 	self.condition = object:getCondition()
---	self.panel.description = ISGeneratorInfoWindow.getRichText(object, true)
 end
 
 function ISGeneratorInfoWindow.getRichText(object, displayStats)

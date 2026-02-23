@@ -230,7 +230,6 @@ function TileList:render()
 	self:renderGrid(xIndent, yIndent, texW, texH)
 
 	self:setScrollHeight(yIndent + maxRow * texH + yIndent)
---	self.vscroll:setX(self.width - self.vscroll.width)
 
 	if self:isMouseOver() then
 		local col,row = self:getColRowAt(self:getMouseX(), self:getMouseY())

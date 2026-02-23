@@ -2,8 +2,6 @@ require "ISUI/ISCollapsableWindow"
 
 ISDebugAnimationTextUI = ISCollapsableWindow:derive("ISDebugAnimationTextUI")
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-
 function ISDebugAnimationTextUI:createChildren()
 	ISCollapsableWindow.createChildren(self)
 	local th = self:titleBarHeight()

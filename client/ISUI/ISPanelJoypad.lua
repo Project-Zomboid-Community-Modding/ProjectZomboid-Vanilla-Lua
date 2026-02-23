@@ -461,7 +461,6 @@ function ISPanelJoypad:onMouseMove(dx, dy)
         self:setX(self.x + dx);
         self:setY(self.y + dy);
         self:bringToTop();
-        --ISMouseDrag.dragView = self;
     end
 end
 
@@ -474,7 +473,6 @@ end
 
 function ISPanelJoypad:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

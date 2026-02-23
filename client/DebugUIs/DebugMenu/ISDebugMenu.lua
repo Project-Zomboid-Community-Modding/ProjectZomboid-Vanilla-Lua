@@ -48,6 +48,7 @@ function ISDebugMenu:setupButtons()
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_NewUI"), function() doNewUIDebug() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_UnitTests"), function() UnitTestsDebug:OnOpenPanel() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_CharacterDebug"), function() ISCharacterDebugUI.OnOpenPanel() end, "DEV");
+    self:addButtonInfo(getText("IGUI_DebugMenu_Dev_ForgetRecipes"), function() ISDebugMenu:onForgetRecipes() end, "DEV");
 
     --sort buttons alphabetically
     table.sort(self.buttons, function(a, b) return string.sort(b.title, a.title) end);
@@ -220,6 +221,10 @@ function ISDebugMenu:onClickSandboxSettings()
     local ui = ISServerSandboxOptionsUI:new(150, 150,800, 600)
     ui:initialise()
     ui:addToUIManager()
+end
+
+function ISDebugMenu:onForgetRecipes()
+    getSpecificPlayer(0):forgetRecipes()
 end
 
 function ISDebugMenu:close()

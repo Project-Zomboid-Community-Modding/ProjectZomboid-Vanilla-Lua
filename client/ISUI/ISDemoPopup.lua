@@ -8,20 +8,16 @@ function ISDemoPopup:initialise()
     ISPanelJoypad.initialise(self);
 end
 
-
 function ISDemoPopup:createChildren()
-
     -- CREATE TUTORIAL PANEL
     local panel = ISRichTextPanel:new(5, 10, self.width-10, self.height-32-10);
     panel:initialise();
 
     self:addChild(panel);
-    --panel:paginate();
     self.richtext = panel;
     self.richtext.text = getText("UI_Demo_Popup");
     self.richtext:paginate();
     self.richtext.backgroundColor.a = 0;
-
 end
 
 function ISDemoPopup:setInfo(item)
@@ -73,13 +69,11 @@ ISDemoPopup.getInstance = function()
         joypadData.focus = ISDemoPopup.instance
         updateJoypadFocus(joypadData)
     end
-   -- SurvivalGuideManager.instance.panel:setVisible(false);
     return ISDemoPopup.instance;
 end
 
 function ISDemoPopup:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

@@ -86,11 +86,10 @@ function ISDumpContentsAction:complete()
 				self.item:setReplaceOnUse(itemType)
 			elseif instanceof(self.item, "DrainableComboItem") and self.item:getReplaceOnDeplete() then
 				self.item:setReplaceOnDeplete(itemType)
-				self.item:setUseDelta(1)
 			end
-		end
-		if instanceof(self.item, "Food") then
-			self.item:setCurrentUses(1)
+        end
+        if instanceof(self.item, "DrainableComboItem") or instanceof(self.item, "Food") then
+            self.item:setCurrentUses(1)
 		end
 		self.item:UseAndSync();
 	end

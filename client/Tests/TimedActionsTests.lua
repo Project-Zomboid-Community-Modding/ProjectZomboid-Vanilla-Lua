@@ -27,11 +27,6 @@ local function removeAllButFloor(square)
 	end
 end
 
-local function removeAllButFloorAt(x, y, z)
-	local square = getCell():getGridSquare(x, y, z)
-	removeAllButFloor(square)
-end
-
 local function newObject(x, y, z, spriteName, objectName)
 	local square = getCell():getGridSquare(x, y, z)
 	if not square then return nil end

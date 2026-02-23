@@ -1,14 +1,12 @@
 NoContainerFillRooms = { armysurplus = {}, armysurplustorage = {}, bookstore = {}, camping = {}, campingstorage = {}, carsupply = {}, clothingstore = {}, clothingstorage = {}, hunting = {}, jayschicken_dining = {}, jayschicken_kitchen = {}, pawnshop = {}, pawnshopoffice = {}, pawnshopstorage = {}, spiffo_dining = {}, spiffoskitchen = {} }
 
 WeaponUpgrades = {
-	VarmintRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad"},
-	HuntingRifle = {"x2Scope", "x4Scope", "x8Scope", "RecoilPad"},
-	Shotgun = {"AmmoStraps", "ChokeTubeFull", "ChokeTubeImproved"},
-	Pistol = {},
-	Pistol2 = {},
-	Pistol3 = {},
-	Revolver = {},
-	Revolver_Long = {},
+	VarmintRifle = {"x2Scope", "x4Scope", "RecoilPad"},
+	HuntingRifle = { "x4Scope", "x8Scope", "RecoilPad"},
+	Shotgun = {"ChokeTubeFull", "ChokeTubeImproved", "RecoilPad"},
+	Pistol = {"GunLight", "Laser", "TritiumSights"},
+	Pistol2 = {"GunLight", "Laser", "TritiumSights"},
+	Pistol3 = {"GunLight", "Laser", "TritiumSights"},
 }
 
 

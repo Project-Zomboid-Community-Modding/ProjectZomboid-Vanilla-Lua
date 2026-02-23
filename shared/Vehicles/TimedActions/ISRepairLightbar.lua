@@ -59,7 +59,7 @@ function ISRepairLightbar:complete()
         end
     	self.vehicle:transmitPartCondition(self.part)
 
-    	self.character:sendObjectChange('mechanicActionDone', { success = true})
+    	self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
     	self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
     else
     	print('no such vehicle id=',self.vehicle)
@@ -77,13 +77,14 @@ function ISRepairLightbar:getDuration()
 	return self.maxTime;
 end
 
-function ISRepairLightbar:new(character, part, item, maxTime)
+function ISRepairLightbar:new(character, part, item, maxTimeInit)
 	print("ISRepairLightbar")
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = part:getVehicle()
 	o.part = part
 	o.item = item
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.jobType = getText("ContextMenu_Repair")
 	return o
 end

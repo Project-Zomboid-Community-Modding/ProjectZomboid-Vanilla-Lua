@@ -12,14 +12,12 @@ function CFeedingTroughGlobalObject:OnLuaObjectUpdated()
 	local isoObject = self:getIsoObject()
 	if isoObject then
 		for type,amount in pairs(self.feedAmount) do
---			print("feed amount",type, amount)
 			isoObject:setFeedAmount(type, amount);
 		end
 		isoObject:setLinkedX(self.linkedX or 0)
 		isoObject:setLinkedY(self.linkedY or 0)
 		isoObject:setMaxFeed(self.maxFeed or 0);
 		isoObject:setMaxWater(self.maxWater or 0);
-		--isoObject:setWater(self.water or 0);
 	end
 end
 

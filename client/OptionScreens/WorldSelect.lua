@@ -280,8 +280,6 @@ function WorldSelect:create()
 	self.nextButton:setEnable(true) -- sets the hard-coded border color
 	self:addChild(self.nextButton)
 
-	--
-
 	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_advanced"))
 	self.advancedButton = ISButton:new((self.width - btnWidth) / 2, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_btn_advanced"), self, self.onOptionMouseDown)
 	self.advancedButton.internal = "ADVANCED"
@@ -365,8 +363,6 @@ function WorldSelect:create()
 	self.maxXSlider:setAnchorsTBLR(true, false, true, false)
 	self.maxXSlider:setValues(0, 250, 1, 0, true)
 	self.advancedPanel:addChild(self.maxXSlider)
-
-
 
 	self.minYSlider = ISSliderPanel:new(maxWidth + UI_BORDER_SPACING * 2, self.YLabel.y, 200, BUTTON_HGT, self, WorldSelect.onMinYSliderChange)
 	self.minYSlider:initialise()

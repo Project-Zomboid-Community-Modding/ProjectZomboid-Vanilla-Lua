@@ -1,5 +1,4 @@
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
 
@@ -17,8 +16,6 @@ function ISButcherHookUI:render()
     self:setHeight(320);
 
     self:checkAnimalOnHook() -- splitscreen / multiplayer
-
-    local joypadData = getJoypadData(self.playerNum)
 
     if not self.animal3D then
         if not self.noAnimalPanel:isVisible() then
@@ -48,16 +45,9 @@ function ISButcherHookUI:render()
     local x,y,w,h = self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight
     self.animalPanel:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3);
 
-    -- display the corpse informations
-    --if not self.corpse then
-    --    return;
-    --end
-
     self:updateLabelAndButtons();
 
     self:checkDistance();
-
-    --self:setWidth(self.avatarX + self.avatarWidth + self.biggestWidth + 20)
 
     if self.configJoypadLater then
         self.configJoypadLater = false
@@ -110,7 +100,6 @@ end
 function ISButcherHookUI:updateLabelAndButtons()
     self.knife = self.chr:getInventory():getFirstTagEvalRecurse(ItemTag.BUTCHER_ANIMAL, predicateNotBroken)
 
-    local modData = self.animal3D:getModData();
     self.biggestWidth = 0;
     self.biggestLabelWidth = 0;
     local yoffset = self.avatarY-2;
@@ -166,7 +155,6 @@ function ISButcherHookUI:updateLabelAndButtons()
     yoffset = self:updatePositions(self.meat, self.removeMeatBtn, self.meatLabel, self.meatInfoLabel, yoffset);
 
     -- disable buttons when doing an action
-
     if self.doingAction or self.hook:getUsingPlayer() ~= nil then
         self.removeLeatherBtn:setVisible(false)
         self.removeHeadBtn:setVisible(false)
@@ -335,10 +323,6 @@ function ISButcherHookUI:create()
     self.removeCorpseBtn:setVisible(true);
     self.animalPanel:addChild(self.removeCorpseBtn);
 
-    --self.avatarPanel = ISCharacterScreenAvatar:new(self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight)
-    --self.avatarPanel:setVisible(false)
-    --self.animalPanel:addChild(self.avatarPanel)
-
     self.leatherLabel = ISLabel:new(avatarRight + UI_BORDER_SPACING, 16, BUTTON_HGT, "", 1, 1, 1, 1, UIFont.Medium, false)
     self.leatherLabel:initialise()
     self.animalPanel:addChild(self.leatherLabel)
@@ -438,13 +422,8 @@ function ISButcherHookUI:setAnimalAvatar(newModData, newCorpse)
             self.avatarPanel:removeFromUIManager();
             self.avatarPanel = nil;
         end
-        --self.animal3D = nil;
         return;
     end
-
-    --if newCorpse then
-    --
-    --end
 
     self.animal3D = self.hook:getAnimal();
     local modData = newModData or self.animal3D:getModData();
@@ -452,27 +431,6 @@ function ISButcherHookUI:setAnimalAvatar(newModData, newCorpse)
     -- recreating the avatarpanel everytime, not really cool but otherwise i have some animations problems, this was a quick fix eh.
     self.avatarPanel = ISCharacterScreenAvatar:new(self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight)
     self.animalPanel:addChild(self.avatarPanel)
-
-    -- Moved to ButcheringUtil.createAnimalForHook
-
-    --if not self.animal3D then
-    --    self.animal3D = IsoAnimal.new(getCell(), self.hook:getSquare():getX(), self.hook:getSquare():getY(), self.hook:getSquare():getZ(), modData["AnimalType"], modData["AnimalBreed"]);
-    --    if newCorpse then
-    --        modData["originalSize"] = newCorpse:getAnimalSize();
-    --    end
-    --    self.animal3D:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
-    --    if modData["animalSize"] < self.animal3D:getData():getSize() then
-    --        self.animal3D:getData():setSizeForced(modData["animalSize"]);
-    --    end
-    --    self.hook:setAnimal(self.animal3D);
-    --    self.animal3D:setDir(IsoDirections.NE)
-    --    self.animal3D:setX(self.animal3D:getX() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionX)
-    --    self.animal3D:setY(self.animal3D:getY() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionY)
-    --    self.animal3D:setZ(self.animal3D:getZ() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionZ)
-    --    self.animal3D:setOnHook(true);
-    --    self.animal3D:setModData(modData)
-    --    self.animal3D:getAnimalVisual():setSkinTextureName(newCorpse:getAnimalVisual():getSkinTexture());
-    --end
 
     if self.animal3D then
         self.animal3D:setHook(self.hook);
@@ -553,7 +511,6 @@ function ISButcherHookUI:onAddedCorpse(corpse)
 
     local newCorpse = ButcheringUtil.onAddedCorpseOnHook(self.hook, corpse, self.chr);
     self:setAnimalAvatar(corpse:getModData(), newCorpse);
-    --self.corpse:getModData()["BloodQty"] = 1;
     self:updateCorpseDatas();
 
     return corpse;
@@ -564,23 +521,6 @@ function ISButcherHookUI:onClickRemoveCorpse()
 
     local body = ButcheringUtil.onRemoveCorpseFromHook(self.hook, self.animal3D)
 
-    --self.corpse:setX(self.hook:getX());
-    --self.corpse:setY(self.hook:getY());
-    --self.corpse:setZ(self.hook:getZ());
-    --
-    --self.corpse:setSquare(self.hook:getSquare());
-    --
-    --self.hook:getSquare():addCorpse(self.corpse, false);
-    --self.corpse:invalidateCorpse();
-    --self.corpse:setInvalidateNextRender(true);
-
-    --if isServer() then
-    --    GameServer.sendCorpse(dead);
-    --end
-
-    --self.corpse = nil;
-    --self.hook:setCorpse(nil);
-
     self.animal3D = nil;
     self:setAnimalAvatar();
     self:updateCorpseDatas();
@@ -589,14 +529,6 @@ end
 
 -- when we change the body model of an animal on the hook we need to reset the avatar/3D animal model
 function ISButcherHookUI:resetCorpse()
-    --local animal = self.animal3D;
-    --local corpse = self:onClickRemoveCorpse();
-    --if corpse then
-    --    corpse:getSquare():removeCorpse(corpse, false);
-    --    corpse:invalidateCorpse();
-    --end
-    --self:onAddedCorpse(animal);
-
     self.animal3D = nil;
 
     self:setAnimalAvatar();
@@ -605,7 +537,6 @@ function ISButcherHookUI:resetCorpse()
         self:setAnimalAvatar(self.hook:getAnimal():getModData(), nil);
     end
 
-    --self.corpse:getModData()["BloodQty"] = 1;
     self:updateCorpseDatas();
 
     self.animal3D = self.hook:getAnimal();
@@ -644,10 +575,7 @@ function ISButcherHookUI:lookForCorpse()
     local corpses = self.chr:getInventory():FindAll("CorpseAnimal");
     if corpses then
         for i=0,corpses:size()-1 do
-            local corpse = corpses:get(i)
-            --if self:isCorpseValid(corpse) then
-                table.insert(result, corpses:get(i));
-            --end
+            table.insert(result, corpses:get(i));
         end
     end
     -- look on the ground
@@ -659,9 +587,7 @@ function ISButcherHookUI:lookForCorpse()
                 for i=0,sq:getStaticMovingObjects():size()-1 do
                     local object = sq:getStaticMovingObjects():get(i);
                     if instanceof(object, "IsoDeadBody") and object:isAnimal() then
-                        --if self:isCorpseValid(object) then
-                            table.insert(result, object);
-                        --end
+                        table.insert(result, object);
                     end
                 end
             end
@@ -778,23 +704,10 @@ end
 function ISButcherHookUI.onReattachAnimal(hook, animal)
     animal:setDir(IsoDirections.NE)
     local modData = animal:getModData();
-    --local animal3D = IsoAnimal.new(getCell(), hook:getSquare():getX(), hook:getSquare():getY(), hook:getSquare():getZ(), modData["AnimalType"], modData["AnimalBreed"]);
     animal:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
     if modData["animalSize"] < animal:getData():getSize() then
         animal:getData():setSizeForced(animal:getModData()["animalSize"]);
     end
-    --hook:setAnimal(animal3D);
-    --animal3D:setDir(IsoDirections.NE)
-    --print("lua attached animal hook pos: ", hook:getX(), hook:getY())
-    --animal:setX(hook:getX() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionX)
-    --animal:setY(hook:getY() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionY)
-    --animal:setZ(hook:getZ() + AnimalAvatarDefinition[modData["AnimalType"]].animalPositionZ)
-    --animal3D:setOnHook(true);
-    --animal3D:setHook(hook);
-    --animal3D:setVariable("onhook", true);
-    --animal3D:setModData(modData)
-    --animal3D:resetModel();
-    --animal3D:resetModelNextFrame();
 end
 
 function ISButcherHookUI:setVisible(vis)
@@ -825,7 +738,6 @@ function ISButcherHookUI:new(x, y, width, height, hook, player)
     height = 320;
     local o = ISCollapsableWindowJoypad.new(self, x, y, width, height);
     o:setResizable(false)
---    o:noBackground();
     o.hook = hook;
     o.chr = player;
     o.playerNum = player:getPlayerNum()

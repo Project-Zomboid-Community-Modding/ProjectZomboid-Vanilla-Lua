@@ -7,7 +7,6 @@ function ISRadioOption:initialise()
 end
 
 function ISRadioOption:prerender()
-
 end
 
 function ISRadioOption:render()
@@ -35,8 +34,8 @@ function ISRadioOption:onMouseUp(x, y)
 
 	return false;
 end
-function ISRadioOption:onMouseDown(x, y)
 
+function ISRadioOption:onMouseDown(x, y)
 	return false;
 end
 

@@ -14,7 +14,6 @@ local TYPE_BOOLEAN = 4;
 function ISItemEditPanel:initElements()
     local elem = self:registerString("IGUI_ItemEditor_ItemType","getFullType", false, false)
     elem = self:registerString("IGUI_ItemEditor_FileName","getFileName", false, false)
---     elem = self:registerString("IGUI_ItemEditor_FilePath","getFileAbsPath", "", true, false)
     elem = self:registerString("IGUI_Name","getName", "setName", true)
     elem = self:registerNumber("Tooltip_item_Weight", "getActualWeight", "setActualWeight", 0, false, 3)
     elem.funcOnSave = ISItemEditPanel.onSaveWeight;
@@ -33,7 +32,7 @@ function ISItemEditPanel:initElements()
     --isClothing
     elem = self:registerNumber("Tooltip_clothing_bloody", "getBloodLevel", "setBloodLevel", 0, 1, 1)
     elem.funcValidate = ISItemEditPanel.validateClothingOrContainer;
-    elem = self:registerNumber("Tooltip_clothing_dirty", "getDirtyness", "setDirtyness", 0, 1, 1)
+    elem = self:registerNumber("Tooltip_clothing_dirty", "getDirtiness", "setDirtiness", 0, 1, 1)
     elem.funcValidate = ISItemEditPanel.validateClothing;
     --isWeapon
     elem = self:registerNumber("Tooltip_weapon_Sharpness", "getSharpness", "setSharpness", 0, 1, 1)
@@ -89,7 +88,6 @@ function ISItemEditPanel:initElements()
     --drainable
     elem = self:registerNumber("IGUI_ItemEditor_UsedDelta", "getCurrentUsesFloat", "setUsedDelta", 0, 1, 3)
     elem.funcValidate = ISItemEditPanel.validateDrainable;
-    --elem = self:registerNumber()
 end
 
 function ISItemEditPanel:initAttributes()
@@ -99,13 +97,10 @@ function ISItemEditPanel:initAttributes()
             local key = cont:getKey(i);
             local attribute = cont:getAttribute(i);
             if AttributeValueType.IsNumeric(key:getValueType()) then
-                --print("number")
                 self:registerAttributeNumber(key, attribute);
             elseif key:getValueType()==AttributeValueType.String then
-                --print("string")
                 self:registerAttributeString(key, attribute);
             elseif key:getValueType()==AttributeValueType.Boolean then
-                --print("bool")
                 self:registerAttributeBool(key, attribute);
             end
         end
@@ -113,10 +108,8 @@ function ISItemEditPanel:initAttributes()
 end
 
 function ISItemEditPanel:registerAttributeBool(_attributeType, _attribute)
-    --print("attributebool")
     local elem = self:registerBoolean(_attributeType:getTranslateKey(), false, false, false);
     elem.editable = true;
---     elem.editable = not _attribute:getIsReadOnly();
     elem.isAttribute = true;
     elem.attributeType = _attributeType;
     elem.attribute = _attribute;
@@ -138,7 +131,6 @@ function ISItemEditPanel:registerBoolean(_text, _funcGet, _funcSet, _canEdit)
 end
 
 function ISItemEditPanel:registerAttributeNumber(_attributeType, _attribute)
-    --print("attributenumber")
     local elem = self:registerNumber(_attributeType:getTranslateKey(), false, false, false, false)
     elem.editable = not _attribute:getIsReadOnly();
     if _attribute:hasBounds() then
@@ -172,7 +164,6 @@ function ISItemEditPanel:registerNumber(_text, _funcGet, _funcSet, _min, _max, _
 end
 
 function ISItemEditPanel:registerAttributeString(_attributeType, _attribute)
-    --print("attributestring")
     local elem = self:registerString(_attributeType:getTranslateKey(), false, false, not _attribute:getIsReadOnly())
     elem.isAttribute = true;
     elem.attributeType = _attributeType;
@@ -209,7 +200,6 @@ function ISItemEditPanel:registerColor(_text, _funcGet, _funcSet)
 end
 
 -- FUNCTIONS -
-
 function ISItemEditPanel:onSaveHunger()
     self.item:setHungChange(self.item:getBaseHunger());
 end
@@ -297,10 +287,6 @@ function ISItemEditPanel:createChildren()
 
     self:initElements();
 
-    -- TODO: doesn't work in that it currently blows up when trying to edit items with item components
-    -- so it has been commented out until it that can be fixed
---     self:initAttributes();
-
     self.usedElems = {};
 
     local maxTextWidth = 0;
@@ -325,7 +311,6 @@ function ISItemEditPanel:createChildren()
             else
                 elem.label = ISLabel:new (0, y, BUTTON_HGT, elem.text, 0.8, 0.8, 0.8, 1.0, UIFont.Small, true);
             end
-            --elem.label = ISLabel:new (0, y, BUTTON_HGT, elem.text, 0.8, 0.8, 0.8, 1.0, UIFont.Small, true);
             elem.label:initialise();
             elem.label:instantiate();
             self:addChild(elem.label);

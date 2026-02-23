@@ -5,7 +5,6 @@ local Handler = ISLootWindowFloorControlHandler_TakeAll
 
 function Handler:shouldBeVisible()
     return not self.container:isEmptyOrUnwanted(self.playerObj)
---     return not self.container:isEmpty()
 end
 
 function Handler:getControl()

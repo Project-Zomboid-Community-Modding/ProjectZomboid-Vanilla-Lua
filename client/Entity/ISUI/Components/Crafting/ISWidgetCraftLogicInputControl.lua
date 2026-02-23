@@ -132,8 +132,7 @@ end
 function ISWidgetCraftLogicInputControl:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
-    --
-    
+
     -- get elements to figure out how big they want to be
     if self.inputItems then self.inputItems:calculateLayout(0, 0); end
     if self.inputTools then self.inputTools:calculateLayout(0, 0); end
@@ -217,8 +216,7 @@ function ISWidgetCraftLogicInputControl:calculateLayout(_preferredWidth, _prefer
         self.outputItems:setX(x);
         self.outputItems:setY(y);
     end
-    
-    --
+
     self:setWidth(width);
     self:setHeight(height);
 end
@@ -283,7 +281,6 @@ function ISWidgetCraftLogicInputControl:updateOutputItems()
     end
 
     -- SET INPUTS FULL VISIBILITY
-    --self.inputsFullLabel:setVisible(self.logic:getCraftLogic():getFreeOutputSlotCount() <= self.outputItemCount); -- this is the more correct way of doing this - but using the method below for now, as its only used for 1:1 drying - spurcival
     local resourceCount = 0;
     local inputResourceItems = self.inputsGroupName and self.resourcesComponent:getResourcesFromGroup(self.inputsGroupName, ArrayList.new(), ResourceIO.Input, ResourceType.Item) or ArrayList.new();
     for i = 0, inputResourceItems:size()-1 do
@@ -297,7 +294,6 @@ function ISWidgetCraftLogicInputControl:onRecipeChanged()
         local slots = self.inputItems:getItemSlots();
         if #slots > 0 then
             self.inputItems:onSelectInputsButton(slots[1]);
-            --self:onSelectInputsButtonClicked(slots[1]);
         end
     end
 end

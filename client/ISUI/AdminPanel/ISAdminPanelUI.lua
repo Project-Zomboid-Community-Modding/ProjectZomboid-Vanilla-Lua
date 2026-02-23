@@ -14,7 +14,6 @@ end
 
 
 function ISAdminPanelUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -357,9 +356,6 @@ function ISAdminPanelUI:onOptionMouseDown(button, x, y)
         ui:addToUIManager()
     end
     if button.internal == "CLIMATE" then
-        --local ui = ISAdminWeather:new(150, 150,800, 600, getPlayer())
-        --ui:initialise()
-        --ui:addToUIManager()
         local ui = ISAdminWeather.OnOpenPanel();
         ui:onMadeActive();
     end

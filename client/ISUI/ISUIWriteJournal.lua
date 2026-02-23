@@ -5,12 +5,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 function ISUIWriteJournal:initialise()
     ISCollapsableWindowJoypad.initialise(self);
 
---    self.winwo = self:wrapInCollapsableWindow();
---    self.winwo:addToUIManager();
---    self.winwo.closeButton:setVisible(false);
---    self.winwo:setX(self.x);
---    self.winwo:setY(self.y);
-
     local btnWid = 100
     local btnHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
     local padBottom = 10
@@ -171,7 +165,6 @@ end
 
 function ISUIWriteJournal:onClick(button)
     if button.internal == "NEXTPAGE" then
---        print("add at pos " .. self.currentPage .. " text " .. self.entry:getText())
         self.newPage[self.currentPage] = self.entry:getText();
         self.currentPage = self.currentPage + 1;
         if self.currentPage == self.numberOfPages then
@@ -191,7 +184,6 @@ function ISUIWriteJournal:onClick(button)
             self.previousPage:setEnable(true);
         end
         self.nextPage:setEnable(true);
---        print("set text from pos " .. self.currentPage .. " text " .. self.newPage[self.currentPage]);
         self.entry.javaObject:setCursorLine(0);
         self.entry:setText(self.newPage[self.currentPage]);
     elseif button.internal == "DELETEPAGE" then
@@ -259,8 +251,6 @@ end
 
 function ISUIWriteJournal:onGainJoypadFocus(joypadData)
     ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
---    self:setISButtonForA(self.yes)
---   self:setISButtonForB(self.no)
     self.yes:setJoypadButton(Joypad.Texture.AButton)
     self.no:setJoypadButton(Joypad.Texture.BButton)
     self:setJoypadButtons(joypadData)
@@ -268,14 +258,6 @@ end
 
 function ISUIWriteJournal:onJoypadDown(button, joypadData)
     ISPanelJoypad.onJoypadDown(self, button, joypadData)
---[[
-    if button == Joypad.AButton then
-        self.yes:forceClick()
-    end
-    if button == Joypad.BButton then
-        self.no:forceClick()
-    end
---]]
 end
 
 function ISUIWriteJournal:onJoypadDirUp(joypadData)

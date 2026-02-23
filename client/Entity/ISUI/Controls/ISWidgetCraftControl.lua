@@ -13,7 +13,6 @@ function ISWidgetCraftControl:createChildren()
 
     local style = self.styleButton or "S_Button_Craft";
     self.buttonStart = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 150, FONT_HGT_SMALL+8, nil) --craft
-    --self.buttonRepair.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
     self.buttonStart.target = self;
     self.buttonStart.onclick = ISWidgetCraftControl.onButtonClick;
     self.buttonStart.enable = false;
@@ -62,7 +61,6 @@ function ISWidgetCraftControl:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetCraftControl:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -102,7 +100,6 @@ function ISWidgetCraftControl:onGetIsStartEnabled()
 end
 
 function ISWidgetCraftControl:onStart()
-    print("OnStart callback not set...")
     return false;
 end
 

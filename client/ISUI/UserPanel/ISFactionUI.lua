@@ -111,9 +111,6 @@ function ISFactionUI:initialise()
     self.removePlayer:setX(self.playerList:getRight() - self.removePlayer.width)
     self:addChild(self.removePlayer);
     self.removePlayer.enable = false;
-    if not self.isOwner and not self.isAdmin then
-        --        self.removePlayer:setVisible(false);
-    end
 
     --tick boxes
 
@@ -200,31 +197,19 @@ end
 function ISFactionUI:populateList()
     self.playerList:clear();
     for i=0,self.faction:getPlayers():size()-1 do
---        if self.safehouse:getPlayers():get(i) ~= self.player:getUsername() then
-            local newPlayer = {};
-            newPlayer.name = self.faction:getPlayers():get(i);
-            self.playerList:addItem(newPlayer.name, newPlayer);
---        end
+        local newPlayer = {};
+        newPlayer.name = self.faction:getPlayers():get(i);
+        self.playerList:addItem(newPlayer.name, newPlayer);
     end
 end
 
 function ISFactionUI:drawPlayers(y, item, alt)
     local a = 0.9;
 
---    self.parent.removePlayer.enable = false;
---    self.parent.selectedPlayer = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
---    self:drawRect(100, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(170, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(240, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
---        if self.parent.isOwner then
---            self.parent.removePlayer.enable = true;
---        end
---        self.parent.selectedPlayer = item.item.name;
     end
 
     self:drawText(item.item.name, 10, y + 2, 1, 1, 1, a, self.font);
@@ -253,33 +238,21 @@ function ISFactionUI:prerender()
     self:drawText(self.faction:getName(), (self.width - getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName())) / 2, UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
     self.changeTitle:setY(UI_BORDER_SPACING);
     self.changeTitle:setX(self.width/2 + ((getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName()) / 2) + 10))
---    self:drawText(getText("IGUI_SafehouseUI_Owner"), x, z, 1,1,1,1, UIFont.Small);
---    local textWid = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_SafehouseUI_Owner"))
---    self:drawText(self.faction:getOwner(), x + textWid + 8, z, 1,1,1,1, UIFont.Small);
---    local textWid2 = getTextManager():MeasureStringX(UIFont.Small, self.faction:getOwner())
     self.owner:setName(self.faction:getOwner())
     if self.isOwner or self.isAdmin then
         self.releaseFaction:setVisible(true);
---        self.releaseFaction:setX(self.owner:getRight() + 8)
---        self.releaseFaction:setY(z);
         self.changeOwnership:setVisible(true);
         self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING)
---        self.changeOwnership:setY(z);
     end
     if self.isOwner or self.isAdmin or self.faction:getTag() then
---        self:drawText(getText("IGUI_FactionUI_Tag"), x, z, 1,1,1,1, UIFont.Small);
---        self:drawText(self.faction:getTag(), splitPoint, z, 1,1,1,1, UIFont.Small);
         self.tag:setName(self.faction:getTag() or "")
         if self.isOwner or self.isAdmin then
             self.changeTag:setVisible(true);
             self.changeTag:setX(self.tag:getRight() + UI_BORDER_SPACING);
---            self.changeTag:setY(z);
             self.tagColor:setX(self.changeTag:getRight() + UI_BORDER_SPACING)
---            self.tagColor:setY(z);
             self.tagColor:setVisible(true);
         end
     end
---    self:drawText(getText("IGUI_SafehouseUI_Players"), x, self.playerList.y - FONT_HGT_SMALL, 1,1,1,1, UIFont.Small);
 end
 
 function ISFactionUI:updateButtons()

@@ -43,7 +43,6 @@ function ISDigitalCode:initialise()
     self.button2m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button2m);
 
-    --
     self.button3p = ISButton:new(self:getWidth() / 2 + 12, (self:getHeight() / 2) - 25, 16, 16, getText("^"), self, ISDigitalCode.onClick);
     self.button3p.internal = "B3PLUS";
     self.button3p:initialise();
@@ -63,7 +62,6 @@ function ISDigitalCode:initialise()
     self.button3m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button3m);
 
-    --
     self.ok = ISButton:new((self:getWidth() / 2) - 13, self:getHeight() - 20, 26, 15, getText("UI_Ok"), self, ISDigitalCode.onClick);
     self.ok.internal = "OK";
     self.ok:initialise();

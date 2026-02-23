@@ -11,9 +11,7 @@ function ISPlayerStatsUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
     for _,v in ipairs(self.windows) do
        v:removeFromUIManager();
@@ -38,8 +36,6 @@ end
 function ISPlayerStatsUI:render()
     ISPlayerStatsUI.instance = self -- to support reloading in lua debugger
     local xOrigin = UI_BORDER_SPACING + 1
-
-    self:updateWeight()
 
     self:updateButtons();
 
@@ -172,36 +168,7 @@ function ISPlayerStatsUI:render()
     end
 
     z = z + self.buttonHeight + UI_BORDER_SPACING*2+1
---[[
-    self.mainPanel:drawText(getText("IGUI_PlayerStats_Exp"), 10, z, self.variableColor.r,self.variableColor.g,self.variableColor.b,self.variableColor.a, UIFont.Small);
-    z = z + self.buttonHeight;
-    local previousXp = 0;
-    if self.char:getXp():getLevel() > 0 then
-        previousXp = self.char:getXpForLevel(self.char:getXp():getLevel() - 1)
-    end
-    local xp = self.char:getXp():getTotalXp() - previousXp
-    local text1 = getText("IGUI_PlayerStats_GlobalExp")
-    local text2 = getText("IGUI_PlayerStats_AvailableSkillPt")
-    local text1Wid = getTextManager():MeasureStringX(UIFont.Small, text1)
-    local text2Wid = getTextManager():MeasureStringX(UIFont.Small, text2)
-    local textWid = math.max(text1Wid, text2Wid)
-    self.mainPanel:drawText(text1, 10, z + btnPadY, 1,1,1,1, UIFont.Small);
-    self.mainPanel:drawText(text2, 10, z + self.buttonHeight + 1 + btnPadY, 1,1,1,1, UIFont.Small);
 
-    nextColumnX = 10 + textWid + 20
-    text1 = xp .. "/" .. self.char:getXpForLevel(self.char:getXp():getLevel()) - previousXp
-    textWid = getTextManager():MeasureStringX(UIFont.Small, text1)
-    self.mainPanel:drawText(text1, nextColumnX, z + btnPadY, 1,1,1,1, UIFont.Small);
-    self.addGlobalXP:setY(z);
-    self.addGlobalXP:setX(nextColumnX + textWid + 10);
-    z = z + self.buttonHeight + 1;
-    z = z + self.buttonHeight + 20
---]]
---    self.mainPanel:drawText("Perk", 10, z, 1,1,1,1, UIFont.Small);
---    self.mainPanel:drawTextRight("Level", 188, z, 1,1,1,1, UIFont.Small);
---    self.mainPanel:drawTextRight("XP", 225, z, 1,1,1,1, UIFont.Small);
---    self.mainPanel:drawTextRight("Boost", 310, z, 1,1,1,1, UIFont.Small);
---    self.mainPanel:drawTextRight("Multiplier", 412, z, 1,1,1,1, UIFont.Small);
     z = z + self.xpListBox.itemheight -- column titles
     self.xpListBox:setY(z);
     self.addXpBtn:setY(self.xpListBox:getY() + self.xpListBox.height + UI_BORDER_SPACING);
@@ -213,7 +180,6 @@ function ISPlayerStatsUI:render()
 
     local yoff = 0;
     local columnLeft = self.xpListBox.columnLeft
-    local columnWidth = self.xpListBox.columnWidth
     self.mainPanel:drawRectBorder(self.xpListBox.x, self.xpListBox.y - self.xpListBox.itemheight + yoff, self.xpListBox:getWidth(), self.xpListBox.itemheight + 1, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self.mainPanel:drawRect(self.xpListBox.x, 1 + self.xpListBox.y - self.xpListBox.itemheight + yoff, self.xpListBox.width, self.xpListBox.itemheight,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
     self.mainPanel:drawRect(self.xpListBox.x + columnLeft[2], 1 + self.xpListBox.y - self.xpListBox.itemheight + yoff, 1, self.xpListBox.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
@@ -232,18 +198,8 @@ function ISPlayerStatsUI:render()
 
     local panelHeight = self.mainPanel.y + self.mainPanel:getScrollHeight()
     self:setHeight(math.min(panelHeight, getCore():getScreenHeight() - 40))
---    self:setHeight(600)
 
     self:clearStencilRect();
-end
-
-function ISPlayerStatsUI:updateWeight()
-    self.syncWeightTimer = self.syncWeightTimer + 1
-    if self.syncWeightTimer > 100 then
-        local args = { id = self.char:getOnlineID() }
-        sendClientCommand(getPlayer(), 'player', 'syncWeight', args)
-        self.syncWeightTimer = 0
-    end
 end
 
 function ISPlayerStatsUI:canModifyThis()
@@ -262,7 +218,6 @@ function ISPlayerStatsUI:updateButtons()
     self.changeProfession.enable = buttonEnable;
     self.changeForename.enable = buttonEnable;
     self.changeSurname.enable = buttonEnable;
---    self.addGlobalXP.enable = buttonEnable;
     self.addXpBtn.enable = buttonEnable;
     self.addLvlBtn.enable = buttonEnable and (self.selectedPerk ~= nil)
     self.loseLvlBtn.enable = buttonEnable and (self.selectedPerk ~= nil)
@@ -287,7 +242,6 @@ function ISPlayerStatsUI:onMouseWheelXXX(del)
         return false;
     end
 end
-
 
 function ISPlayerStatsUI:create()
 
@@ -336,6 +290,7 @@ function ISPlayerStatsUI:create()
     self.addTraitBtn:setAnchorTop(false);
     self.addTraitBtn:setAnchorBottom(true);
     self.addTraitBtn.borderColor = self.buttonBorderColor;
+    self.addTraitBtn:setTooltip(getText("IGUI_PlayerStats_AddTraitTooltip"))
     self.mainPanel:addChild(self.addTraitBtn);
 
     self.changeProfession = ISButton:new(self.buttonOffset, self.height - 30, self.buttonWidth, self.buttonHeight, getText("IGUI_PlayerStats_Change"), self, self.onOptionMouseDown);
@@ -380,17 +335,6 @@ function ISPlayerStatsUI:create()
     self.changeSurname:setAnchorBottom(true);
     self.changeSurname.borderColor = self.buttonBorderColor;
     self.mainPanel:addChild(self.changeSurname);
---[[
-    self.addGlobalXP = ISButton:new(self.buttonOffset, self.height - 30, self.buttonWidth, self.buttonHeight, getText("IGUI_PlayerStats_AddGlobalXP"), self, self.onOptionMouseDown);
-    self.addGlobalXP.internal = "ADDGLOBALXP";
-    self.addGlobalXP:initialise();
-    self.addGlobalXP:instantiate();
-    self.addGlobalXP:setAnchorLeft(true);
-    self.addGlobalXP:setAnchorTop(false);
-    self.addGlobalXP:setAnchorBottom(true);
-    self.addGlobalXP.borderColor = self.buttonBorderColor;
-    self.mainPanel:addChild(self.addGlobalXP);
---]]
 
     self.changeAccessLvlBtn = ISButton:new(self.buttonOffset, self.height - 30, self.buttonWidth, self.buttonHeight, getText("IGUI_PlayerStats_Change"), self, self.onOptionMouseDown);
     self.changeAccessLvlBtn.internal = "CHANGEACCESSLEVEL";
@@ -499,8 +443,6 @@ function ISPlayerStatsUI:create()
     self.addXpBtn.internal = "ADDXP";
     self.addXpBtn:initialise();
     self.mainPanel:addChild(self.addXpBtn);
-
---    self.addGlobalXP.borderColor = self.buttonBorderColor;
     
     self.addLvlBtn = ISButton:new(self.addXpBtn:getRight() + UI_BORDER_SPACING, self.addXpBtn.y, self.buttonWidth, self.buttonHeight, getText("IGUI_PlayerStats_LevelUp"), self, self.onOptionMouseDown);
     self.addLvlBtn.internal = "LEVELPERK";
@@ -511,8 +453,6 @@ function ISPlayerStatsUI:create()
     self.loseLvlBtn.internal = "LOWERPERK";
     self.loseLvlBtn:initialise();
     self.mainPanel:addChild(self.loseLvlBtn);
-
---    self:addScrollBars();
 
     self:loadTraits();
     self:loadProfession();
@@ -564,16 +504,6 @@ function ISPlayerStatsUI:onOptionMouseDown(button, x, y)
         table.insert(ISPlayerStatsUI.instance.windows, modal);
     end
 
---[[
-    if button.internal == "ADDGLOBALXP" then
-        local modal = ISTextBox:new(self.x + 200, 200, 280, 180, getText("IGUI_PlayerStats_AddGlobalXP") .. " ", "1", nil, ISPlayerStatsUI.onAddGlobalXP, self.char:getPlayerNum(), self.char);
-        modal:initialise();
-        modal:addToUIManager();
-        modal:setOnlyNumbers(true);
-        table.insert(ISPlayerStatsUI.instance.windows, modal);
-    end
---]]
-
     if button.internal == "ADDXP" then
         local modal = ISPlayerStatsAddXPUI:new(self.x + 200, self.y + 200, 350, 250, nil, ISPlayerStatsUI.onAddXP)
         modal:initialise();
@@ -589,13 +519,16 @@ function ISPlayerStatsUI:onOptionMouseDown(button, x, y)
         end
         local totalXP = self.selectedPerk.perk:getTotalXpForLevel(perkLevel)
         local amount =  totalXP - playerXP;
-        sendAddXp(self.char, self.selectedPerk.perk, amount, true);
+        if isClient() then
+            SendCommandToServer("/addxp \""..self.char:getUsername().."\" "..tostring(self.selectedPerk.perk).."="..tostring(amount).." -false")
+        end
+        self.char:getXp():AddXP(self.selectedPerk.perk, amount, false, false, false, false);
         self:loadPerks();
         if self.selectedPerk.perk == Perks.Strength or self.selectedPerk.perk == Perks.Fitness then
             self:loadTraits();
         end
     end
-    
+
     if button.internal == "LOWERPERK" then
         local playerXP = self.char:getXp():getXP(self.selectedPerk.perk)
         local perkLevel = self.char:getPerkLevel(self.selectedPerk.perk) - 1
@@ -604,7 +537,10 @@ function ISPlayerStatsUI:onOptionMouseDown(button, x, y)
         end
         local totalXP = self.selectedPerk.perk:getTotalXpForLevel(perkLevel)
         local amount =  totalXP - playerXP;
-        sendAddXp(self.char, self.selectedPerk.perk, amount, true);
+        if isClient() then
+            SendCommandToServer("/addxp \""..self.char:getUsername().."\" "..tostring(self.selectedPerk.perk).."="..tostring(amount).." -false")
+        end
+        self.char:getXp():AddXP(self.selectedPerk.perk, amount, false, false, false, false);
         self:loadPerks();
         if self.selectedPerk.perk == Perks.Strength or self.selectedPerk.perk == Perks.Fitness then
             self:loadTraits();
@@ -677,18 +613,6 @@ function ISPlayerStatsUI:onChangeAccessLevel(button, accessLevel)
     end
 end
 
---[[
-function ISPlayerStatsUI:onAddGlobalXP(button, player)
-    if button.internal == "OK" then
-        if button.parent.entry:getText() and button.parent.entry:getText() ~= "" then
-            ISPlayerStatsUI.instance.char:getXp():addGlobalXP(tonumber(button.parent.entry:getText()));
-            sendAddXp(ISPlayerStatsUI.instance.char, nil, tonumber(button.parent.entry:getText()), false, true);
---            ISPlayerStatsUI.instance.loadPerks();
-        end
-    end
-end
---]]
-
 function ISPlayerStatsUI:onChangeName(button, player, changedName)
     if button.internal == "OK" then
         local doneIt = true;
@@ -730,9 +654,12 @@ function ISPlayerStatsUI:onChangeWeight(button, player)
         if button.parent.entry:getText() and button.parent.entry:getText() ~= "" then
             local w = tonumber(button.parent.entry:getText())
             if w >= 30 and w <= 130 then
-                player:getNutrition():setWeight(w)
-                local args = { weight = w, id = player:getOnlineID() }
-                sendClientCommand(getPlayer(), 'player', 'setWeight', args)
+                if isClient() then
+                    local args = { weight = w, id = player:getOnlineID() }
+                    sendClientCommand(getPlayer(), 'player', 'setWeight', args)
+                else
+                    player:getNutrition():setWeight(w)
+                end
             end
         end
     end
@@ -854,8 +781,14 @@ end
 function ISPlayerStatsUI:onAddXP(button, perk, amount, addGlobalXP, useMultipliers)
     if amount and amount ~= "" then
         amount = tonumber(amount);
-        --ISPlayerStatsUI.instance.char:getXp():AddXP(perk:getType(), amount, false, false, true);
-        sendAddXp(ISPlayerStatsUI.instance.char, perk:getType(), amount, not useMultipliers);
+        if isClient() then
+            if useMultipliers then
+                SendCommandToServer("/addxp \""..ISPlayerStatsUI.instance.char:getUsername().."\" "..tostring(perk:getType()).."="..tostring(amount).." -true")
+            else
+                SendCommandToServer("/addxp \""..ISPlayerStatsUI.instance.char:getUsername().."\" "..tostring(perk:getType()).."="..tostring(amount).." -false")
+            end
+        end
+        ISPlayerStatsUI.instance.char:getXp():AddXP(perk:getType(), amount, false, useMultipliers, false, false);
         ISPlayerStatsUI.instance:loadPerks();
     end
 end
@@ -894,7 +827,6 @@ function ISPlayerStatsUI:new(x, y, width, height, playerChecked, admin)
     o.buttonPadY = 3
     o.buttonHeight = FONT_HGT_SMALL + o.buttonPadY * 2;
     o.warningPoint = 0;
-    o.syncWeightTimer = 50
     ISPlayerStatsUI.instance = o;
     o.windows = {};
     o.moveWithMouse = true;
@@ -909,7 +841,6 @@ end
 ISPlayerStatsUI.receiveUserLog = function(username, logs)
     if not ISPlayerStatsUI.instance or username ~= ISPlayerStatsUI.instance.char:getUsername() then return; end
     ISPlayerStatsUI.instance.userlogs = {};
---    ISPlayerStatsUI.instance.userlogBtn.enable = logs:size() > 0;
     ISPlayerStatsUI.instance.warningPoint = 0;
     for i=0,logs:size()-1 do
         local log = logs:get(i);

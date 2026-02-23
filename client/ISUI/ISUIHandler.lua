@@ -32,10 +32,6 @@ ISUIHandler.toggleUI = function()
     ISUIHandler.setVisibleAllUI(ISUIHandler.allUIVisible);
 end
 
---ISUIHandler.showPing = function()
---    getCore():setShowPing(not getCore():isShowPing());
---end
-
 ISUIHandler.onKeyStartPressed = function(key)
     if not getCore():isKey("VehicleRadialMenu", key) and
             not getCore():isKey("AnimalRadialMenu", key) then
@@ -100,9 +96,6 @@ ISUIHandler.onKeyPressed = function(key)
 		end
 		return
 	end
---    if getCore():isKey("Show Ping", key) and isClient() then
---        ISUIHandler.showPing();
---    end
 end
 
 local function OnGameStart()

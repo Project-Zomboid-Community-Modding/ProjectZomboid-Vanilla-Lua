@@ -12,11 +12,6 @@ function AnimalsPanel:prerender()
 	local stencilY = 1
 	local stencilX2 = self.width - 1
 	local stencilY2 = self.height - 1
---[[
-	if self:isVScrollBarVisible() then
-		stencilX2 = self.vscroll.x + 3 -- +3 because the scrollbar texture is narrower than the scrollbar width
-	end
---]]
 	self:setStencilRect(stencilX, stencilY, stencilX2 - stencilX, stencilY2 - stencilY)
 
 	local x = 1
@@ -98,7 +93,6 @@ function AnimalsPanel:highlightAnimal()
     end
     self.mouseOverAnimal = animal
     if self.mouseOverAnimal then
---        self.mouseOverAnimal:setHighlighted(self.ui.playerNum, true)
         self.mouseOverAnimal:setOutlineHighlight(self.ui.playerNum, true)
         if instanceof(self.mouseOverAnimal, "IsoDeadBody") then
             self.mouseOverAnimal:setOutlineHighlightCol(getCore():getBadHighlitedColor())
@@ -194,10 +188,7 @@ function ISDesignationZoneAnimalZoneUI:initialise()
     ISPanelJoypad.initialise(self);
     local btnWid = 100
     local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-    local btnHgt2 = FONT_HGT_SMALL + 2 * 2
     local padBottom = 10
-
---    self.parentUI:setVisible(false);
 
 	local listBorderWidth = 1
 	self.itemPadY = 4
@@ -243,9 +234,6 @@ function ISDesignationZoneAnimalZoneUI:initialise()
     self.infoBtn:instantiate();
     self.infoBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.infoBtn);
-
-    --self:reload();
-    --self:updateAnimals();
 end
 
 function ISDesignationZoneAnimalZoneUI:checkExist()
@@ -385,8 +373,6 @@ function ISDesignationZoneAnimalZoneUI:updateAnimals()
             btn = ISButton:new(0, z + self.itemPadY, btnWid, btnHgt, getText("IGUI_Animal_Info"), self, ISDesignationZoneAnimalZoneUI.onClick);
             btn.internal = "INFO";
             btn.animal = v;
-            --btn.anchorTop = false
-            --btn.anchorBottom = true
             btn:initialise();
             btn:instantiate();
             btn.borderColor = {r=1, g=1, b=1, a=0.1};
@@ -407,16 +393,10 @@ function ISDesignationZoneAnimalZoneUI:updateAnimals()
         end
         self.animalPanel:addChild(label);
         table.insert(self.animalLabels, label);
-        --self:drawText(txt, 10, z, 1,1,1,1,UIFont.NewSmall);
         local width = getTextManager():MeasureStringX(UIFont.Small, txt) + 30;
         if width > maxwidth then
             maxwidth = width;
         end
-        --if self.animalbuttons[i] then
-        --    self.animalbuttons[i+1]:setVisible(true);
-        --    --self.animalbuttons[i+1]:setX(width)
-        --    self.animalbuttons[i+1]:setY(z-8)
-        --end
         z = z + self.itemHgt;
     end
 

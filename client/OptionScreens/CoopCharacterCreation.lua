@@ -3,8 +3,6 @@ require "ISUI/ISPanelJoypad"
 CoopCharacterCreation = ISPanelJoypad:derive("CoopCharacterCreation")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local BUTTON_HGT = FONT_HGT_SMALL + 6
-local UI_BORDER_SPACING = 10
 
 function CoopCharacterCreation:initPlayer()
 	MainScreen.instance.desc:setForename(self.charCreationMain.forenameEntry:getText());
@@ -17,7 +15,6 @@ end
 function CoopCharacterCreation:accept1()
 	if CoopMapSpawnSelect.instance.selectedRegion then
 		local spawnRegion = CoopMapSpawnSelect.instance.selectedRegion
-		print('using spawn region '..tostring(spawnRegion.name))
 		local spawn = spawnRegion.points[MainScreen.instance.desc:getCharacterProfession():getName()]
 		if not spawn then
 			spawn = spawnRegion.points[CharacterProfession.UNEMPLOYED:getName()]
@@ -26,7 +23,6 @@ function CoopCharacterCreation:accept1()
 			print("ERROR: there is no spawn point table for the player's profession, don't know where to spawn the player")
 			return false
 		end
-		print(#spawn..' possible spawn points')
 		local randSpawnPoint = spawn[(ZombRand(#spawn) + 1)]
 
 		if randSpawnPoint.position then
@@ -82,7 +78,6 @@ function CoopCharacterCreation:accept()
 
 	self:initPlayer();
 
---	self:setVisible(false)
 	self:removeFromUIManager()
 
 	if UIManager.getSpeedControls() and not IsoPlayer.allPlayersDead() then

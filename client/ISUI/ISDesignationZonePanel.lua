@@ -51,22 +51,6 @@ function ISDesignationZonePanel:initialise()
     self:addChild(self.renameZone);
     self.renameZone.enable = false;
 
---    self.teleportToZone = ISButton:new(self.zoneList.x + self.zoneList.width - 70, self.removeZone.y + btnHgt2 + 5, 70, btnHgt2, getText("IGUI_PvpZone_TeleportToZone"), self, ISDesignationZonePanel.onClick);
---    self.teleportToZone:setX(self.zoneList.x + self.zoneList.width - self.teleportToZone.width)
---    self.teleportToZone.internal = "TELEPORTTOZONE";
---    self.teleportToZone:initialise();
---    self.teleportToZone:instantiate();
---    self.teleportToZone.borderColor = self.buttonBorderColor;
---    self:addChild(self.teleportToZone);
---    self.teleportToZone.enable = false;
-
---    self.seeZoneOnGround = ISButton:new(self.zoneList.x, self.addZone.y + btnHgt2 + 5, 70, btnHgt2, getText("IGUI_PvpZone_SeeZone"), self, ISDesignationZonePanel.onClick);
---    self.seeZoneOnGround.internal = "SEEZONE";
---    self.seeZoneOnGround:initialise();
---    self.seeZoneOnGround:instantiate();
---    self.seeZoneOnGround.borderColor = self.buttonBorderColor;
---    self:addChild(self.seeZoneOnGround);
-
     self.closeButton = ISButton:new(self.removeZone.x, self.addZone:getBottom() + BUTTON_HGT*2, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISDesignationZonePanel.onClick);
     self.closeButton.internal = "OK";
     self.closeButton:initialise();
@@ -138,7 +122,6 @@ function ISDesignationZonePanel:drawList(y, item, alt)
     end
 
     self:drawText("Size: " .. item.item.size, self.currentWidth + 20, y + 2, 1, 1, 1, a, self.font);
---    self:drawText(item.item.zone:getSize() .. "", 100, y + 2, 1, 1, 1, a, self.font);
 
     return y + self.itemheight;
 end
@@ -147,13 +130,6 @@ function ISDesignationZonePanel:prerender()
     ISCollapsableWindowJoypad.prerender(self)
 
     self:setInfo(getText("IGUI_DesignationZone_Info"));
-
-    local z = 20;
-    local splitPoint = 100;
-    local x = 10;
---    self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
---    self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawText(getText("IGUI_DesignationZone_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.NewMedium, getText("IGUI_DesignationZone_Title")) / 2), z, 1,1,1,1, UIFont.NewMedium);
 end
 
 function ISDesignationZonePanel:updateButtons()
@@ -166,11 +142,9 @@ function ISDesignationZonePanel:render()
 
     self.removeZone.enable = false;
     self.renameZone.enable = false;
---    self.teleportToZone.enable = false;
     if self.zoneList.selected > 0 then
         self.removeZone.enable = true;
         self.renameZone.enable = true;
---        self.teleportToZone.enable = true;
         -- reset the list of zones to highlight when clicking another zone
         if self.zoneList.items[self.zoneList.selected].item.zone ~= self.selectedZone then
             self.player:resetSelectedZonesForHighlight();
@@ -187,7 +161,6 @@ function ISDesignationZonePanel:render()
 		self:drawRectBorderStatic(x+1, y+1, w-2, h-2, 1.0, 1.0, 1.0, 1.0)
     end
 
---    self.player:setSelectedZoneForHighlight(0);
     if self.selectedZone then
         local connectedZones = DesignationZoneAnimal.getAllDZones(nil, self.selectedZone, nil);
         self.player:setSeeDesignationZone(true);
@@ -239,9 +212,6 @@ function ISDesignationZonePanel:onClick(button)
             setJoypadFocus(self.playerNum, ui)
         end
     end
---    if button.internal == "SEEZONE" then
---        self.player:setSeeDesignationZone(not self.player:setSeeDesignationZone());
---    end
 end
 
 function ISDesignationZonePanel:onRenameZoneClick(button, animal)

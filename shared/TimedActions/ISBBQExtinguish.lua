@@ -38,7 +38,7 @@ function ISBBQExtinguish:complete()
 
 	if self.bbq and self.bbq:isLit() then
 		self.bbq:extinguish()
-		self.bbq:sendObjectChange('state')
+		self.bbq:sendObjectChange(IsoObjectChange.STATE)
 	end
 
 	return true;

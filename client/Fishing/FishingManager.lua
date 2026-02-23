@@ -17,13 +17,6 @@ function FishingManager:new(player, joypad)
     o.states = {}
     o:initStates()
 
-    if getCore():getDebug() and getDebugOptions():getBoolean("DebugDraw.FishingZones") then
-        --self.fishingDebugWindow = FishingDebugWindow:new(player)
-        --self.fishingDebugWindow:initialise();
-        --self.fishingDebugWindow:instantiate();
-        --self.fishingDebugWindow:addToUIManager()
-    end
-
     return o
 end
 
@@ -112,11 +105,6 @@ function FishingManager:destroy()
     end
     self:removeEventHooks()
     self.tensionUI:removeFromUIManager()
-
-    --if self.fishingDebugWindow ~= nil then
-        --self.fishingDebugWindow:destroy()
-    --end
-    --getCore():setZoomEnalbed(true)
 end
 
 FishingManager.onFishingActionMPUpdate = function(data)

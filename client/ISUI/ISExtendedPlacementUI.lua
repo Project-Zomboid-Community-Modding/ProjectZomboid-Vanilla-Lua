@@ -7,7 +7,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 function ISExtendedPlacementUI:initialise()
     ISCollapsableWindow.initialise(self);
-    local btnwidth = 20;
     local btnheight = FONT_HGT_SMALL + 2;
     local txtboxwidth = 50;
     local sliderwidth = 150;
@@ -302,9 +301,6 @@ function ISExtendedPlacementUI:adjust()
         biggestWidth = getTextManager():MeasureStringX(self.font, self.labelaxisz.name);
         biggestWidthAxis = biggestWidth;
     end
-    --if getTextManager():MeasureStringX(self.font, self.labelmode.name) > biggestWidth then
-    --    biggestWidth = getTextManager():MeasureStringX(self.font, self.labelmode.name);
-    --end
 
     self.labelmov:setY(self:titleBarHeight() + 5)
     self.labelxmov:setY(self.labelmov.y + self.labelmov:getHeight() + 5);
@@ -386,9 +382,6 @@ function ISExtendedPlacementUI:prerender()
         gizmo:setTable(self)
         Gizmos.getInstance():setGizmo(self.playerNum, gizmo)
     end
-
-    --self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-    --self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
 
 function ISExtendedPlacementUI:createChildren()
@@ -416,7 +409,6 @@ function ISExtendedPlacementUI:update()
             self.gizmo = "translate"
         end
     end
-    --self:adjust();
 end
 
 function ISExtendedPlacementUI:onJoypadDown(button)

@@ -39,10 +39,6 @@ function ISEmoteRadialMenu:init()
 	ISEmoteRadialMenu.defaultMenu["signal"].subMenu["signalfire"] = getText("IGUI_Emote_Fire");
 	ISEmoteRadialMenu.defaultMenu["signal"].subMenu["comefront"] = getText("IGUI_Emote_Come");
 	ISEmoteRadialMenu.defaultMenu["signal"].subMenu["salute"] = getText("IGUI_Emote_Salute");
---	ISEmoteRadialMenu.defaultMenu["signal"].subMenu["contactR90"] = "Contact";
-
---	ISEmoteRadialMenu.defaultMenu["wavehi"] = {};
---	ISEmoteRadialMenu.defaultMenu["wavehi"].name = "Wave Hi";
 
 	ISEmoteRadialMenu.defaultMenu["shout"] = {};
 	ISEmoteRadialMenu.defaultMenu["shout"].name = getText("IGUI_Emote_Shout");
@@ -131,7 +127,6 @@ function ISEmoteRadialMenu:fillMenu(submenu)
 
 	local icon = nil;
 	if not submenu then -- base menu with all categories
---		menu:addSlice("Friendly", nil, self.fillMenu, self, "friendly")
 		for i,v in pairs(ISEmoteRadialMenu.menu) do
 			icon = nil;
 			if ISEmoteRadialMenu.icons[i] then
@@ -143,7 +138,6 @@ function ISEmoteRadialMenu:fillMenu(submenu)
 				menu:addSlice(v.name, icon, self.emote, self, i)
 			end
 		end
---		menu:addSlice("Config", ISEmoteRadialMenu.icons["config"], self.configEmote, self)
 	else
 		for i,v in pairs(ISEmoteRadialMenu.menu[submenu].subMenu) do
 			icon = nil;

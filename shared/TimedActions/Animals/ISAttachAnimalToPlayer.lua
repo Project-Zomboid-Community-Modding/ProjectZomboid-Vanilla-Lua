@@ -46,7 +46,6 @@ function ISAttachAnimalToPlayer:complete()
 		self.character:getAttachedAnimals():remove(self.animal);
 		self.animal:getData():setAttachedPlayer(nil);
 	end
-	sendAttachAnimalToPlayer(self.animal, self.character, nil, self.remove)
 	return true
 end
 

@@ -148,8 +148,6 @@ end
 
 function ISOvenUI:render()
     ISPanelJoypad.render(self);
---    print(self.oven:getContainer():getTemprature());
---    self:drawTextCentre(math.floor(self.oven:getCurrentTemperature()) .. "", self.width/2, 5, 1, 1, 1, 1, self.font);
 end
 
 function ISOvenUI:prerender()

@@ -128,10 +128,7 @@ function DebugChunkStateUI:createChildren()
 	self.toolBar = ISPanel:new(self.width / 2 - 300 / 2, 10, 300, BUTTON_HGT)
 	self.toolBar:noBackground()
 	self:addChild(self.toolBar)
---[[
-	local button1 = ISButton:new(0, 0, 60, toolHgt, "CAMERA", self, self.onCamera)
-	self.toolBar:addChild(button1)
---]]
+
 	local button2 = ISButton:new(0, 0, 60, BUTTON_HGT, getText("IGUI_DebugMenu_Options"), self, self.onOptions)
 	self.toolBar:addChild(button2)
 	self.buttonOptions = button2
@@ -324,8 +321,6 @@ function DebugChunkStateUI:prerender()
 	if not object:getSprite() then return end
 	local tex = object:getSprite():getTextureForCurrentFrame(IsoDirections.N)
 	if not tex then return end
---	if instanceof(object, "IsoDeadBody") then return end
---	if instanceof(object, "IsoGameCharacter") then return end
 	local spritePopupPanel = self.spritePopupPanel
 	spritePopupPanel.sprite = object:getSprite()
 	spritePopupPanel:setX(self.objectSections:getRight())
@@ -381,22 +376,19 @@ function DebugChunkStateUI:setObjectList(square, x, y, z)
 	for i=1,square:getObjects():size() do
 		local object = square:getObjects():get(i-1)
 		local line1 = object:getClass():getSimpleName()
---		local line1 = line1 .. "  name=" .. tostring(object:getName())
-		local line1 = line1 .. "  type=" .. tostring(object:getType())
+		line1 = line1 .. "  type=" .. tostring(object:getType())
 		self.objectList:addItem(line1, object)
 	end
 	for i=1,square:getStaticMovingObjects():size() do
 		local object = square:getStaticMovingObjects():get(i-1)
 		local line1 = object:getClass():getSimpleName()
---		local line1 = line1 .. "  name=" .. tostring(object:getName())
-		local line1 = line1 .. "  type=" .. tostring(object:getType())
+		line1 = line1 .. "  type=" .. tostring(object:getType())
 		self.objectList:addItem(line1, object)
 	end
 	for i=1,square:getMovingObjects():size() do
 		local object = square:getMovingObjects():get(i-1)
 		local line1 = object:getClass():getSimpleName()
---		local line1 = line1 .. "  name=" .. tostring(object:getName())
-		local line1 = line1 .. "  type=" .. tostring(object:getType())
+		line1 = line1 .. "  type=" .. tostring(object:getType())
 		self.objectList:addItem(line1, object)
 	end
 end

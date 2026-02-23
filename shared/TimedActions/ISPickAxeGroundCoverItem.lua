@@ -36,10 +36,10 @@ function ISPickAxeGroundCoverItem:start()
 	if not self.pickAxe then
 		self.pickAxe = self.character:getPrimaryHandItem();
 	end
-	if self.pickAxe and self.character:getSecondaryHandItem() and self.pickAxe == self.character:getSecondaryHandItem() then
+	if self.character:isSecondaryHandItem(self.pickAxe) then
 	    self:setActionAnim("DestroyFloor")
 	else
-	    self:setActionAnim(CharacterActionAnims.BuildLow)
+	    self:setActionAnim("HammerOre")
 	end
 	addSound(self.character, self.character:getX(),self.character:getY(),self.character:getZ(), 20, 10);
 end
@@ -107,6 +107,9 @@ function ISPickAxeGroundCoverItem:perform()
                 addXp(self.character, Perks.Masonry, 5);
             end
 		end
+        if self:isMineralDeposit() then
+            self.character:playSound("CraftMineralDepositRemove")
+        end
 		if trashItem then
 			local square = self.item:getSquare()
 			self.item:getSquare():SpawnWorldInventoryItem(trashItem, 0.0, 0.0, 0.0)
@@ -151,10 +154,32 @@ function ISPickAxeGroundCoverItem:animEvent(event, parameter)
 	end
 	if event == "PlayHitSound" and self.pickAxe then
         self.character:addCombatMuscleStrain(self.pickAxe)
+        if self:isMineralDeposit() then
+            self.character:playSound("CraftMineralDepositHit")
+            return
+        end
 		-- FIXME: Pick an appropriate value for hit surface.
 		self.character:setMeleeHitSurface("Default")
 		self.character:playSound(self.pickAxe:getDoorHitSound())
 	end
+end
+
+function ISPickAxeGroundCoverItem:isMineralDeposit()
+	if self.objectType then
+        if string.find(self.objectType, "ironOre") ~= nil then
+            return true
+        end
+        if string.find(self.objectType, "copperOre") ~= nil then
+            return true
+        end
+        if self.objectType == "FlintBoulder" then
+            return true
+        end
+        if self.objectType == "LimestoneBoulder" then
+            return true
+		end
+    end
+    return false
 end
 
 function ISPickAxeGroundCoverItem:new(character, item)
@@ -167,9 +192,7 @@ function ISPickAxeGroundCoverItem:new(character, item)
     end
 	local o = ISBaseTimedAction.new(self, character)
 	o.item = item;
-    local props = item:getSprite():getProperties()
-    local objectType = props:has("CustomName") and props:get("CustomName") or nil
-	o.objectType = objectType;
+	o.objectType = item:getProperty("CustomName");
 	o.cornerCounter = -1;
 	if cornerCounter ~= nil then
 		o.cornerCounter = cornerCounter;
@@ -184,4 +207,3 @@ function ISPickAxeGroundCoverItem:new(character, item)
 	o.pickAxe = character:getPrimaryHandItem();
 	return o;
 end
-

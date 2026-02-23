@@ -36,20 +36,9 @@ CDDA.OnInitWorld = function()
 	SandboxVars.StartTime = 2;
 	SandboxVars.WaterShutModifier = -1;
 	SandboxVars.ElecShutModifier = -1;
--- 	SandboxVars.FoodLoot = 3;
--- 	SandboxVars.CannedFoodLoot = 3;
--- 	SandboxVars.RangedWeaponLoot = 3;
--- 	SandboxVars.AmmoLoot = 3;
--- 	SandboxVars.SurvivalGearsLoot = 3;
--- 	SandboxVars.MechanicsLoot = 3;
--- 	SandboxVars.LiteratureLoot = 3;
--- 	SandboxVars.MedicalLoot = 3;
--- 	SandboxVars.WeaponLoot = 3;
--- 	SandboxVars.OtherLoot = 3;
     SandboxVars.LootItemRemovalList = "";
 	SandboxVars.Temperature = 3;
 	SandboxVars.Rain = 3;
-	--    SandboxVars.erosion = 12
 	SandboxVars.ErosionSpeed = 1
 	SandboxVars.Farming = 3;
 	SandboxVars.NatureAbundance = 5;
@@ -73,18 +62,7 @@ CDDA.OnInitWorld = function()
 
 	SandboxVars.ZombieConfig.PopulationMultiplier = ZombiePopulationMultiplier.Insane
 
-	-- FIXME: a number of these spawnpoints are invalid :-(
-	if false then
-	local rand = ZombRand(0, 13) + 1
-	CDDA.x = CDDA.spawns[rand].x;
-	CDDA.y = CDDA.spawns[rand].y;
-	CDDA.z = CDDA.spawns[rand].z;
-	print ("Set to :" .. CDDA.x .. ", "..CDDA.y..", ".. CDDA.z)
-	end
-	
 	Events.OnGameStart.Add(CDDA.OnGameStart);
-
-
 end
 
 CDDA.RemovePlayer = function(p)
@@ -110,10 +88,6 @@ CDDA.AddPlayer = function(playerNum, playerObj)
 end
 
 CDDA.Render = function()
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, getCore():getOffscreenWidth() - 20, 20, "Zombies left : " .. (EightMonthsLater.zombiesSpawned - EightMonthsLater.deadZombie), 1, 1, 1, 0.8);
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, (getCore():getOffscreenWidth()*0.9), 40, "Next wave : " .. tonumber(((60*60) - EightMonthsLater.waveTime)), 1, 1, 1, 0.8);
 end
 
 CDDA.id = "AReallyCDDAy";

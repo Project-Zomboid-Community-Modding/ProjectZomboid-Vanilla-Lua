@@ -106,7 +106,6 @@ function ISMPEditServer:onClick(button)
             newServer:setPort(tonumber(self.serverPort:getInternalText():trim()) or 16262);
             newServer:setServerPassword(self.serverPassword:getInternalText():trim())
             addServerToAccountList(newServer)
-            --getCustomizationData(newServer:getUserName(), newServer:getPwd(), newServer:getIp(), newServer:getPort(), newServer:getServerPassword(), newServer:getName(), false);
         end
         self.ui:refreshList()
     end
@@ -221,7 +220,6 @@ function ISMPEditServer:onMouseMove(dx, dy)
         self:setX(self.x + dx);
         self:setY(self.y + dy);
         self:bringToTop();
-        --ISMouseDrag.dragView = self;
     end
 end
 
@@ -246,7 +244,6 @@ function ISMPEditServer:onOtherKey(key)
 end
 
 function ISMPEditServer:onGainJoypadFocus(joypadData)
---    print("gained modal focus");
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
 	if self.yesno then
 		self:setISButtonForA(self.yes)

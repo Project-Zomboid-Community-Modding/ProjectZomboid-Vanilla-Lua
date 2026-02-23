@@ -174,10 +174,10 @@ ISCheatPanelUI.AddOption("AnimalCheat", "IGUI_CheatPanel_AnimalCheat",
 )
 ISCheatPanelUI.AddOption("AnimalExtraValues", "IGUI_CheatPanel_AnimalExtraValues",
     function(self)
-        return IsoAnimal.isExtraValues()
+        return self.player:isAnimalExtraValuesCheat()
     end,
     function(self, selected)
-        IsoAnimal.setExtraValues(selected)
+        self.player:setAnimalExtraValuesCheat(selected)
     end
 )
 
@@ -315,7 +315,7 @@ ISCheatPanelUI.EnableCheats = function()
     local playerObj = getSpecificPlayer(0)
     if not playerObj or playerObj:isDead() then return end
     -- if single player and it's not debug mode, all cheats should be disabled
-    if not isServer() and not isClient() and not getDebug() then return end
+    if isServer() or isClient() or not getDebug() then return end
     local reader = getFileReader("CheatPanel.ini", false)
     if not reader then return end
     while true do

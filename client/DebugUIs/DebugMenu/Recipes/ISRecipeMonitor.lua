@@ -88,8 +88,6 @@ end
 function ISRecipeMonitor:drawInfoList(y, item, alt)
     local a = 1.0;
 
-    --self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
     end
@@ -133,7 +131,6 @@ function ISRecipeMonitor:prerender()
     ISCollapsableWindow.prerender(self);
 end
 
-
 function ISRecipeMonitor:render()
     ISCollapsableWindow.render(self);
 
@@ -151,7 +148,6 @@ end
 
 function ISRecipeMonitor:new (x, y, width, height, title)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -172,7 +168,6 @@ function ISRecipeMonitor:new (x, y, width, height, title)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = title;
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

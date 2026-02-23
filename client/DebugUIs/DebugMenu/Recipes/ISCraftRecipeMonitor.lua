@@ -63,7 +63,6 @@ function ISCraftRecipeMonitor:onResize()
 end
 
 function ISCraftRecipeMonitor:onBtnClick(_button)
-
     if _button == self.btnRecipe then
         if self.monitor and self.monitor:getRecipe() then
             ISScriptViewWindow.OnOpenPanel(self.monitor:getRecipe());
@@ -85,7 +84,6 @@ function ISCraftRecipeMonitor:prerender()
     ISCollapsableWindow.prerender(self);
 end
 
-
 function ISCraftRecipeMonitor:render()
     ISCollapsableWindow.render(self);
 
@@ -102,7 +100,6 @@ end
 
 function ISCraftRecipeMonitor:new (x, y, width, height, title)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -123,7 +120,6 @@ function ISCraftRecipeMonitor:new (x, y, width, height, title)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = title;
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

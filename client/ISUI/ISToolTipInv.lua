@@ -66,7 +66,6 @@ function ISToolTipInv:render()
 	self.tooltip:setMeasureOnly(false)
 
      -- clampy x, y
-
      local myCore = getCore();
      local maxX = myCore:getScreenWidth();
      local maxY = myCore:getScreenHeight();

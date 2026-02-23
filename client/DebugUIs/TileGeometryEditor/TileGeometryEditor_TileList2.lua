@@ -268,6 +268,11 @@ function TileList2:render()
 				local otherTile = TileDepthTextureAssignmentManager.getInstance():getAssignedTileName(self.editor.modID, tileName)
 				if otherTile then
 					self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.2, 0.2, 0.2)
+                    depthTexture = TileDepthTextureManager.getInstance():getTextureFromTileName(self.editor.modID, otherTile)
+                    if not depthTexture or depthTexture:isEmpty() then
+                        -- It's an error for this tile to be assigned another tile's non-existent depth texture.
+                        self:drawRectBorder(xIndent + (col - 1) * texW + 1, yIndent + (row - 1) * texH + 1, texW - 2, texH - 2, 1.0, 1.0, 0.0, 0.0)
+                    end
 				end
 				self:drawTextureScaled(texture, xIndent + (col - 1) * texW + texture:getOffsetX() * scale, yIndent + (row - 1) * texH + texture:getOffsetY() * scale, texture:getWidth() * scale, texture:getHeight() * scale, 1.0, 1.0, 1.0, 1.0)
 				maxRow = math.max(maxRow, row)
@@ -284,7 +289,6 @@ function TileList2:render()
 	if self:isMouseOver() then
 		local col,row = self:getColRowAt(self:getMouseX(), self:getMouseY())
 		if self:isValidColRow(col, row) then
-			local selection = self.editor.tilePicker.listBox:getSelection()
 			self:drawRectBorder(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.5, 0.5, 0.5)
 			self:renderTilesToAssign(xIndent, yIndent, texW, texH, col, row)
 		end

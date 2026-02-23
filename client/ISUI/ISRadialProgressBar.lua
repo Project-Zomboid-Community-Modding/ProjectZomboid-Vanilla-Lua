@@ -46,6 +46,12 @@ function ISRadialProgressBar:getTexture()
     end
 end
 
+function ISRadialProgressBar:setColor(_col)
+    if self.javaObject then
+        self.javaObject:setColor(_col)
+    end
+end
+
 function ISRadialProgressBar:new(x, y, width, height, texturePath)
     local o = {};
     o = ISUIElement:new(x, y, width, height)

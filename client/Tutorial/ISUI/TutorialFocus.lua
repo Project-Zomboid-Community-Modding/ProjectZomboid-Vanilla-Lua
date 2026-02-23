@@ -82,5 +82,3 @@ function TutorialFocus.unset()
     end
     TutorialFocus.instance = nil;
 end
-
---Events.OnMainMenuEnter.Add(TestFocus);

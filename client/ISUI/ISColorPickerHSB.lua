@@ -197,20 +197,6 @@ function ISColorPickerHSB:onMouseMove(dx, dy)
 
     --if self.otherFct then return true; end
 	if not self.mouseDown then return true end
-	--[[
-	local x = self:getMouseX()
-	local y = self:getMouseY()
-
-	local col = math.floor((x - self.borderSize) / self.buttonSize)
-	local row = math.floor((y - self.borderSize) / self.buttonSize)
-	if col < 0 then col = 0 end
-	if col >= self.columns then col = self.columns - 1 end
-	if row < 0 then row = 0 end
-	if row >= self.rows then row = self.rows - 1 end
-	local index = col + row * self.columns + 1
-	if index == self.index then return true end
-	self.index = index
-		]]--
 end
 
 function ISColorPickerHSB:onMouseDownColorBox(x, y)
@@ -229,32 +215,11 @@ function ISColorPickerHSB:onMouseUp(x, y)
 	if self.mouseDown then
 		self.mouseDown = false
 		self.mouseDownInColorBox = false
-		--[[
-        if self.otherFct then
-		    self:picked2(true)
-        else
-            self:picked(true)
-        end
-		]]--
 	end
 	return true
 end
 
 function ISColorPickerHSB:picked2(hide)
---[[
-    if hide then
-        self:removeSelf()
-    end
-    local x = self:getMouseX()
-    local y = self:getMouseY()
-    local col = math.floor((x - self.borderSize) / self.buttonSize)
-    local row = math.floor((y - self.borderSize) / self.buttonSize)
-    if col < 0 then col = 0 end
-    if col >= self.columns then col = self.columns - 1 end
-    if row < 0 then row = 0 end
-    if row >= self.rows then row = self.rows - 1 end
-    self.index = col + row * self.columns + 1
-		]]--
     if self.pickedFunc then
         self.pickedFunc(self.pickedTarget, self.pickedRGB, false, self.pickedArgs[1], self.pickedArgs[2], self.pickedArgs[3], self.pickedArgs[4])
     end

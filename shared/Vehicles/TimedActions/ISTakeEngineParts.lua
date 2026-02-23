@@ -51,7 +51,7 @@ function ISTakeEngineParts:complete()
     	end
     	self.part:setCondition(0)
     	self.vehicle:transmitPartCondition(self.part)
-    	self.character:sendObjectChange('mechanicActionDone', { success = (numParts > 0)})
+    	self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = (numParts > 0)})
     	if numParts > 0 then
     	    self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
     	else
@@ -84,12 +84,13 @@ function ISTakeEngineParts:getDuration()
 	return self.maxTime;
 end
 
-function ISTakeEngineParts:new(character, part, item, maxTime)
+function ISTakeEngineParts:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = part:getVehicle()
 	o.part = part
 	o.item = item
-	o.maxTime = maxTime
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.jobType = getText("IGUI_TakeEngineParts")
 	return o
 end

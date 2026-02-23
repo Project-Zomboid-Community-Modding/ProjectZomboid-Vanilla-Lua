@@ -126,13 +126,6 @@ function MainPanel:onJoypadDown(button, joypadData)
 		self.parent:activateView(self.parent.viewList[viewIndex].name)
 		joypadData.focus = self.parent:getActiveView()
 		updateJoypadFocus(joypadData)
---[[
-	elseif button == Joypad.AButton then
-		local volumeCtl = self.joypadButtons[self.joypadIndex]
-		self.parent.parent.onPlaySound({ self.parent.parent, volumeCtl })
-	elseif button == Joypad.XButton then
-		self.parent.parent.onStopSound(self.parent.parent)
---]]
 	else
 		ISPanelJoypad.onJoypadDown(self, button, joypadData)
 	end
@@ -159,7 +152,6 @@ end
 ISGameSounds = ISPanelJoypad:derive("ISGameSounds")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISGameSounds:addCombo(x, y, w, h, name, options, selected, target, onchange)
 
@@ -182,9 +174,6 @@ function ISGameSounds:addCombo(x, y, w, h, name, options, selected, target, onch
 	return panel2
 end
 
-local function DummyMouseUp(x, y)
-end
-
 function ISGameSounds:addVolumeControl(x, y, w, h, name, volume, target, onchange)
 	local fontHgt = FONT_HGT_SMALL
 
@@ -198,16 +187,6 @@ function ISGameSounds:addVolumeControl(x, y, w, h, name, volume, target, onchang
 	volumeCtl.label = label
 	self.mainPanel:addChild(volumeCtl)
 
---[[
-	local speaker = ISSpeakerButton:new(volumeCtl:getRight() + 10, volumeCtl.y, h, h, self.onPlaySound, { self, volumeCtl })
-	speaker:initialise()
-	self.mainPanel:addChild(speaker)
-	speaker.onMouseDown = ISSpeakerButton.onMouseUp
-	speaker.onMouseUp = DummyMouseUp
-	speaker.label = label
-	speaker.control = volumeCtl
-	volumeCtl.speaker = speaker
---]]
 	self.mainPanel:insertNewLineOfButtons(volumeCtl)
 
 	self.addY = self.addY + math.max(fontHgt, h) + 6
@@ -316,7 +295,6 @@ function ISGameSounds.onPlaySound(args)
 	end
 	local self = args[1]
 	local gameSound = args[2].gameSound
---	getSoundManager():PlaySound(gameSound:getName(), false, 1.0)
 	self:onStopSound()
 	GameSounds.previewSound(gameSound:getName())
 	self.previewControl = args[2]

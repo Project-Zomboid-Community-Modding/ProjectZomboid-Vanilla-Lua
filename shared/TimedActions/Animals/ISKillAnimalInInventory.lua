@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISKillAnimalInInventory = ISBaseTimedAction:derive("ISKillAnimalInInventory");
 
 function ISKillAnimalInInventory:isValid()
-	return true
+	return self:canKillAnimal();
 end
 
 function ISKillAnimalInInventory:waitToStart()
@@ -24,18 +24,7 @@ function ISKillAnimalInInventory:stop()
 end
 
 function ISKillAnimalInInventory:canKillAnimal()
-	if not self.character then
-		print("!canKillAnimal: self.character is null");
-		return false;
-	end
-
-	if not self.animalItem then
-		print("!canKillAnimal: self.animalItem is null");
-		return false;
-	end
-
-	if not self.character:getInventory():contains(self.animalItem) then
-		print("!canKillAnimal: self.animalItem not in inventory");
+	if not self.character or not self.animalItem or not self.character:getInventory():contains(self.animalItem) then
 		return false;
 	end
 
@@ -55,10 +44,12 @@ function ISKillAnimalInInventory:perform()
 end
 
 function ISKillAnimalInInventory:complete()
-	if isServer() and not self:canKillAnimal() then
-		return false;
-	end
-
+    if isServer() then
+        if not self:canKillAnimal() then
+            return false;
+        end
+        PVPLogTool.logKill(self.character, self.animal)
+    end
     self:kill();
 
 	return true
@@ -68,6 +59,7 @@ function ISKillAnimalInInventory:kill()
     local animal = self.animalItem:getAnimal()
     animal:playBreedSound("death")
 	animal:setHealth(0);
+    animal:doDeathSplatterAndSounds(nil, self.character, true);
     local wasCorpseAlready = true
     local addToSquareAndWorld = false
     local isoDeadBody = IsoDeadBody.new(animal, wasCorpseAlready, addToSquareAndWorld)
@@ -80,9 +72,9 @@ function ISKillAnimalInInventory:kill()
 end
 
 function ISKillAnimalInInventory:getDuration()
-	--if self.character:isTimedActionInstant() then
-	--	return 1
-	--end
+	if self.character:isTimedActionInstant() then
+		return 1
+	end
 	return 80
 end
 

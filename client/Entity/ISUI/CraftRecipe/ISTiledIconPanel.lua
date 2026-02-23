@@ -14,7 +14,6 @@ function ISTiledIconPanel:createChildren()
     ISPanel.createChildren(self);
 
     self.buttonPrev = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT, BUTTON_HGT, nil)
-    --self.buttonPrev.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
     self.buttonPrev.image = getTexture("ArrowLeft");
     self.buttonPrev.target = self;
     self.buttonPrev.onclick = ISTiledIconPanel.onButtonClick;
@@ -25,15 +24,12 @@ function ISTiledIconPanel:createChildren()
 
     local fontHeight = -1; -- <=0 sets label initial height to font
     self.pagesLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "1 / 1", 1.0, 1.0, 1.0, 1, UIFont.Small, true)
-    --self.borderLabel.center = true;
     self.pagesLabel.textColor = self.textColor;
     self.pagesLabel:initialise();
     self.pagesLabel:instantiate();
-    --self:addChild(self.borderLabel);
     self:addChild(self.pagesLabel);
 
     self.buttonNext = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT, BUTTON_HGT, nil)
-    --self.buttonNext.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
     self.buttonNext.image = getTexture("ArrowRight");
     self.buttonNext.target = self;
     self.buttonNext.onclick = ISTiledIconPanel.onButtonClick;
@@ -103,9 +99,6 @@ function ISTiledIconPanel:calculateLayout(_preferredWidth, _preferredHeight)
         self.tiledIconListBox:setX(UI_BORDER_SPACING+1);
         self.tiledIconListBox:setY(UI_BORDER_SPACING*2+1+self.buttonPrev:getHeight());
         self.tiledIconListBox:calculateLayout(width-((UI_BORDER_SPACING+1)*2), boxHeight);
-
-        --width = math.max(width, self.tiledIconListBox:getWidth());
-        --height = math.max(height, self.tiledIconListBox:getHeight());
     end
 
     if self.entryBox then
@@ -119,7 +112,6 @@ function ISTiledIconPanel:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISTiledIconPanel:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -155,13 +147,6 @@ end
 
 -- optional override
 function ISTiledIconPanel:onTileMouseHover(_tileData)
-    --[[
-    if _tileData then
-        self:activateToolTip(_tileData);
-    else
-        self:deactivateToolTip();
-    end
-    --]]
 end
 
 -- optional override
@@ -188,7 +173,6 @@ end
 
 function ISTiledIconPanel:filterData(_string)
     if self.onFilterData and self.callbackTarget then
-        --self.dataList = self.onFilterData(self.callbackTarget, _string, self.dataList, self.sourceDataList);
         self.onFilterData(self.callbackTarget, _string, self.dataList, self.sourceDataList);
     end
 
@@ -229,11 +213,6 @@ function ISTiledIconPanel:setDataList(_dataList)
     if currentRecipeFound then
         -- restore selection
         self:setSelectedData(currentRecipe);
-    --elseif self.dataList:size() > 0 then
-    --    self:setSelectedData(self.dataList:get(0));
-    --    if self.callbackTarget and self.callbackTarget.logic then
-    --        self.callbackTarget.logic:setRecipe(self.dataList:get(0));
-    --    end
     end
 end
 
@@ -301,8 +280,6 @@ function ISTiledIconPanel:new (x, y, width, height, player, dataList, callbackTa
     o.margin = UI_BORDER_SPACING;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

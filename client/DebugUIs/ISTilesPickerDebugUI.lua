@@ -31,27 +31,6 @@ function ISTilesPickerTilesList:render()
 
 	self:setScrollHeight(yIndent + maxRow * texH + yIndent)
 	self.vscroll:setX(self.width - self.vscroll.width)
---[[
-	local tileNames = getWorld():getAllTiles(self.tileset)
-	if tileNames == nil then return end
-	local col = 1
-	local row = 1
-	for i=1,tileNames:size() do
-		local tileName = tileNames:get(i-1)
-		local texture = getTexture(tileName)
-		if texture then
-			self:drawTextureScaledAspect(texture, 10 + (col - 1) * 64, 10 + (row - 1) * 128, 64, 128, 1.0, 1.0, 1.0, 1.0)
-			col = col + 1
-			if col == 9 then
-				col = 1
-				row = row + 1
-			end
-		end
-	end
-
-	self:setScrollHeight(10 + row * 128 + 10)
-	self.vscroll:setX(self.width - self.vscroll.width)
---]]
 
 	col = math.floor((self:getMouseX() - xIndent) / texW)
 	row = math.floor((self:getMouseY() - yIndent) / texH)
@@ -75,10 +54,6 @@ function ISTilesPickerTilesList:new(x, y, w, h)
 end
 
 function ISTilesPickerDebugUI:createChildren()
-	local btnWid = 100
-	local btnHgt = 25
-	local padBottom = 0
-	
 	ISCollapsableWindow.createChildren(self)
 
 	local th = self:titleBarHeight()
@@ -103,15 +78,6 @@ function ISTilesPickerDebugUI:createChildren()
 	self.tilesList:instantiate();
 	self.tilesList:addScrollBars();
 	self:addChild(self.tilesList);
-	
---	self.close = ISButton:new(self.width - btnWid - 10, self.add.y, btnWid, btnHgt, "Close", self, ISSpawnHordeUI.close);
---	self.close.anchorTop = false
---	self.close.anchorBottom = true
---	self.close:initialise();
---	self.close:instantiate();
---	self.close.borderColor = {r=1, g=1, b=1, a=0.1};
---	self:addChild(self.close);
-
 	self.resizeWidget2:bringToTop()
 	self.resizeWidget:bringToTop()
 	
@@ -135,8 +101,7 @@ end
 
 function ISTilesPickerDebugUI:drawTilesetList(y, item, alt)
 	local a = 0.9;
-	
-	--    self.parent.selectedStash = nil;
+
 	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	
 	if self.selected == item.index then
@@ -165,16 +130,10 @@ end
 function ISTilesPickerDebugUI:prerender()
 	self.tilesList.tileset = self.filesList.items[self.filesList.selected].item
 	ISCollapsableWindow.prerender(self);
---	local radius = (self:getRadius() + 1);
---	if self.marker and (self.marker:getSize() ~= radius) then
---		self.marker:setSize(radius)
---	end
 end
 
 function ISTilesPickerDebugUI:render()
 	ISCollapsableWindow.render(self);
-	
---	self:drawText("Picked Square: " .. self.selectX .. "," .. self.selectY .. "," .. self.selectZ, 10, 25, 1, 1, 1, 1, self.font);
 end
 
 function ISTilesPickerDebugUI:addMarker(square, radius)
@@ -226,6 +185,5 @@ function ISTilesPickerDebugUI:new(x, y, character, square)
 	o.anchorRight = true;
 	o.anchorTop = true;
 	o.anchorBottom = true;
---	o:addMarker(square, 1);
 	return o;
 end

@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local UI_BORDER_SPACING = 10
-
 ISHandCraftPanel = ISPanel:derive("ISHandCraftPanel");
 
 function ISHandCraftPanel:initialise()
@@ -61,12 +59,10 @@ function ISHandCraftPanel:onDoubleClick(item)
 end
 
 function ISHandCraftPanel:createRecipesColumn()
-    --self.recipeColumn = self.rootTable:addColumnFill(nil);
-
     self.recipesPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipesPanel, 0, 0, 10, 10, self.player, self.craftBench, self.isoObject, self.logic, self);
     self.recipesPanel.needSortCombo = true;
     self.recipesPanel.needFilterCombo = true;
-    --self.recipesPanel.expandToFitTooltip = true;
+    self.recipesPanel.showAllCraftFilterTickBox = true;
     self.recipesPanel.wrapTooltipText = true;
     self.recipesPanel:initialise();
     self.recipesPanel:instantiate();
@@ -76,7 +72,6 @@ function ISHandCraftPanel:createRecipesColumn()
 
     local column = self.rootTable:addColumnFill(nil);
     self.rootTable:setElement(column:index(), 0, self.recipesPanel);
-    --self.rootTable:cell(column:index(), 0).padding = 0;
 end
 
 function ISHandCraftPanel:createInventoryPanel()
@@ -105,7 +100,6 @@ function ISHandCraftPanel:calculateLayout(_preferredWidth, _preferredHeight)
     local width =math.max(self.minimumWidth, _preferredWidth or 0);
     local height =math.max(self.minimumHeight, _preferredHeight or 0);
 
-    --local x,y = 0,headerHeight;
     if self.rootTable then
         self.rootTable:setX(0);
         self.rootTable:setY(0);
@@ -158,10 +152,6 @@ function ISHandCraftPanel:update()
     if not self.craftBench then
         local newIsoObject = ISEntityUI.FindCraftSurface(self.player, 2);
         if self.isoObject ~= newIsoObject then
-            --if not newIsoObject and self.isoObject then
-            --    self.isoObject:setOutlineHighlight(false);
-            --    self.isoObject:setOutlineHlAttached(false);
-            --end
             self.isoObject = newIsoObject;
             self.parent.isoObject = self.isoObject;
             self.logic:setIsoObject(self.isoObject);
@@ -171,7 +161,6 @@ function ISHandCraftPanel:update()
     end
 
     if ISHandCraftPanel.drawDirty and self.updateTimer == 0 then
-        --local previousSelected = self.recipesPanel.recipeListPanel.recipeListPanel.selected;
         ISHandCraftPanel.drawDirty = false;
         self:refreshRecipeList();
         self.logic:autoPopulateInputs();
@@ -181,7 +170,6 @@ function ISHandCraftPanel:update()
         else
             self.updateTimer = 10;
         end
-        --self.recipesPanel.recipeListPanel.recipeListPanel.selected = previousSelected;
     end
 end
 
@@ -259,7 +247,6 @@ function ISHandCraftPanel:onRecipeChanged(_recipe)
     self.inventoryPanelColumn.visible = self.logic:shouldShowManualSelectInputs() and self.logic:getRecipe() ~= nil;
     self.recipePanelColumn.visible = self.logic:getRecipe() ~= nil;
 
-    --log(DebugType.CraftLogic, "ISHandCraftPanel -> set recipe and calling recalculate layout");
     self:xuiRecalculateLayout();
 end
 
@@ -304,7 +291,6 @@ function ISHandCraftPanel:OnCloseWindow()
 end
 
 function ISHandCraftPanel:onStopCraft()
-    --log(DebugType.CraftLogic, "Calling listener ISHandCraftPanel.onStopCraft")
     self:updateContainers();
     self.logic:sortRecipeList();
     self.logic:refresh();
@@ -368,14 +354,11 @@ function ISHandCraftPanel:new(x, y, width, height, player, craftBench, isoObject
     
     o.logic = HandcraftLogic.new(player, craftBench, isoObject);
     o.logic:setManualSelectInputs(true);
-    --o.logic:addEventListener("onUpdateContainers", o.onUpdateContainers, o);
     o.logic:addEventListener("onRecipeChanged", o.onRecipeChanged, o);
-    --o.logic:addEventListener("onSetRecipeList", o.onSetRecipeList, o);
     o.logic:addEventListener("onUpdateRecipeList", o.onUpdateRecipeList, o);
     o.logic:addEventListener("onShowManualSelectChanged", o.onShowManualSelectChanged, o);
     o.logic:addEventListener("onStopCraft", o.onStopCraft, o);
     o.tooltipLogic = HandcraftLogic.new(player, craftBench, isoObject);
-    --o.margin = 5;
     o.player = player;
     o.craftBench = craftBench;
     o.isoObject = isoObject;
@@ -395,9 +378,6 @@ function ISHandCraftPanel:new(x, y, width, height, player, craftBench, isoObject
     o.activeTooltip = nil;
     o.updateTimer = 0; -- just to not update everytime we refresh backpacks, adding bit of a timer as sometimes it can trigger fast
     o.seeAllRecipe = false;
-    
-    --local test = getScriptManager():getAllRecipes();
-    --log(DebugType.CraftLogic, "Recipe count: "..tostring(test:size()))
 
     return o;
 end

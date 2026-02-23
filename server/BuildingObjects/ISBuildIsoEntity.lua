@@ -103,6 +103,7 @@ function ISBuildIsoEntity:renderFloorGrid(x, y, z)
 end
 
 function ISBuildIsoEntity:render(x, y, z, square)
+	self:ensureSquaresExist(x, y, z)
 	local valid = self:isValid(square);
 	
 	self:renderFloorGrid(x, y, z);
@@ -141,6 +142,45 @@ function ISBuildIsoEntity:render(x, y, z, square)
 			end
 		end
 	end
+end
+
+function ISBuildIsoEntity:ensureSquaresExist(x, y, z)
+	local face = self:getFace()
+	if face then
+		for zz=0,face:getzLayers()-1 do
+			for xx=0,face:getWidth()-1 do
+				for yy=0,face:getHeight()-1 do
+					local tileInfo = face:getTileInfo(xx, yy, zz);
+					if tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) then
+						self:ensureSquareExists1(x+xx, y+yy, z+zz)
+					end
+				end
+			end
+		end
+	else
+		self:ensureSquareExists1(x, y, z)
+	end
+end
+
+function ISBuildIsoEntity:ensureSquareExists1(x, y, z)
+	if not getWorld():isValidSquare(x, y, z) then
+		return
+	end
+	local square = self:ensureSquareExists2(x, y, z)
+	local minZ = square:getChunk():getMinLevel()
+	for z2=z-1,minZ,-1 do
+		self:ensureSquareExists2(x, y, z2)
+	end
+end
+
+function ISBuildIsoEntity:ensureSquareExists2(x, y, z)
+	local square = getCell():getGridSquare(x, y, z)
+	if square == nil then
+		square = IsoGridSquare.new(getCell(), nil, x, y, z)
+		getCell():ConnectNewSquare(square, false)
+	end
+	square:EnsureSurroundNotNull()
+	return square
 end
 
 function ISBuildIsoEntity:isObjectSpriteBlockingWallPlacement(_sprite, _north)
@@ -357,7 +397,7 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		square = getSquare(x, y, z);
 		for i=0,square:getObjects():size()-1 do
 			local obj = square:getObjects():get(i);
-			if (self.north and obj:getProperties():has("WallN")) or (not self.north and obj:getProperties():has("WallW")) then
+			if (obj and obj:getProperties() and ((self.north and obj:getProperties():has("WallN")) or (not self.north and obj:getProperties():has("WallW")))) then
 				for j=0,originalSq:getSpecialObjects():size() - 1 do
 					local sObj = originalSq:getSpecialObjects():get(j);
 					--print("got sobj?", sObj, obj)

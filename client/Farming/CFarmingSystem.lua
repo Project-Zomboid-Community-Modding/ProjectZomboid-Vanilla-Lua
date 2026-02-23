@@ -4,9 +4,6 @@ CFarmingSystem = CGlobalObjectSystem:derive("CFarmingSystem")
 
 function CFarmingSystem:new()
 	local o = CGlobalObjectSystem.new(self, "farming")
-	-- no idea what the point of this error message is but it disrupts the testers
--- 	if not o.hoursElapsed then error "hoursElapsed wasn't sent from the server?" end
-
 	return o
 end
 
@@ -49,7 +46,6 @@ local function DoSpecialTooltip1(tooltip, square)
 	if not playerObj then return end
 	if playerObj:DistTo(square:getX(), square:getY()) > 6 then return end
 	if CFarmingSystem.instance:getXp(playerObj) < 3 and not ISFarmingMenu.cheat then return end
--- 	if not playerObj or CFarmingSystem.instance:getXp(playerObj) < 4 then return end
 
 	local plant = CFarmingSystem.instance:getLuaObjectOnSquare(square)
 	if not plant or plant.typeOfSeed == "none" then return end
@@ -62,18 +58,11 @@ local function DoSpecialTooltip1(tooltip, square)
 	local title_rgb = ISFarmingInfo.getTitleColor(plant)
 	tooltip:DrawTextCentre(tooltip:getFont(), farming_vegetableconf.getObjectName(plant), tooltip:getWidth() / 2, 5, title_rgb["r"], title_rgb["g"], title_rgb["b"], 1)
 	tooltip:adjustWidth(5, farming_vegetableconf.getObjectName(plant))
--- 	tooltip:adjustWidth(5, plant:getObject():getObjectName())
-
-	local layout = tooltip:beginLayout()
-
-
 
 	local layout = tooltip:beginLayout()
 	if ISFarmingMenu.cheat then
 		local layoutItem = layout:addItem()
 		layoutItem:setLabel("state: " .. tostring(plant.state), 1, 1, 1, 1)
--- 		layoutItem = layout:addItem()
---         layoutItem:setLabel("isAlive: " .. tostring(SPlantGlobalObject.isAlive(plant)), 1, 1, 1, 1)
 		layoutItem = layout:addItem()
         layoutItem:setLabel("nbOfGrow: " .. tostring(plant.nbOfGrow), 1, 1, 1, 1)
         if plant.hasVegetable then
@@ -145,22 +134,6 @@ local function DoSpecialTooltip1(tooltip, square)
                 layoutItem:setValue(ISFarmingInfo.getDiseaseString(plant.slugsLvl, farmingLevel), getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1)
             end
 	    end
---         local text
---         local lastWateredHour = ISFarmingInfo.getLastWatedHour(plant)
---         if math.floor(lastWateredHour/24) == 1 then
---             text =  math.floor((lastWateredHour/24)) .. " " .. getText("Farming_Day");
---         elseif  math.floor(lastWateredHour/24) > 1 then
---             text =  math.floor((lastWateredHour/24)) .. " " .. getText("Farming_Days");
---         elseif lastWateredHour == 1 then
---             text = lastWateredHour .. " " .. getText("Farming_Hour");
---         else
---             text = lastWateredHour .. " " .. getText("Farming_Hours");
---         end
---         lastWaterdHour = lastWateredHour .. " " .. getText("Farming_Hours")
---         local nowateredsince_rgb = ISFarmingInfo.getNoWateredSinceColor(plant, lastWateredHour, farmingLevel)
---         layoutItem = layout:addItem()
---         layoutItem:setLabel(getText("Farming_Last_time_watered")..':', 1, 1, 1, 1)
---         layoutItem:setValue(text, nowateredsince_rgb["r"], nowateredsince_rgb["g"], nowateredsince_rgb["b"], 1)
     end
 	-- Pest Info
 	if ISFarmingMenu.cheat then

@@ -14,7 +14,6 @@ function ISPrintMediaTextPanel:setText(text)
 end
 
 function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, lineHeight)
---     getPlayer():Say("Command")
     if command == "LINE" then
         x = 0;
         lineImageHeight = 0;
@@ -30,9 +29,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
     if command == "H1" then
         self.orient[self.currentLine] = "centre";
         self.rgb[self.currentLine] = {};
---         self.rgb[self.currentLine].r = 1;
---         self.rgb[self.currentLine].g = 1;
---         self.rgb[self.currentLine].b = 1;
         self.rgb[self.currentLine].r = 0.0;
         self.rgb[self.currentLine].g = 0.0;
         self.rgb[self.currentLine].b = 0.0;
@@ -42,9 +38,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
     if command == "H2" then
         self.orient[self.currentLine] = "left";
         self.rgb[self.currentLine] = {};
---         self.rgb[self.currentLine].r = 0.8;
---         self.rgb[self.currentLine].g = 0.8;
---         self.rgb[self.currentLine].b = 0.8;
         self.rgb[self.currentLine].r = 0.0;
         self.rgb[self.currentLine].g = 0.0;
         self.rgb[self.currentLine].b = 0.0;
@@ -54,9 +47,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
     if command == "TEXT" then
         self.orient[self.currentLine] = "left";
         self.rgb[self.currentLine] = {};
---         self.rgb[self.currentLine].r = 0.7;
---         self.rgb[self.currentLine].g = 0.7;
---         self.rgb[self.currentLine].b = 0.7;
         self.rgb[self.currentLine].r = 0.0;
         self.rgb[self.currentLine].g = 0.0;
         self.rgb[self.currentLine].b = 0.0;
@@ -134,7 +124,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
     if string.find(command, "SIZE:") then
 
 		local size = string.sub(command, 6);
---~         print(size);
 		if(size == "small") then
 			self.font = UIFont.NewSmall;
 		end
@@ -181,23 +170,7 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
 		self.imageH[self.imageCount] = h;
 		self.imageCount = self.imageCount + 1;
 		x = x + w + IMAGE_PAD*2;
---[[
-        local newY = math.max(y + (h / 2) - 7, y)
-
-        for c,v in ipairs(self.lines) do
-            if self.lineY[c] == y then
-                self.lineY[c] = newY;
-            end
-		end
-		for c,v in ipairs(self.imageY) do
-			if self.imageY[c] == y then
-				self.imageY[c] = newY;
-			end
-		end
-        y = newY;
---]]
     end
-
 
     if string.find(command, "IMAGECENTRE:") ~= nil then
         local w = 0;
@@ -208,7 +181,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
             command = string.trim(vs[1]);
             w = tonumber(string.trim(vs[2]));
             h = tonumber(string.trim(vs[3]));
-
         end
         self.images[self.imageCount] = getTexture(string.sub(command, 13));
         if(w==0) then
@@ -224,9 +196,6 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
             lineImageHeight = (h / 2) + 16;
         end
 
-        if self.images[self.imageCount] == nil then
-            --print("Could not find texture");
-        end
         local mx = (self.width - self.marginLeft - self.marginRight) / 2;
         self.imageX[self.imageCount] = mx - (w/2);
         self.imageY[self.imageCount] = y;
@@ -388,10 +357,6 @@ function ISPrintMediaTextPanel:paginate()
 	while not bDone do
 		cur = string.find(leftText, " ", cur+1);
 		if cur ~= nil then
---			while string.sub(leftText, cur, cur)== " " do
---				cur = cur + 1
---			end
---			cur = cur - 1
 			local token = string.sub(leftText, 0, cur);
 			if string.find(token, "<") and string.find(token, ">") then -- handle missing ' ' after '>'
 				cur = string.find(token, ">") + 1;
@@ -504,7 +469,6 @@ function ISPrintMediaTextPanel:setContentTransparency(alpha)
 end
 
 function ISPrintMediaTextPanel:render()
-
     self.r = 1;
     self.g = 1;
     self.b = 1;
@@ -526,7 +490,6 @@ function ISPrintMediaTextPanel:render()
 	if self.textDirty then
 		self:paginate();
 	end
-	--ISPanel.render(self);
     for c,v in ipairs(self.images) do
         self:drawTextureScaled(v, self.imageX[c] + self.marginLeft, self.imageY[c] + self.marginTop, self.imageW[c], self.imageH[c], self.contentTransparency, 1, 1, 1);
     end
@@ -597,7 +560,6 @@ function ISPrintMediaTextPanel:render()
 							self.font = self.fonts[c];
 						end
 						self:drawText(string.trim(self.lines[c]), lineX + self.lineX[c], self.lineY[c] + self.marginTop, r, g, b, self.contentTransparency, self.font)
---						lineX = lineX + getTextManager():MeasureStringX(self.font, self.lines[c])
 						c = c + 1
 					end
 					c = c - 1
@@ -606,8 +568,6 @@ function ISPrintMediaTextPanel:render()
 				else
 					self:drawText( string.trim(v), self.lineX[c] + self.marginLeft, self.lineY[c] + self.marginTop, r, g, b,self.contentTransparency, self.font);
 				end
-
---				self:drawRect(self.lineX[c] + self.marginLeft, self.lineY[c] + self.marginTop, self.width, 1, 1.0, 0.5, 0.5, 0.5)
 			end
 		end
 		c = c + 1
@@ -616,17 +576,13 @@ function ISPrintMediaTextPanel:render()
 	if ISPrintMediaTextPanel.drawMargins then
 		self:drawRectBorder(0, 0, self.width, self:getScrollHeight(), 0.5,1,1,1)
 		self:drawRect(self.marginLeft, 0, 1, self:getScrollHeight(), 1,1,1,1)
-		local maxLineWidth = self.maxLineWidth or (self.width - self.marginRight - self.marginLeft)
---		self:drawRect(self.marginLeft + maxLineWidth, 0, 1, self:getScrollHeight(), 1,1,1,1)
 		self:drawRect(self.width - self.marginRight, 0, 1, self:getScrollHeight(), 1,1,1,1)
 		self:drawRect(0, self.marginTop, self.width, 1, 1,1,1,1)
 		self:drawRect(0, self:getScrollHeight() - self.marginBottom, self.width, 1, 1,1,1,1)
 	end
 
 	if self.clip then self:clearStencilRect() end
-	--self:setScrollHeight(y);
 end
-
 
 require 'ISUI/Maps/ISMapDefinitions'
 require 'ISUI/ISUIElement'
@@ -636,7 +592,6 @@ ISPrintMediaMap = ISUIElement:derive("ISPrintMediaMap")
 function ISPrintMediaMap:instantiate()
 	self.javaObject = UIWorldMap.new(self)
 	self.mapAPI = self.javaObject:getAPIv3()
---	self.mapAPI:setMapItem(MapItem.getSingleton())
 	self.mapAPI:setBoolean("ClampBaseZoomToPoint5", false)
 	self.mapAPI:setBoolean("Isometric", false)
 	self.mapAPI:setBoolean("WorldBounds", false)
@@ -683,7 +638,6 @@ function ISPrintMediaTextPanel:renderMap(index, map)
 end
 
 function ISPrintMediaTextPanel:onResize()
-  --  ISUIElement.onResize(self);
 	self.width = self:getWidth();
 	self.height = self:getHeight();
     self.textDirty = true;
@@ -699,14 +653,12 @@ end
 
 function ISPrintMediaTextPanel:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self);
     self.__index = self;
 	o.x = x;
 	o.y = y;
     o.contentTransparency = 1.0;
---     o.backgroundColor = {r=0, g=0, b=0, a=0.5};
     o.backgroundColor = {r=1, g=1, b=1, a=1};
     o.borderColor = {r=0, g=0, b=0, a=0.0};
     o.width = width;

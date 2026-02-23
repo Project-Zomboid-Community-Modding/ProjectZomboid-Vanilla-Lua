@@ -258,7 +258,6 @@ function CharacterCreationProfession:create()
     self.addTraitBtn:setAnchorTop(false);
     self.addTraitBtn:setAnchorBottom(true);
     self.addTraitBtn:setEnable(false);
-    --	self.addTraitBtn.borderColor = { r = 1, g = 1, b = 1, a = 0.1 };
     self:addChild(self.addTraitBtn);
 
     -- button to remove a selected trait
@@ -271,7 +270,6 @@ function CharacterCreationProfession:create()
     self.removeTraitBtn:setAnchorTop(false);
     self.removeTraitBtn:setAnchorBottom(true);
     self.removeTraitBtn:setEnable(false);
-    --	self.removeTraitBtn.borderColor = { r = 1, g = 1, b = 1, a = 0.1 };
     self:addChild(self.removeTraitBtn);
 
     -- button to choose trait
@@ -284,7 +282,6 @@ function CharacterCreationProfession:create()
     self.addBadTraitBtn:setAnchorTop(false);
     self.addBadTraitBtn:setAnchorBottom(true);
     self.addBadTraitBtn:setEnable(false);
-    --	self.addTraitBtn.borderColor = { r = 1, g = 1, b = 1, a = 0.1 };
     self:addChild(self.addBadTraitBtn);
 
     -- the profession list choice
@@ -696,10 +693,10 @@ end
 function CharacterCreationProfession:removeTrait(index)
     -- if index is nil currently selected item is used
     local trait = self.listboxTraitSelected:getItem(index).item
-    if not trait:isFree() then
-        self.listboxTraitSelected:removeMatchingItems(trait:getLabel());
-        self.pointToSpend = self.pointToSpend + trait:getCost();
-    end
+    if trait:isFree() then return end
+
+    self.listboxTraitSelected:removeMatchingItems(trait:getLabel());
+    self.pointToSpend = self.pointToSpend + trait:getCost();
 
     -- we remove the free trait that our selected trait give us
     for i = 0, trait:getGrantedTraits():size() - 1 do
@@ -909,8 +906,6 @@ function CharacterCreationProfession:populateBadTraitList(list)
 end
 
 function CharacterCreationProfession:negativeTraitOffset()
-    --     local offset = self.possibleNegativeTraitOffset()
-
     local penalty = getSandboxOptions():getOptionByName("NegativeTraitsPenalty"):getValue()
     if penalty == 1 then return 0 end
     local offset = 0
@@ -931,7 +926,6 @@ function CharacterCreationProfession:negativeTraitOffset()
 end
 
 function CharacterCreationProfession:drawXpBoostMap(y, item, alt)
-
     local dy = (self.itemheight - self.fontHgt) / 2
     local hc = getCore():getGoodHighlitedColor()
     local scrollBarWidth = 13
@@ -1089,7 +1083,6 @@ function CharacterCreationProfession.initWorld()
         error "no spawn region was chosen, don't know where to spawn the player"
         return
     end
-    print('using spawn region '..tostring(spawnRegion.name))
     -- we generate the spawn point for the profession choose
     local spawn = spawnRegion.points[MainScreen.instance.desc:getCharacterProfession():getName()];
     if not spawn then
@@ -1099,7 +1092,6 @@ function CharacterCreationProfession.initWorld()
         error "there is no spawn point table for the player's profession, don't know where to spawn the player"
         return
     end
-    print(#spawn..' possible spawn points')
     local randSpawnPoint = spawn[(ZombRand(#spawn) + 1)];
 
     if randSpawnPoint.position then
@@ -1206,10 +1198,7 @@ end
 
 function CharacterCreationProfession:new(x, y, width, height)
     -- using a virtual 100 height res for doing the UI, so it resizes properly on different rez's.
-
     local o = {}
-
-    --o.data = {}
     o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -1507,7 +1496,6 @@ function BCRC.inputModal(_centered, _width, _height, _posX, _posY, _text, _oncli
         posY = core:getScreenHeight() * 0.5 - height * 0.5;
     end
 
-    -- ISModalDialog:new(x, y, width, height, text, yesno, target, onclick, player, param1, param2)
     local modal = ISTextBox:new(posX, posY, width, height, getText("UI_characreation_BuildSavePrompt"), _text or "", target, _onclick, param1, param2);
     modal:initialise();
     modal:setAlwaysOnTop(true)

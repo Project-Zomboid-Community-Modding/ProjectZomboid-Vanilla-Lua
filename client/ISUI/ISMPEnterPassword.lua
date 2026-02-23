@@ -3,8 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISMPEnterPassword = ISPanelJoypad:derive("ISMPEnterPassword");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISMPEnterPassword:initialise()
 	ISPanel.initialise(self);
@@ -142,12 +140,10 @@ function ISMPEnterPassword:onMouseMove(dx, dy)
         self:setX(self.x + dx);
         self:setY(self.y + dy);
         self:bringToTop();
-        --ISMouseDrag.dragView = self;
     end
 end
 
 function ISMPEnterPassword:onGainJoypadFocus(joypadData)
---    print("gained modal focus");
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
 	if self.yesno then
 		self:setISButtonForA(self.yes)

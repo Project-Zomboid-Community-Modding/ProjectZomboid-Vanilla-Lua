@@ -11,6 +11,9 @@ end
 function ISDestroyStuffAction:isValid()
 	if ISBuildMenu.cheat then return true end
 	local sledgehammer = self.character:getInventory():getFirstEvalRecurse(predicateSledgehammer)
+    if not sledgehammer and getDebug() then
+        sledgehammer = instanceItem(ItemKey.Weapon.SLEDGEHAMMER);
+    end
 	if not sledgehammer or not self.item then return false end
 	--ensure the player hasn't moved too far away while the action was in queue
 	local diffX = math.abs(self.item:getSquare():getX() + 0.5 - self.character:getX());

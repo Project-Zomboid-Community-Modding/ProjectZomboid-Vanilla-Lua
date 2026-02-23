@@ -52,8 +52,8 @@ function STrapGlobalObject:stateFromIsoObject(isoObject)
     -- MapObjects-related code (see MOTrap.lua) might have changed the
     -- isoObject when it was loaded, we must sync with clients.
     if isServer() then
-        isoObject:sendObjectChange('name')
-        isoObject:sendObjectChange('sprite')
+        isoObject:sendObjectChange(IsoObjectChange.NAME)
+        isoObject:sendObjectChange(IsoObjectChange.SPRITE)
         isoObject:transmitModData()
     end
 end
@@ -91,8 +91,8 @@ function STrapGlobalObject:stateToIsoObject(isoObject)
     end
 
     if isServer() then
-        isoObject:sendObjectChange('name')
-        isoObject:sendObjectChange('sprite')
+        isoObject:sendObjectChange(IsoObjectChange.NAME)
+        isoObject:sendObjectChange(IsoObjectChange.SPRITE)
         isoObject:transmitModData()
     end
 end

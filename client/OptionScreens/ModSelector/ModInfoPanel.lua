@@ -2,14 +2,6 @@ require "ISUI/ISPanelJoypad"
 
 ModInfoPanel = ISPanelJoypad:derive("ModInfoPanel")
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local BUTTON_HGT = FONT_HGT_SMALL + 6
-local LABEL_HGT = FONT_HGT_MEDIUM + 6
-local UI_BORDER_SPACING = 10
-local JOYPAD_TEX_SIZE = 32
-local BUTTON_PADDING = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
-
 function ModInfoPanel:new(x, y, width, height)
     local o = ISPanelJoypad:new(x, y, width, height)
     setmetatable(o, self)

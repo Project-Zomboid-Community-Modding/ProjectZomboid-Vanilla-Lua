@@ -4,7 +4,6 @@ ISProgressBar = ISUIElement:derive("ISProgressBar");
 
 function ISProgressBar:initialise()
 	ISUIElement.initialise(self);
-
 end
 
 function ISProgressBar:noBackground()
@@ -94,7 +93,6 @@ end
 
 function ISProgressBar:new (x, y, width, height, text, font)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -120,7 +118,6 @@ function ISProgressBar:new (x, y, width, height, text, font)
     o.horizontalTexture = getTexture("media/ui/Entity/bar_efficiency_horz.png");
     o.verticalTexture = getTexture("media/ui/Entity/bar_efficiency_vert.png");
     o.doTextBackdrop = true;
-    --o.padding = 2;
     o.paddingTop = 2;
     o.paddingBottom = 2;
     o.paddingLeft = 2;

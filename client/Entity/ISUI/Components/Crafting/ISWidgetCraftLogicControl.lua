@@ -2,12 +2,9 @@ require "ISUI/ISPanelJoypad"
 
 ISWidgetCraftLogicControl = ISPanelJoypad:derive("ISWidgetCraftLogicControl");
 
-local debugSpam = true
-
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local BUTTON_SIZE = getTextManager():getFontHeight(UIFont.Small);-- * 1.5
 local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
-local BUTTON_ICON_SIZE = 16 * ICON_SCALE;
 
 function ISWidgetCraftLogicControl:initialise()
     ISPanelJoypad.initialise(self);
@@ -36,14 +33,12 @@ function ISWidgetCraftLogicControl:createChildren()
     local buttonSize = getTextManager():getFontHeight(UIFont.Small) + 2;
 
     self.buttonMax = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize*2, buttonSize, "MAX")
-    --self.buttonPrev.image = getTexture("ArrowLeft");
     self.buttonMax.font = UIFont.Small;
     self.buttonMax.target = self;
     self.buttonMax.onclick = ISWidgetCraftLogicControl.onButtonClick;
     self.buttonMax.enable = true;
     self.buttonMax:initialise();
     self.buttonMax:instantiate();
-    --self.buttonMax.originalTitle = self.buttonMax.title;
     self:addChild(self.buttonMax);
 
     self.buttonMore = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize, buttonSize, "")
@@ -377,8 +372,6 @@ function ISWidgetCraftLogicControl:new(x, y, width, height, player, logic)
     o.margin = 5;
     o.minimumWidth = 100;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

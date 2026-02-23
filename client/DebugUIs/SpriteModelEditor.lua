@@ -95,7 +95,6 @@ end
 function OptionsPanel:onMouseDownOutside(x, y)
 	if self:isMouseOver() then return end
 	self:setVisible(false)
---	self:removeFromUIManager()
 end
 
 function OptionsPanel:new(x, y, width, height)
@@ -118,12 +117,6 @@ function Scene:prerenderEditor()
 	self:java0("clearAxes")
 	self:java0("clearBox3Ds")
 	self:java1("setDrawAttachments", true)
---[[
-	self:java2("setGizmoAxisVisible", "X", true)
-	self:java2("setGizmoAxisVisible", "Y", true)
-	self:java2("setGizmoAxisVisible", "Z", true)
---]]
---	self.javaObject:fromLua1("setSelectedAttachment", nil)
 end
 
 function Scene:prerender()
@@ -142,21 +135,19 @@ function Scene:render()
 	local sx2 = self.javaObject:sceneToUIX(1.0, 0.0, 0.0)
 	local sy2 = self.javaObject:sceneToUIY(1.0, 0.0, 0.0)
 	local scale = math.sqrt((sx2 - sx) * (sx2 - sx) + (sy2 - sy) * (sy2 - sy)) / math.sqrt(32 * 32 + 64 * 64)
----[[
+
 	self:drawTextureScaled(texture,
 		sx - (64 - texture:getOffsetX()) * scale,
 		sy - (256 - 32 - texture:getOffsetY()) * scale,
 		texture:getWidth() * scale,
 		texture:getHeight() * scale,
 		1.0, 1.0, 1.0, 1.0)
---]]
+
 	-- Bounding box around the tile
 	self:drawRectBorder(sx - 64 * scale, sy - 256 * scale + 32 * scale, 128 * scale, 256 * scale, 1.0, 1.0, 1.0, 1.0)
 
 	if tileName ~= self.selectedTileName then
 		self.selectedTileName = tileName
---		self:java3("loadFromGeometryFile", picker.tileset, picker.selected.col - 1, picker.selected.row - 1)
---		self.editor:setGeometryList()
 	end
 
 	self:renderNorthWall()
@@ -174,7 +165,7 @@ function Scene:onMouseDown(x, y)
 		self.javaObject:fromLua3("startGizmoTracking", x, y, self.gizmoAxis)
 		self:onGizmoStart()
 	end
-	self.rotate = false -- not isKeyDown(Keyboard.KEY_LSHIFT)
+	self.rotate = false
 end
 
 function Scene:snapToFurniturePixel(x, y)
@@ -220,19 +211,17 @@ function Scene:onRightMouseDown(x, y)
 	if self.gizmoAxis ~= "None" then
 		self.gizmoAxis = "None"
 		self.javaObject:fromLua0("stopGizmoTracking")
---		self.mouseDown = false
 		self:java1("setGizmoPos", self.gizmoStartScenePos)
 		self:onGizmoCancel()
 	end
 end
 
 function Scene:renderBox3D(tx, ty, tz, rx, ry, rz, minX, minY, minZ, maxX, maxY, maxZ, r, g, b)
-	---
 	self.tempTranslate = self.tempTranslate or Vector3f.new()
 	self.tempRotate = self.tempRotate or Vector3f.new()
 	self.tempExtentsMin = self.tempExtentsMin or Vector3f.new()
 	self.tempExtentsMax = self.tempExtentsMax or Vector3f.new()
-	---
+
 	self.tempTranslate:set(tx, ty, tz)
 	self.tempRotate:set(rx, ry, rz)
 	self.tempExtentsMin:set(minX, minY, minZ)
@@ -342,7 +331,6 @@ function Scene:onGizmoChanged(delta)
 		if delta:x() < 0 or delta:y() < 0 or delta:z() < 0 then
 			xyz = math.min(delta:x(), delta:y(), delta:z())
 		end
---		xyz = xyz * SCALE * ONE_POINT_FIVE
 		scale:add(xyz, xyz, xyz)
 		scale:mul(SCALE * ONE_POINT_FIVE)
 	end
@@ -454,8 +442,6 @@ end
 function TileList:onClearSelectedTiles()
 	if not self.selected then return end
 	local scene = self.editor.scene
---	scene:java2("setModelScript", scene.sceneModelName, nil)
---	scene:java2("setModelSpriteModel", scene.sceneModelName, nil)
 	getSpriteModelEditorState():fromLua4("clearTileProperties", self.editor.modID, self.tileset, self.selected.col - 1, self.selected.row - 1)
 end
 
@@ -490,7 +476,6 @@ function TileList:render()
 				if tileProperties then
 					self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 0.2, 1.0, 1.0, 1.0)
 				end
---				self:drawTextureScaledAspect(texture, xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 1.0, 1.0, 1.0)
 				self:drawTextureScaled(texture, xIndent + (col - 1) * texW + texture:getOffsetX() * scale, yIndent + (row - 1) * texH + texture:getOffsetY() * scale, texture:getWidth() * scale, texture:getHeight() * scale, 1.0, 1.0, 1.0, 1.0)
 				maxRow = math.max(maxRow, row)
 			end
@@ -498,7 +483,6 @@ function TileList:render()
 	end
 
 	self:setScrollHeight(yIndent + maxRow * texH + yIndent)
---	self.vscroll:setX(self.width - self.vscroll.width)
 
 	col = math.floor((self:getMouseX() - xIndent) / texW)
 	row = math.floor((self:getMouseY() - yIndent) / texH)
@@ -555,21 +539,7 @@ function TilePicker:createChildren()
 	local tilesetNames = getWorld():getAllTilesName()
 	for i=1,tilesetNames:size() do
 		local tilesetName = tilesetNames:get(i-1)
-		local tileNames = getWorld():getAllTiles(tilesetName)
---[[
-		local hasBed = false
-		for j=1,tileNames:size() do
-			local sprite = getSprite(tileNames:get(j-1))
-			if sprite and sprite:getProperties():has(IsoFlagType.bed) then
-				hasBed = true
-				break
-			end
-		end
---]]
-		hasBed = true
-		if hasBed then
-			self.comboTileset:addOption(tilesetName)
-		end
+        self.comboTileset:addOption(tilesetName)
 	end
 
 	local listY = combo:getBottom() + UI_BORDER_SPACING
@@ -753,7 +723,6 @@ end
 
 function SpriteModelEditor:onComboChooseModel()
 	local scriptName = self.comboChooseModel:getOptionText(self.comboChooseModel.selected)
---	self.comboAddModel.selected = 0 -- CHOOSE MODEL
 	self.scene:java2("setModelScript", self.scene.sceneModelName, scriptName)
 	self.scene:java1("getObjectScale", self.scene.sceneModelName):set(SCALE * ONE_POINT_FIVE)
 
@@ -896,7 +865,6 @@ end
 
 function SpriteModelEditor:syncRuntimeEntry()
 	local tileProperties = self:getTileProperties()
---	self.runtimeEntry:setEditable(tileProperties ~= nil)
 	if self.runtimeEntryProperties == tileProperties then return end
 	self.runtimeEntryProperties = tileProperties
 	if (tileProperties == nil) or (tileProperties:getRuntimeString() == nil) then
@@ -999,8 +967,6 @@ function SpriteModelEditor:prerender()
 
 	self.scene:java1("setGizmoPos", self.scene:java1("getObjectTranslation", self.scene.sceneModelName))
 	self.scene:java1("setGizmoRotate", self.scene:java1("getObjectRotation", self.scene.sceneModelName))
---	self.scene:java1("setGizmoVisible", "rotate")
---	self.scene:java3("setGizmoXYZ", 1.0, 0.0, 0.0)
 end
 
 function SpriteModelEditor:render()

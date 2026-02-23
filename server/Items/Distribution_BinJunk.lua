@@ -303,6 +303,7 @@ ClutterTables.BinItems = {
 		"HairDyeUncommon", 0.005,
 		"Cologne", 0.05,
 		"Comb", 0.05,
+		"DentalFloss", 0.05,
 		-- Electronics/Components
 		"AlarmClock2", 0.05,
 		"Battery", 0.05,

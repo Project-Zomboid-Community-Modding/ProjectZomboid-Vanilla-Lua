@@ -59,7 +59,6 @@ function ISGameSoundVolumeControl:prerender()
 	self.tooltip = (mouseOver or self.dragging or self.joypadFocused) and self:getTooltip() or nil
 
 	if self.tooltip then
-		local text = self.tooltip
 		if not self.tooltipUI then
 			self.tooltipUI = ISToolTip:new()
 			self.tooltipUI:setOwner(self)

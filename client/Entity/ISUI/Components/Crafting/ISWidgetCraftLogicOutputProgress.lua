@@ -84,7 +84,6 @@ end
 function ISWidgetCraftLogicOutputProgress:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
-    --
 
     -- get elements to figure out how big they want to be
     if self.progressItems then self.progressItems:calculateLayout(0, 0); end
@@ -145,7 +144,6 @@ function ISWidgetCraftLogicOutputProgress:calculateLayout(_preferredWidth, _pref
     self.buttonTake:setX(x);
     self.buttonTake:setY(y);    
 
-    --
     self:setWidth(width);
     self:setHeight(height);
 end

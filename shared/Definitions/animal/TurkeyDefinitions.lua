@@ -259,7 +259,7 @@ local turkey_sounds = {
 	pick_up_corpse = { name = "PickUpAnimalDeadTurkey" },
 	put_down = { name = "PutDownAnimalTurkey", slot = "voice", priority = 1 },
 	put_down_corpse = { name = "PutDownAnimalDeadTurkey" },
-	run = { name = "AnimalFootstepsTurkeyWalk" },
+	run = { name = "AnimalFootstepsTurkeyRun" },
 	stressed = { name = "AnimalVoiceTurkeyStressed", intervalMin = 3, intervalMax = 5, slot = "voice" },
 	walk = { name = "AnimalFootstepsTurkeyWalk" },
 	scratching = { name = "AnimalFoleyTurkeyScratching", slot = "voice" },
@@ -277,7 +277,9 @@ local turkey_poult_sounds = {
 	pick_up_corpse = { name = "PickUpAnimalDeadTurkeyPoult" },
 	put_down = { name = "PutDownAnimalTurkeyPoult", slot = "voice", priority = 1 },
 	put_down_corpse = { name = "PutDownAnimalDeadTurkeyPoult" },
+	run = { name = "AnimalFootstepsTurkeyPoultRun" },
 	stressed = { name = "AnimalVoiceTurkeyPoultStressed", intervalMin = 2, intervalMax = 3, slot = "voice" },
+	walk = { name = "AnimalFootstepsTurkeyPoultWalk" },
 }
 
 AnimalDefinitions.animals["turkeypoult"].breeds["meleagris"].sounds = turkey_poult_sounds

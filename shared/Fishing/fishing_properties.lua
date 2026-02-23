@@ -758,7 +758,7 @@ function Fishing.onCreateFish(item)
         item:setName(getText("IGUI_Fish_" .. fishSizeData.size) .. " " .. getScriptManager():FindItem(fishConfig.itemType):getDisplayName() .. " ");
     end
 
-    if not RecipeCodeOnTest.cutFish(item) then
+    if not RecipeCodeOnTest.cutFish(item, nil) then
         item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
     end
 

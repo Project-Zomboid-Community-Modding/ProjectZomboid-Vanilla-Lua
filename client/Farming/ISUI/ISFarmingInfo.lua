@@ -20,7 +20,6 @@ end
 function ISFarmingInfo:setPlant(plant)
 	self.plant = plant;
 	self.vegetable = getTexture(farming_vegetableconf.props[plant.typeOfSeed].icon);
--- 	self.vegetable = getTexture(farming_vegetableconf.icons[plant.typeOfSeed]);
 end
 
 function ISFarmingInfo:setEnabled(val)
@@ -31,7 +30,6 @@ function ISFarmingInfo:prerender()
 	if self:isPlantValid() then
 		local square = self.plant:getSquare()
 		-- Hide the window when the plant is out-of-bounds
---		if not square then self:getParent():setVisible(false); return end
 		if isClient() then
 			-- Hack: because the client does not have an up-to-date list of plants
 			local object = self.plant:getObject()
@@ -51,7 +49,6 @@ function ISFarmingInfo:render()
 	ISFarmingInfo.getTitleColor(self.plant);
 	ISFarmingInfo.getHealthColor(self, farmingLevel);
 	ISFarmingInfo.getNoWateredSinceColor(self, lastWatedHour, farmingLevel);
--- 	local disease = ISFarmingInfo.getDiseaseName(self);
 	ISFarmingInfo.getWaterLvlBarColor(self, farmingLevel);
 	local top = 69
 	local y = top;
@@ -60,7 +57,6 @@ function ISFarmingInfo:render()
 	-- title of the plant
 	local titleWidth = 0
 	if self.plant:getObject() then
--- 		local displayName = ISFarmingMenu.getPlantName(self.plant)
 		local displayName = farming_vegetableconf.getObjectName(self.plant)
 		local textw = getTextManager():MeasureStringX(UIFont.Normal, displayName);
 		if textw > 190 then
@@ -85,15 +81,12 @@ function ISFarmingInfo:render()
         self:drawRect(13, y, self.width - 25, lineHgt, 0.1, 1.0, 1.0, 1.0);
         -- text for current growing phase
         self:drawText(getText("Farming_Current_growing_phase") .. " : ", 13, y + pady, 1, 1, 1, 1, UIFont.Normal);
---         self:drawText(getText("Farming_Current_growing_phase") .. " : ", 20, y + pady, 1, 1, 1, 1, UIFont.Normal);
-        -- stat (next growing state) on the right
         self:drawTextRight(ISFarmingInfo.getCurrentGrowingPhase(self, farmingLevel), self.width - 17, y + pady, 1, 1, 1, 1, UIFont.Normal);
         y = y + lineHgt;
     end
     if (farmingLevel >= 6 or ISFarmingMenu.cheat) and self.plant:isAlive() then
         self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
         self:drawText(getText("Farming_Next_growing_phase") .. " : ", 13, y + pady, 1, 1, 1, 1, UIFont.Normal);
---         self:drawText(getText("Farming_Next_growing_phase") .. " : ", 20, y + pady, 1, 1, 1, 1, UIFont.Normal);
         self:drawTextRight(ISFarmingInfo.getNextGrowingPhase(self), self.width - 17, y + pady, 1, 1, 1, 1, UIFont.Normal);
 	    y = y + lineHgt;
     end
@@ -103,25 +96,8 @@ function ISFarmingInfo:render()
 		self:drawTextRight(tostring(CFarmingSystem.instance.hoursElapsed), self.width - 17, y + pady, 1, 0.8, 0.8, 1, UIFont.Normal);
 		y = y + lineHgt;
 	end
--- 	y = y + lineHgt;
--- 	self:drawRect(13, y, self.width - 25, lineHgt, 0.1, 1.0, 1.0, 1.0);
--- 	self:drawText(getText("Farming_Last_time_watered") .. " : ", 20, y + pady, 1, 1, 1, 1, UIFont.Normal);
---
---     if math.floor(lastWatedHour/24) == 1 then
---         lastWatedHour =  math.floor((lastWatedHour/24)) .. " " .. getText("Farming_Day");
---     elseif  math.floor(lastWatedHour/24) > 1 then
---         lastWatedHour =  math.floor((lastWatedHour/24)) .. " " .. getText("Farming_Days");
---     elseif lastWatedHour == 1 then
---         lastWatedHour = lastWatedHour .. " " .. getText("Farming_Hour");
---     else
---         lastWatedHour = lastWatedHour .. " " .. getText("Farming_Hours");
---     end
--- -- 	lastWatedHour = lastWatedHour .. " " .. getText("Farming_Hours");
--- 	self:drawTextRight(lastWatedHour, self.width - 17, y + pady, nowateredsince_rgb["r"], nowateredsince_rgb["g"], nowateredsince_rgb["b"], 1, UIFont.Normal);
--- 	y = y + lineHgt;
 
     if (ISFarmingMenu.cheat)  then
---     if((farmingLevel) >= 3 or ISFarmingMenu.cheat)  then
         self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
         self:drawText(getText("Farming_Fertilized") .. " : ", 13, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
         local fertilizer = getText("Farming_Compost_False")
@@ -136,10 +112,7 @@ function ISFarmingInfo:render()
 	if self.plant.compost then compost = getText("Farming_Compost_True") end
 	self:drawTextRight(compost, self.width - 17, y + pady, compost_rgb["r"], compost_rgb["g"], compost_rgb["b"], 1, UIFont.Normal);
 	y = y + lineHgt;
--- 	self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
--- 	self:drawText(getText("Farming_Fertilized") .. " : ", 20, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
--- 	self:drawTextRight(self.plant.fertilizer .. "", self.width - 17, y + pady, fertilizer_rgb["r"], fertilizer_rgb["g"], fertilizer_rgb["b"], 1, UIFont.Normal);
--- 	y = y + lineHgt;
+
     if ISFarmingMenu.cheat then
         self:drawRect(13, y, self.width - 25, lineHgt, 0.1, 1.0, 1.0, 1.0);
         self:drawText(getText("Farming_Health") .. " : ", 13, y + pady, 1.0, 1.0, 1.0, 1, UIFont.Normal);
@@ -147,6 +120,7 @@ function ISFarmingInfo:render()
         self:drawTextRight(ISFarmingInfo.getHealth(self, farmingLevel), self.width - 17, y + pady, health_rgb["r"], health_rgb["g"], health_rgb["b"], 1, UIFont.Normal);
         y = y + lineHgt;
     end
+
     local magnifierFactor = 0
     local hasMagnifier = false
     if self.character:getPrimaryHandItem() and self.character:getPrimaryHandItem():hasTag(ItemTag.MAGNIFIER) then hasMagnifier = true
@@ -155,12 +129,9 @@ function ISFarmingInfo:render()
 
     if((farmingLevel + magnifierFactor) >= 3 or ISFarmingMenu.cheat) and ISFarmingInfo.hasDisease(self.plant) then
         self:drawText(getText("Farming_Disease") .. " : ", 13, y + pady, 1, 1, 1, 1);
---         self:drawText(getText("Farming_Disease") .. " : ", 20, y + pady, 1, 1, 1, 1);
---         self:drawTextRight(disease.text, self.width - 17, y + pady, disease_rgb["0r"], disease_rgb["0g"], disease_rgb["0b"], 1);
         y = y + lineHgt;
         local pestCount = 0
         if self.plant.aphidLvl > 0 then
---         if(disease[1]) then
             self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
             self:drawText(getText("Farming_Aphid") .. " :", 40, y + pady, 1, 1, 1, 1)
             self:drawTextRight(ISFarmingInfo.getDiseaseString(self.plant.aphidLvl, farmingLevel), self.width - 17, y + pady, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
@@ -168,8 +139,8 @@ function ISFarmingInfo:render()
 	        self:drawTextureScaled(getTexture("media/textures/Item_Insect_Aphid.png"), 70 + titleWidth + (pestCount * 25) ,20,25,25,1,1,1,1);
             pestCount = pestCount + 1
         end
+
         if self.plant.mildewLvl > 0 then
---         if(disease[3]) then
             self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
             self:drawText(getText("Farming_Mildew") .. " :", 40, y + pady, 1, 1, 1, 1)
             self:drawTextRight(ISFarmingInfo.getDiseaseString(self.plant.mildewLvl, farmingLevel), self.width - 17, y + pady, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
@@ -177,8 +148,8 @@ function ISFarmingInfo:render()
 	        self:drawTextureScaled(getTexture("media/textures/Item_Mildew.png"), 70 + titleWidth + (pestCount * 25) ,20,25,25,1,1,1,1);
             pestCount = pestCount + 1
         end
+
         if self.plant.fliesLvl > 0 then
---         if(disease[2]) then
             self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
             self:drawText(getText("Farming_Pest_Flies") .. " :", 40, y + pady, 1, 1, 1, 1)
             self:drawTextRight(ISFarmingInfo.getDiseaseString(self.plant.fliesLvl, farmingLevel), self.width - 17, y + pady, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
@@ -186,8 +157,8 @@ function ISFarmingInfo:render()
 	        self:drawTextureScaled(getTexture("media/textures/Item_Insect_Fly.png"), 70 + titleWidth + (pestCount * 25) ,20,25,25,1,1,1,1);
             pestCount = pestCount + 1
         end
+
         if self.plant.slugsLvl > 0 then
---         if(disease[4]) then
             self:drawRect(13, y, self.width - 25, lineHgt, 0.05, 1.0, 1.0, 1.0);
             self:drawText(getText("Farming_Slugs") .. " :", 40, y + pady, 1, 1, 1, 1)
             self:drawTextRight(ISFarmingInfo.getDiseaseString(self.plant.slugsLvl, farmingLevel), self.width - 17, y + pady, getCore():getBadHighlitedColor():getR(), getCore():getBadHighlitedColor():getG(), getCore():getBadHighlitedColor():getB(), 1);
@@ -197,7 +168,6 @@ function ISFarmingInfo:render()
         end
     end
 	-- rect for all info
--- 	self:drawRectBorder(13, top - 1, self.width - 25, y - top + 2, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	if self.plant:isAlive() then
 		y = y + 5;
 		self:drawText(getText("Farming_Water_levels") .. " :", 13, y, 1, 1, 1, 1);
@@ -238,7 +208,6 @@ function ISFarmingInfo.hasDisease(plant)
 end
 
 function ISFarmingInfo.getDiseaseString(diseaseLvl, farmingLevel)
---     if farmingLevel < 6 and not ISFarmingMenu.cheat then return getText("UI_FriendState_Unknown") end
     if diseaseLvl == 0 then return getText("Farming_None") end
     local string
     if diseaseLvl < 10 then string = getText("Farming_Light")
@@ -303,9 +272,7 @@ end
 -- else show the right number
 function ISFarmingInfo.getHealth(info, farmingLevel)
     if not info.plant:isAlive() then return getText("Farming_Dead") end
--- 	if farmingLevel <= 4 then
 	if not ISFarmingMenu.cheat then
--- 	if farmingLevel < 8 and not ISFarmingMenu.cheat then
 		if info.plant.health > 80 then
 			return getText("Farming_Flourishing");
 		elseif info.plant.health > 60 then
@@ -329,16 +296,13 @@ function ISFarmingInfo.getHealth(info, farmingLevel)
 		else
 			return getText("Farming_Dying") .. " (" .. round2(info.plant.health, 2) .. ")";
 		end
--- 		return round2(info.plant.health, 2) .. "";
 	end
 end
 
 -- show text with <= 2 farming skill
 -- else show the right number
 function ISFarmingInfo.getWaterLvl(plant, farmingLevel)
--- 	if farmingLevel <= 4 then
 	if not ISFarmingMenu.cheat then
--- 	if farmingLevel < 8 and not ISFarmingMenu.cheat then
 		if plant.waterLvl > 80 then
 			return getText("Farming_Well_watered");
 		elseif plant.waterLvl > 60 then
@@ -362,7 +326,6 @@ function ISFarmingInfo.getWaterLvl(plant, farmingLevel)
 		else
 			return getText("Farming_Parched") .. " (" .. round2(plant.waterLvl, 2) .. ")";
 		end
--- 		return round2(plant.waterLvl, 2) .. " / 100";
 	end
 end
 
@@ -370,10 +333,8 @@ function ISFarmingInfo.getTitleColor(plant)
     local rgb = {};
 	if plant.state == "dead" or plant.state == "rotten" or plant.state == "destroyed" or plant.state == "harvested" then
         rgb = {["r"]=getCore():getBadHighlitedColor():getR(),["g"]=getCore():getBadHighlitedColor():getG(),["b"]=getCore():getBadHighlitedColor():getB()};
---         rgb = {["r"]=1.0,["g"]=0.0,["b"]=0.0};
 	else
         rgb = {["r"]=getCore():getGoodHighlitedColor():getR(),["g"]=getCore():getGoodHighlitedColor():getG(),["b"]=getCore():getGoodHighlitedColor():getB()};
---         rgb = {["r"]=1.0,["g"]=1.0,["b"]=1.0};
     end
     title_rgb = rgb;
     return rgb;
@@ -456,7 +417,6 @@ function ISFarmingInfo:new (x, y, width, height, character, plant)
 	o.plant = plant;
 	o.character = character
 	o.vegetable = getTexture(farming_vegetableconf.props[plant.typeOfSeed].icon);
--- 	o.vegetable = getTexture(farming_vegetableconf.icons[plant.typeOfSeed]);
    return o
 end
 
@@ -553,30 +513,8 @@ function ISFarmingInfo.getCurrentGrowingPhase(info, farmingLevel)
         local prop = farming_vegetableconf.props[info.plant.typeOfSeed]
         if ISFarmingMenu.cheat then
             return farming_vegetableconf.getObjectPhase(info.plant) .. " " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             if info.plant.hasSeed then
---                 return getText("Farming_Seed_bearing") .. " - " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             elseif info.plant.hasVegetable then
---                 return getText("Farming_Ready_to_harvest") .. " - " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             elseif info.plant.nbOfGrow == prop.harvestLevel - 1 then
---                 return getText("Farming_Harvest_Soon") .. " - " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             elseif info.plant.nbOfGrow <= 2 then
---                 return getText("Farming_Seedling") .. " - " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             else
---                 return getText("Farming_Young") .. " - " .. info.plant.nbOfGrow .. " / " .. farming_vegetableconf.props[info.plant.typeOfSeed].fullGrown+1;
---             end
         elseif farmingLevel >= 2 then -- and farmingLevel < 6 then
             return farming_vegetableconf.getObjectPhase(info.plant)
---             if info.plant.hasSeed then
---                 return getText("Farming_Seed_bearing");
---             elseif info.plant.hasVegetable then
---                 return getText("Farming_Ready_to_harvest");
---             elseif info.plant.nbOfGrow == prop.harvestLevel - 1 then
---                 return getText("Farming_Harvest_Soon");
---             elseif info.plant.nbOfGrow <= 2 then
---                 return getText("Farming_Seedling");
---             else
---                 return getText("Farming_Young");
---             end
         end
     end
 	return getText("UI_FriendState_Unknown");
@@ -585,27 +523,24 @@ end
 -- display the hour of the next growing phase if with have at least 4 farmings pts
 function ISFarmingInfo.getNextGrowingPhase(info)
 	if info.plant:isAlive() then
-	-- (info.plant.state ~= "dead" and info.plant.state ~= "rotten" and info.plant.state ~= "destroyed") then
--- 	if info.plant and info.plant:isAlive() then
 		if ISFarmingMenu.cheat then
 			if(info.plant.nextGrowing == 0) then
 				return "0 " .. getText("Farming_Hours");
 			elseif(info.plant.nextGrowing - CFarmingSystem.instance.hoursElapsed < 0) then
                     return "0 " .. getText("Farming_Hours");
             end
-				local hours = round2((info.plant.nextGrowing - CFarmingSystem.instance.hoursElapsed))
-				if hours==1 then
-					return hours .. " " .. getText("Farming_Hour");
-				elseif hours <= 24 then
-					return hours .. " " .. getText("Farming_Hours");
-				else
-					if math.floor(hours/24) == 1 then
-						return round2((hours/24)) .. " " .. getText("Farming_Day");
-					else
-						return round2((hours/24)) .. " " .. getText("Farming_Days");
-					end
-				end
--- 			end
+            local hours = round2((info.plant.nextGrowing - CFarmingSystem.instance.hoursElapsed))
+            if hours==1 then
+                return hours .. " " .. getText("Farming_Hour");
+            elseif hours <= 24 then
+                return hours .. " " .. getText("Farming_Hours");
+            else
+                if math.floor(hours/24) == 1 then
+                    return round2((hours/24)) .. " " .. getText("Farming_Day");
+                else
+                    return round2((hours/24)) .. " " .. getText("Farming_Days");
+                end
+            end
 		elseif CFarmingSystem.instance:getXp(info.character) >= 6 then
             local hours = round2((info.plant.nextGrowing - CFarmingSystem.instance.hoursElapsed))
             if hours <= 24 then
@@ -620,7 +555,6 @@ function ISFarmingInfo.getNextGrowingPhase(info)
                     return getText("Farming_Months");
                 end
             end
--- 			end
 		end
 		return getText("UI_FriendState_Unknown");
 	end
@@ -642,13 +576,6 @@ function ISFarmingInfo:getDiseaseColor(diseaseLvl, index, info)
 		ISFarmingInfo:getWhite(disease_rgb, index);
 	end
 end
-
--- function ISFarmingInfo:getDiseaseString(diseaseLvl)
---     if diseaseLvl == 0 then return end
---     if diseaseLvl < 10 then return getText("Farming_Light")
---     elseif diseaseLvl < 30 then return getText("Farming_Moderate")
---     else return getText("Farming_Heavy") end
--- end
 
 function ISFarmingInfo.getDisease(diseaseLvl, farmingLevel, disease, info, index, string)
 	if(diseaseLvl > 0) then
@@ -683,104 +610,6 @@ function ISFarmingInfo.getDiseaseName(info)
         ISFarmingInfo.getDisease(info.plant.mildewLvl, farmingLevel, disease, info, 3, "Flies")
         ISFarmingInfo.getDisease(info.plant.slugsLvl, farmingLevel, disease, info, 4, "Slugs")
     end
--- 	local result = {};
-	-- mildew
--- 	if(info.plant.mildewLvl > 0) then
--- 		disease.text = getText("UI_Yes");
--- 		ISFarmingInfo:getOrange(disease_rgb, "0");
--- 		if(farmingLevel >= 4 or ISFarmingMenu.cheat) then
--- 			result.name = getText("Farming_Mildew") .. " : ";
--- 			if ISFarmingMenu.cheat then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = info.plant.mildewLvl .. " / 100";
--- 			elseif(farmingLevel >=6 or ISFarmingMenu.cheat) then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = ISFarmingInfo:getDiseaseString(info.plant.mildewLvl);
--- -- 				result.value = info.plant.mildewLvl .. " / 100";
--- 			else
--- 				result.value = getText("UI_FriendState_Unknown");
--- -- 				result.value = getText("UI_FriendState_Unknown") .. " / 100";
--- 			end
--- 			-- we have mildew, let's add it to our map
--- 			disease[1] = result;
--- 			ISFarmingInfo:getDiseaseColor(info.plant.mildewLvl, "1", info);
--- 		end
--- 	end
---
--- 	-- now we test aphid
--- 	if(info.plant.aphidLvl > 0) then
--- 		disease.text = getText("UI_Yes");
--- 		ISFarmingInfo:getOrange(disease_rgb, "0");
--- 		if(farmingLevel >= 4) or ISFarmingMenu.cheat) then
--- 			result = {};
--- 			result.name = getText("Farming_Aphid") .. " : ";
---
--- 			if ISFarmingMenu.cheat then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = info.plant.aphidLvl .. " / 100";
--- 			elseif(farmingLevel >=6 or ISFarmingMenu.cheat) then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = ISFarmingInfo:getDiseaseString(info.plant.aphidLvl);
--- -- 				result.value = info.plant.mildewLvl .. " / 100";
--- 			else
--- 				result.value = getText("UI_FriendState_Unknown");
--- -- 				result.value = getText("UI_FriendState_Unknown") .. " / 100";
--- 			end
--- 			-- we have aphid let's add it to our map
--- 			disease[#disease + 1] = result;
--- 			ISFarmingInfo:getDiseaseColor(info.plant.aphidLvl, #disease, info);
--- 		end
--- 	end
---
--- 	-- now we test flies
--- 	if(info.plant.fliesLvl > 0) then
--- 		disease.text = getText("UI_Yes");
--- 		ISFarmingInfo:getOrange(disease_rgb, "0");
--- 		if(farmingLevel >= 4 or ISFarmingMenu.cheat) then
--- 			result = {};
--- 			result.name = getText("Farming_Pest_Flies") .. " : ";
---
--- 			if ISFarmingMenu.cheat then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = info.plant.fliesLvl .. " / 100";
--- 			elseif(farmingLevel >=6 or ISFarmingMenu.cheat) then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = ISFarmingInfo:getDiseaseString(info.plant.fliesLvl);
--- -- 				result.value = info.plant.mildewLvl .. " / 100";
--- 			else
--- 				result.value = getText("UI_FriendState_Unknown");
--- -- 				result.value = getText("UI_FriendState_Unknown") .. " / 100";
--- 			end
--- 			-- we have flies let's add it to our map
--- 			disease[#disease + 1] = result;
--- 			ISFarmingInfo:getDiseaseColor(info.plant.fliesLvl, #disease, info);
--- 		end
--- 	end
---
--- 	-- now we test slugs
--- 	if(info.plant.slugsLvl > 0) then
--- 		disease.text = getText("UI_Yes");
--- 		ISFarmingInfo:getOrange(disease_rgb, "0");
--- 		if(farmingLevel >= 4 or ISFarmingMenu.cheat) then
--- 			result = {};
--- 			result.name = getText("Farming_Slugs") .. " : ";
---
--- 			if ISFarmingMenu.cheat then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = info.plant.slugsLvl .. " / 100";
--- 			elseif(farmingLevel >=6 or ISFarmingMenu.cheat) then
--- -- 			if(farmingLevel >= 6 or ISFarmingMenu.cheat) then
--- 				result.value = ISFarmingInfo:getDiseaseString(info.plant.slugsLvl);
--- -- 				result.value = info.plant.mildewLvl .. " / 100";
--- 			else
--- 				result.value = getText("UI_FriendState_Unknown");
--- -- 				result.value = getText("UI_FriendState_Unknown") .. " / 100";
--- 			end
--- 			-- we have flies let's add it to our map
--- 			disease[#disease + 1] = result;
--- 			ISFarmingInfo:getDiseaseColor(info.plant.fliesLvl, #disease, info);
--- 		end
--- 	end
 
 	-- if we have no disease
 	if disease.text == nil then
@@ -860,18 +689,6 @@ function ISFarmingInfo:getRed(list, index)
 	end
 end
 
--- function ISFarmingInfo:getGreen(list, index)
--- 	if(index ~= nil) then
--- 		list[index .. "r"] = 0.0;
--- 		list[index .. "g"] = 0.8;
--- 		list[index .. "b"] = 0.0;
--- 	else
--- 		list["r"] = 0.0;
--- 		list["g"] = 0.8;
--- 		list["b"] = 0.0;
--- 	end
--- end
-
 function ISFarmingInfo:getOrange(list, index)
 	if(index ~= nil) then
 		list[index .. "r"] = 1.0;
@@ -883,18 +700,6 @@ function ISFarmingInfo:getOrange(list, index)
 		list["b"] = 0.0;
 	end
 end
-
--- function ISFarmingInfo:getRed(list, index)
--- 	if(index ~= nil) then
--- 		list[index .. "r"] = 1.0;
--- 		list[index .. "g"] = 0.0;
--- 		list[index .. "b"] = 0.0;
--- 	else
--- 		list["r"] = 1.0;
--- 		list["g"] = 0.0;
--- 		list["b"] = 0.0;
--- 	end
--- end
 
 function ISFarmingInfo:getWhite(list, index)
 	if(index ~= nil) then

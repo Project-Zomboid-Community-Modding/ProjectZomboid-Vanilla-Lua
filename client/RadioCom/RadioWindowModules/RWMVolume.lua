@@ -31,7 +31,6 @@ function RWMVolume:createChildren()
     self.itemDropBox:setToolTip( true, getText("IGUI_RadioDragHeadphones") );
 
     self.hasEnabledHeadphones = false;
-    --self:addChild(self.itemDropBox);
 end
 
 function RWMVolume:toggleHeaphoneSupport(enable)
@@ -49,14 +48,10 @@ end
 
 function RWMVolume:addHeadphone( _items )
     local item;
-    local pbuff = 0;
 
     for _,i in ipairs(_items) do
-        --if i:getDelta() > pbuff then
-            item = i;
+        item = i;
         break;
-            --pbuff = i:getDelta()
-        --end
     end
 
     if item then
@@ -84,15 +79,13 @@ function RWMVolume:round(num, idp)
 end
 
 function RWMVolume:onVolumeChange( _newVol )
-    self.volume = _newVol/self.volumeBar:getVolumeSteps(); --self:round((_newVol/self.volumeBar:getVolumeSteps())*10,0)/10;
-    --print("onvolumeChange", self.volume);
+    self.volume = _newVol/self.volumeBar:getVolumeSteps();
     if self.deviceData then
         -- this is so players with a remote equipped can interact with televisions
         if (self.player and self.deviceData:canPlayerRemoteInteract(self.player))
         or self:doWalkTo() then
             ISTimedActionQueue.add(ISRadioAction:new("SetVolume",self.player, self.device, self.volume ));
         end
-        --self.deviceData:setDeviceVolume(self.volume);
     end
 end
 
@@ -171,20 +164,15 @@ function RWMVolume:prerender()
     ISPanel.prerender(self);
 end
 
-
 function RWMVolume:render()
     ISPanel.render(self);
 end
 
 function RWMVolume:onJoypadDown(button)
     if button == Joypad.AButton then
-        --if self.volumeBar:getVolume() < self.volumeBar:getVolumeSteps() then
-            self.volumeBar:setVolumeJoypad(true)
-        --end
+        self.volumeBar:setVolumeJoypad(true)
     elseif button == Joypad.BButton then
-        --if self.volumeBar:getVolume() > 1 then
-            self.volumeBar:setVolumeJoypad(false)
-        --end
+        self.volumeBar:setVolumeJoypad(false)
     elseif button == Joypad.XButton then
         if self.deviceData:getHeadphoneType() >= 0 then
             self:removeHeadphone();
@@ -213,9 +201,11 @@ end
 function RWMVolume:getAPrompt()
     return getText("IGUI_RadioVolUp");
 end
+
 function RWMVolume:getBPrompt()
     return getText("IGUI_RadioVolDown");
 end
+
 function RWMVolume:getXPrompt()
     if self.deviceData:getHeadphoneType() >= 0 then
         return getText("IGUI_RadioRemoveHeadphones");
@@ -234,6 +224,7 @@ function RWMVolume:getXPrompt()
     end
     return nil
 end
+
 function RWMVolume:getYPrompt()
     if self.speakerButton.isMute then
         return getText("IGUI_RadioUnmuteSpeaker");
@@ -241,7 +232,6 @@ function RWMVolume:getYPrompt()
         return getText("IGUI_RadioMuteSpeaker");
     end
 end
-
 
 function RWMVolume:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);

@@ -99,8 +99,6 @@ function SaveInfoPanel:setRichText()
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_MapNotFound") .. " <RGB:1,1,1> <H2> <LINE> "
 	elseif selectedItem.item.worldVersion == 0 then
 		text = text .. canNotLoadText .. " <TEXT> <RED> " .. getText("UI_worldscreen_SavefileCorrupt") .. " <RGB:1,1,1> <H2> <LINE> "
---	elseif selectedItem.item.worldVersion == 175 then
---		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileOld") .. " <LINE> " .. getText("UI_worldscreen_SavefileUseBeta41_50") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
 	elseif selectedItem.item.worldVersion <= 200 then
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileOld") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
 	elseif selectedItem.item.worldVersion > IsoWorld.getWorldVersion() then
@@ -131,10 +129,6 @@ function SaveInfoPanel:prerender()
 		local BreakPoint = (self.width - thumbHeight) / 2
 		self:drawTexture(selectedItem.thumb, BreakPoint, 10, 1, 1, 1, 1)
 	end
-	local descRectWidth = self.width
-	local descRectHeight = self.height
-
-	-- ISRichTextPanel.drawMargins = true
 
 	self.richText:setX(0)
 	self.richText:setY(thumbHeight + 10 + self:getYScroll())
@@ -171,7 +165,6 @@ end
 function SaveInfoPanel:onJoypadDirDown(joypadData)
 	self:setYScroll(self:getYScroll() - 48)
 end
-
 
 local ConfigPanel = ISPanelJoypad:derive("LoadGameScreen_ConfigPanel")
 
@@ -290,7 +283,6 @@ end
 
 function ConfigPanel:createButton(x, y, buttonWid, buttonHgt, buttonText, command)
 	local button = ISButton:new(x, y, buttonWid, buttonHgt, buttonText, self, command)
---	button:setScrollWithParent(true)
 	self:addChild(button)
 	return button
 end
@@ -427,7 +419,6 @@ function LoadGameScreen:initialise()
 end
 
 function LoadGameScreen:instantiate()
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	self.javaObject:setX(self.x);
 	self.javaObject:setY(self.y);
@@ -482,7 +473,6 @@ function LoadGameScreen:create()
 	self.listbox:initialise();
 	self.listbox:instantiate();
 	self.listbox:setAnchorLeft(true);
---	self.listbox:setAnchorRight(true);
 	self.listbox:setAnchorTop(true);
 	self.listbox:setAnchorBottom(true);
 	self.listbox.drawBorder = true
@@ -934,7 +924,6 @@ end
 
 function LoadGameScreen:new(x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanelJoypad:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

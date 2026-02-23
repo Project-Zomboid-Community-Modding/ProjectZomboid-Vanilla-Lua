@@ -1,7 +1,6 @@
 ISVersionWaterMark = {};
 
 WaterMarkUI = ISPanel:derive("WaterMarkUI");
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
 
 ISVersionWaterMark.doMsg = function()
@@ -125,7 +124,7 @@ function WaterMarkUI:new(x, y, width, height)
     o.borderColor = {r=0, g=0, b=0, a=0};
     o.backgroundColor = {r=0, g=0, b=0, a=0};
     o.chr = getPlayer();
-    o.version = getCore():getVersion();
+    o.version = getCore():getVersion() .. " " .. "pzBullet(" .. getCore():getBulletVersion() .. ")";
     return o;
 end
 

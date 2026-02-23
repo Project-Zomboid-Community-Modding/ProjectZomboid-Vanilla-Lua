@@ -13,7 +13,6 @@ function ZombiePopulationWindow:createChildren()
 	self.renderPanel = ISPanel:new(0, 0, self.width, self.height - self:titleBarHeight() - self:resizeWidgetHeight())
 	self.renderPanel.render = ZombiePopulationWindow.renderTex
 	self.renderPanel:initialise()
---	self.renderPanel:instantiate()
 	self.renderPanel.onMouseDown = ZombiePopulationWindow.onMapMouseDown
 	self.renderPanel.onMouseUp = ZombiePopulationWindow.onMapMouseUp
 	self.renderPanel.onMouseUpOutside = ZombiePopulationWindow.onMapMouseUpOutside
@@ -37,7 +36,6 @@ end
 function ZombiePopulationWindow:onMapMouseDown(x, y)
 	x = self.renderer:uiToWorldX(x)
 	y = self.renderer:uiToWorldY(y)
---	addVirtualZombie(x, y)
 	if isKeyDown(Keyboard.KEY_LSHIFT) then
 		self.settingPath = true
 		self.renderer:setWallFollowerStart(x, y)

@@ -34,10 +34,8 @@ function NewFogDebug:createChildren()
     obj.center = true;
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    --print("w = "..tostring(w))
     v = clim:getClimateFloat(self.newFogID);
     y, obj = self:addFloatOptionAuto(getText("IGUI_ClimateOptions_FOG_INTENSITY"),v,x,y,w)
-    --print(v:getName());
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addBoolOption(getText("IGUI_NewFog_RenderOnlyOneRow"),x,y,w);
@@ -84,9 +82,6 @@ function NewFogDebug:createChildren()
     y, obj = self:addFloatOption(getText("IGUI_NewFog_BottomAlphaHeight"),x,y,w, 0.0,1.0, 0.01);
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    --y, obj = self:addFloatOption("Octaves",x,y,w, 1,6, 1);
-    --y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
-
     y, obj = self:addFloatOption(getText("IGUI_NewFog_CircleAlpha"),x,y,w, 0,1, 0.01);
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
@@ -129,7 +124,6 @@ function NewFogDebug:addBoolOption(_id,_x,_y,_w)
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
     local y2,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w-300),_y,BUTTON_HGT,BUTTON_HGT,_id,tickOptions,NewFogDebug.onTickedValue);
-    --obj2.changeOptionMethod = ClimateOptionsDebug.onTickedValue;
 
     self.bools[_id] = { title = obj, tickboxValue = obj2 };
     self.allOptions[_id] = self.bools[_id];

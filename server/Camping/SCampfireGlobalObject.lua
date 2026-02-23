@@ -286,10 +286,10 @@ function SCampfireGlobalObject:changeFireLvl()
 		isoObject:transmitModData()
 		if self.transmitContainer then
 -- 			self:noise('transmit campfire container')
-			isoObject:sendObjectChange('containers')
+			isoObject:sendObjectChange(IsoObjectChange.CONTAINERS)
 		elseif self.transmitContainerTemp then
 -- 			self:noise('transmit campfire container temperature')
-			isoObject:sendObjectChange('container.customTemperature')
+			isoObject:sendObjectChange(IsoObjectChange.CONTAINER_CUSTOM_TEMPERATURE)
 		end
 	end
 	
@@ -304,7 +304,7 @@ function SCampfireGlobalObject:changeFireLvl()
 		fireObj:setLightRadius(self.radius)
 		if isServer() then
 -- 			self:noise('transmit campfire light radius')
-			fireObj:sendObjectChange('lightRadius')
+			fireObj:sendObjectChange(IsoObjectChange.LIGHT_RADIUS)
 		end
 	end
 

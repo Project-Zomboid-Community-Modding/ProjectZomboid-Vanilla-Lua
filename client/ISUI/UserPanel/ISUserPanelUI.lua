@@ -13,7 +13,6 @@ function ISUserPanelUI:initialise()
 end
 
 function ISUserPanelUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 

@@ -43,7 +43,6 @@ function ISMegaVolumeControl:prerender()
 	self.fade:update()
 
 	if self:isMouseOver() and self.tooltip then
-		local text = self.tooltip
 		if not self.tooltipUI then
 			self.tooltipUI = ISToolTip:new()
 			self.tooltipUI:setOwner(self)

@@ -10,7 +10,6 @@ function ISCraftRecipeTagsPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISCraftRecipeTagsPanel:createChildren()
     ISPanel.createChildren(self);
 
@@ -139,7 +138,6 @@ function ISCraftRecipeTagsPanel:populate()
     end
 
     if self.list.items and #self.list.items>0 then
-        --print("SELECTING ELEMENT")
         self.list.selected = 1;
         self:onTagSelected(self.list.items[self.list.selected].item);
     end
@@ -212,15 +210,11 @@ function ISCraftRecipeTagsPanel:populateRecipes()
     end
 
     if self.recipeList.items and #self.recipeList.items>0 then
-        --print("SELECTING ELEMENT")
         self.recipeList.selected = 1;
-        --self:onFluidListSelected(self.list.items[self.list.selected].item);
     end
 end
 
 function ISCraftRecipeTagsPanel:drawRecipeListItem(y, item, alt)
-    local a = 1.0;
-
     self:drawRectBorder( 1, y+1, self:getWidth()-2, self.itemheight - 2, 0.2, 1.0, 1.0, 1.0)
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
@@ -236,7 +230,6 @@ function ISCraftRecipeTagsPanel:drawRecipeListItem(y, item, alt)
 
     if item.item.name then
         local drawY = y + (self.itemheight/4) - (FONT_HGT_SMALL /2) + 2;
-        --local c = item.item.color;
         self:drawText( item.item.name, x, drawY, 1, 1, 1, 1.0, self.font);
     end
     if item.item.fulltype then
@@ -306,7 +299,6 @@ function ISCraftRecipeTagsPanel:new (x, y, width, height, player)
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.searchText = "";
-    --o.modColor = namedColorToTable("CornFlowerBlue");
 
     o.tooltipCounter = 0;
     o.activeTooltip = nil;

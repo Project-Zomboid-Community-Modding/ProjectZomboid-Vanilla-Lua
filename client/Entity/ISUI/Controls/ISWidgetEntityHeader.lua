@@ -13,9 +13,6 @@ function ISWidgetEntityHeader:createChildren()
         local iconTex = self.entityStyle and self.entityStyle:getIcon();
         local style = self.styleIcon or "S_Image_EntityHeaderIcon";
         self.icon = ISXuiSkin.build(self.xuiSkin, style, ISImage, 0, 0, 32, 32, iconTex);
-        --self.icon.scaledWidth = self.iconSize;
-        --self.icon.scaledHeight = self.iconSize;
-        --self.icon.texture = self.entityStyle:getIcon();
         self.icon:initialise();
         self.icon:instantiate();
         self:addChild(self.icon);
@@ -103,9 +100,6 @@ function ISWidgetEntityHeader:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetEntityHeader:onButtonClick(_button)
-    if _button==self.buttonInfo then
-        --todo open info panel
-    end
 end
 
 function ISWidgetEntityHeader:onResize()
@@ -113,8 +107,6 @@ function ISWidgetEntityHeader:onResize()
 end
 
 function ISWidgetEntityHeader:prerender()
-    --ISPanel.prerender(self);
-
 	if self.background then
 		self:drawRectStatic(self.marginLeft, self.marginTop, self.width - self.marginLeft - self.marginRight, self.height - self.marginTop - self.marginBottom, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 		self:drawRectBorderStatic(self.marginLeft, self.marginTop, self.width - self.marginLeft - self.marginRight, self.height - self.marginTop - self.marginBottom, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);

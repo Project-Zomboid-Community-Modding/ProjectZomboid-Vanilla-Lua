@@ -239,7 +239,6 @@ function CharacterCreationMain:create()
 	self.backButton:setAnchorTop(false);
 	self.backButton:setAnchorBottom(true);
 	self.backButton:enableCancelColor()
---	self.backButton.setJoypadFocused = self.setJoypadFocusedBButton
 	self:addChild(self.backButton);
 
 	self.presetPanel = CharacterCreationMainPresetPanel:new(self.backButton:getRight() + UI_BORDER_SPACING, self.backButton.y, 100, BUTTON_HGT)
@@ -296,7 +295,6 @@ function CharacterCreationMain:create()
 	self.playButton:setAnchorTop(false);
 	self.playButton:setAnchorBottom(true);
 	self.playButton:setEnable(true); -- sets the hard-coded border color
---	self.playButton.setJoypadFocused = self.setJoypadFocusedAButton
 	self.playButton:setSound("activate", "UIActivatePlayButton")
 	self.playButton:enableAcceptColor()
 	self:addChild(self.playButton);
@@ -310,7 +308,6 @@ function CharacterCreationMain:create()
 	self.randomButton:setAnchorRight(true);
 	self.randomButton:setAnchorTop(false);
 	self.randomButton:setAnchorBottom(true);
---	self.backButton.setJoypadFocused = self.setJoypadFocusedYButton
 	self:addChild(self.randomButton);
 
 	-- DISABLE BUTTON
@@ -363,7 +360,6 @@ function CharacterCreationMain:deleteBuildStep2(button, joypadData)
 		self.savedBuilds.selected = #self.savedBuilds.options
 	end
 	self:loadOutfit(self.savedBuilds)
-	--    luautils.okModal("Deleted build "..delBuild.."!", true);
 end
 
 function CharacterCreationMain:saveBuildValidate(text)
@@ -656,9 +652,6 @@ function CharacterCreationMain:createBodyTypeBtn()
 		{r=0.8,g=0.65,b=0.45},
 		{r=0.54,g=0.38,b=0.25},
 		{r=0.36,g=0.25,b=0.14} }
-	--	for _,color in ipairs(skinColors) do
-	--		color:desaturate(0.5)
-	--	end
 	local skinColorBtn = ISButton:new(0, self.yOffset, BUTTON_HGT, BUTTON_HGT, "", self, CharacterCreationMain.onSkinColorSelected)
 	skinColorBtn:initialise()
 	skinColorBtn:instantiate()
@@ -751,7 +744,6 @@ function CharacterCreationMain:createHairTypeBtn()
 		local color = hairColors:get(i-1)
 		-- we create a new info color to desaturate it (like in the game)
 		info:set(color:getRedFloat(), color:getGreenFloat(), color:getBlueFloat(), 1)
-		--		info:desaturate(0.5)
 		table.insert(hairColors1, { r=info:getR(), g=info:getG(), b=info:getB() })
 	end
 	local hairColorBtn = ISButton:new(0, self.yOffset, BUTTON_HGT, BUTTON_HGT, "", self, CharacterCreationMain.onHairColorMouseDown)
@@ -1217,7 +1209,6 @@ function CharacterCreationMain:arrangeClothingUI()
 	local scrollBarW = self.clothingPanel:isVScrollBarVisible() and (UI_BORDER_SPACING + 13) or 0
 	self.comboWid = math.min(300, self.clothingPanel.width - (maxLabelWidth + UI_BORDER_SPACING + UI_BORDER_SPACING + self.clothingTextureComboWidth + scrollBarW))
 	self.comboWid = math.max(self.comboWid, 50)
-	local totalWidth = maxLabelWidth + UI_BORDER_SPACING + self.comboWid + UI_BORDER_SPACING + self.clothingTextureComboWidth
 	local labelRight = maxLabelWidth
 
 	local nonComboWidth = self.clothingPanel.width - labelRight - UI_BORDER_SPACING - scrollBarOffset
@@ -1420,7 +1411,6 @@ function CharacterCreationMain:doClothingCombo(definition, erasePrevious)
 	end
 	
 	-- create new combo or populate existing one (for when having specific profession clothing)
-	local desc = MainScreen.instance.desc;
 	for bodyLocation, profTable in pairs(definition) do
 		local combo = nil;
 		if self.clothingCombo then
@@ -1541,7 +1531,6 @@ function CharacterCreationMain:initClothingDebug()
 	local group = BodyLocations.getGroup("Human")
 	local numLocations = group:size();
 
---	print("CREATE CLOTHING DEBUG?")
 	-- sort the list of clothing groups alphabetically based on translation text
 	local sorted = {}
 	local j = 0
@@ -1713,7 +1702,6 @@ function CharacterCreationMain:disableBtn()
 		
 		if self.clothingDebugCreated then
 			for bodyLocation,combo in pairs(self.clothingCombo) do
-				local selected = combo.selected
 				combo.selected = 1 -- None
 				local item = desc:getWornItem(ItemBodyLocation.get(ResourceLocation.of(bodyLocation)))
 				local clothingItem = nil
@@ -1782,14 +1770,6 @@ function CharacterCreationMain:onHairColorMouseDown(button, x, y)
 	if self.characterPanel.joyfocus then
 		self.characterPanel.joyfocus.focus = self.colorPickerHair
 	end
-	--[[
-		local desc = MainScreen.instance.desc
-		self.hairColor = button.internal;
-		desc:getHumanVisual():setHairColor(button.internal)
-		desc:getHumanVisual():setBeardColor(button.internal)
-		CharacterCreationHeader.instance.avatarPanel:setSurvivorDesc(desc)
-		self:disableBtn();
-	--]]
 end
 
 function CharacterCreationMain:onHairColorPicked(color, mouseUp)
@@ -1805,23 +1785,6 @@ function CharacterCreationMain:onHairColorPicked(color, mouseUp)
 end
 
 function CharacterCreationMain:syncTorsoWithUI()
-	--[[
-		local torsoNum = self.skinColor - 1
-		if not MainScreen.instance.desc:isFemale() then
-			-- white white+chest white+stubble white+chest+stubble
-			-- black black+chest black+stubble black+chest+stubble
-			torsoNum = torsoNum * 4
-			if self.shavedHairCombo.selected == 1 then
-				torsoNum = torsoNum + 2
-			end
-			if self.chestHairCombo.selected == 1 then
-				torsoNum = torsoNum + 1
-			end
-		end
-		MainScreen.instance.desc:setTorsoNumber(torsoNum)
-		SurvivorFactory.setTorso(MainScreen.instance.desc)
-		MainScreen.instance.avatar:reloadSpritePart()
-	--]]
 	self:disableBtn()
 end
 
@@ -1972,7 +1935,6 @@ function CharacterCreationMain:onRandomCharacter()
 	MainScreen.instance.desc:setFemale(female)
 	MainScreen.instance.desc:getHumanVisual():clear()
 	self:setAvatarFromUI()
---		CharacterCreationProfession.instance:changeClothes();
 	self:randomGenericOutfit();
 	self:randomVoice();
 
@@ -2179,11 +2141,6 @@ function CharacterCreationMain:onOptionMouseDown(button, x, y)
 		self:arrangeClothingUI()
 	end
 	if button.internal == "NEXT" then
-		--		MainScreen.instance.charCreationMain:setVisible(false);
-		--		MainScreen.instance.charCreationMain:removeChild(MainScreen.instance.charCreationHeader);
-		--		MainScreen.instance.charCreationProfession:addChild(MainScreen.instance.charCreationHeader);
-		--		MainScreen.instance.charCreationProfession:setVisible(true, self.joyfocus);
-
 		MainScreen.instance.charCreationMain:setVisible(false);
 		-- set the player desc we build
 		self:initPlayer();
@@ -2201,18 +2158,7 @@ function CharacterCreationMain:onOptionMouseDown(button, x, y)
 			createWorld(getWorld():getWorld())
 		end
 		GameWindow.doRenderEvent(false);
---[[
-		-- menu activated via joypad, we disable the joypads and will re-set them automatically when the game is started
-		if self.joyfocus then
-			local joypadData = self.joyfocus
-			joypadData.focus = nil;
-			updateJoypadFocus(joypadData)
-			JoypadState.count = 0
-			JoypadState.players = {};
-			JoypadState.joypads = {};
-			JoypadState.forceActivate = joypadData.id;
-		end
---]]
+
 		forceChangeState(LoadingQueueState.new());
 	end
 	if button.internal == "PLAYDEMOVOICE" then
@@ -2248,21 +2194,6 @@ function CharacterCreationMain:initPlayer()
 	MainScreen.instance.desc:setVoicePitch(self:getVoicePitch());
 end
 
---[[
--- draw the avatar of the player
-function CharacterCreationMain:drawAvatar()
-	if MainScreen.instance.avatar == nil then
-		return;
-	end
-	local x = self:getAbsoluteX();
-	local y = self:getAbsoluteY();
-	x = x + 96/2;
-	y = y + 165;
-
-	MainScreen.instance.avatar:drawAt(x,y);
-end
---]]
-
 function CharacterCreationMain:update()
 	ISPanel.update(self)
 	self:checkAllClothingOptions()
@@ -2272,12 +2203,6 @@ function CharacterCreationMain:prerender()
 	CharacterCreationMain.instance = self
 	ISPanel.prerender(self);
 	self:drawTextCentre(getText("UI_characreation_title"), self.width / 2, UI_BORDER_SPACING+1, 1, 1, 1, 1, UIFont.Large);
-	--[[
-		local avatar = MainScreen.instance.avatar
-		if avatar ~= nil then
-			avatar:getSprite():update(avatar:getSpriteDef())
-		end
-	--]]
 	local facePreview = self.hairTypeCombo.expanded or self.beardTypeCombo.expanded
 	self.avatarPanel:setFacePreview(facePreview)
 	self.deleteBuildButton:setEnable(self.savedBuilds.options[self.savedBuilds.selected] ~= nil)
@@ -2307,29 +2232,8 @@ function CharacterCreationMain:onLoseJoypadFocus(joypadData)
 	self.playButton:clearJoypadButton()
 	self.backButton:clearJoypadButton()
 	self.randomButton:clearJoypadButton()
---	self:clearJoypadFocus(joypadData)
 	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
 end
-
---[[
-function CharacterCreationMain:setJoypadFocusedAButton(focused)
-	ISButton.setJoypadFocused(self, focused)
-	self.ISButtonA = focused and self or nil
-	self.isJoypad = focused
-end
-
-function CharacterCreationMain:setJoypadFocusedBButton(focused)
-	ISButton.setJoypadFocused(self, focused)
-	self.ISButtonB = focused and self or nil
-	self.isJoypad = focused
-end
-
-function CharacterCreationMain:setJoypadFocusedYButton(focused)
-	ISButton.setJoypadFocused(self, focused)
-	CharacterCreationMain.instance.ISButtonY = focused and self or nil
-	self.isJoypad = focused
-end
---]]
 
 function CharacterCreationMain:onJoypadNavigateStart(joypadData)
 	self:onJoypadNavigateStart_Descendant(nil, joypadData)
@@ -2350,11 +2254,7 @@ end
 
 function CharacterCreationMainCharacterPanel:loadJoypadButtons(joypadData)
 	joypadData = joypadData or self.joyfocus
---[[
-	if joypadData and #self.joypadButtonsY > 0 then
-		return
-	end
---]]
+
 	local oldFocus = nil
 	if joypadData then
 		oldFocus = self:getJoypadFocus()
@@ -2386,7 +2286,6 @@ function CharacterCreationMainCharacterPanel:loadJoypadButtons(joypadData)
 	self.joypadIndex = 1
 	self.joypadIndexY = 1
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
---    self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
 	if oldFocus and oldFocus:isVisible() and joypadData.focus == self then
 		self:setJoypadFocus(oldFocus, joypadData)
 	end
@@ -2397,12 +2296,10 @@ function CharacterCreationMain:requiredSize(panel)
 	local yMax = 0
 	local children = panel:getChildren()
 	for _,child in pairs(children) do
-	if child.Type ~= "ISRect" and child.Type ~= "ISScrollBar" then
---	if child:getRight() > xMax then print(child.x, child.width, child.x + child.width, child.Type) end
-		xMax = math.max(xMax, child:getRight())
-		yMax = math.max(yMax, child:getBottom())
---		child:setVisible(true)
-	end
+        if child.Type ~= "ISRect" and child.Type ~= "ISScrollBar" then
+            xMax = math.max(xMax, child:getRight())
+            yMax = math.max(yMax, child:getBottom())
+        end
 	end
 	return xMax,yMax
 end
@@ -2416,7 +2313,6 @@ function CharacterCreationMain:onResolutionChange(oldw, oldh, neww, newh)
 	self.clothingPanel:setWidth(self:getWidth() - x - UI_BORDER_SPACING - 1)
 
 	self:arrangeClothingUI()
-
 end
 
 function CharacterCreationMain:getVoicePrefix()

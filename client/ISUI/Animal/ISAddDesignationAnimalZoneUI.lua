@@ -9,8 +9,6 @@ function ISAddDesignationAnimalZoneUI:initialise()
     ISPanelJoypad.initialise(self);
     local btnWid = 150
 
---    self.parentUI:setVisible(false);
-
     self.buttonAdd = ISButton:new(UI_BORDER_SPACING, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_DesignationZone_SetPosition"), self, ISAddDesignationAnimalZoneUI.onClick);
     self.buttonAdd.internal = "ADD"
     self.buttonAdd.anchorTop = false
@@ -44,7 +42,6 @@ function ISAddDesignationAnimalZoneUI:initialise()
     self.titleEntry:initialise();
     self.titleEntry:instantiate();
     self:addChild(self.titleEntry);
-
 end
 
 function ISAddDesignationAnimalZoneUI:onMouseDownOutside(x, y)
@@ -82,7 +79,6 @@ function ISAddDesignationAnimalZoneUI:askCreateZone()
         return;
     end
     self.drawTileMouse = false;
-    --self.cancel.enable = false;
     self.waitingConfirm = true;
     local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_DesignationZone_AddZone"), true, self, ISAddDesignationAnimalZoneUI.onCreateZone);
     modal:initialise()
@@ -94,7 +90,6 @@ function ISAddDesignationAnimalZoneUI:askCreateZone()
         modal.prevFocus = self
         setJoypadFocus(self.playerNum, modal)
     end
---    self:addZone();
 end
 
 function ISAddDesignationAnimalZoneUI:onCreateZone(button)
@@ -188,15 +183,9 @@ function ISAddDesignationAnimalZoneUI:reset()
             local sq = getCell():getGridSquare(x2,y,self.player:getCurrentSquare():getZ());
             if sq and sq:getFloor() then
                 sq:getFloor():setHighlighted(false, false);
-                --for n = 0,sq:getObjects():size()-1 do
-                --    local obj = sq:getObjects():get(n);
-                --    obj:setHighlighted(false, false);
---                    obj:setHighlightColor(self.zoneColor.r,self.zoneColor.g,self.zoneColor.b,self.zoneColor.a);
---                end
             end
         end
     end
-
 
     self.startRenderTile = false;
     self.drawTileMouse = false;
@@ -290,7 +279,6 @@ function ISAddDesignationAnimalZoneUI:prerender()
 end
 
 function ISAddDesignationAnimalZoneUI:updateButtons()
---    self.ok.enable = self.size > 1;
     if getJoypadData(self.playerNum) then
         self.buttonAdd:setVisible(true)
         if self.startingX == nil then
@@ -435,7 +423,6 @@ function ISAddDesignationAnimalZoneUI:new(x, y, width, height, player)
     o.endX = nil;
     o.endY = nil;
     o.drawTileMouse = true;
---    o.moveWithMouse = true;
     o.startRenderTile = false;
     ISAddDesignationAnimalZoneUI.instance = o;
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5};

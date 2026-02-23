@@ -46,7 +46,6 @@ end
 
 function ServerToolbox:clickAllow()
 	self.selectedItem = self.listbox.items[self.listbox.selected].item;
-	--inviteFriend(self.selectedFriend:getSteamID());
 	self.statusLabel.name = self.selectedItem .." allowed!";
 end
 
@@ -120,9 +119,6 @@ function ServerToolbox:create()
 	self.statusLabel:setAnchorBottom(true);
 	self.statusLabel.center = true;
 	self:addChild(self.statusLabel);
-
-    print("Server toolbox create");
-
 end
 
 function ServerToolbox:new(x, y, width, height)

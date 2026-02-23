@@ -24,7 +24,7 @@ end
 function ISToggleLightSourceAction:complete()
 	if self.lightSource then
 		self.lightSource:toggleLightSource(not self.lightSource:isLightSourceOn())
-		self.lightSource:sendObjectChange('lightSource')
+		self.lightSource:sendObjectChange(IsoObjectChange.LIGHT_SOURCE)
 		return true
 	end
 	return false

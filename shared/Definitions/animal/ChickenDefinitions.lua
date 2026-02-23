@@ -274,7 +274,7 @@ local chicken_sounds = {
 	put_down_corpse = { name = "PutDownAnimalDeadChicken" },
 	scratching = { name = "AnimalFoleyTurkeyScratching", slot = "voice" },
 	grooming = { name = "AnimalFoleyTurkeyGrooming", slot = "voice" },
-	run = { name = "AnimalFootstepsChickenWalk" },
+	run = { name = "AnimalFootstepsChickenRun" },
 	stressed = { name = "AnimalVoiceChickenStressed", intervalMin = 2, intervalMax = 30, slot = "voice" },
 	walk = { name = "AnimalFootstepsChickenWalk" },
 }
@@ -291,7 +291,9 @@ local chick_sounds = {
 	pick_up_corpse = { name = "PickUpAnimalDeadChick" },
 	put_down = { name = "PutDownAnimalChick", slot = "voice", priority = 1 },
 	put_down_corpse = { name = "PutDownAnimalDeadChick" },
+	run = { name = "AnimalFootstepsChickRun" },
 	stressed = { name = "AnimalVoiceChickStressed", intervalMin = 2, intervalMax = 30, slot = "voice" },
+	walk = { name = "AnimalFootstepsChickWalk" },
 }
 
 -- NOTE: chick.breeds must not be the same table as hen.breeds.

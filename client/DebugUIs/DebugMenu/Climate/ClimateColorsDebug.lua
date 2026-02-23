@@ -105,7 +105,6 @@ function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
     local barMod = UI_BORDER_SPACING;
 
     local y2,obj2 = ISDebugUtils.addLabel(self,_info,_x,_y+offset,_info.name, UIFont.Small, true);
-    --obj2.center = true;
 
     local boxH = BUTTON_HGT;
     local ce = _info.colorInfo:getExterior();
@@ -131,10 +130,6 @@ function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
     curX = curX+(boxW)+UI_BORDER_SPACING;
     local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, boxH*2+UI_BORDER_SPACING, getText("IGUI_ClimateColors_Edit"), ClimateColorsDebug.onButtonClick);
     _info.buttonEdit_ext = obj3;
-
-    --curX = curX+boxW+5;
-    --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "APPLY", ClimateColorsDebug.onButtonClick);
-    --_info.buttonApply_ext = obj3;
 
     curX = curX+boxW+UI_BORDER_SPACING;
     local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,getText("IGUI_ClimateColors_Ex"), UIFont.Small, true);
@@ -165,12 +160,7 @@ function ClimateColorsDebug:addColorOption(_info,_x,_y,_w)
     _info.colorboxAlpha_int = colorbox;
 
     curX = curX+boxW+UI_BORDER_SPACING;
-    --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, boxH, "EDIT", ClimateColorsDebug.onButtonClick);
     _info.buttonEdit_int = obj3;
-
-    --curX = curX+boxW+5;
-    --local y3,obj3 = ISDebugUtils.addButton(self, _info, curX, _y, boxW, 16, "APPLY", ClimateColorsDebug.onButtonClick);
-    --_info.buttonApply_int = obj3;
 
     curX = curX+boxW+UI_BORDER_SPACING;
     local y2,obj2 = ISDebugUtils.addLabel(self,_info,curX,_y,getText("IGUI_ClimateColors_In"), UIFont.Small, true);
@@ -278,16 +268,6 @@ function ClimateColorsDebug:onButtonClick(_button)
         end
     end
 end
-
---[[
-function ClimateColorsDebug:onSliderChange(_newval, _slider)
-end
-
-function ClimateColorsDebug:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
-end
-
-function ClimateColorsDebug:onTickedValue(_index, _selected, _arg1, _arg2, _tickbox)
-end--]]
 
 function ClimateColorsDebug:update()
     ISPanel.update(self);

@@ -2,7 +2,6 @@ require 'ISUI/Maps/Editor/WorldMapEditorMode'
 require 'ISUI/Maps/Editor/WorldMapEditorListBox'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -276,7 +275,6 @@ function WorldMapStyleEditor_ColorStopsPanel:populateList(layer)
 end
 
 function WorldMapStyleEditor_ColorStopsPanel:onZoomEntered()
-	local item = self.listbox:getSelectedItem()
 	local index = self.listbox:getSelectedIndex()
 	if index == -1 then return end
 	local value = self:getEntryClamped(self.zoomEntry, 0, 24)
@@ -563,7 +561,6 @@ function WorldMapStyleEditor_TexturePanel:createChildren()
 	button = ISButton:new(UI_BORDER_SPACING+1, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapSquare"), self, self.onChangeSnapMode)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "square"
---	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.square = button
 

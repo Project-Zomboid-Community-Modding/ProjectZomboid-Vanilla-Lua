@@ -104,7 +104,6 @@ function ISMPEditAccount:initialise()
     self.googleKey = ""
     self.googleAuthPopup.render = function(self)
         ISPanel.render(self)
-        --self:clearStencilRect()
         self:drawTextCentre(self.statusLabel, self.width / 2, 60, 1, 1.0, 1.0, 1, UIFont.Large);
         if self.qrTexture then
             self:drawTexture(self.qrTexture, self.width / 2 - self.qrTexture:getWidth()/2, 90, 1, 1, 1, 1)
@@ -233,11 +232,6 @@ function ISMPEditAccount:onClick(button)
 
         self.ui:refreshList()
         if self.connectAfter then
-            -- add the server to our favourite if not already
-            --if not self.ui.selectedInternetServerFeatured then
-            --    addServerToAccountList(self.server)
-            --end
-            --self.ui:refreshList()
             self.ui:connectToServer(self.server, newAccount);
         end
     end

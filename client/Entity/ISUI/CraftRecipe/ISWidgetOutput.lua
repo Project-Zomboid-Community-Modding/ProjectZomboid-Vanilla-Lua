@@ -1,6 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 
@@ -22,14 +21,6 @@ function ISWidgetOutput:createChildren()
 
     self.primary = self:createScriptValues(self.outputScript);
 
-    -- identifier icons
-    --self.iconConsumed = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureConsumed);
-    --self.iconConsumed.autoScale = true;
-    --self.iconConsumed:initialise();
-    --self.iconConsumed:instantiate();
-    --self.iconConsumed:setVisible(not self.primary.isKeep);
-    --self:addChild(self.iconConsumed);
-
     self.iconCreate = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureCreate);
     self.iconCreate.autoScale = true;
     self.iconCreate:initialise();
@@ -37,25 +28,9 @@ function ISWidgetOutput:createChildren()
     self.iconCreate:setVisible(true);
     self:addChild(self.iconCreate);
 
-    --self.iconTool = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureTool);
-    --self.iconTool.autoScale = true;
-    --self.iconTool:initialise();
-    --self.iconTool:instantiate();
-    --self.iconTool:setVisible(self.primary.isKeep and self.primary.isTool and not self.displayAsOutput);
-    --self:addChild(self.iconTool);
-
-    --self.iconReturned = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureReturned);
-    --self.iconReturned.autoScale = true;
-    --self.iconReturned:initialise();
-    --self.iconReturned:instantiate();
-    --self.iconReturned:setVisible(self.primary.isKeep and (self.displayAsOutput or not self.primary.isTool));
-    --self:addChild(self.iconReturned);
-
     local arrowTexture = nil;
     if self.consumeScript then
         --note: currently outputs cannot have a nested 'consume' script
-        --self.secondary = ISWidgetInput.createScriptValues(self, self.consumeScript, true);
-        --arrowTexture = self.textureConsume;
     elseif self.createScript then
         self.secondary = self:createScriptValues(self.createScript, true);
         arrowTexture = self.textureCreate;
@@ -63,7 +38,6 @@ function ISWidgetOutput:createChildren()
 
     if arrowTexture then
         self.arrow = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.iconSize/2, self.iconSize, arrowTexture);
-        --self.consumeArrow.noAspect = true;
         self.arrow.scaledWidth = self.iconSize/2;
         self.arrow.scaledHeight = self.iconSize;
         self.arrow:initialise();
@@ -140,7 +114,6 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetOutput:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -179,7 +152,6 @@ function ISWidgetOutput:createScriptValues(_script)
         table.outputObjects = _script:getPossibleResultItems();
         if table.outputObjects:size()>0 then
             table.iconTexture = table.outputObjects:get(0):getNormalTexture();
-            --table.cycleIcons = table.outputObjects:size() > 1;
         end
     elseif _script:getResourceType()==ResourceType.Fluid then
         table.amount = _script:getAmount();
@@ -188,7 +160,6 @@ function ISWidgetOutput:createScriptValues(_script)
         table.amountStr = tostring(round(table.amount,2)).."L";
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
         table.outputObjects = _script:getPossibleResultFluids();
-        --table.cycleIcons = table.outputObjects:size() > 1;
     elseif _script:getResourceType()==ResourceType.Energy then
         table.amount = _script:getAmount();
         table.maxAmount = _script:getMaxAmount();
@@ -197,7 +168,6 @@ function ISWidgetOutput:createScriptValues(_script)
         table.outputObjects = _script:getPossibleResultEnergies();
         if table.outputObjects:size()>0 then
             table.iconTexture = table.outputObjects:get(0):getIconTexture();
-            --table.cycleIcons = table.outputObjects:size() > 1;
         end
     end
 
@@ -217,7 +187,6 @@ function ISWidgetOutput:createScriptValues(_script)
 
     local fontHeight = -1; -- <=0 sets label initial height to font
     table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Small, true);
-    --table.label.textColor = self.textColor;
     table.label:initialise();
     table.label:instantiate();
     self:addChild(table.label);
@@ -355,13 +324,12 @@ function ISWidgetOutput:onMouseDownOutside(x, y)
     end
 end
 
-function ISWidgetOutput:new (x, y, width, height, player, logic, outputScript) --recipeData, outputScript)
+function ISWidgetOutput:new (x, y, width, height, player, logic, outputScript)
 	local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
     o.outputScript = outputScript;
     o.createScript = outputScript:getCreateToItemScript();
 

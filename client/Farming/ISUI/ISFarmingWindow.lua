@@ -2,9 +2,7 @@ require "ISUI/ISCollapsableWindow"
 
 ISFarmingWindow = ISCollapsableWindow:derive("ISFarmingWindow");
 
-
 function ISFarmingWindow:initialise()
-
 	ISCollapsableWindow.initialise(self);
 end
 
@@ -12,7 +10,6 @@ function ISFarmingWindow:visible(visible)
 	ISFarmingWindow.instance:setVisible(visible);
 	self.farmingPanel:setEnabled(visible)
 end
-
 
 function ISFarmingWindow:createChildren()
 	ISCollapsableWindow.createChildren(self);

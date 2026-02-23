@@ -11,7 +11,6 @@ function ISBuildRecipePanel:createChildren()
 
     local styleCell = "S_TableLayoutCell_Pad5";
     self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10, nil, nil, styleCell);
-    --self.rootTable:addColumnFill(nil);
     self.rootTable:initialise();
     self.rootTable:instantiate();
     self:addChild(self.rootTable);
@@ -45,7 +44,10 @@ function ISBuildRecipePanel:createDynamicChildren()
 
     local column, row;
 
-    self.titleWidget = ISXuiSkin.build(self.xuiSkin, "S_WidgetTitleHeader_Std", ISWidgetTitleHeader, 0, 0, 10, 10, recipe, self.player, self.logic);
+    local favString = BaseCraftingLogic.getFavouriteModDataString(recipe);
+    local isFavourite = self.player:getModData()[favString] or false;
+
+    self.titleWidget = ISXuiSkin.build(self.xuiSkin, "S_WidgetTitleHeader_Std", ISWidgetTitleHeader, 0, 0, 10, 10, recipe, self.player, self.logic, isFavourite);
     --self.titleWidget.ignoreLightIcon = true;
     self.titleWidget.ignoreSurface = true;
     self.titleWidget:initialise();
@@ -104,7 +106,6 @@ function ISBuildRecipePanel:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    --local x,y = 0,headerHeight;
     if self.rootTable then
         self.rootTable:setX(0);
         self.rootTable:setY(0);
@@ -121,7 +122,6 @@ function ISBuildRecipePanel:calculateLayout(_preferredWidth, _preferredHeight)
     self.overlayPanel:setWidth(width);
     self.overlayPanel:setHeight(height);
 
-    --print(width)
     self:setWidth(width);
     self:setHeight(height);
 end
@@ -149,12 +149,6 @@ end
 
 function ISBuildRecipePanel:onRecipeChanged()
     self:createDynamicChildren();
-    --[[
-    if ((not self.recipe) and _recipe) or self.recipe~=_recipe then
-        self.recipe = _recipe;
-        self:createDynamicChildren();
-    end
-    --]]
     if self.inputs then
         self.inputs:onRecipeChanged();
     end
@@ -190,11 +184,7 @@ function ISBuildRecipePanel:new(x, y, width, height, player, logic, recipeData, 
     self.__index = self
 
     o.background = false;
-    --o.margin = 5;
     o.player = player;
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
-    --o.isoObject = isoObject;
 
     o.logic = logic;
     o.logic:addEventListener("onRecipeChanged", o.onRecipeChanged, o);
@@ -204,9 +194,6 @@ function ISBuildRecipePanel:new(x, y, width, height, player, logic, recipeData, 
     o.margin = 0;
     o.minimumWidth = 350;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
-
     o.autoFillContents = false;
 
     -- these may or may not be used by a parent control while calculating layout:

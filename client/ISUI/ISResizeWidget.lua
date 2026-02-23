@@ -27,8 +27,6 @@ function ISResizeWidget:resize(dx, dy)
 	end
 
     self.target.collapseCounter = 0;
-	--self:setX(self.x+dx);
-	--self:setY(self.y+dy);
 	if self.resizeFunction then
 		self.resizeFunction(self.target, x, y);
 	else
@@ -96,16 +94,9 @@ function ISResizeWidget:onMouseDown(x, y)
 end
 
 function ISResizeWidget:prerender()
- --   if(self.mouseOver) then
-   --     self:drawRect(0, 0, self.width, self.height, self.backgroundColorMouseOver.a, self.backgroundColorMouseOver.r, self.backgroundColorMouseOver.g, self.backgroundColorMouseOver.b);
-   -- else
-   --     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-  --  end
-  --  self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
 
 function ISResizeWidget:render()
-
 end
 
 function ISResizeWidget:new (x, y, width, height,  resizeTarget, yonly)

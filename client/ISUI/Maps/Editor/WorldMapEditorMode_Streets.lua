@@ -1,12 +1,8 @@
 require 'ISUI/Maps/Editor/WorldMapEditorMode'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-
-local CELL_SIZE_SQUARES = getCellSizeInSquares()
-local CHUNK_SIZE_SQUARES = getChunkSizeInSquares()
 
 WorldMapEditorMode_Streets = WorldMapEditorMode:derive("WorldMapEditorMode_Streets")
 
@@ -79,15 +75,6 @@ function WorldMapEditorMode_Streets:render()
     if pickedStreet then
         self:renderStreetLines(pickedStreet)
     end
---[[
-    for i=1,self.streetsAPI:getStreetCount() do
-        local street = self.streetsAPI:getStreetByIndex(i-1)
-        self:renderStreetLines(street)
-        if street == self.selectedStreet then
-            self:renderStreetPoints(street)
-        end
-    end
---]]
     local mx = self:getMouseX()
     local my = self:getMouseY()
 	if self.mode == "Create" then

@@ -5,8 +5,6 @@ ISRadioWindow.instances = {};
 ISRadioWindow.instancesIso = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local BUTTON_HGT = FONT_HGT_SMALL + 6
-local UI_BORDER_SPACING = 10
 
 function ISRadioWindow.activate( _player, _deviceObject )
     local playerNum = _player:getPlayerNum();
@@ -23,7 +21,6 @@ function ISRadioWindow.activate( _player, _deviceObject )
 
     if instances[ playerNum ] then
         radioWindow = instances[ playerNum ];
-        --radioWindow:initialise();
     else
         radioWindow = ISRadioWindow:new (100, 100, 250+(getCore():getOptionFontSizeReal()*50), 500, _player);
         radioWindow:initialise();
@@ -36,19 +33,15 @@ function ISRadioWindow.activate( _player, _deviceObject )
         instances[ playerNum ] = radioWindow;
     end
 
-    --radioWindow.isJoypadWindow = JoypadState.players[playerNum+1] and true or false;
-
     radioWindow:readFromObject( _player, _deviceObject );
 
     radioWindow:addToUIManager();
     radioWindow:setVisible(true);
 
-    --radioWindow:setJoypadPrompt();
     if JoypadState.players[playerNum+1] then
         if getFocusForPlayer(playerNum) then getFocusForPlayer(playerNum):setVisible(false); end
         if getPlayerInventory(playerNum) then getPlayerInventory(playerNum):close(); end
         if getPlayerLoot(playerNum) then getPlayerLoot(playerNum):close(); end
-        --setJoypadFocus(playerNum, nil);
         setJoypadFocus(playerNum, radioWindow);
     end
     return radioWindow;
@@ -110,8 +103,6 @@ end
 function ISRadioWindow:addModule( _modulePanel, _moduleName, _enable )
     local module = {};
     module.enabled = _enable;
-    --module.panel = _modulePanel;
-    --module.name = _moduleName;
     module.element = RWMElement:new (0, 0, self.width, 0, _modulePanel, _moduleName, self);
     table.insert(self.modules, module);
     self:addChild(module.element);
@@ -119,9 +110,7 @@ end
 
 function ISRadioWindow:createChildren()
     ISCollapsableWindow.createChildren(self);
-    local th = self:titleBarHeight();
 
-    --self:addModule(RWMSignal:new (0, 0, self.width, 0 ), "Signal", false);
     self:addModule(RWMGeneral:new (0, 0, self.width, 0), getText("IGUI_RadioGeneral"), true);
     self:addModule(RWMPower:new (0, 0, self.width, 0), getText("IGUI_RadioPower"), true);
     self:addModule(RWMGridPower:new (0, 0, self.width, 0), getText("IGUI_RadioPower"), true);
@@ -131,7 +120,6 @@ function ISRadioWindow:createChildren()
     self:addModule(RWMMedia:new (0, 0, self.width, 0 ), getText("IGUI_RadioMedia"), true);
     self:addModule(RWMChannel:new (0, 0, self.width, 0 ), getText("IGUI_RadioChannel"), true);
     self:addModule(RWMChannelTV:new (0, 0, self.width, 0 ), getText("IGUI_RadioChannel"), true);
-
 end
 
 local dist = 10;
@@ -139,7 +127,6 @@ function ISRadioWindow:update()
     ISCollapsableWindow.update(self);
 
     if self:getIsVisible() then
-
         if self.deviceData and self.deviceType == "VehiclePart" then
             local part = self.deviceData:getParent()
             if part and part:getItemType() and not part:getItemType():isEmpty() and not part:getInventoryItem() then
@@ -168,8 +155,6 @@ function ISRadioWindow:update()
 
     -- otherwise remove
     self:close();
-    --self:clear();
-    --self:removeFromUIManager();
 end
 
 function ISRadioWindow:prerender()
@@ -186,18 +171,13 @@ function ISRadioWindow:prerender()
         end
     end
     self:setHeight(ymod);
-    --ISCollapsableWindow.prerender(self);
-    --self:stayOnSplitScreen();
-    --self:setJoypadPrompt();
 end
 
 function ISRadioWindow:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
 
-
 function ISRadioWindow:render()
-    --self:setJoypadPrompt();
     ISCollapsableWindow.render(self);
 end
 
@@ -268,30 +248,6 @@ function ISRadioWindow:readFromObject( _player, _deviceObject )
             end
         end
     end
-
-    --[[
-    for i=1,#self.modules do
-        if self.player and self.device and self.deviceData then
-            if self.modules[i].name == "Power" then
-                self.modules[i].enabled = self.deviceData:getIsBatteryPowered();
-            elseif self.modules[i].name == "GridPower" then
-                self.modules[i].enabled = not self.deviceData:getIsBatteryPowered();
-            elseif self.modules[i].name == "Signal" then
-                self.modules[i].enabled = not self.deviceData:getIsTelevision();
-            else
-                self.modules[i].enabled = true;
-            end
-
-            if self.modules[i].enabled then
-                self.modules[i].element:readFromObject(self.player, self.device, self.deviceData, self.deviceType);
-                self.modules[i].element:setVisible(true);
-            end
-        end
-    end
-    --]]
-
-    --self.moduleTest:readFromObject(_player, _deviceObject);
-    --self.moduleTest2:readFromObject(_player, _deviceObject);
 end
 
 local interval = 20;
@@ -333,24 +289,29 @@ function ISRadioWindow:getAPrompt()
     end
     return nil;
 end
+
 function ISRadioWindow:getBPrompt()
     return getText("IGUI_RadioClose");
 end
+
 function ISRadioWindow:getXPrompt()
     if self.hotKeyPanels.microphone then
         return getText("IGUI_Hotkey")..": "..self.hotKeyPanels.microphone:getAPrompt();
     end
     return nil;
 end
+
 function ISRadioWindow:getYPrompt()
     if self.hotKeyPanels.volume then
         return getText("IGUI_Hotkey")..": "..self.hotKeyPanels.volume:getYPrompt();
     end
     return nil;
 end
+
 function ISRadioWindow:getLBPrompt()
     return getText("IGUI_RadioReleaseFocus");
 end
+
 function ISRadioWindow:getRBPrompt()
     return getText("IGUI_RadioSelectInner");
 end
@@ -369,7 +330,6 @@ function ISRadioWindow:isValidPrompt()
 end
 
 function ISRadioWindow:focusNext(_up)
-    --print("focus next ")
     local first = nil;
     local last = nil;
     local found = false;
@@ -401,7 +361,6 @@ end
 
 --hocus pocus set subfocus
 function ISRadioWindow:setSubFocus( _newFocus )
-    --print("subfocus "..tostring(_newFocus))
     if not _newFocus or not _newFocus.element then
         self:focusSelf();
     else
@@ -412,7 +371,6 @@ end
 
 function ISRadioWindow:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -432,7 +390,6 @@ function ISRadioWindow:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "Radio/Television Window";
-    --o.viewList = {}
     o.resizable = false;
     o.drawFrame = true;
 
@@ -454,36 +411,3 @@ end
 
 Events.OnEquipPrimary.Add(ISRadioWindow.onEquip);
 Events.OnEquipSecondary.Add(ISRadioWindow.onEquip);
-
---[[
-local cnt = 0;
-local tab = "    ";
-function ISRadioWindow:updatetest()
-    ISCollapsableWindow.update(self);
-
-    cnt = cnt+1;
-    if cnt > 60 then
-        cnt = 0;
-        if ISMouseDrag.dragging and #ISMouseDrag.dragging > 0 then
-            print("MOUSE #######################################");
-            for i,v in pairs(ISMouseDrag) do
-                print(i,v);
-            end
-            print("MOUSE #######################################");
-            for i3,v3 in ipairs(ISMouseDrag.dragging) do
-                print(tab,i3,v3);
-                if type( v3 ) == "table" then
-                    for i4,v4 in pairs(v3) do
-                        print(tab,tab,i4,v4);
-                        if type( v4 ) == "table" then
-                            for i5,v5 in pairs(v4) do
-                                print(tab,tab,tab,i5,v5);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
---]]

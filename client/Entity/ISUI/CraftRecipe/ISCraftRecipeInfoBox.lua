@@ -1,13 +1,10 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISCraftRecipeInfoBox = ISPanel:derive("ISCraftRecipeInfoBox");
 
 local debugSpam = true
--- local debugSpam = false
 
 function ISCraftRecipeInfoBox:initialise()
 	ISPanel.initialise(self);
@@ -50,7 +47,6 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
     end
 
     local time = round(self.recipe:getTime(self.player)/10,2);
---     local time = round(self.recipe:getTime()/10,2);
     self:addInfoPair(getText("IGUI_CraftingWindow_CraftTime"), tostring(time).." " .. getText("IGUI_CraftingWindow_Seconds"));
 
     if self.recipe:isInHandCraftCraft() then
@@ -76,7 +72,6 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
 
     local needsLearning = self.recipe:needToBeLearn();
     local learned = CraftRecipeManager.hasPlayerLearnedRecipe(self.recipe, self.player);
-    local notKnown = needsLearning and not learned
     self:addInfoPair(getText("IGUI_CraftingWindow_RequiresLearning"),   needsLearning and "Yes" or "No");
     if needsLearning then
         self:addInfoPair(getText("IGUI_CraftingWindow_HasLearned"), learned and "Yes" or "No", learned and colGood or colBad);
@@ -88,16 +83,12 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
 
             local hasSkill = CraftRecipeManager.hasPlayerRequiredSkill(requiredSkill, self.player);
             local key = getText("IGUI_CraftingWindow_Requires2").." ".. tostring(requiredSkill:getPerk():getName()).." "..getText("IGUI_CraftingWindow_Level").." " .. tostring(requiredSkill:getLevel());
---             local key = "Has "..tostring(requiredSkill:getPerk():getName()).." "..tostring(requiredSkill:getLevel())..":";
             local val = getText("IGUI_CraftingWindow_Has") .. " "..tostring(self.player:getPerkLevel(requiredSkill:getPerk()));
---             local val = b and "Yes" or "No ("..tostring(self.player:getPerkLevel(requiredSkill:getPerk()))..")";
             self:addInfoPair(key, " ", hasSkill and colGood or colBad, true)
---             self:addInfoPair(key, val, b and colGood or colBad)
         end
     end
 
     self:addInfoPair("XXXX", " ", colGood)
-
 
     if self.displayTags and self.recipe:getTags():size()>0 then
         local colTags = namedColorToTable("CornFlowerBlue");
@@ -116,25 +107,6 @@ function ISCraftRecipeInfoBox:createDynamicChildren()
 
     self:xuiRecalculateLayout();
 end
-
--- function ISCraftRecipeInfoBox:addInfoPair(_key, _value, _valueColor)
---
---     local data = {};
---
---     local fontHeight = -1; -- <=0 sets label initial height to font
---     data.keyLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, tostring(_key), 1.0, 1.0, 1.0, 1, UIFont.Small, true)
---     data.keyLabel:initialise();
---     data.keyLabel:instantiate();
---     self:addChild(data.keyLabel);
---
---     data.valueLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, tostring(_value), 1.0, 1.0, 1.0, 1, UIFont.Small, true)
---     data.valueLabel.textColor = _valueColor;
---     data.valueLabel:initialise();
---     data.valueLabel:instantiate();
---     self:addChild(data.valueLabel);
---
---     table.insert(self.infoPairs, data);
--- end
 
 function ISCraftRecipeInfoBox:addInfoPair(_key, _value, _valueColor, fullColor)
 
@@ -192,7 +164,6 @@ function ISCraftRecipeInfoBox:calculateLayout(_preferredWidth, _preferredHeight)
             minWidth = math.max(minWidth, w);
         else
             minHeight = minHeight + v.keyLabel:getHeight() + self.margin;
---             minLeft = math.max(minLeft, (self.margin*2)+v.keyLabel:getWidth());
             local w = (self.margin*4)+v.keyLabel:getWidth();
             minWidth = math.max(minWidth, w);
         end
@@ -202,7 +173,6 @@ function ISCraftRecipeInfoBox:calculateLayout(_preferredWidth, _preferredHeight)
     height = math.max(height, minHeight);
 
     local centerX = math.max(minLeft);
---     local centerX = math.max(width/2, minLeft);
 
     local y = self.margin;
 
@@ -213,7 +183,7 @@ function ISCraftRecipeInfoBox:calculateLayout(_preferredWidth, _preferredHeight)
         end
         y = y + v.keyLabel:getHeight() + self.margin;
 
-        v.keyLabel:setX(self.margin); --centerX-self.margin-v.keyLabel:getWidth());
+        v.keyLabel:setX(self.margin);
         v.keyLabel.originalX = v.keyLabel:getX();
         if v.valueLabel then
             v.valueLabel:setX(centerX+self.margin);
@@ -226,7 +196,6 @@ function ISCraftRecipeInfoBox:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISCraftRecipeInfoBox:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -254,8 +223,6 @@ function ISCraftRecipeInfoBox:new (x, y, width, height, player, recipe)
     o.player = player;
     o.recipe = recipe;
     o.displayTags = false;
-
-    --o.background = false;
 
     o.margin = 5;
     o.minimumWidth = 0;

@@ -157,8 +157,6 @@ end
 
 function ISLabel:new (x, y, height, name, r, g, b, a, font, bLeft)
 	local o = {}
-
-	--o.data = {}
 	o = ISUIElement:new(x, y, 0, height);
 	setmetatable(o, self)
 	self.__index = self

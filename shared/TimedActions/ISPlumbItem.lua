@@ -33,7 +33,7 @@ function ISPlumbItem:complete()
 		self.itemToPipe:getModData().canBeWaterPiped = false
 		self.itemToPipe:setUsesExternalWaterSource(true)
 		self.itemToPipe:transmitModData()
-		self.itemToPipe:sendObjectChange('usesExternalWaterSource', { value = true })
+		self.itemToPipe:sendObjectChange(IsoObjectChange.USES_EXTERNAL_WATER_SOURCE, { value = true })
 		buildUtil.setHaveConstruction(self.itemToPipe:getSquare(), true);
 	else
 		noise('sq is null or index is invalid')

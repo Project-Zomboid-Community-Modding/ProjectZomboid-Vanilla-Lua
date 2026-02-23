@@ -2192,7 +2192,6 @@ function forageSystem.doPoisonItemSpawn(_character, _inventory, _itemDef, _items
 				for item in iterList(_items) do
 					item:setPoisonPower(ZombRand(_itemDef.poisonPowerMin, _itemDef.poisonPowerMax) + 1);
 					item:setPoisonDetectionLevel(_itemDef.poisonDetectionLevel or 0);
-					item:setUseForPoison(item:getHungChange());
 				end;
 			end;
 		end;

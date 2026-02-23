@@ -22,9 +22,6 @@ function ISSearchWindow:update()
 		if currentZone and currentZone.name then
 			--this doesn't work properly with multiple zones stacked and not really needed except when debugging spawn density which is per zone, so 'fixing' it would just create useless numbers.
 			--for a total of items in a zone, just check the .itemsLeft value of that zone.
-			--local title = "DEBUG: " .. zoneTitleString;
-			--local itemsLeft = " - ICONS: (" .. currentZone.itemsLeft .. " / " .. currentZone.itemsTotal .. ")";
-			--self:setTitle(title .. itemsLeft);
 			self:setTitle("DEBUG: " .. zoneTitleString);
 		else
 			self:setTitle("DEBUG: No Zone Here Or Zone Is Updating");
@@ -139,7 +136,6 @@ function ISSearchWindow:checkShowFirstTimeSearchTutorial()
 		if not (SurvivalGuideManager.instance and SurvivalGuideManager.instance.panel) then
 			doSurvivalGuide();
 		end;
-		--
 		if SurvivalGuideManager.instance and SurvivalGuideManager.instance.panel then
 			SurvivalGuideManager.instance.panel:setVisible(true);
 			SurvivalGuideManager.instance.panel:setPage(12);
@@ -195,16 +191,16 @@ end
 
 function ISSearchWindow:initialise()
 	ISCollapsableWindow.initialise(self);
-	--
+
 	self.zoneDisplay = ISZoneDisplay:new(self);
 	self:addChild(self.zoneDisplay);
-	--
+
 	local labelText = getText("UI_search_mode_focus");
 	local w = getTextManager():MeasureStringX(UIFont.Small, labelText);
 	local label = ISLabel:new(UI_BORDER_SPACING + w + 1, self.zoneDisplay:getBottom() + UI_BORDER_SPACING, BUTTON_HGT, labelText, 1, 1, 1, 1, UIFont.Small);
 	label:initialise();
 	self:addChild(label);
-	--
+
 	self.searchFocus = ISComboBox:new(UI_BORDER_SPACING*2 + w + 1, self.zoneDisplay:getBottom() + UI_BORDER_SPACING, self.width - w - UI_BORDER_SPACING*3 - 2, BUTTON_HGT, nil, nil);
 	self.searchFocus:initialise();
 	self.searchFocus.selected	= 1;
@@ -212,18 +208,18 @@ function ISSearchWindow:initialise()
 	self.searchFocus.onChange	= self.onChangeSearchFocusCategory;
 	self.searchFocus.target		= self;
 	self:addChild(self.searchFocus);
-	--
+
 	self.toggleSearchMode = ISButton:new(UI_BORDER_SPACING + 1, self.searchFocus:getBottom() + UI_BORDER_SPACING, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("UI_enable_search_mode"), self.manager, ISSearchManager.toggleSearchMode);
 	self:addChild(self.toggleSearchMode);
-	--
+
 	self:addToUIManager();
 	self:setVisible(false);
 	self:update();
 	self:setHeight(self.toggleSearchMode:getBottom()+UI_BORDER_SPACING+1);
 	self:bringToTop();
-	--
+
 	self:setInfo(getText("SurvivalGuide_entrie11moreinfo"));
-	--
+
 	self:setVisible(false);
 	ISLayoutManager.RegisterWindow('ISSearchWindow', ISSearchWindow, self);
 end
@@ -232,39 +228,39 @@ function ISSearchWindow:new(_manager)
 	local o = ISCollapsableWindow:new(0, 0, 400, 0);
 	setmetatable(o, self);
 	self.__index = self;
-	--
+
 	o.x                 	= 120;
 	o.y                 	= 300;
 	o.width             	= 420;
 	o.height            	= 170;
-	--
+
 	o.joypadMoveSpeed   	= 20;
 	o.overrideBPrompt   	= true;
 	o.tooltipForced     	= nil;
-	--
+
 	o.showBackground    	= true;
 	o.showBorder        	= true;
 	o.backgroundColor   	= {r=0, g=0, b=0, a=1};
 	o.borderColor       	= {r=0.4, g=0.4, b=0.4, a=1};
-	--
+
 	o.manager           	= _manager;
 	o.character         	= _manager.character;
 	o.player            	= _manager.player;
 	o.gameTime          	= getGameTime();
 	o.climateManager    	= getClimateManager();
-	--
+
 	o.title             	= getText("UI_investigate_area_window_title");
-	--
+
 	o.visibleTarget			= o;
 	o.visibleFunction		= ISSearchWindow.onToggleVisible;
-	--
+
 	o.searchFocusCategory	= "None";
-	--
+
 	o:setResizable(false);
 	o:setDrawFrame(true);
-	--
+
 	o:initialise();
-	--
+
 	return o;
 end
 
@@ -299,7 +295,6 @@ function ISSearchWindow.createUI(_player)
 	local character = getSpecificPlayer(_player);
 	if (not ISSearchWindow.players[character]) then
 		ISSearchWindow.players[character] = ISSearchWindow:new(ISSearchManager.getManager(character));
-		print("[ISSearchWindow] created UI for player " .. _player);
 	end;
 end
 
@@ -308,7 +303,6 @@ function ISSearchWindow.destroyUI(_character)
 		ISSearchWindow.players[_character]:setVisible(false);
 		ISSearchWindow.players[_character]:removeFromUIManager();
 		ISSearchWindow.players[_character] = nil;
-		print("[ISSearchWindow] removed UI for player " .. _character:getPlayerNum());
 	end;
 end
 

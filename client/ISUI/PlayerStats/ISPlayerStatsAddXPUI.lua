@@ -12,9 +12,7 @@ function ISPlayerStatsAddXPUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsAddXPUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -58,23 +56,8 @@ function ISPlayerStatsAddXPUI:create()
     self.useMultipliers:addOption(getText("IGUI_PlayerStats_AddXPMultipliers"))
     self:addChild(self.useMultipliers);
     self.useMultipliers:setSelected(1,true);
-
---[[
-    self.addGlobalXP = ISTickBox:new(10, self.entry.y + self.entry.height + 5, 100, 18, "", nil, nil);
-    self.addGlobalXP:initialise();
-    self.addGlobalXP:instantiate();
-    self.addGlobalXP:setAnchorLeft(true);
-    self.addGlobalXP:setAnchorRight(false);
-    self.addGlobalXP:setAnchorTop(true);
-    self.addGlobalXP:setAnchorBottom(false);
-    self.addGlobalXP.selected[1] = true;
-    self.addGlobalXP:addOption(getText("IGUI_PlayerStats_AddGlobalXP"));
-    self:addChild(self.addGlobalXP);
---]]
-
     local btnWid = 100
 
---    self.ok = ISButton:new((self:getWidth() / 2) - 100 - 5, self.addGlobalXP:getBottom() + padBottom, btnWid, btnHgt, getText("UI_Ok"), self, ISPlayerStatsAddXPUI.onOptionMouseDown);
     self.ok = ISButton:new((self:getWidth() - UI_BORDER_SPACING) / 2 - btnWid, self.entry:getBottom() + UI_BORDER_SPACING, btnWid, BUTTON_HGT, getText("UI_Ok"), self, ISPlayerStatsAddXPUI.onOptionMouseDown);
     self.ok.internal = "OK";
     self.ok:initialise();
@@ -93,10 +76,6 @@ function ISPlayerStatsAddXPUI:create()
 end
 
 function ISPlayerStatsAddXPUI:onSelectPerk()
-
---    local perk = PerkFactory.getPerk(Perks.fromIndex(self.combo.selected));
---    print(self.combo.selected, perk);
---    self.addGlobalXP:setVisible(not self.perkList[self.combo.selected]:isPassiv())
 end
 
 function ISPlayerStatsAddXPUI:onOptionMouseDown(button, x, y)
@@ -104,7 +83,6 @@ function ISPlayerStatsAddXPUI:onOptionMouseDown(button, x, y)
         self:setVisible(false);
         self:removeFromUIManager();
         if self.onclick ~= nil then
---            self.onclick(self.target, button, self.perkList[self.combo.selected], self.entry:getText(), self.addGlobalXP.selected[1]);
             self.onclick(self.target, button, self.perkList[self.combo.selected], self.entry:getText(), false, self.useMultipliers:isSelected(1));
         end
     end

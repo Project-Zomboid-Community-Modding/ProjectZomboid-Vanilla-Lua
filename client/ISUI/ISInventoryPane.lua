@@ -31,7 +31,7 @@ function ISInventoryPane:createChildren()
     self.minimumWidth = 256;
     self.headerHgt = fontHgtSmall + 1
 
-    self.column2 = self.headerHgt*2+1; --math.ceil(self.column2*self.zoom);
+    self.column2 = self.headerHgt*2+1;
     self.column3 = math.ceil(self.column3*self.zoom);
     self.column3 = self.column3 + 100;
 
@@ -43,14 +43,12 @@ function ISInventoryPane:createChildren()
     self.expandAll = ISButton:new(1, 0, self.headerHgt, self.headerHgt, "", self, ISInventoryPane.expandAll);
     self.expandAll:initialise();
     self.expandAll.borderColor.a = 0.0;
-  --  self.expandAll.backgroundColorMouseOver.a = 0;
     self.expandAll:setImage(self.expandicon);
     self:addChild(self.expandAll);
 
     self.collapseAll = ISButton:new(1, 0, self.headerHgt, self.headerHgt, "", self, ISInventoryPane.collapseAll);
     self.collapseAll:initialise();
     self.collapseAll.borderColor.a = 0.0;
-   -- self.collapseAll.backgroundColorMouseOver.a = 0;
     self.collapseAll:setImage(self.collapseicon);
     self:addChild(self.collapseAll);
     -- set button to invisible
@@ -59,7 +57,6 @@ function ISInventoryPane:createChildren()
     self.filterMenu = ISButton:new(self.headerHgt+1, 0, self.headerHgt, self.headerHgt, "", self, ISInventoryPane.onFilterMenu);
     self.filterMenu:initialise();
     self.filterMenu.borderColor.a = 0.0;
-    -- self.collapseAll.backgroundColorMouseOver.a = 0;
     self.filterMenu:setImage(self.filtericon);
     self:addChild(self.filterMenu);
 
@@ -131,8 +128,6 @@ function ISInventoryPane:onContext(button)
 
     local playerObj = getSpecificPlayer(self.player)
     local playerInv = playerObj:getInventory();
-    local lootInv = getPlayerLoot(self.player).inventory;
-
 
     if button.mode == "unpack" then
         local k = self.items[self.buttonOption];
@@ -189,7 +184,6 @@ end
 
 function ISInventoryPane:onFilterMenu(button)
     local playerObj = getSpecificPlayer(self.player)
-    local playerInv = playerObj:getInventory()
     if playerObj:isAsleep() then return end
 
     local x = button:getAbsoluteX();
@@ -220,16 +214,12 @@ end
 ISInventoryPane.itemSortByWeightAsc = function(a,b)
     if a.equipped and not b.equipped then return false end
     if b.equipped and not a.equipped then return true end
-    --if a.cat == b.cat then return not string.sort(a.name, b.name) end
-    --return not string.sort(a.cat, b.cat);
     return a.weight < b.weight;
 end
 
 ISInventoryPane.itemSortByWeightDesc = function(a,b)
     if a.equipped and not b.equipped then return false end
     if b.equipped and not a.equipped then return true end
-    --if a.cat == b.cat then return not string.sort(a.name, b.name) end
-    --return string.sort(a.cat, b.cat);
     return a.weight > b.weight;
 end
 
@@ -417,7 +407,6 @@ function ISInventoryPane:hideButtons()
 end
 
 function ISInventoryPane:doButtons(y)
-
     self.contextButton1:setVisible(false);
     self.contextButton2:setVisible(false);
     self.contextButton3:setVisible(false);
@@ -651,7 +640,6 @@ function ISInventoryPane:transferItemsByWeight(items, container)
 
 	for _,item in ipairs(items) do
 		if not container:isItemAllowed(item) then
-			-- 
 		elseif container:getType() == "floor" then
 			ISInventoryPaneContextMenu.dropItem(item, self.player)
 		else
@@ -868,20 +856,13 @@ function ISInventoryPane:updateTooltip()
 			self.toolRender:setVisible(true)
 			self.toolRender:setOwner(self)
 			self.toolRender:setCharacter(getSpecificPlayer(self.player))
---			self.toolRender:setX(getPlayerScreenLeft(self.player) + 60)
---			self.toolRender:setY(getPlayerScreenTop(self.player) + 60)
 			self.toolRender.anchorBottomLeft = { x = self:getAbsoluteX() + self.column2, y = self:getParent():getAbsoluteY() }
 		end
 		self.toolRender.followMouse = not self.doController
 		self.toolRender.tooltip:setWeightOfStack(weightOfStack)
-		if not self.doController then
---			self.toolRender:setX(getMouseX())
---			self.toolRender:setY(getMouseY())
-		end
 	elseif self.toolRender then
 		self.toolRender:removeFromUIManager()
 		self.toolRender:setVisible(false)
---		self.toolRender = nil
 	end
 
 	-- Hack for highlighting doors when a Key tooltip is displayed.
@@ -947,6 +928,27 @@ function ISInventoryPane.getActualItems(items)
 	return ret
 end
 
+function ISInventoryPane.getActualUniqueItems(items)
+	local ret = {}
+	local contains = {}
+	for _,item in ipairs(items) do
+		if instanceof(item, "InventoryItem") then
+			if not contains[item] then
+				-- The top-level group and its children might both be selected.
+				table.insert(ret, item)
+				contains[item] = true
+			end
+		else
+            local item2 = item.items[2]
+            if not contains[item2] then
+                table.insert(ret, item2)
+                contains[item2] = true
+            end
+		end
+	end
+	return ret
+end
+
 function ISInventoryPane:doContextualDblClick(item)
 	local playerObj = getSpecificPlayer(self.player);
 	if instanceof(item, "HandWeapon") then
@@ -1004,7 +1006,6 @@ function ISInventoryPane:doContextualDblClick(item)
             ISInventoryPaneContextMenu.onEatItems({item}, 1, self.player, openingRecipe, 100);
         end
     elseif instanceof(item, "DrainableComboItem") and (item:hasTag(ItemTag.CONSUMABLE)) and not item:hasTag(ItemTag.SHOW_POISON) then
--- 	    ISTimedActionQueue.add(ISTakePillAction:new(playerObj, item));
         if not item:getRequireInHandOrInventory() then
 	        ISInventoryPaneContextMenu.takePill(item, self.player);
         else
@@ -1277,9 +1278,7 @@ function ISInventoryPane:canPutIn()
         return true;
     end
 
-    local items = {}
-    -- If the lightest item fits, allow the transfer.
-    local minWeight = 100000
+    -- If any item fits, allow the transfer.
     local dragging = ISInventoryPane.getActualItems(ISMouseDrag.dragging)
     for i,v in ipairs(dragging) do
         local itemOK = true
@@ -1297,23 +1296,14 @@ function ISInventoryPane:canPutIn()
             itemOK = false
         end
         local inv = self.inventory;
---        if self.mouseOverButton and self.mouseOverButton.inventory then
---            inv = self.mouseOverButton.inventory;
---        end
         if not inv:isItemAllowed(v) then
             itemOK = false;
         end
-        if itemOK then
-            table.insert(items, v)
-        end
-        if v:getUnequippedWeight() < minWeight then
-            minWeight = v:getUnequippedWeight()
+        if itemOK and self.inventory:hasRoomFor(playerObj, v) then
+            return true
         end
     end
-    if #items == 1 then
-        return self.inventory:hasRoomFor(playerObj, items[1])
-    end
-    return self.inventory:hasRoomFor(playerObj, minWeight)
+    return false
 end
 
 ISInventoryPaneDraggedItems = {}
@@ -1408,7 +1398,8 @@ function DraggedItems:update()
     end
 
     local totalWeight = 0
-    local overWeight = false
+    local weightAddedToFloor = 0
+    local containerSq = container:hasWorldItem() and container:getWorldItem():getSquare() or nil
     local validItems = {}
     for _,item in ipairs(self.items) do
         local itemOK = true
@@ -1426,14 +1417,19 @@ function DraggedItems:update()
         end
         -- Items are sorted by weight (see above)
         if itemOK then
-            totalWeight = totalWeight + item:getUnequippedWeight()
-        end
-        if overWeight then
-            itemOK = false
-        else
-            if not container:hasRoomFor(playerObj, totalWeight) then
+            local newTotalWeight = totalWeight + item:getUnequippedWeight()
+            -- If the container and item are both on the ground on the same square, we don't need to consider the
+            -- floor's max capacity, since the weight of items on the square won't change by moving the item into
+            -- a bag on the same square.
+            local newWeightAddedToFloor = weightAddedToFloor
+            if containerSq == nil or not item:isOnGroundOrInsideBagOnSquare(containerSq) then
+                newWeightAddedToFloor = weightAddedToFloor + item:getUnequippedWeight()
+            end
+            if container:hasRoomFor(playerObj, newTotalWeight, newWeightAddedToFloor) then
+                totalWeight = newTotalWeight
+                weightAddedToFloor = newWeightAddedToFloor
+            else
                 itemOK = false
-                overWeight = true
             end
         end
         if itemOK then
@@ -1453,6 +1449,18 @@ end
 function DraggedItems:cannotDropItem(item)
     if not item then return false end
     return self.itemNotOK[item] == true
+end
+
+function DraggedItems:cannotDropAnyItem()
+    if self.items == nil then
+        return true
+    end
+    for _,item in pairs(self.items) do
+        if not self.itemNotOK[item] then
+            return false
+        end
+    end
+    return true
 end
 
 function DraggedItems:reset()
@@ -1622,7 +1630,6 @@ function ISInventoryPane:onRightMouseUp(x, y)
 end
 
 function ISInventoryPane:onMouseDown(x, y)
-
 	if self.player ~= 0 then return true end
 
 	getSpecificPlayer(self.player):nullifyAiming();
@@ -1695,9 +1702,7 @@ function ISInventoryPane:onMouseDown(x, y)
 		self.draggingX = x;
 		self.draggingY = y;
 		self.dragStarted = false
-		--print ("Dragging "..self.selected);
 		ISMouseDrag.dragging = {}
-		----print(self.selected[self.mouseOverOption]);
 		for i,v in ipairs(self.items) do
             if self.selected[count+1] ~= nil then
                 table.insert(ISMouseDrag.dragging, v);
@@ -1722,8 +1727,6 @@ function ISInventoryPane:onMouseDown(x, y)
 		self.draggedItems:reset()
 		ISMouseDrag.dragging = nil;
 		ISMouseDrag.draggingFocus = nil;
-
-
 	end
 
 	if x < self.column2 and y < self.headerHgt then
@@ -1771,11 +1774,6 @@ function ISInventoryPane:prerender()
 
 	self.nameHeader.maximumWidth = self.width - self.typeHeader.minimumWidth - self.column2
 	self.typeHeader.maximumWidth = self.width - self.nameHeader.minimumWidth - self.column2 + 1
-	--self:drawRectStatic(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
---	self:drawRectStatic(0, 0, self.width, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---	self:drawRectStatic(0, self.height-1, self.width, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---	self:drawRectStatic(0, 0, 1, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---	self:drawRectStatic(0+self.width-1, 0, 1, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	self:setStencilRect(0,0,self.width-1, self.height-1);
 
 	if self.mode == "icons" then
@@ -1786,7 +1784,6 @@ function ISInventoryPane:prerender()
 
     self.vscroll:setHeight(self.height)
 	self:updateScrollbars();
-
 end
 
 function ISInventoryPane:rendericons()
@@ -1802,8 +1799,6 @@ function ISInventoryPane:rendericons()
     for i = 0, it:size()-1 do
         local item = it:get(i);
         ISInventoryItem.renderItemIcon(self, item, (xcount * iw) + xpad + 4, (ycount * ih) + ypad + 4)
-        --self:drawTexture(item:getTex(), (xcount * iw) + xpad + 4, (ycount * ih) + ypad + 4, 1, 1, 1, 1);
-
 		xcount = xcount + 1;
 
 		if xcount >= xmax then
@@ -1829,7 +1824,6 @@ function ISInventoryPane:update()
     local playerObj = getSpecificPlayer(self.player)
     
     if self.doController then
-        --print("do controller!")
         if (self.player ~= 0) or (wasMouseActiveMoreRecentlyThanJoypad() == false) then
             table.wipe(self.selected)
         end
@@ -1838,7 +1832,6 @@ function ISInventoryPane:update()
         end
     end
 	self:updateTooltip()
-
 
     local remove = nil
 
@@ -1852,12 +1845,12 @@ function ISInventoryPane:update()
             end
         end
     end
+
     if remove ~= nil then
         for i,v in pairs(remove) do
             self.selected[v] = nil;
         end
     end
-
 
     -- Make it select the header if all sub items in expanded item are selected.
     for i,v in ipairs(self.items) do
@@ -1927,34 +1920,10 @@ function ISInventoryPane:update()
         if self.inventory:getType() ~= "floor" and not mouseOverUI and (noVehicle or vehicleNoWindow or vehicleWindowOpen) then
             local dragging = ISInventoryPane.getActualItems(ISMouseDrag.dragging)
             local dropit = false;
---            for i,v in ipairs(dragging) do
---                if not self.inventory:isInside(v) and not v:isFavorite() then
---                    if not instanceof(v, "Moveable") or v:CanBeDroppedOnFloor() then
---                        if self.inventoryPage.selectedSqDrop and self.inventoryPage.render3DItems and #self.inventoryPage.render3DItems > 0 then
---                            ISWorldObjectContextMenu.transferIfNeeded(playerObj, v)
---                        end
---                    end
---                end
---            end
-
-
---            if self.inventoryPage.selectedSqDrop and luautils.walkAdj(playerObj, self.inventoryPage.selectedSqDrop, true) then
---            if self.inventoryPage.selectedSqDrop then
---                dropit = true;
---            end
             for i,v in ipairs(dragging) do
                 if not self.inventory:isInside(v) and not v:isFavorite() then
                     if not instanceof(v, "Moveable") or v:CanBeDroppedOnFloor() then
---                        if self.inventoryPage.selectedSqDrop and self.inventoryPage.render3DItems and #self.inventoryPage.render3DItems > 0 then
---                            if dropit then
---                                if playerObj:isEquipped(v) then
---                                    ISTimedActionQueue.add(ISUnequipAction:new(playerObj, v, 1));
---                                end
---                                ISTimedActionQueue.add(ISDropWorldItemAction:new (playerObj, v, self.inventoryPage.selectedSqDrop, self.inventoryPage.render3DItemXOffset, self.inventoryPage.render3DItemYOffset, self.inventoryPage.render3DItemZOffset, self.inventoryPage.render3DItemRot));
---                            end
---                        else
-                            ISInventoryPaneContextMenu.dropItem(v, self.player)
---                        end
+                        ISInventoryPaneContextMenu.dropItem(v, self.player)
                         dragContainsNonMovables = true
                     else
                         dragContainsMovables = dragContainsMovables or v
@@ -2156,9 +2125,6 @@ function ISInventoryPane:refreshContainer()
 					end
 				end
 			end
--- 			if unstableScriptNameSpam then
---                 itemName = itemName .. " - " .. item:getFullType()
--- 			end
 			if self.itemindex[itemName] == nil then
 				self.itemindex[itemName] = {};
 				self.itemindex[itemName].items = {}
@@ -2189,7 +2155,7 @@ function ISInventoryPane:refreshContainer()
             end
             v.count = count;
             v.invPanel = self;
-            v.name = k -- v.items[1]:getName();
+            v.name = k
             v.cat = v.items[1]:getDisplayCategory() or v.items[1]:getCategory();
             v.weight = weight;
             if self.collapsed[v.name] == nil then
@@ -2198,8 +2164,6 @@ function ISInventoryPane:refreshContainer()
         end
     end
 
-
-    --print("Preparing to sort inv items");
     table.sort(self.itemslist, self.itemSortFunc );
     
     -- Adding the first item in list additionally at front as a dummy at the start, to be used in the details view as a header.
@@ -2228,7 +2192,6 @@ end
 
 ISInventoryPane.highlightItem = nil;
 function ISInventoryPane:renderdetails(doDragged)
-
     self:updateScrollbars();
 
     if doDragged == false then
@@ -2267,13 +2230,11 @@ function ISInventoryPane:renderdetails(doDragged)
     local HEIGHT = self:getHeight()
     local equippedLine = false
     local all3D = true;
---    self.inventoryPage.render3DItems = {};
     -- Go through all the stacks of items.
     for k, v in ipairs(self.itemslist) do
         local count = 1;
         -- Go through each item in stack..
         for k2, v2 in ipairs(v.items) do
-           -- print("trace:a");
             local item = v2;
             local doIt = true;
             local xoff = 0;
@@ -2293,7 +2254,6 @@ function ISInventoryPane:renderdetails(doDragged)
                     item:updateWetness()
                 end
             end
-           -- print("trace:b");
             local isDragging = false
             if self.dragging ~= nil and self.selected[y+1] ~= nil and self.dragStarted then
                 xoff = MOUSEX - self.draggingX;
@@ -2303,44 +2263,6 @@ function ISInventoryPane:renderdetails(doDragged)
                 else
                     self:suspendStencil();
                     isDragging = true
-                    -- if dragging and item with a 3D model outside of inventory, ready to render it
---                    if not item:getWorldStaticItem() and not instanceof(item, "HandWeapon") and not instanceof(item, "Clothing") then
---                        all3D = false;
---                    end
---                    if all3D and instanceof(item, "Clothing") then
---                        all3D = item:canBe3DRender();
---                    end
---                    if all3D and not self.inventoryPage.mouseOver and not getPlayerLoot(self.player).mouseOver and not getPlayerInventory(self.player).mouseOver then
---                        if xoff > self.width or xoff < 0 or yoff < 0 or yoff > self.height then
---                            doIt = false;
-                            -- multiple selection of a single item, first is dummy
---                            if self.selected[y+1].items and #self.selected[y+1].items > 2 then
---                                for i,v in ipairs(self.selected[y+1].items) do
---                                    if i > 1 then
---                                        local add = true;
---                                        for x,testItem in ipairs(self.inventoryPage.render3DItems) do
---                                            if testItem == v then
---                                                add = false;
---                                                break;
---                                            end
---                                        end
---                                        if add and self.inventory:getType() ~= "floor" then
---                                            table.insert(self.inventoryPage.render3DItems, v)
---                                        end
---                                        print("add multiple table item ", v, #self.inventoryPage.render3DItems)
---                                    end
---                                end
---                            elseif(self.inventory:getType() ~= "floor") then
---                                print("add single item table", item)
---                                table.insert(self.inventoryPage.render3DItems, item)
---                            end
---                            self.inventoryPage.render3DItem = item;
---                        else
---                            self.inventoryPage.render3DItems = {};
---                        end
---                    else
---                        self.inventoryPage.render3DItems = {};
---                    end
                 end
             else
                 if doDragged then
@@ -2351,25 +2273,13 @@ function ISInventoryPane:renderdetails(doDragged)
             if not isDragging and ((topOfItem + self.itemHgt < 0) or (topOfItem > HEIGHT)) then
                 doIt = false
             end
-           -- print("trace:c");
             if doIt == true then
-               -- print("trace:cc");
-        --        print(count);
-                if count == 1 then
-					-- rect over the whole item line
---                    self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth(), 1, 0.3, 0.0, 0.0, 0.0);
-                end
-               -- print("trace:d");
-
                 -- do controller selection.
                 if self.joyselection ~= nil and self.doController then
---                    if self.joyselection < 0 then self.joyselection = (#self.itemslist) - 1; end
---                    if self.joyselection >= #self.itemslist then self.joyselection = 0; end
                     if self.joyselection == y then
                         self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.2, 0.2, 1.0, 1.0);
                     end
                 end
-               -- print("trace:e");
 
                 -- only do icon if header or dragging sub items without header.
                 local tex = item:getTex();
@@ -2380,9 +2290,7 @@ function ISInventoryPane:renderdetails(doDragged)
                     local texOffsetY = (y*self.itemHgt)+(self.itemHgt-texWH)/2+self.headerHgt+yoff
                     local texOffsetX = self.column2-texWH-(self.itemHgt-texWH)/2+xoff
                     if count == 1  then
-                        --ISInventoryItem.renderItemIcon(self, item, 10+xoff, (y*self.itemHgt)+self.headerHgt+texDY+yoff, 1.0, texWH, texWH);
                         ISInventoryItem.renderItemIcon(self, item, texOffsetX, texOffsetY+texDY, 1.0, texWH, texWH);
-						--self:drawTextureScaledAspect(tex, 10+xoff, (y*self.itemHgt)+self.headerHgt+texDY+yoff, texWH, texWH, 1, item:getR(), item:getG(), item:getB());
 						if player:isEquipped(item) then
 							self:drawTexture(self.equippedItemIcon, texOffsetX+auxDXY, texOffsetY+auxDXY, 1, 1, 1, 1);
 						end
@@ -2410,7 +2318,6 @@ function ISInventoryPane:renderdetails(doDragged)
 						end
                         if item:isFavorite() then
                             self:drawTexture(self.favoriteStar, texOffsetX, texOffsetY+auxDXY, 1, 1, 1, 1);
---                         end
                         elseif item:isNoRecipes(player) then
                             self:drawTextureScaled(self.noFavoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, 1, 1, 1);
                         elseif item:isFavouriteRecipeInput(player) then
@@ -2420,8 +2327,6 @@ function ISInventoryPane:renderdetails(doDragged)
                         -- removed the fade effect on items in stacks as it makes it difficult to tell what color clothing and bags in stacks are
                         -- we also have variable icons for items now as well, so that makes it difficult as well when they are in stacks
                         ISInventoryItem.renderItemIcon(self, item, 10+16+xoff, texOffsetY+texDY, 1.0, texWH, texWH);
-						--ISInventoryItem.renderItemIcon(self, item, 10+16+xoff, (y*self.itemHgt)+self.headerHgt+texDY+yoff, 0.3, texWH, texWH);
-                        --self:drawTextureScaledAspect(tex, 10+16+xoff, (y*self.itemHgt)+self.headerHgt+texDY+yoff, texWH, texWH, 1, item:getR(), item:getG(), item:getB());
 						if player:isEquipped(item) then
 							self:drawTexture(self.equippedItemIcon, texOffsetX+auxDXY+16, texOffsetY+auxDXY, 1, 1, 1, 1);
                         end
@@ -2449,7 +2354,6 @@ function ISInventoryPane:renderdetails(doDragged)
 						end
                         if item:isFavorite() then
                             self:drawTexture(self.favoriteStar, texOffsetX+auxDXY+19, texOffsetY+auxDXY-1, 1, 1, 1, 1);
---                         end
                         elseif item:isNoRecipes(player) then
                             self:drawTextureScaled(self.noFavoriteRecipeInputStar, texOffsetX, texOffsetY+auxDXY, favoriteRecipeInputStarSize, favoriteRecipeInputStarSize, 1, 1, 1, 1);
                         elseif item:isFavouriteRecipeInput(player) then
@@ -2471,10 +2375,11 @@ function ISInventoryPane:renderdetails(doDragged)
                         end
                     end
                 end
-               -- print("trace:g");
 
                 if self.selected[y+1] ~= nil and not self.highlightItem then -- clicked/dragged item
-					if checkDraggedItems and self.draggedItems:cannotDropItem(item) then
+					if checkDraggedItems and self.collapsed[v.name] and self.draggedItems:cannotDropAnyItem() then
+						self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.20, 1.0, 0.0, 0.0);
+					elseif checkDraggedItems and not self.collapsed[v.name] and self.draggedItems:cannotDropItem(item) then
 						self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.20, 1.0, 0.0, 0.0);
 					elseif false and (((instanceof(item,"Food") or instanceof(item,"DrainableComboItem")) and item:getHeat() ~= 1) or item:getItemHeat() ~= 1) then
 						if (((instanceof(item,"Food") or instanceof(item,"DrainableComboItem")) and item:getHeat() > 1) or item:getItemHeat() > 1) then
@@ -2483,14 +2388,6 @@ function ISInventoryPane:renderdetails(doDragged)
 							self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.5, 0.0, 0.0, math.abs(item:getInvHeat()));
 						end
                     else
-                    --    if (instanceof(item,"Literature") and
-                    --((player:isLiteratureRead(item:getModData().literatureTitle)) or
-                    --(SkillBook[item:getSkillTrained()] ~= nil and item:getMaxLevelTrained() < player:getPerkLevel(SkillBook[item:getSkillTrained()].perk) + 1) or
-                    --(item:getNumberOfPages() > 0 and player:getAlreadyReadPages(item:getFullType()) == item:getNumberOfPages()) or
-                    --(item:getLearnedRecipes() ~= nil and player:getKnownRecipes():containsAll(item:getLearnedRecipes())) or
-                    --(item:getModData().learnedRecipe ~= nil and player:getKnownRecipes():contains(item:getModData().learnedRecipe)))) then
-                        --self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.3, ISInventoryPane.ghc:getR(), ISInventoryPane.ghc:getG(), ISInventoryPane.ghc:getB());
-					--else
 						self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.20, 1.0, 1.0, 1.0);
 					end
                 elseif self.mouseOverOption == y+1 and not self.highlightItem then -- called when you mose over an element
@@ -2501,14 +2398,6 @@ function ISInventoryPane:renderdetails(doDragged)
 							self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.3, 0.0, 0.0, math.abs(item:getInvHeat()));
 						end
                     else
-                    --    if (instanceof(item,"Literature") and
-                    --((player:isLiteratureRead(item:getModData().literatureTitle)) or
-                    --(SkillBook[item:getSkillTrained()] ~= nil and item:getMaxLevelTrained() < player:getPerkLevel(SkillBook[item:getSkillTrained()].perk) + 1) or
-                    --(item:getNumberOfPages() > 0 and player:getAlreadyReadPages(item:getFullType()) == item:getNumberOfPages()) or
-                    --(item:getLearnedRecipes() ~= nil and player:getKnownRecipes():containsAll(item:getLearnedRecipes())) or
-                    --(item:getModData().learnedRecipe ~= nil and player:getKnownRecipes():contains(item:getModData().learnedRecipe)))) then
-                    --    --self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.15, ISInventoryPane.ghc:getR(), ISInventoryPane.ghc:getG(), ISInventoryPane.ghc:getB());
-					--else
 						self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.05, 1.0, 1.0, 1.0);
 					end
                 else
@@ -2546,18 +2435,6 @@ function ISInventoryPane:renderdetails(doDragged)
                                     end
                                 end
                             else
-                            --    if (instanceof(item,"Literature") and
-                            --((player:isLiteratureRead(item:getModData().literatureTitle)) or
-                            --(SkillBook[item:getSkillTrained()] ~= nil and item:getMaxLevelTrained() < player:getPerkLevel(SkillBook[item:getSkillTrained()].perk) + 1) or
-                            --(item:getNumberOfPages() > 0 and player:getAlreadyReadPages(item:getFullType()) == item:getNumberOfPages()) or
-                            --(item:getLearnedRecipes() ~= nil and player:getKnownRecipes():containsAll(item:getLearnedRecipes())) or
-                            --(item:getModData().learnedRecipe ~= nil and player:getKnownRecipes():contains(item:getModData().learnedRecipe)))) then
-                            --    if alt then
-                            --        --self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.1, ISInventoryPane.ghc:getR(), ISInventoryPane.ghc:getG(), ISInventoryPane.ghc:getB());
-                            --    else
-                            --        --self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt,  0.05, ISInventoryPane.ghc:getR(), ISInventoryPane.ghc:getG(), ISInventoryPane.ghc:getB());
-                            --    end
-                            --else
                                 if alt then
                                     self:drawRect(self.column2+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self.column4, self.itemHgt, 0.02, 1.0, 1.0, 1.0);
                                 else
@@ -2577,7 +2454,6 @@ function ISInventoryPane:renderdetails(doDragged)
 						end
                     end
                 end
-               -- print("trace:h");
 
                 -- divider between equipped and unequipped items
                 if v.equipped then
@@ -2588,12 +2464,10 @@ function ISInventoryPane:renderdetails(doDragged)
                 end
 
                 if item:getJobDelta() > 0 and (count > 1 or self.collapsed[v.name]) then
---                 if item:getJobDelta() > 0 then
                     local scrollBarWid = self:isVScrollBarVisible() and 13 or 0
                     local displayWid = self.column4 - scrollBarWid
                     self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, displayWid * item:getJobDelta(), self.itemHgt, 0.2, 0.4, 1.0, 0.3);
                 end
-               -- print("trace:i");
 
                 if self.itemsToHighlight ~= nil and self.itemsToHighlight[item] == true then
                     self:drawRect(1+xoff, (y*self.itemHgt)+self.headerHgt+yoff, self:getWidth()-1, self.itemHgt, 0.20, 1.0, 1.0, 1.0);
@@ -2601,11 +2475,8 @@ function ISInventoryPane:renderdetails(doDragged)
 
 				local textDY = (self.itemHgt - self.fontHgt) / 2
 
-                --~ 				local redDetail = false;
                 local itemName = item:getName(getSpecificPlayer(self.player));
---                 if unstableScriptNameSpam then
---                     itemName = itemName .. " - " .. item:getFullType()
---                 end
+
                 local textColor = normalTextColor
                 if item:isUnwanted(getSpecificPlayer(self.player)) then textColor = unwantedTextColor end
                 if count == 1 then
@@ -2643,11 +2514,6 @@ function ISInventoryPane:renderdetails(doDragged)
 						end
 					end
                 end
-               -- print("trace:j");
-
-                --~ 				if self.mouseOverOption == y+1 and self.dragging and not self.parent:canPutIn(item) then
-                --~ 							self:drawText(item:getName(), self.column2+8+xoff, (y*18)+16+1+yoff, 0.7, 0.0, 0.0, 1.0);
-                    --~ 						else
 
                 if item:getJobDelta() > 0  then
                     if  (count > 1 or self.collapsed[v.name]) then
@@ -2698,7 +2564,6 @@ function ISInventoryPane:renderdetails(doDragged)
                 break
             end
             count = count + 1;
-           -- print("trace:zz");
         end
 	end
 
@@ -2711,11 +2576,9 @@ function ISInventoryPane:renderdetails(doDragged)
 		self:drawRectBorder(self.draggingMarquisX, self.draggingMarquisY, w, h, 0.4, 0.9, 0.9, 1);
     end
 
-
     if not doDragged then
 		self:drawRectStatic(1, 0, self.width-2, self.headerHgt, 1, 0, 0, 0);
     end
-
 end
 
 function ISInventoryPane:isLiteratureRead(playerObj, item)
@@ -2766,13 +2629,10 @@ function ISInventoryPane:drawTextAndProgressBar(text, fraction, xoff, top, fgTex
 end
 
 function ISInventoryPane:drawItemDetails(item, y, xoff, yoff, red)
-
     if item == nil then
         return;
     end
 
---~ 	print("renderdetail");
---~ 	print(red);
 	local hdrHgt = self.headerHgt
 	local top = hdrHgt + y * self.itemHgt + yoff
     local hc = getCore():getGoodHighlitedColor()
@@ -2951,7 +2811,6 @@ end
 
 function ISInventoryPane:new (x, y, width, height, inventory, zoom)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self

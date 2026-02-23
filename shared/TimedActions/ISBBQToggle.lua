@@ -33,7 +33,7 @@ end
 function ISBBQToggle:complete()
 	if self.bbq and self.bbq:hasFuel() then
 		self.bbq:toggle()
-		self.bbq:sendObjectChange('state')
+		self.bbq:sendObjectChange(IsoObjectChange.STATE)
 	end
 
 	return true;

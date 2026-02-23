@@ -145,16 +145,18 @@ end
 function RWMSubEditPreset:getAPrompt()
     return getText("IGUI_RadioIncFrequency");
 end
+
 function RWMSubEditPreset:getBPrompt()
     return getText("IGUI_RadioDecFrequency");
 end
+
 function RWMSubEditPreset:getXPrompt()
-    return getText("IGUI_RadioToggleStep", tostring(self.joypadSteps[self.joypadStepIndex])); --"Toggle step size, (current: "..tostring(self.joypadSteps[self.joypadStepIndex]).." MHz)";
+    return getText("IGUI_RadioToggleStep", tostring(self.joypadSteps[self.joypadStepIndex]));
 end
+
 function RWMSubEditPreset:getYPrompt()
     return getText("IGUI_RadioSaveChanges");
 end
-
 
 function RWMSubEditPreset:new (x, y, width, height, target, onSave)
     local o = ISPanel:new(x, y, width, height);
@@ -179,6 +181,5 @@ function RWMSubEditPreset:new (x, y, width, height, target, onSave)
     o.onSave = onSave;
     o.joypadSteps = {0.2,2,5,25};
     o.joypadStepIndex = 1;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     return o
 end

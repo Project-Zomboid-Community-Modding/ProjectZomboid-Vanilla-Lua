@@ -75,7 +75,7 @@ function ISWidgetRecipeFilterPanel:createChildren()
         self.tickBoxShowAllVersion:addOption(getText("IGUI_CraftingUI_ShowAllVersion"));
         self.tickBoxShowAllVersion:setWidth(15 + getTextManager():MeasureStringX(UIFont.Small, "IGUI_CraftingUI_ShowAllVersion"));
         self:addChild(self.tickBoxShowAllVersion);
-    else
+    elseif self.showAllCraftFilterTickBox then
         self.showAllRecipeTickBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTickBox, 0, 0, 15, FONT_HGT_SMALL, "tickbox", self, ISWidgetRecipeFilterPanel.onShowAllRecipeClick)
         self.showAllRecipeTickBox:initialise();
         self.showAllRecipeTickBox:instantiate();
@@ -259,7 +259,6 @@ function ISWidgetRecipeFilterPanel:calculateLayout(_preferredWidth, _preferredHe
         self.filterTypeCombo:setX(comboX)
         self.filterTypeCombo:setY(y)
     end
-
 
     -- search
     self.searchEntryBox:setX(UI_BORDER_SPACING+1);

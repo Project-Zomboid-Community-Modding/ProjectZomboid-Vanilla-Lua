@@ -42,7 +42,6 @@ function ISBatteryStatusDisplay:prerender()
     ISPanel.prerender(self);
 end
 
-
 function ISBatteryStatusDisplay:render()
     ISPanel.render(self);
     local offx = 0;
@@ -67,7 +66,6 @@ function ISBatteryStatusDisplay:render()
 
     self:drawRect(x+w, y+(h*0.25), headW, h*0.5, c.a, c.r, c.g, c.b);
 end
-
 
 function ISBatteryStatusDisplay:new (x, y, width, height, addAlertLed)
     local o = ISPanel:new(x, y, width, height);

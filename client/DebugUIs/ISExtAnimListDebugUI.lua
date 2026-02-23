@@ -3,8 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISExtAnimListDebugUI = ISCollapsableWindow:derive("ISExtAnimListDebugUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -27,7 +25,6 @@ function ISExtAnimListDebugUI:createChildren()
     for i, anim in ipairs(self.extList) do
         self.combo:addOption(anim);
     end
---    self.combo:setWidthToOptions()
 
     self.start = ISButton:new(x, self:getHeight() - BUTTON_HGT - x, btnWid, BUTTON_HGT, getText("IGUI_DebugMenu_Play"), self, ISExtAnimListDebugUI.playAnim);
     self.start.anchorTop = false
@@ -81,11 +78,9 @@ function ISExtAnimListDebugUI:new(x, y, character)
     end
     if x == 0 then
         o.x = 200;
---        o.x = getPlayerScreenLeft(o.playerNum) + (getPlayerScreenWidth(o.playerNum) - width) / 2
         o:setX(o.x)
     end
 
---    x = 200
     o.width = width;
     o.height = height;
     o.character = character;

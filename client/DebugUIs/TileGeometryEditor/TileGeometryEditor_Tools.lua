@@ -80,7 +80,6 @@ function GizmoTool:onMouseDown(x, y)
 	self.gizmoAxis = self:java2("testGizmoAxis", x, y)
 	local scenePos = self:java0("getGizmoPos")
 	self.gizmoStartScenePos = Vector3f.new(scenePos)
---	self.gizmoClickScenePos = self.javaObject:uiToScene(x, y, 0, Vector3f.new())
 	self.javaObject:fromLua3("startGizmoTracking", x, y, self.gizmoAxis)
 	self:onGizmoStart()
 end
@@ -88,9 +87,6 @@ end
 function GizmoTool:onMouseMove(dx, dy)
 	if self.gizmoAxis ~= "None" then
 		local x,y = self:getMouseX(),self:getMouseY()
---		local newPos = self.javaObject:uiToScene(x, y, 0, Vector3f.new())
---		newPos:sub(self.gizmoClickScenePos)
---		newPos:add(self.gizmoStartScenePos)
 		self:java2("dragGizmo", x, y)
 	end
 end
@@ -110,7 +106,6 @@ function GizmoTool:onRightMouseDown(x, y)
 		self.gizmoAxis = "None"
 		self.scene.gizmoAxis = "None"
 		self:java0("stopGizmoTracking")
---		self.mouseDown = false
 		self:java1("setGizmoPos", self.gizmoStartScenePos)
 		self:onGizmoCancel()
 		self.scene.currentTool = nil
@@ -342,29 +337,6 @@ function GizmoToolResizeBox:onGizmoChanged(delta)
 	end
 	extents:set(original)
 	extents:add(delta)
---[[
-	local sx = self.javaObject:sceneToUIX(0.0, 0.0, 0.0)
-	local sy = self.javaObject:sceneToUIY(0.0, 0.0, 0.0)
-	local sx2 = self.javaObject:sceneToUIX(1.0, 0.0, 0.0)
-	local sy2 = self.javaObject:sceneToUIY(1.0, 0.0, 0.0)
-	local pixelScreenSize = math.sqrt((sx2 - sx) * (sx2 - sx) + (sy2 - sy) * (sy2 - sy)) / math.sqrt(64 * 64 + 32 * 32)
-	if self.gizmoAxis == "X" then
-		sx2 = self.javaObject:sceneToUIX(1.0, 0.0, 0.0)
-		local xEqualsOnePixels = math.abs(sx2 - sx)
-		local sceneDX = (pixelScreenSize / xEqualsOnePixels)
---		extents:setComponent(0, math.floor(extents:x() / sceneDX) * sceneDX)
-	elseif self.gizmoAxis == "Y" then
-		sy2 = self.javaObject:sceneToUIY(0.0, 1.0, 0.0)
-		local yEqualsOnePixels = math.abs(sy2 - sy)
-		local sceneDY = (pixelScreenSize / yEqualsOnePixels)
---		extents:setComponent(1, math.floor(extents:y() / sceneDY) * sceneDY)
-	elseif self.gizmoAxis == "Z" then
-		sx2 = self.javaObject:sceneToUIX(0.0, 0.0, 1.0)
-		local zEqualsOnePixels = math.abs(sx2 - sx)
-		local sceneDZ = (pixelScreenSize / zEqualsOnePixels)
---		extents:setComponent(2, math.floor(extents:z() / sceneDZ) * sceneDZ)
-	end
---]]
 end
 
 function GizmoToolResizeBox:onGizmoAccept()
@@ -405,7 +377,6 @@ function GizmoToolResizeCylinder:onGizmoChanged(delta)
 		self:java3("changeCylinderHeight", objectName, self.movingFace, self.originalHeight - delta:z())
 	end
 	if self.movingFace == "zMax" then
---		self:java2("setCylinderHeight", objectName, self.originalHeight + delta:z() * 2)
 		self:java3("changeCylinderHeight", objectName, self.movingFace, self.originalHeight + delta:z())
 	end
 end

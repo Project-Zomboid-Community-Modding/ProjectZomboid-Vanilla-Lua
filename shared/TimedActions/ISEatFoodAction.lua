@@ -22,7 +22,12 @@ end
 
 function ISEatFoodAction:isValid()
     if isClient() and self.item then
-        return self.character:getInventory():containsID(self.item:getID());
+        if self.character:getInventory():containsID(self.item:getID()) then
+            return true
+        else
+            self:forceComplete()
+            return false
+        end
     else
         return self.character:getInventory():contains(self.item);
     end

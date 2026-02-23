@@ -3,8 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISBombTimerDialog = ISPanelJoypad:derive("ISBombTimerDialog")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -69,14 +67,12 @@ function ISBombTimerDialog:initialise()
 	self.yes = ISButton:new((self:getWidth() - UI_BORDER_SPACING)/2 - buttonWid, textBox:getBottom() + UI_BORDER_SPACING, buttonWid, BUTTON_HGT, getText("UI_Ok"), self, ISBombTimerDialog.onButton)
 	self.yes.internal = "OK"
 	self.yes:initialise()
---	self.yes:instantiate()
 	self.yes:enableAcceptColor()
 	self:addChild(self.yes)
 
 	self.no = ISButton:new(self.yes:getRight() + UI_BORDER_SPACING, self.yes:getY(), buttonWid, BUTTON_HGT, getText("UI_Cancel"), self, ISBombTimerDialog.onButton)
 	self.no.internal = "CANCEL"
 	self.no:initialise()
---	self.no:instantiate()
 	self.no:enableCancelColor()
 	self:addChild(self.no)
 
@@ -145,9 +141,6 @@ end
 
 function ISBombTimerDialog:render()
 	ISPanelJoypad.render(self)
---	if self.player:getX() ~= self.playerX or self.player:getY() ~= self.playerY then
---		self:destroy()
---	end
 end
 
 function ISBombTimerDialog:addTime(seconds)

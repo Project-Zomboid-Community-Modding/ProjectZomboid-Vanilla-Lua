@@ -12,11 +12,9 @@ function ISGroupBox:createChildren()
     if self.title then
         local fontHeight = -1; -- <=0 sets label initial height to font
         self.borderLabel = ISXuiSkin.build(self.xuiSkin, self.styleLabel, ISLabel, 0, 0, fontHeight, self.title, 1.0, 1.0, 1.0, 1, UIFont.Small, true)
-        --self.borderLabel.center = true;
         self.borderLabel.textColor = self.textColor;
         self.borderLabel:initialise();
         self.borderLabel:instantiate();
-        --self:addChild(self.borderLabel);
         ISUIElement.addChild(self, self.borderLabel);
     end
 
@@ -55,8 +53,6 @@ function ISGroupBox:calculateLayout(_preferredWidth, _preferredHeight)
         if self.element.calculateLayout then
             self.element:calculateLayout(math.max(0, width-margin2x), math.max(0, height-margin2x));
         end
-        --self.element:setX(self.margin);
-        --self.element:setY(self.margin);
         width = math.max(width, self.element:getWidth()+margin2x);
         height = math.max(height, self.element:getHeight()+margin2x);
 
@@ -77,13 +73,10 @@ function ISGroupBox:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISGroupBox:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
 function ISGroupBox:prerender()
-    --ISPanel.prerender(self);
-
     local x, y = self.marginBorder, self.marginBorder;
     local w, h = self.width-(self.marginBorder*2), self.height - (self.marginBorder*2);
     local c = self.backgroundColor;

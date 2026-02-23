@@ -2,7 +2,6 @@ local WARNED_STYLES = {};
 
 local _print = print;
 local function print(_s)
-    --_print("ISXuiSkin -> "..tostring(_s));
     if getDebug() then
         _print("ISXuiSkin -> "..tostring(_s));
     end
@@ -17,13 +16,10 @@ ISXuiSkinFunctions = {};
 function ISXuiSkinFunctions.xuiRecalculateLayout(_self, _preferredWidth, _preferredHeight, _force, _anchorRight)
     if _self:getParent() then
         if _self:getParent().xuiRecalculateLayout then
-            --_print("ISXuiSkinFunctions.xuiRecalculateLayout -> Calling parent: "..tostring(_self:getParent().Type))
             _self:getParent():xuiRecalculateLayout(_preferredWidth, _preferredHeight, _force, _anchorRight);
         else
             _print("XuiSkin -> couldnt trigger xuiRecalculateLayout for parent.")
         end
-    else
-        --_print("XuiSkin -> no parent.")
     end
 end
 
@@ -108,9 +104,6 @@ function ISXuiSkin.build(_skin, _styleName, _luaClass, ...)
 
         -- add XuiSkin functions
         ISXuiSkin.RegisterXuiSkinFunctions(luaObject, false);
-        --[[if not luaObject.xuiRecalculateLayout then
-            luaObject.xuiRecalculateLayout = xuiRecalculateLayout;
-        end--]]
     end
 
     return luaObject;
@@ -131,11 +124,6 @@ end
 function ISXuiSkin.constructors.ISWindow(_xuiScript, _title, _x, _y, _width, _height)
     local o = ISWindow:new(_title, _x, _y, _width, _height);
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _title then
-        o.title = _title;
-    end
-    --]]
     return o, true;
 end
 
@@ -151,11 +139,6 @@ function ISXuiSkin.constructors.ISButton(_xuiScript, _x, _y, _width, _height, _t
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
     o.originalWidth = o.width;
     o.originalHeight = o.height;
-    --[[
-    if _title then
-        o.title = _title;
-    end
-    --]]
     return o, true;
 end
 
@@ -165,29 +148,13 @@ function ISXuiSkin.constructors.ISImage(_xuiScript, _x, _y, _width, _height, _te
 		o:setColor(_r,_g,_b)
 	end
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _texture then
-        o.texture = _texture;
-    end
-    --]]
     return o, true;
 end
 
 function ISXuiSkin.constructors.ISLabel(_xuiScript, _x, _y, _height, _name, _r, _g, _b, _a, _font, _bLeft)
     local o = ISLabel:new(_x, _y, _height, _name, _r, _g, _b, _a, _font, _bLeft);
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _name then
-        o.name = _name;
-    end
-    if _font then
-        o.font = _font;
-    end
-    if _r then o.r = _r; end
-    if _g then o.g = _g; end
-    if _b then o.b = _b; end
-    if _a then o.a = _a; end
-    --]]
+
     o.font = o.font or UIFont.Small;
 	o.width = getTextManager():MeasureStringX(o.font, o.name)
 	if (o.left ~= true) then
@@ -202,14 +169,7 @@ end
 function ISXuiSkin.constructors.ISProgressBar(_xuiScript, _x, _y, _width, _height, _text, _font)
     local o = ISProgressBar:new(_x, _y, _width, _height, _text, _font);
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _text then
-        o.text = _text;
-    end
-    if _font then
-        o.font = _font;
-    end
-    --]]
+
     o:setText(o.text);
     return o, true;
 end
@@ -249,11 +209,7 @@ end
 function ISXuiSkin.constructors.ISTextEntryBox(_xuiScript, _title, _x, _y, _width, _height)
     local o = ISTextEntryBox:new(_title, _x, _y, _width, _height);
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _title then
-        o.title = _title;
-    end
-    --]]
+
     o.currentText = o.title;
     return o, true;
 end
@@ -261,11 +217,7 @@ end
 function ISXuiSkin.constructors.ISTickBox(_xuiScript, _x, _y, _width, _height, _name, _changeOptionTarget, _changeOptionMethod, _changeOptionArg1, _changeOptionArg2)
     local o = ISTickBox:new(_x, _y, _width, _height, _name, _changeOptionTarget, _changeOptionMethod, _changeOptionArg1, _changeOptionArg2);
     ISXuiSkin.autoApplyTableKeys(_xuiScript, o);
-    --[[
-    if _name then
-        o.title = _name;
-    end
-    --]]
+
     o.fontHgt = getTextManager():getFontHeight(o.font);
     o.itemHgt = math.max(o.boxSize, o.fontHgt) + o.itemGap;
     local itemHgtVar = _xuiScript:getVar("itemHgt");

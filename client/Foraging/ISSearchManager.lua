@@ -612,21 +612,15 @@ function ISSearchManager:checkSquares()
 	local i = 1;
 	for square in pairs(self.squareStack) do
 		self.squareStack[square] = nil;
-		--
-		--debug highlight squares
-		--if square and square:getFloor() then square:getFloor():setHighlighted(true); end;
-		--
 		sqX, sqY = square:getX(), square:getY();
-		--
+
 		if getDistance2D(plX, plY, sqX, sqY) < cellIconRadius then
 			i = i + 1;
 			if i > squareCheckRate then break; end;
-			--
 			--check if already activated a zone on this square
 			if zoneData == nil or not forageSystem.zoneContains(zoneData, sqX, sqY, 0) then
 				zoneData = self:getAndActivateZoneAtXY(sqX, sqY);
 			end;
-			--
 			local doSpriteCheck = false;
 			if self:isFinishedLoadingIcons() and (not square:HasTree()) then
 				if zoneData and (not self.spriteCheckedSquares[square]) and (not self.movedIconsSquares[square]) then
@@ -634,7 +628,7 @@ function ISSearchManager:checkSquares()
 					self.spriteCheckedSquares[square] = true;
 				end;
 			end;
-			--
+
 			if not self.checkedSquares[square] then
 				for object in iterList(square:getObjects()) do
 					if not instanceof(object, "IsoAnimalTrack") then
@@ -645,7 +639,7 @@ function ISSearchManager:checkSquares()
 					end;
 				end;
 			end;
-			--
+
 			self.checkedSquares[square] = true;
 			self.movedIconsSquares[square] = true;
 		end;
@@ -1053,23 +1047,23 @@ function ISSearchManager:getOverlayRadius()
 
 	--only the highest modifier applies for aim or sneak
 	local visionBonus 		= math.max(modifiers.aimBonus, modifiers.sneakBonus);
-	--
+
 	overlayRadius 			= overlayRadius * visionBonus;
 	maxRadius 				= maxRadius * visionBonus;
 	minRadius 				= minRadius * visionBonus;
 	maxRadius 				= math.min(maxRadius, maxRadiusCap);
-	--
+
 	overlayRadius 			= overlayRadius * modifiers.lightPenalty;
-	--
+
 	return clamp(overlayRadius, self.minRadius, maxRadius);
 end
 
 function ISSearchManager:updateOverlay()
 	if self.isOverride then return; end;
-	--
+
 	local blur = 0;
 	local desaturation = 0;
-	--
+
 	local overlayEffectOption = getCore():getOptionSearchModeOverlayEffect();
 	if overlayEffectOption == 1 or overlayEffectOption == 2 then
 		blur = 0.5;
@@ -1077,27 +1071,27 @@ function ISSearchManager:updateOverlay()
 	if overlayEffectOption == 1 or overlayEffectOption == 3 then
 		desaturation = 0.5;
 	end;
-	--
+
 	local panicLevel = math.min(1 - forageSystem.getPanicPenalty(self.character), 0.5);
 	local exhaustionLevel = math.min(1 - forageSystem.getExhaustionPenalty(self.character), 0.5);
 	local darkLevel = 1 - forageSystem.getLightLevelPenalty(self.character, self.square, false);
 	--use the highest value, and ensure there is always a slight border with 0.1 dark
 	local darkness = math.max(math.max(panicLevel, exhaustionLevel, darkLevel), 0.1);
-	--
+
 	local radius = self:getOverlayRadius();
-	--
+
 	local sm = self.searchModeOverlay;
 	sm:getBlur():setTargets(blur, blur);
 	sm:getDesat():setTargets(desaturation, desaturation);
 	sm:getRadius():setTargets(radius, radius);
 	sm:getDarkness():setTargets(darkness, darkness);
 	sm:getGradientWidth():setTargets(2, 2);
-	--
+
 	self.overlayValues.blur = blur;
 	self.overlayValues.desaturation = desaturation;
 	self.overlayValues.darkness = darkness;
 	self.radius = radius;
-	--
+
 	self.searchMode:setEnabled(self.player, self.isSearchMode or self.isEffectOverlay);
 end
 
@@ -1134,7 +1128,7 @@ function ISSearchManager:checkMarkers()
 	local forceRemove = false;
 	if (not self.isSearchMode) then forceRemove = true; end;
 	if self:getGameSpeed() ~= 1 then forceRemove = true; end;
-	--
+
 	for iconID, debugMarker in pairs(self.debugMarkers) do
 		if forceRemove or (not self.activeIcons[iconID]) or (not ISSearchManager.showDebug) or (not ISSearchManager.showDebugVisionRadius) then
 			debugMarker:remove();
@@ -1196,13 +1190,13 @@ end
 
 function ISSearchManager:doUpdateEvents(_force)
 	self.updateTick = self.updateTick + 1;
-	--
+
 	for _, event in ipairs(self.updateEvents) do
 		if (_force or self.updateTick % event.tick == 0) and self[event.method] then
 			self[event.method](self);
 		end;
 	end;
-	--
+
 	if self.updateTick > self.updateTickMax then self.updateTick = 0; end;
 end
 
@@ -1210,26 +1204,26 @@ function ISSearchManager:update()
 	self:updateAlpha();
 	self:updateVisionBonuses();
 	self:updateOverlay();
-	--
+
 	if (not self.isSearchMode) then
 		ISAnimalTracksFinder:clearTracks(self.character);
 		return;
 	end;
 	if self:getGameSpeed() == 0 then return; end;
-	--
+
 	self:doDisableCheck();
 	self:checkMarkers();
 	self:createIconsForCell();
 	self:doUpdateEvents();
 	self:loadIcons();
-	--
+
 	if self.isSearchMode then
 		local searchWindow = ISSearchWindow.players[self.character];
 		if searchWindow and searchWindow.searchFocusCategory and searchWindow.searchFocusCategory == "Tracks" then
 			ISAnimalTracksFinder:update(self.character);
 		end
 	end
-	--
+
 	self.isSpotting = false;
 end
 
@@ -1401,7 +1395,6 @@ function ISSearchManager.createUI(_player)
 	if not ISSearchManager.players[character] then
 		ISSearchManager.setManager(character, ISSearchManager:new(character));
 	end;
-	print("[ISSearchManager] created UI for player " .. _player);
 end
 
 function ISSearchManager.destroyUI(_character)
@@ -1413,7 +1406,6 @@ function ISSearchManager.destroyUI(_character)
 		manager:removeFromUIManager();
 		ISSearchManager.players[_character] = nil;
 	end;
-	print("[ISSearchManager] removed UI for player " .. _character:getPlayerNum());
 end
 
 Events.OnCreatePlayer.Add(ISSearchManager.createUI);

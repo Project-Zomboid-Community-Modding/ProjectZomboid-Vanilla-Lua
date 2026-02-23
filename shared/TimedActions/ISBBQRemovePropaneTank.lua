@@ -42,7 +42,7 @@ function ISBBQRemovePropaneTank:complete()
 	if bbq and bbq:hasPropaneTank() then
 		local tank = bbq:removePropaneTank()
 		if isServer() then
-			self.bbq:sendObjectChange("state")
+			self.bbq:sendObjectChange(IsoObjectChange.STATE)
 		end
 		self.character:getSquare():AddWorldInventoryItem(tank, 0.5, 0.5, 0)
 		triggerEvent("OnContainerUpdate")

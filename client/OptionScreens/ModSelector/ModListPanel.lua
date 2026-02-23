@@ -113,14 +113,6 @@ function ModListPanel:createChildren()
     self.enabledModsTickbox:addOption(getText("UI_modselector_showEnabledMods"));
     self.filterPanel:addChild(self.enabledModsTickbox);
 
-    --[[
-    tickboxWidth = BUTTON_HGT + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_modselector_showUnsupportedMods"))
-    self.unsupportedModsTickbox = ISTickBox:new(self.enabledModsTickbox:getRight() + UI_BORDER_SPACING, self.enabledModsTickbox.y, tickboxWidth, BUTTON_HGT, "", self, self.applyUnsupportedMods);
-    self.unsupportedModsTickbox:initialise();
-    self.unsupportedModsTickbox:instantiate();
-    self.unsupportedModsTickbox:addOption(getText("UI_modselector_showUnsupportedMods"));
-    self:addChild(self.unsupportedModsTickbox);
-]]
     local btnWidth = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_savedServers"))
     self.favoriteButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWidth - 1, self.enabledModsTickbox.y, btnWidth, BUTTON_HGT, getText("UI_servers_savedServers"), self, ModListPanel.onOptionMouseDown)
     self.favoriteButton.internal = "Favorite"

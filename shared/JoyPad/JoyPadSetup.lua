@@ -274,7 +274,7 @@ function JoypadControllerData:onPressButtonNoFocus(button)
     end
 
     -- Case 2: In game.
-        if joypadData.player and getCell() and getCell():getDrag(joypadData.player) then
+    if joypadData.player and getCell() and getCell():getDrag(joypadData.player) then
         getCell():getDrag(joypadData.player):onJoypadPressButton(joypadIndex, joypadData, button);
         return;
     end
@@ -908,9 +908,13 @@ end
 
 function onJoypadActivate(id)
     if JoypadState.controllerTest then return end
---    if getCore():getGameMode() == "Tutorial" then return end
+
     local controller = JoypadState.controllers[id]
-    if controller.joypad ~= nil then return end
+    if controller.joypad ~= nil then
+        -- Notify player
+        onJoypadActivateNotifyPlayer(controller.joypad)
+        return
+    end
 
     noise("activate %d", id)
 
@@ -930,6 +934,7 @@ function onJoypadActivate(id)
                 break
             end
         end
+
         if not joypadData then
             -- All player slots have controllers.
             return
@@ -940,6 +945,21 @@ function onJoypadActivate(id)
 
     joypadData:setActive(true)
     controller:setJoypad(joypadData)
+
+    -- Notify player
+    onJoypadActivateNotifyPlayer(joypadData)
+end
+
+function onJoypadActivateNotifyPlayer(joypadData)
+    if not joypadData then return end
+
+    local playerNum = joypadData.player
+    if not playerNum then return end
+
+    local playerObj = getSpecificPlayer(playerNum)
+    if not playerObj then return end
+
+    setPlayerJoypad(playerNum, joypadData.id, playerObj, nil)
 end
 
 function onJoypadActivateUI(id)

@@ -2,16 +2,12 @@ require "ISUI/ISCollapsableWindow"
 
 TextureWindow = ISCollapsableWindow:derive("TextureWindow");
 
-
 function TextureWindow:initialise()
-
     ISCollapsableWindow.initialise(self);
     self.title = self.tex:getName();
-
 end
 
 function TextureWindow:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local width = math.max(self.width, self:minTitleBarWidth())
@@ -22,7 +18,6 @@ function TextureWindow:createChildren()
     self.renderPanel.tex = self.tex;
     self.renderPanel:initialise();
     self:addChild(self.renderPanel);
-
 end
 
 
@@ -39,4 +34,3 @@ function TextureWindow:new(x, y, width, height, tex)
     o.backgroundColor = {r=0, g=0, b=0, a=1.0};
     return o
 end
-

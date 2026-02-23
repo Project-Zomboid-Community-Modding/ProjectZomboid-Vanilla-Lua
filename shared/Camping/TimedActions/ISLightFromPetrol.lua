@@ -59,9 +59,10 @@ function ISLightFromPetrol:getDuration()
     return self.maxTime;
 end
 
-function ISLightFromPetrol:new(character, campfire, lighter, petrol, maxTime)
+function ISLightFromPetrol:new(character, campfire, lighter, petrol, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	-- custom fields
 	o.campfire = campfire
 	o.lighter = lighter

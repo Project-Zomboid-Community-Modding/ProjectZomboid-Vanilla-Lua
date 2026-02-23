@@ -23,7 +23,6 @@ function IsoRegionsWindow:createChildren()
     self.renderPanel = ISPanel:new(0, 0, self.width, self.height - self:titleBarHeight() - self:resizeWidgetHeight())
     self.renderPanel.render = IsoRegionsWindow.renderTex
     self.renderPanel:initialise()
-    --	self.renderPanel:instantiate()
     self.renderPanel.onMouseDown = IsoRegionsWindow.onMapMouseDown
     self.renderPanel.onMouseUp = IsoRegionsWindow.onMapMouseUp
     self.renderPanel.onMouseUpOutside = IsoRegionsWindow.onMapMouseUpOutside
@@ -52,19 +51,6 @@ function IsoRegionsWindow:onMapMouseDown(x, y)
         self.renderer:unsetSelected();
         self.renderer:editSquare(x, y);
     end
-    --	addVirtualZombie(x, y)
-    --[[
-    if isKeyDown(Keyboard.KEY_LSHIFT) then
-        self.settingPath = true
-        self.renderer:setWallFollowerStart(x, y)
-        self.renderer:setWallFollowerEnd(x, y)
-        return true
-    end
-    if isKeyDown(Keyboard.KEY_LCONTROL) then
-        self.renderer:setWallFollowerEnd(x, y)
-        return true
-    end
-    --]]
     return false
 end
 
@@ -176,9 +162,6 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
         cellX = math.floor(cellX)
         cellY = math.floor(cellY)
         local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
-        --context:addOption("Clear Zombies", cellX, zpopClearZombies, cellY)
-        --context:addOption("Spawn Time To Zero", cellX, zpopSpawnTimeToZero, cellY)
-        --context:addOption("Spawn Now", cellX, zpopSpawnNow, cellY)
         local worldX = self.renderer:uiToWorldX(x)
         local worldY = self.renderer:uiToWorldY(y)
         context:addOption(getText("IGUI_IsoRegions_TeleportHere"), self.parent, IsoRegionsWindow.onTeleport, worldX, worldY)
@@ -225,9 +208,9 @@ function IsoRegionsWindow:onMapRightMouseUp(x, y)
         local subMenu = context:getNew(context)
         local subMenuOption = context:addOption(getText("IGUI_IsoRegions_Other"), nil, nil)
         if not isClient() then
-            local option = subMenu:addOption(getText("IGUI_IsoRegions_RecalcPlayerSurroundChunks"), self.parent, IsoRegionsWindow.onRecalcChunks);
+            subMenu:addOption(getText("IGUI_IsoRegions_RecalcPlayerSurroundChunks"), self.parent, IsoRegionsWindow.onRecalcChunks);
         end
-        local option = subMenu:addOption(getText("IGUI_IsoRegions_OpenLogs"), self.parent, IsoRegionsWindow.onOpenLogs);
+        subMenu:addOption(getText("IGUI_IsoRegions_OpenLogs"), self.parent, IsoRegionsWindow.onOpenLogs);
         context:addSubMenu(subMenuOption, subMenu)
     end
     return true

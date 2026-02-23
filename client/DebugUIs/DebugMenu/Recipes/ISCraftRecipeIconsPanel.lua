@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISCraftRecipeIconsPanel = ISPanel:derive("ISCraftRecipeIconsPanel");
 
@@ -10,14 +9,8 @@ function ISCraftRecipeIconsPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISCraftRecipeIconsPanel:createChildren()
     ISPanel.createChildren(self);
-
-    local x,y = UI_BORDER_SPACING+1, UI_BORDER_SPACING+1;
-    local initY = y;
-
-    local LEFT_BAR_WIDTH = 400+(getCore():getOptionFontSizeReal()*50);
 
     self.iconPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTiledIconPanel, 0, 0, 10, 10, self.player, nil, self);
     self.iconPanel:setSearchInfoText(getText("IGUI_DebugMenu_Search"));
@@ -57,8 +50,6 @@ function ISCraftRecipeIconsPanel:onResize(_width, _height)
     self.iconPanel:setX(0);
     self.iconPanel:setY(0);
     self.iconPanel:calculateLayout(self.width, self.height);
-    --self.iconPanel:setWidth(self.width);
-    --self.iconPanel:setHeight(self.height);
 
     self.tooltipRecipe = nil;
 end
@@ -86,13 +77,6 @@ function ISCraftRecipeIconsPanel:updateTooltip()
         return;
     end
 
-    --[[
-    if self.activeTooltip and (self:getSelectedRecipe()==self.activeTooltip.recipe) then
-        self:deactivateTooltip();
-        return;
-    end
-    --]]
-
     local titleOnly = self.tooltipCounter>0;
     if self.activeTooltip then
         self.activeTooltip:setRecipe(self.tooltipRecipe, titleOnly);
@@ -115,7 +99,6 @@ function ISCraftRecipeIconsPanel:new (x, y, width, height, player)
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.searchText = "";
-    --o.modColor = namedColorToTable("CornFlowerBlue");
 
     o.tooltipCounterTime = 0; --0.75;
     o.tooltipCounter = o.tooltipCounterTime;

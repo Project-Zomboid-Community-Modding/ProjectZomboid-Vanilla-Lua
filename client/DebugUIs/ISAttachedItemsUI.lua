@@ -3,13 +3,10 @@ require "ISUI/ISPanelJoypad"
 ISAttachedItemsUI = ISCollapsableWindow:derive("ISAttachedItemsUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISAttachedItemsUI:createChildren()
-	local padBottom = 20
 	local x = UI_BORDER_SPACING + 1
 	
 	ISCollapsableWindow.createChildren(self)
@@ -107,20 +104,6 @@ function ISAttachedItemsUI:createChildren()
 
 	self:setWidth(math.max(self.width, targetWidth))
 	self:setHeight(math.max(self.height, self.location:getBottom() + UI_BORDER_SPACING * 3 + BUTTON_HGT*2 + 1))
-	
-
-	
---
---	self.restoreEnd = ISButton:new(self:getWidth() - btnWid - 20, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, "Restore Endurance", self, ISAttachedItemsUI.restoreEndurance);
---	self.restoreEnd.internal = "RESTOREENDURANCE";
---	self.restoreEnd.anchorTop = false
---	self.restoreEnd.anchorBottom = true
---	self.restoreEnd:initialise();
---	self.restoreEnd:instantiate();
---	self.restoreEnd.borderColor = {r=1, g=1, b=1, a=0.1};
---	self:addChild(self.restoreEnd);
---
---	self:setInfo("Click on start timer to start the trip, once you're done, click on stop timer. \n When you're done, you should click on restore endurance to start from scratch as endurance regen while time pass. \n \n The total current speed variable is updated only when running/sprinting, it could show wrong when idle/walking as it's not used.");
 end
 
 function ISAttachedItemsUI:onAddOnChar()
@@ -198,8 +181,7 @@ end
 
 function ISAttachedItemsUI:drawDatas(y, item, alt)
 	local a = 0.9;
-	
-	--    self.parent.selectedStash = nil;
+
 	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	
 	if self.selected == item.index then
@@ -223,7 +205,6 @@ function ISAttachedItemsUI:update()
 	if self.itemType:getText() and self.itemType:getText() ~= "" then
 		self.add:setEnable(true)
 	end
---	print(self.datas.selected)
 end
 
 function ISAttachedItemsUI:render()

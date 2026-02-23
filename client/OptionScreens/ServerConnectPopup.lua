@@ -6,7 +6,6 @@ require "defines"
 ServerConnectPopup =  ISPanelJoypad:derive("ServerConnectPopup");
 
 function ServerConnectPopup:create()
-
     local y = self.height/2 - 200;
     local entrySize = 160;
     local labelX = self.width/2 - entrySize/2;

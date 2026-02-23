@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
-
 ISWidgetTooltipOutput = ISPanel:derive("ISWidgetTooltipOutput");
 
 function ISWidgetTooltipOutput:initialise()
@@ -20,19 +18,9 @@ function ISWidgetTooltipOutput:createChildren()
 
     self.primary = self:createScriptValues(self.outputScript);
 
---     self.iconKeep = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 24, 24, self.textureKeep);
--- --     self.iconKeep = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 26, 12, self.textureKeep);
---     self.iconKeep.autoScale = true;
---     self.iconKeep:initialise();
---     self.iconKeep:instantiate();
---     self.iconKeep:setVisible(self.primary.isKeep);
---     self:addChild(self.iconKeep);
-
     local arrowTexture = nil;
     if self.consumeScript then
         --note: currently outputs cannot have a nested 'consume' script
-        --self.secondary = ISWidgetInput.createScriptValues(self, self.consumeScript);
-        --arrowTexture = self.textureConsume;
     elseif self.createScript then
         self.secondary = self:createScriptValues(self.createScript);
         arrowTexture = self.textureCreate;
@@ -40,7 +28,6 @@ function ISWidgetTooltipOutput:createChildren()
 
     if arrowTexture then
         self.arrow = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.iconSize/2, self.iconSize, arrowTexture);
-        --self.consumeArrow.noAspect = true;
         self.arrow.scaledWidth = self.iconSize/2;
         self.arrow.scaledHeight = self.iconSize;
         self.arrow:initialise();
@@ -66,9 +53,6 @@ function ISWidgetTooltipOutput:calculateLayout(_preferredWidth, _preferredHeight
         minWidth = minWidth + self.iconSize;
     end
 
-
-    --width = math.max(width, minWidth);
-
     height = math.max(height, self.iconSize +(self.margin*2));
 
     local x = self.margin;
@@ -76,10 +60,6 @@ function ISWidgetTooltipOutput:calculateLayout(_preferredWidth, _preferredHeight
     self.primary.icon:setX(x);
     self.primary.icon:setY((height/2)-(self.primary.icon:getHeight()/2));
     x = self.primary.icon:getX() + self.primary.icon:getWidth() + spacing;
-
-    local iconMid = self.primary.icon:getX() + (self.primary.icon:getWidth() / 2);
---     self.iconKeep:setX(iconMid - (self.iconKeep:getWidth()/2));
---     self.iconKeep:setY(height - self.iconKeep:getHeight() - 1);
 
     self.primary.label:setX(x);
     self.primary.label.originalX = self.primary.label:getX();
@@ -108,7 +88,6 @@ function ISWidgetTooltipOutput:calculateLayout(_preferredWidth, _preferredHeight
 end
 
 function ISWidgetTooltipOutput:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -179,7 +158,6 @@ function ISWidgetTooltipOutput:createScriptValues(_script)
 
     local fontHeight = -1; -- <=0 sets label initial height to font
     table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, table.amountStr, 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
-    --table.label.textColor = self.textColor;
     table.label:initialise();
     table.label:instantiate();
     self:addChild(table.label);
@@ -240,10 +218,6 @@ end
 function ISWidgetTooltipOutput:updateValues()
     if self.primary then
         self:updateScriptValues(self.primary);
-
-        --if self.iconKeep then
-            --self.iconKeep:setVisible(self.primary.isKeep);
-        --end
     end
 
     if self.secondary then
@@ -266,13 +240,12 @@ function ISWidgetTooltipOutput:updateValues()
     end
 end
 
-function ISWidgetTooltipOutput:new (x, y, width, height, player, logic, outputScript) --recipeData, outputScript)
+function ISWidgetTooltipOutput:new (x, y, width, height, player, logic, outputScript)
 	local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
     o.outputScript = outputScript;
     o.createScript = outputScript:getCreateToItemScript();
 
@@ -283,11 +256,8 @@ function ISWidgetTooltipOutput:new (x, y, width, height, player, logic, outputSc
     o.textureFluid = getTexture("media/textures/Item_Waterdrop_Grey.png");
     o.textureKeep = getTexture("media/ui/Entity/Crafting_Keep_24.png");
     o.textureDrain = getTexture("media/ui/Entity/Crafting_Drain_24.png");
---     o.textureKeep = getTexture("media/ui/Entity/keep_item_icon.png");
     o.textureConsume = getTexture("media/ui/Entity/icon_arrow_consume_grey.png");
     o.textureCreate = getTexture("media/ui/Entity/icon_arrow_create_grey.png");
-
-    --o.background = false;
 
     o.margin = 5;
     o.minimumWidth = 0;

@@ -47,8 +47,6 @@ function ISFluidBar:render()
         local isRemoved = self.ratioOrig>self.ratioNew; --self.ratioNew<self.ratioOrig;
         local y, h = self:getRatioY(isRemoved and self.ratioNew or self.ratioOrig);
 
-        --c = self.fluidColor;
-        --self:drawRect(self.innerX, y, self.innerW, h, 1.0, c.r, c.g, c.b);
         if self.ratioOrig==self.ratioNew then
             --no change
             if self.container then
@@ -91,7 +89,6 @@ function ISFluidBar:render()
 
                 if (not isRemoved) and self.showMixed and self.containerMixed then
                     local y, h = self:getRatioY(self.ratioNew);
-                    --self:drawRect(self.innerX+(self.innerW/2)-1, y, 2, h, 1.0, 0, 0, 0);
                     local c = self.containerMixed:getColor();
                     self:drawRect(self.innerX+(self.innerW/2), y, self.innerW/2, h, 1.0, c:getRedFloat(), c:getGreenFloat(), c:getBlueFloat());
                 end
@@ -226,7 +223,6 @@ function ISFluidBar:activateToolTip()
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
             self.toolTip:setCharacter(self.player);
-            --self.toolTip:doLayout();
         end
     end
 end

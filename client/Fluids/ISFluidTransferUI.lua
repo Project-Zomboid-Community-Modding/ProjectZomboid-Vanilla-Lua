@@ -13,13 +13,12 @@ local LABEL_HGT = FONT_HGT_MEDIUM + 6
 
 -- Container = FluidContainer instance
 function ISFluidTransferUI.OpenPanel(_player, _container, _source)
-    --_container = ISFluidContainer:new(_container);
     if not ISFluidUtil.validateContainer(_container) then
         print("FluidTransferUI not a valid (ISFluidContainer) container?")
         return;
     end
 
-    if not _container:isValid() then -- not _container or ((not _container:getOwner()) and (not _container:isEmbedded())) then
+    if not _container:isValid() then
         print("FluidTransferUI container nil or has no owner.")
         return;
     end
@@ -27,7 +26,6 @@ function ISFluidTransferUI.OpenPanel(_player, _container, _source)
         print("FluidTransferUI no valid player.")
         return;
     end
-    --print("Opening Fluid Transfer UI");
     local playerNum = _player:getPlayerNum();
 
     local x = getMouseX() + 10;
@@ -341,7 +339,6 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
     self.panelRight:setInvalid(false);
 
     if (not self.disableTransfer) and (from and to) and FluidContainer.CanTransfer(from, to) then
-
         self.errorLabel:setName(self.errorDefault);
 
         local fromAmount = from:getAmount();
@@ -546,10 +543,10 @@ function ISFluidTransferUI:onRightMouseUp(x, y)
         local context = ISContextMenu.get(playerNum, self:getAbsoluteX()+x, self:getAbsoluteY()+y)
 
         local s = "[Debug] Set Test High Skill To '"..tostring(not ISFluidTransferUI.cheatSkill).."'";
-        local option = context:addOption(s, self, self.toggleCheatSkill, (not ISFluidTransferUI.cheatSkill))
+        context:addOption(s, self, self.toggleCheatSkill, (not ISFluidTransferUI.cheatSkill))
 
         local s = "[Debug] Set Quick Transfer To '"..tostring(not ISFluidTransferUI.cheatTransfer).."'";
-        local option = context:addOption(s, self, self.toggleCheatTransfer, (not ISFluidTransferUI.cheatTransfer))
+        context:addOption(s, self, self.toggleCheatTransfer, (not ISFluidTransferUI.cheatTransfer))
 
         context.mouseOver = 1
     end
@@ -602,9 +599,7 @@ function ISFluidTransferUI:new(x, y, width, height, _player, _container, source)
     o.playerNum = o.player:getPlayerNum();
     o.container = _container;
     o.source = source;
-    --o.owner = _container:getOwner();
-    o.isIsoPanel = not (o.container:isItem() or o.container:isResource()); --instanceof(_container:getOwner(), "IsoObject");
-    --o.tempContainer = FluidContainer.new();
+    o.isIsoPanel = not (o.container:isItem() or o.container:isResource());
     o.info = {
         maxTransfer = 0;
         transferring = 0;

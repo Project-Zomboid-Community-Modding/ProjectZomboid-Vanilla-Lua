@@ -11,7 +11,6 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local Z_SCALE = 0.8164966666666666
 local TEXTURE_OFFSET_X = 1
-local ONE_STAIRCASE_STEP = Z_SCALE * 3 / 12 -- 0.20412416666666666
 
 TileGeometryEditor = ISPanel:derive("TileGeometryEditor")
 
@@ -94,7 +93,6 @@ end
 function OptionsPanel:onMouseDownOutside(x, y)
 	if self:isMouseOver() then return end
 	self:setVisible(false)
---	self:removeFromUIManager()
 end
 
 function OptionsPanel:new(x, y, width, height)
@@ -122,24 +120,6 @@ function Scene:prerenderEditor()
 	self:java2("setGizmoAxisVisible", "X", true)
 	self:java2("setGizmoAxisVisible", "Y", true)
 	self:java2("setGizmoAxisVisible", "Z", true)
---	self.javaObject:fromLua1("setSelectedAttachment", nil)
---[[
-	if self:isPolygonObject(self.selectedObjectName) then
-		local gridPlane = self:java1("getPolygonPlane", self.selectedObjectName)
-		if gridPlane == "XY" then
-			self:java2("setGizmoAxisVisible", "X", false)
-			self:java2("setGizmoAxisVisible", "Y", false)
-		end
-		if gridPlane == "XZ" then
-			self:java2("setGizmoAxisVisible", "X", false)
-			self:java2("setGizmoAxisVisible", "Z", false)
-		end
-		if gridPlane == "YZ" then
-			self:java2("setGizmoAxisVisible", "Y", false)
-			self:java2("setGizmoAxisVisible", "Z", false)
-		end
-	end
---]]
 	self:java2("setObjectVisible", "depthTexture", false)
 end
 
@@ -281,14 +261,12 @@ function Scene:renderSelectedTile(tileName, texture)
 			return
 		end
 	end
----[[
 	self:drawTextureScaled(texture,
 		sx + texture:getOffsetX() * pixelSize,
 		sy + texture:getOffsetY() * pixelSize,
 		texture:getWidth() * pixelSize,
 		texture:getHeight() * pixelSize,
 		1.0, 1.0, 1.0, 1.0)
---]]
 end
 
 function Scene:renderSpriteGridTile(sprite, dx, dy, dz)
@@ -301,7 +279,6 @@ function Scene:renderSpriteGridTile(sprite, dx, dy, dz)
 		texture:getWidth() * pixelSize,
 		texture:getHeight() * pixelSize,
 		1.0, 1.0, 1.0, 1.0)
---	self:drawRectBorder(sx, sy, 128 * pixelSize, 256 * pixelSize, 1.0, 1.0, 1.0, 1.0)
 end
 
 -- If this is an overlay sprite, render one of the underlying sprites.
@@ -333,7 +310,6 @@ function Scene:renderSurfaceOffset()
 	local sprite = getSprite(tileName)
 	if not sprite then return end
 	local props = sprite:getProperties()
---	if not props:isTable() then return end
 	local ItemHeight = props:getItemHeight()
 	local Surface = props:getSurface()
 	if props:isSurfaceOffset() then
@@ -354,12 +330,10 @@ function Scene:renderSurfaceOffsetAux(value, r, g, b)
 end
 
 function Scene:renderBox3D(tx, ty, tz, rx, ry, rz, minX, minY, minZ, maxX, maxY, maxZ, r, g, b)
-	---
 	self.tempTranslate = self.tempTranslate or Vector3f.new()
 	self.tempRotate = self.tempRotate or Vector3f.new()
 	self.tempExtentsMin = self.tempExtentsMin or Vector3f.new()
 	self.tempExtentsMax = self.tempExtentsMax or Vector3f.new()
-	---
 	self.tempTranslate:set(tx, ty, tz)
 	self.tempRotate:set(rx, ry, rz)
 	self.tempExtentsMin:set(minX, minY, minZ)
@@ -373,12 +347,10 @@ function Scene:renderBox3D(tx, ty, tz, rx, ry, rz, minX, minY, minZ, maxX, maxY,
 end
 
 function Scene:renderSolidBox3D(tx, ty, tz, rx, ry, rz, minX, minY, minZ, maxX, maxY, maxZ, r, g, b, a)
-	---
 	self.tempTranslate = self.tempTranslate or Vector3f.new()
 	self.tempRotate = self.tempRotate or Vector3f.new()
 	self.tempExtentsMin = self.tempExtentsMin or Vector3f.new()
 	self.tempExtentsMax = self.tempExtentsMax or Vector3f.new()
-	---
 	self.tempTranslate:set(tx, ty, tz)
 	self.tempRotate:set(rx, ry, rz)
 	self.tempExtentsMin:set(minX, minY, minZ)
@@ -529,8 +501,6 @@ function Scene:renderPixelGrid(tileName)
 			self:renderPixelGrid2(sx, sy, sx2, sy2, pixelSize, texture, mask)
 			return
 		end
-		local gridWidth = spriteGrid:getWidth()
-		local gridHeight = spriteGrid:getHeight()
 		local gridPosX = spriteGrid:getSpriteGridPosX(sprite)
 		local gridPosY = spriteGrid:getSpriteGridPosY(sprite)
 		local gridPosZ = spriteGrid:getSpriteGridPosZ(sprite)
@@ -715,7 +685,7 @@ function TilePicker:createChildren()
 		local hasBed = false
 		for j=1,tileNames:size() do
 			local sprite = getSprite(tileNames:get(j-1))
-			if sprite then -- and sprite:getProperties():has(IsoFlagType.bed) then
+			if sprite then
 				hasBed = true
 				break
 			end
@@ -776,7 +746,7 @@ function TilePicker2:createChildren()
 		local hasBed = false
 		for j=1,tileNames:size() do
 			local sprite = getSprite(tileNames:get(j-1))
-			if sprite then -- and sprite:getProperties():has(IsoFlagType.bed) then
+			if sprite then
 				hasBed = true
 				break
 			end
@@ -865,7 +835,6 @@ function TileGeometryEditor:createChildren()
 
 	self.scene.javaObject:fromLua2("createModel", "curtain", "SheetDoorClosed")
 	local spriteModel = getScriptManager():getSpriteModel("fixtures_windows_curtains_01_16")
---	self.scene:java2("setModelSpriteModel", "curtain", spriteModel)
 	self.scene.javaObject:fromLua1("getObjectTranslation", "curtain"):set(spriteModel:getTranslate())
 	self.scene.javaObject:fromLua1("getObjectRotation", "curtain"):set(spriteModel:getRotate())
 	self.scene.javaObject:fromLua1("getObjectScale", "curtain"):set(spriteModel:getScale() * 1.5)
@@ -1076,10 +1045,9 @@ function TileGeometryEditor:prerender()
 	self.scene.selectedObjectName = self.editMode.geometry.listBox.items[self.editMode.geometry.listBox.selected].item
 	self.scene:prerenderEditor()
 
-	local translate = self.scene:java1("getObjectTranslation", self.scene.selectedObjectName)
-	local rotate = self.scene:java1("getObjectRotation", self.scene.selectedObjectName)
+	self.scene:java1("getObjectTranslation", self.scene.selectedObjectName)
+	self.scene:java1("getObjectRotation", self.scene.selectedObjectName)
 	-- FIXME: axes are always rendered relative to the gizmo transform, this should be in world space.
---	self.scene:java6("addAxis", translate:x(), translate:y(), translate:z(), rotate:x(), rotate:y(), rotate:z())
 
 	self:configGizmo()
 
@@ -1103,22 +1071,11 @@ function TileGeometryEditor:configGizmo()
 		end
 		if self.scene.gizmo == "translate" then
 			self.scene:java2("setGizmoOrigin", "character", self.scene.selectedObjectName)
---			self.scene:java1("setGizmoPos", self.scene:java1("getObjectTranslation", self.scene.selectedObjectName))
---			self.scene:java1("setGizmoRotate", self.scene:java1("getObjectRotation", self.scene.selectedObjectName))
 			return
 		end
 	end
---[[
-	if self.listBox.selected == 1 then
-		self.scene:java2("setGizmoOrigin", "character", self.scene.selectedObjectName)
-	else
-		self.scene:java2("setGizmoOrigin", "polygon", self.scene.selectedObjectName)
-	end
---]]
 	self.scene:java1("setGizmoPos", self.scene:java1("getObjectTranslation", self.scene.selectedObjectName))
 	self.scene:java1("setGizmoRotate", self.scene:java1("getObjectRotation", self.scene.selectedObjectName))
---	self.scene.javaObject:fromLua1("setGizmoVisible", "rotate")
---	self.scene.javaObject:fromLua3("setGizmoXYZ", 1.0, 0.0, 0.0)
 end
 
 function TileGeometryEditor:render()

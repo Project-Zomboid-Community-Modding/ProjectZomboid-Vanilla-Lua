@@ -52,16 +52,13 @@ function ISGameDebugPanel:createChildren()
         v.label = label;
         v.labelValue = value;
         v.slider = slider;
-        --slider:setCurrentValue(v.java[v.get](v.java[v.get]));
         slider:setValues(v.min, v.max, v.step, v.step*10, true);
         local val = v.java[v.get](v.java) + v.applyMod;
-        --print(v.var.." = "..tostring(val))
         slider:setCurrentValue(val);
 
         y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
 
-    --y, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
     if self.buttons then
         for k,v in ipairs(self.buttons)  do
             y, obj = ISDebugUtils.addButton(self,v,x,y,w,BUTTON_HGT,v.title,ISGameDebugPanel.onClick);
@@ -90,7 +87,6 @@ function ISGameDebugPanel:createChildren()
 
         y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
     end
-
 
     self:setScrollHeight(y+1);
 end
@@ -157,8 +153,6 @@ function ISGameDebugPanel:prerender()
         elseif v.tag=="disable_media_line_registering" then
             v.tickbox.selected[1] = getZomboidRadio():getDisableMediaLineLearning();
         end
-        --val = v.lua.cheat;
-        --v.tickbox.selected[1] = val;
     end
 end
 

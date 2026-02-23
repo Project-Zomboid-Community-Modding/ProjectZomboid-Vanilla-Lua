@@ -8,14 +8,12 @@ function ISMenuContextInventory.new()
     self.items      = nil;
     self.inventory  = nil;
     self.test       = nil;
-    --self.item       = nil;
 	
 	function self.init()
 		self.loadElements( ISInventoryMenuElements );
 	end	
 
 	function self.createMenu( _player, _context, _items, _item )
-        --print("Inventory Context menu");
         local playerObj 	= getSpecificPlayer(_player);
         self.playerNum      = _player;
         self.player         = playerObj;
@@ -23,7 +21,6 @@ function ISMenuContextInventory.new()
         self.items          = _items;
         self.inventory 	    = playerObj:getInventory();
         self.test 		    = false;
-        --self.item           = _item;
 
         for i,k in pairs(_items) do
             -- inventory item list

@@ -5,24 +5,14 @@ StreamMapWindow = ISCollapsableWindow:derive("StreamMapWindow");
 local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
 
 function StreamMapWindow:onMouseDoubleClickOpenObject(item)
-
-
     if instanceof (item, "KahluaTableImpl") then
-
         local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
-
         src:initialise();
         src:addToUIManager();
-
-
      else
-
        local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
-
        src:initialise();
        src:addToUIManager();
-
-
     end
 end
 
@@ -55,14 +45,11 @@ function StreamMapWindow:fillInfo()
             end
         end
     end
-
 end
 
 function StreamMapWindow:initialise()
-
     ISCollapsableWindow.initialise(self);
     self.title = "Map Debugger";
-
 end
 
 function StreamMapWindow:onMapMouseDown(x, y)
@@ -80,7 +67,6 @@ function StreamMapWindow:onMapMouseDown(x, y)
 end
 
 function StreamMapWindow:onMapMouseMove(dx, dy)
-
     if self.panning then
         self.parent.xpos = self.parent.xpos - ((dx)/self.parent.zoom);
         self.parent.ypos = self.parent.ypos - ((dy)/self.parent.zoom);
@@ -100,22 +86,19 @@ function StreamMapWindow:onMapRightMouseUp(x, y)
 end
 
 function StreamMapWindow:onRenderMouseWheel(del)
-
     if(del > 0) then
-
         self.parent.zoom = self.parent.zoom* 0.8;
     else
         self.parent.zoom = self.parent.zoom* 1.2;
-
     end
 
-
-    if self.parent.zoom > 30 then self.parent.zoom = 30 end
+    if self.parent.zoom > 30 then
+        self.parent.zoom = 30
+    end
     return true;
 end
 
 function StreamMapWindow:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local th = self:titleBarHeight()
@@ -144,7 +127,6 @@ function StreamMapWindow:createChildren()
     self.objectView.anchorBottom = true;
     self:addChild(self.objectView);
     self.objectView:setOnMouseDoubleClick(self, StreamMapWindow.onMouseDoubleClickOpenObject);
-
 end
 
 function StreamMapWindow:doDrawItem(y, item, alt)
@@ -153,11 +135,9 @@ function StreamMapWindow:doDrawItem(y, item, alt)
 
     end
 
-    --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(item.text, 15, y, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function StreamMapWindow:renderTex()
@@ -221,12 +201,10 @@ end
 
 function StreamMapWindow:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.backgroundColor = {r=0, g=0, b=0, a=1.0};
-    local cell = getCell();
 
     o.xpos = getSpecificPlayer(0):getX();
     o.ypos =  getSpecificPlayer(0):getY();

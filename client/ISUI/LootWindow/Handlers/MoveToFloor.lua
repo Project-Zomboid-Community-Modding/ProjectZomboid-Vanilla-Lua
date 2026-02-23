@@ -20,7 +20,7 @@ function Handler:perform()
         table.insert(items, itemArrayList:get(i-1))
     end
     -- TODO: sort by lowest to highest weight
-	ISInventoryPaneContextMenu.onMoveItemsTo(items, ISInventoryPage.floorContainer[self.playerNum+1], self.playerNum)
+    ISInventoryPaneContextMenu.onMoveItemsTo(items, ISInventoryPage.GetFloorContainer(self.playerNum), self.playerNum)
 end
 
 function Handler:new()

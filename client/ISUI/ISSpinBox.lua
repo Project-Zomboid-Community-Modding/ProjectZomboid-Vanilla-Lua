@@ -61,7 +61,6 @@ function ISSpinBox:prerender()
 	self:drawRectBorderStatic(0, 0, self.width, self.height, alpha, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
 	if self:isMouseOver() and self.tooltip then
-		local text = self.tooltip
 		if not self.tooltipUI then
 			self.tooltipUI = ISToolTip:new()
 			self.tooltipUI:setOwner(self)

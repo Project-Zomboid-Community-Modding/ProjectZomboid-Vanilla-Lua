@@ -137,10 +137,6 @@ TutorialTests.PlayerInfoOpen = function()
 end
 
 TutorialTests.HealthOpen = function()
---    if JoypadState.players[1] then
---        local focus = getPlayerInfoPanel(0).panel:getActiveView()
---        setJoypadFocus(0, focus)
---    end
     ISEquippedItem.instance.healthBtn:setVisible(true);
     ISCharacterInfoWindow.instance.closeButton:setVisible(false);
     ISEquippedItem.instance.healthBtn.blinkImage = true;
@@ -523,13 +519,10 @@ function InventoryUseStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
---         getPlayerLoot(0).lootAll:setVisible(false);
     end
     ISInventoryPaneContextMenu.dontCreateMenu = false;
     Tutorial1.contextMenuEat = true;
     JoypadState.disableGrab = true;
-
-    local sw = getCore():getScreenWidth()
     
     if JoypadState.players[1] then
         JoypadState.disableYInventory = false;
@@ -705,17 +698,11 @@ function InventoryUseStep:seeWeapon()
     local isOpen = getPlayerLoot(0) ~= nil and not getPlayerLoot(0).isCollapsed;
     if isOpen then
         getPlayerLoot(0).blink = false;
---        if not InventoryUseStep.clickedOnInventory then
-            getPlayerLoot(0):setBlinkingContainer(true);
---        end
+        getPlayerLoot(0):setBlinkingContainer(true);
     else
         getPlayerLoot(0).blink = true;
     end
     local complete = getPlayerLoot(0).inventoryPane.inventory:contains("Pan") and not getPlayerLoot(0).isCollapsed;
-    if complete then
---        TutorialTests.RemoveMarkers();
---        TutorialTests.stopHighlight(InventoryUseStep.panContainer);
-    end
     return complete;
 end
 
@@ -789,7 +776,6 @@ function FightStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
---         getPlayerLoot(0).lootAll:setVisible(false);
     end
     
     FightStep:spawnMom();
@@ -837,7 +823,6 @@ function FightStep:WalkToWindow()
     local complete = math.abs(getPlayer():getX() - FightStep.windowX) <= 0.6 and (math.abs(getPlayer():getY() - FightStep.windowY) > 0.20 and math.abs(getPlayer():getY() - FightStep.windowY) < 0.8);
     if complete then
         TutorialTests.RemoveMarkers();
---        TutorialTests.addHoming(getSquare(161, 154, 0), true);
     end
     return complete;
 end
@@ -1083,7 +1068,6 @@ function SneakStep:begin()
             getPlayerInventory(0):setVisible(true);
             getPlayerLoot(0):setVisible(true);
         end
---         getPlayerLoot(0).lootAll:setVisible(false);
         getPlayer():setZombieKills(1);
     end
     
@@ -1154,11 +1138,9 @@ end
 function SneakStep:spawnDad()
     SneakStep.dadzombie = addZombiesInOutfit(SneakStep.zombieDadSpawnX, SneakStep.zombieDadSpawnY, 0, 1, "TutorialDad", 0):get(0);
     SneakStep.dadzombie:setDir(IsoDirections.W);
---    SneakStep.loopedSound = SneakStep.dadzombie:getEmitter():playSound("MaleZombieCombined");
     
     Events.OnZombieDead.Add(SneakStep.OnDadDead);
 
-    --    zombie.getEmitter().playSound(soundName);
     SneakStep.dadzombie:setDressInRandomOutfit(false);
     SneakStep.dadzombie:dressInNamedOutfit("TutorialDad");
     SneakStep.dadzombie:getVisual():setHairModel("Baldspot");
@@ -1187,8 +1169,6 @@ function SneakStep:GoThroughDoor()
         TutorialTests.stopHighlight(FightStep.lockedDoor2);
         TutorialTests.RemoveMarkers();
         TutorialTests.addMarker(getSquare(163, 150, 0), 2);
---        FightStep.lockedDoor:setHighlighted(false);
---        FightStep.lockedDoor2:setHighlighted(false);
     elseif FightStep.markerDone then
         getPlayer():setIgnoreContextKey(false);
     end
@@ -1304,7 +1284,6 @@ function SneakStep:DadDead()
     local complete = SneakStep.isDadDead;
     if complete then
         Events.OnWeaponHitXp.Remove(SneakStep.OnSwingAtDad);
---        SneakStep.dadzombie:getEmitter():stopSound(SneakStep.loopedSound)
         getPlayer():setAuthorizeMeleeAction(false);
         getPlayer():setAuthorizeShoveStomp(true);
         SneakStep.fenceGate:ToggleDoorSilent();
@@ -1675,7 +1654,6 @@ function BandageStep.spawnBrothers()
     BandageStep.brother1:setDir(IsoDirections.W);
 
     BandageStep.brother1:setDressInRandomOutfit(false);
---    BandageStep.brother1:dressInNamedOutfit("TutorialBrother1");
     BandageStep.brother1:getVisual():setSkinTextureIndex(2);
     BandageStep.brother1:resetModelNextFrame();
     BandageStep.brother1:setForceEatingAnimation(true);
@@ -1690,7 +1668,6 @@ function BandageStep.spawnBrothers()
     BandageStep.brother2:setDir(IsoDirections.E);
 
     BandageStep.brother2:setDressInRandomOutfit(false);
---    BandageStep.brother2:dressInNamedOutfit("TutorialBrother2");
     BandageStep.brother2:getVisual():setSkinTextureIndex(2);
     BandageStep.brother2:resetModelNextFrame();
     BandageStep.brother2:setForceEatingAnimation(true);
@@ -1890,7 +1867,6 @@ function ShotgunStep:begin()
     ShotgunStep.squares = {};
     for x=183, 185 do
         local sq = getSquare(x, 153, 0);
-        local objs = sq:getObjects();
         local obj = sq:getWall(true);
         if obj then
             TutorialTests.highlight(obj, 0.1);
@@ -1990,16 +1966,7 @@ end
 function ShotgunStep.ClimbedFence()
     getPlayer():setIgnoreAutoVault(false);
     getPlayer():setIgnoreContextKey(false);
---    if getPlayer():getDir() ~= IsoDirections.N then
---        getPlayer():setIgnoreInputsForDirection(false);
---        getPlayer():setDir(IsoDirections.N);
---    else
---        getPlayer():setIgnoreInputsForDirection(true);
---        ShotgunStep.block = true;
---    end
---    if ShotgunStep.block then
---        getPlayer():setIgnoreInputsForDirection(true);
---    end
+
     if not ShotgunStep.vaulted and getPlayer():getCurrentState() == ClimbOverWallState.instance() then
         ShotgunStep.vaulted = true;
     end
@@ -2133,7 +2100,6 @@ function ShotgunStep.BrothersDead()
     return complete;
 end
 
-
 function ShotgunStep:Shout()
     getPlayer():setSneaking(false);
     getPlayer():setCanShout(true);
@@ -2182,7 +2148,6 @@ function ShotgunStep:Shout()
         ISBackButtonWheel.disableMoveable = false;
         ISBackButtonWheel.disableZoomOut = false;
         ISBackButtonWheel.disableZoomIn = false;
-        --        end
     end
     return complete;
 end
@@ -2221,9 +2186,6 @@ function ShotgunStep:isPlayedDead()
     getPlayer():setIgnoreContextKey(false);
     getPlayer():setIgnoreAutoVault(false);
     if getPlayer():isDead() then
---        if FightStep.timeOfDeath + 200 > getTimestamp() then
---            TutorialMessage.instance:setVisible(false)
---        end
         return true;
     else
         addSound(getPlayer(), getPlayer():getX(), getPlayer():getY(), 0, 100, 100);
@@ -2247,9 +2209,6 @@ function ShotgunStep:isPlayedDeadJoypad()
     getPlayer():setIgnoreContextKey(false);
     getPlayer():setIgnoreAutoVault(false);
     if getPlayer():isDead() then
-        --        if FightStep.timeOfDeath + 200 > getTimestamp() then
-        --            TutorialMessage.instance:setVisible(false)
-        --        end
         return true;
     else
         addSound(getPlayer(), getPlayer():getX(), getPlayer():getY(), 0, 100, 100);

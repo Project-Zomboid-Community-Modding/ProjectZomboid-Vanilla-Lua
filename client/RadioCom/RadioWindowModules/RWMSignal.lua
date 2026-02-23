@@ -10,7 +10,6 @@ function RWMSignal:initialise()
 end
 
 function RWMSignal:createChildren()
-
     self.sineWaveDisplay = ISSineWaveDisplay:new (UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, self:getWidth()-UI_BORDER_SPACING*2-2, BUTTON_HGT);
     self.sineWaveDisplay:initialise();
     self:addChild(self.sineWaveDisplay);
@@ -39,7 +38,6 @@ end
 function RWMSignal:doSignal( _time )
     self.sineWaveDisplay:setWaveParameters(0.15, 0.5, 0.3, 1.0, 1, 10, 1, 6);
     self.updCntr = not _time and 150 or 0;
-    --self.incomingSignal = true;
 end
 
 function RWMSignal:clear()
@@ -112,7 +110,6 @@ end
 
 function RWMSignal:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = RWMPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

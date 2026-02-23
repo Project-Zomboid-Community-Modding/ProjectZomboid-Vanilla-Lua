@@ -3,21 +3,17 @@ require "ISUI/ISPanel"
 ISAddGeneticDisorderUI = ISPanel:derive("ISAddGeneticDisorderUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISAddGeneticDisorderUI:initialise()
     ISPanel.initialise(self);
     self:create();
 end
 
-
 function ISAddGeneticDisorderUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
 function ISAddGeneticDisorderUI:render()
-
 end
 
 function ISAddGeneticDisorderUI:create()

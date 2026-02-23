@@ -8,27 +8,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-
---[[
-local enabled = true; --getDebug();
-
-function WeatherPeriodDebug.OnKeepKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyKeepDown = "..tostring(key));
-    if key==42 or key==54 then
-        WeatherPeriodDebug.shiftDown = 4;
-    end
-end
-
-function WeatherPeriodDebug.OnKeyDown(key)
-    --backspace 14, shift 42, 54
-    --print("KeyDown = "..tostring(key));
-    if WeatherPeriodDebug.shiftDown>0 and key ==12 then
-        WeatherPeriodDebug.OnOpenPanel();
-    end
-end
---]]
-
 function WeatherPeriodDebug.OnOpenPanel()
     if WeatherPeriodDebug.instance==nil then
         WeatherPeriodDebug.instance = WeatherPeriodDebug:new (100, 100, 900, 300, getPlayer());
@@ -85,21 +64,18 @@ function WeatherPeriodDebug:createChildren()
     self.historyM1 = ValuePlotter:new(x+UI_BORDER_SPACING,y+UI_BORDER_SPACING,600,FONT_HGT_SMALL*5+UI_BORDER_SPACING*4,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
-    --self.historyM1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50);
     self:addChild(self.historyM1);
     self.historyM1:setVisible(true);
 
     self.historyH1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyH1:initialise();
     self.historyH1:instantiate();
-    --self.historyH1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
     self:addChild(self.historyH1);
     self.historyH1:setVisible(false);
 
     self.historyD1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyD1:initialise();
     self.historyD1:instantiate();
-    --self.historyD1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
     self:addChild(self.historyD1);
     self.historyD1:setVisible(false);
 
@@ -114,16 +90,12 @@ function WeatherPeriodDebug:createChildren()
             self.charts[i]:defineVariable(vinfo.desc, vinfo.col, vinfo.min, vinfo.max);
         end
 
-        --self.charts[i]:setHorzLine(0.10,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.125,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.25,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.30,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.375,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.50,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.60,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.625,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.75,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.80,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.875,{r=0.05, g=0.05, b=0.05, a=1});
     end
 
@@ -157,7 +129,7 @@ function WeatherPeriodDebug:createChildren()
     local cacheY, cacheX = y, x;
     local toggleButtonWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimatePlotter_Toggle"))
 
-    y = th+BUTTON_HGT+UI_BORDER_SPACING; --self.historyM1:getY()-2;
+    y = th+BUTTON_HGT+UI_BORDER_SPACING;
     x = self.historyM1:getX() + self.historyM1:getWidth() + getTextManager():MeasureStringX(UIFont.Small, "1.00") + UI_BORDER_SPACING;
     local widest = 0;
     local vars = self.historyM1:getVars();
@@ -194,8 +166,6 @@ end
 function WeatherPeriodDebug:initVariables()
     self.varInfo = {};
     self.colTable = {};
-    --self:addColor(1.0,1.0,0.9);
-    --self:addColor(0.4,0.4,0.4);
     local cc = {1.0,0.5,0.0};
     for ri=1,#cc do
         for gi=1,#cc do
@@ -210,14 +180,7 @@ function WeatherPeriodDebug:initVariables()
     self:addVarInfo("WeatherNoise", getText("IGUI_WeatherPlotter_WeatherNoise"),0,1,"getWeatherNoise");
     self:addVarInfo("CurrentStrength",getText("IGUI_WeatherPlotter_CurrentStrength"),0,1,"getCurrentStrength");
     self:addVarInfo("RainThreshold",getText("IGUI_WeatherPlotter_RainThreshold"),0,1,"getRainThreshold");
-    --self:addVarInfo("ThunderThreshold","ThunderThreshold",0,1,"getThunderThreshold");
-    --self:addVarInfo("RumbleThreshold","RumbleThreshold",0,1,"getRumbleThreshold");
     self:addVarInfo("PrecipitationFinal",getText("IGUI_WeatherPlotter_PrecipitationFinal"),0,1,"getPrecipitationFinal");
-    --self:addVarInfo("","",0,1,"");
-    --self:addVarInfo("","",0,1,"");
-    --self:addVarInfo("","",-1,1,"");
-    --self:addVarInfo("meanTemperature","meanTemperature",-50,50,function(_mgr) return _mgr:getSeason():getDayMeanTemperature() end);
-    --self:addVarInfo("","",-1,1,"");
 end
 
 function WeatherPeriodDebug:addColor(_r,_g,_b)
@@ -295,17 +258,13 @@ function WeatherPeriodDebug:updateValues(_mgr)
         if dayInfo:getDay()~=self.dayStamp then
             self.dayStamp = dayInfo:getDay();
             plotVertBarH1 = {r=0.2, g=0.2, b=0.2, a=1};
-            --plotVertBarM1 = {r=0.6, g=0.6, b=0.6, a=1};
 
             if dayInfo:getMonth()~=self.monthStamp then
                 self.monthStamp = dayInfo:getMonth();
                 plotVertBarD1 = {r=0.2, g=0.2, b=0.2, a=1};
-                --plotVertBarH1 = {r=0.6, g=0.6, b=0.6, a=1};
 
                 if dayInfo:getYear()~=self.yearStamp then
                     self.yearStamp = dayInfo:getYear();
-                    --plotVertBarD1 = {r=0.6, g=1, b=0.6, a=1};
-                    --plotVertBarH1 = {r=0.6, g=1, b=0.6, a=1};
                 end
             end
 
@@ -386,10 +345,8 @@ function WeatherPeriodDebug:onButtonToggle(_btn)
     end
 end
 
-
 function WeatherPeriodDebug:onResize()
     ISUIElement.onResize(self);
-    local th = self:titleBarHeight();
 end
 
 function WeatherPeriodDebug:update()
@@ -433,11 +390,8 @@ function WeatherPeriodDebug:clear()
     self.currentTile = nil;
 end
 
-
-
 function WeatherPeriodDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -458,7 +412,6 @@ function WeatherPeriodDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_WeatherPlot");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 
@@ -476,14 +429,3 @@ function WeatherPeriodDebug:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
---local function WeatherPeriodDebugOntick()
-    --getPlayer():getBodyDamage():RestoreToFullHealth();
---end
---[[
-if enabled then
-    --Events.OnTick.Add(WeatherPeriodDebugOntick);
-    Events.OnCustomUIKey.Add(WeatherPeriodDebug.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(WeatherPeriodDebug.OnKeepKeyDown);
-    Events.OnClimateTickDebug.Add(WeatherPeriodDebug.OnClimateTickDebug);
-    --Events.OnObjectLeftMouseButtonUp.Add(WeatherPeriodDebug.onMouseButtonUp);
-end--]]

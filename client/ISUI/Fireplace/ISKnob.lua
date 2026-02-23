@@ -15,8 +15,6 @@ function ISKnob:render()
 		end
     end
 	
-	
-	
     if self.values[self.selected] then
 		local centerX = self.width / 2
 		local centerY = self.height / 2
@@ -26,9 +24,6 @@ function ISKnob:render()
         self:DrawTextureAngle(self.tex, centerX, centerY, self.values[self.selected].angle);
     end
     ISUIElement.render(self);
---    for i,v in ipairs(self.values) do
---        self:drawTextCentre(self.values[i].value .. "", self.values[i].textX, self.values[i].textY, 1,1,1,1,UIFont.Small)
---    end
 end
 
 function ISKnob:prerender()
@@ -39,8 +34,6 @@ function ISKnob:addValue(angle, value)
     local newValue = {};
     newValue.angle =  angle;
     newValue.value = value;
---    newValue.textX = getCore():getXAngle(self.tex:getWidth(), angle + 45);
---    newValue.textY = getCore():getYAngle(self.tex:getWidth(), angle + 45);
     table.insert(self.values, newValue);
 
     if self.selected == 0 then
@@ -51,7 +44,6 @@ function ISKnob:addValue(angle, value)
 end
 
 function ISKnob:forceClick()
-
 end
 
 function ISKnob:setJoypadFocused(focused)
@@ -111,7 +103,6 @@ function ISKnob:setKnobPosition(value)
 end
 
 function ISKnob:onMouseDown(x, y)
---    setMouseXY(self:getAbsoluteX() + ((self.amplitude / #self.values) * (self.selected - 1)), self.height/2 + self:getAbsoluteY())
     self.draggingX = self:getMouseX();
     self.originalX = self:getMouseX();
     self.dragging = true;
@@ -124,7 +115,6 @@ function ISKnob:onMouseUp(x, y)
         self.lastValue = self.selected;
     end
 end
-
 
 function ISKnob:onMouseUpOutside(x, y)
     self.dragging = false;

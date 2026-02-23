@@ -15,18 +15,16 @@ end
 SourceWindow.map = {}
 
 function SourceWindow:initialise()
-
     ISCollapsableWindow.initialise(self);
-
     self.title = getShortenedFilename(self.filename);
 end
+
 function SourceWindow:onSourceMouseWheel(del)
     self:setYScroll(self:getYScroll() - (del*18*6));
     return true;
 end
 
 function SourceWindow:reloadFile()
-
     reloadLuaFile(self.filename);
     triggerEvent("OnSourceWindowFileReload");
     local y = self.sourceView:getYScroll();
@@ -34,8 +32,8 @@ function SourceWindow:reloadFile()
     self.sourceView:setYScroll(y);
     return true;
 end
-function SourceWindow:fill()
 
+function SourceWindow:fill()
     self.sourceView:clear();
     local br = getGameFilesTextInput(self.filename);
     local count = 1;
@@ -56,12 +54,12 @@ function SourceWindow:fill()
     end
     endTextFileInput();
 end
+
 function SourceWindow:createChildren()
     local buttonHgt = math.max(24, FONT_HGT_SMALL + 3 * 2)
     local entryHgt = FONT_HGT_CODE + 3 * 2
     local bottomHgt = math.max(buttonHgt, entryHgt)
 
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     self.sourceView = ISScrollingListBox:new(0, self:titleBarHeight(), self.width, self.height - self:resizeWidgetHeight() - bottomHgt - self:titleBarHeight());
@@ -120,9 +118,7 @@ end
 function SourceWindow:renderSrc()
     self:setStencilRect(0,0,self.width+1, self.height);
     self:drawRect(0, -self:getYScroll(), self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-    --self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-    local y = 0;
     if self.items == nil then
         self:clearStencilRect();
         self:repaintStencilRect(0,0,self.width, self.height)
@@ -146,7 +142,6 @@ function SourceWindow:renderSrc()
     self:repaintStencilRect(0,0,self.width, self.height)
 end
 
-
 function SourceWindow:doDrawItem(y, item)
     if self.selected == item.index then
         self:drawRect(0, y, self:getWidth(), self.itemheight, 0.2, 0.6, 0.7, 0.8);
@@ -161,11 +156,9 @@ function SourceWindow:doDrawItem(y, item)
         self:drawRect(0, y, self:getWidth(), self.itemheight, 0.6, 0.6, 0.8, 0.7);
     end
 
-  --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function SourceWindow:scrollToLine(line)

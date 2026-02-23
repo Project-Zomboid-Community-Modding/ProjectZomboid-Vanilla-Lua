@@ -9,12 +9,6 @@ local function roundNum(num, numDecimalPlaces)
     return math.floor(num * mult + 0.5) / mult
 end
 
-local function clamp01(_n)
-    if _n<0 then _n=0; end
-    if _n>1 then _n=1; end
-    return _n;
-end
-
 local function printval(_v, _d)
     return tostring(roundNum(_v,_d));
 end
@@ -47,7 +41,6 @@ function PuddlesControl:createChildren()
     obj.center = true;
     y = self:addHorzBar(y+barMod)+barMod+1;
 
-    --print("w = "..tostring(w))
     for i=0,puddles:getFloatMax()-1 do
         v = puddles:getPuddlesFloat(i);
         y, obj = self:addFloatOption(v:getName(),v,x,y,w)
@@ -77,7 +70,6 @@ end
 
 function PuddlesControl:addTickBox(_id,_x,_y,_w,_h,_title, options)
     local tickBox = ISTickBox:new(_x, _y, _w, _h, _title, self, PuddlesControl.onTicked);
-    --self["tickBox".._id] = tickBox;
     tickBox.choicesColor = {r=1, g=1, b=1, a=1};
     tickBox.backgroundColor = {r=0, g=0, b=0, a=0};
     tickBox:initialise();
@@ -93,7 +85,6 @@ end
 
 function PuddlesControl:addSlider(_id,_x,_y, _w, _h)
     local slider = ISSliderPanel:new(_x, _y, _w, _h, self, PuddlesControl.onSliderChange );
-    --self["slider".._id] = slider;
     slider:initialise();
     slider:instantiate();
     slider.valueLabel = false;
@@ -105,7 +96,6 @@ end
 function PuddlesControl:addLabel(_id,_x,_y,_title, _font,_bLeft)
     local FONT_HGT = getTextManager():getFontHeight(_font);
     local label = ISLabel:new(_x, _y, FONT_HGT, _title, 1, 1, 1, 1.0, _font, _bLeft==nil and true or _bLeft);
-    --self["lbl".._id] = label;
     label:initialise();
     label:instantiate();
     label.uiID = _id;
@@ -162,20 +152,6 @@ function PuddlesControl:prerender()
         o.tickbox.selected[1] = o.option:isEnableAdmin();
         o.tickboxValue.selected[1] = o.option:getAdminValue();
     end
-
-    --[[local v,s;
-    if self.puddles then
-        for i=0,self.puddles:getFloatMax()-1 do
-            v = self.puddles:getpuddlesateFloat(i);
-
-            s = self.floats[v:getName()];
-
-            if s then
-                s.tickbox.selected[1] = self.puddles:issetAdminFloat(i);
-                s.slider:setCurrentValue(self.puddles:getAdminFloat(i));
-            end
-        end
-    end--]]
 end
 
 function PuddlesControl:onSliderChange(_newval, _slider)
@@ -218,8 +194,6 @@ function PuddlesControl:update()
 end
 
 function PuddlesControl:close()
-    --self:setVisible(false);
-    --self:removeFromUIManager();
 end
 
 function PuddlesControl:new(x, y, width, height)

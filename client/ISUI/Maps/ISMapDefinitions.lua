@@ -198,8 +198,6 @@ function MapUtils.initDefaultStyleV1(mapUI)
 		layer:addTexture(14.5, nil)
 		layer:addTexture(14.5, "media/textures/worldMap/Water.png")
 		layer:addTexture(MAXZ, "media/textures/worldMap/Water.png")
---		layer:addScale(MINZ, 4.0)
---		layer:addScale(MAX, 4.0)
 	end
 
 	layer = styleAPI:newPolygonLayer("road-trail")
@@ -417,17 +415,6 @@ local function overlayPNG(mapUI, x, y, scale, layerName, tex, alpha)
 	layer:setBoundsInSquares(x, y, x + texture:getWidth() * scale, y + texture:getHeight() * scale)
 end
 
-local function overlayPNG2(mapUI, x, y, scaleX, scaleY, tex)
-	local mapAPI = mapUI.javaObject:getAPIv1()
-	local styleAPI = mapAPI:getStyleAPI()
-	local layer = styleAPI:newTextureLayer("lootMapPNG")
-	layer:setMinZoom(MINZ)
-	local texture = getTexture(tex)
-	layer:addFill(MINZ, 255, 255, 255, 128)
-	layer:addTexture(MINZ, tex)
-	layer:setBoundsInSquares(x, y, x + texture:getWidth() * scaleX, y + texture:getHeight() * scaleY)
-end
-
 local function worldMapImage(fileName)
 	if getCore():getOptionColorblindPatterns() then
 		return "media/textures/worldMap/Colorblind Patterns/" .. fileName
@@ -480,9 +467,6 @@ LootMaps.Init.MarchRidgeMap = function(mapUI)
 
 	-- Draw a paper-like texture overtop the map.
 	MapUtils.overlayPaper(mapUI)
-
-	-- The original loot map texture, used to position things correctly.
---	overlayPNG(mapUI, 32*300+55, 41*300+155, 0.666, "lootMapPNG", "media/ui/LootableMaps/marchridgemap.png", 0.5)
 end
 
 local LVx = 11700
@@ -511,7 +495,6 @@ LootMaps.Init.LouisvilleMap1 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(0), lvGridY1(0), lvGridX2(0), lvGridY2(0))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(0), lvGridY1(0), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -522,7 +505,6 @@ LootMaps.Init.LouisvilleMap2 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(1), lvGridY1(0), lvGridX2(1), lvGridY2(0))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(1), lvGridY1(0), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -533,7 +515,6 @@ LootMaps.Init.LouisvilleMap3 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(2), lvGridY1(0), lvGridX2(2), lvGridY2(0))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(2), lvGridY1(0), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -544,7 +525,6 @@ LootMaps.Init.LouisvilleMap4 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(0), lvGridY1(1), lvGridX2(0), lvGridY2(1))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(0), lvGridY1(1), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -555,7 +535,6 @@ LootMaps.Init.LouisvilleMap5 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(1), lvGridY1(1), lvGridX2(1), lvGridY2(1))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(1), lvGridY1(1), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -566,7 +545,6 @@ LootMaps.Init.LouisvilleMap6 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(2), lvGridY1(1), lvGridX2(2), lvGridY2(1))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(2), lvGridY1(1), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -577,7 +555,6 @@ LootMaps.Init.LouisvilleMap7 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(0), lvGridY1(2), lvGridX2(0), lvGridY2(2))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(0), lvGridY1(2), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -588,7 +565,6 @@ LootMaps.Init.LouisvilleMap8 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(1), lvGridY1(2), lvGridX2(1), lvGridY2(2))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(1), lvGridY1(2), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -599,7 +575,6 @@ LootMaps.Init.LouisvilleMap9 = function(mapUI)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
 	mapAPI:setBoundsInSquares(lvGridX1(2), lvGridY1(2), lvGridX2(2), lvGridY2(2))
---	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, lvGridX1(2), lvGridY1(2), 1.0, "legend", worldMapImage("LouisvilleBadge.png"))
 	MapUtils.overlayPaper(mapUI)
 end
@@ -613,7 +588,6 @@ LootMaps.Init.MuldraughMap = function(mapUI)
 	overlayPNG(mapUI, 11093, 9222, 0.666, "badge", "media/textures/worldMap/MuldraughBadge.png")
 	overlayPNG(mapUI, 10807, 10342, 0.666, "legend", worldMapImage("Legend.png"))
 	MapUtils.overlayPaper(mapUI)
---	overlayPNG(mapUI, 10524, 9222, 0.666, "lootMapPNG", "media/ui/LootableMaps/muldraughmap.png", 0.5)
 end
 
 LootMaps.Init.RosewoodMap = function(mapUI)
@@ -625,7 +599,6 @@ LootMaps.Init.RosewoodMap = function(mapUI)
 	overlayPNG(mapUI, 7958, 11962, 0.666, "badge", "media/textures/worldMap/RosewoodBadge.png")
 	overlayPNG(mapUI, 8213, 11161, 0.666, "legend", worldMapImage("Legend.png"))
 	MapUtils.overlayPaper(mapUI)
---	overlayPNG(mapUI, 26*300+100, 37*300+30, 0.666, "lootMapPNG", "media/ui/LootableMaps/rosewoodmap.png", 0.5)
 end
 
 LootMaps.Init.RiversideMap = function(mapUI)
@@ -637,8 +610,6 @@ LootMaps.Init.RiversideMap = function(mapUI)
 	overlayPNG(mapUI, 6155, 5053, 0.385, "badge", "media/textures/worldMap/RiversideBadge.png")
 	overlayPNG(mapUI, 6500, 5062, 0.385, "legend", worldMapImage("Legend2.png"))
 	MapUtils.overlayPaper(mapUI)
-	-- This is the only map with different x/y scales
---	overlayPNG2(mapUI, 20*300-2, 17*300-69, 0.385, 0.455, "media/ui/LootableMaps/riversidemap.png", 0.5)
 end
 
 LootMaps.Init.WestpointMap = function(mapUI)
@@ -650,7 +621,6 @@ LootMaps.Init.WestpointMap = function(mapUI)
 	overlayPNG(mapUI, 10868, 7314, 0.666, "badge", "media/textures/worldMap/WestPointBadge.png")
 	overlayPNG(mapUI, 10956, 7006, 0.666, "legend", worldMapImage("Legend.png"))
 	MapUtils.overlayPaper(mapUI)
---	overlayPNG(mapUI, 36*300, 21*300+190, 0.666, "lootMapPNG", "media/ui/LootableMaps/westpointmap.png", 0.5)
 end
 
 LootMaps.Init.MulStashMap1 = function(mapUI)
@@ -1572,13 +1542,3 @@ function PrintMediaMaps.callLua(functionName, mapUI, arg1, arg2, arg3, arg4)
 	end
 	print("PrintMediaMaps.callLua(): no such function PrintMediaMaps." .. functionName .. "." .. tostring(mapUI.mapID))
 end
-
---[[
-PrintMediaMaps.Init.WestMapleCountryClub = function(mapUI)
-	local mapAPI = mapUI.javaObject:getAPIv1()
-	MapUtils.initDirectoryMapData(mapUI, LootMaps.DEFAULT_MAP_DIRECTORY)
-	MapUtils.initDefaultStyleV3(mapUI)
-	replaceWaterStyle(mapUI)
-	mapAPI:setBoundsInSquares(11020, 6820, 11389, 7009)
-end
---]]

@@ -1,12 +1,10 @@
 require "ISUI/ISPanel"
 
 ISDebugPanelBase = ISPanel:derive("ISDebugPanelBase");
---ISDebugPanelBase.instance = nil;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-
 
 function ISDebugPanelBase.OnOpenPanel(_class,_x, _y, _w, _h, _title)
     if _class.instance==nil then
@@ -34,7 +32,6 @@ function ISDebugPanelBase:registerPanel(_buttonTitle, _panelClass, _ignoreSortin
         panelClass = _panelClass,
         ignoreSorting = _ignoreSorting;
     });
-    --table.sort(self.panelInfo, function(a, b) return string.sort(b.buttonTitle, a.buttonTitle) end)
 end
 
 function ISDebugPanelBase:createChildren()
@@ -98,7 +95,6 @@ function ISDebugPanelBase:createChildren()
         options.onMouseWheel = ISDebugUtils.onMouseWheel;
 
         v.panel = options;
-        --self.climateOptions = options;
         table.insert(self.panels, self.climateOptions);
 
         if k>1 then
@@ -158,7 +154,6 @@ function ISDebugPanelBase:new(x, y, width, height, title)
     o.zOffsetSmallFont = 25;
     o.moveWithMouse = true;
     o.panelTitle = title;
-    --ISDebugPanelBase.instance = o
     return o;
 end
 

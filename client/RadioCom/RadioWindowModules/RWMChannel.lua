@@ -226,7 +226,6 @@ function RWMChannel:update()
     if self.comboBox and self.comboBox.expanded == true and self.lastModeExpanded == false then
         local a,b = self.comboBox:getY()+self.comboBox:getHeight()+UI_BORDER_SPACING+1, self.editPresetButton:getY()+self.editPresetButton:getHeight()+UI_BORDER_SPACING+1;
         self:setHeight( a > b and a or b);
-        --self:setHeight(self.comboBox:getY()+self.comboBox:getHeight()+5);
         if self.parent then
             self.parent:calculateHeights();
         end
@@ -279,7 +278,7 @@ function RWMChannel:onJoypadDown(button)
         overrideLB, overrideRB = self.editPresetPanel:onJoypadDown(button);
     else
         if button == Joypad.AButton then
-            if self.focusElement then --and self.focusElement.isCombobox then
+            if self.focusElement then
                 self.focusElement:forceClick();
                 self.focusElement:setJoypadFocused(false);
                 self.focusElement = nil;
@@ -378,7 +377,6 @@ function RWMChannel:getRBPrompt()
         end
     end
 end
-
 
 function RWMChannel:new (x, y, width, height )
     local o = RWMPanel:new(x, y, width, height);

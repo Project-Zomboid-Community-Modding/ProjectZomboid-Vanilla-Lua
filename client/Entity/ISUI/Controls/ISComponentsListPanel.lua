@@ -52,8 +52,6 @@ function ISComponentsListPanel:calculateLayout(_preferredWidth, _preferredHeight
     local x,y = 0,0;
     local widestPanelWidth = 0;
 
-    --print("components pref w = "..tostring(_preferredWidth)..", h = "..tostring(_preferredHeight)..", container = "..tostring(containerWidth))
-
     self.container:setX(self.margin);
     self.container:setY(self.margin);
 
@@ -67,11 +65,9 @@ function ISComponentsListPanel:calculateLayout(_preferredWidth, _preferredHeight
         widestPanelWidth = math.max(widestPanelWidth, v.panel:getWidth());
 
         y = v.panel:getY() + v.panel:getHeight();
-        --height = height + v.panel:getHeight();
     end
 
     -- first handle the height:
-
     local containerHeight = math.max(y, height - (self.margin*2));
 
     if self.maximumHeight>0 and (containerHeight>self.maximumHeight - (self.margin*2)) then
@@ -85,21 +81,15 @@ function ISComponentsListPanel:calculateLayout(_preferredWidth, _preferredHeight
     height = self.container:getY() + self.container:getHeight() + self.margin;
 
     -- handle width, adjust width if were going to have scrollbar.
-
     local scrollBarMod = (y > containerHeight and self.scrollBarWidth) or 0;
 
     local panelWidth = width - (self.margin*2) - scrollBarMod;
 
-    --print("panelw = "..tostring(panelWidth)..", widest = "..tostring(widestPanelWidth)..", s-mod = "..tostring(scrollBarMod))
-
     panelWidth = math.max(panelWidth, widestPanelWidth);
-
-    --print(">>> Y = "..tostring(y)..", CONTAINER HEIGHT = "..tostring(containerHeight));
     for index,v in ipairs(self.panels) do
         if y<containerHeight and index==#self.panels then
             --if room left over this sizes the last panel to fit that space
             v.panel:calculateLayout(panelWidth, v.panel:getHeight() + (containerHeight-y));
-            --print("panelW = "..tostring(panelWidth)..", actualW = "..tostring(v.panel:getWidth()))
         else
             v.panel:calculateLayout(panelWidth, 0);
         end
@@ -111,11 +101,9 @@ function ISComponentsListPanel:calculateLayout(_preferredWidth, _preferredHeight
 
     self:setWidth(width);
     self:setHeight(height);
-    --print("components w = "..tostring(width)..", h = "..tostring(height)..", y = "..tostring(y))
 end
 
 function ISComponentsListPanel:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

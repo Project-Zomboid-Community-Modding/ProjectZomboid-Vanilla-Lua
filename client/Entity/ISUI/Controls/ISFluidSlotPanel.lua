@@ -1,4 +1,3 @@
-
 require "Entity/ISUI/Controls/ISGroupBox"
 
 ISFluidSlotPanel = ISGroupBox:derive("ISFluidSlotPanel");
@@ -48,14 +47,10 @@ function ISFluidSlotPanel:addResource(_resourceFluid, _styleFluidSlot, _styleBtn
     fluidSlot:initialise();
     fluidSlot:instantiate();
     fluidSlot:setResource( _resourceFluid );
-    --fluidSlot.functionTarget = self;
-    --fluidSlot.onTransferFluids = ISFluidSlotPanel.onTransferFluids;
-    --fluidSlot.onClearFluids = ISFluidSlotPanel.onClearFluids;
     self.tableLayout:setElement(columnIndex, 0, fluidSlot);
 end
 
 function ISFluidSlotPanel:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

@@ -2,8 +2,6 @@ require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
-local TOGGLE_HGT = getTextManager():getFontHeight(UIFont.Medium);
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISBuildWidgetIngredientsInputs = ISPanelJoypad:derive("ISBuildWidgetIngredientsInputs");
 
@@ -13,16 +11,6 @@ end
 
 function ISBuildWidgetIngredientsInputs:createChildren()
     ISPanelJoypad.createChildren(self);
-
-    --[[
-    local column, row;
-
-    self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10);
-    self.rootTable:addRowFill(nil);
-    self.rootTable:initialise();
-    self.rootTable:instantiate();
-    self:addChild(self.rootTable);
-    --]]
 
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
@@ -52,9 +40,6 @@ function ISBuildWidgetIngredientsInputs:addInput(_inputScript)
     local input = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetInput, 0, 0, 10, 10, self.player, self.logic, _inputScript);
     input.isBuildMenu = self.isBuildMenu;
     input.interactiveMode = self.interactiveMode;
-    if _inputScript:isKeep() then
-        -- set keep flag
-    end
     input:initialise();
     input:instantiate();
     self:addChild(input);
@@ -77,9 +62,8 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     for k,v in ipairs(self.inputs) do
         v:calculateLayout(0,0);
 
-        minInputWidth = math.max(minInputWidth, v:getWidth()); --+(self.margin*2));
+        minInputWidth = math.max(minInputWidth, v:getWidth());
         minInputHeight = math.max(minInputHeight, v:getHeight());
-        --minHeight = minHeight + self.margin;
     end
     
     local inputCount = #self.inputs;
@@ -173,12 +157,6 @@ end
 function ISBuildWidgetIngredientsInputs:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData)
     self:restoreJoypadFocus()
---     if self.joypadButtons and #self.joypadButtons > 0 then
---         self.joypadIndexY = 1
---         self.joypadIndex = 1
---         self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
---         self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
---     end
 end
 
 function ISBuildWidgetIngredientsInputs:onLoseJoypadFocus(joypadData)
@@ -197,8 +175,6 @@ function ISBuildWidgetIngredientsInputs:new (x, y, width, height, player, logic)
     o.player = player;
     o.logic = logic;
     o.logic:setManualSelectInputs(true);
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
 
     o.interactiveMode = false;
 

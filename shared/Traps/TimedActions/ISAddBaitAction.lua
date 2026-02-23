@@ -4,7 +4,7 @@ ISAddBaitAction = ISBaseTimedAction:derive("ISAddBaitAction");
 
 function ISAddBaitAction:isValid()
 	self.trap:updateFromIsoObject()
-	return self.trap:getIsoObject() ~= nil
+	return self.trap:getIsoObject() ~= nil and self.character:getInventory():contains(self.bait);
 end
 
 function ISAddBaitAction:waitToStart()

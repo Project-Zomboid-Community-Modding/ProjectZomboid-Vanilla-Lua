@@ -12,7 +12,6 @@ function ISFluidSlot:createChildren()
     if self.enableTransfer then
         local style = self.styleBtnTransfer or "S_Button_TransferFluids";
         self.buttonTransfer = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 24, 24, "")
-        --self.buttonTransfer.image = self.iconTransfer;
         self.buttonTransfer.target = self;
         self.buttonTransfer.onclick = ISFluidSlot.onButtonClick;
         self.buttonTransfer.enable = not self.disableButtons;
@@ -25,7 +24,6 @@ function ISFluidSlot:createChildren()
     if self.enableClear then
         local style = self.styleBtnClear or "S_Button_ClearFluids";
         self.buttonClear = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 24, 24, "")
-        --self.buttonClear.image = self.iconClear;
         self.buttonClear.target = self;
         self.buttonClear.onclick = ISFluidSlot.onButtonClick;
         self.buttonClear.enable = not self.disableButtons;
@@ -126,8 +124,6 @@ function ISFluidSlot:onButtonClick(_button)
         --todo open transfer window
         if self.resource then
             local container = ISFluidContainer:new(self.resource);
-            --print("owner: "..tostring(container:getOwner()))
-            --print("exists: "..tostring(container:getOwner():isExistInTheWorld()))
             ISFluidTransferUI.OpenPanel(self.player, container); --:getFluidContainer());
         else
             print("ISFluidSlot -> Cannot open TransferFluids, no resource attached.");
@@ -139,11 +135,8 @@ function ISFluidSlot:onButtonClick(_button)
         end
 
         if self.resource and not self.resource:isEmpty() then
-            --NOTE: cannot do this: (reason resource cannot retrieve fluidcontainer with getComponent(ComponentType.FluidContainer) down the line!)
-            --local action = ISFluidEmptyAction:new(self.player, self.resource:getGameEntity());
             local action = ISFluidEmptyAction:new(self.player, self.resource);
             ISTimedActionQueue.add(action);
-            --self.resource:clear();
         else
             print("ISFluidSlot -> Cannot clear Fluids, no resource attached.");
         end

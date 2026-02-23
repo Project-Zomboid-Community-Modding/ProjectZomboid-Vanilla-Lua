@@ -40,7 +40,6 @@ function ISContextManager.getInstance()
 			menuInventory			= ISMenuContextInventory.new();	
 			menuInventory.init();
 			Events.OnFillInventoryObjectContextMenu.Add(self.createInventoryMenu);
-			--Events.OnFillWorldObjectContextMenu.Add(self.createWorldMenu);
 			hasInit = true;
 		end
     end

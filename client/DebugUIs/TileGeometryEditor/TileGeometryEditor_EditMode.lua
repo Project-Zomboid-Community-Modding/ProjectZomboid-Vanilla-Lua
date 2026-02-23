@@ -59,8 +59,6 @@ function GeometryListBox:onRightMouseDown(x, y)
 	if self.scene:java1("getGeometryType", objectName) ~= nil then
 		context:addOption("Duplicate Object", self.editor, self.editor.onDuplicateObject, objectName)
 	end
---	context:addOption("XXX", self, self.onXXX)
---	context:addOption("XXX", self, self.onXXX)
 end
 
 function GeometryListBox:new(x, y, width, height, editor)
@@ -270,7 +268,6 @@ function BoxPanel:configGizmoAux(face, extentX, extentY, extentZ)
 	local objectName = self.scene.selectedObjectName
 	self.scene.gizmo = "translate"
 	self.scene:java3("setGizmoOrigin", "geometry", objectName, face)
---	self.scene:java1("setGizmoPos", Vector3f.new(extentX, extentY, extentZ))
 	self.scene:java2("setGizmoAxisVisible", "X", face == "xMin" or face == "xMax")
 	self.scene:java2("setGizmoAxisVisible", "Y", face == "yMin" or face == "yMax")
 	self.scene:java2("setGizmoAxisVisible", "Z", face == "zMin" or face == "zMax")
@@ -312,7 +309,6 @@ function CylinderPanel:onTextEntered(entry, id)
 		self.scene:java2("setCylinderRadius", objectName, tonumber(entry:getText()))
 	end
 	if id == "zMax" then
---		self.scene:java2("setCylinderHeight", objectName, tonumber(entry:getText()))
 		self.scene:java3("changeCylinderHeight", objectName, id, tonumber(entry:getText()))
 	end
 	self.editor:updateGeometryFile()
@@ -344,8 +340,8 @@ function CylinderPanel:configGizmo()
 	if self.scene:java1("getGeometryType", objectName) ~= "cylinder" then
 		return false
 	end
-	local radius = self.scene:java1("getCylinderRadius", objectName)
-	local height = self.scene:java1("getCylinderHeight", objectName)
+	self.scene:java1("getCylinderRadius", objectName)
+	self.scene:java1("getCylinderHeight", objectName)
 	if self.scene.currentTool == self.scene.tools.resizeCylinder then
 		if self.movingFace == "xMax" then
 			self.radiusEntry:focus()
@@ -379,7 +375,6 @@ function CylinderPanel:configGizmoAux(face)
 	local objectName = self.scene.selectedObjectName
 	self.scene.gizmo = "translate"
 	self.scene:java3("setGizmoOrigin", "geometry", objectName, face)
---	self.scene:java1("setGizmoPos", Vector3f.new(extentX, extentY, extentZ))
 	self.scene:java2("setGizmoAxisVisible", "X", face == "xMin" or face == "xMax")
 	self.scene:java2("setGizmoAxisVisible", "Y", face == "yMin" or face == "yMax")
 	self.scene:java2("setGizmoAxisVisible", "Z", face == "zMin" or face == "zMax")
@@ -424,7 +419,6 @@ function PropertiesPanel:createEntry(x, y, w, h, id)
 	entry:instantiate()
 	entry.min = 0
 	entry:setOnlyNumbers(true)
---	entry.onCommandEntered = function(self) self.parent:onTextEntered(self, id) end
 	self:addChild(entry)
 	return entry
 end
@@ -532,9 +526,7 @@ function DepthTexturePanel:render()
 	local texX = 0
 	local texY = 0
 	local texW,texH = 128,256
---	self:drawRect(texX, texY, texW, texH, 1.0, 0.0, 0.0, 0.0)
 	self:drawTextureScaled(texture, texX, texY, texW, texH, 1.0, 1.0, 1.0, 1.0)
---	self:drawRectBorder(texX - 1, texY - 1, texW + 2, texH + 2, 1.0, 1.0, 1.0, 1.0)
 end
 
 function DepthTexturePanel:new(x, y, width, height, editor)
@@ -750,7 +742,6 @@ function TileGeometryEditor_EditMode_Geometry:createChildren()
 	self.buttonRecalcShadows = buttonRecalcShadows
 	--buttons end here
 
-
 	self.boxPanel = BoxPanel:new(self.listBox:getRight() + UI_BORDER_SPACING, self.listBox:getY(), 10, 10, self.editor)
 	self.editor:addChild(self.boxPanel)
 
@@ -860,8 +851,6 @@ function TileGeometryEditor_EditMode_Geometry:prerenderGeometry()
 			if i == self.listBox.selected and self.scene:isPolygonObject(self.listBox.items[i].item) then
 				local plane = self:java1("getPolygonPlane", objectName)
 				self.tempTranslate:set(self:java1("getObjectTranslation", objectName))
-	--			self.tempTranslate:setComponent(1, 0.0)
---				self.tempExtents:set(self.scene:java1("getPolygonExtents", objectName))
 				if plane == "XY" then
 					self.tempExtentsMin:set(-0.5, 0.0, 0.0)
 					self.tempExtentsMax:set(0.5, 3.0 * Z_SCALE, 0.0)
@@ -1030,9 +1019,6 @@ function TileGeometryEditor_EditMode_Geometry:setGeometryList()
 	self.listBox:addItem("Player", "character1") -- other code assumes this is first
 	for i=1,names:size() do
 		local objectName = names:get(i-1)
-		if objectName == "character1" then
---			self.listBox:addItem("Player", objectName)
-		end
 		if luautils.stringStarts(objectName, "box") or luautils.stringStarts(objectName, "cylinder") then
 			self.listBox:addItem(objectName, objectName)
 		end
@@ -1103,8 +1089,6 @@ end
 function TileGeometryEditor_EditMode_Geometry:onAddBox()
 	local objectName = self:pickUniqueName("box")
 	self:java1("createBox", objectName)
---	self:java1("getObjectTranslation", objectName):set(0.0, 3 * Z_SCALE * 0.5, 0.0)
---	self:java1("getObjectRotation", objectName):set(0.0, 0.0, 0.0)
 	self:setGeometryList()
 	self.listBox.selected = self.listBox:size()
 	self:updateGeometryFile()
@@ -1224,17 +1208,13 @@ function TileGeometryEditor_EditMode_Geometry:onKeyPress(key)
 				if self:java1("getGeometryType", objectName) == "cylinder" then
 					-- To handle rotated cylinders, the bounding box is used when moving
 					-- the cylinder to the ground.
---					if not self.scene:java1("moveCylinderToGround", objectName) then
-						self.scene:java2("moveCylinderToOrigin", objectName, self.scene.gizmoAxis)
---					end
+                    self.scene:java2("moveCylinderToOrigin", objectName, self.scene.gizmoAxis)
 				else
 					self:zeroTranslation(objectName, self.scene.gizmoAxis)
---					self.scene:java4("setObjectPosition", objectName, 0.0, 0.0, 0.0)
 				end
 			end
 			if self.scene.gizmo == "rotate" then
 				self:zeroRotation(objectName, self.scene.gizmoAxis)
---				self.scene:java1("getObjectRotation", objectName):set(0.0, 0.0, 0.0)
 			end
 			if self:java1("getGeometryType", objectName) ~= nil then
 				self:updateGeometryFile()
@@ -1255,15 +1235,6 @@ function TileGeometryEditor_EditMode_Geometry:onSave()
 		TileDepthTextureAssignmentManager.getInstance():initSprites()
 		TileGeometryManager.getInstance():initSpriteProperties()
 	end
---[[
-	local selectedTile = picker:getFirstSelectedTile()
-	if selectedTile then
-		local depthTexture = TileDepthTextureManager.getInstance():getTexture(self.editor.modID, picker.tileset, selectedTile.index)
-		if depthTexture then
-			depthTexture:save()
-		end
-	end
---]]
 end
 
 function TileGeometryEditor_EditMode_Geometry:zeroTranslation(objectName, axis)
@@ -1381,11 +1352,7 @@ function TileGeometryEditor_EditMode_SceneTiles:createChildren()
 	local buttonHideGeom = ISButton:new(0, buttonTranslate:getBottom() + buttonPadY, self.buttonPanel.width, buttonHgt, "REMOVE", self, self.onButtonRemove)
 	self.buttonPanel:addChild(buttonHideGeom)
 	self.buttonHideGeom = buttonHideGeom
---[[
-	local buttonAddXY = ISButton:new(0, buttonHideGeom:getBottom() + buttonPadY, self.buttonPanel.width, buttonHgt, "SELECT", self, self.onButtonSelect)
-	self.buttonPanel:addChild(buttonAddXY)
-	self.buttonAddXY = buttonAddXY
---]]
+
 	local buttonAddXZ = ISButton:new(0, buttonHideGeom:getBottom() + buttonPadY, self.buttonPanel.width, buttonHgt, "MOVE", self, self.onButtonMove)
 	self.buttonPanel:addChild(buttonAddXZ)
 	self.buttonAddXZ = buttonAddXZ
@@ -1531,7 +1498,6 @@ function CurtainPropertiesPanel:createEntry(x, y, w, h, id)
 	entry:instantiate()
 	entry.min = 0
 	entry:setOnlyNumbers(true)
---	entry.onCommandEntered = function(self) self.parent:onTextEntered(self, id) end
 	self:addChild(entry)
 	return entry
 end
@@ -1600,8 +1566,6 @@ function CurtainPropertiesPanel:toUI()
 	end
 	if not self.curtainOffsetEntry:isFocused() or self:isTranslatingCurtain() then
 		local tileName = selectedTile.tileName
---		local value = TileGeometryManager.getInstance():getTileProperty(self.editor.modID, picker.tileset, selectedTile.col - 1, selectedTile.row - 1, "CurtainOffset")
---		if not value then value = "0.0 0.0 0.0" end
 		local translate = self.scene:java1("getObjectTranslation", "curtain")
 		local valueStr = string.format("%.4f %.4f %.4f", translate:x(), translate:y(), translate:z())
 		self.curtainOffsetEntry:setText(valueStr)
@@ -1931,7 +1895,6 @@ function TileGeometryEditor_EditMode_Seating:onButtonRemovePosition()
 end
 
 function TileGeometryEditor_EditMode_Seating:activate()
---	SeatingManager.getInstance():fixDefaultPositions()
 	TileGeometryEditor_EditMode.activate(self)
 	self.buttonPanel:setVisible(true)
 	self.tilePicker3:setVisible(true)
@@ -1973,8 +1936,6 @@ function TileGeometryEditor_EditMode_Seating:prerenderEditor()
 	local selectedTile = picker:getFirstSelectedTile()
 	if selectedTile then
 		if self:checkSelectedTile(picker.tileset, selectedTile.col, selectedTile.row) then
---			local xln = SeatingManager.getInstance():getTranslation(self.editor.modID, picker.tileset, selectedTile.index, Vector3f.new())
---			self:java1("getObjectTranslation", "character1"):set(xln:x(), xln:z(), xln:y()) // Y/Z swapped
 			self:populateListBox()
 		end
 		if self:checkSelectedPosition(picker.tileset, selectedTile.col, selectedTile.row) then

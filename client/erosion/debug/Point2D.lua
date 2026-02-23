@@ -1,8 +1,3 @@
---[[
-  Point2D.lua - 2014.
-  Author: Kees "TurboTuTone" Bekkema.
-  ]]
-
 Point2D = {};
 Point2D.meta = {
     __tostring 	= function (self) 		return tostring(self.x)..":"..tostring(self.y); 								end,

@@ -10,9 +10,11 @@ end
 AnimalContextMenu.doInventoryMenu = function(player, context, animalInv, test)
     local animal = animalInv:getAnimal();
     local playerObj = getSpecificPlayer(player);
-    context:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
+    local option = context:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, playerObj);
+    option.iconTexture = getTexture("media/ui/inventoryPanes/Button_Info.png")
 
-    context:addOption(getText("ContextMenu_Drop"), { animalInv }, ISInventoryPaneContextMenu.onDropItems, player);
+    option = context:addOption(getText("ContextMenu_Drop"), { animalInv }, ISInventoryPaneContextMenu.onDropItems, player);
+    option.iconTexture = getTexture("media/ui/AnimalActions_Grab.png")
 
     AnimalContextMenu.doFeedFromHandMenu(playerObj, animal, context);
     AnimalContextMenu.doWaterAnimalMenu(context, animal, playerObj)
@@ -107,25 +109,30 @@ end
 -- Called for animals carried by the player.
 AnimalContextMenu.doKillAnimalMenu = function(playerObj, animalInv, context)
     local animal = animalInv:getAnimal()
-    if animal:canBeKilledWithoutWeapon() then
-        local option = context:addOption(getText("ContextMenu_KillAnimal"), animalInv, AnimalContextMenu.onKillAnimal, playerObj)
-        local tooltip = ISWorldObjectContextMenu.addToolTip()
-        tooltip:setName(getText("Tooltip_Animal_KillWithoutWeapon"))
-        option.toolTip = tooltip
+    local weapon = playerObj:getInventory():getAllTagEval(ItemTag.KILL_ANIMAL, predicateNotBroken);
+    local option;
+    if animal:canBeKilledWithoutWeapon() or (weapon and not weapon:isEmpty()) then
+        option = context:addOption(getText("ContextMenu_KillAnimal"), animalInv, AnimalContextMenu.onKillAnimal, playerObj);
+        if animal:canBeKilledWithoutWeapon() then
+            local tooltip = ISWorldObjectContextMenu.addToolTip();
+            tooltip:setName(getText("Tooltip_Animal_KillWithoutWeapon"));
+            option.toolTip = tooltip;
+        end
     else
-        local option = context:addOption(getText("ContextMenu_KillAnimal"), animalInv, AnimalContextMenu.onKillAnimal, playerObj)
-        option.notAvailable = true
-        local tooltip = ISWorldObjectContextMenu.addToolTip()
-        tooltip:setName(getText("Tooltip_Animal_NoWeapon"))
-        option.toolTip = tooltip
+        option = context:addOption(getText("ContextMenu_KillAnimal"));
+        option.notAvailable = true;
+        local tooltip = ISWorldObjectContextMenu.addToolTip();
+        tooltip:setName(getText("Tooltip_Animal_NoWeapon"));
+        option.toolTip = tooltip;
     end
+
+    option.iconTexture = getTexture("Item_HuntingKnife.png")
 end
 
 AnimalContextMenu.doMenu = function(player, context, animal, test)
     if animal:isOnHook() then return; end
     local playerObj = getSpecificPlayer(player);
     local playerInv = playerObj:getInventory();
-
 
     -- init the core debug stuff, as i'm using it in java too, but easier to maintain it only in lua so i can quickly reload this file and test stuff
     getCore():setAnimalCheat(AnimalContextMenu.cheat);
@@ -193,7 +200,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
     end
 
     if animal:getData():getMilkQuantity() > 0.1 and animal:canBeMilked() then
-        --local bucketList = playerInv:getAllTagEval(ItemTag.Bucket, predicateNotBroken)
         local bucketList = playerInv:getAvailableFluidContainer(animal:getData():getBreed():getMilkType())
         local choosenBuckets = {};
         local existingBucket = {};
@@ -204,14 +210,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
                     existingBucket[bucket:getType() .. bucket:getFluidContainer():getAmount()] = true;
                     table.insert(choosenBuckets, bucket);
                 end
-                --if not existingBucket[bucket:getType()] and bucket:getMilkReplaceItem() then
-                --    table.insert(choosenBuckets, bucket)
-                --    existingBucket[bucket:getType()] = true;
-                --end
-                --if instanceof(bucket, "Food") and bucket:getMaxMilk() > 0 and bucket:getMilkQty() < bucket:getMaxMilk() and bucket:getMilkType() and animal:getData():getBreed():getMilkType() == bucket:getMilkType() and not existingBucket[bucket:getType() .. bucket:getMilkQty()] then
-                --    existingBucket[bucket:getType() .. bucket:getMilkQty()] = true;
-                --    table.insert(choosenBuckets, bucket)
-                --end
             end
         end
         if #choosenBuckets > 0 then
@@ -259,17 +257,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
     if animal:canBePicked(playerObj) then
         local pickOption = animalSubMenu:addOption(getText("ContextMenu_PickUpAnimal", animal:getFullName()), animal, AnimalContextMenu.onPickupAnimal, playerObj);
         pickOption.iconTexture = getTexture("media/ui/AnimalActions_Grab.png")
-        --if not animal:canBePicked(playerObj) then
-        --    if AnimalContextMenu.cheat or playerObj:isUnlimitedCarry() or playerObj:isGhostMode() then
-        --        animalSubMenu:removeLastOption();
-        --        animalSubMenu:addDebugOption(getText("ContextMenu_PickUpAnimal", animal:getFullName()), animal, AnimalContextMenu.onPickupAnimal, playerObj);
-        --    else
-        --        pickOption.notAvailable = true;
-        --        local tooltip = ISWorldObjectContextMenu.addToolTip();
-        --        tooltip:setName(getText("Tooltip_Animal_TooHeavy"));
-        --        pickOption.toolTip = tooltip;
-        --    end
-        --end
     end
 
     local possibleLure = animal:getPossibleLuringItems(playerObj);
@@ -285,9 +272,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
                 local option = lureSubMenu:addOption(getItemDisplayName(item:getType()), animal, AnimalContextMenu.onLure, playerObj, item);
             end
             alreadyAdded[getItemDisplayName(item:getType())] = true;
-            --if not playerInv:contains(item) then
-            --    option.notAvailable = true;
-            --end
         end
     end
 
@@ -295,7 +279,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         local option = animalSubMenu:addOption(getText("ContextMenu_PetAnimal"), animal, AnimalContextMenu.onPetAnimal, playerObj);
         option.iconTexture = getTexture("media/ui/AnimalActions_Pet.png")
         if not animal:petTimerDone() and AnimalContextMenu.cheat then
-            --option.notAvailable = true;
             local txt = "";
             if AnimalContextMenu.cheat then
                 txt = " (" .. animal:getPetTimer() .. ")";
@@ -316,19 +299,20 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
     if not animal:isWild() then
         local weapon = playerInv:getAllTagEval(ItemTag.KILL_ANIMAL, predicateNotBroken);
         if animal:canBeKilledWithoutWeapon() or (weapon and not weapon:isEmpty()) then
-            local option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
+            option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
             if animal:canBeKilledWithoutWeapon() then
                 local tooltip = ISWorldObjectContextMenu.addToolTip();
                 tooltip:setName(getText("Tooltip_Animal_KillWithoutWeapon"));
                 option.toolTip = tooltip;
             end
         else
-            local option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
+            option = animalSubMenu:addOption(getText("ContextMenu_KillAnimal"), animal, AnimalContextMenu.onKillAnimal, playerObj);
             option.notAvailable = true;
             local tooltip = ISWorldObjectContextMenu.addToolTip();
             tooltip:setName(getText("Tooltip_Animal_NoWeapon"));
             option.toolTip = tooltip;
         end
+        option.iconTexture = getTexture("Item_HuntingKnife.png")
     end
 
     if AnimalContextMenu.cheat then
@@ -419,11 +403,6 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         debugSubMenu:addOption("Set on fire", animal, AnimalContextMenu.onSetFire, playerObj);
 
         debugSubMenu:addOption("Generate world sound", animal, AnimalContextMenu.onGenerateWorldSound, playerObj);
-
-        --debugSubMenu:addDebugOption("SANTA!", animal, AnimalContextMenu.onSanta, playerObj);
-        --debugSubMenu:addDebugOption("Bowtie Gold", animal, AnimalContextMenu.onBowtieGold, playerObj);
-        --debugSubMenu:addDebugOption("Bowtie Green", animal, AnimalContextMenu.onBowtieGreen, playerObj);
-        --debugSubMenu:addDebugOption("Bowtie Red", animal, AnimalContextMenu.onBowtieRed, playerObj);
     end
 end
 
@@ -479,6 +458,7 @@ AnimalContextMenu.doWaterAnimalMenu = function(animalSubMenu, animal, playerObj)
     local waterItems = playerObj:getInventory():getAllWaterFluidSources(true);
 
     local waterOption = animalSubMenu:addOption(getText("ContextMenu_WaterAnimal"), nil, nil);
+    waterOption.iconTexture = getTexture("Item_WaterDrop.png");
 
     local alreadyAdded = {};
     if waterItems:isEmpty() then
@@ -586,7 +566,6 @@ AnimalContextMenu.onDebugForceEgg = function(animal, playerObj)
 end
 
 AnimalContextMenu.onLure = function(animal, playerObj, item)
-    --local lureItem = playerObj:getInventory():getItemFromType(item);
     ISWorldObjectContextMenu.transferIfNeeded(playerObj, item)
     ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), item, true, false)
     ISTimedActionQueue.add(ISLureAnimal:new(playerObj, animal, item))
@@ -668,16 +647,21 @@ end
 
 AnimalContextMenu.doAnimalBodyMenu = function(context, player, animalbody)
     local playerObj = getSpecificPlayer(player);
-    local txt = getText("ContextMenu_PickUpAnimalBody", animalbody:getCustomName());
+    local bodyOption = context:addOption(animalbody:getCustomName());
+    bodyOption.iconTexture = getTexture(animalbody:getInvIcon())
+    local subMenu = ISContextMenu:getNew(context);
+    context:addSubMenu(bodyOption, subMenu);
+
+    local txt = getText("ContextMenu_PickUpAnimalBody");
     if animalbody:isAnimalSkeleton() then
         txt = getText("ContextMenu_PickUpSkeleton");
     end
-    local grabOption = context:addOption(txt, nil, ISWorldObjectContextMenu.onGrabCorpseItem, animalbody, player);
+    local grabOption = subMenu:addOption(txt, nil, ISWorldObjectContextMenu.onGrabCorpseItem, animalbody, player);
     ISWorldObjectContextMenu.initWorldItemHighlightOption(grabOption, animalbody)
 
     if animalbody:hasAnimalParts() then
         local knife = playerObj:getInventory():getFirstTagEvalRecurse(ItemTag.BUTCHER_ANIMAL, predicateNotBroken)
-        local butcherOption = context:addOption(getText("ContextMenu_ButcherAnimal", animalbody:getCustomName()), animalbody, AnimalContextMenu.onButcherAnimal, playerObj, knife);
+        local butcherOption = subMenu:addOption(getText("ContextMenu_ButcherAnimal"), animalbody, AnimalContextMenu.onButcherAnimal, playerObj, knife);
         if not knife then
             butcherOption.notAvailable = true;
             local tooltip = ISWorldObjectContextMenu.addToolTip();
@@ -690,11 +674,11 @@ AnimalContextMenu.doAnimalBodyMenu = function(context, player, animalbody)
         end
         ISWorldObjectContextMenu.initWorldItemHighlightOption(butcherOption, animalbody)
         if AnimalContextMenu.cheat then
-            context:addDebugOption("Butcher Debug UI " .. animalbody:getCustomName(), animalbody, AnimalContextMenu.onButcherAnimalDebug, playerObj);
+            subMenu:addDebugOption("Butcher Debug UI", animalbody, AnimalContextMenu.onButcherAnimalDebug, playerObj);
         end
     end
     if animalbody:isAnimalSkeleton() then
-        local option = context:addOption(getText("ContextMenu_GetBones", animalbody:getCustomName()), animalbody, AnimalContextMenu.onGetAnimalBones, playerObj);
+        local option = subMenu:addOption(getText("ContextMenu_GetBones", animalbody:getCustomName()), animalbody, AnimalContextMenu.onGetAnimalBones, playerObj);
         ISWorldObjectContextMenu.initWorldItemHighlightOption(option, animalbody)
     end
 end
@@ -728,9 +712,6 @@ AnimalContextMenu.onGetAnimalBonesFromInv = function(body, chr, knife)
 
     corpse:getSquare():addCorpse(corpse, false);
 
-    --if (GameServer.bServer) then
-    --    GameServer.sendCorpse(corpse);
-    --end
     chr:getInventory():Remove(body);
     ISTimedActionQueue.add(ISGetAnimalBones:new(chr, corpse))
 end
@@ -746,9 +727,6 @@ AnimalContextMenu.onButcherAnimalFromInv = function(body, chr, knife)
     corpse:getSquare():addCorpse(corpse, false);
     corpse:transmitModData();
 
-    --if (GameServer.bServer) then
-    --    GameServer.sendCorpse(corpse);
-    --end
     sendRemoveItemFromContainer(body:getContainer(), body);
     body:getContainer():Remove(body);
     ISTimedActionQueue.add(ISButcherAnimal:new(chr, corpse));
@@ -803,7 +781,7 @@ AnimalContextMenu.onShearAnimal = function(animal, chr, shear)
     local vecRight = animal:getAttachmentWorldPos("rightshear");
     local vecLeft = animal:getAttachmentWorldPos("leftshear");
     local vec = vecRight;
--- pick the closest vector, left or right of the animal
+    -- pick the closest vector, left or right of the animal
     if chr:DistToSquared(vecLeft:x(), vecLeft:y()) < chr:DistToSquared(vecRight:x(), vecRight:y()) then
         vec = vecLeft;
     end
@@ -877,8 +855,6 @@ AnimalContextMenu.onMilkAnimal = function(animal, chr, bucket, all)
         right = false;
     end
     ISTimedActionQueue.add(ISWalkToTimedActionF:new(chr, vec));
---        ISWorldObjectContextMenu.transferIfNeeded(chr, shear)
---        ISWorldObjectContextMenu.equip(chr, chr:getPrimaryHandItem(), shear, true, false)
     ISTimedActionQueue.add(ISMilkAnimal:new(chr, animal, bucket, right, all))
 end
 
@@ -1065,6 +1041,7 @@ AnimalContextMenu.onBowtieGold = function(animal, playerObj)
         animal:setAttachedItem("bowtie", instanceItem("Base.Animal_BowtieGold"))
     end
 end
+
 AnimalContextMenu.onBowtieGreen = function(animal, playerObj)
     if isClient() then
         sendClientCommandV(playerObj, "animal", "attach",
@@ -1075,6 +1052,7 @@ AnimalContextMenu.onBowtieGreen = function(animal, playerObj)
         animal:setAttachedItem("bowtie", instanceItem("Base.Animal_BowtieGreen"))
     end
 end
+
 AnimalContextMenu.onBowtieRed = function(animal, playerObj)
     if isClient() then
         sendClientCommandV(playerObj, "animal", "attach",
@@ -1138,11 +1116,8 @@ function AnimalContextMenu:onKillAnimalConfirm(button)
         if instanceof(animal, "AnimalInventoryItem") then
             local animalItem = animal
             animal = animalItem:getAnimal()
-            if animal:canBeKilledWithoutWeapon() then
-                ISTimedActionQueue.add(ISKillAnimalInInventory:new(playerObj, animalItem))
-                return
-            end
-            ISInventoryPaneContextMenu.dropItem(animalItem, playerObj:getPlayerNum())
+            ISTimedActionQueue.add(ISKillAnimalInInventory:new(playerObj, animalItem))
+            return;
         end
         if not animal:canBeKilledWithoutWeapon() then
             local weapon = playerObj:getInventory():getAllTagEval(ItemTag.KILL_ANIMAL, predicateNotBroken):get(0);

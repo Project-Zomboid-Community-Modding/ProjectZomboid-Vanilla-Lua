@@ -1,6 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 
@@ -24,9 +23,6 @@ function ISWidgetInput:createChildren()
 
     -- identifier icons
     local icon = self.textureConsumed;
-    --if not self.primary.isItemCount then
-    --    self.iconConsumed.texture = self.textureUsed;
-    --end
     self.iconConsumed = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, icon);
     self.iconConsumed.autoScale = true;
     self.iconConsumed:initialise();
@@ -34,13 +30,6 @@ function ISWidgetInput:createChildren()
     self.iconConsumed:setVisible(not self.primary.isKeep);
     self.iconConsumed.mouseovertext = getText("IGUI_CraftingWindow_WillBeDestroyed");
     self:addChild(self.iconConsumed);
-
-    --self.iconCreate = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureCreate);
-    --self.iconCreate.autoScale = true;
-    --self.iconCreate:initialise();
-    --self.iconCreate:instantiate();
-    --self.iconCreate:setVisible(self.primary.isKeep);
-    --self:addChild(self.iconCreate);
 
     self.iconTool = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.labelIconSize, self.labelIconSize, self.textureTool);
     self.iconTool.autoScale = true;
@@ -69,7 +58,6 @@ function ISWidgetInput:createChildren()
 
     if arrowTexture then
         self.arrow = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.iconSize/2, self.iconSize, arrowTexture);
-        --self.consumeArrow.noAspect = true;
         self.arrow.scaledWidth = self.iconSize/2;
         self.arrow.scaledHeight = self.iconSize;
         self.arrow:initialise();
@@ -162,7 +150,6 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetInput:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -187,7 +174,6 @@ end
 
 function ISWidgetInput:update()
     ISPanel.update(self);
-    --self:updateValues();
 end
 
 function ISWidgetInput:createScriptValues(_script, isSecondary)
@@ -210,7 +196,6 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
             table.amountStr = table.amountStr .. "-" .. tostring(round(table.maxAmount,2));
         end
 
-        --table.inputObjects = _script:getPossibleInputItems();
         table.inputObjects = self.logic:getSatisfiedInputItems(_script);
         if table.inputObjects:size() == 0 then
             table.inputObjects = _script:getPossibleInputItems();
@@ -219,7 +204,6 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
         if table.inputObjects:size()>0 then
             table.iconTexture = table.inputObjects:get(0):getNormalTexture();
             table.iconColor = { r=table.inputObjects:get(0):getR(),g=table.inputObjects:get(0):getG(),b=table.inputObjects:get(0):getB(),a=1 };
-            --table.cycleIcons = table.inputObjects:size() > 1;
             table.inputFullName = table.inputObjects:get(0):getFullName();
             table.inputItem = table.inputObjects:get(0);
         end
@@ -245,20 +229,14 @@ function ISWidgetInput:createScriptValues(_script, isSecondary)
         end
         if table.inputObjects:size()>0 then
             table.inputFullName = table.inputObjects:get(0):getFluidTypeString();
-        --    local fluid = table.inputObjects:get(0);
-        --    table.cycleIcons = table.inputObjects:size() > 1;
         end
-        --table.cycleIcons = table.inputObjects:size() > 1;
     elseif _script:getResourceType()==ResourceType.Energy then
-        --if not getDebug() then
-            table.isKeep = false; --not displaying 'keep' for energies for now
-        --end
+        table.isKeep = false; --not displaying 'keep' for energies for now
         table.amount = _script:getAmount();
         table.amountStr = tostring(Temperature.getRoundedDisplayTemperature(table.amount))..Temperature.getTemperaturePostfix();
         table.inputObjects = _script:getPossibleInputEnergies();
         if table.inputObjects:size()>0 then
             table.iconTexture = table.inputObjects:get(0):getIconTexture();
-            --table.cycleIcons = table.inputObjects:size() > 1;
             table.inputFullName = table.inputObjects:get(0):getEnergyTypeString();
         end
     end
@@ -341,8 +319,6 @@ function ISWidgetInput:onSelectInputsClicked(_button)
 
     self.logic:setShowManualSelectInputs(true);
     self.logic:setManualSelectInputScriptFilter(self.inputScript);
-    
-    --print("onSelectInputsClicked()");
 end
 
 function ISWidgetInput:updateScriptValues(_table)
@@ -424,9 +400,6 @@ function ISWidgetInput:updateScriptValues(_table)
 
         if _table.iconText then
             local text = _table.tooltipText or _table.iconText
---             if _table.script:isBaseItem() then
---                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsBaseItem")
---             end
             if _table.script:isSharpenable() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsSharpenable")
             end
@@ -496,9 +469,6 @@ function ISWidgetInput:updateScriptValues(_table)
             if _table.script:isCookedFoodItem() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsCookedFoodItem")
             end
---             if _table.script:isHandlePart() then
---                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHandle")
---             end
             if _table.script:isHeadPart() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHeadPart")
             end
@@ -641,7 +611,6 @@ function ISWidgetInput:new (x, y, width, height, player, logic, inputScript) --r
     o.player = player;
     o.logic = logic;
 
-    --o.recipeData = recipeData;
     o.inputScript = inputScript;
     o.consumeScript = inputScript:getConsumeFromItemScript();
     o.createScript = inputScript:getCreateToItemScript();

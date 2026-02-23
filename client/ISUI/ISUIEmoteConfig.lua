@@ -5,7 +5,6 @@ ISUIEmoteConfig = ISCollapsableWindow:derive("ISUIEmoteConfig");
 function ISUIEmoteConfig:createChildren()
 	local btnWid = 100
 	local btnHgt = 25
-	local padBottom = 0
 	
 	ISCollapsableWindow.createChildren(self)
 	
@@ -61,10 +60,6 @@ function ISUIEmoteConfig:createChildren()
 	for i,v in pairs(ISEmoteRadialMenu.menu) do
 		if v.subMenu then -- stuff with submenu
 			self.categoryCB:addOptionWithData(v.name, i);
---			for anim, name in pairs(v.subMenu) do
---				self.emoteCB:addOptionWithData(name, anim);
---			end
-		else
 		end
 	end
 
@@ -93,8 +88,6 @@ end
 
 function ISUIEmoteConfig:render()
 	ISCollapsableWindow.render(self);
-	
---	self:drawText("Picked Square: " .. self.selectX .. "," .. self.selectY .. "," .. self.selectZ, 10, 25, 1, 1, 1, 1, self.font);
 end
 
 function ISUIEmoteConfig:close()
@@ -134,11 +127,9 @@ function ISUIEmoteConfig:readFile()
 				break
 			end
 			line = string.trim(line)
---			print("line!", line)
 		end
 		
 		ISEmoteRadialMenu:init(); -- DEBUG
---		ISEmoteRadialMenu.menu = ISEmoteRadialMenu.defaultMenu;
 	else
 		ISEmoteRadialMenu:init();
 		self:writeToFile();

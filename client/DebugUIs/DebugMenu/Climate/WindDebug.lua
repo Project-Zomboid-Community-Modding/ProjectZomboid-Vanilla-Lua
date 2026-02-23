@@ -24,7 +24,6 @@ function WindDebug:initialise()
     ISCollapsableWindow.initialise(self);
 end
 
-
 function WindDebug:createChildren()
     ISCollapsableWindow.createChildren(self);
 
@@ -37,7 +36,6 @@ function WindDebug:createChildren()
     self.historyM1 = ValuePlotter:new(x+UI_BORDER_SPACING,y+UI_BORDER_SPACING,600,FONT_HGT_SMALL*5+UI_BORDER_SPACING*4,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
-    --self.historyM1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50);
     self:addChild(self.historyM1);
     self.historyM1:setVisible(true);
 
@@ -51,16 +49,12 @@ function WindDebug:createChildren()
             self.charts[i]:defineVariable(vinfo.desc, vinfo.col, vinfo.min, vinfo.max);
         end
 
-        --self.charts[i]:setHorzLine(0.10,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.125,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.25,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.30,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.375,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.50,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.60,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.625,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.75,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.80,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.875,{r=0.05, g=0.05, b=0.05, a=1});
     end
 
@@ -94,7 +88,7 @@ function WindDebug:createChildren()
     local cacheY, cacheX = y, x;
     local toggleButtonWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimatePlotter_Toggle"))
 
-    y = th; --self.historyM1:getY()-2;
+    y = th;
     x = self.historyM1:getX() + self.historyM1:getWidth() + getTextManager():MeasureStringX(UIFont.Small, "-50 C") + UI_BORDER_SPACING;
     local widest = 0;
     local vars = self.historyM1:getVars();
@@ -144,7 +138,6 @@ function WindDebug:initVariables()
         end
     end
 
-    --self:addVarInfo("","",-1,1,"");
     self:addVarInfo("windNoiseBase",getText("IGUI_WindTick_WindNoiseBase"),-1,1,"getDayLightStrength");
     self:addVarInfo("windNoiseFinal",getText("IGUI_WindTick_WindNoiseFinal"),-1,1,"getDayLightStrength");
     self:addVarInfo("windTickFinal",getText("IGUI_WindTick_WindTickFinal"),-1,1,"getDayLightStrength");
@@ -165,7 +158,6 @@ function WindDebug:addVarInfo(_name,_desc,_min,_max,_func)
     });
     self.varInfo[#self.varInfo].col = self.colTable[#self.varInfo];
 end
-
 
 function WindDebug:onButton(_btn)
     if _btn.title=="M1" then
@@ -193,9 +185,6 @@ end
 
 function WindDebug:onResize()
     ISUIElement.onResize(self);
-    local th = self:titleBarHeight();
-    --self.richtext:setWidth(self.width);
-    --self.richtext:setHeight(self.height-(th+10));
 end
 
 local ctr = 0;
@@ -227,7 +216,6 @@ function WindDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
 
-
 function WindDebug:render()
     ISCollapsableWindow.render(self);
 
@@ -235,7 +223,6 @@ function WindDebug:render()
         WindDebug.shiftDown = WindDebug.shiftDown-1;
     end
 end
-
 
 function WindDebug:close()
     ISCollapsableWindow.close(self);
@@ -251,11 +238,8 @@ function WindDebug:clear()
     self.currentTile = nil;
 end
 
-
-
 function WindDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -276,7 +260,6 @@ function WindDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_WindTickDebug");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 
@@ -294,11 +277,3 @@ function WindDebug:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
-
---[[
-if enabled then
-    Events.OnCustomUIKey.Add(WindDebug.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(WindDebug.OnKeepKeyDown);
-    Events.OnClimateTickDebug.Add(WindDebug.OnClimateTickDebug);
-    --Events.OnObjectLeftMouseButtonUp.Add(WindDebug.onMouseButtonUp);
-end--]]

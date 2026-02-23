@@ -5,14 +5,10 @@ ISWorldItemIconTrack = ISBaseIcon:derive("ISWorldItemIconTrack");
 
 function ISWorldItemIconTrack:onRightMouseUp()
     ISAnimalTracksMenu.doContextMenu(ISContextMenu.get(self.player, getMouseX(), getMouseY()), self.itemObj, getSpecificPlayer(self.player))
---    print("do context yiha", self.itemObj)
---    return self:doContextMenu();
 end;
 
 function ISWorldItemIconTrack:doContextMenu()
-    local contextMenu = ISContextMenu.get(self.player, getMouseX(), getMouseY());
-
---    contextMenu:addOption(getText("ContextMenu_InspectTrack"))
+    ISContextMenu.get(self.player, getMouseX(), getMouseY());
 end
 
 function ISWorldItemIconTrack:onRightMouseDown()
@@ -24,7 +20,7 @@ function ISWorldItemIconTrack:doPickup(_x, _y, _contextOption, _targetContainer,
     self:getGridSquare();
     if not self.square then return; end;
     self.manager:createIconsForWorldItems(self.square);
-    --
+
     --double clicking sends item to currently selected inventory in panel
     local targetContainer = _targetContainer or getPlayerInventory(self.player).inventory or self.character:getInventory();
     if self.square and luautils.walkAdj(self.character, self.square) then
@@ -91,14 +87,11 @@ function ISWorldItemIconTrack:new(_manager, _icon)
     o = ISBaseIcon:new(_manager, _icon);
     setmetatable(o, self)
     self.__index = self;
---    o.onClickContext = ISWorldItemIconTrack.doPickup;
---    o.onMouseDoubleClick = ISWorldItemIconTrack.doPickup;
     o.iconClass = "worldObject";
     o.isValidSquare = true;
     o.itemObjTable = _icon.itemObjTable;
     o.container = _icon.itemObj:getContainer();
     o.isTrack = true;
---    o.onMouseDoubleClick = ISWorldItemIconTrack.doPickup;
     o:initialise();
     return o;
 end

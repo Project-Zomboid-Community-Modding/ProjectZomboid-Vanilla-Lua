@@ -7,14 +7,12 @@ Challenge1.Add = function()
 end
 
 Challenge1.OnInitWorld = function()
-    --SandboxVars.ZombieLore.Speed = 1;
     SandboxVars.DecayingCorpseHealthImpact = 1
     SandboxVars.Map.AllowMiniMap = false
     SandboxVars.Map.AllowWorldMap = false
 end
 
 Challenge1.AddPlayer = function(playerNum, playerObj)
-
     if getCore():isDedicated() then return end
 
     local pl = playerObj;
@@ -48,15 +46,6 @@ Challenge1.AddPlayer = function(playerNum, playerObj)
 	luautils.updatePerksXp(Perks.Sprinting, pl)
 	luautils.updatePerksXp(Perks.Strength, pl)
 	luautils.updatePerksXp(Perks.Aiming, pl)
-
-  --  local torch = pl:getInventory():AddItem("Base.Torch");
-
-      --local pistol = pl:getInventory():AddItem("Base.Schoolbag");
-  --  pl:getInventory():AddItems("Base.ShotgunShells", 5);
- --   torch:setActivated(true);
---    torch:setLightStrength(torch:getLightStrength() / 1.5);
-  --  pl:setSecondaryHandItem(torch);
-   -- pl:setPrimaryHandItem(pistol);
 end
 
 function Challenge1.RemovePlayer(playerObj)
@@ -156,15 +145,10 @@ Challenge1.SpawnZombies = function(count)
 end
 
 Challenge1.Render = function()
-
     if Challenge1.alphaTxt > 0 then
         getTextManager():DrawStringCentre(UIFont.Cred1, (getCore():getScreenWidth()*0.5), getCore():getScreenHeight()*0.1, "PREPARE FOR WAVE "..(Challenge1.wave+1), 1, 1, 1, Challenge1.alphaTxt);
 		Challenge1.alphaTxt = Challenge1.alphaTxt - 0.01;
     end
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, getCore():getOffscreenWidth() - 20, 20, "Zombies left : " .. (Challenge1.zombiesSpawned - Challenge1.deadZombie), 1, 1, 1, 0.8);
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, (getCore():getOffscreenWidth()*0.9), 40, "Next wave : " .. tonumber(((60*60) - Challenge1.waveTime)), 1, 1, 1, 0.8);
 end
 
 Challenge1.Tick = function()
@@ -175,15 +159,10 @@ Challenge1.Tick = function()
         prepareTimeEnd = 1;
     end
 
---~ 	print("wave time : " .. Challenge1.waveTime);
---~ 	print("prepareTime : " .. prepareTimeEnd);
-
     if Challenge1.waveTime >= prepareTimeEnd and Challenge1.lastWaveTime < prepareTimeEnd then
         print("Wave "..(Challenge1.wave+1).." started.")
         Challenge1.SpawnZombies(Challenge1.spawnCount[Challenge1.wave+1]);
 		Challenge1.zombiesSpawned = Challenge1.zombiesSpawned + Challenge1.spawnCount[Challenge1.wave+1];
-
---~ 		Challenge1.alphaTxt = 1;
 
         for m = 0, getNumActivePlayers() - 1 do
           local pl = getSpecificPlayer(m);
@@ -201,16 +180,6 @@ Challenge1.Tick = function()
         Challenge1.lastWaveTime = 0;
         Challenge1.wave = Challenge1.wave + 1;
         return;
-    end
-
-
-    for m = 0, getNumActivePlayers() - 1 do
-        if ZombRand(500) == 0 then
-           -- local pl = getSpecificPlayer(m);
-
-           ---- addSound(pl, pl:getX(), pl:getY(), pl:getZ(), 300, 300);
-        end
-
     end
 
     Challenge1.lastWaveTime = Challenge1.waveTime;
@@ -245,4 +214,3 @@ Challenge1.alphaTxt = 0;
 Challenge1.waveTime = 0;
 Challenge1.lastWaveTime = 0;
 Challenge1.zombieSpawnsRect = { x = 114, y = 119, x2 = 192, y2 = 200 }
---Events.OnChallengeQuery.Add(Challenge1.Add)

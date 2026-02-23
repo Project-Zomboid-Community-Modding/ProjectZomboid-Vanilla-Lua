@@ -61,7 +61,7 @@ end
 
 function RWMPower:removeBattery()
     if self:doWalkTo() then
-        ISTimedActionQueue.add(ISRadioAction:new("RemoveBattery",self.player, self.device ));
+        ISTimedActionQueue.add(ISDeviceBatteryAction:new(self.player, true, nil, ISDeviceBatteryAction:getDeviceDataParameter(self.player, self.device, self.deviceType) ));
     end
 end
 
@@ -78,7 +78,7 @@ function RWMPower:addBattery( _items )
 
     if item then
         if self:doWalkTo() then
-            ISTimedActionQueue.add(ISRadioAction:new("AddBattery",self.player, self.device, item ));
+            ISTimedActionQueue.add(ISDeviceBatteryAction:new(self.player, false, item, ISDeviceBatteryAction:getDeviceDataParameter(self.player, self.device, self.deviceType) ));
         end
     end
 end
@@ -151,12 +151,6 @@ end
 
 function RWMPower:render()
     ISPanel.render(self);
-    --if self.batteryTex then
-        --self:drawTextureScaled(self.batteryTex, (10+self.removeBatButton:getWidth()+5)+2, 4+2, self:getHeight()-8-4, self:getHeight()-8-4, 1.0, 1.0, 1.0, 1.0);
-
-        --local c = self.borderColor;
-        --self:drawRectBorder(10+self.removeBatButton:getWidth()+5, 4, self:getHeight()-8, self:getHeight()-8, c.a, c.r, c.g, c.b);
-    --end
 end
 
 function RWMPower:onJoypadDown(button)
@@ -186,6 +180,7 @@ function RWMPower:getAPrompt()
         return getText("ContextMenu_Turn_On");
     end
 end
+
 function RWMPower:getBPrompt()
     if self.deviceData:getHasBattery() then
         return getText("ContextMenu_Remove_Battery");
@@ -198,13 +193,14 @@ function RWMPower:getBPrompt()
     end
     return nil;
 end
+
 function RWMPower:getXPrompt()
     return nil;
 end
+
 function RWMPower:getYPrompt()
     return nil;
 end
-
 
 function RWMPower:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);

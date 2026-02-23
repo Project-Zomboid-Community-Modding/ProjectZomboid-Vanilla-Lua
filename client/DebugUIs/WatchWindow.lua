@@ -6,7 +6,6 @@ local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrent
 
 function WatchWindow:onRightMouseDownObject(x, y)
     if instanceof(self.parent.obj, "KahluaTableImpl") then
-
         if #self.items == 0 then
             return
         end
@@ -39,13 +38,6 @@ function WatchWindow:onRightMouseDownObject(x, y)
             y = 1;
         end
 
-        -- RJ: If you select the same item it unselect it
-        --if self.selected == y then
-        --if self.selected == y then
-        --self.selected = -1;
-        --return;
-        --end
-
         self.selected = y;
 
         local sel = self.items[self.selected];
@@ -61,9 +53,11 @@ function WatchWindow:onRightMouseDownObject(x, y)
         end
     end
 end
+
 function WatchWindow.onDataWrite(data)
     toggleBreakOnChange(data.obj, data.item.key);
 end
+
 function WatchWindow.onDataRead(data)
     toggleBreakOnRead(data.obj, data.item.key);
 end
@@ -76,37 +70,27 @@ function WatchWindow:onMouseDoubleClickOpenObject(item)
     end
 
     if item == nil then return; end
-
         local bReuse = true;
     -- hold lshift to not reuse.
         bReuse = false;
 
     if instanceof (item, "KahluaTableImpl") then
-
-             local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
-
-            src:initialise();
-            src:addToUIManager();
-
-
+        local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
+        src:initialise();
+        src:addToUIManager();
     elseif instanceof (item, "Class") then
-
     elseif instanceof (item, "Field") then
         item = getClassFieldVal(self.obj, item);
         self:onMouseDoubleClickOpenObject(item);
-
     elseif instanceof (item, "Array") then
         item = getClassFieldVal(self.obj, item);
         self:onMouseDoubleClickOpenObject(item);
     elseif instanceof (item, "Texture") then
-
         local src = TextureWindow:new(getCore():getScreenWidth() / 2, 0, item:getWidth(), item:getHeight(), item);
 
         src:initialise();
         src:addToUIManager();
-
     elseif instanceof (item, "LuaClosure") then
-
         local f = getFilenameOfClosure(item);
         if f ~= nil then
             local src = nil;
@@ -116,7 +100,6 @@ function WatchWindow:onMouseDoubleClickOpenObject(item)
                 src:removeFromUIManager();
                 src:addToUIManager();
             else
-
                 src = SourceWindow:new(getCore():getScreenWidth() / 2, 0, 600, 600, f);
                 SourceWindow.map[f] = src;
                 src:initialise();
@@ -124,19 +107,11 @@ function WatchWindow:onMouseDoubleClickOpenObject(item)
             end
             src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
-
     else
-
-
         local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
 
         src:initialise();
         src:addToUIManager();
-
-
-
-
-
     end
 end
 
@@ -148,12 +123,8 @@ function WatchWindow:restorePos()
     self.objectView:setYScroll(self.sc);
 end
 
-
-
 function WatchWindow:initialise()
-
     ISCollapsableWindow.initialise(self);
-
     self.title = "Watch Window";
 end
 
@@ -183,7 +154,6 @@ function WatchWindow:fill()
 end
 
 function WatchWindow:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local th = self:titleBarHeight()
@@ -201,23 +171,6 @@ function WatchWindow:createChildren()
     self:addChild(self.objectView);
 
     self:fill();
-
---[[
-    -- Do corner x + y widget
-    local resizeWidget = ISResizeWidget:new(self.width-10, self.height-10, 10, 10, self);
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget = resizeWidget;
-
-    -- Do bottom y widget
-    resizeWidget = ISResizeWidget:new(0, self.height-10, self.width-10, 10, self, true);
-    resizeWidget.anchorRight = true;
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget2 = resizeWidget;
---]]
 end
 
 function WatchWindow:doDrawItem(y, item, alt)
@@ -233,15 +186,12 @@ function WatchWindow:doDrawItem(y, item, alt)
         self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.6, 0.8, 0.4);
     end
 
-    --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function WatchWindow:addWatch(obj)
-
 end
 
 function WatchWindow:prerender()
@@ -259,10 +209,7 @@ function WatchWindow:checkFontSize()
 end
 
 function WatchWindow:new (x, y, width, height)
-
     local o = {}
-
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

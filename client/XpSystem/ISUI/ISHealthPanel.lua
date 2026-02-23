@@ -352,6 +352,12 @@ function ISHealthPanel:update()
     ISPanelJoypad.update(self)
     if self.otherPlayer then
         -- ISCollapsableWindow:close() just hides the window
+        if self:wasRemotePlayerRecreated() then
+            self.parent:removeFromUIManager()
+            if self.joyfocus then self.joyfocus.focus = nil end
+            self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
+            return
+        end
         if not self.parent:getIsVisible() then
             self.parent:removeFromUIManager()
             if self.joyfocus then self.joyfocus.focus = nil end
@@ -1868,7 +1874,12 @@ function ISHealthPanel:doBodyPartContextMenu(bodyPart, x, y)
         updateJoypadFocus(JoypadState.players[playerNum+1])
     end
 end
-    
+
+function ISHealthPanel:wasRemotePlayerRecreated()
+    local patient = self:getPatient()
+    return isClient() and (patient ~= nil) and (patient ~= getPlayerByOnlineID(patient:getOnlineID()))
+end
+
 -- check what anim nodes to play depending on where you bandage yourself
 function ISHealthPanel.getBandageType(bodyPart)
     if bodyPart:getType() == BodyPartType.Head or bodyPart:getType() == BodyPartType.Neck then

@@ -13,7 +13,6 @@ WinterIsComing.OnGameStart = function()
     if getGameTime():getWorldAgeHours()+2 >=3*24 and getGameTime():getWorldAgeHours()-2 <=4*24 then
         getClimateManager():triggerWinterIsComingStorm();
     end
-    --getClimateManager():forceDayInfoUpdate();
 
 	if getGameTime():getDay() == 8 and getGameTime():getTimeOfDay() == 9 then
 		local modal = ISModalRichText:new(getCore():getScreenWidth()/2 - 100, getCore():getScreenHeight()/2 - 50, 200, 100, getText("Challenge_WinterIsComingInfoBox"), false, nil, nil, 0);
@@ -47,20 +46,9 @@ WinterIsComing.OnInitWorld = function()
 	SandboxVars.StartTime = 2;
 	SandboxVars.WaterShutModifier = 7;
 	SandboxVars.ElecShutModifier = 7;
--- 	SandboxVars.FoodLoot = 3;
--- 	SandboxVars.CannedFoodLoot = 3;
--- 	SandboxVars.RangedWeaponLoot = 3;
--- 	SandboxVars.AmmoLoot = 3;
--- 	SandboxVars.SurvivalGearsLoot = 3;
--- 	SandboxVars.MechanicsLoot = 3;
--- 	SandboxVars.LiteratureLoot = 3;
--- 	SandboxVars.MedicalLoot = 3;
--- 	SandboxVars.WeaponLoot = 3;
--- 	SandboxVars.OtherLoot = 3;
     SandboxVars.LootItemRemovalList = "";
 	SandboxVars.Temperature = 3;
 	SandboxVars.Rain = 3;
---	    SandboxVars.erosion = 12
 	SandboxVars.ErosionSpeed = 1
 	SandboxVars.Farming = 3;
 	SandboxVars.NatureAbundance = 5;
@@ -85,7 +73,6 @@ WinterIsComing.OnInitWorld = function()
 
 	Events.OnGameStart.Add(WinterIsComing.OnGameStart);
     Events.EveryHours.Add(WinterIsComing.EveryHours);
-    --Events.EveryTenMinutes.Add(WinterIsComing.EveryTenMinutes);
     Events.OnInitSeasons.Add(WinterIsComing.OnInitSeasons);
 end
 
@@ -98,27 +85,13 @@ WinterIsComing.EveryHours = function()
     end
 end
 
---[[
-WinterIsComing.EveryTenMinutes = function()
-    if getGameTime():getDaysSurvived() >= 7 then
-        getWorld():setGlobalTemperature(ZombRand(-10,0));
-    end
-end
---]]
-
 WinterIsComing.RemovePlayer = function(p)
-
 end
 
 WinterIsComing.AddPlayer = function(playerNum, playerObj)
-
 end
 
 WinterIsComing.Render = function()
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, getCore():getOffscreenWidth() - 20, 20, "Zombies left : " .. (EightMonthsLater.zombiesSpawned - EightMonthsLater.deadZombie), 1, 1, 1, 0.8);
-
---~ 	getTextManager():DrawStringRight(UIFont.Small, (getCore():getOffscreenWidth()*0.9), 40, "Next wave : " .. tonumber(((60*60) - EightMonthsLater.waveTime)), 1, 1, 1, 0.8);
 end
 
 WinterIsComing.id = "WinterIsComing";

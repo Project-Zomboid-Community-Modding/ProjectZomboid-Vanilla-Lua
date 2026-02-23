@@ -2,7 +2,6 @@ require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISWidgetIngredientsInputs = ISPanelJoypad:derive("ISWidgetIngredientsInputs");
 
@@ -14,16 +13,6 @@ function ISWidgetIngredientsInputs:createChildren()
     self:setScrollChildren(true)
     self:addScrollBars()
     ISPanelJoypad.createChildren(self);
-
-    --[[
-    local column, row;
-
-    self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10);
-    self.rootTable:addRowFill(nil);
-    self.rootTable:initialise();
-    self.rootTable:instantiate();
-    self:addChild(self.rootTable);
-    --]]
 
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
@@ -56,7 +45,6 @@ function ISWidgetIngredientsInputs:createChildren()
     self.panel:setScrollChildren(true)
     self.panel:addScrollBars();
     self:addChild(self.panel)
-    --
     
     self.inputs = {};
 
@@ -78,7 +66,6 @@ function ISWidgetIngredientsInputs:createChildren()
     for i=0,recipe:getInputs():size()-1 do
         local input = recipe:getInputs():get(i);
         if (not input:getCreateToItemScript()) and (not input:isAutomationOnly()) then
-            --self:addInput(input);
             if input:isKeep() or input:isTool() then
                 table.insert(keepToolInputList, input);
             else
@@ -99,9 +86,6 @@ function ISWidgetIngredientsInputs:addInput(_inputScript)
     local input = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetInput, 0, 0, 10, 10, self.player, self.logic, _inputScript);
     input.isBuildMenu = self.isBuildMenu;
     input.interactiveMode = self.interactiveMode;
-    if _inputScript:isKeep() then
-        -- set keep flag
-    end
     input:initialise();
     input:instantiate();
     self.panel:addChild(input);
@@ -124,9 +108,8 @@ function ISWidgetIngredientsInputs:calculateLayout(_preferredWidth, _preferredHe
     for k,v in ipairs(self.inputs) do
         v:calculateLayout(0,0);
 
-        minInputWidth = math.max(minInputWidth, v:getWidth()); --+(self.margin*2));
+        minInputWidth = math.max(minInputWidth, v:getWidth());
         minInputHeight = math.max(minInputHeight, v:getHeight());
-        --minHeight = minHeight + self.margin;
     end
     
     local inputCount = #self.inputs;
@@ -251,8 +234,6 @@ function ISWidgetIngredientsInputs:onJoypadDown(button, joypadData)
     if button == Joypad.AButton then
         local input = self.joypadButtons[self.joypadIndex]
         if input and input.primary and input.primary.selectInputButton then
-            local indexY = self.joypadIndexY
-            local index = self.joypadIndex
             input:onSelectInputsClicked(input.primary.selectInputButton)
         end
         return
@@ -260,12 +241,10 @@ function ISWidgetIngredientsInputs:onJoypadDown(button, joypadData)
     ISPanelJoypad.onJoypadDown(self, button, joypadData)
 end
 
-function ISWidgetIngredientsInputs:new (x, y, width, height, player, logic) -- recipeData, craftBench)
+function ISWidgetIngredientsInputs:new (x, y, width, height, player, logic)
 	local o = ISPanelJoypad.new(self, x, y, width, height);
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
 
     o.interactiveMode = false;
 

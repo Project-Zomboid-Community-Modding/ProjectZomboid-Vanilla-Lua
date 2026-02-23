@@ -23,18 +23,10 @@ function ISBaseEntityWindow:createEntityHeader(_xuiSkin, _styleName, _force, _st
         self.entityHeader:instantiate();
         self:addChild(self.entityHeader);
     end
-    --return self.entityHeader:getY() + self.entityHeader:getHeight();
 end
-
---[[
-function ISBaseEntityWindow:recalculateLayout()
-    self.dirtyLayout = false;
-end
---]]
 
 function ISBaseEntityWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeight, _force, _anchorRight)
     if self.calculateLayout and ((not self.dirtyLayout) or _force) then
-        --print("xuiRecalculateLayout setting dirty state")
         self.xuiPreferredResizeWidth = self.width;
         self.xuiPreferredResizeHeight = self.height;
         self.xuiResizeAnchorRight = _anchorRight;
@@ -45,7 +37,6 @@ function ISBaseEntityWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeig
             self.xuiPreferredResizeHeight = _preferredHeight<0 and self.height+_preferredHeight or _preferredHeight;
         end
         self.dirtyLayout = true;
-        --self:calculateLayout(self.width, self.height);
     end
 end
 
@@ -67,16 +58,9 @@ function ISBaseEntityWindow:prerender()
     ISCollapsableWindow.prerender(self);
 end
 
---[[
-function ISBaseEntityWindow:onResize()
-
-end
---]]
-
 function ISBaseEntityWindow:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
-
 
 function ISBaseEntityWindow:render()
     ISCollapsableWindow.render(self);
@@ -91,15 +75,9 @@ function ISBaseEntityWindow:update()
         local dist = self.panelCloseDistance or 10;
         -- in case of IsoObject check distance.
         if self.entity:getGameEntityType()==GameEntityType.IsoObject or self.entity:getGameEntityType()==GameEntityType.VehiclePart then
-            --local ex, ey, ez = self.entity:getX(), self.entity:getY(), self.entity:getZ();
-            --local px, py, pz = self.player:getX(), self.player:getY(), self.player:getZ();
-
             if self.player:DistToProper(self.entity) <= dist then
                 valid = true;
             end
-            --if self.entity:getSquare() and px > ex-dist and px < ex+dist and py > ey-dist and py < ey+dist and ez == pz then
-            --    valid = true;
-            --end
         else
             valid = true;
         end
@@ -190,7 +168,6 @@ function ISBaseEntityWindow:new(x, y, width, height, player, entity, entityUiSty
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = nil;
-    --o.resizable = false;
     o.drawFrame = true;
 
     o.panelCloseDistance = 4;

@@ -36,10 +36,8 @@ function CheckList:onMouseDown(x, y)
 	end
 	self.selected = row
 
---	if x < self.leftMargin + self.boxSize then
-		self:setChecked(row, not self:isChecked(row))
-		getSoundManager():playUISound("UIToggleTickBox")
---	end
+    self:setChecked(row, not self:isChecked(row))
+    getSoundManager():playUISound("UIToggleTickBox")
 end
 
 function CheckList:onMouseDoubleClick(x, y)

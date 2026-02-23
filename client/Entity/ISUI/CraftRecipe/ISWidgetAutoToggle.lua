@@ -1,10 +1,6 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
-
 ISWidgetAutoToggle = ISPanel:derive("ISWidgetAutoToggle");
---ISWidgetAutoToggle.defWidth = 50;
---ISWidgetAutoToggle.defHeight = 12;
 
 function ISWidgetAutoToggle:initialise()
 	ISPanel.initialise(self);
@@ -23,7 +19,6 @@ function ISWidgetAutoToggle:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetAutoToggle:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -58,7 +53,6 @@ function ISWidgetAutoToggle:onMouseDown(x, y)
 end
 
 function ISWidgetAutoToggle:onMouseUp(x, y)
-
 end
 
 function ISWidgetAutoToggle:onMouseMove(dx, dy)

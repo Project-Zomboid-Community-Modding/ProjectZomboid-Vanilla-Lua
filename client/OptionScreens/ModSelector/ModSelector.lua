@@ -3,7 +3,6 @@ require "ISUI/ISPanelJoypad"
 ModSelector = ISPanelJoypad:derive("ModSelector")
 
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6

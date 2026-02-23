@@ -7,6 +7,10 @@ function ISButcherAnimal:isValid()
 end
 
 function ISButcherAnimal:waitToStart()
+    if isClient() and self.body:getObjectIDAsLong() == -1 then
+        return true
+    end
+
 	self.character:faceThisObject(self.body)
 	return self.character:shouldBeTurning()
 end

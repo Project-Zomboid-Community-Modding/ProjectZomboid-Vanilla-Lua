@@ -10,7 +10,6 @@ function ISMPTabPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISMPTabPanel:updateSmoothScrolling()
 	if not self.smoothScrollTargetX then return end
 	local dx = self.smoothScrollTargetX - self.smoothScrollX
@@ -24,10 +23,8 @@ function ISMPTabPanel:updateSmoothScrolling()
 	if math.abs(targetX - self.smoothScrollTargetX) > 1 then
 		self.scrollX = math.floor(targetX)
 		self.smoothScrollX = targetX
---		print(dx .. "," .. self.scrollX .. "," .. self.smoothScrollTargetX .. "," .. maxXScroll)
 	else
 		self.scrollX = self.smoothScrollTargetX
---		print(dx .. "," .. self.scrollX .. "," .. self.smoothScrollTargetX .. "," .. maxXScroll)
 		self.smoothScrollTargetX = nil
 	end
 end
@@ -91,8 +88,6 @@ function ISMPTabPanel:prerender()
 		newViewList = self.viewList;
 	end
 	-- our principal rect, wich display our different view
-	--self:drawRect(0, self.tabHeight, self.width, self.height - self.tabHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-	--self:drawRectBorder(0, self.tabHeight, self.width, self.height - self.tabHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	local x = inset;
 	if self.centerTabs and (self:getWidth() >= self:getWidthOfAllTabs()) then
 		x = (self:getWidth() - self:getWidthOfAllTabs()) / 2
@@ -155,23 +150,18 @@ function ISMPTabPanel:prerender()
                     end
                 end
                 alpha = self.blinkTabAlpha;
-                --self:drawTextureScaled(ISMPTabPanel.tabUnSelected, x, 0, tabWidth, self.tabHeight - 1, self.tabTransparency,1,1,1);
                 self:drawRect(x, 0, tabWidth, self.tabHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-                --self:drawRectBorder(x, 0, tabWidth, self.tabHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
                 self:drawTextureScaled(viewObject.iconDisabled, x + self.tabPadX, self.tabPadX, self.tabHeight - (self.tabPadX*2), self.tabHeight - (self.tabPadX*2), 1,1,1,1);
 
 
                 self:drawRect(x, 0, tabWidth, self.tabHeight - 1, alpha, 1, 1, 1);
             elseif shouldBlink then
                 alpha = self.blinkTabAlpha;
-                --self:drawTextureScaled(ISMPTabPanel.tabUnSelected, x, 0, tabWidth, self.tabHeight - 1, self.tabTransparency,1,1,1);
                 self:drawRect(x, 0, tabWidth, self.tabHeight - 1, alpha, 1, 1, 1);
                 self:drawTextureScaled(viewObject.iconDisabled, x + self.tabPadX, self.tabPadX, self.tabHeight - (self.tabPadX*2), self.tabHeight - (self.tabPadX*2), 1,1,1,1);
 
             else
-			    --self:drawTextureScaled(ISMPTabPanel.tabUnSelected, x, 0, tabWidth, self.tabHeight - 1, self.tabTransparency,1,1,1);
                 self:drawRect(x, 0, tabWidth, self.tabHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-                --self:drawRectBorder(x, 0, tabWidth, self.tabHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
                 self:drawTextureScaled(viewObject.iconDisabled, x + self.tabPadX, self.tabPadX, self.tabHeight - (self.tabPadX*2), self.tabHeight - (self.tabPadX*2), 1,1,1,1);
 
 
@@ -181,9 +171,6 @@ function ISMPTabPanel:prerender()
 					viewObject.fade:setFadeIn(false)
 			    end
 			    viewObject.fade:update()
-				--self:drawTextureScaled(ISMPTabPanel.tabSelected, x, 0, tabWidth, self.tabHeight - 1, 0.2 * viewObject.fade:fraction(),1,1,1);
-                ----self:drawRect(x, 0, tabWidth, self.tabHeight, self.backgroundColorSelected.a, self.backgroundColorSelected.r, self.backgroundColorSelected.g, self.backgroundColorSelected.b);
-                ----self:drawRectBorder(x, 0, tabWidth, self.tabHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
            end
 		end
         -- Draw tab border
@@ -219,10 +206,8 @@ function ISMPTabPanel:prerender()
 	-- we draw a ghost of our tab we currently dragging
 	if self.draggingTab and self.isDragging and not ISMPTabPanel.mouseOut then
 		if self.draggingTab > 0 then
-			--self:drawTextureScaled(ISMPTabPanel.tabSelected, inset + (self.draggingTab * (tabWidth + gap)) + (self:getMouseX() - ISMPTabPanel.xMouse), 0, tabWidth, self.tabHeight - 1, 0.8,1,1,1);
 			self:drawTextCentre(ISMPTabPanel.viewDragging.name, inset + (self.draggingTab * (tabWidth + gap)) + (self:getMouseX() - ISMPTabPanel.xMouse) + (tabWidth / 2), 3, 1, 1, 1, 1, UIFont.Normal);
 		else
-			--self:drawTextureScaled(ISMPTabPanel.tabSelected, inset + (self:getMouseX() - ISMPTabPanel.xMouse), 0, tabWidth, self.tabHeight - 1, 0.8,1,1,1);
 			self:drawTextCentre(ISMPTabPanel.viewDragging.name, inset + (self:getMouseX() - ISMPTabPanel.xMouse) + (tabWidth / 2), 3, 1, 1, 1, 1, UIFont.Normal);
 		end
     end
@@ -296,8 +281,6 @@ function ISMPTabPanel:onMouseUpOutside(x, y)
 		ISMPTabPanel.yMouse = -1;
 		self.isDragging = false;
 		ISMPTabPanel.mouseOut = false;
---~ 		local newView = ISMPTabPanel.viewDragging.view:new(0,0,ISMPTabPanel.viewDragging.view.width,ISMPTabPanel.viewDragging.height);
---~ 		local newView = ISCharacterInfo:new(0, 0, self.width, self.height-8);
 		-- we start to remove the view from our tab panel
 		self:removeChild(ISMPTabPanel.viewDragging.view);
 		local newWindow = ISCollapsableWindow:new(self:getMouseX() + self:getAbsoluteX(), self:getMouseY() + self:getAbsoluteY(), ISMPTabPanel.viewDragging.view:getWidth(), ISMPTabPanel.viewDragging.view:getHeight());
@@ -351,7 +334,6 @@ ISMPTabPanel.redoTab = function(self)
 			end
 		end
 		self.viewList = trueViewList;
---~ 		print(#self.viewList);
 		-- we remove all the child view from the collapsable window and add them to our own tab panel
 		for i,v in pairs(ISMPTabPanel.viewDragging.view:getViews()) do
 			self:addChild(v);
@@ -360,7 +342,6 @@ ISMPTabPanel.redoTab = function(self)
 			newView.view = v;
 			newView.name = ISMPTabPanel.viewDragging.view:getTitle();
 			table.insert(self.viewList, self:getTabIndexAtX(self:getMouseX()), newView);
---~ 			print(#self.viewList);
 		end
 		ISMPTabPanel.viewDragging.view:clearChildren();
 		ISMPTabPanel.viewDragging.view:setVisible(false);
@@ -512,13 +493,11 @@ function ISMPTabPanel:addView(name, iconEnabled, iconDisabled, view)
 	viewObject.view = view;
 	viewObject.iconEnabled = iconEnabled;
 	viewObject.iconDisabled = iconDisabled;
-	--viewObject.tabWidth = getTextManager():MeasureStringX(UIFont.Large, name) + self.tabHeight*4;
 	viewObject.tabWidth = self.tabWidth
 	viewObject.fade = UITransition.new()
 	table.insert(self.viewList, viewObject);
 	-- the view have to be under our tab
 	view:setY(self.tabHeight);
---	view:initialise();
 	self:addChild(view);
 	view.parent = self;
 	-- the 1st view will be default visible
@@ -664,7 +643,6 @@ function ISMPTabPanel:new (x, y, width, height)
 	o:noBackground();
 	o.draggingTab = nil;
 	o.isDragging = false
---~ 	o.parent = nil;
 	o.tabTornOffTarget = nil
 	o.tabTornOff = nil
 	o.maxLength = 0

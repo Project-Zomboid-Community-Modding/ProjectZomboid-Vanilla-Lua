@@ -337,7 +337,9 @@ function ISMoveableDefinitions.load()
     moveableDefinitions.addMaterialDefinition( "Leather",  "Base.LeatherStrips",  3,  10 );
     -- Natural
     moveableDefinitions.addMaterialDefinition( "Natural",  "Base.Twigs",  3,  10 );
-    --FIXME currently missing materials to be added later: 'Brick' and 'Plastic'
+    -- Brick
+    moveableDefinitions.addMaterialDefinition( "Brick",  "Base.ClayBrick",   3,  20 );
+    --FIXME currently missing materials to be added later: 'Plastic'
 
     -- MATERIALS (SCRAP)
     --[[
@@ -386,7 +388,9 @@ function ISMoveableDefinitions.load()
     moveableDefinitions.addScrapDefinition( "AluminumScrap",  {"Base.Hammer"}, {},   Perks.Woodwork,  75,     "Hammering",    true );
     -- not yet applied to anything
 
-    moveableDefinitions.addScrapDefinition( "Brick",  {"Base.Hammer"}, {},   Perks.Woodwork,  75,     "Hammering",    true );
+    moveableDefinitions.addScrapDefinition( "Brick",  {"Base.Hammer"}, {},   Perks.Masonry,  75,     "Hammering",    true );
+
+    moveableDefinitions.addScrapItem( "Brick",  "Base.ClayBrick",   1, 80, true );
     -- applied to some brick objects
 
     moveableDefinitions.addScrapDefinition( "Door",  {"Base.Hammer"}, {"Base.Screwdriver"},   Perks.Woodwork,  1000,     "Hammering",    true , 10);
@@ -525,7 +529,7 @@ function ISMoveableDefinitions.load()
 
     moveableDefinitions.addScrapDefinition( "Stone",  {"Base.Hammer"}, {},   Perks.Strength,  1000,     "Hammering",    true, 30 );
     -- applied to objects that can be smashed with sledge hammer to get stones/stoneshards (graves etc)
-    moveableDefinitions.addScrapItem( "Stone",  "Base.Stone",  4,  90 );
+    moveableDefinitions.addScrapItem( "Stone",  "Base.Stone2",  4,  90 );
 
     moveableDefinitions.addScrapDefinition( "Transmission",  {"Base.Hammer"}, {},   Perks.Woodwork,  75,     "Hammering",    true );
     -- not yet applied

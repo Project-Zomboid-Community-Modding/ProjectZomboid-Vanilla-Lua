@@ -3,7 +3,6 @@ require "ISUI/ISCollapsableWindow"
 ISEntitiesDebugWindow = ISCollapsableWindow:derive("ISEntitiesDebugWindow");
 ISEntitiesDebugWindow.coords = false;
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 
 function ISEntitiesDebugWindow.OnOpenPanel(_player)
@@ -86,7 +85,6 @@ end
 function ISEntitiesDebugWindow:prerender()
     ISCollapsableWindow.prerender(self);
 end
-
 
 function ISEntitiesDebugWindow:render()
     ISCollapsableWindow.render(self)

@@ -1,8 +1,5 @@
 require "ISUI/ISCollapsableWindow"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-
 ISAnimalBehaviorDebugUI = ISCollapsableWindow:derive("ISAnimalBehaviorDebugUI");
 
 function ISAnimalBehaviorDebugUI:prerender()
@@ -13,7 +10,6 @@ function ISAnimalBehaviorDebugUI:render()
     ISCollapsableWindow.render(self);
 
     self:drawText(self.animal:getData():getDebugBehaviorString(), 10, 20, 1,1,1,1, UIFont.Small);
-
 end
 
 function ISAnimalBehaviorDebugUI:initialise()
@@ -22,13 +18,11 @@ function ISAnimalBehaviorDebugUI:initialise()
 end
 
 function ISAnimalBehaviorDebugUI:create()
-
 end
 
 function ISAnimalBehaviorDebugUI:new(x, y, width, height, animal, player)
     local o = {};
     o = ISCollapsableWindow:new(x, y, width, height);
-    --    o:noBackground();
     setmetatable(o, self);
     self.__index = self;
     o.animal = animal;

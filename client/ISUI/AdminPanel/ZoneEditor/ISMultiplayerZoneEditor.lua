@@ -2,9 +2,7 @@ require "ISUI/ISPanelJoypad"
 require('ISUI/Maps/Editor/WorldMapEditorMode')
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISMultiplayerZoneEditor = ISPanelJoypad:derive("ISMultiplayerZoneEditor")
 
@@ -14,11 +12,7 @@ function ISMultiplayerZoneEditor_ButtonPanel:createChildren()
 	local btnSize = self.texViewIsometric and self.texViewIsometric:getWidth() or 48
 
 	local buttons = {}
---[[
-	self.optionBtn = ISButton:new(0, 0, btnSize, btnSize, getText("UI_mainscreen_option"), self, self.onChangeOptions)
-	self:addChild(self.optionBtn)
-	table.insert(buttons, self.optionBtn)
---]]
+
 	self.zoomInButton = ISButton:new(0, 0, btnSize, btnSize, "+", self.editor, self.editor.onZoomInButton)
 	self:addChild(self.zoomInButton)
 	table.insert(buttons, self.zoomInButton)
@@ -27,32 +21,11 @@ function ISMultiplayerZoneEditor_ButtonPanel:createChildren()
 	self:addChild(self.zoomOutButton)
 	table.insert(buttons, self.zoomOutButton)
 
---	if getDebug() then
-		self.pyramidBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self.editor, self.editor.onTogglePyramid)
-		self.pyramidBtn:setImage(self.editor.texViewPyramid)
-		self:addChild(self.pyramidBtn)
-		table.insert(buttons, self.pyramidBtn)
---	end
+    self.pyramidBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self.editor, self.editor.onTogglePyramid)
+    self.pyramidBtn:setImage(self.editor.texViewPyramid)
+    self:addChild(self.pyramidBtn)
+    table.insert(buttons, self.pyramidBtn)
 
---[[
-	-- Isometric view doesn't work with WorldMapEditorResizer
-	self.perspectiveBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "", self.editor, self.editor.onChangePerspective)
-	self.perspectiveBtn:setImage(self.isometric and self.editor.texViewIsometric or self.editor.texViewOrthographic)
-	self:addChild(self.perspectiveBtn)
-	table.insert(buttons, self.perspectiveBtn)
-
-	self.centerBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "C", self.editor, self.editor.onCenterOnPlayer)
-	self:addChild(self.centerBtn)
-	table.insert(buttons, self.centerBtn)
-
-	self.symbolsBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "S", self.editor, self.editor.onToggleSymbols)
-	self:addChild(self.symbolsBtn)
-	table.insert(buttons, self.symbolsBtn)
-
-	self.forgetBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, "?", self.editor, function(self, button) self.editor:onForget(button) end)
-	self.buttonPanel:addChild(self.forgetBtn)
-	table.insert(buttons, self.forgetBtn)
---]]
 	self.closeBtn = ISButton:new(buttons[#buttons]:getRight() + UI_BORDER_SPACING, 0, btnSize, btnSize, getText("UI_btn_close"), self.editor, self.editor.close)
 	self:addChild(self.closeBtn)
 	table.insert(buttons, self.closeBtn)
@@ -108,7 +81,6 @@ end
 function ISMultiplayerZoneEditor:instantiate()
 	self.javaObject = UIWorldMap.new(self)
 	self.mapAPI = self.javaObject:getAPIv3()
---	self.mapAPI:setMapItem(MapItem.getSingleton())
 	self.javaObject:setX(self.x)
 	self.javaObject:setY(self.y)
 	self.javaObject:setWidth(self.width)
@@ -292,13 +264,10 @@ function ISMultiplayerZoneEditor:onComboChangeMode()
 end
 
 function ISMultiplayerZoneEditor:onSwitchMode(mode)
---	local mode = button.mode
 	if self.currentMode then
---		self.modeButton[self.currentMode].textColor.a = 0.5
 		self.mode[self.currentMode]:undisplay()
 	end
 	self.currentMode = mode
---	self.modeButton[mode].textColor.a = 1.0
 	self.mode[mode]:display()
 end
 
@@ -331,7 +300,6 @@ function ISMultiplayerZoneEditor:initDirectoryMapData(directory)
 	local mapAPI = mapUI.javaObject:getAPIv1()
 	local file = directory..'/worldmap-forest.xml'
 	if fileExists(file) then
---		mapAPI:addData(file)
 	end
 	file = directory..'/worldmap.xml'
 	if fileExists(file) then

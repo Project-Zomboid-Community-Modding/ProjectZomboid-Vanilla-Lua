@@ -11,10 +11,8 @@ function ISWidgetRecipeTools:createChildren()
 
     local fontHeight = -1; -- <=0 sets label initial height to font
     self.toolsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Tools"), 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
-    --self.amountLabel.scriptAmount = amount;
     self.toolsLabel:initialise();
     self.toolsLabel:instantiate();
-    --self.amountLabel:setName("1000 / 1000");
     self:addChild(self.toolsLabel);
 
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
@@ -58,7 +56,6 @@ function ISWidgetRecipeTools:createToolSide(_recipe, _doLeft)
 
     table.icon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.iconSize, self.iconSize, nil);
     table.icon.autoScale = true;
-    --table.icon.doBorder = true;
     table.icon.borderColor.a = 1;
     if not table.enabled then
         table.icon.borderColor = {r=c.r, g=c.g, b=c.b, a=0.7};
@@ -75,20 +72,11 @@ function ISWidgetRecipeTools:createToolSide(_recipe, _doLeft)
     table.icon.tooltipUI.nameMarginX = 0;
     table.icon.tooltipUI.defaultMyWidth = 0;
 
---     table.iconKeep = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 24, 24, self.textureKeep);
---     table.iconKeep.autoScale = true;
---     table.iconKeep:initialise();
---     table.iconKeep:instantiate();
---     table.iconKeep:setVisible(table.enabled and table.inputWidget.primary.isKeep);
---     self:addChild(table.iconKeep);
-
     c = table.enabled and self.colTextEnabled or self.colDisabled;
     local text = _doLeft and getText("IGUI_CraftingWindow_ToolLeft") or getText("IGUI_CraftingWindow_ToolRight");
     table.label = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, text, c.r, c.g, c.b, 1, UIFont.Large, true);
-    --self.amountLabel.scriptAmount = amount;
     table.label:initialise();
     table.label:instantiate();
-    --self.amountLabel:setName("1000 / 1000");
     self:addChild(table.label);
 
     return table;
@@ -130,8 +118,6 @@ function ISWidgetRecipeTools:calculateLayout(_preferredWidth, _preferredHeight)
     x = self.left.icon:getX() + self.left.icon:getWidth() + self.margin + 2;
 
     local iconMid = self.left.icon:getX() + (self.left.icon:getWidth() / 2);
---     self.left.iconKeep:setX(iconMid - (self.left.iconKeep:getWidth()/2));
---     self.left.iconKeep:setY(height - self.left.iconKeep:getHeight() - 1);
 
     self.left.label:setX(x);
     self.left.label.originalX = self.left.label:getX();
@@ -144,8 +130,6 @@ function ISWidgetRecipeTools:calculateLayout(_preferredWidth, _preferredHeight)
     x = x - self.margin - self.right.label:getWidth() - 2;
 
     iconMid = self.right.icon:getX() + (self.right.icon:getWidth() / 2);
---     self.right.iconKeep:setX(iconMid - (self.right.iconKeep:getWidth()/2));
---     self.right.iconKeep:setY(height - self.right.iconKeep:getHeight() - 1);
 
     self.right.label:setX(x);
     self.right.label.originalX = self.right.label:getX();
@@ -190,9 +174,6 @@ function ISWidgetRecipeTools:updateToolValues(_table)
         _table.icon.borderColor.r = c.r;
         _table.icon.borderColor.g = c.g;
         _table.icon.borderColor.b = c.b;
-
-        --_table.iconKeep:setVisible(_table.enabled and _table.inputWidget.primary.isKeep);
---         _table.iconKeep.backgroundColor.a = _table.inputWidget.iconKeep.backgroundColor.a
     end
 end
 
@@ -204,17 +185,14 @@ function ISWidgetRecipeTools:update()
     ISPanel.update(self);
 end
 
-function ISWidgetRecipeTools:new(x, y, width, height, player, logic) -- recipeData, craftBench)
+function ISWidgetRecipeTools:new(x, y, width, height, player, logic)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
 
     o.background = true;
-    --o.margin = 5;
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
     o.editMode = false;
 
     o.iconSize = 32;
@@ -223,13 +201,10 @@ function ISWidgetRecipeTools:new(x, y, width, height, player, logic) -- recipeDa
 
     o.textureKeep = getTexture("media/ui/Entity/Crafting_Keep_24.png");
     o.textureDrain = getTexture("media/ui/Entity/Crafting_Drain_24.png");
---     o.textureKeep = getTexture("media/ui/Entity/keep_item_icon.png");
 
     o.margin = 5;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

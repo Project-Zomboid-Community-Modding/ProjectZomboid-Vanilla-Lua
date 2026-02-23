@@ -54,12 +54,14 @@ function ISWalkToCursor:isValid(square)
 end
 
 function ISWalkToCursor:render(x, y, z, square)
-	local hc = getCore():getGoodHighlitedColor()
+    local hc = getCore():getGoodHighlitedColor()
     local targetSquare = self:locateTargetSquare(square);
-	if not self:isValid(targetSquare) then
-		hc = getCore():getBadHighlitedColor()
-	end
-	self:getFloorCursorSprite():RenderGhostTileColor(targetSquare:getX(), targetSquare:getY(), targetSquare:getZ(), hc:getR(), hc:getG(), hc:getB(), 0.8)
+    if not targetSquare or not self:isValid(targetSquare) then
+        hc = getCore():getBadHighlitedColor()
+    end
+    if targetSquare then
+        self:getFloorCursorSprite():RenderGhostTileColor(targetSquare:getX(), targetSquare:getY(), targetSquare:getZ(), hc:getR(), hc:getG(), hc:getB(), 0.8)
+    end
     if square ~= targetSquare then
         hc = getCore():getBadHighlitedColor();
         self:getFloorCursorSprite():RenderGhostTileColor(square:getX(), square:getY(), square:getZ(), hc:getR(), hc:getG(), hc:getB(), 0.8)

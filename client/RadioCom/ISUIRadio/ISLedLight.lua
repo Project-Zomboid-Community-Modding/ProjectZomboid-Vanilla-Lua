@@ -27,7 +27,6 @@ function ISLedLight:prerender()
     ISPanel.prerender(self);
 end
 
-
 function ISLedLight:render()
     ISPanel.render(self);
 
@@ -78,7 +77,6 @@ function ISLedLight:setLedColorOff( _a, _r, _g, _b )
     end
 end
 
-
 function ISLedLight:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
@@ -98,7 +96,6 @@ function ISLedLight:new (x, y, width, height)
     o.ledTexture = getTexture("Radio_ledLight");
     o.ledCol = {r=1.0, g=0.0, b=0.0, a =1.0};
     o.ledColOff = {r=0.3, g=0.0, b=0.0, a =1.0};
-    --o.ledSize = 8;
     o.doLedBlink = false;
     o.ledIsOn = false;
     o.ledBlinkSpeed = 10;

@@ -67,7 +67,6 @@ end
 function StashDebug:drawDatas(y, item, alt)
     local a = 0.9;
 
-    --    self.parent.selectedStash = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
@@ -96,12 +95,8 @@ function StashDebug:onClick(button)
             local map = instanceItem(self.selectedStash:getItem());
             StashSystem.doStashItem(self.selectedStash, map);
             getPlayer():getInventory():AddItem(map);
-            local mapUI = ISMap:new(0, 0, 0, 0, map, 0);
+            ISMap:new(0, 0, 0, 0, map, 0);
             map:doBuildingStash();
---             getPlayer():setX(self.selectedStash:getBuildingX() + 2);
---             getPlayer():setY(self.selectedStash:getBuildingY() + 2);
---             getPlayer():setLastX(self.selectedStash:getBuildingX() + 2);
---             getPlayer():setLastY(self.selectedStash:getBuildingY() + 2);
             self:populateList();
         end
     end

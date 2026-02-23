@@ -89,12 +89,6 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	local y = getMouseY()
 	local square,sqX,sqY,sqZ = DebugContextMenu.pickSquare(x, y)
 
-    local vehicle = square:getVehicleContainer()
-    if vehicle then
-        debugMenu:addOption(string.format("%s - Jump", getClassSimpleName(vehicle)), vehicle, DebugContextMenu.onJumpVehicle)
-        debugMenu:addOption(string.format("%s - Landmine!", getClassSimpleName(vehicle)), vehicle, DebugContextMenu.onHitLandmine, square)
-    end
-
 	for dy=-1,1 do
 		for dx=-1,1 do
 			local l_square = getCell():getGridSquare(sqX+dx, sqY+dy, sqZ)
@@ -121,6 +115,7 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
         debugMenu:addSubMenu(devOption, devContext);
 
         devContext:addOption("Tailoring to CSV", nil, DebugContextMenu.doCSV);
+        devContext:addOption("Fluid Containers to CSV", nil, DebugContextMenu.doFluidContainerCSV);
     end
 
     local brushToolOption = debugMenu:addOption("Brush Tool", worldobjects, nil);
@@ -137,6 +132,12 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 		print("[DebugContextMenu][doDebugMenu] returned, square is null")
 		return;
 	end;
+    
+    local vehicle = square:getVehicleContainer()
+    if vehicle then
+        debugMenu:addOption(string.format("%s - Jump", getClassSimpleName(vehicle)), vehicle, DebugContextMenu.onJumpVehicle)
+        debugMenu:addOption(string.format("%s - Landmine!", getClassSimpleName(vehicle)), vehicle, DebugContextMenu.onHitLandmine, square)
+    end
 
 	if square:getBuilding() then
 		DebugContextMenu.addRBDebugMenu(debugMenu, square:getBuilding());
@@ -175,11 +176,6 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	DebugContextMenu.doSurvivorSwapMenu(player, debugMenu, worldobjects, test)
 
 	DebugContextMenu.doForageMenu(player, debugMenu, worldobjects, test)
-	--	if not DebugContextMenu.staggerBacking then
-	--		subMenu:addOption("Start Stagger Back", playerObj, DebugContextMenu.stagger, true);
-	--	else
-	--		subMenu:addOption("Stop Stagger Back", playerObj, DebugContextMenu.stagger, false);
-	--	end
 end
 
 function DebugContextMenu.onFilmingToolsUI(playerObj)
@@ -212,7 +208,6 @@ function DebugContextMenu.doDebugAnimalMenu(playerObj, context, worldobjects, te
 	local subMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(debugOption, subMenu);
 
-	--	subMenu:addOption("Designation Zone", playerObj, DebugContextMenu.onAddDesignationZone);
 	if isClient() then
 		subMenu:addOption(getText("IGUI_DebugContext_RemoveAll"), nil, DebugContextMenu.OnRemoveAllAnimalsClient)
 	else
@@ -325,7 +320,6 @@ function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
 	local y = getMouseY()
 
 	local playerObj = getSpecificPlayer(player)
-	local playerInv = playerObj:getInventory()
 
 	local debugOption = context:addOption(getText("IGUI_DebugContext_Objects"), worldobjects, nil);
 	local subMenu = ISContextMenu:getNew(context);
@@ -677,7 +671,6 @@ end
 
 function DebugContextMenu.OnDeadBodyRemove(body)
 	body:getSquare():removeCorpse(body, false)
-
 end
 
 function DebugContextMenu.OnGetBuildingKey(worldobjects, player)
@@ -1442,28 +1435,6 @@ function DebugContextMenu.onAddEnclosure(playerObj)
 		sq:AddTileObject(fence);
 
 	end
-
-	--local sq = getSquare(playerObj:getCurrentSquare():getX() - 3, playerObj:getCurrentSquare():getY() + 2, playerObj:getCurrentSquare():getZ())
-	--local trough = IsoFeedingTrough.new(sq, "location_farm_accesories_01_14", nil)
-	--local def = FeedingTroughDef["simple"];
-	--trough:setName("FeedingTrough")
-	--trough:setMaxWater(def.maxWater)
-	--trough:setDef(def);
-	--sq:AddSpecialObject(trough)
-	--trough:transmitCompleteItemToClients()
-	--trough:updateLuaObject();
-	--ISFeedingTroughMenu.onAddFoodDebug(nil, trough);
-	--
-	--local sq = getSquare(playerObj:getCurrentSquare():getX() - 3, playerObj:getCurrentSquare():getY(), playerObj:getCurrentSquare():getZ())
-	--local trough = IsoFeedingTrough.new(sq, "location_farm_accesories_01_14", nil)
-	--local def = FeedingTroughDef["simple"];
-	--trough:setName("FeedingTrough")
-	--trough:setMaxWater(def.maxWater)
-	--trough:setDef(def);
-	--sq:AddSpecialObject(trough)
-	--trough:transmitCompleteItemToClients()
-	--trough:updateLuaObject();
-	--ISFeedingTroughMenu.onAddWaterDebug(nil, trough);
 end
 
 function DebugContextMenu.AddAnimal(type, breed, square, skeleton, playerObj)
@@ -1477,9 +1448,9 @@ function DebugContextMenu.AddAnimal(type, breed, square, skeleton, playerObj)
 				"skeleton", skeleton)
 	else
 		local animal = addAnimal(getCell(),
-				getPlayer():getCurrentSquare():getX(),
-				getPlayer():getCurrentSquare():getY(),
-				getPlayer():getCurrentSquare():getZ(),
+                square:getX(),
+                square:getY(),
+                square:getZ(),
 				type,
 				breed,
 				skeleton)
@@ -1489,4 +1460,8 @@ end
 
 DebugContextMenu.doCSV = function()
     DebugCSVExport.doCSV();
+end
+
+DebugContextMenu.doFluidContainerCSV = function()
+    DebugCSVExportFluidContainers.doCSV();
 end

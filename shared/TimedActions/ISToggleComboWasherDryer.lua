@@ -25,7 +25,7 @@ end
 function ISToggleComboWasherDryer:complete()
 	if not self.object then return end
 	self.object:setActivated(not self.object:isActivated())
-	self.object:sendObjectChange(self.object:isModeWasher() and "washer.state" or "dryer.state")
+	self.object:sendObjectChange(self.object:isModeWasher() and IsoObjectChange.WASHER_STATE or IsoObjectChange.DRYER_STATE)
 	return true
 end
 

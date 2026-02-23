@@ -4,7 +4,6 @@ function ISMenuContextBuild.new()
 	local self 					= ISMenuElement.new();
 	
 	function self.init()
-		--self.loadElements( _table_ );
 	end	
 
 	function self.createMenu()

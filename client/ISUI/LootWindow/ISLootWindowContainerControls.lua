@@ -21,7 +21,6 @@ require "ISUI/LootWindow/Handlers/StoveToggle"
 require "ISUI/LootWindow/Handlers/TakeAll"
 require "ISUI/LootWindow/Handlers/TakeSameType"
 require "ISUI/LootWindow/Handlers/VehicleCloseTrunk"
---require "ISUI/LootWindow/Handlers/VehicleCloseTrunk2"
 require "ISUI/LootWindow/Handlers/VehicleLockTrunk"
 
 require "ISUI/LootWindow/Handlers/FloorTakeAll"
@@ -115,7 +114,6 @@ function ISLootWindowContainerControls:checkHandler(handlerClass, object, contai
 end
 
 function ISLootWindowContainerControls:arrange()
-    local playerObj = getSpecificPlayer(self.lootWindow.player)
     local container = self:getDisplayedContainer()
     local object = self:getDisplayedObject()
     for _,control in ipairs(self.controls) do

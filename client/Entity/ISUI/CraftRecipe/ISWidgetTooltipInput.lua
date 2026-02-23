@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
-
 ISWidgetTooltipInput = ISPanel:derive("ISWidgetTooltipInput");
 
 function ISWidgetTooltipInput:initialise()
@@ -20,21 +18,6 @@ function ISWidgetTooltipInput:createChildren()
 
     self.primary = self:createScriptValues(self.inputScript);
 
---     self.iconKeep = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 24, 24, self.textureKeep);
---     self.iconKeep.autoScale = true;
---     self.iconKeep:initialise();
---     self.iconKeep:instantiate();
---     self.iconKeep:setVisible(self.primary.isKeep);
---     self:addChild(self.iconKeep);
-
-
---     self.iconDrain = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, 24, 24, self.textureDrain);
---     self.iconDrain.autoScale = true;
---     self.iconDrain:initialise();
---     self.iconDrain:instantiate();
---     self.iconDrain:setVisible(not self.primary.isItemCount);
---     self:addChild(self.iconDrain);
-
     local arrowTexture = nil;
     if self.consumeScript then
         self.secondary = self:createScriptValues(self.consumeScript);
@@ -46,7 +29,6 @@ function ISWidgetTooltipInput:createChildren()
 
     if arrowTexture then
         self.arrow = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.iconSize/2, self.iconSize, arrowTexture);
-        --self.consumeArrow.noAspect = true;
         self.arrow.scaledWidth = self.iconSize/2;
         self.arrow.scaledHeight = self.iconSize;
         self.arrow:initialise();
@@ -72,8 +54,6 @@ function ISWidgetTooltipInput:calculateLayout(_preferredWidth, _preferredHeight)
         minWidth = minWidth + self.iconSize;
     end
 
-    --width = math.max(width, minWidth);
-
     height = math.max(height, self.iconSize +(self.margin*2));
 
     local x = self.margin;
@@ -81,12 +61,6 @@ function ISWidgetTooltipInput:calculateLayout(_preferredWidth, _preferredHeight)
     self.primary.icon:setX(x);
     self.primary.icon:setY((height/2)-(self.primary.icon:getHeight()/2));
     x = self.primary.icon:getX() + self.primary.icon:getWidth() + spacing;
-
-    local iconMid = self.primary.icon:getX() + (self.primary.icon:getWidth() / 2);
---     self.iconKeep:setX(iconMid - (self.iconKeep:getWidth()/2));
---     self.iconKeep:setY(height - self.iconKeep:getHeight() - 1);
---     self.iconDrain:setX(iconMid - (self.iconDrain:getWidth()/2));
---     self.iconDrain:setY(height - self.iconDrain:getHeight() - 1);
 
     self.primary.label:setX(x);
     self.primary.label.originalX = self.primary.label:getX();
@@ -115,7 +89,6 @@ function ISWidgetTooltipInput:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetTooltipInput:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -130,7 +103,6 @@ end
 
 function ISWidgetTooltipInput:update()
     ISPanel.update(self);
-    --self:updateValues();
 end
 
 function ISWidgetTooltipInput:createScriptValues(_script)
@@ -161,15 +133,9 @@ function ISWidgetTooltipInput:createScriptValues(_script)
         table.amountStr = tostring(round(table.amount,2)).."L";
         table.iconTexture = getTexture("media/textures/Item_Waterdrop_Grey.png");
         table.inputObjects = _script:getPossibleInputFluids();
-        --if table.inputObjects:size()>0 then
-        --    local fluid = table.inputObjects:get(0);
-        --    table.cycleIcons = table.inputObjects:size() > 1;
-        --end
         table.cycleIcons = table.inputObjects:size() > 1;
     elseif _script:getResourceType()==ResourceType.Energy then
-        --if not getDebug() then
-            table.isKeep = false; --not displaying 'keep' for energies for now
-        --end
+        table.isKeep = false; --not displaying 'keep' for energies for now
         table.amount = _script:getAmount();
         table.maxAmount = _script:getMaxAmount();
         table.amountStr = tostring(Temperature.getRoundedDisplayTemperature(table.amount))..Temperature.getTemperaturePostfix();
@@ -252,9 +218,6 @@ function ISWidgetTooltipInput:updateScriptValues(_table)
 
         if _table.iconText then
             local text = _table.iconText
---             if _table.script:isBaseItem() then
---                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsBaseItem")
---             end
             if _table.script:isSharpenable() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsSharpenable")
             end
@@ -324,9 +287,6 @@ function ISWidgetTooltipInput:updateScriptValues(_table)
             if _table.script:isCookedFoodItem() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsCookedFoodItem")
             end
---             if _table.script:isHandlePart() then
---                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHandle")
---             end
             if _table.script:isHeadPart() then
                text = text .. " <BR> " .. getText("IGUI_CraftingWindow_IsHeadPart")
             end
@@ -339,10 +299,6 @@ end
 function ISWidgetTooltipInput:updateValues()
     if self.primary then
         self:updateScriptValues(self.primary);
-
---         if self.iconKeep then
---             self.iconKeep:setVisible((not self.displayAsOutput) and self.primary.isKeep);
---         end
     end
 
     if self.secondary then
@@ -354,8 +310,6 @@ function ISWidgetTooltipInput:updateValues()
     end
 
     self.primary.icon.backgroundColor.a = 1.0;
---     self.iconKeep.backgroundColor.a = 1.0;
---     self.iconDrain.backgroundColor.a = 1.0;
 
     local satisfied = true;
     if self.logic then
@@ -394,7 +348,6 @@ function ISWidgetTooltipInput:updateValues()
                 self.borderColor = self.colPartial;
             elseif satisfiedAmount<amount then
                 self.primary.icon.backgroundColor.a = 0.25;
---                 self.iconKeep.backgroundColor.a = 0.25;
             end
             local inputItem = self.logic:getRecipeData():getFirstManualInputFor(self.inputScript);
             if inputItem and inputItem:getScriptItem() and inputItem:getScriptItem():getNormalTexture() then
@@ -408,13 +361,12 @@ function ISWidgetTooltipInput:updateValues()
     end
 end
 
-function ISWidgetTooltipInput:new (x, y, width, height, player, logic, inputScript) --recipeData, inputScript)
+function ISWidgetTooltipInput:new (x, y, width, height, player, logic, inputScript)
 	local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
     o.inputScript = inputScript;
     o.consumeScript = inputScript:getConsumeFromItemScript();
     o.createScript = inputScript:getCreateToItemScript();
@@ -429,11 +381,8 @@ function ISWidgetTooltipInput:new (x, y, width, height, player, logic, inputScri
     o.textureFluid = getTexture("media/textures/Item_Waterdrop_Grey.png");
     o.textureKeep = getTexture("media/ui/Entity/Crafting_Keep_24.png");
     o.textureDrain = getTexture("media/ui/Entity/Crafting_Drain_24.png");
---     o.textureKeep = getTexture("media/ui/Entity/keep_item_icon.png");
     o.textureConsume = getTexture("media/ui/Entity/icon_arrow_consume_grey.png");
     o.textureCreate = getTexture("media/ui/Entity/icon_arrow_create_grey.png");
-
-    --o.background = false;
 
     o.margin = 5;
     o.minimumWidth = 0;

@@ -52,7 +52,6 @@ function ISComboBoxPopup:prerender()
             end
         end
     end
---    numVisible = math.max(numVisible, 1)
     self:setScrollHeight(numVisible * self.itemheight)
     self:setHeight(math.min(numVisible, 9) * self.itemheight)
     self.vscroll:setHeight(self.height)
@@ -232,7 +231,6 @@ function ISComboBox:onJoypadDirDown(joypadData)
 end
 
 function ISComboBox:pointOnItem(index)
-
 end
 
 function ISComboBox:forceClick()
@@ -246,7 +244,6 @@ function ISComboBox:forceClick()
     self.expanded = not self.expanded;
     if self.expanded then
         self:showPopup()
---        self.joypadIndexFocused = self.selected
     else
         self:hidePopup()
     end
@@ -349,7 +346,7 @@ function ISComboBox:onMouseUp(x, y)
     self.expanded = not self.expanded;
     if self:isEditable() then
         if not self.editor then
-            local inset = 2 -- UITextBox2.getInset()
+            local inset = 2
             local editorX = 10 - 2
             local textY = (self.height - getTextManager():getFontHeight(self.font)) / 2
             local editorY = textY - inset
@@ -375,6 +372,7 @@ function ISComboBox:onMouseUp(x, y)
         self.mouseOver = self:isMouseOver()
     end
 end
+
 function ISComboBox:onMouseDownOutside(x, y)
     self.sawMouseDown = false
 	if self.expanded then
@@ -382,6 +380,7 @@ function ISComboBox:onMouseDownOutside(x, y)
 		self:hidePopup()
 	end
 end
+
 function ISComboBox:onMouseMove(dx, dy)
 	self.mouseOver = true;
 end
@@ -423,7 +422,6 @@ function ISComboBox:find(func, arg1, arg2)
 end
 
 function ISComboBox:addOption(option)
-
 	table.insert(self.options, option);
 
 	if self.selected == 0 then
@@ -568,7 +566,6 @@ end
 
 function ISComboBox:new (x, y, width, height, target, onChange, onChangeArg1, onChangeArg2)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
@@ -596,33 +593,8 @@ function ISComboBox:new (x, y, width, height, target, onChange, onChangeArg1, on
 	o.tooltip = nil;
     o.isCombobox = true;
 	o.disabled = false;
---    o.joypadIndexFocused = 1;
     o.image = getTexture("media/ui/ArrowDown.png");
     o.fade = UITransition.new()
 	o.editable = false
 	return o
 end
-
-
-
--- Event method to check game mode and create K&B tutorial panel if necessary.
-testcomboBox = function ()
-
-	--print("start testing combobox");
-	local panel2 = ISComboBox:new(150, 0, 100, 18, nil);
-	--print("panel2 newed");
-
-	panel2:initialise();
-	--print("panel2 initialised");
-	panel2:addOption("1024x768");
-	panel2:addOption("1920x1080");
-	panel2:addToUIManager();
-	--print("panel2 added ToUIManager");
-
---panel2 = ISInventoryPage:new(300, 300, 400+32, 400, getPlayer():getInventory());
---panel2:initialise();
---panel2:addToUIManager();
-end
-
---Events.OnMainMenuEnter.Add(testcomboBox);
-

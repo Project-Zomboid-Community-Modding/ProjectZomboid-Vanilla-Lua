@@ -31,7 +31,6 @@ function ISButton:setJoypadFocused(focused)
 end
 
 function ISButton:onMouseUp(x, y)
-
     if not self:getIsVisible() then
         return;
     end
@@ -47,11 +46,9 @@ function ISButton:onMouseUp(x, y)
         getSoundManager():playUISound(self.sounds.activate)
         self.onclick(self.target, self, self.onClickArgs[1], self.onClickArgs[2], self.onClickArgs[3], self.onClickArgs[4]);
     end
-
 end
 
 function ISButton:onMouseUpOutside(x, y)
-
     self.pressed = false;
 end
 
@@ -157,6 +154,10 @@ function ISButton:setImage(image)
 	self.image = image;
 end
 
+function ISButton:setTextureColor(color)
+    self.textureColor = {r=color:getR(), g=color:getG(), b=color:getB(), a=color:getA()}
+end
+
 function ISButton:forceImageSize(width, height)
     self.forcedWidthImage = width;
     self.forcedHeightImage = height;
@@ -167,9 +168,7 @@ function ISButton:setOverlayText(text)
 end
 
 function ISButton:render()
---    print("btn:render")
 	if self.image ~= nil then
---        print("btn:image")
         local alpha = self.textureColor.a;
         if self.blinkImage then
             if not self.blinkImageAlpha then
@@ -244,7 +243,6 @@ function ISButton:render()
     if self.textureOverride then
         self:drawTexture(self.textureOverride, (self.width /2) - (self.textureOverride:getWidth() / 2), (self.height /2) - (self.textureOverride:getHeight() / 2), 1, 1, 1, 1);
     end
-
 end
 
 function ISButton:setFont(font)
@@ -441,9 +439,7 @@ function ISButton:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmousedown, allowMouseUpProcessing)
-
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self

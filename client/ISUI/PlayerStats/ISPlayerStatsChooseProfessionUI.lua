@@ -12,9 +12,7 @@ function ISPlayerStatsChooseProfessionUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsChooseProfessionUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 

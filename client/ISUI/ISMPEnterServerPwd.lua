@@ -3,7 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISMPEnterServerPwd = ISPanelJoypad:derive("ISMPEnterServerPwd");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISMPEnterServerPwd:initialise()
@@ -52,7 +51,6 @@ end
 function ISMPEnterServerPwd:onClick(button)
     if button.internal == "SAVE" then
         self.server:setServerPassword(self.password:getInternalText():trim())
-        --updateServerToAccountList(self.server)
 
         -- launch the select account or create after we're done with server pwd
         if self.connectAfter then
@@ -94,16 +92,6 @@ function ISMPEnterServerPwd:updateButtons()
     self.closeBtn:setX(15);
     self.closeBtn:setY(self.saveBtn:getY());
 end
-
---function ISMPEnterServerPwd:onOtherKey(key)
---    if key == Keyboard.KEY_TAB then
---        if self.parent.login:isFocused() then
---           self.parent.login:unfocus()
---           self.parent.password:focus()
---           return
---        end
---    end
---end
 
 function ISMPEnterServerPwd:onMouseUp(x, y)
     if not self.moveWithMouse then return; end
@@ -167,7 +155,6 @@ function ISMPEnterServerPwd:onMouseMove(dx, dy)
 end
 
 function ISMPEnterServerPwd:onGainJoypadFocus(joypadData)
---    print("gained modal focus");
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
 end
 

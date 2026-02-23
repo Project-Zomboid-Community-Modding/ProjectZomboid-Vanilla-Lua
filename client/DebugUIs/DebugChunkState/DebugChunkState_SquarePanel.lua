@@ -84,14 +84,6 @@ function SPH_misc:render1()
 		local zone = self.vehicleZone
 		self:addLine("vehicle zone = %s / %s", zone:getName(), zone:getType())
 	end
---[[
-	local zone = square and square:getZone() or nil
-	if zone then
-		self:addLine("zone = %s / %s", zone:getName(), zone:getType())
-	else
-		self:addLine("zone = nil")
-	end
---]]
 
 	if square then
 		self:addLine("seen = %s  couldSee = %s  canSee = %s", square:getSeen(pn), square:isCouldSee(pn), square:getCanSee(pn))

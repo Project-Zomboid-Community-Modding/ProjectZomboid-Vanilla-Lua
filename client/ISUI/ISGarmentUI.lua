@@ -6,7 +6,6 @@ ISGarmentUI.ghs = "<GHC>"
 ISGarmentUI.bhs = "<BHC>"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISGarmentUI:update()
 	ISCollapsableWindow.update(self);
@@ -297,9 +296,7 @@ function ISGarmentUI:doDrawItem(y, item, alt)
 end
 
 function ISGarmentUI:render()
-	-- TODO: HELPING DEBUG TO REMOVE!
-				self.listbox.doDrawItem = ISGarmentUI.doDrawItem;
---				self.listbox.onRightMouseUp = ISGarmentUI.onBodyPartListRightMouseUp
+    self.listbox.doDrawItem = ISGarmentUI.doDrawItem;
 
 	ISCollapsableWindow.render(self)
 	local y = 30;
@@ -335,7 +332,7 @@ function ISGarmentUI:render()
 	y = self.progressY;
 	self:drawBar(self.progressX1, y, self.progressWidth, self.progressHeight, self.clothing:getCondition() / self.clothing:getConditionMax(), true)
 	self:drawBar(self.progressX2, y, self.progressWidth, self.progressHeight, self.clothing:getBloodlevel() / 100, false)
-	self:drawBar(self.progressX3, y, self.progressWidth, self.progressHeight, self.clothing:getDirtyness() / 100, false)
+	self:drawBar(self.progressX3, y, self.progressWidth, self.progressHeight, self.clothing:getDirtiness() / 100, false)
 	y = y + FONT_HGT_SMALL;
 	
 	if not self.clothing:getFabricType() then

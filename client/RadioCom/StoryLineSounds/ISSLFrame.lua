@@ -12,15 +12,12 @@ function ISSLFrame:initialise()
 end
 
 function ISSLFrame:createChildren()
-
-    --test data
     local test = {};
     table.insert(test,{t=0,i=0});
     table.insert(test,{t=0.4,i=0.7});
     table.insert(test,{t=1,i=0});
     self:addGridData( "test", Color.new(1,1,1,1), test );
 
-    --self:setStoryEvent(getSLSoundManager():getStorySoundEvent("warzone"));
     self:setStoryEvent(nil);
 
     self:updateGridRectangle();
@@ -35,16 +32,9 @@ function ISSLFrame:onMouseDown(x, y)
     self.dragInside = true;
 end
 
---function ISSLFrame:onMouseDownOutside(x, y)
---self.dragInside = false;
---end
-
 function ISSLFrame:onMouseUpOutside(x, y)
     self:onMouseUp(self:getMouseX(),y);
 end
---function ISSLFrame:onMouseUp(x, y)
---self.dragInside = false;
---end
 
 function ISSLFrame:onMouseMove(x, y)
     if not self:getIsVisible() then
@@ -56,7 +46,6 @@ function ISSLFrame:onMouseMove(x, y)
 end
 
 function ISSLFrame:onMouseMoveOutside(x, y)
-    --self.hoverVolume = -1;
     self:onMouseMove(x,y);
 end
 
@@ -71,8 +60,6 @@ end
 function ISSLFrame:render()
     ISPanel.render(self);
     -- grid
-    --local p = self.gridPadding;
-    --local gx,gy,gw,gh = x+p.left,y+p.top,w-p.left-p.right,h-p.top-p.bot;
     local r = self.gridRectangle;
     local c = self.borderColor;
     self:drawRect(r.x, r.y, r.w, r.h, c.a, c.r, c.g, c.b);
@@ -82,16 +69,13 @@ function ISSLFrame:render()
         for i = 0, self.gridVertSpacing do
             local s = tostring(round(1.0-((i*interval)/r.h),1));
             local iy = r.y+(i*interval);
-            --local iw = (gy+1) + (gh-2);
             if i~=0 and i~=self.gridVertSpacing then
                 self:drawRect(r.x+1, iy, r.w-2, 1, c.a, c.r, c.g, c.b);
             end
 
             local sw = getTextManager():MeasureStringX(UIFont.Small, s);
             local sh = getTextManager():MeasureStringY(UIFont.Small, s)/2;
-            --self:drawText(s, gx-sw-2, iy, 1,1,1,1, UIFont.Small);
             self:drawText(s, r.x-sw-2, iy-sh, 1,1,1,1, UIFont.Small);
-            --self:drawText(self.distanceText, x, self.cacheHeight, 1,1,1,1, UIFont.Small);
         end
         interval = r.w/self.gridHorzSpacing;
         for i = 0, self.gridHorzSpacing do
@@ -104,7 +88,6 @@ function ISSLFrame:render()
             end
 
             local sw = getTextManager():MeasureStringX(UIFont.Small, s)/2;
-            --self:drawText(s, ix, ih+2, 1,1,1,1, UIFont.Small);
             self:drawText(s, ix-sw, ih+2, 1,1,1,1, UIFont.Small);
         end
     end
@@ -115,7 +98,6 @@ function ISSLFrame:render()
     end
 
     self:drawLinePoints();
-
 end
 
 function ISSLFrame:drawLinePoints()
@@ -158,13 +140,10 @@ function ISSLFrame:drawGridData( _x, _y, _t )
                         local intens = clerp(t,dataPoint:getIntensity(),next:getIntensity());
                         local _,y = self:dataToGrid(0,intens);
                         self:drawRect(_x, y, 1, 1, 1.0, c:getRed()/255, c:getGreen()/255, c:getBlue()/255);
-                        --self:drawRect(_x, y, 1, 1, 1.0, 1.0, 1.0, 1.0);
                         break;
                     end
                 end
-
             end
-
         end
     end
 end
@@ -182,7 +161,6 @@ function ISSLFrame:drawGridDataold( _x, _y, _t )
                         local t = (_t-dataPoint:getTime())/(next:getTime()-dataPoint:getTime());
                         local intens = clerp(t,dataPoint:getIntensity(),next:getIntensity());
                         local _,y = self:dataToGrid(0,intens);
-                        --self:drawRect(_x, y, 1, 1, 1.0, c:getRed()/255, c:getGreen()/255, c:getBlue()/255);
                         self:drawRect(_x, y, 1, 1, 1.0, 1.0, 1.0, 1.0);
                         break;
                     end
@@ -193,7 +171,6 @@ function ISSLFrame:drawGridDataold( _x, _y, _t )
 end
 
 function ISSLFrame:updateVisualGrid()
-    local x = 0;
 end
 
 function ISSLFrame:updateGridRectangle()
@@ -214,7 +191,7 @@ end
 function ISSLFrame:dataToGrid( _t, _i )
     local r = self.gridRectangle;
     local x = r.x + (r.w*_t);
-    local y = r.y + (r.h*(1-_i)); --local y = r.y + (1-(r.h*_i));
+    local y = r.y + (r.h*(1-_i));
     return x,y;
 end
 function ISSLFrame:gridToData( _x, _y ) --FIXME make sure input are local coordinates (for mouse input related functionallity)
@@ -248,19 +225,11 @@ function ISSLFrame:setStoryEvent( _event )
     end
 end
 
-
 function ISSLFrame:addGridData( _name, _col, _t )
     local gridData = {};
     gridData.name = _name;
     gridData.color = _col;
     gridData.dataPoints = _t;
-    --[[
-    gridData.gridPoints = {};
-    for k,v in ipairs(_t) do
-        local x,y = self:dataToGrid( v.t, v.i);
-        table.insert(gridData.gridPoints, {x=x, y=y});
-    end
-    --]]
     table.insert(self.gridData,gridData);
 end
 
@@ -269,7 +238,6 @@ function ISSLFrame:onResize()
     self:updateGridRectangle();
     self:updateVisualGrid();
 end
-
 
 function ISSLFrame:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);

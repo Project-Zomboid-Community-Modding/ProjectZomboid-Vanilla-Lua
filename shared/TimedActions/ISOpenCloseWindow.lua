@@ -47,5 +47,6 @@ function ISOpenCloseWindow:new(character, object)
 	o.maxTime = o:getDuration();
 	o.useProgressBar = false;
 	o.ignoreHandsWounds = true;
+    o.retriggerLastAction = true;
 	return o;
 end

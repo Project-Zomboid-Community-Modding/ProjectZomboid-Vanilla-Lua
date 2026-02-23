@@ -85,16 +85,18 @@ function RWMMicrophone:getAPrompt()
         return getText("IGUI_RadioMuteMic");
     end
 end
+
 function RWMMicrophone:getBPrompt()
     return nil;
 end
+
 function RWMMicrophone:getXPrompt()
     return nil;
 end
+
 function RWMMicrophone:getYPrompt()
     return nil;
 end
-
 
 function RWMMicrophone:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);

@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISKillAnimal = ISBaseTimedAction:derive("ISKillAnimal");
 
 function ISKillAnimal:isValid()
-	return true
+	return self:canKillAnimal();
 end
 
 function ISKillAnimal:waitToStart()
@@ -30,18 +30,7 @@ function ISKillAnimal:stop()
 end
 
 function ISKillAnimal:canKillAnimal()
-	if not self.character then
-		print("!canKillAnimal: self.character is null");
-		return false;
-	end
-
-	if not self.animal then
-		print("!canKillAnimal: self.animal is null");
-		return false;
-	end
-
-	if self.character:DistToSquared(self.animal:getX(), self.animal:getY()) > 2 * 2 then
-		print("!canKillAnimal: DistToSquared > 2 * 2");
+	if not self.character or not self.animal or self.character:DistToSquared(self.animal:getX(), self.animal:getY()) > 2 * 2 then
 		return false;
 	end
 
@@ -54,10 +43,12 @@ function ISKillAnimal:perform()
 end
 
 function ISKillAnimal:complete()
-	if isServer() and not self:canKillAnimal() then
-		return false;
-	end
-
+    if isServer() then
+        if not self:canKillAnimal() then
+            return false;
+        end
+        PVPLogTool.logKill(self.character, self.animal)
+    end
 	self:kill();
 
 	return true
@@ -69,9 +60,9 @@ function ISKillAnimal:kill()
 end
 
 function ISKillAnimal:getDuration()
-	--if self.character:isTimedActionInstant() then
-	--	return 1
-	--end
+	if self.character:isTimedActionInstant() then
+		return 1
+	end
 	return 80
 end
 

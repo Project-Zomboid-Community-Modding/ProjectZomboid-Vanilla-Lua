@@ -27,7 +27,6 @@ function XuiDebugWindow:initialise()
 	ISCollapsableWindow.initialise(self);
 end
 
-
 function XuiDebugWindow:createChildren()
     ISCollapsableWindow.createChildren(self)
 
@@ -74,8 +73,6 @@ function XuiDebugWindow:createChildren()
     self.colors.target = self;
     self.colors.onmousedown = XuiDebugWindow.onColorSelected;
     self.colors.drawBorder = true;
-    --adding later below
-    --self:addChild(self.colors);
 
     self.rightWidth = self.colors:getX() - UI_BORDER_SPACING;
 
@@ -178,8 +175,6 @@ function XuiDebugWindow:createChildren()
     self.vars.selected = 0;
     self.vars.font = UIFont.Small;
     self.vars.doDrawItem = XuiDebugWindow.drawVarItem;
-    --self.vars.target = self;
-    --self.vars.onmousedown = XuiDebugWindow.onVarSelected;
     self.vars.drawBorder = true;
     self:addChild(self.vars);
 
@@ -219,9 +214,9 @@ function XuiDebugWindow:initColors()
     };
     c = Colors.DarkRed;
     self.disableColor = {
-        r = 0.4, --c:getRedFloat(),
-        g = 0.4, --c:getGreenFloat(),
-        b = 0.4, --c:getBlueFloat(),
+        r = 0.4,
+        g = 0.4,
+        b = 0.4,
         a = 0.8,
     };
     c = Colors.Pink;
@@ -266,7 +261,6 @@ function XuiDebugWindow:onResize(_width, _height)
     self.rightWidth = self.colors:getX()-UI_BORDER_SPACING;
 
     local midWidth = self.width - (self.width - self.rightWidth) - self.leftWidth;
-    --print("resizing "..tostring(midWidth))
     self.viewScriptButton:setWidth(midWidth);
     self.testWindowButton:setWidth(midWidth);
     self.testCustomButton:setWidth(midWidth);
@@ -288,14 +282,11 @@ function XuiDebugWindow:prerender()
     ISCollapsableWindow.prerender(self)
 end
 
-
 function XuiDebugWindow:render()
     ISCollapsableWindow.render(self)
 end
 
 function XuiDebugWindow:drawVarItem(y, item, alt)
-    local a = 1.0;
-
     self:drawRectBorder( 1, y+1, self:getWidth()-2, self.itemheight - 2, 0.2, 1.0, 1.0, 1.0)
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
@@ -310,7 +301,6 @@ function XuiDebugWindow:drawVarItem(y, item, alt)
         self:drawRectBorder( x, y+4, 20, self.itemheight - 8, 0.2, 1.0, 1.0, 1.0);
         x = x + 30;
     end
-
 
     if item.item.name then
         local drawY = y + (self.itemheight/2) - (FONT_HGT_SMALL /2);
@@ -328,10 +318,6 @@ end
 
 function XuiDebugWindow:onVarSelected(_item)
     -- nothing to do here so var
-end
-
-local sortAlpha = function (a, b)
-    return a.name < b.name
 end
 
 local sortVars = function (a, b)
@@ -374,7 +360,6 @@ function XuiDebugWindow:createVarItem(_name, _value, _order, _var)
     else
         t.var = _var;
         t.type = _var:getValueType();
-        --t.value = _var:getValueString();
         if _var:getValueType()==XuiScriptType.Style then
             t.color = self.styleColor;
         elseif _var:getValueType()==XuiScriptType.DefaultStyle then
@@ -587,22 +572,17 @@ function XuiDebugWindow:populateElements()
         local script = self.selectedScriptItem.script;
         self:addScriptElements(script, 0);
         if self.elements.items and #self.elements.items>0 then
-            --print("SELECTING ELEMENT")
             self.elements.selected = 1;
             self:onElementSelected(self.elements.items[self.elements.selected].item);
         end
     end
-    --self:populateVars();
 end
 
 function XuiDebugWindow:drawConfigItem(y, item, alt)
-    local a = 1.0;
-
     self:drawRectBorder( 1, y+1, self:getWidth()-2, self.itemheight - 2, 0.2, 1.0, 1.0, 1.0)
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
     end
-
 
     if item.item.name then
         local drawY = y + (self.itemheight/2) - (FONT_HGT_SMALL /2);
@@ -639,8 +619,6 @@ function XuiDebugWindow:onConfigSelected(_item)
                 self.testCustomButton.enable = true;
             end
         end
-    else
-        --
     end
     self:populateElements();
 end
@@ -715,7 +693,6 @@ function XuiDebugWindow:populate()
         elseif t.type==XuiScriptType.DefaultStyle then
             t.color = self.defStyleColor;
         end
-        --self.list:addItem(name, t);
         table.insert(temp, t);
     end
 
@@ -726,7 +703,6 @@ function XuiDebugWindow:populate()
     end
 
     if self.list.items and #self.list.items>0 then
-        --print("SELECTING ELEMENT")
         self.list.selected = 1;
         self:onConfigSelected(self.list.items[self.list.selected].item);
     end
@@ -825,9 +801,6 @@ function XuiDebugWindow:onButtonClick(_button)
                     ui:instantiate();
                     ui:setVisible(true);
                     ui:addToUIManager();
-                    --[[if XuiDebugWindow.customTestWindow.instance then
-                        XuiDebugWindow.customTestWindow.instance:close();
-                    end--]]
                     self:onCloseSubWindow(XuiDebugWindow.customTestWindow.instance, true);
                     XuiDebugWindow.customTestWindow.instance = ui;
                     self:positionSubWindow(XuiDebugWindow.customTestWindow);

@@ -49,8 +49,6 @@ function ISScrollingListBox:onJoypadDirLeft(joypadData)
 end
 
 function ISScrollingListBox:instantiate()
-
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	self.javaObject:setX(self.x);
 	self.javaObject:setY(self.y);
@@ -502,8 +500,6 @@ function ISScrollingListBox:prerender()
 	local y = 0;
 	local alt = false;
 
-	--	if self.selected ~= -1 and self.selected < 1 then
-	--		self.selected = 1
 	if self.selected ~= -1 and self.selected > #self.items then
 		self.selected = #self.items
 	end
@@ -532,7 +528,6 @@ function ISScrollingListBox:prerender()
 
 		alt = not alt;
 		i = i + 1;
-
 	end
 
 	self:setScrollHeight((y));
@@ -549,7 +544,6 @@ function ISScrollingListBox:prerender()
 	self:updateTooltip()
 
 	if #self.columns > 0 then
-		--		print(self:getScrollHeight())
 		self:drawRectBorderStatic(0, 0 - self.itemheight, self.width, self.itemheight, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 		self:drawRectStatic(0, 0 - self.itemheight, self.width, self.itemheight,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
 		local dyText = (self.itemheight - FONT_HGT_SMALL) / 2
@@ -583,13 +577,6 @@ function ISScrollingListBox:onMouseDown(x, y)
 	if row < 1 then
 		return
 	end
-
-	-- RJ: If you select the same item it unselect it
-	--if self.selected == y then
-	--if self.selected == y then
-	--self.selected = -1;
-	--return;
-	--end
 
 	getSoundManager():playUISound("UISelectListItem")
 
@@ -637,7 +624,6 @@ function ISScrollingListBox:ensureVisible(index)
 		end
 		y = y + v.height
 	end
-	--	print('y='..y..' top='..self:getYScroll()..' bottom='..(self:getYScroll() + self.height))
 	if not self.smoothScrollTargetY then self.smoothScrollY = self:getYScroll() end
 	if y <= 0-self:getYScroll() then
 		self.smoothScrollTargetY = 0 - y
@@ -702,7 +688,6 @@ end
 
 function ISScrollingListBox:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanelJoypad:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

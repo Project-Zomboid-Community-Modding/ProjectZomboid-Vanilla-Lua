@@ -1,7 +1,5 @@
 require "ISUI/ISPanel"
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
-
 ISCraftRecipeTooltip = ISPanel:derive("ISCraftRecipeTooltip");
 
 function ISCraftRecipeTooltip:initialise()
@@ -92,7 +90,6 @@ function ISCraftRecipeTooltip:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISCraftRecipeTooltip:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 
@@ -119,8 +116,6 @@ function ISCraftRecipeTooltip:position()
         local sy = getPlayerScreenTop(self.playerNum);
         local sw = getPlayerScreenWidth(self.playerNum);
         local sh = getPlayerScreenHeight(self.playerNum);
-
-        --print("mx="..tostring(mx)..", my="..tostring(my)..", sx="..tostring(sx)..", sy="..tostring(sy)..", sw="..tostring(sw)..", sh="..tostring(sh))
 
         if x+self:getWidth()>(sx+sw) then
             local x2 = mx - xOffset - self:getWidth();
@@ -162,7 +157,7 @@ function ISCraftRecipeTooltip:setRecipe(_recipe, _titleOnly)
     if (self.recipe~=_recipe) or (self.titleOnly~=_titleOnly) then
         self.recipe = _recipe;
         if self.logic then
-            self.logic:setRecipe(_recipe); --recipeData:setRecipe(_recipe)
+            self.logic:setRecipe(_recipe);
         end
         self.titleOnly = _titleOnly;
         self:createDynamicChildren();
@@ -195,14 +190,11 @@ function ISCraftRecipeTooltip:new (x, y, width, height, player, recipe, logic, f
     o.player = player;
     o.playerNum = player:getPlayerNum();
     o.logic = logic;
-    --o.recipeData = recipeData;
-    o.recipe = recipe; --recipeData:getRecipe();
-    --o.craftBench = craftBench;
+    o.recipe = recipe;
     o.followMouse = followMouse;
     o.titleOnly = false;
     o.titleOnlyAlpha = 0.5;
 
-    --o.background = false;
     o.debugMode = debugMode;
 
     o.margin = 5;
@@ -219,34 +211,11 @@ function ISCraftRecipeTooltip:new (x, y, width, height, player, recipe, logic, f
     return o
 end
 
---[[
-function ISCraftRecipeTooltip.activateToolTipWithRecipeFor(_parent, _player, _recipe, _followMouse, _titleOnly)
-    if not ISCraftRecipeTooltip.recipeDatas or not ISCraftRecipeTooltip.recipeDatas[_player] then
-        ISCraftRecipeTooltip.recipeDatas = ISCraftRecipeTooltip.recipeDatas or {};
-        ISCraftRecipeTooltip.recipeDatas[_player] = CraftRecipeData.new(CraftMode.Handcraft, true, true, false, true);
-    end
-
-    local recipeData = ISCraftRecipeTooltip.recipeDatas[_player];
-
-    ISCraftRecipeTooltip.activateToolTipFor(_parent, _player, recipeData, _followMouse, _titleOnly)
-end
---]]
-
 function ISCraftRecipeTooltip.activateToolTipFor(_parent, _player, _recipe, _logic, _followMouse, _titleOnly, _debugMode)
     if not _recipe or (_logic and not _logic:getRecipe()) then  --(not _logic) or (not _logic:getRecipe()) then --(not _recipe) then
         ISCraftRecipeTooltip.deactivateToolTipFor(_parent);
         return;
     end
-
-    --[[
-    if not ISCraftRecipeTooltip.recipeDatas or not ISCraftRecipeTooltip.recipeDatas[_player] then
-        ISCraftRecipeTooltip.recipeDatas = ISCraftRecipeTooltip.recipeDatas or {};
-        ISCraftRecipeTooltip.recipeDatas[_player] = CraftRecipeData.new(CraftMode.Handcraft, true, true, false, true);
-    end
-
-    local recipeData = ISCraftRecipeTooltip.recipeDatas[_player];
-    recipeData:setRecipe(_recipe);
-    --]]
 
     if _parent.__toolTip ~= nil and _parent.__toolTip.logic==_logic and _parent.__toolTip.recipe==_recipe then
         _parent.__toolTip:setVisible(true);

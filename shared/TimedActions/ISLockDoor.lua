@@ -5,7 +5,6 @@ ISLockDoor = ISBaseTimedAction:derive("ISLockDoor");
 function ISLockDoor:isValid()
 	local keyId = instanceof(self.door, "IsoDoor") and self.door:checkKeyId() or self.door:getKeyId()
 	if self.character:getInventory():haveThisKeyId(keyId) then return true end
-	if self.door:getProperties():has("forceLocked") then return false end
 	if self.door:getModData().CustomLock then return false end
 	return not self.character:getCurrentSquare():has(IsoFlagType.exterior)
 end

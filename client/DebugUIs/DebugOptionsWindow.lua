@@ -124,7 +124,6 @@ function DebugOptionsWindow:onCategorySelected(category)
 	local width,height = self:calcTickBoxBounds()
 	local width = math.max(width, self.categoryList:getRight() + 300)
 	self:setWidth(width + 12)
---	self:setHeight(height + self:resizeWidgetHeight())
 end
 
 function DebugOptionsWindow:calcTickBoxBounds()

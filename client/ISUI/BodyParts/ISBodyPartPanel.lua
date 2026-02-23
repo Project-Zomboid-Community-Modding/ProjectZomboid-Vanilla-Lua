@@ -37,19 +37,7 @@ function ISBodyPartPanel:initialise()
     for i=0,16 do
         local type = BodyPartType.FromIndex(i);
         local tex = getTexture("media/ui/BodyParts/bps_"..sex.."_"..setup_table[i].filename);
-        if not tex then
-            --print("missing: "..tostring(setup_table[i].filename));
-        else
-            --print("filename: "..tostring(setup_table[i].filename));
-            --print("tex offsetX "..tostring(tex:getOffsetX()));
-            --print("tex offsetY "..tostring(tex:getOffsetY()));
-            --print("tex width "..tostring(tex:getWidth()));
-            --print("tex height "..tostring(tex:getHeight()));
-            --print("tex orig width "..tostring(tex:getWidthOrig()));
-            --print("tex orig height "..tostring(tex:getHeightOrig()));
 
-            --print("bodypart "..tostring(type));
-        end
         local bp = {
             texture = getTexture("media/ui/BodyParts/bps_"..sex.."_"..setup_table[i].filename);
             bodyPartType = type;
@@ -156,8 +144,6 @@ function ISBodyPartPanel:render()
 
     self:drawTexture(self.outlineTex, 0, 0, 1.0);
 
-    --self:drawRectBorder( x, y, w, h, a, r, g, b)
-
     for i=1, #self.bps do
         bp = self.bps[i];
         if self.drawDebugLines and self.bps[i].texture then
@@ -217,7 +203,6 @@ function ISBodyPartPanel:getPartForCoordinate(mx, my)
 end
 
 function ISBodyPartPanel:setSelected(mx, my, bLock)
-    --print("mouse move "..tostring(dx).." - "..tostring(dy))
     if self.canSelect then
         local bp = self:getPartForCoordinate(mx, my);
         if bp~=self.selectedBp or (bLock and not self.lockedSelection)  then
@@ -242,7 +227,6 @@ function ISBodyPartPanel:deselect()
 end
 
 function ISBodyPartPanel:onMouseMove(dx, dy)
-    --print("mouse move "..tostring(dx).." - "..tostring(dy))
     if not self.lockedSelection then
         self:setSelected(self:getMouseX(), self:getMouseY());
     end
@@ -274,8 +258,6 @@ function ISBodyPartPanel:onRightMouseUp(x, y)
     end
 end
 
-
-
 function ISBodyPartPanel:setToolTip( _b, _text )
 end
 
@@ -285,16 +267,6 @@ function ISBodyPartPanel:deactivateToolTip()
 end
 
 function ISBodyPartPanel:onJoypadDown(button)
-    if button == Joypad.BButton then
-        --getPlayerInfoPanel(self.playerNum):toggleView(xpSystemText.clothingIns);
-        --setJoypadFocus(self.playerNum, nil);
-    end
-    if button == Joypad.LBumper then
-        --getPlayerInfoPanel(self.playerNum):onJoypadDown(button);
-    end
-    if button == Joypad.RBumper then
-        --getPlayerInfoPanel(self.playerNum):onJoypadDown(button);
-    end
 end
 
 --if enabled, when selecting a node a line will be drawn from the node center to anchor point
@@ -359,26 +331,8 @@ function ISBodyPartPanel:setValue( _bodyPartType, _value, _force )
         if bp.bodyPartType == _bodyPartType then
             if _force or bp.value~=val then
                 bp.value = val;
-
                 self:setColorForValue( bp.value, bp.color );
-                --[[
-                local colS = self.colorScheme[1].color;
-                local colE = colS;
-                local s, e = 0, 1;
-                for j=1,#self.colorScheme do
-                    if self.colorScheme[j].val >= bp.value then
-                        e = self.colorScheme[j].val;
-                        colE = self.colorScheme[j].color;
-                        break;
-                    end
-                    colS = self.colorScheme[j].color;
-                    s = self.colorScheme[j].val;
-                end
-
-                colS:interp(colE, (bp.value-s) / ((e-s >0) and (e-s) or 1) ,bp.color);
-                --]]
             end
-
             break;
         end
     end
@@ -412,12 +366,9 @@ function ISBodyPartPanel:setColorScheme( _colorScheme )
     self.colorScheme = _colorScheme;
     for i=1, #self.bps do
         local bp = self.bps[i];
-
         self:setValue(bp.bodyPartType, bp.value, true);
     end
 end
-
-
 
 function ISBodyPartPanel:new (player, x, y, target, onPartSelected)
     local o = ISPanelJoypad:new(x, y, 123, 302);
@@ -455,9 +406,6 @@ function ISBodyPartPanel:new (player, x, y, target, onPartSelected)
     o.drawSelectedHitbox = false;
 
     o.nodes = { enabled = false, onlySelected = true };
-
-    --o.onClickPart = onClickPart;
-    --o.onMouseOverPart = onMouseOverPart;
 
     o.onPartSelected = onPartSelected;
 

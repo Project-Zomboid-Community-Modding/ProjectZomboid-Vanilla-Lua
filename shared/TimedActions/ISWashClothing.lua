@@ -22,12 +22,6 @@ end
 function ISWashClothing:start()
 	self:setActionAnim("ScrubClothWithSoap")
 	self:setOverrideHandModels(getScriptManager():FindItem("Soap2"):getStaticModel(), getScriptManager():FindItem("DishCloth"):getStaticModel())
-	local bandages = { ["Base.BandageDirty"]=1, ["Base.DenimStripsDirty"]=1, ["Base.LeatherStripsDirty"]=1, ["Base.RippedSheetsDirty"]=1 }
-	if bandages[self.item:getFullType()] then
-		self.sound = self.character:playSound("FirstAidCleanRag")
-	else
-		self.sound = self.character:playSound("WashClothing")
-	end
 	self.character:reportEvent("EventWashClothing");
 end
 
@@ -120,7 +114,7 @@ function ISWashClothing:complete()
 	local item = self.item;
 	local water = ISWashClothing.GetRequiredWater(item)
     local isRemoved = false;
-	if instanceof(item, "Clothing") then
+	if instanceof(item, "Clothing") or instanceof(item, "InventoryContainer") then
 		local coveredParts = BloodClothingType.getCoveredParts(item:getBloodClothingType())
 		if coveredParts then
 			for j=0,coveredParts:size()-1 do
@@ -131,8 +125,10 @@ function ISWashClothing:complete()
 				item:setDirt(coveredParts:get(j), 0);
 			end
 		end
-		item:setWetness(100);
-		item:setDirtyness(0);
+        if instanceof(item, "Clothing") then
+		    item:setWetness(100);
+            item:setDirtiness(0);
+        end
 	elseif item:getItemAfterCleaning() then
 	    isRemoved = true;
 		local newItemType = item:getItemAfterCleaning();
@@ -205,6 +201,18 @@ function ISWashClothing:getDuration()
 	end
 
 	return self:adjustMaxTime(maxTime);
+end
+
+function ISWashClothing:animEvent(event, parameter)
+    if event == 'PlayWashSound' then
+        self:stopSound()
+        local bandages = { ["Base.BandageDirty"]=1, ["Base.DenimStripsDirty"]=1, ["Base.LeatherStripsDirty"]=1, ["Base.RippedSheetsDirty"]=1 }
+        if bandages[self.item:getFullType()] then
+            self.sound = self.character:playSound("FirstAidCleanRag")
+        else
+            self.sound = self.character:playSound("WashClothing")
+        end
+    end
 end
 
 function ISWashClothing:new(character, sink, soaps, item, bloodAmount, dirtAmount, noSoap)

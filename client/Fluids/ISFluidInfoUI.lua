@@ -6,14 +6,11 @@ ISFluidInfoUI.cheatSkill = false;
 ISFluidInfoUI.cheatTransfer = false;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 -- Container = FluidContainer instance
 function ISFluidInfoUI.OpenPanel(_player, _container)
-   -- _container = ISFluidContainer:new(_container);
-
     if not ISFluidUtil.validateContainer(_container) then
         print("FluidInfoUI not a valid (ISFluidContainer) container?")
         return;
@@ -27,7 +24,6 @@ function ISFluidInfoUI.OpenPanel(_player, _container)
         print("FluidInfoUI no valid player.")
         return;
     end
-    --print("Opening Fluid Transfer UI");
     local playerNum = _player:getPlayerNum();
 
     local x = getMouseX() + 10;
@@ -105,10 +101,6 @@ function ISFluidInfoUI:createChildren()
 
     self:setWidth(self.panel:getRight() + UI_BORDER_SPACING + 1);
     self:setHeight(self.btnClose:getBottom() + UI_BORDER_SPACING+1);
-    --if self.panel:getIsoObjectTextures() then
-    --    self:setHeight(self:getHeight() + 180);
-    --end
-
     self:setWidth(self.panel.width + UI_BORDER_SPACING*2+2);
     self.title:setX((self.width - self.title.width)/2)
     self.btnClose:setWidth(self.panel.width)
@@ -177,6 +169,6 @@ function ISFluidInfoUI:new(x, y, width, height, _player, _container)
     o.player = _player;
     o.container = _container;
     o.owner = _container:getOwner();
-    o.isIsoPanel = _container:isIsoPanel(); -- instanceof(_container:getOwner(), "IsoObject");
+    o.isIsoPanel = _container:isIsoPanel();
     return o;
 end

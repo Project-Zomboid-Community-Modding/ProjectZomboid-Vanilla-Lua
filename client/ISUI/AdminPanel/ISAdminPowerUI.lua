@@ -51,12 +51,6 @@ function ISAdminPowerUI:addAdminPowerOptions()
         end);
         ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_Invisible")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleInvisibleHimself:name())
     end
-    --if self.player:getRole():hasCapability(Capability.ToggleInvincibleHimself) then
-    --    self:addOption(getText("IGUI_AdminPanel_Invincible"), self.player:isInvincible(), function(self, selected)
-    --        self.player:setInvincible(selected);
-    --    end);
-    --    ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_Invincible")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleInvincibleHimself:name())
-    --end
     if self.player:getRole():hasCapability(Capability.ToggleGodModHimself) then
         self:addOption(getText("IGUI_AdminPanel_GodMode"), self.player:isGodMod(), function(self, selected)
             self.player:setGodMod(selected);
@@ -193,10 +187,6 @@ function ISAdminPowerUI:addAdminPowerOptions()
         end);
         ISAdminPowerUI.cheatTooltips[getText("IGUI_CheatPanel_AnimalCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.AnimalCheats:name())
     end
-
-    --for some reason, sorting A-Z makes the options appear Z-A, so i reversed the sorting.
-    --sort should be done for every table inside the tickBox
-    --table.sort(self.tickBox.options, function(a, b) return string.sort(b, a) end)
 
     self.tickBox:setWidthToFit()
 

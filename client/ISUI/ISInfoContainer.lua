@@ -4,8 +4,6 @@ ISInfoContainer = ISCollapsableWindow:derive("ISInfoContainer");
 
 
 function ISInfoContainer:initialise()
-
-	--print("init");
 	ISCollapsableWindow.initialise(self);
 
 	self.panel = ISPanel:new(0, 16, self.width, self.height-16);
@@ -15,20 +13,15 @@ function ISInfoContainer:initialise()
 	self.panel:setAnchorTop(true);
 	self.panel:setAnchorBottom(true);
 	self:addChild(self.panel);
-
 end
 
-
 function ISInfoContainer:prerender()
-
 	ISCollapsableWindow.prerender(self);
 	self:drawTextCentre(self.title, self.width / 2, 1, 1, 1, 1, 1, UIFont.Small);
-
 end
 
 function ISInfoContainer:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

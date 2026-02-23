@@ -6,18 +6,12 @@ require "ISUI/ISLayoutManager"
 ISPlayerDataObject = ISBaseObject:derive("ISPlayerDataObject");
 
 function ISPlayerDataObject:createInventoryInterface()
-
-
     local zoom = 2.0;
 
     local playerObj = getSpecificPlayer(self.id);
 
     local bind = playerObj:getJoypadBind();
---[[
-    if self.id > 0 and bind == -1 then
-	    return;
-    end
---]]
+
     local isMouse = self.id == 0 and bind == -1;
     local register = self.id == 0;
     if isMouse then
@@ -25,7 +19,7 @@ function ISPlayerDataObject:createInventoryInterface()
         zoom = 1.34;
     end
 
-zoom = 1.34
+    zoom = 1.34
 
     local numPlayers = getNumActivePlayers();
     self:placeInventoryScreens(self.id, numPlayers, isMouse);
@@ -38,9 +32,7 @@ zoom = 1.34
     panel2:setController(bind)
     panel2:setInfo(getText("UI_InventoryInfo"));
 
---    print("createInventoryInterface player="..self.id);
     panel2.player = self.id;
---     panel2.transferAll:setVisible(true);
     self.playerInventory = panel2;
     self.playerInventory.player = self.id;
     if not isMouse then
@@ -49,15 +41,11 @@ zoom = 1.34
         panel2.inventoryPane:onResizeColumn(panel2.inventoryPane.nameHeader)
     end
 
-    --ISInventoryPage.playerInventory = panel2;
-  --  if ISContainerPanelInstance == nil then
     local panel3 = ISInventoryPage:new(self.x2, self.y2, self.w2, self.h2, nil, false, zoom);
     self.lootInventory = panel3;
     self.lootInventory.player = self.id;
     panel3:setUIName("loot"..self.id)
---    print("loot inv created");
-    --ISContainerPanelInstance = panel3;
-    --   panel2:setNewContainer(self.container);
+
     panel3.player = self.id;
     panel3:initialise();
     panel3:addToUIManager();
@@ -68,7 +56,6 @@ zoom = 1.34
         panel3.inventoryPane.nameHeader:setWidth((panel3.inventoryPane.width - panel3.inventoryPane.column2) * 2 / 3)
         panel3.inventoryPane:onResizeColumn(panel3.inventoryPane.nameHeader)
     end
---     panel3.lootAll:setVisible(true);
 
     UIManager.setPlayerInventory(self.id, self.playerInventory.javaObject, self.lootInventory.javaObject)
 
@@ -94,13 +81,9 @@ zoom = 1.34
     self.buttonPrompt:initialise();
     self.buttonPrompt:addToUIManager();
 
---    print("loot all visible");
     self.contextMenu = ISContextMenu:new(0, 0, 1, 1);
---    print("context menu created");
     self.contextMenu:initialise();
---    print("context menu initialised");
     self.contextMenu:addToUIManager();
---    print("context menu added");
     self.contextMenu:setVisible(false);
     self.contextMenu.player = self.id;
 
@@ -116,10 +99,6 @@ zoom = 1.34
 
     self.equipped:setX(self.x1left + 10);
     self.equipped:setY(self.y1top + 10);
-    -- end
-    --panel2 = ISInventoryPage:new(300, 300, 400+32, 400, getPlayer():getInventory());
-    --panel2:initialise();
-    --panel2:addToUIManager();
 
     local x = getPlayerScreenLeft(self.id)
     local y = getPlayerScreenTop(self.id)
@@ -137,16 +116,8 @@ zoom = 1.34
         self.playerHotbar:setVisible(isMouse);
     end
 
-    self.craftingUI = ISCraftingUI:new(0, 0, 800+(getCore():getOptionFontSizeReal()-1)*100, 600+(getCore():getOptionFontSizeReal()-1)*60, playerObj)
-    self.craftingUI:initialise();
-    self.craftingUI.minimumWidth =
-    self.craftingUI:addToUIManager();
-    self.craftingUI:setVisible(false);
-    self.craftingUI:setEnabled(false)
-
     self.mechanicsUI = ISVehicleMechanics:new(0,0,playerObj,nil);
     self.mechanicsUI:initialise();
---    self.mechanicsUI:addToUIManager();
     self.mechanicsUI:setVisible(false);
     self.mechanicsUI:setEnabled(false);
 
@@ -179,7 +150,6 @@ zoom = 1.34
     if register then
     ISLayoutManager.RegisterWindow('inventory'..self.id, ISInventoryPage, self.playerInventory) 
     ISLayoutManager.RegisterWindow('loot'..self.id, ISInventoryPage, self.lootInventory)
-    ISLayoutManager.RegisterWindow('crafting'..self.id, ISCraftingUI, self.craftingUI)
     ISLayoutManager.RegisterWindow('mechanics'..self.id, ISVehicleMechanics, self.mechanicsUI)
     if self.miniMap then
         ISLayoutManager.RegisterWindow('miniMap'..self.id, ISMiniMapOuter, self.miniMap) 
@@ -243,8 +213,6 @@ function ISPlayerDataObject:placeInventoryScreens(playerID, totalPlayers, mouse)
 
     end
 
-
-	print("PLAYER DATA OFFSET " .. playerID);
 	if playerID > 0 then
 		getSpecificPlayer(playerID):setOffSetXUI(self.x1);
 		getSpecificPlayer(playerID):setOffSetYUI(self.y1);
@@ -281,13 +249,6 @@ function ISPlayerDataObject:onResolutionChange(oldw, oldh, neww, newh)
 
     local x = getPlayerScreenLeft(self.id)
     local y = getPlayerScreenTop(self.id)
-    local w = getPlayerScreenWidth(self.id)
-    local h = getPlayerScreenHeight(self.id)
-
-    --if self.safetyUI then
-    --    self.safetyUI:setX(x + w - 100)
-    --    self.safetyUI:setY(y + h - 100)
-    --end
 
     if self.vehicleDashboard then
         self.vehicleDashboard:onResolutionChange()
@@ -319,12 +280,10 @@ end
 
 function ISPlayerDataObject:new (id)
     local o = {}
-    --o.data = {}
     setmetatable(o, self)
     self.__index = self
 
     o.id = id;
-
 
     return o
 end
@@ -337,6 +296,3 @@ ISPlayerDataObject.onKeyPressed = function(key)
         screenZoomOut();
     end
 end
-
-
--- Events.OnKeyPressed.Add(ISPlayerDataObject.onKeyPressed);

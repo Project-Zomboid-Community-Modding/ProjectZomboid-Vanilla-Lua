@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISPlasterAction = ISBaseTimedAction:derive("ISPlasterAction");
 
 function ISPlasterAction:isValid()
-	return ISBuildMenu.cheat or self.character:getInventory():contains("BucketPlasterFull");
+	return self.character:isBuildCheat() or self.character:getInventory():contains("BucketPlasterFull");
 end
 
 function ISPlasterAction:update()
@@ -37,9 +37,9 @@ function ISPlasterAction:complete()
 		self.thumpable:setPaintable(true)
 		self.thumpable:setCanBePlastered(false)
 		self.thumpable:transmitUpdatedSpriteToClients()
-		self.thumpable:sendObjectChange("paintable")
+		self.thumpable:sendObjectChange(IsoObjectChange.PAINTABLE)
 
-		if not ISBuildMenu.cheat then
+		if not self.character:isBuildCheat() then
 			self.plasterBucket:UseAndSync();
 		end
 
@@ -49,7 +49,7 @@ function ISPlasterAction:complete()
 end
 
 function ISPlasterAction:getDuration()
-	if self.character:isTimedActionInstant() or ISBuildMenu.cheat then
+	if self.character:isTimedActionInstant() or self.character:isBuildCheat() then
 		return 1;
 	end
 	return 100

@@ -122,7 +122,6 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
     if string.find(command, "SIZE:") then
 
 		local size = string.sub(command, 6);
---~         print(size);
 		if(size == "small") then
 			self.font = UIFont.NewSmall;
 		end
@@ -160,30 +159,12 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
             lineImageHeight = h + 0;
         end
 
-        if self.images[self.imageCount] == nil then
-            --print("Could not find texture");
-        end
         self.imageX[self.imageCount] = x+IMAGE_PAD;
         self.imageY[self.imageCount] = y+(lineHeight-lineImageHeight)/2;
         self.imageW[self.imageCount] = w;
         self.imageH[self.imageCount] = h;
         self.imageCount = self.imageCount + 1;
         x = x + w + IMAGE_PAD*2;
---[[
-        local newY = math.max(y + (h / 2) - 7, y)
-
-        for c,v in ipairs(self.lines) do
-            if self.lineY[c] == y then
-                self.lineY[c] = newY;
-            end
-		end
-		for c,v in ipairs(self.imageY) do
-			if self.imageY[c] == y then
-				self.imageY[c] = newY;
-			end
-		end
-        y = newY;
---]]
     end
 
 
@@ -212,9 +193,6 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
             lineImageHeight = (h / 2) + 16;
         end
 
-        if self.images[self.imageCount] == nil then
-            --print("Could not find texture");
-        end
         local mx = (self.width - self.marginLeft - self.marginRight) / 2;
         self.imageX[self.imageCount] = mx - (w/2);
         self.imageY[self.imageCount] = y;
@@ -301,9 +279,6 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
                     lineImageHeight = (h / 2) + 16;
                 end
 
-                if self.images[self.imageCount] == nil then
-                    --print("Could not find texture");
-                end
                 local mx = (self.width - self.marginLeft - self.marginRight) / 2;
                 self.imageX[self.imageCount] = mx - (w/2);
                 self.imageY[self.imageCount] = y;
@@ -449,10 +424,6 @@ function ISRichTextPanel:paginate()
 	while not bDone do
 		cur = string.find(leftText, " ", cur+1);
 		if cur ~= nil then
---			while string.sub(leftText, cur, cur)== " " do
---				cur = cur + 1
---			end
---			cur = cur - 1
 			local token = string.sub(leftText, 0, cur);
 			if string.find(token, "<") and string.find(token, ">") then -- handle missing ' ' after '>'
 				cur = string.find(token, ">") + 1;
@@ -565,7 +536,6 @@ function ISRichTextPanel:setContentTransparency(alpha)
 end
 
 function ISRichTextPanel:render()
-
     self.r = 1;
     self.g = 1;
     self.b = 1;
@@ -587,7 +557,6 @@ function ISRichTextPanel:render()
 	if self.textDirty then
 		self:paginate();
 	end
-	--ISPanel.render(self);
     for c,v in ipairs(self.images) do
         self:drawTextureScaled(v, self.imageX[c] + self.marginLeft, self.imageY[c] + self.marginTop, self.imageW[c], self.imageH[c], self.contentTransparency, 1, 1, 1);
     end
@@ -622,7 +591,6 @@ function ISRichTextPanel:render()
 		end
 
 		if self.marginTop + self:getYScroll() + self.lineY[c] + getTextManager():getFontHeight(self.font) > 0 then
-		
 			local r = self.r;
 			local b = self.b;
 			local g = self.g;
@@ -661,7 +629,6 @@ function ISRichTextPanel:render()
 							self.font = self.fonts[c];
 						end
 						self:drawText(string.trim(self.lines[c]), lineX + self.lineX[c], self.lineY[c] + self.marginTop, r, g, b, self.contentTransparency, self.font)
---						lineX = lineX + getTextManager():MeasureStringX(self.font, self.lines[c])
 						c = c + 1
 					end
 					c = c - 1
@@ -670,8 +637,6 @@ function ISRichTextPanel:render()
 				else
 					self:drawText( string.trim(v), self.lineX[c] + self.marginLeft, self.lineY[c] + self.marginTop, r, g, b,self.contentTransparency, self.font);
 				end
-
---				self:drawRect(self.lineX[c] + self.marginLeft, self.lineY[c] + self.marginTop, self.width, 1, 1.0, 0.5, 0.5, 0.5)
 			end
 		end
 		c = c + 1
@@ -680,19 +645,15 @@ function ISRichTextPanel:render()
 	if ISRichTextPanel.drawMargins then
 		self:drawRectBorder(0, 0, self.width, self:getScrollHeight(), 0.5,1,1,1)
 		self:drawRect(self.marginLeft, 0, 1, self:getScrollHeight(), 1,1,1,1)
-		local maxLineWidth = self.maxLineWidth or (self.width - self.marginRight - self.marginLeft)
---		self:drawRect(self.marginLeft + maxLineWidth, 0, 1, self:getScrollHeight(), 1,1,1,1)
 		self:drawRect(self.width - self.marginRight, 0, 1, self:getScrollHeight(), 1,1,1,1)
 		self:drawRect(0, self.marginTop, self.width, 1, 1,1,1,1)
 		self:drawRect(0, self:getScrollHeight() - self.marginBottom, self.width, 1, 1,1,1,1)
 	end
 
 	if self.clip then self:clearStencilRect() end
-	--self:setScrollHeight(y);
 end
 
 function ISRichTextPanel:onResize()
-  --  ISUIElement.onResize(self);
 	self.width = self:getWidth();
 	self.height = self:getHeight();
     self.textDirty = true;
@@ -727,7 +688,6 @@ end
 
 function ISRichTextPanel:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self);
     self.__index = self;

@@ -36,7 +36,6 @@ function ISStorySoundsDebug:prerender()
     ISCollapsableWindow.prerender(self);
 end
 
-
 function ISStorySoundsDebug:render()
     ISCollapsableWindow.render(self);
 end
@@ -75,7 +74,6 @@ function ISStorySoundsDebug:new (x, y, width, height)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "Storyline Sounds debug";
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

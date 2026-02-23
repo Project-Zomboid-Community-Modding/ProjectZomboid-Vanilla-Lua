@@ -2,30 +2,15 @@ ISFeedingTroughMenu = {}
 
 ISFeedingTroughMenu.FEED_PER_DELTA = 10;
 
-local function predicateNotFull(item)
-	return item:getCurrentUsesFloat() < 1
-end
-
-local function predicateEmptySandbag(item)
-	return not instanceof(item, "InventoryContainer") or item:getInventory():isEmpty()
-end
-
 function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
 	if test and ISWorldObjectContextMenu.Test then return true end
 
 	local subMenu;
 	if context.troughSubmenu then
 		subMenu = context.troughSubmenu;
-	--else
-	--	local subOption = context:addOption(getText("ContextMenu_FeedingTrough"), worldobjects, nil);
-	--	subMenu = ISContextMenu:getNew(context);
-	--	context:addSubMenu(subOption, subMenu);
-	--else
-	--	return;
 	end
 
 	local playerObj = getSpecificPlayer(player)
-	local playerInv = playerObj:getInventory()
 
 	if playerObj:getVehicle() then return false end
 
@@ -66,7 +51,6 @@ function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, world
 	end
 
 	local option
-	local tooltip
 
 	option = subMenu:addOption(getText("ContextMenu_FeedingTrough_Info"), isoObject, ISFeedingTroughMenu.onInfo, playerObj)
 	option.iconTexture = getTexture("media/ui/inventoryPanes/Button_Info.png")
@@ -196,5 +180,3 @@ function ISFeedingTroughMenu.isValidAnimalFeed(item)
 	if not item then return false end
 	return item:isAnimalFeed() and instanceof(item, "Drainable");
 end
-
---Events.OnFillWorldObjectContextMenu.Add(ISFeedingTroughMenu.OnFillWorldObjectContextMenu)

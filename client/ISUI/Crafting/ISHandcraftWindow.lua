@@ -49,8 +49,6 @@ function ISHandcraftWindow:createChildren()
     self.handCraftPanel = ISXuiSkin.build(self.xuiSkin, nil, ISHandCraftPanel, 0, 0, 10, 10, self.player, nil, self.isoObject);
     if self.queryOverride then
         self.handCraftPanel.recipeQuery = self.queryOverride;
-    elseif self.isoObject then
-        self.handCraftPanel.recipeQuery = "InHandCraft;AnySurfaceCraft";
     else
         self.handCraftPanel.recipeQuery = "InHandCraft;AnySurfaceCraft";
     end
@@ -58,7 +56,6 @@ function ISHandcraftWindow:createChildren()
     self.handCraftPanel:instantiate();
     self:addChild(self.handCraftPanel);
 
-    --self.maximumHeight = 200;
     if self.pinButton then
         self.pinButton:setAnchorRight(false);
     end
@@ -70,13 +67,11 @@ function ISHandcraftWindow:createChildren()
     self.resizeWidget.resizeFunction = ISHandcraftWindow.calculateLayout;
     self.resizeWidget2.resizeFunction = ISHandcraftWindow.calculateLayout;
 
-    --self:calculateLayout();
     self:xuiRecalculateLayout();
 end
 
 function ISHandcraftWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeight, _force, _anchorRight)
     if self.calculateLayout and ((not self.dirtyLayout) or _force) then
-        --print("xuiRecalculateLayout setting dirty state")
         self.xuiPreferredResizeWidth = self.width;
         self.xuiPreferredResizeHeight = self.height;
         self.xuiResizeAnchorRight = _anchorRight;
@@ -87,12 +82,10 @@ function ISHandcraftWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeigh
             self.xuiPreferredResizeHeight = _preferredHeight<0 and self.height+_preferredHeight or _preferredHeight;
         end
         self.dirtyLayout = true;
-        --self:calculateLayout(self.width, self.height);
     end
 end
 
 function ISHandcraftWindow:calculateLayout(_preferredWidth, _preferredHeight)
-    --print("############# CALC LAYOUT ##############")
     self:validateSizeBounds();
 
     local th = self:titleBarHeight();
@@ -111,7 +104,6 @@ function ISHandcraftWindow:calculateLayout(_preferredWidth, _preferredHeight)
     width = math.max(width, self.windowHeader:getWidth());
     width = math.max(width, self.handCraftPanel:getWidth());
 
-
     local x,y = 0,th;
 
     self.windowHeader:setX(0);
@@ -128,7 +120,6 @@ function ISHandcraftWindow:calculateLayout(_preferredWidth, _preferredHeight)
         width = math.max(width, self.handCraftPanel:getWidth());
         height = math.max(height, self.handCraftPanel:getHeight()+th+rh+wh);
     end
-
 
     self:setWidth(width);
     self:setHeight(height);
@@ -167,19 +158,11 @@ function ISHandcraftWindow:prerender()
 
     if self.isoObject then
         if self.isoObjectInProximity then
-            --if getCore():getOptionDoContainerOutline() then
-            --    self.isoObject:setOutlineHighlight(true);
-            --    self.isoObject:setOutlineHlAttached(true);
-            --    self.isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
-            --end
-
             local header = getText("IGUI_CraftingWindow_Header");
             local props = self.isoObject:getProperties();
             local surface = (props and props:has("IsMoveAble") and props:has("CustomName") and props:get("CustomName")) or getText("IGUI_CraftingWindow_Surface"); --self.isoObject:getProperties():has("IsMoveAble") and
             self.windowHeader.title.name = header .. surface;
         else
---             self.isoObject:setOutlineHighlight(false);
---             self.isoObject:setOutlineHlAttached(false);
             self.windowHeader.title.name = getText("IGUI_CraftingWindow_Title");
         end
     else
@@ -205,7 +188,6 @@ function ISHandcraftWindow:update()
     ISCollapsableWindow.update(self);
 
     local valid = false;
-    local isoObjectProximityChanged = false;
 
     if self.isoObject and self.player then
         local dist = self.panelCloseDistance or 10;
@@ -214,7 +196,6 @@ function ISHandcraftWindow:update()
         local px, py, pz = self.player:getX(), self.player:getY(), self.player:getZ();
 
         if self.isoObject:getSquare() then
-            --if px > ex-dist and px < ex+dist and py > ey-dist and py < ey+dist and ez == pz then
             if self.isoObject:getSquare():DistToProper(self.player) <= dist then
                 valid = true;
                 if not self.isoObjectInProximity then
@@ -286,10 +267,6 @@ function ISHandcraftWindow:close()
     end
     if self.entity then
         self.entity:setUsingPlayer(nil);
-    end
-    if self.isoObject and getCore():getOptionDoContainerOutline() then
---         self.isoObject:setOutlineHighlight(false);
---         self.isoObject:setOutlineHlAttached(false);
     end
     self:removeFromUIManager();
 end
@@ -381,13 +358,11 @@ function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOver
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = nil;
-    --o.resizable = false;
     o.drawFrame = true;
     o.locked = true;
 
     -- reduced distance to be consistent with the distance at which you can initially interact with a workstation
     o.panelCloseDistance = 2;
---     o.panelCloseDistance = 8;
     o.isoObject = isoObject;
     o.queryOverride = queryOverride;
     o.isoObjectInProximity = true;
@@ -410,11 +385,17 @@ function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOver
     o.overrideBPrompt = true;
     o:setWantKeyEvents(true)
 
-    if isoObject and getCore():getOptionDoContainerOutline() then
---         isoObject:setOutlineHighlight(true);
---         isoObject:setOutlineHlAttached(true);
---         isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
-    end
-
     return o
 end
+
+function ISHandcraftWindow.OnPlayerDeath(playerObj)
+    if not ISEntityUI.IsWindowOpen(playerObj:getPlayerNum(), "HandcraftWindow") then
+        return
+    end
+
+    local windowInstance = ISEntityUI.GetWindowInstance(playerObj:getPlayerNum(), "HandcraftWindow")
+    windowInstance:close()
+    windowInstance:removeFromUIManager()
+end
+
+Events.OnPlayerDeath.Add(ISHandcraftWindow.OnPlayerDeath)

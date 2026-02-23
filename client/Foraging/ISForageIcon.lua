@@ -16,11 +16,17 @@ function ISForageIcon:doForage(_x, _y, _contextOption, _targetContainer)
 		local targetContainer = _targetContainer or getPlayerInventory(self.player).inventory or self.character:getInventory();
 		if targetContainer:isItemAllowed(self.itemObj) then
 			if targetContainer and targetSquare and luautils.walkAdj(self.character, targetSquare) then
-			    local itemTypeList = {}
+			    local itemDataList = {}
 			    for i = 0, self.itemList:size() - 1 do
-			        table.insert(itemTypeList, self.itemList:get(i):getType());
+                    local item = self.itemList:get(i)
+                    local data = { type = item:getType() };
+                    if instanceof(item, "Food") then
+                        data.poisonPower = item:getPoisonPower();
+                        data.poisonDetectionLevel = item:getPoisonDetectionLevel();
+                    end
+			        table.insert(itemDataList, data);
                 end;
-				ISTimedActionQueue.add(ISForageAction:new(self.character, self.iconID, itemTypeList, targetContainer, self.itemType));
+				ISTimedActionQueue.add(ISForageAction:new(self.character, self.iconID, itemDataList, targetContainer, self.itemType));
 			end;
 		end;
 	else

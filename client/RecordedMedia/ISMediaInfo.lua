@@ -3,12 +3,11 @@ ISMediaInfo.instance = nil;
 
 function ISMediaInfo.openPanel(_playerNum, _text)
     if _text then
-        --ISMediaInfo.instance = nil;
         if ISMediaInfo.instance then
             ISMediaInfo.instance.richText:setText(_text);
             ISMediaInfo.instance.richText:paginate();
         else
-            ISMediaInfo.instance = ISMediaInfo:new(0, 0, 280, 320, _playerNum, _text);
+            ISMediaInfo.instance = ISMediaInfo:new(0, 0, 380, 420, _playerNum, _text);
             ISMediaInfo.instance:initialise();
             ISMediaInfo.instance:instantiate();
 
@@ -28,23 +27,28 @@ end
 function ISMediaInfo:createChildren()
     ISCollapsableWindowJoypad.createChildren(self);
 
-    local btnWid = 100
     local btnHgt = 25
     local pad = 10
 
-    self.buttonOK = ISButton:new((self:getWidth() / 2) - (btnWid/2), self:getHeight() - pad - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, ISMediaInfo.onClick);
+    self.buttonOK = ISButton:new(5, self:getHeight() - pad - btnHgt, self:getWidth() - 10, btnHgt, getText("UI_Ok"), self, ISMediaInfo.onClick);
     self.buttonOK.internal = "OK";
+    self.buttonOK.anchorTop = false;
+    self.buttonOK.anchorBottom = true;
+    self.buttonOK.anchorLeft = true;
+    self.buttonOK.anchorRight = true;
     self.buttonOK:initialise();
     self.buttonOK:instantiate();
     self.buttonOK.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.buttonOK);
 
     local height = self:getHeight() - btnHgt - (pad*4);
-    self.richText = ISRichTextPanel:new(self:getWidth() / 2 - ((self:getWidth() - 20) / 2), pad*2, self:getWidth() - 20, height);
+    self.richText = ISRichTextPanel:new(self:getWidth() / 2 - ((self:getWidth() - 35) / 2), pad*2 + 13, self:getWidth() - 20, height);
     self.richText.text = self.text;
-    self.richText.borderColor = {r=1, g=1, b=1, a=0.4};
+    self.richText.backgroundColor = {r=0, g=0, b=0, a=0};
     self.richText.autosetheight = false;
     self.richText.defaultFont = UIFont.Small;
+    self.richText.anchorRight = true;
+    self.richText.anchorBottom = true;
     self.richText.clip = true;
     self.richText:initialise();
     self.richText:instantiate();
@@ -117,6 +121,7 @@ function ISMediaInfo:new(x, y, width, height, playerNum, text)
     o.anchorRight = true;
     o.anchorTop = true;
     o.anchorBottom = true;
+    o.resizable = false;
     o.text = text;
     o.fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight();
     o.playerNum = playerNum;

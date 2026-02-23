@@ -41,6 +41,7 @@ function ISWidgetRecipesPanel:createRecipeFilterPanel(_parentTable)
     self.recipeFilterPanel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetRecipeFilterPanel, 0, 0, 10, 10, self.callbackTarget);
     self.recipeFilterPanel:setSearchInfoText(getText("IGUI_CraftingWindow_SearchRecipes"));
     self.recipeFilterPanel.isBuildMenu = self.isBuildMenu;
+    self.recipeFilterPanel.showAllCraftFilterTickBox = self.showAllCraftFilterTickBox;
     self.recipeFilterPanel.needFilterCombo = self.needFilterCombo;
     self.recipeFilterPanel.needSortCombo = self.needSortCombo;
     self.recipeFilterPanel.showFilterByOutputItem = self.showFilterByOutputItem;
@@ -76,7 +77,7 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
         if craftRecipe and craftRecipe:getIconTexture() then
             local a,r,g,b = 1.0,1.0,1.0,1.0;
             if instanceof(self.logic, "BaseCraftingLogic") then
-                local info = self.logic:getCachedRecipeInfo(craftRecipe); -- self:getRecipeDrawData(_recipe);
+                local info = self.logic:getCachedRecipeInfo(craftRecipe);
                 if info and (not info:isValid()) then
                     r = 0.3;
                     g = 0.25;
@@ -96,8 +97,6 @@ function ISWidgetRecipesPanel:createRecipeIconPanel(_parentTable)
             local isFavourite = self.player:getModData()[favString] or false;
             if isFavourite then
                 _self:drawTextureScaledAspect(self.starSetTexture, _x + _width - LIST_FAVICON_SIZE, _y, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, a, getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB());
-            --else
-            --    _self:drawTextureScaledAspect(self.starUnsetTexture, _x + _width - LIST_FAVICON_SIZE, _y, LIST_FAVICON_SIZE, LIST_FAVICON_SIZE, a, r, g, b);
             end
         else
             _self:drawRectBorderStatic(_x, _y, _width, _height, 1.0, 0.5, 0.5, 0.5);
@@ -163,11 +162,7 @@ function ISWidgetRecipesPanel:calculateLayout(_preferredWidth, _preferredHeight)
         width = math.max(width, self.recipeTable:getWidth());
         height = math.max(height, self.recipeTable:getHeight());
     end
-    
-    --if self.recipeListPanel then
-    --    self.recipeListPanel:calculateLayout(width, height);
-    --end
-    --
+
     if self.recipeListPanelRow and self.recipeListPanelRow.visible then
         if self.recipeListPanel then
             local cell = self.recipeTable:cellFor(self.recipeListPanel);

@@ -80,7 +80,6 @@ function ISChallenge2UpgradeTab:onJoypadDown(button, joypadData)
 			end
 		end
 		self.panel:activateView(self.panel.viewList[viewIndex].name)
---		setJoypadFocus(self.playerId, self.panel:getActiveView())
 		joypadData.focus = self.panel:getActiveView()
 	end
 end
@@ -97,7 +96,6 @@ function ISChallenge2UpgradeTab:new (x, y, width, height, player)
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self);
 	self.__index = self;
---	o:noBackground();
 	o:setTitle(getText("Challenge_Challenge2_WindowTitle"))
 	o.playerId = player;
 	ISChallenge2UpgradeTab.instance[player] = o;

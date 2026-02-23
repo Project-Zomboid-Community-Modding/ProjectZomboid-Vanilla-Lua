@@ -280,7 +280,6 @@ function ISSliderPanel:new (x, y, width, height, target, onValueChange, customPa
     o.doToolTip = true;
     o.toolTipText = getText("UI_Radio_IncreaseStepSize")
     o.isSliderPanel = true;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     o.disabled = false
     o.isSlider = true
     return o

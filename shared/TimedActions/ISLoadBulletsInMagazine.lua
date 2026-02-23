@@ -46,8 +46,8 @@ end
 
 function ISLoadBulletsInMagazine:serverStart()
 	self:initVars()
-	emulateAnimEvent(self.netAction, 500, "InsertBullet", nil)
-	emulateAnimEvent(self.netAction, 550, "loadFinished", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "InsertBullet", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 550), "loadFinished", nil)
 end
 
 function ISLoadBulletsInMagazine:getDuration()

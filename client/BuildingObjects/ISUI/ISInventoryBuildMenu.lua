@@ -12,10 +12,6 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
 
 	if test and ISWorldObjectContextMenu.Test then return true end
 
-    local gravelBag = {};
-	local sandBag = {};
-    local dirtBag = {};
-    local claybag = {};
     local shovel = nil;
     local fillWithGravel = nil;
     local fillWithSand = nil;
@@ -73,61 +69,25 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
                 	fillWithClay = object
                 end
 		    else
--- 		        print("Nothing 1")
 				nothingToTake = true
 			end
         end
     end
-	--[[
-	if playerInv:containsTypeRecurse("Gravelbag") then
-		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = context:addOption(getText("ContextMenu_Spill_Gravel"), playerObj, ISInventoryBuildMenu.onSpillGravel);
---         local groundFloor = playerObj:getZ() <= 0
--- 		if not groundFloor then
--- 		    option.notAvailable = true;
---             local tooltip = ISWorldObjectContextMenu.addToolTip();
---             tooltip:setName(getText("ContextMenu_NotAboveGroundFloor"));
---             option.toolTip = tooltip;
--- 		end
-    end
-	if playerInv:containsTypeRecurse("Sandbag") then
-		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = context:addOption(getText("ContextMenu_Spill_Sand"), playerObj, ISInventoryBuildMenu.onSpillSand);
---         local groundFloor = playerObj:getZ() <= 0
--- 		if not groundFloor then
--- 		    option.notAvailable = true;
---             local tooltip = ISWorldObjectContextMenu.addToolTip();
---             tooltip:setName(getText("ContextMenu_NotAboveGroundFloor"));
---             option.toolTip = tooltip;
--- 		end
-    end
-	if playerInv:containsTypeRecurse("Dirtbag") then
-		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = context:addOption(getText("ContextMenu_Spill_Dirt"), playerObj, ISInventoryBuildMenu.onSpillDirt);
-        local groundFloor = getSandboxOptions():getOptionByName("PlaceDirtAboveground"):getValue() == true or playerObj:getZ() == 0
-		if not groundFloor then
-		    option.notAvailable = true;
-            local tooltip = ISWorldObjectContextMenu.addToolTip();
-            tooltip:setName(getText("ContextMenu_NotAboveGroundFloor"));
-            option.toolTip = tooltip;
-		end
-    end
-	]]--
     if fillWithSand then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_sands"), playerObj, ISInventoryBuildMenu.onTakeThing, "sand");
+		shovelSubMenu:addOption(getText("ContextMenu_Take_some_sands"), playerObj, ISInventoryBuildMenu.onTakeThing, "sand");
     end
     if fillWithGravel then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_gravel"), playerObj, ISInventoryBuildMenu.onTakeThing, "gravel");
+		shovelSubMenu:addOption(getText("ContextMenu_Take_some_gravel"), playerObj, ISInventoryBuildMenu.onTakeThing, "gravel");
     end
     if fillWithDirt then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_dirt"), playerObj, ISInventoryBuildMenu.onTakeThing, "dirt");
+		shovelSubMenu:addOption(getText("ContextMenu_Take_some_dirt"), playerObj, ISInventoryBuildMenu.onTakeThing, "dirt");
     end
 	if fillWithClay then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = shovelSubMenu:addOption(getText("ContextMenu_Take_some_clay"), playerObj, ISInventoryBuildMenu.onTakeThing, "clay");
+		shovelSubMenu:addOption(getText("ContextMenu_Take_some_clay"), playerObj, ISInventoryBuildMenu.onTakeThing, "clay");
     end
     if nothingToTake and playerInv:containsTypeRecurse("EmptySandbag") then
 		if test then return ISWorldObjectContextMenu.setTest() end

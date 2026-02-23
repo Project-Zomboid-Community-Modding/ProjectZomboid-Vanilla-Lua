@@ -10,7 +10,6 @@ function ISModalEditRole:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
     local elementHeight = FONT_HGT_MEDIUM
-    local elementWidth = 100
     local y = UI_BORDER_SPACING+1
 
     local title = getText("IGUI_AdminPanel_SeeRole").." \""..self.role:getName().."\""
@@ -127,7 +126,6 @@ function ISModalEditRole:initialise()
         return false
     end
 
-    --local y2 = 0
     self.tickBoxCapability = ISTickBox:new(UI_BORDER_SPACING, 0, self.width - 2*UI_BORDER_SPACING, BUTTON_HGT, "", self, self.onTickBox, self.role)
     self.tickBoxCapability:initialise()
     self.tickBoxCapability:instantiate();
@@ -140,9 +138,6 @@ function ISModalEditRole:initialise()
         self.tickBoxCapability.enable = false;
     end
     self.scrollPanel:addChild(self.tickBoxCapability);
-
-    --y2 = y2 + self.tickBoxCapability:getHeight() + UI_BORDER_SPACING;
-    --self.scrollPanel:setScrollHeight(1000)
 
     self.close = ISButton:new(self.width - btnWid - (UI_BORDER_SPACING+1)*2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISModalEditRole.onClick);
     self.close.internal = "CLOSE";
@@ -225,7 +220,6 @@ end
 function ISModalEditRole:drawDatas(y, item, alt)
     local a = 0.9;
 
-    --    self.parent.selectedFaction = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then

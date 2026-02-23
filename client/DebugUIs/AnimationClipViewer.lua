@@ -276,7 +276,6 @@ end
 function OptionsPanel:onMouseDownOutside(x, y)
 	if self:isMouseOver() then return end
 	self:setVisible(false)
---	self:removeFromUIManager()
 end
 
 function OptionsPanel:new(x, y, width, height)
@@ -594,10 +593,6 @@ function AnimationClipViewer:initAnimalModelScripts()
 		if modelScript then
 			self.animalScriptByName[def:getBodyModelStr()] = modelScript
 			self.animalScriptByModelScript[modelScript] = modelScript
-		end
-		local breeds = def:getBreeds()
-		for j=1,breeds:size() do
-			local breed = breeds:get(j-1)
 		end
 	end
 end

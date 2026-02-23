@@ -72,7 +72,6 @@ function ISAdminTicketsUI:initialise()
     self:addChild(self.refreshBtn);
 
     self:getTickets();
-
 end
 
 function ISAdminTicketsUI:getTickets()
@@ -128,14 +127,9 @@ end
 
 function ISAdminTicketsUI:drawDatas(y, item, alt)
     local a = 0.9;
-
     local answerHeight = 0;
 
-
---    self.parent.selectedTicket = nil;
     self:drawRectBorder(0, (y), self:getWidth(), item.height, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
-
 
     local ticket = item.item.ticket
 
@@ -149,13 +143,10 @@ function ISAdminTicketsUI:drawDatas(y, item, alt)
     self:drawText(tostring(ticket:isViewed()) .. "", UI_BORDER_SPACING + COL_1_WIDTH + COL_2_WIDTH, y + 3, 1, 1, 1, a, self.font);
     item.item.richText:render(UI_BORDER_SPACING + COL_1_WIDTH + COL_2_WIDTH + COL_3_WIDTH, y + 3, self)
     local messageHeight = math.max(item.item.richText:getHeight() + 3, self.itemheight)
---    self:drawText(ticket:getMessage(), 205, y + 2, 1, 1, 1, a, self.font);
 
     if ticket:getAnswer() then
         answerHeight = math.max(item.item.richText2:getHeight() + 6, self.itemheight)
---        self:drawText("Answer", 30, y + 2 + messageHeight, 1, 1, 1, a, self.font);
         item.item.richText2:render(UI_BORDER_SPACING*2, y + messageHeight+3, self)
---        self:drawText(item.item:getAnswer():getAuthor() .. ": " .. item.item:getAnswer():getMessage(), 100, y + self.itemheight +  2, 1, 1, 1, a, self.font);
         self:drawRect(0, (y + messageHeight), self:getWidth(), answerHeight, 0.15, 1, 1, 1);
     end
 
@@ -177,10 +168,7 @@ function ISAdminTicketsUI:render()
     self:drawRectBorder(self.datas.x, self.datas.y - BUTTON_HGT, self.datas:getWidth(), BUTTON_HGT + 1, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawRect(self.datas.x, self.datas.y - BUTTON_HGT, self.datas:getWidth(), BUTTON_HGT + 1, self.listHeaderColor.a, self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
 
-
-
     local x = self.datas.x
-
 
     self:drawText("Author", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
     x = x + COL_1_WIDTH

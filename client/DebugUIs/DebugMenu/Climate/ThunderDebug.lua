@@ -5,25 +5,6 @@ ThunderDebug.instance = nil;
 ThunderDebug.shiftDown = 0;
 ThunderDebug.eventsAdded = false;
 
-local enabled = true; --getDebug();
-
---[[
-function ThunderDebug.OnKeepKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyKeepDown = "..tostring(key));
-    if key==42 or key==54 then
-        ThunderDebug.shiftDown = 4;
-    end
-end
-
-function ThunderDebug.OnKeyDown(key)
-    --backspace 14, shift 42, 54
-    --print("KeyDown = "..tostring(key));
-    if ThunderDebug.shiftDown>0 and key ==12 then
-        ThunderDebug.OnOpenPanel();
-    end
-end--]]
-
 function ThunderDebug.OnOpenPanel()
     if ThunderDebug.instance==nil then
         ThunderDebug.instance = ThunderDebug:new (100, 100, 1000, 1000, getPlayer());
@@ -46,7 +27,6 @@ end
 function ThunderDebug:initialise()
     ISCollapsableWindow.initialise(self);
 end
-
 
 function ThunderDebug:createChildren()
     ISCollapsableWindow.createChildren(self);
@@ -72,7 +52,6 @@ function ThunderDebug:createChildren()
     end
 
     y = y+10;
-    --self:setHeight(y);
 end
 
 function ThunderDebug:addPoi(_name, _x, _y)
@@ -132,8 +111,6 @@ function ThunderDebug.OnThunderEvent(x,y,strike,light,rumble)
     end
 end
 
-
-
 function ThunderDebug:onResize()
     ISUIElement.onResize(self);
     local th = self:titleBarHeight();
@@ -155,7 +132,6 @@ end
 function ThunderDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
-
 
 function ThunderDebug:render()
     ISCollapsableWindow.render(self);
@@ -195,25 +171,7 @@ function ThunderDebug:render()
             end
         end
     end
-    --self.richtext:clearStencilRect();
-
-    --[[
-    local w,h = self:getWidth(), self:getHeight();
-
-    local c = self.greyCol;
-    local sx,sy = (w/2)-300, (h/2)-100;
-
-    local interval = h/self.gridVertSpacing;
-    for i = 1, self.gridVertSpacing-1 do
-        self:drawRect(1, i*interval, w-2, 1, c.a, c.r, c.g, c.b);
-    end
-    interval = w/self.gridHorzSpacing;
-    for i = 1, self.gridHorzSpacing-1 do
-        self:drawRect(i*interval, 1, 1, h-2, c.a, c.r, c.g, c.b);
-    end
-    --]]
 end
-
 
 function ThunderDebug:close()
     ISCollapsableWindow.close(self)
@@ -229,11 +187,8 @@ function ThunderDebug:clear()
     self.currentTile = nil;
 end
 
-
-
 function ThunderDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -254,7 +209,6 @@ function ThunderDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_Thunderbug");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 
@@ -274,12 +228,3 @@ function ThunderDebug:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
-
---[[
-if enabled then
-    Events.OnCustomUIKey.Add(ThunderDebug.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(ThunderDebug.OnKeepKeyDown);
-    Events.OnClimateTickDebug.Add(ThunderDebug.OnClimateTickDebug);
-    Events.OnThunderEvent.Add(ThunderDebug.OnThunderEvent);
-    --Events.OnObjectLeftMouseButtonUp.Add(ThunderDebug.onMouseButtonUp);
-end--]]

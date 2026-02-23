@@ -39,6 +39,7 @@ function ISFitnessAction:update()
 	if self.character:pressedMovement(true) or self.character:getMoodles():getMoodleLevel(MoodleType.ENDURANCE) > ISFitnessUI.enduranceLevelThreshold then
 		self.character:setVariable("ExerciseStarted", false);
 		self.character:setVariable("ExerciseEnded", true);
+		self:forceStop();
 	end
 	
 	if getGameTime():getCalender():getTimeInMillis() > self.endMS then
@@ -129,7 +130,7 @@ function ISFitnessAction:serverStart()
         period = 1300;
 	elseif self.exeDataType == "burpees" then
 		period = 2400;
-	elseif self.exeDataType == "barbellcull" then
+	elseif self.exeDataType == "barbellcurl" then
 		period = 2200;
 	elseif self.exeDataType == "dumbbellpress" then
 		period = 1500;

@@ -64,7 +64,6 @@ function SeamTileList:onRightMouseUp(x, y)
 	if not tiles or tiles:isEmpty() then return end
 	local row = self:getRowAt(self:getMouseX(), self:getMouseY())
 	if row < 0 or row >= tiles:size() then return end
-	local tileName = tiles:get(row)
 	local player = 0
 	local context = ISContextMenu.get(player, self:getAbsoluteX() + x, self:getAbsoluteY() + y + self:getYScroll())
 	context:removeFromUIManager()
@@ -108,7 +107,6 @@ end
 function SeamTileList:getTileNameList()
 	local tilesetName,tileIndex = self.editor.scene:getSelectedTile()
 	if not tilesetName then return end
-	local tiles = nil
 	if self.seamTile == "east" then
 		return SeamManager.getInstance():getTileJoinE(self.editor.modID, tilesetName, tileIndex % 8, tileIndex / 8, false)
 	end

@@ -270,8 +270,6 @@ function TileList2:render()
 			if texture then
 				if SeamManager.getInstance():getMasterTileName(self.editor.modID, tilesetName, col - 1, row - 1) then
 					self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.0, 0.2, 0.2)
---                if tileNames ~= nil and tileNames:contains(texture:getName()) then
---				    self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.2, 0.2, 0.2)
 				end
 				self:drawTextureScaled(texture,
 					xIndent + (col - 1) * texW + texture:getOffsetX() * scale,
@@ -292,7 +290,6 @@ function TileList2:render()
 	if self:isMouseOver() then
 		local col,row = self:getColRowAt(self:getMouseX(), self:getMouseY())
 		if self:isValidColRow(col, row) then
-			local selection = self.editor.tilePicker.listBox:getSelection()
 			self:drawRectBorder(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.5, 0.5, 0.5)
 			self:renderTilesToAssign(xIndent, yIndent, texW, texH, col, row)
 		end
@@ -363,7 +360,6 @@ function TileList2:assignMasterSprites(col, row)
 		local colSelf = (col - 1 + e.col - selection.minCol)
 		local rowSelf = (row - 1 + e.row - selection.minRow)
 		local tileIndex = colSelf + rowSelf * 8
-		local tileName = string.format("%s_%d", self.tileset, tileIndex)
 		if not SeamManager.getInstance():isMasterTile(self.editor.modID, self.tileset, colSelf, rowSelf) then
 			-- The selected tile in TileList #1 could have it's own seam data, or a master sprite
 			local otherTile = e.tileName

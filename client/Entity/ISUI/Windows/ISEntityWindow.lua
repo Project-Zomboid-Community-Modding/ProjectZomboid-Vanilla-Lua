@@ -32,7 +32,6 @@ function ISEntityWindow:createChildren()
     self.componentsPanel:instantiate();
     self:addChild(self.componentsPanel);
 
-    --self.maximumHeight = 200;
     if self.pinButton then
         self.pinButton:setAnchorRight(false);
     end
@@ -44,7 +43,6 @@ function ISEntityWindow:createChildren()
     self.resizeWidget.resizeFunction = ISEntityWindow.calculateLayout;
     self.resizeWidget2.resizeFunction = ISEntityWindow.calculateLayout;
 
-    --self:calculateLayout();
     self:xuiRecalculateLayout();
 end
 
@@ -60,8 +58,6 @@ function ISEntityWindow:calculateLayout(_preferredWidth, _preferredHeight)
     -- limit the preferred sizes to maximum bounds (can be overruled by children sizes)
     if self.maximumWidth>0 then width = math.min(width, self.maximumWidth); end
     if self.maximumHeight>0 then height = math.min(height, self.maximumHeight); end
-
-    --print("_width = "..tostring(_preferredWidth)..", width = "..tostring(width)..", self.width = "..tostring(self.width))
 
     local x,y = 0,th;
 
@@ -125,8 +121,6 @@ function ISEntityWindow:calculateLayout(_preferredWidth, _preferredHeight)
     if self.collapseButton then
         self.collapseButton:setX(width - 3 - self.collapseButton:getWidth())
     end
-    --print("entitywindow w = "..tostring(self.minimumWidth)..", h = "..tostring(self.minimumHeight))
-    --print("entitywindow w = "..tostring(width)..", h = "..tostring(height)..", resizable = "..tostring(self.resizable))
 end
 
 function ISEntityWindow:onResize(_width, _height)
@@ -173,7 +167,6 @@ end
 
 
 function ISEntityWindow:refresh()
-    --ISCraftingUI.refresh(self);
 end
 
 function ISEntityWindow:close()

@@ -59,8 +59,8 @@ end
 function ISSleepingUI:onResolutionChange()
 	local x = getPlayerScreenLeft(self.playerIndex)
 	local y = getPlayerScreenTop(self.playerIndex)
-	local w = 1 -- getPlayerScreenWidth(self.playerIndex)
-	local h = 1 -- getPlayerScreenHeight(self.playerIndex)
+	local w = 1
+	local h = 1
 	self:setWidth(w)
 	self:setHeight(h)
 	self:setX(x)
@@ -70,8 +70,8 @@ end
 function ISSleepingUI:new(playerIndex)
 	local x = getPlayerScreenLeft(playerIndex)
 	local y = getPlayerScreenTop(playerIndex)
-	local w = 1 -- getPlayerScreenWidth(playerIndex)
-	local h = 1 -- getPlayerScreenHeight(playerIndex)
+	local w = 1
+	local h = 1
 	local o = ISPanel.new(self, x, y, w, h)
 	o.background = false
 	o.playerIndex = playerIndex

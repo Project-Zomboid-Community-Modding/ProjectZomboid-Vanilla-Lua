@@ -12,7 +12,6 @@ function CFeedingTroughSystem:isValidIsoObject(isoObject)
 end
 
 function CFeedingTroughSystem:newLuaObject(globalObject)
---	print("new lua object C")
 	return CFeedingTroughGlobalObject:new(self, globalObject)
 end
 

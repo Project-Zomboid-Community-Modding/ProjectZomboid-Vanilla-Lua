@@ -6,15 +6,12 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-
 function ISPlayerStatsWarningPointUI:initialise()
     ISPanel.initialise(self);
     self:create();
 end
 
-
 function ISPlayerStatsWarningPointUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -22,7 +19,6 @@ function ISPlayerStatsWarningPointUI:render()
     self:drawText(getText("IGUI_PlayerStats_WarningPointTitle"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PlayerStats_WarningPointTitle")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
     self:drawText(getText("IGUI_PlayerStats_Reason"), UI_BORDER_SPACING+1, self.reason.y - self.reason.height-UI_BORDER_SPACING+3, 1,1,1,1, UIFont.Small);
     self:drawText(getText("IGUI_PlayerStats_Amount"), UI_BORDER_SPACING+1, self.amount.y - self.amount.height-UI_BORDER_SPACING+3, 1,1,1,1, UIFont.Small);
-
 end
 
 function ISPlayerStatsWarningPointUI:create()

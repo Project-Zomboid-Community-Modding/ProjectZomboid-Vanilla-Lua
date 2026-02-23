@@ -62,8 +62,6 @@ function ISFluidViewPanel:createChildren()
 
     y = self:incY(y, self.scriptRuntimeButton, UI_BORDER_SPACING);
 
-    local height = self.height - y - UI_BORDER_SPACING - 1;
-
     self.listView = ISStringListView:new (x, y, width, self.height - y - UI_BORDER_SPACING - 1);
     self.listView:initialise();
     self.listView:instantiate();
@@ -157,7 +155,6 @@ end
 
 function ISFluidViewPanel:new (x, y, width, height, fluid)
     local o = {}
-    --o.data = {}
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

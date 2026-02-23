@@ -80,12 +80,13 @@ function ISFertilizeAction:getDuration()
 	return self.maxTime;
 end
 
-function ISFertilizeAction:new(character, item, plant, maxTime)
+function ISFertilizeAction:new(character, item, plant, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character);
 	o.character = character;
 	o.item = item;
     o.plant = plant;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 
 	return o
 end

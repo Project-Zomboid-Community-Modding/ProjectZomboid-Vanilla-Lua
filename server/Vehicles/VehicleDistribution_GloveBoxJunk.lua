@@ -53,6 +53,7 @@ ClutterTables.GloveBoxItems = {
 	"Mirror", 4,
 	"Perfume", 4,
 	"Razor", 4,
+	"DentalFloss", 0.1,
 	-- Medical
 	"AlcoholWipes", 8,
 	"Bandage", 4,

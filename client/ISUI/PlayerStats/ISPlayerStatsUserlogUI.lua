@@ -23,7 +23,6 @@ function ISPlayerStatsUserlogUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsUserlogUI:setVisible(visible)
     self.javaObject:setVisible(visible);
     for _,v in ipairs(self.windows) do

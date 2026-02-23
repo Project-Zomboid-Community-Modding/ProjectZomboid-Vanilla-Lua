@@ -15,7 +15,6 @@ function LuaDebugger:initialise()
 end
 
 function LuaDebugger:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local th = self:titleBarHeight()
@@ -69,7 +68,6 @@ end
 
 function LuaDebugger:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -78,10 +76,7 @@ function LuaDebugger:new (x, y, width, height)
     return o
 end
 
-
-
 DoLuaDebuggerOnBreak = function (file, line)
-
     local f = file
     local src = nil;
     if f ~= nil then
@@ -109,10 +104,6 @@ DoLuaDebuggerOnBreak = function (file, line)
        v:fill();
        v:restorePos();
     end
---   panel2:collapse();
-
---	getWorld():setDrawWorld(false);
---	CharacterInfoPage.doInfo(SurvivorFactory:CreateSurvivor());
 end
 
 DoLuaDebugger = function (f, line)
@@ -158,8 +149,4 @@ DoLuaDebugger = function (f, line)
     else
         LuaDebugger.instance.threadPanel:fill();
     end
---   panel2:collapse();
-
---	getWorld():setDrawWorld(false);
---	CharacterInfoPage.doInfo(SurvivorFactory:CreateSurvivor());
 end

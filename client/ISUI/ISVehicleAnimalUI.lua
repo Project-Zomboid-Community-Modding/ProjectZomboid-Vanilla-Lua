@@ -10,7 +10,6 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 ISAnimalInVehiclePanel = ISPanelJoypad:derive("ISAnimalInVehiclePanel")
 
 function ISAnimalInVehiclePanel:createChildren()
-    local btnWidth = self.animalUI.btnWidth
     local btnHeight = self.animalUI.btnHeight
 
     self.avatar = ISVehicleAnimal3DModel:new(0, 0, self.width, self.height - btnHeight - 5)
@@ -153,7 +152,7 @@ function ISVehicleAnimalUI:checkCanAddAnimal()
     if instanceof(self.character:getPrimaryHandItem(), "AnimalInventoryItem") then
         haveAnimals = true;
     end
-    if self.character:getPrimaryHandItem() and self.character:getPrimaryHandItem():getType() == "CorpseAnimal" and not self.character:getPrimaryHandItem():getDeadBodyObject():isAnimalSkeleton() then
+    if self.character:getPrimaryHandItem() and self.character:getPrimaryHandItem():getType() == "CorpseAnimal" and self.character:getPrimaryHandItem():getDeadBodyObject() and not self.character:getPrimaryHandItem():getDeadBodyObject():isAnimalSkeleton() then
         haveAnimals = true;
     end
     for x=self.vehicle:getSquare():getX() - 6, self.vehicle:getSquare():getX()+5 do
@@ -217,7 +216,6 @@ function ISVehicleAnimalUI:prerenderScrollPanel()
     local xoffset = 10;
     local yoffset = 10;
     local index = 0;
-    --self:drawText(getText("IGUI_Animal_TrailerAvailability") .. round(self.vehicle:getCurrentTotalAnimalSize(), 1) .. "/" .. self.vehicle:getAnimalTrailerSize(), 20, 12, 1,1,1,1, UIFont.NewSmall);
     for i,animalPanel in ipairs(self.avatars) do
         animalPanel:setX(xoffset);
         animalPanel:setY(yoffset);
@@ -238,8 +236,6 @@ function ISVehicleAnimalUI:prerenderScrollPanel()
                 else
                     avatar:setVariable("TrailerAnimation", "idle1")
                 end
-                --                print("def values", avatar.animal:getCustomName(),  "zoom: ", avatarDef.trailerZoom, "xoffset", avatarDef.trailerXoffset, "yoffset", avatarDef.trailerYoffset)
-                --                print("final values", avatar.animal:getCustomName(),  "zoom: ", avatarDef.trailerZoom * avatar.animal:getData():getSize(), "xoffset", avatarDef.trailerXoffset * avatar.animal:getData():getSize(), "yoffset", avatarDef.trailerYoffset * avatar.animal:getData():getSize())
             end
 
             if avatar.animal:getCustomName() then
@@ -290,11 +286,9 @@ end
 function ISVehicleAnimalUI:prerender()
     ISCollapsableWindowJoypad.prerender(self)
 
---    if not AnimalContextMenu.cheat then
-        if not self.vehicle or not self.vehicle:getCurrentSquare() or not self.character or not self.character:getCurrentSquare() or self.vehicle:getCurrentSquare():DistToProper(self.character) > 4 then
-            self:close();
-        end
---    end
+    if not self.vehicle or not self.vehicle:getCurrentSquare() or not self.character or not self.character:getCurrentSquare() or self.vehicle:getCurrentSquare():DistToProper(self.character) > 4 then
+        self:close();
+    end
 end
 
 --
@@ -337,17 +331,6 @@ function ISVehicleAnimalUI:create(reset)
         if addAvatar then
             self.scrollPanel.avatars[i] = animalPanel;
         end
---[[
-        local removeBtn = animalPanel.removeBtn;
-        local grabBtn = animalPanel.grabBtn;
-        local infoBtn = animalPanel.infoBtn;
-        removeBtn.animal = animal;
-        removeBtn.borderColor = {r=1, g=1, b=1, a=0.8};
-        grabBtn.animal = animal;
-        grabBtn.borderColor = {r=1, g=1, b=1, a=0.8};
-        infoBtn.animal = animal;
-        infoBtn.borderColor = {r=1, g=1, b=1, a=0.8};
---]]
     end
 
     -- custom size
@@ -467,7 +450,6 @@ ISVehicleAnimal3DModel = ISUI3DModel:derive("ISVehicleAnimal3DModel")
 function ISVehicleAnimal3DModel:instantiate()
     ISUI3DModel.instantiate(self)
     self:setIsometric(false)
-    --    self.javaObject:setConsumeMouseEvents(false)
 end
 
 function ISVehicleAnimal3DModel:onMouseDown(x, y)

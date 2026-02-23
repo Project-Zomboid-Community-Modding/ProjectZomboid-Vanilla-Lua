@@ -12,7 +12,6 @@ function ISTradingUI:initialise()
     ISPanel.initialise(self);
     local btnWid = 100
     local btnHgt = 25
-    local btnHgt2 = 18
     local padBottom = 10
     local listWidh = (self.width / 2) - 15;
     local listHeight = 250;
@@ -278,8 +277,6 @@ function ISTradingUI:updateTooltip()
             self.toolRender:setVisible(false)
         end
     end
-
-
 end
 
 function ISTradingUI:updateButtons()

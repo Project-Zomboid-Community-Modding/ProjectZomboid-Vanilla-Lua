@@ -24,7 +24,6 @@ function ISSpeakerButton:onMouseUp(x, y)
     if not self:getIsVisible() or (not self.enableControls) then
         return;
     end
-    --self.isMute = not self.isMute;
     if self.onclick and self.onclickTarget then
         self.onclick(self.onclickTarget, not self.isMute);
     end
@@ -33,7 +32,6 @@ end
 function ISSpeakerButton:prerender()
     ISPanel.prerender(self);
 end
-
 
 function ISSpeakerButton:render()
     ISPanel.render(self);
@@ -44,12 +42,10 @@ function ISSpeakerButton:render()
         end
         self:drawRectBorder(0, 0, self:getWidth(), self:getHeight(), 1.0, 0.8, 0.8, 0.8)
         -- texture
-        --self:drawTextureScaled(self.speakerTexture, self.marginLeft+self.speakerTexture:getOffsetX(), self.marginTop+self.speakerTexture:getOffsetY(), self.textureSize, self.textureSize, 1.0, 1.0, 1.0, 1.0);
         self:drawTextureScaled(self.speakerTexture, 2, 2, self:getWidth()-4, self:getHeight()-4, 1.0, 1.0, 1.0, 1.0);
         if self.isMute then
             self:drawTextureScaled(self.muteTexture, 2, 2, self:getWidth()-4, self:getHeight()-4, 1.0, 1.0, 0.0, 0.0);
         end
-        --self:drawTexture(self.speakerTexture, self.marginLeft+self.speakerTexture:getOffsetX(), self.marginTop+self.speakerTexture:getOffsetY(), 1.0, 1.0, 1.0, 1.0);
     end
 end
 
@@ -59,7 +55,6 @@ end
 function ISSpeakerButton:getEnableControls()
     return self.enableControls;
 end
-
 
 function ISSpeakerButton:new (x, y, width, height, onclick, onclickTarget)
     local o = ISPanel:new(x, y, width, height);

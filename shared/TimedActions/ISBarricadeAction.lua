@@ -152,7 +152,7 @@ function ISBarricadeAction:complete()
 					barricade:transmitCompleteItemToClients()
 				else
 					if isClient() or isServer() then	 -- FIXME? for MP
-						barricade:sendObjectChange('state')
+						barricade:sendObjectChange(IsoObjectChange.STATE)
 					end
 				end
 				sendRemoveItemsFromContainer(player:getInventory(), items);

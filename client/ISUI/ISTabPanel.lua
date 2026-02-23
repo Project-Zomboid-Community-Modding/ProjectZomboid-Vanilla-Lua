@@ -12,7 +12,6 @@ function ISTabPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISTabPanel:updateSmoothScrolling()
 	if not self.smoothScrollTargetX then return end
 	local dx = self.smoothScrollTargetX - self.smoothScrollX
@@ -26,10 +25,8 @@ function ISTabPanel:updateSmoothScrolling()
 	if math.abs(targetX - self.smoothScrollTargetX) > 1 then
 		self.scrollX = math.floor(targetX)
 		self.smoothScrollX = targetX
---		print(dx .. "," .. self.scrollX .. "," .. self.smoothScrollTargetX .. "," .. maxXScroll)
 	else
 		self.scrollX = self.smoothScrollTargetX
---		print(dx .. "," .. self.scrollX .. "," .. self.smoothScrollTargetX .. "," .. maxXScroll)
 		self.smoothScrollTargetX = nil
 	end
 end
@@ -250,7 +247,6 @@ function ISTabPanel:onMouseMove(dx, dy)
 	end
 end
 
-
 -- if you dragged a tab out of the panel and release the button, we place the view here
 function ISTabPanel:onMouseUpOutside(x, y)
 	if ISTabPanel.mouseOut and self.isDragging and ISTabPanel.viewDragging then
@@ -266,8 +262,6 @@ function ISTabPanel:onMouseUpOutside(x, y)
 		ISTabPanel.yMouse = -1;
 		self.isDragging = false;
 		ISTabPanel.mouseOut = false;
---~ 		local newView = ISTabPanel.viewDragging.view:new(0,0,ISTabPanel.viewDragging.view.width,ISTabPanel.viewDragging.height);
---~ 		local newView = ISCharacterInfo:new(0, 0, self.width, self.height-8);
 		-- we start to remove the view from our tab panel
 		self:removeChild(ISTabPanel.viewDragging.view);
 		local newWindow = ISCollapsableWindow:new(self:getMouseX() + self:getAbsoluteX(), self:getMouseY() + self:getAbsoluteY(), ISTabPanel.viewDragging.view:getWidth(), ISTabPanel.viewDragging.view:getHeight());
@@ -321,7 +315,6 @@ ISTabPanel.redoTab = function(self)
 			end
 		end
 		self.viewList = trueViewList;
---~ 		print(#self.viewList);
 		-- we remove all the child view from the collapsable window and add them to our own tab panel
 		for i,v in pairs(ISTabPanel.viewDragging.view:getViews()) do
 			self:addChild(v);
@@ -330,12 +323,11 @@ ISTabPanel.redoTab = function(self)
 			newView.view = v;
 			newView.name = ISTabPanel.viewDragging.view:getTitle();
 			table.insert(self.viewList, self:getTabIndexAtX(self:getMouseX()), newView);
---~ 			print(#self.viewList);
 		end
 		ISTabPanel.viewDragging.view:clearChildren();
 		ISTabPanel.viewDragging.view:setVisible(false);
 		ISTabPanel.viewDragging.view:removeFromUIManager();
-	-- we re do all our tab in the list to display them in the new order we choose (by dragging a tab)
+	    -- we re do all our tab in the list to display them in the new order we choose (by dragging a tab)
 	else
 		local newViewList = {};
 		for i,viewObject in ipairs(self.viewList) do
@@ -372,33 +364,6 @@ function ISTabPanel:onMouseUp(x, y)
 		ISTabPanel.yMouse = -1;
 		self.isDragging = false;
 		ISTabPanel.viewDragging = nil;
---[[
-		-- when we click somewhere on our tab panel
-		-- first test, do we click on the tab height ?
-		if self:getMouseY() >= 0 and self:getMouseY() < self.tabHeight then
-			if self:getScrollButtonAtX(self:getMouseX()) then
-				return
-			end
-			-- we get the # of the clicked tab
-			local tabNb = self:getTabIndexAtX(self:getMouseX());
-			-- do we really click on a tab ?
-			if tabNb <= #self.viewList then
-				-- do we clicked on a different view than the current one ?
-				local clickedView = nil;
-				for ind,value in ipairs(self.viewList) do
-					-- we get the view we clicked on
-					if ind == tabNb then
-						clickedView = value;
-						break;
-					end
-				end
-				-- if we clicked on another view, we display it and make the previous one not visible
-				if clickedView and clickedView.name ~= self.activeView.name then
-					self:activateView(clickedView.name)
-				end
-			end
-		end
---]]
 	end
 end
 
@@ -468,12 +433,6 @@ function ISTabPanel:activateView(viewName)
 		end
 	end
 	return false;
-	-- if we clicked on another view, we display it and make the previous one not visible
---~ 	if clickedView and clickedView.name ~= self.activeView.name then
---~ 		self.activeView.view:setVisible(false);
---~ 		clickedView.view:setVisible(true);
---~ 		self.activeView = clickedView;
---~ 	end
 end
 
 function ISTabPanel:getActiveView()
@@ -504,7 +463,6 @@ function ISTabPanel:addView(name, view)
 	table.insert(self.viewList, viewObject);
 	-- the view have to be under our tab
 	view:setY(self.tabHeight);
---	view:initialise();
 	self:addChild(view);
 	view.parent = self;
 	-- the 1st view will be default visible
@@ -650,7 +608,6 @@ function ISTabPanel:new (x, y, width, height)
 	ISTabPanel.tabUnSelected = getTexture("media/ui/XpSystemUI/tab_unselected.png");
 	o.draggingTab = nil;
 	o.isDragging = false
---~ 	o.parent = nil;
 	o.tabTornOffTarget = nil
 	o.tabTornOff = nil
 	o.maxLength = 0

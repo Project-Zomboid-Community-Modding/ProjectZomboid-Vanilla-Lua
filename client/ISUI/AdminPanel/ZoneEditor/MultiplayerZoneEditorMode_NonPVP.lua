@@ -16,7 +16,6 @@ function MultiplayerZoneEditorMode_NonPVP:createChildren()
 	self.listbox:setFont(UIFont.Small, 3)
 	self:addChild(self.listbox)
 
-	local buttonPadding = UI_BORDER_SPACING * 2
 	local button = ISButton:new(UI_BORDER_SPACING, self.listbox:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_MultiplayerZoneEditor_Button_AddZone"), self, function(self) self:onAddZone() end)
 	button:setWidthToTitle()
 	self:addChild(button)
@@ -112,12 +111,6 @@ function MultiplayerZoneEditorMode_NonPVP:renderRect(x1, y1, x2, y2, r, g, b, a)
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX2, uiY2, uiX3, uiY3, THICK, r, g, b, a)
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX3, uiY3, uiX4, uiY4, THICK, r, g, b, a)
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX4, uiY4, uiX1, uiY1, THICK, r, g, b, a)
-	--[[
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, uiX2 - uiX1 + THICK * 2, THICK, a, r, g, b)
-	self.mapUI:drawRect(uiX2, uiY2 - THICK, THICK, uiY3 - uiY2 + THICK * 2, a, r, g, b)
-	self.mapUI:drawRect(uiX4 - THICK, uiY4, uiX3 - uiX4 + THICK * 2, THICK, a, r, g, b)
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, THICK, uiY4 - uiY1 + THICK * 2, a, r, g, b)
-	--]]
 end
 
 function MultiplayerZoneEditorMode_NonPVP:fillList()

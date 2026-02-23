@@ -45,7 +45,6 @@ function ISAttachAnimalToTree:complete()
 		self.character:removeAttachedAnimal(self.animal);
 		self.animal:getData():setAttachedPlayer(nil);
 	end
-	sendAttachAnimalToTree(self.animal, self.character, self.tree, self.remove)
 	return true
 end
 

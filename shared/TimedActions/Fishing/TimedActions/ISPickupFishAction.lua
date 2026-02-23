@@ -99,14 +99,24 @@ function ISPickupFishAction:stop()
 
     if not self.fishInInv then
         if not isClient() then
-            local square = self.character:getCurrentSquare()
-            local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(self.character, square, self.item)
-            self.character:getCurrentSquare():AddWorldInventoryItem(self.item, dropX, dropY, dropZ);
-            self.character:getModData().Fishing_IsFirstFishing = true
+            self:dropFish();
         end
 
         ISInventoryPage.renderDirty = true
     end
+end
+
+function ISPickupFishAction:serverStop()
+    if not self.fishInInv then
+        self:dropFish();
+    end
+end
+
+function ISPickupFishAction:dropFish()
+    local square = self.character:getCurrentSquare()
+    local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(self.character, square, self.item)
+    self.character:getCurrentSquare():AddWorldInventoryItem(self.item, dropX, dropY, dropZ);
+    self.character:getModData().Fishing_IsFirstFishing = true
 end
 
 function ISPickupFishAction:perform()

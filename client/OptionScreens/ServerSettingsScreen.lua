@@ -17,7 +17,6 @@ local ServerSettingsScreenPanel = ISPanelJoypad:derive("ServerSettingsScreenPane
 local ServerSettingsScreenBaseListBox = ISScrollingListBox:derive("ServerSettingsScreenBaseListBox")
 local SpawnRegionsPanel = MultiColumnPanelJoypad:derive("SpawnRegionsPanel")
 local SpawnRegionsListBox = ServerSettingsScreenBaseListBox:derive("SpawnRegionsListBox")
-local SpawnPointsListBox = ISScrollingListBox:derive("SpawnPointsListBox")
 local ServerSettingsScreenGroupBox = ServerSettingsScreenPanel:derive("ServerSettingsScreenGroupBox")
 local ServerSettingsScreenModsPanel = MultiColumnPanelJoypad:derive("ServerSettingsScreenModsPanel")
 local ServerSettingsScreenModsListBox = ServerSettingsScreenBaseListBox:derive("ServerSettingsScreenModsListBox")
@@ -47,7 +46,6 @@ local function getTooltipText(name)
 	end
 	return tooltip
 end
-
 
 function BaseServerSettingsPanel:onLoseJoypadFocus(joypadData)
 	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
@@ -112,7 +110,6 @@ function MultiColumnPanelJoypad:setJoypadColumn(index)
 		self:insertNewLineOfButtons(ui)
 	end
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
---	self:restoreJoypadFocus()
 end
 
 function MultiColumnPanelJoypad:addJoypadColumn(uiList)
@@ -130,7 +127,6 @@ function MultiColumnPanelJoypad:new(x, y, width, height)
 	o.multiColumnIndex = 1
 	return o
 end
-
 
 function ServerSettingsScreenPanel:prerender()
 	self:doRightJoystickScrolling(20, 20)
@@ -165,15 +161,6 @@ function ServerSettingsScreenPanel:prerender()
 						control.borderColor.g = 0.0
 						control.borderColor.b = 0.0
 					end
-					--[[
-					if text == tostring(option:getDefaultValue()) then
-						self.labels[settingName].r = 1
-						self.labels[settingName].g = 1
-					else
-						self.labels[settingName].r = 0.2
-						self.labels[settingName].g = 0.2
-					end
-					--]]
 				end
 			end
 		end
@@ -266,7 +253,6 @@ function ServerSettingsScreenPanel:onJoypadDirLeft(joypadData)
 	ISPanelJoypad.onJoypadDirLeft(self, joypadData)
 end
 
-
 function ServerSettingsScreenGroupBox:new(x, y, width, height, tickBoxLabel, category)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -332,7 +318,7 @@ function ServerSettingsScreenGroupBox:onTicked(index, selected)
 				control.selected = option:getDefaultValue()
 			elseif control.Type == "ISTickBox" then
 				control.selected[1] = option:getDefaultValue()
-		    elseif settingName ~= "ZombieLore.SprinterPercentage" then
+		    elseif settingName ~= "ZombieLore.SprinterPercentage" and settingName ~= "ZombieLore.DoorOpeningPercentage" then
 				error "unhandled control type"
 			end
 		end
@@ -361,7 +347,7 @@ function ServerSettingsScreenGroupBox:settingsToUI(settings, category)
 				allDefault = false
 				break
 			end
-		elseif settingName ~= "ZombieLore.SprinterPercentage" then
+		elseif settingName ~= "ZombieLore.SprinterPercentage" and settingName ~= "ZombieLore.DoorOpeningPercentage" then
 		    print("Option " .. tostring(option))
 		    print("Name " .. tostring(settingName))
 			error "unhandled control type"
@@ -399,7 +385,6 @@ function ServerSettingsScreenGroupBox:ensureVisible()
         self.contents:setYScroll(0 - (y + child:getHeight() + 40 - self.contents:getHeight()))
     end
 end
-
 
 SpawnRegionsNameFilePanel = ISPanelJoypad:derive("SpawnRegionsNameFilePanel")
 
@@ -755,7 +740,6 @@ function SpawnRegionsPanel:onResolutionChange()
 	self.listbox:setWidth(self.buttonAdd.x - UI_BORDER_SPACING*2 - 1)
 end
 
-
 -- Like ISScrollingListBox:setJoypadFocused, but doesn't set joypadData.focus=self
 function ServerSettingsScreenBaseListBox:setJoypadFocused(focused, joypadData)
 	if focused then
@@ -839,32 +823,12 @@ function ServerSettingsScreenModsPanel:createChildren()
 	self:addChild(button)
 	self.button = button
 
-	--label = ISLabel:new(self.listbox:getX(), self.listbox:getBottom() + 12, fontHgt, getText("UI_ServerSettings_AddInstalledMod"), 1, 1, 1, 1, UIFont.Medium, true)
-	--self:addChild(label)
-
-	--[[
-	local comboBox = ISComboBox:new(label:getX(), label:getBottom() + 4, self.listbox:getWidth(), fontHgt + 4, self, self.onAddInstalledMod)
-	comboBox:setToolTipMap({ defaultTooltip = getTooltipText("UI_ServerSettings_AddInstalledMod_tooltip") })
-	self:addChild(comboBox)
-	self.comboBox = comboBox
-
-	label = ISLabel:new(self.listbox:getX(), comboBox:getBottom() + 12, 20, getText("UI_ServerSettings_AddOtherMod"), 1, 1, 1, 1, UIFont.Medium, true)
-	self:addChild(label)
-	
-	local entry = ISTextEntryBox:new("", self.listbox:getX(), label:getBottom() + 4, self.listbox:getWidth(), fontHgt + 4)
-	entry.font = UIFont.Medium
-	entry.tooltip = getTooltipText("UI_ServerSettings_AddOtherMod_tooltip")
-	entry.onCommandEntered = self.onAddOtherMod
-	self:addChild(entry)
-]]
-	--self:addJoypadColumn( { self.listbox, self.comboBox, entry } )
 	self:addJoypadColumn( { button } )
 	self:setJoypadColumn(1)
 end
 
 function ServerSettingsScreenModsPanel:prerender()
 	MultiColumnPanelJoypad.prerender(self)
-	--self.buttonRemove:setEnable(self.listbox.items[self.listbox.selected] ~= nil)
 end
 
 function ServerSettingsScreenModsPanel:setSettings(settings)
@@ -908,17 +872,14 @@ function ServerSettingsScreenModsPanel:addModToList(modID)
 end
 
 function ServerSettingsScreenModsPanel:aboutToShowStartScreen()
-	--self.comboBox.options = {}
 	self.modInfoByID = {}
 	local modDirectories = getModDirectoryTable()
 	for index,dirName in ipairs(modDirectories) do
 		local modInfo = getModInfo(dirName)
 		if modInfo then
-			--self.comboBox:addOptionWithData(modInfo:getName(), modInfo)
 			self.modInfoByID[modInfo:getId()] = modInfo
 		end
 	end
-	--table.sort(self.comboBox.options, function(a,b) return not string.sort(a.text, b.text) end)
 end
 
 function ServerSettingsScreenModsPanel:onGainJoypadFocus(joypadData)
@@ -982,7 +943,6 @@ function ServerSettingsScreenModsPanel:onResolutionChange()
 	self.button:setX(self.listbox:getRight() + UI_BORDER_SPACING)
 end
 
-
 function ServerSettingsScreenModsListBox:prerender()
 	self.mouseOverButtonIndex = nil
 	ISScrollingListBox.prerender(self)
@@ -1016,7 +976,6 @@ end
 function ServerSettingsScreenModsListBox:onMouseDown(x, y)
 	ISScrollingListBox.onMouseDown(self, x, y)
 end
-
 
 function ServerSettingsScreenMapsPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
@@ -1214,7 +1173,6 @@ function ServerSettingsScreenMapsPanel:fillComboBox(modsString)
 	self.comboBox:addOption("Muldraugh, KY")
 	-- Riverside, Rosewood, and West Point do not need to be included since
 	-- those map folders do not have objects.lua files of their own.
---	self.comboBox:addOption("West Point, KY")
 	local modIDs = string.split(modsString, ";")
 	for _,modID in ipairs(modIDs) do
 		local modInfo = (modID ~= "") and getModInfoByID(modID) or ""
@@ -1278,7 +1236,6 @@ function ServerSettingsScreenMapsPanel:onLoseJoypadFocus(joypadData)
 	if child and (joypadData.focus ~= child) then
 		child:setJoypadFocused(false, joypadData)
 	end
---	self:clearJoypadFocus(joypadData)
 end
 
 function ServerSettingsScreenMapsPanel:onJoypadDown(button, joypadData)
@@ -1319,7 +1276,6 @@ function ServerSettingsScreenMapsPanel:onJoypadDirRight(joypadData)
 end
 
 function ServerSettingsScreenMapsPanel:onResolutionChange()
-
 	self.listbox:setX((self.width-(self.listbox.width + self.buttonMoveUp.width + UI_BORDER_SPACING))/2)
 	self.buttonMoveUp:setX(self.listbox:getRight() + UI_BORDER_SPACING)
 	self.buttonMoveDown:setX(self.buttonMoveUp.x)
@@ -1337,7 +1293,6 @@ function ServerSettingsScreenMapsPanel:onResolutionChange()
 			end
 		end
 	end
-
 end
 
 function ServerSettingsScreenMapsListBox:prerender()
@@ -1794,7 +1749,6 @@ function SpawnRegionsListBox:positionEntries()
 	self.entryFile:setVisible(true)
 end
 
-
 function SandboxPresetPanel:createChildren()
 	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	local label = ISLabel:new(24, UI_BORDER_SPACING+1, fontHgt, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Medium, true)
@@ -1943,7 +1897,6 @@ function SandboxPresetPanel:onResolutionChange()
 	self.listbox:setX((self.width-(self.listbox.width + self.buttonApplyPreset.width + UI_BORDER_SPACING))/2)
 	self.buttonApplyPreset:setX(self.listbox:getRight() + UI_BORDER_SPACING)
 end
-
 
 function Page1:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
@@ -2165,8 +2118,6 @@ end
 function Page1:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
 	self:setISButtonForB(self.backButton)
---	joypadData.focus = self.listbox
---	updateJoypadFocus(joypadData)
 	self:restoreJoypadFocus()
 end
 
@@ -2425,7 +2376,6 @@ function Page2:onResolutionChange()
 	end
 end
 
-
 function Page3:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -2585,9 +2535,6 @@ function Page3:createPanel(category, page)
 		local label = nil
 		local control = nil
 		if setting.name == "WaterShut" or setting.name == "ElecShut" then
-			-- ignore
--- 		elseif setting.singlePlayerOnly then
-		    -- ignore
 		elseif setting.type == "checkbox" then
 			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
 			control = ISTickBox:new(0, 0, LABEL_HGT, LABEL_HGT, "", self, self.onTickBoxSelected, category.name, setting.name)
@@ -2649,8 +2596,6 @@ function Page3:createPanel(category, page)
 			if setting.title then
 				titles[#labels] = { title = getText("Sandbox_Title_" .. setting.title) }
 			end
-		else
--- 			error "no label or control"
 		end
 	end
 
@@ -3059,7 +3004,6 @@ function Page3.ChooseModsWindow:new(x, y, width, height)
 end
 
 function Page3.ChooseModsWindow:create()
-
 	self.listbox = ServerSettingsScreenModsListBox:new(self.width/4, FONT_HGT_LARGE+UI_BORDER_SPACING*2+1, self.width/2, self.height - FONT_HGT_LARGE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2)
 	self.listbox:initialise()
 	self.listbox:instantiate()
@@ -3381,7 +3325,6 @@ function Page4:onResolutionChange()
 	end
 end
 
-
 function Page5:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -3539,7 +3482,6 @@ function Page5:onResolutionChange()
 	end
 end
 
-
 function Page6:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -3655,7 +3597,6 @@ function Page6:onResolutionChange()
 		end
 	end
 end
-
 
 function Page7:new(x, y, width, height)
 	local o = MultiColumnPanelJoypad.new(self, x, y, width, height)
@@ -4018,9 +3959,7 @@ function Page7:onResolutionChange()
 	self.addSpawnPointLabel:setX(self.pointListBox.x)
 	self.entryAddSpawnPoint:setX(self.pointListBox.x)
 	self.entryAddSpawnPoint:setWidth(listboxWidth)
-
 end
-
 
 function ServerSettingsScreen:create()
 	self.pageStart = Page1:new(0, 0, self.width, self.height)
@@ -4311,11 +4250,17 @@ SettingsTable = {
 			{
 				name = "Loot",
 				settings = {
--- 					{ name = "HoursForLootRespawn" },
--- 					{ name = "MaxItemsForLootRespawn" },
--- 					{ name = "ConstructionPreventsLootRespawn" },
 					{ name = "SafehousePreventsLootRespawn" },
 					{ name = "ItemNumbersLimitPerContainer" },
+				},
+			},
+			{
+				name = "War",
+				settings = {
+					{ name = "War" },
+					{ name = "WarStartDelay" },
+					{ name = "WarDuration" },
+					{ name = "WarSafehouseHitPoints" },
 				},
 			},
 			{
@@ -4347,6 +4292,7 @@ SettingsTable = {
 				settings = {
 					{ name = "GlobalChat" },
 					{ name = "AnnounceDeath" },
+					{ name = "AnnounceAnimalDeath" },
 					{ name = "ServerWelcomeMessage" },
 					{ name = "ChatMessageCharacterLimit" },
 					{ name = "ChatMessageSlowModeTime" },
@@ -4364,7 +4310,9 @@ SettingsTable = {
 				settings = {
 					{ name = "DiscordEnable" },
 					{ name = "DiscordToken" },
-					{ name = "DiscordChannel" },
+					{ name = "DiscordChatChannel" },
+					{ name = "DiscordLogChannel" },
+                    { name = "DiscordCommandChannel" },
 				},
 			},
 			{
@@ -4379,10 +4327,8 @@ SettingsTable = {
 					{ name = "DoLuaChecksum" },
 					{ name = "AllowDestructionBySledgehammer" },
 					{ name = "SledgehammerOnlyInSafehouse" },
--- 					{ name = "MinutesPerPage" }, -- migrated to sandbox
 					{ name = "SaveWorldEveryMinutes" },
                     { name = "FastForwardMultiplier" },
-					-- { name = "BloodSplatLifespanDays" }, -- migrated to sandbox
 					{ name = "AllowNonAsciiUsername" },
 				},
 			},
@@ -4449,6 +4395,18 @@ SettingsTable = {
 					{ name = "ZombieLore.Mortality" },
 					{ name = "ZombieLore.Reanimate" },
 					{ name = "ZombieLore.Cognition" },
+					{ name = "ZombieLore.DoorOpeningPercentage", advancedCombo = {
+						default = 4,
+						values = {
+							{ name = "Sandbox_Insane", text = "100" },
+							{ name = "Sandbox_VeryHigh", text = "90" },
+							{ name = "Sandbox_High", text = "50" },
+							{ name = "Sandbox_Normal", text = "33" },
+							{ name = "Sandbox_Low", text = "6" },
+							{ name = "Sandbox_None", text = "0" },
+						}
+					}
+					},
 					{ name = "ZombieLore.CrawlUnderVehicle" },
 					{ name = "ZombieLore.Memory" },
 					{ name = "ZombieLore.Sight" },
@@ -4540,7 +4498,6 @@ SettingsTable = {
 					}
 					},
 					{ name = "DaysUntilMaximumLooted" },
--- 					{ name = "RuralLooted" },
 					{ name = "RuralLooted", advancedCombo = {
 						default = 4,
 						values = {
@@ -4553,7 +4510,6 @@ SettingsTable = {
 						}
 					}
 					},
--- 					{ name = "MaximumDiminishedLoot" },
 					{ name = "MaximumDiminishedLoot", advancedCombo = {
 						default = 4,
 						values = {
@@ -4669,6 +4625,34 @@ SettingsTable = {
                     }
                     },
 					{ name = "MechanicsLootNew",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "0.6" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "SkillBookLoot",
+					advancedCombo = {
+                        default = 4,
+                        values = {
+                            { name = "Sandbox_None", text = "0.0" },
+                            { name = "Sandbox_Insane", text = "0.05" },
+                            { name = "Sandbox_ExtremelyRare", text = "0.2" },
+                            { name = "Sandbox_Rare", text = "0.4" },
+                            { name = "Sandbox_Normal", text = "0.6" },
+                            { name = "Sandbox_Common", text = "2" },
+                            { name = "Sandbox_Abundant", text = "3" },
+                        }
+                    }
+                    },
+					{ name = "RecipeResourceLoot",
 					advancedCombo = {
                         default = 4,
                         values = {
@@ -4853,13 +4837,6 @@ SettingsTable = {
                     }
 
 					},
-					-- temporary testing values
--- 					{ name = "InsaneLootFactor" },
--- 					{ name = "ExtremeLootFactor" },
--- 					{ name = "RareLootFactor" },
--- 					{ name = "NormalLootFactor" },
--- 					{ name = "CommonLootFactor" },
--- 					{ name = "AbundantLootFactor" },
 				},
 			},
 			{
@@ -4872,13 +4849,10 @@ SettingsTable = {
 					{ name = "AlarmDecay" },
 					{ name = "Alarm" },
 					{ name = "LockedHouses" },
-					--{ name = "NightLength" },
 					{ name = "FireSpread" },
 					{ name = "AllowExteriorGenerator" },
 					{ name = "GeneratorTileRange" },
 					{ name = "GeneratorVerticalPowerRange" },
-
--- 					{ name = "FuelStationGas" },
 					{ name = "FuelStationGasInfinite" },
 					{ name = "FuelStationGasMin",
 					advancedCombo = {
@@ -4919,11 +4893,6 @@ SettingsTable = {
 					{ name = "WorldItemRemovalList" },
 					{ name = "HoursForWorldItemRemoval" },
 					{ name = "ItemRemovalListBlacklistToggle" },
--- 					{ name = "FallSpeedMultiplier" },
--- 					{ name = "FallTimeMultiplier" },
--- 					{ name = "HardFallThreshold" },
--- 					{ name = "HardFallThreshold2" },
--- 					{ name = "LethalFallThreshold" },
 					{ name = "Basement.SpawnFrequency", title = "Basements" },
 					{ name = "MaximumFireFuelHours" },
 				},
@@ -4938,13 +4907,11 @@ SettingsTable = {
 					{ name = "MaxRainFxIntensity" },
 					{ name = "ErosionSpeed" },
 					{ name = "ErosionDays" },
--- 					{ name = "Farming" },
 					{ name = "FarmingSpeedNew" },
 					{ name = "CompostTime" },
 					{ name = "FishAbundance" },
 					{ name = "NatureAbundance" },
 					{ name = "PlantResilience" },
--- 					{ name = "PlantAbundance" },
 					{ name = "FarmingAmountNew" },
 					{ name = "KillInsideCrops" },
 					{ name = "PlantGrowingSeasons" },
@@ -4965,7 +4932,6 @@ SettingsTable = {
 					{ name = "SleepingEvent" },
 					{ name = "GeneratorFuelConsumption" },
 					{ name = "SurvivorHouseChance" },
--- 					{ name = "SpawnHouseStories" },
 					{ name = "VehicleStoryChance" },
 					{ name = "ZoneStoryChance" },
 					{ name = "AnnotatedMapChance" },
@@ -5103,13 +5069,6 @@ SettingsTable = {
                     { name = "AnimalPathChance" },
 				},
 			},
---			{
---			    name = "Physics",
---			    settings = {
---                  { name = "RagdollUsePhysicHitReaction" },
---                  { name = "RagdollMaxActiveRagdolls" },
---	      	    },
---			},
 		},
 	},
 }
@@ -5125,7 +5084,7 @@ for _,page in ipairs(SettingsTable[1].pages) do
 		local option = serverOptions:getOptionByName(setting.name)
 		if not option then error('unknown server option "' .. setting.name .. "'") end
 		option = option:asConfigOption()
-		setting.translatedName = setting.name -- option:getTranslatedName()
+		setting.translatedName = setting.name
 		setting.tooltip = option:getTooltip()
 		if option:getType() == "boolean" then
 			setting.type = "checkbox"

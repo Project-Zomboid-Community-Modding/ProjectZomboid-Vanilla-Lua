@@ -2,7 +2,6 @@ ConnectToServer = ISPanelJoypad:derive("ConnectToServer")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 
 function ConnectToServer:create()
 	local buttonHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
@@ -291,17 +290,6 @@ function ConnectToServer:OnConnected()
 		end
 	else
 		GameWindow.doRenderEvent(false)
---[[
-		-- menu activated via joypad, we disable the joypads and will re-set them automatically when the game is started
-		if joypadData then
-			joypadData.focus = nil
-			updateJoypadFocus(joypadData)
-			JoypadState.count = 0
-			JoypadState.players = {}
-			JoypadState.joypads = {}
-			JoypadState.forceActivate = joypadData.id
-		end
---]]
 		forceChangeState(LoadingQueueState.new())
 	end
 end
@@ -331,11 +319,6 @@ function ConnectToServer:OnConnectFailed(message, detail)
 	if message and string.match(message, "MODURL=") then
 		local test = string.split(message, "MODURL=")
 		message = test[1]
---[[
-		self.getModBtn:setVisible(true)
-		self.getModBtn:setX(5 + (getTextManager():MeasureStringX(UIFont.Medium, message)/2) + self.listbox.x + self.listbox.width/2)
-		self.getModBtn.url = test[2]
---]]
 	end
 
 	message = message or getText("UI_servers_connectionfailed")
@@ -370,7 +353,6 @@ function ConnectToServer:OnConnectionStateChanged(state, message, arg)
 	    end
 	    return
 	end
-	--if state == "Failed" and message then self.failMessage = getText('UI_servers_'..message); return end
 	-- Set connecting to false so we don't draw the > > > in render()
 	if state == "Connected" then self.connecting = false end
 	if state == "Message" then self.connectLabel.name = getText('UI_servers_'..message) return end

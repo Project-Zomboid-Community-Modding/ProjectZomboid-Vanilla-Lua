@@ -9,11 +9,6 @@ end
 function ISVolumeBar:createChildren()
 end
 
---function ISVolumeBar:readFromObject( _player, _deviceObject )
-    --self.player = _player;
-    --self.device = _deviceObject;
---end
-
 function ISVolumeBar:isDragging()
     if not self:getIsVisible() or self.enableControls == false or self.mouseEnabled == false then
         return false;
@@ -28,29 +23,17 @@ function ISVolumeBar:onMouseDown(x, y)
     self.dragInside = true;
 end
 
---function ISVolumeBar:onMouseDownOutside(x, y)
-    --self.dragInside = false;
---end
-
 function ISVolumeBar:onMouseUpOutside(x, y)
     if not self:getIsVisible() or self.enableControls == false or self.mouseEnabled == false then
         self.dragInside = false;
         return;
     end
-    --self.dragInside = false;
     self:onMouseUp(self:getMouseX(),y);
-
-    --self.hoverVolume = -1;
 end
 
 function ISVolumeBar:resetHoverVolume()
-    --self.dragInside = false;
     self.hoverVolume = -1;
 end
---function ISVolumeBar:onMouseUp(x, y)
-    --self.dragInside = false;
---end
-
 function ISVolumeBar:onMouseMove(x, y)
     if not self:getIsVisible() or self.enableControls == false or self.dragInside == false or self.mouseEnabled == false then
         return;
@@ -62,23 +45,19 @@ function ISVolumeBar:onMouseMove(x, y)
 end
 
 function ISVolumeBar:onMouseMoveOutside(x, y)
-    --self.hoverVolume = -1;
     self:onMouseMove(x,y);
 end
 
 function ISVolumeBar:onMouseUp(x, y)
-    --self.dragInside = false;
-    --self.hoverVolume = -1;
     if not self:getIsVisible() or self.enableControls == false or self.dragInside == false or self.mouseEnabled == false then
         return;
     end
     self.dragInside = false;
     local newVol = self:getVolumeFromXPosition( x );
     if newVol then
-        --self.volume = newVol;
         self.hoverVolume = newVol;
         if self.onVolumeChange and self.onVolumeChangeTarget then
-            self.onVolumeChange(self.onVolumeChangeTarget, self.hoverVolume); --self.volume);
+            self.onVolumeChange(self.onVolumeChangeTarget, self.hoverVolume);
         end
     end
 end
@@ -127,7 +106,6 @@ end
 function ISVolumeBar:setVolume(vol)
     self.volume = vol;
     if self.volume == self.hoverVolume then
-        --print("newVolume: ",self.volume);
         self.hoverVolume = -1;
     end
 end

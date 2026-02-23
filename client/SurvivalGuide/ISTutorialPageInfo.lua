@@ -3,7 +3,6 @@ require "ISBaseObject"
 ISTutorialPageInfo = ISBaseObject:derive("ISTutorialPageInfo");
 
 function ISTutorialPageInfo:initialise()
-
 end
 
 function ISTutorialPageInfo:new (title, text, moreTextInfo, nextcondition)
@@ -21,7 +20,6 @@ end
 ISTutorialSetInfo = ISBaseObject:derive("ISTutorialSetInfo");
 
 function ISTutorialSetInfo:initialise()
-
 end
 
 function ISTutorialSetInfo:addPage(pagetitle, pagetext, moreTextInfo, pagenextcondition)

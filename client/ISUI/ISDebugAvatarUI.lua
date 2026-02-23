@@ -2,22 +2,13 @@ require "ISUI/ISCollapsableWindow"
 require "ISUI/ISUI3DModel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISDebugAvatarUI = ISCollapsableWindow:derive("ISDebugAvatarUI");
 
 function ISDebugAvatarUI:prerender()
-    --    if not self.animal:isExistInTheWorld() then
-    --        self:close();
-    --    end
     ISCollapsableWindow.prerender(self)
-
---    self.avatarPanel:setZoom(self.avatarDefinition.zoom * self.animal:getData():getSize());
---    self.avatarPanel:setXOffset(self.avatarDefinition.xoffset * self.animal:getData():getSize());
---    self.avatarPanel:setYOffset(self.avatarDefinition.yoffset * self.animal:getData():getSize());
 
     local th = self:titleBarHeight()
 
@@ -69,6 +60,7 @@ end
 function ISDebugAvatarUI:render()
     ISCollapsableWindow.render(self);
 
+    self.direction = self.avatarPanel:getDirection()
     local dir = self.direction:toString();
     self:drawText(getText("IGUI_DebugAvatar_Direction")..": " .. dir, self.dirRight.x + self.dirRight.width + UI_BORDER_SPACING, self.dirRight.y, 1,1,1,1, UIFont.NewSmall);
 
@@ -91,7 +83,6 @@ function ISDebugAvatarUI:close()
 end
 
 function ISDebugAvatarUI:create()
-
     self.avatarPanel = ISCharacterScreenAvatar:new(self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight)
     self.avatarPanel:setVisible(true)
     self:addChild(self.avatarPanel)
@@ -107,16 +98,7 @@ function ISDebugAvatarUI:create()
     self:populateAnimalComboBox();
     self:populateBreedComboBox();
 
---    self.avatarPanel:setState("idle")
---    self.avatarPanel:setDirection(self.avatarDefinition.avatarDir or IsoDirections.S)
---    self.avatarPanel:setIsometric(false)
---    self.avatarPanel:setAnimSetName(self.animal:GetAnimSetName())
---    self.avatarPanel:setCharacter(self.animal)
-
     self.avatarBackgroundTexture = getTexture("media/ui/avatarBackgroundWhite.png")
-
-    local btnWid = 70
-    local btnHgt = FONT_HGT_SMALL
 
     self.dirLeft = ISButton:new(0,0, BUTTON_HGT, BUTTON_HGT, "", self, ISDebugAvatarUI.onChangeDir);
     self.dirLeft.internal = "LEFT";
@@ -225,9 +207,9 @@ end
 
 function ISDebugAvatarUI:onChangeDir(button, x, y)
     if button.internal == "LEFT" then
-        self.direction = IsoDirections.RotLeft(self.direction)
+        self.direction = self.direction:RotRight()
     elseif button.internal == "RIGHT" then
-        self.direction = IsoDirections.RotRight(self.direction)
+        self.direction = self.direction:RotLeft()
     end
     self.avatarPanel:setDirection(self.direction)
 end
@@ -322,7 +304,6 @@ function ISDebugAvatarUI:new(player)
     local height = 500;
     local o = {};
     o = ISCollapsableWindow:new(x, y, width, height);
-    --    o:noBackground();
     setmetatable(o, self);
 
     self.__index = self;

@@ -2,7 +2,6 @@ ISPlayerStatsManageInvUI = ISPanel:derive("ISPlayerStatsManageInvUI");
 ISPlayerStatsManageInvUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 function ISPlayerStatsManageInvUI.OnOpenPanel()
 	if ISPlayerStatsManageInvUI.instance == nil then
@@ -25,7 +24,6 @@ function ISPlayerStatsManageInvUI:initialise()
 	ISPanel.initialise(self);
 	local btnWid = 100
     local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
-	local btnHgt2 = 18
 	local padBottom = 10
 
 	self.no = ISButton:new(10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Cancel"), self, ISPlayerStatsManageInvUI.onClick);
@@ -114,7 +112,6 @@ function ISPlayerStatsManageInvUI:initialise()
 	self.datas:addColumn("Variables", 440);
 	self:addChild(self.datas);
 
---	self:populateList();
 	self:requestDatas();
 end
 
@@ -157,29 +154,18 @@ function ISPlayerStatsManageInvUI.ReceiveItems(itemtable)
 end
 
 function ISPlayerStatsManageInvUI:populateList()
---	self.datas:clear();
---	for i=0,Faction.getFactions():size()-1 do
---		local fact = Faction.getFactions():get(i);
---		self.datas:addItem(fact:getName(), fact);
---	end
 end
 
 function ISPlayerStatsManageInvUI:drawDatas(y, item, alt)
 	local a = 0.9;
-	
-	--    self.parent.selectedFaction = nil;
-	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
---	self:drawRect(190, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
+	self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
 	if self.selected == item.index then
 		self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
 		self.parent.removeBtn.enable = true;
 		self.parent.selectedItem = item;
 	end
---	if self.parent.selectedItem~= nil then
---		print(tostring(self.parent.selectedItem.item.itemId).." == "..tostring(item.item.parrentId));
---	end
 	if (self.parent.selectedItem~= nil) and (tostring(self.parent.selectedItem.item.itemId) == tostring(item.item.parrentId)) then
 		self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.5, 0.35, 0.15);
 	end
@@ -207,7 +193,6 @@ function ISPlayerStatsManageInvUI:drawDatas(y, item, alt)
 	if item.item.hasParrent then
 		container = "In container: "..item.item.container.." "
 	end
-	--self:drawText("container: " .. item.item.container, self.columns[4].size + 10, y + 2, 1, 1, 1, a, self.font);
 	if item.item.cat == getText("IGUI_ItemCat_Weapon") then
 		local condition = math.floor((item.item.var/item.item.maxCondition)*1000)/10.0
 		self:drawText(container.."Condition: " .. condition .. "%", self.columns[4].size + 10, y + 2, 1, 1, 1, a, self.font);
@@ -239,7 +224,6 @@ function ISPlayerStatsManageInvUI:onClick(button)
 	if self.selectedItem then
 		if button.internal == "REMOVE" then
 			InvMngRemoveItem(self.selectedItem.item.itemId, self.playerID, self.playerUsername);
-			--self:removeSelectedItem();
 			self:requestDatas();
 		end
 		if button.internal == "GETITEM" then
@@ -248,7 +232,6 @@ function ISPlayerStatsManageInvUI:onClick(button)
 			else
 				InvMngGetItem(self.selectedItem.item.itemId, nil, self.playerID, self.playerUsername);
 			end
-			--self:removeSelectedItem();
 			self:requestDatas();
 		end
 	end

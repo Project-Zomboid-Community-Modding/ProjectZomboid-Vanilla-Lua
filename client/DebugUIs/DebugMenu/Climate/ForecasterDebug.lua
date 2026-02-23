@@ -6,7 +6,6 @@ local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local SCROLL_BAR_WIDTH = 13
 
 local stages = {
     [0] = "STAGE_START",
@@ -134,8 +133,6 @@ function ForecasterDebug:drawDayList(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
     end
 
-    --local prefix = item.item:getIndexOffset()==0 and "TODAY" or tostring(item.item:getIndexOffset());
-    --self:drawText( prefix .. " :: " .. item.item:getName(), 10, y + 2, 1, 1, 1, a, self.font);
     if item.item:isHasFog() then
         self:drawText( item.text .. " (F)", 10, y + 2, 0.8, 1, 0.75, a, self.font);
     else
@@ -152,8 +149,6 @@ end
 function ForecasterDebug:printForecastValue(_name, _value, _func, _func2)
     local formatFunc = _func or roundstring;
     self.infoList:addItem("--- ".._name.." ---", nil);
-    --self.infoList:addItem("Min: "..self:formatVal(_value:getTotalMin(), formatFunc, _func2), nil);
-    --self.infoList:addItem("Max: "..self:formatVal(_value:getTotalMax(), formatFunc, _func2), nil);
     self.infoList:addItem("  "..getText("IGUI_Forecaster_MinMax")..": "..self:formatVal(_value:getTotalMin(), formatFunc, _func2).." / "..self:formatVal(_value:getTotalMax(), formatFunc, _func2), nil);
     self.infoList:addItem("  "..getText("IGUI_Forecaster_Mean")..": "..self:formatVal(_value:getTotalMean(), formatFunc, _func2), nil);
     self.infoList:addItem("  "..getText("IGUI_Forecaster_DayMinMax")..": "..self:formatVal(_value:getDayMin(), formatFunc, _func2).." / "..self:formatVal(_value:getDayMax(), formatFunc, _func2), nil);
@@ -180,7 +175,6 @@ function ForecasterDebug:populateInfoList(_forecast)
     self.infoList:addItem(getText("IGUI_Forecaster_FogStrength")..": "..roundstring(_forecast:getFogStrength()), nil);
     self.infoList:addItem(getText("IGUI_Forecaster_FogDuration")..": "..roundstring(_forecast:getFogDuration()), nil);
     self.infoList:addItem(getText("IGUI_Forecaster_AirfrontType")..": "..tostring(_forecast:getAirFrontString()), nil);
-    --self.infoList:addItem("Weather wind: "..roundstring(_forecast:getWeatherWind()), nil);
     local weatherOverlaps = _forecast:getWeatherOverlap()~=nil and true or false;
 
     if _forecast:isWeatherStarts() or weatherOverlaps then
@@ -229,7 +223,6 @@ function ForecasterDebug:populateWeatherInfoList(_forecast, _isOverlap)
         local name = stages[index] or "UNKNOWN";
         self.infoList:addItem(getText("IGUI_Forecaster_Stage", tostring(i))..": "..tostring(name), nil);
     end
-
 end
 
 function ForecasterDebug:drawInfoList(y, item, alt)

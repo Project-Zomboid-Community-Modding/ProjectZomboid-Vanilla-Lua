@@ -25,7 +25,6 @@ function ISFluidDebugWindow:initialise()
 	ISCollapsableWindow.initialise(self);
 end
 
-
 function ISFluidDebugWindow:createChildren()
     ISCollapsableWindow.createChildren(self);
 
@@ -96,7 +95,6 @@ end
 function ISFluidDebugWindow:prerender()
     ISCollapsableWindow.prerender(self);
 end
-
 
 function ISFluidDebugWindow:render()
     ISCollapsableWindow.render(self)

@@ -63,12 +63,10 @@ function ISAnimalTracksUI:initialise()
 end
 
 function ISAnimalTracksUI:create()
-
 end
 
 function ISAnimalTracksUI:new(x, y, width, height, track, player)
     local o = ISCollapsableWindow.new(self, x, y, width, height);
---     o:noBackground();
     o:setResizable(false)
     o.track = track:getAnimalTracks();
     o.chr = player;

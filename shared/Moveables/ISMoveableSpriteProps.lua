@@ -1010,11 +1010,7 @@ function ISMoveableSpriteProps:getSpriteGridCache( _square, _verifyOnly, _getWor
                 if _getWorldObjects then
                     obj, sprInstance = self:findOnSquare( square, spriteForPos:getName() );
                     if not obj then
-                        createTile(spriteForPos:getName(), square)      -- On map some objects can miss tiles (like tent), so we generate missing tile obj.
-                        obj, sprInstance = self:findOnSquare( square, spriteForPos:getName() );
-                        if not obj then
-                            return false;
-                        end
+                        return false;
                     end
                 end
                 if not _verifyOnly then
@@ -2197,6 +2193,11 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
                         if type(modData.modData) == "table" then
                             for key,value in pairs(modData.modData) do
                                 obj:getModData()[key] = value
+                                if (string.find(key, "customContainerName") ~= nil) then
+                                    if (value ~= nil and value ~= '') then
+                                        obj:setName(value);
+                                    end
+                                end
                             end
                         end
                         if type(modData.color) == "userdata" then
@@ -2235,6 +2236,17 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
 
         if obj and _item and _item:hasModData() and _item:getModData().movableData then
             obj:getModData().movableData = copyTable(_item:getModData().movableData);
+        end
+
+        if obj and _item and _item:hasModData() and _item:getModData().movableData == nil then
+            for key,value in pairs(_item:getModData()) do
+                obj:getModData()[key] = value
+                if (string.find(key, "customContainerName") ~= nil) then
+                    if (value ~= nil and value ~= '') then
+                        obj:setName(value);
+                    end
+                end
+            end
         end
 
         if obj then

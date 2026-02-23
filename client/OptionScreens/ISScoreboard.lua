@@ -57,7 +57,6 @@ function ISScoreboard:update()
     ISPanelJoypad.update(self)
     if self.listbox:getYScroll() ~= self.listboxYScroll then
         self.listbox.mouseoverselected = self.listbox:rowAt(self.listbox:getMouseX(), self.listbox:getMouseY())
---        self:doAdminButtons()
         self.listboxYScroll = self.listbox:getYScroll()
     end
 end
@@ -138,7 +137,6 @@ end
 
 function ISScoreboard:onMouseMove(dx, dy)
     ISPanelJoypad.onMouseMove(dx, dy)
---    self:doAdminButtons()
 end
 
 function ISScoreboard:onContext(button)
@@ -261,7 +259,6 @@ function ISScoreboard:create()
     self.kickButton:setAnchorLeft(false)
     self.kickButton:setAnchorRight(true)
     self:addChild(self.kickButton);
---    self.kickButton:setVisible(false);
     self.kickButton.borderColor.a = 0.3;
     table.insert(buttons, self.kickButton)
     
@@ -271,7 +268,6 @@ function ISScoreboard:create()
     self.banButton:setAnchorLeft(false)
     self.banButton:setAnchorRight(true)
     self:addChild(self.banButton);
---    self.banButton:setVisible(false);
     self.banButton.borderColor.a = 0.3;
     table.insert(buttons, self.banButton)
     butY = butY + btnHgt2 + 2;
@@ -283,7 +279,6 @@ function ISScoreboard:create()
         self.banIpButton:setAnchorLeft(false)
         self.banIpButton:setAnchorRight(true)
         self:addChild(self.banIpButton);
---        self.banIpButton:setVisible(false);
         self.banIpButton.borderColor.a = 0.3;
         table.insert(buttons, self.banIpButton)
     end
@@ -294,7 +289,6 @@ function ISScoreboard:create()
     self.godmodButton:setAnchorLeft(false)
     self.godmodButton:setAnchorRight(true)
     self:addChild(self.godmodButton);
---    self.godmodButton:setVisible(false);
     self.godmodButton.borderColor.a = 0.3;
     table.insert(buttons, self.godmodButton)
     butY = butY + btnHgt2 + 2;
@@ -305,7 +299,6 @@ function ISScoreboard:create()
     self.invisibleButton:setAnchorLeft(false)
     self.invisibleButton:setAnchorRight(true)
     self:addChild(self.invisibleButton);
---    self.invisibleButton:setVisible(false);
     self.invisibleButton.borderColor.a = 0.3;
     table.insert(buttons, self.invisibleButton)
 
@@ -315,7 +308,6 @@ function ISScoreboard:create()
     self.teleportButton:setAnchorLeft(false)
     self.teleportButton:setAnchorRight(true)
     self:addChild(self.teleportButton);
---    self.teleportButton:setVisible(false);
     self.teleportButton.borderColor.a = 0.3;
     table.insert(buttons, self.teleportButton)
     butY = butY + btnHgt2 + 2;
@@ -326,14 +318,12 @@ function ISScoreboard:create()
     self.teleportToYouButton:setAnchorLeft(false)
     self.teleportToYouButton:setAnchorRight(true)
     self:addChild(self.teleportToYouButton);
---    self.teleportToYouButton:setVisible(false);
     self.teleportToYouButton.borderColor.a = 0.3;
     table.insert(buttons, self.teleportToYouButton)
 
     self.muteButton = ISButton:new(butX + butWid + 10, butY, butWid, btnHgt2, getText("UI_Scoreboard_Mute"), self, ISScoreboard.onContext);
     self.muteButton:initialise();
     self.muteButton.internal = "MUTE";
---    self.muteButton:setVisible(false);
     self.muteButton:setAnchorLeft(false)
     self.muteButton:setAnchorRight(true)
     self.muteButton.borderColor.a = 0.3;
@@ -346,7 +336,6 @@ function ISScoreboard:create()
     self.voipmuteButton.internal = "VOIPMUTE";
     self.voipmuteButton:setAnchorLeft(false)
     self.voipmuteButton:setAnchorRight(true)
---    self.voipmuteButton:setVisible(false);
     self.voipmuteButton.borderColor.a = 0.3;
     self:addChild(self.voipmuteButton);
     table.insert(buttons, self.voipmuteButton)

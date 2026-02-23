@@ -26,7 +26,7 @@ function ISRemoveLightSourceFuelAction:complete()
 	if self.lightSource and self.lightSource:haveFuel() then
 		local fuel = self.lightSource:removeCurrentFuel(nil)
 		if fuel then
-			self.lightSource:sendObjectChange('lightSource')
+			self.lightSource:sendObjectChange(IsoObjectChange.LIGHT_SOURCE)
 			self.character:getInventory():AddItem(fuel);
 			sendAddItemToContainer(self.character:getInventory(), fuel);
 		end

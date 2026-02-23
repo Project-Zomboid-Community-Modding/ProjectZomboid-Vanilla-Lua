@@ -3,7 +3,10 @@ require "TimedActions/ISBaseTimedAction"
 ISGrabCorpseAction = ISBaseTimedAction:derive("ISGrabCorpseAction");
 
 function ISGrabCorpseAction:isValid()
-    if not self.character:getSquare():canReachTo(self.corpseBody:getSquare()) then return false end
+    if not self.character:getSquare():canReachTo(self.corpseBody:getSquare()) then
+        print("ISGrabCorpseAction:isValid> Cannot reach destination corpseBody.")
+        return false
+    end
     if self.corpseBody:getStaticMovingObjectIndex() < 0 then
         return false
     end

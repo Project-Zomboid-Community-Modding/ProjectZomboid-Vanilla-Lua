@@ -2438,7 +2438,6 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Etheridge");
     SurvivorFactory.addSurname("Cuellar");
     SurvivorFactory.addSurname("Chastain");
-    SurvivorFactory.addSurname("Bundy");
     SurvivorFactory.addSurname("Speer");
     SurvivorFactory.addSurname("Skelton");
     SurvivorFactory.addSurname("Pyle");
@@ -2914,7 +2913,6 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Delvalle");
     SurvivorFactory.addSurname("Cintron");
     SurvivorFactory.addSurname("Wilks");
-    SurvivorFactory.addSurname("Weinstein");
     SurvivorFactory.addSurname("Rizzo");
     SurvivorFactory.addSurname("Noyes");
     SurvivorFactory.addSurname("McLendon");
@@ -3198,7 +3196,6 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Mancuso");
     SurvivorFactory.addSurname("Judge");
     SurvivorFactory.addSurname("Headley");
-    SurvivorFactory.addSurname("Epstein");
     SurvivorFactory.addSurname("Clarkson");
     SurvivorFactory.addSurname("Carnahan");
     SurvivorFactory.addSurname("Boren");
@@ -3430,7 +3427,6 @@ BaseGameCharacterDetails.DoSurname = function()
     SurvivorFactory.addSurname("Bach");
     SurvivorFactory.addSurname("Tennant");
     SurvivorFactory.addSurname("Sutter");
-    SurvivorFactory.addSurname("Manson");
     SurvivorFactory.addSurname("Keel");
     SurvivorFactory.addSurname("Keegan");
     SurvivorFactory.addSurname("Emanuel");

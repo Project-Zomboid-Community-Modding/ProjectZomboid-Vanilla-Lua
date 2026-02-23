@@ -46,8 +46,8 @@ end
 
 function ISUnloadBulletsFromMagazine:serverStart()
 	self:initVars()
-	emulateAnimEvent(self.netAction, 500, "RemoveBullet", nil)
-	emulateAnimEvent(self.netAction, 550, "unloadFinished", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "RemoveBullet", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 550), "unloadFinished", nil)
 end
 
 function ISUnloadBulletsFromMagazine:getDuration()

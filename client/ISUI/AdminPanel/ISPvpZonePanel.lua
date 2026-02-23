@@ -63,7 +63,6 @@ function ISPvpZonePanel:initialise()
     self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)
 
     self:populateList();
-
 end
 
 function ISPvpZonePanel:populateList()
@@ -86,7 +85,6 @@ function ISPvpZonePanel:drawList(y, item, alt)
     end
 
     self:drawText(item.item.title, 10, y + 2, 1, 1, 1, a, self.font);
---    self:drawText(item.item.zone:getSize() .. "", 100, y + 2, 1, 1, 1, a, self.font);
 
     return y + self.itemheight;
 end

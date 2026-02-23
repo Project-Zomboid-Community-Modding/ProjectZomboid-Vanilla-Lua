@@ -20,7 +20,7 @@ function ISTestComponentPanel:createChildren()
     local titleStr = "Dummy Test Component";
 
     local fontHeight = -1; -- <=0 sets label initial height to font
-    local style = nil; --self.styleLabel or "S_Label_ComponentHeaderTitle";
+    local style;
     self.title = ISXuiSkin.build(self.xuiSkin, style, ISLabel, 0, 0, fontHeight, titleStr, 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
     self.title.origTitleStr = titleStr;
     self.title:initialise();
@@ -41,8 +41,6 @@ function ISTestComponentPanel:calculateLayout(_preferredWidth, _preferredHeight)
 
         width = math.max(width, self.componentHeader:getWidth());
         height = math.max(height, self.componentHeader:getHeight());
-
-        --self.componentHeader:calculateLayout(width, 0);
 
         y = self.componentHeader:getHeight();
     end
@@ -94,8 +92,6 @@ function ISTestComponentPanel:new(x, y, width, height, player, entity, component
     setmetatable(o, self);
     self.__index = self;
 
-    --o.minimumWidth = 500;
-    --o.minimumHeight = 300;
     o.margin = 30;
 
     return o;

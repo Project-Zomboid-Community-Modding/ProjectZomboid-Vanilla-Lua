@@ -17,17 +17,8 @@ function ISSLEvent:createChildren()
     self.eventSoundList.itemheight = 30;
     self.eventSoundList.selected = 0;
     self.eventSoundList.doDrawItem = ISSLEvent.drawEventSoundItem;
-    --self.eventSoundList:setOnMouseDownFunction(self, ISCraftingCategoryUI.refreshParent);
-    --self.eventSoundList:setOnMouseDoubleClick(self, ISCraftingCategoryUI.onDblClickRecipeList);
-    --self.eventSoundList.joypadParent = self;
-    --    self.eventSoundList.resetSelectionOnChangeFocus = true;
     self.eventSoundList.drawBorder = false;
     self:addChild(self.eventSoundList);
-
-    --self.eventSoundList:addItem("test", {});
-    --self.eventSoundList:addItem("test2", {});
-
-    --self:setEvent(getSLSoundManager():getStorySoundEvent("warzone"));
 
     self:onResize();
 end
@@ -42,7 +33,6 @@ function ISSLEvent:setEvent(_event)
                 local eSound 		= eventSounds:get(i);
                 local dataPoints    = eSound:getDataPoints();
 
-                --self.eventSoundList:addItem(eSound:getCat(), {});
                 self:addEventSoundItem(eSound);
 
                 table.insert(self.eventData, {eventSound=eSound, dataPoints= dataPoints});
@@ -71,33 +61,6 @@ function ISSLEvent:drawEventSoundItem(y, item, alt)
 
     self:drawText(item.item.eventSound:getName(), 6, y + 2, 1, 1, 1, a, UIFont.Medium);
 
-    --[[
-    if item.item.favorite then
-        local categoryUI = self.parent
-        self:drawTexture(categoryUI.favoriteStar, self:getWidth() - 51, y+(self.itemheight / 2 - categoryUI.favoriteButton.height /2 ),a,1,1,1);
-    end
-
-    if item.item.customRecipeName then
-        self:drawText(item.item.eventSound:getCat(), 6, y + 2, 1, 1, 1, a, UIFont.Medium);
-    else
-        self:drawText(item.item.recipe:getName(), 6, y + 2, 1, 1, 1, a, UIFont.Medium);
-    end
-
-    local textWidth = 0;
-    if item.item.texture then
-        local texWidth = item.item.texture:getWidth();
-        local texHeight = item.item.texture:getHeight();
-        if texWidth <= 32 and texHeight <= 32 then
-            self:drawTexture(item.item.texture,6+(32-texWidth)/2,y+19+(32-texHeight)/2,a,1,1,1);
-        else
-            self:drawTextureScaledAspect(item.item.texture,6,y+19,32,32,a,1,1,1);
-        end
-        local name = item.item.evolved and item.item.resultName or item.item.itemName
-        self:drawText(name, texWidth + 20, y + (self.itemheight / 2) - 2, 1, 1, 1, a, UIFont.Small);
-    end
-    --]]
-
-
     return y + self.itemheight;
 end
 
@@ -115,7 +78,6 @@ end
 
 function ISSLEvent:onResize()
     ISUIElement.onResize(self);
-    local w,h = self:getWidth()*0.8, self:getHeight()*0.8;
     self.eventFrame:setX(200);
     self.eventFrame:setY(0)
     self.eventFrame:setWidth(self:getWidth()-200);
@@ -123,7 +85,6 @@ function ISSLEvent:onResize()
 
     self.eventSoundList:setHeight(self:getHeight());
 end
-
 
 function ISSLEvent:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);
@@ -140,6 +101,5 @@ function ISSLEvent:new (x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     return o
 end

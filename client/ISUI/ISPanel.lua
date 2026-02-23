@@ -89,13 +89,11 @@ function ISPanel:onMouseMove(dx, dy)
             self:setY(self.y + dy);
             self:bringToTop();
         end
-        --ISMouseDrag.dragView = self;
     end
 end
 
 function ISPanel:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

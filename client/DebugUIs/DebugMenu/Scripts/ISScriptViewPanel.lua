@@ -18,11 +18,9 @@ function ISScriptViewPanel:createChildren()
     self.viewModes = {};
     self.currentViewMode = 1;
     table.insert(self.viewModes, {
-        --value = 1,
         text = getText("IGUI_ScriptView_ToggleRuntime"),
     });
     table.insert(self.viewModes, {
-        --value = 2,
         text = getText("IGUI_ScriptView_ToggleViewScript"),
     });
 
@@ -45,7 +43,6 @@ function ISScriptViewPanel:createChildren()
 end
 
 function ISScriptViewPanel:onResize()
-    --ISUIElement.onResize(self);
     self.toggleViewButton:setWidth(self.width - (UI_BORDER_SPACING+1)*2);
     self.listView:setWidth(self.width - (UI_BORDER_SPACING+1)*2);
     self.listView:setHeight(self.height-self.listView:getY()-UI_BORDER_SPACING-1);
@@ -86,7 +83,7 @@ function ISScriptViewPanel:populate()
         elseif self.currentViewMode==2 then
             local lines = ObjectDebuggerLua.AllocList();
 
-            ObjectDebuggerLua.GetLines(self.script, lines); --, 1000, true, false, 1000);
+            ObjectDebuggerLua.GetLines(self.script, lines);
 
             self.listView:populate(lines);
 
@@ -106,7 +103,6 @@ end
 function ISScriptViewPanel:prerender()
     ISPanel.prerender(self);
 end
-
 
 function ISScriptViewPanel:render()
     ISPanel.render(self);

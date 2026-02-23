@@ -1,9 +1,3 @@
---[[
-  ChunkReader.lua - 2014.
-  Author: Kees "TurboTuTone" Bekkema.
-  ]]
-
-
 EDebug = EDebug or {};
 
 function EDebug.ChunkReader( _chunkTileW )
@@ -13,7 +7,6 @@ function EDebug.ChunkReader( _chunkTileW )
 
     local self_Point 			= Point2D;
     local self_Floor			= math.floor;
-    local self_Rand				= ZombRand;
 
     local self_chunkMap 		= getWorld():getCell():getChunkMap(getPlayer():getPlayerNum());
     local self_chunkMapWidth 	= self_chunkMap:getWidthInTiles() / self_chunkTileWidth;
@@ -81,7 +74,6 @@ function EDebug.ChunkReader( _chunkTileW )
         else
             self.SetNextRing(0);
         end
-        --print("$$$$$ NEXTRING: ", self_size_cur)
     end
 
     function self.GetNextChunk( _curTick )

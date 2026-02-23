@@ -1,7 +1,6 @@
 require "ISUI/ISPanelJoypad"
 
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local BUTTON_SIZE = getTextManager():getFontHeight(UIFont.Small) * 1.5
 local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 local BUTTON_ICON_SIZE = 16 * ICON_SCALE;
 
@@ -17,18 +16,6 @@ function ISWidgetBuildControl:createChildren()
     ISPanelJoypad.createChildren(self);
 
     self.colProgress = safeColorToTable(self.xuiSkin:color("C_ValidGreen"));
-
-    --local fontHeight = -1; -- <=0 sets label initial height to font
-    --self.autoLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_ManualSelect"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
-    --self.autoLabel:initialise();
-    --self.autoLabel:instantiate();
-    --self:addChild(self.autoLabel);
---
-    --self.autoToggle = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISWidgetAutoToggle, 0, 0, nil, nil, true, self, ISWidgetBuildControl.onAutoToggled);
-    --self.autoToggle.toggleState = self.logic:isManualSelectInputs();
-    --self.autoToggle:initialise();
-    --self.autoToggle:instantiate();
-    --self:addChild(self.autoToggle);
 
     self.entryBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTextEntryBox, "1", 0, 0, 70, 20);
     self.entryBox.font = UIFont.Small;
@@ -77,20 +64,6 @@ function ISWidgetBuildControl:createChildren()
         self.buttonForceCraft.originalTitle = self.buttonForceCraft.title;
         self:addChild(self.buttonForceCraft);
     end
-    -- debug tool to know all recipes
---     if isDebugEnabled() and debugSpam then
---         self.buttonKnowAllRecipes = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, 32, "(DEBUG) TOGGLE KNOW ALL RECIPES")
---         self.buttonKnowAllRecipes.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
---         --self.buttonPrev.image = getTexture("ArrowLeft");
---         self.buttonKnowAllRecipes.font = UIFont.Medium;
---         self.buttonKnowAllRecipes.target = self;
---         self.buttonKnowAllRecipes.onclick = ISWidgetBuildControl.onButtonClick;
---         self.buttonKnowAllRecipes.enable = true;
---         self.buttonKnowAllRecipes:initialise();
---         self.buttonKnowAllRecipes:instantiate();
---         self.buttonKnowAllRecipes.originalTitle = self.buttonKnowAllRecipes.title;
---         self:addChild(self.buttonKnowAllRecipes);
---     end
 
     self.boxHeight = self.height;
 end
@@ -100,32 +73,19 @@ function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
     local minHeight = self.margin*3;
-    --minHeight = minHeight + self.autoToggle:getHeight() + self.margin;
     minHeight = minHeight + self.entryBox:getHeight() + self.margin;
     minHeight = minHeight + self.buttonCraft:getHeight();
---     if isDebugEnabled() then
     if self.buttonForceCraft then
         minHeight = minHeight + self.buttonForceCraft:getHeight();
     end
     if self.buttonKnowAllRecipes then
         minHeight = minHeight + self.buttonForceCraft:getHeight();
     end
---     end
 
     height = math.max(height, minHeight);
 
     local x = self.margin;
     local y = self.margin;
-
-    --self.autoToggle:setX(width-self.margin-self.autoToggle:getWidth());
-    --self.autoToggle:setY(y);
-
-    --local centerY = self.autoToggle:getY() + (self.autoToggle:getHeight()/2)
-    --self.autoLabel:setX(self.autoToggle:getX() - self.margin - self.autoLabel:getWidth());
-    --self.autoLabel.originalX = self.autoLabel:getX();
-    --self.autoLabel:setY(centerY - (self.autoLabel:getHeight()/2));
-
-    --y = y + self.autoToggle:getHeight() + (self.margin * 2);
 
     if self.allowBatchCraft and (not self.logic:isManualSelectInputs()) and self.entryBox and self.slider then
         self.entryBox:setVisible(true);
@@ -143,11 +103,9 @@ function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
         self.slider:paginate();
 
         y = self.entryBox:getY() + self.entryBox:getHeight() + self.margin;
-
     else
         if self.entryBox then self.entryBox:setVisible(false); end
         if self.slider then self.slider:setVisible(false); end
-
     end
 
     self.buttonCraft:setX(x);
@@ -156,7 +114,6 @@ function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
 
     y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;
 
---     if isDebugEnabled() then
     if self.buttonForceCraft then
         self.buttonForceCraft:setX(x);
         self.buttonForceCraft:setWidth(width-(self.margin*2));
@@ -172,14 +129,8 @@ function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
 
         y = self.buttonKnowAllRecipes:getY() + self.buttonKnowAllRecipes:getHeight() + self.margin;
     end
---     end
 
     self.boxHeight = y;
-    --[[
-    self.progressBar:setX(x);
-    self.progressBar:setWidth(width-(self.margin*2));
-    self.progressBar:setY(y);
-    --]]
 
     self:setWidth(width);
     self:setHeight(height);
@@ -202,53 +153,10 @@ function ISWidgetBuildControl:onResize()
 end
 
 function ISWidgetBuildControl:prerender()
-    --ISPanelJoypad.prerender(self);
-
 	if self.background then
 		self:drawRectStatic(0, 0, self.width, self.boxHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 		self:drawRectBorderStatic(0, 0, self.width, self.boxHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	end
-
-    --local y = self.autoToggle:getY() + self.autoToggle:getHeight() + self.margin;
-    --self:drawRectStatic(0, y, self.width, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
-    --if self.logic and self.logic:isCraftActionInProgress() and self.logic:getCraftActionTable() then
-        --local action = self.logic:getCraftActionTable();
-        --local plrQueue = ISTimedActionQueue.getTimedActionQueue(self.player);
-        --if plrQueue and plrQueue.queue and plrQueue.queue[1] and plrQueue.queue[1]==action then
-        --    if self.buttonCraft then
-        --        self.buttonCraft:setVisible(false);
-        --        self.buttonCraft.enable = false;
-        --        --self.buttonCraft.displayBackground = false;
-        --        --self.buttonCraft:drawProgressBar(0, 0, self.buttonCraft:getWidth(), self.buttonCraft:getHeight(), action:getJobDelta(), self.colProgress);
-        --        --self.buttonCraft.title = tostring(round(action:getJobDelta()*100, 0)).."%";
-        --
-        --        local title = tostring(round(action:getJobDelta()*100, 0)).."%";
-        --        local x = self.buttonCraft:getX();
-        --        local y = self.buttonCraft:getY();
-        --        local width = self.buttonCraft:getWidth();
-        --        local height = self.buttonCraft:getHeight();
-        --
-        --        self:drawProgressBar(x, y, width, height, action:getJobDelta(), self.colProgress);
-        --
-        --        local c = 0.3;
-        --        self:drawRectBorder(x, y, width, height, 1.0, c, c, c);
-        --
-        --        local textW = getTextManager():MeasureStringX(self.buttonCraft.font, title)
-        --        local textH = getTextManager():MeasureStringY(self.buttonCraft.font, title)
-        --        --print("TextH = "..tostring(textH)..", TextW = "..tostring(textW))
-        --        x = x + ((width / 2) - (textW / 2));
-        --        y = y + ((height / 2) - (textH/2) + self.buttonCraft.yoffset);
-        --        c = 0.1;
-        --        self:drawText(title, x+1, y+1, c, c, c, 1, self.buttonCraft.font);
-        --        self:drawText(title, x+1, y-1, c, c, c, 1, self.buttonCraft.font);
-        --        self:drawText(title, x-1, y-1, c, c, c, 1, self.buttonCraft.font);
-        --        self:drawText(title, x-1, y+1, c, c, c, 1, self.buttonCraft.font);
-        --        c = 0.95;
-        --        self:drawText(title, x, y, c, c, c, 1, self.buttonCraft.font);
-        --    end
-        --end
-    --else
     if self.buttonCraft then
         local cheat = self.player:isBuildCheat();
         local canBuild = self.logic:cachedCanPerformCurrentRecipe() or cheat;
@@ -258,10 +166,7 @@ function ISWidgetBuildControl:prerender()
         end
         self.buttonCraft.enable = canBuild;
         self.buttonCraft:setVisible(true);
-        --self.buttonCraft.displayBackground = true;
-        --self.buttonCraft.title = self.buttonCraft.originalTitle;
     end
-    --end
 end
 
 function ISWidgetBuildControl:render()
@@ -276,7 +181,6 @@ end
 function ISWidgetBuildControl:onAutoToggled(_newState)
     self.logic:setManualSelectInputs(_newState);
     self.logic:setLastManualInputMode(_newState);
-    --self:triggerEvent(ISWidgetBuildControl.onAutoToggled, self, _newState);
 end
 
 function ISWidgetBuildControl:onButtonClick(_button)
@@ -301,9 +205,7 @@ function ISWidgetBuildControl:startBuild(force)
 end
 
 function ISWidgetBuildControl:onHandcraftActionComplete()
---     print("Return to container " .. tostring(self.returnToContainer))
     self.logic:stopCraftAction();
---     ISCraftingUI.ReturnItemsToOriginalContainer(self.player, self.returnToContainer)
 end
 
 function ISWidgetBuildControl:onSliderChange(_newval, _slider)
@@ -345,7 +247,6 @@ function ISWidgetBuildControl:new(x, y, width, height, player, logic)
 
     o.background = true;
     o.backgroundColor = {r=0.2, g=0.2, b=0.2, a=0.5};
-    --o.margin = 5;
     o.player = player;
     o.logic = logic;
     o.interactiveMode = false;
@@ -354,8 +255,6 @@ function ISWidgetBuildControl:new(x, y, width, height, player, logic)
     o.margin = 5;
     o.minimumWidth = 100;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

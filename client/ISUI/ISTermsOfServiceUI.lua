@@ -24,9 +24,7 @@ function ISTermsOfServiceUI:createChildren()
 	self.richText = ISRichTextPanel:new(textX, titleY + titleHgt + 20, self.width - textX, self.height - padBottom - btnHgt - 10 - FONT_HGT_LARGE)
 	self.richText:initialise()
 	self:addChild(self.richText)
---	self.richText:addScrollBars()
 	self.richText.background = false
---	self.richText.clip = true
 	self.richText.autosetheight = true
 	self.richText:setMargins(10, 10, 10, 10)
 	self.richText.text = getText("UI_TermsOfService_Prompt1")
@@ -39,13 +37,11 @@ function ISTermsOfServiceUI:createChildren()
 	self.button1 = ISButton:new(btnX, self.richText:getBottom(), btnWid, btnHgt, getText("UI_TermsOfService_Button1"), self, ISTermsOfServiceUI.onButton1)
 	self.button1:initialise()
 	self.button1:instantiate()
---	self.button1.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button1)
 	
 	self.button2 = ISButton:new(btnX, self.button1:getBottom() + 10, btnWid, btnHgt, getText("UI_TermsOfService_Button2"), self, ISTermsOfServiceUI.onButton2)
 	self.button2:initialise()
 	self.button2:instantiate()
---	self.button2.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.button2)
 
 	local textureBottom = self.textureY + texture:getHeight() + padBottom
@@ -54,13 +50,11 @@ function ISTermsOfServiceUI:createChildren()
 	self.buttonAccept = ISButton:new(btnX, btnY, btnWid, btnHgt, getText("UI_TermsOfService_ButtonAccept"), self, ISTermsOfServiceUI.onButtonAccept)
 	self.buttonAccept:initialise()
 	self.buttonAccept:instantiate()
---	self.buttonAccept.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.buttonAccept)
 
 	self.buttonQuit = ISButton:new(self.buttonAccept:getRight() + 20, btnY, btnWid, btnHgt, getText("UI_TermsOfService_ButtonQuit"), self, ISTermsOfServiceUI.onButtonQuit)
 	self.buttonQuit:initialise()
 	self.buttonQuit:instantiate()
---	self.buttonQuit.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.buttonQuit)
 
 	self:setHeight(self.buttonAccept:getBottom() + padBottom)
@@ -134,7 +128,6 @@ function ISTermsOfServiceUI:prerender()
 end
 
 function ISTermsOfServiceUI:onMouseDown(x, y)
---	ISPanelJoypad.onMouseDown(self, x, y)
 	-- FIXME: this prevents clicks being passed to windows behind, but need to swallow clicks outside and mouse-move events as well
 	return true
 end
@@ -147,7 +140,6 @@ end
 
 function ISTermsOfServiceUI:onLoseJoypadFocus(joypadData)
 	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
---	self.buttonAccept:clearJoypadButton()
 end
 
 function ISTermsOfServiceUI:onJoypadDown(button)

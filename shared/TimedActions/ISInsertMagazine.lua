@@ -59,7 +59,7 @@ end
 
 function ISInsertMagazine:serverStart()
 	self:initVars()
-	emulateAnimEventOnce(self.netAction, 1500, "loadFinished", nil)
+	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1500), "loadFinished", nil)
 end
 
 function ISInsertMagazine:getDuration()

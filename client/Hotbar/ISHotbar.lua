@@ -8,7 +8,6 @@ function ISHotbar:render()
 	if (self.playerNum > 0) or JoypadState.players[self.playerNum+1] then
 		self:setVisible(false);
 		-- Don't remove this from the screen, we need update() to call refresh().
---		self:removeFromUIManager();
 	end
 	
 	self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
@@ -51,15 +50,6 @@ function ISHotbar:render()
 		if item then
 			local tex = item:getTexture()
 			self:drawTexture(tex, slotX + (tex:getWidth() / 2), (self.height - tex:getHeight()) / 2, 1, 1, 1, 1)
-			
-			--local n = math.floor(((item:getCondition() / item:getConditionMax()) * 5));
-			
-			--if(item:getCondition() > 0 and n == 0) then
-			--	n = 1;
-			--end
-			
-			--self:drawTexture(self.qualityStars[n], slotX + self.slotWidth - 15, self.margins + 3,1,1,1,1);
-
 			if item:isEquipped() then
 				tex = self.equippedItemIcon
 				self:drawTexture(tex, slotX + self.slotWidth - tex:getWidth() - 5, self.height - self.margins - tex:getHeight() - 5,1,1,1,1);
@@ -102,7 +92,6 @@ function ISHotbar:doMenu(slotIndex)
 	-- first check for remove
 	if self.attachedItems[slotIndex] then
 		context = ISInventoryPaneContextMenu.createMenu(self.chr:getPlayerNum(), true, {self.attachedItems[slotIndex]}, getMouseX(), getMouseY());
---		context:addOptionOnTop("Remove " .. self.attachedItems[slotIndex]:getDisplayName(), self, ISHotbar.removeItem, self.attachedItems[slotIndex], true);
 		found = true;
 	end
 	
@@ -122,7 +111,7 @@ function ISHotbar:doMenu(slotIndex)
 					end
 					if doIt then
 						if not subMenuAttach then
-							local subOption = context:addOptionOnTop(getText("ContextMenu_Attach"), nil);
+							local subOption = context:addOption(getText("ContextMenu_Attach"), nil);
 							subMenuAttach = context:getNew(context);
 							context:addSubMenu(subOption, subMenuAttach);
 						end
@@ -147,10 +136,10 @@ function ISHotbar.doMenuFromInventory(playerNum, item, context)
 	if self:isInHotbar(item) and item:getAttachmentType() and item:getAttachedSlot() ~= -1 then
 		local slot = self.availableSlot[item:getAttachedSlot()]
 		local slotName = getTextOrNull("IGUI_HotbarAttachment_" .. slot.slotType) or slot.name;
-		context:addOptionOnTop(getText("ContextMenu_RemoveFromHotbar", self.attachedItems[item:getAttachedSlot()]:getDisplayName(), slotName), self, ISHotbar.removeItem, self.attachedItems[item:getAttachedSlot()], true);
+		context:addOption(getText("ContextMenu_RemoveFromHotbar", self.attachedItems[item:getAttachedSlot()]:getDisplayName(), slotName), self, ISHotbar.removeItem, self.attachedItems[item:getAttachedSlot()], true);
 	end
 	if item:getAttachmentType() and not self:isInHotbar(item) and not item:isBroken() and self.replacements[item:getAttachmentType()] ~= "null" then
-		local subOption = context:addOptionOnTop(getText("ContextMenu_Attach"), nil);
+		local subOption = context:addOption(getText("ContextMenu_Attach"), nil);
 		local subMenuAttach = context:getNew(context);
 		context:addSubMenu(subOption, subMenuAttach);
 		
@@ -161,7 +150,7 @@ function ISHotbar.doMenuFromInventory(playerNum, item, context)
 				if item:getAttachmentType() == i then
 					local doIt = true;
 					local name = getTextOrNull("IGUI_HotbarAttachment_" .. slot.slotType) or slot.name;
-			-- we check for slot index == 1 so bag replacement stuff doesn't affect katanas/machetes on the belt and back
+			        -- we check for slot index == 1 so bag replacement stuff doesn't affect katanas/machetes on the belt and back
 					if slotDef.name == "Back" and self.replacements and self.replacements[item:getAttachmentType()] then
 						slot = self.replacements[item:getAttachmentType()];
 						if slot == "null" then
@@ -266,11 +255,28 @@ function ISHotbar:update()
 			if self.chr:isEquipped(item) then
 				self.chr:removeAttachedItem(item);
 			elseif not self.chr:getAttachedItem(item:getAttachedToModel()) then -- ensure it's attached
---				self.chr:setAttachedItem(slotDef.attachments[item:getAttachmentType()], item);
 				self:attachItem(item, slotDef.attachments[item:getAttachmentType()], item:getAttachedSlot(), slotDef, false)
 			end
 		end
 	end
+    -- show item tooltip when moused over
+    local slotIndex = self:getSlotIndexAt(self:getMouseX(), self:getMouseY())
+    if slotIndex ~= -1 and self.attachedItems[slotIndex] and not getPlayerContextMenu(self.playerNum):isAnyVisible() then
+        local item = self.attachedItems[slotIndex]
+        if self.toolRender then
+            self.toolRender:setItem(item)
+            self.toolRender:bringToTop()
+        else
+            self.toolRender = ISToolTipInv:new(item)
+            self.toolRender:initialise()
+            self.toolRender:addToUIManager()
+            self.toolRender:setOwner(self)
+            self.toolRender:setCharacter(getSpecificPlayer(self.playerNum))
+        end
+        self.toolRender:setVisible(true)
+    elseif self.toolRender then
+        self.toolRender:setVisible(false)
+    end
 end
 
 function ISHotbar:onRightMouseUp(x, y)
@@ -355,7 +361,7 @@ function ISHotbar:attachItem (item, slot, slotIndex, slotDef, doAnim)
 	else
 		-- add new item
 		-- if the item need to be attached elsewhere than its original emplacement because of a bag for example
-			-- we check for slot index == 1 so bag replacement stuff doesn't affect katanas/machetes on the belt and back
+        -- we check for slot index == 1 so bag replacement stuff doesn't affect katanas/machetes on the belt and back
 		if slotDef.name == "Back" and self.replacements and self.replacements[item:getAttachmentType()] then
 			slot = self.replacements[item:getAttachmentType()];
 			if slot == "null" then
@@ -442,7 +448,6 @@ function ISHotbar:refresh()
 		return;
 	end
 
-	local previousSlot = self.availableSlot;
 	local newSlots = {};
 	local newIndex = 2;
 	local slotIndex = #self.availableSlot + 1;
@@ -497,20 +502,18 @@ function ISHotbar:refresh()
 	end
 
 	local attached = {} -- keep a key/value pair of slotType / attached item
---	if #self.availableSlot ~= #newSlots then
-		for i,v in pairs(self.availableSlot) do
-			local item = self.attachedItems[i]
-			if not self:haveThisSlot(v.slotType, newSlots) then
-				self.availableSlot[i] = nil;
-				if item then
-					self:removeItem(item, false);
-				end
-			elseif item then
-				attached[v.slotType] = item
-			end
-		end
-		self:savePosition();
---	end
+    for i,v in pairs(self.availableSlot) do
+        local item = self.attachedItems[i]
+        if not self:haveThisSlot(v.slotType, newSlots) then
+            self.availableSlot[i] = nil;
+            if item then
+                self:removeItem(item, false);
+            end
+        elseif item then
+            attached[v.slotType] = item
+        end
+    end
+    self:savePosition();
 
 	newSlots = {};
 	-- now we redo our correct order
@@ -594,7 +597,6 @@ function ISHotbar:equipItem(item)
 		if isForceDropHeavyItem(primary) then
 			ISTimedActionQueue.add(ISUnequipAction:new(self.chr, primary, 50));
 		else
-			local inventory = self.chr:getInventory()
 			if primary and self:isInHotbar(primary) then
 				ISTimedActionQueue.add(ISUnequipAction:new(self.chr, primary, 20));
 				if primary == secondary then secondary = nil end -- pretend it doesnt exist since we're putting it away
@@ -603,16 +605,9 @@ function ISHotbar:equipItem(item)
 			end
 
 			local heavy_secondary = (secondary and instanceof(secondary, "InventoryContainer") and willBeOverMaxWeight(self.chr, secondary))
-			--if heavy_secondary and item:isRequiresEquippedBothHands() then
 			if heavy_secondary and both_hands then
 				dropItemNow(self.chr, secondary)
 			end
-
-			--if item:isRequiresEquippedBothHands() then
-			--	both_hands = true
-			--elseif heavy_secondary then
-			--	both_hands = false
-			--end
 		end
         local primary = both_hands or item:IsWeapon()
         if not primary and self.chr:getSecondaryHandItem() and not self.chr:getPrimaryHandItem() then
@@ -626,7 +621,6 @@ function ISHotbar:equipItem(item)
 	
 	self.chr:getInventory():setDrawDirty(true);
 	getPlayerData(self.chr:getPlayerNum()).playerInventory:refreshBackpacks();
---	self:refresh();
 end
 
 function ISHotbar:getSlotIndexAt(x, y)
@@ -639,7 +633,6 @@ function ISHotbar:getSlotIndexAt(x, y)
 end
 
 function ISHotbar:onMouseUp(x, y)
-	local counta = 1;
 	if ISMouseDrag.dragging then
 		local clickedSlot = self:getSlotIndexAt(x, y);
 		local slot = self.availableSlot[clickedSlot];
@@ -842,10 +835,14 @@ ISHotbar.onKeyKeepPressed = function(key)
 end
 
 ISHotbar.onClothingUpdated = function(player)
-	local hotbar = getPlayerHotbar(player:getPlayerNum());
-	if hotbar == nil then return end -- player is dead
---	hotbar:refresh();
-	hotbar.needsRefresh = true
+	local inventory = getPlayerInventory(player:getPlayerNum())
+	if inventory then
+		inventory:refreshBackpacks()
+	end
+	local hotbar = getPlayerHotbar(player:getPlayerNum())
+	if hotbar then
+		hotbar.needsRefresh = true
+	end
 end
 
 function ISHotbar:new(character)
@@ -874,7 +871,6 @@ function ISHotbar:new(character)
 	o.textColor = {r=1.0, g=1.0, b=1.0, a=1.0};
 	o.width = width;
 	o.height = height;
---	o:noBackground();
 	o.anchorLeft = true;
 	o.anchorRight = true;
 	o.anchorTop = true;
@@ -883,19 +879,11 @@ function ISHotbar:new(character)
 	o.font = UIFont.Small;
 	o.needsRefresh = false
 	o:refresh();
-	--o.qualityStars = {};
-	--o.qualityStars[0] = getTexture("media/ui/QualityStar_0.png");
-	--o.qualityStars[1] = getTexture("media/ui/QualityStar_1.png");
-	--o.qualityStars[2] = getTexture("media/ui/QualityStar_2.png");
-	--o.qualityStars[3] = getTexture("media/ui/QualityStar_3.png");
-	--o.qualityStars[4] = getTexture("media/ui/QualityStar_4.png");
-	--o.qualityStars[5] = getTexture("media/ui/QualityStar_5.png");
 	o.equippedItemIcon = getTexture("media/ui/icon.png");
 	return o;
 end
 
 local function OnGameStart()
---	Events.OnSave.Add(ISHotbar.onSave);
 	Events.OnClothingUpdated.Add(ISHotbar.onClothingUpdated);
 	Events.OnKeyStartPressed.Add(ISHotbar.onKeyStartPressed);
 	Events.OnKeyPressed.Add(ISHotbar.onKeyPressed);

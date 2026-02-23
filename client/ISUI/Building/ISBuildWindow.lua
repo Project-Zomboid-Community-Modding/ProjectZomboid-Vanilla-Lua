@@ -15,7 +15,6 @@ end
 
 function ISBuildWindow:isKeyConsumed(key)
     return key == Keyboard.KEY_ESCAPE or getCore():isKey("Building UI", key)
---     return key == Keyboard.KEY_ESCAPE
 end
 
 function ISBuildWindow:onKeyRelease(key)
@@ -68,7 +67,6 @@ function ISBuildWindow:createChildren()
     self.BuildPanel:instantiate();
     self:addChild(self.BuildPanel);
 
-    --self.maximumHeight = 200;
     if self.pinButton then
         self.pinButton:setAnchorRight(false);
     end
@@ -80,13 +78,11 @@ function ISBuildWindow:createChildren()
     self.resizeWidget.resizeFunction = ISBuildWindow.calculateLayout;
     self.resizeWidget2.resizeFunction = ISBuildWindow.calculateLayout;
 
-    --self:calculateLayout();
     self:xuiRecalculateLayout();
 end
 
 function ISBuildWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeight, _force, _anchorRight)
     if self.calculateLayout and ((not self.dirtyLayout) or _force) then
-        --print("xuiRecalculateLayout setting dirty state")
         self.xuiPreferredResizeWidth = self.width;
         self.xuiPreferredResizeHeight = self.height;
         self.xuiResizeAnchorRight = _anchorRight;
@@ -97,12 +93,10 @@ function ISBuildWindow:xuiRecalculateLayout(_preferredWidth, _preferredHeight, _
             self.xuiPreferredResizeHeight = _preferredHeight<0 and self.height+_preferredHeight or _preferredHeight;
         end
         self.dirtyLayout = true;
-        --self:calculateLayout(self.width, self.height);
     end
 end
 
 function ISBuildWindow:calculateLayout(_preferredWidth, _preferredHeight)
-    --print("############# CALC LAYOUT ##############")
     self:validateSizeBounds();
 
     local th = self:titleBarHeight();
@@ -300,9 +294,6 @@ function ISBuildWindow:onJoypadNavigateStart_Descendant(descendant, joypadData)
     local recipePanel = self.BuildPanel.craftRecipePanel
     local recipeInputs = recipePanel and recipePanel.inputs or nil
     local craftControl = recipePanel and recipePanel.craftControl or nil
---    local inventoryPanel = self.BuildPanel.inventoryPanel.itemListBox
---    inventoryPanel.joypadNavigate = { left = recipePanel.inputs }
---    if not inventoryPanel:isReallyVisible() then inventoryPanel = nil end
     local inventoryPanel = nil
     recipeCategories.joypadNavigate = { right = listOrIconPanel }
     recipeFilterPanel.joypadNavigate = { left = recipeCategories, right = recipeInputs, down = listOrIconPanel }
@@ -336,7 +327,6 @@ function ISBuildWindow:new(x, y, width, height, player, isoObject, queryOverride
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = nil;
-    --o.resizable = false;
     o.drawFrame = true;
 
     o.panelCloseDistance = 8;
@@ -370,3 +360,15 @@ function ISBuildWindow:new(x, y, width, height, player, isoObject, queryOverride
 
     return o
 end
+
+function ISBuildWindow.OnPlayerDeath(playerObj)
+    if not ISEntityUI.IsWindowOpen(playerObj:getPlayerNum(), "BuildWindow") then
+        return
+    end
+
+    local windowInstance = ISEntityUI.GetWindowInstance(playerObj:getPlayerNum(), "BuildWindow")
+    windowInstance:close()
+    windowInstance:removeFromUIManager()
+end
+
+Events.OnPlayerDeath.Add(ISBuildWindow.OnPlayerDeath)

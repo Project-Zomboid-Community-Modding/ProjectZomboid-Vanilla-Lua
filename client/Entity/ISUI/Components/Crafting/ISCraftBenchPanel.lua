@@ -39,7 +39,6 @@ function ISCraftBenchPanel:calculateLayout(_preferredWidth, _preferredHeight)
         width = math.max(width, self.componentHeader:getWidth());
     end
 
-    --local x,y = 0,headerHeight;
     if self.handCraftPanel then
         self.handCraftPanel:setX(0);
         self.handCraftPanel:setY(headerHeight);
@@ -122,8 +121,6 @@ function ISCraftBenchPanel:new(x, y, width, height, player, entity, component, c
 	local o = ISBaseComponentPanel:new(x, y, width, height, player, entity, component, componentUiStyle);
     setmetatable(o, self);
     self.__index = self;
-
-    --o.recipeData = component:getPrimaryRecipeData();
 
     return o;
 end

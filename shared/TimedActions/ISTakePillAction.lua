@@ -102,6 +102,8 @@ function ISTakePillAction:new (character, item)
     o.isEating = true;
     o.carLighter = item:hasTag(ItemTag.SMOKABLE) and character:getVehicle() and character:getVehicle():canLightSmoke(character)
     o.openFlame = false;
-    if item:hasTag(ItemTag.SMOKABLE) then o.openFlame = ISInventoryPaneContextMenu.hasOpenFlame(character) end
+    if not isServer() then
+        if item:hasTag(ItemTag.SMOKABLE) then o.openFlame = ISInventoryPaneContextMenu.hasOpenFlame(character) end
+    end
 	return o
 end

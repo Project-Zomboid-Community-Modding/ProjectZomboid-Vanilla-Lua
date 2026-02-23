@@ -52,28 +52,6 @@ function ISRadioAction:performToggleOnOff()
     end
 end
 
--- RemoveBattery
-function ISRadioAction:isValidRemoveBattery()
-    return self.deviceData:getIsBatteryPowered() and self.deviceData:getHasBattery();
-end
-
-function ISRadioAction:performRemoveBattery()
-    if self:isValidRemoveBattery() and self.character:getInventory() then
-        self.deviceData:getBattery(self.character:getInventory());
-    end
-end
-
--- AddBattery
-function ISRadioAction:isValidAddBattery()
-    return self.deviceData:getIsBatteryPowered() and self.deviceData:getHasBattery() == false;
-end
-
-function ISRadioAction:performAddBattery()
-    if self:isValidAddBattery() and self.secondaryItem then
-        self.deviceData:addBattery(self.secondaryItem);
-    end
-end
-
 -- SetChannel
 function ISRadioAction:isValidSetChannel()
     if (not self.secondaryItem) and type(self.secondaryItem)~="number" then return false; end
@@ -189,28 +167,6 @@ function ISRadioAction:performTogglePlayMedia()
         else
             self.deviceData:StartPlayMedia();
         end
-    end
-end
-
--- AddMedia
-function ISRadioAction:isValidAddMedia()
-    return (not self.deviceData:hasMedia()) and self.deviceData:getMediaType() == self.secondaryItem:getMediaType();
-end
-
-function ISRadioAction:performAddMedia()
-    if self:isValidAddMedia() and self.secondaryItem then
-        self.deviceData:addMediaItem(self.secondaryItem);
-    end
-end
-
--- RemoveMedia
-function ISRadioAction:isValidRemoveMedia()
-    return self.deviceData:hasMedia();
-end
-
-function ISRadioAction:performRemoveMedia()
-    if self:isValidRemoveMedia() and self.character:getInventory() then
-        self.deviceData:removeMediaItem(self.character:getInventory());
     end
 end
 

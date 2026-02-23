@@ -1,7 +1,6 @@
 require "ISUI/ISPanel"
 
 local SMALL_FONT_HGT = getTextManager():getFontHeight(UIFont.Small);
-local MEDIUM_FONT_HGT = getTextManager():getFontHeight(UIFont.Medium);
 
 ISCraftInventoryPanel = ISPanel:derive("ISCraftInventoryPanel");
 
@@ -37,15 +36,12 @@ function ISCraftInventoryPanel:createChildren()
                 return;
             end
 
-            local row = -1;
             local lx = getMouseX() - _self:getAbsoluteX();
-            local ly = getMouseY() - _self:getAbsoluteY();
             local sbarWid = 0
             if _self.vscroll and _self.vscroll:isVScrollBarVisible() then
                 sbarWid = _self.vscroll:getWidth()
             end
             if lx < _self.width - sbarWid then
-                --row = self:rowAt(self:getMouseX(), self:getMouseY())
                 if not _self.tooltipItem then
                     _self.tooltipItem = ISToolTipInv:new(data.inventoryItem);
                     _self.tooltipItem:addToUIManager();
@@ -97,7 +93,6 @@ function ISCraftInventoryPanel:createChildren()
     self.itemListBox.selected = 0;
     self.itemListBox.joypadParent = self;
     self.itemListBox.logic = self.logic;
-    --self.itemListBox.recipeData = self.recipeData;
     self.itemListBox.colGood = self.colGood;
     self.itemListBox.colYellow = self.colYellow;
     self.itemListBox.colBad = self.colBad;
@@ -184,12 +179,6 @@ function ISCraftInventoryPanel:populate()
         nodes = self.inputScriptFilter and self.logic:getInputItemNodesForInput(self.inputScriptFilter) or self.logic:getInputItemNodes();
         allInputItems = self.inputScriptFilter and self.inputScriptFilter:getPossibleInputItems();
     end
-
-    --if nodes:size()==0 then
-    --    local header = self:createListHeader("Items");
-    --    self.itemListBox:addItem(header.name, header);
-    --    return;
-    --end
 
     local item = nil;
     local availableItems = {};
@@ -323,7 +312,6 @@ function ISCraftInventoryPanel:populate()
                 self.itemListBox:addItem(item.name, item)
             else
                 local addedPairs = {};
-                local index = 0;
                 local inputItems = {}
                 for i = 0, allInputItems:size()-1 do
                     local inputItem = allInputItems:get(i);
@@ -489,9 +477,6 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
     local a = 1.0;
 
     self:drawRectBorder( 1, y+1, self:getWidth()-2, self.itemheight - 2, 0.2, 1.0, 1.0, 1.0)
-    if self.selected == item.index then
-        --self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
-    end
 
     local dx,dy = 0,0;
     local data = item.item;
@@ -508,7 +493,6 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
 
         if data.hasExpandArrow then
-            --dx = dx - 36;
             local iconTexture = getTexture("media/ui/Entity/Icon_ExpandArrow_Closed_48x48.png");
             if (data.isUnavailableItemsHeader and self.target.unavailablesExpanded) 
             or (data.isUnavailableFluidsHeader and self.target.unavailableFluidsExpanded) then
@@ -525,10 +509,6 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.1, 1.0, 1.0, 1.0);
 
         dx = 10;
-        --if data.script then
-        --    ISInventoryItem.renderScriptItemIcon(self, data.script, dx, y+2, 1.0, self.itemheight-4, self.itemheight-4);
-        --end
-        --dx = dx + self.itemheight + 16;
         dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
 
         self:drawText( data.text, dx, dy, 1, 1, 1, 1.0, self.font);
@@ -719,11 +699,7 @@ function ISCraftInventoryPanel:onListItemClicked(_item)
 end
 
 function ISCraftInventoryPanel:onRebuildItemNodes(_inputItems)
-    --print("Calling listener -> ISCraftInventoryPanel.onRebuildItemNodes")
-    ---self.itemsList = _itemsList;
-
     --todo check if have to remove all previous added InputItems from recipeData
-
     self:populate();
 end
 
@@ -752,8 +728,6 @@ function ISCraftInventoryPanel:new(x, y, width, height, player, logic)
     o.margin = 5;
     o.minimumWidth = 256;
     o.minimumHeight = 32;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

@@ -1,4 +1,3 @@
-
 ISFastTeleportMove = {}
 ISFastTeleportMove.cheat = false
 ISFastTeleportMove.currentZ = 0
@@ -11,10 +10,6 @@ ISFastTeleportMove.moveXY = function(player, dx, dy)
     local y = player:getY() + dy
 
 	player:teleportTo(x, y, player:getZ())
---     player:setX(x)
---     player:setY(y)
---     player:setLastX(x)
---     player:setLastY(y)
 end
 
 ISFastTeleportMove.moveZ = function(player, dz)

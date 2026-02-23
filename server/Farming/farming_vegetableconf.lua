@@ -323,12 +323,9 @@ farming_vegetableconf.grow = function(planting, nextGrowing, updateNbOfGrow)
 
         planting.waterNeeded = prop.waterNeeded
     end
-    if planting:isAlive() then
-        if (prop.harvestLevel and nbOfGrow >= prop.harvestLevel)
-         or (not prop.harvestLevel and nbOfGrow >= prop.harvestLeve) then
-            planting:setObjectName(name)
-            planting.hasVegetable = true;
-         end
+    if planting:isAlive() and prop.harvestLevel and nbOfGrow >= prop.harvestLevel then
+        planting:setObjectName(name)
+        planting.hasVegetable = true;
     end
 	return planting;
 end

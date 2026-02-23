@@ -46,6 +46,9 @@ end
 
 -- when you or a npc try to hit something
 xpUpdate.onWeaponHitXp = function(owner, weapon, hitObject, damage, hitCount)
+    if not weapon then
+        return;
+    end
     local isShove = false
     if hitObject:isOnFloor() == false and weapon:getType() == "BareHands" then
         isShove = true
@@ -132,6 +135,15 @@ xpUpdate.displayCharacterInfo = function(key)
 			ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
 		end
 	end
+    if getCore():isKey("Building UI", key) then
+        local windowInstance = ISEntityUI.GetWindowInstance(0, "BuildWindow");
+        if windowInstance then
+            windowInstance:close();
+            windowInstance:removeFromUIManager();
+        else
+            ISEntityUI.OpenBuildWindow(getSpecificPlayer(0));
+        end
+    end
 	if getCore():isKey("Toggle Skill Panel", key) then
 		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
 		xpUpdate.characterInfo:toggleView(xpSystemText.skills);
@@ -285,17 +297,19 @@ xpUpdate.checkForLosingLevel = function(playerObj, perk)
 end
 
 xpUpdate.everyTenMinutes = function()
-	for playerIndex=0,getNumActivePlayers()-1 do
-		local playerObj = getSpecificPlayer(playerIndex)
+	local players = getOnlinePlayers()
+	local playersNumber = isServer() and players:size()-1 or getNumActivePlayers()-1
+	for playerIndex=0,playersNumber do
+		local playerObj = isServer() and players:get(playerIndex) or getSpecificPlayer(playerIndex)
 		if playerObj and not playerObj:isDead() then
 			local modData = xpUpdate.getModData(playerObj)
 			-- strength stuff
-			modData.strengthUpTimer = modData.strengthUpTimer + 10;
+			modData.strengthUpTimer = modData.strengthUpTimer + getLoosingXpTick(modData.strengthUpTimer);
 			-- if we've been lazy for too long, we start losing xp, every 1200 tick we lose 1 xp
 			if modData.strengthUpTimer > 20000 and modData.strengthMod ~= math.floor(modData.strengthUpTimer / 1200) then
 				modData.strengthMod = math.floor(modData.strengthUpTimer / 1200);
 				if playerObj:getXp():getXP(Perks.Strength) > 0 then
-					sendAddXp(playerObj, Perks.Strength, -1, true);
+					addXp(playerObj, Perks.Strength, getLoosingXpValue())
 				end
 				xpUpdate.checkForLosingLevel(playerObj, Perks.Strength);
 			end
@@ -303,12 +317,12 @@ xpUpdate.everyTenMinutes = function()
 				modData.strengthUpTimer = 0;
 			end
 			-- fitness stuff
-			modData.fitnessUpTimer = modData.fitnessUpTimer + 10;
+			modData.fitnessUpTimer = modData.fitnessUpTimer + getLoosingXpTick(modData.fitnessUpTimer);
 			-- if we've been lazy for too long, we start losing xp, every 1200 tick we lose 1 xp
 			if modData.fitnessUpTimer > 20000 and modData.fitnessMod ~= math.floor(modData.fitnessUpTimer / 1200) then
 				modData.fitnessMod = math.floor(modData.fitnessUpTimer / 1200);
 				if playerObj:getXp():getXP(Perks.Fitness) > 0 then
-					sendAddXp(playerObj, Perks.Fitness, -1, true);
+					addXp(playerObj, Perks.Fitness, getLoosingXpValue())
 				end
 				xpUpdate.checkForLosingLevel(playerObj, Perks.Fitness);
 			end
@@ -316,7 +330,7 @@ xpUpdate.everyTenMinutes = function()
 				modData.fitnessUpTimer = 0;
 			end
 		end
-    end
+	end
 end
 
 -- load our losing xp timer

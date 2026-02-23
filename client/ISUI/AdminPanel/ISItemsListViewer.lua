@@ -48,13 +48,6 @@ function ISItemsListViewer:initList()
         local item = self.items:get(i);
         --The following code is used to generate a list of all items in the game
         --in a format that allows for easier conversion into an excel / google sheets
-        --compatible layout. IN THE OUTPUT, replace <<<>>> with a tab.
-
-        --if (item:getDisplayCategory() ~= nil) then
-        --    print("<<<>>>" .. item:getName() .. "<<<>>>" .. item:getDisplayCategory())
-        --else
-        --    print("<<<>>>" .. item:getName() .. "<<<>>>")
-        --end
 
         --The above code activates as soon as the item list viewer is activated.
         if not item:getObsolete() and not item:isHidden() then

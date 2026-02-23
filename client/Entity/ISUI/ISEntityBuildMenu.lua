@@ -25,7 +25,6 @@ function ISEntityBuildMenu.createMenu(_player, _context, _subMenu, _worldObjects
 
     local buildables = SHOW_ALL_MENU and ISBuildIsoEntity.GetAllBuildableEntities() or ISEntityBuildMenu.buildables;
 
-    --print("buildables = "..tostring(#buildables));
     local cats = {}; -- Meow.
     for _,info in ipairs(buildables) do
         local category = info:getRecipe():getBuildCategory() or "none";
@@ -121,7 +120,6 @@ function ISEntityBuildMenu.onBuildEntity(_player, _info)
     local buildEntity = ISBuildIsoEntity:new(_player, _info, 1, containers);
 
     local inventory = _player:getInventory();
-    local items = ISEntityBuildMenu.items;
 
     local _recipe = _info:getRecipe():getCraftRecipe();
     buildEntity.equipBothHandItem = getTool(_recipe:getToolBoth(), inventory);

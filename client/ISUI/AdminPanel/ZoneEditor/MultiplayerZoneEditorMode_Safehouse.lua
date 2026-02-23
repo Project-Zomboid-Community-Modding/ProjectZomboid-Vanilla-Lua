@@ -15,11 +15,9 @@ MultiplayerZoneEditorMode_Safehouse_Confirm = ISPanelJoypad:derive("SafehouseCon
 local SafehouseConfirm = MultiplayerZoneEditorMode_Safehouse_Confirm
 
 function SafehouseConfirm:createChildren()
-	local fontHgt = FONT_HGT_SMALL
 	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, "Ok") + 12
 	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, "Cancel") + 12
 	local buttonWid = math.max(buttonWid1, buttonWid2, 100)
-	local padBottom = UI_BORDER_SPACING + 1
 
 	local inset = 2
 	local entryHgt = inset + FONT_HGT_MEDIUM + inset
@@ -83,8 +81,6 @@ end
 
 function SafehouseConfirm:prerender()
 	self.backgroundColor.a = 0.8
---	self.entryTitle.backgroundColor.a = 0.8
---	self.entryOwner.backgroundColor.a = 0.8
 
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
 
@@ -99,13 +95,6 @@ function SafehouseConfirm:prerender()
 	end
 
 	self:updateButtons()
---[[
-	if OnScreenKeyboard.IsVisible() then
-		if self:getBottom() > OnScreenKeyboard.instance.y then
-			self:setY(OnScreenKeyboard.instance.y - self.height)
-		end
-	end
---]]
 end
 
 function SafehouseConfirm:updateButtons()
@@ -116,7 +105,6 @@ function SafehouseConfirm:updateButtons()
 		self.yes:setEnable(true)
 	end
 	self.yes.tooltip = nil
---	local text = self.entryTitle:getText()
 	if self.joyfocus and self.entry.joypadFocused then
 		self.ISButtonA = nil
 		self.ISButtonB = nil
@@ -138,7 +126,6 @@ function SafehouseConfirm:onGainJoypadFocus(joypadData)
 	self.joypadIndex = 1
 	self:insertNewLineOfButtons(self.entryTitle)
 	self:insertNewLineOfButtons(self.entryOwner)
---	self:insertNewLineOfButtons(self.yes, self.no)
 	self.entry:setJoypadFocused(true, joypadData)
 end
 
@@ -217,8 +204,6 @@ MultiplayerZoneEditorMode_Safehouse_Details = ISPanel:derive("MultiplayerZoneEdi
 DetailsPanel = MultiplayerZoneEditorMode_Safehouse_Details
 
 function DetailsPanel:createChildren()
-	local btnWid = 100
-
 	local nameLbl = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("IGUI_SafehouseUI_Title"), 1, 1, 1, 1, UIFont.Small, true)
 	nameLbl:initialise()
 	nameLbl:instantiate()
@@ -390,8 +375,6 @@ end
 function DetailsPanel:prerender()
 	if self.safehouse then
 		local z = 20
-		local splitPoint = 100
-		local x = 10
 		self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
 		self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 		self.title:setName(self.safehouse:getTitle())
@@ -594,7 +577,6 @@ function MultiplayerZoneEditorMode_Safehouse:createChildren()
 	self.listbox:setFont(UIFont.Small, 3)
 	self:addChild(self.listbox)
 
-	local buttonPadding = UI_BORDER_SPACING * 2
 	local button = ISButton:new(UI_BORDER_SPACING, self.listbox:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_MultiplayerZoneEditor_Button_AddZone"), self, function(self) self:onAddZone() end)
 	button:setWidthToTitle()
 	self:addChild(button)
@@ -682,12 +664,6 @@ function MultiplayerZoneEditorMode_Safehouse:renderRect(x1, y1, x2, y2, r, g, b,
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX2, uiY2, uiX3, uiY3, THICK, r, g, b, a)
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX3, uiY3, uiX4, uiY4, THICK, r, g, b, a)
 	self.mapUI.javaObject:DrawLine(Texture:getWhite(), uiX4, uiY4, uiX1, uiY1, THICK, r, g, b, a)
-	--[[
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, uiX2 - uiX1 + THICK * 2, THICK, a, r, g, b)
-	self.mapUI:drawRect(uiX2, uiY2 - THICK, THICK, uiY3 - uiY2 + THICK * 2, a, r, g, b)
-	self.mapUI:drawRect(uiX4 - THICK, uiY4, uiX3 - uiX4 + THICK * 2, THICK, a, r, g, b)
-	self.mapUI:drawRect(uiX1 - THICK, uiY1 - THICK, THICK, uiY4 - uiY1 + THICK * 2, a, r, g, b)
-	--]]
 end
 
 function MultiplayerZoneEditorMode_Safehouse:fillList()
@@ -895,7 +871,6 @@ end
 function MultiplayerZoneEditorMode_Safehouse:setZoneBounds(x1, y1, x2, y2)
 	local zone = self:getSelectedZone()
 	local title = zone:getTitle()
-	-- TODO
 	self.selectedZone = nil
 end
 

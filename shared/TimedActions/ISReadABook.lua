@@ -39,13 +39,8 @@ function ISReadABook:update()
         if self.item:getLvlSkillTrained() > self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 or self.character:hasTrait(CharacterTrait.ILLITERATE) then
             if self.pageTimer >= 200 then
                 self.pageTimer = 0;
-                local txtRandom = ZombRand(3);
-                if txtRandom == 0 then
-					HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_DontGet"));
-                elseif txtRandom == 1 then
-					HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_TooComplicated"));
-                else
-					HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_DontUnderstand"));
+                if not isClient() then
+                    self:doHaloText()
                 end
                 if self.item:getNumberOfPages() > 0 then
                     self.character:setAlreadyReadPages(self.item:getFullType(), 0)
@@ -55,11 +50,8 @@ function ISReadABook:update()
         elseif self.item:getMaxLevelTrained() < self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
             if self.pageTimer >= 200 then
                 self.pageTimer = 0;
-                local txtRandom = ZombRand(2);
-                if txtRandom == 0 then
-					HaloTextHelper.addGoodText(self.character, getText("IGUI_PlayerText_KnowSkill"));
-                else
-					HaloTextHelper.addGoodText(self.character, getText("IGUI_PlayerText_BookObsolete"));
+                if not isClient() then
+                    self:doHaloText()
                 end
             end
         else
@@ -76,6 +68,29 @@ function ISReadABook:update()
     if self.stats and (self.item:getUnhappyChange() < 0.0) then
         if stats:get(CharacterStat.UNHAPPINESS) > self.stats.unhappiness then
             stats:set(CharacterStat.UNHAPPINESS, self.stats.unhappiness)
+        end
+    end
+end
+
+function ISReadABook:doHaloText()
+    if SkillBook[self.item:getSkillTrained()] == nil then
+        return
+    end
+    if self.item:getLvlSkillTrained() > self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 or self.character:hasTrait(CharacterTrait.ILLITERATE) then
+        local txtRandom = ZombRand(3);
+        if txtRandom == 0 then
+            HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_DontGet"));
+        elseif txtRandom == 1 then
+            HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_TooComplicated"));
+        else
+            HaloTextHelper.addBadText(self.character, getText("IGUI_PlayerText_DontUnderstand"));
+        end
+    elseif self.item:getMaxLevelTrained() < self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
+        local txtRandom = ZombRand(2);
+        if txtRandom == 0 then
+            HaloTextHelper.addGoodText(self.character, getText("IGUI_PlayerText_KnowSkill"));
+        else
+            HaloTextHelper.addGoodText(self.character, getText("IGUI_PlayerText_BookObsolete"));
         end
     end
 end
@@ -300,6 +315,10 @@ end
 function ISReadABook:complete()
     self.item:setJobDelta(0.0);
 
+    if isServer() and self.forceStopped then
+        return true
+    end
+
     if self.item:getLearnedRecipes() and not self.item:getLearnedRecipes():isEmpty() then
         self.character:getAlreadyReadBook():add(self.item:getFullType());
          if self.item:getLearnedRecipes():contains("Herbalist") and not self.character:hasTrait(CharacterTrait.HERBALIST) then
@@ -358,9 +377,14 @@ function ISReadABook:animEvent(event, parameter)
                         self.character:setAlreadyReadPages(self.item:getFullType(), 0)
                         self.item:setAlreadyReadPages(0);
                         syncItemFields(self.character, self.item)
+                        self.forceStopped = true
                         self.netAction:forceComplete()
+                        self:doHaloText()
+                        return
                     end
-                elseif self.item:getMaxLevelTrained() >= self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
+                elseif self.item:getMaxLevelTrained() < self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
+                    self:doHaloText()
+                else
                     ISReadABook.checkMultiplier(self);
                 end
             end

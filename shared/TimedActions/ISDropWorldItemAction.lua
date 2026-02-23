@@ -2,7 +2,11 @@ require "TimedActions/ISBaseTimedAction"
 
 ISDropWorldItemAction = ISBaseTimedAction:derive("ISDropWorldItemAction");
 
-function ISDropWorldItemAction:isValid()	
+function ISDropWorldItemAction:isValid()
+    local playerSq = self.character:getCurrentSquare()
+	if self.isPlaceItem and playerSq ~= nil and (not self.sq:isAdjacentTo(playerSq) or self.sq:isBlockedTo(playerSq)) then
+		return false
+	end
 	local ground = self.sq:getTotalWeightOfItemsOnFloor()
 	if ground + self.item:getUnequippedWeight() > 50 then
 		return false

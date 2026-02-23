@@ -1,7 +1,6 @@
 require "ISUI/ISCollapsableWindow"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 ISAnimalGenomeUI = ISCollapsableWindow:derive("ISAnimalGenomeUI");
 
@@ -15,9 +14,6 @@ end
 function ISAnimalGenomeUI:render()
     ISCollapsableWindow.render(self);
 
-    local nameWid = getTextManager():MeasureStringX(UIFont.Medium, self.animalName)
-
-    local xoffsetbtn = 150;
     local y = 10;
     local xoffset = 0;
 
@@ -29,7 +25,6 @@ function ISAnimalGenomeUI:render()
         local xvalue = 110;
         self:drawRectBorderStatic(x - 40, y + 25, 550, 80, 1, 0.5, 0.5, 0.5);
         y = y + 20;
-
 
         self.mainPanel:drawTextRight("name: ", x, y, 1,1,1,1, UIFont.Small);
         self.mainPanel:drawText(gene.name, x + 10, y, 1,1,1,1, UIFont.Small);
@@ -106,7 +101,6 @@ function ISAnimalGenomeUI:render()
     end
 
     self:setHeight(y + 200)
---    self:setStencilRect(0,0,self:getWidth(),self:getHeight());
 end
 
 function ISAnimalGenomeUI:initialise()
@@ -130,7 +124,6 @@ function ISAnimalGenomeUI:subPanelRender()
 end
 
 function ISAnimalGenomeUI:create()
-
     self.mainPanel = ISPanel:new(0, 10, self:getWidth(), self:getHeight() - 60)
     self.mainPanel:initialise()
     self.mainPanel:instantiate()
@@ -183,8 +176,6 @@ function ISAnimalGenomeUI:create()
             stuff.allele2.dominant = "false";
         end
         stuff.allele2.geneticDisorder = gene:getAllele2():getGeneticDisorder() or "none";
-
---        print("init ", gene:getGene1():getName(), gene:getGene1():getCurrentValue(), gene:getGene2():getCurrentValue())
 
         local currentValue1Btn = ISButton:new(0,0, btnWid, btnHgt, getText("ContextMenu_AnimalGenome_Edit"), self, ISAnimalGenomeUI.changeValue);
         currentValue1Btn:initialise();
@@ -303,7 +294,6 @@ function ISAnimalGenomeUI:onAddGb(button, gd, allele)
     self:reinit();
 end
 
-
 function ISAnimalGenomeUI:onChangeDominant(modal, allele)
     allele:setDominant(modal.internal == "YES");
     self:reinit();
@@ -336,7 +326,6 @@ function ISAnimalGenomeUI:new(x, y, width, height, animal, player)
     local o = {};
     width = 1400;
     o = ISCollapsableWindow:new(x, y, width, height);
-    --    o:noBackground();
     setmetatable(o, self);
 
     self.__index = self;

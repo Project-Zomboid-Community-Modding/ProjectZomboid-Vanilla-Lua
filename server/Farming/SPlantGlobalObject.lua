@@ -49,8 +49,8 @@ function SPlantGlobalObject:stateFromIsoObject(isoObject)
 	-- MapObjects-related code (see MOFarming.lua) might have changed the
 	-- isoObject when it was loaded, we must sync with clients.
 	if isServer() then
-		isoObject:sendObjectChange('name')
-		isoObject:sendObjectChange('sprite')
+		isoObject:sendObjectChange(IsoObjectChange.NAME)
+		isoObject:sendObjectChange(IsoObjectChange.SPRITE)
 		isoObject:transmitModData()
 	end
 end
@@ -80,8 +80,8 @@ function SPlantGlobalObject:stateToIsoObject(isoObject)
 	self:toModData(isoObject:getModData())
 
 	if isServer() then
-		isoObject:sendObjectChange('name')
-		isoObject:sendObjectChange('sprite')
+		isoObject:sendObjectChange(IsoObjectChange.NAME)
+		isoObject:sendObjectChange(IsoObjectChange.SPRITE)
 		isoObject:transmitModData()
 	end
 end
@@ -97,7 +97,7 @@ function SPlantGlobalObject:setObjectName(objectName)
 	if object then
 		object:setName(self.objectName)
 		if isServer() then
-			object:sendObjectChange('name')
+			object:sendObjectChange(IsoObjectChange.NAME)
 		end
 		-- objectName is stored in modData
 		self:toModData(object:getModData())
@@ -112,7 +112,7 @@ function SPlantGlobalObject:setSpriteName(spriteName)
 	if object then
 		object:setSpriteFromName(self.spriteName)
 		if isServer() then
-			object:sendObjectChange('sprite')
+			object:sendObjectChange(IsoObjectChange.SPRITE)
 		end
 		-- spriteName is stored in modData
 		self:toModData(object:getModData())

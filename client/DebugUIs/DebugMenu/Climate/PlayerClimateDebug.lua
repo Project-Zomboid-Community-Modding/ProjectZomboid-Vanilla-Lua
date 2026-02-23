@@ -7,25 +7,6 @@ PlayerClimateDebug.eventsAdded = false;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 
---[[
-local enabled = true; --getDebug();
-
-function PlayerClimateDebug.OnKeepKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyKeepDown = "..tostring(key));
-    if key==42 or key==54 then
-        PlayerClimateDebug.shiftDown = 4;
-    end
-end
-
-function PlayerClimateDebug.OnKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyDown = "..tostring(key));
-    if PlayerClimateDebug.shiftDown>0 and key ==14 then
-        PlayerClimateDebug.OnOpenPanel();
-    end
-end--]]
-
 function PlayerClimateDebug.OnOpenPanel()
     PlayerClimateDebug.fx = getCell():getWeatherFX();
     PlayerClimateDebug.cm = getClimateManager();
@@ -38,11 +19,9 @@ function PlayerClimateDebug.OnOpenPanel()
 
     PlayerClimateDebug.instance:addToUIManager();
     PlayerClimateDebug.instance:setVisible(true);
-    --PlayerClimateDebug.instance:setCapture(false);
 
     if not PlayerClimateDebug.eventsAdded then
         Events.OnClimateTickDebug.Add(PlayerClimateDebug.onClimateTickDebug);
-        --Events.OnTick.Add(PlayerClimateDebug.onTick);
         PlayerClimateDebug.eventsAdded = true;
     end
 
@@ -103,7 +82,6 @@ end
 
 function PlayerClimateDebug:initVariables()
     local thermos = self.player:getBodyDamage():getThermoregulator();
-    local stats = self.player:getStats();
     local body = self.player:getBodyDamage();
     local nutrition = self.player:getNutrition();
     local climate = getClimateManager();
@@ -150,15 +128,8 @@ function PlayerClimateDebug:initVariables()
     self:registerVariable("getSkinCelciusMultiplier", getText("IGUI_PlayerClimate_SkinC") ..":", true, thermos, 0, nil, nil);
 
     self:registerVariable("title_stats",getText("IGUI_PlayerClimate_StatsTitle"),false);
---    self:registerVariable("getHunger", getText("IGUI_StatsAndBody_Hunger") ..":", true, stats, 0, nil, nil);
---    self:registerVariable("getThirst", getText("IGUI_StatsAndBody_Thirst") ..":", true, stats, 0, nil, nil);
---    self:registerVariable("getFatigue", getText("IGUI_StatsAndBody_Fatigue") ..":", true, stats, 0, nil, nil);
---    self:registerVariable("getFitness", getText("IGUI_StatsAndBody_Fitness") ..":", true, stats, 0, nil, nil);
---    self:registerVariable("getIntoxication", getText("IGUI_StatsAndBody_Intoxication") ..":", true, stats, 0, nil, nil);
---    self:registerVariable("getSickness", getText("IGUI_StatsAndBody_Sickness") ..":", true, stats, 0, nil, nil);
 
     self:registerVariable("title_body",getText("IGUI_PlayerClimate_BodyTitle"),false);
---    self:registerVariable("getWetness", getText("IGUI_StatsAndBody_Wetness") ..":", true, body, 0, nil, nil);
     self:registerVariable("getColdStrength", getText("IGUI_StatsAndBody_ColdStrength") ..":", true, body, 0, nil, nil);
     self:registerVariable("getCatchACold", getText("IGUI_PlayerClimate_CatchCold") ..":", true, body, 0, nil, nil);
 
@@ -177,56 +148,6 @@ function PlayerClimateDebug:registerVariable(_variable,_title,_isValue, _javaIns
         javaInstance = _javaInstance,
     });
 end
-
-local vars = { -- OLD UNUSED
-    tempBase = 0,
-    isInside = false,
-    isInVehicle = false,
-    airTemperature = 0,
-    windSpeed = 0,
-
-    hunger = 0,
-    thirst = 0,
-    tired = 0,
-    excercise = 0,
-    weight = 0,
-    fitness = 0,
-    intoxication = 0,
-    sickness = 0,
-    hasACold = 0,
-    wetness = 0,
-    clothing = 0,
-    --clothingFinal = 0,
-    --windPower = 0,
-
-    coldStrength = 0,
-    heatStrength = 0,
-
-    coldBodyResist = 0,
-    heatBodyResist = 0,
-
-    coldClothResist = 0,
-    heatClothResist = 0,
-
-    coldChange = 0,
-    heatChange = 0,
-
-    tickChangePm = 0,
-    tickChange = 0,
-    --appliedModTick = 0,
-    playerTemp = 0,
-
-    coldBodyBonus = 0,
-    coldClothBonus = 0,
-    heatBodyBonus = 0,
-    heatClothBonus = 0,
-    underCooled = 0,
-    overHeated = 0,
-
-    --extra
-    --clothInvert = 0,
-    --clothInvert2 = 0,
-};
 
 function PlayerClimateDebug:addLabel(_curY, _labelID, _title)
     if not self.labels[_labelID] then
@@ -309,8 +230,6 @@ function PlayerClimateDebug:onResize()
     local th = self:titleBarHeight();
     self.panel:setWidth(self.width);
     self.panel:setHeight(self.height-(th+10))
-    --self.richtext:setWidth(self.width);
-    --self.richtext:setHeight(self.height-(th+10));
 end
 
 local function round(num, numDecimalPlaces)
@@ -336,8 +255,6 @@ function PlayerClimateDebug:updateOLD()
     if PlayerClimateDebug.shiftDown>0 then
         PlayerClimateDebug.shiftDown = PlayerClimateDebug.shiftDown-1;
     end
-
-    --local vars = ClimateMain.getVars();
 
     if not vars.isInside then
         self:getValueLabel("isInside").name = "false";
@@ -418,13 +335,11 @@ function PlayerClimateDebug:updateOLD()
                 l.name = ""..tostring(round(v,3));
             end
         elseif type(v)=="boolean" then
-            --print("v="..tostring(v)..", str="..tostring(v==true and "true" or "false"));
             self:getValueLabel(k).name = v==true and "true" or "false";
         else
             self:getValueLabel(k).name = ""..tostring(v);
         end
     end
-
 end
 
 function PlayerClimateDebug:prerender()
@@ -436,13 +351,9 @@ function PlayerClimateDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
 
-
 function PlayerClimateDebug:render()
     ISCollapsableWindow.render(self);
-
-    --self.richtext:clearStencilRect();
 end
-
 
 function PlayerClimateDebug:close()
     ISCollapsableWindow.close(self);
@@ -461,10 +372,8 @@ function PlayerClimateDebug:clear()
     end
 end
 
-
 function PlayerClimateDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -484,7 +393,6 @@ function PlayerClimateDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_PlayerTemp");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

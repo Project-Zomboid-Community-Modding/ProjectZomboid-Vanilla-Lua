@@ -3,7 +3,6 @@ ISFactionAddPlayerUI.messages = {};
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -88,13 +87,7 @@ end
 function ISFactionAddPlayerUI:drawPlayers(y, item, alt)
     local a = 0.9;
 
---    self.parent.addPlayer.enable = false;
---    self.parent.selectedPlayer = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
---    self:drawRect(100, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(170, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(240, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
@@ -126,10 +119,6 @@ function ISFactionAddPlayerUI:onClick(button)
     end
     if button.internal == "ADDPLAYER" then
         if not self.changeOwnership then
---            self.faction:addPlayer(self.selectedPlayer);
---            self.addPlayer.enable = false;
---            self:populateList();
---            self.factionUI:populateList();
             local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_InvitationSent",self.selectedPlayer), false, nil, nil);
             modal:initialise()
             modal:addToUIManager()

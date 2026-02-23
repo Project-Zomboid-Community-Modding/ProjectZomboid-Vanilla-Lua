@@ -227,12 +227,6 @@ Challenge2.Tick = function()
 		end
 	end
 
-	-- handle VirtualZombieManager sometimes removing virtual zombies
---	if getVirtualAndRealZombieCount() < Challenge2.zombiesSpawned then
---		print('replacement zombies spawning')
---		Challenge2.SpawnZombies(Challenge2.zombiesSpawned - getVirtualAndRealZombieCount())
---	end
-
 	for i=1,getNumActivePlayers() do
 		local playerObj = getSpecificPlayer(i-1)
 		if playerObj and not playerObj:isDead() then
@@ -253,7 +247,6 @@ Challenge2.onZombieDead = function()
 		for i = 0,getNumActivePlayers() - 1 do
 			local playerObj = getSpecificPlayer(i)
 			if playerObj then
-	--~ 		getSpecificPlayer(i):getModData()["challenge2Xp"] = getSpecificPlayer(i):getModData()["challenge2Xp"] + 10;
 				Challenge2.playersMoney[i] = math.floor(Challenge2.playersMoney[i] + (10 + (10 * (tonumber(playerObj:getModData()["challenge2BoostGoldLevel"]) / 100))));
 			end
 			if Challenge2.upgradeScreen[i] then
@@ -291,12 +284,6 @@ end
 
 Challenge2.onKeyPressed = function(key)
 	if Core.isLastStand() then
---~ 		if getCore():isKey("Equip/Unequip Handweapon", key) then
---~ 			if Challenge2.zombiesSpawned > 0 then
---~ 				Challenge2.onZombieDead();
---~ 			end
---~ 		end
-
 		if key == Keyboard.KEY_O then
 			if getSpecificPlayer(0) and not getSpecificPlayer(0):isDead() then
 				showUpgradeScreen(0)
@@ -311,7 +298,6 @@ Challenge2.onKeyPressed = function(key)
 end
 
 Challenge2.onCreatePlayer = function(playerId)
---~ 	getSpecificPlayer(self.playerId):getModData()["challenge2StartingGoldLevel"];
 end
 
 function Challenge2.onBackButtonWheel(playerNum, dir)

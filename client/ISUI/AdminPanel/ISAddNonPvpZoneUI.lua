@@ -91,7 +91,6 @@ function ISAddNonPvpZoneUI:prerender()
         self.ok:setEnable(false);
         self.ok.enable = false;
         self.cancel:setY(z)
-        --self:setHeight(z+BUTTON_HGT+UI_BORDER_SPACING+1)
         local r,g,b,a = 1.0, 0.0, 0.0, 0.25
         addAreaHighlight(startingX, startingY, endX, endY, 0, r, g, b, a)
     else
@@ -106,24 +105,9 @@ function ISAddNonPvpZoneUI:prerender()
         z = z + BUTTON_HGT + UI_BORDER_SPACING;
         self.ok:setY(z);
         self.cancel:setY(z)
-        --self:setHeight(z+BUTTON_HGT+UI_BORDER_SPACING+1)
         local r,g,b,a = 0.0, 0.0, 1.0, 0.25
         addAreaHighlight(startingX, startingY, endX, endY, 0, r, g, b, a)
     end
---[[
-    for x2=startingX, endX do
-        for y=startingY, endY do
-            local sq = getCell():getGridSquare(x2,y,0);
-            if sq then
-                for n = 0,sq:getObjects():size()-1 do
-                    local obj = sq:getObjects():get(n);
-                    obj:setHighlighted(true);
-                    obj:setHighlightColor(0.6,1,0.6,0.5);
-                end
-           end
-        end
-    end
---]]
     self:updateButtons();
 end
 

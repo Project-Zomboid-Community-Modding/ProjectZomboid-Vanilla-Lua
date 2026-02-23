@@ -155,8 +155,6 @@ function ISLcdBar:setText(_text)
                 self.text = self.text.." ";
             end
         end
-        --print("Lcd text set to '"..tostring(self.text).."'");
-        --print("indexes len = "..tostring(#ISLcdBar.indexes))
     end
 end
 

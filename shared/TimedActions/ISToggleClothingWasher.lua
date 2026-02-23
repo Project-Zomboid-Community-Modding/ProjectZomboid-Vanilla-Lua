@@ -25,7 +25,7 @@ end
 function ISToggleClothingWasher:complete()
 	if not self.object then return false end
 	self.object:setActivated(not self.object:isActivated())
-	self.object:sendObjectChange("washer.state")
+	self.object:sendObjectChange(IsoObjectChange.WASHER_STATE)
 	return true
 end
 

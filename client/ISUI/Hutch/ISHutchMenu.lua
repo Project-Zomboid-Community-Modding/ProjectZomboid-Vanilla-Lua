@@ -4,7 +4,6 @@ function ISHutchMenu.OnFillWorldObjectContextMenu(player, context, worldobjects,
     if test and ISWorldObjectContextMenu.Test then return true end
 
     local playerObj = getSpecificPlayer(player)
-    local playerInv = playerObj:getInventory()
 
     if playerObj:getVehicle() then return false end
 
@@ -18,20 +17,11 @@ function ISHutchMenu.OnFillWorldObjectContextMenu(player, context, worldobjects,
 
     if not hutch then return; end
 
-    local distOk = playerObj:getCurrentSquare():DistToProper(hutch:getEntrySq()) <= 5;
-
     local subOption = context:addOptionOnTop(getText("ContextMenu_Hutch"), worldobjects, nil);
     local subMenu = ISContextMenu:getNew(context);
     context:addSubMenu(subOption, subMenu);
 
-    local option = subMenu:addOption(getText("ContextMenu_Hutch_Info"), hutch, ISHutchMenu.onInfo, playerObj)
-    --if not distOk then
-    --    option.notAvailable = true;
-    --    local tooltip = ISWorldObjectContextMenu.addToolTip();
-    --    tooltip:setName(getText("Tooltip_Hutch_TooFar"));
-    --    option.toolTip = tooltip;
-    --    return;
-    --end
+    subMenu:addOption(getText("ContextMenu_Hutch_Info"), hutch, ISHutchMenu.onInfo, playerObj)
 
     if hutch:isOpen() then
         subMenu:addOption(getText("ContextMenu_Close_door"), hutch, ISHutchMenu.onToggleDoor, playerObj)
@@ -48,8 +38,6 @@ function ISHutchMenu.OnFillWorldObjectContextMenu(player, context, worldobjects,
     if AnimalContextMenu.cheat then
         subMenu:addDebugOption("Set Hutch Dirt to 100", hutch, ISHutchMenu.setDirt, playerObj, 100)
         subMenu:addDebugOption("Set Hutch Dirt to 0", hutch, ISHutchMenu.setDirt, playerObj, 0)
-        --subMenu:addOption("[DEBUG] Set Nest Dirt to 100", hutch, ISHutchMenu.setNestDirt, playerObj, 100)
-        --subMenu:addOption("[DEBUG] Set Nest Dirt to 0", hutch, ISHutchMenu.setNestDirt, playerObj, 0)
     end
 
     -- put chicken/turkey inside the hutch

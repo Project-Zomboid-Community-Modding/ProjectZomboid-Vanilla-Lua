@@ -11,13 +11,6 @@ local SCROLLBAR = 13
 ISStatisticsUI = ISCollapsableWindow:derive("ISStatisticsUI");
 ISStatisticsPanel = ISPanel:derive("ISStatisticsPanel");
 
-local function getWorldAge()
-    local h = math.floor(getGameTime():getWorldAgeHours())
-    local days = math.floor(h / 24)
-    local hours = h - days * 24
-    return days .. "Days " .. hours .. "H"
-end
-
 function ISStatisticsPanel:prerender()
     self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
     ISPanel.prerender(self)
@@ -38,7 +31,6 @@ function ISStatisticsPanel:render()
 end
 
 function ISStatisticsPanel:renderStatistics()
-
     --base measurements
     local width = self.width - SCROLLBAR;
     local y = TEXT_OFFSET;
@@ -203,7 +195,6 @@ function ISStatisticsUI:createChildren()
     self.panel.player = self.player
     self.panel:initialise()
     self.panel:instantiate()
-    --    self.panel:noBackground()
     self.panel.backgroundColor.a = 0
     self.panel:setScrollChildren(true)
     self:addChild(self.panel)

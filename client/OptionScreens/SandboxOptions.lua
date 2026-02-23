@@ -36,7 +36,6 @@ function SandboxOptionsScreenListBox:doDrawItem(y, item, alt)
         self:drawText(item.text, dx, y + dy, 0.9, 0.9, 0.9, 0.9, self.font)
     end
 
-
     return y + item.height
 end
 
@@ -681,9 +680,6 @@ function SandboxOptionsScreen:createPanel(page)
     for _,label in ipairs(labels) do
         labelWidth = math.max(labelWidth, label:getWidth())
     end
-    --if labelWidth + CONTROL_WIDTH > panel.width - 13 - UI_BORDER_SPACING then
-    --    CONTROL_WIDTH = panel.width - labelWidth - 13 - UI_BORDER_SPACING*2
-    --end
     local xOffset = (panel.width - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
     local y = 11
 

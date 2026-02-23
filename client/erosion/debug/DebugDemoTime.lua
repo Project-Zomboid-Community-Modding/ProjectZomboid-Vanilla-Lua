@@ -1,7 +1,3 @@
---[[
-  UtilsDemoTime.lua - 2014.
-  Author: Kees "TurboTuTone" Bekkema.
-  ]]
 local screenX,screenY = 0,0;
 local function screenInit() screenX,screenY = getCore():getScreenWidth(), getCore():getScreenHeight(); end
 local function screenSetter( _ox, _oy, x, y ) screenX, screenY = x,y; end
@@ -115,7 +111,6 @@ function EDebug.DemoTime( _erosionMain )
         priv.ChunkReader.SetNextRing( 0 );
         priv.ChunkReader.ResetChunkReader( priv.p_chunkCurrent, priv.p_chunkMoveDir );
 
-        --Events.EveryTenMinutes.Add( self_MainTimer );
         Events.OnPlayerUpdate.Add( 	priv.UpdatePlayerChunk 	);
         Events.OnTick.Add( 			priv.DebugQue 		);
         Events.EveryTenMinutes.Add( priv.timeReset );
@@ -124,7 +119,6 @@ function EDebug.DemoTime( _erosionMain )
 
         priv.txt[1] = "CurrentTick: " .. tostring(0);
         priv.updateTxt()
-        --self_isRunning 				= true;
         return true;
     end
 
@@ -246,7 +240,6 @@ function EDebug.DemoTime( _erosionMain )
             return;
         else
             priv.tick = priv.newTick;
-            --priv.txt[1] = "CurrentTick: " .. tostring(priv.ErosionMain:getEtick()) .. " - db " .. tostring(priv.tick);
             if priv.ErosionMain:getEtick() > 100 then
                 -- start increasing the date for seasons
 
@@ -272,7 +265,6 @@ function EDebug.DemoTime( _erosionMain )
 
     local counter = 0;
     function priv.DebugQue( _ticks )
-        --if priv.pause then return end;
         counter = counter + 1;
         local player = getPlayer();
         player:setHealth(1.0);
@@ -283,7 +275,6 @@ function EDebug.DemoTime( _erosionMain )
         if not priv.chunk then
             priv.chunk, priv.chunkPos, priv.chunkModData = priv.ChunkReader.GetNextChunk( priv.tick );
             if not priv.chunk then
-                --if counter < EROSION_DEBUG_TICK then return end
                 counter = 0;
                 if not priv.pause then
                     priv.newTick = priv.tick + 1;
@@ -292,7 +283,6 @@ function EDebug.DemoTime( _erosionMain )
             end;
         end
 
-        --print("working on chunk: ", priv.chunkPos.x, priv.chunkPos.y )
         priv.p_workingOn.x, priv.p_workingOn.y = priv.chunkPos.x, priv.chunkPos.y;
 
         for tileY = 0, 9, 1 do
@@ -332,8 +322,6 @@ function EDebug.DemoTime( _erosionMain )
             priv.p_chunkCurrent.setPoint( moved_to );
 
             priv.ChunkReader.ResetChunkReader( priv.p_chunkCurrent, priv.p_chunkMoveDir );
-
-            --priv.printPos();
         end
     end
 

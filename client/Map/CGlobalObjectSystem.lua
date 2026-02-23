@@ -73,9 +73,7 @@ end
 
 function CGlobalObjectSystem:removeLuaObject(luaObject)
 	if not luaObject or (luaObject.luaSystem ~= self) then return end
--- 	self:noise('removing luaObject '..luaObject.x..','..luaObject.y..','..luaObject.z)
 	self.system:removeObject(luaObject.globalObject)
--- 	self:noise('#objects='..self.system:getObjectCount())
 end
 
 function CGlobalObjectSystem:removeLuaObjectAt(x, y, z)
@@ -85,7 +83,7 @@ end
 
 function CGlobalObjectSystem:getLuaObjectAt(x, y, z)
 	local globalObject = self.system:getObjectAt(x, y, z)
--- This used to be done in CGlobalObject:new()
+    -- This used to be done in CGlobalObject:new()
 	if globalObject then
 		local luaObject = globalObject:getModData()
 		luaObject:updateFromIsoObject()
@@ -99,8 +97,6 @@ function CGlobalObjectSystem:getLuaObjectOnSquare(square)
 end
 
 function CGlobalObjectSystem:OnLuaObjectUpdated(luaObject)
-	-- luaObject fields were updated with new values from the server
--- 	self:noise('OnLuaObjectUpdated')
 end
 
 function CGlobalObjectSystem:sendCommand(playerObj, command, args)

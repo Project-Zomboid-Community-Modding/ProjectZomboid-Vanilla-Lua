@@ -71,7 +71,7 @@ function ISBBQInsertPropaneTank:complete()
 		tank:setUsedDelta(delta)
 		self.bbq:setPropaneTank(tank)
 		if isServer() then
-			self.bbq:sendObjectChange("state")
+			self.bbq:sendObjectChange(IsoObjectChange.STATE)
 		end
 	end
 

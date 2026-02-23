@@ -29,7 +29,6 @@ function ValuePlotter:render()
         self:drawRect(0, h*self.horzBars[i].val, w, 1, c.a, c.r, c.g, c.b);
     end
 
-    --local elemcnt = #self.his;
     local prevVal = {};
     local drawY,drawH;
     local index = self.indexPointer;
@@ -48,9 +47,6 @@ function ValuePlotter:render()
                 if self.vars[j].enabled then
                     c = self.vars[j].color;
                     val = self.his[index][j];
-                    --if self.vars[j].offset>0 then
-                    --val = val+self.vars[j].offset;
-                    --end
                     if val<self.vars[j].min then val = self.vars[j].min; end
                     if val>self.vars[j].max then val = self.vars[j].max; end
                     val = (val-self.vars[j].min)/self.vars[j].diff;
@@ -94,7 +90,6 @@ function ValuePlotter:addPlotPoint(dataset,vertbarCol)
     if self.indexPointer > self.maxPlotPoints then
         self.indexPointer = 1;
     end
-
 end
 
 function ValuePlotter:calcMinMax(indexLine, minmax)
@@ -148,10 +143,6 @@ function ValuePlotter:clearHistory()
     self.his = {};
 end
 
---plotpoints = total points to plot
---function ValuePlotter:init(plotPoints)
-
---end
 function ValuePlotter:setVariableEnabled(_name,_bool)
     for i=1,#self.vars do
         if self.vars[i].name==_name then
@@ -177,7 +168,6 @@ function ValuePlotter:defineVariable(name, color, minVal, maxVal)
         diff = max-min,
         offset = offset,
         enabled = false,
-        --history = {},
     });
 end
 

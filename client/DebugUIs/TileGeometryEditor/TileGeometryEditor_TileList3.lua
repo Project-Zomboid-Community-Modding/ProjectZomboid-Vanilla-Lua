@@ -184,16 +184,6 @@ function TileList:render()
 				if self.renderItemBackground then
 					self:renderItemBackground(tilesetName, col - 1, row - 1, xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH)
 				end
---[[
-				local depthTexture = TileDepthTextureManager.getInstance():getTexture(self.editor.modID, tilesetName, tileIndex)
-				if depthTexture and not depthTexture:isEmpty() then
-					self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.0, 12/255, 123/255)
-				end
-				local otherTile = TileDepthTextureAssignmentManager.getInstance():getAssignedTileName(self.editor.modID, tileName)
-				if otherTile then
-					self:drawRect(xIndent + (col - 1) * texW, yIndent + (row - 1) * texH, texW, texH, 1.0, 0.2, 0.2, 0.2)
-				end
---]]
 				self:drawTextureScaled(texture, xIndent + (col - 1) * texW + texture:getOffsetX() * scale, yIndent + (row - 1) * texH + texture:getOffsetY() * scale, texture:getWidth() * scale, texture:getHeight() * scale, 1.0, 1.0, 1.0, 1.0)
 				maxRow = math.max(maxRow, row)
 			else
@@ -205,7 +195,6 @@ function TileList:render()
 	self:renderGrid(xIndent, yIndent, texW, texH)
 
 	self:setScrollHeight(yIndent + maxRow * texH + yIndent)
---	self.vscroll:setX(self.width - self.vscroll.width)
 
 	if self:isMouseOver() then
 		local col,row = self:getColRowAt(self:getMouseX(), self:getMouseY())

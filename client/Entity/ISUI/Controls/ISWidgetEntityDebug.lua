@@ -14,7 +14,6 @@ function ISWidgetEntityDebug:createChildren()
     if getDebug() then
         local style = self.styleButton or "S_Button_DebugEntity";
         self.buttonDebug = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 150, FONT_HGT_SMALL+8, "debug.entity")
-        --self.buttonRepair.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
         self.buttonDebug.target = self;
         self.buttonDebug.onclick = ISWidgetEntityDebug.onButtonClick;
         self.buttonDebug.enable = true;
@@ -68,7 +67,6 @@ function ISWidgetEntityDebug:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISWidgetEntityDebug:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

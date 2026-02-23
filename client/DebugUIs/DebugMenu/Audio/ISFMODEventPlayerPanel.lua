@@ -27,19 +27,10 @@ table.insert(PARAMETERS, { name = "ShoeType", type = "combo", values = { "Barefo
 table.insert(PARAMETERS, { name = "TripObstacleType", type = "combo", values = { "Wood", "Metal", "Sandbag", "Gravelbag", "Barbwire", "Tree", "Zombie", "CollideWithWall", "Metal  Bars", "Window" } })
 table.insert(PARAMETERS, { name = "VehicleEngineCondition", type = "entry", defaultValue = 100.0 } )
 table.insert(PARAMETERS, { name = "VehicleHitLocation", type = "combo", values = { "Front", "Rear", "Side" } } )
-table.insert(PARAMETERS, { name = "VehicleRoadMaterial", type = "combo", values = { "Concrete", "Grass", "Gravel", "Puddle", "Snow", "Wood", "Carpet", "Dirt", "Sand" } })
+table.insert(PARAMETERS, { name = "VehicleRoadMaterial", type = "combo", values = { "Concrete", "Grass", "Gravel", "Puddle", "Snow", "Wood", "Carpet", "Dirt", "Sand", "Railroad" } })
 table.insert(PARAMETERS, { name = "VehicleRPM", type = "entry", defaultValue = 800.0 } )
 table.insert(PARAMETERS, { name = "ZombieState", type = "combo", values = { "Idle", "Eating", "SearchTarget", "LockTarget", "AttachScratch", "AttackLacerate", "AttackBite", "Hit", "Death", "Reanimate", "Pushed", "GettingUp", "Attack", "RunOver" } } )
---[[
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
-table.insert(PARAMETERS, { name = "", min = 0.0, max = 1.0, type = "" })
---]]
+
 local PARAMETER_MAP = {}
 for _,v in ipairs(PARAMETERS) do
 	PARAMETER_MAP[v.name] = v

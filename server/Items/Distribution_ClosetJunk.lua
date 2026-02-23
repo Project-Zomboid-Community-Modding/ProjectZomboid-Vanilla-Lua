@@ -244,6 +244,7 @@ ClutterTables.ClosetItems = {
 	"DeadMouse", 0.1,
 	"DeadRat", 0.1,
 	"DenimStrips", 0.1,
+	"DentalFloss", 0.1,
 	"Diary1", 0.1,
 	"Diary2", 0.1,
 	"Dice", 0.1,

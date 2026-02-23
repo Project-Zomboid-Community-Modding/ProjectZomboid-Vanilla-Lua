@@ -6,7 +6,6 @@ function ISWeather:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISWeather:addImage(image)
 	table.insert(self.images,getTexture(image));
 end
@@ -45,7 +44,6 @@ end
 
 function ISWeather:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self

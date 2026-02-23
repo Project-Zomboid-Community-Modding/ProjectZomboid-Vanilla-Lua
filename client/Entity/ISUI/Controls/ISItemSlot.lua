@@ -1,4 +1,3 @@
-
 require "ISUI/ISPanel"
 
 ISItemSlot = ISPanel:derive("ISItemSlot");
@@ -83,7 +82,6 @@ function ISItemSlot:prerender()
     if self.mouseOverState > MOUSE_NONE then
         c = self.backgroundHover;
         if self.mouseOverState == MOUSE_OVER then
-            --c2 = ;
         elseif self.mouseOverState == MOUSE_ITEM_VALID then
             c2 = self.borderValid;
         elseif self.mouseOverState == MOUSE_ITEM_INVALID then
@@ -201,7 +199,6 @@ function ISItemSlot:prerender()
             s = tostring(self.overrideItemCount);
         elseif self.resource then
             local satisfiedAmount = self.resource:getItemUses(self.inputScript);
-            --s = tostring(self.resource:storedSize());
             s = tostring(self.itemCount);
                         
             if self.renderRequiredItemCount then
@@ -242,32 +239,6 @@ function ISItemSlot:prerender()
         end
     end
 end
-
---[[
-function ISItemSlot:renderFilterItems(_x, _y, _alpha, _width, _height)
-    if true then
-        return; --TODO CURRENTLY DISABLED
-    end
-    if self.resource and self.filterItems and #self.filterItems>0 then
-        if self.filterItemIndex>#self.filterItems then
-            --self.filterItemIndex = #self.filterItems>1 and 1 or 0;
-            self.filterItemIndex = 1;
-        end
-
-        local item = self.filterItems[self.filterItemIndex];
-        if item then
-            ISInventoryItem.renderScriptItemIcon(self, item, _x, _y, _alpha, _width, _height);
-        end
-
-        --todo use UIManager.getBlinkAlpha(playerIndex)
-        self.filterCycleCounter = self.filterCycleCounter + 1;
-        if self.filterCycleCounter > 40 then
-            self.filterCycleCounter = 0;
-            self.filterItemIndex = self.filterItemIndex + 1;
-        end
-    end
-end
---]]
 
 function ISItemSlot:update()
     --get storeditem from slot
@@ -329,7 +300,6 @@ function ISItemSlot:onMouseMove(dx, dy)
     end
 
     self.mouseOverState = MOUSE_OVER;
-    --(self.allowDropAlways or self.boxOccupied == false) and
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
         if self:hasValidItemInDrag() then
             self.mouseOverState = MOUSE_ITEM_VALID;
@@ -371,9 +341,6 @@ function ISItemSlot:onMouseUp(x, y)
     end
 
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
-        --if ((not self.allowDropAlways) and self.boxOccupied == true) then
-        --    return;
-        --end
         if self.resource and self.resource:isFull() then
             return;
         end
@@ -412,9 +379,6 @@ function ISItemSlot:onRightMouseUp(x, y)
     end
 
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self then
-        --if ((not self.allowDropAlways) and self.boxOccupied == true) then
-            --return;
-        --end
         if self.resource and self.resource:isFull() then
             return;
         end
@@ -451,7 +415,7 @@ function ISItemSlot:itemDropped( _items )
         for index,item in ipairs(_items) do
             list:add(item);
         end
-        local added = self.resource:offerItems(list);
+        self.resource:offerItems(list);
     end
 end
 
@@ -548,9 +512,6 @@ end
 
 function ISItemSlot:activateToolTip()
     if self.doToolTip then
-        --if self:isLocked() and not self.toolTipTextLocked then
-        --    return;
-        --end
         if self.toolTip ~= nil then
             self.toolTip:setVisible(true);
             self.toolTip:addToUIManager();
@@ -658,9 +619,6 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     o.backgroundHover = {r=0.3, g=0.3, b=0.3, a=1.0};
 
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    --o.borderInput = {r=0.4, g=0.4, b=0.4, a=1};
-    --o.borderOutput = {r=0.4, g=0.4, b=0.4, a=1};
-    --o.borderNeutral = {r=0.4, g=0.4, b=0.4, a=1};
     o.borderValid = {r=0.0, g=1.0, b=0.0, a=1};
     o.borderInvalid = {r=1.0, g=0.0, b=0.0, a=1};
 
@@ -703,7 +661,6 @@ function ISItemSlot:new (x, y, width, height, resource, target, onItemDropped, o
     
     o.character = nil;
     o.resource = resource; --slotcontroller slot
-    --o.resourceIO = ResourceIO.Any; --todo remove instead do borders with style
     o.storeItem = true; --store java item interally y,n?
     o.storedItem = nil; --javaobj
     o.storedItemTex = nil; --itemtex for display

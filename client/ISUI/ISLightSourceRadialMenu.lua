@@ -3,7 +3,6 @@ require "ISUI/ISRadialMenu"
 ISLightSourceRadialMenu = ISBaseObject:derive("ISLightSourceRadialMenu")
 
 local function predicateLightSource(item)
-	-- getLightStrength() may be > 0 even though the battery is dead.
 	return (item:getLightStrength() > 0) or (item:getFullType() == "Base.Candle")
 end
 
@@ -253,14 +252,12 @@ function ISLightSourceRadialMenu:onToggle(item)
 end
 
 function ISLightSourceRadialMenu:onLightCandle(item)
-	local playerObj = self.character
 	local recipe = getScriptManager():getRecipe("Light Candle")
 	if not recipe then return end
 	ISInventoryPaneContextMenu.OnCraft(item, recipe, self.playerNum, false)
 end
 
 function ISLightSourceRadialMenu:onExtinguishCandle(item)
-	local playerObj = self.character
 	local recipe = getScriptManager():getRecipe("Extinguish Candle")
 	if not recipe then return end
 	ISInventoryPaneContextMenu.OnCraft(item, recipe, self.playerNum, false)

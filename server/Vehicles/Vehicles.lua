@@ -460,7 +460,7 @@ function Vehicles.Update.GasTank(vehicle, part, elapsedMinutes)
 		-- heater consume more gas
 		local heater = vehicle:getHeater();
 		if heater and heater:getModData().active then
-			gasMultiplier = gasMultiplier + 5000;
+			gasMultiplier = gasMultiplier - 5000;
 		end
 		-- if quality is 60, we do: 100 - 60 = 40; 40/2 = 20; 20/100=0.2; 0.2+1 = 1.2 : our multiplier;
 		local qualityMultiplier = ((100 - vehicle:getEngineQuality()) / 200) + 1;
@@ -476,15 +476,14 @@ function Vehicles.Update.GasTank(vehicle, part, elapsedMinutes)
 			speedMultiplier = 1;
 		end
 		-- we're at max gear, cap general gas consumption
-		if speedMultiplier < 800 then
+		if speedMultiplier < 800 and speedMultiplier ~= 1 then
 			speedMultiplier = 800;
 		end
-		
-	
---		local engineSpeed = math.min(vehicle:getEngineSpeed(), 6000)
---		local engineSpeedCalc = 6000 - engineSpeed;
 
---		local newAmount = engineSpeedCalc / gasMultiplier;
+        if speedMultiplier == 1 then -- we're idling, need to increase the fuel consumption still
+            speedMultiplier = 300;
+        end
+
 		local newAmount = (speedMultiplier / gasMultiplier)  * SandboxVars.CarGasConsumption;
 		newAmount =  newAmount * (vehicle:getEngineSpeed()/2500.0);
 		amount = amount - elapsedMinutes * newAmount;
@@ -1521,6 +1520,15 @@ function VehicleUtils.initHeadlight(vehicle, part)
 		part:createSpotLight(xOffset, yOffset, distance, intensity, dot, focusing)
 	elseif part:getId() == "HeadlightRight" then
 		part:createSpotLight(-xOffset, yOffset, distance, intensity, dot, focusing)
+	else
+		yOffset = 1.6;
+		distance = 3;
+		intensity = 0.2;
+		if part:getId() == "HeadlightRearLeft" then
+			part:createSpotLightColor(xOffset, -yOffset, distance, intensity, dot, focusing, 1.0f, 0.2f, 0.2f)
+		elseif part:getId() == "HeadlightRearRight" then
+			part:createSpotLightColor(-xOffset, -yOffset, distance, intensity, dot, focusing, 1.0f, 0.2f, 0.2f)
+		end
 	end
 end
 

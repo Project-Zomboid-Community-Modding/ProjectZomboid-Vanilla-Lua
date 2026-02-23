@@ -26,7 +26,6 @@ function ISItemEditorUI:createChildren()
     local btnWid = 100;
 
     local y = UI_BORDER_SPACING+1;
-    --ISLabel:new (0, y, height, name, r, g, b, a, font, bLeft)
     self.titleText = getText("IGUI_ItemEditor_Title");
     self.title = ISLabel:new (0, y, FONT_HGT_MEDIUM, self.titleText, 1, 1, 1, 1.0, UIFont.Medium, true);
     self.title:initialise();
@@ -34,14 +33,6 @@ function ISItemEditorUI:createChildren()
     self:addChild(self.title);
 
     y = y + FONT_HGT_MEDIUM + UI_BORDER_SPACING;
-
---     self.pathText = self.item:getFileAbsPath();
---     self.path = ISLabel:new (0, y, FONT_HGT_MEDIUM, self.pathText, 1, 1, 1, 1.0, UIFont.Medium, true);
---     self.path:initialise();
---     self.path:instantiate();
---     self:addChild(self.path);
---
---     y = y + FONT_HGT_MEDIUM + UI_BORDER_SPACING;
 
     local panelY = 200;
     self.optionsPanel = ISItemEditPanel:new(UI_BORDER_SPACING+1, y,400, panelY, self.admin, self.item);
@@ -109,7 +100,6 @@ function ISItemEditorUI:onOptionMouseDown(button, x, y)
 end
 
 function ISItemEditorUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -124,7 +114,6 @@ end
 function ISItemEditorUI:new(x, y, width, height, admin, item)
     local o = {};
     o = ISPanel:new(x, y, 800, height);
---     o = ISPanel:new(x, y, 400, height);
     setmetatable(o, self);
     self.__index = self;
     o.variableColor={r=0.9, g=0.55, b=0.1, a=1};

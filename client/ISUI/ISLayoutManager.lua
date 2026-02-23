@@ -92,11 +92,6 @@ ISLayoutManager.TryRestore = function(name)
 					return ISLayoutManager.CallRestoreLayout(name, layout)
 				end
 			end
-		else
---			print("layout: that isn't the resolution we're looking for")
---			print(xres);print(yres);print(v.width);print(v.height);
---			if xres==v.width then print("xres==v.width") else print("xres!=v.width") end
---			if yres==v.height then print("yres=v.height") else print("yres!=v.height") end
 		end
 	end
 end
@@ -162,7 +157,6 @@ ISLayoutManager.ReadIni = function()
 				local kv = string.split(values[i], "=")
 				layout[kv[1]] = kv[2]
 			end
---			breakpoint()
 			table.insert(resolution.windows, layout)
             if ISLayoutManager.enableLog then print('layout: window='..layout.name) end
 		end    
@@ -235,6 +229,5 @@ ISLayoutManager.OnPostSave = function()
 	ISLayoutManager.WriteIni()
 end
 
---Events.OnGameStart.Add(ISLayoutManager.ReadIni)
 Events.OnPostSave.Add(ISLayoutManager.OnPostSave)
 

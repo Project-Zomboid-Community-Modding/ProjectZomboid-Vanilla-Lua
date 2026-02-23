@@ -33,12 +33,6 @@ function ISOpenAnimalInfo:stop()
 end
 
 function ISOpenAnimalInfo:perform()
-
-    -- needed to remove from queue / start next.
-	ISBaseTimedAction.perform(self);
-end
-
-function ISOpenAnimalInfo:complete()
 	local ui = ISAnimalUI:new(getPlayerScreenLeft(self.playerNum)+100, getPlayerScreenTop(self.playerNum)+100, 650, 500, self.animal, self.player)
 	ui:initialise();
 	ui:addToUIManager();
@@ -49,7 +43,8 @@ function ISOpenAnimalInfo:complete()
 		end
 		setJoypadFocus(self.playerNum, ui)
 	end
-	return true
+    -- needed to remove from queue / start next.
+	ISBaseTimedAction.perform(self);
 end
 
 function ISOpenAnimalInfo:getDuration()

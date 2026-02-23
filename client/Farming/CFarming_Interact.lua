@@ -1,26 +1,7 @@
 CFarming_Interact = {}
-local function predicateFreshEnough(item) --, isHerb)
-	if not item then return false end
-	if not instanceof(item, "Food") then return true end
-	-- if not item:isFood() then return true end
-	if item:isRotten() then return false end
-	if item:hasTag(ItemTag.IS_CUTTING) and not item:isFresh() then return false end
-	return true
-end
 
-local function predicateFreshEnoughNotHeld(item) --, isHerb)
+local function predicateGoodSeed(item)
 	if not item then return false end
-	if item == getSpecificPlayer(0):getPrimaryHandItem() then return end
-	if not instanceof(item, "Food") then return true end
-	-- if not item:isFood() then return true end
-	if item:isRotten() then return false end
-	if item:hasTag(ItemTag.IS_CUTTING) and not item:isFresh() then return false end
-	return true
-end
-
-local function predicateGoodSeed(item) --, isHerb)
-	if not item then return false end
-	-- if not item:isFood() then return true end
 	if not instanceof(item, "Food") then return true end
 
 	if item:isRotten() or item:isCooked() or item:isBurnt() then return false end
@@ -35,7 +16,7 @@ local function predicateGoodSeed(item) --, isHerb)
 	return true
 end
 
-local function predicateGoodSeedNotHeld(item) --, isHerb)
+local function predicateGoodSeedNotHeld(item)
 	if not item then return false end
 	if item == getSpecificPlayer(0):getPrimaryHandItem() then return end
 	return predicateGoodSeed(item)
@@ -56,7 +37,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
 	if not player:isAiming() then return end
 	if player:hasTimedActions() then return end
 	local dir = player:getDir()
-	-- local index = player:getPlayerNum()
 	local square = player:getSquare():getAdjacentSquare(dir)
 	if not square:getCanSee(player:getPlayerNum()) then return end
 	if square:getMovingObjects():size() > 0 then return end
@@ -96,12 +76,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     local water = item:isWaterSource() and item:getCurrentUses() > 0
     local fertilizer = item:hasTag(ItemTag.FERTILIZER) and item:getCurrentUses() > 0
     local compost = item:hasTag(ItemTag.COMPOST) and item:getCurrentUses() > 0
---     local corpse = item:getType() == "CorpseFemale" or item:getType() == "CorpseMale"
-
-    local fliesCure = item:getType() == "GardeningSprayMilk" and item:getCurrentUses() > 0
-    local mildewCure = item:getType() == "GardeningSprayCigarettes" and item:getCurrentUses() > 0 
-    local slugsCure = item:getType() == "SlugRepellent" and item:getCurrentUses() > 0
-    local aphidsCure = item:getType() == "GardeningSprayAphids" and item:getCurrentUses() > 0
 
     -- if you have an axe and there's a tree you chop it
 	if chopTree and square:HasTree() then
@@ -119,7 +93,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     if pickaxe and square:getStump() then
         ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(player, square:getStump()));
     end
---     print("MINING CHECK")
 -- TODO: Doesn't work anymore, fix
     if (pickaxe or stoneMaul or sledge or clubHammer) and square:getOre() then
         ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(player, square:getOre()));
@@ -127,7 +100,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
 
 	-- if you have a tool to dig a furrow and you can dig one you dig one
 	if digPlow and ISFarmingMenu.canDigHereSquare(square) then
-		-- square:setHighlighted(true)
 		player:setIsFarming(true)
 		ISTimedActionQueue.add(ISPlowAction:new(player, square, item))
 		return
@@ -160,7 +132,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     -- if you have the tool unused furrows are removed
     -- dead plants are now restored to furrows, earlier
     if plow and digPlow then
---     if (plow or (plant and (plant.state == "destroyed" or  plant.state == "dead" or plant.state == "rotten"  or plant.state == "harvested"))) and digPlow then
 		player:setIsFarming(true)
         ISTimedActionQueue.add(ISShovelAction:new(player, item, plant, 110))
         return
@@ -181,10 +152,8 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     and plant.state == "seeded"
     and plant:isAlive()
     and plant.waterLvl < 100 then
---         player:Say("Water")
         local prop = farming_vegetableconf.props[plant.typeOfSeed]
         local use = item:getCurrentUses()
---         local use = math.floor(item:getCurrentUsesFloat()/item:getUseDelta())
         local max = 100
         if prop.waterLvlMax and prop[typeOfSeed].seasonRecipe and (player:isRecipeActuallyKnown(prop[typeOfSeed].seasonRecipe) or CFarmingSystem.instance:getXp(player) >= 6) then
             max = prop.waterLvlMax
@@ -273,16 +242,6 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
             return
         end
     end
-
-
-
---     if corpse and CCampfireSystem.instance:getLuaObjectOnSquare(square) then
---         ISTimedActionQueue.add(ISDropWorldItemAction:new(player, item, square, 0.5, 0.5, 0.0, 0, false));
---         return
---     elseif corpse and CCampfireSystem.instance:getLuaObjectOnSquare(player:getSquare()) then
---         ISTimedActionQueue.add(ISInventoryTransferAction:new(player, item, player:getInventory(), ISInventoryPage.floorContainer[player:getPlayerNum()+1]))
---         return
---     end
     player:setIsFarming(false)
 end
 
@@ -324,43 +283,25 @@ CFarming_Interact.FastDropItem = function(key)
 		ISTimedActionQueue.add(ISGrabCorpseAction:new(player, body));
 
     end
---         if testItem:getType() == "CorpseMale" or testItem:getType() == "CorpseFemale" then
---             tests.corpse = testItem;
---         end
-
 end
 
 
 CFarming_Interact.ChangeClimbDirection = function(key)
     local player = getSpecificPlayer(0)
     if not player or not player:isClimbingRope() then return end
---     local climbing = player:getCurrentState():equals(ClimbSheetRopeState.instance()) or player:getCurrentState():equals(ClimbDownSheetRopeState.instance())
---     if not player or not climbing then return end
---     if not player or not player:isClimbing() then return end
     if not getCore():isKey("Forward", key)
     and not getCore():isKey("Backward", key)
-    and not getCore():isKey("ReleaseRope", key)--DropBothHeldItemsAndWornBag
+    and not getCore():isKey("ReleaseRope", key)
     then return end
     local doUp = getCore():isKey("Forward", key)
     local isUp = player:getCurrentState() == ClimbSheetRopeState.instance()
 
---     print("climbing up " .. tostring(player:getCurrentState():equals(ClimbSheetRopeState.instance())))
---     print("climbing down " .. tostring(player:getCurrentState():equals(ClimbDownSheetRopeState.instance())))
---
---     print("doUp " .. tostring(doUp))
---     print("isUp " .. tostring(isUp))
     if getCore():isKey("ReleaseRope", key) then
         player:fallFromRope()
---         player:setCollidable(true);
---         player:setbClimbing(false);
---         player:setbFalling(true);
---         player:clearVariable("ClimbRope");
     elseif isUp and not doUp then
---         print("Should climb down")
         player:getStateMachineParams(ClimbDownSheetRopeState:instance()):clear()
         player:reportEvent("EventClimbDownRope")
     elseif doUp and not isUp then
---         print("Should climb up")
         player:getStateMachineParams(ClimbSheetRopeState:instance()):clear()
         player:reportEvent("EventClimbRope")
     end

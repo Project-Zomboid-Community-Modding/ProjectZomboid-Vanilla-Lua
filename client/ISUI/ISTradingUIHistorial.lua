@@ -60,7 +60,6 @@ end
 
 function ISTradingUIHistorical:prerender()
     local z = 10;
-    local splitPoint = 100;
     local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);

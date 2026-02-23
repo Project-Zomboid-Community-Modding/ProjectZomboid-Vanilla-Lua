@@ -3,6 +3,9 @@ require "TimedActions/ISBaseTimedAction"
 ISReloadWeaponAction = ISBaseTimedAction:derive("ISReloadWeaponAction");
 
 function ISReloadWeaponAction:isValid()
+	if isClient() then
+		self.gun = self.character:getInventory():getItemById(self.gun:getID())
+	end
 	return self.character:getPrimaryHandItem() == self.gun
 end
 
@@ -40,6 +43,9 @@ ISReloadWeaponAction.canRack = function(weapon)
 end
 
 function ISReloadWeaponAction:start()
+	if isClient() then
+		self.gun = self.character:getInventory():getItemById(self.gun:getID())
+	end
 	-- Setup IsPerformingAction & the current anim we want (check in AnimSets LoadHandgun.xml for example)
 	self:setOverrideHandModels(self.gun, nil);
 	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
@@ -58,6 +64,11 @@ function ISReloadWeaponAction:start()
 	if not self.bullets then
 		self:forceStop();
 	end
+end
+
+function ISReloadWeaponAction.getReloadTime(character, baseTime)
+	local modifier = character:getVariableFloat("ReloadSpeed", 1.0)
+    return baseTime / modifier
 end
 
 -- This is used by other timed actions.
@@ -158,15 +169,15 @@ function ISReloadWeaponAction:serverStart()
 		end
 	end
 	if self.gun:getWeaponReloadType() == "shotgun" then
-		emulateAnimEvent(self.netAction, 833, "loadFinished", nil)
+		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 833), "loadFinished", nil)
 	elseif self.gun:getWeaponReloadType() == "revolver" then
-		emulateAnimEvent(self.netAction, 950, "loadFinished", nil)
+		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 950), "loadFinished", nil)
 	elseif self.gun:getWeaponReloadType() == "boltactionnomag" then
-		emulateAnimEvent(self.netAction, 590, "loadFinished", nil)
+		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 590), "loadFinished", nil)
 	elseif self.gun:getWeaponReloadType() == "doublebarrelshotgun" then
-		emulateAnimEvent(self.netAction, 2500, "loadFinished", nil)
+		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 2500), "loadFinished", nil)
 	else
-		emulateAnimEvent(self.netAction, 1000, "loadFinished", nil)
+		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1000), "loadFinished", nil)
 	end
 end
 
@@ -310,6 +321,9 @@ end
 
 -- Called by ISFirearmRadialMenu.onKeyReleased()
 ISReloadWeaponAction.BeginAutomaticReload = function(playerObj, gun)
+    if gun:getCurrentAmmoCount() >= gun:getMaxAmmo() then
+        return
+    end
 	if gun:getMagazineType() then
 		-- clip inside, pressing R will remove it, other wise we load another
 		local magazine = gun:getBestMagazine(playerObj)
@@ -340,10 +354,6 @@ ISReloadWeaponAction.BeginAutomaticReload = function(playerObj, gun)
 			ISTimedActionQueue.add(ISInsertMagazine:new(playerObj, gun, magazine))
 		end
 	else
-		-- if can't have more bullets, we don't do anything, this doesn't apply for magazine-type guns (you'll still remove the current clip)
-		if gun:getCurrentAmmoCount() >= gun:getMaxAmmo() then
-			return
-		end
 		-- can't load bullet into a jammed gun, clip works tho
 		if gun:isJammed() then
 			return

@@ -248,7 +248,6 @@ function ISMap:onConfirmRemove(button, note)
 end
 
 function ISMap:onMouseUpOutside()
---    print("OnMouseUpOutside");
     self.dragging = false;
 end
 
@@ -301,8 +300,6 @@ function ISMap:prerender()
 end
 
 function ISMap:render()
---    ISPanelJoypad.render(self);
-
     if not self.wrap.isCollapsed then
         if isJoypadFocusOnElementOrDescendant(self.playerNum, self) then
             self:renderJoypadIcons()
@@ -502,38 +499,7 @@ function ISMap:updateButtons()
     else
         self.editSymbolsBtn.tooltip = nil;
     end
---[[
-    if not self.removenoteBtn.enable then
-        self.removenoteBtn.tooltip = getText("Tooltip_Map_CantErase");
-    else
-        self.removenoteBtn.tooltip = nil;
-    end
-    if self.addingNote then
-        self.addnoteBtn:setTitle(getText("UI_Cancel"));
-    else
-        self.addnoteBtn:setTitle(getText("IGUI_Map_AddNote"));
-    end
-    if self.mapAPI:getSymbolsAPI():getSymbolCount() == 0 then
-        self.removenoteBtn.enable = false;
-    end
-    if self.removingElement then
-        if self.joyfocus then
-            self.placeSymbBtn:setTitle(getText("IGUI_Map_RemoveElement"));
-            self.placeSymbBtn.enable = self.mouseOverNote or self.mouseOverSymbol
-        end
-        self.removenoteBtn:setTitle(getText("UI_Cancel"));
-    else
-        self.placeSymbBtn:setTitle(getText("IGUI_Map_AddSymbol"));
-        self.removenoteBtn:setTitle(getText("IGUI_Map_RemoveElement"));
-    end
-    if self.symbolList then
-        self.symbolBtn:setTitle(getText("UI_Cancel"));
-    elseif JoypadState.players[self.playerNum+1] then
-        self.symbolBtn:setTitle(getText("IGUI_Map_ChooseSymbol"))
-    else
-        self.symbolBtn:setTitle(getText("IGUI_Map_AddSymbol"));
-    end
---]]
+
     local isMouse = (self.playerNum == 0) and (getJoypadData(self.playerNum) == nil or wasMouseActiveMoreRecentlyThanJoypad())
     self.ok:setVisible(isMouse)
     self.showMapKey:setVisible(isMouse)
@@ -563,7 +529,6 @@ function ISMap:onJoypadDown(button, joypadData)
 	end
 	if button == Joypad.YButton and self.symbolsUI.currentTool == nil then
 		self:onButtonClick(self.showMapKey)
---		self.removenoteBtn:forceClick()
 	end
 end
 

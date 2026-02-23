@@ -174,6 +174,7 @@ BagsAndContainers.BanditItems = {
 	"GemBag", 0.1,
 	"Goblet", 0.1,
 	"GoldBar", 0.1,
+	"GoldCoin", 1,
 	"HollowBook_Valuables", 0.1,
 	"IDcard_Blank", 0.1,
 	"KeyRing_Clover", 0.005,
@@ -208,6 +209,7 @@ BagsAndContainers.BanditItems = {
 	"ScratchTicket", 1,
 	"ScratchTicket_Winner", 1,
 	"SilverBar", 0.1,
+	"SilverCoin", 4,
 	"SmallGoldBar", 1,
 	"SmallSilverBar", 1,
 	"TrophyGold", 1,
@@ -236,6 +238,7 @@ BagsAndContainers.BanditItems = {
 	"ComicBook", 1,
 	"CopperScrap", 1,
 	"Cube", 1,
+	"DentalFloss", 1,
 	"Dice", 1,
 	"DiceBag", 0.1,
 	"ElectricWire", 1,
@@ -567,10 +570,11 @@ BagsAndContainers.BanditItems = {
 	"ViseGrips", 1,
 	"Wrench", 1,
 	-- Guns/Ammo/Explosives
-	"223Box", 6,
+	"556Box", 6,
 	"308Box", 1,
 	"556Box", 1,
 	"Bag_ChestRig", 1,
+	"Bullets357Box", 1,
 	"Bullets38Box", 6,
 	"Bullets44Box", 1,
 	"Bullets45Box", 1,
@@ -704,6 +708,7 @@ BagsAndContainers.CigarBox_Gaming = {
 BagsAndContainers.CigarBox_Keepsakes = {
 	rolls = 4,
 	items = {
+		"GoldCoin", 4,
 		"LetterHandwritten", 50,
 		"Lighter", 20,
 		"Locket", 20,
@@ -720,6 +725,7 @@ BagsAndContainers.CigarBox_Keepsakes = {
 		"Pocketwatch", 10,
 		"Postcard", 50,
 		"Ring_Left_RingFinger_Gold", 20,
+		"SilverCoin", 20,
 		"SmokingPipe", 10,
 		"StraightRazor", 10,
 		"WristWatch_Left_Expensive", 1,
@@ -1097,6 +1103,195 @@ BagsAndContainers.Farming = {
 	},
 }
 
+BagsAndContainers.FirstAidKit = {
+	rolls = 1,
+	items = {
+		"AlcoholWipes", 50,
+		"AlcoholWipes", 20,
+		"AlcoholWipes", 10,
+		"Bandage", 20,
+		"Bandage", 10,
+		"Bandaid", 50,
+		"Bandaid", 20,
+		"Bandaid", 10,
+		"BookFirstAid1", 4,
+		"Coldpack", 10,
+		"CottonBalls", 20,
+		"Disinfectant", 4,
+		"Gloves_Surgical", 20,
+		"Gloves_Surgical", 10,
+		"Pills", 10,
+		"Scalpel", 2,
+		"ScissorsBlunt", 10,
+		"ScissorsBluntMedical", 10,
+		"Scotchtape", 10,
+		"SutureNeedle", 50,
+		"SutureNeedle", 20,
+		"SutureNeedle", 10,
+		"SutureNeedleHolder", 20,
+		"Tweezers", 10,
+	},
+	junk = {
+		rolls = 1,
+		items = {
+			
+		}
+	},
+}
+
+BagsAndContainers.FirstAidKit_Camping = {
+    rolls = 1,
+    items = {
+        -- Medical
+        "AlcoholWipes", 50,
+        "AlcoholWipes", 20,
+        "AlcoholWipes", 10,
+        "Antibiotics", 10,
+        "Bandage", 20,
+        "Bandage", 10,
+        "Bandaid", 50,
+        "Bandaid", 20,
+        "Bandaid", 10,
+        "Coldpack", 10,
+        "CottonBalls", 20,
+        "Disinfectant", 4,
+        "Pills", 20,
+        "Pills", 10,
+        "Scotchtape", 10,
+        "Tweezers", 50,
+        -- Camping Items
+        "BeefJerky", 10,
+        "GranolaBar", 10,
+        "InsectRepellent", 10,
+        "LighterDisposable", 10,
+        "MagnesiumFirestarter", 10,
+        "Matches", 10,
+        "Mirror", 10,
+        "PillsVitamins", 10,
+        "SunflowerSeeds", 10,
+        "Tissue", 10,
+        "WaterBottle", 10,
+        "WaterPurificationTablets", 10,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
+BagsAndContainers.FirstAidKit_Camping_New = {
+    rolls = 3,
+    items = {
+        -- Medical
+        "AdhesiveBandageBox", 8,
+        "AlcoholWipes", 50,
+        "AlcoholWipes", 20,
+        "AlcoholWipes", 10,
+        "Antibiotics", 10,
+        "Bandage", 20,
+        "Bandage", 10,
+        "BandageBox", 4,
+        "Bandaid", 50,
+        "Bandaid", 20,
+        "Bandaid", 10,
+        "Coldpack", 10,
+        "ColdpackBox", 2,
+        "CottonBalls", 10,
+        "CottonBallsBox", 2,
+        "Disinfectant", 4,
+        "Pills", 20,
+        "Pills", 10,
+        "Scotchtape", 10,
+        "Tweezers", 20,
+        -- Camping Items
+        "PillsVitamins", 10,
+        "WaterPurificationTablets", 20,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
+BagsAndContainers.FirstAidKit_Military = {
+    rolls = 3,
+    items = {
+        "AlcoholWipes", 50,
+        "AlcoholWipes", 20,
+        "AlcoholWipes", 10,
+        "Antibiotics", 10,
+        "AntibioticsBox", 4,
+        "Bandage", 50,
+        "Bandage", 20,
+        "BandageBox", 8,
+        "CottonBalls", 20,
+        "CottonBallsBox", 2,
+        "Disinfectant", 4,
+        "Gloves_Surgical", 20,
+        "Gloves_Surgical", 10,
+        "Pills", 50,
+        "Pills", 20,
+        "Scalpel", 8,
+        "ScissorsBlunt", 10,
+        "ScissorsBluntMedical", 10,
+        "Scotchtape", 10,
+        "SutureNeedle", 20,
+        "SutureNeedle", 10,
+        "SutureNeedleBox", 8,
+        "SutureNeedleHolder", 20,
+        "Tweezers", 20,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
+BagsAndContainers.FirstAidKit_New = {
+    rolls = 3,
+    items = {
+        "AdhesiveBandageBox", 4,
+        "AlcoholWipes", 50,
+        "AlcoholWipes", 20,
+        "AlcoholWipes", 10,
+        "Bandage", 50,
+        "Bandage", 20,
+        "Bandage", 10,
+        "BandageBox", 2,
+        "Bandaid", 50,
+        "Bandaid", 20,
+        "Bandaid", 10,
+        "BookFirstAid1", 10,
+        "Coldpack", 10,
+        "CottonBalls", 10,
+        "Disinfectant", 10,
+        "Gloves_Surgical", 10,
+        "Gloves_Surgical", 10,
+        "Pills", 10,
+        "Scalpel", 5,
+        "ScissorsBlunt", 10,
+        "ScissorsBluntMedical", 10,
+        "Scotchtape", 10,
+        "SutureNeedle", 50,
+        "SutureNeedle", 20,
+        "SutureNeedle", 10,
+        "SutureNeedleHolder", 20,
+        "Tweezers", 10,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
 BagsAndContainers.FirstAidKit_Pro = {
     rolls = 2,
     items = {
@@ -1134,41 +1329,45 @@ BagsAndContainers.FirstAidKit_Pro = {
     },
 }
 
-BagsAndContainers.FirstAidKit = {
-	rolls = 1,
-	items = {
-		"AlcoholWipes", 50,
-		"AlcoholWipes", 20,
-		"AlcoholWipes", 10,
-		"Bandage", 50,
-		"Bandage", 20,
-		"Bandage", 10,
-		"Bandaid", 50,
-		"Bandaid", 20,
-		"Bandaid", 10,
-		"BookFirstAid1", 10,
-		"Coldpack", 10,
-		"CottonBalls", 10,
-		"Disinfectant", 10,
-		"Gloves_Surgical", 10,
-		"Gloves_Surgical", 10,
-		"Pills", 10,
-		"Scalpel", 5,
-		"ScissorsBlunt", 10,
-		"ScissorsBluntMedical", 10,
-		"Scotchtape", 10,
-		"SutureNeedle", 50,
-		"SutureNeedle", 20,
-		"SutureNeedle", 10,
-		"SutureNeedleHolder", 20,
-		"Tweezers", 10,
-	},
-	junk = {
-		rolls = 1,
-		items = {
-			
-		}
-	},
+BagsAndContainers.FirstAidKit_NewPro = {
+    rolls = 3,
+    items = {
+        "AlcoholWipes", 50,
+        "AlcoholWipes", 20,
+        "AlcoholWipes", 10,
+        "Bandage", 50,
+        "Bandage", 20,
+        "Bandage", 10,
+        "Bandaid", 50,
+        "Bandaid", 20,
+        "Bandaid", 10,
+        "BookFirstAid1", 10,
+        "Coldpack", 10,
+        "CottonBalls", 20,
+        "CottonBallsBox", 4,
+        "Disinfectant", 10,
+        "Gloves_Surgical", 20,
+        "Gloves_Surgical", 10,
+        "Pills", 50,
+        "Pills", 20,
+        "Scalpel", 10,
+        "ScissorsBlunt", 20,
+        "ScissorsBluntMedical", 20,
+        "Scotchtape", 20,
+        "SutureNeedle", 50,
+        "SutureNeedle", 20,
+        "SutureNeedleBox", 8,
+        "SutureNeedleHolder", 20,
+        "TongueDepressor", 10,
+        "TongueDepressorBox", 2,
+        "Tweezers", 20,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
 }
 
 BagsAndContainers.Gardening = {
@@ -1354,6 +1553,7 @@ BagsAndContainers.HandbagsAndPurses = {
 		"Matches", 10,
 		-- Cosmetic
 		"Comb", 4,
+		"DentalFloss", 0.1,
 		"Hairgel", 0.1,
 		"Hairspray2", 0.1,
 		"Lipstick", 6,
@@ -2056,13 +2256,14 @@ BagsAndContainers.Plasticbags = {
 BagsAndContainers.Bag_Police = {
 	rolls = 2,
 	items = {
-		"223Box", 10,
+		"556Box", 10,
 		"308Box", 10,
 		"44Clip", 8,
 		"45Clip", 8,
 		"9mmClip", 8,
 		"AmmoStraps", 6,
 		"AssaultRifle2", 2,
+	    "Bullets357Box", 10,
 		"Bullets38Box", 10,
 		"Bullets44Box", 10,
 		"Bullets45Box", 10,
@@ -2501,10 +2702,10 @@ BagsAndContainers.RevolverCase2 = {
 	rolls = 1,
 	items = {
 		"Revolver", 200,
-		"Bullets45Box", 200,
-		"Bullets45Box", 50,
-		"Bullets45Box", 20,
-		"Bullets45Box", 10,
+		"Bullets357Box", 200,
+		"Bullets357Box", 50,
+		"Bullets357Box", 20,
+		"Bullets357Box", 10,
 		"HolsterShoulder", 1,
 	},
 	junk = {
@@ -2538,11 +2739,11 @@ BagsAndContainers.RifleCase1 = {
 	rolls = 1,
 	items = {
 		"VarmintRifle", 200,
-		"223Box", 200,
-		"223Box", 50,
-		"223Box", 20,
-		"223Box", 10,
-		"AmmoStrap_Bullets_223", 2,
+		"556Box", 200,
+		"556Box", 50,
+		"556Box", 20,
+		"556Box", 10,
+		"AmmoStrap_Bullets", 2,
 		"RecoilPad", 2,
 		"x2Scope", 4,
 		"x4Scope", 2,
@@ -2948,6 +3149,7 @@ BagsAndContainers.SurvivorItems = {
 	"PrimitiveToolMag2", 4,
 	"PrimitiveToolMag3", 4,
 	"SurvivalSchematic", 4,
+	"TailoringMag1", 4,
 	"TrickMag1", 4,
 	"WeaponMag1", 4,
 	"WeaponMag2", 4,
@@ -3321,6 +3523,7 @@ BagsAndContainers.Wallet = {
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
+		"SilverCoin", 0.1,
 		-- Misc.
 		"BusinessCard", 10,
 		"ParkingTicket", 4,
@@ -3359,6 +3562,7 @@ BagsAndContainers.Wallet_Female = {
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
+		"SilverCoin", 0.1,
 		-- Misc.
 		"BusinessCard", 10,
 		"ParkingTicket", 4,
@@ -3397,6 +3601,7 @@ BagsAndContainers.Wallet_Male = {
 		"Money", 20,
 		"Money", 10,
 		"Money", 10,
+		"SilverCoin", 0.1,
 		-- Misc.
 		"BusinessCard", 10,
 		"ParkingTicket", 4,

@@ -62,7 +62,6 @@ function ISJoypadListBox:fill()
 end
 
 function ISJoypadListBox:invoke()
-	local joypadData = self.joypadData
 	local item = self.items[self.selected].item
 	if item.cmd == "takeover" then
 		self:cmdTakeOver(item.playerNum)

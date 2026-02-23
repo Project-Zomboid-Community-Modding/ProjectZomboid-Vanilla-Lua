@@ -9,7 +9,6 @@ function ISEntityInstancesPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISEntityInstancesPanel:createChildren()
     ISPanel.createChildren(self);
 
@@ -51,7 +50,7 @@ function ISEntityInstancesPanel:createChildren()
 
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_Entities_Instances_DebugUI"), ticked = getDebugOptions():getBoolean("Entity.DebugUI") });
-    local y2,obj2 = ISDebugUtils.addTickBox(self, {}, x, y, BUTTON_HGT, BUTTON_HGT, "Tooltip", tickOptions, ISEntityInstancesPanel.onEntityDebugUI);
+    ISDebugUtils.addTickBox(self, {}, x, y, BUTTON_HGT, BUTTON_HGT, "Tooltip", tickOptions, ISEntityInstancesPanel.onEntityDebugUI);
 
     y = self.list:getY();
     x = self.list:getX() + self.list:getWidth() + UI_BORDER_SPACING;
@@ -201,8 +200,6 @@ function ISEntityInstancesPanel:populate()
 end
 
 function ISEntityInstancesPanel:drawEntityListItem(y, item, alt)
-    local a = 1.0;
-
     self:drawRectBorder( 1, y+1, self:getWidth()-2, self.itemheight - 2, 0.2, 1.0, 1.0, 1.0)
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);

@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 
 ISWidgetCraftLogicTitle = ISPanel:derive("ISWidgetCraftLogicTitle");
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
 local ICON_SIZE = 32 * math.max(1, FONT_SCALE);
 
 function ISWidgetCraftLogicTitle:initialise()

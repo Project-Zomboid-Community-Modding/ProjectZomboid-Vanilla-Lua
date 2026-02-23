@@ -16,7 +16,7 @@ function ISWorldItemIcon:doPickup(_x, _y, _contextOption, _targetContainer, _ite
 	self:getGridSquare();
 	if not self.square then return; end;
 	self.manager:createIconsForWorldItems(self.square);
-	--
+
 	--double clicking sends item to currently selected inventory in panel
 	local targetContainer = _targetContainer or getPlayerInventory(self.player).inventory or self.character:getInventory();
 	if self.square and luautils.walkAdj(self.character, self.square) then

@@ -130,22 +130,15 @@ function ThermoDebug:addTitle(_title)
 end
 
 function ThermoDebug:addLine(_prefix, _line)
-    --if _prefix:len()<40 then
-    --_prefix = _prefix .. string.rep(" ",40-_prefix:len());
-    --end
     self.tmpTxt = self.tmpTxt .. " <TEXT> "..tostring(_prefix)..": "..tostring(_line).." <LINE> ";
 end
 
 function ThermoDebug:addLineEnd()
-    --if _prefix:len()<40 then
-    --_prefix = _prefix .. string.rep(" ",40-_prefix:len());
-    --end
     self.tmpTxt = self.tmpTxt .." <LINE> ";
 end
 
 function ThermoDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -165,7 +158,6 @@ function ThermoDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_Thermoregulator");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

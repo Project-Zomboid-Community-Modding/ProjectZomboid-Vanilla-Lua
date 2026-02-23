@@ -5,7 +5,6 @@ InterpolationPeriodDebug.instance = nil;
 InterpolationPeriodDebug.shiftDown = 0;
 InterpolationPeriodDebug.eventsAdded = false;
 
-
 function InterpolationPeriodDebug.OnOpenPanel(zombie)
     if InterpolationPeriodDebug.instance==nil then
         InterpolationPeriodDebug.instance = InterpolationPeriodDebug:new (100, 100, 900, 300, getPlayer());
@@ -24,7 +23,6 @@ end
 function InterpolationPeriodDebug:initialise()
     ISCollapsableWindow.initialise(self);
 end
-
 
 function InterpolationPeriodDebug:createChildren()
     ISCollapsableWindow.createChildren(self);
@@ -112,7 +110,6 @@ function InterpolationPeriodDebug:createChildren()
     y = self:addLabelValue(x+5, y, labelWidth, "value","finderProgress","finderProgress:",0);
 	y = self:addLabelValue(x+5, y, labelWidth, "value","usePathFind","usePathFind:",0);
 	y = self:addLabelValue(x+5, y, labelWidth, "value","owner","owner:",0);
-    
 end
 
 function InterpolationPeriodDebug:addLabel(_curX, _curY, _labelID, _title)
@@ -190,7 +187,6 @@ function InterpolationPeriodDebug:initVariables()
 	self:addVarInfo("TargetY","TargetY",-100,100,"TargetY");
 	self:addVarInfo("PathLength","PathLength",-100,100,"PathLength");
 	self:addVarInfo("TargetLength","TargetLength",-100,100,"TargetLength");
-
 end
 
 function InterpolationPeriodDebug:addColor(_r,_g,_b)
@@ -230,7 +226,6 @@ function InterpolationPeriodDebug:updateValues()
         else
         end
     end
-	
 
     self.historyM1:addPlotPoint(dataset, false);
 	
@@ -268,7 +263,6 @@ function InterpolationPeriodDebug:onMouseWheel(del)
 	return true
 end
 
-
 function InterpolationPeriodDebug:onButtonToggle(_btn)
     if _btn.toggleVarName then
         _btn.toggleVal = not _btn.toggleVal;
@@ -280,7 +274,6 @@ function InterpolationPeriodDebug:onButtonToggle(_btn)
         end
     end
 end
-
 
 function InterpolationPeriodDebug:onResize()
     ISUIElement.onResize(self);
@@ -306,7 +299,6 @@ end
 function InterpolationPeriodDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
-
 
 function InterpolationPeriodDebug:render()
     ISCollapsableWindow.render(self);
@@ -334,11 +326,8 @@ function InterpolationPeriodDebug:clear()
     self.currentTile = nil;
 end
 
-
-
 function InterpolationPeriodDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -359,7 +348,6 @@ function InterpolationPeriodDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "Interpolation Period Debug";
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 
@@ -379,7 +367,3 @@ function InterpolationPeriodDebug:new (x, y, width, height, player)
 	o.zombieInfo = {};
     return o
 end
---local function InterpolationPeriodDebugOntick()
-    --getPlayer():getBodyDamage():RestoreToFullHealth();
---end
-

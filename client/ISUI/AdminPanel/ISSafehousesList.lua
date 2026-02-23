@@ -54,7 +54,6 @@ function ISSafehousesList:initialise()
     self.viewBtn:setX(self.teleportBtn.x - self.viewBtn.width - UI_BORDER_SPACING)
 
     self:populateList();
-
 end
 
 function ISSafehousesList:populateList()
@@ -68,7 +67,6 @@ end
 function ISSafehousesList:drawDatas(y, item, alt)
     local a = 0.9;
 
---    self.parent.selectedSafehouse = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
@@ -142,4 +140,3 @@ function ISSafehousesList.OnSafehousesChanged()
 end
 
 Events.OnSafehousesChanged.Add(ISSafehousesList.OnSafehousesChanged)
-

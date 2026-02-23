@@ -36,10 +36,6 @@ function ISFluidContainerPanel:createChildren()
         h = self.innerHeight,
     }
 
-	--if self.isIso and (#self.textureList > 0) then
-	--	self.containerBox.x = UI_BORDER_SPACING+1+64*2 + UI_BORDER_SPACING
-	--end
-
     if self.isItem then
         self.itemDropBox = ISItemDropBox:new (self.containerBox.x + UI_BORDER_SPACING+1, self.containerBox.y+UI_BORDER_SPACING+1, BUTTON_HGT, BUTTON_HGT, true, self, ISFluidContainerPanel.addItem, ISFluidContainerPanel.removeItem, ISFluidContainerPanel.verifyItem, nil );
         self.itemDropBox.allowDropAlways = true;
@@ -54,17 +50,10 @@ function ISFluidContainerPanel:createChildren()
         self:addChild(self.itemDropBox);
     end
 
-    --local w = (self.pad*3) + self.fluidBar:getWidth() + self.containerBox.w;
-    --self:setWidth(w);
-
-    --local h = self.innerY + self.innerHeight + self.pad;
-    --self:setHeight(h);
-
     --align ui things:
     self:setIsLeft(self.isLeft);
 
     if self.container and self.container:getFluidContainer() then
-        --self.fluidBar:setFromContainer(self.container);
         self.fluidBar:setContainer(self.container:getFluidContainer());
     end
 end
@@ -129,44 +118,6 @@ function ISFluidContainerPanel:prerender()
     if (not self.isIso) or (not self.owner) or (not instanceof(self.owner, "IsoObject")) then
         return;
     end
-    local ownerOffsetY = self.owner:getRenderYOffset() * Core.getTileScale();
-
---    -- In case the container is IsoObject draw the square tiles, outline the owner object.
---    if self.textureList and #self.textureList > 0 then
---        local x = UI_BORDER_SPACING+1;
---        local y = self:getHeight() - 128*2;
---        for i = 1, #self.textureList do
---            local children = self.textureList[i].children;
---            local texture = self.textureList[i].texture;
---            local offsetY = -self.textureList[i].offsetY;-- / Core.getTileScale()
---            --offsetY = offsetY + 50;
---            if self.textureList[i].texture == self.ownerTexture and self.textureList[i].offsetY == ownerOffsetY then
---                self:drawTextureIso(texture, x, y + offsetY, 1);
---
---                if children and #children>0 then
---                    for j=1, #children do
---                        local childTexture = children[j].texture;
---                        local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
---                        self:drawTextureIso(childTexture, x, y + childOffsetY);
---                    end
---                end
---
---                if self.doOwnerOutlines then
---                    self:drawTextureOutlines(texture, x, y + offsetY);
---
---                    if children and #children>0 then
---                        for j=1, #children do
---                            local childTexture = children[j].texture;
---                            local childOffsetY = -children[j].offsetY;-- / Core.getTileScale()
---                            self:drawTextureOutlines(childTexture, x, y + childOffsetY);
---                        end
---                    end
---                end
---            else
---                self:drawTextureIso(texture, x, y + offsetY, 0.5);
---            end
---        end
---    end
 end
 
 function ISFluidContainerPanel:render()
@@ -209,7 +160,6 @@ function ISFluidContainerPanel:render()
         end
     end
 
-    --local fc = self:getContainer()
     if self:getContainer() then
         local capacity = self:getContainer():getCapacity();
         local stored = self:getContainer():getAmount();
@@ -366,17 +316,6 @@ function ISFluidContainerPanel:setIsLeft(_b)
     if not self.customTitle then
         self.title = self.isLeft and getText("Fluid_Source") or getText("Fluid_Target");
     end
---[[ This conflicts with code in render()
-    if not self.isLeft then
-        local x = UI_BORDER_SPACING+1;
-        self.fluidBar:setX(x);
-        x = x + self.fluidBar:getWidth() + UI_BORDER_SPACING;
-        self.containerBox.x = x;
-		if self.itemDropBox then
-			self.itemDropBox:setX(self.containerBox.x + UI_BORDER_SPACING+1)
-		end
-    end
---]]
 end
 
 function ISFluidContainerPanel:setInvalid(_b)
@@ -394,8 +333,6 @@ end
 function ISFluidContainerPanel:getContainer()
     if self.container and self.container:getFluidContainer() then
         return self.container:getFluidContainer();
-    --else
-        --return self.itemDropBox and self.itemDropBox.storedItem and self.itemDropBox.storedItem:getFluidContainer();
     end
     return nil;
 end
@@ -468,10 +405,6 @@ function ISFluidContainerPanel:hasValidContainer()
     if self.container then
         --check if iso still has square, check if item is in inventory
         return ISFluidUtil.validateContainer(self.container);
-    --elseif self.itemDropBox and self.itemDropBox.storedItem then
-        --if self.itemDropBox.storedItem:getFluidContainer() then
-            --return ISFluidUtil.validateContainer(self.itemDropBox.storedItem:getFluidContainer());
-        --end
     end
 end
 
@@ -521,10 +454,9 @@ function ISFluidContainerPanel:new (x, y, _player, _container, _doTitle, _isLeft
     o.container = _container;
     if o.container then
         o.owner = _container:getOwner();
-        o.isIso = _container:isIsoPanel(); --instanceof(o.owner, "IsoObject");
+        o.isIso = _container:isIsoPanel();
         o.isItem = _container:isItem();
         o.containerCopy = _container:getFluidContainer():copy();
-        --o.borderOuterColor = col;
     else
         o.isItem = true;
     end

@@ -154,7 +154,7 @@ fishingNet.checkTrap = function(player, trap, hours)
                 item:setActualWeight(fishSizeData.weight * 2.2)   -- weight is kg * 2.2 (in pound)
                 item:setCustomWeight(true)
 
-                if not RecipeCodeOnTest.cutFish(item) then
+                if not RecipeCodeOnTest.cutFish(item, nil) then
                     item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
                 end
 

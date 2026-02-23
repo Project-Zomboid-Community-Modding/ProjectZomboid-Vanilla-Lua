@@ -65,7 +65,7 @@ local function LoadCampfire(isoObject, fuelAmount)
 -- 		noise('set object name')
 		isoObject:setName("Campfire")
 		if isServer() then
-			isoObject:sendObjectChange("name")
+			isoObject:sendObjectChange(IsoObjectChange.NAME)
 		end
 	end
 	SCampfireSystem.instance:loadIsoObject(isoObject)

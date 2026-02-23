@@ -51,6 +51,9 @@ function ISPathFindAction:start()
 	if self.goal[1] == 'VehicleSeat' then
 		self.character:getPathFindBehavior2():pathToVehicleSeat(self.goal[2], self.goal[3])
 	end
+    if self.goal[1] == 'GrabCorpse' then
+        self.character:getPathFindBehavior2():pathToGrabCorpse(self.goal[2])
+    end
 end
 
 function ISPathFindAction:stop()
@@ -150,6 +153,16 @@ function ISPathFindAction:pathToVehicleSeat(character, vehicle, seat)
 	o.maxTime = -1
 	o.goal = { 'VehicleSeat', vehicle, seat }
 	return o
+end
+
+function ISPathFindAction:pathToGrabCorpse(character, corpse)
+    local o = ISBaseTimedAction.new(self, character)
+    o.stopOnAim = false
+    o.stopOnWalk = false
+    o.stopOnRun = false
+    o.maxTime = -1
+    o.goal = { 'GrabCorpse', corpse }
+    return o
 end
 
 -- Debug function for testing pathfinding.

@@ -84,6 +84,7 @@ StoryClutter.BathroomSinkClutter = {
     "Base.Ring_Left_RingFinger_GoldDiamond",
     "Base.Ring_Left_RingFinger_Silver",
     "Base.Rubberducky",
+    "Base.DentalFloss",
 }
 
 -- items scattered on the ground for the bbq story on the beaches, not stuff inside BBQs; that is normal loot
@@ -312,6 +313,7 @@ StoryClutter.DormClutter = {
     "Base.BeerEmpty",
     "Base.BeerCanEmpty",
     "Base.Hat_Cowboy_Plastic",
+    "Base.DentalFloss",
 }
 
 -- farming stuff that isn't farm animal based for farm storage rooms, used in the Barn Randomized Buildings

@@ -3,7 +3,6 @@ require "ISUI/ISCollapsableWindow"
 LuaFileBrowser = ISCollapsableWindow:derive("LuaFileBrowser");
 
 local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrentCodeFont())
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 
 LuaFileBrowserList = ISScrollingListBox:derive("LuaFileBrowserList")
 
@@ -11,7 +10,6 @@ function LuaFileBrowser:initialise()
     ISCollapsableWindow.initialise(self);
     self.title = "Lua Files";
 end
-
 
 function LuaFileBrowser:onMouseDoubleClickFile(item)
     local f = item;
@@ -57,7 +55,6 @@ function LuaFileBrowserList:doDrawItem(y, item, alt)
     self:drawText(item.text, 15, y + (item.height - self.fontHgt) / 2, 1.0, 1.0, 1.0, 1.0, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function LuaFileBrowser:fill()
@@ -70,7 +67,6 @@ function LuaFileBrowser:fill()
         if string.trim(self.textEntry:getInternalText()) == nil or string.contains(string.lower(name), string.lower(string.trim(self.textEntry:getInternalText()))) then
             self.fileList:addItem(name, path);
         end
-
     end
 end
 
@@ -102,7 +98,6 @@ function LuaFileBrowser:onButtonReload()
 end
 
 function LuaFileBrowser:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local th = self:titleBarHeight()
@@ -137,23 +132,6 @@ function LuaFileBrowser:createChildren()
     self.fileList.doRepaintStencil = true
     button:setVisible(false)
     self.buttonReload = button
-
---[[
-    -- Do corner x + y widget
-    local resizeWidget = ISResizeWidget:new(self.width-10, self.height-10, 10, 10, self);
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget = resizeWidget;
-
-    -- Do bottom y widget
-    resizeWidget = ISResizeWidget:new(0, self.height-10, self.width-10, 10, self, true);
-    resizeWidget.anchorRight = true;
-    resizeWidget:initialise();
-    self:addChild(resizeWidget);
-
-    self.resizeWidget2 = resizeWidget;
---]]
 end
 
 function LuaFileBrowser:prerender()
@@ -181,7 +159,6 @@ end
 
 function LuaFileBrowser:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

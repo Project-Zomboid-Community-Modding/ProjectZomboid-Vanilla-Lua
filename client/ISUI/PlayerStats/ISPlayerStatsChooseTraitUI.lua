@@ -12,9 +12,7 @@ function ISPlayerStatsChooseTraitUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsChooseTraitUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 

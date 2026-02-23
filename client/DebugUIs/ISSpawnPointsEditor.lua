@@ -6,8 +6,6 @@ require "ISUI/ISScrollingListBox"
 ISSpawnPointsEditor = ISCollapsableWindow:derive("ISSpawnPointsEditor")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.NewLarge)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -17,8 +15,6 @@ function ISSpawnPointsEditor:createChildren()
 	local th = self:titleBarHeight()
 
 	local itemPadY = (BUTTON_HGT-FONT_HGT_SMALL)/2
-	--local scrollBarWidth = 13
-	--local pointListWidth = getTextManager():MeasureStringX(UIFont.Small, "X: 00000, Y: 00000, Z: 000") + scrollBarWidth + 1
 
 	self.mapList = ISScrollingListBox:new(UI_BORDER_SPACING+1, th + UI_BORDER_SPACING, 300, self.height - th - UI_BORDER_SPACING*2 - 1)
 	self.mapList:initialise()

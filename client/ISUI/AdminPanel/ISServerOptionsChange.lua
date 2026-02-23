@@ -14,7 +14,6 @@ end
 
 
 function ISServerOptionsChange:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 
@@ -150,7 +149,6 @@ function ISServerOptionsChange:updateButtons()
 end
 
 function ISServerOptionsChange:onOptionMouseDown(button, x, y)
-
     if button.internal == "SAVE" then
         self.errorTxt = nil;
         if self.onclick ~= nil then
@@ -183,6 +181,7 @@ function ISServerOptionsChange:onOptionMouseDown(button, x, y)
             self:removeFromUIManager();
         end
     end
+
     if button.internal == "RESET" then
         if self.booleanOption then
             if not self.option:getDefaultValue() then

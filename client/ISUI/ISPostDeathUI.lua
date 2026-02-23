@@ -5,7 +5,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local JOYPAD_TEX_SIZE = 32
 
 function ISPostDeathUI:createChildren()
 	local buttonWid = UI_BORDER_SPACING*2 + math.max(

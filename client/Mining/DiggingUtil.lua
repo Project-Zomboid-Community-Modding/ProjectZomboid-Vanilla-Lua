@@ -50,9 +50,6 @@ DiggingUtil = {
                 end
 
             end
-
-
-
         end
     end,
 

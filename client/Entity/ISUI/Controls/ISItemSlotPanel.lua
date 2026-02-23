@@ -74,7 +74,6 @@ function ISItemSlotPanel:addResource(_resourceItem, _styleItemSlot, _itemTypeFil
     itemSlot.functionTarget = self;
     itemSlot.onBoxClicked = ISItemSlotPanel.onItemSlotRemoveItems;
     itemSlot.onItemDropped = ISItemSlotPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
-    --uiSlot.onVerifyItem = ISBlueprintLogicPanel.onItemSlotVerifyItem; --when items are checked to see if box can accept
     itemSlot.onItemRemove = ISItemSlotPanel.onItemSlotRemoveSingleItem; --when rightclicking to remove item
     itemSlot.onStoredItemChanged = ISItemSlotPanel.onStoredItemChanged; -- called when the stored item changes in slot
     itemSlot.allowDrop = self.allowDrop;

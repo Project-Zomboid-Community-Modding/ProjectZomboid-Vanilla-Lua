@@ -326,7 +326,6 @@ function ModLoadOrderPanel:onJoypadDown(button, joypadData)
     end
 end
 
-
 function ModLoadOrderPanel:onJoypadDirUp(joypadData)
     self.modList:onJoypadDirUp(joypadData)
 end
@@ -334,7 +333,6 @@ end
 function ModLoadOrderPanel:onJoypadDirDown(joypadData)
     self.modList:onJoypadDirDown(joypadData)
 end
-
 
 function ModLoadOrderPanel:onJoypadDirLeft(joypadData)
     if self.joypadIndex == self.acceptButton.ID then

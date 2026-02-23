@@ -80,11 +80,12 @@ function ISHarvestPlantAction:getDuration()
 	return self.maxTime;
 end
 
-function ISHarvestPlantAction:new(character, plant, maxTime)
+function ISHarvestPlantAction:new(character, plant, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character);
 	o.character = character;
     o.plant = plant;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
     o.caloriesModifier = 4;
 	if character:isTimedActionInstant() then
 		o.maxTime = 1;

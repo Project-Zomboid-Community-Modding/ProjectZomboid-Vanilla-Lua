@@ -50,7 +50,6 @@ function ISAnimalZoneFirstInfo:prerender()
 end
 
 function ISAnimalZoneFirstInfo:render()
-
     self.rich.text = getText("IGUI_Animal_ZoneFirstInfo");
     self.rich:paginate()
 end

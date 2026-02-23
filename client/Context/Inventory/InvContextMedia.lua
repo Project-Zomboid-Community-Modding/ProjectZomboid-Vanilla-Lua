@@ -8,35 +8,6 @@ function ISInventoryMenuElements.ContextMedia()
     end
 
     function self.createMenu( _item )
-        if _item:isRecordedMedia() then
-            if _item:getContainer() ~= self.invMenu.inventory then
-                return;
-            end
-            local mediaData = _item:getMediaData();
-
-            if mediaData then
-                local extra = mediaData:getTranslatedExtra();
-
-                if extra then
-                    self.invMenu.context:addOption(getText("IGUI_media_readLabel"), self.invMenu, self.openMediaInfo, _item, extra );
-                end
---[[
-                if getCore():getDebug() then
-                    -- This adds the option to change a media item to another data set.
-                    local parent = self.invMenu.context:addOption(getText("DBG: Change recording"), self.invMenu, nil );
-                    local subMenu = ISContextMenu:getNew(self.invMenu.context);
-                    self.invMenu.context:addSubMenu(parent, subMenu);
-
-                    local list = getZomboidRadio():getRecordedMedia():getAllMediaForType(mediaData:getMediaType());
-
-                    for i=0, list:size()-1 do
-                        local other = list:get(i);
-                        subMenu:addOption(other:getTranslatedItemDisplayName(), self.invMenu, self.changeRecording, _item, other );
-                    end
-                end
---]]
-            end
-        end
         if (getCore():getDebug() or isAdmin()) and _item:getScriptItem():getRecordedMediaCat() then
             if _item:getContainer() ~= self.invMenu.inventory then
                 return;
@@ -64,11 +35,8 @@ function ISInventoryMenuElements.ContextMedia()
             _item:getContainer():setDrawDirty(true);
             return
         end
-        --print("Index = "..tostring(_other:getIndex()))
-        --print("Item = "..tostring(_item:getDisplayName()))
         _item:setRecordedMediaData(_other);
         _item:getContainer():setDrawDirty(true);
-        --_item:setName(_other:getTranslatedItemDisplayName());
     end
 
     return self;

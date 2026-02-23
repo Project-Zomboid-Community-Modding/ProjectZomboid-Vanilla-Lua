@@ -7,10 +7,6 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-local function roundstring(_val)
-    return tostring(ISDebugUtils.roundNum(_val,2));
-end
-
 function RadioScriptDebugger.OnOpenPanel(_radioChannel)
     if RadioScriptDebugger.instance==nil then
         RadioScriptDebugger.instance = RadioScriptDebugger:new (100, 100, 1000+(getCore():getOptionFontSizeReal()*150), 600, getText("IGUI_ZomboidRadio_ChannelScriptDebugger"));
@@ -75,18 +71,6 @@ function RadioScriptDebugger:createChildren()
     self.broadcastList.drawBorder = true;
     self:addChild(self.broadcastList);
 
-    --[[
-    self.infoList = ISScrollingListBox:new(220, 50, 400, self.height - 100);
-    self.infoList:initialise();
-    self.infoList:instantiate();
-    self.infoList.itemheight = 22;
-    self.infoList.selected = 0;
-    self.infoList.joypadParent = self;
-    self.infoList.font = UIFont.NewSmall;
-    self.infoList.doDrawItem = self.drawInfoList;
-    self.infoList.drawBorder = true;
-    self:addChild(self.infoList);
-    --]]
     local btnY, btnWidth = self.broadcastList:getBottom() + UI_BORDER_SPACING, 180
     local y, obj = ISDebugUtils.addButton(self,"close",self.width-btnWidth-UI_BORDER_SPACING-1,btnY,btnWidth,BUTTON_HGT,getText("IGUI_DebugMenu_Close"),RadioScriptDebugger.onClickClose);
     obj:enableCancelColor()
@@ -100,7 +84,6 @@ function RadioScriptDebugger:onClickClose()
 end
 
 function RadioScriptDebugger:OnDaysListMouseDown(item)
-    --self:populateInfoList(item);
     self:populateBroadcastList(item);
 end
 
@@ -190,7 +173,6 @@ function RadioScriptDebugger:populateBroadcastList(_bc)
             self.broadcastList:addItem(lines:get(i):getText(), lines:get(i));
         end
     end
-    --GetPlayerIsListening()
 end
 
 function RadioScriptDebugger:drawBroadcastList(y, item, alt)

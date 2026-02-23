@@ -7,25 +7,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
---[[
-local enabled = true; --getDebug();
-
-function DailyValuesDebug.OnKeepKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyKeepDown = "..tostring(key));
-    if key==42 or key==54 then
-        DailyValuesDebug.shiftDown = 4;
-    end
-end
-
-function DailyValuesDebug.OnKeyDown(key)
-    --backspace 13, shift 42, 54
-    --print("KeyDown = "..tostring(key));
-    if DailyValuesDebug.shiftDown>0 and key ==13 then
-        DailyValuesDebug.OnOpenPanel();
-    end
-end--]]
-
 function DailyValuesDebug.OnOpenPanel()
     DailyValuesDebug.fx = getCell():getWeatherFX();
     DailyValuesDebug.cm = getClimateManager();
@@ -60,7 +41,6 @@ function DailyValuesDebug:createChildren()
     y = self:addLabel(y,"season",getText("IGUI_DailyValues_Season")..":","");
     y = self:addLabelValue(y,"value","seasonProgression",getText("IGUI_DailyValues_SeasonProgression")..":",0);
     y = self:addLabelValue(y,"value","seasonStrength",getText("IGUI_Forecaster_Strength")..":",0);
-    --y = self:addLabelValue(y,"value","seasonMidpoint","Midpoint:",0);
 
     y = y+UI_BORDER_SPACING*2;
 
@@ -142,12 +122,9 @@ function DailyValuesDebug:getValueLabel(_labelID)
     end
 end
 
-
 function DailyValuesDebug:onResize()
     ISUIElement.onResize(self);
     local th = self:titleBarHeight();
-    --self.richtext:setWidth(self.width);
-    --self.richtext:setHeight(self.height-(th+10));
 end
 
 local function round(num, numDecimalPlaces)
@@ -254,7 +231,6 @@ function DailyValuesDebug:update()
     col.r = desat;
     col.g = desat;
     col.b = desat;
-
 end
 
 function DailyValuesDebug:prerender()
@@ -266,13 +242,9 @@ function DailyValuesDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
 
-
 function DailyValuesDebug:render()
     ISCollapsableWindow.render(self);
-
-    --self.richtext:clearStencilRect();
 end
-
 
 function DailyValuesDebug:close()
     ISCollapsableWindow.close(self);
@@ -287,10 +259,8 @@ function DailyValuesDebug:clear()
     self.currentTile = nil;
 end
 
-
 function DailyValuesDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -310,7 +280,6 @@ function DailyValuesDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_DailyValues_Title");
-    --o.viewList = {}
     o.resizable = false;
     o.drawFrame = true;
 
@@ -323,10 +292,3 @@ function DailyValuesDebug:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
-
---[[
-if enabled then
-    Events.OnCustomUIKey.Add(DailyValuesDebug.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(DailyValuesDebug.OnKeepKeyDown);
-    --Events.OnObjectLeftMouseButtonUp.Add(DailyValuesDebug.onMouseButtonUp);
-end--]]

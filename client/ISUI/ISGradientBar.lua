@@ -7,7 +7,6 @@ function ISGradientBar:initialise()
 end
 
 function ISGradientBar:createChildren()
-
 end
 
 function ISGradientBar:prerender()
@@ -22,10 +21,8 @@ function ISGradientBar:render()
     local radius = self.settings.radius;
     local valOffset;
     if self.settings.doKnob then
-        --valOffset = PZMath.clamp(self.value * w, self.settings.radius, w-radius);
         valOffset = PZMath.clampFloat(self.value * w, 0, w);
     else
-        --valOffset = PZMath.clamp(self.value * w, self.settings.radius+3, w-radius-3);
         valOffset = PZMath.clampFloat(self.value * w, 3, w-3);
     end
 

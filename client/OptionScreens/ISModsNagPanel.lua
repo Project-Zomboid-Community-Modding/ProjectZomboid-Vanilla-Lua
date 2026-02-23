@@ -34,7 +34,6 @@ function ISModsNagPanel:createChildren()
 	self.ok.anchorBottom = true
 	self.ok:initialise()
 	self.ok:instantiate()
---	self.ok.borderColor = {r=1, g=1, b=1, a=0.1}
 	self:addChild(self.ok)
 end
 

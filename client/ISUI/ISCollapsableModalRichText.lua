@@ -83,14 +83,7 @@ end
 function ISCollapsableModalRichText:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---	self:drawTextCentre(self.text, self:getWidth() / 2, (self:getHeight() / 2) - 10, 1, 1, 1, 1, UIFont.Small);
 end
---
---function ISCollapsableModalRichText:onMouseDown(x, y)
-----	ISCollapsableWindow.onMouseDown(self, x, y)
---	-- FIXME: this prevents clicks being passed to windows behind, but need to swallow clicks outside and mouse-move events as well
---	return true
---end
 
 function ISCollapsableModalRichText:onGainJoypadFocus(joypadData)
     ISCollapsableWindow.onGainJoypadFocus(self, joypadData);
@@ -144,12 +137,6 @@ end
 
 function ISCollapsableModalRichText:update()
     ISCollapsableWindow.update(self)
---	local minHeight = self.chatText:getY() + self.chatText:getHeight() + 30
---	if self:getHeight() < minHeight then
---		local dh = minHeight - self:getHeight()
---		self:setHeight(minHeight)
---		self:setY(self:getY() - dh / 2)
---	end
 end
 
 function ISCollapsableModalRichText:new(x, y, width, height, text, yesno, target, onclick, player, param1, param2)
@@ -179,10 +166,6 @@ function ISCollapsableModalRichText:new(x, y, width, height, text, yesno, target
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
 	o.width = width;
 	o.height = height;
---	o.anchorLeft = true;
---	o.anchorRight = true;
---	o.anchorTop = true;
---	o.anchorBottom = true;
 	o.text = text;
 	o.yesno = yesno;
 	o.target = target;

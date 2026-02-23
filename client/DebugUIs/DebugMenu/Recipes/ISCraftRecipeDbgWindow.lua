@@ -25,7 +25,6 @@ function ISCraftRecipeDbgWindow:initialise()
 	ISCollapsableWindow.initialise(self);
 end
 
-
 function ISCraftRecipeDbgWindow:createChildren()
     ISCollapsableWindow.createChildren(self);
 

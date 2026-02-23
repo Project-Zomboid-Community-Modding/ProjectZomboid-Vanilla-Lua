@@ -35,8 +35,6 @@ function ISStringListView:createChildren()
 
     y = self.entryBox:getY() + self.entryBox:getHeight() + UI_BORDER_SPACING;
 
-    --self.infoListY = y;
-
     self.infoList = ISScrollingListBox:new(x, y, width, self.height - y - UI_BORDER_SPACING-1);
     self.infoList.backgroundColor = {r=0.9, g=0.9, b=0.9, a=1.0};
     self.infoList.iconExpand = self.iconExpand;
@@ -83,14 +81,6 @@ function ISStringListView:parseSearchText()
     if needle then
         self.rootNode:search(needle, Colors.LemonChiffon); --Colors.Khaki , Colors.LemonChiffon
     end
-
-    --[[
-    local target = -1;
-    if target>0 and self.infoList.items and #self.infoList.items>0 and target<=#self.infoList.items then
-        self.infoList.selected = target;
-        self.infoList:ensureVisible(target);
-    end
-    --]]
 end
 
 function ISStringListView:clear()
@@ -98,11 +88,10 @@ function ISStringListView:clear()
 end
 
 function ISStringListView:buildNodes(_lines)
-    --self.rootNode = ISStringListViewNode:new(nil);
     self.rootNode:reset();
 
     local charLength = getTextManager():MeasureStringX(UIFont.Code, "=");
-    local tabLength = charLength * 3; --getTextManager():MeasureStringX(UIFont.Code, "  ");
+    local tabLength = charLength * 3;
     local lastNode = false;
     local currentNode = self.rootNode;
     local tabs = 0;
@@ -289,7 +278,6 @@ function ISStringListView:prerender()
     ISPanel.prerender(self);
 end
 
-
 function ISStringListView:render()
     ISPanel.render(self);
 end
@@ -324,10 +312,6 @@ function ISStringListView:new (x, y, width, height)
     o.rootNode = ISStringListViewNode:new(nil, "", true);
     return o
 end
-
---[[
-    ISStringListViewNode
---]]
 
 ISStringListViewNode = {};
 

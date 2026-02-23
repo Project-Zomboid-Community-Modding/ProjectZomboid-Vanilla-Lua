@@ -81,7 +81,6 @@ local SystemPanel = DebugGlobalObjectState_SystemPanel
 
 function SystemPanel:render1()
 	if not self.system then return end
---	self:addLine("name = %s", self.system:getName())
 	local modData = self.system:getModData()
 	for k,v in pairs(modData) do
 		self:renderKeyValue(k, v)

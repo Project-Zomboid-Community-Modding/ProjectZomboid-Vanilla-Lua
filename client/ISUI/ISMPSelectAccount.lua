@@ -3,7 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISMPSelectAccount = ISPanelJoypad:derive("ISMPSelectAccount");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISMPSelectAccount:initialise()
@@ -115,16 +114,6 @@ function ISMPSelectAccount:updateButtons()
     self.closeBtn:setY(self.connectBtn:getY());
 end
 
---function ISMPSelectAccount:onOtherKey(key)
---    if key == Keyboard.KEY_TAB then
---        if self.parent.login:isFocused() then
---           self.parent.login:unfocus()
---           self.parent.password:focus()
---           return
---        end
---    end
---end
-
 function ISMPSelectAccount:onMouseUp(x, y)
     if not self.moveWithMouse then return; end
     if not self:getIsVisible() then
@@ -182,12 +171,10 @@ function ISMPSelectAccount:onMouseMove(dx, dy)
         self:setX(self.x + dx);
         self:setY(self.y + dy);
         self:bringToTop();
-        --ISMouseDrag.dragView = self;
     end
 end
 
 function ISMPSelectAccount:onGainJoypadFocus(joypadData)
---    print("gained modal focus");
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
 end
 

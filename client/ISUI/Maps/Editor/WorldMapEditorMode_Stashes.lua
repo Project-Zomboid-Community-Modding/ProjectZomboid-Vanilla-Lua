@@ -34,7 +34,6 @@ function WorldMapEditorMode_Stashes:createChildren()
 	self:addChild(self.buildingYEntry)
 	self.buildingYEntry:setOnlyNumbers(true)
 
-	local height = UI_BORDER_SPACING+BUTTON_HGT*2
 	button = ISButton:new(UI_BORDER_SPACING, self.buildingYEntry:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_Place"), self, function(self) self:onBuildingSet() end)
 	button:setWidth(UI_BORDER_SPACING*2+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	self:addChild(button)

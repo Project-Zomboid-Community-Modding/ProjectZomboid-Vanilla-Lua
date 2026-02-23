@@ -98,20 +98,21 @@ function ISItemSlotAddAction:canStart()
 	return true;
 end
 
-function ISItemSlotAddAction:new(character, entity, item, itemSlot)
+-- The internalItemSlot argument has a different name from the field in the object so that in multiplayer this field is not passed to the server side.
+function ISItemSlotAddAction:new(character, entity, item, resource, internalItemSlot)
 	local o = ISBaseTimedAction.new(self, character)
 	o.entity = entity
 	o.item = item;
-	o.resource = itemSlot and itemSlot.resource;
-    o.itemSlot = nil;
+	o.resource = resource;
+    o.itemSlot = internalItemSlot;
 	o.maxTime = o:getDuration();
 	
 	-- overide-able functions
 	o.canAddItem = nil;
 
 	o.actionAnimVariables = {}
-	if itemSlot and itemSlot.actionAnim then
-		o.actionAnim = itemSlot.actionAnim;
+	if internalItemSlot and internalItemSlot.actionAnim then
+		o.actionAnim = internalItemSlot.actionAnim;
 	else
 		o.actionAnim = "Loot";
 		o.actionAnimVariables["LootPosition"] = "";

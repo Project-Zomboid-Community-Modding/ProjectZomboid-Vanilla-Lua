@@ -30,8 +30,6 @@ function ISPlantInfoAction:perform()
 	else
 		local x = getPlayerScreenLeft(self.playerNum)
 		local y = getPlayerScreenTop(self.playerNum)
-		local w = getPlayerScreenWidth(self.playerNum)
-		local h = getPlayerScreenHeight(self.playerNum)
 		info = ISFarmingWindow:new(x + 70, y + 50,320,240, self.character, self.plant);
 		info:initialise();
 		info:addToUIManager();

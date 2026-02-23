@@ -12,7 +12,6 @@ end
 
 function ISRect:new(x, y, width, height, a, r, g, b)
 	local o = {}
-	--o.data = {}
 	o = ISUIElement:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

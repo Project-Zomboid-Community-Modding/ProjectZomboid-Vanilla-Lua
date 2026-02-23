@@ -85,7 +85,6 @@ end
 
 function ISEntityViewWindow:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -106,7 +105,6 @@ function ISEntityViewWindow:new (x, y, width, height)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "Entity View Window";
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
     o.minimumWidth = 500;

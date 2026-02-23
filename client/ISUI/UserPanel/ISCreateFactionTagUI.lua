@@ -48,11 +48,6 @@ function ISCreateFactionTagUI:prerender()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(getText("IGUI_FactionUI_ChangeTag"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_FactionUI_ChangeTag")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
-
---    z = z + 30;
---    self:drawText(getText("IGUI_FactionUI_Tag"), 10, z, 1,1,1,1, UIFont.Small);
---    self.entry:setY(z)
---    self.entry:setX(getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FactionUI_Tag")) + 15);
 end
 
 function ISCreateFactionTagUI:updateButtons()

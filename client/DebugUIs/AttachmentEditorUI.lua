@@ -114,10 +114,6 @@ local function vectorComponentToString(n, scale)
 	return tostring(round(n * scale, 3))
 end
 
-local function vectorToString(v, scale)
-	return vectorComponentToString(v:x(), scale) .. " " .. vectorComponentToString(v:y(), scale) .. " " .. vectorComponentToString(v:z(), scale)
-end
-
 local function drawVector(ui, label, x, y, vx, vy, vz)
 	ui:drawText(label, x, y, 1, 1, 1, 1, UIFont.Small)
 	x = x + getTextManager():MeasureStringX(UIFont.Small, label)
@@ -310,9 +306,6 @@ AttachmentEditorUI_EditAttachment = EditPanel:derive("AttachmentEditorUI_EditAtt
 local EditAttachment = AttachmentEditorUI_EditAttachment
 
 function EditAttachment:createChildren()
-	local buttonHgt = FONT_HGT_MEDIUM
-
-	local comboHeight = FONT_HGT_MEDIUM
 	local combo = ISComboBox:new(0, 0, self.width, LABEL_HGT, self, self.onComboAddModel)
 	combo.noSelectionText = getText("IGUI_AttachmentEditor_AddModel")
 	combo:setEditable(true)
@@ -492,10 +485,6 @@ function EditAttachment:initAnimalModelScripts()
 			self.animalScriptByName[def:getBodyModelStr()] = modelScript
 			self.animalScriptByModelScript[modelScript] = modelScript
 		end
-		local breeds = def:getBreeds()
-		for j=1,breeds:size() do
-			local breed = breeds:get(j-1)
-		end
 	end
 end
 
@@ -627,7 +616,6 @@ function EditAttachment:isVehicleScript(modelScript)
 		return false
 	end
 	return instanceof(modelScript, "VehicleScript")
---	return modelScript == self:java1("getVehicleScript", "vehicle")
 end
 
 function EditAttachment:getSceneObjectId(modelScript)
@@ -704,7 +692,6 @@ function EditAttachment:doDrawItem(y, item, alt)
 	local modelScript = item.item
 	
 	local x = 4
-	local indent = 16
 
 	local isMouseOver = self.mouseoverselected == item.index and not self:isMouseOverScrollBar()
 	if item.selected then
@@ -1000,9 +987,6 @@ function EditAttachment:setSelectedModel(modelScript)
 		end
 	end
 	self.list2:sort()
-	if self.list2:getSelectedCount() == 0 then
---		self.list2:setSelectedRow(1)
-	end
 end
 
 function EditAttachment:setSelectedAttachment(attach)
@@ -1147,7 +1131,6 @@ function EditAttachment:onGizmoStart()
 	for _,attach in ipairs(self:getSelectedAttachments()) do
 		if self.gizmo == "translate" then
 			-- FIXME: Need to consider the scale of the parent to use alignVectorToGrid()
---			self.originalOffset[attach] = alignVectorToGrid(Vector3f.new(attach:getOffset()), self:java0("getGridMult"))
 			self.originalOffset[attach] = Vector3f.new(attach:getOffset())
 		end
 		if self.gizmo == "rotate" then
@@ -1333,7 +1316,6 @@ function Scene:onMouseDown(x, y)
 	if self.gizmoAxis ~= "None" then
 		local scenePos = self.javaObject:fromLua0("getGizmoPos")
 		self.gizmoStartScenePos = alignVectorToGrid(Vector3f.new(scenePos), self.javaObject:fromLua0("getGridMult"))
---		self.gizmoClickScenePos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
 		self.javaObject:fromLua3("startGizmoTracking", x, y, self.gizmoAxis)
 		self:onGizmoStart()
 	else
@@ -1346,9 +1328,6 @@ function Scene:onMouseMove(dx, dy)
 		ISUI3DScene.onMouseMove(self, dx, dy)
 	else
 		local x,y = self:getMouseX(),self:getMouseY()
---		local newPos = alignVectorToGrid(self.javaObject:uiToScene(x, y, 0, Vector3f.new()), self.javaObject:fromLua0("getGridMult"))
---		newPos:sub(self.gizmoClickScenePos)
---		newPos:add(self.gizmoStartScenePos)
 		self.javaObject:fromLua2("dragGizmo", x, y)
 	end
 end

@@ -44,7 +44,6 @@ function DebugLogSettings:createChildren()
 		maxWidth = math.max(maxWidth, getTextManager():MeasureStringX(UIFont.Small, debugType:name()))
 	end
 
-	local logSeverityList = LogSeverity.getValueList()
 	local comboWidth = 100
 	local comboHgt = FONT_HGT_SMALL + 3 * 2
 

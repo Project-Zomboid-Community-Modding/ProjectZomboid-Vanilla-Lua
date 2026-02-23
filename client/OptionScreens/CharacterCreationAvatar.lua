@@ -6,7 +6,6 @@ require "ISUI/ISUI3DModel"
 CharacterCreationAvatar = ISPanelJoypad:derive("CharacterCreationAvatar")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -17,7 +16,6 @@ function CharacterCreationAvatar:createChildren()
 	self.avatarPanel.backgroundColor = {r=0, g=0, b=0, a=0.0}
 	self.avatarPanel.borderColor = {r=1, g=1, b=1, a=0.0}
 	self:addChild(self.avatarPanel)
---	CharacterCreationHeader.instance:randomGenericOutfit()
 	self.avatarPanel:setState("idle")
 	self.avatarPanel:setDirection(IsoDirections.S)
 	self.avatarPanel:setIsometric(false)
@@ -63,10 +61,10 @@ end
 function CharacterCreationAvatar:onTurnChar(button, x, y)
 	local direction = self.avatarPanel:getDirection()
 	if button.internal == "TURNCHARACTERLEFT" then
-		direction = IsoDirections.RotLeft(direction)
+		direction = direction:RotRight()
 		self.avatarPanel:setDirection(direction)
 	elseif button.internal == "TURNCHARACTERRIGHT" then
-		direction = IsoDirections.RotRight(direction)
+		direction = direction:RotLeft()
 		self.avatarPanel:setDirection(direction)
 	end
 end

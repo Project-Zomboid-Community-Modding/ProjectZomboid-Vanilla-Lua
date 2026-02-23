@@ -16,9 +16,6 @@ function ISWidgetTitleHeader:createChildren()
     if self.enableIcon then
         self.icon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, ICON_SIZE, ICON_SIZE, self.iconTex);
         self.icon.autoScale = true;
-        --self.icon.scaledWidth = self.iconSize;
-        --self.icon.scaledHeight = self.iconSize;
-        --self.icon.texture = self.entityStyle:getIcon();
         self.icon:initialise();
         self.icon:instantiate();
         self:addChild(self.icon);
@@ -77,7 +74,6 @@ function ISWidgetTitleHeader:createChildren()
             self:addChild(self.isCanWalkIcon);
         end
         if not self.canBeDoneInDark and not self.ignoreLightIcon then
-            --local iconTex = getTexture("media/ui/craftingMenus/Icon_Moon_48x48.png");
             local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Light" .. fileSize);
             self.canBeDoneInDarkIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
             self.canBeDoneInDarkIcon.autoScale = true;
@@ -112,16 +108,9 @@ function ISWidgetTitleHeader:createChildren()
         end
 
         if self.player then
-            --local color = {r=0.5, g=0.5, b=0.5, a=1.0};
-            -- modified to scale by player skill level
             local time = round(self.recipe:getTime(self.player)/10,2);
---             local time = round(self.recipe:getTime()/10,2);
 
             local timeText = getText("IGUI_CraftingWindow_CraftTime") .. " " .. tostring(time).." " .. getText("IGUI_CraftingWindow_Seconds");
-            --self.timeLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_CraftTime") .. " " .. timeText, color.r, color.g, color.b, color.a, UIFont.NewSmall, true);
-            --self.timeLabel:initialise();
-            --self.timeLabel:instantiate();
-            --self:addChild(self.timeLabel);
 
             local iconTex = getTexture("media/ui/craftingMenus/BuildProperty_Clock" .. fileSize);
             self.timeIcon = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISImage, 0, 0, self.propertyIconSize, self.propertyIconSize, iconTex);
@@ -167,23 +156,6 @@ function ISWidgetTitleHeader:createChildren()
                 table.insert(self.requiredSkillList, requiredSkillLabel);
             end
         end
-
---             -- UI information if a player could or would benefit from having a recipe item at hand
---         if self.player and self.recipe:couldBenefitFromRecipeAtHand(self.player) then
---             local text = getText("IGUI_CraftingWindow_CouldBenefitFromRecipeAtHand")
---             local lineColor = self.colBad
---             if self.recipe:validateBenefitFromRecipeAtHand(self.player, self.logic:getContainers()) then
---                  text = getText("IGUI_CraftingWindow_ValidateBenefitFromRecipeAtHand")
---                  lineColor = self.colGood
---             end
---
---             self.recipeBenefitLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, text, lineColor.r, lineColor.g, lineColor.b, lineColor.a, UIFont.NewSmall, true);
---             self.recipeBenefitLabel.origTitleStr = text;
---             self.recipeBenefitLabel:initialise();
---             self.recipeBenefitLabel:instantiate();
---             self:addChild(self.recipeBenefitLabel);
---         end
-
     end
 
     self.recipeBenefitLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "", self.colGood.r, self.colGood.g, self.colGood.b, self.colGood.a, UIFont.NewSmall, true);
@@ -231,7 +203,9 @@ function ISWidgetTitleHeader:updateLabels()
             errorText = errorText .. getText("IGUI_CraftingWindow_Error_Workbench");
         end
 
-        errorText = getText("IGUI_CraftingWindow_Error_NotAvailable") .. errorText;
+        if errorText ~= "" then
+            errorText = getText("IGUI_CraftingWindow_Error_NotAvailable") .. errorText;
+        end
 
         self.errorLabel.errorText = errorText;
         self.errorLabel:setVisible(true);
@@ -542,6 +516,7 @@ function ISWidgetTitleHeader:onFavouritesClick()
 
     local favString = BaseCraftingLogic.getFavouriteModDataString(self.recipe);
     self.player:getModData()[favString] = self.isFavourite;
+    self.player:transmitModData();
 
     if self.isFavourite then
         self.favouritesIcon.image = getTexture("media/ui/inventoryPanes/FavouriteYes.png");

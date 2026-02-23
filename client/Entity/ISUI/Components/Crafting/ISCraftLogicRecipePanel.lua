@@ -19,9 +19,7 @@ function ISCraftLogicRecipePanel:createChildren()
 
     self:addChild(self.overlayPanel);
 
-    --if self.recipe then
     self:createDynamicChildren();
-    --end
 end
 
 function ISCraftLogicRecipePanel:createDynamicChildren()
@@ -152,9 +150,6 @@ function ISCraftLogicRecipePanel:getRecipe()
 end
 
 function ISCraftLogicRecipePanel:onRebuildItemNodes(_inputItems)
-    --if self.inputControlWidget then
-    --    self.inputControlWidget:onRebuildItemNodes(_inputItems);
-    --end
 end
 
 function ISCraftLogicRecipePanel:onInputsChanged()
@@ -179,7 +174,6 @@ function ISCraftLogicRecipePanel:new(x, y, width, height, player, logic)
     local o = ISPanel.new(self, x, y, width, height);
 
     o.background = false;
-    --o.margin = 5;
     o.player = player;
     
     o.craftLogicComponent = logic:getCraftLogic();
@@ -199,8 +193,6 @@ function ISCraftLogicRecipePanel:new(x, y, width, height, player, logic)
     o.minimumHeight = 0;
     o.elementSpacing = 5;
     o.elementPadding = 2;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

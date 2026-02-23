@@ -61,27 +61,16 @@ function IsoRegionDetails:readRegion( _x, _y, _z, _o )
         self:addLine("Y",_y);
         self:addLine("Z",_z);
         local gs = getCell():getGridSquare(_x,_y,_z);
-        --local ds = IsoRegions.getDataSquare(_x,_y,_z);
         self:addLine("hasGridsquare",gs and "true" or "false");
         if gs then
             self:addLine("isSolidFloor",gs:has(IsoFlagType.solidfloor) and "true" or "false");
-            --self:addLine("hasDataSquare",gs:getDataSquare() and "true" or "false");
             self:addLine("hasWorldRegion",gs:getIsoWorldRegion() and tostring(gs:getIsoWorldRegion():getID()) or "false");
         else
             self:addLine("isSolidFloor","false");
-            --[[self:addLine("found DataSquare",ds and "true" or "false");
-            if ds then
-                self:addLine("found Region",ds:getRegion() and tostring(ds:getRegion():getID()) or "false");
-                local mr = ds:getRegion() and ds:getRegion():getIsoWorldRegion();
-                if mr then
-                    self:addLine("found WorldRegion",mr and tostring(mr:getID()) or "false");
-                end
-            end--]]
         end
 
         local ds = IsoRegions.getSquareFlags(_x,_y,_z);
         local chunk = IsoRegions.getDataChunk(_x/10,_y/10);
-        print("ds = "..tostring(ds)..", chunk = "..tostring(chunk))
         if ds>=0 and chunk then
             chunk:setSelectedFlags(_x% 10,_y% 10,_z);
             self:addTitle("BitFlags");
@@ -160,16 +149,10 @@ function IsoRegionDetails:addTitle(_title)
 end
 
 function IsoRegionDetails:addLine(_prefix, _line)
-    --if _prefix:len()<40 then
-    --_prefix = _prefix .. string.rep(" ",40-_prefix:len());
-    --end
     self.tmpTxt = self.tmpTxt .. " <TEXT> "..tostring(_prefix)..": "..tostring(_line).." <LINE> ";
 end
 
 function IsoRegionDetails:addLineEnd()
-    --if _prefix:len()<40 then
-    --_prefix = _prefix .. string.rep(" ",40-_prefix:len());
-    --end
     self.tmpTxt = self.tmpTxt .." <LINE> ";
 end
 
@@ -204,7 +187,6 @@ function IsoRegionDetails:render()
 
 end
 
-
 function IsoRegionDetails:close()
     ISCollapsableWindow.close(self)
     if JoypadState.players[self.playerNum+1] then
@@ -218,11 +200,8 @@ end
 function IsoRegionDetails:clear()
 end
 
-
-
 function IsoRegionDetails:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -243,7 +222,6 @@ function IsoRegionDetails:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "IsoRegionDetails";
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 

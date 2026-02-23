@@ -186,11 +186,7 @@ function ISTextBoxMap:destroy()
 	UIManager.setShowPausedMessage(true);
 	self:setVisible(false);
 	self:removeFromUIManager();
---[[
-	if UIManager.getSpeedControls() then
-		UIManager.getSpeedControls():SetCurrentGameSpeed(1);
-	end
---]]
+
 	if OnScreenKeyboard.IsVisible() then
 		OnScreenKeyboard.Hide()
 	end
@@ -438,35 +434,6 @@ end
 
 function ISTextBoxMap:onJoypadDown(button, joypadData)
 	ISCollapsableWindowJoypad.onJoypadDown(self, button, joypadData)
---[[
-	if button == Joypad.AButton then
-		if not self.yes:isEnabled() then
-			return
-		end
-		self.yes.player = self.player
-		self.yes.onclick(self.yes.target, self.yes)
-		if joypadData.focus == self then
-			if self.player and JoypadState.players[self.player+1] then
-				setJoypadFocus(self.player, nil)
-			else
-				joypadData.focus = nil
-			end
-		end
-		self:destroy()
-	end
-	if button == Joypad.BButton then
-		self.no.player = self.player
-		self.no.onclick(self.no.target, self.no)
-		if joypadData.focus == self then
-			if self.player and JoypadState.players[self.player+1] then
-				setJoypadFocus(self.player, nil)
-			else
-				joypadData.focus = nil
-			end
-		end
-		self:destroy()
-	end
---]]
 end
 
 function ISTextBoxMap:onJoypadDirDown(joypadData)

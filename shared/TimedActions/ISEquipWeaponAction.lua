@@ -146,7 +146,7 @@ function ISEquipWeaponAction:complete()
         local item = self.character:getClothingItem_Back()
         local extra = self.character:getClothingItem_Back():getClothingItemExtra():get(0)
         self.character:removeFromHands(item)
-        self.character:removeWornItem(item)
+        self.character:removeWornItem(item, false)
         self.character:getInventory():Remove(item)
 	    sendRemoveItemFromContainer(self.character:getInventory(), item)
         local newItem = ISClothingExtraAction:createItem(item, extra)
@@ -276,13 +276,14 @@ function ISEquipWeaponAction:getDuration()
 	end
 end
 
-function ISEquipWeaponAction:new (character, item, maxTime, primary, twoHands, alwaysTurnOn)
+function ISEquipWeaponAction:new (character, item, maxTimeInit, primary, twoHands, alwaysTurnOn)
 	local o = ISBaseTimedAction.new(self, character);
 	o.item = item;
 	o.stopOnAim = false;
 	o.stopOnWalk = false;
 	o.stopOnRun = true;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.primary = primary;
 	o.twoHands = twoHands;
 	o.ignoreHandsWounds = true;

@@ -63,26 +63,6 @@ function ISSineWaveDisplay:render()
         end
     end
 
-    -- sine wave
-    --[[
-    self.waveCntr= self.waveCntr + 1;
-    if (not self.wave) or self.waveCntr >= self.waveUpdInt or self.hasChanged then
-        local height = ZombRand((h/2)*p.minH,(h/2)*p.maxH);
-        self.wave = self:getWaveData(ZombRand(100*p.minLen,100*p.maxLen),-height,height);
-        self.waveUpdInt = ZombRand(p.minSpeed,p.maxSpeed);
-        self.offsetUpdInt = ZombRand(p.minUpd,p.maxUpd);
-        self.waveCntr = 0;
-        self.hasChanged = false;
-    end
-
-    self.offsetCntr = self.offsetCntr + 1;
-    if self.offsetCntr >= self.offsetUpdInt then
-        self.offsetCntr = 0;
-        self.offset = self.offset + 1;
-        if self.offset >= #self.wave-1 then self.offset = 0; end
-    end
-    --]]
-
     -- It's possible update() hasn't been called yet.
     if not self.wave then return end
 
@@ -126,7 +106,6 @@ function ISSineWaveDisplay:getWaveData(_len,_minH,_maxH)
     end
     return tab;
 end
-
 
 function ISSineWaveDisplay:new (x, y, width, height)
     local o = ISPanel:new(x, y, width, height);

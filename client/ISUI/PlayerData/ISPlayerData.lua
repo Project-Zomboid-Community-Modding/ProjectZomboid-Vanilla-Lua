@@ -1,7 +1,6 @@
 ISPlayerData = {}
 
 function getPlayerData(id)
-
     return ISPlayerData[id+1];
 end
 
@@ -12,18 +11,13 @@ function removeInventoryUI(id)
         data.playerHotbar:removeFromUIManager();
     end
     if data.playerInventory ~= nil then
-        print("removing player inventory");
-      --  data.playerInventory:setVisible(false);
         data.playerInventory:removeFromUIManager();
     end
     if data.buttonPrompt ~= nil then
-        print("removing buttonprompts");
         data.buttonPrompt:removeFromUIManager();
     end
 
     if data.lootInventory ~= nil then
-        print("removing loot inventory");
-    --    data.lootInventory:setVisible(false);
         data.lootInventory:removeFromUIManager();
     end
 
@@ -31,32 +25,22 @@ function removeInventoryUI(id)
     UIManager.setPlayerInventoryTooltip(id, nil, nil)
 
     if data.equipped ~= nil then
-        print("removing equipped icons");
         data.equipped:removeFromUIManager();
 
     end
     if data.characterInfo ~= nil then
-        print("removing characterInfo");
         data.characterInfo:removeFromUIManager();
     end
     if data.backButtonWheel then
-        print("removing backButtonWheel")
         data.backButtonWheel:removeFromUIManager()
     end
-    if data.craftingUI then
-        print("removing craftingUI")
-        data.craftingUI:removeFromUIManager()
-    end
     if data.mechanicsUI then
-        print("removing mechanicsUI")
         data.mechanicsUI:removeFromUIManager()
     end
     if ISMoveableCursor.cursors[id] then
-        print("removing cursor + panel")
         ISMoveableCursor.cursors[id]:exitCursor();
     end
     if ISRadioWindow.instances[id] or ISRadioWindow.instancesIso[id] then
-        print("removing radio panels")
         if ISRadioWindow.instances[id] then ISRadioWindow.instances[id]:removeFromUIManager() end
         if ISRadioWindow.instancesIso[id] then ISRadioWindow.instancesIso[id]:removeFromUIManager() end
     end
@@ -88,13 +72,11 @@ function removeInventoryUI(id)
     data.characterInfo = nil;
     data.playerHotbar = nil;
     data.backButtonWheel = nil
-    data.craftingUI = nil
     data.mechanicsUI = nil
     data.vehicleDashboard = nil
     data.miniMap = nil
     data.sleepingUI = nil
-
-    end
+end
 
 function getButtonPrompts(id)
     local data = getPlayerData(id)
@@ -138,11 +120,6 @@ function getPlayerBackButtonWheel(id)
     return nil
 end
 
-function getPlayerCraftingUI(id)
-    local data = getPlayerData(id)
-    return data and data.craftingUI
-end
-
 function getPlayerZoneUI(id)
     local data = getPlayerData(id)
     return data and data.zoneUI
@@ -179,7 +156,6 @@ function getPlayerSleepingUI(id)
 end
 
 function createPlayerData(id)
-
    if getCore():isDedicated() then return; end
 
     local numPlayers = getNumActivePlayers();

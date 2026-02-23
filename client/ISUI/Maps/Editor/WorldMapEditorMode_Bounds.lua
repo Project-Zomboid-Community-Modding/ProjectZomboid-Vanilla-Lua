@@ -42,7 +42,6 @@ function WorldMapEditorMode_Bounds:createChildren()
 	button = ISButton:new(UI_BORDER_SPACING, button:getBottom() + UI_BORDER_SPACING, 80, BUTTON_HGT, getText("IGUI_WorldMapEditor_SnapChunk"), self, self.onChangeSnapMode)
 	button:setWidth(buttonPadding+getTextManager():MeasureStringX(UIFont.Small, button.title))
 	button.internal = "chunk"
---	button.textColor.a = 0.5
 	self:addChild(button)
 	self.snapButtons.chunk = button
 

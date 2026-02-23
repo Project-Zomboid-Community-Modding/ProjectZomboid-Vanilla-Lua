@@ -4,7 +4,6 @@ TutorialStep = ISBaseObject:derive("TutorialStep");
 
 
 function TutorialStep:begin()
-
 end
 
 function TutorialStep:isComplete()
@@ -16,7 +15,6 @@ function TutorialStep:finish()
 end
 
 function TutorialStep:during()
-
 end
 
 function TutorialStep:onClose(message)
@@ -32,7 +30,6 @@ function TutorialStep:addMessage(text, x, y)
     end
 
     self.messages:add( { text=text, x=x, y=y } )
-
 end
 
 function TutorialStep:addMessage(text, x, y, w, h, clickToSkip, test,focusx, focusy, focusw,focush)
@@ -56,9 +53,7 @@ function TutorialStep:doMessage()
         TutorialFocus.set(message.focusx, message.focusy, message.focusw, message.focush)
     end
 
-    local modal = TutorialMessage.getInstance(message.x, message.y, message.w, message.h, message.text, message.clickToSkip, self, message.test);
-
-    -- onclick handler
+    TutorialMessage.getInstance(message.x, message.y, message.w, message.h, message.text, message.clickToSkip, self, message.test);
 end
 
 function TutorialStep:new (type)

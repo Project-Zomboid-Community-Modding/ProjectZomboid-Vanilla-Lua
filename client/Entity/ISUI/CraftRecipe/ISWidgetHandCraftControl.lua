@@ -3,7 +3,6 @@ require "ISUI/ISPanelJoypad"
 ISWidgetHandCraftControl = ISPanelJoypad:derive("ISWidgetHandCraftControl");
 
 local debugSpam = true
--- local debugSpam = false
 
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local BUTTON_SIZE = getTextManager():getFontHeight(UIFont.Small) * 1.5
@@ -44,14 +43,12 @@ function ISWidgetHandCraftControl:createChildren()
     local buttonSize = getTextManager():getFontHeight(UIFont.Small) + 2;
     
     self.buttonMax = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize*2, buttonSize, "MAX")
-    --self.buttonPrev.image = getTexture("ArrowLeft");
     self.buttonMax.font = UIFont.Small;
     self.buttonMax.target = self;
     self.buttonMax.onclick = ISWidgetHandCraftControl.onButtonClick;
     self.buttonMax.enable = true;
     self.buttonMax:initialise();
     self.buttonMax:instantiate();
-    --self.buttonMax.originalTitle = self.buttonMax.title;
     self:addChild(self.buttonMax);
 
     self.buttonMore = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize, buttonSize, "")
@@ -75,34 +72,18 @@ function ISWidgetHandCraftControl:createChildren()
     local style = self.styleBar or "S_ProgressBar_Craft";
     self.progressBar = ISXuiSkin.build(self.xuiSkin, style, ISProgressBar, 0, 0, 150, buttonSize, false, UIFont.Small);
     self.progressBar.progressColor = self.colProgress;
-    --self.progressBar.progressTexture = self.horzTexture;
     self.progressBar:initialise();
     self.progressBar:instantiate();
     self.progressBar:setProgress(0);
     self:addChild(self.progressBar);
 
-    --self.originalBarWidth = self.progressBar:getWidth();
-    --self.originalBarHeight = self.progressBar:getHeight();
-
-    --self.slider = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISSliderPanel,0, 0, 100, 18, self, ISWidgetHandCraftControl.onSliderChange );
-    --self.slider.minValue = 1;
-    --self.slider:initialise();
-    --self.slider:instantiate();
-    --self.slider.valueLabel = false;
-    --self.slider.maxValue = self.logic:getPossibleCraftCount(false);
-    --self.slider:setCurrentValue( 1, true );
-    ----self.slider.customData = _data;
-    --self:addChild(self.slider);
-
     self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, getText("IGUI_CraftingWindow_Craft"))
-    --self.buttonPrev.image = getTexture("ArrowLeft");
     self.buttonCraft.font = UIFont.Small;
     self.buttonCraft.target = self;
     self.buttonCraft.onclick = ISWidgetHandCraftControl.onButtonClick;
     self.buttonCraft.enable = true;
     self.buttonCraft:initialise();
     self.buttonCraft:instantiate();
-    --self.buttonCraft.originalTitle = self.buttonCraft.title;
     self:addChild(self.buttonCraft);
 
     self.origButtonHeight = self.buttonCraft:getHeight();
@@ -112,7 +93,6 @@ function ISWidgetHandCraftControl:createChildren()
         self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, "Force Action")
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
         self.buttonForceCraft.joypadTextureWH = BUTTON_ICON_SIZE;
-        --self.buttonPrev.image = getTexture("ArrowLeft");
         self.buttonForceCraft.font = UIFont.Small;
         self.buttonForceCraft.target = self;
         self.buttonForceCraft.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -122,20 +102,6 @@ function ISWidgetHandCraftControl:createChildren()
         self.buttonForceCraft.originalTitle = self.buttonForceCraft.title;
         self:addChild(self.buttonForceCraft);
     end
-    -- debug tool to know all recipes
---     if isDebugEnabled() and debugSpam then
---         self.buttonKnowAllRecipes = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, "(DEBUG) TOGGLE KNOW ALL RECIPES")
---         self.buttonKnowAllRecipes.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
---         --self.buttonPrev.image = getTexture("ArrowLeft");
---         self.buttonKnowAllRecipes.font = UIFont.Small;
---         self.buttonKnowAllRecipes.target = self;
---         self.buttonKnowAllRecipes.onclick = ISWidgetHandCraftControl.onButtonClick;
---         self.buttonKnowAllRecipes.enable = true;
---         self.buttonKnowAllRecipes:initialise();
---         self.buttonKnowAllRecipes:instantiate();
---         self.buttonKnowAllRecipes.originalTitle = self.buttonKnowAllRecipes.title;
---         self:addChild(self.buttonKnowAllRecipes);
---     end
 
     self.boxHeight = self.height;
     
@@ -147,19 +113,16 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
     local minHeight = self.margin*3;
-    --minHeight = minHeight + self.autoToggle:getHeight() + self.margin;
     
     minHeight = minHeight + self.quantityLabel:getHeight() + self.margin;
     minHeight = minHeight + self.entryBox:getHeight() + self.margin;
     minHeight = minHeight + self.buttonCraft:getHeight();
---     if isDebugEnabled() then
     if self.buttonForceCraft then
         minHeight = minHeight + self.buttonForceCraft:getHeight();
     end
     if self.buttonKnowAllRecipes then
         minHeight = minHeight + self.buttonForceCraft:getHeight();
     end
---     end
 
     height = math.max(height, minHeight);
 
@@ -193,9 +156,7 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
     
     -- qty buttons and progressBar
     heightUsed = 0;
-    if self.allowBatchCraft then --and self.slider then
-        --self.slider:setVisible(true);
-
+    if self.allowBatchCraft then
         if self.buttonLess then
             self.buttonLess:setVisible(true);
             self.buttonLess:setX(x);
@@ -227,21 +188,11 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
             x = x + self.buttonPadding + self.buttonMax:getWidth();
             heightUsed = math.max(heightUsed, self.buttonMax:getHeight())
         end
-
-        --local centerY = self.entryBox:getY() + (self.entryBox:getHeight()/2);
-
-        --local offX = self.entryBox:getX() + self.entryBox:getWidth() + self.margin;
-        --self.slider:setX(offX);
-        --self.slider:setY(centerY - (self.slider:getHeight()/2));
-        --self.slider:setWidth(width-self.margin-offX);
-        --self.slider:paginate();
-
     else
         if self.entryBox then self.entryBox:setVisible(false); end
         if self.buttonMax then self.buttonMax:setVisible(false); end
         if self.buttonMore then self.buttonMore:setVisible(false); end
         if self.buttonLess then self.buttonLess:setVisible(false); end
-        --if self.slider then self.slider:setVisible(false); end
     end
 
     if self.progressBar then
@@ -264,7 +215,6 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
 
     y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;
 
---     if isDebugEnabled() then
     if self.buttonForceCraft then
         self.buttonForceCraft:setX(x);
         self.buttonForceCraft:setWidth(width-(self.margin*2));
@@ -280,14 +230,8 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
 
         y = self.buttonKnowAllRecipes:getY() + self.buttonKnowAllRecipes:getHeight() + self.margin;
     end
---     end
 
     self.boxHeight = y;
-    --[[
-    self.progressBar:setX(x);
-    self.progressBar:setWidth(width-(self.margin*2));
-    self.progressBar:setY(y);
-    --]]
 
     self:setWidth(width);
     self:setHeight(height);
@@ -314,26 +258,19 @@ function ISWidgetHandCraftControl:onResize()
 end
 
 function ISWidgetHandCraftControl:prerender()
-    --ISPanelJoypad.prerender(self);
-
 	if self.background then
 		self:drawRectStatic(0, 0, self.width, self.boxHeight, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 		self:drawRectBorderStatic(0, 0, self.width, self.boxHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	end
 
-    --local y = self.autoToggle:getY() + self.autoToggle:getHeight() + self.margin;
-    --self:drawRectStatic(0, y, self.width, 1, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
     if self.durationLabel then
         if self.logic and self.logic:getRecipe() then
             local seconds = self.logic:getRecipe():getTime(self.player);
---             local seconds = self.logic:getRecipe():getTime();
             -- changed because weird artifacts were happening for sub 1 minute recipes
             local mm
             if seconds < 60 then mm = 0
             else mm = round(seconds / 60, 0) end;
 
---             local mm = round(seconds / 60, 0);
             local ss = math.fmod(seconds, 60);
             local text = string.format("Time Required: %02dm %02ds", mm, ss);
             self.durationLabel:setName(text)
@@ -352,43 +289,12 @@ function ISWidgetHandCraftControl:prerender()
                 self.progressBar:setText(title);
             end
             if self.buttonCraft then
-                --self.buttonCraft:setVisible(false);
                 self.buttonCraft.enable = false;
-                ----self.buttonCraft.displayBackground = false;
-                ----self.buttonCraft:drawProgressBar(0, 0, self.buttonCraft:getWidth(), self.buttonCraft:getHeight(), action:getJobDelta(), self.colProgress);
-                ----self.buttonCraft.title = tostring(round(action:getJobDelta()*100, 0)).."%";
---
-                --local title = tostring(round(action:getJobDelta()*100, 0)).."%";
-                --local x = self.buttonCraft:getX();
-                --local y = self.buttonCraft:getY();
-                --local width = self.buttonCraft:getWidth();
-                --local height = self.buttonCraft:getHeight();
---
-                --self:drawProgressBar(x, y, width, height, action:getJobDelta(), self.colProgress);
---
-                --local c = 0.3;
-                --self:drawRectBorder(x, y, width, height, 1.0, c, c, c);
---
-                --local textW = getTextManager():MeasureStringX(self.buttonCraft.font, title)
-                --local textH = getTextManager():MeasureStringY(self.buttonCraft.font, title)
-                ----log(DebugType.CraftLogic, "TextH = "..tostring(textH)..", TextW = "..tostring(textW))
-                --x = x + ((width / 2) - (textW / 2));
-                --y = y + ((height / 2) - (textH/2) + self.buttonCraft.yoffset);
-                --c = 0.1;
-                --self:drawText(title, x+1, y+1, c, c, c, 1, self.buttonCraft.font);
-                --self:drawText(title, x+1, y-1, c, c, c, 1, self.buttonCraft.font);
-                --self:drawText(title, x-1, y-1, c, c, c, 1, self.buttonCraft.font);
-                --self:drawText(title, x-1, y+1, c, c, c, 1, self.buttonCraft.font);
-                --c = 0.95;
-                --self:drawText(title, x, y, c, c, c, 1, self.buttonCraft.font);
             end
         end
     else
         if self.buttonCraft then
             self.buttonCraft.enable = self.logic:cachedCanPerformCurrentRecipe();
-            --self.buttonCraft:setVisible(true);
-            --self.buttonCraft.displayBackground = true;
-            --self.buttonCraft.title = self.buttonCraft.originalTitle;
         end
         if self.progressBar then
             self.progressBar:setProgress(0);
@@ -409,7 +315,6 @@ end
 function ISWidgetHandCraftControl:onAutoToggled(_newState)
     self.logic:setManualSelectInputs(_newState);
     self.logic:setLastManualInputMode(_newState);
-    --self:triggerEvent(ISWidgetHandCraftControl.onAutoToggled, self, _newState);
 end
 
 function ISWidgetHandCraftControl:onButtonClick(_button)
@@ -427,10 +332,6 @@ function ISWidgetHandCraftControl:onButtonClick(_button)
         if tostring(amount)~=self.entryBox:getInternalText() then
             self:setCraftQuantity(amount);
         end
-
-        --if self.slider then
-        --    self.slider:setCurrentValue( amount, true );
-        --end
     end
     if self.buttonMore and _button==self.buttonMore then
         local amount = tonumber(self.entryBox:getInternalText());
@@ -440,10 +341,6 @@ function ISWidgetHandCraftControl:onButtonClick(_button)
         if tostring(amount)~=self.entryBox:getInternalText() then
             self:setCraftQuantity(amount);
         end
-
-        --if self.slider then
-        --    self.slider:setCurrentValue( amount, true );
-        --end
     end
     if self.buttonLess and _button==self.buttonLess then
         local amount = tonumber(self.entryBox:getInternalText());
@@ -453,10 +350,6 @@ function ISWidgetHandCraftControl:onButtonClick(_button)
         if tostring(amount)~=self.entryBox:getInternalText() then
             self:setCraftQuantity(amount);
         end
-
-        --if self.slider then
-        --    self.slider:setCurrentValue( amount, true );
-        --end   
     end
 end
 
@@ -533,7 +426,6 @@ function ISWidgetHandCraftControl:onHandcraftActionComplete()
             self.logic:stopCraftAction();
         else
             self:setCraftQuantity(self.craftTimes);
-            --self.slider:setCurrentValue( self.craftTimes, false );
         end
     end
 
@@ -547,12 +439,6 @@ function ISWidgetHandCraftControl:onHandcraftActionCancelled()
     self.logic:stopCraftAction();
     self.craftTimes = nil;
 end
-
---function ISWidgetHandCraftControl:onSliderChange(_newval, _slider)
---    if _slider==self.slider then
---        self:setCraftQuantity(_newval);
---    end
---end
 
 function ISWidgetHandCraftControl.onTextChange(box)
     if not box then
@@ -584,12 +470,6 @@ function ISWidgetHandCraftControl:sanitizeCraftQuantity()
     if tostring(amount)~=self.entryBox:getInternalText() then
         self.entryBox:setText(tostring(amount));
     end
-
-    --if self.slider then
-    --    self.slider.maxValue = self.logic:getPossibleCraftCount(false);
-    --    local sliderVal = amount;
-    --    self.slider:setCurrentValue(sliderVal, false);
-    --end 
 end
 
 function ISWidgetHandCraftControl:onGainJoypadFocus(joypadData)
@@ -607,7 +487,6 @@ function ISWidgetHandCraftControl:new(x, y, width, height, player, logic)
 
     o.background = true;
     o.backgroundColor = {r=0.2, g=0.2, b=0.2, a=0.5};
-    --o.margin = 5;
     o.player = player;
     o.logic = logic;
 
@@ -619,8 +498,6 @@ function ISWidgetHandCraftControl:new(x, y, width, height, player, logic)
     o.margin = 5;
     o.minimumWidth = 100;
     o.minimumHeight = 0;
-
-    --o.doToolTip = true;
 
     o.autoFillContents = false;
 

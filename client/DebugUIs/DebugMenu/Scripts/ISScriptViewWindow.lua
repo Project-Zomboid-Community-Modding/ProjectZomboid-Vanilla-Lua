@@ -3,7 +3,6 @@ require "ISUI/ISCollapsableWindow"
 ISScriptViewWindow = ISCollapsableWindow:derive("ISScriptViewWindow");
 ISScriptViewWindow.instance = nil;
 ISScriptViewWindow.coords = false;
-local UI_BORDER_SPACING = 10
 
 function ISScriptViewWindow.OnOpenPanel(_script)
     if ISScriptViewWindow.instance==nil then
@@ -65,7 +64,6 @@ function ISScriptViewWindow:prerender()
     ISCollapsableWindow.prerender(self);
 end
 
-
 function ISScriptViewWindow:render()
     ISCollapsableWindow.render(self);
 
@@ -86,7 +84,6 @@ end
 
 function ISScriptViewWindow:new (x, y, width, height)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -107,7 +104,6 @@ function ISScriptViewWindow:new (x, y, width, height)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = "Script View Window";
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
     o.minimumWidth = 300;

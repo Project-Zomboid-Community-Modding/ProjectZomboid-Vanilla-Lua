@@ -92,9 +92,6 @@ function ISMiniScoreboardUI:populateList()
             local name = displayName
             item.username = username
             item.displayName = displayName
---            if username ~= displayName then
---                name = displayName .. " (" .. username .. ")";
---            end
             local item0 = self.playerList:addItem(name, item);
             if username ~= displayName then
                 item0.tooltip = username

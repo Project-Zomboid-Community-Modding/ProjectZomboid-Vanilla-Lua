@@ -32,7 +32,6 @@ function HorizontalLine:new(x, y, width)
 	return o
 end
 
-
 local MainPanel = ISPanelJoypad:derive("NewGameScreen_MainPanel")
 
 function MainPanel:prerender()
@@ -162,7 +161,6 @@ function NewGameScreen:initialise()
 end
 
 function NewGameScreen:instantiate()
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	self.javaObject:setX(self.x);
 	self.javaObject:setY(self.y);
@@ -196,37 +194,6 @@ function NewGameScreen:create()
     local gapY = UI_BORDER_SPACING
 
     local mediumFontHgt = FONT_HGT_MEDIUM + 4
-    local largeFontHgt = FONT_HGT_LARGE + 6
-
---    self.tutorial = ISLabel:new(x, y, FONT_HGT_LARGE, getText("UI_NewGame_Tutorial"), 1, 1, 1, 1, UIFont.NewLarge, true);
---    self.tutorial.internal = "Tutorial";
---    self.tutorial.mode = "Tutorial";
---    self.tutorial.desc = getText("UI_NewGame_Tutorial_desc");
---    self.tutorial.thumb = "media/ui/spiffoSkipping.png";
---    self.tutorial:initialise();
---    self.mainPanel:addChild(self.tutorial);
---    self.tutorial.onMouseDown = NewGameScreen.onMenuItemMouseDown;
---    self.tutorial:setOnMouseDoubleClick(self, NewGameScreen.dblClickTutorial);
---    y = y + FONT_HGT_LARGE;
---
---    local sep1 = HorizontalLine:new(x, y + 10, 1500)
---    sep1:initialise();
---    self.mainPanel:addChild(sep1);
---    y = y + 10 + 2 + 10
-
---    local survival = ISLabel:new(x, y, FONT_HGT_LARGE, getText("UI_NewGame_Survival") .. getText("UI_NewGame_SurvivalMore"), 1, 1, 1, 1, UIFont.NewLarge, true);
---    survival.moreTextToRemove = getText("UI_NewGame_SurvivalMore");
---    survival.internal = "SURVIVAL";
---    survival.mode = "Survival";
---    survival.desc = getText("UI_NewGame_Survival_desc");
---    survival.thumb = "media/ui/spiffoSurvivor.png"
---    survival:initialise();
---    self.mainPanel:addChild(survival);
---    survival.onMouseDown = NewGameScreen.onMenuItemMouseDown;
---    survival:setOnMouseDoubleClick(self, NewGameScreen.dblClickSurvival);
---    y = y + FONT_HGT_LARGE + 4;
-
---    self.survival = survival;
 
     local playstyle = ISLabel:new(x, y, FONT_HGT_LARGE, getText("UI_NewGame_PlayStyle"), 1, 1, 1, 1, UIFont.NewLarge, true);
     playstyle:initialise();
@@ -293,125 +260,6 @@ function NewGameScreen:create()
     sandboxDesc:initialise();
     self.mainPanel:addChild(sandboxDesc);
     y = y + FONT_HGT_LARGE
-
-
---    local sep1 = HorizontalLine:new(x, y + 10, 1000)
---    sep1:initialise();
---    self.mainPanel:addChild(sep1);
---    y = y + 10 + 2 + 10
---
---    local scenarios = ISLabel:new(x, y, FONT_HGT_LARGE, getText("UI_NewGame_Scenarios"), 1, 1, 1, 1, UIFont.NewLarge, true);
---    scenarios:initialise();
---    self.mainPanel:addChild(scenarios);
---
---    self.difficulty = ISLabel:new(x + xoffsetdifficulty, y, FONT_HGT_LARGE, getText("UI_NewGame_StartingCondition"), 1, 1, 1, 1, UIFont.NewLarge, true);
---    self.difficulty:initialise();
---    self.mainPanel:addChild(self.difficulty);
---    self.difficulty:setVisible(false);
---    y = y + FONT_HGT_LARGE + 4;
-
---    local practiceRun = ISLabel:new(x+xoffset, y, mediumFontHgt, getText("UI_NewGame_InitialInfection"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    practiceRun.internal = "PRACTICE";
---    practiceRun.mode = "Initial Infection";
---    practiceRun.desc = getText("UI_NewGame_InitialInfection_desc");
---    practiceRun.thumb = "media/ui/spiffoSkipping.png";
---    practiceRun:initialise();
---    self.mainPanel:addChild(practiceRun);
---    practiceRun.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-
---    local begining = ISLabel:new(x+xoffset, y, mediumFontHgt, getText("UI_NewGame_OneWeekLater") .. getText("UI_NewGame_OneWeekLaterMore"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    begining.internal = "BEGINING";
---    begining.mode = "One Week Later";
---    begining.moreTextToRemove = getText("UI_NewGame_OneWeekLaterMore");
---    begining.desc = getText("UI_NewGame_FirstWeek_desc");
---    begining.thumb = "media/ui/spiffoSkipping.png"
---    begining:initialise();
---    self.mainPanel:addChild(begining);
---    begining.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-
---    self.difficultyEasy = ISLabel:new(x + xoffset + xoffsetdifficulty, y, mediumFontHgt, getText("UI_StarterCondition_Easy"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    self.difficultyEasy:initialise();
---    self.difficultyEasy.difficulty = "Easy";
---    self.difficultyEasy.internal = "EASY";
---    self.difficultyEasy:setTooltip(getText("UI_StarterCondition_Easy_desc"):gsub("\\n", "\n"));
---    self.mainPanel:addChild(self.difficultyEasy);
---    self.difficultyEasy:setVisible(false);
---    self.difficultyEasy:setOnMouseDoubleClick(self, NewGameScreen.dblClickDifficulty);
---    self.difficultyEasy.onMouseDown = NewGameScreen.onChooseDifficulty;
---    y = y + mediumFontHgt + gapY
-
---    local ends = ISLabel:new(x+xoffset, y, mediumFontHgt, getText("UI_NewGame_SixMonths") .. getText("UI_NewGame_SixMonthsMore"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    ends.internal = "ENDS";
---    ends.mode = "Six Months Later";
---    ends.moreTextToRemove = getText("UI_NewGame_SixMonthsMore");
---    ends.desc = getText("UI_NewGame_SixMonths_desc");
---    ends.thumb = "media/ui/spiffoPanic.png"
---    ends:initialise();
---    self.mainPanel:addChild(ends);
---    ends.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-
---    self.difficultyNormal = ISLabel:new(x+xoffset + xoffsetdifficulty, y, mediumFontHgt, getText("UI_StarterCondition_Normal"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    self.difficultyNormal:initialise();
---    self.difficultyNormal.difficulty = "Normal";
---    self.difficultyNormal.internal = "NORMAL";
---    self.difficultyNormal:setTooltip(getText("UI_StarterCondition_Normal_desc"):gsub("\\n", "\n"));
---    self.mainPanel:addChild(self.difficultyNormal);
---    self.difficultyNormal:setVisible(false);
---    self.difficultyNormal:setOnMouseDoubleClick(self, NewGameScreen.dblClickDifficulty);
---    self.difficultyNormal.onMouseDown = NewGameScreen.onChooseDifficulty;
---    y = y + mediumFontHgt + gapY
-
---    self.difficultyHard = ISLabel:new(x+xoffset + xoffsetdifficulty, y, mediumFontHgt, getText("UI_StarterCondition_Normal"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    self.difficultyHard:initialise();
---    self.difficultyHard.difficulty = "Hard";
---    self.difficultyHard.internal = "HARD";
---    self.difficultyHard:setTooltip(getText("UI_StarterCondition_Hard_desc"):gsub("\\n", "\n"));
---    self.mainPanel:addChild(self.difficultyHard);
---    self.difficultyHard:setVisible(false);
---    self.difficultyHard:setOnMouseDoubleClick(self, NewGameScreen.dblClickDifficulty);
---    self.difficultyHard.onMouseDown = NewGameScreen.onChooseDifficulty;
---    y = y + mediumFontHgt + gapY
---
---    self.difficultyHardcore = ISLabel:new(x+xoffset + xoffsetdifficulty, y, mediumFontHgt,  getText("UI_StarterCondition_Hardcore"), 1, 1, 1, 1, UIFont.NewMedium, true);
---    self.difficultyHardcore:initialise();
---    self.difficultyHardcore.difficulty = "Hardcore";
---    self.difficultyHardcore.internal = "HARDCORE";
---    self.difficultyHardcore:setTooltip(getText("UI_StarterCondition_Hardcore_desc"):gsub("\\n", "\n"));
---    self.mainPanel:addChild(self.difficultyHardcore);
---    self.difficultyHardcore:setVisible(false);
---    self.difficultyHardcore:setOnMouseDoubleClick(self, NewGameScreen.dblClickDifficulty);
---    self.difficultyHardcore.onMouseDown = NewGameScreen.onChooseDifficulty;
---    y = y + mediumFontHgt + gapY
-
---    local right = 0
---    right = math.max(right, practiceRun:getRight())
---    right = math.max(right, begining:getRight())
---    right = math.max(right, ends:getRight())
---    right = math.max(right, survival:getRight())
---    right = right + 32
---    if self.difficulty.x < right then
---        self.difficulty:setX(right)
---        self.difficultyEasy:setX(right + xoffset)
-----        self.difficultyNormal:setX(right + xoffset)
---        self.difficultyHard:setX(right + xoffset)
---        self.difficultyHardcore:setX(right + xoffset)
---    end
-
---    local sep2 = HorizontalLine:new(x, y + 10, 1000)
---    sep2:initialise();
---    self.mainPanel:addChild(sep2)
---    y = y + 10 + 2 + 10
-
---    local sandbox = ISLabel:new(x, y, largeFontHgt, getText("UI_NewGame_Sandbox"), 1, 1, 1, 1, UIFont.NewLarge, true);
---    sandbox.internal = "SANDBOX";
---    sandbox.mode = "Sandbox";
---    sandbox.desc = getText("UI_NewGame_Sandbox_desc");
---    sandbox.thumb = "media/ui/playstyleIcons/spiffoPacking.png"
---    sandbox:initialise();
---    self.mainPanel:addChild(sandbox);
---    sandbox.onMouseDown = NewGameScreen.onMenuItemMouseDown;
---    sandbox:setOnMouseDoubleClick(self, NewGameScreen.dblClickChallenge);
---    y = y + math.max(30, largeFontHgt)
 
     local sep3 = HorizontalLine:new(x, y + 10, 1000)
     sep3:initialise()
@@ -487,16 +335,8 @@ function NewGameScreen:create()
     width = width + self.mainPanel.vscroll:getWidth() + 4
     self.mainPanelReqWidth = width
     width = math.min(width, (self.width / 2) + 90 - self.mainPanel.x)
---    self.mainPanel:setX(30 + (self.width / 2 - width) / 2)
     self.mainPanel:setWidth(width)
 
---    self:insertNewLineOfButtons(self.tutorial)
---    self:insertNewLineOfButtons(practiceRun, self.difficultyEasy)
---    self:insertNewLineOfButtons(survival)
---    self:insertNewLineOfButtons(begining, self.difficultyEasy)
---    self:insertNewLineOfButtons(self.difficultyNormal)
---    self:insertNewLineOfButtons(ends, self.difficultyHard)
---    self:insertNewLineOfButtons(self.difficultyHardcore)
     self.mainPanel:insertNewLineOfButtons(survivor)
     self.mainPanel:insertNewLineOfButtons(fighter)
     self.mainPanel:insertNewLineOfButtons(builder)
@@ -505,7 +345,6 @@ function NewGameScreen:create()
         self.mainPanel:insertNewLineOfButtons(challenge)
     end
     self.mainPanel:insertNewLineOfButtons(self.buttonMods)
---    self.joypadIndex = 1
 
     local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
     local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
@@ -547,7 +386,6 @@ function NewGameScreen:create()
     self.richText.marginRight = 20
     self.richText:setAnchorBottom(true);
     self.richText:setAnchorRight(true);
---    self.richText:setVisible(false);
     self:addChild(self.richText);
     self.richText:addScrollBars()
 
@@ -591,32 +429,9 @@ NewGameScreen.onMenuItemMouseDown = function(item, x, y)
     local screen = NewGameScreen.instance;
     screen.selectedItem = item;
 
---    screen.selectedDifficulty = nil;
---    screen.difficulty:setVisible(false);
---    screen.difficultyEasy:setVisible(false);
---    screen.difficultyNormal:setVisible(false);
---    screen.difficultyHard:setVisible(false);
---    screen.difficultyHardcore:setVisible(false);
-
---    if screen:needDifficulty() then
---        screen.difficulty:setVisible(true);
---        screen.difficultyEasy:setVisible(true);
-----        screen.difficultyNormal:setVisible(true);
---        screen.difficultyHard:setVisible(true);
---        screen.difficultyHardcore:setVisible(true);
---        screen.difficultyEasy.disabled = false;
-----        screen.difficultyNormal.disabled = false;
---        screen.difficultyHard.disabled = false;
---        screen.difficultyEasy.a = 1;
-----        screen.difficultyNormal.a = 1;
---        screen.difficultyHard.a = 1;
---    elseif screen.selectedItem.internal == "SURVIVAL" then
     if screen.selectedItem then
         screen.selectedDifficulty = screen.difficultyHardcore;
---        screen:clickPlay();
     end
---    NewGameScreen.instance:clickPlay();
---    end
 end
 
 
@@ -903,10 +718,6 @@ function NewGameScreen:clickPlay()
         end
     end
 
-    if self.selectedItem.mode then
---         getWorld():setPreset(self.selectedItem.mode);
-    end
-
     getWorld():setMap("DEFAULT")
     MainScreen.instance.createWorld = true;
     if getWorld():getGameMode() == "Sandbox" then
@@ -960,7 +771,6 @@ end
 
 function NewGameScreen:onResolutionChange(oldw, oldh, neww, newh)
     local width = math.min(self.mainPanelReqWidth, self.width / 2 + 90 - self.mainPanel.x)
---    self.mainPanel:setX(30 + (self.width / 2 - width) / 2)
     self.mainPanel:setWidth(width)
 end
 
@@ -993,7 +803,6 @@ end
 function NewGameScreen:onJoypadBeforeDeactivate(joypadData)
 	self.backButton:clearJoypadButton()
 	self.nextButton:clearJoypadButton()
---	self:clearJoypadFocus()
 end
 
 function NewGameScreen:onKeyRelease(key)

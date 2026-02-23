@@ -25,11 +25,9 @@ local function CreateSourceItem1(recipe, source, sourceFullType)
 end
 
 local containers = nil
-local pack = nil
 
 local function addToInv(item)
 	local playerObj = getPlayer()
---	playerObj:getInventory():AddItem(item)
 	while true do
 		local r = ZombRand(containers:size())
 		if containers:get(r):getType() ~= "floor" then -- TODO: world inventory items
@@ -51,7 +49,6 @@ end
 local itemText = {}
 
 local function CreateSourceItem2(recipe, source, sourceFullType)
-	local playerObj = getPlayer()
 	local item = nil
 	if sourceFullType == "Water" then
 		for i=1,source:getCount() do
@@ -78,7 +75,6 @@ local function CreateSourceItem2(recipe, source, sourceFullType)
 end
 
 local function CreateSourceItem(recipe, source, sourceFullType)
-	local playerObj = getPlayer()
 	if sourceFullType == "Water" then
 		CreateSourceItem2(recipe, source, sourceFullType)
 	elseif source:isDestroy() then
@@ -140,11 +136,8 @@ local function TestRecipe(recipe)
 	for j=1,recipe:getSource():size() do
 		local source = recipe:getSource():get(j-1)
 		if source:getItems():size() > 1 then
---			for k=1,source:getItems():size() do
-				local sourceFullType = source:getItems():get(multiSourceIndex-1)
-				CreateSourceItem(recipe, source, sourceFullType)
---				break;
---			end
+            local sourceFullType = source:getItems():get(multiSourceIndex-1)
+            CreateSourceItem(recipe, source, sourceFullType)
 		else
 			local sourceFullType = source:getOnlyItem()
 			CreateSourceItem(recipe, source, sourceFullType)
@@ -217,10 +210,7 @@ local function PostValidate(recipe)
 		local source = recipe:getSource():get(j-1)
 		local sourceFullType = nil
 		if source:getItems():size() > 1 then
---			for k=1,source:getItems():size() do
-				sourceFullType = source:getItems():get(multiSourceIndex-1)
---				break;
---			end
+            sourceFullType = source:getItems():get(multiSourceIndex-1)
 		else
 			sourceFullType = source:getOnlyItem()
 		end
@@ -275,7 +265,6 @@ end
 
 -- Call from debug console to test one recipe (or several with the same name)
 function RecipeTestOne(recipeName)
-	local playerObj = getPlayer()
 	SetupContainers()
 	local recipes = getAllRecipes()
 	recipesToTest = {}
@@ -298,7 +287,6 @@ end
 
 -- Call from debug console to test every recipe
 function RecipeTestAll()
-	local playerObj = getPlayer()
 	SetupContainers()
 	local recipes = getAllRecipes()
 	recipesToTest = {}
@@ -306,7 +294,6 @@ function RecipeTestAll()
 		local recipe = recipes:get(i-1)
 		table.insert(recipesToTest, recipe)
 	end
---	TestRecipe(recipe)
 	if not tickRegistered then
 		Events.OnTick.Add(OnTick)
 		tickRegistered = true

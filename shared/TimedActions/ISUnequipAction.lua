@@ -137,15 +137,6 @@ function ISUnequipAction:complete()
 		self.character:getCurrentSquare():AddWorldInventoryItem(self.item, dropX, dropY, dropZ)
 	end
 
-	-- if it was an animal corpse, drop it
-	if self.item:getType() == "CorpseAnimal" and self.character:getCurrentSquare() then
-		if self.item:getContainer() then
-            sendRemoveItemFromContainer(self.item:getContainer(), self.item);
-			self.item:getContainer():Remove(self.item);
-		end
-		self.character:getCurrentSquare():AddWorldInventoryItem(self.item, 0,0,0, true);
-	end
-
 	if isClient() then
 		ISInventoryPage.renderDirty = true
 	end
@@ -168,15 +159,27 @@ function ISUnequipAction:getDuration()
     end
 end
 
-function ISUnequipAction:new(character, item, maxTime)
+function ISUnequipAction:new(character, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character);
 	o.item = item;
 	o.stopOnAim = false;
 	o.stopOnWalk = false;
 	o.stopOnRun = true;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.ignoreHandsWounds = true;
 	o.clothingAction = true;
 	o.stopOnWalk = ISWearClothing.isStopOnWalk(item);
+	if isServer() then
+		o.hotbar = nil
+	else
+		o.hotbar = getPlayerHotbar(character:getPlayerNum());
+	end
+	o.fromHotbar = o.hotbar and o.hotbar:isItemAttached(item);
+	if o.maxTime > 1 and o.fromHotbar then
+		o.animSpeed = o.maxTime / o:adjustMaxTime(o.maxTime)
+	else
+		o.animSpeed = 1.0
+	end
 	return o;
 end

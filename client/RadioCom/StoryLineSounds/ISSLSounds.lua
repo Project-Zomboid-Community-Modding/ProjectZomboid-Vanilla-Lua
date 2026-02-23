@@ -11,7 +11,6 @@ function ISSLSounds:createChildren()
     table.insert(self.columns, {percent = 0.33})
 
     local col = self.columns[1];
-    local w = self.width*col.percent;
 
     self.filterEntry = ISTextEntryBox:new("", 0, 0, 0, 0);
     self.filterEntry:initialise();
@@ -27,21 +26,13 @@ function ISSLSounds:createChildren()
     self.soundList.itemheight = self.soundList.fontHgt + (self.soundList.itemPadY * 2);
     self.soundList:initialise();
     self.soundList:instantiate();
-    --self.soundList.itemheight = 30;
     self.soundList.selected = 0;
-    --self.soundList.doDrawItem = ISSLEvent.drawSoundItem;
-    --self.soundList:setOnMouseDownFunction(self, ISCraftingCategoryUI.refreshParent);
-    --self.soundList:setOnMouseDoubleClick(self, ISCraftingCategoryUI.onDblClickRecipeList);
-    --self.soundList.joypadParent = self;
-    --    self.soundList.resetSelectionOnChangeFocus = true;
     self.soundList.drawBorder = false;
     self:addChild(self.soundList);
 
     self.playSoundButton = ISButton:new(0, 0, 0,0,"Play sound",self, ISSLSounds.playSoundFromMainList);
     self.playSoundButton:initialise()
     self:addChild(self.playSoundButton);
-
-    --self:setEvent(getSLSoundManager():getStorySoundEvent("warzone"));
 
     self:loadSounds();
 
@@ -58,7 +49,6 @@ function ISSLSounds:loadSounds( _filter )
             if _filter == nil or string.contains(string.lower(eSound:getName()), _filter) then
                 self:addSoundItem(eSound);
             end
-            --self:addSoundItem(eSound);
         end
     end
 end

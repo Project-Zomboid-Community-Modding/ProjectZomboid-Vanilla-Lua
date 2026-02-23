@@ -9,7 +9,6 @@ end
 function RWMTestPane:createChildren()
     self:setHeight(32);
 
-    --ISItemDropBox:new (x, y, width, height, storeItem, target, onItemDropped, onItemRemove, onVerifyItem, onDragSelf)
     self.itemDropBox = ISItemDropBox:new (10, 4, self.height-8, self.height-8, false, self, nil, nil, RWMTestPane.verifyItem, nil );
     self.itemDropBox:initialise();
     self.itemDropBox:setBackDropTex( getTexture("Item_Battery"), 0.2, 1,1,1 );
@@ -43,11 +42,9 @@ function RWMTestPane:prerender()
     ISPanel.prerender(self);
 end
 
-
 function RWMTestPane:render()
     ISPanel.render(self);
 end
-
 
 function RWMTestPane:new (x, y, width, height)
     local o = RWMPanel:new(x, y, width, height);
@@ -64,7 +61,6 @@ function RWMTestPane:new (x, y, width, height)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
     return o
 end
 

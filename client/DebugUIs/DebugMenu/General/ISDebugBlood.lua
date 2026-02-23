@@ -29,7 +29,6 @@ function ISDebugBlood:createChildren()
 		y2,value = ISDebugUtils.addLabel(self, part, x+(w-300)-20, y, "0", UIFont.Small, false)
 		y,slider = ISDebugUtils.addSlider(self, part, x+(w-300), y, 300,BUTTON_HGT, self.onSliderChange)
 		slider:setValues(0.0, 1.0, 0.01, 0.01, true)
---		slider:setCurrentValue(getPlayer():getHumanVisual():getBlood(part))
 		self.partToSlider[part] = slider
 		y = ISDebugUtils.addHorzBar(self, math.max(y,y2)+barMod)+barMod+1
 	end

@@ -38,7 +38,6 @@ function ISTextEntryBox:setOnlyText(onlyText)
 end
 
 function ISTextEntryBox:instantiate()
-	--self:initialise();
 	self.javaObject = UITextBox2.new(self.font, self.x, self.y, self.width, self.height, self.title, false);
 	self.javaObject:setTable(self);
 	self.javaObject:setX(self.x);
@@ -194,7 +193,7 @@ function ISTextEntryBox:prerender()
 	elseif self.borderColor.a == 1 then
 		local rgb = math.min(self.borderColor.r + 0.2 * self.fade:fraction(), 1.0)
 		self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, rgb, rgb, rgb);
-	else -- setValid(false)
+	else
 		local r = math.min(self.borderColor.r + 0.2 * self.fade:fraction(), 1.0)
 		self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, r, self.borderColor.g, self.borderColor.b)
 	end
@@ -302,8 +301,6 @@ function ISTextEntryBox:onJoypadDown(button, joypadData)
 			return -- splitscreen
 		end
 		local osk = OnScreenKeyboard.Show(joypadData.player, self, joypadData)
---		osk:setX(self:getAbsoluteX())
---		osk:setY(self:getAbsoluteY() + self:getHeight())
 		osk.prevFocus = joypadData.focus -- could be self or parent ISPanelJoypad
 		joypadData.focus = osk
 	end

@@ -522,6 +522,9 @@ end
 function ISInventoryTransferAction:floorHasRoomFor(square, item)
 	local capacity = self.destContainer:getEffectiveCapacity(self.character)
 	local totalWeight = square:getTotalWeightOfItemsOnFloor()
+	if item:isOnGroundOrInsideBagOnSquare(square) then
+		totalWeight = totalWeight - item:getUnequippedWeight()
+	end
 	if totalWeight >= capacity then
 		return false
 	end

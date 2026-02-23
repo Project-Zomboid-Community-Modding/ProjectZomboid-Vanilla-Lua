@@ -98,7 +98,6 @@ function ISRecipeScrollingListBox:doDrawNode(y, item, _alt)
         end
 
         local detailsLeft = UI_BORDER_SPACING + LIST_ICON_SIZE + UI_BORDER_SPACING + xOffset;
-        --local detailsCentre = detailsLeft + ((safeDrawWidth - detailsLeft) / 2);
         local detailsY = 4;
 
         -- icons
@@ -116,7 +115,6 @@ function ISRecipeScrollingListBox:doDrawNode(y, item, _alt)
             iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
         end
         if not craftRecipe:canBeDoneInDark() and not self.ignoreLightIcon then
-            --local iconTexture = getTexture("media/ui/craftingMenus/Icon_Moon_48x48.png");
             local iconTexture = getTexture("media/ui/craftingMenus/BuildProperty_Light" .. fileSize);
             self:drawTextureScaledAspect(iconTexture, iconRight, y +detailsY, LIST_SUBICON_SIZE, LIST_SUBICON_SIZE, color.a, color.r, color.g, color.b);
             iconRight = iconRight - LIST_SUBICON_SIZE - LIST_SUBICON_SPACING;
@@ -149,7 +147,6 @@ function ISRecipeScrollingListBox:doDrawNode(y, item, _alt)
                     tags = tags .. ",";
                 end
             end
-            --titleStr = titleStr .. " ( DBG:" .. craftRecipe:getTags() .. ")";
             titleStr = titleStr .. "\n (tags: " .. tags .. ")";
         end
         self:drawText(titleStr, detailsLeft, y +detailsY, color.r, color.g, color.b, color.a, UIFont.Small);
@@ -277,7 +274,6 @@ function ISRecipeScrollingListBox:doDrawGroup(y, item, _alt)
     end
 
     local detailsLeft = UI_BORDER_SPACING + LIST_ICON_SIZE + UI_BORDER_SPACING;
-    --local detailsCentre = detailsLeft + ((safeDrawWidth - detailsLeft) / 2);
     local detailsY = 4;
 
     -- icons
@@ -333,7 +329,6 @@ function ISRecipeScrollingListBox:addGroup(_groupNode, _nodes, _recipeToSelect, 
     -- add category
     if _groupNode then
         local groupTitle = _groupNode:getTitle();
-        --local groupIcon = _groupNode:getIconTexture();
         
         local listItem = self:addItem(groupTitle, nil);
         listItem.groupNode = _groupNode;
@@ -367,11 +362,6 @@ function ISRecipeScrollingListBox:addGroup(_groupNode, _nodes, _recipeToSelect, 
             end
         end
     end
-
-    --if not currentRecipeFound and #self.recipeListPanel.items > 0 then
-    --    self:setSelectedData(self.recipeListPanel.items[1].item)
-    --    self.logic:setRecipe(self.recipeListPanel.items[1].item);
-    --end
     
     return recipeFoundIndex;
 end
@@ -527,7 +517,6 @@ function ISRecipeScrollingListBox:new (x, y, width, height, player, logic)
     o.itemheight = math.max(2 + FONT_HGT_HEADING + FONT_HGT_SMALL + UI_BORDER_SPACING, LIST_ICON_SIZE + UI_BORDER_SPACING);
     
     o.selected = 0;
-    --o.joypadParent = self;
     o.drawBorder = true;
 
     return o

@@ -8,7 +8,6 @@ ISLiteratureMediaList = ISScrollingListBox:derive("ISListeratureMediaList")
 ISLiteratureGrowingList = ISScrollingListBox:derive("ISListeratureGrowingList")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local LITERATURE_HIDDEN = {}
 
@@ -16,18 +15,6 @@ function ISLiteratureUI.SetItemHidden(fullType, hidden)
 	if type(fullType) ~= 'string' or not string.contains(fullType, '.') then return end
 	LITERATURE_HIDDEN[fullType] = hidden and true or nil
 end
-
--- ISLiteratureUI.SetItemHidden('Base.BookBlacksmith1', true)
--- ISLiteratureUI.SetItemHidden('Base.BookBlacksmith2', true)
--- ISLiteratureUI.SetItemHidden('Base.BookBlacksmith3', true)
--- ISLiteratureUI.SetItemHidden('Base.BookBlacksmith4', true)
--- ISLiteratureUI.SetItemHidden('Base.BookBlacksmith5', true)
--- ISLiteratureUI.SetItemHidden('Base.SmithingMag1', true)
--- ISLiteratureUI.SetItemHidden('Base.SmithingMag2', true)
--- ISLiteratureUI.SetItemHidden('Base.SmithingMag3', true)
--- ISLiteratureUI.SetItemHidden('Base.SmithingMag4', true)
-
-
 
 ISLiteratureUI.SetItemHidden('Base.CarrotBagSeed2_Empty', true)
 ISLiteratureUI.SetItemHidden('Base.BroccoliBagSeed2_Empty', true)
@@ -88,14 +75,8 @@ ISLiteratureUI.SetItemHidden('Base.ZucchiniBagSeed_Empty', true)
 
 
 function ISLiteratureList:doDrawItem(y, item, alt)
---[[
-	if self.selected == item.index then
-		self:drawRect(0, y, self:getWidth(), item.height-1, 0.3, 0.7, 0.35, 0.15)
-	end
---]]
 	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
     local showUnknownRecipes
---     print("ShowUnknownRecipes = " .. tostring(showUnknownRecipes))
     if metaKnowledge == 1 then showUnknownRecipes = true end
 	local r,g,b,a = 0.5,0.5,0.5,1.0
 	local itemPadY = (item.height - self.fontHgt) / 2
@@ -226,7 +207,6 @@ end
 
 function ISLiteratureGrowingList:doDrawItem(y, item, alt)
 	local itemPadY = (item.height - self.fontHgt) / 2
---     local typeOfSeed = item.text
     local prop = farming_vegetableconf.props[item.text]
     if not prop then return y end
     if not prop.seasonRecipe then return y end
@@ -542,9 +522,6 @@ function ISLiteratureUI:onJoypadDirDown(button)
 end
 
 function ISLiteratureUI:onRecipeSelected(recipe)
---     print("Recipe " .. tostring(recipe))
---     print("self " .. tostring(self))
---     print("listbox " .. tostring(listbox))
     local showMeta = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue() ~= 3
     local showAllRecipes = getSandboxOptions():getOptionByName("SeeNotLearntRecipe"):getValue() == true and showMeta
 

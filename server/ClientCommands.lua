@@ -378,7 +378,7 @@ Commands.fireplace.setFuel = function(player, args)
 	local fp = getFireplace(args.x, args.y, args.z)
 	if fp then
 		fp:setFuelAmount(args.fuelAmt)
-		fp:sendObjectChange('state')
+		fp:sendObjectChange(IsoObjectChange.STATE)
 	end
 end
 
@@ -402,7 +402,7 @@ Commands.bbq.setFuel = function(player, args)
 	local bbq = getBarbecue(args.x, args.y, args.z)
 	if bbq then
 		bbq:setFuelAmount(args.fuelAmt)
-		bbq:sendObjectChange('state')
+		bbq:sendObjectChange(IsoObjectChange.STATE)
 	end
 end
 
@@ -583,14 +583,7 @@ end
 Commands.player.setWeight = function(player, args)
 	local otherPlayer = getPlayerByOnlineID(args.id)
 	if otherPlayer then
-		sendServerCommand(otherPlayer, "player", "setWeight", args)
-	end
-end
-
-Commands.player.syncWeight = function(player, args)
-	local otherPlayer = getPlayerByOnlineID(args.id)
-	if otherPlayer then
-		sendServerCommand(otherPlayer, "player", "syncWeight", args)
+		otherPlayer:getNutrition():setWeight(args.weight)
 	end
 end
 

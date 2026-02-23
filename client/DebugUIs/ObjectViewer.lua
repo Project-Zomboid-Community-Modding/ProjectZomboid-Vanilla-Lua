@@ -6,8 +6,6 @@ local FONT_HGT_CODE = getTextManager():getFontHeight(getTextManager():getCurrent
 
 function ObjectViewer:onRightMouseDownObject(x, y)
     if instanceof(self.parent.obj, "KahluaTableImpl") then
-
-
         local context = getDebuggerContextMenu()
         context:hideAndChildren();
         context:setVisible(true);
@@ -37,15 +35,7 @@ function ObjectViewer:onRightMouseDownObject(x, y)
             y = 1;
         end
 
-        -- RJ: If you select the same item it unselect it
-        --if self.selected == y then
-        --if self.selected == y then
-        --self.selected = -1;
-        --return;
-        --end
-
         self.selected = y;
-
 
         local sel = self.items[self.selected];
         context:addOption("Watch", { obj = self.parent.obj, item = sel.item}, ObjectViewer.onWatch);
@@ -62,17 +52,15 @@ function ObjectViewer:onRightMouseDownObject(x, y)
     end
 end
 
-
-
 function ObjectViewer.onWatch(item)
-
     WatchWindowInstance.objlist:add(item);
     WatchWindowInstance:fill();
 end
 
 function ObjectViewer.onDataWrite(data)
-toggleBreakOnChange(data.obj, data.item.key);
+    toggleBreakOnChange(data.obj, data.item.key);
 end
+
 function ObjectViewer.onDataRead(data)
     toggleBreakOnRead(data.obj, data.item.key);
 end
@@ -82,14 +70,13 @@ function ObjectViewer:onMouseDoubleClickListItem(item)
 end
 
 function ObjectViewer:onMouseDoubleClickOpenObject(item)
-
     local bReuse = true;
     -- hold lshift to not reuse.
     if isKeyDown(Keyboard.KEY_LSHIFT) then
         bReuse = false;
     end
 
-    if instanceof(item, "KahluaTableImpl") then
+    if instanceof(item, "KahluaTableImpl") or instanceof(item, "PZNetKahluaTableImpl") then
         if not bReuse then
             local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
             src:initialise();
@@ -100,25 +87,19 @@ function ObjectViewer:onMouseDoubleClickOpenObject(item)
             self.title =  KahluaUtil.rawTostring2(self.obj);
             self:fill();
         end
-
     elseif instanceof (item, "Class") then
-
     elseif instanceof (item, "Field") then
         item = getClassFieldVal(self.obj, item);
         self:onMouseDoubleClickOpenObject(item);
-
     elseif instanceof (item, "Array") then
         item = getClassFieldVal(self.obj, item);
         self:onMouseDoubleClickOpenObject(item);
     elseif instanceof (item, "Texture") then
-
         local src = TextureWindow:new(getCore():getScreenWidth() / 2, 0, item:getWidth(), item:getHeight(), item);
 
         src:initialise();
         src:addToUIManager();
-
     elseif instanceof (item, "LuaClosure") then
-
         local f = getFilenameOfClosure(item);
         if f ~= nil then
             local src = nil;
@@ -136,9 +117,7 @@ function ObjectViewer:onMouseDoubleClickOpenObject(item)
             end
             src:scrollToLine(getFirstLineOfClosure(item)-1)
         end
-
     else
-
         if not bReuse then
             local src = ObjectViewer:new(getCore():getScreenWidth() / 2, 0, 600, 300, item);
             src:initialise();
@@ -149,7 +128,6 @@ function ObjectViewer:onMouseDoubleClickOpenObject(item)
             self.title =  KahluaUtil.rawTostring2(self.obj);
             self:fill();
         end
-
     end
 end
 
@@ -164,9 +142,7 @@ end
 ObjectViewer.map = {}
 
 function ObjectViewer:initialise()
-
     ISCollapsableWindow.initialise(self);
-
     self.title = KahluaUtil.rawTostring2(self.obj);
 end
 
@@ -198,7 +174,7 @@ function ObjectViewer:fill()
     self.objectView:setYScroll(0);
     local bSort = true;
 
-    if instanceof(self.obj, "KahluaTableImpl") then
+    if instanceof(self.obj, "KahluaTableImpl") or instanceof(self.obj, "PZNetKahluaTableImpl") then
         for k, v in pairs(self.obj) do
             local s = KahluaUtil.rawTostring2(k);
             local s2 = KahluaUtil.rawTostring2(v);
@@ -232,8 +208,6 @@ function ObjectViewer:fill()
                 local k = field:getType():getSimpleName()
                 local s = tabToX(k, 18) .. " " .. tabToX(field:getName(), 24) .. " " .. tabToX(val, 24);
                 self.objectView:addItem(s, {key=k, val=field});
-            else
-                --local s = type(field)..' = '..tostring(field)
             end
         end
 
@@ -253,8 +227,6 @@ function ObjectViewer:fill()
                 local s = tabToX(k, 18) .. " " .. tabToX(meth:getName(), 24) .. "( " .. params .. " )";
                 s = tabToX(s, 40);
                 self.objectView:addItem(s, {key=k, val=meth});
-            else
-                --local s = type(meth)..' = '..tostring(meth)
             end
         end
     end
@@ -264,7 +236,6 @@ function ObjectViewer:fill()
 end
 
 function ObjectViewer:createChildren()
-    --print("instance");
     ISCollapsableWindow.createChildren(self);
 
     local th = self:titleBarHeight()
@@ -324,7 +295,7 @@ function ObjectViewer:doDrawItem(y, item, alt)
         self:drawRect(0, y, self:getWidth(), self.itemheight, 0.2, 0.6, 0.7, 0.8);
     end
 
-    if instanceof(item.item.val, "KahluaTableImpl") then
+    if instanceof(item.item.val, "KahluaTableImpl") or instanceof(item.item.val, "PZNetKahluaTableImpl") then
         if item.item.key ~= nil and hasDataBreakpoint(self.parent.obj, item.item.key) then
             self:drawRect(0, y, self:getWidth(), self.itemheight, 0.3, 0.8, 0.6, 0.4);
         end
@@ -333,11 +304,9 @@ function ObjectViewer:doDrawItem(y, item, alt)
         end
     end
 
-    --  self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(item.text, 15, y + (self.itemheight - FONT_HGT_CODE) / 2, 1, 1, 1, 1, self.font);
     y = y + self.itemheight;
     return y;
-
 end
 
 function ObjectViewer:checkFontSize()

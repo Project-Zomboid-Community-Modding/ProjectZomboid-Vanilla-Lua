@@ -115,7 +115,6 @@ end
 
 function ISMicrowaveUI:render()
     ISPanelJoypad.render(self);
---    self:drawTextCentre(math.floor(self.oven:getCurrentTemperature()) .. "", self.width/2, 5, 1, 1, 1, 1, self.font);
 end
 
 function ISMicrowaveUI:prerender()

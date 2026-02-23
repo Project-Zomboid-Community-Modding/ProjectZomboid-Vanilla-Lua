@@ -150,7 +150,7 @@ function ISCraftLogicPanel:createRecipesColumn()
     self.recipesPanel.needSortCombo = true;
     --self.recipesPanel.expandToFitTooltip = true;
     self.recipesPanel.wrapTooltipText = true;
-    --self.recipesPanel.showAllVersionTickbox = true;
+    self.recipesPanel.showAllCraftFilterTickBox = false;
     self.recipesPanel.ignoreSurface = true;
     self.recipesPanel:initialise();
     self.recipesPanel:instantiate();
@@ -454,8 +454,7 @@ function ISCraftLogicPanel.ItemSlotAddItems( _player, _entity, _itemSlot, _itemL
         for index,item in ipairs(_itemList) do
             local maxItems = math.min(_itemSlot.resource:getFreeItemCapacity(), math.max(0, _component:getFreeOutputSlotCount() - _itemSlot.resource:storedSize()));
             if index<=maxItems then
-                local action = ISItemSlotAddAction:new(_player, _entity, item, _itemSlot)
-                action.itemSlot = _itemSlot;
+                local action = ISItemSlotAddAction:new(_player, _entity, item, _itemSlot.resource, _itemSlot)
                 action.component = _component;
                 action.canAddItem = function(_self)
                     local freeSlots = _self.component:getFreeOutputSlotCount() - _self.resource:storedSize();

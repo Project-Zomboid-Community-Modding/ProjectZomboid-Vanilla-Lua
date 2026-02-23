@@ -87,11 +87,9 @@ end
 function ISModalRichText:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---	self:drawTextCentre(self.text, self:getWidth() / 2, (self:getHeight() / 2) - 10, 1, 1, 1, 1, UIFont.Small);
 end
 
 function ISModalRichText:onMouseDown(x, y)
---	ISPanelJoypad.onMouseDown(self, x, y)
 	-- FIXME: this prevents clicks being passed to windows behind, but need to swallow clicks outside and mouse-move events as well
 	return true
 end
@@ -118,46 +116,7 @@ end
 
 function ISModalRichText:onJoypadDown(button)
 	ISPanelJoypad.onJoypadDown(self, button)
---[[
-	if button == Joypad.AButton then
-		if self.yesno then
-			if self.yes.mouseOver then
-				self.yes.player = self.player;
-				self.yes.onclick(self.yes.target, self.yes);
-			else
-				self.no.player = self.player;
-				self.no.onclick(self.no.target, self.no);
-			end
-		else
-			self.ok.onclick(self.ok.target, self.ok);
-		end
-	end
-	if button == Joypad.BButton then
-		if self.yesno then
-			self.no.player = self.player;
-			self.no.onclick(self.no.target, self.no);
-		else
-			self.ok.onclick(self.ok.target, self.ok);
-		end
-	end
---]]
 end
-
---[[
-function ISModalRichText:onJoypadDirRight()
-	if self.yesno then
-		self.no.mouseOver = true;
-		self.yes.mouseOver = false;
-	end
-end
-
-function ISModalRichText:onJoypadDirLeft()
-	if self.yesno then
-		self.no.mouseOver = false;
-		self.yes.mouseOver = true;
-	end
-end
---]]
 
 function ISModalRichText:update()
 	ISPanelJoypad.update(self)

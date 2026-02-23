@@ -1,4 +1,3 @@
-local WelcomeVersion = 42.0
 WelcomeMessages = {};
 WelcomeMessageUI = ISCollapsableWindow:derive("WelcomeMessageUI");
 
@@ -9,9 +8,6 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 WelcomeMessages.doMsg = function()
-    --if getDebug() or getCore():getShownWelcomeMessageVersion() >= WelcomeVersion then
-    --    return;
-    --end
     if getDebug() or getPlayer():getModData().seenWelcome then
         return;
     end
@@ -24,8 +20,6 @@ WelcomeMessages.doMsg = function()
     panel:setX((getCore():getScreenWidth() / 2) - (panel.width / 2));
     panel:setY((getCore():getScreenHeight() / 2) - (panel.height / 2));
     getPlayer():getModData().seenWelcome = true
-    --getCore():setShownWelcomeMessageVersion(WelcomeVersion)
-    --getCore():saveOptions()
 end
 
 function WelcomeMessageUI:new(x, y, width, height)

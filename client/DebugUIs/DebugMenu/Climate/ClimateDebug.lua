@@ -64,21 +64,18 @@ function ClimateDebug:createChildren()
     self.historyM1 = ValuePlotter:new(x+UI_BORDER_SPACING,y+UI_BORDER_SPACING,600,BUTTON_HGT+(BUTTON_HGT+UI_BORDER_SPACING)*12,600);
     self.historyM1:initialise();
     self.historyM1:instantiate();
-    --self.historyM1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50);
     self:addChild(self.historyM1);
     self.historyM1:setVisible(true);
 
     self.historyH1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyH1:initialise();
     self.historyH1:instantiate();
-    --self.historyH1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
     self:addChild(self.historyH1);
     self.historyH1:setVisible(false);
 
     self.historyD1 = ValuePlotter:new(self.historyM1.x,self.historyM1.y,self.historyM1.width,self.historyM1.height,600);
     self.historyD1:initialise();
     self.historyD1:instantiate();
-    --self.historyD1:defineVariable("temperature", {r=0, g=0, b=1.0, a=1.0}, -50, 50)
     self:addChild(self.historyD1);
     self.historyD1:setVisible(false);
 
@@ -93,16 +90,12 @@ function ClimateDebug:createChildren()
             self.charts[i]:defineVariable(vinfo.desc, vinfo.col, vinfo.min, vinfo.max);
         end
 
-        --self.charts[i]:setHorzLine(0.10,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.125,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.25,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.30,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.375,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.50,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.60,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.625,{r=0.05, g=0.05, b=0.05, a=1});
         self.charts[i]:setHorzLine(0.75,{r=0.1, g=0.1, b=0.1, a=1});
-        --self.charts[i]:setHorzLine(0.80,{r=0.1, g=0.1, b=0.1, a=1});
         self.charts[i]:setHorzLine(0.875,{r=0.05, g=0.05, b=0.05, a=1});
     end
 
@@ -136,7 +129,7 @@ function ClimateDebug:createChildren()
     local cacheY, cacheX = y, x;
     local toggleButtonWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_ClimatePlotter_Toggle"))
 
-    y = th; --self.historyM1:getY()-2;
+    y = th;
     x = self.historyM1:getX() + self.historyM1:getWidth() + getTextManager():MeasureStringX(UIFont.Small, "-50 C") + UI_BORDER_SPACING;
     local widest = 0;
     local vars = self.historyM1:getVars();
@@ -171,22 +164,6 @@ function ClimateDebug:createChildren()
 
 end
 
---[[
---        self.charts[i]:defineVariable("daylight", {r=1.0, g=1.0, b=0.9, a=1.0}, -1, 1); --white
-        self.charts[i]:defineVariable("night", {r=0.4, g=0.4, b=0.4, a=1.0}, -1, 1); --grey
-        self.charts[i]:defineVariable("precipitation", {r=0, g=0, b=1.0, a=1.0}, -1, 1); --blue
-        self.charts[i]:defineVariable("fog", {r=0.5, g=0.5, b=1.0, a=1.0}, -1, 1); --lightpurple
-        self.charts[i]:defineVariable("airmassDaily", {r=1.0, g=0.5, b=0.5, a=1.0}, -1, 1); --beige
-        self.charts[i]:defineVariable("airmass", {r=1.0, g=0.5, b=1.0, a=1.0}, -1, 1); --pink
-        self.charts[i]:defineVariable("windAngle", {r=1.0, g=0.5, b=0, a=1.0}, -1, 1); --orange
-        self.charts[i]:defineVariable("windPower", {r=0.5, g=1.0, b=0, a=1.0}, -1, 1); --lime
-        self.charts[i]:defineVariable("wind", {r=1.0, g=1.0, b=0, a=1.0}, -1, 1); --yellow
-        self.charts[i]:defineVariable("meanTemperature", {r=0, g=1.0, b=0, a=1.0}, -50, 50); --green
-        self.charts[i]:defineVariable("baseTemperature", {r=0, g=0.5, b=0, a=1.0}, -50, 50); --darkgreen
-        self.charts[i]:defineVariable("temperatureMod", {r=0, g=0.5, b=0.5, a=1.0}, -10, 10); --teal
-        self.charts[i]:defineVariable("temperature", {r=1.0, g=0, b=0, a=1.0}, -50, 50); --red
---]]
-
 function ClimateDebug:initVariables()
     self.varInfo = {};
     self.colTable = {};
@@ -203,7 +180,6 @@ function ClimateDebug:initVariables()
         end
     end
 
-    --self:addVarInfo("","",-1,1,"");
     self:addVarInfo("daylight",getText("IGUI_ClimateOptions_DAYLIGHT_STRENGTH"),-1,1,"getDayLightStrength");
     self:addVarInfo("night",getText("IGUI_ClimateOptions_NIGHT_STRENGTH"),-1,1,"getNightStrength");
     self:addVarInfo("precipitation",getText("IGUI_ClimateOptions_PRECIPITATION_INTENSITY"),-1,1,"getPrecipitationIntensity");
@@ -216,11 +192,8 @@ function ClimateDebug:initVariables()
     self:addVarInfo("wind",getText("IGUI_ClimateOptions_WIND_INTENSITY"),-1,1,"getWindIntensity");
     self:addVarInfo("meanTemperature",getText("IGUI_ClimatePlotter_meanTemperature"),-50,50,function(_mgr) return _mgr:getSeason():getDayMeanTemperature() end);
     self:addVarInfo("airmassTemperature",getText("IGUI_ClimatePlotter_airmassTemperature"),-1,1,"getAirMassTemperature");
-    --self:addVarInfo("baseTemperature","baseTemperature",-50,50,"getBaseTemperature");
-    --self:addVarInfo("temperatureMod","temperatureMod",-10,10,"getTemperatureMod");
     self:addVarInfo("temperature",getText("IGUI_ClimateOptions_TEMPERATURE"),-50,50,"getTemperature");
     self:addVarInfo("snowstrength",getText("IGUI_ClimatePlotter_snowstrength"),-10,10,"getSnowStrength");
-    --self:addVarInfo("","",-1,1,"");
 end
 
 function ClimateDebug:addColor(_r,_g,_b)
@@ -253,21 +226,6 @@ function ClimateDebug:updateValues(_mgr)
             print("function: "..tostring(vinfo.func).." cannot be found in climatemanager");
         end
     end
-    --[[
-    table.insert(dataset,_mgr:getDayLightStrength());
-    table.insert(dataset,_mgr:getNightStrength());
-    table.insert(dataset,_mgr:getPrecipitationIntensity());
-    table.insert(dataset,_mgr:getFogIntensity());
-    table.insert(dataset,_mgr:getAirMassDaily());
-    table.insert(dataset,_mgr:getAirMass());
-    table.insert(dataset,_mgr:getWindAngleIntensity());
-    table.insert(dataset,_mgr:getWindPower());
-    table.insert(dataset,_mgr:getWindIntensity());
-    table.insert(dataset,_mgr:getSeason():getDayMeanTemperature());
-    table.insert(dataset,_mgr:getBaseTemperature());
-    table.insert(dataset,_mgr:getTemperatureMod());
-    table.insert(dataset,_mgr:getTemperature());
-    --]]
 
     local plotVertBarM1 = false;
     local plotVertBarH1 = false;
@@ -378,9 +336,6 @@ end
 
 function ClimateDebug:onResize()
     ISUIElement.onResize(self);
-    local th = self:titleBarHeight();
-    --self.richtext:setWidth(self.width);
-    --self.richtext:setHeight(self.height-(th+10));
 end
 
 function ClimateDebug:update()
@@ -400,33 +355,13 @@ function ClimateDebug:stayOnSplitScreen()
     ISUIElement.stayOnSplitScreen(self, self.playerNum)
 end
 
-
 function ClimateDebug:render()
     ISCollapsableWindow.render(self);
 
     if ClimateDebug.shiftDown>0 then
         ClimateDebug.shiftDown = ClimateDebug.shiftDown-1;
     end
-
-    --self.richtext:clearStencilRect();
-
-    --[[
-    local w,h = self:getWidth(), self:getHeight();
-
-    local c = self.greyCol;
-    local sx,sy = (w/2)-300, (h/2)-100;
-
-    local interval = h/self.gridVertSpacing;
-    for i = 1, self.gridVertSpacing-1 do
-        self:drawRect(1, i*interval, w-2, 1, c.a, c.r, c.g, c.b);
-    end
-    interval = w/self.gridHorzSpacing;
-    for i = 1, self.gridHorzSpacing-1 do
-        self:drawRect(i*interval, 1, 1, h-2, c.a, c.r, c.g, c.b);
-    end
-    --]]
 end
-
 
 function ClimateDebug:close()
     ISCollapsableWindow.close(self);
@@ -442,11 +377,8 @@ function ClimateDebug:clear()
     self.currentTile = nil;
 end
 
-
-
 function ClimateDebug:new (x, y, width, height, player)
     local o = {}
-    --o.data = {}
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -467,7 +399,6 @@ function ClimateDebug:new (x, y, width, height, player)
     o.isCollapsed = false;
     o.collapseCounter = 0;
     o.title = getText("IGUI_ClimDebuggers_ClimatePlot");
-    --o.viewList = {}
     o.resizable = true;
     o.drawFrame = true;
 
@@ -485,11 +416,3 @@ function ClimateDebug:new (x, y, width, height, player)
     ISDebugMenu.RegisterClass(self);
     return o
 end
-
---[[
-if enabled then
-    Events.OnCustomUIKey.Add(ClimateDebug.OnKeyDown);
-    Events.OnKeyKeepPressed.Add(ClimateDebug.OnKeepKeyDown);
-    Events.OnClimateTickDebug.Add(ClimateDebug.OnClimateTickDebug);
-    --Events.OnObjectLeftMouseButtonUp.Add(ClimateDebug.onMouseButtonUp);
-end--]]

@@ -74,7 +74,7 @@ function ContextMenuCode.BatteryLightSourceInteraction(context, param)
 end
 
 function ContextMenuCode.CompostInteraction(context, option, compost, playerObj, param)
-    local playerInv = playerObj:GetInventory();
+    local playerInv = playerObj:getInventory()
 	--local option = context:addOption(getText("ContextMenu_GetCompost") .. " (" .. round(compost:getCompost(),1) .. getText("ContextMenu_FullPercent") .. ")")
 	option.toolTip = ISWorldObjectContextMenu.addToolTip()
 	option.toolTip:setVisible(false)

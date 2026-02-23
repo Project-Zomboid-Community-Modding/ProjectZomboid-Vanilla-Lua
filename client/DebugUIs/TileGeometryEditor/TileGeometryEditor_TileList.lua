@@ -57,7 +57,6 @@ function TileList:onRightMouseDown(x, y)
 	if not self:isSelectionEmpty() then
 		context:addOption("Clear Depth Of Selected Tiles", self, self.onClearDepthOfSelectedTiles)
 		context:addOption("Clear Assigned Depth Textures", self, self.onClearAssignedDepthTextures)
---		context:addOption("Shift One Pixel Right", self, self.onShiftOnePixelRight)
 		local selectedTile = self:getSingleSelectedTile()
 		if selectedTile then
 			context:addOption("Rotate 90 Degrees Around Y", self, self.onRotate90Degrees, selectedTile.tileName)
@@ -101,7 +100,6 @@ function TileList:onShiftOnePixelRight()
 	for _,e in ipairs(self.selection.elements) do
 		self.editor.scene:java6("shiftGeometryByPixels", self.editor.modID, self.tileset, e.col - 1, e.row - 1, 1, 0)
 	end
---	self.editor:updateGeometryFile()
 end
 
 function TileList:onSelectInOtherList(tileName)
@@ -312,7 +310,6 @@ function TileList:render()
 	self:renderGrid(xIndent, yIndent, texW, texH)
 
 	self:setScrollHeight(yIndent + maxRow * texH + yIndent)
---	self.vscroll:setX(self.width - self.vscroll.width)
 
 	if self:isMouseOver() then
 		local col,row = self:getColRowAt(self:getMouseX(), self:getMouseY())

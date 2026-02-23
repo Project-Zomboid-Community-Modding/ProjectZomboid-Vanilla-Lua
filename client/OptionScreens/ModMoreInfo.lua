@@ -8,7 +8,6 @@ require "defines"
 
 ModMoreInfo = ISPanel:derive("ModMoreInfo");
 
-
 function ModMoreInfo:initialise()
 	ISPanel.initialise(self);
 end
@@ -53,7 +52,6 @@ function ModMoreInfo:create(desc)
 	self.moreInfo.text = desc;
 	self.moreInfo:paginate();
 	self.moreInfo:addScrollBars();
-
 end
 
 function ModMoreInfo.onOptionMouseDown(button, x, y)
@@ -61,23 +59,14 @@ function ModMoreInfo.onOptionMouseDown(button, x, y)
 		MainScreen.instance.charCreationProfession:setVisible(false);
 		MainScreen.instance.worldScreen:setVisible(true);
 	end
-
 end
 
 function ModMoreInfo:prerender()
-
-
 	ISPanel.prerender(self);
-
-
 end
 
 function ModMoreInfo:new (x, y, width, height)
-	-- using a virtual 100 height res for doing the UI, so it resizes properly on different rez's.
-
 	local o = {}
-
-	--o.data = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self

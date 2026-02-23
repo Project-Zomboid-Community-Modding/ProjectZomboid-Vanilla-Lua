@@ -120,9 +120,6 @@ function ISTextBox:destroy()
 	UIManager.setShowPausedMessage(true);
 	self:setVisible(false);
 	self:removeFromUIManager();
---	if UIManager.getSpeedControls() then
---		UIManager.getSpeedControls():SetCurrentGameSpeed(1);
---	end
 end
 
 function ISTextBox:onClick(button)
@@ -161,13 +158,6 @@ function ISTextBox:prerender()
     end
 
     self:updateButtons();
---[[
-    if OnScreenKeyboard.IsVisible() then
-        if self:getBottom() > OnScreenKeyboard.instance.y then
-            self:setY(OnScreenKeyboard.instance.y - self.height)
-        end
-    end
---]]
 end
 
 function ISTextBox:showErrorMessage(show, errorMsg)
@@ -261,7 +251,6 @@ function ISTextBox:onGainJoypadFocus(joypadData)
 	self.joypadIndexY = 1
 	self.joypadIndex = 1
 	self:insertNewLineOfButtons(self.entry)
---	self:insertNewLineOfButtons(self.yes, self.no)
 	self.entry:setJoypadFocused(true, joypadData)
 end
 

@@ -207,15 +207,6 @@ function Page2:create()
 	self.visibility:addOption(getText("UI_WorkshopSubmit_VisibilityPrivate"))
 	self.visibility:addOption(getText("UI_WorkshopSubmit_VisibilityUnlisted"))
 	self:addChild(self.visibility)
---[[
-	local label4 = ISLabel:new(padX, self.visibility:getBottom() + 12, labelHgt, getText("UI_WorkshopSubmit_ItemID"), 1, 1, 1, 1, UIFont.Medium, true)
-	self:addChild(label4)
-	
-	self.IDEntry = ISTextEntryBox:new("", padX, label4:getBottom() + 2, entryWid, entryHgt)
-	self.IDEntry.font = UIFont.Medium
-	self.IDEntry:initialise()
-	self:addChild(self.IDEntry)
---]]
 
 	local label5 = ISLabel:new(self.titleEntry:getRight() + 32, 64, labelHgt, getText("UI_WorkshopSubmit_ItemPreview"), 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label5)
@@ -317,8 +308,6 @@ function Page2:setWorkshopItem(item)
 	else
 		self.visibility.selected = 1
 	end
-
---	self.IDEntry:setText(item:getID())
 
 	local allowedTags = SteamWorkshopItem.getAllowedTags()
 	self.tags:setTags(allowedTags)
@@ -422,12 +411,10 @@ end
 function Page3:create()
 	local padX = 24
 	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
-	local label1 = ISLabel:new(padX, 64, labelHgt, getText("UI_WorkshopSubmit_UnknownItem"), 1, 1, 1, 1, UIFont.Medium, true)
---	self:addChild(label1)
+	ISLabel:new(padX, 64, labelHgt, getText("UI_WorkshopSubmit_UnknownItem"), 1, 1, 1, 1, UIFont.Medium, true)
 
 	local buttonWid = 500
 	local buttonHgt = math.max(48, FONT_HGT_MEDIUM * 2 + 3 * 2)
-	local buttonGapY = 24
 
 	local title2 = getText("UI_WorkshopSubmit_BtnExistingItem"):gsub("\\n", "\n")
 	local title2Wid = getTextManager():MeasureStringX(UIFont.Medium, title2) + 10
@@ -565,10 +552,7 @@ function Page4:new(x, y, width, height)
 end
 
 function Page4:create()
---	local padX = 24
 	local labelHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
---	local label1 = ISLabel:new(padX, 64, labelHgt, getText("UI_WorkshopSubmit_UnknownItem"), 1, 1, 1, 1, UIFont.Medium, true)
---	self:addChild(label1)
 	
 	local entryWid = 400
 	local entryHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight() + 2 * 2
@@ -756,9 +740,6 @@ function Page5:create()
 	self.button1 = ISButton:new(self.width / 2 - buttonWid / 2, buttonY, buttonWid, buttonHgt, getText("UI_WorkshopSubmit_BtnChangelog"):gsub("\\n", "\n"), self, self.onButtonChangelog)
 	self.button1.internal = "CHANGELOG"
 	self.button1:initialise()
---	self.button1:setAnchorLeft(true)
---	self.button1:setAnchorTop(false)
---	self.button1:setAnchorBottom(true)
 	self.button1.borderColor = {r=1, g=1, b=1, a=0.25}
 	self.button1:setFont(UIFont.Medium)
 	self:addChild(self.button1)
@@ -766,9 +747,6 @@ function Page5:create()
 	self.button2 = ISButton:new(self.width / 2 - buttonWid / 2, self.button1:getBottom() + buttonGapY, buttonWid, buttonHgt, getText("UI_WorkshopSubmit_BtnPublish"):gsub("\\n", "\n"), self, self.onButtonPublish)
 	self.button2.internal = "PUBLISH"
 	self.button2:initialise()
---	self.button2:setAnchorLeft(true)
---	self.button2:setAnchorTop(false)
---	self.button2:setAnchorBottom(true)
 	self.button2.borderColor = {r=1, g=1, b=1, a=0.25}
 	self.button2:setFont(UIFont.Medium)
 	self:addChild(self.button2)
@@ -801,8 +779,6 @@ function Page5:create()
 
 	self.joypadIndexY = 1
 	self.joypadIndex = 1
---	self:insertNewLineOfButtons(self.titleEntry)
---	self:insertNewLineOfButtons(self.IDEntry)
 	self:insertNewLineOfButtons(self.button1)
 	self:insertNewLineOfButtons(self.button2)
 end
@@ -930,7 +906,6 @@ function Page6:create()
 	self.entry:setAnchorRight(true)
 	self.entry:setMultipleLine(true)
 	self.entry:setMaxLines(512)
---	self.entry:setMaxTextLength(8000)
 	self.entry:addScrollBars()
 	self:addChild(self.entry)
 
@@ -1030,7 +1005,6 @@ function Page6:onJoypadDirDown(joypadData)
 	end
 end
 
-
 function Page7:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -1088,7 +1062,6 @@ function Page7:updateWhenVisible()
 		-- We'll get either OnSteamWorkshopItemCreated or OnSteamWorkshopItemNotCreated.
 		if TEST then
 			triggerEvent("OnSteamWorkshopItemCreated", "1234", true)
---			triggerEvent("OnSteamWorkshopItemNotCreated", 666)
 		end
 	elseif self.state == "createFail" then
 		-- Failed, do nothing further.
@@ -1115,7 +1088,6 @@ function Page7:updateWhenVisible()
 			self.updateTime = self.updateTime + 1
 			if self.updateTime >= self.updateTimeMax then
 				triggerEvent("OnSteamWorkshopItemUpdated", true)
---				triggerEvent("OnSteamWorkshopItemNotUpdated", 666)
 			end
 		end
 	elseif self.state == "updateFail" then
@@ -1263,7 +1235,6 @@ function Page8:onGainJoypadFocus(joypadData)
 	self:setISButtonForB(self.backButton)
 end
 
-
 function Page9:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -1289,13 +1260,7 @@ function Page9:create()
 	self.button2.borderColor = {r=1, g=1, b=1, a=0.25}
 	self.button2:setFont(UIFont.Medium)
 	self:addChild(self.button2)
---[[
-	self.button3 = ISButton:new(self.width / 2 - buttonWid / 2, self.button2:getBottom() + buttonGapY, buttonWid, buttonHgt, getText("UI_WorkshopSubmit_BtnViewSubscriptions"):gsub("\\n", "\n"), self, self.onButtonViewSubscriptions)
-	self.button3:initialise()
-	self.button3.borderColor = {r=1, g=1, b=1, a=0.25}
-	self.button3:setFont(UIFont.Medium)
-	self:addChild(self.button3)
---]]
+
 	self.button4 = ISButton:new(self.width / 2 - buttonWid / 2, self.button2:getBottom() + buttonGapY, buttonWid, buttonHgt, getText("UI_WorkshopSubmit_BtnCreateAndUpdate"):gsub("\\n", "\n"), self, self.onButtonCreateAndUpdate)
 	self.button4:initialise()
 	self.button4.borderColor = {r=1, g=1, b=1, a=0.25}
@@ -1323,7 +1288,6 @@ function Page9:create()
 	self.joypadIndex = 1
 	self:insertNewLineOfButtons(self.button1)
 	self:insertNewLineOfButtons(self.button2)
---	self:insertNewLineOfButtons(self.button3)
 	self:insertNewLineOfButtons(self.button4)
 end
 
@@ -1368,7 +1332,6 @@ function Page9:onGainJoypadFocus(joypadData)
 	self:restoreJoypadFocus()
 end
 
-
 function Page10:new(x, y, width, height)
 	local o = ISPanelJoypad:new(x, y, width, height)
 	setmetatable(o, self)
@@ -1379,7 +1342,6 @@ function Page10:new(x, y, width, height)
 end
 
 function Page10:create()
-
 	self.backButton = ISButton:new(16, self.height-30, 100, 25, getText("UI_btn_back"), self, self.onButtonBack)
 	self.backButton.internal = "BACK"
 	self.backButton:initialise()

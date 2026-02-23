@@ -118,10 +118,6 @@ function ISMoveableInfoWindow:render()
     if self.mouseOverUI then
         return
     end
-    if ISMoveableInfoWindow.displayPosition == "cursor" and self:isMouseOver() then
-        --self:removeFromUIManager();
-        --return;
-    end
     if ISMoveableInfoWindow.displayPosition == "norender" then
         return;
     end
@@ -138,9 +134,6 @@ function ISMoveableInfoWindow:render()
         if self.moveableTexture then
             -- texture box
             self:drawRect(8, h, 64, 128, 0, 0, 0, 1);
-            --self:drawRectBorder(8, h, 64, 128, 0.8, 0.8, 0.8, 1);
-                -- texture
-                --self:drawTexture(self.moveableTexture, 8, h, 1);
             --textures (new)
             if #self.textureList > 0 then
                 for i = 1, #self.textureList do
@@ -185,7 +178,6 @@ function ISMoveableInfoWindow:render()
             for i = 1, #self.bodyText.table do
                 local line = self.bodyText.table[i];
                 if line[1] then
-                    --print(line[1].txt, x,y,line[1].r,line[1].g,line[1].b,1.0);
                     self:drawText(line[1].txt, x,y,line[1].r,line[1].g,line[1].b,1.0,self.bodyText.font);
                 end
                 if line[2] then
@@ -194,11 +186,6 @@ function ISMoveableInfoWindow:render()
                 y = y + self.bodyText.fontheight;
             end
         end
-        --if self.customBodyAlign and self.customBodyAlign == "center" then
-            --self.infoBody:Draw(self:getX() + (self:getWidth()/2), self:getY() + self.header:getHeight() + 2);
-        --else
-            --self.infoBody:Draw(self:getX() + w, self:getY() + self.header:getHeight() + 2);
-        --end
 
         -- footer
         self.footer:Draw(self:getX() + (self:getWidth()/2), self:getY() + h );
@@ -241,8 +228,6 @@ function ISMoveableInfoWindow:setHeaderText( _header, _font )
 end
 
 function ISMoveableInfoWindow:setBodyText( _bodyTextTable, _font, _align)
-    --o.fontheight = getTextManager():MeasureStringY(UIFont.Small, "AbdfghijklpqtyZ")+2;
-    --print_body(_bodyTextTable);
     self.bodyText = {};
     self.bodyText.font = _font or UIFont.Small;
     self.bodyText.table = _bodyTextTable;
@@ -308,13 +293,6 @@ function ISMoveableInfoWindow:setFooterText( _footer, _font )
         self:calculateDimensions();
     end
 end
-
---[[
-function ISMoveableInfoWindow:setTexture( _textureName )
-    self.moveableTexture = _textureName and getTexture(_textureName) or nil;
-    self:calculateDimensions();
-end
---]]
 
 function ISMoveableInfoWindow:setTexture( _textureName, _allow, _square, _yoffset )
     self.moveableTexture = _textureName and { texture = getTexture(_textureName), offsetY = (_yoffset or 0) * Core.getTileScale()} or nil;
@@ -383,7 +361,6 @@ function ISMoveableInfoWindow:new(x, y, character, drag)
     o.character = character
     o.playerNum = character:getPlayerNum()
     o.drag = drag
-    --o:setResizable(false)
     o:noBackground();
     o.x = 0;
     o.y = 0;
@@ -401,26 +378,16 @@ function ISMoveableInfoWindow:new(x, y, character, drag)
     o.anchorRight = false;
     o.anchorTop = true;
     o.anchorBottom = false;
-    --banana 	#E3CF57 	227 	207 	87 	5754851
-    o.header = TextDrawObject.new(255, 255, 255, true, true, true, true, true, true); --TextDrawObject.new(227, 207, 87, true, true, true, true, true, true);
+    o.header = TextDrawObject.new(255, 255, 255, true, true, true, true, true, true);
     o.header:setHorizontalAlign("center");
     o.header:ReadString(UIFont.Medium, "Title", -1);
     o.infoBody = TextDrawObject.new(255, 255, 255, true, true, true, true, true, true);
     o.infoBody:setHorizontalAlign("left");
     o.infoBody:ReadString(UIFont.Small, "Info body", -1);
-    --cornsilk 3 	#CDC8B1 	205 	200 	177 	11651277
     o.footer = TextDrawObject.new(205, 200, 177, true, true, true, true, true, true);
     o.footer:setHorizontalAlign("center");
     o.footer:ReadString(UIFont.Small, "footer", -1);
-    --o.bodyText = {};
-    --o.bodyText.font = UIFont.Small;
-    --o.bodyText.table = nil;
-    --o.bodyText.fontheight = getTextManager():MeasureStringY(o.bodyText.font, "AbdfghijklpqtyZ")+2;
-    --o.bodyText.height = 0;
-    --o.bodyText.width = 0;
-    --o.bodyText.textTab = 0;
     o:setBodyText( nil, nil, nil)
-    --o:calculateDimensions();
     return o
 end
 

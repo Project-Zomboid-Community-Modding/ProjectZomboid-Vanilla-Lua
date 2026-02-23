@@ -23,7 +23,7 @@ function ISWakeOtherPlayer:perform()
 end
 
 function ISWakeOtherPlayer:complete()
-	self.otherPlayer:sendObjectChange("wakeUp")
+	self.otherPlayer:sendObjectChange(IsoObjectChange.WAKE_UP)
 end
 
 function ISWakeOtherPlayer:getDuration()

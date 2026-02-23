@@ -209,14 +209,14 @@ end
 
 function ISZoneDisplay:showTip(_tip, _force)
 	if _force then self.tipPanel:setVisible(true); end;
-	--
+
 	self.infoBtn:setTextureRGBA(1, 1, 1, 1);
-	--
+
 	self.flashTipButton		= false;
 	self.flashNumber		= 0;
-	--
+
 	self.tipPanel.tip = _tip;
-	--
+
 	self.tipPanel:setText(
 		" <CENTRE> " ..
 		"<H1> " ..
@@ -227,7 +227,7 @@ function ISZoneDisplay:showTip(_tip, _force)
 		" <SIZE:small> " ..
 		getText("IGUI_SearchMode_Tip_Hover")
 	);
-	--
+
 	self.tipPanel:paginate();
 end
 
@@ -243,11 +243,11 @@ function ISZoneDisplay:updateTips()
 		end;
 		self.perkLevel = perkLevel;
 	end;
-	--
+
 	if self.flashTipButton then
 		local step = self.blinkStep / 10;
 		self.infoBtn:setTextureRGBA(step, step, step, 1);
-		--
+
 		self.blinkStep = self.blinkStep - 1;
 		if self.blinkStep < 0 then
 			self.blinkStep = 10;
@@ -491,7 +491,7 @@ end
 function ISZoneDisplay:getVisionTooltipText()
 	local rgbWhite = " <RGB:1,1,1> ";
 	local text = "";
-	--
+
 	local visionRadius	= self.manager:getOverlayRadius();
 	local modifiers		= self.manager.modifiers;
 	text = text .. rgbWhite .. getText("IGUI_SearchMode_Vision_Effect_Radius") .. ": " .. string.format("%.2f", visionRadius) .. " <LINE> ";
@@ -622,9 +622,9 @@ function ISZoneDisplay:updateTooltip()
 			self.tooltip:addToUIManager();
 			self.tooltip:setVisible(true);
 		end;
-		--
+
 		local tooltipForced = self.parent.tooltipForced and not self.parent.isCollapsed;
-		--
+
 		self.tooltip.followMouse = not tooltipForced;
 		if tooltipForced then
 			local ui = self.parent and self.parent or self
@@ -634,7 +634,7 @@ function ISZoneDisplay:updateTooltip()
 			self.tooltip:setX(self:getMouseX() + 23);
 			self.tooltip:setY(self:getMouseY() + 23);
 		end;
-		--
+
 		if isMouseOverElement(self) or tooltipForced ~= nil then
 			if isMouseOverElement(self.visionBonuses) or (tooltipForced and self.parent.tooltipForced == "Vision") then
 				self.tooltip:setName(getText("IGUI_SearchMode_Vision_Effect_Title"));
@@ -756,12 +756,12 @@ function ISZoneDisplay:initialise()
 	self:initialiseImages(zdTex.solar, 35, 35, false)
 	self:initialiseImages(zdTex.sky, self.width, self.height, false)
 	self:initialiseImages(zdTex.zones, self.width, self.height, true)
-	--
+
 	self:initialiseImages(zdTex.fog, self.width, self.height, false)
 	self.fog1.alphaStep = 0.01;
 	self.fog2.alphaStep = 0.01;
 	self.fog3.alphaStep = 0.01;
-	--
+
 	self.tipPanel = ISRichTextPanel:new(0, 0, self.width, self.height);
 	self.tipPanel:initialise();
 	self.tipPanel:instantiate();
@@ -772,17 +772,17 @@ function ISZoneDisplay:initialise()
 	self.tipPanel:setMargins(30, 10, 30, 10);
 	self.tipPanel.clip = true;
 	self:addChild(self.tipPanel);
-	--
+
 	self.prevBtn = ISButton:new(UI_BORDER_SPACING, (self:getHeight()-20) / 2, 20, 20, "", self, self.showPrevTip);
 	self.prevBtn:initialise();
 	self.prevBtn:setImage(zdTex.prevBtn);
 	self.tipPanel:addChild(self.prevBtn);
-	--
+
 	self.nextBtn = ISButton:new(self:getWidth() - 20 - UI_BORDER_SPACING, (self:getHeight()-20) / 2, 20, 20, "", self, self.showNextTip);
 	self.nextBtn:initialise();
 	self.nextBtn:setImage(zdTex.nextBtn);
 	self.tipPanel:addChild(self.nextBtn);
-	--
+
 	local infoWidth = zdTex.infoBtn:getWidth() / 2;
 	local infoHeight = zdTex.infoBtn:getHeight() / 2;
 	self.infoBtn = ISButton:new(UI_BORDER_SPACING, self.height-UI_BORDER_SPACING-infoHeight, infoWidth, infoHeight, "", self, self.toggleTips);
@@ -791,13 +791,13 @@ function ISZoneDisplay:initialise()
 	self.infoBtn:setTextureRGBA(1, 1, 1, 1);
 	self:addChild(self.infoBtn);
 	self.tipPanel:addChild(self.infoBtn);
-	--
+
 	local eyeWidth = zdTex.eyeconOn:getWidth() / 2;
 	local eyeHeight = zdTex.eyeconOn:getHeight() / 2;
 	self.visionBonuses = zdImage:new(self, self.width - eyeWidth - UI_BORDER_SPACING, self.infoBtn.y, eyeWidth, eyeHeight, zdTex.eyeconOn);
 	self:addChild(self.visionBonuses);
 	self.zdImages.visionBonuses = self.visionBonuses;
-	--
+
 	self.canSeeSky = self:canSeeOutside();
 end
 
@@ -819,11 +819,10 @@ function ISZoneDisplay:close()    self:setVisible(false); self:removeFromUIManag
 
 function ISZoneDisplay:new(_parent)
 	local yPos			= _parent and _parent:titleBarHeight() or 20;
-	--
+
 	local o				= ISPanel:new(0, yPos, 100, 40);
 	setmetatable(o, self);
 	self.__index		= self;
-	--
 
 	o.x					= 1;
 	o.y					= yPos;

@@ -7,10 +7,6 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-local function roundstring(_val)
-    return tostring(ISDebugUtils.roundNum(_val,2));
-end
-
 function IsoRegionLogWindow.OnOpenPanel()
     if IsoRegionLogWindow.instance==nil then
         IsoRegionLogWindow.instance = IsoRegionLogWindow:new (100, 100, 1200, 600, "IsoRegions Logs");
@@ -59,9 +55,7 @@ function IsoRegionLogWindow:onClickClose()
     self:close();
 end
 
-
 function IsoRegionLogWindow:OnTableNamesListMouseDown(item)
-    --self:populateInfoList(item);
 end
 
 function IsoRegionLogWindow:populateList()
@@ -73,14 +67,11 @@ function IsoRegionLogWindow:populateList()
     logger:unsetDirtyUI();
 
     if logs:size()==0 then
-        --self:populateInfoList(nil);
         return;
     end
 
     for i=0, logs:size()-1 do
         local log = logs:get(i);
-
-        --print("found table name = "..tostring(name));
         self.tableNamesList:addItem("log", {txt = log:getStr(), type = log:getType(), col = log:getColor()});
     end
 
@@ -107,7 +98,6 @@ end
 
 function IsoRegionLogWindow:prerender()
     ISPanel.prerender(self);
-    --self:populateList();
 end
 
 function IsoRegionLogWindow:update()

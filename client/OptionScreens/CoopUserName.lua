@@ -4,10 +4,8 @@ CoopUserName = ISPanelJoypad:derive("CoopUserName")
 
 function CoopUserName:createChildren()
 	local padX = 16
-	local btnWid = 100
 	local btnHgt = 25
 	local btnPadY = 5
-	local titleHgt = 80
 
 	self.fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	local inset = 2

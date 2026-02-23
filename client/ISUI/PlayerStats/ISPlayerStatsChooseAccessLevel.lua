@@ -12,9 +12,7 @@ function ISPlayerStatsChooseAccessLevelUI:initialise()
     self:create();
 end
 
-
 function ISPlayerStatsChooseAccessLevelUI:setVisible(visible)
-    --    self.parent:setVisible(visible);
     self.javaObject:setVisible(visible);
 end
 

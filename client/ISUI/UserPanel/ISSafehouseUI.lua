@@ -3,7 +3,6 @@ ISSafehouseUI.messages = {};
 ISSafehouseUI.inviteDialogs = {}
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -184,13 +183,11 @@ function ISSafehouseUI:populateList()
     local selected = self.playerList.selected;
     self.playerList:clear();
     for i=0,self.safehouse:getPlayers():size()-1 do
---        if self.safehouse:getPlayers():get(i) ~= self.player:getUsername() then
-            local newPlayer = {};
-            newPlayer.name = self.safehouse:getPlayers():get(i);
-            if newPlayer.name ~= self.safehouse:getOwner() then
-                self.playerList:addItem(newPlayer.name, newPlayer);
-            end;
---        end
+        local newPlayer = {};
+        newPlayer.name = self.safehouse:getPlayers():get(i);
+        if newPlayer.name ~= self.safehouse:getOwner() then
+            self.playerList:addItem(newPlayer.name, newPlayer);
+        end;
     end;
     self.playerList.selected = math.min(selected, #self.playerList.items);
 end
@@ -198,20 +195,10 @@ end
 function ISSafehouseUI:drawPlayers(y, item, alt)
     local a = 0.9;
 
---    self.parent.removePlayer.enable = false;
---    self.parent.selectedPlayer = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
---    self:drawRect(100, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(170, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawRect(240, y-1, 1, self.itemheight,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15);
---        if self.parent.isOwner then
---            self.parent.removePlayer.enable = true;
---        end
---        self.parent.selectedPlayer = item.item.name;
     end
 
     self:drawText(item.item.name, 10, y + 2, 1, 1, 1, a, self.font);
@@ -240,16 +227,11 @@ function ISSafehouseUI:prerender()
     ISSafehouseUI.instance = self  -- to support reloading in lua debugger
     
     local z = 20;
-    local splitPoint = 100;
-    local x = 10;
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
---    self:drawText(self.safehouse:getTitle(), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, self.safehouse:getTitle()) / 2), z, 1,1,1,1, UIFont.Medium);
     self.title:setName(self.safehouse:getTitle())
     self.changeTitle:setX(self.title:getRight() + UI_BORDER_SPACING)
     z = z + 30;
---    self:drawText(getText("IGUI_SafehouseUI_Owner"), x, z, 1,1,1,1, UIFont.Small);
---    self:drawText(self.safehouse:getOwner(), splitPoint, z, 1,1,1,1, UIFont.Small);
     self.owner:setName(self.safehouse:getOwner())
     if self:isOwner() or self:hasPrivilegedAccessLevel() then
         self.releaseSafehouse:setVisible(true);
@@ -261,7 +243,6 @@ function ISSafehouseUI:prerender()
     else
         self.quitSafehouse:setY(self.playerList.y + self.playerList.height + UI_BORDER_SPACING)
     end
---    self:drawText(getText("IGUI_SafehouseUI_Players"), x, self.playerList.y - FONT_HGT_SMALL, 1,1,1,1, UIFont.Small);
 end
 
 function ISSafehouseUI:updatePlayerList()

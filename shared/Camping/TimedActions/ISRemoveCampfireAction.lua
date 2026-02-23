@@ -59,12 +59,13 @@ function ISRemoveCampfireAction:stopSound()
 	end
 end
 
-function ISRemoveCampfireAction:new (character, campfire, maxTime)
+function ISRemoveCampfireAction:new (character, campfire, maxTimeInit)
     local o = ISBaseTimedAction.new(self, character)
 	o.character = character;
 	o.stopOnWalk = true;
 	o.stopOnRun = true;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	-- custom fields
 	o.campfire = campfire
 	return o

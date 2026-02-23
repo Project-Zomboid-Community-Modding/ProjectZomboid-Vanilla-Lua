@@ -280,26 +280,6 @@ function MainOptions:addTextEntry(x, y, name, _text)
 	return entry
 end
 
---this entire function isn't being used
---function MainOptions:addSpinBox(x, y, w, h, name, options, selected, target, onchange)
---	local label = ISLabel:new(x, y + self.addY, h, name, 1, 1, 1, 1, UIFont.Small);
---	label:initialise();
---	self.mainPanel:addChild(label);
---	local panel2 = ISSpinBox:new(x+20, y + self.addY + 2, w, h, target, onchange);
---	panel2:initialise();
---
---	for i, k in ipairs(options) do
---		panel2:addOption(k);
---	end
---
---	panel2.selected = selected;
---	panel2.default = selected;
---	self.mainPanel:addChild(panel2);
---	self.mainPanel:insertNewLineOfButtons(panel2.leftButton, panel2.rightButton)
---	self.addY = self.addY + 26;
---	return panel2;
---end
-
 function MainOptions:addVolumeControl(x, y, w, h, name, volume, target, onchange)
 	h = BUTTON_HGT
 	local label = ISLabel:new(x, y + self.addY, h, name, 1, 1, 1, 1, UIFont.Small);
@@ -320,7 +300,6 @@ function MainOptions:addTickBox(x, y, w, h)
 	tickBox:initialise()
 	self.mainPanel:addChild(tickBox)
 	self.mainPanel:insertNewLineOfButtons(tickBox)
---	self.addY = self.addY + tickBox:getHeight() + 6
 	return tickBox
 end
 
@@ -411,7 +390,6 @@ function MainOptions:addVolumeIndicator(x, y, w, h, name, volume, target, onchan
 	local panel2 = ISVolumeIndicator:new(x+20, y + self.addY, w, h, target, onchange);
 	panel2:initialise();
 	self.mainPanel:addChild(panel2);
---	self.mainPanel:insertNewLineOfButtons(panel2)
 	self.addY = self.addY + h + UI_BORDER_SPACING;
 	return panel2;
 end
@@ -508,13 +486,11 @@ function MainOptions:create()
 	self.tabs:initialise();
 	self.tabs:setAnchorBottom(true);
 	self.tabs:setAnchorRight(true);
---	self.tabs.borderColor = { r = 0, g = 0, b = 0, a = 0};
 	self.tabs.onActivateView = MainOptions.onTabsActivateView;
 	self.tabs.target = self;
 	self.tabs:setEqualTabWidth(false)
 	self.tabs.tabPadX = 40
 	self.tabs:setCenterTabs(true)
---	self.tabs.tabHeight = self.tabs.tabHeight + 12
 	self:addChild(self.tabs);
 
 	local btnWidthBack = BUTTON_PADDING + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
@@ -566,39 +542,14 @@ function MainOptions:create()
 	self.saveButton:enableAcceptColor()
 	self:addChild(self.saveButton);
 
-	local splitpoint = self:getWidth() / 2;
-	--local comboWidth = self:getWidth()-splitpoint - 100
-	local comboWidth = 45 * (getCore():getOptionFontSizeReal() +1) + 60
-
 	self:addDisplayPanel()
 
 	self:addUIPanel()
 	self:addSoundPanel()
 
-    --y = y + self.addY;
-
---    local label = ISLabel:new(splitpoint - 1, y, 20, "Mods folder", 1, 1, 1, 1, UIFont.Small, false);
---    label:initialise();
---    self.mainPanel:addChild(label);
---
---    self.modSaveTxt = ISTextEntryBox:new(getCore():getSaveFolder(), splitpoint + 20, y, self:getWidth()-splitpoint - 240, 20);
---    self.modSaveTxt:initialise();
---    self.modSaveTxt:instantiate();
---    self.modSaveTxt:setAnchorLeft(true);
---    self.modSaveTxt:setAnchorRight(true);
---    self.modSaveTxt:setAnchorTop(true);
---    self.modSaveTxt:setAnchorBottom(false);
---    self.mainPanel:addChild(self.modSaveTxt);
-
 	local reload = MainOptions.loadKeys();
 	SurvivalGuideEntries.addEntry11();
-	--
 	self:addKeybindingPanel()
-	--self.mainPanel:setScrollHeight(self.addY + y + BUTTON_HGT + UI_BORDER_SPACING);
-	--
-	--y = y + 40;
-
-	--self.mainPanel:setScrollHeight(y + self.addY + 20)
 
 	self:addAccessibilityPanel()
 	self:addControllerPanel()
@@ -641,11 +592,7 @@ function MainOptions:addDisplayPanel()
 	if true then
 		local displayMode = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_DisplayMode"),
 				{ getText("UI_optionscreen_DisplayMode1"), getText("UI_optionscreen_DisplayMode2"), getText("UI_optionscreen_DisplayMode3") })
-		--[[
-            local map = {}
-            map["defaultTooltip"] = getText("UI_optionscreen_DisplayMode_tt")
-            displayMode:setToolTipMap(map)
-        --]]
+
 		gameOption = GameOption:new('displayMode', displayMode)
 		function gameOption.toUI(self)
 			local box = self.control
@@ -735,7 +682,6 @@ function MainOptions:addDisplayPanel()
 			invalidSizesRemoved = true
 		end
 	end
-    print("Removing undersized resolution mode " .. string.sub(logText, 1, -3) .. " from Resolution option")
 	table.insert(modes, 1, "CURRENT")
 	local res = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_resolution"), modes, 1);
 
@@ -746,11 +692,7 @@ function MainOptions:addDisplayPanel()
 		local h = getCore():getScreenHeight()
 		box.options[1] = getText("UI_optionscreen_CurrentResolution", w .. " x " .. h)
 		box.selected = 1
-		--		if w == 1280 and h == 720 then
-		--			box:select(w.." x "..h.. " (" .. getText("UI_optionscreen_recommended") .. ")")
-		--		else
 		box:select(w.." x "..h)
-		--		end
 	end
 	function gameOption.apply(self)
 		-- 'fullscreen' option sets both resolution and fullscreen
@@ -830,52 +772,6 @@ function MainOptions:addDisplayPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--[[
-        ----- MULTICORE -----
-        local map = {};
-
-        local multithread;
-        multithread = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_multicore"));
-        multithread.tooltip = getText("UI_optionscreen_needreboot");
-
-        gameOption = GameOption:new('multicore', multithread)
-        function gameOption.toUI(self)
-            local box = self.control
-            box:setSelected(1, getCore():isMultiThread())
-        end
-        function gameOption.apply(self)
-            local box = self.control
-            self:restartRequired(getCore():isMultiThread(), box:isSelected(1))
-            getCore():setMultiThread(box:isSelected(1))
-        end
-        self.gameOptions:add(gameOption)
-
-        ----- SHADERS -----
-        --shaders now forced on.
-        local shader;
-        shader = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_shaders2"), {getText("UI_Yes"), getText("UI_No")}, 1);
-
-        gameOption = GameOption:new('shaders', shader)
-        function gameOption.toUI(self)
-            local box = self.control
-            if getCore():getUseShaders() then
-                box.selected = 1;
-            else
-                box.selected = 2;
-            end
-        end
-        function gameOption.apply(self)
-            local box = self.control
-            if box.options[box.selected] then
-                getCore():setUseShaders(box.selected == 1)
-                if MainScreen.instance.inGame then
-                    getCore():shadersOptionChanged()
-                end
-            end
-        end
-        self.gameOptions:add(gameOption)
-    --]]
-
 	self:addHorizontalLine(y, getText("UI_DisplayOptions_Textures"))
 
 	if getCore():allowOptionTextureCompression() then
@@ -894,24 +790,6 @@ function MainOptions:addDisplayPanel()
         end
         self.gameOptions:add(gameOption)
 	end
-
-	----- DOUBLE SIZED -----
-	-- removed as almost no mods use both sizes of tiles, and it generates bug reports
-
-	--     local doubleSize = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_texture2x"));
-	--     doubleSize.tooltip = getText("UI_optionscreen_texture2x_tt");
-	--
-	-- 	gameOption = GameOption:new('doubleSize', doubleSize)
-	-- 	function gameOption.toUI(self)
-	-- 		local box = self.control
-	-- 		box:setSelected(1, getCore():getOptionTexture2x())
-	-- 	end
-	-- 	function gameOption.apply(self)
-	-- 		local box = self.control
-	-- 		self:restartRequired(getCore():getOptionTexture2x(), box:isSelected(1))
-	-- 		getCore():setOptionTexture2x(box:isSelected(1))
-	-- 	end
-	-- 	self.gameOptions:add(gameOption)
 
 	local maxTextureSize = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_MaxTextureSize"),
 			{ getText("UI_optionscreen_MaxTextureSize1"), getText("UI_optionscreen_MaxTextureSize2"), getText("UI_optionscreen_MaxTextureSize3"), getText("UI_optionscreen_MaxTextureSize4") });
@@ -995,47 +873,6 @@ function MainOptions:addDisplayPanel()
 		getCore():setOptionScreenFilter((box.selected == 1) and "linear" or "nearest")
 	end
     self.gameOptions:add(gameOption)
-
-	--[[
-        -- Disabled because it's too slow to create the mipmaps.
-        ----- MODEL TEXTURE MIPMAPS -----
-        local modelTextureMipmaps = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_ModelTextureMipmaps"));
-        modelTextureMipmaps.tooltip = getText("UI_optionscreen_ModelTextureMipmaps_tt");
-
-        gameOption = GameOption:new('modelTextureMipmaps', modelTextureMipmaps)
-        function gameOption.toUI(self)
-            local box = self.control
-            box:setSelected(1, getCore():getOptionModelTextureMipmaps())
-        end
-        function gameOption.apply(self)
-            local box = self.control
-            self:restartRequired(getCore():getOptionModelTextureMipmaps(), box:isSelected(1))
-            getCore():setOptionModelTextureMipmaps(box:isSelected(1))
-        end
-        self.gameOptions:add(gameOption)
-    ]]--
-
-	--[[
-        ----- NEW ROOF-HIDING -----
-        local roofHiding = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_NewRoofHiding"), {getText("UI_Yes"), getText("UI_No")}, 1);
-        roofHiding:setToolTipMap({ defaultTooltip = getText("UI_optionscreen_NewRoofHiding_tt") })
-        gameOption = GameOption:new('newRoofHiding', roofHiding)
-        function gameOption.toUI(self)
-            local box = self.control
-            if getPerformance():getNewRoofHiding() then
-                box.selected = 1
-            else
-                box.selected = 2
-            end
-        end
-        function gameOption.apply(self)
-            local box = self.control
-            if box.options[box.selected] then
-                getPerformance():setNewRoofHiding(box.selected == 1)
-            end
-        end
-        self.gameOptions:add(gameOption)
-    --]]
 
 	self:addHorizontalLine(y, getText("UI_DisplayOptions_RenderingAndPerformance"))
 
@@ -1131,21 +968,6 @@ function MainOptions:addDisplayPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--[[
-    local doRainIndoors = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_render_rain_indoors"))
-
-    gameOption = GameOption:new('renderRainIndoors', doRainIndoors)
-    function gameOption.toUI(self)
-        local box = self.control
-        box:setSelected(1, getCore():isRenderPrecipIndoors())
-    end
-    function gameOption.apply(self)
-        local box = self.control
-        getCore():setRenderPrecipIndoors(box:isSelected(1))
-    end
-    self.gameOptions:add(gameOption)
-    --]]
-
 	local ohc = getCore():getObjectHighlitedColor()
 	local rgba = {r = ohc:getR(), g = ohc:getG(), b = ohc:getB(), a = 1}
 	self.objHighColor = self:addColorButton(splitpoint, y, getText("UI_optionscreen_objHighlightColor"), rgba, MainOptions.onObjHighlightColor)
@@ -1195,32 +1017,6 @@ function MainOptions:addDisplayPanel()
 		getCore():setWorldItemHighlightColor(ColorInfo.new(color.r, color.g, color.b, 1))
 	end
 	self.gameOptions:add(gameOption)
-
-	----- WORKSTATION HIGHLIGHT COLOR -----
--- 	local whc = getCore():getWorkstationHighlitedColor()
--- 	local rgba2 = {r = whc:getR(), g = whc:getG(), b = whc:getB(), a = 1}
--- 	self.workstationHighColor = self:addColorButton(splitpoint, y, getText("UI_optionscreen_workstationHighlightColor"), rgba2, MainOptions.onWorkstationHighlightColor)
---
--- 	self.colorPicker5 = ISColorPicker:new(0, 0)
--- 	self.colorPicker5:initialise()
--- 	self.colorPicker5.pickedTarget = self
--- 	self.colorPicker5.resetFocusTo = self
--- 	self.colorPicker5:setInitialColor(getCore():getWorkstationHighlitedColor());
---
--- 	gameOption = GameOption:new('workstationHighColor', self.workstationHighColor)
--- 	function gameOption.toUI(self)
--- 		local color = getCore():getWorkstationHighlitedColor()
--- 		self.control.backgroundColor = {r = color:getR(), g = color:getG(), b = color:getB(), a = 1}
--- 	end
--- 	function gameOption.apply(self)
--- 		local color = self.control.backgroundColor
--- 		local current = getCore():getWorkstationHighlitedColor()
--- 		if current:getR() == color.r and current:getG() == color.g and current:getB() == color.b then
--- 			return
--- 		end
--- 		getCore():setWorkstationHighlitedColor(ColorInfo.new(color.r, color.g, color.b, 1))
--- 	end
--- 	self.gameOptions:add(gameOption)
 
 	local zombieUpdateOpt = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_zombie_update_optimization"))
 	zombieUpdateOpt.tooltip = getText("UI_optionscreen_zombie_update_optimization_tt")
@@ -1948,9 +1744,6 @@ function MainOptions:addUIPanel()
 	self:addHorizontalLine(y, getText("UI_DisplayOptions_Reticle"))
 
 	local combo = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_OptionScreen_ReticleMode"), {getText("UI_OptionScreen_ReticleMode0"), getText("UI_OptionScreen_ReticleMode1")}, 0)
-	local map = {}
-	--  map["defaultTooltip"] = getText("UI_OtpionScreen_ReticleMode_tt")
-	--	reticleMode:setToolTipMap(map)
 
 	gameOption = GameOption:new("reticleMode", combo)
 	function gameOption.toUI(self)
@@ -1967,8 +1760,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--	local showAimTexture = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowAimTexture"))
-	-- showAimTexture.tooltip = getText("UI_OptionScreen_ShowAimTexture_tt");
 	gameOption = GameOption:new('showAimTexture', self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowAimTexture")))
 	function gameOption.toUI(self)
 		self.control:setSelected(1, getCore():getOptionShowAimTexture())
@@ -1978,7 +1769,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
---   local aimTexture = self:addCombo(splitpoint,y,comboWidth,20,"AimTexture", {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17"},0)
    gameOption = GameOption:new("aimTexture", self:addCombo(splitpoint,y,comboWidth,20,getText("UI_OptionScreen_AimTexture"), {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17"},0))
     function gameOption.toUI(self)
         self.control.selected = getCore():getOptionAimTextureIndex() + 1
@@ -1990,8 +1780,6 @@ function MainOptions:addUIPanel()
     end
     self.gameOptions:add(gameOption)
 
-	--	local showReticleTexture = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowReticleTexture"))
-	-- showAimTexture.tooltip = getText("UI_OptionScreen_ShowReticleTexture_tt");
 	gameOption = GameOption:new('showReticleTexture', self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowReticleTexture")))
 	function gameOption.toUI(self)
 		self.control:setSelected(1, getCore():getOptionShowReticleTexture())
@@ -2001,7 +1789,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--    local reticleTexture = self:addCombo(splitpoint,y,comboWidth,20,"ReticleTexture", {"0","1","2","3","4","5","6"},0)
 	gameOption = GameOption:new("reticleTexture", self:addCombo(splitpoint,y,comboWidth,20,getText("UI_OptionScreen_ReticleTexture"), {"0","1","2","3","4","5","6"},0))
 	function gameOption.toUI(self)
 		self.control.selected = getCore():getOptionReticleTextureIndex() + 1
@@ -2013,8 +1800,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--	local showValidTargetReticleTexture = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowValidTargetReticleTexture"))
-	-- showAimTexture.tooltip = getText("UI_OptionScreen_ShowValidTargetReticleTexture_tt")
 	gameOption = GameOption:new('showValidTargetReticleTexture', self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ShowValidTargetReticleTexture")))
 	function gameOption.toUI(self)
 		self.control:setSelected(1, getCore():getOptionShowValidTargetReticleTexture())
@@ -2024,7 +1809,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--    local validTargetReticleTexture = self:addCombo(splitpoint,y,comboWidth,20,"ValidTargetReticleTexture", {"0","1","2","3","4","5","6"},0)
 	gameOption = GameOption:new("validTargetReticleTexture", self:addCombo(splitpoint,y,comboWidth,20,getText("UI_OptionScreen_ValidTargetReticleTexture"), {"0","1","2","3","4","5","6"},0))
 	function gameOption.toUI(self)
 		self.control.selected = getCore():getOptionValidTargetReticleTextureIndex() + 1
@@ -2039,10 +1823,6 @@ function MainOptions:addUIPanel()
 	local targetColor = getCore():getTargetColor()
 	local rgba = {r = targetColor:getR(), g = targetColor:getG(), b = targetColor:getB(), a = 1}
 	self.targetColor = self:addColorButton(splitpoint, y, getText("UI_OptionScreen_TargetColor"), rgba, MainOptions.onTargetColor)
-
-	--	if MainScreen.instance.inGame then
-	--		self.targetColor.tooltip = getText("UI_OptionScreen_TargetColor_tt")
-	--	end
 
 	self.colorPicker5 = ISColorPicker:new(0, 0)
 	self.colorPicker5:initialise()
@@ -2069,10 +1849,6 @@ function MainOptions:addUIPanel()
 	local rgba = {r = noTargetColor:getR(), g = noTargetColor:getG(), b = noTargetColor:getB(), a = 1}
 	self.noTargetColor = self:addColorButton(splitpoint, y, getText("UI_OptionScreen_NoTargetColor"), rgba, MainOptions.onNoTargetColor)
 
-	--	if MainScreen.instance.inGame then
-	--		self.noTargetColor.tooltip = getText("UI_OptionScreen_NoTargetColor_tt")
-	--	end
-
 	self.colorPicker6 = ISColorPicker:new(0, 0)
 	self.colorPicker6:initialise()
 	self.colorPicker6.pickedTarget = self
@@ -2094,7 +1870,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--    local crosshairTexture = self:addCombo(splitpoint,y,comboWidth,20,"CrosshairTexture", {"0","1","2"},0)
 	gameOption = GameOption:new("crosshairTexture", self:addCombo(splitpoint,y,comboWidth,20,getText("UI_OptionScreen_CrosshairTexture"), {"0","1","2"},0))
 	function gameOption.toUI(self)
 		self.control.selected = getCore():getOptionCrosshairTextureIndex() + 1;
@@ -2106,7 +1881,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--	local maxCrosshairOffset = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_OptionScreen_MaxCrosshairOffset"), {"100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "05%"}, 11)
 	gameOption = GameOption:new('maxCrosshairOffset', self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_OptionScreen_MaxCrosshairOffset"), {"100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%", "05%"}, 11))
 	function gameOption.toUI(self)
 		local crosshairOffset = getCore():getOptionMaxCrosshairOffset()
@@ -2131,8 +1905,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--	local reticleCameraZoom = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ReticleCameraZoom"))
-	-- showAimTexture.tooltip = getText("UI_OptionScreen_ReticleCameraZoom_tt");
 	gameOption = GameOption:new('reticleCameraZoom', self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_OptionScreen_ReticleCameraZoom")))
 	function gameOption.toUI(self)
 		self.control:setSelected(1, getCore():getOptionReticleCameraZoom())
@@ -2194,11 +1966,9 @@ function MainOptions:addUIPanel()
 	local clock24 = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_temperature_display"), { getText("UI_optionscreen_temperature_fahrenheit"), getText("UI_optionscreen_temperature_celsius") }, 1)
 	gameOption = GameOption:new('temperatureDisplay', clock24)
 	function gameOption.toUI(self)
-		--		local box = self.control
 		self.control.selected = getCore():getOptionDisplayAsCelsius() and 2 or 1
 	end
 	function gameOption.apply(self)
-		--		local box = self.control
 		if self.control.options[self.control.selected] then
 			getCore():setOptionDisplayAsCelsius(self.control.selected == 2)
 		end
@@ -2275,31 +2045,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--local v3Ditem;
-	--v3Ditem = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_perf_3Ditems"));
-	--
-	--gameOption = GameOption:new('perf_3Ditems', v3Ditem)
-	--function gameOption.toUI(self)
-	--	local box = self.control
-	--	box:setSelected(1, getCore():isOption3DGroundItem())
-	--end
-	--function gameOption.apply(self)
-	--	local box = self.control
-	--	getCore():setOption3DGroundItem(box:isSelected(1))
-	--end
-	--self.gameOptions:add(gameOption)
-
-
-
-	--local communityContentTickBox = ISTickBox:new(splitpoint + 20, y + self.addY, 200, BUTTON_HGT, "HELLO?")
-	--communityContentTickBox.choicesColor = {r=1, g=1, b=1, a=1}
-	--communityContentTickBox:initialise();
-	---- Must addChild *before* addOption() or ISUIElement:getKeepOnScreen() will restrict y-position to screen height
-	--self.mainPanel:addChild(communityContentTickBox)
-	--communityContentTickBox:addOption(getText("UI_optionscreen_tickbox_comlang"), nil)
-	--self.mainPanel:insertNewLineOfButtons(communityContentTickBox)
-	--self.addY = self.addY + communityContentTickBox:getHeight()
-
 	local communityContentTickBox = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_tickbox_comlang"));
 
 	gameOption = GameOption:new('comlang', communityContentTickBox)
@@ -2372,30 +2117,6 @@ function MainOptions:addSoundPanel()
 		getCore():setOptionMusicVolume(self.control:getVolume())
 	end
 	self.gameOptions:add(gameOption)
-
---[[ Removed by request SPIF-1690
-	----- AMBIENT VOLUME -----
-	local control = self:addVolumeControl(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_ambient_volume"), 0)
-	gameOption = GameOption:new('ambientVolume', control)
-	function gameOption.storeCurrentValue(self)
-		self.originalValue = getCore():getOptionAmbientVolume()
-	end
-	function gameOption.restoreOriginalValue(self)
-		getCore():setOptionAmbientVolume(self.originalValue)
-	end
-	function gameOption.toUI(self)
-		local volume = getCore():getOptionAmbientVolume()
-		volume = math.min(10, math.max(0, volume))
-		self.control:setVolume(volume)
-	end
-	function gameOption.onChange(self, control, volume)
-		getCore():setOptionAmbientVolume(volume)
-	end
-	function gameOption.apply(self)
-		getCore():setOptionAmbientVolume(self.control:getVolume())
-	end
-	self.gameOptions:add(gameOption)
---]]
 
 	local control = self:addVolumeControl(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_jumpscare_volume"), 0)
 	gameOption = GameOption:new('jumpscareVolume', control)
@@ -2513,11 +2234,6 @@ function MainOptions:addSoundPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	--    self.voipKey = ISLabel:new(splitpoint + 20, y + self.addY, 20, getText("UI_PPT_Key", getCore():getKey("Enable voice transmit")), 1, 1, 1, 1, UIFont.Small, true);
-	--    self.voipKey:initialise();
-	--    self.mainPanel:addChild(self.voipKey);
-	--    self.addY = self.addY + 26;
-
 	local voiceVADMode = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_voiceVADMode"), {getText("UI_VADMode1_Quality"), getText("UI_VADMode2_LowBitrate"), getText("UI_VADMode3_Aggressive"), getText("UI_VADMode4_VeryAggressive")}, 1)
 	gameOption = GameOption:new('voiceVADMode', voiceVADMode)
 	function gameOption.toUI(self)
@@ -2554,7 +2270,6 @@ function MainOptions:addSoundPanel()
 		getCore():setOptionVoiceVolumeMic(self.control:getVolume())
 	end
 	self.gameOptions:add(gameOption)
-
 
 	local voiceVolumeMicIndicator = self:addVolumeIndicator(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_voiceVolumeMicIndicator"), 0)
 	voiceVolumeMicIndicator.tooltip = getText("UI_optionscreen_voiceVolumeMicIndicator_tt");
@@ -2632,10 +2347,7 @@ function MainOptions:addKeybindingPanel()
 			table.insert(MainOptions.keyText, keyTextElement);
 
 			x = MainOptions.keyBindingLength + 30;
-			--y = y + fontHgtMedium + 10;
 		else
-
-			--            print("UI_optionscreen_binding_" .. v.value .. " = \" " .. v.value .. "\",");
 			local splitpoint = self:getWidth() / 2 ;
 			local label = ISLabel:new(x, y+self.addY, BUTTON_HGT, v.value, 1, 1, 1, 1, UIFont.Small);
 			label:initialise();
@@ -2648,7 +2360,6 @@ function MainOptions:addKeybindingPanel()
 			btn.internal = v.value;
 			btn:initialise();
 			btn:instantiate();
-			--~ 			btn:setAnchorRight(true);
 			self.mainPanel:addChild(btn);
 
 			keyTextElement.txt = label;
@@ -2975,22 +2686,6 @@ function MainOptions:addAccessibilityPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	-- SHOW PROGRESS BAR
-	--	local progressBar = self:addTickBox(splitpoint, y, 300, 20)
-	--	progressBar:addOption(getText("UI_optionscreen_ShowProgressBar"))
-	--	self.addY = self.addY + progressBar:getHeight()
-	--
-	--	gameOption = GameOption:new('showProgressBar', progressBar)
-	--	function gameOption.toUI(self)
-	--		local box = self.control
-	--		box:setSelected(1, getCore():isOptionProgressBar())
-	--	end
-	--	function gameOption.apply(self)
-	--		local box = self.control
-	--		getCore():setOptionProgressBar(box:isSelected(1))
-	--	end
-	--	self.gameOptions:add(gameOption)
-
 	local autoDrink = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_AutoDrink"));
 
 	gameOption = GameOption:new('autoDrink', autoDrink)
@@ -3031,8 +2726,6 @@ function MainOptions:addAccessibilityPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-    -----
-
 	local autoRevealPrintMediaMapLocations = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_AutoRevealPrintMediaMapLocations"));
 	autoRevealPrintMediaMapLocations.tooltip = getText("UI_optionscreen_AutoRevealPrintMediaMapLocations_tt");
 
@@ -3046,8 +2739,6 @@ function MainOptions:addAccessibilityPanel()
 		getCore():setOptionAutoRevealPrintMediaMapLocations(box:isSelected(1))
 	end
 	self.gameOptions:add(gameOption)
-
-	-----
 
 	local ghc = getCore():getGoodHighlitedColor()
 	local rgba = {r = ghc:getR(), g = ghc:getG(), b = ghc:getB(), a = 1}
@@ -3160,7 +2851,6 @@ function MainOptions:addAccessibilityPanel()
     if isSystemMacOS() then
         ----- MacOS: Ignore Mouse Wheel Acceleration -----
         local ignoreMouseWheelAcceleration = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_MacOSIgnoreMouseWheelAcceleration"));
---        ignoreMouseWheelAcceleration.tooltip = getText("UI_optionscreen_MacOSIgnoreMouseWheelAcceleration_tt");
         gameOption = GameOption:new('ignoreMouseWheelAcceleration', ignoreMouseWheelAcceleration)
         function gameOption.toUI(self)
             local box = self.control
@@ -3176,7 +2866,6 @@ function MainOptions:addAccessibilityPanel()
 
         ----- MacOS: Map HorizontalMouseWheelToVertical -----
         local mapHorizontalMouseWheelToVertical = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_MacOSMapHorizontalMouseWheelToVertical"));
---        mapHorizontalMouseWheelToVertical.tooltip = getText("UI_optionscreen_MacOSMapHorizontalMouseWheelToVertical_tt");
         gameOption = GameOption:new('mapHorizontalMouseWheelToVertical', mapHorizontalMouseWheelToVertical)
         function gameOption.toUI(self)
             local box = self.control
@@ -3190,40 +2879,12 @@ function MainOptions:addAccessibilityPanel()
         end
         self.gameOptions:add(gameOption)
 	end
-
-	--[[
-        ----- IGNORE PRONE ZOMBIE DIST -----
-        local ignoreProne = self:addCombo(splitpoint, y, 300, 20, getText("UI_optionscreen_IgnoreProneZombieRange"),
-            {
-                getText("UI_optionscreen_IgnoreProneZombieRange1"),
-                getText("UI_optionscreen_IgnoreProneZombieRange2"),
-                getText("UI_optionscreen_IgnoreProneZombieRange3"),
-                getText("UI_optionscreen_IgnoreProneZombieRange4"),
-                getText("UI_optionscreen_IgnoreProneZombieRange5")
-            },
-            2)
-        ignoreProne:setToolTipMap({ defaultTooltip = getText("UI_optionscreen_IgnoreProneZombieRange_tt") })
-
-        gameOption = GameOption:new('ignoreProneZombieRange', ignoreProne)
-        function gameOption.toUI(self)
-            local box = self.control
-            box.selected = getCore():getOptionIgnoreProneZombieRange()
-        end
-        function gameOption.apply(self)
-            local box = self.control
-            if box.options[box.selected] then
-                getCore():setOptionIgnoreProneZombieRange(box.selected)
-            end
-        end --]]
-	--	self.gameOptions:add(gameOption)
 	self.mainPanel:setScrollHeight(y + self.addY + 20)
 end
 
 function MainOptions:addControllerPanel()
 	local y = INITIAL_Y;
 	self.addY = 0
-	local splitpoint = self:getWidth() / 2;
-	local comboWidth = 45 * (getCore():getOptionFontSizeReal() +1) + 60
 
 	self:addPage(getText("UI_optionscreen_controller"))
 	local x = UI_BORDER_SPACING+1
@@ -3254,7 +2915,6 @@ function MainOptions:addControllerPanel()
 	self.gameOptions:add(gameOption)
 	y = y + BUTTON_HGT + UI_BORDER_SPACING
 
-	--
 	label = ISLabel:new(x, y, FONT_HGT_SMALL, getText("UI_optionscreen_controller_tip"), 1, 1, 1, 1, UIFont.Small, true)
 	label:initialise()
 	self.mainPanel:addChild(label)
@@ -3344,7 +3004,6 @@ function MainOptions:addControllerPanel()
 	self.btnJoypadSensitivityP:setEnable(false)
 	self.stuffBelowControllerTickbox:addChild(self.btnJoypadSensitivityP)
 
-
 	local panel = ISControllerTestPanel:new(self.width / 2, UI_BORDER_SPACING+1, self.width - UI_BORDER_SPACING+1 - (self.width / 2), self.mainPanel.height - (UI_BORDER_SPACING+1)*2)
 	panel:setAnchorRight(true)
 	panel:setAnchorBottom(true)
@@ -3357,14 +3016,12 @@ function MainOptions:addControllerPanel()
 	self.mainPanel:insertNewLineOfButtons(controllerTickBox, self.controllerTestPanel.combo)
 	self.mainPanel:insertNewLineOfButtons(btn)
 	self.mainPanel:insertNewLineOfButtons(self.btnJoypadSensitivityM, self.btnJoypadSensitivityP)
-
 end
 
 function MainOptions:addMultiplayerPanel()
 	local y = INITIAL_Y;
 	self.addY = 0
 	local splitpoint = self:getWidth() / 2;
-	local comboWidth = 45 * (getCore():getOptionFontSizeReal() +1) + 60
 
 	self:addPage(getText("UI_optionscreen_multiplayer"))
 
@@ -3411,7 +3068,6 @@ function MainOptions:addMultiplayerPanel()
 		end
 	end
 	self.gameOptions:add(gameOption)
-
 end
 
 function MainOptions:addModOptionsPanel()
@@ -3719,27 +3375,6 @@ function MainOptions:onWorldItemHighlightColor(button)
     end
 end
 
--- function MainOptions:onWorkstationHighlightColor(button)
---     local x = button.parent.parent.x + button.parent.x + button.parent:getXScroll() + button.x
---     local y = button.parent.parent.y + button.parent.y + button.parent:getYScroll() + button.y + button.height + 1
---     if y + self.colorPicker5.height > self.height then
---         y = y - button.height - self.colorPicker5.height - 1
---     end
---     self.colorPicker5:setX(x)
---     self.colorPicker5:setY(y)
---     self.colorPicker5.pickedFunc = MainOptions.pickedWorkstationHighlightColor;
---     local color = self.workstationHighColor.backgroundColor
---     local colorInfo = ColorInfo.new(color.r, color.g, color.b, 1)
---     self.colorPicker5:setInitialColor(colorInfo);
---     self:addChild(self.colorPicker5)
---     self.colorPicker5:setVisible(true);
---     self.colorPicker5:bringToTop();
---     local joypadData = JoypadState.getMainMenuJoypad()
---     if joypadData then
---         joypadData.focus = self.colorPicker5
---     end
--- end
-
 function MainOptions:onModColorPick(button)
 	local x = button.parent.parent.x + button.parent.x + button.parent:getXScroll() + button.x
 	local y = button.parent.parent.y + button.parent.y + button.parent:getYScroll() + button.y + button.height + 1
@@ -3885,13 +3520,6 @@ function MainOptions:pickedWorldItemHighlightColor(color, mouseUp)
     gameOptions:onChange(gameOptions:get('worldItemHighlightColor'))
     getCore():setWorldItemHighlightColor(ColorInfo.new(color.r,color.g,color.b,1))
 end
-
--- function MainOptions:pickedWorkstationHighlightColor(color, mouseUp)
---     MainOptions.instance.workstationHighColor.backgroundColor = { r=color.r, g=color.g, b=color.b, a = 1 }
---     local gameOptions = MainOptions.instance.gameOptions
---     gameOptions:onChange(gameOptions:get('workstationHighColor'))
---     getCore():setWorkstationHighlitedColor(ColorInfo.new(color.r,color.g,color.b,1))
--- end
 
 function MainOptions:pickedModColor(color, mouseUp)
 	self.backgroundColor = { r=color.r, g=color.g, b=color.b, a = 1 }
@@ -4094,8 +3722,6 @@ function MainOptions:onMouseWheel(del)
 	if self.tabs:onMouseWheel(del) then
 		return true;
 	end
---	local panel = self.tabs:getActiveView()
---	panel:onMouseWheel(del)
 	return true;
 end
 
@@ -4288,15 +3914,6 @@ function MainOptions:prerender()
 end
 
 function MainOptions:render()
---[[
-	local currentMusic = getSoundManager():getCurrentMusicName()
-	if currentMusic then
-		local track = getTextOrNull("GameSound_"..currentMusic) or currentMusic
-		self.currentMusicLabel.name = track
-	else
-		self.currentMusicLabel.name = ''
-	end
---]]
 end
 
 function MainOptions:onKeyBindingBtnPress(button, x, y)
@@ -4528,48 +4145,6 @@ function MainOptions.getGeneralTranslators(_language)
         end
         return result
     end
---[[
-    _language = _language:text()
-    if _language == "Francais" then
-        return {"Bret","Legumanigo","Peanuts","Marmotte971","Nyoshi","CareBearCorpse","Teesee","Furthick"};
-    elseif _language == "Deutsch" then
-        return {"RoboMat","Lakorta","Dahugo","Addy","Tuto","Houy Gaming"};
-    elseif _language == "Russian" then
-        return {"Lev Ivanov","lordixi","Adapt","ArionWT","Konrad Knox"};
-    elseif _language == "Norsk" then
-        return {"Hans Morgenstierne"};
-    elseif _language == "Espanol (ES)" then
-        return {"ditoseadio"}; -- removed "RetardedUser","Kalamar","Danny-Dynamita","Pagoru"
-    elseif _language == "Italiano" then
-        return {"Simone \"fox\" Volpini","Mattia \"d00de\" Geretti"};
-    elseif _language == "Polish" then
-        return {"Geras","Lord_Venom","adios_1984","Szary_Optymista","Th3FatPanda","Siarczek","pdjakow","voythas","Zorak","Spazmatic","welniok","Svarog","Insers"};
-    elseif _language == "Nederlands" then
-        return {"Massivekills (Kevin Heuvink)","Raymundo46", "Shinyshark"};
-    elseif _language == "Afrikaans" then
-        return {"PsychoEliteNZ (Adrian Jansen)","Viceroy (Stephanus Siebrits Cilliers van Zyl)"};
-    elseif _language == "Czech" then
-        return {"Jiri \"Rsa Viper\" Prochazka"};
-    elseif _language == "Danish" then
-        return {"A. Gade"};
-    elseif _language == "Portuguese" then
-        return {"Penedus", "ZonaryQuasar"};
-    elseif _language == "Turkish" then
-        return {"DemirHerif"};
-    elseif _language == "Hungarian" then
-        return {"sandor.baliko"};
-    elseif _language == "Japanese" then
-        return {"UENO \"Katzengarten\" Masahiro","Koichi \"Falcon33jp\" Takebe"};
-    elseif _language == "Korean" then
-        return {"clarke","daden","djcide(tannoy)","ingyer","yoongoon","zepaedori "};
-    elseif _language == "Brazilian Portuguese" then
-        return {"HiveFuse"};
-    elseif _language == "Simplified Chinese" then
-        return {"Sky_Orc_Mm"};
-    elseif _language == "Thai" then
-        return {"Artdekdok"};
-    end
---]]
     return {getText("UI_optionscreen_no_translators")};
 end
 
@@ -4744,7 +4319,6 @@ function MainOptions:onJoypadDownCurrentTab(button, joypadData)
 		end
 		getSoundManager():playUISound("UIActivateTab")
 		self.parent:activateView(self.parent.viewList[viewIndex].name)
---		self.parent:getActiveView().joypadData = joypadData
 		joypadData.focus = self.parent:getActiveView()
 		updateJoypadFocus(joypadData)
 	else
@@ -4801,7 +4375,6 @@ end
 
 function MainOptions:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanelJoypad:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
@@ -4820,10 +4393,6 @@ function MainOptions:new (x, y, width, height)
 	MainOptions.instance = o;
 	return o
 end
-
---Events.OnCustomUIKey.Add(MainOptions.keyPressHandler);
-
---Events.OnMainMenuEnter.Add(testWorldPanel);
 
 Events.OnGamepadConnect.Add(MainOptions.OnGamepadConnect)
 Events.OnGamepadDisconnect.Add(MainOptions.OnGamepadDisconnect)

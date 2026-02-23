@@ -213,17 +213,10 @@ function ISXuiFunctions.xuiFindAll(_self, _xuiKey, _list)
         return list;
     end
     list = _self:xuiGetAll(_xuiKey, list);
-    local element;
     if _self.__xui and _self.__xui.children then
         for _,v in ipairs(_self.__xui.children) do
             if v.element.xuiFindAll then
                 v.element:xuiFindAll(_xuiKey, list);
-                --[[
-                element = v.element:xuiFindAll(_xuiKey);
-                if element then
-                    table.insert(list, element);
-                end
-                --]]
             end
         end
     end
@@ -287,17 +280,10 @@ function ISXuiFunctions.xuiFindClassAll(_self, _luaClass, _list)
         return list;
     end
     list = _self:xuiGetClassAll(_luaClass, list);
-    local element;
     if _self.__xui and _self.__xui.children then
         for _,v in ipairs(_self.__xui.children) do
             if v.element.xuiFindClassAll then
                 v.element:xuiFindClassAll(_luaClass, list);
-                --[[
-                element = v.element:xuiFindClassAll(_luaClass);
-                if element then
-                    table.insert(list, element);
-                end
-                --]]
             end
         end
     end
@@ -356,7 +342,6 @@ local function buildInternal(_xuiScript, _parent, _buildInfo, _noChildren, ...)
     end
 
     if element then
-        --print("Building "..tostring(class))
         if not hasInitialized then
             ISXuiBuilder.initialiseObject(_xuiScript, element, _parent);
         end
@@ -370,7 +355,6 @@ local function buildInternal(_xuiScript, _parent, _buildInfo, _noChildren, ...)
             if resizeOld then
                 resizeOld(_self, _width, _height);
             end
-            --applySizing(_self);
         end
         element.onResize = onResize;
 
@@ -428,10 +412,6 @@ function ISXuiBuilder.initialiseObject(_xuiScript, _o, _parent)
     ISXuiBuilder.applySizing(_xuiScript, _o, _parent);
 end
 
--- ###############################################
--- # Main build options:                         #
--- ###############################################
-
 -- only _xuiScript is required.
 function ISXuiBuilder.build(_xuiScript, _parent, _buildInfo)
     local element = buildInternal(_xuiScript, _parent, _buildInfo, nil);
@@ -453,7 +433,6 @@ function ISXuiBuilder.buildSingle(_xuiScript, _parent, _buildInfo, ...)
     local element = buildInternal(_xuiScript, _parent, _buildInfo, true, ...);
     if _parent then
         ISXuiBuilder.applyXuiTable(nil, _parent);
-        --_parent.__xui.children[_xuiScript:getXuiKey()] = element;
         table.insert(_parent.__xui.children, {
             xuiKey = _xuiScript:getXuiKey(),
             element = element,
@@ -463,10 +442,6 @@ function ISXuiBuilder.buildSingle(_xuiScript, _parent, _buildInfo, ...)
     end
     return element;
 end
-
--- ###############################################
--- # END                                         #
--- ###############################################
 
 function ISXuiBuilder.applySpacing(_spacing, _origX, _origY, _origW, _origH)
     return applySpacing(_spacing, _origX, _origY, _origW, _origH)
@@ -520,7 +495,6 @@ function ISXuiBuilder.autoApplyTableKeys(_xuiScript, _o, _parent, _ignoreKeys, _
         local var = vars:get(i);
 
         if var:getLuaTableKey() then
-            --print("Applying key = "..tostring(var:getLuaTableKey()))
             local proceed = (not _ignoreKeys) or (not _ignoreKeys[var:getLuaTableKey()]);
             if proceed then
                 local autoApplyMode = _autoApplyOverride or var:getAutoApplyMode();
@@ -638,22 +612,12 @@ function ISXuiBuilder.constructors.ISXuiTableLayout(_xuiScript, _parent, _buildI
         local row = o:row(i);
         if rowScript and row then
             ISXuiBuilder.autoApplyTableKeys(rowScript, row);
-            --ISXuiBuilder.applyXuiTable(rowScript, row);
             row.configHeight = rowScript:getVector():getH();
             row.isPercent = rowScript:getVector():ishPercent();
         end
     end
 
     ISXuiBuilder.initialiseObject(_xuiScript, o, _parent);
-    --[[
-    ISXuiBuilder.autoApplyTableKeys(_xuiScript, o, _parent);
-    o:initialise();
-    o:instantiate();
-    -- add special table to object.
-    ISXuiBuilder.applyXuiTable(_xuiScript, o, _parent);
-
-    ISXuiBuilder.applySizing(_xuiScript, o, _parent);
-    --]]
 
     for y=0,rowCount-1 do
         for x=0,colCount-1 do
@@ -716,27 +680,3 @@ function ISXuiBuilder.constructors.ISLabel(_xuiScript, _parent, _buildInfo, _x, 
     end
     return o, false;
 end
-
---[[
-function ISXuiBuilder.ISImage(_xuiScript, _parent, x, y, width, height, texture)
-    local vector = _xuiScript:getVector();
-    local o = ISImage:new(vector:getX(), vector:getY(), ISXuiBuilder.texture(_xuiScript:getTexture()));
-    o.textureOverride = ISXuiBuilder.texture(_xuiScript:getTextureOverride());
-    return o, false;
-end
-
-function ISXuiBuilder.ISTickBox(_xuiScript, _parent, x, y, width, height, name, changeOptionTarget, changeOptionMethod, changeOptionArg1, changeOptionArg2)
-    local vector = _xuiScript:getVector();
-    local o = ISImage:new(vector:getX(), vector:getY(), _xuiScript:getName());
-    if _xuiScript:getTextureTick() then
-        o.tickTexture = ISXuiBuilder.texture(_xuiScript:getTextureTick());
-    end
-    o.name = _xuiScript:getName();
-    if _xuiScript:getColorChoices() then
-        o.choicesColor = ISXuiBuilder.colorTable(_xuiScript:getColorChoices());
-    end
-    return o, false;
-end
---]]
-
-

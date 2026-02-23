@@ -8,7 +8,6 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local Z_SCALE = 0.8164966666666666
 local TEXTURE_OFFSET_X = 1
-local ONE_STAIRCASE_STEP = Z_SCALE * 3 / 12 -- 0.20412416666666666
 
 SeamEditorUI = ISPanel:derive("SeamEditorUI")
 
@@ -47,7 +46,6 @@ end
 function OptionsPanel:onMouseDownOutside(x, y)
 	if self:isMouseOver() then return end
 	self:setVisible(false)
---	self:removeFromUIManager()
 end
 
 function OptionsPanel:new(x, y, width, height)
@@ -77,7 +75,6 @@ function Scene:render()
 		end
 		return
 	end
-	local tileIndex = selectedTile.index
 	local tileName = selectedTile.tileName
 	local texture = getTexture(tileName)
 	if not texture then
@@ -96,14 +93,7 @@ function Scene:render()
 
 	-- floor bounds
 	self:renderFloorBounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
---[[
-	local floorHgt = 64
-	local shiftX = -1 * pixelSize
-	self:drawLine2(sx + shiftX, sy2 - floorHgt / 2 * pixelSize, sx + 128 / 2 * pixelSize + shiftX, sy2 - floorHgt * pixelSize, 1.0, 1.0, 1.0, 1.0)
-	self:drawLine2(sx + 128 / 2 * pixelSize + shiftX, sy2 - floorHgt * pixelSize, sx2 + shiftX, sy2 - floorHgt / 2 * pixelSize, 1.0, 1.0, 1.0, 1.0)
-	self:drawLine2(sx2 + shiftX, sy2 - floorHgt / 2 * pixelSize, sx + 128 / 2 * pixelSize + shiftX, sy2, 1.0, 1.0, 1.0, 1.0)
-	self:drawLine2(sx + 128 / 2 * pixelSize + shiftX, sy2, sx + shiftX, sy2 - floorHgt / 2 * pixelSize, 1.0, 1.0, 1.0, 1.0)
---]]
+
 	local renderDraggedTile = self.editor.tilePicker2.listBox:getDraggedTileName() ~= nil
 	if true then -- east square
 		local r,g,b = 0.2,0.2,0.2
@@ -188,8 +178,6 @@ function Scene:renderTileAt(texture, x, y, z)
 		texture:getWidth() * pixelSize,
 		texture:getHeight() * pixelSize,
 		alpha, 1.0, 1.0, 1.0)
-
---	self:drawRectBorder(sx + shiftX, sy + shiftY, 128 * pixelSize, 256 * pixelSize, 1.0, 1.0, 1.0, 1.0)
 end
 
 function Scene:renderSelectedTile(tileName, texture)
@@ -403,7 +391,7 @@ function TilePicker:createChildren()
 		local hasBed = false
 		for j=1,tileNames:size() do
 			local sprite = getSprite(tileNames:get(j-1))
-			if sprite then -- and sprite:getProperties():has(IsoFlagType.bed) then
+			if sprite then
 				hasBed = true
 				break
 			end
@@ -626,9 +614,7 @@ function SeamEditorUI:onResolutionChange(oldw, oldh, neww, newh)
 	self:setWidth(neww)
 	self:setHeight(newh)
 	self.tilePicker:setX(self.width - 10 - self.tilePicker.width)
---	self.tilePicker:setHeight(self.height - 10 - 40)
 	self.tilePicker2:setX(self.tilePicker.x - 10 - self.tilePicker2.width)
---	self.tilePicker2:setHeight(self.height - 10 - 40)
 end
 
 function SeamEditorUI:update()

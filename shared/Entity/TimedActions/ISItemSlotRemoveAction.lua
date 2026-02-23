@@ -70,6 +70,7 @@ function ISItemSlotRemoveAction:complete()
 	else
 		removedItem = self.resource:pollItem();
 	end
+    self.resource:sync()
 
 	if removedItem then
 		self.character:getInventory():AddItem(removedItem);
@@ -89,17 +90,18 @@ function ISItemSlotRemoveAction:stopSound()
 	end
 end
 
-function ISItemSlotRemoveAction:new(character, entity, itemSlot, item)
+-- The internalItemSlot argument has a different name from the field in the object so that in multiplayer this field is not passed to the server side.
+function ISItemSlotRemoveAction:new(character, entity, resource, internalItemSlot, item)
 	local o = ISBaseTimedAction.new(self, character)
 	o.entity = entity
-	o.resource = itemSlot and itemSlot.resource;
-    o.itemSlot = nil;
+	o.resource = resource;
+    o.itemSlot = internalItemSlot;
 	o.targetItem = item;
 	o.maxTime = o:getDuration()
 
 	o.actionAnimVariables = {}
-	if itemSlot and itemSlot.actionAnim then
-		o.actionAnim = itemSlot.actionAnim;
+	if internalItemSlot and internalItemSlot.actionAnim then
+		o.actionAnim = internalItemSlot.actionAnim;
 	else
 		o.actionAnim = "Loot";
 		o.actionAnimVariables["LootPosition"] = "";

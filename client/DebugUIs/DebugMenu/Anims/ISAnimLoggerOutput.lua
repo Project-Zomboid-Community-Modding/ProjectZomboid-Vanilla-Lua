@@ -8,11 +8,8 @@ end
 
 function ISAnimLoggerOutput:createChildren()
     ISPanel.createChildren(self);
-    local v, obj;
 
     local x,y,w = 1,1,self.width-12;
-
-    --self:initHorzBars(x,w);
 
     self.richtext = ISRichTextPanel:new(x, y, w, self.height-2);
     self.richtext:initialise();
@@ -20,7 +17,6 @@ function ISAnimLoggerOutput:createChildren()
     self:addChild(self.richtext);
 
     self.richtext.backgroundColor = {r=0, g=0, b=0, a=1};
-    --self.richtext.background = false;
     self.richtext.autosetheight = false;
     self.richtext.clip = true
     self.richtext:addScrollBars();
@@ -28,8 +24,6 @@ function ISAnimLoggerOutput:createChildren()
     self.clearText = "No monitor attached.";
     self.richtext.text = self.clearText;
     self.richtext:paginate();
-
-
 
     self:setScrollHeight(y+10);
 

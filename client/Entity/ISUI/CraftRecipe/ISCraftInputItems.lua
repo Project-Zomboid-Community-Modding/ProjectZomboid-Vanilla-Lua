@@ -28,7 +28,6 @@ function ISCraftInputItems:rebuildItemNodes()
         self.oldNodes = {};
         for _,node in ipairs(self.nodes) do
             self.oldNodes[node.scriptItem] = node;
-            --print("adding old node for: "..tostring(node.name))
         end
     end
 
@@ -106,7 +105,6 @@ function ISCraftInputItemNode:new(_recipe, _scriptItem)
     o.recipe = _recipe;
     o.scriptItem = _scriptItem;
     o.name = o.scriptItem:getScriptObjectFullType();
-    --o.isHeaderNode = _isHeaderNode;
     o.textCol = Colors.White;
     o.width = 1;
     o.expanded = false;
@@ -115,7 +113,5 @@ function ISCraftInputItemNode:new(_recipe, _scriptItem)
 end
 
 function ISCraftInputItemNode:reset()
-    --self.items = {};
-    --self.expanded = false;
 end
 

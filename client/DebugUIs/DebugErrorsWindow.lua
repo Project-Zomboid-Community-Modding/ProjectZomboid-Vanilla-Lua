@@ -2,8 +2,6 @@ require "ISUI/ISCollapsableWindow"
 
 DebugErrorsWindow = ISCollapsableWindow:derive("DebugErrorsWindow")
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-
 function DebugErrorsWindow:createChildren()
 	ISCollapsableWindow.createChildren(self)
 	

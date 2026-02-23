@@ -5,8 +5,8 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-function ISAdmPanelWeather:createChildren() --:initialise()
-    ISPanel.createChildren(self); --initialise(self);
+function ISAdmPanelWeather:createChildren()
+    ISPanel.createChildren(self);
 
     local x,y = UI_BORDER_SPACING+1,UI_BORDER_SPACING+1;
 
@@ -96,7 +96,6 @@ function ISAdmPanelWeather:createChildren() --:initialise()
     rowY = ISDebugUtils.addHorzBar(self,rowY+UI_BORDER_SPACING)+1;
 
     self.totalY = rowY;
-    --y, obj = self:addButton("Apply",self.width-110,self.height-30,100,20,getText("IGUI_PlayerStats_ReloadOptions"));
     self:setScrollHeight(rowY+UI_BORDER_SPACING+1);
 end
 
@@ -134,7 +133,6 @@ function ISAdmPanelWeather:prerender()
     end
 end
 
-
 function ISAdmPanelWeather:close()
     ISPanel.close(self);
 end
@@ -151,13 +149,11 @@ function ISAdmPanelWeather:onSliderChange(_newval, _slider)
         else
             _slider.valueLabel:setName(ISDebugUtils.printval(_newval,3));
         end
-        --_slider.valueLabel:setName(ISDebugUtils.printval(_newval,3));
     end
 end
 
 function ISAdmPanelWeather:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
     if _tickbox.customData == "FrontType" then
-        --print("selected = "..tostring(_index)..", option = "..tostring(_selected))
         _tickbox.selected[1] = _index==1;
         _tickbox.selected[2] = _index==2;
     end

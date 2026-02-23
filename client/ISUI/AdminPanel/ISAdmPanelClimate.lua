@@ -2,7 +2,6 @@ require "DebugUIs/DebugMenu/Base/ISDebugSubPanelBase";
 
 ISAdmPanelClimate = ISDebugSubPanelBase:derive("ISAdmPanelClimate");
 
-local FONT_HGT_MED = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
@@ -18,7 +17,6 @@ function ISAdmPanelClimate:createChildren()
     table.insert(tickOptions, { text = getText("IGUI_Adm_Weather_ClimateEnabled"), ticked = false });
     local obj;
 
-    --y, obj = self:addTickBox("ClimEnabled",x,y,self.width-40,ISDebugUtils.FONT_HGT_SMALL,"climate enabled", tickOptions);
     y, obj = ISDebugUtils.addLabel(self,"TickboxInfo",x,y,getText("IGUI_Adm_Weather_ClimateEnabledInfo"), UIFont.Small);
 
     local w = self.width-40;
@@ -26,8 +24,6 @@ function ISAdmPanelClimate:createChildren()
     local col0_x, col1_x, col2_x = UI_BORDER_SPACING, UI_BORDER_SPACING+colW, UI_BORDER_SPACING+(colW*2);
 
     self:initHorzBars(x,w);
-    --self.horzBarX = x;
-    --self.horzBarW = w;
 
     local rowY = BUTTON_HGT+UI_BORDER_SPACING;
     local oTitle, oValue, oUi;
@@ -35,7 +31,6 @@ function ISAdmPanelClimate:createChildren()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Windspeed"), ticked = false });
     y, oTitle = ISDebugUtils.addTickBox(self,"Wind",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    --y, oTitle = self:addLabel("Wind",col0_x,rowY,"Windspeed");
     y, oValue = ISDebugUtils.addLabel(self,"WindVal",col2_x-20,rowY,"0 kph", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"WindSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
@@ -47,7 +42,6 @@ function ISAdmPanelClimate:createChildren()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Clouds"), ticked = false });
     y, oTitle = ISDebugUtils.addTickBox(self,"Clouds",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    --y, oTitle = self:addLabel("Clouds",col0_x,rowY,"Clouds");
     y, oValue = ISDebugUtils.addLabel(self,"CloudsVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"CloudsSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
@@ -59,7 +53,6 @@ function ISAdmPanelClimate:createChildren()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Fog"), ticked = false });
     y, oTitle = ISDebugUtils.addTickBox(self,"Fog",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    --y, oTitle = self:addLabel("Fog",col0_x,rowY,"Fog");
     y, oValue = ISDebugUtils.addLabel(self,"FogVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"FogSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
@@ -71,7 +64,6 @@ function ISAdmPanelClimate:createChildren()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Precipitation"), ticked = false });
     y, oTitle = ISDebugUtils.addTickBox(self,"Precip",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    --y, oTitle = self:addLabel("Precip",col0_x,rowY,"Precipitation");
     y, oValue = ISDebugUtils.addLabel(self,"PrecipVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"PrecipSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
@@ -90,7 +82,6 @@ function ISAdmPanelClimate:createChildren()
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_climate_Temperature"), ticked = false });
     y, oTitle = ISDebugUtils.addTickBox(self,"Temp",col0_x,rowY,colW,BUTTON_HGT,"tickbox", tickOptions,ISAdmPanelClimate.onTicked);
-    --y, oTitle = self:addLabel("Temp",col0_x,rowY,"Temperature");
     y, oValue = ISDebugUtils.addLabel(self,"TempVal",col2_x-20,rowY+2,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"TempSlider",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
     oUi.valueLabel = oValue;
@@ -119,7 +110,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightR_ext",oTitle,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -129,7 +119,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightG_ext",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -139,7 +128,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightB_ext",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -153,11 +141,10 @@ function ISAdmPanelClimate:createChildren()
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     y, oValue = ISDebugUtils.addLabel(self,"LightValA_ext",col2_x-20,rowY+2,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_ext",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
-    oUi.pretext = "A_exterior: "; --"Intensity: ";
+    oUi.pretext = "A_exterior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightA_ext",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -175,7 +162,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightR_int",oTitle,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -185,7 +171,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightG_int",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -195,7 +180,6 @@ function ISAdmPanelClimate:createChildren()
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightB_int",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -209,11 +193,10 @@ function ISAdmPanelClimate:createChildren()
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
     y, oValue = ISDebugUtils.addLabel(self,"LightValA_int",col2_x-20,rowY,"0", UIFont.Small, false);
     y, oUi = ISDebugUtils.addSlider(self,"LightSliderA_int",col2_x,rowY+(BUTTON_HGT/2)-9,colW-10, 18,ISAdmPanelClimate.onSliderChange);
-    oUi.pretext = "A_interior: "; --"Intensity: ";
+    oUi.pretext = "A_interior: ";
     oUi.valueLabel = oValue;
     oUi:setValues(0, 255, 1, 1, true);
     oUi.currentValue = 0;
-    --oUi:setCurrentValue(0);
     self:addUI("LightA_int",nil,oValue,oUi);
 
     rowY = rowY+BUTTON_HGT+UI_BORDER_SPACING;
@@ -246,59 +229,6 @@ function ISAdmPanelClimate:addUI(_name, _tickbox, _label, _slider)
     self["lbl".._name.."Val"] = _label;
     self["slider".._name.."Slider"] = _slider;
 end
-
---[[function ISAdmPanelClimate:addHorzBar(_y)
-    if not self.horzBars then
-        self.horzBars = {};
-    end
-    table.insert(self.horzBars,_y);
-    return _y;
-end--]]
-
---[[function ISAdmPanelClimate:addSlider(_id,_x,_y, _w, _h, _title)
-    self["slider".._id] = ISSliderPanel:new(_x, _y, _w, _h, self, ISAdmPanelClimate.onSliderChange );
-    self["slider".._id]:initialise();
-    self["slider".._id]:instantiate();
-    self["slider".._id].valueLabel = false;
-    self["slider".._id].uiID = _id;
-    self:addChild(self["slider".._id]);
-    return self["slider".._id]:getY() + self["slider".._id]:getHeight(), self["slider".._id];
-end
-
-function ISAdmPanelClimate:addTickBox(_id,_x,_y,_w,_h,_title, options)
-    self["tickBox".._id] = ISTickBox:new(_x, _y, _w, _h, _title, self, ISAdmPanelClimate.onTicked);
-    self["tickBox".._id].choicesColor = {r=1, g=1, b=1, a=1};
-    self["tickBox".._id].backgroundColor = {r=0, g=0, b=0, a=0};
-    self["tickBox".._id]:initialise();
-    self["tickBox".._id]:instantiate();
-    self["tickBox".._id].uiID = _id;
-    for k,v in ipairs(options) do
-        self["tickBox".._id].selected[1] = v.ticked;
-        self["tickBox".._id]:addOption(v.text);
-    end
-    self:addChild(self["tickBox".._id]);
-    return self["tickBox".._id]:getY() + self["tickBox".._id]:getHeight(), self["tickBox".._id];
-end
-
-function ISAdmPanelClimate:addButton(_id,_x,_y,_w,_h,_title)
-    self["btn".._id] = ISButton:new(_x, _y, _w, _h, _title, self, ISAdmPanelClimate.onClick);
-    self["btn".._id]:initialise();
-    self["btn".._id].backgroundColor = {r=0, g=0, b=0, a=1.0};
-    self["btn".._id].backgroundColorMouseOver = {r=0.5, g=0.5, b=0.5, a=1};
-    self["btn".._id].borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
-    self["btn".._id].uiID = _id;
-    self:addChild(self["btn".._id]);
-    return self["btn".._id]:getY() + self["btn".._id]:getHeight(), self["btn".._id];
-end
-
-function ISAdmPanelClimate:addLabel(_id,_x,_y,_title,_bLeft)
-    self["lbl".._id] = ISLabel:new(_x, _y, ISDebugUtils.FONT_HGT_SMALL, _title, 1, 1, 1, 1.0, UIFont.Small, _bLeft==nil and true or _bLeft);
-    self["lbl".._id]:initialise();
-    self["lbl".._id]:instantiate();
-    self["lbl".._id].uiID = _id;
-    self:addChild(self["lbl".._id]);
-    return self["lbl".._id]:getY() + self["lbl".._id]:getHeight(), self["lbl".._id];
-end--]]
 
 local FLOAT_DESATURATION = 0;
 local FLOAT_GLOBAL_LIGHT_INTENSITY = 1;
@@ -361,7 +291,6 @@ function ISAdmPanelClimate:prerender()
 
         var = clim:getClimateFloat(FLOAT_GLOBAL_LIGHT_INTENSITY);
         self.tickBoxLightR_ext.selected[1] = var:isEnableAdmin();
-        --self.sliderLightIntensitySlider:setCurrentValue(var:getAdminValue());
 
         local col = clim:getClimateColor(COLOR_GLOBAL_LIGHT):getAdminValue():getExterior();
         self.sliderLightR_extSlider:setCurrentValue(col:getRedFloat()*255);
@@ -376,7 +305,6 @@ function ISAdmPanelClimate:prerender()
         self.sliderLightA_intSlider:setCurrentValue(col:getAlphaFloat()*255);
     end
 end
-
 
 function ISAdmPanelClimate:close()
     ISPanel.close(self);
@@ -396,7 +324,6 @@ function ISAdmPanelClimate:onSliderChange(_newval, _slider)
         end
     end
     if self.LightColorPanel_ext and (_slider.customData=="LightSliderR_ext" or _slider.customData=="LightSliderG_ext" or _slider.customData=="LightSliderB_ext") then
-        --local r,g,b = self.sliderLightSliderR:getCurrentValue(),self.sliderLightSliderG:getCurrentValue(),self.sliderLightSliderB:getCurrentValue();
         self.LightColorPanel_ext.backgroundColor.r = self.sliderLightR_extSlider:getCurrentValue()/255;
         self.LightColorPanel_ext.backgroundColor.g = self.sliderLightG_extSlider:getCurrentValue()/255;
         self.LightColorPanel_ext.backgroundColor.b = self.sliderLightB_extSlider:getCurrentValue()/255;
@@ -411,7 +338,6 @@ function ISAdmPanelClimate:onSliderChange(_newval, _slider)
     end
 
     if self.LightColorPanel_int and (_slider.customData=="LightSliderR_int" or _slider.customData=="LightSliderG_int" or _slider.customData=="LightSliderB_int") then
-        --local r,g,b = self.sliderLightSliderR:getCurrentValue(),self.sliderLightSliderG:getCurrentValue(),self.sliderLightSliderB:getCurrentValue();
         self.LightColorPanel_int.backgroundColor.r = self.sliderLightR_intSlider:getCurrentValue()/255;
         self.LightColorPanel_int.backgroundColor.g = self.sliderLightG_intSlider:getCurrentValue()/255;
         self.LightColorPanel_int.backgroundColor.b = self.sliderLightB_intSlider:getCurrentValue()/255;
@@ -439,8 +365,6 @@ function ISAdmPanelClimate:onSliderChange(_newval, _slider)
         clim:getClimateFloat(FLOAT_AMBIENT):setAdminValue(1-_slider:getCurrentValue());
     elseif _slider.customData=="DesaturationSlider" and clim:getClimateFloat(FLOAT_DESATURATION) then
         clim:getClimateFloat(FLOAT_DESATURATION):setAdminValue(_slider:getCurrentValue());
-    --elseif _slider.customData=="LightSliderIntensity" and clim:getClimateFloat(FLOAT_GLOBAL_LIGHT_INTENSITY) then
-        --clim:getClimateFloat(FLOAT_GLOBAL_LIGHT_INTENSITY):setAdminValue(_slider:getCurrentValue());
     elseif (_slider.customData=="LightSliderR_ext" or _slider.customData=="LightSliderG_ext" or _slider.customData=="LightSliderB_ext" or _slider.customData=="LightSliderA_ext") then
         local c = clim:getClimateColor(COLOR_GLOBAL_LIGHT):getAdminValue():getExterior();
         local r = _slider.customData=="LightSliderR_ext" and self.sliderLightR_extSlider:getCurrentValue()/255 or c:getRedFloat();
@@ -468,7 +392,6 @@ function ISAdmPanelClimate:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
             clim:getClimateFloat(FLOAT_WIND_INTENSITY):setEnableAdmin(true);
             clim:getClimateFloat(FLOAT_WIND_INTENSITY):setAdminValue(val/clim:getMaxWindspeedKph());
         end
-        --self.tickBoxFrontType.selected[1] = _index==1;
     elseif _tickbox.customData == "Clouds" then
         if clim:getClimateFloat(FLOAT_CLOUD_INTENSITY):isEnableAdmin() then
             clim:getClimateFloat(FLOAT_CLOUD_INTENSITY):setEnableAdmin(false);
@@ -499,7 +422,6 @@ function ISAdmPanelClimate:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
     elseif _tickbox.customData == "PrecipIsSnow" then
         if clim:getClimateFloat(FLOAT_PRECIPITATION_INTENSITY):isEnableAdmin() then
             local val = self.tickBoxPrecipIsSnow.selected[1];
-            --print("set admin snow: "..tostring(val))
             clim:getClimateBool(BOOL_IS_SNOW):setEnableAdmin(true);
             clim:getClimateBool(BOOL_IS_SNOW):setAdminValue(val);
         end
@@ -540,8 +462,6 @@ function ISAdmPanelClimate:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
         else
             clim:getClimateFloat(FLOAT_GLOBAL_LIGHT_INTENSITY):setEnableAdmin(true);
             clim:getClimateColor(COLOR_GLOBAL_LIGHT):setEnableAdmin(true);
-            --local val = self.sliderLightIntensitySlider:getCurrentValue();
-            --clim:setAdminFloat(FLOAT_GLOBAL_LIGHT_INTENSITY,val);
             local r = self.sliderLightR_extSlider:getCurrentValue()/255;
             local g = self.sliderLightG_extSlider:getCurrentValue()/255;
             local b = self.sliderLightB_extSlider:getCurrentValue()/255;
@@ -552,7 +472,6 @@ function ISAdmPanelClimate:onTicked(_index, _selected, _arg1, _arg2, _tickbox)
             b = self.sliderLightB_intSlider:getCurrentValue()/255;
             a = self.sliderLightA_intSlider:getCurrentValue()/255;
             clim:getClimateColor(COLOR_GLOBAL_LIGHT):setAdminValueInterior(r,g,b,a);
-            --clim:setAdminColor(COLOR_GLOBAL_LIGHT, r,g,b);
         end
     end
 end

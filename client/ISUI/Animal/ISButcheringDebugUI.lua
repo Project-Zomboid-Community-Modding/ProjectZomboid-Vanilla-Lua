@@ -1,7 +1,6 @@
 require "ISUI/ISCollapsableWindow"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 
 ISButcheringDebugUI = ISCollapsableWindow:derive("ISButcheringDebugUI");
 
@@ -41,7 +40,6 @@ end
 function ISButcheringDebugUI:new(x, y, width, height, carcass, player)
     local o = {};
     o = ISCollapsableWindow:new(x, y, width, height);
-    --    o:noBackground();
     setmetatable(o, self);
     self.__index = self;
     o.carcass = carcass;

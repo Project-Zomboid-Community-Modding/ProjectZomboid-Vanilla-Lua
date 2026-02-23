@@ -10,7 +10,6 @@ LastStandPlayerSelect = ISPanelJoypad:derive("LastStandPlayerSelect");
 LastStandPlayerSelect.playerSelected = nil;
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 
 function LastStandPlayerSelect:initialise()
@@ -18,8 +17,6 @@ function LastStandPlayerSelect:initialise()
 end
 
 function LastStandPlayerSelect:instantiate()
-
-	--self:initialise();
 	self.javaObject = UIElement.new(self);
 	self.javaObject:setX(self.x);
 	self.javaObject:setY(self.y);
@@ -111,9 +108,6 @@ function LastStandPlayerSelect:create()
 
 	self:createPlayerList();
 
---~ 	for i, k in ipairs(LastStandChallenge) do
---~ 		self.listbox:addItem(k.name, k);
---~ 	end
 	self:addChild(self.listbox);
 
 	local btnY = self.height - padBottom - btnHgt
@@ -165,10 +159,6 @@ function LastStandPlayerSelect:create()
 	self:addChild(self.deleteButton);
 
 	self:setVisible(false);
-
---~ 	avatar = IsoSurvivor.new(SurvivorFactory.CreateSurvivor(), nil, 0, 0, 0);
---~ 	avatar:PlayAnimWithSpeed("Run", 0.3);
---~ 	avatar:reloadSpritePart();
 end
 
 function LastStandPlayerSelect:render()
@@ -214,13 +204,7 @@ function LastStandPlayerSelect:drawMap(y, item, alt)
 		self:drawTexture(professionDef:getTexture(), self.width-80, y + 15, 1,1,1,1);
 	end
 
-
---~ 	self:drawTextRight(item.item.lastPlayed, self:getWidth() - 10, (y)+self.itemheight-20, 0.7, 0.7, 0.7, 0.7, UIFont.Small);
-	--self:drawTexture(self.worldimage, 16, y+16, 1, 1, 1, 1);
-
 	self.itemheightoverride[item.text] = self.itemheight;
-
---	avatar:drawAt(self:getAbsoluteX() + 16 + 128 / 2, self:getAbsoluteY() + y + 16 + 128 / 2 + 117 + self:getYScroll());
 
 	y = y + self.itemheightoverride[item.text];
 
@@ -262,7 +246,6 @@ function LastStandPlayerSelect:onOptionMouseDown(button, x, y)
 		if self.joyfocus then
 			self.joyfocus.focus = modal;
 			modal.removeIfJoypadDeactivated = true;
---			updateJoypadFocus(self.joyfocus);
 		end
 	 end
 end
@@ -332,18 +315,7 @@ LastStandPlayerSelect.clickPlay = function()
 	LastStandPlayerSelect.playerSelected = sel.item;
 	LastStandPlayerSelect.playerSelected.playedTime = LastStandPlayerSelect.playerSelected.playedTime + 1;
 	MainScreen.instance.lastStandPlayerSelect:setVisible(false);
---[[
-	-- menu activated via joypad, we disable the joypads and will re-set them automatically when the game is started
-	if LastStandPlayerSelect.instance.joyfocus then
-		local joypadData = LastStandPlayerSelect.instance.joyfocus
-		joypadData.focus = nil;
-		updateJoypadFocus(joypadData);
-		JoypadState.count = 0
-		JoypadState.players = {};
-		JoypadState.joypads = {};
-		JoypadState.forceActivate = joypadData.id;
-	end
---]]
+
     GameWindow.doRenderEvent(false);
 	forceChangeState(LoadingQueueState.new());
 end
@@ -392,7 +364,6 @@ end
 
 function LastStandPlayerSelect:new (x, y, width, height)
 	local o = {}
-	--o.data = {}
 	o = ISPanelJoypad.new(self, x, y, width, height);
 	o.x = x;
 	o.y = y;

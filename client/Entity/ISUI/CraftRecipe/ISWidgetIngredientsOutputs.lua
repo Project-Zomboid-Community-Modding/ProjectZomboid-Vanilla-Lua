@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISWidgetIngredientsOutputs = ISPanel:derive("ISWidgetIngredientsOutputs");
 
@@ -12,16 +11,6 @@ end
 
 function ISWidgetIngredientsOutputs:createChildren()
     ISPanel.createChildren(self);
-
-    --[[
-    local column, row;
-
-    self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10);
-    self.rootTable:addRowFill(nil);
-    self.rootTable:initialise();
-    self.rootTable:instantiate();
-    self:addChild(self.rootTable);
-    --]]
 
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
@@ -134,9 +123,8 @@ function ISWidgetIngredientsOutputs:calculateLayout(_preferredWidth, _preferredH
     for k,v in ipairs(self.outputs) do
         v:calculateLayout(0,0);
 
-        minOutputWidth = math.max(minOutputWidth, v:getWidth()); --+(self.margin*2));
+        minOutputWidth = math.max(minOutputWidth, v:getWidth());
         minOutputHeight = math.max(minOutputHeight, v:getHeight());
-        --minHeight = minHeight + self.margin;
     end
 
     local outputCount = #self.outputs;
@@ -209,8 +197,6 @@ function ISWidgetIngredientsOutputs:new (x, y, width, height, player, logic) -- 
     self.__index = self
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
 
     o.interactiveMode = false;
 

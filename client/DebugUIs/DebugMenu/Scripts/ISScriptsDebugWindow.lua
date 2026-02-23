@@ -29,7 +29,6 @@ function ISScriptsDebugWindow:initialise()
 	ISCollapsableWindow.initialise(self);
 end
 
-
 function ISScriptsDebugWindow:createChildren()
     ISCollapsableWindow.createChildren(self);
 
@@ -58,7 +57,6 @@ function ISScriptsDebugWindow:createChildren()
     self.comboBox = ISComboBox:new (x, y, LEFT_BAR_WIDTH, BUTTON_HGT, self, ISScriptsDebugWindow.comboChange)
     self.comboBox:initialise();
     self.comboBox:instantiate();
-    --self:addChild(self.comboBox);
 
     local enums = ScriptType.GetEnumListLua();
     for i=0,enums:size()-1 do
@@ -102,14 +100,10 @@ function ISScriptsDebugWindow:createChildren()
     self.list:instantiate();
     self.list.itemheight = BUTTON_HGT*2;
     self.list.selected = 0;
-    --self.infoList.joypadParent = self;
     self.list.font = UIFont.Small;
     self.list.doDrawItem = ISScriptsDebugWindow.drawScriptListItem;
     self.list.target = self;
-    --self.list.onmousedblclick = ISStationRecipeList.onItemDoubleClick;
     self.list.onmousedown = ISScriptsDebugWindow.onScriptListSelected;
-    --self.list.onMouseDown = ISStationRecipeList.onMouseDownRecipeItem;
-    --self.list.onMouseDoubleClick = ISStationRecipeList.onMouseDoubleClickRecipeItem;
     self.list.drawBorder = true;
     self:addChild(self.list);
 
@@ -252,7 +246,6 @@ function ISScriptsDebugWindow:populate()
     end
 
     if self.list.items and #self.list.items>0 then
-        --print("SELECTING ELEMENT")
         self.list.selected = 1;
         self:onScriptListSelected(self.list.items[self.list.selected].item);
     end
@@ -269,7 +262,6 @@ function ISScriptsDebugWindow:drawScriptListItem(y, item, alt)
 
     if item.item.name then
         local drawY = y + (self.itemheight/4) - (FONT_HGT_SMALL/2) + 2;
-        --local c = item.item.color;
         self:drawText( item.item.name, 5, drawY, 1, 1, 1, 1.0, self.font);
     end
     if item.item.fulltype then
@@ -300,7 +292,6 @@ function ISScriptsDebugWindow:prerender()
         self.reloadButton.enable = true;
     end
 end
-
 
 function ISScriptsDebugWindow:render()
     ISCollapsableWindow.render(self)

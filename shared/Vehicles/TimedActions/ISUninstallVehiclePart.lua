@@ -75,15 +75,17 @@ function ISUninstallVehiclePart:complete()
     			local square = self.character:getCurrentSquare()
     			local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(self.character, square, item)
     			self.character:getCurrentSquare():AddWorldInventoryItem(item, dropX, dropY, dropZ);
-   				ISInventoryPage.renderDirty = true
-   			end
-   			self.character:sendObjectChange('mechanicActionDone', { success = true})
+				if not isServer() then
+					ISInventoryPage.renderDirty = true
+				end
+			end
+   			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
    			self.character:addMechanicsItem(item:getID() .. self.vehicle:getMechanicalID() .. "0", self.part, getGameTime():getCalender():getTimeInMillis());
    		elseif ZombRand(failure) < 100 then
    			self.part:setCondition(self.part:getCondition() - ZombRand(5,10));
    			self.vehicle:transmitPartCondition(self.part)
    			playServerSound("PZ_MetalSnap", self.character:getCurrentSquare());
-   			self.character:sendObjectChange('mechanicActionDone', { success = false})
+   			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
    			addXp(self.character, Perks.Mechanics, 1);
    		end
    	else

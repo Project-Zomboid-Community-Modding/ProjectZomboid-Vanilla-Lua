@@ -2,13 +2,16 @@ require "TimedActions/ISBaseTimedAction"
 
 ISDropVehicleItemAction = ISBaseTimedAction:derive("ISDropVehicleItemAction");
 
-function ISDropVehicleItemAction:isValid()	
+function ISDropVehicleItemAction:isValid()
 	local ground = self.dropSquare:getTotalWeightOfItemsOnFloor()
 	if ground + self.item:getUnequippedWeight() > 50 then
 		return false
 	end
 	if isClient() and self.item then
-	    return self.character:getInventory():containsID(self.item:getID());
+		if self.wasValid == nil then
+			self.wasValid = self.character:getInventory():containsID(self.item:getID());
+		end
+		return self.wasValid
 	else
 	    return self.character:getInventory():contains(self.item);
 	end

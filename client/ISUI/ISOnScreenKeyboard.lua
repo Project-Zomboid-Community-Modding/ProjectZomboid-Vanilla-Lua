@@ -4,7 +4,6 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 local KEY_HGT = FONT_HGT_MEDIUM + UI_BORDER_SPACING*2
 local JOYPAD_TEX_SIZE = 32
 
@@ -338,12 +337,6 @@ end
 
 function OnScreenKeyboardPanel:render()
 	ISPanelJoypad.render(self)
---[[
-	if self.joyfocus then
-		self:drawRectBorder(0, -self:getYScroll(), self:getWidth(), self:getHeight(), 0.4, 0.2, 1.0, 1.0);
-		self:drawRectBorder(1, 1-self:getYScroll(), self:getWidth()-2, self:getHeight()-2, 0.4, 0.2, 1.0, 1.0);
-	end
---]]
 end
 
 function OnScreenKeyboardPanel:onGainJoypadFocus(joypadData)
@@ -500,19 +493,12 @@ function ISOnScreenKeyboard:prerender()
 	self:setY(getCore():getScreenHeight() - self.height * 0.5 - self.height * 0.5 * (self.transition / DURATION))
 
 	if self.textEntryBox then
---		self.entry:setText(self.textEntryBox:getInternalText())
---		self.entry:setCursorPos(self.textEntryBox:getCursorPos())
 		self.entry.javaObject:focus() -- show the cursor, but don't actually take the focus
 	end
---[[
-	if self.textEntryBox then -- and not self.textEntryBox.javaObject:isFocused() then
-		self.textEntryBox:focus() -- user could be clicking buttons with the mouse
-	end
---]]
+
 	self:bringToTop()
 
 	self:setX((getCore():getScreenWidth() - self.width) / 2)
---	self:setY(getCore():getScreenHeight() - self.height)
 
 	if self.capsLock then
 		self.buttonCapsLock.backgroundColor = self.toggleButtonBG
@@ -606,7 +592,6 @@ function ISOnScreenKeyboard:show(playerNum, textEntryBox, joypadData)
 	self.transition = 0
 	self.bSelectDefaultKey = true
 	self:setMultipleLine(textEntryBox and textEntryBox.javaObject:isMultipleLine() or false)
---	self:setVisible(true, joypadData)
 	self:setVisible(true, nil)
 	self:addToUIManager()
 
@@ -623,14 +608,12 @@ function ISOnScreenKeyboard:show(playerNum, textEntryBox, joypadData)
 end
 
 function ISOnScreenKeyboard:setMultipleLine(multipleLine)
---multipleLine = true
 	self.entry:setMultipleLine(multipleLine)
 	if multipleLine then
 		self.buttonEnter:setTitle(getText("IGUI_Keyboard_Enter"))
 		self.buttonEnter.chLower = getText("IGUI_Keyboard_Enter")
 		self.buttonEnter.chUpper = getText("IGUI_Keyboard_Accept")
 		self.entry:setMaxLines(self.textEntryBox and self.textEntryBox:getMaxLines() or 10)
---self.entry:setMaxLines(10)
 		self.entry:setHeight(FONT_HGT_LARGE * 8 + 2 * 2)
 	else
 		self.buttonEnter:setTitle(getText("IGUI_Keyboard_Accept"))

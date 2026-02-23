@@ -213,11 +213,6 @@ function ModSelector.Model:filterMods(category, searchWord, favoriteMode, onlyEn
             show = false
         end
 
-        local verMin = modData.modInfo:getVersionMin()
-        --if not self.isUnsupportedModsVisible and (verMin == nil or verMin:isLessThan(getBreakModGameVersion())) then
-        --    show = false
-        --end
-
         if show then
             table.insert(self.currentMods, modData)
         end

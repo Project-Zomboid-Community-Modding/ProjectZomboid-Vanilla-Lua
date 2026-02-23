@@ -65,18 +65,12 @@ function ISSearchMode:createChildren()
     y, obj = self:addBoolOption(getText("IGUI_SearchMode_Debug_Search_Window"),x,y,w, "searchmode_debug_searchwindow_enabled");
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
-    --y, obj = self:addButton("Fade in SearchMode",x,y+margin,w,butH,margin,ID_FADE_IN);
-    --y, obj = self:addButton("Fade out SearchMode",x,y+margin,w,butH,margin,ID_FADE_OUT);
-
     y, obj = ISDebugUtils.addLabel(self,"title2",x+(w/2),y,getText("IGUI_SearchMode_Debug_General_Title"), UIFont.Small);
     obj.center = true;
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
 
     y, obj = self:addFloatOption(getText("IGUI_SearchMode_Debug_General_Fade_Time"),x,y,w,sm, 0, 5, 0.1, "getFadeTime", "setFadeTime", false);
     y = ISDebugUtils.addHorzBar(self,y+barMod)+barMod+1;
-
-    --y, obj = self:addFloatOption("Shader Max Desaturation",x,y,w,sm, 0, 1, 0.01, "getMaxDesaturation", "setMaxDesaturation", false);
-
 
     y, obj = ISDebugUtils.addLabel(self,"title3",x+(w/2),y,getText("IGUI_SearchMode_Debug_Overlay_Config_Title"), UIFont.Small);
     obj.center = true;
@@ -162,7 +156,6 @@ function ISSearchMode:addBoolOption(_id,_x,_y,_w,_tag)
     local tickOptions = {};
     table.insert(tickOptions, { text = getText("IGUI_DebugMenu_Enabled"), ticked = false });
     local y,obj2 = ISDebugUtils.addTickBox(self,_id,_x+(_w-300),_y,300,BUTTON_HGT,_id,tickOptions,ISSearchMode.onTickedValue);
-    --obj2.changeOptionMethod = ClimateOptionsDebug.onTickedValue;
 
     local v = { title = obj, tickboxValue = obj2, tag=_tag };
     self.boolOptions[_id] = v;
@@ -176,7 +169,6 @@ function ISSearchMode:addFloatOption(_id,_x,_y,_w,_java,_min,_max,_stepsize, _ge
     local y2,obj2 = ISDebugUtils.addLabel(self,_id,_x+(_w-300)-20,_y,"0", UIFont.Small, false);
     local y3, obj3 = ISDebugUtils.addSlider(self,_id,_x+(_w-300),_y,300, BUTTON_HGT,ISSearchMode.onSliderChange);
     obj3.valueLabel = obj2;
-    --obj3:setCurrentValue(0);
 
     local v = {
         title = obj,
@@ -200,7 +192,6 @@ function ISSearchMode:addFloatOption(_id,_x,_y,_w,_java,_min,_max,_stepsize, _ge
     else
         val = v.java[v.get](v.java) + v.applyMod;
     end
-    --print(v.var.." = "..tostring(val))
     obj3.customData = v;
     obj3:setValues(_min or 0, _max or 1, _stepsize or 0.01, _stepsize or 0.01);
     obj3:setCurrentValue(val);
@@ -209,14 +200,6 @@ function ISSearchMode:addFloatOption(_id,_x,_y,_w,_java,_min,_max,_stepsize, _ge
 end
 
 function ISSearchMode:onClick(_button)
-    if _button.customData and _button.customData.command then
-        local c = _button.customData.command
-        if c==ID_FADE_IN then
-            --getSearchMode():FadeIn(PLR_INDEX);
-        elseif c==ID_FADE_OUT then
-            --getSearchMode():FadeOut(PLR_INDEX);
-        end
-    end
 end
 
 function ISSearchMode:prerender()

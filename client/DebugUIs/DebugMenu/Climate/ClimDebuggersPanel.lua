@@ -46,7 +46,6 @@ function ClimDebuggersPanel:createChildren()
     self:initHorzBars(x,w);
 
     local h = BUTTON_HGT;
-    --y, obj = ISDebugUtils.addButton(self,"TriggerStorm",x+100,rowY+10,w-200,20,getText("IGUI_climate_TriggerStorm"), ISAdmPanelWeather.onClick);
     if self.buttons then
         for k,v in ipairs(self.buttons)  do
             y, obj = ISDebugUtils.addButton(self,v,x,y+UI_BORDER_SPACING,w,h,v.title,ClimDebuggersPanel.onClick);
@@ -62,8 +61,6 @@ function ClimDebuggersPanel:createChildren()
 
     self:setScrollHeight(y+UI_BORDER_SPACING+1);
 end
-
-
 
 function ClimDebuggersPanel:prerender()
     ISDebugSubPanelBase.prerender(self);

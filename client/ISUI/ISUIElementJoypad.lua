@@ -153,35 +153,6 @@ function ISUIElementJoypad:inheritingClassCall(_functionName, ...)
     return inheritingClassCall(_functionName, ...)
 end
 
---[[
-function ISUIElementJoypad.Wrap(_Class, ...)
-    local o = _Class:new(...)
-
-    local Class = _Class;
-    setmetatable(o, {
-        __index = function (table, key)
-            local result = rawget(ISUIElementJoypad, key);
-            if result then
-                return result;
-            elseif Class then
-                return Class[key];
-            end
-            return nil;
-        end
-    });
-
-    if o.__Class then
-        print("ISUIElementJoypad ->Class already wrapped.");
-        return;
-    end
-    o.__Class = _Class;
-
-    -- adding Joypad table.
-    createJoypadTable(o);
-    return o;
-end
---]]
-
 function ISUIElementJoypad.Wrap(_Class, ...)
     local o = ISUIElementJoypad.Inject(nil, _Class, ...);
     return o;
@@ -209,7 +180,6 @@ function ISUIElementJoypad.Inject(_NewClass, _Class, ...)
             end
             return nil;
         end,
-        --__metatable = false,
     });
 
     if o.__Class then
@@ -318,9 +288,6 @@ function ISUIElementJoypad:onLoseJoypadFocus(joypadData)
     self.__joypad.data = nil;
 
     callbackFunc(self, self.__joypad.onLoseJoypadFocus, joypadData)
-
-    --self.joyfocus = nil;
-    --self.drawJoypadFocus = false;
 end
 
 function ISUIElementJoypad:onGainJoypadFocus(joypadData)
@@ -328,13 +295,9 @@ function ISUIElementJoypad:onGainJoypadFocus(joypadData)
 
     callbackFunc(self, self.__joypad.onGainJoypadFocus, joypadData)
 
-    print("Gained focus: "..tostring(self.name))
-
     if self.__joypad.autoFocusFirstAvail and (not self.__joypad.isElement) then
         self:focusNextJoypadElement(joypadData)
     end
-    --self.joyfocus = joypadData;
-    --self.drawJoypadFocus = false;
 end
 
 function ISUIElementJoypad:hasJoypadFocus()

@@ -30,7 +30,7 @@ function ISSetComboWasherDryerMode:complete()
 	else
 		self.object:setModeDryer()
 	end
-	self.object:sendObjectChange("mode")
+	self.object:sendObjectChange(IsoObjectChange.MODE)
 	return true
 end
 

@@ -12,7 +12,6 @@ function ISItemsListTable:initialise()
     ISPanel.initialise(self);
 end
 
-
 function ISItemsListTable:render()
     ISPanel.render(self);
     
@@ -34,7 +33,6 @@ function ISItemsListTable:render()
         else
             size = self.datas.columns[i+1].size - self.datas.columns[i].size
         end
---        print(v.name, x, v.size)
         self:drawText(v.name, x+UI_BORDER_SPACING+1, y+3, 1,1,1,1,UIFont.Small);
         self:drawRectBorder(self.datas.x + x, y, 1, BUTTON_HGT, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         x = x + size;
@@ -61,7 +59,6 @@ function ISItemsListTable:createChildren()
     
     local btnWid = 100
     local bottomHgt = BUTTON_HGT*6 + UI_BORDER_SPACING*3 + LABEL_HGT -2
-    --local bottomHgt = 5 + FONT_HGT_SMALL * 2 + 5 + BUTTON_HGT + 20 + FONT_HGT_LARGE + LABEL_HGT + LABEL_HGT
 
     self.datas = ISScrollingListBox:new(0, BUTTON_HGT, self.width, self.height - bottomHgt - LABEL_HGT);
     self.datas:initialise();
@@ -72,7 +69,6 @@ function ISItemsListTable:createChildren()
     self.datas.font = UIFont.NewSmall;
     self.datas.doDrawItem = self.drawDatas;
     self.datas.drawBorder = true;
---    self.datas.parent = self;
     self.datas:addColumn("Type", 0); --note, trying to add translations to these breaks the menu completely. find some way to bypass this
     self.datas:addColumn("Name", 200+(getCore():getOptionFontSizeReal()*20));
     self.datas:addColumn("Category", 450+(getCore():getOptionFontSizeReal()*40));
@@ -90,21 +86,18 @@ function ISItemsListTable:createChildren()
     self.buttonAdd1 = ISButton:new(0, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add1"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd1.internal = "ADDITEM1";
     self.buttonAdd1.enable = false;
---    self.buttonAdd1.parent = self;
     self.buttonAdd1.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAdd1);
         
     self.buttonAdd2 = ISButton:new(self.buttonAdd1:getRight() + UI_BORDER_SPACING, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add2"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd2.internal = "ADDITEM2";
     self.buttonAdd2.enable = false;
---    self.buttonAdd2.parent = self;
     self.buttonAdd2.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAdd2);
         
     self.buttonAdd5 = ISButton:new(self.buttonAdd2:getRight() + UI_BORDER_SPACING, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add5"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd5.internal = "ADDITEM5";
     self.buttonAdd5.enable = false;
---    self.buttonAdd5.parent = self;
     self.buttonAdd5.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAdd5);
 
@@ -113,7 +106,6 @@ function ISItemsListTable:createChildren()
     self.buttonAddMultiple:initialise();
     self.buttonAddMultiple:instantiate();
     self.buttonAddMultiple.enable = false;
---    self.buttonAddMultiple.parent = self;
     self.buttonAddMultiple.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAddMultiple);
 
@@ -168,7 +160,6 @@ function ISItemsListTable:createChildren()
             table.insert(self.filterWidgets, combo)
             self.filterWidgetMap[column.name] = combo
         elseif column.name == "Craft" then
---             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
             local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
             combo.font = UIFont.Medium
             combo:initialise()
@@ -181,7 +172,6 @@ function ISItemsListTable:createChildren()
             table.insert(self.filterWidgets, combo)
             self.filterWidgetMap[column.name] = combo
         elseif column.name == "Forage" then
---             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
             local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
             combo.font = UIFont.Medium
             combo:initialise()
@@ -194,7 +184,6 @@ function ISItemsListTable:createChildren()
             table.insert(self.filterWidgets, combo)
             self.filterWidgetMap[column.name] = combo
         elseif column.name == "Loot" then
---             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
             local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
             combo.font = UIFont.Medium
             combo:initialise()
@@ -207,7 +196,6 @@ function ISItemsListTable:createChildren()
             table.insert(self.filterWidgets, combo)
             self.filterWidgetMap[column.name] = combo
         elseif column.name == "#spawn" then
---             local combo = ISTextEntryBox:new("", x, entryY, size, LABEL_HGT);
             local combo = ISComboBox:new(x, entryY, size, LABEL_HGT)
             combo.font = UIFont.Medium
             combo:initialise()
@@ -268,7 +256,6 @@ function ISItemsListTable:onOptionMouseDown(button, x, y)
     end
     if button.internal == "ADDITEM" then
         local item = button.parent.datas.items[button.parent.datas.selected].item;
---        self:addItem(button.parent.datas.items[button.parent.datas.selected].item);
         local modal = ISTextBox:new(0, 0, 280, 180, getText("IGUI_AdminPanel_ItemList_AddXTitle", item:getDisplayName()), "1", self, ISItemsListTable.onAddItem, nil, item);
         modal:initialise();
         modal:addToUIManager();
@@ -293,7 +280,6 @@ function ISItemsListTable:initList(module)
     local categoryMap = {}
     local displayCategoryMap = {}
     local lootCategoryMap = {}
-    local spawnNumMap = {}
     for x,v in ipairs(module) do
         self.datas:addItem(v:getDisplayName(), v);
         if not categoryMap[v:getItemType():toString()] then
@@ -335,25 +321,16 @@ function ISItemsListTable:initList(module)
     end
 
     local combo = self.filterWidgetMap.Craft
---     table.sort(craftNames, function(a,b) return not string.sort(a, b) end)
     combo:addOption("<Any>")
     combo:addOption("false")
     combo:addOption("true")
---     for _,craftName in ipairs(craftNames) do
---         combo:addOption(craftName)
---     end
 
     local combo = self.filterWidgetMap.Forage
---     table.sort(forageNames, function(a,b) return not string.sort(a, b) end)
     combo:addOption("<Any>")
     combo:addOption("false")
     combo:addOption("true")
---     for _,forageName in ipairs(forageNames) do
---         combo:addOption(craftName)
---     end
 
     local combo = self.filterWidgetMap.Loot
---     table.sort(lootNames, function(a,b) return not string.sort(a, b) end)
     combo:addOption("<Any>")
     combo:addOption("false")
     combo:addOption("true")
@@ -402,39 +379,27 @@ end
 function ISItemsListTable:filterCraft(widget, scriptItem)
     if widget.selected == 1 then return true end -- Any category
     local txtToCheck = string.lower(tostring(scriptItem:isCraftRecipeProduct()))
---     local filterTxt = string.lower(widget:getInternalText())
 getPlayer():Say("1" .. tostring(txtToCheck))
 getPlayer():Say("2" .. tostring(widget:getOptionText(widget.selected)))
     return txtToCheck == widget:getOptionText(widget.selected)
---     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
---     return true
 end
 
 function ISItemsListTable:filterForage(widget, scriptItem)
     if widget.selected == 1 then return true end -- Any category
     local txtToCheck = string.lower(tostring(scriptItem:canBeForaged()))
---     local filterTxt = string.lower(widget:getInternalText())
     return txtToCheck == widget:getOptionText(widget.selected)
---     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
---     return true
 end
 
 function ISItemsListTable:filterLoot(widget, scriptItem)
     if widget.selected == 1 then return true end -- Any category
     local txtToCheck = string.lower(tostring(scriptItem:canSpawnAsLoot()))
---     local filterTxt = string.lower(widget:getInternalText())
     return txtToCheck == widget:getOptionText(widget.selected)
---     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
---     return true
 end
 
 function ISItemsListTable:filterSpawned(widget, scriptItem)
     if widget.selected == 1 then return true end -- Any category
     local txtToCheck = string.lower(tostring(scriptItem:getNumSpawned()))
---     local filterTxt = string.lower(widget:getInternalText())
     return txtToCheck == widget:getOptionText(widget.selected)
---     return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
---     return true
 end
 
 function ISItemsListTable.onFilterChange(widget)
@@ -442,9 +407,6 @@ function ISItemsListTable.onFilterChange(widget)
     if not datas.fullList then datas.fullList = datas.items; end
     widget.parent.totalResult = 0;
     datas:clear();
---print(entry.parent, combo)
---    local filterTxt = entry:getInternalText();
---    if filterTxt == "" then datas.items = datas.fullList; return; end
     for i,v in ipairs(datas.fullList) do -- check every items
         local add = true;
         for j,widget in ipairs(widget.parent.filterWidgets) do -- check every filters

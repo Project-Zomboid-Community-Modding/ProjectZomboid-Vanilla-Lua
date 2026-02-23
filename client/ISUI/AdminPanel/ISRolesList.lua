@@ -82,7 +82,6 @@ end
 function ISRolesList:drawDatas(y, item, alt)
     local a = 0.9;
 
-    --    self.parent.selectedFaction = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then

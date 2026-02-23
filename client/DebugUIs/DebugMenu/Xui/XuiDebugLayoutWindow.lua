@@ -6,7 +6,6 @@ function XuiDebugLayoutWindow:initialise()
 	ISCollapsableWindow.initialise(self);
 end
 
-
 function XuiDebugLayoutWindow:createChildren()
     ISCollapsableWindow.createChildren(self)
     self.th = self:titleBarHeight();
@@ -39,7 +38,6 @@ function XuiDebugLayoutWindow:close()
         self.parent:onCloseSubWindow(self, false);
     end
 end
-
 
 -- collects all elements with script uuid in the hierarchy
 -- modified for debug to grab cells
@@ -74,9 +72,7 @@ function XuiDebugLayoutWindow:debugXuiFindAllUUID(_self, _uuid, _list)
     return list;
 end
 
-
 function XuiDebugLayoutWindow:selectUUID(_uuid)
-    --self.selectedUUID = _uuid;
     self.selections = {};
     if _uuid then
         if self.selectedUUID and self.selectedUUID==_uuid then
@@ -91,8 +87,6 @@ function XuiDebugLayoutWindow:selectUUID(_uuid)
     end
     if self.selectedUUID and self.toggle then
         if self.xuiPanel then
-            --local elements = self:xuiFindAllUUID(self.selectedUUID, {});
-            --print("uuid = "..tostring(self.selectedUUID))
             local elements = self:debugXuiFindAllUUID(self, self.selectedUUID, {});
 
             for _,elem in ipairs(elements) do
@@ -111,15 +105,12 @@ function XuiDebugLayoutWindow:selectUUID(_uuid)
                 end
             end
         end
-    else
-        --clear
     end
 end
 
 function XuiDebugLayoutWindow:prerender()
     ISCollapsableWindow.prerender(self)
 end
-
 
 function XuiDebugLayoutWindow:render()
     ISCollapsableWindow.render(self);
@@ -132,8 +123,6 @@ function XuiDebugLayoutWindow:render()
         self.selectColor.g = 0.5;
         self.colMod = self.colMod * -1;
     end
-    --self.selectColor.r = self.selectColor.g;
-    --self.selectColor.b = self.selectColor.g;
 
     local nums = #self.selections;
     if nums>0 then
@@ -144,8 +133,6 @@ function XuiDebugLayoutWindow:render()
             local y = e.e:getAbsoluteY()-self:getAbsoluteY();
 
             if nums==1 then
-                --ISXuiBuilder.setDrawRectangle(self, 0, self.th, self.width, self.height-self.heightMod);
-                --self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.5, 0.0, 0.0, 0.0);
                 local dy = self.th;
                 local dh = self.height-self.heightMod;
                 if x>0 then

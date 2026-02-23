@@ -13,7 +13,6 @@ function ISDuplicateKeybindDialog:createChildren()
 			getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel"))
 	)
 
-	local fontHgt = getTextManager():getFontFromEnum(UIFont.Medium):getLineHeight()
 	local actionName = getText("UI_optionscreen_binding_" .. self.keybind2Name):trim()
 	local text = getText("UI_optionscreen_keyAlreadyBinded", getKeyName(self.key), actionName, actionName)
 	local label = ISLabel:new(0,UI_BORDER_SPACING+1, LABEL_HGT*2, text:gsub("\\n", "\n"):gsub("\\\"", "\""), 1, 1, 1, 1, UIFont.Medium, true)
@@ -66,7 +65,6 @@ function ISDuplicateKeybindDialog:onKeep()
 	end
 
 	-- Don't change the key assigned to keybind #2.
-
 	self:nextDuplicate()
 end
 

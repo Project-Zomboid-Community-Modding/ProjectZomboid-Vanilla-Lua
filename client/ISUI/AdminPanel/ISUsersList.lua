@@ -111,7 +111,6 @@ end
 function ISUsersList:drawDatas(y, item, alt)
     local a = 0.9;
 
-    --    self.parent.selectedFaction = nil;
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
     if self.selected == item.index then
@@ -243,7 +242,6 @@ function ISUsersList:onClickOption(item, action)
         local modal = ISPlayerStatsUserlogUI:new(self.x + 200, self.y + 200, 600+(getCore():getOptionFontSizeReal()*100), 550, nil, ISPlayerStatsUI.onUserlogOption, item:getUsername(), {});
         modal:initialise();
         modal:addToUIManager();
-        --table.insert(ISPlayerStatsUI.instance.windows, modal);
     end
     if action == "SeeSuspicionActivity" then
         requestUserlog(item:getUsername());
@@ -260,13 +258,11 @@ function ISUsersList:onClickOption(item, action)
         local modal = ISPlayerStatsManageInvUI:new(self.x + 100, self.y + 100, 900, 650, pid, item:getUsername());
         modal:initialise();
         modal:addToUIManager();
-        --table.insert(ISPlayerStatsUI.instance.windows, modal);
     end
     if action == "AddWarningPoint" then
         local modal = ISPlayerStatsWarningPointUI:new(self.x + 200, self.y + 200, 350, 250, item:getUsername(), ISUsersList.onAddWarningPoint);
         modal:initialise();
         modal:addToUIManager();
-        --table.insert(ISPlayerStatsUI.instance.windows, modal);
     end
     if action == "Delete" then
             local modal = ISModalDialog:new((getCore():getScreenWidth() / 2) - 130, (getCore():getScreenHeight() / 2) - 60, 260, 120, getText("IGUI_RolesList_DeleteRole"), true, ISUsersList.instance, ISUsersList.onDeleteModalClick);
@@ -284,8 +280,6 @@ end
 
 function ISUsersList.onAddWarningPoint(username, button, reason, amount)
     addWarningPoint(username, reason, tonumber(amount));
-    --ISPlayerStatsUI.instance.warningPoint = ISPlayerStatsUI.instance.warningPoint + tonumber(amount);
-    --requestUserlog(username);
 end
 
 function ISUsersList:onSetRoleClickOption(item, role)
@@ -452,7 +446,6 @@ function ISUsersList:doContextMenu(item, x, y)
         context:addOption(getText("IGUI_UserList_ResetPassword"), ISUsersList.instance, ISUsersList.onClickOption, item, "ResetPassword");
         context:addOption(getText("IGUI_UserList_SetPassword"), ISUsersList.instance, ISUsersList.onClickOption, item, "SetPassword");
     end
-
 end
 
 function ISUsersList:closeModal()

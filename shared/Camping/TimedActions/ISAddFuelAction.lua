@@ -7,9 +7,14 @@ function ISAddFuelAction:isValid()
 	local campfire = CCampfireSystem.instance:getLuaObjectOnSquare(self.campfire:getSquare())
 	if (campfire.fuelAmt + self.fuelAmt) > getCampingFuelMax() then return false end
 
-	if isClient() and self.item then
-        return self.campfire:getObject() and
-            self.character:getInventory():containsID(self.item:getID())
+	if isClient() then
+        if self.item == nil or self.campfire:getObject() == nil then return false end
+        if self.character:getInventory():containsID(self.item:getID()) then
+            return true
+        else
+            self:forceComplete()
+            return false
+        end
 	else
         return self.campfire:getObject() and
             self.character:getInventory():contains(self.item)

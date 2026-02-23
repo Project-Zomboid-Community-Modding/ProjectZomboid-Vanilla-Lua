@@ -11,7 +11,6 @@ function ISEntityScriptsPanel:initialise()
 	ISPanel.initialise(self);
 end
 
-
 function ISEntityScriptsPanel:createChildren()
     ISPanel.createChildren(self);
 
@@ -91,7 +90,6 @@ function ISEntityScriptsPanel:onResize(_width, _height)
     local x = self.list:getX() + self.list:getWidth() + UI_BORDER_SPACING;
     local midWidth = self.width - x - UI_BORDER_SPACING - 1;
 
-    --self.reloadButton:setWidth(midWidth);
     self.buildButton:setWidth(midWidth);
 
     self.scriptPanel:setWidth(midWidth);
@@ -188,7 +186,6 @@ function ISEntityScriptsPanel:populate()
     end
 
     if self.list.items and #self.list.items>0 then
-        --print("SELECTING ELEMENT")
         self.list.selected = 1;
         self:onEntityListSelected(self.list.items[self.list.selected].item);
     end
@@ -205,7 +202,6 @@ function ISEntityScriptsPanel:drawEntityListItem(y, item, alt)
 
     if item.item.name then
         local drawY = y + (self.itemheight/4) - (FONT_HGT_SMALL /2) + 2;
-        --local c = item.item.color;
         self:drawText( item.item.name, 5, drawY, 1, 1, 1, 1.0, self.font);
     end
     if item.item.fulltype then
@@ -237,7 +233,6 @@ function ISEntityScriptsPanel:prerender()
 
     self.buildButton.enable = self.selectedEntityItem and self.selectedCanBuild;
 end
-
 
 function ISEntityScriptsPanel:render()
     ISPanel.render(self)

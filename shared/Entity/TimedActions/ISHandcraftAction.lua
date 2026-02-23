@@ -68,6 +68,18 @@ function ISHandcraftAction:serverStart()
 	self.logic = HandcraftLogic.new(self.character, self.craftBench, self.isoObject);
 	self.logic:setContainers(self.containers);
 	self.logic:setRecipe(self.craftRecipe);
+	self.logic:setTargetVariableInputRatio(self.variableInputRatio);
+	if self.manualInputs then
+		self:fixManualInputs()
+		self.logic:setManualSelectInputs(true);
+		self.logic:clearManualInputs();
+		for inputIndex, items in pairs(self.manualInputs) do
+			local inputScript = self.craftRecipe:getIOForIndex(inputIndex);
+			if (not inputScript) or (not self.logic:setManualInputsFor(inputScript, items)) then
+				log(DebugType.CraftLogic, "ISHandcraftAction.start -> failed to set manual input items for recipe.")
+			end
+		end
+    end
 end
 
 function ISHandcraftAction:start()
@@ -78,6 +90,9 @@ function ISHandcraftAction:start()
 	self.logic:setRecipe(self.craftRecipe);
 	self.logic:setTargetVariableInputRatio(self.variableInputRatio);
 	if self.manualInputs then
+		if isClient() then
+			self:fixManualInputs()
+		end
 		self.logic:setManualSelectInputs(true);
 		self.logic:clearManualInputs();
 		
@@ -89,6 +104,10 @@ function ISHandcraftAction:start()
 			end
 		end
 
+		-- This call is required so CraftRecipeData.CachedData.addAppliedData() is called for manualInputs.
+		-- Without it, the CraftRecipeData.getAllInputItems() call below won't return manualInputs.
+		self.logic:canPerformCurrentRecipe()
+
 		if not isClient() and not self.force and not self.logic:canPerformCurrentRecipe() then
 			log(DebugType.CraftLogic, "ISHandcraftAction.start -> canPerformCurrentRecipe failed.")
 			self:forceStop();
@@ -96,7 +115,11 @@ function ISHandcraftAction:start()
 		end
 	end
 
-	if not self.items then
+	if self.items then
+		if isClient() then
+			self:fixMovedItems(self.items)
+		end
+    else
 		-- populate with what recipe has now filled
 		if self.logic:getRecipeData() then
 			self.items = self.logic:getRecipeData():getAllInputItems()
@@ -154,6 +177,9 @@ function ISHandcraftAction:perform()
 	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
 		self.character:stopOrTriggerSound(self.sound);
 	end
+    if self.actionScript and self.actionScript:getCompletionSound() ~= nil then
+        self.character:playSound(self.actionScript:getCompletionSound());
+    end
 
 	ISInventoryPage.dirtyUI();
 
@@ -254,6 +280,9 @@ function ISHandcraftAction:animEvent(event, parameter)
     if event == "StartActionAnim" and self.actionScript:getSound() ~= nil and self.actionScript:getSoundTime() == ActionSoundTime.ANIMATION_START then
         self:stopSound();
         self.sound = self.character:playSound(self.actionScript:getSound());
+    elseif event == "PlayActionSound" and self.actionScript:getSound() ~= nil and self.actionScript:getSoundTime() == ActionSoundTime.ANIMATION_EVENT then
+        self:stopSound();
+        self.sound = self.character:playSound(self.actionScript:getSound());
     end
 end
 
@@ -337,6 +366,23 @@ function ISHandcraftAction.FromLogic(handcraftLogic, eatPercentage)
 	return action;
 end
 
+function ISHandcraftAction:fixManualInputs()
+    if not self.manualInputs then return end
+    for inputIndex,items in pairs(self.manualInputs) do
+        self:fixMovedItems(items)
+    end
+end
+
+function ISHandcraftAction:fixMovedItems(items)
+    for i=1,items:size() do
+        local item = items:get(i-1)
+        local item2 = self.character:getInventory():getItemById(item:getID())
+        if item2 ~= nil then
+            items:set(i-1, item2)
+        end
+    end
+end
+
 function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, craftBench, manualInputs, items, recipeItem, variableInputRatio, eatPercentage)
 	log(DebugType.CraftLogic, "Creating handcraft action")
 	local o = ISBaseTimedAction.new(self, character);
@@ -346,7 +392,7 @@ function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, cr
 	o.isoObject = isoObject;
 	o.craftBench = craftBench; -- may be nil, if not nil the craftbench is a component of the supplied isoObject.
     o.containers = containers;
-	o.manualInputs = manualInputs; -- a non-ordered key,value table where key=integer index of InputScript, and value=ArrayList of InventoryItem's.
+	o.manualInputs = convertToPZNetTable(manualInputs); -- a non-ordered key,value table where key=integer index of InputScript, and value=ArrayList of InventoryItem's.
 	o.craftRecipe = craftRecipe;
 	o.actionScript = o.craftRecipe and o.craftRecipe:getTimedActionScript();
 	--o.usesCustomDelta = true;

@@ -33,14 +33,12 @@ function ISSleepDialog:initialise()
 	self.yes = ISButton:new((self:getWidth() / 2) - 5 - buttonWid1, spinBox:getY() + spinBox:getHeight() + 20, buttonWid1, buttonHgt, getText("ContextMenu_Sleep"), self, ISSleepDialog.onClick)
 	self.yes.internal = "YES"
 	self.yes:initialise()
---	self.yes:instantiate()
 	self.yes.borderColor = {r=1, g=1, b=1, a=0.25}
 	self:addChild(self.yes)
 
 	self.no = ISButton:new((self:getWidth() / 2) + 5, self.yes:getY(), buttonWid2, buttonHgt, getText("UI_Cancel"), self, ISSleepDialog.onClick)
 	self.no.internal = "NO"
 	self.no:initialise()
---	self.no:instantiate()
 	self.no.borderColor = {r=1, g=1, b=1, a=0.25}
 	self:addChild(self.no)
 

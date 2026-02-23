@@ -33,20 +33,15 @@ function ISComponentsTabPanel:createChildren()
     if self.multiPanels then
         local styleCell = self.styleCell or "S_TableLayoutCell_Component_Tab";
         self.menuLayout = ISXuiSkin.build(self.xuiSkin, nil, ISTableLayout, 0, 0, 10, 10, nil, nil, styleCell);
-        --self.menuLayout.drawDebugLines = true;
         self.menuLayout:addColumnFill(nil);
         self.menuLayout:initialise();
         self.menuLayout:instantiate();
-        --self:addChild(self.menuLayout);
 
         column = self.tableLayout:addColumn(nil);
         self.tableLayout:setElement(column:index(), 0, self.menuLayout);
     end
 
     self.panelColumn = self.tableLayout:addColumnFill(nil);
-    --self.tableLayout:setElement(column:index(), 0, self.container);
-
-    --self.panels = ISEntityUI.GetComponentPanels(self.player, self.entity);
 
     local added = false;
     local row;
@@ -56,12 +51,7 @@ function ISComponentsTabPanel:createChildren()
         row.minimumHeight = 6;
         local cell = self.menuLayout:cell(0, row:index());
         cell.padding = 0;
-        --cell.height = 10;
         for index,v in ipairs(self.panels) do
-            --if not added then
-            --self.container:addChild(v.panel);
-            --self.tableLayout:setElement(self.panelColumn:index(), 0, v.panel);
-            --end
             v.panel.minimumWidth = math.max(v.panel.minimumWidth or 0, self.minimumPanelWidth);
 
             if self.disableHeaders then
@@ -74,24 +64,18 @@ function ISComponentsTabPanel:createChildren()
             end
             local style = self.styleButton or "S_Button_Component_Tab";
             local tabButton = ISXuiSkin.build(self.xuiSkin, style, ISButton, 0, 0, 20, FONT_HGT_SMALL+8, name);
-            --self.buttonRepair.image = (not self.showInfo) and self.iconInfo or self.iconPanel;
             tabButton.data = v;
             if self.doIcons and self.doText then
                 tabButton.iconTexture = v.uiStyle and v.uiStyle:getIcon();
             elseif self.doIcons then
-                --local size = 20;
-                --tabButton.width = size;
-                --tabButton.height = size;
                 tabButton.width = 40;
                 tabButton.image = v.uiStyle and v.uiStyle:getIcon();
-                --tabButton:forceImageSize(size, size);
             end
             tabButton.target = self;
             tabButton.onclick = ISComponentsTabPanel.onButtonClick;
             tabButton.enable = true;
             tabButton:initialise();
             tabButton:instantiate();
-            --self:addChild(tabButton);
 
             row = self.menuLayout:addRow(nil);
             self.menuLayout:setElement(0, row:index(), tabButton);
@@ -104,8 +88,6 @@ function ISComponentsTabPanel:createChildren()
             if not added then
                 self.originalColor = tabButton.textColor;
                 self:selectPanel(index, false);
-                --self.originalColor = tabButton.backgroundColor;
-                --tabButton.backgroundColor = self.selectedColor;
             end
 
             added = true;
@@ -143,7 +125,7 @@ function ISComponentsTabPanel:selectPanel(_index, _recalc)
 
         if _recalc then
             if self.layoutParent then
-                self.layoutParent:calculateLayout(0,0); --(self.layoutParent:getWidth(), self.layoutParent:getHeight());
+                self.layoutParent:calculateLayout(0,0);
             else
                 self:calculateLayout(0, 0);
             end
@@ -171,7 +153,6 @@ function ISComponentsTabPanel:calculateLayout(_preferredWidth, _preferredHeight)
 end
 
 function ISComponentsTabPanel:onResize()
-    --ISUIElement.onResize(self)
     ISUIElement.onResize(self)
 end
 

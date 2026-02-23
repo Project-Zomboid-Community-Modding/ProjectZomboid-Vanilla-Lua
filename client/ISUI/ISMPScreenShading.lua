@@ -15,13 +15,6 @@ function ISMPScreenShading:destroy()
     end
 end
 
---function ISMPScreenShading:onClick(button)
---    self:destroy();
---    self.ui.screenShading = nil
---    self.ui.modal:destroy();
---    self.ui.modal = nil
---end
-
 function ISMPScreenShading:onMouseDown(x, y)
     if not self:getIsVisible() then
         return;

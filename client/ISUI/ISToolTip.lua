@@ -65,7 +65,6 @@ function ISToolTip:prerender()
 end
 
 function ISToolTip:render()
-
 	local mx = getMouseX() + 32
 	local my = getMouseY() + 10
 	if not self.followMouse then
@@ -160,10 +159,6 @@ function ISToolTip:doLayout()
 		myWidth = nameWidth
 	end
 
---	if self.texture and myHeight < textureHeight + 40 then
---		myHeight = textureHeight + 40
---	end
-
 	if self.footNote then
 		local noteWidth = getTextManager():MeasureStringX(UIFont.Small, self.footNote)
 		if myWidth < noteWidth then myWidth = noteWidth end
@@ -215,9 +210,6 @@ function ISToolTip:layoutContents(x, y, myWidth)
 		if panelWidth > self.descriptionPanel:getWidth() then
 			self.descriptionPanel:setWidth(panelWidth)
 			self.descriptionPanel:paginate()
---		elseif panelWidth < self.descriptionPanel:getWidth() then
---			self.descriptionPanel:setWidth(panelWidth)
---			self.descriptionPanel:paginate()
 		end
 		
 		textWidth = self.descriptionPanel:getWidth()
@@ -363,7 +355,6 @@ function ISToolTip:new()
    o.anchorRight = false;
    o.anchorTop = true;
    o.anchorBottom = false;
-   -- description panel
    o.descriptionPanel = ISRichTextPanel:new(0, 0, 0, 0);
    o.descriptionPanel.marginLeft = 0
    o.descriptionPanel.marginRight = 0

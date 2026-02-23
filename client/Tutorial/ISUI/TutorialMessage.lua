@@ -9,7 +9,6 @@ function TutorialMessage:initialise()
 end
 
 function TutorialMessage:createChildren()
-
     -- CREATE TUTORIAL PANEL
     local panel = ISRichTextPanel:new(15, 0, self.width-30, self.height);
     panel:initialise();
@@ -53,12 +52,9 @@ function TutorialMessage:updateSize()
     self.richtext:setHeight(self.richtext:getHeight())
     self:setWidth(self.richtext:getWidth());
     self:setHeight(self.richtext:getHeight()+10);
-    --print(text)
 end
 
-
 function TutorialMessage:setInfo(item)
-
 end
 
 function TutorialMessage:onMouseWheel(del)
@@ -77,7 +73,6 @@ function TutorialMessage:update()
     end
 end
 function TutorialMessage:render()
-
     if self.message ~= self.richtext.text then
         self.message = self.richtext.text
         self:updateSize()
@@ -89,28 +84,11 @@ function TutorialMessage:render()
 
 
     self:drawTextureScaled(TutorialMessage.spiffo, self.width - 43, -60, 256/2, 364/2, 1, 1, 1, 1);
-    --self.richtext:drawRectBorder(self.richtext.x, self.richtext.y, self.richtext.width, self.richtext.height, 1, 0.2, 0.4, 1)
     if JoypadState.players[1] and self.clickToSkip and getJoypadFocus(0) ~= self and not Tutorial1.disableMsgFocus then
         setJoypadFocus(0, self)
     end
 
 end
-
---function TutorialMessage:onMouseDown(x, y)
---    if self.clickToSkip then
---        TutorialMessage.instance = nil;
---        self:removeFromUIManager();
---        self.target:onClose(self);
---    end
---
---end
---function TutorialMessage:onMouseDownOutside(x, y)
---    if self.clickToSkip then
---        TutorialMessage.instance = nil;
---        self:removeFromUIManager();
---        self.target:onClose(self);
---    end
---end
 
 function TutorialMessage:onGainJoypadFocus(joypadData)
     ISPanelJoypad.onGainJoypadFocus(self, joypadData);
@@ -132,7 +110,6 @@ TutorialMessage.onKeyPressed = function(key)
         TutorialMessage.instance = nil;
         instance:removeFromUIManager();
         instance.target:onClose(instance);
---        getPlayer():setAuthorizeMeleeAction(true);
     end
 end
 
@@ -158,16 +135,13 @@ TutorialMessage.getInstance = function(x, y, w, h, message, clickToSkip, target,
         TutorialMessage.instance:addToUIManager();
         TutorialMessage.instance:setAlwaysOnTop(true);
     end
---    getPlayer():setAuthorizeMeleeAction(false);
     TutorialMessage.instance.target = target;
     TutorialMessage.instance.test = test;
-    -- SurvivalGuideManager.instance.panel:setVisible(false);
     return TutorialMessage.instance;
 end
 
 function TutorialMessage:new (x, y, width, height, clickToSkip, message)
     local o = {}
-    --o.data = {}
     o = ISPanelJoypad:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

@@ -25,12 +25,10 @@ end
 
 function ISSurvivalGuideListBox:onGainJoypadFocus(joypadData)
 	ISScrollingListBox.onGainJoypadFocus(self, joypadData)
---	self.joypadFocused = true
 end
 
 function ISSurvivalGuideListBox:onLoseJoypadFocus(joypadData)
 	ISScrollingListBox.onLoseJoypadFocus(self, joypadData)
---	self.joypadFocused = false
 end
 
 function ISSurvivalGuideListBox:onJoypadDown(button, joypadData)
@@ -379,7 +377,6 @@ end
 
 function ISTutorialPanel:onGainJoypadFocus(joypadData)
 	ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
---	joypadData.lastfocus = nil
 	self:setUseJoypad(true)
 	joypadData.focus = self.chapterList
 	updateJoypadFocus(joypadData)
@@ -395,8 +392,6 @@ end
 
 function ISTutorialPanel:new(x, y, width, height)
 	local o = ISCollapsableWindowJoypad.new(self, x, y, width, height);
---	o.borderColor = {r=1, g=1, b=1, a=0.7};
---	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.anchorLeft = true;
 	o.anchorRight = false;
 	o.anchorTop = true;

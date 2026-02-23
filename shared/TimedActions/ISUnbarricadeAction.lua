@@ -134,7 +134,7 @@ function ISUnbarricadeAction:complete()
     			local plank = barricade:removePlank(nil)
     			if barricade:getNumPlanks() > 0 then
 					if (isClient() or isServer()) then
-						barricade:sendObjectChange('state')		-- FIXME? not work in SP
+						barricade:sendObjectChange(IsoObjectChange.STATE)		-- FIXME? not work in SP
 					end
     			end
     			if plank then

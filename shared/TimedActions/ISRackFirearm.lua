@@ -7,6 +7,10 @@ function ISRackFirearm:isValid()
 end
 
 function ISRackFirearm:start()
+	if isClient() then
+		self.gun = self.character:getInventory():getItemById(self.gun:getID())
+	end
+
 	if not ISReloadWeaponAction.canRack(self.gun) then
 		self:forceComplete()
 		return
@@ -129,8 +133,8 @@ end
 function ISRackFirearm:serverStart()
 	self:ejectSpentRounds()
 	self:initVars()
-	emulateAnimEventOnce(self.netAction, 100, "rackBullet", nil)
-	emulateAnimEventOnce(self.netAction, 1200, "rackingFinished", nil)
+	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 100), "rackBullet", nil)
+	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1200), "rackingFinished", nil)
 end
 
 function ISRackFirearm:getDuration()

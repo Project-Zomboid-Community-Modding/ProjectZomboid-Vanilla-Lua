@@ -33,6 +33,7 @@ function ISPutAnimalInHutch:complete()
 	local animal = self.character:getPrimaryHandItem();
 	animal:getAnimal():getBehavior():setHourBeforeLeavingHutch(1);
 	self.hutch:addAnimalInside(animal:getAnimal());
+	sendRemoveItemFromContainer(self.character:getInventory(), animal);
 	self.character:getInventory():Remove(animal);
 	self.character:setPrimaryHandItem(nil);
 	self.character:setSecondaryHandItem(nil);

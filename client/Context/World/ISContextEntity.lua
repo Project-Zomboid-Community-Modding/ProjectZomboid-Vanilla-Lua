@@ -24,16 +24,6 @@ function ISWorldMenuElements.ContextEntity()
                 canAddEntityOption = false;
             end
         end
-
-        if false and getDebug() then
-            local parent = _data.context:addOption(getText("Entity Debug Build"), _data, nil );
-            local subMenu = ISContextMenu:getNew(_data.context);
-            _data.context:addSubMenu(parent, subMenu);
-            for i=0,EntityDebugTestType.getValueList():size()-1 do
-                local v = EntityDebugTestType.getValueList():get(i);
-                subMenu:addOption("TestBuild: "..tostring(v), _data, self.buildTest, v );
-            end
-        end
     end
 
     function self.openPanel( _data, _entity )

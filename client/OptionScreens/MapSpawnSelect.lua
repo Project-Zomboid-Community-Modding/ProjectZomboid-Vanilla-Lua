@@ -459,17 +459,13 @@ function MapSpawnSelect:fillList()
 			item.region = v;
 			item.dir = v.name;
 			item.desc = info.description or "NO DESCRIPTION";
-			--item.worldimage = info.thumb;
 			if info.spawnSelectImagePyramid then
 				spawnSelectImagePyramid = info.spawnSelectImagePyramid -- only one is supported
---			elseif info.worldmap then
---				WORLD_MAP = info.worldmap
 			end
 			item.zoomX = info.zoomX
 			item.zoomY = info.zoomY
 			item.zoomS = info.zoomS
 			item.demoVideo = info.demoVideo
-			--self.listbox:addItem(item.name, item);
 			self:checkSorted(item);
 		else
 			local item = {}
@@ -479,11 +475,9 @@ function MapSpawnSelect:fillList()
 			item.desc = "";
 			item.worldimage = nil;
 			self:checkSorted(item);
-			--self.listbox:addItem(item.name, item);
 		end
 	end
-	--self.listbox:sort()
-	--self:sortList();
+
 	if #self.listbox.items > 1 then
         local item = {}
         item.name = getText("UI_mapspawn_random");
@@ -491,7 +485,6 @@ function MapSpawnSelect:fillList()
         item.dir = "";
         item.desc = "";
         item.worldimage = nil;
-        --self.listbox:addItem(item.name, item);
 		table.insert(self.notSortedList, item);
     end
 
@@ -553,7 +546,6 @@ function MapSpawnSelect:checkSorted(item)
 	if not found then
 		table.insert(self.notSortedList, item)
 	end
-
 end
 
 function MapSpawnSelect:hideOrShowSaveName()
@@ -623,14 +615,12 @@ function MapSpawnSelect:clickNext()
 
     if self.listbox.items[self.listbox.selected].item.name == getText("UI_mapspawn_random") then
         local roll = ZombRand((#self.listbox.items - 1)) + 1
---         print("Roll " .. tostring(roll))
         self.listbox.selected = roll
     end
 
 	self.selectedRegion = self.listbox.items[self.listbox.selected].item.region
 	setSpawnRegion(self.selectedRegion.name)
 	getCore():setSelectedMap(tostring(self.selectedRegion.name))
-     --print("self.selectedRegion.name" .. tostring(self.selectedRegion.name))
 	self:setVisible(false)
 	if MainScreen.instance.createWorld then
 		getWorld():setWorld(sanitizeWorldName(self.textEntry:getText()));
@@ -706,8 +696,6 @@ function MapSpawnSelect:render()
 			self.selectedMapIndex = self.listbox.selected
 			if selectedItem.zoomX ~= nil and not (selectedItem.zoomX == 0 and selectedItem.zoomY == 0 and selectedItem.zoomS == 0) then -- nil during post-death at a player's location
 				self.mapPanel.mapAPI:transitionTo(selectedItem.zoomX, selectedItem.zoomY, selectedItem.zoomS)
--- 				self.mapPanel.mapAPI:centerOn(x, y)
--- 				self.mapPanel.mapAPI:setZoom(scale)
 			elseif selectedItem.region ~= nil and selectedItem.region.points ~= nil then
 				local points = selectedItem.region.points.unemployed
 				if points then
@@ -730,25 +718,6 @@ end
 
 function MapSpawnSelect:recalculateMapSize()
 	if WORLD_MAP ~= nil or self.mapPanel:hasSomethingToDisplay() then
-		---old code for matching exact size ratio of map
-		--local mapW = WORLD_MAP:getWidth() --width of map image
-		--local mapH = WORLD_MAP:getHeight() --height of map image
-		--local maxW = self.width - UI_BORDER_SPACING*3 - 2 - self.width/4 --max width for map
-		--local maxH = self.height - FONT_HGT_LARGE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2 --max height for map
-		--
-		--if maxH > mapH and maxW > mapW then
-		--	WORLD_MAP_SCALE = 1
-		--else
-		--	WORLD_MAP_SCALE = math.max(mapW/maxW, mapH/maxH) -- set the scale of the whole image here
-		--end
-		--
-		--ZOOM_SCALE = WORLD_MAP_SCALE
-		--
-		--WORLD_MAP_W = math.max(mapW/WORLD_MAP_SCALE, (self.width-UI_BORDER_SPACING*3-2)/2)
-		--WORLD_MAP_H = maxH
-		--WORLD_MAP_X = self.width - UI_BORDER_SPACING - WORLD_MAP_W
-		--WORLD_MAP_Y = FONT_HGT_LARGE + UI_BORDER_SPACING*2 + 1
-
 		WORLD_MAP_W = (self.width-UI_BORDER_SPACING*3-2)*0.75
 		WORLD_MAP_H = self.height - FONT_HGT_LARGE - UI_BORDER_SPACING*4 - BUTTON_HGT - 2
 		WORLD_MAP_X = self.width - UI_BORDER_SPACING - WORLD_MAP_W
@@ -784,16 +753,6 @@ function MapSpawnSelect:recalculateMapSize()
 end
 
 function MapSpawnSelect:zoomMap(x, y, scale)
-	--- this zoom function takes
-	---		the x and y coordinates of a central point in the map,
-	---		and a zoom factor, clamped between 1 and WORLD_MAP_SCALE.
-	---
-	--- it calculates the offset relative to the mapPanel position
-	---	and draws the map texture with the desired central point displayed
-	--- exactly in the middle of the mapPanel.
-	---
-	--- ~ Fox Chaotica
-
 	local lerpValue = 0.02 -- how fast the zoom takes to move to new location, between 0 and 1. lower numbers make the zoom take longer
 	local snapThreshold = 0.1 -- how close to the target location the zoom needs to be before the zoom snaps to position.
 
@@ -878,13 +837,6 @@ end
 
 function MapSpawnSelect:onResolutionChange(oldw, oldh, neww, newh)
 	self:recalculateMapSize()
-
-	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
-	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
-	--if self.seedPanel then
-	--	self.randomButton:setX(self.seedPanel:getRight() - btnWidth - UI_BORDER_SPACING*2 - 2)
-	--	self.seedTextBox:setWidth(self.randomButton.x - self.seedLabel:getRight() - UI_BORDER_SPACING*2)
-	--end
 end
 
 function MapSpawnSelect:checkSeed()
@@ -900,10 +852,6 @@ end
 function MapSpawnSelect:saveGenParams()
 	self:checkSeed()
 	WorldGenParams.INSTANCE:setSeedString(self.seedTextBox:getText())
-	--WorldGenParams.INSTANCE:setMinXCell(self.minXSlider:getCurrentValue())
-	--WorldGenParams.INSTANCE:setMinYCell(self.minYSlider:getCurrentValue())
-	--WorldGenParams.INSTANCE:setMaxXCell(self.maxXSlider:getCurrentValue())
-	--WorldGenParams.INSTANCE:setMaxYCell(self.maxYSlider:getCurrentValue())
 end
 
 function MapSpawnSelect:discardGenParams()
@@ -972,7 +920,6 @@ function MapSpawnSelect:create()
 
 	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
     if not MainScreen.instance.inGame then -- don't show seed in splitscreen
-		--local advPanelHeight = UI_BORDER_SPACING*4 + BUTTON_HGT*3 + 2
         self.seedPanel = MapSpawnSelectSeedPanel:new(self.listbox.x,self.richText:getBottom() + UI_BORDER_SPACING, self.listbox.width, advPanelHeight - UI_BORDER_SPACING)
 		self.seedPanel:initialise()
 		self.seedPanel:instantiate()
@@ -981,7 +928,7 @@ function MapSpawnSelect:create()
 		self:addChild(self.seedPanel)
         self.seedTextBox = self.seedPanel.seedTextBox
         self.randomButton = self.seedPanel.randomButton
-    end -- not MainScreen.instance.inGame
+    end
 
 	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_btn_back"))
 	self.backButton = ISButton:new(UI_BORDER_SPACING+1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("UI_btn_back"), self, MapSpawnSelect.onOptionMouseDown)

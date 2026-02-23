@@ -4,17 +4,8 @@ local ServerCommands = {}
 local Commands = {}
 
 Commands.player = {}
-Commands.player.setWeight = function(args)
-    getPlayer():getNutrition():setWeight(args.weight)
-    getPlayer():getNutrition():setCalories(1000)
-end
-
-Commands.player.syncWeight = function(args)
-    getPlayer():getNutrition():syncWeight()
-end
 
 Commands.fishing = {}
-
 Commands.fishing.attachLure = function(args)
     local rod = getPlayer():getInventory():getItemWithID(args.rodId)
     local lure = getPlayer():getInventory():getItemWithID(args.lureId)

@@ -52,25 +52,6 @@ function ISBuildAction:isValid()
     end
 
     return valid;
-
-    -- TODO RJ: This is done in the ISBuildIsoEntity:walkTo
-    --local plSquare = self.character:getSquare();
-    --if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
-    --    if self.square:isSomethingTo(plSquare) then
-    --        if not (self:isReachableThroughWindowOrDoor(self.square) or self:isReachableThroughWindowOrDoor(plSquare) or luautils.isSquareAdjacentToSquare(plSquare, self.square)) then
-    --            self:stop()
-    --            return false;
-    --        end
-    --    end;
-    --else
-    --    self:stop();
-    --    return false;
-    --end;
-
-    --if not self.item.noNeedHammer and self.hammer then
-	--	return self.hammer:getCondition() > 0;
-	--end
-    --return true;
 end
 
 function ISBuildAction:waitToStart()
@@ -162,8 +143,7 @@ function ISBuildAction:start()
 	self.item.ghostSpriteZ = self.z;
 
 	self.item:onTimedActionStart(self)
-	
---	self.character:reportEvent("EventCrafting");
+
 	if isClient() then
 		self.action:setWaitForFinished(true)
 	end
@@ -241,8 +221,6 @@ function ISBuildAction:perform()
     -- reduce the condition of the hammer if it's a stone hammer
     local hammer = self.character:getPrimaryHandItem()
     if hammer and ( hammer:getType() == "HammerStone" or hammer:hasTag(ItemTag.CRUDE) ) and hammer:damageCheck(0,1,false) then
---     if hammer and ( hammer:getType() == "HammerStone" or hammer:hasTag(ItemTag.CRUDE) ) and ZombRand(hammer:getConditionLowerChance()) == 0 then
---         hammer:setCondition(hammer:getCondition() - 1)
         ISWorldObjectContextMenu.checkWeapon(self.character);
     end
 

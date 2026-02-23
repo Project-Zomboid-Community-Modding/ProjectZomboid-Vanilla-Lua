@@ -127,13 +127,14 @@ function ISWaterPlantAction:useItemOneUnit()
     end
 end
 
-function ISWaterPlantAction:new(character, item, uses, sq, maxTime)
+function ISWaterPlantAction:new(character, item, uses, sq, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character);
 	o.character = character;
 	o.item = item;
 	o.uses = uses;
 	o.usesUsed = 0;
-	o.maxTime = maxTime;
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.deltaPerUse = 1.0 / uses;
 	if character:isTimedActionInstant() then
 		o.maxTime = 1;

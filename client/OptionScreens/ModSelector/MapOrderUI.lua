@@ -140,7 +140,6 @@ function MapOrderUI:onGainJoypadFocus(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
 end
 
-
 function MapOrderUI:onJoypadDown(button, joypadData)
 	local child = self.children[self.joypadIndex]
 
@@ -162,7 +161,6 @@ function MapOrderUI:onJoypadDown(button, joypadData)
 	end
 end
 
-
 function MapOrderUI:onJoypadDirUp(joypadData)
 	self.modList:onJoypadDirUp(joypadData)
 end
@@ -170,7 +168,6 @@ end
 function MapOrderUI:onJoypadDirDown(joypadData)
 	self.modList:onJoypadDirDown(joypadData)
 end
-
 
 function MapOrderUI:onJoypadDirLeft(joypadData)
 	if self.joypadIndex == self.acceptButton.ID then

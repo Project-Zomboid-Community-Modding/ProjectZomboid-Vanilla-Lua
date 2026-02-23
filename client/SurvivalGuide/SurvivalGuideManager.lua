@@ -54,10 +54,6 @@ end
 function doSurvivalGuide()
 	Events.OnTick.Remove(doSurvivalGuide);
 	if isServer() then return; end
-    -- hide it for tut
---    if getCore():getGameMode() == "Tutorial" and not getCore():isTutorialDone() then
---        return;
---    end
     -- only happens on single player so no splitscreen support required.
     if SurvivalGuideManager.instance == nil then
         SurvivalGuideManager.instance = SurvivalGuideManager:new();
@@ -108,28 +104,12 @@ end
 
 SurvivalGuideManager.OnGameStart = function()
 	if JoypadState.players[1] then return end
---[[ SurvivalGuideEntries.addEntry11 does nothing
-	if getCore():isShowFirstTimeSneakTutorial() and getCore():getGameMode() ~= "Tutorial" then
-		if SurvivalGuideManager.instance == nil then
-			SurvivalGuideManager.instance = SurvivalGuideManager:new();
-			SurvivalGuideManager.instance:update();
-		end
-		local panel = SurvivalGuideManager.instance.panel
-		panel:setVisible(true);
-		panel:setPage(11)
-		getCore():setShowFirstTimeSneakTutorial(false);
-		getCore():saveOptions();
-	end
---]]
 end
 SurvivalGuideManager.OnCreatePlayer = function()
 	-- ensure respawning players get the survival guide if they haven't disabled it
 	Events.OnTick.Add(doSurvivalGuide);
 end
---Events.OnGameStart.Add(SurvivalGuideManager.OnGameStart)
+
 Events.OnCreatePlayer.Add(SurvivalGuideManager.OnCreatePlayer)
---Events.OnEnterVehicle.Add(SurvivalGuideManager.onEnterVehicle);
 Events.OnKeyPressed.Add(SurvivalGuideManager.onKeyPressed);
---Events.OnNewGame.Add(SurvivalGuideManager.OnNewGame);
 Events.OnTick.Add(doSurvivalGuide);
---~ Events.OnMainMenuEnter.Add(doSurvivalGuide);

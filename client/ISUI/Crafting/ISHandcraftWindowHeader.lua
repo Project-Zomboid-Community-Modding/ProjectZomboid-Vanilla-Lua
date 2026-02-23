@@ -97,9 +97,6 @@ function ISHandcraftWindowHeader:calculateLayout(_preferredWidth, _preferredHeig
 end
 
 function ISHandcraftWindowHeader:onButtonClick(_button)
-    if _button==self.buttonInfo then
-        --todo open info panel
-    end
 end
 
 function ISHandcraftWindowHeader:onResize()
@@ -107,8 +104,6 @@ function ISHandcraftWindowHeader:onResize()
 end
 
 function ISHandcraftWindowHeader:prerender()
-    --ISPanel.prerender(self);
-
 	if self.background then
 		self:drawRectStatic(self.marginLeft, self.marginTop, self.width - self.marginLeft - self.marginRight, self.height - self.marginTop - self.marginBottom, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 		self:drawRectBorderStatic(self.marginLeft, self.marginTop, self.width - self.marginLeft - self.marginRight, self.height - self.marginTop - self.marginBottom, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);

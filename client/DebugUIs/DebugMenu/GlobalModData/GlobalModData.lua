@@ -7,10 +7,6 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
-local function roundstring(_val)
-    return tostring(ISDebugUtils.roundNum(_val,2));
-end
-
 function GlobalModDataDebug.OnOpenPanel()
     if GlobalModDataDebug.instance==nil then
         GlobalModDataDebug.instance = GlobalModDataDebug:new (100, 100, 800+(getCore():getOptionFontSizeReal()*100), 600, getText("IGUI_DebugMenu_Dev_GlobalModData"));
@@ -85,10 +81,6 @@ end
 function GlobalModDataDebug:populateList()
     local tableNames = ModData.getTableNames();
 
-    --if self.firstTableName and self.firstTableName==tableNames:get(0) then --todo remove this?
-    --    return;
-    --end
-
     self.tableNamesList:clear();
 
     if tableNames:size()==0 then
@@ -98,8 +90,6 @@ function GlobalModDataDebug:populateList()
 
     for i=0, tableNames:size()-1 do
         local name = tableNames:get(i);
-
-        --print("found table name = "..tostring(name));
         self.tableNamesList:addItem(name, name);
     end
 
@@ -150,19 +140,11 @@ function GlobalModDataDebug:populateInfoList(_name)
         self.infoList:addItem("No data.", nil);
         return;
     end
-    --print("Attempting to draw table = "..tostring(_name));
 
     local modData = ModData.get(_name);
 
     if modData then
         self:parseTable(modData, "");
-        --[[
-        local s;
-        for k,v in pairs(modData) do
-            s = "["..tostring(k).."] -> "..tostring(v);
-            self.infoList:addItem(s, nil);
-        end
-        --]]
     else
         self.infoList:addItem("Table not found.", nil);
     end
@@ -185,7 +167,6 @@ end
 
 function GlobalModDataDebug:prerender()
     ISPanel.prerender(self);
-    --self:populateList();
 end
 
 function GlobalModDataDebug:update()

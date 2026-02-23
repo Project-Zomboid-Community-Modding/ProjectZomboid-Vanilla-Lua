@@ -55,7 +55,7 @@ function ISBBQLightFromPetrol:complete()
 	if not self.bbq then return end
 	if self.bbq:hasFuel() and not self.bbq:isLit() then
 		self.bbq:turnOn()
-		self.bbq:sendObjectChange('state')
+		self.bbq:sendObjectChange(IsoObjectChange.STATE)
 	end
 
 	return true;

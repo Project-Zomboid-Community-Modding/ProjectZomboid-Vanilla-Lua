@@ -2,8 +2,6 @@ require "ISUI/ISUIElement"
 
 ISButtonPrompt = ISUIElement:derive("ISButtonPrompt");
 
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-
 function ISButtonPrompt:initialise()
     ISUIElement.initialise(self);
 end
@@ -139,8 +137,6 @@ function ISButtonPrompt:prerender()
 end
 
 function ISButtonPrompt:getTopOf()
-    local fontHgt = getTextManager():getFontHeight(UIFont.NewLarge)
-    local buttonWid = 32
     local buttonHgt = 32
     local rowHgt = 32
     local y = getPlayerScreenTop(self.player)
@@ -152,7 +148,8 @@ end
 
 function ISButtonPrompt:update()
     if not self.player then return end
-    local joypadData = JoypadState.players[self.player+1]
+
+    local joypadData = self.player and JoypadState.players[self.player+1] or nil
     if not joypadData or not joypadData.isActive then return end
     if isJoypadRBPressed(joypadData.id) then
         ISFirearmRadialMenu.onRepeatRBumper(self)
@@ -182,8 +179,7 @@ function ISButtonPrompt:interact(worldobjects)
         x = x - getPlayerScreenWidth(self.player) / 4
         y = y - getPlayerScreenHeight(self.player) / 4
     end
---
---    local menu = ISWorldObjectContextMenu.createMenu(self.player, worldobjects.items, x, y);
+
     local menu = ISContextManager.getInstance().createWorldMenu( self.player, nil, worldobjects.items, x, y );
     menu.origin = nil;
     if menu:getIsVisible() == false then
@@ -235,9 +231,8 @@ function ISButtonPrompt:smashWindow(window)
     local player = getSpecificPlayer(self.player);
     player:smashWindow(window);
 end
-function ISButtonPrompt:sleep()
 
---~ 	local player = getSpecificPlayer(self.player);
+function ISButtonPrompt:sleep()
     ISWorldObjectContextMenu.onSleep(nil, self.player, true);
 end
 
@@ -245,7 +240,10 @@ function ISButtonPrompt:cmdShowInventory()
     local playerObj = getSpecificPlayer(self.player)
     local ui = getPlayerInventory(self.player)
     ui:setVisible(true)
-    local joypadData = JoypadState.players[self.player+1]
+
+    local joypadData = self.player and JoypadState.players[self.player+1] or nil
+    if not joypadData then return end
+
     joypadData.focus = ui
     updateJoypadFocus(joypadData)
     playerObj:setBannedAttacking(true)
@@ -255,7 +253,10 @@ function ISButtonPrompt:cmdShowLoot()
     local playerObj = getSpecificPlayer(self.player)
     local ui = getPlayerLoot(self.player)
     ui:setVisible(true)
-    local joypadData = JoypadState.players[self.player+1]
+
+    local joypadData = self.player and JoypadState.players[self.player+1] or nil
+    if not joypadData then return end
+
     joypadData.focus = ui
     updateJoypadFocus(joypadData)
     playerObj:setBannedAttacking(true)
@@ -282,7 +283,6 @@ function ISButtonPrompt:openEntityUI(entity)
         ISEntityUI.OpenWindow(playerObj, entity)
     end
 end
-
 
 function ISButtonPrompt:cmdUseVehicle(vehicle, part)
     local playerObj = getSpecificPlayer(self.player)
@@ -322,7 +322,6 @@ function ISButtonPrompt:dropCorpse()
 end
 
 function ISButtonPrompt:getBestAButtonAction(dir)
-
     if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
         self:setAPrompt(nil, nil, nil);
         return;
@@ -408,7 +407,6 @@ function ISButtonPrompt:getBestAButtonAction(dir)
 end
 
 function ISButtonPrompt:testAButtonAction(dir)
-
     local playerObj = getSpecificPlayer(self.player)
     local square1 = playerObj:getCurrentSquare();
     local square2 = square1:getAdjacentSquare(dir);
@@ -542,10 +540,8 @@ function ISButtonPrompt:testAButtonAction(dir)
 end
 
 function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
-
     local playerObj = getSpecificPlayer(self.player)
     local square1 = playerObj:getCurrentSquare()
-    local square2 = square1:getAdjacentSquare(dir)
 
     if instanceof(obj, "IsoDoor") then
         if obj:isDestroyed() then
@@ -580,7 +576,6 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
 end
 
 function ISButtonPrompt:getBestBButtonAction(dir)
-
     if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
         self:setBPrompt(nil, nil, nil);
         return;
@@ -694,7 +689,6 @@ function ISButtonPrompt:getBestBButtonAction(dir)
 end
 
 function ISButtonPrompt:testBButtonAction(dir)
-
     if self.bPrompt then return end
     
     local playerObj = getSpecificPlayer(self.player)
@@ -743,10 +737,8 @@ function ISButtonPrompt:testBButtonAction(dir)
 end
 
 function ISButtonPrompt:doBButtonDoorOrWindowOrWindowFrame(dir, obj)
-
     local playerObj = getSpecificPlayer(self.player)
     local square1 = playerObj:getCurrentSquare()
-    local square2 = square1:getAdjacentSquare(dir)
 
     if instanceof(obj, "IsoWindow") and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
         self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
@@ -765,7 +757,6 @@ function ISButtonPrompt:doBButtonDoorOrWindowOrWindowFrame(dir, obj)
 end
 
 function ISButtonPrompt:getBestYButtonAction(dir)
-
     if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
         self:setYPrompt(nil, nil, nil);
         return;
@@ -780,7 +771,9 @@ function ISButtonPrompt:getBestYButtonAction(dir)
         return;
     end
 
-    if JoypadState.players[self.player+1].disableYInventory then
+
+    local joypadData = self.player and JoypadState.players[self.player+1] or nil
+    if joypadData and joypadData.disableYInventory then
         return
     end
 
@@ -913,7 +906,8 @@ function ISButtonPrompt:getBestXButtonAction(dir)
     local vehicle = playerObj:getVehicle()
     if vehicle then
         if vehicle:isDriver(playerObj) then
-            self:setXPrompt(getText("IGUI_Controller_CruiseControl"), ISVehicleRegulator.onJoypadPressX, JoypadState.players[self.player+1])
+            local joypadData = self.player and JoypadState.players[self.player+1] or nil
+            self:setXPrompt(getText("IGUI_Controller_CruiseControl"), ISVehicleRegulator.onJoypadPressX, joypadData)
         end
         return
     end
@@ -926,7 +920,6 @@ function ISButtonPrompt:getBestXButtonAction(dir)
 end
 
 function ISButtonPrompt:getXButtonObjects(dir)
-
     if self.list == nil then
         self.list = LuaList:new();
 
@@ -967,7 +960,6 @@ function ISButtonPrompt:getXButtonObjects(dir)
     sqs[1] = square;
 
     for x = 1, 4 do
-
         local gs = sqs[x];
 
         -- stop grabbing thru walls...
@@ -976,18 +968,12 @@ function ISButtonPrompt:getXButtonObjects(dir)
         end
 
         if gs ~= nil then
-
-            --for y = -1, 1 do
             local obs = gs:getObjects();
-
             for i = 0, obs:size()-1 do
                 local o = obs:get(i);
                 if instanceof(o, "IsoRaindrop") then
-
                 elseif instanceof(o, "IsoRainSplash") then
-
                 else
-                    --print("Find "..tostring(o:getSprite():getName()))
                     objects:add(o);
                     break
                 end
@@ -997,8 +983,8 @@ function ISButtonPrompt:getXButtonObjects(dir)
 
             for i = 0, obs:size()-1 do
                 local o = obs:get(i);
-                    objects:add(o);
-                    break
+                objects:add(o);
+                break
             end
 
             obs = gs:getMovingObjects()
@@ -1012,17 +998,7 @@ function ISButtonPrompt:getXButtonObjects(dir)
         end
     end
 
-    --local hit = ISWorldObjectContextMenu.createMenu(self.player, objects.items,0, 0, true);
     local hit = ISContextManager.getInstance().createWorldMenu( self.player, nil, objects.items, 0, 0, true );
-
-    if hit then
---        hit:setVisible(false);
---        print("MENU CREATED");
-    end
-
-    if not objects:isEmpty() then
---        print("OBJECT NOT EMPTY");
-    end
 
     if not objects:isEmpty() and hit then
         return objects
@@ -1135,7 +1111,6 @@ end
 
 function ISButtonPrompt:new (player)
     local o = {}
-    --o.data = {}
     o = ISUIElement:new(0, 0, 1, 1);
     setmetatable(o, self)
     self.__index = self
@@ -1164,10 +1139,6 @@ function ISButtonPrompt:new (player)
     o.movableIconScrap = getTexture("media/ui/Furniture_Disassemble.png");
     o.moveableIconRepair = getTexture("media/ui/Furniture_On2.png");
     o.moveableIconBuild = getTexture("media/ui/Build_Tool_Off.png");
- --   o:setAPrompt("Close window");
-   -- o:setBPrompt("Climb through");
-  --  o:setXPrompt("Interact");
-  --  o:setYPrompt("Loot");
     return o
 end
 

@@ -1,8 +1,3 @@
---local _print = print;
---local function log(DebugType.CraftLogic, _s)
---    _log(DebugType.CraftLogic, "ISEntityUI -> "..tostring(_s));
---end
-
 ISEntityUI = {};
 ISEntityUI.drawDebugLines = false;
 ISEntityUI.players = nil;
@@ -28,7 +23,7 @@ end
 
 function ISEntityUI.ItemSlotRemoveSingleItem( _player, _entity, _itemSlot, _item )
     if ISEntityUI.WalkToEntity( _player, _entity) then
-        local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot, _item)
+        local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource, _itemSlot, _item)
         action.itemSlot = _itemSlot
         ISTimedActionQueue.add(action);
     end
@@ -38,13 +33,13 @@ function ISEntityUI.ItemSlotRemoveItems( _player, _entity, _itemSlot, _items )
     if ISEntityUI.WalkToEntity( _player, _entity) then
         if _items then
             for i=0, _items:size()-1 do
-                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot, _items:get(i))
+                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource, _itemSlot, _items:get(i))
                 action.itemSlot = _itemSlot
                 ISTimedActionQueue.add(action);
             end
         else
             for i=0,_itemSlot.resource:getItemAmount()-1 do
-                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot)
+                local action = ISItemSlotRemoveAction:new(_player, _entity, _itemSlot.resource, _itemSlot)
                 action.itemSlot = _itemSlot
                 ISTimedActionQueue.add(action);
             end
@@ -56,7 +51,7 @@ function ISEntityUI.ItemSlotAddItems( _player, _entity, _itemSlot, _itemList )
     if #_itemList>0 and ISEntityUI.WalkToEntity( _player, _entity) then
         for index,item in ipairs(_itemList) do --todo remove For loop and handle list of items in Action
             if index<=_itemSlot.resource:getFreeItemCapacity() then
-                local action = ISItemSlotAddAction:new(_player, _entity, item, _itemSlot)
+                local action = ISItemSlotAddAction:new(_player, _entity, item, _itemSlot.resource, _itemSlot)
                 action.itemSlot = _itemSlot
                 ISTimedActionQueue.add(action);
             end
@@ -64,34 +59,7 @@ function ISEntityUI.ItemSlotAddItems( _player, _entity, _itemSlot, _itemList )
     end
 end
 
---todo deprecated:
---[[
-function ISEntityUI.CraftProcessorStart( _player, _entity, _component, _craftProcessor )
-    --if ISTimedActionQueue.hasActionType(_player, ISCraftAnimAction.Type) then
-    --    return;
-    --end
-    if (not _player) or (not _entity) or (not _component) or (not _craftProcessor) then
-        log(DebugType.CraftLogic, "Invalid parameters for ISEntityUI.CraftProcessorStart");
-        log(DebugType.CraftLogic, "params-><"..tostring(_player).."><"..tostring(_entity).."><"..tostring(_component).."><"..tostring(_craftProcessor))
-        return;
-    end
-
-    if not _craftProcessor:canStart(_player) then
-        return;
-    end
-
-    if ISEntityUI.WalkToEntity( _player, _entity) then
-        local action = ISStartCraftProcessorAction:new(_player, _entity, _component, _craftProcessor)
-        ISTimedActionQueue.add(action);
-        return true;
-    end
-end
---]]
-
 function ISEntityUI.GenericCraftStart( _player, _entity, _component, _funcCanStart, _funcStart )
-    --if ISTimedActionQueue.hasActionType(_player, ISCraftAnimAction.Type) then
-    --    return;
-    --end
     if (not _player) or (not _entity) or (not _component) or (not _funcCanStart) or (not _funcStart) then
         log(DebugType.CraftLogic, "Invalid parameters for ISEntityUI.CraftProcessorStart");
         log(DebugType.CraftLogic, "params-><"..tostring(_player).."><"..tostring(_entity).."><"..tostring(_component).."><"..tostring(_funcCanStart).."><"..tostring(_funcStart))
@@ -116,7 +84,6 @@ function ISEntityUI.HandcraftStart( _player, _handcraftLogic, force, addToQueue,
         return;
     end
 
-    --local resources = _craftBench and _craftBench:getResources();
     if _player~=_handcraftLogic:getPlayer() then
         log(DebugType.CraftLogic, "HandcraftStart -> player mismatch with logic.player")
     end
@@ -145,7 +112,6 @@ function ISEntityUI.HandcraftStartMultiple( _player, _handcraftLogic, force, qty
         return;
     end
 
-    --local resources = _craftBench and _craftBench:getResources();
     if _player~=_handcraftLogic:getPlayer() then
         log(DebugType.CraftLogic, "HandcraftStartMultiple -> player mismatch with logic.player")
     end
@@ -265,7 +231,6 @@ local function getComponentPanelsInternal(_player, _entity, _test, _dontInstanti
 
                     if not _dontInstantiate then
                         local styleName = v.uiStyle:getXuiStyle();
-                        --local panel = v.panelClass:new(skin, styleName, 0, 0, 100, 100, _player, _entity, v.component, v.uiScript);
                         local panel = ISXuiSkin.build(skin, styleName, v.panelClass, 0, 0, 100, 100, _player, _entity, v.component, v.uiStyle);
                         panel:initialise();
                         panel:instantiate();
@@ -339,13 +304,6 @@ function ISEntityUI.GetCustomOpenWindowFunc(_entity)
 end
 
 function ISEntityUI.CanOpenWindowFor(_player, _entity)
-    --[[
-    local skin = ISEntityUI.GetEntityUiSkin(_entity);
-    if skin then
-        skin:debuglog(DebugType.CraftLogic, );
-    end
-    --]]
-
     local customFunction = ISEntityUI.GetCustomCanOpenWindowFunc(_entity);
 
     if customFunction and customFunction~=ISEntityUI.CanOpenWindowFor then
@@ -446,13 +404,15 @@ local function createWindow(_player, _windowInstance, _isoObject)
 end
 
 function ISEntityUI.OpenWindow(_player, _entity)
-
     if not ISEntityUI.CanOpenWindowFor(_player, _entity) then
         return;
     end
 
     if not ISEntityUI.CanPlayerUseEntity(_player, _entity) then
         log(DebugType.CraftLogic, "Object already in use by other player.")
+        if isClient() then
+            getPlayer():Say(getText("IGUI_ObjectAlreadyUsedSayMessage"));
+        end
         return;
     end
 
@@ -580,11 +540,10 @@ function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ig
     -- reduced the radius because only adjacent squares will pass as valid for ISOGridSquare canReachTo tests.
     -- we probably need to restrict crafting to adjacent square anyways because of all the edge case permutations that would emerge otherwise
         _isoObject = ISEntityUI.FindCraftSurface(_player, 1);
---         _isoObject = ISEntityUI.FindCraftSurface(_player, 4);
     end
 
-    local skin = XuiManager.GetDefaultSkin(); --ISEntityUI.GetEntityUiSkin(_entity);
-    local windowStyle = "HandcraftWindow"; --ISEntityUI.GetWindowStyleName(_entity);
+    local skin = XuiManager.GetDefaultSkin();
+    local windowStyle = "HandcraftWindow";
     local windowInstance = ISXuiSkin.build(skin, windowStyle, ISHandcraftWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
     windowInstance:bringToTop()
@@ -601,13 +560,6 @@ function ISEntityUI.OpenHandcraftWindow(_player, _isoObject, _queryOverride, _ig
             windowInstance.handCraftPanel.logic:setRecipe(windowInstance.handCraftPanel.logic:getRecipeList():getFirstRecipe())
         end
     end
-
---     if _isoObject  and getCore():getOptionDoContainerOutline() then
---         _isoObject:setOutlineHighlight(true);
---         _isoObject:setOutlineHlAttached(true);
---         _isoObject:setOutlineHighlightCol(1, 1, 1, 1);
---         _isoObject:setOutlineHighlightCol(getCore():getWorkstationHighlitedColor():getR(), getCore():getWorkstationHighlitedColor():getG(), getCore():getWorkstationHighlitedColor():getB(), 1);
---     end
 end
 
 function ISEntityUI.FindCraftSurface(_player, _radius)

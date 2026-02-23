@@ -59,13 +59,20 @@ function ISRepairEngine:complete()
     		if giveXP then
     			addXp(self.character, Perks.Mechanics, done);
     		end
-    		local items = self.character:getInventory():RemoveAll('EngineParts', tonumber(done))
-    		sendRemoveItemsFromContainer(self.character:getInventory(), items);
+            local itemsToRemove = self.character:getInventory():getSomeTypeRecurse("EngineParts", done)
+            for i = 0, itemsToRemove:size() - 1 do
+                local item = itemsToRemove:get(i)
+                local container = item:getContainer()
+                if item and container then
+                    container:DoRemoveItem(item)
+                    sendRemoveItemFromContainer(container, item)
+                end
+            end
     		self.vehicle:transmitPartCondition(self.part)
     	else
     	    addXp(self.character, Perks.Mechanics, 1);
     	end
-    	self.character:sendObjectChange('mechanicActionDone', { success = (done > 0)})
+    	self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = (done > 0)})
     	if done > 0 then
             self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
         else
@@ -86,12 +93,13 @@ function ISRepairEngine:getDuration()
 	return self.maxTime;
 end
 
-function ISRepairEngine:new(character, part, item, maxTime)
+function ISRepairEngine:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = part:getVehicle()
 	o.part = part
 	o.item = item
-	o.maxTime = maxTime
+	o.maxTimeInit = maxTimeInit
+	o.maxTime = maxTimeInit
 	o.jobType = getText("IGUI_RepairEngine")
 	return o
 end

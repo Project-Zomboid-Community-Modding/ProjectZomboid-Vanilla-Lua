@@ -237,8 +237,6 @@ function Fishing.States.ReelIn:destroy()
     end
 end
 
-
-
 Fishing.States.ReelOut = {}
 function Fishing.States.ReelOut:new(manager)
     local o = {}
@@ -281,8 +279,6 @@ end
 
 function Fishing.States.ReelOut:destroy()
 end
-
-
 
 Fishing.States.PickupFish = {}
 function Fishing.States.PickupFish:new(manager)

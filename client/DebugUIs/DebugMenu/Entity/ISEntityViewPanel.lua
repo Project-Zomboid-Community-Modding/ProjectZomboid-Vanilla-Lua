@@ -40,7 +40,6 @@ function ISEntityViewPanel:createChildren()
     self.list:instantiate();
     self.list.itemheight = BUTTON_HGT*2;
     self.list.selected = 0;
-    --self.infoList.joypadParent = self;
     self.list.font = UIFont.Small;
     self.list.target = self;
     self.list.doDrawItem = ISEntityViewPanel.drawEntityListItem;
@@ -102,8 +101,6 @@ function ISEntityViewPanel:createChildren()
 
     y = self:incY(y, self.scriptRuntimeButton, UI_BORDER_SPACING);
 
-    local height = self.height - y - UI_BORDER_SPACING - 1;
-
     self.listView = ISStringListView:new (x, y, width, self.height - y - UI_BORDER_SPACING - 1);
     self.listView:initialise();
     self.listView:instantiate();
@@ -129,12 +126,8 @@ function ISEntityViewPanel:onButtonClick(_button)
     if _button==self.reloadScriptButton then
         local reloadTable = ISEntityUI.GetReloadTable();
         ISEntityUI.CloseWindows();
-        if ISEntitiesDebugWindow.instance then
-            --ISEntitiesDebugWindow.instance:onReloadEntities();
-        end
 
         reloadEntityFromScriptDebug(self.entity);
-        --self.entity = false;
 
         self:populate();
         self:populateListView();
@@ -148,11 +141,9 @@ function ISEntityViewPanel:onButtonClick(_button)
         local reloadTable = ISEntityUI.GetReloadTable();
         ISEntityUI.CloseWindows();
         if ISEntitiesDebugWindow.instance then
-            --ISEntitiesDebugWindow.instance:onReloadEntities();
         end
 
         reloadEntityDebug(self.entity);
-        --self.entity = false;
 
         self:populate();
         self:populateListView();
@@ -235,7 +226,7 @@ function ISEntityViewPanel:populate()
     if self.entity then
         local temp = {};
 
-        local entityScript = nil;-- self.entity:getEntityScript();
+        local entityScript;
         local scriptComp = self.entity:getComponent(ComponentType.Script);
         if scriptComp then
             entityScript = scriptComp:getScript();
@@ -270,8 +261,8 @@ function ISEntityViewPanel:populate()
             componentType = false,
             script = entityScript,
             entityScript = entityScript,
-            fulltype = "Entity", --self.entity:getEntityFullType(),
-            name = self.entity:getEntityDisplayName() or self.entity:getEntityFullType(), --"GameEntity",
+            fulltype = "Entity",
+            name = self.entity:getEntityDisplayName() or self.entity:getEntityFullType(),
         }
 
         table.insert(temp, 1, t);
@@ -281,7 +272,6 @@ function ISEntityViewPanel:populate()
         end
 
         if self.list.items and #self.list.items>0 then
-            --print("SELECTING ELEMENT")
             self.list.selected = 1;
             self:onEntityListSelected(self.list.items[self.list.selected].item);
         end
@@ -299,7 +289,6 @@ function ISEntityViewPanel:drawEntityListItem(y, item, alt)
 
     if item.item.name then
         local drawY = y + (self.itemheight/4) - (FONT_HGT_SMALL/2) + 2;
-        --local c = item.item.color;
         self:drawText( item.item.name, 5, drawY, 1, 1, 1, 1.0, self.font);
     end
     if item.item.fulltype then
@@ -338,7 +327,6 @@ end
 
 function ISEntityViewPanel:new (x, y, width, height, entity)
     local o = {}
-    --o.data = {}
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self

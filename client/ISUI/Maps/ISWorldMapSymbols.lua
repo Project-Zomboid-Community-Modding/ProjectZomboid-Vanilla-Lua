@@ -128,8 +128,6 @@ function ISWorldMapSymbolTool_AddSymbol:addSymbol(x, y)
 	local newSymbol = {}
 	local scale = ISMap.SCALE
 	local sym = self.symbolsUI.selectedSymbol
-	local symW = 20 / 2 * scale
-	local symH = 20 / 2 * scale
 	newSymbol.x = self.mapAPI:uiToWorldX(x, y)
 	newSymbol.y = self.mapAPI:uiToWorldY(x, y)
 	newSymbol.symbol = sym.tex
@@ -209,11 +207,7 @@ function ISWorldMapSymbolTool_AddNote:addNote(x, y)
     self.modal:showMatchPerspectiveTickBox(self.mapUI.javaObject:isMapEditor())
     self.modal:showRotationSlider(0.0)
     self.modal:showScaleSlider(ISMap.SCALE)
---[[
-    if self.mapUI.javaObject:isMapEditor() then
-        self.modal:showZoomPanel(0.0, 24.0)
-    end
- ]]
+
 	self.modal.entry:focus()
 	self.modal.maxChars = 45
 	if self.mapUI.joyfocus then
@@ -375,11 +369,7 @@ function ISWorldMapSymbolTool_EditAnnotation:editNote(x, y)
     if scale < 0 then scale = 1.0 end
     self.modal:showScaleSlider(scale)
     self.modal:showRotationSlider(symbol:getRotation())
---[[
-    if self.mapUI.javaObject:isMapEditor() then
-        self.modal:showZoomPanel(symbol:getMinZoom(), symbol:getMaxZoom())
-    end
- ]]
+
 	self.modal.entry:focus()
 	self.modal.maxChars = 45
 	if self.mapUI.joyfocus then
@@ -410,11 +400,7 @@ function ISWorldMapSymbolTool_EditAnnotation:editSymbol(x, y)
     if scale < 0 then scale = 1.0 end
     self.modal:showScaleSlider(scale)
     self.modal:showRotationSlider(symbol:getRotation())
---[[
-    if self.mapUI.javaObject:isMapEditor() then
-        self.modal:showZoomPanel(symbol:getMinZoom(), symbol:getMaxZoom())
-    end
- ]]
+
 	if self.mapUI.joyfocus then
 		self.mapUI.joyfocus.focus = self.modal
 	end
@@ -1236,7 +1222,6 @@ function ISWorldMapSymbols:createChildren()
 		tab.joypadIndexY = math.floor(#tab.joypadButtonsY / 2)
 		tab.joypadButtons = tab.joypadButtonsY[tab.joypadIndexY]
 		tab.joypadIndex = math.ceil(#tab.joypadButtons / 2)
---		tab.joypadButtons[tab.joypadIndex]:setJoypadFocused(true)
 	end
 
 
@@ -1252,7 +1237,6 @@ function ISWorldMapSymbols:createChildren()
 	self.addNoteBtn:initialise()
 	self.addNoteBtn:instantiate()
 	self.addNoteBtn.borderColor.a = 0.0
---	self.addNoteBtn.borderColor = {r=1, g=1, b=1, a=0.4}
 	self:addChild(self.addNoteBtn)
 	y = y + btnHgt + btnPad
 
@@ -1261,7 +1245,6 @@ function ISWorldMapSymbols:createChildren()
 	self.editNoteBtn:initialise()
 	self.editNoteBtn:instantiate()
 	self.editNoteBtn.borderColor.a = 0.0
---	self.editNoteBtn.borderColor = {r=1, g=1, b=1, a=0.4}
 	self:addChild(self.editNoteBtn)
 	y = y + btnHgt + btnPad
 
@@ -1270,7 +1253,6 @@ function ISWorldMapSymbols:createChildren()
 	self.moveBtn:initialise()
 	self.moveBtn:instantiate()
 	self.moveBtn.borderColor.a = 0.0
---	self.moveBtn.borderColor = {r=1, g=1, b=1, a=0.4}
     self.moveBtn.tooltip = getText("IGUI_Map_MoveElement_tt")
 	self:addChild(self.moveBtn)
 	y = y + btnHgt + btnPad
@@ -1280,7 +1262,6 @@ function ISWorldMapSymbols:createChildren()
 	self.rotateBtn:initialise()
 	self.rotateBtn:instantiate()
 	self.rotateBtn.borderColor.a = 0.0
---	self.rotateBtn.borderColor = {r=1, g=1, b=1, a=0.4}
     self.rotateBtn.tooltip = getText("IGUI_Map_RotateElement_tt")
 	self:addChild(self.rotateBtn)
 	y = y + btnHgt + btnPad
@@ -1290,7 +1271,6 @@ function ISWorldMapSymbols:createChildren()
 	self.removeBtn:initialise()
 	self.removeBtn:instantiate()
 	self.removeBtn.borderColor.a = 0.0
---	self.removeBtn.borderColor = {r=1, g=1, b=1, a=0.4}
 	self:addChild(self.removeBtn)
 	y = y + btnHgt + btnPad
 
@@ -1300,7 +1280,6 @@ function ISWorldMapSymbols:createChildren()
 		self.sharingBtn:initialise()
 		self.sharingBtn:instantiate()
 		self.sharingBtn.borderColor.a = 0.0
-	--	self.sharingBtn.borderColor = {r=1, g=1, b=1, a=0.4}
 		self:addChild(self.sharingBtn)
 	end
 
@@ -1560,8 +1539,6 @@ function ISWorldMapSymbols:renderNoteBeingAddedOrEdited(modal)
     if symbol then
         anchorX = symbol:getAnchorX()
         anchorY = symbol:getAnchorY()
---        degrees = symbol:getRotation()
---        bMatchPerspective = symbol:isMatchPerspective()
         bApplyZoom = symbol:isApplyZoom()
     end
 	local layerID = self.symbolsAPI:getDefaultLayerID()
@@ -1586,11 +1563,7 @@ function ISWorldMapSymbols:renderNoteBeingAddedOrEdited(modal)
 	if modal.useLayerColor then
         r,g,b,a = 0,0,0,0
     end
---[[
-    if self.mapAPI:getZoomF() < minZoom or self.mapAPI:getZoomF() > maxZoom then
-        a = 0.25
-    end
- ]]
+
 	self.mapUI.javaObject:DrawTextSdfRotated(layerID, text,
 			mx, my, anchorX, anchorY, degrees,
 			scale, bMatchPerspective, bApplyZoom, r, g, b, a)
@@ -1777,16 +1750,6 @@ local function filterEdit(symbol)
 	return symbol ~= nil
 end
 
-local function filterText(symbol)
-	if isClient() and not symbol:canClientModify() then return false end
-	return symbol ~= nil and symbol:isText()
-end
-
-local function filterTexture(symbol)
-	if isClient() and not symbol:canClientModify() then return false end
-	return symbol ~= nil and symbol:isTexture()
-end
-
 function ISWorldMapSymbols:checkAnnotationForMoveMouse()
 	if (self.playerNum ~= 0) or (JoypadState.players[self.playerNum+1] and not wasMouseActiveMoreRecentlyThanJoypad()) then return end
 	self:hitTestAnnotations(self.mapUI:getMouseX(), self.mapUI:getMouseY(), "move", filterAny)
@@ -1850,24 +1813,6 @@ function ISWorldMapSymbols:renderSymbolOutline(symbol, r, g, b)
     local a = 1.0
     local thickness = 2.0
     symbol:renderOutline(r, g, b, a, thickness)
---[[
-	local x = symbol:getDisplayX()
-	local y = symbol:getDisplayY()
-	local w = symbol:getDisplayWidth()
-	local h = symbol:getDisplayHeight()
-
-	local x1 = math.floor(x)
-	local y1 = math.floor(y)
-	local x2 = math.ceil(x + w)
-	local y2 = math.ceil(y + h)
-	x = x1
-	y = y1
-	w = x2 - x1
-	h = y2 - y1
-
-	self.mapUI:drawRectBorder(x - 1, y - 1, w + 2, h + 2, 1, r, g, b)
-	self.mapUI:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, r, g, b)
---]]
 end
 
 function ISWorldMapSymbols:onGainJoypadFocus(joypadData)
@@ -1876,7 +1821,6 @@ function ISWorldMapSymbols:onGainJoypadFocus(joypadData)
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
 	self.joypadIndex = 1
 	self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
---	self.removeBtn:setJoypadButton(Joypad.Texture.XButton)
 end
 
 function ISWorldMapSymbols:onLoseJoypadFocus(joypadData)
@@ -1886,11 +1830,7 @@ end
 
 function ISWorldMapSymbols:onJoypadDown(button, joypadData)
 	ISPanelJoypad.onJoypadDown(self, button)
---[[
-	if button == Joypad.XButton then
-		self:onButtonClick(self.removeBtn)
-	end
---]]
+
 	if button == Joypad.BButton then
 		self:undisplay()
 		self:setVisible(false)

@@ -1,9 +1,6 @@
 ISEquippedItem = ISPanel:derive("ISEquippedItem");
 ISEquippedItem.text = nil;
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local TEXTURE_WIDTH = 0
 local TEXTURE_HEIGHT = 0
@@ -27,10 +24,8 @@ local function setTextureWidth()
     TEXTURE_HEIGHT = TEXTURE_WIDTH * 0.75
 end
 
-
 function ISEquippedItem:prerender()
     self:checkSidebarSizeOption()
---	self:drawTexture(self.HandSecondaryTexture, -1, 50, 1, 1, 1, 1);
 
     if self.invBtn == nil then
         return;
@@ -162,37 +157,36 @@ function ISEquippedItem:prerender()
             self.warManagerBtn:setVisible(true)
 
             if not self.adminBtn:isVisible() then
-                self.warManagerBtn:setX(self.adminBtn:getX())
                 self.warManagerBtn:setY(self.adminBtn:getY())
             else
-                self.warManagerBtn:setX(self.adminBtn:getX())
-                self.warManagerBtn:setY(self.adminBtn:getBottom() + UI_BORDER_SPACING + 5)
+                self.warManagerBtn:setY(self.adminBtn:getBottom() + UI_BORDER_SPACING)
             end
 
-            local warX = self.warManagerBtn:getX()
-            local warY = self.warManagerBtn:getY()
-            local clockWid = self.clockTexture:getWidth()
-            local clockX = self.width - self.clockTexture:getWidthOrig() + clockWid
-            local clockOffsetY = (self.warManagerBtn.height - self.clockTexture:getHeight()) / 2
-            local textOffsetY = (self.warManagerBtn.height - FONT_HGT_SMALL) / 2
-            local textX = clockX + self.clockTexture:getWidthOrig() + 4
+            local timerString = tostring(war:getTime())
+            local timerWidth = getTextManager():MeasureStringX(UIFont.Small, timerString)
+            local timerOffset = self.warManagerBtn:getX() + (TEXTURE_WIDTH/2) - (timerWidth/2)
 
             if war:getState():name() == "Claimed" then
-                self:drawTexture(self.clockTexture, clockX, warY + clockOffsetY, 1,1,1,1)
-                self:drawText(tostring(war:getTime()), textX, warY + textOffsetY, 1,1,1,1, UIFont.Small)
+                self:drawText(timerString, timerOffset, self.warManagerBtn:getBottom(), 1,1,1,1, UIFont.Small)
                 self.warManagerBtn:setImage(self.warIconOff)
             end
 
             if war:getState():name() == "Accepted" then
-                self:drawTexture(self.clockTexture, clockX, warY + clockOffsetY, 1,1,1,1)
-                self:drawText(tostring(war:getTime()), textX, warY + textOffsetY, 1,1,1,1,UIFont.Small)
-                -- TODO - make war button flash off and on when war is about to start
-                self.warManagerBtn:setImage(self.warSoon)
+                self:drawText(timerString, timerOffset, self.warManagerBtn:getBottom(), 1,1,1,1,UIFont.Small)
+
+                -- war button flash
+                self.warIconTimer = self.warIconTimer - 0.05
+                if self.warIconTimer < 0 then
+                    self.warIconTimer = 1.0
+                elseif self.warIconTimer < 0.5 then
+                    self.warManagerBtn:setImage(self.warIconOff)
+                else
+                    self.warManagerBtn:setImage(self.warIconOn)
+                end
             end
 
             if war:getState():name() == "Started" then
-                self:drawTexture(self.clockTexture, clockX, warY + clockOffsetY, 1,1,1,1)
-                self:drawText(tostring(war:getTime()), textX, warY + textOffsetY, 1,1,1,1,UIFont.Small)
+                self:drawText(timerString, timerOffset, self.warManagerBtn:getBottom(), 1,1,1,1,UIFont.Small)
                 self.warManagerBtn:setImage(self.warIconOn)
             end
         else
@@ -203,69 +197,66 @@ function ISEquippedItem:prerender()
         end
     end
 
-    local safetyEnabled = getServerOptions():getBoolean("SafetySystem");
-    local toggleTimeMax = getServerOptions():getInteger("SafetyToggleTimer");
-    local cooldownTimerMax = getServerOptions():getInteger("SafetyCooldownTimer");
-    local isNonPvpZone = NonPvpZone.getNonPvpZone(self.chr:getX(), self.chr:getY())
-
+    -- safety button
     if isClient() then
-        self.safetyBtn:setVisible(safetyEnabled);
-        self.radialIcon:setVisible(false);
+        local safetyEnabled = getServerOptions():getBoolean("SafetySystem")
+
+        -- default values
+        self.safetyBtn:setVisible(safetyEnabled)
+        self.safetyBtn:setImage(self.safetyTint)
+        self.radialIcon:setVisible(false)
+        self.radialIcon:setTexture(self.safetyTint)
 
         if safetyEnabled then
+            -- switch safety button outline depending on non-PVP zone
+            if NonPvpZone.getNonPvpZone(self.chr:getX(), self.chr:getY()) then
+                self.safetyBtn:setTooltip(getText("IGUI_PvpZone_NonPvpZone"))
+                self:drawTextureScaled(self.safetyBackground, self.safetyBtn:getX()-1, self.safetyBtn:getY() - 1, self.safetyBtn:getWidth() + 2, self.safetyBtn:getHeight() + 2, self.bhc:getA(), self.bhc:getR(), self.bhc:getG(), self.bhc:getB())
+                -- keep the safety button visuals, so player knows the safety state after leaving
+            else
+                self.safetyBtn:setTooltip(nil)
+                self:drawTextureScaled(self.safetyBackground, self.safetyBtn:getX() - 1, self.safetyBtn:getY() - 1, self.safetyBtn:getWidth() + 2, self.safetyBtn:getHeight() + 2, self.nhc:getA(), self.nhc:getR(), self.nhc:getG(), self.nhc:getB())
 
-            local safetyX = self.safetyBtn:getX();
-            local safetyY = self.safetyBtn:getY();
-
-            if self.safety:getToggle() > 0 or self.safety:getCooldown() > 0 then
-
-                self:drawTexture(self.clockTexture, safetyX + UI_BORDER_SPACING, safetyY + UI_BORDER_SPACING, 1,1,1,1);
-
-                if self.safety:getToggle() > 0 then
-
-                    self.radialIcon:setVisible(true);
-                    self.radialIcon:setValue(self.safety:getToggle() / toggleTimeMax);
-
-                    if self.safety:isEnabled() then
-                        self.radialIcon:setTexture(self.safetyOff);
-                        self.safetyBtn:setImage(self.safetyOn);
-                    else
-                        self.radialIcon:setTexture(self.safetyOn);
-                        self.safetyBtn:setImage(self.safetyOff);
-                    end
-
-                    self:drawText(tostring(math.ceil(self.safety:getToggle())), safetyX + self.clockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
-
-                elseif self.safety:getCooldown() > 0 then
-
-                    self.radialIcon:setVisible(true);
-                    self.radialIcon:setValue(1 - self.safety:getCooldown() / cooldownTimerMax);
-
-                    if self.safety:isEnabled() then
-                        self.radialIcon:setTexture(self.safetyOn);
-                        self.safetyBtn:setImage(self.safetyOn);
-                    else
-                        self.radialIcon:setTexture(self.safetyOff);
-                        self.safetyBtn:setImage(self.safetyOff);
-                    end
-
-                    self:drawText(tostring(math.ceil(self.safety:getCooldown())), safetyX + self.clockTexture:getWidthOrig() + UI_BORDER_SPACING + 5, safetyY + UI_BORDER_SPACING, 1,1,1,1, UIFont.Small);
-
-                end
-            elseif not isNonPvpZone then
+                -- set the safety button actual visuals
                 if self.safety:isEnabled() then
-                    self.safetyBtn:setImage(self.safetyOn);
+                    self.safetyBtn:setTextureColor(self.ghc)
                 else
-                    self.safetyBtn:setImage(self.safetyOff);
+                    self.safetyBtn:setTextureColor(self.bhc)
                 end
             end
-        end
 
-        if isNonPvpZone then
-            self.safetyBtn:setImage(self.disableTexture);
-            self.radialIcon:setVisible(false);
-            if self:isMouseOver() then
-                self:drawText(getText("IGUI_PvpZone_NonPvpZone"), self.width + 10, self.height/2, 1, 0, 0, 1, self.Small);
+            -- check if we need count down with radial progress animation
+            if self.safety:getToggle() > 0 or self.safety:getCooldown() > 0 then
+                self:drawTextureScaled(self.safetyBackground, self.safetyBtn:getX()-1, self.safetyBtn:getY() - 1, self.safetyBtn:getWidth() + 2, self.safetyBtn:getHeight() + 2, self.bhc:getA(), self.bhc:getR(), self.bhc:getG(), self.bhc:getB())
+                self.radialIcon:setVisible(true)
+
+                -- check whether the reason is toggled safety button or attack
+                if self.safety:getToggle() > 0 then
+                    -- show time to wait
+                    self.radialIcon:setValue(self.safety:getToggle() / getServerOptions():getInteger("SafetyToggleTimer"))
+                    self:drawText(tostring(math.ceil(self.safety:getToggle())), self.safetyBtn:getX() + self.safetyBtn:getWidth(), self.safetyBtn:getY(), self.nhc:getR(), self.nhc:getG(), self.nhc:getB(), self.nhc:getA(), UIFont.Small)
+
+                    -- required for the safety button to correctly display the radial fade
+                    if not self.changingSafetyState then
+                        self.previousSafetyState = self.currentSafetyState
+                        self.currentSafetyState = not self.currentSafetyState
+                        self.changingSafetyState = true
+                    end
+
+                    -- toggle the safety button background and set opposite radial icon background
+                    if self.previousSafetyState then
+                        self.safetyBtn:setTextureColor(self.bhc)
+                        self.radialIcon:setColor(self.ghc)
+                    else
+                        self.safetyBtn:setTextureColor(self.ghc)
+                        self.radialIcon:setColor(self.bhc)
+                    end
+                elseif self.safety:getCooldown() > 0 then
+                    -- show time to wait
+                    self:drawText(tostring(math.ceil(self.safety:getCooldown())), self.safetyBtn:getX() + self.safetyBtn:getWidth(), self.safetyBtn:getY(), self.nhc:getR(), self.nhc:getG(), self.nhc:getB(), self.nhc:getA(), UIFont.Small)
+                end
+            else
+                self.changingSafetyState = false
             end
         end
     end
@@ -364,16 +355,6 @@ function ISEquippedItem:render()
             local hand = self.mainHand
             self:drawTextureScaledAspect(item:getTex(), hand.x+(hand.width/2) - (scale/2), hand.y+(hand.height/2)-(scale/2), scale, scale, item:getA(),item:getR(),item:getG(),item:getB());
         end
-        -- This handles the condition star. commented out in case it's to be readded later
---		if instanceof(item,"HandWeapon") then
---			local n = math.floor(((item:getCondition() / item:getConditionMax()) * 5));
-
---			if(item:getCondition() > 0 and n == 0) then
---				n = 1;
---			end
-
---			self:drawTexture(getTexture("media/ui/QualityStar_" .. n .. ".png"),5,10,1,1,1,1);
---		end
 	end
 	if secondaryItem then
         local item = secondaryItem
@@ -438,7 +419,6 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
             focus = self.inventory
         end
     elseif button.internal == "HEALTH" then
-	--	xpUpdate.toggleCharacterInfo(self.chr);
 		self.infopanel:toggleView(getText("IGUI_XP_Health"));
         if self.infopanel:isVisible() then
             focus = self.infopanel.panel:getActiveView()
@@ -454,15 +434,6 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
                 ISEntityUI.OpenHandcraftWindow(self.chr, nil);
             end
         end
---         elseif isKeyDown(Keyboard.KEY_LSHIFT) then
---             -- temporary option to open handcraft window
---             ISEntityUI.OpenHandcraftWindow(self.chr, nil);
---         else
---             ISCraftingUI.toggleCraftingUI();
---             if getPlayerCraftingUI(playerNum):isVisible() then
---                 focus = getPlayerCraftingUI(playerNum)
---             end
---         end
     elseif button.internal == "ZONE" then
         ISDesignationZonePanel.toggleZoneUI(playerNum);
         if getPlayerZoneUI(playerNum) and getPlayerZoneUI(playerNum):isVisible() then
@@ -520,6 +491,7 @@ end
 local activateCounter = 0;
 local activateTicks = 10; -- the actual value * 2;
 local lastId = 0;
+
 function ISEquippedItem:checkToolTip()
     local mx, my = getMouseX(), getMouseY();
     local mouseOverID, tooltiptext = -1, nil;
@@ -531,8 +503,11 @@ function ISEquippedItem:checkToolTip()
             end
         end
     end
+    if self.toolRender then
+        self.toolRender:setVisible(false)
+    end
     local activate = false;
-    if mouseOverID > 0 then
+    if mouseOverID >= 3 then
         if activateCounter < activateTicks then
             activateCounter = activateCounter+1;
         end
@@ -547,6 +522,19 @@ function ISEquippedItem:checkToolTip()
         activateCounter = activateCounter-1;
     end
     self:doToolTip(activate, tooltiptext);
+    -- show item tooltip when moused over
+    local player = getSpecificPlayer(self.playerNum)
+    if mouseOverID ~= -1 and not getPlayerContextMenu(self.playerNum):isAnyVisible() then
+        local item1, item2 = player:getPrimaryHandItem(), player:getSecondaryHandItem()
+        if item1 and mouseOverID == 1 then
+            self:doInvToolTip(item1, player)
+            self.toolRender:setVisible(true)
+        end
+        if item2 and mouseOverID == 2 then
+            self:doInvToolTip(item2, player)
+            self.toolRender:setVisible(true)
+        end
+    end
 end
 
 function ISEquippedItem:doToolTip( _state, _text )
@@ -559,26 +547,37 @@ function ISEquippedItem:doToolTip( _state, _text )
             self.toolTip:setWidth(100);
             self.toolTip.description = _text;
             self.toolTip:doLayout();
-            self.toolTip:setVisible(true);
         else
             if self.toolTip then
                 if self.toolTip:getIsVisible()==false then
-                    self.toolTip:setVisible(true);
                     self.toolTip:addToUIManager();
                 end
                 if self.toolTip.description ~= _text then
                     self.toolTip.description = _text;
                     self.toolTip:doLayout();
                 end
-
                 self.toolTip:bringToTop();
             end
         end
+        self.toolTip:setVisible(true);
     else
         if self.toolTip and self.toolTip:getIsVisible() then
             self.toolTip:removeFromUIManager();
             self.toolTip:setVisible(false);
         end
+    end
+end
+
+function ISEquippedItem:doInvToolTip(item, player)
+    if self.toolRender then
+        self.toolRender:setItem(item)
+        self.toolRender:bringToTop()
+    else
+        self.toolRender = ISToolTipInv:new(item)
+        self.toolRender:initialise()
+        self.toolRender:addToUIManager()
+        self.toolRender:setOwner(self)
+        self.toolRender:setCharacter(player)
     end
 end
 
@@ -601,6 +600,10 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.anchorLeft = true;
     o.chr = chr;
     o.safety = o.chr:getSafety()
+    o.previousSafetyState = true
+    o.currentSafetyState = true
+    o.changingSafetyState = false;
+    o.warIconTimer = 1.0;
 	o.anchorRight = false;
 	o.anchorTop = true;
 	o.anchorBottom = false;
@@ -648,12 +651,12 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.warIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_On_" .. TEXTURE_WIDTH .. ".png");
     o.warIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/War_Off_" .. TEXTURE_WIDTH .. ".png");
     --safety
-    o.safetyOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_On_" .. TEXTURE_WIDTH .. ".png");
-    o.safetyOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_Off_" .. TEXTURE_WIDTH .. ".png");
+    o.safetyTint = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_Tintable_" .. TEXTURE_WIDTH .. ".png");
+    o.safetyBackground = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Safety_Background_" .. TEXTURE_WIDTH .. ".png");
 
     o.warSoon = getTexture("media/ui/war_soon.png");
     o.clockTexture = getTexture("media/ui/pvpicon_clock.png");
-    o.disableTexture = getTexture("media/ui/pvpicon_off.png"); --getTexture("media/ui/SafetyDISABLE.png");
+    o.disableTexture = getTexture("media/ui/pvpicon_off.png");
     o.healthIconOscillatorLevel = 0.0;
     o.healthIconOscillator = 0.0;
     o.healthIconOscillatorDecelerator = 0.96;
@@ -662,9 +665,12 @@ function ISEquippedItem:new (x, y, width, height, chr)
     o.healthIconOscillatorStartLevel = 1.0;
     o.healthIconOscillatorStep = 0.0;
     o.previousHealth = 0.0;
-    o.sidebarSizeOption = getCore():getOptionSidebarSize()
+    o.ghc = ColorInfo.new(0.6, 0.8, 0.5, 1.0);
+    o.bhc = ColorInfo.new(0.9, 0.4, 0.4, 1.0);
+    o.nhc = ColorInfo.new(1.0, 1.0, 1.0, 1.0);
+    o.sidebarSizeOption = getCore():getOptionSidebarSize();
     ISEquippedItem.instance = o;
-	return o;
+    return o;
 end
 
 local function createFakeObject(_x,_y,_w,_h)
@@ -689,8 +695,6 @@ function ISEquippedItem:addMouseOverToolTipItem( _object, _displayString )
     end
 end
 
-
-
 function ISEquippedItem:initialise()
     setTextureWidth()
 	ISPanel.initialise(self);
@@ -705,7 +709,6 @@ function ISEquippedItem:initialise()
     self:addChild(self.mainHand);
     local y = self.mainHand:getBottom() + UI_BORDER_SPACING + 5
 
-    --    self:drawTexture(self.HandSecondaryTexture, -1, 50, 1, 1, 1, 1);
     self.offHand = ISImage:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, self.HandSecondaryTexture);
     self.offHand.scaledWidth = TEXTURE_WIDTH;
     self.offHand.scaledHeight = TEXTURE_HEIGHT;
@@ -829,13 +832,6 @@ function ISEquippedItem:initialise()
 
         y = self.zoneBtn:getBottom() + UI_BORDER_SPACING + 5
 
---[[
-        self.metaPopup = ISMetaPopup:new(10 + self.zoneBtn:getX(), 10 + self.zoneBtn:getY(), TEXTURE_WIDTH * 2, TEXTURE_HEIGHT)
-        self.metaPopup.owner = self
-        self.metaPopup:addToUIManager()
-        self.metaPopup:setVisible(false)
---]]
-
         if ISWorldMap.IsAllowed() then
             self.mapBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.mapBtn:setImage(self.mapIconOff);
@@ -881,8 +877,9 @@ function ISEquippedItem:initialise()
         end;
 
         if isClient() then
-            self.safetyBtn = ISButton:new(2, y, self.disableTexture:getWidthOrig(), self.disableTexture:getHeightOrig(), "", self, ISEquippedItem.onOptionMouseDown);
-            self.safetyBtn:setImage(self.disableTexture);
+            self.safetyBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
+            self.safetyBtn:setImage(self.safetyTint);
+            self.safetyBtn:setTextureColor(self.ghc)
             self.safetyBtn.internal = "SAFETY";
             self.safetyBtn:initialise();
             self.safetyBtn:instantiate();
@@ -892,14 +889,13 @@ function ISEquippedItem:initialise()
             self.safetyBtn:ignoreHeightChange();
             self:addChild(self.safetyBtn);
 
-            self.radialIcon = ISRadialProgressBar:new(2, y, self.disableTexture:getWidthOrig(), self.disableTexture:getHeight(), nil);
+            self.radialIcon = ISRadialProgressBar:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, nil);
             self.radialIcon:setVisible(false);
             self:addChild(self.radialIcon);
 
             self:setHeight(self.safetyBtn:getBottom())
             y = self.safetyBtn:getBottom() + UI_BORDER_SPACING + 5
-        end
-        if isClient() then
+
             self.clientBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
             self.clientBtn:setImage(self.clientIconOff);
             self.clientBtn.internal = "USERPANEL";
@@ -940,6 +936,7 @@ function ISEquippedItem:initialise()
             self:addChild(self.warManagerBtn);
 
             self:setHeight(self.warManagerBtn:getBottom())
+            y = self.warManagerBtn:getBottom() + UI_BORDER_SPACING + 5
         end
     end
 
@@ -1199,7 +1196,6 @@ function ISMapPopup:onMouseUp(x, y)
     self:setVisible(false)
     local playerNum = self.owner.chr:getPlayerNum()
     local index = math.floor(x / TEXTURE_WIDTH)
-    local mode = nil
     if index == 0 then
         ISWorldMap.ToggleWorldMap(playerNum)
     elseif index == 1 then
@@ -1215,71 +1211,6 @@ function ISMapPopup:new(x, y, width, height)
     o.texMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
     o.texMiniMap = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Map_On_" .. TEXTURE_WIDTH .. ".png")
 
-    return o
-end
-
-ISMetaPopup = ISPanel:derive("ISMetaPopup")
-
-function ISMetaPopup:prerender()
-    self:setAlwaysOnTop(true)
-end
-
-function ISMetaPopup:render()
-    local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-
-    local boxWidth = math.max(
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Zone_Name")) + UI_BORDER_SPACING*2,
-            getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_BuildingRoomsEditor_Title")) + UI_BORDER_SPACING*2,
-            self.width
-    )
-
-    self:drawRect(0, 0, boxWidth, self.height + fontHgt + 2 * 2, 0.80, 0, 0, 0)
-
-    local index = math.floor(self:getMouseX() / TEXTURE_WIDTH)
-    if index > 0 then
-        self:drawRect(index * TEXTURE_WIDTH, 0, TEXTURE_WIDTH, self.height, 0.15, 1, 1, 1)
-    end
-
-    local texts = { getText("IGUI_Zone_Name"), getText("IGUI_BuildingRoomsEditor_Title")}
-    local text = texts[index+1]
-    self:drawText(text, UI_BORDER_SPACING, self.height + 2, 1.0, 0.85, 0.05, 1.0, UIFont.Small)
-
-    local x = 0
-    local y = 0
-
-    local tex = self.texAnimalZone
-    self:drawTextureScaled(tex, x, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
-
-    tex = self.texRoomEditor
-    self:drawTextureScaled(tex, x + TEXTURE_WIDTH, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, 1, 1)
-end
-
-function ISMetaPopup:onMouseDown(x, y)
-    return true
-end
-
-function ISMetaPopup:onMouseUp(x, y)
-    self:setVisible(false)
-    local playerNum = self.owner.chr:getPlayerNum()
-    local index = math.floor(x / TEXTURE_WIDTH)
-    local mode = nil
-    if index == 0 then
-        ISDesignationZonePanel.toggleZoneUI(playerNum)
-        if getPlayerZoneUI(playerNum) and getPlayerZoneUI(playerNum):isVisible() then
-            focus = getPlayerZoneUI(playerNum)
-        end
-        ISAnimalZoneFirstInfo.showUI(playerNum, false)
-    elseif index == 1 then
-        ISBuildingRoomsEditor.Show()
-    end
-    return true
-end
-
-function ISMetaPopup:new(x, y, width, height)
-    setTextureWidth()
-    local o = ISPanel.new(self, x, y, width, height)
-    o.texAnimalZone = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/AnimalZone_On_" .. TEXTURE_WIDTH .. ".png")
-    o.texRoomEditor = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/BuildingRoomsEditor_" .. TEXTURE_WIDTH .. ".png")
     return o
 end
 
@@ -1316,5 +1247,4 @@ function launchEquippedItem(playerObj)
     return panel;
 end
 
---Events.OnCreateUI.Add(launchEquippedItem);
 Events.OnKeyPressed.Add(ISEquippedItem.onKeyPressed);

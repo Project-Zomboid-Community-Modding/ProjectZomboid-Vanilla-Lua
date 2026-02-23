@@ -2,7 +2,6 @@ require "ISUI/ISCollapsableWindowJoypad"
 require "ISUI/ISUI3DModel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local UI_BORDER_SPACING = 10
@@ -26,7 +25,6 @@ ISHutch3DModel = ISUI3DModel:derive("ISHutch3DModel")
 function ISHutch3DModel:instantiate()
     ISUI3DModel.instantiate(self)
     self:setIsometric(false)
---    self.javaObject:setConsumeMouseEvents(false)
 end
 
 function ISHutch3DModel:onMouseDown(x, y)
@@ -57,7 +55,6 @@ function ISHutch3DModel:new(x, y, width, height)
     local o = ISUI3DModel.new(self, x, y, width, height)
     return o
 end
-
 
 -- Panel with eggs or a chicken
 ISHutchNestBox = ISPanel:derive("ISHutchNestBox")
@@ -96,10 +93,6 @@ function ISHutchNestBox:doNestStuff()
         for i,pos in ipairs(self.possibleEggPosition) do
             if nest:getEggsNb() >= i then
                 self:drawTexture(getTexture("Item_Egg"), pos.x, pos.y, 1, 1, 1, 1)
---                local egg = nest:getEgg(i-1)
---                if egg and egg:isFertilized() then
---                    self:drawTexture(self.favoriteStar, pos.x + 10, pos.y + 10, 1, 1, 1, 1)
---                end
             else
                 self:drawTexture(getTexture("Item_Egg"), pos.x, pos.y, 0.2, 1, 1, 1)
             end
@@ -126,8 +119,6 @@ function ISHutchNestBox:initEggPos()
         local pos = {};
         pos.x = x;
         pos.y = y;
---        pos.x = pos.x + ZombRand(0,4);
---        pos.y = pos.y + ZombRand(0,4);
         table.insert(self.possibleEggPosition, pos);
         if i == 4 then
             x = 15;
@@ -160,13 +151,9 @@ function ISHutchNestBox:onRightMouseUp(x, y)
     local context = ISContextMenu.get(self.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
     if self:getAnimal() then
         context:addOption(getText("ContextMenu_AnimalInfo"), self:getAnimal(), AnimalContextMenu.onAnimalInfo, self.chr);
-        --context:addDebugOption("Remove Animal", self, ISHutchNestBox.onCheatRemoveAnimal)
     elseif AnimalContextMenu.cheat then
         context:addDebugOption("Add Animal", self, ISHutchNestBox.onCheatAddAnimal)
     end
-    --if self:getNest():getEggsNb() < 10 then
-    --    context:addDebugOption("Add Egg", self, ISHutchNestBox.onCheatAddEgg)
-    --end
     if self:getNest():getEggsNb() > 0 then
         context:addOption(getText("IGUI_Hutch_GrabEggs"), self, ISHutchNestBox.onButtonGrab)
     end
@@ -201,11 +188,9 @@ function ISHutchNestBox:onCheatAddAnimal()
 end
 
 function ISHutchNestBox:onCheatRemoveAnimal()
-    
 end
 
 function ISHutchNestBox:onCheatAddEgg()
-    
 end
 
 function ISHutchNestBox:onCheatRemoveEgg()
@@ -245,7 +230,6 @@ end
 ISHutchNestParentPanel = ISPanelJoypad:derive("ISHutchNestParentPanel")
 
 function ISHutchNestParentPanel:createChildren()
-    local boxX = PADXY
     local boxY = PADXY
     local boxPerRow = 2
     local requiredNestWid = NEST_BOX_WIDTH * boxPerRow + UI_BORDER_SPACING * (boxPerRow - 1)
@@ -263,13 +247,6 @@ function ISHutchNestParentPanel:createChildren()
             boxY1 = boxY1 + NEST_BOX_HEIGHT + 10
         end
     end
-
-    --self.boxCleanBtn = ISButton:new(0, 0, 90, BUTTON_HGT, "", self.hutchUI, ISHutchUI.onCleanNest);
-    --self.boxCleanBtn:initialise();
-    --self.boxCleanBtn.anchorTop = false
-    --self.boxCleanBtn.anchorBottom = false
-    --self.boxCleanBtn.borderColor = self.hutchUI.btnBorder;
-    --self:addChild(self.boxCleanBtn);
 
     self.eggHatchDoorBtn = ISButton:new(0, 0, 80, BUTTON_HGT, "", self.hutchUI, ISHutchUI.onToggleEggHatchDoor);
     self.eggHatchDoorBtn:initialise();
@@ -339,22 +316,6 @@ function ISHutchNestParentPanel:render()
         end
         return
     end
-
-    --local hutch = self.hutchUI.hutch
-    --local fgBar = self.hutchUI.fgBar;
-    --if hutch:getHutchDirt() > 70 then
-    --    fgBar = self.hutchUI.fgBarRed;
-    --elseif hutch:getHutchDirt() > 40 then
-    --    fgBar = self.hutchUI.fgBarOrange;
-    --end
-    --local rowX = PADXY
-    --local rowY = self.height - UI_BORDER_SPACING - BUTTON_HGT - PROGRESS_HEIGHT
-    --self:drawProgressBar(rowX, rowY, PROGRESS_WIDTH, FONT_HGT_SMALL, hutch:getNestBoxDirt() / 100, fgBar)
-    --self:drawText(getText("IGUI_Hutch_Dirt", round(hutch:getNestBoxDirt(), 2)), rowX + 7, rowY, 1,1,1,1, UIFont.NewSmall);
-    --self.boxCleanBtn:setX(rowX)
-    --self.boxCleanBtn:setY(rowY + PROGRESS_HEIGHT + 2)
-    --self.boxCleanBtn:setTitle(getText("IGUI_Hutch_Clean"))
-    --self.boxCleanBtn:setVisible(hutch:getNestBoxDirt() > 0);
 end
 
 function ISHutchNestParentPanel:configJoypad()
@@ -381,7 +342,6 @@ function ISHutchNestParentPanel:configJoypad()
         if #joypadButtons > 0 then
             self:insertNewListOfButtons(joypadButtons)
         end
-        --self:setISButtonForY(self.boxCleanBtn)
         self:setISButtonForX(self.eggHatchDoorBtn)
     end
     self:restoreJoypadFocus(joypadData)
@@ -392,7 +352,6 @@ function ISHutchNestParentPanel:onGainJoypadFocus(joypadData)
     if self.closedDoorPanel:isVisible() then
         self:setISButtonForX(self.openDoorBtn)
     else
-        --self:setISButtonForY(self.boxCleanBtn)
         self:setISButtonForX(self.eggHatchDoorBtn)
     end
     self:restoreJoypadFocus(joypadData)
@@ -431,9 +390,6 @@ function ISHutchRoost:render()
     if self:isMouseOver() then
         self:drawRectBorder(0, 0, self.width, self.height, 1.0, 0.5, 0.5, 0.5)
     end
---    if self:getAnimal() and self:getAnimal():getData():isFertilized() then
---        self:drawTexture(self.favoriteStar, self.width - 20, self.height - 20, 1, 1, 1, 1)
---    end
 
     local animal = self:getAnimal()
     if animal ~= nil and animal:getCustomName() ~= nil then
@@ -583,7 +539,6 @@ end
 ISHutchRoostParentPanel = ISPanelJoypad:derive("ISHutchRoostParentPanel")
 
 function ISHutchRoostParentPanel:createChildren()
-
     self.roostUI = {}
     self.avatarPanel = {}
     local animalIndex = 0
@@ -658,10 +613,8 @@ function ISHutchRoostParentPanel:render()
 
     local playerInv = self.hutchUI.chr:getInventory()
     local waterSources = playerInv:getAllWaterFluidSources(true);
-    --local cleaningSources = playerInv:getAllCleaningFluidSources();
     local mop = playerInv:containsTagEvalRecurse(ItemTag.CLEAN_STAINS, predicateNotBroken)
-    --local canClean = playerInv:containsTypeRecurse("Bleach") and (playerInv:containsTypeRecurse("BathTowel") or playerInv:containsTypeRecurse("DishCloth") or playerInv:containsTypeRecurse("Mop") or playerInv:containsTypeEvalRecurse("Broom", predicateNotBroken))
-    local canClean = mop and not waterSources:isEmpty() --and not cleaningSources:isEmpty();
+    local canClean = mop and not waterSources:isEmpty()
     if not canClean then
         self.birdPooCleanBtn.enable = false;
         self.birdPooCleanBtn.tooltip = getText("IGUI_Hutch_NeedWaterMop");
@@ -840,7 +793,6 @@ function ISHutchUI:create()
 end
 
 function ISHutchUI:onCleanNest()
---    ISTimedActionQueue.add(ISHutchClean:new(self.playerObj, self.hutch, "nest", self.hutch:getNestBoxDirt() * 20))
     if luautils.walkAdj(self.chr, self.hutch:getEntrySq()) then
         ISTimedActionQueue.add(ISHutchCleanNest:new(self.chr, self.hutch))
     end
@@ -1012,7 +964,6 @@ function ISHutchUI:new(x, y, width, height, hutch, player)
     o.fgBar = {r=0, g=0.6, b=0, a=0.7 }
     o.fgBarOrange = {r=1, g=0.3, b=0, a=0.7 }
     o.fgBarRed = {r=1, g=0, b=0, a=0.7 }
---    o.chickenTexture = getTexture("media/ui/Animals/chicken.png");
     o.chickenTexture = getTexture("media/ui/Animals/ChickenSlot_occupied.png");
     o.chickenEmptyTexture = getTexture("media/ui/Animals/ChickenSlot_empty.png");
     o.eggTexture = getTexture("media/ui/Animals/egg.png");

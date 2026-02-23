@@ -1,4 +1,3 @@
-
 require "ISUI/ISPanel"
 
 ISEnergySlot = ISPanel:derive("ISEnergySlot");
@@ -13,7 +12,6 @@ function ISEnergySlot:createChildren()
     if self.enableIcon and self.energy then
         local style = self.styleIcon or "S_Image_EnergyIcon";
         self.icon = ISXuiSkin.build(self.xuiSkin, style, ISImage, 0, 0, 24, 24, self.energy:getIconTexture());
-        --self.icon.autoScale = true;
         self.icon:initialise();
         self.icon:instantiate();
         self:addChild(self.icon);
@@ -21,7 +19,6 @@ function ISEnergySlot:createChildren()
 
     local style = self.styleBar or ((self.isVertical and "S_EnergyBar_Vertical") or "S_EnergyBar_Horizontal");
     self.energyBar = ISXuiSkin.build(self.xuiSkin, style, ISEnergyBar, 0, 0, 20, 20, self.player, self.resource);
-    --self.energyBar.isHorizontal = true;
     self.energyBar.isVertical = self.isVertical; --override to always match parent.
     self.energyBar:initialise();
     self.energyBar:instantiate();
@@ -114,11 +111,6 @@ function ISEnergySlot:prerender()
 end
 
 function ISEnergySlot:render()
-    --[[
-    if true then
-        self:drawRectBorderStatic(0, 0, self.width, self.height, 1.0, 0, 1, 0);
-    end
-    --]]
 end
 
 function ISEnergySlot:update()

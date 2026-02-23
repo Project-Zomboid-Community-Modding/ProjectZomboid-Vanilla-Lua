@@ -8,12 +8,9 @@ local SandboxOptionsScreenPresetPanel = ISPanelJoypad:derive("SandboxOptionsScre
 local SandboxOptionsScreenGroupBox = SandboxOptionsScreenPanel:derive("SandboxOptionsScreenGroupBox")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-
-local  preset
 
 local function getTooltipText(name)
 	local tooltip = getTextOrNull(name)
@@ -245,8 +242,6 @@ function SandboxOptionsScreenGroupBox:settingsToUI(settings)
 				allDefault = false
 				break
 			end
-		else
--- 			error "unhandled control type"
 		end
 	end
 	self.cover:setVisible(allDefault)
@@ -337,22 +332,18 @@ function SandboxOptionsScreenPresetPanel:onButtonApplyPreset()
 end
 
 local index
-local presets = {}
 
 function SandboxOptionsScreenPresetPanel:addPresetToList(fileName, text, userDefined)
     index = index + 1
--- 	local mode = getCore():getGameMode()
 	local preset = getWorld():getPreset()
 	local item = {}
 	item.fileName = fileName
 	item.userDefined = userDefined
 	self.listbox:addItem(text, item)
 
--- 	if mode == fileName then
 	if preset == fileName then
         self.listbox.selected = index
     end
-
 end
 
 function SandboxOptionsScreenPresetPanel:settingsToUI(options)
@@ -375,9 +366,6 @@ function SandboxOptionsScreenPresetPanel:settingsToUI(options)
 		end
 	end
 	index = 0
-
--- 	getPlayer():Say(tostring(getCore():getGameMode()))
--- 	self.listbox:setSelectedIndex(index - 1)
 end
 
 
@@ -536,7 +524,6 @@ function ISServerSandboxOptionsUI:createPanel(page)
 	panel:initialise()
 	panel:instantiate()
 	panel.backgroundColor.a = panel.backgroundColor.a
---	if page.groupBox then panel.contents.backgroundColor.a = panel.contents.backgroundColor.a end
 	panel:setAnchorRight(true)
 	panel:setAnchorBottom(true)
 	panel.settingNames = {}
@@ -560,8 +547,6 @@ function ISServerSandboxOptionsUI:createPanel(page)
 		local ignore = false
 		if not getDebug() and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier") then
 			ignore = true
--- 		elseif setting.singlePlayerOnly then
-			-- ignore
 		elseif setting.type == "checkbox" then
 			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Small)
 			control = ISTickBox:new(0, 0, 100, entryHgt, "", self, self.onTickBoxSelected, setting.name)
@@ -813,4 +798,3 @@ function ISServerSandboxOptionsUI:new(x, y, width, height)
 	ISServerSandboxOptionsUI.instance = o
 	return o
 end
-

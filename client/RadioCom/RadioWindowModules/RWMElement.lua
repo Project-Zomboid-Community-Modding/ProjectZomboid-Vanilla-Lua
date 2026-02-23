@@ -5,18 +5,12 @@ function RWMElement:initialise()
 end
 
 function RWMElement:createChildren()
-    --self.labelName = ISLabel:new(4,2,self.fontheightMed+2,"device",1,1,1,1,UIFont.Medium, true);
-    --self:addChild(self.labelName);
-
-    --ISButton:new (x, y, width, height, title, clicktarget, onclick, onmousedown, allowMouseUpProcessing)
     self.headerButton = ISButton:new(0, 0, self.width,self.fontheightMed+2,self.titleText or "Title",self, RWMElement.onHeaderClick);
     self.headerButton:initialise();
     self.headerButton:setFont(UIFont.Small);
     self.headerButton.backgroundColor = {r=0, g=0, b=0, a=0.0};
     self.headerButton.backgroundColorMouseOver = {r=1.0, g=1.0, b=1.0, a=0.1};
     self.headerButton.borderColor = {r=1.0, g=1.0, b=1.0, a=0.3};
-    --self.headerButton:setImage(self.buttonTexture);
-    --self.headerButton:forceImageSize(self.width, self.fontheightMed+2);
     self:addChild(self.headerButton);
 
     if self.subpanel then
@@ -73,9 +67,6 @@ function RWMElement:prerender()
     if self.buttonTexture then
         self:drawTextureScaled(self.buttonTexture, 0, 0,self.width,self.fontheightMed+2, 1.0, 1.0, 1.0, 1.0);
     end
-    --ISPanel.prerender(self);
-    --self:drawTextureScaledAspect(self.image, (self.width / 2) - (self.forcedWidthImage / 2), (self.height / 2) - (self.forcedHeightImage / 2),self.forcedWidthImage,self.forcedHeightImage, self.textureColor.r, self.textureColor.g, self.textureColor.b, alpha);
-    --ISUIElement:drawTextureScaled(texture, x, y, w, h, a, r, g, b)
 end
 
 function RWMElement:render()
@@ -87,7 +78,6 @@ function RWMElement:render()
 end
 
 function RWMElement:setFocus(_playerNum, _radioParent)
-    --print("setFocus RMWELEMENT");
     self.playerNum = _playerNum;
     self.radioParent = _radioParent;
     if self.subpanel then
@@ -170,30 +160,35 @@ function RWMElement:getAPrompt()
     end
     return nil;
 end
+
 function RWMElement:getBPrompt()
     if self.subpanel and self.subpanel:getIsVisible() and self.subpanel.getBPrompt then
         return self.subpanel:getBPrompt();
     end
     return nil;
 end
+
 function RWMElement:getXPrompt()
     if self.subpanel and self.subpanel:getIsVisible() and self.subpanel.getXPrompt then
         return self.subpanel:getXPrompt();
     end
     return nil;
 end
+
 function RWMElement:getYPrompt()
     if self.subpanel and self.subpanel:getIsVisible() and self.subpanel.getYPrompt then
         return self.subpanel:getYPrompt();
     end
     return nil;
 end
+
 function RWMElement:getLBPrompt()
     if self.subpanel and self.subpanel:getIsVisible() and self.subpanel.getLBPrompt then
         return self.subpanel:getLBPrompt();
     end
     return getText("IGUI_RadioReleaseFocus");
 end
+
 function RWMElement:getRBPrompt()
     if self.subpanel and self.subpanel:getIsVisible() and self.subpanel.getRBPrompt then
         return self.subpanel:getRBPrompt();

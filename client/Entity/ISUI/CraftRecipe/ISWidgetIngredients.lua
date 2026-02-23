@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 ISWidgetIngredients = ISPanel:derive("ISWidgetIngredients");
 
@@ -12,16 +11,6 @@ end
 
 function ISWidgetIngredients:createChildren()
     ISPanel.createChildren(self);
-
-    --[[
-    local column, row;
-
-    self.rootTable = ISXuiSkin.build(self.xuiSkin, "S_TableLayout_Main", ISTableLayout, 0, 0, 10, 10);
-    self.rootTable:addRowFill(nil);
-    self.rootTable:initialise();
-    self.rootTable:instantiate();
-    self:addChild(self.rootTable);
-    --]]
 
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
@@ -157,9 +146,8 @@ function ISWidgetIngredients:calculateLayout(_preferredWidth, _preferredHeight)
     for k,v in ipairs(self.inputs) do
         v:calculateLayout(0,0);
 
-        minInputWidth = math.max(minInputWidth, v:getWidth()); --+(self.margin*2));
+        minInputWidth = math.max(minInputWidth, v:getWidth());
         minInputHeight = math.max(minInputHeight, v:getHeight());
-        --minHeight = minHeight + self.margin;
     end
 
     local minOutputWidth = 0;
@@ -167,9 +155,8 @@ function ISWidgetIngredients:calculateLayout(_preferredWidth, _preferredHeight)
     for k,v in ipairs(self.outputs) do
         v:calculateLayout(0,0);
 
-        minOutputWidth = math.max(minOutputWidth, v:getWidth()); --+(self.margin*2));
+        minOutputWidth = math.max(minOutputWidth, v:getWidth());
         minOutputHeight = math.max(minOutputHeight, v:getHeight());
-        --minHeight = minHeight + self.margin;
     end
 
     local minIOWidth = math.max(minInputWidth, minOutputWidth);
@@ -184,7 +171,6 @@ function ISWidgetIngredients:calculateLayout(_preferredWidth, _preferredHeight)
     height = math.max(height, minHeight);
 
     local IOWidth = (width-(self.margin*4)) /3;
---     local IOWidth = (width-(self.margin*3)) /2;
 
     local x = self.margin;
     local y = self.margin;
@@ -254,14 +240,12 @@ function ISWidgetIngredients:update()
     ISPanel.update(self);
 end
 
-function ISWidgetIngredients:new (x, y, width, height, player, logic) -- recipeData, craftBench)
+function ISWidgetIngredients:new (x, y, width, height, player, logic)
 	local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
     o.player = player;
     o.logic = logic;
-    --o.recipeData = recipeData;
-    --o.craftBench = craftBench;
 
     o.interactiveMode = false;
 

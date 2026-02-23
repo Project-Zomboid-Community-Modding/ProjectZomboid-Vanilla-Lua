@@ -7,15 +7,19 @@ require "TimedActions/ISBaseTimedAction"
 
 ISAddItemInRecipe = ISBaseTimedAction:derive("ISAddItemInRecipe");
 
-function ISAddItemInRecipe:isValid()
+function ISAddItemInRecipe:isValidStart()
 	if isServer() then
 		return true
 	end
     if isClient() and self.baseItem then
-	    return self.character:getInventory():containsID(self.baseItem:getID()) and self.recipe:getItemsCanBeUse(self.character, self.baseItem, nil):contains(self.usedItem)
+	    return self.character:getInventory():containsID(self.baseItem:getID()) and self.recipe:isItemUsableInRecipe(self.character, self.baseItem, self.usedItem:getID());
 	else
 	    return self.character:getInventory():contains(self.baseItem) and self.recipe:getItemsCanBeUse(self.character, self.baseItem, nil):contains(self.usedItem)
 	end
+end
+
+function ISAddItemInRecipe:isValid()
+    return true;
 end
 
 function ISAddItemInRecipe:update()

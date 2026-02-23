@@ -73,7 +73,7 @@ function ISClothingExtraAction:createItemNew(item, newItem)
 			newItem:setName(item:getName())
 		end
 	end
---    newItem:setDirtyness(item:getDirtyness())
+--    newItem:setDirtiness(item:getDirtiness())
 --    newItem:setTexture(item:getTexture())
 	newItem:setColor(item:getColor())
 	newVisual:copyDirt(visual)
@@ -109,8 +109,6 @@ end
 function ISClothingExtraAction:perform()
 	self:stopSound()
 	self.item:setJobDelta(0.0);
-	getPlayerInventory(self.character:getPlayerNum()):refreshBackpacks();
-	triggerEvent("OnClothingUpdated", self.character)
 
 	ISBaseTimedAction.perform(self)
 end
@@ -132,6 +130,7 @@ function ISClothingExtraAction:complete()
 		self.character:setWornItem(newItem:getBodyLocation(), newItem)
 		sendClothing(self.character, newItem:getBodyLocation(), newItem);
 	end
+	syncVisuals(self.character)
 
 	if newItem:hasTag(ItemTag.REPLACE_PRIMARY) then
 		if self.character:getPrimaryHandItem() then
@@ -140,6 +139,8 @@ function ISClothingExtraAction:complete()
 		self.character:setPrimaryHandItem(newItem)
 		sendEquip(self.character)
 	end
+
+    triggerEvent("OnClothingUpdated", self.character)
 
 	return true
 end
