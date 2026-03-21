@@ -104,10 +104,11 @@ function BuildRecipeCode.barricade.OnCreate(params)
 	local objects = checkSquare:getObjects();
 	local barricade = nil;
 	local created = false;
-
+    local doNorth = params.facing == "n" or params.facing == "s"
 	for i=objects:size()-1, 0, -1 do
 		local object = objects:get(i);
-		if instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow())) then
+        local objectValid = instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow()))
+        if objectValid and object:getNorth() == doNorth then
             local oppositeSq = object:getOppositeSquare();
             if square == oppositeSq then
                 opposite = true
@@ -236,7 +237,7 @@ function BuildRecipeCode.stairs.OnCreate(params)
 			local objProps = object:getProperties();
 
 			local shouldRemove = objProps and ((object:getProperties():has(IsoFlagType.vegitation) and object:getType() ~= IsoObjectType.tree) or object:getProperties():has(IsoFlagType.canBeRemoved));
-			overWater = overWater or object:getSprite():getProperties():has(IsoFlagType.water) or object:getSprite():getProperties():has(IsoFlagType.taintedWater);
+			overWater = overWater or (object:getSprite() ~= nil and (object:getSprite():getProperties():has(IsoFlagType.water) or object:getSprite():getProperties():has(IsoFlagType.taintedWater)));
 
 			if object:getTextureName() ~= nil and string.contains(object:getTextureName(), "floors_rugs") then
 				shouldRemove = false;

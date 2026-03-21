@@ -77,9 +77,12 @@ CDDA.AddPlayer = function(playerNum, playerObj)
 	playerObj:getInventory():clear();
 	playerObj:clearWornItems();
 	playerObj:getStats():set(CharacterStat.WETNESS, CharacterStat.WETNESS:getMaximumValue());
+    for i=0, playerObj:getBodyDamage():getBodyParts():size() - 1 do
+        playerObj:getBodyDamage():getBodyParts():get(i):setWetness(CharacterStat.WETNESS:getMaximumValue())
+    end
 	playerObj:getBodyDamage():setCatchACold(0.0);
 	playerObj:getBodyDamage():setHasACold(true);
-	playerObj:getBodyDamage():setColdStrength(20.0);
+	playerObj:getBodyDamage():setColdStrength(50.0);
 	playerObj:getBodyDamage():setTimeToSneezeOrCough(0);
 	playerObj:setClothingItem_Feet(nil)
 	playerObj:setClothingItem_Legs(nil)

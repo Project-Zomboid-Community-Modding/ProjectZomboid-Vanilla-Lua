@@ -991,6 +991,10 @@ function ISWorldMapSymbolTool_Sharing:showPropertiesUI()
 			self.propertiesUI = ISWorldMapSharing:new(self.mapUI)
 			self.mapUI:addChild(self.propertiesUI)
 		end
+		self.propertiesUI.legendWasVisible = self.mapUI.keyUI ~= nil and self.mapUI.keyUI:isVisible()
+		if self.propertiesUI.legendWasVisible then
+			self.mapUI.keyUI:setVisible(false)
+		end
 		if not self.propertiesUI:isVisible() then
 			self.propertiesUI:setVisible(true)
 			self.mapUI:addChild(self.propertiesUI)
@@ -1280,6 +1284,7 @@ function ISWorldMapSymbols:createChildren()
 		self.sharingBtn:initialise()
 		self.sharingBtn:instantiate()
 		self.sharingBtn.borderColor.a = 0.0
+		self.sharingBtn.tooltip = getText("IGUI_Map_Sharing_tt")
 		self:addChild(self.sharingBtn)
 	end
 

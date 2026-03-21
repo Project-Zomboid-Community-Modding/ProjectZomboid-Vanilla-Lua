@@ -141,14 +141,14 @@ end
 function ISEatFoodAction:serverStop()
 	local applyEat = true;
 	if self.item and self.item:getFullType()=="Base.Cigarettes" then
-		applyEat = false; -- dont apply cigarette effects when action cancelled.
+		applyEat = false; -- don't apply cigarette effects when action cancelled.
 	end
 	local hungerChange = math.abs(self.item:getHungerChange() * 100)
 	if (hungerChange or self.item:getBaseHunger()) and hungerChange <= 1 then
-		applyEat = false; -- dont consume 1 hunger food items when action cancelled.
+		applyEat = false; -- don't consume 1 hunger food items when action cancelled.
 	end
 	if applyEat and self.character:getInventory():contains(self.item) then
-		self:eat(self.item, self:getJobDelta());
+		self:eat(self.item, self.netAction and self.netAction:getProgress() or self:getJobDelta());
 	end
 end
 

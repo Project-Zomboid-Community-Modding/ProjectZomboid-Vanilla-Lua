@@ -1600,6 +1600,7 @@ function ISWorldMap.ToggleWorldMap(playerNum)
 	else
 		-- local playerObj = getSpecificPlayer(playerNum)
 		if playerObj then
+            playerObj:setJoypadIgnoreAimUntilCentered(true)
 			ISTimedActionQueue.clear(playerObj)
 			ISTimedActionQueue.add(ISReadWorldMap:new(playerObj))
 		else

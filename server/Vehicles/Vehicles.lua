@@ -1003,10 +1003,20 @@ end
 
 VehicleUtils = {}
 
+function VehicleUtils.getInventoryContainersRecurse(containers, container)
+	table.insert(containers, container)
+	local items = container:getAllEvalRecurse(function(item) return instanceof(item, "InventoryContainer") end)
+	if items == nil or items:isEmpty() then return end
+	for i=1,items:size() do
+		local item = items:get(i-1)
+		VehicleUtils.getInventoryContainersRecurse(containers, item:getInventory())
+	end
+end
+
 function VehicleUtils.getContainers(playerNum)
 	local containers = {}
 	for _,v in ipairs(getPlayerInventory(playerNum).inventoryPane.inventoryPage.backpacks) do
-		table.insert(containers, v.inventory)
+		VehicleUtils.getInventoryContainersRecurse(containers, v.inventory)
 	end
 	for _,v in ipairs(getPlayerLoot(playerNum).inventoryPane.inventoryPage.backpacks) do
 		table.insert(containers, v.inventory)
@@ -1503,7 +1513,7 @@ function VehicleUtils.initHeadlight(vehicle, part)
 	local yOffset = 2.0
 	local distance = 36
 	local intensity = 0.75
-	local dot = 0.96
+	local dot = 0.75
 	local focusing = ZombRand(200)
 	-- NOTE: distance,intensity values vary between 50% and 100% of the given value based on part condition.
 	-- NOTE: focusing value is ignored, instead it is set based on part condition.

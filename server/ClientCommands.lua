@@ -1139,6 +1139,22 @@ Commands.feedingThrough.removeFoodDebug = function(player, args)
     isoObject:checkOverlayAfterAnimalEat();
 end
 
+Commands.item = {}
+
+Commands.item.changeRecording = function(player, args)
+    if not player:getRole():hasCapability(Capability.EditItem) then
+        print("item.changeRecording The player's access level is not sufficient to perform this action")
+        return
+    end
+    local item = player:getInventory():getItemWithID(args.itemID)
+    if not item then
+        print("item.changeRecording Item not found")
+        return
+    end
+    item:setRecordedMediaIndexInteger(args.mediaIndex)
+    sendReplaceItemInContainer(item:getContainer(), item, item)
+end
+
 ClientCommands.OnClientCommand = function(module, command, player, args)
 	if Commands[module] and Commands[module][command] then
 		local argStr = ''

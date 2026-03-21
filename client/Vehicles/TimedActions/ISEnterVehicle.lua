@@ -10,6 +10,13 @@ function ISEnterVehicle:isValid()
 		not self.vehicle:isSeatOccupied(self.seat)
 end
 
+function ISEnterVehicle:waitToStart()
+	if self.character:isAiming() then
+		self.character:nullifyAiming()
+	end
+	return false
+end
+
 function ISEnterVehicle:update()
 	self.vehicle:playPassengerAnim(self.seat, "enter")
 	if self.character:GetVariable("EnterAnimationFinished") == "true" then

@@ -86,8 +86,6 @@ function DebugScenarios:onClickOption(option)
 end
 
 function DebugScenarios:launchScenario(scenario)
-    MainScreen.instance:setBeginnerPreset();
-    
     if(scenario ~= nil) then
         selectedDebugScenario = scenario;
     end

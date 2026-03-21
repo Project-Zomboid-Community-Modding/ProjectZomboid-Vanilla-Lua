@@ -74,6 +74,10 @@ function RWMMedia:addMedia( _items )
 end
 
 function RWMMedia:addMediaAux(item)
+    if item:getWorldItem() and not luautils.walkAdj(self.player, item:getWorldItem():getSquare(), true) then
+        return
+    end
+    ISInventoryPaneContextMenu.transferIfNeeded(self.player, item)
     if self:doWalkTo() then
         ISTimedActionQueue.add(ISDeviceMediaAction:new(self.player, false, item, ISDeviceBatteryAction:getDeviceDataParameter(self.player, self.device, self.deviceType) ));
     end

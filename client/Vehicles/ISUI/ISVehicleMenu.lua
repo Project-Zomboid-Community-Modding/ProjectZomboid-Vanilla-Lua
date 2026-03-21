@@ -1071,7 +1071,9 @@ function ISVehicleMenu.FillPartMenu(playerIndex, context, slice, vehicle)
 			and part:getContainerContentAmount() > 0 then
 				local hose = playerObj:getInventory():getFirstTagRecurse(ItemTag.SIPHON_GAS)
 				if slice then
-					if hose then
+					if playerObj:hasFullInventory() then
+						slice:addSlice(getText("ContextMenu_FullInventory"), getTexture("Item_Petrol"))
+					elseif hose then
 						slice:addSlice(getText("ContextMenu_VehicleSiphonGas"), getTexture("media/ui/vehicles/gas_siphon.png"), ISVehiclePartMenu.onTakeGasoline, playerObj, part)
 					else													
 						slice:addSlice(getText("ContextMenu_VehicleNeedHose"), getTexture("Item_Petrol"))			

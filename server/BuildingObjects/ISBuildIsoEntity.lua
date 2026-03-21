@@ -28,42 +28,9 @@ function ISBuildIsoEntity:walkTo(x, y, z)
 	else
 		return luautils.walkAdj(playerObj, square, false, excludeTiles)
 	end
-
-	--local square2 = self:getSquare2(square, self.north)
-	--if square2 == nil or square:DistToProper(playerObj) < square2:DistToProper(playerObj) then
-	--	return luautils.walkAdj(playerObj, square)
-	--end
-	--return luautils.walkAdj(playerObj, square2)
 end
 
 function ISBuildIsoEntity:removeFromGround(square)
-	--[[
-	for i = 0, square:getSpecialObjects():size()-1 do
-		local thump = square:getSpecialObjects():get(i);
-		if instanceof(thump, "IsoThumpable") then
-			square:transmitRemoveItemFromSquare(thump);
-			break
-		end
-	end
-
-	local xa = square:getX();
-	local ya = square:getY();
-
-	if self:getNorth() then
-		ya = ya - 1;
-	else
-		xa = xa - 1;
-	end
-
-	square = getCell():getGridSquare(xa, ya, square:getZ());
-	for i = 0, square:getSpecialObjects():size()-1 do
-		local thump = square:getSpecialObjects():get(i);
-		if instanceof(thump, "IsoThumpable") then
-			square:transmitRemoveItemFromSquare(thump);
-			break
-		end
-	end
-	--]]
 end
 
 -- return the health of the new furniture, it reads base health and skill-based bonus health from the entity's script
@@ -91,7 +58,6 @@ function ISBuildIsoEntity:renderFloorGrid(x, y, z)
 			for yy=0,face:getHeight()-1 do
 				local square = getCell():getGridSquare(x + xx, y + yy, z);
 				local tileInfo = face:getTileInfo(xx, yy, 0);
-				--local tileInfoSprite = tileInfo and tileInfo:getSpriteName() and getSprite(tileInfo:getSpriteName());
 				local hc = colorBad;
 				if square and tileInfo then --and tileInfoSprite then
 					hc = self:isValidPerSquare(square, tileInfo, true, yy > 0, xx > 0) and colorGood or colorBad;
@@ -118,12 +84,11 @@ function ISBuildIsoEntity:render(x, y, z, square)
 			for yy=0,face:getHeight()-1 do
 				local tileInfo = face:getTileInfo(xx,yy,zz);
 				if tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) then
-					--if true then return; end
 					-- set the isWallLike to walkAdjWall or simple walkAdj
 					if not self.tileCheck or self.tileCheck ~= getSprite(tileInfo:getSpriteName()) then
 						self.tileCheck = getSprite(tileInfo:getSpriteName());
 						local props = self.tileCheck:getProperties();
-						self.isWallLike = props:has("WallN") or props:has("WallW") or props:has("WallNTrans") or props:has("WallWTrans") or props:has("WindowN") or props:has("WindowW") or props:has("DoorWallN") or props:has("DoorWallW");
+						self.isWallLike = props:has(IsoPropertyType.WALL_N) or props:has(IsoPropertyType.WALL_W) or props:has(IsoPropertyType.WALL_N_TRANS) or props:has(IsoPropertyType.WALL_W_TRANS) or props:has(IsoPropertyType.WINDOW_N) or props:has(IsoPropertyType.WINDOW_W) or props:has(IsoPropertyType.DOOR_WALL_N) or props:has(IsoPropertyType.DOOR_WALL_W);
 					end
 					local sprite = tileInfo:getSpriteName() and self.spriteCache[tileInfo:getSpriteName()] or self.tileSprite;
 					if sprite then
@@ -239,8 +204,7 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		if not tileInfoSprite or not tileInfoSprite:getType() == IsoObjectType.wall then
 			if buildUtil.stairIsBlockingPlacement( square, true ) then
 				return false;
-			end	-- DO THIS SMARTER
-			--    if buildUtil.stairIsBlockingPlacement( square, true, (self.nSprite==4 or self.nSprite==2) ) then return false; end -- SMARTER?
+			end
 
 			if _requiresFloor then
 				if not square:isFree(true) then
@@ -312,10 +276,10 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 					hasFrame = true
 				end
 				local sprite = o:getSprite()
-				if self.north and sprite and sprite:getProperties():has("DoorWallN") then
+				if self.north and sprite and sprite:getProperties():has(IsoPropertyType.DOOR_WALL_N) then
 					hasFrame = true
 				end
-				if not self.north and sprite and sprite:getProperties():has("DoorWallW") then
+				if not self.north and sprite and sprite:getProperties():has(IsoPropertyType.DOOR_WALL_W) then
 					hasFrame = true
 				end
 			end
@@ -336,7 +300,6 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 	end
 
 	-- WINDOW STUFF
-	--local isWindow = tileInfoSprite and (tileInfoSpriteProps:has("WindowW") or tileInfoSpriteProps:has("WindowN"));
 	if self.needWindowFrame then
 		local hasFrame = false
 		local hasWindow = false;
@@ -350,17 +313,11 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		for i=0,square:getObjects():size()-1 do
 			local o = square:getObjects():get(i)
 			if instanceof(o, 'IsoObject') then
-				--if self.north and o:getType() == IsoObjectType.doorFrN then
-				--	hasFrame = true
-				--end
-				--if not self.north and o:getType() == IsoObjectType.doorFrW then
-				--	hasFrame = true
-				--end
 				local sprite = o:getSprite()
-				if self.north and sprite and sprite:getProperties():has("WindowN") then
+				if self.north and sprite and sprite:getProperties():has(IsoPropertyType.WINDOW_N) then
 					hasFrame = true
 				end
-				if not self.north and sprite and sprite:getProperties():has("WindowW") then
+				if not self.north and sprite and sprite:getProperties():has(IsoPropertyType.WINDOW_W) then
 					hasFrame = true
 				end
 			end
@@ -373,7 +330,7 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 	end
 
 	-- CHECK SOLID, can never place a solid on a solid
-	if tileInfoSpriteProps and (square and square:getProperties() and square:getProperties():has("BlocksPlacement") or square:isSolid() or square:isSolidTrans()) and (tileInfoSpriteProps:has(IsoFlagType.solidtrans) or tileInfoSpriteProps:has("BlocksPlacement")) then
+	if tileInfoSpriteProps and (square and square:getProperties() and square:getProperties():has(IsoPropertyType.BLOCKS_PLACEMENT) or square:isSolid() or square:isSolidTrans()) and (tileInfoSpriteProps:has(IsoFlagType.solidtrans) or tileInfoSpriteProps:has("BlocksPlacement")) then
 		if tileInfoSpriteProps:has("IsStackable") then
 			local props = ISMoveableSpriteProps.new(tileInfoSprite)
 			return props:canPlaceMoveable("bogus", square, nil)
@@ -397,11 +354,16 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		square = getSquare(x, y, z);
 		for i=0,square:getObjects():size()-1 do
 			local obj = square:getObjects():get(i);
-			if (obj and obj:getProperties() and ((self.north and obj:getProperties():has("WallN")) or (not self.north and obj:getProperties():has("WallW")))) then
+            local props = obj and obj:getProperties()
+
+            if props and (
+                props:has(IsoPropertyType.WALL_NW)
+                or (self.north and props:has(IsoPropertyType.WALL_N))
+                or (not self.north and props:has(IsoPropertyType.WALL_W))
+            ) then
 				for j=0,originalSq:getSpecialObjects():size() - 1 do
 					local sObj = originalSq:getSpecialObjects():get(j);
-					--print("got sobj?", sObj, obj)
-					if(sObj ~= obj and instanceof(sObj, "IsoThumpable")) then
+					if(sObj ~= obj and instanceof(sObj, "IsoThumpable") and not sObj:isFloor()) then
 						return false;
 					end
 				end
@@ -496,7 +458,6 @@ function ISBuildIsoEntity:isValid(square)
 				local tileInfo = face:getTileInfo(xx,yy,zz);
 				local sq = getCell():getGridSquare(x+xx, y+yy, z+zz);
 				if tileInfo then
-					--if tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) then
 					if not sq then
 						return false;
 					else
@@ -524,7 +485,6 @@ function ISBuildIsoEntity:getOccupiedTiles(square)
 						local tileInfo = face:getTileInfo(xx,yy,zz);
 						local sq = getCell():getGridSquare(x+xx, y+yy, z+zz);
 						if tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) and sq then
-							--if sq then
 							table_insert(occupiedTiles, sq)
 						end
 					end
@@ -623,8 +583,6 @@ function ISBuildIsoEntity:create(x, y, z, north, sprite)
 			end
 		end
 	end
-
-	print("ISBuildIsoEntity -> create success")
 end
 
 function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
@@ -632,7 +590,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 	if self.objectInfo:getScript():isProp() then
 		local props = ISMoveableSpriteProps.new(IsoObject.new(square, sprite):getSprite())
 		props.rawWeight = 10
-		props:placeMoveableInternal(square, instanceItem("Base.Plank"), sprite)
+		props:placeMoveableInternal(square, instanceItem(ItemKey.Weapon.PLANK), sprite)
 		return;
 	end
 
@@ -647,7 +605,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 	-- set property flags
 	local spriteType = thumpable:getType();
 	local thumpableProps = thumpable:getProperties();
-	self.blockAllTheSquare = thumpableProps and thumpableProps:has("BlocksPlacement"); -- need to consider prop IsHigh and IsLow here
+	self.blockAllTheSquare = thumpableProps and thumpableProps:has(IsoPropertyType.BLOCKS_PLACEMENT); -- need to consider prop IsHigh and IsLow here
 	self.canPassThrough = thumpableProps and not (thumpableProps:has(IsoFlagType.solid) or thumpableProps:has(IsoFlagType.solidtrans) or
 		thumpableProps:has(IsoFlagType.doorN) or thumpableProps:has(IsoFlagType.doorW) or
 		thumpableProps:has(IsoFlagType.WallN) or thumpableProps:has(IsoFlagType.WallNTrans) or thumpableProps:has(IsoFlagType.WallW) or
@@ -661,7 +619,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 		self.thumpDmg = 5;
 	end
 	self.canBarricade = ((spriteType and (spriteType == IsoObjectType.doorN or spriteType == IsoObjectType.doorW)) or (thumpableProps and (thumpableProps:has(IsoFlagType.WindowN) or thumpableProps:has(IsoFlagType.WindowW) or thumpableProps:has(IsoFlagType.windowN) or thumpableProps:has(IsoFlagType.windowW))))
-			and thumpableProps and not (thumpableProps:has("DoubleDoor") or thumpableProps:has("GarageDoor"));
+			and thumpableProps and not (thumpableProps:has(IsoPropertyType.DOUBLE_DOOR) or thumpableProps:has(IsoPropertyType.GARAGE_DOOR));
 
 	buildUtil.setInfo(thumpable, self);
 
@@ -704,7 +662,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 
 	thumpable:setBreakSound(self.objectInfo:getScript():getBreakSound());
 
-	if thumpableProps and thumpableProps:has("IsStackable") then
+	if thumpableProps and thumpableProps:has(IsoPropertyType.IS_STACKABLE) then
 		local props = ISMoveableSpriteProps.new(thumpable:getSprite())
 		local offsetY = props:getTotalTableHeight(square)
 		thumpable:setRenderYOffset(offsetY)
@@ -714,7 +672,6 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 		local gameEntityScript = self.objectInfo:getScript():getParent();
 		local isFirstTimeCreated = true;
 		GameEntityFactory.CreateIsoObjectEntity(thumpable, gameEntityScript, isFirstTimeCreated);
-		--gameEntityScript:InstanceComponents(thumpable);
 	else
 		print("ISBuildIsoEntity -> Cannot instance components, script missing.")
 	end
@@ -913,10 +870,6 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	setmetatable(o, self);
 	self.__index = self;
 	o:init();
-	--o:setSprite(sprite1);
-	--o:setNorthSprite(northSprite1);
-	--o.sprite2 = sprite2;
-	--o.northSprite2 = northSprite2;
 	o.character = character;
 	o.nSprite = nSprite;
 	o.nSpriteCache = -1;
@@ -945,7 +898,6 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	o.dismantable = true;
 	o.canBeAlwaysPlaced = true;
 	o.buildLow = true;
-	--todo
 
 	o.spriteCache = {};
 	o.tileSprite = self:getFloorCursorSprite();
@@ -957,13 +909,6 @@ function ISBuildIsoEntity:new(character, objectInfo, nSprite, containers, logic)
 	if o.craftRecipe then
 		-- set general
 		o.maxTime = o.craftRecipe:getTime();
-
-		-- override sprites
-		--local mainSprite = objectInfo:getFace("w") or objectInfo:getFace("single");
-		--o:setSprite(mainSprite and mainSprite:getMasterTileInfo():getSpriteName() or nil);
-		--o:setNorthSprite(objectInfo:getFace("n") and objectInfo:getFace("n"):getMasterTileInfo():getSpriteName() or nil);
-		--o:setEastSprite(objectInfo:getFace("e") and objectInfo:getFace("e"):getMasterTileInfo():getSpriteName() or nil);
-		--o:setSouthSprite(objectInfo:getFace("s") and objectInfo:getFace("s"):getMasterTileInfo():getSpriteName() or nil);
 
 		-- set tools/props
 		if o.craftRecipe:getToolLeft() and o.craftRecipe:getToolLeft():canUseItem("Base.Hammer")  then
@@ -1045,14 +990,12 @@ end
 
 local function parseObjectInfo(_player, _info, _inventory, _items, _outCanBuildList, _consume)
 	if _info:getScript() and _info:getRecipe() then
-		print("parse!", _info, _info:getScript());
 		local constructItems = _info:getRecipe():getCraftRecipe():getInputs(); -- ArrayList<InputScript>
 
 		local canBuild = true;
 
 		for k=0,constructItems:size()-1 do
 			local constructItem = constructItems:get(k);	--InputScript
-			print("construct item!", constructItem:getOriginalLine()," ",k,"/",constructItems:size())
 			local entryItems = constructItem:getPossibleInputItems();
 			local testUses = not constructItem:isItemCount();
 			local count = 1;
@@ -1089,11 +1032,8 @@ local function parseObjectInfo(_player, _info, _inventory, _items, _outCanBuildL
 					for index=0,result:size()-1 do
 						local test = result:get(index);
 						if test and instanceof(test, "DrainableComboItem") and test:getCurrentUses() > 0 then
-							-- 						    print("Result " .. tostring (result))
 							_items[itemType].uses = _items[itemType].uses + test:getCurrentUses();
 							_items[itemType].invUses = _items[itemType].invUses + test:getCurrentUses();
-							-- 							_items[itemType].uses = _items[itemType].uses + result:getCurrentUses();
-							-- 							_items[itemType].invUses = _items[itemType].invUses + result:getCurrentUses();
 						end
 						table_insert(_items[itemType].invItems, test);
 					end
@@ -1107,7 +1047,6 @@ local function parseObjectInfo(_player, _info, _inventory, _items, _outCanBuildL
 					end
 				end
 
-				--print("ISBuildIsoEntity -> consume test ", itemType, consumeCount, _consume)
 				if consumeCount>0 and _consume then
 					local t = _items[itemType];
 					consumeCount = consumeItems(_player, _inventory, testUses, consumeCount, t.invItems);	-- _consume inventory
@@ -1129,14 +1068,6 @@ local function parseObjectInfo(_player, _info, _inventory, _items, _outCanBuildL
 	end
 	return false;
 end
-
---function ISBuildIsoEntity.GetBuildableEntityItems(_info, _player)
---	local items = ISBuildIsoEntity.GetAllGroundItemsForPlayer(_player);
---
---	local inventory = _player:getInventory();
---	parseObjectInfo(_player, _info, inventory, items, nil);
---	return items;
---end
 
 function ISBuildIsoEntity.GetBuildableEntities(_player)	-- only used by right click build menu
 	local items = ISBuildIsoEntity.GetAllGroundItemsForPlayer(_player);
@@ -1160,11 +1091,9 @@ function ISBuildIsoEntity.ConsumeBuildEntityItems(_info, _player) -- used by cre
 	local canBuild = parseObjectInfo(_player, _info, inventory, items, nil);
 
 	if canBuild then
-		--print("ISBuildIsoEntity -> consume test success, consuming for real")
 		parseObjectInfo(_player, _info, inventory, items, nil, true);
 		return true;
 	end
-	--print("ISBuildIsoEntity -> consume test failed")
 	return false;
 end
 

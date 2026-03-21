@@ -60,9 +60,9 @@ function ModSelector.Model:reloadMods()
     table.wipe(self.sortedMods)
     for _, directory in ipairs(getModDirectoryTable()) do
         local modInfo = getModInfo(directory)
-        local modId = modInfo:getId()
-        if modInfo and not self.mods[modId] then
+        if modInfo and not self.mods[modInfo:getId()] then
             local data = {}
+            local modId = modInfo:getId()
             data.modId = modId
             data.modInfo = modInfo
             data.name = modInfo:getName()

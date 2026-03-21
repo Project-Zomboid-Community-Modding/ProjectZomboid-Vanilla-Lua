@@ -200,54 +200,64 @@ function NewGameScreen:create()
     self.mainPanel:addChild(playstyle);
     y = y + FONT_HGT_LARGE + 4
 
-    local survivor = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Apocalypse"), 1, 1, 1, 1, UIFont.NewMedium, true);
-    survivor.internal = "APOCALYPSE";
-    survivor.mode = "Apocalypse";
-    survivor.desc = getText("UI_NewGame_Apocalypse_desc");
-    survivor.thumb = "media/ui/playstyleIcons/survivor2.png"
-    survivor:initialise();
-    self.mainPanel:addChild(survivor);
-    survivor.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-    survivor:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
-    self.survival = survivor;
+    local apocalypse = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Apocalypse"), 1, 1, 1, 1, UIFont.NewMedium, true);
+    apocalypse.mode = "Apocalypse";
+    apocalypse.desc = getText("UI_NewGame_Apocalypse_desc");
+    apocalypse.thumb = "media/ui/playstyleIcons/apocalypse.png"
+    apocalypse:initialise();
+    self.mainPanel:addChild(apocalypse);
+    apocalypse.onMouseDown = NewGameScreen.onMenuItemMouseDown;
+    apocalypse:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
+    self.survival = apocalypse;
 
-    local survivorDesc = ISLabel:new(survivor:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Apocalypse_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
-    survivorDesc:initialise();
-    self.mainPanel:addChild(survivorDesc);
+    local apocalypseDesc = ISLabel:new(apocalypse:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Apocalypse_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
+    apocalypseDesc:initialise();
+    self.mainPanel:addChild(apocalypseDesc);
     y = y + FONT_HGT_LARGE + 4;
 
-    local fighter = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Survivor"), 1, 1, 1, 1, UIFont.NewMedium, true);
-    fighter.internal = "SURVIVOR";
-    fighter.mode = "Survivor";
-    fighter.desc = getText("UI_NewGame_Survivor_desc");
-    fighter.thumb = "media/ui/playstyleIcons/brawler.png"
-    fighter:initialise();
-    self.mainPanel:addChild(fighter);
-    fighter.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-    fighter:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
+    local outbreak = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Outbreak"), 1, 1, 1, 1, UIFont.NewMedium, true);
+    outbreak.mode = "Outbreak";
+    outbreak.desc = getText("UI_NewGame_Outbreak_desc");
+    outbreak.thumb = "media/ui/playstyleIcons/outbreak.png"
+    outbreak:initialise();
+    self.mainPanel:addChild(outbreak);
+    outbreak.onMouseDown = NewGameScreen.onMenuItemMouseDown;
+    outbreak:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
 
-    local fighterDesc = ISLabel:new(fighter:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Survivor_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
-    fighterDesc:initialise();
-    self.mainPanel:addChild(fighterDesc);
+    local outbreakDesc = ISLabel:new(outbreak:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Outbreak_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
+    outbreakDesc:initialise();
+    self.mainPanel:addChild(outbreakDesc);
     y = y + FONT_HGT_LARGE + 4;
 
-    local builder = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Builder"), 1, 1, 1, 1, UIFont.NewMedium, true);
-    builder.internal = "BUILDER";
-    builder.mode = "Builder";
-    builder.desc = getText("UI_NewGame_Builder_desc");
-    builder.thumb = "media/ui/playstyleIcons/builder.png"
-    builder:initialise();
-    self.mainPanel:addChild(builder);
-    builder.onMouseDown = NewGameScreen.onMenuItemMouseDown;
-    builder:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
+    local extinction = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Extinction"), 1, 1, 1, 1, UIFont.NewMedium, true);
+    extinction.mode = "Extinction";
+    extinction.desc = getText("UI_NewGame_Extinction_desc");
+    extinction.thumb = "media/ui/playstyleIcons/extinction.png"
+    extinction:initialise();
+    self.mainPanel:addChild(extinction);
+    extinction.onMouseDown = NewGameScreen.onMenuItemMouseDown;
+    extinction:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
 
-    local builderDesc = ISLabel:new(builder:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Builder_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
-    builderDesc:initialise();
-    self.mainPanel:addChild(builderDesc);
+    local extinctionDesc = ISLabel:new(extinction:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Extinction_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
+    extinctionDesc:initialise();
+    self.mainPanel:addChild(extinctionDesc);
+    y = y + FONT_HGT_LARGE + 4;
+
+    local rising = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Rising"), 1, 1, 1, 1, UIFont.NewMedium, true);
+    rising.mode = "Rising";
+    rising.desc = getText("UI_NewGame_Rising_desc");
+    rising.thumb = "media/ui/playstyleIcons/rising.png"
+    rising:initialise();
+    self.mainPanel:addChild(rising);
+    rising.onMouseDown = NewGameScreen.onMenuItemMouseDown;
+    rising:setOnMouseDoubleClick(self, NewGameScreen.dblClickPlaystyle);
+
+    local risingDesc = ISLabel:new(rising:getRight(), y, mediumFontHgt, " - " .. getText("UI_NewGame_Rising_desc"), 0.5, 0.5, 0.5, 1, UIFont.Small, true);
+    risingDesc:initialise();
+    self.mainPanel:addChild(risingDesc);
     y = y + FONT_HGT_LARGE + 4;
 
     local sandbox = ISLabel:new(x + xoffset, y, mediumFontHgt, getText("UI_NewGame_Sandbox"), 1, 1, 1, 1, UIFont.NewMedium, true);
-    sandbox.internal = "SANDBOX";
     sandbox.mode = "Sandbox";
     sandbox.desc = getText("UI_NewGame_Sandbox_desc");
     sandbox.thumb = "media/ui/playstyleIcons/sandbox.png"
@@ -323,7 +333,7 @@ function NewGameScreen:create()
 
     local width = 0
     for _,child in pairs(self.mainPanel:getChildren()) do
-        if child.internal and child.Type ~= "ISButton" then
+        if child.mode and child.Type ~= "ISButton" then
             child.prerender = NewGameScreen.prerenderBottomPanelLabel;
             child.setJoypadFocused = NewGameScreen.Label_setJoypadFocused
         end
@@ -337,9 +347,9 @@ function NewGameScreen:create()
     width = math.min(width, (self.width / 2) + 90 - self.mainPanel.x)
     self.mainPanel:setWidth(width)
 
-    self.mainPanel:insertNewLineOfButtons(survivor)
-    self.mainPanel:insertNewLineOfButtons(fighter)
-    self.mainPanel:insertNewLineOfButtons(builder)
+    self.mainPanel:insertNewLineOfButtons(apocalypse)
+    self.mainPanel:insertNewLineOfButtons(outbreak)
+    self.mainPanel:insertNewLineOfButtons(rising)
     self.mainPanel:insertNewLineOfButtons(sandbox)
     for _,challenge in ipairs(challenges) do
         self.mainPanel:insertNewLineOfButtons(challenge)
@@ -394,11 +404,6 @@ function NewGameScreen:create()
 	self:setVisible(false);
 end
 
-NewGameScreen.onChooseDifficulty = function(item, x, y)
-    if item.disabled then return; end
-    NewGameScreen.instance.selectedDifficulty = item;
-end
-
 NewGameScreen.dblClickTutorial = function(item, x, y)
     NewGameScreen.onMenuItemMouseDown(item, x, y)
     NewGameScreen.instance:clickPlay();
@@ -414,11 +419,6 @@ NewGameScreen.dblClickChallenge = function(item, x, y)
     NewGameScreen.instance:clickPlay();
 end
 
-NewGameScreen.dblClickDifficulty = function(item, x, y)
-    NewGameScreen.onChooseDifficulty(item,x,y);
-    NewGameScreen.instance:clickPlay();
-end
-
 NewGameScreen.dblClickSurvival = function(item, x, y)
     NewGameScreen.instance:clickPlay();
 end
@@ -428,25 +428,13 @@ NewGameScreen.onMenuItemMouseDown = function(item, x, y)
 
     local screen = NewGameScreen.instance;
     screen.selectedItem = item;
-
-    if screen.selectedItem then
-        screen.selectedDifficulty = screen.difficultyHardcore;
-    end
-end
-
-
-function NewGameScreen:needDifficulty()
-    if self.selectedItem then
-        return self.selectedItem.internal == "PRACTICE" or self.selectedItem.internal == "BEGINING" or self.selectedItem.internal == "ENDS";
-    end
-    return false;
 end
 
 function NewGameScreen:prerenderBottomPanelLabel()
     local padLeft = 6
     local padRight = 6
     local alpha = 0.5
-    if NewGameScreen.instance.selectedItem == self or NewGameScreen.instance.selectedDifficulty == self then
+    if NewGameScreen.instance.selectedItem == self then
         self:drawRect(0 - padLeft, 0, self:getWidth() + padLeft + padRight, self:getHeight(), alpha, 0.3, 0.3, 0.3)
         if self.joypadFocused then
             self:drawRectBorder(0 - padLeft, 0, self:getWidth() + padLeft + padRight, self:getHeight(), 0.9, 0.6, 0.6, 0.6)
@@ -502,15 +490,8 @@ function NewGameScreen:update()
 end
 
 function NewGameScreen:disableBtn()
-    self.nextButton:setEnable(false);
+    self.nextButton:setEnable(self.selectedItem ~= nil);
     self.nextButton:setTooltip(nil);
-    if self.selectedItem then
-        if (self:needDifficulty() and self.selectedDifficulty) or not self:needDifficulty() then
-           self.nextButton:setEnable(true);
-        else
-            self.nextButton:setTooltip(getText("UI_NewGame_SelectDifficulty"))
-        end
-    end
 end
 
 function NewGameScreen:updateBottomPanelButtons()
@@ -542,7 +523,6 @@ end
 
 function NewGameScreen:render()
     local selectedItem = self.selectedItem;
-    local selectedDifficulty = self.selectedDifficulty;
     if not selectedItem then return; end
 
     local descRectWidth = self.width - self.mainPanel:getWidth() - UI_BORDER_SPACING*3 - 2
@@ -575,11 +555,7 @@ function NewGameScreen:render()
         name = name:gsub("-", "");
     end
     text = text .. " <H1> " .. name .. " <LINE> ";
-    if selectedDifficulty then
-        text = text .. " <H1> " .. getText("UI_Difficulty") .. ": " .. selectedDifficulty.name .. " <LINE> <LINE>";
-    else
-        text = text .. " <LINE>";
-    end
+    text = text .. " <LINE>";
     text = text .. " <H2><CENTRE> " .. selectedItem.desc;
     self.richText.text = text;
     self.richText:paginate();
@@ -640,7 +616,6 @@ function NewGameScreen:clickPlay()
 	MainScreen.instance:setDefaultSandboxVars()
 
     if self.selectedItem.mode == "Challenge" then
-        getWorld():setDifficulty("Hardcore");
         LastStandData.chosenChallenge = self.selectedItem.challenge;
         local worldName = ZombRand(100000)..ZombRand(100000)..ZombRand(100000)..ZombRand(100000);
         doChallenge(self.selectedItem.challenge);
@@ -668,60 +643,14 @@ function NewGameScreen:clickPlay()
         return;
     end
 
-    if self.selectedDifficulty then
-        getWorld():setDifficulty(self.selectedDifficulty.difficulty);
-    end
-
-    if self.selectedItem.mode == "Apocalypse" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getApocalypsePreset());
-    end
-    if self.selectedItem.mode == "Survivor" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getSurvivorPreset());
-    end
-    if self.selectedItem.mode == "Builder" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getBuilderPreset());
-    end
-
-
-    if self.selectedItem.mode == "Initial Infection" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getBeginnerPreset());
-    end
-
-    if self.selectedItem.mode == "One Week Later" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getNormalPreset());
-    end
-
-    if self.selectedItem.mode == "Six Months Later" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getHardPreset());
-    end
-
-    if self.selectedItem.mode == "Survival" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getDefaultPreset());
-    end
-
     if self.selectedItem.mode ~= "Sandbox" then
+        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getSandboxPreset(self.selectedItem.mode));
         getWorld():setPreset(self.selectedItem.mode)
-    end
-
-    if self.selectedDifficulty then
-        if self.selectedDifficulty.internal == "EASY" then
-            MainScreen.instance:setEasyPreset();
-        end
-        if self.selectedDifficulty.internal == "NORMAL" then
-            MainScreen.instance:setNormalPreset();
-        end
-        if self.selectedDifficulty.internal == "HARD" then
-            MainScreen.instance:setHardPreset();
-        end
-        if self.selectedDifficulty.internal == "HARDCORE" then
-            MainScreen.instance:setHardcorePreset();
-        end
     end
 
     getWorld():setMap("DEFAULT")
     MainScreen.instance.createWorld = true;
     if getWorld():getGameMode() == "Sandbox" then
-        getWorld():setDifficulty("Hardcore")
         if WorldSelect.instance:hasChoices() then
             WorldSelect.instance:fillList()
             WorldSelect.instance.previousScreen = "NewGameScreen"

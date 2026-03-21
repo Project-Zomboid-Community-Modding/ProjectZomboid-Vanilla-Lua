@@ -401,6 +401,13 @@ ISVehiclePartMenu.doSiphonFuelMenu = function(playerObj, part, context)
 		return
 	end
 	local fillOption = context:addOption(getText("ContextMenu_VehicleSiphonGas"), worldobjects, nil);
+	if playerObj:hasFullInventory() then
+		fillOption.notAvailable = true;
+		local tooltip = ISInventoryPaneContextMenu.addToolTip();
+		tooltip.description = getText("ContextMenu_FullInventory");
+		fillOption.toolTip = tooltip;
+		return false
+	end
 	if not hose then
 		fillOption.notAvailable = true;
 		local tooltip = ISInventoryPaneContextMenu.addToolTip();

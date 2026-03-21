@@ -71,6 +71,10 @@ function ISItemSlotAddAction:complete()
 	if self.canAddItem and not self.canAddItem(self) then
 		return false;
 	end
+
+    if not self.item:getContainer() then
+        return false;
+    end
 	
 	self.resource:offerItem(self.item);
 	return true
@@ -89,8 +93,12 @@ end
 function ISItemSlotAddAction:canStart()
 	if self.resource:isFull() then
 		return false;
-	end	
-	
+	end
+
+    if not self.item:getContainer() then
+        return false;
+    end
+    
 	if self.canAddItem and not self.canAddItem(self) then
 		return false;
 	end

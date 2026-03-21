@@ -88,7 +88,7 @@ function ISInsertMagazine:animEvent(event, parameter)
 		end
 		if isServer() then
 			self.netAction:forceComplete()
-		else
+		elseif not isClient() then
 			self:forceComplete()
 		end
 	end

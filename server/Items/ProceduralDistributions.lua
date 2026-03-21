@@ -964,6 +964,8 @@ ProceduralDistributions.list = {
 		rolls = 4,
 		items = {
 			-- Ammo
+	        "3030Box", 20,
+	        "3030Box", 10,
 			"308Box", 20,
 			"308Box", 10,
 			"308Carton", 1,
@@ -1067,52 +1069,50 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
-	-- Mostly sidearms but can have larger guns.
-	-- Need to check what sidearms the Army uses and if they use shotguns/sniper rifles.
-	ArmyStorageGuns = {
-		rolls = 4,
-		items = {
-			-- Guns
-			"AssaultRifle", 2,
-			"AssaultRifle2", 0.1,
-			"HuntingRifle", 4,
-			"Pistol", 20,
-			"Pistol", 10,
-			"Shotgun", 4,
-			-- Gun Accessories
-			"AmmoStrap_Bullets", 4,
-			"AmmoStrap_Shells", 1,
-			"HolsterSimple_Green", 8,
-			"x2Scope", 2,
-			"x4Scope", 1,
-			"x8Scope", 0.5,
-			-- Clips/Magazines
-			"9mmClip", 20,
-			"9mmClip", 10,
-			"556Clip", 8,
-			-- Bags/Containers
-			"Bag_AmmoBox", 2,
-			"Bag_AmmoBox_308", 1,
-			"Bag_AmmoBox_9mm", 4,
-			"Bag_AmmoBox_ShotgunShells", 1,
-			"Bag_ProtectiveCaseBulkyAmmo_308", 0.5,
-			"Bag_ProtectiveCaseBulkyAmmo_556", 1,
-			"Bag_ProtectiveCaseBulkyAmmo_9mm", 2,
-			"Bag_ProtectiveCaseBulkyAmmo_ShotgunShells", 0.5,
-			"Bag_ProtectiveCaseSmallMilitary_Pistol1", 4,
-			"Bag_RifleCaseClothCamo", 1,
-			"Bag_RifleCaseGreen", 2,
-			"Bag_ShotgunCaseGreen", 1,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				
-			}
-		}
-	},
-	
+
+    -- Mostly sidearms but can have larger guns.
+    -- Need to check what sidearms the Army uses and if they use shotguns/sniper rifles.
+    ArmyStorageGuns = {
+        rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
+        items = {
+            -- Guns
+            "AssaultRifle", 20,
+            "AssaultRifle", 10,
+            "MSR7T_Rifle", 4,
+            "Pistol", 20,
+            "Pistol", 10,
+            "JS3T_Shotgun", 4,
+            -- Gun Accessories
+            "AmmoStrap_Bullets", 4,
+            "AmmoStrap_Shells", 1,
+            "HolsterSimple_Green", 8,
+            "x2Scope", 2,
+            "x4Scope", 1,
+            "x8Scope", 0.5,
+            -- Bags/Containers
+            "Bag_AmmoBox", 2,
+            "Bag_AmmoBox_308", 1,
+            "Bag_AmmoBox_9mm", 4,
+            "Bag_AmmoBox_ShotgunShells", 1,
+            "Bag_ProtectiveCaseBulkyAmmo_308", 0.5,
+            "Bag_ProtectiveCaseBulkyAmmo_556", 1,
+            "Bag_ProtectiveCaseBulkyAmmo_9mm", 2,
+            "Bag_ProtectiveCaseBulkyAmmo_ShotgunShells", 0.5,
+            "Bag_ProtectiveCaseSmallMilitary_Pistol1", 4,
+            "Bag_RifleCaseClothCamo", 1,
+            "Bag_RifleCaseGreen", 2,
+            "Bag_ShotgunCaseGreen", 1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	-- Generic Army medical stuff.
 	ArmyStorageMedical = {
 		rolls = 4,
@@ -2656,6 +2656,7 @@ ProceduralDistributions.list = {
 			"Lard", 4,
 			"Margarine", 8,
 			"Milk", 10,
+            "MilkBottle", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -4104,24 +4105,12 @@ ProceduralDistributions.list = {
 			"Tissue", 10,
 			"TissueBox", 4,
 			-- Guns
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
-			"Pistol", 0.5,
-			"Pistol2", 0.1,
-			"Pistol3", 0.05,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
-			"Revolver", 0.1,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
+            "Pistol", 0.01,
+            "Pistol2", 0.05,
+            "Pistol3", 0.001,
+            "Revolver", 0.05,
+            "Revolver_Long", 0.001,
+            "Revolver_Short", 0.01,
 			-- Special
 			"Flask", 0.1,
 			"HollowBook", 0.1,
@@ -4248,6 +4237,7 @@ ProceduralDistributions.list = {
 			"PokerChips", 0.0005,
 			"RadioBlack", 0.5,
 			"RadioRed", 0.2,
+            "Revolver_CapGun", 1,
 			"RubberSpider", 1,
 			"RPGmanual", 1,
 			"SewingKit", 0.5,
@@ -4344,12 +4334,6 @@ ProceduralDistributions.list = {
 			"Key1", 2,
 			"Key1", 2,
 			-- TODO: Sort Me!
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
 			"Belt2", 4,
 			"Bikini_Pattern01", 0.2,
 			"Bikini_TINT", 0.2,
@@ -4448,20 +4432,8 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsSleepingTablets", 1,
 			"PillsVitamins", 0.1,
-			"Pistol", 0.5,
-			"Pistol2", 0.1,
-			"Pistol3", 0.05,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"RadioBlack", 0.5,
 			"RadioRed", 0.2,
-			"Revolver", 0.1,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"SewingKit", 0.5,
 			"Sheet", 10,
 			"Shirt_FormalTINT", 4,
@@ -4524,6 +4496,13 @@ ProceduralDistributions.list = {
 			"WristWatch_Left_DigitalBlack", 0.1,
 			"WristWatch_Left_DigitalDress", 1,
 			"WristWatch_Left_DigitalRed", 0.1,
+            -- Guns
+            "Pistol", 0.01,
+            "Pistol2", 0.05,
+            "Pistol3", 0.001,
+            "Revolver", 0.05,
+            "Revolver_Long", 0.001,
+            "Revolver_Short", 0.01,
 		},
 		junk = {
 			rolls = 1,
@@ -4558,12 +4537,6 @@ ProceduralDistributions.list = {
 			"Key1", 2,
 			"Key1", 2,
 			-- TODO: Sort Me!
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
 			"Belt2", 4,
 			"Bikini_Pattern01", 0.2,
 			"Bikini_TINT", 0.2,
@@ -4646,20 +4619,8 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsSleepingTablets", 1,
 			"PillsVitamins", 0.1,
-			"Pistol", 0.5,
-			"Pistol2", 0.1,
-			"Pistol3", 0.05,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"RadioBlack", 0.5,
 			"RadioRed", 0.2,
-			"Revolver", 0.1,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"SewingKit", 0.5,
 			"Sheet", 10,
 			"Shirt_CamoDesert", 0.5,
@@ -4732,6 +4693,13 @@ ProceduralDistributions.list = {
 			"WristWatch_Left_ClassicMilitary", 0.1,
 			"WristWatch_Left_DigitalBlack", 0.1,
 			"WristWatch_Left_DigitalRed", 0.1,
+            -- Guns
+            "Pistol", 0.1,
+            "Pistol2", 0.5,
+            "Pistol3", 0.01,
+            "Revolver", 0.5,
+            "Revolver_Long", 0.01,
+            "Revolver_Short", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -4774,12 +4742,6 @@ ProceduralDistributions.list = {
 			"Key1", 2,
 			-- TODO: Sort Me!
 			"AlarmClock2", 10,
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
 			"BluePen", 8,
 			"Book_Fiction", 2,
 			"Book_GeneralNonFiction", 2,
@@ -4847,21 +4809,9 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsSleepingTablets", 2,
 			"PillsVitamins", 0.1,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"Pocketwatch", 0.5,
 			"Postcard", 4,
 			"RedPen", 8,
-			"Revolver", 0.01,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"SewingKit", 0.5,
 			"SheetPaper2", 10,
 			"SmokingPipe", 0.01,
@@ -4876,6 +4826,13 @@ ProceduralDistributions.list = {
 			"WristWatch_Left_DigitalBlack", 0.1,
 			"WristWatch_Left_DigitalDress", 0.1,
 			"WristWatch_Left_DigitalRed", 0.1,
+            -- Guns
+            "Pistol", 0.1,
+            "Pistol2", 0.5,
+            "Pistol3", 0.01,
+            "Revolver", 0.5,
+            "Revolver_Long", 0.01,
+            "Revolver_Short", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -4997,6 +4954,7 @@ ProceduralDistributions.list = {
 			"Plushabug", 0.001,
 			"PokerChips", 2,
 			"RedPen", 8,
+            "Revolver_CapGun", 1,
 			"RPGmanual", 1,
 			"RubberSpider", 1,
 			"SewingKit", 0.5,
@@ -5052,12 +5010,6 @@ ProceduralDistributions.list = {
 			"Key1", 2,
 			-- TODO: Sort Me!
 			"AlarmClock2", 10,
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
 			"BluePen", 8,
 			"Book_Business", 2,
 			"Book_Legal", 2,
@@ -5134,21 +5086,9 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsSleepingTablets", 2,
 			"PillsVitamins", 0.1,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"Pocketwatch", 0.5,
 			"Postcard", 4,
 			"RedPen", 8,
-			"Revolver", 0.01,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"SewingKit", 0.5,
 			"SheetPaper2", 10,
 			"SmokingPipe", 0.01,
@@ -5169,6 +5109,13 @@ ProceduralDistributions.list = {
 			"WristWatch_Left_DigitalBlack", 0.1,
 			"WristWatch_Left_DigitalDress", 1,
 			"WristWatch_Left_DigitalRed", 0.1,
+            -- Guns
+            "Pistol", 0.1,
+            "Pistol2", 0.5,
+            "Pistol3", 0.01,
+            "Revolver", 0.5,
+            "Revolver_Long", 0.01,
+            "Revolver_Short", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -5207,12 +5154,6 @@ ProceduralDistributions.list = {
 			-- TODO: Sort Me!
 			"AlarmClock2", 10,
 			"ArmorMag3", 0.001,
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
 			"BluePen", 8,
 			"Calculator", 0.1,
 			"CanteenMilitaryEmpty", 0.1,
@@ -5278,21 +5219,9 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsSleepingTablets", 2,
 			"PillsVitamins", 0.1,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"Pocketwatch", 0.5,
 			"Postcard", 4,
 			"RedPen", 8,
-			"Revolver", 0.01,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"SewingKit", 0.5,
 			"SheetPaper2", 10,
 			"SmokingPipe", 0.01,
@@ -5306,6 +5235,13 @@ ProceduralDistributions.list = {
 			"WristWatch_Left_ClassicMilitary", 0.1,
 			"WristWatch_Left_DigitalBlack", 0.1,
 			"WristWatch_Left_DigitalRed", 0.1,
+            -- Guns
+            "Pistol", 0.1,
+            "Pistol2", 0.5,
+            "Pistol3", 0.01,
+            "Revolver", 0.5,
+            "Revolver_Long", 0.01,
+            "Revolver_Short", 0.1,
 		},
 		junk = {
 			rolls = 1,
@@ -7999,7 +7935,7 @@ ProceduralDistributions.list = {
 	},
 	
 	CafeKitchenFridge = {
-		-- Mix for coffee and similar drinks. We some fridge-friendly syrup.
+		-- Mix for coffee and similar drinks.
 		ignoreZombieDensity = true,
 		rolls = 4,
 		items = {
@@ -8007,6 +7943,8 @@ ProceduralDistributions.list = {
 			"Milk", 20,
 			"Milk", 10,
 			"Milk", 10,
+            "MilkBottle", 20,
+            "MilkBottle", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -8219,6 +8157,7 @@ ProceduralDistributions.list = {
 			"Lard", 2,
 			"Margarine", 8,
 			"Milk", 8,
+            "MilkBottle", 2,
 			"Processedcheese", 8,
 			-- Vegetables
 			"Lettuce", 8,
@@ -9730,6 +9669,7 @@ ProceduralDistributions.list = {
 			"EggCarton", 10,
 			"Milk", 20,
 			"Milk", 10,
+            "MilkBottle", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -10624,16 +10564,11 @@ ProceduralDistributions.list = {
 			"KeyRing_RubberDuck", 0.001,
 			"KeyRing_Sexy", 0.001,
 			-- TODO: Sort me!
-			"AssaultRifle2", 0.001,
 			"Bag_BigHikingBag", 0.05,
 			"Bag_DuffelBagTINT", 0.5,
 			"Bag_FannyPackFront", 2,
 			"Bag_FluteCase", 6,
 			"Bag_NormalHikingBag", 0.1,
-			"Bag_RifleCaseCloth", 0.0025,
-			"Bag_RifleCaseCloth2", 0.0005,
-			"Bag_ShotgunCaseCloth", 0.0025,
-			"Bag_ShotgunCaseCloth2", 0.0025,
 			"Bag_Satchel", 0.2,
 			"Bag_SaxophoneCase", 6,
 			"Bag_Schoolbag", 0.5,
@@ -10659,7 +10594,6 @@ ProceduralDistributions.list = {
 			"DappleDeerHide", 0.001,
 			"DeerHide", 0.001,
 			"Disc_Retail", 2,
-			"DoubleBarrelShotgun", 0.01,
 			"Drumstick", 20,
 			"Drumstick", 10,
 			"DuctTape", 4,
@@ -10690,7 +10624,6 @@ ProceduralDistributions.list = {
 			"Hat_BucketHat", 0.1,
 			"Hat_Fedora", 0.05,
 			"HotWaterBottleEmpty", 1,
-			"HuntingRifle", 0.005,
 			"JacketLong_Random", 1,
 			"Jacket_Leather", 0.5,
 			"Jacket_Padded", 0.05,
@@ -10721,9 +10654,6 @@ ProceduralDistributions.list = {
 			"PaperclipBox", 0.1,
 			"Pliers", 8,
 			"PowerBar", 4,
-			"RifleCase1", 0.0025,
-			"RifleCase2", 0.0005,
-			"RifleCase3", 0.0005,
 			"Rope", 10,
 			"Saw", 8,
 			"Saxophone", 6,
@@ -10741,16 +10671,21 @@ ProceduralDistributions.list = {
 			"Shoes_TrainerTINT", 2,
 			"Shoes_Wellies", 0.5,
 			"Shoes_WorkBoots", 0.5,
-			"Shotgun", 0.01,
-			"ShotgunCase1", 0.0025,
-			"ShotgunCase2", 0.0025,
 			"Suitcase", 0.2,
 			"Toolbox", 2,
 			"Trumpet", 6,
 			"Twine", 10,
-			"VarmintRifle", 0.05,
 			"ViseGrips", 4,
 			"Violin", 4,
+            -- Guns
+            "DoubleBarrelShotgun", 0.5,
+            "HuntingRifle", 1,
+            "JS14_Rifle", 0.5,
+            "L92_Carbine", 0.5,
+            "L94_Rifle", 0.5,
+            "Shotgun", 1,
+            "TrapperCarbine", 0.1,
+            "VarmintRifle", 1,
 		},
 		junk = ClutterTables.ClosetJunk,
 	},
@@ -10773,17 +10708,12 @@ ProceduralDistributions.list = {
 			"KeyRing_RubberDuck", 0.001,
 			"KeyRing_Sexy", 0.001,
 			-- TODO: Sort Me!
-			"AssaultRifle2", 0.001,
 			"Bag_BigHikingBag", 0.05,
 			"Bag_DuffelBagTINT", 0.5,
 			"Bag_FannyPackFront", 2,
 			"Bag_NormalHikingBag", 0.1,
-			"Bag_RifleCaseCloth", 0.0025,
-			"Bag_RifleCaseCloth2", 0.0005,
 			"Bag_Satchel", 0.2,
 			"Bag_Schoolbag", 0.5,
-			"Bag_ShotgunCaseCloth", 0.0025,
-			"Bag_ShotgunCaseCloth2", 0.0025,
 			"BaseballBat", 1,
 			"BaseballBat_Metal", 0.5,
 			"Battery", 10,
@@ -10827,7 +10757,6 @@ ProceduralDistributions.list = {
 			"Hat_BucketHat", 0.1,
 			"Hat_Fedora", 0.05,
 			"HotWaterBottleEmpty", 1,
-			"HuntingRifle", 0.005,
 			"JacketLong_Random", 1,
 			"Jacket_Leather", 0.5,
 			"Jacket_Padded", 0.05,
@@ -10857,9 +10786,6 @@ ProceduralDistributions.list = {
 			"PaperclipBox", 0.1,
 			"Pliers", 8,
 			"PowerBar", 4,
-			"RifleCase1", 0.0025,
-			"RifleCase2", 0.0005,
-			"RifleCase3", 0.0005,
 			"Rope", 10,
 			"Saw", 8,
 			"Screwdriver", 8,
@@ -10876,14 +10802,19 @@ ProceduralDistributions.list = {
 			"Shoes_TrainerTINT", 2,
 			"Shoes_Wellies", 0.5,
 			"Shoes_WorkBoots", 0.5,
-			"Shotgun", 0.01,
-			"ShotgunCase1", 0.0025,
-			"ShotgunCase2", 0.0025,
 			"Suitcase", 0.2,
 			"Toolbox", 2,
 			"Twine", 10,
-			"VarmintRifle", 0.05,
 			"ViseGrips", 4,
+            -- Guns
+            "DoubleBarrelShotgun", 0.5,
+            "HuntingRifle", 1,
+            "JS14_Rifle", 0.5,
+            "L92_Carbine", 0.5,
+            "L94_Rifle", 0.5,
+            "Shotgun", 1,
+            "TrapperCarbine", 0.1,
+            "VarmintRifle", 1,
 		},
 		junk = ClutterTables.ClosetJunk,
 	},
@@ -10906,19 +10837,14 @@ ProceduralDistributions.list = {
 			"KeyRing_RubberDuck", 0.001,
 			"KeyRing_Sexy", 0.001,
 			-- TODO: Sort Me!
-			"AssaultRifle2", 0.001,
 			"BadmintonRacket", 10,
 			"Bag_BigHikingBag", 0.05,
 			"Bag_DuffelBagTINT", 0.5,
 			"Bag_FannyPackFront", 2,
 			"Bag_GolfBag", 10,
 			"Bag_NormalHikingBag", 0.1,
-			"Bag_RifleCaseCloth", 0.0025,
-			"Bag_RifleCaseCloth2", 0.0005,
 			"Bag_Satchel", 0.2,
 			"Bag_Schoolbag", 0.5,
-			"Bag_ShotgunCaseCloth", 0.0025,
-			"Bag_ShotgunCaseCloth2", 0.0025,
 			"BarBell", 8,
 			"Baseball", 10,
 			"BaseballBat", 6,
@@ -10984,7 +10910,6 @@ ProceduralDistributions.list = {
 			"Hat_HockeyHelmet", 2,
 			"Hat_HockeyMask", 4,
 			"HotWaterBottleEmpty", 1,
-			"HuntingRifle", 0.005,
 			"IceHockeyStick", 6,
 			"JacketLong_Random", 1,
 			"Jacket_Leather", 0.5,
@@ -11016,9 +10941,6 @@ ProceduralDistributions.list = {
 			"PaperclipBox", 0.1,
 			"Pliers", 8,
 			"PowerBar", 4,
-			"RifleCase1", 0.0025,
-			"RifleCase2", 0.0005,
-			"RifleCase3", 0.0005,
 			"Rope", 10,
 			"Saw", 8,
 			"Screwdriver", 8,
@@ -11038,9 +10960,6 @@ ProceduralDistributions.list = {
 			"Shoes_TrainerTINT", 2,
 			"Shoes_Wellies", 0.5,
 			"Shoes_WorkBoots", 0.5,
-			"Shotgun", 0.01,
-			"ShotgunCase1", 0.0025,
-			"ShotgunCase2", 0.0025,
 			"Shoulderpads_Football", 4,
 			"Shoulderpads_IceHockey", 4,
 			"SoccerBall", 10,
@@ -11049,10 +10968,18 @@ ProceduralDistributions.list = {
 			"TennisRacket", 10,
 			"Toolbox", 2,
 			"Twine", 10,
-			"VarmintRifle", 0.05,
 			"Vest_CatcherVest", 8,
 			"ViseGrips", 4,
 			"Whistle", 8,
+            -- Guns
+            "DoubleBarrelShotgun", 0.5,
+            "HuntingRifle", 1,
+            "JS14_Rifle", 0.5,
+            "L92_Carbine", 0.5,
+            "L94_Rifle", 0.5,
+            "Shotgun", 1,
+            "TrapperCarbine", 0.1,
+            "VarmintRifle", 1,
 		},
 		junk = ClutterTables.ClosetJunk,
 	},
@@ -14380,7 +14307,6 @@ ProceduralDistributions.list = {
 	},
 	
 	CrateFabric_Cotton = {
-		isTrash = true,
 		rolls = 4,
 		items = {
 			"FabricRoll_Cotton", 50,
@@ -14398,7 +14324,6 @@ ProceduralDistributions.list = {
 	},
 	
 	CrateFabric_DenimBlack = {
-		isTrash = true,
 		rolls = 4,
 		items = {
 			"FabricRoll_DenimBlack", 50,
@@ -14416,7 +14341,6 @@ ProceduralDistributions.list = {
 	},
 	
 	CrateFabric_DenimBlue = {
-		isTrash = true,
 		rolls = 4,
 		items = {
 			"FabricRoll_DenimBlue", 50,
@@ -14434,7 +14358,6 @@ ProceduralDistributions.list = {
 	},
 	
 	CrateFabric_DenimDarkBlue = {
-		isTrash = true,
 		rolls = 4,
 		items = {
 			"FabricRoll_DenimDarkBlue", 50,
@@ -15826,7 +15749,43 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateMetalBars = {
+        isShop = true,
+        rolls = 6,
+        items = {
+            "MetalBar", 50,
+            "MetalBar", 20,
+            "MetalBar", 20,
+            "MetalBar", 10,
+            "MetalBar", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    CrateMetalPipes = {
+        isShop = true,
+        rolls = 6,
+        items = {
+            "MetalPipe", 50,
+            "MetalPipe", 20,
+            "MetalPipe", 20,
+            "MetalPipe", 10,
+            "MetalPipe", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateMetalwork = {
 		rolls = 4,
 		items = {
@@ -17292,6 +17251,8 @@ ProceduralDistributions.list = {
 			"IndustrialDye", 50,
 			"Needle", 20,
 			"SewingKit", 6,
+            "SewingPattern", 50,
+            "SewingPattern", 20,
 			"HoodieDOWN_WhiteTINT", 2,
 			"Shirt_Denim", 2,
 			"Shirt_FormalWhite", 8,
@@ -17697,7 +17658,28 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateWallpaper = {
+        rolls = 4,
+        items = {
+            "Wallpaper_BeigeStripe", 20,
+            "Wallpaper_BlackFloral", 20,
+            "Wallpaper_BlueStripe", 20,
+            "Wallpaper_GreenDiamond", 20,
+            "Wallpaper_GreenFloral", 20,
+            "Wallpaper_PinkChevron", 20,
+            "Wallpaper_PinkFloral", 20,
+            "WallpaperPastePowder", 20,
+            "WallpaperPastePowder", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateWhiteComfyChair = {
 		rolls = 1,
 		items = {
@@ -17943,6 +17925,7 @@ ProceduralDistributions.list = {
 			"Lard", 4,
 			"Margarine", 4,
 			"Milk", 8,
+            "MilkBottle", 2,
 			-- Sauces/Condiments
 			"JamFruit", 8,
 			"JamMarmalade", 4,
@@ -18384,6 +18367,7 @@ ProceduralDistributions.list = {
 			-- Misc.
 			"EggCarton", 4,
 			"Milk", 8,
+            "MilkBottle", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -18827,6 +18811,7 @@ ProceduralDistributions.list = {
 			"Lard", 2,
 			"Margarine", 8,
 			"Milk", 8,
+            "MilkBottle", 2,
 			"Processedcheese", 8,
 			-- Vegetables
 			"Lettuce", 8,
@@ -19091,12 +19076,7 @@ ProceduralDistributions.list = {
 			"Key1", 2,
 			"Key1", 2,
 			-- TODO: Sort Me!
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
+
 			"BaseballBat", 0.1,
 			"BaseballBat_Metal", 0.1,
 			"Belt2", 4,
@@ -19124,12 +19104,6 @@ ProceduralDistributions.list = {
 			"LongJohns_Bottoms", 1,
 			"Photo", 4,
 			"Photo_Secret", 0.1,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
 			"RadioBlack", 0.5,
 			"RadioRed", 0.2,
 			"Revolver", 0.1,
@@ -19242,35 +19216,19 @@ ProceduralDistributions.list = {
 	
 	DrugLabGuns = {
 		rolls = 2,
+        gunStorage = true,
 		items = {
 			-- Guns
-			"AssaultRifle", 2,
-			"AssaultRifle2", 0.1,
-			"DoubleBarrelShotgun", 8,
-			"DoubleBarrelShotgunSawnoff", 8,
-			"HuntingRifle", 6,
+			"AssaultRifle", 4,
+			"DoubleBarrelShotgunSawnoff", 20,
+			"JS14_Rifle", 8,
 			"Pistol", 8,
-			"Pistol2", 6,
-			"Pistol3", 4,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"Revolver_Short", 8,
-			"Shotgun", 8,
-			"ShotgunSawnoff", 8,
-			-- Ammo
-			"308Box", 10,
-			"556Box", 10,
-			"Bullets357Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
-			"Bullets9mmBox", 10,
-			"ShotgunShellsBox", 10,
-			-- Clips/Magazines
-			"44Clip", 8,
-			"45Clip", 8,
-			"556Clip", 8,
-			"9mmClip", 8,
-			"M14Clip", 10,
+			"Pistol2", 8,
+			"Pistol3", 10,
+			"Revolver_Short", 20,
+			"Shotgun", 10,
+			"ShotgunSawnoff", 20,
+			"TrapperCarbine", 8,
 			-- Knives/Blades
 			"HuntingKnife", 8,
 			"KnifeButterfly", 4,
@@ -19331,16 +19289,9 @@ ProceduralDistributions.list = {
 		items = {
 			-- Money
 			"MoneyBundle", 100,
-			"MoneyBundle", 50,
-			-- Guns
-			"DoubleBarrelShotgunSawnoff", 8,
-			"Pistol", 8,
-			"Pistol2", 6,
-			"Pistol3", 4,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"Revolver_Short", 8,
-			"ShotgunSawnoff", 8,
+            "MoneyBundle", 50,
+			"MoneyBundle", 20,
+            "MoneyBundle", 10,
 			-- Knives/Blades
 			"KnifeButterfly", 4,
 			"LargeKnife", 1,
@@ -19383,8 +19334,8 @@ ProceduralDistributions.list = {
 			"Bag_MoneyBag", 20,
 			"Briefcase_Money", 10,
 			-- Special
-			"GemBag", 1,
-			"HollowBook_Valuables", 0.001,
+			"GemBag", 4,
+			"HollowBook_Valuables", 0.1,
 			"IDcard_Blank", 20,
 			"IDcard_Blank", 10,
 			"SuspiciousPackage", 1,
@@ -19758,14 +19709,16 @@ ProceduralDistributions.list = {
 		rolls = 4,
 		items = {
 			-- Guns
-			"DoubleBarrelShotgun", 4,
-			"DoubleBarrelShotgunSawnoff", 8,
-			"Pistol", 8,
-			"Revolver", 6,
-			"Revolver_Short", 8,
-			"Shotgun", 4,
-			"ShotgunSawnoff", 8,
-			"VarmintRifle", 2,
+            "AssaultRifle", 1,
+            "DoubleBarrelShotgunSawnoff", 10,
+            "JS14_Rifle", 4,
+            "Pistol", 4,
+            "Pistol2", 4,
+            "Pistol3", 10,
+            "Revolver_Short", 10,
+            "Shotgun", 10,
+            "ShotgunSawnoff", 10,
+            "TrapperCarbine", 4,
 			-- Melee Weapons
 			"BaseballBat", 8,
 			"BaseballBat_Metal", 4,
@@ -20428,25 +20381,27 @@ ProceduralDistributions.list = {
 	
 	FirearmWeapons = {
 		rolls = 2,
+        gunStorage = true,
 		items = {
 			-- Guns
-			"DoubleBarrelShotgun", 4,
-			"Pistol", 8,
-			"Pistol2", 6,
-			"Revolver", 6,
-			"Revolver_Short", 10,
-			"Shotgun", 8,
-			"VarmintRifle", 10,
-			-- Ammo
-			"556Box", 20,
-			"Bullets357Box", 10,
-			"Bullets38Box", 20,
-			"Bullets45Box", 4,
-			"Bullets9mmBox", 10,
-			"ShotgunShellsBox", 10,
-			-- Clips/Magazines
-			"45Clip", 6,
-			"9mmClip", 10,
+            "AssaultRifle", 1,
+            "AssaultRifle2", 1,
+			"DoubleBarrelShotgun", 1,
+            "DoubleBarrelShotgunSawnoff", 4,
+            "HuntingRifle", 4,
+            "JS14_Rifle", 10,
+            "JS3T_Shotgun", 1,
+            "L92_Carbine", 4,
+            "L94_Rifle", 4,
+            "MSR7T_Rifle", 4,
+			"Pistol", 4,
+			"Pistol2", 10,
+            "Pistol3", 10,
+            "Revolver_Long", 1,
+			"Shotgun", 10,
+            "ShotgunSawnoff", 4,
+            "TrapperCarbine", 4,
+            "VarmintRifle", 4,
 			-- Gun Accessories
 			"ChokeTubeFull", 4,
 			"ChokeTubeImproved", 2,
@@ -20476,21 +20431,30 @@ ProceduralDistributions.list = {
 	
 	FirearmWeapons_Mid = {
 		rolls = 3,
+        gunStorage = true,
 		items = {
-			-- Guns
-			"AssaultRifle2", 4,
-			"DoubleBarrelShotgun", 2,
-			"DoubleBarrelShotgunSawnoff", 2,
-			"HuntingRifle", 6,
-			"Pistol", 8,
-			"Pistol2", 6,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"Revolver_Short", 10,
-			"Shotgun", 4,
-			"ShotgunSawnoff", 4,
-			"VarmintRifle", 10,
-			"Bag_RifleCaseCloth", 1,
+            -- Guns
+            "AssaultRifle", 1,
+            "AssaultRifle2", 1,
+            "DoubleBarrelShotgun", 1,
+            "DoubleBarrelShotgunSawnoff", 4,
+            "HuntingRifle", 4,
+            "JS14_Rifle", 10,
+            "JS3T_Shotgun", 1,
+            "L92_Carbine", 4,
+            "L94_Rifle", 4,
+            "MSR7T_Rifle", 4,
+            "Pistol", 4,
+            "Pistol2", 10,
+            "Pistol3", 10,
+            "Revolver_Long", 1,
+            "Shotgun", 10,
+            "ShotgunSawnoff", 4,
+            "TrapperCarbine", 4,
+            "VarmintRifle", 4,
+			-- Bags/Containers
+            "Bag_AmmoBox_Mixed", 4,
+            "Bag_RifleCaseCloth", 1,
 			"Bag_RifleCaseCloth2", 1,
 			"Bag_ShotgunCaseCloth", 1,
 			"Bag_ShotgunCaseCloth2", 1,
@@ -20498,25 +20462,9 @@ ProceduralDistributions.list = {
 			"RifleCase2", 1,
 			"ShotgunCase1", 1,
 			"ShotgunCase2", 1,
-			-- Ammo
-			"556Box", 20,
-			"556Carton", 4,
-			"308Box", 10,
-			"Bullets357Box", 10,
-			"Bullets38Box", 20,
-			"Bullets38Carton", 5,
-			"Bullets44Box", 6,
-			"Bullets45Box", 4,
-			"Bullets9mmBox", 10,
-			"Bullets9mmCarton", 2,
-			"ShotgunShellsBox", 10,
-			"ShotgunShellsCarton", 2,
-			"Bag_AmmoBox_Mixed", 1,
-			-- Clips/Magazines
-			"45Clip", 6,
-			"9mmClip", 10,
-			"M14Clip", 6,
 			-- Gun Accessories
+            "AmmoStrap_Bullets", 8,
+            "AmmoStrap_Shells", 4,
 			"ChokeTubeFull", 4,
 			"ChokeTubeImproved", 2,
 			"GunLight", 1,
@@ -20528,9 +20476,6 @@ ProceduralDistributions.list = {
 			"x2Scope", 4,
 			"x4Scope", 2,
 			"x8Scope", 1,
-			-- Bags/Containers
-			"AmmoStrap_Bullets", 8,
-			"AmmoStrap_Shells", 4,
 			-- Skill Books
 			"BookAiming1", 1,
 			"BookAiming2", 1,
@@ -20553,21 +20498,33 @@ ProceduralDistributions.list = {
 	
 	FirearmWeapons_Late = {
 		rolls = 4,
+        gunStorage = true,
 		items = {
 			-- Guns
-			"AssaultRifle", 1,
-			"AssaultRifle2", 4,
-			"DoubleBarrelShotgun", 4,
-			"DoubleBarrelShotgunSawnoff", 4,
-			"HuntingRifle", 6,
-			"Pistol", 8,
-			"Pistol2", 6,
-			"Pistol3", 4,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"Revolver_Short", 10,
-			"Shotgun", 8,
-			"ShotgunSawnoff", 8,
+            "AssaultRifle", 1,
+            "AssaultRifle2", 1,
+            "DoubleBarrelShotgun", 1,
+            "DoubleBarrelShotgunSawnoff", 4,
+            "HuntingRifle", 4,
+            "JS14_Rifle", 10,
+            "JS3T_Shotgun", 1,
+            "L92_Carbine", 4,
+            "L94_Rifle", 4,
+            "MSR7T_Rifle", 4,
+            "Pistol", 4,
+            "Pistol2", 10,
+            "Pistol3", 10,
+            "Revolver_Long", 1,
+            "Shotgun", 10,
+            "ShotgunSawnoff", 4,
+            "TrapperCarbine", 4,
+            "VarmintRifle", 4,
+            -- Bags/Containers
+            "Bag_AmmoBox", 4,
+            "Bag_AmmoBox_Mixed", 4,
+            "Bag_AmmoBox_ShotgunShells", 4,
+            "Bag_ProtectiveCaseBulkyAmmo", 4,
+            "Bag_ProtectiveCaseSmall_Armorer", 1,
 			"Bag_RifleCaseCloth2", 1,
 			"Bag_ShotgunCaseCloth", 1,
 			"Bag_ShotgunCaseCloth2", 1,
@@ -20578,34 +20535,12 @@ ProceduralDistributions.list = {
 			"RifleCase3", 1,
 			"ShotgunCase1", 1,
 			"ShotgunCase2", 1,
- 			-- Ammo
-			"308Box", 10,
-			"308Carton", 2,
-			"556Box", 6,
-			"556Carton", 1,
-			"Bullets357Box", 10,
-			"Bullets357Carton", 2,
-			"Bullets38Box", 20,
-			"Bullets38Carton", 5,
-			"Bullets44Box", 6,
-			"Bullets44Carton", 1,
-			"Bullets45Box", 4,
-			"Bullets45Carton", 1,
-			"Bullets9mmBox", 10,
-			"Bullets9mmCarton", 2,
-			"ShotgunShellsBox", 10,
-			"ShotgunShellsCarton", 2,
-			"Bag_AmmoBox", 1,
-			"Bag_AmmoBox_Mixed", 1,
-			"Bag_AmmoBox_ShotgunShells", 1,
-			"Bag_ProtectiveCaseBulkyAmmo", 1,
-			-- Clips/Magazines
-			"44Clip", 8,
-			"45Clip", 6,
-			"556Clip", 4,
-			"9mmClip", 10,
-			"M14Clip", 6,
 			-- Gun Accessories
+            "AmmoStrap_Bullets", 8,
+            "AmmoStrap_Shells", 4,
+            "Bag_ALICE_BeltSus", 2,
+            "Bag_ChestRig", 1,
+            "Bag_WeaponBag", 1,
 			"ChokeTubeFull", 4,
 			"ChokeTubeImproved", 2,
 			"GunLight", 1,
@@ -20619,13 +20554,6 @@ ProceduralDistributions.list = {
 			"x2Scope", 4,
 			"x4Scope", 2,
 			"x8Scope", 1,
-			"Bag_ProtectiveCaseSmall_Armorer", 1,
-			-- Bags/Containers
-			"AmmoStrap_Bullets", 8,
-			"AmmoStrap_Shells", 4,
-			"Bag_ALICE_BeltSus", 2,
-			"Bag_ChestRig", 1,
-			"Bag_WeaponBag", 1,
 			-- Skill Books
 			"BookAiming1", 1,
 			"BookAiming2", 1,
@@ -20981,6 +20909,7 @@ ProceduralDistributions.list = {
 			-- Misc.
 			"EggCarton", 8,
 			"Milk", 8,
+            "MilkBottle", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -21896,13 +21825,18 @@ ProceduralDistributions.list = {
 		ignoreZombieDensity = true,
 		rolls = 2,
 		items = {
-			"BeerCan", 20,
-			"BeerCan", 10,
-			"BeerBottle", 20,
-			"BeerBottle", 10,
-			"Butter", 10,
-			"Milk", 10,
-			"EggCarton", 10,
+            -- Farm Products
+			"Butter", 50,
+            "Butter", 20,
+			"MilkBottle", 50,
+            "MilkBottle", 20,
+			"EggCarton", 50,
+            "EggCarton", 20,
+            -- Drinks
+            "BeerCan", 20,
+            "BeerCan", 10,
+            "BeerBottle", 20,
+            "BeerBottle", 10,
 			"Pop", 8,
 			"Pop2", 8,
 			"Pop3", 8,
@@ -22040,6 +21974,7 @@ ProceduralDistributions.list = {
 			"Cheese", 2,
 			"EggCarton", 0.5,
 			"Milk", 8,
+            "MilkBottle", 2,
 			"MilkChocolate_Personalsized", 4,
 			"Processedcheese", 8,
 			"Yoghurt", 4,
@@ -22150,7 +22085,8 @@ ProceduralDistributions.list = {
 			"Butter", 8,
 			"Cheese", 8,
 			"EggCarton", 8,
-			"Milk", 20,
+			"MilkBottle", 20,
+            "MilkBottle", 10,
 			"Processedcheese", 10,
 			"Yoghurt", 10,
 			-- Misc.
@@ -22268,6 +22204,7 @@ ProceduralDistributions.list = {
 			"MayonnaiseFull", 10,
 			"Milk", 20,
 			"Milk", 10,
+            "MilkBottle", 8,
 			"Processedcheese", 20,
 			"Processedcheese", 10,
 			"RemouladeFull", 6,
@@ -22348,6 +22285,7 @@ ProceduralDistributions.list = {
 			"MayonnaiseFull", 2,
 			"MeatPatty", 10,
 			"Milk", 10,
+            "MilkBottle", 4,
 			"MilkChocolate_Personalsized", 6,
 			"MincedMeat", 10,
 			"Mustard", 2,
@@ -22499,6 +22437,7 @@ ProceduralDistributions.list = {
 			"MayonnaiseFull", 0.5,
 			"MeatPatty", 6,
 			"Milk", 6,
+            "MilkBottle", 1,
 			"MincedMeat", 6,
 			"Mustard", 0.5,
 			"Onion", 1,
@@ -22665,19 +22604,26 @@ ProceduralDistributions.list = {
 	
 	GarageFirearms = {
 		rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		items = {
 			-- Guns
 			"AssaultRifle2", 0.5,
-			"DoubleBarrelShotgun", 2,
-			"HuntingRifle", 4,
+			"DoubleBarrelShotgun", 4,
+            "DoubleBarrelShotgunSawnoff", 1,
+			"HuntingRifle", 10,
+			"JS14_Rifle", 4,
+			"L92_Carbine", 4,
+			"L94_Rifle", 4,
 			"Pistol", 4,
-			"Pistol2", 2,
+			"Pistol2", 10,
 			"Pistol3", 1,
-			"Revolver", 2,
+			"Revolver", 10,
 			"Revolver_Long", 1,
 			"Revolver_Short", 4,
-			"Shotgun", 4,
-			"VarmintRifle", 6,
+			"Shotgun", 10,
+			"TrapperCarbine", 1,
+			"VarmintRifle", 10,
 			-- Accessories
 			"AmmoStrap_Bullets", 4,
 			"AmmoStrap_Shells", 4,
@@ -22709,20 +22655,20 @@ ProceduralDistributions.list = {
 			"Bag_ProtectiveCaseSmall_Armorer", 1,
 			"Bag_ProtectiveCaseSmall_Pistol1", 1,
 			"Bag_ProtectiveCaseSmall_Pistol2", 0.5,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.1,
+			"Bag_ProtectiveCaseSmall_Pistol3", 0.01,
 			"Bag_ProtectiveCaseSmall_Revolver1", 1,
 			"Bag_ProtectiveCaseSmall_Revolver2", 0.5,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.1,
+			"Bag_ProtectiveCaseSmall_Revolver3", 0.01,
 			"Bag_RifleCaseCloth", 1,
 			"Bag_RifleCaseCloth2", 0.5,
 			"Bag_ShotgunCaseCloth", 1,
 			"Bag_ShotgunCaseCloth2", 1,
 			"PistolCase1", 1,
 			"PistolCase2", 0.5,
-			"PistolCase3", 0.1,
+			"PistolCase3", 0.01,
 			"RevolverCase1", 1,
 			"RevolverCase2", 0.5,
-			"RevolverCase3", 0.1,
+			"RevolverCase3", 0.01,
 			"RifleCase1", 0.5,
 			"RifleCase2", 0.1,
 			"RifleCase3", 0.05,
@@ -23922,6 +23868,8 @@ ProceduralDistributions.list = {
 			"KnittingNeedles", 10,
 			"Needle", 10,
 			"SewingKit", 4,
+            "SewingPattern", 50,
+            "SewingPattern", 20,
 			"Pillow", 20,
 			"Pillow", 10,
 			"Sheet", 20,
@@ -25496,6 +25444,9 @@ ProceduralDistributions.list = {
 			"556Box", 20,
 			"556Box", 10,
 			"556Carton", 1,
+			"3030Box", 20,
+			"3030Box", 10,
+			"3030Carton", 1,
 			"308Box", 20,
 			"308Box", 10,
 			"308Carton", 1,
@@ -25786,6 +25737,8 @@ ProceduralDistributions.list = {
 			"M14Clip", 20,
 			"M14Clip", 10,
 			-- Ammo
+			"3030Box", 20,
+			"3030Carton", 1,
 			"308Box", 20,
 			"308Carton", 1,
 			"556Box", 20,
@@ -25814,70 +25767,8 @@ ProceduralDistributions.list = {
 	-- needed for some corner case stuff
 	GunStoreGuns = {
 		isShop = true,
-		rolls = 2,
-		items = {
-			-- Keys
-			"CarKey", 2,
-			"Key1", 0.5,
-			"Key1", 0.5,
-			"Key1", 0.5,
-			-- Keyrings (Store)
-			"KeyRing_Bass", 2,
-			"KeyRing_EagleFlag", 2,
-			"KeyRing_PineTree", 2,
-			"KeyRing_PrayingHands", 2,
-			-- Pistols
-			"Pistol", 10,
-			"Pistol2", 8,
-			"Pistol3", 6,
-			"Revolver", 8,
-			"Revolver_Long", 6,
-			"Revolver_Short", 10,
-			-- Rifles/Shotguns
-			"AssaultRifle2", 4,
-			"DoubleBarrelShotgun", 8,
-			"DoubleBarrelShotgun", 8,
-			"HuntingRifle", 8,
-			"Shotgun", 10,
-			"Shotgun", 10,
-			"VarmintRifle", 10,
-			-- Clips/Magazines
-			"44Clip", 8,
-			"45Clip", 8,
-			"9mmClip", 8,
-			"M14Clip", 8,
-			-- Accessories
-			"AmmoStrap_Bullets", 10,
-			"AmmoStrap_Shells", 10,
-			"ChokeTubeFull", 6,
-			"ChokeTubeImproved", 6,
-			"RecoilPad", 6,
-			"RecoilPad", 6,
-			"RedDot", 6,
-			"x2Scope", 8,
-			"x4Scope", 6,
-			"x8Scope", 4,
-			-- Ammo
-			"308Box", 10,
-            "556Box", 10,
-			"Bullets357Box", 10,
-			"Bullets38Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
-			"Bullets9mmBox", 10,
-			"ShotgunShellsBox", 20,
-			"ShotgunShellsBox", 10,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-
-			}
-		}
-	},
-
-	GunStorePistols = {
-		isShop = true,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		rolls = 4,
 		items = {
 			-- Keys
@@ -25891,16 +25782,67 @@ ProceduralDistributions.list = {
 			"KeyRing_PineTree", 2,
 			"KeyRing_PrayingHands", 2,
 			-- Pistols
-			"Pistol", 50,
+			"Pistol", 4,
+			"Pistol2", 10,
+			"Pistol3", 1,
+			"Revolver", 10,
+			"Revolver_Long", 1,
+			"Revolver_Short", 4,
+			-- Rifles/Shotguns
+			"AssaultRifle2", 1,
+			"DoubleBarrelShotgun", 10,
+			"HuntingRifle", 10,
+			"JS14_Rifle", 4,
+            "JS3T_Shotgun", 1,
+			"L92_Carbine", 10,
+			"L94_Rifle", 10,
+            "MSR7T_Rifle", 1,
+			"Shotgun", 10,
+			"TrapperCarbine", 4,
+			"VarmintRifle", 10,
+			-- Accessories
+			"AmmoStrap_Bullets", 10,
+			"AmmoStrap_Shells", 10,
+			"ChokeTubeFull", 6,
+			"ChokeTubeImproved", 6,
+			"RecoilPad", 6,
+			"RecoilPad", 6,
+			"RedDot", 6,
+			"x2Scope", 8,
+			"x4Scope", 6,
+			"x8Scope", 4,
+		},
+		junk = {
+			rolls = 1,
+			items = {
+
+			}
+		}
+	},
+
+	GunStorePistols = {
+		isShop = true,
+        gunStorage = true,
+        dontSpawnAmmo = true,
+		rolls = 4,
+		items = {
+			-- Keys
+			"CarKey", 2,
+			"Key1", 0.5,
+			"Key1", 0.5,
+			"Key1", 0.5,
+			-- Keyrings (Store)
+			"KeyRing_Bass", 2,
+			"KeyRing_EagleFlag", 2,
+			"KeyRing_PineTree", 2,
+			"KeyRing_PrayingHands", 2,
+			-- Pistols
+			"Pistol", 8,
 			"Pistol2", 20,
-			"Pistol3", 10,
+			"Pistol3", 2,
 			"Revolver", 20,
-			"Revolver_Long", 10,
-			"Revolver_Short", 50,
-			-- Clips/Magazines
-			"44Clip", 20,
-			"45Clip", 20,
-			"9mmClip", 20,
+			"Revolver_Long", 2,
+			"Revolver_Short", 8,
 			-- Accessories
 			"GunLight", 10,
 			"HolsterAnkle", 1,
@@ -25909,12 +25851,6 @@ ProceduralDistributions.list = {
 			"HolsterSimple", 10,
 			"RedDot", 10,
 			"TritiumSights", 10,
-			-- Ammo
-			"Bullets357Box", 20,
-			"Bullets38Box", 20,
-			"Bullets44Box", 20,
-			"Bullets45Box", 20,
-			"Bullets9mmBox", 20,
 		},
 		junk = {
 			rolls = 1,
@@ -25926,6 +25862,8 @@ ProceduralDistributions.list = {
 
 	GunStoreRifles = {
 		isShop = true,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		rolls = 4,
 		items = {
 			-- Keys
@@ -25939,22 +25877,19 @@ ProceduralDistributions.list = {
 			"KeyRing_PineTree", 2,
 			"KeyRing_PrayingHands", 2,
 			-- Rifles
-			"AssaultRifle2", 10,
-			"HuntingRifle", 50,
-			"HuntingRifle", 20,
-			"VarmintRifle", 20,
+			"AssaultRifle2", 2,
+			"HuntingRifle", 10,
+			"JS14_Rifle", 8,
+			"L92_Carbine", 10,
+			"L94_Rifle", 10,
+			"TrapperCarbine", 8,
 			"VarmintRifle", 10,
-			-- Clips/Magazines
-			"M14Clip", 8,
 			-- Accessories
 			"AmmoStrap_Bullets", 10,
 			"RecoilPad", 6,
 			"x2Scope", 8,
 			"x4Scope", 6,
 			"x8Scope", 4,
-			-- Ammo
-			"556Box", 20,
-			"308Box", 20,
 		},
 		junk = {
 			rolls = 1,
@@ -25980,6 +25915,8 @@ ProceduralDistributions.list = {
 
 	GunStoreShotguns = {
 		isShop = true,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		rolls = 4,
 		items = {
 			-- Keys
@@ -25994,17 +25931,13 @@ ProceduralDistributions.list = {
 			"KeyRing_PrayingHands", 2,
 			-- Shotguns
 			"DoubleBarrelShotgun", 20,
-			"DoubleBarrelShotgun", 10,
-			"Shotgun", 50,
 			"Shotgun", 20,
+            "JS3T_Shotgun", 4,
 			-- Accessories
 			"AmmoStrap_Shells", 10,
 			"ChokeTubeFull", 6,
 			"ChokeTubeImproved", 6,
 			"RecoilPad", 6,
-			-- Ammo
-			"ShotgunShellsBox", 20,
-			"ShotgunShellsBox", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -27116,219 +27049,230 @@ ProceduralDistributions.list = {
 		}
 	},
 
-	Hunter = {
-		rolls = 4,
-		items = {
-			"308Box", 10,
-            "556Box", 10,
-			"Bag_AmmoBox_Hunting", 1,
-			"Bag_LeatherWaterBag", 0.1,
-			"Bag_RifleCaseCloth", 2,
-			"Bag_RifleCaseCloth2", 1,
-			"Bag_ShotgunCaseCloth", 2,
-			"Bag_ShotgunCaseCloth2", 2,
-			"BookTracking1", 6,
-			"BookTracking2", 4,
-			"BookTracking3", 2,
-			"BookTracking4", 1,
-			"BookTracking5", 0.5,
-			"BookTrapping1", 6,
-			"BookTrapping2", 4,
-			"BookTrapping3", 2,
-			"BookTrapping4", 1,
-			"BookTrapping5", 0.5,
-			"Bullets357Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
-			"Canteen", 10,
-			"DappleDeerHide", 1,
-			"DeerHide", 1,
-			"DoubleBarrelShotgun", 4,
-			"Dungarees_HuntingCamo", 1,
-			"FlashLight_AngleHead", 1,
-			"Gloves_HuntingCamo", 1,
-			"HandAxe", 2,
-			"Handiknife", 1,
-			"Hat_BaseballCap_HuntingCamo", 10,
-			"Hat_BonnieHat", 10,
-			"Hat_BonnieHat_CamoGreen", 8,
-			"HerbalistMag", 2,
-			"Hoodie_HuntingCamo_DOWN", 10,
-			"HuntingKnife", 6,
-			"HuntingMag1", 2,
-			"HuntingMag2", 2,
-			"HuntingMag3", 2,
+    Hunter = {
+        rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
+        items = {
+            -- Clothing
+            "Dungarees_HuntingCamo", 1,
+            "Gloves_HuntingCamo", 1,
+            "Hat_BaseballCap_HuntingCamo", 10,
+            "Hat_BonnieHat", 10,
+            "Hat_BonnieHat_CamoGreen", 8,
+            "Hoodie_HuntingCamo_DOWN", 10,
+            "Jacket_HuntingCamo", 6,
+            "Jacket_Padded_HuntingCamo", 1,
+            "LongJohns", 4,
+            "LongJohns_Bottoms", 4,
+            "PonchoGreenDOWN", 6,
+            "Shirt_CamoGreen", 8,
+            "Shirt_Lumberjack", 4,
+            "Shirt_Lumberjack_TINT", 4,
+            "Shoes_HikingBoots", 4,
+            "Shoes_Wellies", 1,
+            "Shorts_CamoGreenLong", 8,
+            "Trousers_HuntingCamo", 6,
+            "Trousers_Padded_HuntingCamo", 1,
+            "Tshirt_HuntingCamo", 10,
+            "Tshirt_LongSleeve_HuntingCamo", 10,
+            "Vest_Hunting_Camo", 6,
+            "Vest_Hunting_CamoGreen", 6,
+            "Vest_Hunting_Grey", 2,
+            "Vest_Hunting_Orange", 6,
+            -- Guns
+            "DoubleBarrelShotgun", 4,
+            "HuntingRifle", 10,
+            "JS14_Rifle", 4,
+            "L92_Carbine", 4,
+            "L94_Rifle", 4,
+            "TrapperCarbine", 1,
+            "Shotgun", 10,
+            "VarmintRifle", 10,
+            -- Knives
+            "HandAxe", 2,
+            "Handiknife", 1,
+            "HuntingKnife", 6,
+            "KnifeButterfly", 8,
+            "KnifePocket", 1,
+            "LargeKnife", 4,
+            "Multitool", 0.1,
+            "SmallKnife", 8,
+            -- Accessories
+            "Bag_LeatherWaterBag", 0.1,
+            "Canteen", 10,
+            "FlashLight_AngleHead", 1,
+            "PanForged", 4,
+            "PotForged", 1,
+            "Whetstone", 10,
+            "Whistle", 2,
+            -- Literature
+            "BookTracking1", 6,
+            "BookTracking2", 4,
+            "BookTracking3", 2,
+            "BookTracking4", 1,
+            "BookTracking5", 0.5,
+            "BookTrapping1", 6,
+            "BookTrapping2", 4,
+            "BookTrapping3", 2,
+            "BookTrapping4", 1,
+            "BookTrapping5", 0.5,
+            "HerbalistMag", 2,
+            "HuntingMag1", 2,
+            "HuntingMag2", 2,
+            "HuntingMag3", 2,
             "HuntingMag4", 2,
-			"HuntingRifle", 2,
-			"Jacket_HuntingCamo", 6,
-			"Jacket_Padded_HuntingCamo", 1,
-			"KnifeButterfly", 8,
-			"KnifePocket", 1,
-			"LargeKnife", 4,
-			"LongJohns", 4,
-			"LongJohns_Bottoms", 4,
-			"Magazine_Firearm", 10,
-			"Magazine_Outdoors", 10,
-			"Mov_HuntingTrophy", 1,
-			"Multitool", 0.1,
-			"PanForged", 4,
-			"Paperback_MilitaryHistory", 4,
-			"Paperback_Nature", 8,
-			"PonchoGreenDOWN", 6,
-			"PotForged", 1,
-			"RifleCase1", 2,
-			"RifleCase2", 1,
-			"Shirt_CamoGreen", 8,
-			"Shirt_Lumberjack", 4,
-			"Shirt_Lumberjack_TINT", 4,
-			"Shoes_HikingBoots", 4,
-			"Shoes_Wellies", 1,
-			"Shorts_CamoGreenLong", 8,
-			"Shotgun", 4,
-			"ShotgunCase1", 2,
-			"ShotgunCase2", 2,
-			"ShotgunShellsBox", 10,
-			"SmallKnife", 8,
-			"Trousers_HuntingCamo", 6,
-			"Trousers_Padded_HuntingCamo", 1,
-			"Tshirt_HuntingCamo", 10,
-			"Tshirt_LongSleeve_HuntingCamo", 10,
-			"VarmintRifle", 4,
-			"Vest_Hunting_Camo", 6,
-			"Vest_Hunting_CamoGreen", 6,
-			"Vest_Hunting_Grey", 2,
-			"Vest_Hunting_Orange", 6,
-			"Whetstone", 10,
-			"Whistle", 2,
-		},
-		junk = {
-			rolls = 1,
-			items = {
+            "Magazine_Firearm", 10,
+            "Magazine_Outdoors", 10,
+            "Paperback_MilitaryHistory", 4,
+            "Paperback_Nature", 8,
+            -- Bags/Containers
+            "Bag_AmmoBox_Hunting", 1,
+            "Bag_RifleCaseCloth", 2,
+            "Bag_RifleCaseCloth2", 1,
+            "Bag_ShotgunCaseCloth", 2,
+            "Bag_ShotgunCaseCloth2", 2,
+            "RifleCase1", 2,
+            "RifleCase2", 1,
+            "ShotgunCase1", 2,
+            "ShotgunCase2", 2,
+            -- Misc.
+            "DappleDeerHide", 1,
+            "DeerHide", 1,
+            "Mov_HuntingTrophy", 1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
 
-			}
-		}
-	},
+            }
+        }
+    },
 
-	HuntingLockers = {
-		rolls = 4,
-		items = {
-			"308Box", 10,
-            "556Box", 10,
-			"AmmoStrap_Bullets", 4,
-			"AmmoStrap_Shells", 4,
-			"ArmorMag6", 0.001,
-			"Bag_ALICEpack", 0.01,
-			"Bag_AmmoBox_Hunting", 1,
-			"Bag_BigHikingBag", 0.05,
-			"Bag_DuffelBagTINT", 0.5,
-			"Bag_FannyPackFront", 2,
-			"Bag_HydrationBackpack", 0.01,
-			"Bag_LeatherWaterBag", 1,
-			"Bag_NormalHikingBag", 0.1,
-			"Bag_RifleCaseCloth", 2,
-			"Bag_RifleCaseCloth2", 1,
-			"Bag_ShotgunCaseCloth", 2,
-			"Bag_ShotgunCaseCloth2", 2,
-			"BeefJerky", 10,
-			"BookAiming1", 1,
-			"BookAiming2", 0.8,
-			"BookAiming3", 0.6,
-			"BookAiming4", 0.4,
-			"BookAiming5", 0.2,
-			"BookReloading1", 1,
-			"BookReloading2", 0.8,
-			"BookReloading3", 0.6,
-			"BookReloading4", 0.4,
-			"BookReloading5", 0.2,
-			"BookTracking1", 2,
-			"BookTracking2", 1,
-			"BookTracking3", 0.5,
-			"BookTracking4", 0.1,
-			"BookTracking5", 0.05,
-			"BookTrapping1", 2,
-			"BookTrapping2", 1,
-			"BookTrapping3", 0.5,
-			"BookTrapping4", 0.1,
-			"BookTrapping5", 0.05,
-			"Bullets357Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
-			"Canteen", 10,
-			"CanteenCowboy", 4,
-			"DoubleBarrelShotgun", 4,
-			"Dungarees_HuntingCamo", 1,
-			"FirstAidKit_Camping", 4,
-			"FlashLight_AngleHead", 1,
-			"Flask", 1,
-			"Glasses_Aviators", 1,
-			"Glasses_Shooting", 8,
-			"Glasses_Sun", 2,
-			"Gloves_HuntingCamo", 1,
-			"GranolaBar", 8,
-			"Gum", 10,
-			"HandAxe", 2,
-			"Handiknife", 1,
-			"Hat_BaseballCap_HuntingCamo", 10,
-			"Hat_Beany", 10,
-			"Hat_BonnieHat", 10,
-			"Hat_BonnieHat_CamoGreen", 8,
-			"Hoodie_HuntingCamo_DOWN", 10,
-			"HuntingKnife", 8,
-			"HuntingRifle", 2,
-			"InsectRepellent", 10,
-			"Jacket_HuntingCamo", 6,
-			"Jacket_Padded_HuntingCamo", 1,
-			"KnifeButterfly", 8,
-			"KnifePocket", 1,
-			"LargeKnife", 4,
-			"Magazine_Firearm", 4,
-			"Magazine_Outdoors", 8,
-			"Mov_Cot", 0.1,
-			"Multitool", 0.1,
-			"Paperback_MilitaryHistory", 4,
-			"Paperback_Nature", 8,
-			"PonchoGreenDOWN", 6,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"RifleCase1", 2,
-			"RifleCase2", 1,
-			"ShemaghScarf_Green", 0.01,
-			"Shirt_CamoGreen", 8,
-			"Shirt_Lumberjack", 4,
-			"Shirt_Lumberjack_TINT", 4,
-			"Shoes_HikingBoots", 4,
-			"Shoes_Wellies", 1,
-			"Shorts_CamoGreenLong", 8,
-			"Shotgun", 4,
-			"ShotgunCase1", 2,
-			"ShotgunCase2", 2,
-			"ShotgunShellsBox", 10,
-			"SleepingBag_Camo_Packed", 4,
-			"SmallKnife", 8,
-			"TobaccoChewing", 1,
-			"Trousers_CamoGreen", 6,
-			"Trousers_HuntingCamo", 6,
-			"Trousers_Padded_HuntingCamo", 1,
-			"Tshirt_CamoGreen", 10,
-			"Tshirt_HuntingCamo", 10,
-			"Tshirt_LongSleeve_HuntingCamo", 10,
-			"VarmintRifle", 4,
-			"Vest_Hunting_Camo", 6,
-			"Vest_Hunting_CamoGreen", 6,
-			"Vest_Hunting_Grey", 2,
-			"Vest_Hunting_Orange", 6,
-			"WaterPurificationTablets", 1,
-			"Whetstone", 10,
-			"Whistle", 2,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				"CombinationPadlock", 10,
-				"Padlock", 1,
-			}
-		}
-	},
+    HuntingLockers = {
+        rolls = 4,
+        items = {
+            -- Clothing
+            "DoubleBarrelShotgun", 4,
+            "Dungarees_HuntingCamo", 1,
+            "Glasses_Aviators", 1,
+            "Glasses_Shooting", 8,
+            "Glasses_Sun", 2,
+            "Gloves_HuntingCamo", 1,
+            "Hat_BaseballCap_HuntingCamo", 10,
+            "Hat_Beany", 10,
+            "Hat_BonnieHat", 10,
+            "Hat_BonnieHat_CamoGreen", 8,
+            "Hoodie_HuntingCamo_DOWN", 10,
+            "Jacket_HuntingCamo", 6,
+            "Jacket_Padded_HuntingCamo", 1,
+            "PonchoGreenDOWN", 6,
+            "ShemaghScarf_Green", 0.01,
+            "Shirt_CamoGreen", 8,
+            "Shirt_Lumberjack", 4,
+            "Shirt_Lumberjack_TINT", 4,
+            "Shoes_HikingBoots", 4,
+            "Shoes_Wellies", 1,
+            "Shorts_CamoGreenLong", 8,
+            "Trousers_CamoGreen", 6,
+            "Trousers_HuntingCamo", 6,
+            "Trousers_Padded_HuntingCamo", 1,
+            "Tshirt_CamoGreen", 10,
+            "Tshirt_HuntingCamo", 10,
+            "Tshirt_LongSleeve_HuntingCamo", 10,
+            "Vest_Hunting_Camo", 6,
+            "Vest_Hunting_CamoGreen", 6,
+            "Vest_Hunting_Grey", 2,
+            "Vest_Hunting_Orange", 6,
+            -- Guns
+            "HuntingRifle", 2,
+            "JS14_Rifle", 1,
+            "L92_Carbine", 1,
+            "L94_Rifle", 1,
+            "Shotgun", 4,
+            "TrapperCarbine", 1,
+            "VarmintRifle", 4,
+            -- Knives
+            "HandAxe", 2,
+            "Handiknife", 1,
+            "HuntingKnife", 8,
+            "KnifeButterfly", 8,
+            "KnifePocket", 1,
+            "LargeKnife", 4,
+            "Multitool", 0.1,
+            "SmallKnife", 8,
+            -- Accessories
+            "AmmoStrap_Bullets", 4,
+            "AmmoStrap_Shells", 4,
+            "Canteen", 10,
+            "CanteenCowboy", 4,
+            "FirstAidKit_Camping", 4,
+            "FlashLight_AngleHead", 1,
+            "Flask", 1,
+            "InsectRepellent", 10,
+            "SleepingBag_Camo_Packed", 4,
+            "TobaccoChewing", 1,
+            "WaterPurificationTablets", 1,
+            "Whetstone", 10,
+            "Whistle", 2,
+            -- Food
+            "BeefJerky", 10,
+            "GranolaBar", 8,
+            "Gum", 10,
+            -- Literature
+            "ArmorMag6", 0.001,
+            "BookAiming1", 1,
+            "BookAiming2", 0.8,
+            "BookAiming3", 0.6,
+            "BookAiming4", 0.4,
+            "BookAiming5", 0.2,
+            "BookReloading1", 1,
+            "BookReloading2", 0.8,
+            "BookReloading3", 0.6,
+            "BookReloading4", 0.4,
+            "BookReloading5", 0.2,
+            "BookTracking1", 2,
+            "BookTracking2", 1,
+            "BookTracking3", 0.5,
+            "BookTracking4", 0.1,
+            "BookTracking5", 0.05,
+            "BookTrapping1", 2,
+            "BookTrapping2", 1,
+            "BookTrapping3", 0.5,
+            "BookTrapping4", 0.1,
+            "BookTrapping5", 0.05,
+            "Magazine_Firearm", 4,
+            "Magazine_Outdoors", 8,
+            "Paperback_MilitaryHistory", 4,
+            "Paperback_Nature", 8,
+            -- Bags/Containers
+            "Bag_ALICEpack", 0.01,
+            "Bag_AmmoBox_Hunting", 1,
+            "Bag_BigHikingBag", 0.05,
+            "Bag_DuffelBagTINT", 0.5,
+            "Bag_FannyPackFront", 2,
+            "Bag_HydrationBackpack", 0.01,
+            "Bag_LeatherWaterBag", 1,
+            "Bag_NormalHikingBag", 0.1,
+            "Bag_RifleCaseCloth", 2,
+            "Bag_RifleCaseCloth2", 1,
+            "Bag_ShotgunCaseCloth", 2,
+            "Bag_ShotgunCaseCloth2", 2,
+            "RifleCase1", 2,
+            "RifleCase2", 1,
+            "ShotgunCase1", 2,
+            "ShotgunCase2", 2,
+            -- Misc.
+            "Mov_Cot", 0.1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
 
 	ImprovisedCrafts = {
 		rolls = 4,
@@ -27496,6 +27440,7 @@ ProceduralDistributions.list = {
 			"Cheese", 4,
 			"EggCarton", 2,
 			"Milk", 8,
+            "MilkBottle", 2,
 			-- Meat
 			"Chicken", 4,
 			"Ham", 2,
@@ -27911,6 +27856,7 @@ ProceduralDistributions.list = {
 			-- Ingredients
 			"EggCarton", 8,
 			"Milk", 8,
+            "MilkBottle", 2,
 		},
 		junk = {
 			rolls = 1,
@@ -28441,6 +28387,111 @@ ProceduralDistributions.list = {
 		}
 	},
 
+    JuiceStandDrinks = {
+        ignoreZombieDensity = true,
+        isShop = true,
+        rolls = 4,
+        items = {
+            -- Ingredients
+            "JuiceLemon", 20,
+            "JuiceLemon", 10,
+            "Sugar", 20,
+            "Sugar", 10,
+            -- Cups
+            "PlasticCup", 50,
+            "PlasticCup", 20,
+            "PlasticCup", 20,
+            "PlasticCup", 10,
+            -- Misc.
+            "PaperNapkins2", 50,
+            "PaperNapkins2", 20,
+            "PaperNapkins2", 20,
+            "PaperNapkins2", 10,
+            "Straw2", 50,
+            "Straw2", 20,
+            "Straw2", 20,
+            "Straw2", 10,
+            -- Misc.
+            "Cashbox", 1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    JuiceStandFridge = {
+        ignoreZombieDensity = true,
+        isShop = true,
+        rolls = 4,
+        items = {
+            -- Drinks
+            "WaterBottle", 50,
+            "WaterBottle", 20,
+            "Pop", 4,
+            "Pop2", 4,
+            "Pop3", 4,
+            "PopBottle", 10,
+            "SodaCan", 20,
+            "SodaCan", 10,
+            -- Ingredients
+            "Lemon", 50,
+            "Lemon", 20,
+            "Lemon", 20,
+            "Lemon", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    JuiceStandSnacks = {
+        ignoreZombieDensity = true,
+        isShop = true,
+        rolls = 4,
+        items = {
+            -- Chips/Pretzels/Etc.
+            "Crisps", 4,
+            "Crisps2", 4,
+            "Crisps3", 4,
+            "Crisps4", 4,
+            "Peanuts", 4,
+            "PorkRinds", 4,
+            "Pretzel", 4,
+            "SunflowerSeeds", 4,
+            "TortillaChips", 4,
+            -- Chocolate Bars/Granola
+            "Chocolate", 4,
+            "Chocolate_Butterchunkers", 2,
+            "Chocolate_Candy", 4,
+            "Chocolate_Crackle", 2,
+            "Chocolate_Deux", 2,
+            "Chocolate_GalacticDairy", 2,
+            "Chocolate_RoysPBPucks", 2,
+            "Chocolate_Smirkers", 2,
+            "Chocolate_SnikSnak", 2,
+            -- Snack Cakes
+            "ChocoCakes", 4,
+            "HiHis", 4,
+            "Plonkies", 4,
+            "QuaggaCakes", 4,
+            "SnoGlobes", 4,
+            -- Misc.
+            "Cashbox", 1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	JunkBin = {
 		rolls = 4,
 		items = {
@@ -28930,6 +28981,25 @@ ProceduralDistributions.list = {
 		}
 	},
 
+    KitchenMicrowave = {
+        ignoreZombieDensity = true,
+        rolls = 4,
+        cookFood = true,
+        onlyOne = true,
+        items = {
+            "Bacon", 8,
+            "Oatmeal", 8,
+            "TVDinner", 8,
+        },
+        junk = {
+            rolls = 1,
+            cookFood = true,
+            items = {
+
+            }
+        }
+    },
+
 	KitchenPots = {
 		rolls = 4,
 		items = {
@@ -29022,6 +29092,7 @@ ProceduralDistributions.list = {
 			"CleaningLiquid2", 2,
 			"Gloves_Dish", 8,
 			"SewingKit", 1,
+            "SewingPattern", 0.1,
 			"Sponge", 6,
 			-- Literature (Generic)
 			"Brochure", 2,
@@ -29103,8 +29174,7 @@ ProceduralDistributions.list = {
 			"Timer", 8,
 			"Torch", 2,
 			-- Firearms
-			"Pistol", 0.005,
-			"Revolver_Short", 0.01,
+
 			-- Gardening
 			"GardeningSprayEmpty", 2,
 			"InsectRepellent", 0.5,
@@ -32217,18 +32287,12 @@ ProceduralDistributions.list = {
 	LockerArmyBedroom = {
 		rolls = 4,
 		items = {
-			"9mmClip", 0.1,
-			"556Box", 0.1,
-			"556Clip", 0.1,
-			"AssaultRifle", 0.001,
 			"Bag_ALICE_BeltSus_Camo", 0.1,
 			"Bag_ALICE_BeltSus_Green", 0.1,
 			"Bag_ALICEpack_Army", 0.05,
 			"Bag_Military", 0.1,
 			"Bag_ProtectiveCaseMilitary", 1,
 			"Bag_ProtectiveCaseSmallMilitary_FirstAid", 4,
-			"Bag_ProtectiveCaseSmallMilitary_Pistol1", 0.4,
-			"Bag_RifleCaseGreen", 0.0025,
 			"BeefJerky", 1,
 			"Belt2", 1,
 			"BookAiming1", 1,
@@ -32237,7 +32301,6 @@ ProceduralDistributions.list = {
 			"BookReloading1", 1,
 			"BookReloading2", 0.5,
 			"BookReloading3", 0.1,
-			"Bullets9mmBox", 0.1,
 			"CanteenMilitary", 2,
 			"CDplayer", 1,
 			"Crayons", 0.1,
@@ -32273,7 +32336,6 @@ ProceduralDistributions.list = {
 			"P38", 1,
 			"Paperback", 4,
 			"PillsVitamins", 1,
-			"Pistol2", 0.1,
 			"PonchoGreenDOWN", 2,
 			"Razor", 1,
 			"ShemaghScarf_Green", 0.001,
@@ -32312,7 +32374,6 @@ ProceduralDistributions.list = {
 	LockerArmyBedroomHome = {
 		rolls = 4,
 		items = {
-			"AssaultRifle2", 0.001,
 			"Bag_ALICEpack_Army", 0.05,
 			"Bag_BigHikingBag", 0.1,
 			"Bag_DuffelBagTINT", 0.5,
@@ -32372,13 +32433,7 @@ ProceduralDistributions.list = {
 			"Money", 4,
 			"Paperback_Fantasy", 2,
 			"Paperback_SciFi", 2,
-			"Pistol", 0.5,
-			"Pistol2", 0.1,
-			"Pistol3", 0.05,
 			"PonchoGreenDOWN", 0.4,
-			"Revolver", 0.1,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
 			"ShemaghScarf_Green", 0.01,
 			"Shirt_CamoDesert", 0.5,
 			"Shirt_CamoGreen", 2,
@@ -32391,7 +32446,6 @@ ProceduralDistributions.list = {
 			"Shoes_Wellies", 1,
 			"Shorts_CamoGreenLong", 1,
 			"Shorts_CamoUrbanLong", 0.5,
-			"Shotgun", 0.01,
 			"SleepingBag_Camo_Packed", 2,
 			"TobaccoChewing", 1,
 			"Trousers_ArmyService", 2,
@@ -32405,7 +32459,6 @@ ProceduralDistributions.list = {
 			"Tshirt_Profession_VeterenGreen", 2,
 			"Tshirt_Profession_VeterenRed", 2,
 			"Tshirt_Rock", 1,
-			"VarmintRifle", 0.05,
 			"Vest_BulletArmy", 0.1,
 			"Vest_DefaultTEXTURE_TINT", 2,
 			"WalkieTalkie5", 1,
@@ -35139,6 +35192,143 @@ ProceduralDistributions.list = {
 		}
 	},
 
+    MusicSchoolCases = {
+        rolls = 4,
+        items = {
+            "Bag_FluteCase", 50,
+            "Bag_FluteCase", 20,
+            "Bag_SaxophoneCase", 50,
+            "Bag_SaxophoneCase", 20,
+            "Bag_TrumpetCase", 50,
+            "Bag_TrumpetCase", 20,
+            "Bag_ViolinCase", 50,
+            "Bag_ViolinCase", 20,
+            "Guitarcase", 50,
+            "Guitarcase", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    MusicSchoolSheets = {
+        rolls = 4,
+        items = {
+            -- Paper
+            "SheetPaper2", 100,
+            "SheetPaper2", 50,
+            "SheetPaper2", 50,
+            "SheetPaper2", 20,
+            -- Stationery
+            "Eraser", 10,
+            "Pencil", 50,
+            "Pencil", 20,
+            -- Literature
+            "Book_Music", 50,
+            "Book_Music", 20,
+            "Magazine_Music", 50,
+            "Magazine_Music", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    MusicSchoolLocker = {
+        rolls = 4,
+        items = {
+            -- Instruments
+            "Bag_FluteCase", 20,
+            "Bag_SaxophoneCase", 20,
+            "Bag_TrumpetCase", 20,
+            "Bag_ViolinCase", 20,
+            "Guitarcase", 20,
+            -- Bags/Containers
+            "Bag_BigHikingBag", 0.05,
+            "Bag_DuffelBagTINT", 0.5,
+            "Bag_FannyPackFront", 2,
+            "Bag_NormalHikingBag", 0.1,
+            "Bag_Satchel", 0.2,
+            "Handbag", 0.5,
+            "Purse", 0.5,
+            -- Clothing
+            "Dress_Knees", 1,
+            "Dress_Long", 1,
+            "Dress_Normal", 1,
+            "Hat_BaseballCap", 0.05,
+            "Hat_BaseballCapBlue", 0.05,
+            "Hat_BaseballCapGreen", 0.05,
+            "Hat_BaseballCapKY", 0.01,
+            "Hat_BaseballCapKY_Red", 0.01,
+            "Hat_BaseballCapRed", 0.05,
+            "Hat_BaseballCapTINT", 0.5,
+            "Hat_Beany", 0.1,
+            "Hat_Beret", 0.5,
+            "Hat_BucketHat", 0.1,
+            "HoodieDOWN_WhiteTINT", 1,
+            "JacketLong_Random", 0.5,
+            "Jacket_Leather", 0.5,
+            "Jacket_WhiteTINT", 0.5,
+            "Shoes_Random", 2,
+            "Shoes_TrainerTINT", 2,
+            "Shorts_LongDenim", 1,
+            "Skirt_Knees", 1,
+            "Skirt_Long", 1,
+            "Skirt_Normal", 1,
+            "Socks_Ankle", 2,
+            "Socks_Ankle_Black", 2,
+            "Socks_Ankle_White", 2,
+            "Socks_Heavy", 1,
+            "Socks_Long", 2,
+            "Socks_Ankle_Black", 2,
+            "Socks_Long_White", 2,
+            "Trousers", 2,
+            "TrousersMesh_DenimLight", 2,
+            "Trousers_DefaultTEXTURE", 2,
+            "Trousers_DefaultTEXTURE_HUE", 2,
+            "Trousers_DefaultTEXTURE_TINT", 2,
+            "Trousers_Denim", 1,
+            "Trousers_JeanBaggy", 1,
+            "Trousers_WhiteTINT", 2,
+            "Tshirt_PoloStripedTINT", 0.5,
+            "Tshirt_PoloTINT", 0.5,
+            "Tshirt_WhiteLongSleeveTINT", 1,
+            "Tshirt_WhiteTINT", 2,
+            "Vest_DefaultTEXTURE_TINT", 1,
+            -- Literature
+            "Magazine_Music", 20,
+            -- Stationery
+            "Clipboard", 10,
+            "Eraser", 10,
+            "Notebook", 10,
+            "Notepad", 10,
+            "Pencil", 20,
+            "SheetPaper2", 50,
+            "SheetPaper2", 20,
+            -- Misc.
+            "CDplayer", 10,
+            "Disc_Retail", 20,
+            "Earbuds", 10,
+            "Flask", 0.5,
+            "Headphones", 10,
+            "Paperback_Music", 10,
+            "Photo", 2,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
+
 	MusicStoreBass = {
 		isShop = true,
 		rolls = 4,
@@ -35649,24 +35839,7 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsVitamins", 0.1,
 			-- Firearms
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
-			"Revolver", 0.01,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
+
 			-- Special
 			"Camera", 2,
 			"CameraExpensive", 0.1,
@@ -35751,24 +35924,7 @@ ProceduralDistributions.list = {
 			"Pills", 0.5,
 			"PillsVitamins", 0.1,
 			-- Firearms
-			"Bag_ProtectiveCaseSmall_Pistol1", 0.005,
-			"Bag_ProtectiveCaseSmall_Pistol2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Pistol3", 0.0005,
-			"Bag_ProtectiveCaseSmall_Revolver1", 0.005,
-			"Bag_ProtectiveCaseSmall_Revolver2", 0.0025,
-			"Bag_ProtectiveCaseSmall_Revolver3", 0.0005,
-			"Pistol", 0.05,
-			"Pistol2", 0.01,
-			"Pistol3", 0.005,
-			"PistolCase1", 0.005,
-			"PistolCase2", 0.0025,
-			"PistolCase3", 0.0005,
-			"Revolver", 0.01,
-			"RevolverCase1", 0.01,
-			"RevolverCase2", 0.005,
-			"RevolverCase3", 0.001,
-			"Revolver_Long", 0.005,
-			"Revolver_Short", 0.05,
+
 			-- Special
 			"CameraExpensive", 2,
 			"CameraFilm", 1,
@@ -36208,7 +36364,43 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    PaintStudioTools = {
+        isShop = true,
+        rolls = 4,
+        items = {
+            -- Tools
+            "BucketEmpty", 10,
+            "Paintbrush", 50,
+            "Paintbrush", 20,
+            "Pencil", 50,
+            "Pencil", 20,
+            -- Paint
+            "PaintBlack", 1,
+            "PaintBlue", 1,
+            "PaintBrown", 1,
+            "PaintGreen", 1,
+            "PaintGrey", 1,
+            "PaintLightBlue", 1,
+            "PaintLightBrown", 1,
+            "PaintRed", 1,
+            "PaintWhite", 1,
+            "PaintYellow", 1,
+            -- Paint: Bright Colors
+            "PaintCyan", 2,
+            "PaintOrange", 2,
+            "PaintPink", 2,
+            "PaintPurple", 2,
+            "PaintTurquoise", 2,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	PawnShopCases = {
 		isShop = true,
 		rolls = 4,
@@ -36239,40 +36431,44 @@ ProceduralDistributions.list = {
 
 	PawnShopGuns = {
 		isShop = true,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		rolls = 4,
 		items = {
-			"44Clip", 8,
-			"45Clip", 8,
-			"9mmClip", 8,
+            -- Guns
+            "AssaultRifle2", 1,
+            "DoubleBarrelShotgun", 10,
+            "HuntingRifle", 10,
+            "JS14_Rifle", 4,
+            "JS3T_Shotgun", 1,
+            "L92_Carbine", 10,
+            "L94_Rifle", 10,
+            "MSR7T_Rifle", 1,
+            "Pistol", 4,
+            "Pistol2", 10,
+            "Pistol3", 1,
+            "Revolver", 10,
+            "Revolver_Long", 1,
+            "Revolver_Short", 4,
+            "Shotgun", 10,
+            "TrapperCarbine", 4,
+            "VarmintRifle", 10,
+            -- Accessories
 			"AmmoStrap_Bullets", 10,
 			"AmmoStrap_Shells", 10,
-			"Bullets357Box", 10,
-			"Bullets38Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
-			"Bullets9mmBox", 10,
 			"ChokeTubeFull", 4,
 			"ChokeTubeImproved", 2,
-			"DoubleBarrelShotgun", 8,
 			"HolsterAnkle", 1,
 			"HolsterDouble", 10,
 			"HolsterShoulder", 4,
-			"HolsterSimple", 20,
 			"HolsterSimple", 10,
-			"MilitaryMedal", 1,
-			"Pistol", 8,
-			"Pistol2", 6,
-			"Pistol3", 4,
 			"RecoilPad", 4,
 			"RedDot", 1,
-			"Revolver", 6,
-			"Revolver_Long", 4,
-			"Revolver_Short", 8,
-			"Shotgun", 10,
-			"ShotgunShellsBox", 10,
 			"x2Scope", 4,
 			"x4Scope", 2,
 			"x8Scope", 1,
+            -- Misc.
+            "MilitaryMedal", 1,
 		},
 		junk = {
 			rolls = 1,
@@ -36284,79 +36480,81 @@ ProceduralDistributions.list = {
 
 	PawnShopGunsSpecial = {
 		rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		items = {
-			"308Box", 20,
-			"556Box", 10,
-			"556Clip", 10,
+            -- Guns
+            "AssaultRifle", 1,
+            "AssaultRifle2", 4,
+            "DoubleBarrelShotgunSawnoff", 10,
+            "HuntingRifle", 10,
+            "JS14_Rifle", 4,
+            "JS3T_Shotgun", 1,
+            "L92_Carbine", 10,
+            "L94_Rifle", 10,
+            "MSR7T_Rifle", 1,
+            "Pistol", 4,
+            "Pistol2", 10,
+            "Pistol3", 10,
+            "Revolver_Long", 1,
+            "Revolver", 10,
+            "Revolver_Short", 10,
+            "Shotgun", 10,
+            "ShotgunSawnoff", 10,
+            "TrapperCarbine", 4,
+            "VarmintRifle", 10,
+            -- Armor
+            "ElbowPad_Left_Tactical", 1,
+            "Kneepad_Left_Tactical", 1,
+            "ThighProtective_L", 0.1,
+            "Vest_BulletCivilian", 2,
+            -- Knives/Blades
+            "Katana", 0.1,
+            "KnifeButterfly", 1,
+            "Machete", 2,
+            "SwitchKnife", 1,
+            -- Accessories
 			"AmmoStrap_Bullets", 10,
 			"AmmoStrap_Shells", 10,
-			"AssaultRifle", 0.25,
-			"AssaultRifle2", 1,
 			"Bag_ALICE_BeltSus_Camo", 0.5,
 			"Bag_ALICE_BeltSus_Green", 0.5,
+            "Bag_ChestRig", 1,
+            "ChokeTubeFull", 8,
+            "ChokeTubeImproved", 8,
+            "HolsterAnkle", 1,
+            "HolsterDouble", 10,
+            "HolsterShoulder", 4,
+            "HolsterSimple", 10,
+            "RecoilPad", 10,
+            "RedDot", 10,
+            "x2Scope", 10,
+            "x4Scope", 8,
+            "x8Scope", 6,
+            -- Bags/Containers
 			"Bag_AmmoBox_Mixed", 10,
-			"Bag_ChestRig", 1,
 			"Bag_Military", 1,
 			"Bag_MoneyBag", 1,
 			"Bag_ProtectiveCaseBulkyAmmo", 10,
 			"Bag_ProtectiveCaseSmall_Armorer", 1,
-			"Bag_ProtectiveCaseSmall_Pistol3", 2,
-			"Bag_ProtectiveCaseSmall_Revolver3", 2,
-			"Bag_ShotgunCaseCloth", 2,
-			"Bag_ShotgunCaseCloth2", 2,
-			"Bag_WeaponBag", 1,
+            -- Literature
+            "Magazine_Firearm", 10,
+            "Magazine_Military", 10,
+            -- Misc.
 			"Base.HempBagSeed", 1,
-			"Bullets357Box", 10,
-			"Bullets44Box", 10,
-			"Bullets45Box", 10,
 			"CameraFilm", 1,
 			"CanteenMilitary", 1,
-			"ChokeTubeFull", 8,
-			"ChokeTubeImproved", 8,
-			"DoubleBarrelShotgun", 4,
-			"ElbowPad_Left_Tactical", 1,
 			"FirstAidKit_Military", 4,
 			"FirstAidKit_Camping", 4,
 			"FlashLight_AngleHead_Army", 1,
 			"GemBag", 0.01,
-			"HolsterAnkle", 1,
-			"HolsterDouble", 10,
-			"HolsterShoulder", 4,
-			"HolsterSimple", 20,
-			"HolsterSimple", 10,
 			"IDcard_Blank", 1,
-			"Katana", 0.1,
-			"Kneepad_Left_Tactical", 1,
-			"KnifeButterfly", 1,
-			"M14Clip", 10,
-			"Machete", 2,
-			"Magazine_Firearm", 10,
-			"Magazine_Military", 10,
 			"ManPackRadio", 0.5,
 			"MilitaryMedal", 1,
 			"Mov_FlagUSA", 4,
 			"Mov_FlagUSALarge", 1,
-			"Pistol3", 4,
-			"PistolCase3", 2,
-			"RecoilPad", 10,
-			"RedDot", 10,
-			"RevolverCase3", 2,
-			"Revolver_Long", 4,
-			"RifleCase3", 1,
-			"RifleCase4", 0.25,
-			"Shotgun", 4,
-			"ShotgunCase1", 2,
-			"ShotgunCase2", 2,
-			"ShotgunShellsBox", 10,
-			"SwitchKnife", 1,
-			"ThighProtective_L", 0.1,
-			"Vest_BulletCivilian", 2,
 			"WristWatch_Left_Expensive", 0.1,
 			"WristWatch_Left_ClassicGold", 0.1,
 			"WristWatch_Left_DigitalDress", 0.1,
-			"x2Scope", 10,
-			"x4Scope", 8,
-			"x8Scope", 6,
 		},
 		junk = {
 			rolls = 1,
@@ -36752,7 +36950,7 @@ ProceduralDistributions.list = {
 			"Money", 10,
 			"Pistol", 10,
 			"Pistol2", 6,
-			"Pistol3", 2,
+			"Pistol3", 1,
 			"Revolver", 6,
 			"Revolver_Long", 2,
 			"Revolver_Short", 10,
@@ -37010,7 +37208,7 @@ ProceduralDistributions.list = {
 			"Zipties", 10,
 			-- Weapons
 			"Nightstick", 2,
-			"Pistol", 0.1,
+			"Pistol", 1,
 			-- Food
 			"DoughnutChocolate", 1,
 			"DoughnutFrosted", 1,
@@ -37058,6 +37256,7 @@ ProceduralDistributions.list = {
 
 	PoliceEvidence = {
 		rolls = 1,
+        dontSpawnAmmo = true,
 		items = {
 			-- Tools
 			"Axe", 0.05,
@@ -37171,11 +37370,15 @@ ProceduralDistributions.list = {
 			-- Guns
 			"DoubleBarrelShotgun", 8,
 			"DoubleBarrelShotgunSawnoff", 8,
+			"JS14_Rifle", 4,
+			"L92_Carbine", 4,
+			"L94_Rifle", 4,
 			"Pistol", 8,
 			"Revolver", 6,
 			"Revolver_Short", 8,
 			"Shotgun", 8,
 			"ShotgunSawnoff", 8,
+			"TrapperCarbine", 4,
 			"VarmintRifle", 8,
 			-- Accessories
 			"Vest_BulletCivilian", 2,
@@ -37273,103 +37476,125 @@ ProceduralDistributions.list = {
 		}
 	},
 
-	PoliceLockers = {
-		rolls = 4,
-		items = {
-			-- Keys/Keyrings
-			"CarKey", 2,
-			"KeyRing_SecurityPass", 0.1,
-			"Key1", 0.5,
-			"Key1", 0.5,
-			"Key1", 0.5,
-			-- TODO: Sort Me!
-			"Bag_DuffelBagTINT", 0.5,
-			"Bag_FannyPackFront", 2,
-			"Bag_MedicalBag", 0.1,
-			"Bag_Police", 0.2,
-			"Bag_Satchel", 0.2,
-			"Bag_Satchel_Medical", 0.1,
-			"Belt2", 4,
-			"BookAiming1", 1,
-			"BookAiming2", 0.8,
-			"BookAiming3", 0.6,
-			"BookAiming4", 0.4,
-			"BookAiming5", 0.2,
-			"BookReloading1", 1,
-			"BookReloading2", 0.8,
-			"BookReloading3", 0.6,
-			"BookReloading4", 0.4,
-			"BookReloading5", 0.2,
-			"Briefcase", 0.2,
-			"Bullhorn", 1,
-			"Camera", 2,
-			"CameraFilm", 2,
-			"CameraFilm", 1,
-			"CDplayer", 2,
-			"Danish", 1,
-			"Disc_Retail", 2,
-			"DoughnutChocolate", 1,
-			"DoughnutFrosted", 1,
-			"DoughnutJelly", 1,
-			"DoughnutPlain", 1,
-			"Earbuds", 1,
-			"FirstAidKit", 4,
-			"FirstAidKit_NewPro", 4,
-			"Flask", 0.1,
-			"Glasses_Aviators", 1,
-			"Glasses_Sun", 2,
-			"Gum", 10,
-			"Handbag", 0.5,
-			"HandTorch", 4,
-			"Hat_CrashHelmet_Police", 1,
-			"Hat_EarMuff_Protectors", 8,
-			"Hat_Police", 4,
-			"Headphones", 1,
-			"HolsterAnkle", 1,
-			"HolsterShoulder", 2,
-			"HolsterSimple_Black", 8,
-			"Jacket_Police", 4,
-			"Kneepad_Left_Tactical", 1,
-			"Lunchbag", 1,
-			"Lunchbox", 1,
-			"Lunchbox2", 0.01,
-			"Magazine", 4,
-			"Magazine_Crime", 4,
-			"Magazine_Police", 10,
-			"Money", 4,
-			"MoneyBundle", 0.001,
-			"Nightstick", 2,
-			"Paperback_CrimeFiction", 4,
-			"Paperback_Legal", 8,
-			"Purse", 0.5,
-			"Shirt_OfficerWhite", 6,
-			"Shirt_PoliceBlue", 10,
-			"Shoes_Random", 8,
-			"Sportsbottle", 1,
-			"Suitcase", 0.2,
-			"TobaccoChewing", 1,
-			"Trousers_Police", 8,
-			"Tshirt_PoliceBlue", 10,
-			"Vest_BulletPolice", 2,
-			"WalkieTalkie4", 1,
-			"Whistle", 2,
-			"WristWatch_Left_ClassicBlack", 0.1,
-			"WristWatch_Left_ClassicBrown", 0.1,
-			"WristWatch_Left_ClassicGold", 0.1,
-			"WristWatch_Left_DigitalBlack", 0.1,
-			"WristWatch_Left_DigitalDress", 0.1,
-			"WristWatch_Left_DigitalRed", 0.1,
-			"Zipties", 1,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				"Bag_MoneyBag", 0.0001,
-				"CombinationPadlock", 10,
-				"Padlock", 1,
-			}
-		}
-	},
+    PoliceLibraryLegal = {
+        rolls = 4,
+        items = {
+            "Book_Legal", 50,
+            "Book_Legal", 20,
+            "BookFancy_Legal", 20,
+            "BookFancy_Legal", 10,
+            "OfficialDocument", 20,
+            "OfficialDocument", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    PoliceLockers = {
+        rolls = 4,
+        items = {
+            -- Keys/Keyrings
+            "CarKey", 2,
+            "KeyRing_SecurityPass", 0.1,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            -- Clothing
+            "Belt2", 4,
+            "Glasses_Aviators", 1,
+            "Glasses_Sun", 2,
+            "Hat_CrashHelmet_Police", 1,
+            "Hat_EarMuff_Protectors", 8,
+            "Hat_Police", 4,
+            "Jacket_Police", 4,
+            "Shirt_OfficerWhite", 6,
+            "Shirt_PoliceBlue", 10,
+            "Shoes_Random", 8,
+            "Trousers_Police", 8,
+            "Tshirt_PoliceBlue", 10,
+            -- Accessories
+            "Bullhorn", 1,
+            "Camera", 2,
+            "CameraFilm", 2,
+            "CameraFilm", 1,
+            "FirstAidKit", 4,
+            "FirstAidKit_NewPro", 4,
+            "HandTorch", 4,
+            "HolsterAnkle", 1,
+            "HolsterShoulder", 2,
+            "HolsterSimple_Black", 8,
+            "Kneepad_Left_Tactical", 1,
+            "Nightstick", 2,
+            "Vest_BulletPolice", 2,
+            "WalkieTalkie4", 1,
+            "Whistle", 2,
+            "Zipties", 1,
+            -- Literature
+            "BookAiming1", 1,
+            "BookAiming2", 0.8,
+            "BookAiming3", 0.6,
+            "BookAiming4", 0.4,
+            "BookAiming5", 0.2,
+            "BookReloading1", 1,
+            "BookReloading2", 0.8,
+            "BookReloading3", 0.6,
+            "BookReloading4", 0.4,
+            "BookReloading5", 0.2,
+            "Magazine", 4,
+            "Magazine_Crime", 4,
+            "Magazine_Police", 10,
+            "Paperback_CrimeFiction", 4,
+            "Paperback_Legal", 8,
+            -- Misc.
+            "CDplayer", 2,
+            "Danish", 1,
+            "Disc_Retail", 2,
+            "DoughnutChocolate", 1,
+            "DoughnutFrosted", 1,
+            "DoughnutJelly", 1,
+            "DoughnutPlain", 1,
+            "Earbuds", 1,
+            "Flask", 0.1,
+            "Gum", 10,
+            "Handbag", 0.5,
+            "Headphones", 1,
+            "Lunchbag", 1,
+            "Lunchbox", 1,
+            "Lunchbox2", 0.01,
+            "Money", 4,
+            "MoneyBundle", 0.001,
+            "Purse", 0.5,
+            "Sportsbottle", 1,
+            "Suitcase", 0.2,
+            "TobaccoChewing", 1,
+            "WristWatch_Left_ClassicBlack", 0.1,
+            "WristWatch_Left_ClassicBrown", 0.1,
+            "WristWatch_Left_ClassicGold", 0.1,
+            "WristWatch_Left_DigitalBlack", 0.1,
+            "WristWatch_Left_DigitalDress", 0.1,
+            "WristWatch_Left_DigitalRed", 0.1,
+            -- Bags/Containers
+            "Bag_DuffelBagTINT", 0.5,
+            "Bag_FannyPackFront", 2,
+            "Bag_MedicalBag", 0.1,
+            "Bag_Police", 0.2,
+            "Bag_Satchel", 0.2,
+            "Bag_Satchel_Medical", 0.1,
+            "Briefcase", 0.2,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "Bag_MoneyBag", 0.0001,
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
 
 	PoliceOutfit = {
 		rolls = 3,
@@ -37483,16 +37708,18 @@ ProceduralDistributions.list = {
 		rolls = 4,
 		items = {
 			-- Ammo
-			"308Box", 20,
-			"308Box", 10,
+			"556Box", 10,
+            "Bullets44Box", 10,
+            "Bullets45Box", 20,
+            "Bullets45Box", 10,
 			"Bullets9mmBox", 50,
 			"Bullets9mmBox", 20,
-			"Bullets9mmBox", 20,
-			"Bullets9mmBox", 10,
-			"ShotgunShellsBox", 50,
 			"ShotgunShellsBox", 20,
+			"ShotgunShellsBox", 10,
 			-- Bags/Containers
-			"Bag_AmmoBox_308", 8,
+			"Bag_AmmoBox", 4,
+            "Bag_AmmoBox_44", 4,
+            "Bag_AmmoBox_45", 10,
 			"Bag_AmmoBox_9mm", 20,
 			"Bag_AmmoBox_ShotgunShells", 10,
 			"Bag_ProtectiveCaseBulkyAmmo_308", 2,
@@ -37527,40 +37754,32 @@ ProceduralDistributions.list = {
 	},
 
 	PoliceStorageGuns = {
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		rolls = 4,
 		items = {
 			-- Pistols
-			"Pistol", 50,
 			"Pistol", 20,
+            "Pistol", 10,
+            "Pistol2", 10,
+            "Revolver", 20,
+            "Revolver", 10,
+            "Revolver_Long", 4,
+            "Revolver_Short", 10,
 			--Shotguns
+            "JS3T_Shotgun", 4,
 			"Shotgun", 20,
-			"Shotgun", 10,
+            "Shotgun", 10,
 			-- Rifles
-			"AssaultRifle2", 4,
-			"HuntingRifle", 10,
-			-- Clips/Magazines
-			"9mmClip", 50,
-			"9mmClip", 20,
-			"9mmClip", 20,
-			"9mmClip", 10,
+			"JS14_Rifle", 4,
 			-- Accessories
-			"AmmoStrap_Bullets", 8,
-			"AmmoStrap_Shells", 8,
+			"AmmoStrap_Bullets", 4,
+			"AmmoStrap_Shells", 4,
 			"HolsterAnkle", 2,
 			"HolsterShoulder", 4,
-			"HolsterSimple_Black", 20,
-			"x2Scope", 8,
-			"x4Scope", 4,
-			"x8Scope", 2,
-			-- Ammo
-			"308Box", 20,
-			"308Box", 10,
-			"Bullets9mmBox", 50,
-			"Bullets9mmBox", 20,
-			"ShotgunShellsBox", 50,
-			"ShotgunShellsBox", 20,
+			"HolsterSimple_Black", 10,
 			-- Bags/Containers
-			"Bag_Police", 2,
+			"Bag_Police", 4,
 		},
 		junk = {
 			rolls = 1,
@@ -38144,9 +38363,6 @@ ProceduralDistributions.list = {
 			"BookPottery3", 6,
 			"BookPottery4", 4,
 			"BookPottery5", 2,
-			-- Tools
-			"Brush", 10,
-			"ClayTool", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -38155,6 +38371,23 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
+
+    -- Same for this one, but with potter's tools.
+    PotteryStudioTools = {
+        rolls = 8,
+        items = {
+            "Brush", 50,
+            "Brush", 20,
+            "ClayTool", 50,
+            "ClayTool", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
 
 	PrisonCellRandom = {
 		rolls = 4,
@@ -38383,22 +38616,12 @@ ProceduralDistributions.list = {
 	PrisonArmoryShotguns = {
 		rolls = 4,
 		items = {
-			-- Shotguns
-			"Shotgun", 50,
-			"Shotgun", 20,
-			"Shotgun", 20,
-			"Shotgun", 10,
-			-- Shells
-			"Bag_AmmoBox_ShotgunShells", 20,
-			"Bag_AmmoBox_ShotgunShells", 10,
-			"Bag_ProtectiveCaseBulkyAmmo_ShotgunShells", 8,
+			-- DEPRECATED
 		},
 		junk = {
 			rolls = 1,
 			items = {
-				"Bag_MoneyBag", 0.0001,
-				"CombinationPadlock", 10,
-				"Padlock", 1,
+
 			}
 		}
 	},
@@ -38423,6 +38646,30 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
+
+    PrisonStorageGuns = {
+        rolls = 4,
+        items = {
+            -- Guns
+            "HuntingRifle", 20,
+            "HuntingRifle", 10,
+            "JS14_Rifle", 10,
+            "Revolver", 20,
+            "Revolver", 10,
+            "Shotgun", 20,
+            "Shotgun", 10,
+            -- Accessories
+            "HolsterSimple_Black", 20,
+            "HolsterSimple_Black", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
 
 	-- General riot-control supplies. Armor, batons, etc.
 	PrisonRiotStorage = {
@@ -39625,6 +39872,7 @@ ProceduralDistributions.list = {
 			"Butter", 4,
 			"Cheese", 4,
 			"Milk", 8,
+            "MilkBottle", 2,
 			"Processedcheese", 8,
 			-- Misc.
 			"Egg", 8,
@@ -41574,6 +41822,7 @@ ProceduralDistributions.list = {
 			"Lard", 1,
 			"Margarine", 2,
 			"Milk", 8,
+            "MilkBottle", 2,
 			"MilkChocolate_Personalsized", 4,
 			"Processedcheese", 8,
 			"Yoghurt", 8,
@@ -42930,11 +43179,8 @@ ProceduralDistributions.list = {
 			"Nightstick", 2,
 			"ShortBat", 0.5,
 			-- Guns/Ammo
-			"9mmClip", 0.1,
-			"Bullets38Box", 2,
-			"Bullets9mmBox", 1,
-			"Pistol", 0.1,
-			"Revolver_Short", 0.5,
+			"Pistol", 1,
+			"Revolver_Short", 1,
 			-- Medical
 			"Pills", 1,
 			"PillsVitamins", 1,
@@ -42974,65 +43220,66 @@ ProceduralDistributions.list = {
 		junk = ClutterTables.DeskJunk,
 	},
 
-	SecurityLockers = {
-		rolls = 4,
-		items = {
-			-- Keys/Keyrings
-			"CarKey", 2,
-			"KeyRing_SecurityPass", 0.1,
-			"Key1", 1,
-			"Key1", 1,
-			"Key1", 1,
-			-- Weapons (Melee)
-			"Nightstick", 2,
-			"ShortBat", 0.5,
-			-- Outfit
-			"Belt2", 4,
-			"Glasses_Aviators", 1,
-			"Glasses_Sun", 2,
-			"HolsterShoulder", 0.1,
-			"HolsterSimple_Black", 0.5,
-			"WalkieTalkie4", 1,
-			"WristWatch_Left_ClassicMilitary", 1,
-			"Zipties", 10,
-			-- Medical
-			"FirstAidKit", 4,
-			"FirstAidKit_NewPro", 0.1,
-			-- Guns/Ammo
-			"9mmClip", 0.1,
-			"Bullets38Box", 2,
-			"Bullets9mmBox", 1,
-			"Pistol", 0.1,
-			"Revolver_Short", 0.5,
-			-- Literature (Generic)
-			"Magazine", 4,
-			"Magazine_Crime", 4,
-			"Magazine_Police", 8,
-			"Paperback_CrimeFiction", 4,
-			"Paperback_Legal", 8,
-			-- Misc.
-			"CigarettePack", 1,
-			"CDplayer", 2,
-			"Disc_Retail", 2,
-			"Earbuds", 1,
-			"Flask", 0.5,
-			"Gum", 10,
-			"Headphones", 1,
-			"LighterDisposable", 2,
-			"Money", 4,
-			"Sportsbottle", 1,
-			"TobaccoChewing", 1,
-			-- Special
-			"ArmorMag7", 0.001,
-		},
-		junk = {
-			rolls = 1,
-			items = {
-				"CombinationPadlock", 10,
-				"Padlock", 1,
-			}
-		}
-	},
+    SecurityLockers = {
+        rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
+        items = {
+            -- Keys/Keyrings
+            "CarKey", 2,
+            "KeyRing_SecurityPass", 0.1,
+            "Key1", 1,
+            "Key1", 1,
+            "Key1", 1,
+            -- Guns
+            "Pistol", 20,
+            "Pistol2", 8,
+            "Revolver", 8,
+            "Revolver_Short", 20,
+            -- Weapons (Melee)
+            "Nightstick", 20,
+            "ShortBat", 2,
+            -- Outfit
+            "Belt2", 4,
+            "Glasses_Aviators", 1,
+            "Glasses_Sun", 2,
+            "HolsterShoulder", 0.1,
+            "HolsterSimple_Black", 0.5,
+            "WalkieTalkie4", 1,
+            "WristWatch_Left_ClassicMilitary", 1,
+            "Zipties", 10,
+            -- Medical
+            "FirstAidKit", 4,
+            "FirstAidKit_NewPro", 0.1,
+            -- Literature (Generic)
+            "Magazine", 4,
+            "Magazine_Crime", 4,
+            "Magazine_Police", 8,
+            "Paperback_CrimeFiction", 4,
+            "Paperback_Legal", 8,
+            -- Misc.
+            "CigarettePack", 1,
+            "CDplayer", 2,
+            "Disc_Retail", 2,
+            "Earbuds", 1,
+            "Flask", 0.5,
+            "Gum", 10,
+            "Headphones", 1,
+            "LighterDisposable", 2,
+            "Money", 4,
+            "Sportsbottle", 1,
+            "TobaccoChewing", 1,
+            -- Special
+            "ArmorMag7", 0.01,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
 
 	SecurityStorage = {
 		rolls = 4,
@@ -43047,8 +43294,9 @@ ProceduralDistributions.list = {
 			"Zipties", 50,
 			"Zipties", 20,
 			-- Weapons (Melee)
-			"Nightstick", 2,
-			"ShortBat", 0.5,
+			"Nightstick", 20,
+            "Nightstick", 10,
+			"ShortBat", 2,
 			-- Medical
 			"FirstAidKit", 8,
 			"FirstAidKit_NewPro", 0.5,
@@ -43923,6 +44171,8 @@ ProceduralDistributions.list = {
 			"Needle", 10,
 			"Scissors", 8,
 			"SewingKit", 4,
+            "SewingPattern", 50,
+            "SewingPattern", 20,
 			"Thread", 20,
 			"Thread", 20,
 			"Thread", 10,
@@ -46193,7 +46443,10 @@ ProceduralDistributions.list = {
 			-- Guns
 			"DoubleBarrelShotgun", 0.01,
 			"HuntingRifle", 0.01,
+			"L92_Carbine", 0.01,
+			"L94_Rifle", 0.01,
 			"Shotgun", 0.01,
+			"TrapperCarbine", 0.01,
 			"VarmintRifle", 0.05,
 			-- Knives/Blades
 			"HandAxe", 8,
@@ -46539,20 +46792,25 @@ ProceduralDistributions.list = {
 		rolls = 4,
 		items = {
 			-- Ammo
+            "556Box", 20,
+            "556Box", 10,
+            "Bullets45Box", 20,
+            "Bullets45Box", 10,
+            "Bullets9mmBox", 50,
 			"Bullets9mmBox", 20,
-			"Bullets9mmBox", 10,
-			"Bullets308Box", 50,
-			"Bullets308Box", 20,
-			"Bullets308Box", 20,
 			"Bullets308Box", 10,
 			"ShotgunShellsBox", 50,
 			"ShotgunShellsBox", 20,
 			-- Bags/Containers
-			"Bag_AmmoBox_308", 20,
-			"Bag_AmmoBox_9mm", 8,
-			"Bag_AmmoBox_ShotgunShells", 10,
-			"Bag_ProtectiveCaseBulkyAmmo_308", 8,
-			"Bag_ProtectiveCaseBulkyAmmo_9mm", 2,
+            "Bag_AmmoBox", 8,
+            "Bag_AmmoBox_308", 4,
+            "Bag_AmmoBox_45", 8,
+			"Bag_AmmoBox_9mm", 20,
+			"Bag_AmmoBox_ShotgunShells", 20,
+			"Bag_ProtectiveCaseBulkyAmmo_308", 1,
+            "Bag_ProtectiveCaseBulkyAmmo_45", 2,
+            "Bag_ProtectiveCaseBulkyAmmo_556", 2,
+			"Bag_ProtectiveCaseBulkyAmmo_9mm", 4,
 			"Bag_ProtectiveCaseBulkyAmmo_ShotgunShells", 4,
 		},
 		junk = {
@@ -46590,21 +46848,17 @@ ProceduralDistributions.list = {
 	
 	SWATStorageGuns = {
 		rolls = 4,
+        gunStorage = true,
+        dontSpawnAmmo = true,
 		items = {
 			-- Pistols
 			"Pistol", 20,
+            "Pistol2", 8,
 			--Shotguns
-			"Shotgun", 20,
-			"Shotgun", 10,
+			"JS3T_Shotgun", 20,
 			-- Rifles
-			"AssaultRifle2", 20,
-			"AssaultRifle2", 10,
-			"HuntingRifle", 8,
-			-- Clips/Magazines
-			"M14Clip", 50,
-			"M14Clip", 20,
-			"M14Clip", 20,
-			"M14Clip", 10,
+			"AssaultRifle", 8,
+			"MSR7T_Rifle", 4,
 			-- Accessories
 			"AmmoStrap_Bullets_308", 8,
 			"AmmoStrap_Shells", 8,
@@ -46617,13 +46871,6 @@ ProceduralDistributions.list = {
 			"x2Scope", 8,
 			"x4Scope", 4,
 			"x8Scope", 2,
-			-- Ammo
-			"308Box", 20,
-			"308Box", 10,
-			"Bullets9mmBox", 50,
-			"Bullets9mmBox", 20,
-			"ShotgunShellsBox", 50,
-			"ShotgunShellsBox", 20,
 			-- Bags/Containers
 			"Bag_Police", 2,
 		},
@@ -47796,7 +48043,10 @@ ProceduralDistributions.list = {
 			-- Guns/Ammo
 			"DoubleBarrelShotgun", 2,
 			"HuntingRifle", 1,
+			"L92_Carbine", 1,
+			"L94_Rifle", 1,
 			"Shotgun", 2,
+			"TrapperCarbine", 1,
 			"VarmintRifle", 8,
 			-- Gun Cases
 			"Bag_RifleCaseCloth", 0.5,
@@ -49050,12 +49300,12 @@ ProceduralDistributions.list = {
 	UniversityLibraryMilitaryHistory = {
 		rolls = 4,
 		items = {
-			"BookAiming3", 1,
-			"BookAiming3", 2,
 			"BookAiming3", 4,
-			"BookReloading3", 1,
-			"BookReloading3", 2,
+			"BookAiming4", 2,
+			"BookAiming5", 1,
 			"BookReloading3", 4,
+			"BookReloading4", 2,
+			"BookReloading5", 1,
 			"Book_MilitaryHistory", 20,
 			"Book_MilitaryHistory", 20,
 			"Book_MilitaryHistory", 10,
@@ -50032,6 +50282,7 @@ ProceduralDistributions.list = {
 			"GamePieceRed", 2,
 			"GamePieceWhite", 2,
 			"OujaBoard", 0.1,
+            "Revolver_CapGun", 1,
 			"RubberSpider", 1,
 			"TarotCardDeck", 0.1,
 			"ToyBear", 8,
@@ -50302,10 +50553,13 @@ ProceduralDistributions.list = {
 			"Shoebox", 1,
 			"Suitcase", 0.5,
 			-- Guns/Ammo
-			"AssaultRifle2", 0.001,
 			"DoubleBarrelShotgun", 0.01,
-			"HuntingRifle", 0.01,
-			"Shotgun", 0.01,
+			"HuntingRifle", 0.05,
+			"JS14_Rifle", 0.01,
+			"L92_Carbine", 0.01,
+			"L94_Rifle", 0.01,
+			"Shotgun", 0.05,
+			"TrapperCarbine", 0.001,
 			"VarmintRifle", 0.05,
 			-- Gun Cases
 			"Bag_RifleCaseCloth", 0.0025,
@@ -50558,22 +50812,25 @@ ProceduralDistributions.list = {
 			"Handbag", 0.5,
 			"Purse", 0.5,
 			"Suitcase", 0.5,
-			-- Guns/Ammo
-			"AssaultRifle2", 0.001,
-			"DoubleBarrelShotgun", 0.01,
-			"HuntingRifle", 0.01,
-			"Shotgun", 0.01,
-			"VarmintRifle", 0.05,
-			-- Gun Cases
-			"Bag_RifleCaseCloth", 0.0025,
-			"Bag_RifleCaseCloth2", 0.0005,
-			"Bag_ShotgunCaseCloth", 0.0025,
-			"Bag_ShotgunCaseCloth2", 0.0025,
-			"RifleCase1", 0.0025,
-			"RifleCase2", 0.0005,
-			"RifleCase3", 0.0005,
-			"ShotgunCase1", 0.0025,
-			"ShotgunCase2", 0.0025,
+            -- Guns/Ammo
+            "DoubleBarrelShotgun", 0.01,
+            "HuntingRifle", 0.05,
+            "JS14_Rifle", 0.01,
+            "L92_Carbine", 0.01,
+            "L94_Rifle", 0.01,
+            "Shotgun", 0.05,
+            "TrapperCarbine", 0.001,
+            "VarmintRifle", 0.05,
+            -- Gun Cases
+            "Bag_RifleCaseCloth", 0.0025,
+            "Bag_RifleCaseCloth2", 0.0005,
+            "Bag_ShotgunCaseCloth", 0.0025,
+            "Bag_ShotgunCaseCloth2", 0.0025,
+            "RifleCase1", 0.0025,
+            "RifleCase2", 0.0005,
+            "RifleCase3", 0.0005,
+            "ShotgunCase1", 0.0025,
+            "ShotgunCase2", 0.0025,
 			-- Special
 			"HollowBook", 0.001,
 			"MilitaryMedal", 0.001,
@@ -50806,22 +51063,25 @@ ProceduralDistributions.list = {
 			"KnifePocket", 0.5,
 			"LargeKnife", 0.1,
 			"Multitool", 0.001,
-			-- Guns/Ammo
-			"AssaultRifle2", 0.001,
-			"DoubleBarrelShotgun", 0.01,
-			"HuntingRifle", 0.01,
-			"Shotgun", 0.01,
-			"VarmintRifle", 0.05,
-			-- Gun Cases
-			"Bag_RifleCaseCloth", 0.0025,
-			"Bag_RifleCaseCloth2", 0.0005,
-			"Bag_ShotgunCaseCloth", 0.0025,
-			"Bag_ShotgunCaseCloth2", 0.0025,
-			"RifleCase1", 0.0025,
-			"RifleCase2", 0.0005,
-			"RifleCase3", 0.0005,
-			"ShotgunCase1", 0.0025,
-			"ShotgunCase2", 0.0025,
+            -- Guns/Ammo
+            "DoubleBarrelShotgun", 0.01,
+            "HuntingRifle", 0.05,
+            "JS14_Rifle", 0.01,
+            "L92_Carbine", 0.01,
+            "L94_Rifle", 0.01,
+            "Shotgun", 0.05,
+            "TrapperCarbine", 0.001,
+            "VarmintRifle", 0.05,
+            -- Gun Cases
+            "Bag_RifleCaseCloth", 0.0025,
+            "Bag_RifleCaseCloth2", 0.0005,
+            "Bag_ShotgunCaseCloth", 0.0025,
+            "Bag_ShotgunCaseCloth2", 0.0025,
+            "RifleCase1", 0.0025,
+            "RifleCase2", 0.0005,
+            "RifleCase3", 0.0005,
+            "ShotgunCase1", 0.0025,
+            "ShotgunCase2", 0.0025,
 			-- Special
 			"CanteenMilitary", 0.1,
 			"Firecracker", 0.01,

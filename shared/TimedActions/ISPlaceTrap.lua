@@ -40,13 +40,12 @@ function ISPlaceTrap:perform()
 end
 
 function ISPlaceTrap:complete()
-	local trap = IsoTrap.new(self.character, self.weapon, self.square:getCell(), self.square);
-	self.square:AddTileObject(trap);
-	trap:transmitCompleteItemToClients();
-
 	self.character:removeFromHands(self.weapon)
 	self.character:getInventory():Remove(self.weapon);
 	sendRemoveItemFromContainer(self.character:getInventory(), self.weapon);
+
+	local trap = IsoTrap.new(self.character, self.weapon, self.square:getCell(), self.square);
+	trap:place();
 
 	buildUtil.setHaveConstruction(self.square, true);
 	return true;

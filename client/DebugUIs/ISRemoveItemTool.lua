@@ -18,7 +18,7 @@ function ISRemoveItemTool:initialise()
     )
     self:setWidth(buttonWid * 3 + UI_BORDER_SPACING * 4)
 
-    self.itemType = ISRadioButtons:new(self:getWidth()/2 - 50, y, 150, 20, self, self.onItemType)
+    self.itemType = ISRadioButtons:new(self:getWidth()/2 - 50, y, 150, 20)
     self.itemType.choicesColor = {r=1, g=1, b=1, a=1}
     self.itemType:initialise()
     self.itemType.autoWidth = true;
@@ -51,18 +51,6 @@ function ISRemoveItemTool:initialise()
     self:addChild(self.close);
 end
 
-function ISRemoveItemTool:onItemType(buttons, index)
-    if index == 1 then
-        if self.marker then
-            self.marker:setActive(false)
-        end
-    else
-        if self.marker then
-            self.marker:setActive(true)
-        end
-    end
-end
-
 function ISRemoveItemTool:destroy()
     self:setVisible(false);
     self:removeFromUIManager();
@@ -76,17 +64,11 @@ function ISRemoveItemTool:onClick(button)
         self.endPos = nil
         self.zPos = self.player:getZ()
         self.highlightSquares = {}
-        if self.marker then
-            self.marker:remove()
-            self.marker = nil
-        end
 
         if self.OnRenderTick == nil then
             self.OnRenderTick = function()
-                if self.marker == nil or not self.marker:isActive() then
-                    for _, sqFloor in ipairs(self.highlightSquares) do
-                        sqFloor:setHighlighted(true)
-                    end
+                for _, sqFloor in ipairs(self.highlightSquares) do
+                    sqFloor:setHighlighted(true)
                 end
             end
             Events.OnRenderTick.Add(self.OnRenderTick)
@@ -124,21 +106,14 @@ function ISRemoveItemTool:onClick(button)
                     item:removeFromWorld()
                     item:removeFromSquare()
                     item:setSquare(nil)
-                elseif self.itemType:isSelected(2) and not isClient() then
+                elseif self.itemType:isSelected(2) then
                     sq:removeCorpse(item, false);
                 end
-            end
-            if self.itemType:isSelected(2) and isClient() then
-                SendCommandToServer(string.format("/removezombies -x %d -y %d -z %d -radius %d -clear true", math.floor(self.marker:getX()), math.floor(self.marker:getY()), math.floor(self.marker:getZ()), math.floor(self.marker:getSize())))
             end
             if self.OnRenderTick ~= nil then
                 Events.OnRenderTick.Remove(self.OnRenderTick)
                 self.OnRenderTick = nil
                 self.highlightSquares = {}
-            end
-            if self.marker then
-                self.marker:remove()
-                self.marker = nil
             end
         end
     end
@@ -147,10 +122,6 @@ function ISRemoveItemTool:onClick(button)
             Events.OnRenderTick.Remove(self.OnRenderTick)
             self.OnRenderTick = nil
             self.highlightSquares = {}
-        end
-        if self.marker then
-            self.marker:remove()
-            self.marker = nil
         end
         self:destroy();
         return;
@@ -269,18 +240,6 @@ function ISRemoveItemTool:onMouseDownOutside(x, y)
                 if sq and sq:getFloor() then
                     table.insert(self.highlightSquares, sq:getFloor())
                 end
-            end
-        end
-
-        if isClient() then
-            local centerX = self.startPos.x + (self.endPos.x - self.startPos.x)/2.0
-            local centerY = self.startPos.y + (self.endPos.y - self.startPos.y)/2.0
-            local radius = math.floor(math.min((self.endPos.x - self.startPos.x)/2.0, (self.endPos.y - self.startPos.y)/2.0))
-            local square = getSquare(centerX, centerY, self.zPos)
-            if square then
-                self.marker = getWorldMarkers():addGridSquareMarker(square, 0.8, 0.8, 0.0, true, radius)
-                self.marker:setScaleCircleTexture(true);
-                self.marker:setActive(self.itemType:isSelected(2))
             end
         end
     end

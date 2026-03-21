@@ -1163,6 +1163,9 @@ function ISMoveableSpriteProps:pickUpMoveable( _character, _square, _createItem,
 
                 local createItem = _createItem and not self.isForceSingleItem;
                 for _,gridMember in ipairs(sgrid) do
+                    if gridMember.object:getFluidContainer() then
+                        gridMember.object:getFluidContainer():Empty();
+                    end
                     table.insert(items, self:pickUpMoveableInternal( _character, gridMember.square, gridMember.object, gridMember.sprInstance, gridMember.sprite:getName(), createItem, _forceAllow ));
                 end
 

@@ -448,7 +448,11 @@ function ISReadABook:getDuration()
         time = time * 0.9;
     end
 
-    return time;
+    if self.character:isSitOnGround() or self.character:isSittingOnFurniture() then
+        time = time * 0.9;
+    end
+
+    return math.max(time, 1);
 end
 
 function ISReadABook:new(character, item)

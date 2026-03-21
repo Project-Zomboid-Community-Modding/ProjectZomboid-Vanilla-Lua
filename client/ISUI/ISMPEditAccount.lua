@@ -29,8 +29,6 @@ function ISMPEditAccount:initialise()
     self.authType:instantiate();
     self.authType.choicesColor = {r=1, g=1, b=1, a=1}
     self.authType:addOption(getText("UI_servers_auth_password"))
-    self.authType:addOption(getText("UI_servers_auth_google"))
-    self.authType:addOption(getText("UI_servers_auth_two_factor"))
     self.authType.image = self.ui_droplist
     self:addChild(self.authType);
 

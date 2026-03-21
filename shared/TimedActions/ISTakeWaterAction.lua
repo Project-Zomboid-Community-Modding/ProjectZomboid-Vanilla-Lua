@@ -4,7 +4,7 @@ ISTakeWaterAction = ISBaseTimedAction:derive("ISTakeWaterAction");
 
 function ISTakeWaterAction:isValid()
 	if self.item and not self.item:getContainer() then return false end
-	return self.waterObject:hasFluid()
+	return self.waterObject:hasFluid() and not self.character:hasFullInventory()
 end
 
 function ISTakeWaterAction:waitToStart()
@@ -172,7 +172,7 @@ function ISTakeWaterAction:getDuration()
     end
 end
 
-function ISTakeWaterAction:new (character, item, waterObject, waterTaintedCL)
+function ISTakeWaterAction:new(character, item, waterObject, waterTaintedCL)
 	local o = ISBaseTimedAction.new(self, character)
 	o.item = item;
     o.waterObject = waterObject;
@@ -183,7 +183,11 @@ function ISTakeWaterAction:new (character, item, waterObject, waterTaintedCL)
 		if o.item:getFluidContainer() then
 			o.startUsedAmount = o.item:getFluidContainer():getAmount();
 			o.endUsedAmount = o.item:getFluidContainer():getCapacity();
-		    o.waterUnit = math.min(o.endUsedAmount - o.startUsedAmount, waterAvailable)
+			local freeInventoryCapacity = character:getFreeInventoryCapacity();
+			if o.item:isEquipped() or character:isEquippedClothing(o.item) then
+               freeInventoryCapacity = freeInventoryCapacity/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
+            end
+		    o.waterUnit = math.min(math.min(o.endUsedAmount - o.startUsedAmount, waterAvailable), freeInventoryCapacity);
         end
     else
         local thirst = o.character:getStats():get(CharacterStat.THIRST) * 2

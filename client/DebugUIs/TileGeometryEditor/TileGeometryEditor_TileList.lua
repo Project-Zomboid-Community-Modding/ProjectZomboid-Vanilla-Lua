@@ -57,6 +57,7 @@ function TileList:onRightMouseDown(x, y)
 	if not self:isSelectionEmpty() then
 		context:addOption("Clear Depth Of Selected Tiles", self, self.onClearDepthOfSelectedTiles)
 		context:addOption("Clear Assigned Depth Textures", self, self.onClearAssignedDepthTextures)
+		context:addOption("Remove Geometry", self, self.onRemoveGeometryOfSelectedTiles)
 		local selectedTile = self:getSingleSelectedTile()
 		if selectedTile then
 			context:addOption("Rotate 90 Degrees Around Y", self, self.onRotate90Degrees, selectedTile.tileName)
@@ -172,6 +173,14 @@ function TileList:onClearAssignedDepthTextures()
 	for _,e in ipairs(self.selection.elements) do
 		TileDepthTextureAssignmentManager.getInstance():clearAssignedTileName(self.editor.modID, e.tileName)
 	end
+end
+
+function TileList:onRemoveGeometryOfSelectedTiles()
+	for _,e in ipairs(self.selection.elements) do
+		self.editor.scene:java4("clearGeometry", self.editor.modID, self.tileset, e.col - 1, e.row - 1)
+	end
+	self.editor:setGeometryList()
+	self.selected = 1 -- player
 end
 
 function TileList:selectionAdd(col, row)

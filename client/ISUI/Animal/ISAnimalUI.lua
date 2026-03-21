@@ -257,7 +257,7 @@ function ISAnimalUI:render()
     end
 
     self.milkAnimalBtn:setVisible(false);
-    if self.animal:canBeMilked() or AnimalContextMenu.cheat then
+    if self.animal:canBeMilked() or AnimalContextMenu.cheat and not self.chr:hasFullInventory() then
         if self.animal:hasUdder() and not self.animal:getData():canHaveMilk() then
             self:drawTextRight(getText("IGUI_Animal_Udder"), self.xOffset, y, 1,1,1,1, UIFont.Small);
             self:drawText(getText("IGUI_Animal_NeedBaby"), self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);

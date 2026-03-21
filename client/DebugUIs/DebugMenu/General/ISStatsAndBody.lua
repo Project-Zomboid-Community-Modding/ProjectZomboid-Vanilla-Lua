@@ -223,8 +223,17 @@ function ISStatsAndBody:onSliderChange(_newVal, _slider)
         player:getStats():set(CharacterStat.FITNESS, newFitness)
         local newLevel = math.floor((newFitness + 1) * 5 + 0.5)
         if player:getPerkLevel(Perks.Fitness) ~= newLevel then
+            local currentXP = player:getXp():getXP(Perks.Fitness)
+            local newLevelXP = round(Perks.Fitness:getXpForLevel(newLevel), 2)
+            local amount = 0
             player:setPerkLevelDebug(Perks.Fitness, newLevel)
             player:getXp():setXPToLevel(Perks.Fitness, newLevel)
+            if (currentXP < newLevelXP) then
+                amount = player:getXp():getXP(Perks.Fitness)
+            else
+                amount = player:getXp():getXP(Perks.Fitness) - currentXP + 1
+            end
+            SendCommandToServer("/addxp \""..player:getUsername().."\" "..v.var.."="..tostring(amount).." -false")
         end
         return;
     elseif v.var=="OverallBodyHealth" then

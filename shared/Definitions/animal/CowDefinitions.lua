@@ -238,7 +238,7 @@ AnimalDefinitions.animals["cow"].stressAboveGround = true;
 AnimalDefinitions.animals["cow"].dungChancePerDay = 70;
 AnimalDefinitions.animals["cow"].minBlood = 1000;
 AnimalDefinitions.animals["cow"].maxBlood = 3500;
-AnimalDefinitions.animals["cow"].corpseSize = 7;
+AnimalDefinitions.animals["cow"].corpseSize = 4;
 AnimalDefinitions.animals["cow"].idleSoundRadius = 50;
 AnimalDefinitions.animals["cow"].idleSoundVolume = 30;
 

@@ -10,23 +10,29 @@ ISInventoryTransferAction.putSoundTime = 0
 function ISInventoryTransferAction:isValid()
 	if not self.item then
 		return false;
-    end
-    -- fix for players being able to replace items into containers they shouldnt
-    if not ISInventoryPaneContextMenu.getContainers(self.character):contains(self.destContainer) then
-        return false;
-    end
-    -- fix for players being able to add ingredients to evolved recipes after walking away from the container they are in
-    if not ISInventoryPaneContextMenu.getContainers(self.character):contains(self.srcContainer) then
-        return false;
-    end
+	end
+	if not self.destContainer or not self.srcContainer then
+		return false;
+   end
+	-- fix for players being able to replace items into containers they shouldn't
+	local containers = ISInventoryPaneContextMenu.getContainers(self.character)
+	if not containers:contains(self.destContainer) then
+		return false;
+	end
+	-- fix for players being able to add ingredients to evolved recipes after walking away from the container they are in
+	-- Items can be taken from bags inside bags in the player's inventory.
+	-- This isn't done for bags inside bags in object containers.
+	-- Bags in vehicle containers and on seats work, since those are displayed in the loot window.
+	if not containers:contains(self.srcContainer) and self.srcContainer:getOutermostContainer() ~= self.character:getInventory() then
+		return false;
+	end
 
-    -- fix for items that were consumed in crafting still being put back into their container
+	-- fix for items that were consumed in crafting still being put back into their container
 	if self.item:getIsCraftingConsumed() then
 		return false;
-    end
+	end
 	self.dontAdd = false;
-	if not self.destContainer or not self.srcContainer then return false; end
-	
+
 	-- Limit items per container in MP
 	if isClient() then
 		if not self.started and not isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer, nil, self.character) then
@@ -513,6 +519,10 @@ function ISInventoryTransferAction:perform()
 		self.character:updateEquippedRadioFreq();
 	end
 
+	if isClient() then
+		-- Needed to display bags added to or removed from vehicle containers and seats.
+		ISInventoryPage.renderDirty = true
+	end
 end
 
 function ISInventoryTransferAction:isAlreadyTransferred(item)
@@ -644,13 +654,9 @@ function ISInventoryTransferAction:transferItem(item)
 	if self.destContainer:getType() == "stonefurnace" then
 		self.item:setWorker(self.character:getFullName());
 	end
-	
-	local pdata = getPlayerData(self.character:getPlayerNum());
 
 	ISInventoryPage.renderDirty = true
---	pdata.playerInventory:refreshBackpacks();
---	pdata.lootInventory:refreshBackpacks();
-	
+
 	-- do the overlay sprite
 	if not isClient() then
 		if self.srcContainer:getParent() and self.srcContainer:getParent():getOverlaySprite() then
@@ -660,6 +666,10 @@ function ISInventoryTransferAction:transferItem(item)
 			ItemPicker.updateOverlaySprite(self.destContainer:getParent())
 		end
 	end
+
+    if isServer() then
+        return
+    end
 
     local soundName = self:getTransferCompleteSoundName()
     if soundName ~= nil and not self.character:getEmitter():isPlaying(soundName) then

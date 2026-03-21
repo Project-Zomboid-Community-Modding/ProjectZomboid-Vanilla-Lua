@@ -304,13 +304,13 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         end
         if testItem:isWaterSource() then
             tests.waterContainer = testItem;
-		elseif testItem:getFluidContainer() then
+		elseif testItem:getFluidContainer() and not testItem:getFluidContainer():isMultiTileMoveable() then
             tests.fluidContainer = testItem;
         end
 
         -- IsoWorldInventoryObject
         local worldItem = testItem:getWorldItem()
-        if worldItem ~= nil and worldItem:getFluidContainer() ~= nil then
+        if worldItem ~= nil and worldItem:getFluidContainer() ~= nil and not worldItem:getFluidContainer():isMultiTileMoveable() then
             if worldItem:getFluidContainer():isWaterSource() then
                 tests.waterContainer = worldItem;
             else
@@ -890,7 +890,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     if tests.brokenObject then
         local fixingList = FixingManager.getFixes(tests.brokenObject);
         if not fixingList:isEmpty() then
-            local fixOption = context:addOption(getText("ContextMenu_Repair") .. getItemNameFromFullType(tests.brokenObject:getFullType()), items, nil);
+            local fixOption = context:addOption(getText("ContextMenu_Repair") .. (" ") .. getItemNameFromFullType(tests.brokenObject:getFullType()), items, nil);
             local subMenuFix = ISContextMenu:getNew(context);
             context:addSubMenu(fixOption, subMenuFix);
             for i=0,fixingList:size()-1 do
@@ -1805,7 +1805,7 @@ ISInventoryPaneContextMenu.doReloadMenuForBullets = function(playerObj, bullet, 
                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
                 tooltip.description =
                         (getText("ContextMenu_Magazine") .. ": " .. getText(item:getDisplayName()) .. "\n"..
-                        getText("ContextMenu_GunType") .. ": " .. getText(getItemDisplayName(item:getGunType())) .. "\n" ..
+                        getText("ContextMenu_GunType") .. ": " .. item:getGunTypeString() .. "\n" ..
                         getText("Tooltip_weapon_AmmoCount") .. ": " .. item:getCurrentAmmoCount() .. "/" .. item:getMaxAmmo());
                 insertOption.toolTip = tooltip;
             end
@@ -2250,6 +2250,9 @@ end
 
 ISInventoryPaneContextMenu.doDrinkFluidMenu = function(playerObj, fluidContainer, context)
     if not fluidContainer or not fluidContainer:getFluidContainer() then return end
+    if fluidContainer:getJobDelta() > 0 and (fluidContainer:getJobType() == getText("ContextMenu_Drink") or (fluidContainer:getCustomMenuOption() and fluidContainer:getJobType() == fluidContainer:getCustomMenuOption())) then
+        return
+    end
     local item = instanceof(fluidContainer, "IsoWorldInventoryObject") and fluidContainer:getItem() or fluidContainer;
     if (instanceof(fluidContainer, "IsoWorldInventoryObject") and item:getJobDelta() ~= 0.0) then return end
     local openingRecipe = item:getOpeningRecipe()
@@ -2347,10 +2350,16 @@ ISInventoryPaneContextMenu.onAddItemInEvoRecipe = function(recipe, baseItem, use
     if not playerObj:getInventory():contains(usedItem) then -- take the item if it's not in our inventory
         ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, usedItem,usedItem:getContainer(), playerObj:getInventory(), nil));
         table.insert(returnToContainer, usedItem);
+        if (instanceof(usedItem, "Food")) then
+            usedItem:setChef(playerObj:getUsername())
+        end
     end
     if not playerObj:getInventory():contains(baseItem) then -- take the base item if it's not in our inventory
         ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, baseItem, baseItem:getContainer(), playerObj:getInventory(), nil));
         table.insert(returnToContainer, baseItem);
+        if (instanceof(baseItem, "Food")) then
+            baseItem:setChef(playerObj:getUsername())
+        end
     end
     ISTimedActionQueue.add(ISAddItemInRecipe:new(playerObj, recipe, baseItem, usedItem));
     ISCraftingUI.ReturnItemsToOriginalContainer(playerObj, returnToContainer)
@@ -3815,6 +3824,7 @@ ISInventoryPaneContextMenu.dropItem = function(item, player)
 		if vehicle:getPassengerDoor(seatPart) then
 			local door = vehicle:getPassengerDoor(seatPart)
 			local dropSquare = vehicle:getSquareForArea(door:getArea())
+			ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
 			ISTimedActionQueue.add(ISDropVehicleItemAction:new(playerObj, item, vehicle, door, dropSquare))
 		end
 	else

@@ -157,37 +157,6 @@ function SpawnItems.OnNewGame(playerObj, square)
 		playerObj:setClothingItem_Back(bag);
 	end;
 
-	-- add starting items (depends on difficulty)
-	if getWorld():getDifficulty() == "Easy" then
-		local bag =  playerObj:getInventory():FindAndReturn("Base.Bag_Schoolbag");
-		if not bag then
-			bag = playerObj:getInventory():AddItem("Base.Bag_Schoolbag");
-			playerObj:getInventory():AddItem("Base.WaterBottle");
-			bag:getItemContainer():AddItem("Base.BaseballBat");
-			bag:getItemContainer():AddItem("Base.Hammer");
-			playerObj:getInventory():AddItem("Base.Crisps");
-			playerObj:setClothingItem_Back(bag);
-		end;
-		bag:getItemContainer():AddItem("Base.Saw");
-		playerObj:getInventory():AddItem("Base.Crisps2");
-		playerObj:getInventory():AddItem("Base.Crisps3");
-	elseif getWorld():getDifficulty() == "Normal" then
-		local bag =  playerObj:getInventory():FindAndReturn("Base.Bag_Schoolbag");
-		if not bag then
-			bag = playerObj:getInventory():AddItem("Base.Bag_Schoolbag");
-			local bat = bag:getItemContainer():AddItem("Base.BaseballBat");
-			bat:setCondition(7);
-			local hammer = bag:getItemContainer():AddItem("Base.Hammer");
-			hammer:setCondition(5);
-			playerObj:setClothingItem_Back(bag);
-		end;
-		playerObj:getInventory():AddItem("Base.WaterBottle");
-		playerObj:getInventory():AddItem("Base.Crisps");
-	elseif getWorld():getDifficulty() == "Hard" then
-		playerObj:getInventory():AddItem("Base.WaterBottle");
-		playerObj:getInventory():AddItem("Base.Crisps");
-	end;
-	
 	-- give the new players the SpawnItem if configured (MP Only)
 	if isServer() then
 		if getServerOptions():getOption("SpawnItems") and getServerOptions():getOption("SpawnItems")~= "" then

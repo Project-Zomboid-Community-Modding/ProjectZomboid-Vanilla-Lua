@@ -109,11 +109,13 @@ function ISDestroyStuffAction:complete()
 -- 	end
 
 	-- corner walls need special handling, so this sets up ordinary walls to work with that handling to simplify things
-	if not self.item:getSquare():getWall(false) == self.item and not self.item:getSquare():getWall(true) == self.item then --no wall
+	local wallW = self.item:getSquare():getWall(false)
+	local wallN = self.item:getSquare():getWall(true)
+	if wallW ~= self.item and not wallN == self.item then --no wall
 		self.cornerCounter = -1
-	elseif self.item:getSquare():getWall(false) == self.item and not self.item:getSquare():getWall(true) == self.item then --west wall only
+	elseif wallW == self.item and wallN ~= self.item then --west wall only
 		self.cornerCounter = 0
-	elseif not self.item:getSquare():getWall(false) == self.item and self.item:getSquare():getWall(true) == self.item then --north wall only
+	elseif wallW ~= self.item and wallN == self.item then --north wall only
 		self.cornerCounter = 1
 	end
 

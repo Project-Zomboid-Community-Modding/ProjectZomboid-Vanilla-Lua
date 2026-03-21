@@ -131,12 +131,8 @@ function ISObjectClickHandler.doClickCurtain(object, playerNum, playerObj)
 end
 
 function ISObjectClickHandler.doClickDoor(object, playerNum, playerObj)
-    if false then
-        ISWorldObjectContextMenu.onOpenCloseDoor(nil, object, playerNum);
-        return true;
-    end;
     local playerSq = playerObj:getCurrentSquare();
-    if playerSq:isWallTo(object:getSquare()) then return false; end;
+    if playerSq:isWallTo(object:getSquare()) and not playerSq:isDoorTo(object:getSquare()) then return false; end;
     if object:getSquare():getZ() ~= playerSq:getZ() then return false end;
     if not object:isAdjacentToSquare(playerSq) then return false end;
     if isKeyDown(Keyboard.KEY_LSHIFT) and not playerObj:isWalking() then

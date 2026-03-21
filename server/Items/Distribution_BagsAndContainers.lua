@@ -571,6 +571,7 @@ BagsAndContainers.BanditItems = {
 	"Wrench", 1,
 	-- Guns/Ammo/Explosives
 	"556Box", 6,
+	"3030Box", 1,
 	"308Box", 1,
 	"556Box", 1,
 	"Bag_ChestRig", 1,
@@ -2254,56 +2255,32 @@ BagsAndContainers.Plasticbags = {
 }
 
 BagsAndContainers.Bag_Police = {
-	rolls = 2,
-	items = {
-		"556Box", 10,
-		"308Box", 10,
-		"44Clip", 8,
-		"45Clip", 8,
-		"9mmClip", 8,
-		"AmmoStraps", 6,
-		"AssaultRifle2", 2,
-	    "Bullets357Box", 10,
-		"Bullets38Box", 10,
-		"Bullets44Box", 10,
-		"Bullets45Box", 10,
-		"Bullets9mmBox", 10,
-		"ChokeTubeFull", 6,
-		"ChokeTubeImproved", 6,
-		"Crowbar", 8,
-		"FirstAidKit", 4,
-		"Glasses_Shooting", 8,
-		"Gloves_FingerlessGloves", 8,
-		"HuntingRifle", 4,
-		"HolsterAnkle", 1,
-		"HolsterShoulder", 2,
-		"HolsterSimple_Black", 8,
-		"KnifePocket", 4,
-		"M14Clip", 8,
-		"Nightstick", 8,
-		"Pistol", 8,
-		"Pistol2", 6,
-		"Pistol3", 4,
-		"RecoilPad", 6,
-		"RedDot", 6,
-		"Revolver", 6,
-		"Revolver_Long", 4,
-		"Revolver_Short", 8,
-		"Shotgun", 10,
-		"ShotgunSawnoff", 10,
-		"ShotgunShellsBox", 10,
-		"VarmintRifle", 8,
-		"Vest_BulletPolice", 2,
-		"x2Scope", 8,
-		"x4Scope", 6,
-		"x8Scope", 4,
-	},
-	junk = {
-		rolls = 1,
-		items = {
-			
-		}
-	},
+    rolls = 4,
+    dontSpawnAmmo = true,
+    items = {
+        -- Guns
+        "JS14_Rifle", 4,
+        "JS3T_Shotgun", 4,
+        "Pistol", 20,
+        "Revolver", 20,
+        "Revolver_Long", 4,
+        "Shotgun", 20,
+        -- Accessories
+        "AmmoStrap_Shells", 10,
+        "HolsterAnkle", 10,
+        "HolsterShoulder", 10,
+        "HolsterSimple_Black", 20,
+        -- Misc.
+        "FirstAidKit_Pro", 10,
+        "Nightstick", 20,
+        "Vest_BulletPolice", 10,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
 }
 
 BagsAndContainers.ProduceStorage_Apple = {

@@ -712,6 +712,7 @@ function MultiplayerUI:onPressButtonOnAccountList(button, x, y)
         self.screenShading:setAlwaysOnTop(true)
         self.modal:setAlwaysOnTop(true)
     elseif button.internal == "CONNECT" then
+        print("Connecting to server (IP: " .. tostring(button.server:getIp()) .. "; Port: " .. tostring(button.server:getPort()) .. ").")
         self:connectToServer(button.server, button.account);
     end
 end

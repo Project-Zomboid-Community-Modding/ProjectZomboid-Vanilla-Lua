@@ -2171,12 +2171,8 @@ end
 
 function forageSystem.doGlassesCheck(_character, _skillDef, _bonusEffect)
 	if _bonusEffect == "visionBonus" then
-		local visualAids = {
-			["Base.Glasses_Normal"]     = true,
-			["Base.Glasses_Reading"]    = true,
-		};
 		local wornItem = _character:getWornItem(ItemBodyLocation.EYES);
-		if wornItem and visualAids[wornItem:getFullType()] then
+		if wornItem and wornItem:isVisualAid() then
 			return false;
 		end;
 	end;

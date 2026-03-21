@@ -2,16 +2,20 @@ require "TimedActions/ISBaseTimedAction"
 
 ISPickAxeGroundCoverItem = ISBaseTimedAction:derive("ISPickAxeGroundCoverItem");
 
-local function predicatePickAxe(item)
+function ISPickAxeGroundCoverItem:predicatePickAxe(item)
 	if item:isBroken() then return false end
+	if self.item:isStump() then
+        return item:hasTag(ItemTag.REMOVE_STUMP)
+    end
 	local type = item:getType()
 	return item:hasTag(ItemTag.HAMMER) or item:hasTag(ItemTag.SLEDGEHAMMER) or item:hasTag(ItemTag.CLUB_HAMMER) or item:hasTag(ItemTag.PICK_AXE) or type == "PickAxe" or item:hasTag(ItemTag.STONE_MAUL)
 end
 
 function ISPickAxeGroundCoverItem:isValid()
-	if ISBuildMenu.cheat then return true end
-	local PickAxe = self.character:getInventory():getFirstEvalRecurse(predicatePickAxe)
-	if not PickAxe then return false end
+	local pickAxe = self.character:getPrimaryHandItem()
+	if not pickAxe or not self:predicatePickAxe(pickAxe) then
+        return false
+    end
 	--ensure the player hasn't moved too far away while the action was in queue
 	local diffX = math.abs(self.item:getSquare():getX() + 0.5 - self.character:getX());
 	local diffY = math.abs(self.item:getSquare():getY() + 0.5 - self.character:getY());
@@ -53,11 +57,11 @@ function ISPickAxeGroundCoverItem:perform()
 		return
 	end
 	local xp = false
-	if self.objectType then
+	if self.objectType or self.item:isStump() then
 		local trashItem
-		if self.objectType == "Small Stump" or self.objectType == "Stump" then trashItem = "Base.UnusableWood" end
--- 		if self.objectType == "bigRock" or self.objectType == "bigRockTwigs" then trashItem = "Base.LargeStone" end
--- 		if self.objectType == "flatRock" then trashItem = "Base.FlatStone" end
+        if self.item:isStump() then
+            trashItem = "Base.UnusableWood"
+        end
         if (string.find(tostring(self.objectType), "ironOre") ~= nil) then
 -- 		if self.objectType:contains("ironOre") then
             trashItem = "Base.IronOre"

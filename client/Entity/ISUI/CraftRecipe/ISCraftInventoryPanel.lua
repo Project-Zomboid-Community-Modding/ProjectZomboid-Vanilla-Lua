@@ -554,9 +554,6 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
 end
 
 function ISCraftInventoryPanel:onListDoubleClick(_item)
-    if instanceof(self.logic, "CraftLogicUILogic") then
-        return;
-    end
     local previousText = self.selectedItem.name;
     local wasNode = self.selectedItem.isNode;
     local maxIndex = 0;
@@ -626,7 +623,7 @@ function ISCraftInventoryPanel:onListSelected(_item)
             end
             --currently do nothing
         elseif self.selectedItem.isNode then
-            if isCtrlDown and not instanceof(self.logic, "CraftLogicUILogic") then
+            if isCtrlDown then
                 local previousSelected = self.itemListBox.selected;
                 self.selectedItem.node:setExpandedUsed(true)
                 self.selectedItem.node:setExpandedAvailable(true)
@@ -651,7 +648,7 @@ function ISCraftInventoryPanel:onListSelected(_item)
                 if not self.previousSelected or not isShiftDown then
                     self.previousSelected = self.itemListBox.selected;
                 end
-                if isShiftDown and not instanceof(self.logic, "CraftLogicUILogic") then
+                if isShiftDown then
                     self.logic:clearManualInputsFor(self.logic:getRecipeData():getDataForInputScript(self.logic:getManualSelectInputScriptFilter()));
                     local startIndex = self.itemListBox.selected;
                     local endIndex = self.previousSelected;

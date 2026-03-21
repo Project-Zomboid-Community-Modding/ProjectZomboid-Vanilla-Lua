@@ -21,6 +21,9 @@ function ISLoadBulletsInMagazine:start()
 	self:setOverrideHandModels(nil, "GunMagazine");
 	self:setActionAnim(CharacterActionAnims.InsertBullets);
 	self:initVars()
+	self.loadedThisLoop = false;
+	self.updateLoadBulletsTime = 0.0
+	self.character:setVariable("UpdateLoadBulletsTime", 0.0);
 end
 
 function ISLoadBulletsInMagazine:update()
@@ -33,6 +36,18 @@ function ISLoadBulletsInMagazine:update()
 		return;
 	end
 	self.character:setMetabolicTarget(Metabolics.LightDomestic);
+
+    self:updateLoadingTime()
+end
+
+function ISLoadBulletsInMagazine:updateLoadingTime()
+    local animTimeDelta = self.character:getAnimationTimeDelta();
+    local oldUpdateLoadBulletsTime = self.updateLoadBulletsTime;
+    self.updateLoadBulletsTime = (self.updateLoadBulletsTime + animTimeDelta) % 1.0;
+    if oldUpdateLoadBulletsTime > self.updateLoadBulletsTime then
+        self.loadedThisLoop = false
+    end
+	self.character:setVariable("UpdateLoadBulletsTime", self.updateLoadBulletsTime);
 end
 
 function ISLoadBulletsInMagazine:initVars()
@@ -44,10 +59,18 @@ function ISLoadBulletsInMagazine:isLoadFinished()
 	return self.magazine:getCurrentAmmoCount() >= self.magazine:getMaxAmmo() or not self.character:getInventory():containsWithModule(itemKey)
 end
 
+function ISLoadBulletsInMagazine:isLocal()
+    if not isMultiplayer() or isClient() then
+        return true
+    end
+    return false
+end
+
 function ISLoadBulletsInMagazine:serverStart()
 	self:initVars()
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "InsertBullet", nil)
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 550), "loadFinished", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "updateLoadingTime", nil)
 end
 
 function ISLoadBulletsInMagazine:getDuration()
@@ -59,18 +82,34 @@ function ISLoadBulletsInMagazine:complete()
 end
 
 function ISLoadBulletsInMagazine:animEvent(event, parameter)
+    if isServer() then
+        if event == "updateLoadingTime" then
+            self:updateLoadingTime();
+        end
+    end
 	if event == 'InsertBulletSound' then
 		if self:isLoadFinished() then
 			-- Fix for looping animation events arriving after loading finished.
 			-- That's why 'PlaySound' isn't used instead.
 			return
 		end
+        if self:isLocal() then
+            if self.loadedThisLoop then
+                return
+            end
+        end
 		self.character:playSound(parameter);
 	elseif event == 'InsertBullet' then
 		if self:isLoadFinished() then
 			-- Fix for looping animation events arriving after loading finished.
 			return
 		end
+        if self:isLocal() then
+            if self.loadedThisLoop then
+                return
+            end
+        end
+        self.loadedThisLoop = true
 		if not isClient() then
 			local chance = 5;
 			local xp = 1;
@@ -90,6 +129,7 @@ function ISLoadBulletsInMagazine:animEvent(event, parameter)
 	elseif event == 'loadFinished' then
 		if self:isLoadFinished() then
 			self.loadFinished = true
+	        self.loadedThisLoop = false
 			if isServer() then
 				self.netAction:forceComplete()
 			end
@@ -124,5 +164,7 @@ function ISLoadBulletsInMagazine:new(character, magazine, ammoCount)
 	o.magazine = magazine;
 	o.useProgressBar = false;
 	o.ammoCount = ammoCount
+	o.updateLoadBulletsTime = 0.0
+	o.loadedThisLoop = false
 	return o
 end

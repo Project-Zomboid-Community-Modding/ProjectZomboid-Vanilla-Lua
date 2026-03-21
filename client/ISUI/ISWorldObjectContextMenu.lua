@@ -82,6 +82,10 @@ local function predicatePickAxe(item)
 	return not item:isBroken() and item:hasTag(ItemTag.PICK_AXE)
 end
 
+local function predicateRemoveStump(item)
+	return not item:isBroken() and item:hasTag(ItemTag.REMOVE_STUMP)
+end
+
 local function predicateMaulOrPickAxe(item)
 	return not item:isBroken() and (item:hasTag(ItemTag.STONE_MAUL) or item:hasTag(ItemTag.SLEDGEHAMMER) or item:hasTag(ItemTag.CLUB_HAMMER) or item:hasTag(ItemTag.PICK_AXE))
 end
@@ -671,47 +675,130 @@ ISWorldObjectContextMenu.onFishingNet = function(_, player, fishNet)
     getCell():setDrag(fishingNet:new(player, fishNet), player:getPlayerNum());
 end
 
-ISWorldObjectContextMenu.onCheckFishingNet = function(worldobjects, player, trap, hours)
-    ISTimedActionQueue.add(ISCheckFishingNetAction:new(player, trap, hours));
+local function isValidWaterSquare(square)
+    if square == nil then
+        return false
+    end
+    local floor = square:getFloor()
+    return floor ~= nil and floor:hasProperty(IsoFlagType.water)
 end
 
-local function getNearestToWaterSquare(playerObj, square)
-	if playerObj:getZ() ~= 0 then return nil end
+local function isValidShoreSquare(square)
+    if square == nil then
+        return false
+    end
+    if square:isSolid() or square:isSolidTrans() then
+        return false
+    end
+    -- Shore squares have both a non-water floor tile and a water tile.
+    local floor = square:getFloor()
+    if floor == nil then
+        return false
+    end
+    if floor:hasProperty(IsoFlagType.water) then
+        return false
+    end
+    return true
+end
 
-	local dx = (square:getX() - playerObj:getX())/100.0
-	local dy = (square:getY() - playerObj:getY())/100.0
-	local x = playerObj:getX()
-	local y = playerObj:getY()
-	local cell = getCell()
-	for i = 0, 100 do
-		local sq = cell:getGridSquare(x, y, 0)
-		if sq and sq:getProperties() and sq:getProperties():has(IsoFlagType.water) then
-			return sq
-		end
-		x = x + dx
-		y = y + dy
-	end
+local function isSquareAdjacentToWater(square)
+    if not isValidShoreSquare(square) then
+        return false
+    end
+    for i=1,8 do
+        local square2 = square:getAdjacentSquare(IsoDirections.fromIndex(i-1))
+        if isValidWaterSquare(square2) then
+            return true
+        end
+    end
+    return false
+end
+
+local function getSquaresAdjacentToWater(x, y, z, range)
+    local result = {}
+    for y1=y-range,y+range do
+        local square = getCell():getGridSquare(x-range, y1, z)
+        if isSquareAdjacentToWater(square) then
+            table.insert(result, square)
+        end
+        square = getCell():getGridSquare(x+range, y1, z)
+        if isSquareAdjacentToWater(square) then
+            table.insert(result, square)
+        end
+    end
+    for x1=x-range+1,x+range-1 do
+        local square = getCell():getGridSquare(x1, y-range, z)
+        if isSquareAdjacentToWater(square) then
+            table.insert(result, square)
+        end
+        square = getCell():getGridSquare(x1, y+range, z)
+        if isSquareAdjacentToWater(square) then
+            table.insert(result, square)
+        end
+    end
+    return result
+end
+
+local function findPathNextToWater(playerObj, waterSquare, range, callback, args)
+    if playerObj:getZ() ~= 0 then
+        return nil
+    end
+    local squares = getSquaresAdjacentToWater(waterSquare:getX(), waterSquare:getY(), waterSquare:getZ(), range)
+    while #squares == 0 and range < 5 do
+        range = range + 1
+        squares = getSquaresAdjacentToWater(waterSquare:getX(), waterSquare:getY(), waterSquare:getZ(), range)
+    end
+    if #squares == 0 then
+        return nil
+    end
+    local locations = {}
+    for _,square in ipairs(squares) do
+        table.insert(locations, square:getX() + 0.5)
+        table.insert(locations, square:getY() + 0.5)
+        table.insert(locations, square:getZ())
+    end
+    local action = ISPathFindAction:pathToNearest(playerObj, locations)
+    action:setOnComplete(ISWorldObjectContextMenu.onWalkNextToWaterComplete, callback, args)
+    action:setOnFail(ISWorldObjectContextMenu.onWalkNextToWaterFail, playerObj, waterSquare, range, callback, args)
+    ISTimedActionQueue.add(action)
+    return action
+end
+
+function ISWorldObjectContextMenu.onWalkNextToWaterComplete(callback, args)
+    callback(args)
+end
+
+function ISWorldObjectContextMenu.onWalkNextToWaterFail(playerObj, waterSquare, range, callback, args)
+    if range > 4 then
+        return
+    end
+    findPathNextToWater(playerObj, waterSquare, range + 1, callback, args)
+end
+
+ISWorldObjectContextMenu.onCheckFishingNet = function(worldobjects, playerObj, trap, hours)
+    findPathNextToWater(playerObj, trap:getSquare(), 1, function(args)
+        ISTimedActionQueue.add(ISCheckFishingNetAction:new(args.playerObj, args.trap, args.hours));
+    end, { playerObj=playerObj, trap=trap, hours=hours })
 end
 
 ISWorldObjectContextMenu.onAddBaitToWater = function(playerObj, chum, square)
-	local sq = getNearestToWaterSquare(playerObj, square)
-	if sq == nil then return end
-	if luautils.walkAdj(playerObj, sq) then
-		ISWorldObjectContextMenu.transferIfNeeded(playerObj, chum)
-		ISTimedActionQueue.add(AddChumToWaterAction:new(playerObj, chum, square));
-	end
+    findPathNextToWater(playerObj, square, 1, function(args)
+        ISWorldObjectContextMenu.transferIfNeeded(args.playerObj, args.chum)
+        ISTimedActionQueue.add(AddChumToWaterAction:new(args.playerObj, args.chum, args.square));
+    end, { playerObj=playerObj, chum=chum, square=square })
 end
 
-ISWorldObjectContextMenu.onRemoveFishingNet = function(worldobjects, player, trap)
-	ISTimedActionQueue.add(ISRemoveFishingNetAction:new(player, trap));
+ISWorldObjectContextMenu.onRemoveFishingNet = function(worldobjects, playerObj, trap)
+    findPathNextToWater(playerObj, trap:getSquare(), 1, function(args)
+        ISTimedActionQueue.add(ISRemoveFishingNetAction:new(args.playerObj, args.trap));
+    end, { playerObj=playerObj, trap=trap })
 end
 
 ISWorldObjectContextMenu.onAddBaitToFishingNet = function(worldobjects, playerObj, trap, bait)
-	if luautils.walkAdj(playerObj, getNearestToWaterSquare(playerObj, trap:getSquare())) then
-		ISWorldObjectContextMenu.transferIfNeeded(playerObj, bait)
-
-		ISTimedActionQueue.add(ISAddBaitToFishNetAction:new(playerObj, trap, bait));
-	end
+    findPathNextToWater(playerObj, trap:getSquare(), 1, function(args)
+        ISWorldObjectContextMenu.transferIfNeeded(args.playerObj, args.bait)
+        ISTimedActionQueue.add(ISAddBaitToFishNetAction:new(args.playerObj, args.trap, args.bait));
+    end, { playerObj=playerObj, trap=trap, bait=bait })
 end
 
 ISWorldObjectContextMenu.getFishingLure = function(player, rod)
@@ -1722,8 +1809,14 @@ ISWorldObjectContextMenu.doFillFuelMenu = function(source, playerNum, context)
 
     local fillOption = context:addOption(getText("ContextMenu_TakeGasFromPump"), worldobjects, nil);
     if not source:getSquare() or not AdjacentFreeTileFinder.Find(source:getSquare(), playerObj) then
-        fillOption.notAvailable = true;
         --if the player can reach the tile, populate the submenu, otherwise don't bother
+        return;
+    end
+    if playerObj:hasFullInventory() then
+        fillOption.notAvailable = true;
+        local tooltip = ISWorldObjectContextMenu.addToolTip();
+        tooltip.description = getText("ContextMenu_FullInventory");
+        fillOption.toolTip = tooltip;
         return;
     end
 
@@ -1846,22 +1939,12 @@ ISWorldObjectContextMenu.doWashClothingMenu = function(sink, player, context)
 	local washYourself = false
 	local washEquipment = false
 	local washList = {}
-	local soapList = {}
+    local soapList = character:getInventory():getSoapList(nil, true)
 	local noSoap = true
 
 	washYourself = ISWashYourself.GetRequiredWater(playerObj) > 0
 
-	local barList = playerInv:getItemsFromType("Soap2", true)
-	for i=0, barList:size() - 1 do
-		local item = barList:get(i)
-		table.insert(soapList, item)
-	end
 
-	local bottleList = playerInv:getAllEvalRecurse(predicateCleaningLiquid)
-	for i=0, bottleList:size() - 1 do
-		local item = bottleList:get(i)
-		table.insert(soapList, item)
-	end
 
 	local washClothing = {}
 	local clothingInventory = playerInv:getItemsFromCategory("Clothing")
@@ -1970,26 +2053,22 @@ ISWorldObjectContextMenu.doWashClothingMenu = function(sink, player, context)
 				local option = nil
 				if #washClothing > 0 then
 					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washClothing)
-					noSoap = soapRequired < soapRemaining
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllClothing"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washClothing, nil, noSoap);
+					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllClothing"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washClothing, nil);
 					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washClothing, option)
 				end
 				if #washContainer > 0 then
 					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washContainer)
-					noSoap = soapRequired < soapRemaining
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllContainer"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washContainer, nil, noSoap);
+					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllContainer"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washContainer, nil);
 					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washContainer, option)
 				end
 				if #washWeapon > 0 then
 					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washWeapon)
-					noSoap = soapRequired < soapRemaining
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllWeapon"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washWeapon, nil, noSoap);
+					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllWeapon"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washWeapon, nil);
 					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washWeapon, option)
 				end
 				if #washOther > 0 then
 					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washOther)
-					noSoap = soapRequired < soapRemaining
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllOther"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washOther, nil, noSoap);
+					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllOther"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washOther, nil);
 					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washOther, option)
 				end
 			end
@@ -2025,7 +2104,7 @@ ISWorldObjectContextMenu.doWashClothingMenu = function(sink, player, context)
 	end
 end
 
-ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, washList, singleClothing, noSoap)
+ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, washList, singleClothing)
 	if not sink:getSquare() or not luautils.walkAdj(playerObj, sink:getSquare(), true) then
 		return
 	end
@@ -2035,7 +2114,18 @@ ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, wa
 		table.insert(washList, singleClothing);
 	end
 
+    local currentSoapUses = 0
+    if soapList then
+        currentSoapUses = ISWashClothing.GetSoapRemaining(soapList)
+    end
+
 	for i,item in ipairs(washList) do
+        local noSoap = true
+        local soapNeeded = ISWashClothing.GetRequiredSoap(item)
+        if currentSoapUses > 0 then
+            noSoap = false
+            currentSoapUses = currentSoapUses - math.min(currentSoapUses, soapNeeded) -- handwave mechanic to allow the last use(s) of a soap bar to wash an item, preventing soap only being completely used when it matches the exact soapNeeded
+        end
 		local bloodAmount = 0
 		local dirtAmount = 0
 		if instanceof(item, "Clothing") or instanceof(item, "InventoryContainer") then
@@ -2052,7 +2142,7 @@ ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, wa
 		else
 			bloodAmount = bloodAmount + item:getBloodLevel()
 		end
-		ISTimedActionQueue.add(ISWashClothing:new(playerObj, sink, soapList, item, bloodAmount, dirtAmount, noSoap))
+		ISTimedActionQueue.add(ISWashClothing:new(playerObj, sink, item, bloodAmount, dirtAmount, noSoap))
 	end
 end
 
@@ -2061,7 +2151,7 @@ ISWorldObjectContextMenu.onWashYourself = function(playerObj, sink, soapList)
 		return
 	end
 
-	ISTimedActionQueue.add(ISWashYourself:new(playerObj, sink, soapList));
+	ISTimedActionQueue.add(ISWashYourself:new(playerObj, sink));
 end
 
 local CleanBandages = {}
@@ -2691,7 +2781,7 @@ function ISWorldObjectContextMenu.doCleanGraffiti(playerObj, square)
 	if luautils.walkAdj(playerObj, square) then
 		local cleaner
 		local item
-		if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem():getFluidContainer():contains(Fluid.Petrol) then
+		if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem():getFluidContainer() and playerObj:getSecondaryHandItem():getFluidContainer():contains(Fluid.Petrol) then
 		    cleaner = playerObj:getSecondaryHandItem()
 		else
             cleaner = playerInv:getFirstEvalRecurse(function(item)
@@ -3060,6 +3150,14 @@ ISWorldObjectContextMenu.onPickupGroundCoverItem = function(worldobjects, player
     end
 end
 
+ISWorldObjectContextMenu.onRemoveGroundCoverItemStump = function(worldobjects, player, object)
+    local playerObj = getSpecificPlayer(player)
+    if object:getSquare() and luautils.walkAdj(playerObj, object:getSquare()) then
+        ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), predicateRemoveStump, true, true)
+        ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(playerObj, object));
+    end
+end
+
 ISWorldObjectContextMenu.onRemoveGroundCoverItemPickAxe = function(worldobjects, player, object)
     local playerObj = getSpecificPlayer(player)
     if object:getSquare() and luautils.walkAdj(playerObj, object:getSquare()) then
@@ -3077,7 +3175,7 @@ ISWorldObjectContextMenu.onRemoveGroundCoverItemHammerOrPickAxe = function(world
 end
 
 ISWorldObjectContextMenu.chairCheckList = {}
-ISWorldObjectContextMenu.chairCheckList.badList = { "Barstool", "Chair", "Chairs", "Ottoman", "Stool", "Stump", "Block", "Table"} --Futon",
+ISWorldObjectContextMenu.chairCheckList.badList = { "Barstool", "Chair", "Chairs", "Ottoman", "Stool", "Stump", "Block", "Table", "Toilet"} --Futon",
 ISWorldObjectContextMenu.chairCheckList.goodList = { "Beach", "Black Fancy", "Comfy", "Dentist Patient", "Fancy White", "Lazy", "Light Blue", "Modern White", "Rattan", "Salon", "Victorian", "Yellow Modern"} -- , "Plastic"
 
 ISWorldObjectContextMenu.chairCheck = function(bed)
@@ -3200,19 +3298,23 @@ ISWorldObjectContextMenu.doSheetRopeOptions = function(_context, _object, _world
 
 			if (_playerInv:getItemCountRecurse("SheetRope") >= object:countAddSheetRope()) then
 				if _test == true then return true; end
+                local option;
 				if object:getSprite():getProperties():has("TieSheetRope") then
-					_context:addGetUpOption(getText("ContextMenu_Tie_escape_rope_sheet"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, true);
+					option =_context:addGetUpOption(getText("ContextMenu_Tie_escape_rope_sheet"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, true);
 				else
-					_context:addGetUpOption(getText("ContextMenu_Nail_escape_rope_sheet"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, true);
+                    option =_context:addGetUpOption(getText("ContextMenu_Nail_escape_rope_sheet"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, true);
 				end
+                option.iconTexture = getTexture("Item_SheetRope");
 			end
 			if (_playerInv:getItemCountRecurse("Rope") >= object:countAddSheetRope()) then
 				if _test == true then return true; end
+                local option;
 				if object:getSprite():getProperties():has("TieSheetRope") then
-					_context:addGetUpOption(getText("ContextMenu_Tie_escape_rope"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, false);
+					option = _context:addGetUpOption(getText("ContextMenu_Tie_escape_rope"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, false);
 				else
-					_context:addGetUpOption(getText("ContextMenu_Nail_escape_rope"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, false);
+                    option = _context:addGetUpOption(getText("ContextMenu_Nail_escape_rope"), _worldobjects, ISWorldObjectContextMenu.onAddSheetRope, object, _player, false);
 				end
+                option.iconTexture = getTexture("Item_Rope");
 			end
 		else
 			if object:haveSheetRope() then

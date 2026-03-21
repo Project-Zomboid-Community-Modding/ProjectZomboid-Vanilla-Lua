@@ -295,6 +295,7 @@ UI.PrintMedia = UI.Window{
                     local centerX = xx / (#locationData * 2)
                     local centerY = yy / (#locationData * 2)
                     local playerObj = getPlayer() -- FIXME: splitscreen
+                    playerObj:setJoypadIgnoreAimUntilCentered(true)
                     ISTimedActionQueue.clear(playerObj)
                     ISTimedActionQueue.add(ISReadWorldMap:new(playerObj, centerX, centerY, getMapZoom(maxLen)))
                 end

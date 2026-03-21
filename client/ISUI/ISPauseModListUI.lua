@@ -16,24 +16,9 @@ function ISPauseModListUI:initialise()
     self.chatText:addScrollBars();
 
     local text = ""
-    local modItems = {}
-
-    if isClient() then
-        local modString = getServerOptions():getOptionByName("Mods"):getValue()
-        modItems = string.split(modString, ";")
-    else
-        local saveInfo = getSaveInfo(getWorld():getWorld())
-        local activeMods = saveInfo.activeMods
-        if activeMods == nil then
-        elseif activeMods:getMods():isEmpty() then
-        else
-            for i=1,activeMods:getMods():size() do
-                table.insert(modItems, activeMods:getMods():get(i-1))
-            end
-        end
-    end
-
-    for i, modID in ipairs(modItems) do
+    local modList = getActivatedMods()
+    for i = 0, modList:size()-1 do
+        local modID = modList:get(i)
         local modInfo = getModInfoByID(modID)
         if modInfo == nil then
             text = text .. " <LINE> <RGB:1,1,0> " .. modID .. " [Not found]"

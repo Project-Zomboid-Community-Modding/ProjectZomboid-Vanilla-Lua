@@ -199,7 +199,7 @@ function ISUsersList:onClick(button)
         end
     end
     if button.internal == "DELETE" then
-        local modal = ISModalDialog:new((getCore():getScreenWidth() / 2) - 130, (getCore():getScreenHeight() / 2) - 60, 260, 120, getText("IGUI_RolesList_DeleteRole"), true, ISUsersList.instance, ISUsersList.onDeleteModalClick);
+        local modal = ISModalDialog:new((getCore():getScreenWidth() / 2) - 130, (getCore():getScreenHeight() / 2) - 60, 260, 120, getText("IGUI_UsersList_DeleteUser"), true, ISUsersList.instance, ISUsersList.onDeleteModalClick);
         modal:initialise();
         modal:addToUIManager();
         return;

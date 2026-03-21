@@ -68,6 +68,17 @@ function ISGrabCorpseItem:complete()
 		part:setContainerContentAmount(part:getItemContainer():getCapacityWeight());
 	end
 
+    if "Base.CorpseAnimal" == self.item:getFullType() then
+        self.character:getInventory():AddItem(self.item);
+        sendAddItemToContainer(self.character:getInventory(), self.item);
+        self.character:setPrimaryHandItem(self.item);
+        self.character:setSecondaryHandItem(self.item);
+        if isServer() then
+            sendEquip(self.character)
+        end
+        return true;
+    end
+
 	self.character:pickUpCorpseItem(self.item)
 
 	if isClient() then

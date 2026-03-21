@@ -30,6 +30,12 @@ function ISInventoryMenuElements.ContextMedia()
     end
 
     function self.changeRecording( _p, _item, _other )
+        if isClient() then
+            local playerObj = getSpecificPlayer(self.invMenu.playerNum)
+            local mediaIndex = _other and _other:getIndexForLua() or -1
+            sendClientCommand(playerObj, "item", "changeRecording", { itemID=_item:getID(), mediaIndex=mediaIndex })
+            return
+        end
         if _other == nil then
             _item:setRecordedMediaIndexInteger(-1)
             _item:getContainer():setDrawDirty(true);

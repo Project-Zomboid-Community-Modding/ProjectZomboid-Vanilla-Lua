@@ -45,7 +45,7 @@ function RWMPanel:doWalkTo()
         if self.deviceType == "InventoryItem" then
             return true;
         elseif self.deviceType == "IsoObject" and self.device:getSquare() then
-            return luautils.walkAdj( self.player, self.device:getSquare(), false );
+            return luautils.walkAdj( self.player, self.device:getSquare(), true );
         elseif self.deviceType == "VehiclePart" and self.player:getVehicle() == self.device:getVehicle() then
             return true;
         end

@@ -58,19 +58,23 @@ function ISWidgetCraftLogicInputControl:createDynamicChildren()
     for i = 0, recipeInputs:size()-1 do
         local recipeInput = recipeInputs:get(i);
         local itemSlot = nil;
-        if showToolsSeparate and (recipeInput:isTool() or recipeInput:isKeep()) then
+        if self.inputTools and showToolsSeparate and (recipeInput:isTool() or recipeInput:isKeep()) then
             itemSlot = self.inputTools:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
-        else
+        elseif self.inputItems then
             itemSlot = self.inputItems:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
             itemSlot.onItemDropped = ISCraftLogicPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
         end
-        itemSlot.inputScript = recipeInput;
-        itemSlot.showPreviewItem = true;
+        if itemSlot then
+            itemSlot.inputScript = recipeInput;
+            itemSlot.showPreviewItem = true;
+        end
     end
-    local missingSlotCount = inputResourceItems:size() - recipeInputs:size();
-    for i = 1, missingSlotCount do
-        local itemSlot = self.inputItems:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
-        itemSlot.onItemDropped = ISCraftLogicPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
+    if self.inputItems then
+        local missingSlotCount = inputResourceItems:size() - recipeInputs:size();
+        for i = 1, missingSlotCount do
+            local itemSlot = self.inputItems:addResource(inputResourceItems:get(i), "S_ItemSlot_Input");
+            itemSlot.onItemDropped = ISCraftLogicPanel.onItemSlotAddItems; --when items dragged under mouse are dropped in box
+        end
     end
 
     -- Inputs - Full Label
@@ -257,11 +261,37 @@ end
 
 function ISWidgetCraftLogicInputControl:onResourceSlotContentsChanged()
     self:updateOutputItems();
+    self:updateInputItemsCount();
     self.controlWidget:onInputsChanged();
     self:calculateLayout(self.width, self.height);
 end
 
+function ISWidgetCraftLogicInputControl:updateInputItemsCount()
+    if self.inputItems then
+        -- reset count
+        for _,slot in pairs(self.inputItems:getItemSlots()) do
+            slot.overrideItemCount = nil;
+        end
+        
+        local slot = self.logic:getManualSelectItemSlot();
+        if slot then
+            local satisfiedAmount = slot.resource and slot.resource:getItemUses(slot.inputScript) or 0;
+            satisfiedAmount = satisfiedAmount + #self.logic:getInventoryItemsToTransfer();
+
+            if slot.renderRequiredItemCount and slot.resource then
+                local maxCount = slot.resource:getItemCapacity();
+                satisfiedAmount = tostring(satisfiedAmount) .. "/" .. tostring(maxCount);
+            end
+            
+            slot.overrideItemCount = satisfiedAmount;
+        end
+    end
+end
+
 function ISWidgetCraftLogicInputControl:updateOutputItems()
+    if not self.outputItems then
+        return;
+    end
     -- update output teaser
     self.outputItems:removeAllSlots();
     local outputItems = self.logic:getOutputItems();
@@ -290,7 +320,7 @@ function ISWidgetCraftLogicInputControl:updateOutputItems()
 end
 
 function ISWidgetCraftLogicInputControl:onRecipeChanged()
-    if self.logic:shouldShowManualSelectInputs() then
+    if self.logic:shouldShowManualSelectInputs() and self.inputItems then
         local slots = self.inputItems:getItemSlots();
         if #slots > 0 then
             self.inputItems:onSelectInputsButton(slots[1]);

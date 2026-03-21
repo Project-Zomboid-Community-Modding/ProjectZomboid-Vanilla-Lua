@@ -26,9 +26,6 @@ function ISRepairClothing:update()
 	local hole = self.clothing:getVisual():getHole(self.part)
 	local jobType = (hole > 0) and getText("ContextMenu_PatchHole") or getText("ContextMenu_AddPadding")
 	ISGarmentUI.setBodyPartActionForPlayer(self.character, self.part, self, jobType, { })
-    local skill = self.character:getPerkLevel(Perks.Tailoring)
-    local strain = ( (1 - (skill * 0.05))/10 * getGameTime():getMultiplier() ) / 2
-    self.character:addNeckMuscleStrain(strain)
 end
 
 function ISRepairClothing:start()

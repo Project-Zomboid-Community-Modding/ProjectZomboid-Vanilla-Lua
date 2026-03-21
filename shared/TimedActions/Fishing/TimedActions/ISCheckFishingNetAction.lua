@@ -6,6 +6,11 @@ function ISCheckFishingNetAction:isValid()
 	return self.trap ~= nil and self.trap:getSquare() ~= nil and math.abs(math.floor(((getGameTime():getCalender():getTimeInMillis() - self.trap:getSquare():getModData()["fishingNetTS"]) / 60000) / 60) - self.hours) < 2;
 end
 
+function ISCheckFishingNetAction:waitToStart()
+    self.character:faceThisObject(self.trap)
+    return self.character:isTurning() or self.character:shouldBeTurning()
+end
+
 function ISCheckFishingNetAction:update()
     self.character:setMetabolicTarget(Metabolics.MediumWork);
 end

@@ -529,6 +529,7 @@ function CoopOptionsScreen:onStartButtonDown(button, x, y)
     self.progress = 0;
     self.serverStatus = getText("UI_ServerStatus_Launching");
     self.uiStatus = "launching";
+    self.backButton:setEnable(false);
     self.startButton:setEnable(false);
     self.abortButton:setEnable(true);
 end
@@ -536,7 +537,6 @@ end
 function CoopOptionsScreen:onAbortButtonDown(button, x, y)
     CoopServer:abort();
     self.abortButton:setEnable(false);
-    self.backButton:setEnable(false);
 end
 
 function CoopOptionsScreen:checkWorldExists()

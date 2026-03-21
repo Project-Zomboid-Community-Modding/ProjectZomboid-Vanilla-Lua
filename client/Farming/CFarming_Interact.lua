@@ -67,6 +67,7 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     local digPlow = item:hasTag(ItemTag.DIG_PLOW)
     local hasCuttingTool = item:hasTag(ItemTag.CUT_PLANT)
     local pickaxe = item:hasTag(ItemTag.PICK_AXE)
+    local removeStump = item:hasTag(ItemTag.REMOVE_STUMP)
     local stoneMaul = item:hasTag(ItemTag.STONE_MAUL)
     local sledge = item:hasTag(ItemTag.SLEDGEHAMMER)
     local clubHammer = item:hasTag(ItemTag.CLUB_HAMMER)
@@ -90,12 +91,13 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
         ISTimedActionQueue.add(ISRemoveBush:new(player, square, false))
         return
 	end
-    if pickaxe and square:getStump() then
+    if removeStump and square:getStump() then
         ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(player, square:getStump()));
+		return
     end
--- TODO: Doesn't work anymore, fix
     if (pickaxe or stoneMaul or sledge or clubHammer) and square:getOre() then
         ISTimedActionQueue.add(ISPickAxeGroundCoverItem:new(player, square:getOre()));
+		return
     end
 
 	-- if you have a tool to dig a furrow and you can dig one you dig one

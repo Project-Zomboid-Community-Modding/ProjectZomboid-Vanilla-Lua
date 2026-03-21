@@ -67,6 +67,7 @@ end
 function ISCleanGraffiti:complete()
 	if self.cleaner then
 		self.cleaner:getFluidContainer():adjustAmount(self.cleaner:getFluidContainer():getAmount() - ZomboidGlobals.CleanGraffitiPetrolAmount);
+        sendItemStats(self.cleaner)
 	end
 	self.square:removeGraffiti();
 

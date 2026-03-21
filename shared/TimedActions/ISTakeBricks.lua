@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISTakeBricks = ISBaseTimedAction:derive("ISTakeBricks");
 
 function ISTakeBricks:isValid()
-	return true;
+	return self.pallet:isExistInTheWorld();
 end
 
 function ISTakeBricks:waitToStart()
@@ -31,7 +31,6 @@ function ISTakeBricks:perform()
 end
 
 function ISTakeBricks:complete()
-
     if self.pallet:getContainer() and not self.pallet:getContainer():isEmpty() then
         local items = self.pallet:dumpContentsInSquare();
     end

@@ -77,7 +77,7 @@ function ISDisinfect:complete()
         self.bodyPart:setAlcoholLevel(self.bodyPart:getAlcoholLevel() + alcoholPower);
 	    addPain = (alcoholPower * 13) - (self.doctorLevel / 2)
 	end
-    if not (isMultiplayer() and self.doctor:getRole():hasCapability(Capability.CanMedicalCheat)) then
+    if not (isMultiplayer() and self.doctor:isHealthCheat()) then
         self.bodyPart:setAdditionalPain(self.bodyPart:getAdditionalPain() + addPain);
     end
     if self.alcohol:hasComponent(ComponentType.FluidContainer) and self.alcohol:getFluidContainer():getAmount() > 0.15 then

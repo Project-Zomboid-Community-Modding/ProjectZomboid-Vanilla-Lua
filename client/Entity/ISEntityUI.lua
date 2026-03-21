@@ -77,6 +77,24 @@ function ISEntityUI.GenericCraftStart( _player, _entity, _component, _funcCanSta
     end
 end
 
+function ISEntityUI.GenericCraftTransferAndStart( _player, _entity, _component, _funcCanStart, _funcStart, _itemsToTransfer, _itemSlot )
+    if (not _player) or (not _entity) or (not _component) or (not _funcCanStart) or (not _funcStart) then
+        log(DebugType.CraftLogic, "Invalid parameters for ISEntityUI.CraftProcessorStart");
+        log(DebugType.CraftLogic, "params-><"..tostring(_player).."><"..tostring(_entity).."><"..tostring(_component).."><"..tostring(_funcCanStart).."><"..tostring(_funcStart))
+        return;
+    end
+
+    if ISEntityUI.WalkToEntity( _player, _entity) then
+        if _itemSlot and _itemsToTransfer then
+            ISCraftLogicPanel.ItemSlotAddItems( _player, _entity, _itemSlot, _itemsToTransfer, _component );
+        end
+
+        local action = ISGenericCraftStart:new(_player, _entity, _component, _funcCanStart, _funcStart)
+        ISTimedActionQueue.add(action);
+        return true;
+    end
+end
+
 function ISEntityUI.HandcraftStart( _player, _handcraftLogic, force, addToQueue, eatPercentage ) --_recipeData, _craftBench, _isoObject)
     if (not _player) or (not _handcraftLogic) then --or (not _craftBench) then
         log(DebugType.CraftLogic, "Invalid parameters for ISEntityUI.HandcraftStart");

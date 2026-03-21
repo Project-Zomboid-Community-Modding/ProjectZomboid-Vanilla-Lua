@@ -877,11 +877,9 @@ function SandboxOptionsScreen:loadPresets()
     self.presets = {};
 
     self:addPresetToList("Apocalypse", getText("UI_NewGame_Apocalypse"), false)
-    self:addPresetToList("Survivor", getText("UI_NewGame_Survivor"), false)
-    self:addPresetToList("Builder", getText("UI_NewGame_Builder"), false)
-    self:addPresetToList("Beginner", getText("UI_NewGame_InitialInfection"), false)
-    self:addPresetToList("FirstWeek", getText("UI_NewGame_OneWeekLater"), false)
-    self:addPresetToList("Survival", getText("UI_NewGame_Survival"), false)
+    self:addPresetToList("Outbreak", getText("UI_NewGame_Outbreak"), false)
+    self:addPresetToList("Extinction", getText("UI_NewGame_Extinction"), false)
+    self:addPresetToList("Rising", getText("UI_NewGame_Rising"), false)
     self:addPresetToList("SixMonthsLater", getText("UI_NewGame_SixMonths"), false)
 
     local presets = getSandboxPresets();
@@ -898,58 +896,9 @@ function SandboxOptionsScreen:loadPresets()
     self:onPresetChange()
 end
 
-
-function SandboxOptionsScreen:getNormalPreset()
+function SandboxOptionsScreen:getSandboxPreset(preset)
     local newPreset = {};
-    newPreset.name = "FirstWeek";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getSurvivalPreset()
-    local newPreset = {};
-    newPreset.name = "Survival";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getHardPreset()
-    local newPreset = {};
-    newPreset.name = "SixMonthsLater";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getBeginnerPreset()
-    local newPreset = {};
-    newPreset.name = "Beginner";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getApocalypsePreset()
-    local newPreset = {};
-    newPreset.name = "Apocalypse";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getSurvivorPreset()
-    local newPreset = {};
-    newPreset.name = "Survivor";
-    newPreset.options = SandboxOptions.new()
-    newPreset.options:loadGameFile(newPreset.name)
-    return newPreset;
-end
-
-function SandboxOptionsScreen:getBuilderPreset()
-    local newPreset = {};
-    newPreset.name = "Builder";
+    newPreset.name = preset;
     newPreset.options = SandboxOptions.new()
     newPreset.options:loadGameFile(newPreset.name)
     return newPreset;

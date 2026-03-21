@@ -170,6 +170,12 @@ function ISCraftLogicRecipePanel:onResourceSlotContentsChanged()
     self:calculateLayout(self.width, self.height);
 end
 
+function ISCraftLogicRecipePanel:onInputsChanged()
+    if self.inputControlWidget then self.inputControlWidget:onResourceSlotContentsChanged(); end
+    if self.outputProgressWidget then self.outputProgressWidget:onResourceSlotContentsChanged(); end
+    self:calculateLayout(self.width, self.height);
+end
+
 function ISCraftLogicRecipePanel:new(x, y, width, height, player, logic)
     local o = ISPanel.new(self, x, y, width, height);
 

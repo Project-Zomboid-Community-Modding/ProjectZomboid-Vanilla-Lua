@@ -545,6 +545,7 @@ function ISMap:revealOnWorldMap()
     local centerX = (x1 + x2) / 2
     local centerY = (y1 + y2) / 2
     local playerObj = self.character
+    playerObj:setJoypadIgnoreAimUntilCentered(true)
     ISTimedActionQueue.clear(playerObj)
     ISTimedActionQueue.add(ISReadWorldMap:new(playerObj, centerX, centerY, self.mapAPI:getZoomF()))
 end

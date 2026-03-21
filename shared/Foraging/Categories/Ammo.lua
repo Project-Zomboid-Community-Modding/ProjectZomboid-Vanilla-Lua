@@ -28,6 +28,7 @@ local function generateAmmoDefs()
 				["45Clip"]           = "Base.45Clip",
 				["556Clip"]          = "Base.556Clip",
 				["9mmClip"]          = "Base.9mmClip",
+				["JS14_Clip"]        = "Base.JS14_Clip",
 				["M14Clip"]          = "Base.M14Clip",
 			},
 		},

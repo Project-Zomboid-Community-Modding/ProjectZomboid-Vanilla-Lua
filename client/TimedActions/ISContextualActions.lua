@@ -98,7 +98,7 @@ function ContextualActionHandlers.AnimalsInteraction(action, playerObj, animal, 
         bucket = bucketList:get(0);
     end
 
-    local milk = item and bucket and animal:readyToBeMilked();
+    local milk = item and bucket and animal:readyToBeMilked() and not playerObj:hasFullInventory();
     local shear = item and item:hasTag(ItemTag.SHEAR) and animal:readyToBeSheared();
     local pet = animal:canBePet();
 

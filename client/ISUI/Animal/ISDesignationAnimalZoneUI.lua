@@ -198,6 +198,17 @@ function ISDesignationZoneAnimalZoneUI:initialise()
 	self.animalPanel:setScrollChildren(true)
 	self.animalPanel:addScrollBars()
 
+    self.showZoneTickBox = ISTickBox:new(self.animalPanel:getX(), self.animalPanel:getBottom() + 5, 100, FONT_HGT_SMALL, "", self, self.onTicked)
+    self.showZoneTickBox.backgroundColor.a = 1
+    self.showZoneTickBox.background = false
+    self.showZoneTickBox.choicesColor = {r=1, g=1, b=1, a=1}
+    self.showZoneTickBox.leftMargin = 2
+    self.showZoneTickBox:setFont(UIFont.Small)
+    self.showZoneTickBox:addOption(getText("IGUI_DesignationZone_ShowZone"))
+    self.showZoneTickBox:setSelected(1, ISDesignationZoneAnimalZoneUI.showZone)
+    self:addChild(self.showZoneTickBox);
+    self.onTicked(self, 1, ISDesignationZoneAnimalZoneUI.showZone)
+
     self.ok = ISButton:new(self:getWidth() - btnWid - 10, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Close"), self, ISDesignationZoneAnimalZoneUI.onClick);
     self.ok.internal = "OK";
     self.ok.anchorTop = false
@@ -234,6 +245,18 @@ function ISDesignationZoneAnimalZoneUI:initialise()
     self.infoBtn:instantiate();
     self.infoBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.infoBtn);
+end
+
+function ISDesignationZoneAnimalZoneUI:onTicked(index, selected)
+    self.player:setSeeDesignationZone(selected);
+    self.player:resetSelectedZonesForHighlight()
+    if selected then
+        local connectedZones = DesignationZoneAnimal.getAllDZones(nil, self.zone, nil);
+        for i=1,connectedZones:size() do
+            self.player:addSelectedZoneForHighlight(connectedZones:get(i-1):getId())
+        end
+    end
+    ISDesignationZoneAnimalZoneUI.showZone = selected;
 end
 
 function ISDesignationZoneAnimalZoneUI:checkExist()
@@ -277,8 +300,6 @@ function ISDesignationZoneAnimalZoneUI:prerender()
     local x = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_DesignationZone_Animals") .. nbOfAnimals) + 60
     self:drawText(getText("IGUI_DesignationZone_Corpses") .. nbOfCorpses, x, z, 1,1,1,1, UIFont.Small);
 
-    z = z + FONT_HGT_SMALL + 5;
-
     self.updateTick = self.updateTick - UIManager.getMillisSinceLastRender();
     if self.updateTick <= 0 then
         self.updateTick = 1000;
@@ -286,8 +307,9 @@ function ISDesignationZoneAnimalZoneUI:prerender()
         self:reload();
     end
 
-    z = self.animalPanel:getBottom() + FONT_HGT_SMALL + 3;
+    z = self.showZoneTickBox:getBottom() - 30;
 
+    z = z + 50;
     self:drawText(getText("IGUI_FeedingTroughUI_Enclosure") .. self.zone:getFullZoneSize(), 10, z, 1,1,1,1, UIFont.NewSmall);
     z = z + FONT_HGT_SMALL + 5;
 
@@ -672,5 +694,8 @@ function ISDesignationZoneAnimalZoneUI:new(x, y, width, height, player, zone)
     o.nbOfAnimals = -1; -- this is used so i can auto refresh when animals nb change
     o.listTakesFocus = false
     o.updateTick = 0
+    if ISDesignationZoneAnimalZoneUI.showZone == nil then
+        ISDesignationZoneAnimalZoneUI.showZone = true;
+    end
     return o;
 end

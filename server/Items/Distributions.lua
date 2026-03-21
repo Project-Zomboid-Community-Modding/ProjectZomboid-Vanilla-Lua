@@ -7,7 +7,6 @@ local distributionTable = {
 	-- =====================
 	
 	aesthetic = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -50,7 +49,6 @@ local distributionTable = {
 	},
 	
 	aestheticstorage = {
-		isShop = true,
 		metal_shelves = {
 			procedural = true,
 			procList = {
@@ -2270,6 +2268,7 @@ local distributionTable = {
 		Outfit_Hunter = {
 			rolls = 1,
 			items = {
+	            "3030Bullets", 10,
 				"308Bullets", 10,
                 "556Bullets", 10,
 				"BeefJerky", 8,
@@ -3753,7 +3752,6 @@ local distributionTable = {
 	},
 	
 	arenakitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -3809,7 +3807,6 @@ local distributionTable = {
 			}
 		},
 		stove = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="StoveSpiffos", min=1, max=99, forceForTiles="appliances_cooking_20;appliances_cooking_21;appliances_cooking_22;appliances_cooking_23;appliances_cooking_24"},
@@ -3818,7 +3815,6 @@ local distributionTable = {
 	},
 	
 	arenakitchenstorage = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -3878,7 +3874,6 @@ local distributionTable = {
 	},
 	
 	armysurplus = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -3982,7 +3977,6 @@ local distributionTable = {
 	},
 	
 	artstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -4010,7 +4004,159 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    attic = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="Antiques", min=0, max=1, weightChance=20},
+                {name="ArtSupplies", min=0, max=1, weightChance=20},
+                {name="BurglarTools", min=0, max=1, weightChance=5},
+                {name="Chemistry", min=0, max=1, weightChance=10},
+                {name="ClothingStorageWinter", min=0, max=1, weightChance=10},
+                {name="CrateBooks", min=0, max=1, weightChance=60},
+                {name="CrateCanning", min=0, max=1, weightChance=20},
+                {name="CrateClothesRandom", min=0, max=1, weightChance=20},
+                {name="CrateComics", min=0, max=1, weightChance=60},
+                {name="CrateCompactDiscs", min=0, max=1, weightChance=40},
+                {name="CrateComputer", min=0, max=1, weightChance=10},
+                {name="CrateCostume", min=0, max=1, weightChance=10},
+                {name="CrateDishes", min=0, max=1, weightChance=10},
+                {name="CrateElectronics", min=0, max=1, weightChance=40},
+                {name="CrateFitnessWeights", min=0, max=1, weightChance=10},
+                {name="CrateFootwearRandom", min=0, max=1, weightChance=10},
+                {name="CrateInstruments", min=0, max=1, weightChance=10},
+                {name="CrateLinens", min=0, max=1, weightChance=10},
+                {name="CrateMagazines", min=0, max=1, weightChance=80},
+                {name="CrateNewspapers", min=0, max=1, weightChance=60},
+                {name="CratePetSupplies", min=0, max=1, weightChance=10},
+                {name="CratePhotos", min=0, max=1, weightChance=20},
+                {name="CrateTailoring", min=0, max=1, weightChance=10},
+                {name="CrateTools", min=0, max=1, weightChance=60},
+                {name="CrateToolsOld", min=0, max=1, weightChance=80},
+                {name="CrateToys", min=0, max=1, weightChance=10},
+                {name="CrateTV", min=0, max=1, weightChance=10},
+                {name="CrateTVWide", min=0, max=1, weightChance=10},
+                {name="CrateVHSTapes", min=0, max=1, weightChance=80},
+                {name="CrateWallFinish", min=0, max=1, weightChance=20},
+                {name="EngineerTools", min=0, max=1, weightChance=5},
+                {name="FitnessTrainer", min=0, max=1, weightChance=10},
+                {name="Gifts", min=0, max=1, weightChance=10},
+                {name="Hiker", min=0, max=1, weightChance=5},
+                {name="Hobbies", min=0, max=1, weightChance=20},
+                {name="HolidayStuff", min=0, max=1, weightChance=10},
+                {name="Homesteading", min=0, max=1, weightChance=5},
+                {name="Hunter", min=0, max=1, weightChance=5},
+                {name="ImprovisedCrafts", min=0, max=1, weightChance=20},
+                {name="JunkHoard", min=0, max=1, weightChance=20},
+                {name="MechanicSpecial", min=0, max=1, weightChance=5},
+                {name="Photographer", min=0, max=1, weightChance=10},
+                {name="PlumbingSupplies", min=0, max=1, weightChance=5},
+                {name="ScienceMisc", min=0, max=1, weightChance=5},
+                {name="SurvivalGear", min=0, max=1, weightChance=5},
+                {name="Trapper", min=0, max=1, weightChance=5},
+                {name="VacationStuff", min=0, max=1, weightChance=20},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="Antiques", min=0, max=1, weightChance=20},
+                {name="ArtSupplies", min=0, max=1, weightChance=20},
+                {name="BurglarTools", min=0, max=1, weightChance=5},
+                {name="Chemistry", min=0, max=1, weightChance=10},
+                {name="ClothingStorageWinter", min=0, max=1, weightChance=10},
+                {name="CrateBooks", min=0, max=1, weightChance=60},
+                {name="CrateCanning", min=0, max=1, weightChance=20},
+                {name="CrateClothesRandom", min=0, max=1, weightChance=20},
+                {name="CrateComics", min=0, max=1, weightChance=60},
+                {name="CrateCompactDiscs", min=0, max=1, weightChance=40},
+                {name="CrateComputer", min=0, max=1, weightChance=10},
+                {name="CrateCostume", min=0, max=1, weightChance=10},
+                {name="CrateDishes", min=0, max=1, weightChance=10},
+                {name="CrateElectronics", min=0, max=1, weightChance=40},
+                {name="CrateFitnessWeights", min=0, max=1, weightChance=10},
+                {name="CrateFootwearRandom", min=0, max=1, weightChance=10},
+                {name="CrateInstruments", min=0, max=1, weightChance=10},
+                {name="CrateLinens", min=0, max=1, weightChance=10},
+                {name="CrateMagazines", min=0, max=1, weightChance=80},
+                {name="CrateNewspapers", min=0, max=1, weightChance=60},
+                {name="CratePetSupplies", min=0, max=1, weightChance=10},
+                {name="CrateTailoring", min=0, max=1, weightChance=10},
+                {name="CrateTools", min=0, max=1, weightChance=60},
+                {name="CrateToolsOld", min=0, max=1, weightChance=80},
+                {name="CrateToys", min=0, max=1, weightChance=10},
+                {name="CrateTV", min=0, max=1, weightChance=10},
+                {name="CrateTVWide", min=0, max=1, weightChance=10},
+                {name="CrateVHSTapes", min=0, max=1, weightChance=80},
+                {name="CrateWallFinish", min=0, max=1, weightChance=20},
+                {name="EngineerTools", min=0, max=1, weightChance=5},
+                {name="FitnessTrainer", min=0, max=1, weightChance=10},
+                {name="Gifts", min=0, max=1, weightChance=10},
+                {name="Hiker", min=0, max=1, weightChance=5},
+                {name="Hobbies", min=0, max=1, weightChance=20},
+                {name="HolidayStuff", min=0, max=1, weightChance=10},
+                {name="Homesteading", min=0, max=1, weightChance=5},
+                {name="Hunter", min=0, max=1, weightChance=5},
+                {name="ImprovisedCrafts", min=0, max=1, weightChance=20},
+                {name="JunkHoard", min=0, max=1, weightChance=20},
+                {name="MechanicSpecial", min=0, max=1, weightChance=5},
+                {name="Photographer", min=0, max=1, weightChance=10},
+                {name="PlumbingSupplies", min=0, max=1, weightChance=5},
+                {name="ScienceMisc", min=0, max=1, weightChance=5},
+                {name="SurvivalGear", min=0, max=1, weightChance=5},
+                {name="Trapper", min=0, max=1, weightChance=5},
+                {name="VacationStuff", min=0, max=1, weightChance=20},
+            }
+        },
+        smallbox = {
+            procedural = true,
+            procList = {
+                {name="Antiques", min=0, max=1, weightChance=20},
+                {name="ArtSupplies", min=0, max=1, weightChance=20},
+                {name="BurglarTools", min=0, max=1, weightChance=5},
+                {name="Chemistry", min=0, max=1, weightChance=10},
+                {name="ClothingStorageWinter", min=0, max=1, weightChance=10},
+                {name="CrateBooks", min=0, max=1, weightChance=60},
+                {name="CrateCanning", min=0, max=1, weightChance=5},
+                {name="CrateClothesRandom", min=0, max=1, weightChance=20},
+                {name="CrateComics", min=0, max=1, weightChance=40},
+                {name="CrateComics", min=0, max=1, weightChance=60},
+                {name="CrateCompactDiscs", min=0, max=1, weightChance=10},
+                {name="CrateCompactDiscs", min=0, max=1, weightChance=40},
+                {name="CrateCostume", min=0, max=1, weightChance=10},
+                {name="CrateDishes", min=0, max=1, weightChance=10},
+                {name="CrateElectronics", min=0, max=1, weightChance=40},
+                {name="CrateFootwearRandom", min=0, max=1, weightChance=10},
+                {name="CrateLinens", min=0, max=1, weightChance=10},
+                {name="CrateMagazines", min=0, max=1, weightChance=80},
+                {name="CrateNewspapers", min=0, max=1, weightChance=60},
+                {name="CratePetSupplies", min=0, max=1, weightChance=10},
+                {name="CratePhotos", min=0, max=1, weightChance=20},
+                {name="CrateTailoring", min=0, max=1, weightChance=10},
+                {name="CrateToys", min=0, max=1, weightChance=10},
+                {name="CrateVHSTapes", min=0, max=1, weightChance=80},
+                {name="EngineerTools", min=0, max=1, weightChance=5},
+                {name="FitnessTrainer", min=0, max=1, weightChance=10},
+                {name="Gifts", min=0, max=1, weightChance=10},
+                {name="Hiker", min=0, max=1, weightChance=5},
+                {name="Hobbies", min=0, max=1, weightChance=20},
+                {name="HolidayStuff", min=0, max=1, weightChance=10},
+                {name="Homesteading", min=0, max=1, weightChance=5},
+                {name="Hunter", min=0, max=1, weightChance=5},
+                {name="ImprovisedCrafts", min=0, max=1, weightChance=20},
+                {name="JunkHoard", min=0, max=1, weightChance=20},
+                {name="MechanicSpecial", min=0, max=1, weightChance=5},
+                {name="Photographer", min=0, max=1, weightChance=10},
+                {name="PlumbingSupplies", min=0, max=1, weightChance=5},
+                {name="ScienceMisc", min=0, max=1, weightChance=5},
+                {name="SurvivalGear", min=0, max=1, weightChance=5},
+                {name="Trapper", min=0, max=1, weightChance=5},
+                {name="VacationStuff", min=0, max=1, weightChance=20},
+            }
+        },
+    },
+
 	backstage = {
 		cardboardbox = {
 			procedural = true,
@@ -4065,7 +4211,6 @@ local distributionTable = {
 	},
 	
 	bakery = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -4131,7 +4276,6 @@ local distributionTable = {
 	},
 	
 	bakerykitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -4178,7 +4322,6 @@ local distributionTable = {
 	},
 	
 	bandkitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -4202,7 +4345,6 @@ local distributionTable = {
 	},
 	
 	bandlivingroom = {
-		isShop = true,
 		locker = {
 			procedural = true,
 			procList = {
@@ -4212,7 +4354,6 @@ local distributionTable = {
 	},
 	
 	bandmerch = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -4241,9 +4382,7 @@ local distributionTable = {
 	},
 	
 	bar = {
-		isShop = true,
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinBar", min=0, max=99},
@@ -4311,7 +4450,6 @@ local distributionTable = {
 	},
 	
 	barbecuestore = {
-		isShop = true,
 		barbecue = {
 			rolls = 1,
 			items = {
@@ -4358,7 +4496,6 @@ local distributionTable = {
 	},
 	
 	barcountertwiggy = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -4379,9 +4516,7 @@ local distributionTable = {
 	},
 	
 	barkitchen = {
-		isShop = true,
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinBar", min=0, max=99},
@@ -4447,9 +4582,7 @@ local distributionTable = {
 	},
 	
 	barstorage = {
-		isShop = true,
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinBar", min=0, max=99},
@@ -4575,7 +4708,6 @@ local distributionTable = {
 	},
 	
 	baseballstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -4607,7 +4739,6 @@ local distributionTable = {
 	},
 	
 	batfactory = {
-		isShop = true,
 		crate = {
 			procedural = true,
 			procList = {
@@ -4681,8 +4812,6 @@ local distributionTable = {
 				{name="FireDeptLockers", min=0, max=99, forceForRooms="firestorage"},
 				{name="GymLockers", min=0, max=99, forceForRooms="fitness;gym"},
 				{name="HospitalLockers", min=0, max=99, forceForRooms="hospitalroom;hospitalhallway;hospitalstorage"},
-				{name="PoliceLockers", min=0, max=99, forceForRooms="policestorage"},
-				{name="PrisonGuardLockers", min=0, max=99, forceForRooms="cells"},
 			}
 		},
 		shelves = {
@@ -4705,7 +4834,6 @@ local distributionTable = {
 	},
 	
 	batstorage = {
-		isShop = true,
 		crate = {
 			procedural = true,
 			procList = {
@@ -4721,7 +4849,6 @@ local distributionTable = {
 	},
 	
 	batteryfactory = {
-		isShop = true,
 		counter = {
 			rolls = 1,
 			items = {
@@ -4737,7 +4864,6 @@ local distributionTable = {
 	},
 	
 	batterystorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -4874,7 +5000,6 @@ local distributionTable = {
 	},
 	
 	beergarden = {
-		isShop = true,
 		bin = {
 			isTrash = true,
 			rolls = 4,
@@ -5086,8 +5211,6 @@ local distributionTable = {
 				{name="FireDeptLockers", min=0, max=99, forceForRooms="firestorage"},
 				{name="GymLockers", min=0, max=99, forceForRooms="fitness;gym"},
 				{name="HospitalLockers", min=0, max=99, forceForRooms="hospitalroom;hospitalhallway;hospitalstorage"},
-				{name="PoliceLockers", min=0, max=99, forceForRooms="policestorage"},
-				{name="PrisonGuardLockers", min=0, max=99, forceForRooms="cells"},
 			}
 		},
 		shelves = {
@@ -5105,7 +5228,6 @@ local distributionTable = {
 	},
 	
 	brewery = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5123,10 +5245,10 @@ local distributionTable = {
 			}
 		},
 		counter = {
-			rolls = 1,
-			items = {
-				
-			}
+            procedural = true,
+            procList = {
+                {name="BreweryEmptyBottles", min=0, max=99},
+            }
 		},
 		metal_shelves = {
 			procedural = true,
@@ -5148,7 +5270,6 @@ local distributionTable = {
 	},
 	
 	brewerystorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5166,7 +5287,6 @@ local distributionTable = {
 	},
 	
 	burgerkitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -5214,7 +5334,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=1, max=99, weightChance=80},
@@ -5231,7 +5350,6 @@ local distributionTable = {
 			}
 		},
 		stove = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="StoveSpiffos", min=1, max=99, forceForTiles="appliances_cooking_20;appliances_cooking_21;appliances_cooking_22;appliances_cooking_23;appliances_cooking_24"},
@@ -5240,7 +5358,6 @@ local distributionTable = {
 	},
 	
 	butcher = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5348,7 +5465,6 @@ local distributionTable = {
 	},
 	
 	cafe = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5436,7 +5552,6 @@ local distributionTable = {
 	},
 	
 	cafekitchen = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5480,7 +5595,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="BakeryDoughnuts", min=1, max=2, weightChance=20},
@@ -5503,7 +5617,6 @@ local distributionTable = {
 	},
 	
 	cafeteria = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -5543,7 +5656,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=0, max=1, weightChance=100},
@@ -5568,7 +5680,6 @@ local distributionTable = {
 	},
 	
 	cafeteriakitchen = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5660,7 +5771,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=0, max=1, weightChance=100},
@@ -5705,7 +5815,6 @@ local distributionTable = {
 	},
 	
 	camerastore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -5729,7 +5838,6 @@ local distributionTable = {
 	},
 	
 	camping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5865,7 +5973,6 @@ local distributionTable = {
     },
 
 	candystorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -5893,7 +6000,6 @@ local distributionTable = {
 	},
 	
 	candystore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -6010,7 +6116,6 @@ local distributionTable = {
 	},
 	
 	carsupply = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6095,7 +6200,6 @@ local distributionTable = {
 	},
 
 	carsupplysport = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6123,7 +6227,6 @@ local distributionTable = {
 	},
 
 	catfish_dining = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6140,7 +6243,6 @@ local distributionTable = {
 	},
 	
 	catfish_kitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6166,7 +6268,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayFishFried", min=0, max=99},
@@ -6197,7 +6298,23 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    cdstore = {
+        counter = {
+            procedural = true,
+            procList = {
+                {name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
+                {name="StoreCounterBags", min=0, max=1, weightChance=100},
+            }
+        },
+        shelves = {
+            procedural = true,
+            procList = {
+                {name="MusicStoreCDs", min=0, max=99},
+            }
+        },
+    },
+
 	changeroom = {
 		cardboardbox = {
 			procedural = true,
@@ -6234,7 +6351,6 @@ local distributionTable = {
 				{name="HospitalLockers", min=0, max=99, forceForRooms="hospitalroom;hospitalhallway;hospitalstorage;laboratory"},
 				{name="HuntingLockers", min=0, max=99, forceForRooms="hunting"},
 				{name="Locker", min=0, max=99, weightChance=100},
-				{name="PrisonGuardLockers", min=0, max=99, forceForRooms="prisoncells"},
 			}
 		},
 		metal_shelves = {
@@ -6255,7 +6371,6 @@ local distributionTable = {
 	},
 	
 	chinesekitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6300,7 +6415,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayMeatDumplings", min=1, max=2, weightChance=100},
@@ -6314,7 +6428,6 @@ local distributionTable = {
 	},
 	
 	chineserestaurant = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6322,7 +6435,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayMeatDumplings", min=1, max=2, weightChance=100},
@@ -6628,7 +6740,6 @@ local distributionTable = {
 	},
 	
 	clothingstore = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -6676,7 +6787,6 @@ local distributionTable = {
 	
 	-- Worst. Store. Ever.
 	comicstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6777,7 +6887,6 @@ local distributionTable = {
 	},
 	
 	conveniencestore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -6849,7 +6958,6 @@ local distributionTable = {
 	},
 	
 	cornerstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -6936,7 +7044,6 @@ local distributionTable = {
 	},
 	
 	cornerstorecounter = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -6960,7 +7067,7 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
-				{name="StoreShelfSnacks", min=0, max=99},
+				{name="TobaccoStoreCigarettes", min=0, max=99},
 			}
 		},
 		shelvesmag = {
@@ -6973,7 +7080,6 @@ local distributionTable = {
 	},
 	
 	cornerstorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -7016,7 +7122,6 @@ local distributionTable = {
 	},
 	
 	cybercafe = {
-		isShop = true,
 		desk = {
 			procedural = true,
 			procList = {
@@ -7044,7 +7149,6 @@ local distributionTable = {
 	},
 	
 	dartgame = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7142,7 +7246,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBiscuits", min=0, max=1, weightChance=10},
@@ -7161,7 +7264,6 @@ local distributionTable = {
 	},
 	
 	dentist = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7185,7 +7287,6 @@ local distributionTable = {
 	},
 	
 	dentiststorage = {
-		isShop = true,
 		metal_shelves = {
 			procedural = true,
 			procList = {
@@ -7197,7 +7298,6 @@ local distributionTable = {
 	},
 	
 	departmentstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -7238,7 +7338,6 @@ local distributionTable = {
 	},
 	
 	departmentstore = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -7351,7 +7450,27 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    derelict_steelfactory = {
+        crate = {
+            procedural = true,
+            procList = {
+                {name="ToolFactoryBarStock", min=0, max=99, weightChance=60},
+                {name="ToolFactoryIngots", min=0, max=99, weightChance=100},
+            }
+        },
+        other = {
+            procedural = true,
+            procList = {
+                {name="DerelictHouseParty", min=0, max=1, weightChance=5},
+                {name="DerelictHouseDrugs", min=0, max=1, weightChance=5},
+                {name="DerelictHouseCrime", min=0, max=1, weightChance=5},
+                {name="DerelictHouseSquatter", min=0, max=1, weightChance=5},
+                {name="DerelictHouseJunk", min=0, max=99, weightChance=100},
+            }
+        },
+    },
+
 	detectiveoffice = {
 		cardboardbox = {
 			procedural = true,
@@ -7380,7 +7499,6 @@ local distributionTable = {
 	},
 	
 	dinerbackroom = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7391,7 +7509,6 @@ local distributionTable = {
 	},
 	
 	dinercounter = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7469,7 +7586,6 @@ local distributionTable = {
 	},
 	
 	dining = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7479,7 +7595,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="BakeryDoughnuts", min=0, max=1, weightChance=20},
@@ -7509,7 +7624,6 @@ local distributionTable = {
 	},
 	
 	dogfoodfactory = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -7534,7 +7648,6 @@ local distributionTable = {
 	},
 	
 	dogfoodshipping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -7552,7 +7665,6 @@ local distributionTable = {
 	},
 	
 	dogfoodstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -7589,7 +7701,6 @@ local distributionTable = {
 	},
 	
 	donut_dining = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7613,7 +7724,6 @@ local distributionTable = {
 	},
 	
 	donut_kitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7640,7 +7750,6 @@ local distributionTable = {
 	},
 	
 	donut_kitchenstorage = {
-		isShop = true,
 		freezer = {
 			procedural = true,
 			procList = {
@@ -7759,7 +7868,6 @@ local distributionTable = {
 	},
 	
 	duckshootgame = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -7770,7 +7878,6 @@ local distributionTable = {
 	},
 	
 	eggstorage = {
-		isShop = true,
 		counter = {
 			rolls = 1,
 			items = {
@@ -7804,7 +7911,6 @@ local distributionTable = {
 	},
 	
 	electronicsstorage = {
-		isShop = true,
 		freezer = {
 			rolls = 1,
 			items = {
@@ -7829,7 +7935,6 @@ local distributionTable = {
 	},
 	
 	electronicstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -8210,7 +8315,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBiscuits", min=1, max=2, weightChance=60},
@@ -8222,7 +8326,6 @@ local distributionTable = {
 	},
 	
 	fishingstorage = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -8297,7 +8400,6 @@ local distributionTable = {
 	},
 	
 	fossoil = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -8357,10 +8459,10 @@ local distributionTable = {
 	},
 	
 	furniturestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
+				{name="CrateWallpaper", min=0, max=1, weightChance=100},
 				{name="CrateBlueComfyChair", min=0, max=1, weightChance=20},
 				{name="CrateBlueRattanChair", min=0, max=1, weightChance=20},
 				{name="CrateBrownComfyChair", min=0, max=1, weightChance=20},
@@ -8404,6 +8506,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
+				{name="CrateWallpaper", min=0, max=1, weightChance=100},
 				{name="CrateBlueComfyChair", min=0, max=1, weightChance=20},
 				{name="CrateBlueRattanChair", min=0, max=1, weightChance=20},
 				{name="CrateBrownComfyChair", min=0, max=1, weightChance=20},
@@ -8453,10 +8556,10 @@ local distributionTable = {
 	},
 	
 	furniturestore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
+				{name="CrateWallpaper", min=0, max=1, weightChance=100},
 				{name="CrateBlueComfyChair", min=0, max=1, weightChance=60},
 				{name="CrateBluePlasticChairs", min=0, max=1, weightChance=100},
 				{name="CrateBlueRattanChair", min=0, max=1, weightChance=40},
@@ -8494,6 +8597,7 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
+				{name="CrateWallpaper", min=0, max=1, weightChance=100},
 				{name="CrateBlueComfyChair", min=0, max=1, weightChance=60},
 				{name="CrateBluePlasticChairs", min=0, max=1, weightChance=100},
 				{name="CrateBlueRattanChair", min=0, max=1, weightChance=40},
@@ -8759,7 +8863,6 @@ local distributionTable = {
 	},
 	
 	gardenstore = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -8824,7 +8927,6 @@ local distributionTable = {
 	},
 	
 	gas2go = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -8875,7 +8977,6 @@ local distributionTable = {
 	},
 	
 	gasstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -8909,7 +9010,6 @@ local distributionTable = {
 	},
 	
 	gasstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -8968,7 +9068,6 @@ local distributionTable = {
 	},
 	
 	generalstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9060,7 +9159,6 @@ local distributionTable = {
 	},
 	
 	generalstorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9087,7 +9185,6 @@ local distributionTable = {
 	},
 	
 	giftstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9115,7 +9212,6 @@ local distributionTable = {
 	},
 	
 	giftstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9169,7 +9265,6 @@ local distributionTable = {
 	},
 	
 	gigamart = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -9264,7 +9359,6 @@ local distributionTable = {
 	},
 	
 	gigamartkitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -9304,7 +9398,6 @@ local distributionTable = {
 	
 	-- Also used for optometrist.
 	glassesstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -9363,7 +9456,6 @@ local distributionTable = {
 	},
 	
 	golfshipping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9380,7 +9472,6 @@ local distributionTable = {
 	},
 	
 	golfstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -9406,7 +9497,6 @@ local distributionTable = {
 	},
 	
 	grocery = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9537,7 +9627,6 @@ local distributionTable = {
 	},
 	
 	grocerystorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9606,7 +9695,6 @@ local distributionTable = {
 	},
 	
 	gunstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9635,9 +9723,9 @@ local distributionTable = {
 				{name="GunStoreAccessories", min=0, max=1, weightChance=40},
 				{name="GunStoreMagsAmmo", min=0, max=1, weightChance=40},
 				{name="GunStoreKnives", min=0, max=1, weightChance=60},
-				{name="GunStorePistols", min=1, max=2, weightChance=80},
-				{name="GunStoreRifles", min=1, max=4, weightChance=100},
-				{name="GunStoreShotguns", min=1, max=4, weightChance=100},
+				{name="GunStorePistols", min=1, max=12, weightChance=80},
+				{name="GunStoreRifles", min=1, max=12, weightChance=100},
+				{name="GunStoreShotguns", min=1, max=12, weightChance=100},
 			},
 			dontSpawnAmmo = true,
 		},
@@ -9663,9 +9751,9 @@ local distributionTable = {
 			}
 		},
 		militarylocker = {
-			rolls = 1,
-			items = {
-				
+			procedural = true,
+			procList = {
+				{name="GunStoreAmmunition", min=0, max=99},
 			}
 		},
 		shelves = {
@@ -9686,7 +9774,6 @@ local distributionTable = {
 	},
 	
 	gunstorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -9883,7 +9970,6 @@ local distributionTable = {
 	},
 	
 	hoopgame = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -9997,7 +10083,6 @@ local distributionTable = {
 	},
 	
 	hospitalstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -10017,7 +10102,6 @@ local distributionTable = {
 	},
 	
 	hotdogstand = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10042,7 +10126,6 @@ local distributionTable = {
 	},
 	
 	housewarestore = {
-		isShop = true,
 		shelves = {
 			procedural = true,
 			procList = {
@@ -10056,7 +10139,6 @@ local distributionTable = {
 	},
 	
 	hunting = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -10168,7 +10250,6 @@ local distributionTable = {
     },
 
 	icecream = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10206,7 +10287,6 @@ local distributionTable = {
 	},
 	
 	icecreamkitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10263,7 +10343,6 @@ local distributionTable = {
 	},
 	
 	italiankitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10290,7 +10369,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayPizza", min=0, max=99},
@@ -10299,7 +10377,6 @@ local distributionTable = {
 	},
 	
 	italianrestaurant = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10313,7 +10390,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayPizza", min=0, max=99},
@@ -10421,9 +10497,7 @@ local distributionTable = {
 	},
 	
 	jayschicken_dining = {
-		isShop = true,
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinJays", min=0, max=99},
@@ -10441,7 +10515,6 @@ local distributionTable = {
 	
 	jayschicken_kitchen = {
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinJays", min=0, max=99},
@@ -10484,7 +10557,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayGravy", min=0, max=1, weightChance=20},
@@ -10504,7 +10576,6 @@ local distributionTable = {
 	},
 	
 	jerkycoldroom = {
-		isShop = true,
 		freezer = {
 			rolls = 1,
 			items = {
@@ -10520,7 +10591,6 @@ local distributionTable = {
 	},
 	
 	jerkyfactory = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -10537,7 +10607,6 @@ local distributionTable = {
 	},
 	
 	jerkyshipping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -10563,7 +10632,6 @@ local distributionTable = {
 	},
 	
 	jewelrystorage = {
-		isShop = true,
 		desk = {
 			procedural = true,
 			procList = {
@@ -10591,7 +10659,6 @@ local distributionTable = {
 	},
 	
 	jewelrystore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10640,7 +10707,6 @@ local distributionTable = {
 	},
 	
 	kennels = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10671,7 +10737,31 @@ local distributionTable = {
 			}
 		}
 	},
-	
+
+    juicestand = {
+        counter = {
+            procedural = true,
+            procList = {
+                {name="StoreCounterCleaning", min=0, max=99, forceForTiles="location_shop_accessories_01_0;location_shop_accessories_01_1;location_shop_accessories_01_2;location_shop_accessories_01_3;location_shop_accessories_01_20;location_shop_accessories_01_21;location_shop_accessories_01_22;location_shop_accessories_01_23"},
+                {name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
+                {name="JuiceStandDrinks", min=0, max=2, weightChance=100},
+                {name="JuiceStandSnacks", min=0, max=2, weightChance=100},
+            }
+        },
+        freezer = {
+            rolls = 1,
+            items = {
+
+            }
+        },
+        fridge = {
+            procedural = true,
+            procList = {
+                {name="JuiceStandFridge", min=0, max=99},
+            }
+        },
+    },
+
 	kidsbedroom = {
 		cardboardbox = {
 			procedural = true,
@@ -10825,6 +10915,12 @@ local distributionTable = {
 				{name="KitchenDryFood", min=0, max=1, weightChance=100},
 			}
 		},
+        microwave = {
+            procedural = true,
+            procList = {
+                {name="KitchenMicrowave", min=0, max=99},
+            }
+        },
 		shelves = {
 			procedural = true,
 			procList = {
@@ -10874,7 +10970,6 @@ local distributionTable = {
 	},
 	
 	kitchen_crepe = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -10909,7 +11004,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayOmelettes", min=1, max=2, weightChance=60},
@@ -10928,7 +11022,6 @@ local distributionTable = {
 	},
 	
 	kitchenwares = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -10966,7 +11059,6 @@ local distributionTable = {
 	},
 	
 	knifefactory = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -11006,7 +11098,6 @@ local distributionTable = {
 	},
 	
 	knifeshipping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -11037,7 +11128,6 @@ local distributionTable = {
 	},
 	
 	knifestore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -11106,7 +11196,6 @@ local distributionTable = {
 	},
 	
 	lasertag = {
-		isShop = true,
 		crate = {
 			rolls = 1,
 			items = {
@@ -11234,7 +11323,6 @@ local distributionTable = {
 	},
 	
 	leatherclothesstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -11263,7 +11351,7 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
 	library = {
 		counter = {
 			procedural = true,
@@ -11323,7 +11411,6 @@ local distributionTable = {
 	},
 	
 	liquorstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -11653,16 +11740,17 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateLongStick", min=0, max=99, weightChance=20},
+                {name="LoggingFactoryTools", min=0, max=99, weightChance=20},
+                {name="CrateLongStick", min=0, max=99, weightChance=40},
 				{name="CrateLumber", min=0, max=99, weightChance=100},
 			}
 		},
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="CrateCarpentry", min=0, max=99, weightChance=100},
-				{name="CrateHeavyChains", min=0, max=99, weightChance=60},
-				{name="CrateTools", min=0, max=99, weightChance=40},
+                {name="CrateLumber", min=0, max=99, weightChance=20},
+                {name="CrateHeavyChains", min=0, max=99, weightChance=60},
+				{name="LoggingFactoryTools", min=0, max=99, weightChance=100},
 			}
 		},
 	},
@@ -11681,18 +11769,17 @@ local distributionTable = {
 		crate = {
 			procedural = true,
 			procList = {
-				{name="CrateCarpentry", min=0, max=99, weightChance=40},
-				{name="CrateLongStick", min=0, max=99, weightChance=10},
+				{name="LoggingFactoryTools", min=0, max=99, weightChance=20},
+				{name="CrateLongStick", min=0, max=99, weightChance=40},
 				{name="CrateLumber", min=0, max=99, weightChance=100},
-				{name="CrateTools", min=0, max=99, weightChance=20},
 			}
 		},
 		smallbox = {
 			procedural = true,
 			procList = {
-				{name="CrateCarpentry", min=0, max=99, weightChance=100},
+				{name="CrateCarpentry", min=0, max=99, weightChance=20},
 				{name="CrateHeavyChains", min=0, max=99, weightChance=60},
-				{name="CrateTools", min=0, max=99, weightChance=40},
+				{name="LoggingFactoryTools", min=0, max=99, weightChance=100},
 			}
 		},
 	},
@@ -11774,7 +11861,6 @@ local distributionTable = {
 	},
 	
 	mechanic = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -11874,10 +11960,8 @@ local distributionTable = {
 	},
 	
 	medical = {
-		isShop = true,
 		bin = {
 			procedural = true,
-			isTrash = true,
 			procList = {
 				{name="BinHospital", min=0, max=99},
 			}
@@ -11964,7 +12048,6 @@ local distributionTable = {
 	},
 	
 	medicalstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -12011,68 +12094,129 @@ local distributionTable = {
 			}
 		},
 	},
-	
-	metalshipping = {
-		cardboardbox = {
-			procedural = true,
-			procList = {
-				{name="CrateSheetMetal", min=0, max=99},
-			}
-		},
-		crate = {
-			procedural = true,
-			procList = {
-				{name="CrateSheetMetal", min=0, max=99},
-			}
-		},
-		metal_shelves = {
-			procedural = true,
-			procList = {
-				{name="MetalShopTools", min=0, max=99, weightChance=80},
-				{name="CrateSheetMetal", min=0, max=99, weightChance=100},
-			}
-		},
-	},
-	
-	metalshop = {
-		counter = {
-			rolls = 1,
-			items = {
-				
-			}
-		},
-		crate = {
-			procedural = true,
-			procList = {
-				{name="MetalShopTools", min=0, max=99, weightChance=80},
-				{name="CrateSheetMetal", min=0, max=99, weightChance=100},
-			}
-		},
-		metal_shelves = {
-			procedural = true,
-			procList = {
-				{name="MetalShopTools", min=0, max=99, weightChance=80},
-				{name="CrateSheetMetal", min=0, max=99, weightChance=100},
-			}
-		},
-		smallbox = {
-			procedural = true,
-			procList = {
-				{name="MetalShopTools", min=0, max=99, weightChance=80},
-				{name="CrateSheetMetal", min=0, max=99, weightChance=100},
-			}
-		},
-		toolcabinet = {
-			procedural = true,
-			procList = {
-				{name="MetalShopTools", min=0, max=99},
-			}
-		},
-	},
-	
+
+    metalfabrication = {
+        counter = {
+            procedural = true,
+            procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=20},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=20},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=20},
+                {name="ToolFactoryBarStock", min=0, max=99, weightChance=60},
+                {name="ToolFactoryIngots", min=0, max=99, weightChance=100},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=20},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=20},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=20},
+                {name="ToolFactoryBarStock", min=0, max=99, weightChance=60},
+                {name="ToolFactoryIngots", min=0, max=99, weightChance=100},
+            }
+        },
+        toolcabinet = {
+            procedural = true,
+	        procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+    },
+
+    metalfabricationstorage = {
+        crate = {
+            procedural = true,
+            procList = {
+                {name="ToolFactoryIngots", min=0, max=99},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="ToolFactoryIngots", min=0, max=99},
+            }
+        },
+        toolcabinet = {
+            procedural = true,
+            procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+    },
+
+    metalshipping = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=40},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=40},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=100},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=40},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=40},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=100},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=40},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=40},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=100},
+            }
+        },
+    },
+
+    metalshop = {
+        counter = {
+            procedural = true,
+            procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=40},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=40},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=100},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="CrateMetalBars", min=0, max=99, weightChance=40},
+                {name="CrateMetalPipes", min=0, max=99, weightChance=40},
+                {name="CrateSheetMetal", min=0, max=99, weightChance=100},
+            }
+        },
+        smallbox = {
+            procedural = true,
+            procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+        toolcabinet = {
+            procedural = true,
+            procList = {
+                {name="MetalShopTools", min=0, max=99},
+            }
+        },
+    },
+
 	-- Also used for tacokitchen
 	mexicankitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -12266,7 +12410,6 @@ local distributionTable = {
 	},
 	
 	movierental = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -12288,19 +12431,35 @@ local distributionTable = {
 			}
 		},
 	},
-	
-	movierentalxxx = {
-		isShop = true,
-		shelves = {
-			procedural = true,
-			procList = {
-				{name="MagazineRackAdult", min=0, max=99},
-			}
-		},
-	},
-	
+
+    musicschool = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="MusicSchoolCases", min=0, max=99},
+            }
+        },
+        counter = {
+            procedural = true,
+            procList = {
+                {name="MusicSchoolSheets", min=0, max=99},
+            }
+        },
+        dresser = {
+            procedural = true,
+            procList = {
+                {name="BandPracticeClothing", min=0, max=99},
+            }
+        },
+        locker = {
+            procedural = true,
+            procList = {
+                {name="BandPracticeClothing", min=0, max=99},
+            }
+        },
+    },
+
 	musicstore = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -12558,7 +12717,6 @@ local distributionTable = {
 	},
 	
 	officestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -12664,7 +12822,6 @@ local distributionTable = {
 	},
 	
 	outdoorsupply = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -12703,7 +12860,6 @@ local distributionTable = {
 	},
 	
 	outdoorsupply_storage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -12734,10 +12890,10 @@ local distributionTable = {
 			}
 		},
 		counter = {
-			rolls = 1,
-			items = {
-				
-			}
+            procedural = true,
+            procList = {
+                {name="PaintStudioTools", min=0, max=99},
+            }
 		},
 		crate = {
 			procedural = true,
@@ -12748,19 +12904,18 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
-				{name="CratePaint", min=0, max=99},
+				{name="PaintStudioTools", min=0, max=99},
 			}
 		},
 		toolcabinet = {
 			procedural = true,
 			procList = {
-				{name="CratePaint", min=0, max=99},
+				{name="PaintStudioTools", min=0, max=99},
 			}
 		},
 	},
 	
 	pawnshop = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -12975,7 +13130,6 @@ local distributionTable = {
 	},
 	
 	petstore = {
-		isShop = true,
 		shelves = {
 			procedural = true,
 			procList = {
@@ -12985,7 +13139,6 @@ local distributionTable = {
 	},
 	
 	pharmacy = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -13044,7 +13197,6 @@ local distributionTable = {
 	},
 	
 	pharmacystorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -13093,7 +13245,6 @@ local distributionTable = {
 	},
 	
 	photoroom = {
-		isShop = true,
 		counter = {
 			rolls = 1,
 			items = {
@@ -13123,7 +13274,6 @@ local distributionTable = {
 	},
 	
 	pizzakitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -13169,7 +13319,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayPizza", min=0, max=99},
@@ -13184,7 +13333,6 @@ local distributionTable = {
 	},
 	
 	pizzawhirled = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -13206,7 +13354,6 @@ local distributionTable = {
 	},
 	
 	pizzawhirledcounter = {
-		isShop = true,
 		freezer = {
 			rolls = 1,
 			items = {
@@ -13277,7 +13424,16 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    policelibrary = {
+        shelves = {
+            procedural = true,
+            procList = {
+                {name="PoliceLibraryLegal", min=0, max=99},
+            }
+        },
+    },
+
 	policelocker = {
 		locker = {
 			procedural = true,
@@ -13343,24 +13499,50 @@ local distributionTable = {
 			}
 		},
 	},
-	
-	policegunstorage = {
-		locker = {
-			procedural = true,
-			procList = {
-				{name="PoliceStorageGuns", min=0, max=99, forceForTiles="furniture_storage_02_8;furniture_storage_02_9;furniture_storage_02_10;furniture_storage_02_11"},
-				{name="PoliceStorageArmor", min=0, max=99, forceForTiles="furniture_storage_02_4;furniture_storage_02_5;furniture_storage_02_6;furniture_storage_02_7"},
-			},
-			dontSpawnAmmo = true,
-		},
-		militarylocker = {
-			procedural = true,
-			procList = {
-				{name="PoliceStorageGuns", min=0, max=99},
-			}
-		},
-	},
-	
+
+    policegunstorage = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="PoliceEvidence", min=0, max=4, weightChance=40},
+                {name="PoliceFileBox", min=0, max=99, weightChance=100},
+            }
+        },
+        filingcabinet = {
+            procedural = true,
+            procList = {
+                {name="PoliceFilingCabinet", min=0, max=99},
+            }
+        },
+        locker = {
+            procedural = true,
+            procList = {
+                {name="PoliceStorageGuns", min=0, max=99, forceForTiles="furniture_storage_02_8;furniture_storage_02_9;furniture_storage_02_10;furniture_storage_02_11"},
+                {name="PoliceStorageArmor", min=0, max=99, forceForTiles="furniture_storage_02_4;furniture_storage_02_5;furniture_storage_02_6;furniture_storage_02_7"},
+            },
+            dontSpawnAmmo = true,
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="PoliceEvidence", min=0, max=99},
+            }
+        },
+        militarylocker = {
+            procedural = true,
+            procList = {
+                {name="PoliceStorageGuns", min=0, max=99},
+            }
+        },
+        smallbox = {
+            procedural = true,
+            procList = {
+                {name="PoliceEvidence", min=0, max=1, weightChance=40},
+                {name="PoliceFileBox", min=0, max=99, weightChance=100},
+            }
+        },
+    },
+
 	policeoutfitstorage = {
 		clothingdryer = {
 			procedural = true,
@@ -13418,7 +13600,47 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    policeswat = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="PoliceEvidence", min=0, max=4, weightChance=40},
+                {name="PoliceFileBox", min=0, max=99, weightChance=100},
+            }
+        },
+        filingcabinet = {
+            procedural = true,
+            procList = {
+                {name="PoliceFilingCabinet", min=0, max=99},
+            }
+        },
+        locker = {
+            procedural = true,
+            procList = {
+                {name="SWATStorageGuns", min=0, max=99},
+            },
+        },
+        medicine = {
+            procedural = true,
+            procList = {
+                {name="MedicalCabinet", min=0, max=99},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="SWATStorageAmmunition", min=0, max=99},
+            }
+        },
+        militarylocker = {
+            procedural = true,
+            procList = {
+                {name="SWATStorageGuns", min=0, max=99},
+            },
+        },
+    },
+
 	pool = {
 		locker = {
 			procedural = true,
@@ -13552,7 +13774,30 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    potter = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="CrateClayBags", min=0, max=99},
+            }
+        },
+        counter = {
+            procedural = true,
+            procList = {
+                {name="PotteryStudioTools", min=1, max=99, weightChance=60},
+                {name="CrateClayBags", min=0, max=99, weightChance=100},
+            }
+        },
+        shelves = {
+            procedural = true,
+            procList = {
+                {name="PotteryBooks", min=1, max=2, weightChance=20},
+                {name="CrateClayBags", min=0, max=99, weightChance=100},
+            }
+        },
+    },
+
 	prisoncells = {
 		sidetable = {
 			procedural = true,
@@ -13563,11 +13808,32 @@ local distributionTable = {
 		}
 	},
 
+    prisonlocker = {
+        locker = {
+            procedural = true,
+            procList = {
+                {name="PrisonGuardLockers", min=0, max=99},
+            },
+        },
+        counter = {
+            rolls = 1,
+            items = {
+
+            },
+        },
+        clothingdryerbasic = {
+            procedural = true,
+            procList = {
+                {name="GymTowels", min=0, max=99, weightChance=100},
+            }
+        },
+    },
+
 	prisonstorage = { -- this needs to have worthwhile and interesting stuff in all of the containers, especially it is significantly harder for players to get into these rooms in b42 versus previous builds are the doors are much stronger and cannot be dismantled
 		locker = {
 			procedural = true,
 			procList = {
-				{name="PrisonArmoryShotguns", min=0, max=99, forceForTiles="furniture_storage_02_8;furniture_storage_02_9;furniture_storage_02_10;furniture_storage_02_11"},
+				{name="PrisonStorageGuns", min=0, max=99, forceForTiles="furniture_storage_02_8;furniture_storage_02_9;furniture_storage_02_10;furniture_storage_02_11"},
 				{name="PrisonRiotStorage", min=0, max=99, forceForTiles="furniture_storage_02_4;furniture_storage_02_5;furniture_storage_02_6;furniture_storage_02_7"},
 			},
 			dontSpawnAmmo = true,
@@ -13667,7 +13933,6 @@ local distributionTable = {
 	},
 	
 	radiofactory = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -13689,7 +13954,6 @@ local distributionTable = {
 	},
 	
 	radioshipping = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -13711,7 +13975,6 @@ local distributionTable = {
 	},
 	
 	radiostorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -13787,7 +14050,6 @@ local distributionTable = {
 	},
 	
 	recreation = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -13815,7 +14077,6 @@ local distributionTable = {
 	},
 	
 	restaurantdining = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -13838,7 +14099,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=0, max=1, weightChance=80},
@@ -13913,7 +14173,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=0, max=1, weightChance=80},
@@ -13942,9 +14201,81 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    restaurantkitchen_fancy = {
+        counter = {
+            procedural = true,
+            procList = {
+                {name="StoreKitchenCleaning", min=0, max=99, forceForTiles="fixtures_sinks_01_0;fixtures_sinks_01_1;fixtures_sinks_01_2;fixtures_sinks_01_3;fixtures_sinks_01_4;fixtures_sinks_01_5;fixtures_sinks_01_6;fixtures_sinks_01_7;fixtures_sinks_01_8;fixtures_sinks_01_9;fixtures_sinks_01_10;fixtures_sinks_01_11;fixtures_sinks_01_16;fixtures_sinks_01_17;fixtures_sinks_01_18;fixtures_sinks_01_19"},
+                {name="StoreKitchenBaking", min=0, max=1, weightChance=100},
+                {name="StoreKitchenButcher", min=0, max=1, weightChance=100},
+                {name="StoreKitchenCafe", min=1, max=1, weightChance=80},
+                {name="StoreKitchenPotatoes", min=0, max=1, weightChance=60},
+                {name="StoreKitchenSauce", min=0, max=1, weightChance=60},
+                {name="StoreKitchenPots", min=0, max=1, weightChance=40},
+                {name="StoreKitchenDishes", min=0, max=1, weightChance=20},
+                {name="StoreKitchenGlasses", min=0, max=1, weightChance=20},
+                {name="StoreKitchenCutlery", min=0, max=1, weightChance=20},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="FryFactoryPotatoes", min=0, max=99},
+            }
+        },
+        freezer = {
+            procedural = true,
+            procList = {
+                {name="RestaurantKitchenFreezer", min=0, max=99},
+            }
+        },
+        fridge = {
+            procedural = true,
+            procList = {
+                {name="RestaurantKitchenFridge", min=0, max=99},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="FryFactoryPotatoes", min=0, max=2, weightChance=40},
+                {name="StoreKitchenGlasses", min=0, max=99, weightChance=60},
+                {name="StoreKitchenDishes", min=0, max=99, weightChance=80},
+                {name="StoreKitchenPots", min=0, max=99, weightChance=100},
+            }
+        },
+        restaurantdisplay = {
+            procedural = true,
+            procList = {
+                {name="ServingTrayBurgers", min=0, max=1, weightChance=80},
+                {name="ServingTrayChicken", min=0, max=1, weightChance=80},
+                {name="ServingTrayChickenFried", min=0, max=1, weightChance=100},
+                {name="ServingTrayChickenNuggets", min=0, max=1, weightChance=100},
+                {name="ServingTrayChickenWings", min=0, max=1, weightChance=100},
+                {name="ServingTrayFishFingers", min=0, max=1, weightChance=100},
+                {name="ServingTrayFries", min=0, max=1, weightChance=100},
+                {name="ServingTrayHam", min=0, max=1, weightChance=80},
+                {name="ServingTrayHotdogs", min=0, max=1, weightChance=80},
+                {name="ServingTrayOnionRings", min=0, max=1, weightChance=100},
+                {name="ServingTrayPerogies", min=0, max=1, weightChance=20},
+                {name="ServingTrayPizza", min=0, max=1, weightChance=20},
+                {name="ServingTrayPorkChops", min=0, max=1, weightChance=80},
+                {name="ServingTrayPotatoPancakes", min=0, max=1, weightChance=20},
+                {name="ServingTraySausage", min=0, max=1, weightChance=80},
+                {name="ServingTraySteak", min=0, max=1, weightChance=60},
+                {name="ServingTrayTatoDots", min=0, max=1, weightChance=100},
+            }
+        },
+        shelves = {
+            procedural = true,
+            procList = {
+                {name="StoreKitchenPots", min=0, max=99},
+            }
+        },
+    },
+
 	ringtossgame = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -14048,6 +14379,12 @@ local distributionTable = {
 				{name="StoreKitchenPotatoes", min=1, max=1, weightChance=100},
 				{name="StoreKitchenPots", min=0, max=1, weightChance=20},
 				{name="StoreKitchenTrays", min=0, max=1, weightChance=20},
+			}
+		},
+		displaycasebutcher = {
+			procedural = true,
+			procList = {
+				{name="ButcherFish", min=0, max=99},
 			}
 		},
 		freezer = {
@@ -14200,9 +14537,38 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    sewingfactory = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+				{name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+				{name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+				{name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+				{name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+				{name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+				{name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+    },
+
 	sewingstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -14227,12 +14593,13 @@ local distributionTable = {
 	},
 	
 	sewingstore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
-				{name="SewingStoreTools", min=0, max=99, weightChance=100},
-				{name="SewingStoreFabric", min=0, max=99, weightChance=100},
+				{name="CrateFabric_Cotton", min=1, max=4, weightChance=60},
+				{name="CrateFabric_DenimBlack", min=0, max=1, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=20},
 			}
 		},
 		clothingrack = {
@@ -14257,6 +14624,10 @@ local distributionTable = {
 		metal_shelves = {
 			procedural = true,
 			procList = {
+				{name="CrateFabric_Cotton", min=1, max=4, weightChance=60},
+				{name="CrateFabric_DenimBlack", min=0, max=1, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=20},
 				{name="SewingStoreTools", min=1, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=1, max=99, weightChance=100},
 			}
@@ -14264,6 +14635,10 @@ local distributionTable = {
 		shelves = {
 			procedural = true,
 			procList = {
+				{name="CrateFabric_Cotton", min=1, max=4, weightChance=60},
+				{name="CrateFabric_DenimBlack", min=0, max=1, weightChance=20},
+				{name="CrateFabric_DenimBlue", min=0, max=1, weightChance=40},
+				{name="CrateFabric_DenimDarkBlue", min=0, max=1, weightChance=20},
 				{name="SewingStoreTools", min=1, max=99, weightChance=100},
 				{name="SewingStoreFabric", min=1, max=99, weightChance=100},
 			}
@@ -14325,7 +14700,6 @@ local distributionTable = {
 	},
 	
 	shoestore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -14416,7 +14790,6 @@ local distributionTable = {
 	},
 	
 	sodatruck = {
-		isShop = true,
 		all = {
 			procedural = true,
 			procList = {
@@ -14427,9 +14800,7 @@ local distributionTable = {
 	},
 	
 	spiffo_dining = {
-		isShop = true,
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinSpiffos", min=0, max=99},
@@ -14475,7 +14846,6 @@ local distributionTable = {
 	
 	spiffoskitchen = {
 		bin = {
-			isTrash = true,
 			procedural = true,
 			procList = {
 				{name="BinSpiffos", min=0, max=99},
@@ -14538,7 +14908,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayBurgers", min=1, max=8, weightChance=100},
@@ -14548,7 +14917,6 @@ local distributionTable = {
 			}
 		},
 		stove = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="StoveSpiffos", min=1, max=99, forceForTiles="appliances_cooking_20;appliances_cooking_21;appliances_cooking_22;appliances_cooking_23;appliances_cooking_24"},
@@ -14611,7 +14979,6 @@ local distributionTable = {
 	},
 	
 	sportstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -14650,7 +15017,6 @@ local distributionTable = {
 	},
 	
 	sportstore = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -15097,7 +15463,6 @@ local distributionTable = {
 	},
 	
 	sushidining = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -15129,7 +15494,6 @@ local distributionTable = {
 	},
 	
 	sushikitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -15156,7 +15520,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTraySushiEgg", min=1, max=4, weightChance=100},
@@ -15174,7 +15537,46 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
+    swatlocker = {
+        locker = {
+            procedural = true,
+            procList = {
+                {name="SWATStorageArmor", min=0, max=99},
+            },
+        },
+    },
+
+    tailoringworkshop = {
+        cardboardbox = {
+            procedural = true,
+            procList = {
+                {name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+                {name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+                {name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+                {name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+        crate = {
+            procedural = true,
+            procList = {
+                {name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+                {name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+                {name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+                {name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+        metal_shelves = {
+            procedural = true,
+            procList = {
+                {name="CrateFabric_Cotton", min=0, max=99, weightChance=100},
+                {name="CrateFabric_DenimBlack", min=0, max=99, weightChance=20},
+                {name="CrateFabric_DenimBlue", min=0, max=99, weightChance=40},
+                {name="CrateFabric_DenimDarkBlue", min=0, max=99, weightChance=20},
+            }
+        },
+    },
+
 	technical = {
 		metal_shelves = {
 			procedural = true,
@@ -15183,7 +15585,7 @@ local distributionTable = {
 			}
 		},
 	},
-	
+
 	theatre = {
 		cardboardbox = {
 			procedural = true,
@@ -15203,7 +15605,6 @@ local distributionTable = {
 	},
 	
 	theatrekitchen = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -15250,7 +15651,6 @@ local distributionTable = {
 	},
 	
 	theatrestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15278,7 +15678,6 @@ local distributionTable = {
 	},
 	
 	throwgame = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -15337,7 +15736,6 @@ local distributionTable = {
 	},
 	
 	toolstorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15379,7 +15777,6 @@ local distributionTable = {
 	},
 	
 	toolstore = {
-		isShop = true,
 		barbecue = {
 			rolls = 1,
 			items = {
@@ -15500,7 +15897,6 @@ local distributionTable = {
 	},
 	
 	toystore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15544,7 +15940,6 @@ local distributionTable = {
 	},
 	
 	toystorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15593,7 +15988,6 @@ local distributionTable = {
 	},
 	
 	universitystorage = {
-		isShop = true,
 		metal_shelves = {
 			procedural = true,
 			procList = {
@@ -15647,7 +16041,6 @@ local distributionTable = {
 			}
 		},
 		restaurantdisplay = {
-			cookFood = true,
 			procedural = true,
 			procList = {
 				{name="ServingTrayChickenWings", min=0, max=1, weightChance=10},
@@ -15683,7 +16076,6 @@ local distributionTable = {
 	},
 	
 	walletshop = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15724,7 +16116,6 @@ local distributionTable = {
 	},
 	
 	warehouse = {
-		isShop = true,
 		counter = {
 			rolls = 1,
 			items = {
@@ -15789,7 +16180,6 @@ local distributionTable = {
 	},
 	
 	waterstorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15799,7 +16189,6 @@ local distributionTable = {
 	},
 	
 	weddingstoredress = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -15815,7 +16204,6 @@ local distributionTable = {
 	},
 	
 	weddingstorestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15832,7 +16220,6 @@ local distributionTable = {
 	},
 	
 	weddingstoresuit = {
-		isShop = true,
 		clothingrack = {
 			procedural = true,
 			procList = {
@@ -15855,7 +16242,6 @@ local distributionTable = {
 	},
 	
 	weldingstorage = {
-		isShop = true,
 		metal_shelves = {
 			procedural = true,
 			procList = {
@@ -15866,7 +16252,6 @@ local distributionTable = {
 	},
 	
 	weldingworkshop = {
-		isShop = true,
 		metal_shelves = {
 			procedural = true,
 			procList = {
@@ -15889,7 +16274,6 @@ local distributionTable = {
 	},
 	
 	westerndining = {
-		isShop = true,
 		fireplace = {
 			rolls = 1,
 			items = {
@@ -15940,7 +16324,6 @@ local distributionTable = {
 	},
 	
 	whiskeybottling = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -15970,7 +16353,6 @@ local distributionTable = {
 	},
 	
 	wirefactory = {
-		isShop = true,
 		crate = {
 			procedural = true,
 			procList = {
@@ -16105,7 +16487,6 @@ local distributionTable = {
 	},
 	
 	ww_blacksmith = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -16122,7 +16503,6 @@ local distributionTable = {
 	},
 	
 	ww_generalstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -16263,7 +16643,6 @@ local distributionTable = {
 	},
 	
 	ww_toolstore = {
-		isShop = true,
 		counter = {
 			procedural = true,
 			procList = {
@@ -16287,7 +16666,6 @@ local distributionTable = {
 	},
 	
 	zippeestorage = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -16330,7 +16708,6 @@ local distributionTable = {
 	},
 	
 	zippeestore = {
-		isShop = true,
 		cardboardbox = {
 			procedural = true,
 			procList = {
@@ -16662,6 +17039,7 @@ local distributionTable = {
 	Bag_AmmoBox_Hunting = {
 		rolls = 3,
 		items = {
+	        "3030Box", 20,
 			"556Box", 20,
 			"308Box", 20,
 			"ShotgunShellsBox", 20,
@@ -16678,6 +17056,7 @@ local distributionTable = {
 		rolls = 2,
 		items = {
 			"556Box", 20,
+	        "3030Box", 10,
 			"308Box", 10,
 			"556Box", 10,
 			"Bullets357Box", 10,
@@ -19197,7 +19576,6 @@ local distributionTable = {
 	Bag_TrashBag = {
 		rolls = 2,
 		ignoreZombieDensity = true,
-		isTrash = true,
 		items = ClutterTables.BinItems,
 		junk = ClutterTables.BinJunk,
 	},
@@ -19320,7 +19698,7 @@ local distributionTable = {
 		junk = {
 			rolls = 1,
 			items = {
-				
+
 			}
 		},
 	},

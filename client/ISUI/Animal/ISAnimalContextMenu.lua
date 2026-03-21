@@ -214,22 +214,30 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         end
         if #choosenBuckets > 0 then
             local milkOption = animalSubMenu:addOption(getText("ContextMenu_Milk"), nil, nil);
-            local milkSubMenu = ISContextMenu:getNew(animalSubMenu);
-            animalSubMenu:addSubMenu(milkOption, milkSubMenu);
 
-            for i,bucket in ipairs(choosenBuckets) do
-                text = bucket:getDisplayName();
-                if bucket:getFluidContainer():getPrimaryFluid() then
-                    text = bucket:getFluidContainer():getUiName();
-                end
-                if not bucket:getFluidContainer():isEmpty() then
-                    text = text .. " (" .. round(bucket:getFluidContainer():getAmount(), 2) .. "/" .. bucket:getFluidContainer():getCapacity() .. "L)";
-                end
-                milkSubMenu:addOption(text, animal, AnimalContextMenu.onMilkAnimal, playerObj, bucket, false);
-            end
+            if playerObj:hasFullInventory() then
+                milkOption.notAvailable = true;
+                local tooltip = ISWorldObjectContextMenu.addToolTip();
+                tooltip.description = getText("ContextMenu_FullInventory");
+                milkOption.toolTip = tooltip;
+            else
+                local milkSubMenu = ISContextMenu:getNew(animalSubMenu);
+                animalSubMenu:addSubMenu(milkOption, milkSubMenu);
 
-            if #choosenBuckets > 1 then
-                milkSubMenu:addOption(getText("ContextMenu_Eat_All"), animal, AnimalContextMenu.onMilkAnimal, playerObj, nil, true);
+                for i,bucket in ipairs(choosenBuckets) do
+                    text = bucket:getDisplayName();
+                    if bucket:getFluidContainer():getPrimaryFluid() then
+                        text = bucket:getFluidContainer():getUiName();
+                    end
+                    if not bucket:getFluidContainer():isEmpty() then
+                        text = text .. " (" .. round(bucket:getFluidContainer():getAmount(), 2) .. "/" .. bucket:getFluidContainer():getCapacity() .. "L)";
+                    end
+                    milkSubMenu:addOption(text, animal, AnimalContextMenu.onMilkAnimal, playerObj, bucket, false);
+                end
+
+                if #choosenBuckets > 1 then
+                    milkSubMenu:addOption(getText("ContextMenu_Eat_All"), animal, AnimalContextMenu.onMilkAnimal, playerObj, nil, true);
+                end
             end
         end
     end
@@ -625,6 +633,15 @@ AnimalContextMenu.onForceAnimalGrowAway = function(animal, playerObj)
 end
 
 AnimalContextMenu.doAnimalBodyMenuFromInv = function(context, playerObj, animalbody)
+    if not playerObj:getInventory():contains(animalbody) then
+        local txt = getText("ContextMenu_PickUpAnimalBody");
+        if animalbody:isAnimalSkeleton() then
+            txt = getText("ContextMenu_PickUpSkeleton");
+        end
+        local grabOption = context:addOption(txt, playerObj, ISInventoryPaneContextMenu.grabCorpseItem, animalbody);
+        return;
+    end
+
     if animalbody:hasAnimalParts() and not playerObj:getVehicle() then
         local knife = playerObj:getInventory():getFirstTagEvalRecurse(ItemTag.BUTCHER_ANIMAL, predicateNotBroken)
         local butcherOption = context:addOption(getText("ContextMenu_ButcherAnimal", animalbody:getDisplayName()), animalbody, AnimalContextMenu.onButcherAnimalFromInv, playerObj, knife);

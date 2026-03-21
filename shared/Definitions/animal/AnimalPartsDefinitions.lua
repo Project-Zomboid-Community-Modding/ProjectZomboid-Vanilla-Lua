@@ -31,6 +31,7 @@ AnimalPartsDefinitions.animals["cockerelrhodeisland"] = cockerelrhodeisland;
 
 local chickrhodeisland = AnimalPartsDefinitions.animals["chickrhodeisland"] or {};
 chickrhodeisland.parts = chickrhodeisland.parts or {};
+table.insert(chickrhodeisland.parts, {item = "Base.Smallbirdmeat", nb = 1})
 chickrhodeisland.bones = chickrhodeisland.bones or {};
 table.insert(chickrhodeisland.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
 chickrhodeisland.noSkeleton = true;
@@ -68,7 +69,7 @@ AnimalPartsDefinitions.animals["cockerelleghorn"] = cockerelleghorn;
 
 local chickleghorn = AnimalPartsDefinitions.animals["chickleghorn"] or {};
 chickleghorn.parts = chickleghorn.parts or {};
---table.insert(chickleghorn.parts, {item = "Base.Chicken", nb = 1})
+table.insert(chickleghorn.parts, {item = "Base.Smallbirdmeat", nb = 1})
 chickleghorn.bones = chickleghorn.bones or {};
 table.insert(chickleghorn.bones, {item = "Base.SmallAnimalBone", minNb = 2, maxNb = 4})
 chickleghorn.noSkeleton = true;

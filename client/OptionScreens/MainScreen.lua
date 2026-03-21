@@ -1309,26 +1309,10 @@ MainScreen.continueLatestSave = function(gameMode, saveName)
         return
     end
 
-	if gameMode == "Beginner" then
-		getWorld():setGameMode("Beginner")
-		getWorld():setWorld(saveName)
-		MainScreen.instance:setBeginnerPreset()
-		MainScreen.continueLatestSaveAux()
-		return
-	end
-
 	if gameMode == "Sandbox" then
 		getWorld():setGameMode("Sandbox")
 		getWorld():setWorld(saveName)
 		MainScreen.instance:setDefaultSandboxVars() -- in case map_sand.bin doesn't exist, FIXME: use SandboxOptions.getDefaultPreset()?
-		MainScreen.continueLatestSaveAux()
-		return
-	end
-
-	if gameMode == "Survival" then
-		getWorld():setGameMode("Survival")
-		getWorld():setWorld(saveName)
-		MainScreen.instance:setDefaultSandboxVars()
 		MainScreen.continueLatestSaveAux()
 		return
 	end
@@ -1348,48 +1332,8 @@ MainScreen.continueLatestSave = function(gameMode, saveName)
     getWorld():setGameMode(gameMode)
     getWorld():setWorld(saveName)
 
-    if gameMode == "Apocalypse" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getApocalypsePreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-    if gameMode == "Survivor" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getSurvivorPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-    if gameMode == "Builder" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getBuilderPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-
-    if gameMode == "Initial Infection" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getBeginnerPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-
-    if gameMode == "One Week Later" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getNormalPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-
-    if gameMode == "Six Months Later" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getHardPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-
-    if gameMode == "Survival" then
-        MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getDefaultPreset());
-        MainScreen.continueLatestSaveAux();
-        return;
-    end
-
-    MainScreen.instance:setDefaultSandboxVars()
-    MainScreen.continueLatestSaveAux()
+    MainScreen.instance:setSandboxPreset(MainScreen.instance.sandOptions:getSandboxPreset(gameMode));
+    MainScreen.continueLatestSaveAux();
 end
 
 MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
@@ -1416,10 +1360,6 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     if MainScreen.instance.delay > 0 then return; end
     if MainScreen.instance.tutorialButton then return end
     if MainScreen.instance.checkSavefileModal then return end
-
-    if (item.internal == "MULTIPLAYER" or item.internal == "CHALLENGE" or item.internal == "SANDBOX" or item.internal == "BEGINNER" or item.internal == "APOCALYPSE" or item.internal == "SOLO") and not MainScreen.checkTutorial(item) then
-        return;
-    end
 
     if item.internal == "LATESTSAVE" then
         MainScreen.continueLatestSave(MainScreen.latestSaveGameMode, MainScreen.latestSaveWorld)
@@ -1668,50 +1608,6 @@ function MainScreen:setSandboxPreset(preset)
         getSandboxOptions():set("ElecShutModifier", getSandboxOptions():randomElectricityShut(elecShut))
     end
     getSandboxOptions():toLua()
-end
-
-function MainScreen:setBeginnerPreset()
-    local beginnerPreset = MainScreen.instance.sandOptions:getBeginnerPreset()
-    self:setSandboxPreset(beginnerPreset);
-end
-
-function MainScreen:setEasyPreset()
-    SandboxVars.StatsDecrease = 5;
-    SandboxVars.EndRegen = 5;
-    SandboxVars.InjurySeverity = 1;
-    SandboxVars.CarGasConsumption = 0.7;
-
-    SandboxVars.MultiplierConfig = {
-        XPMultiplierGlobal = 2,
-        XPMultiplierGlobalToggle = true,
-    }
-end
-
-function MainScreen:setNormalPreset()
-    SandboxVars.StatsDecrease = 4;
-    SandboxVars.EndRegen = 4;
-    SandboxVars.MultiplierConfig = {
-        XPMultiplierGlobal = 1.5,
-        XPMultiplierGlobalToggle = true,
-    }
-end
-
-function MainScreen:setHardPreset()
-    SandboxVars.InjurySeverity = 3;
-    SandboxVars.CarGasConsumption = 1.2;
-    SandboxVars.MultiplierConfig = {
-        XPMultiplierGlobal = 1.2,
-        XPMultiplierGlobalToggle = true,
-    }
-end
-
-function MainScreen:setHardcorePreset()
-    SandboxVars.InjurySeverity = 3;
-    SandboxVars.CarGasConsumption = 1.2;
-    SandboxVars.MultiplierConfig = {
-        XPMultiplierGlobal = 1,
-        XPMultiplierGlobalToggle = true,
-    }
 end
 
 function MainScreen:onEnterFromGame()

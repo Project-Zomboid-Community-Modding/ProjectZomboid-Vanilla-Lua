@@ -24,6 +24,9 @@ function ISUnloadBulletsFromMagazine:start()
 	self:setOverrideHandModels(nil, "GunMagazine")
 	self:setActionAnim(CharacterActionAnims.RemoveBullets)
 	self:initVars()
+    self.unloadedThisLoop = false;
+    self.updateLoadBulletsTime = 0.0
+    self.character:setVariable("UpdateLoadBulletsTime", 0.0);
 end
 
 function ISUnloadBulletsFromMagazine:update()
@@ -34,6 +37,25 @@ function ISUnloadBulletsFromMagazine:update()
 		return
 	end
 	self.character:setMetabolicTarget(Metabolics.LightDomestic)
+
+    self:updateLoadingTime()
+end
+
+function ISUnloadBulletsFromMagazine:isLocal()
+    if not isMultiplayer() or isClient() then
+        return true
+    end
+    return false
+end
+
+function ISUnloadBulletsFromMagazine:updateLoadingTime()
+    local animTimeDelta = self.character:getAnimationTimeDelta();
+    local oldUpdateLoadBulletsTime = self.updateLoadBulletsTime;
+    self.updateLoadBulletsTime = (self.updateLoadBulletsTime + animTimeDelta) % 1.0;
+    if oldUpdateLoadBulletsTime > self.updateLoadBulletsTime then
+        self.unloadedThisLoop = false
+    end
+    self.character:setVariable("UpdateLoadBulletsTime", self.updateLoadBulletsTime);
 end
 
 function ISUnloadBulletsFromMagazine:initVars()
@@ -48,6 +70,7 @@ function ISUnloadBulletsFromMagazine:serverStart()
 	self:initVars()
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "RemoveBullet", nil)
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 550), "unloadFinished", nil)
+	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "updateLoadingTime", nil)
 end
 
 function ISUnloadBulletsFromMagazine:getDuration()
@@ -59,17 +82,33 @@ function ISUnloadBulletsFromMagazine:complete()
 end
 
 function ISUnloadBulletsFromMagazine:animEvent(event, parameter)
+    if isServer() then
+        if event == "updateLoadingTime" then
+            self:updateLoadingTime();
+        end
+    end
 	if event == 'RemoveBulletSound' then
 		if self.magazine:getCurrentAmmoCount() <= 0 then
 			-- Fix for looping animation events arriving after loading finished.
 			-- That's why 'PlaySound' isn't used instead.
 			return
 		end
+        if self:isLocal() then
+            if self.unloadedThisLoop then
+                return
+            end
+        end
 		self.character:playSound(parameter)
 	elseif event == 'RemoveBullet' then
 		if self.magazine:getCurrentAmmoCount() <= 0 then
 			return
 		end
+        if self:isLocal() then
+            if self.unloadedThisLoop then
+                return
+            end
+        end
+        self.unloadedThisLoop = true
 		if not isClient() then
 		    local itemKey = self.magazine:getAmmoType():getItemKey();
 			local newBullet = instanceItem(itemKey);
@@ -82,6 +121,7 @@ function ISUnloadBulletsFromMagazine:animEvent(event, parameter)
 	elseif event == 'unloadFinished' then
 		if self.magazine:getCurrentAmmoCount() <= 0 then
 			self.unloadFinished = true
+	        self.unloadedThisLoop = false
 			if isServer() then
 				self.netAction:forceComplete()
 			end
@@ -107,5 +147,7 @@ function ISUnloadBulletsFromMagazine:new(character, magazine)
 	o.maxTime = o:getDuration()
 	o.magazine = magazine
 	o.useProgressBar = false
+	o.updateLoadBulletsTime = 0.0
+    o.unloadedThisLoop = false
 	return o
 end

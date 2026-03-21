@@ -10,6 +10,11 @@ function ISAddBaitToFishNetAction:isValid()
     end
 end
 
+function ISAddBaitToFishNetAction:waitToStart()
+    self.character:faceThisObject(self.fishNet)
+    return self.character:isTurning() or self.character:shouldBeTurning()
+end
+
 function ISAddBaitToFishNetAction:update()
     self.bait:setJobDelta(self:getJobDelta());
     self.character:setMetabolicTarget(Metabolics.LightDomestic);

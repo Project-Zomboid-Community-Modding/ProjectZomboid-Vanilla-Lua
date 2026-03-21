@@ -6,6 +6,11 @@ function ISRemoveFishingNetAction:isValid()
     return self.trap ~= nil and self.trap:getSquare() ~= nil
 end
 
+function ISRemoveFishingNetAction:waitToStart()
+    self.character:faceThisObject(self.trap)
+    return self.character:isTurning() or self.character:shouldBeTurning()
+end
+
 function ISRemoveFishingNetAction:update()
     self.character:setMetabolicTarget(Metabolics.MediumWork);
 end

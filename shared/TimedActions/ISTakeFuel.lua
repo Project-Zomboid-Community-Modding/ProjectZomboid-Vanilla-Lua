@@ -4,7 +4,7 @@ ISTakeFuel = ISBaseTimedAction:derive("ISTakeFuel");
 
 function ISTakeFuel:isValid()
 	local pumpCurrent = self.fuelStation:getPipedFuelAmount()
-	return pumpCurrent > 0
+	return pumpCurrent > 0 and not self.character:hasFullInventory()
 end
 
 function ISTakeFuel:waitToStart()
@@ -96,7 +96,8 @@ function ISTakeFuel:new(character, fuelStation, petrolCan)
 	o.petrolCan = petrolCan;
 	local freeCapacity = petrolCan:getFluidContainer():getFreeCapacity();
 	local pumpCurrent = tonumber(o.fuelStation:getPipedFuelAmount());
-	o.amount = math.min(pumpCurrent, freeCapacity);
+    local freeInventoryCapacity = character:getFreeInventoryCapacity()/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
+	o.amount = math.min(math.min(pumpCurrent, freeCapacity), freeInventoryCapacity);
 	o.itemStart = petrolCan:getFluidContainer():getAmount();
 	o.itemTarget = o.itemStart + o.amount;
 	o.maxTime = o:getDuration();

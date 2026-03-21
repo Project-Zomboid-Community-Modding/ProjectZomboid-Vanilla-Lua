@@ -10,6 +10,7 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local CheckList = ISScrollingListBox:derive("ISWorldMapSharing_CheckList")
 
 function CheckList:doDrawItem(y, item, alt)
+	self.boxSize = self.fontHgt - 2 * 2
 	local boxDY = (item.height - self.boxSize) / 2
 	local textDY = (item.height - self.fontHgt) / 2
 	if item.index == self.selected and self.joyfocus then
@@ -19,7 +20,7 @@ function CheckList:doDrawItem(y, item, alt)
 	end
 	self:drawRectBorder(self.leftMargin, y + boxDY, self.boxSize, self.boxSize, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
 	if item.item.checked then
-		self:drawTexture(self.tickTexture, self.leftMargin + 3, y + boxDY + 2, 1, 1, 1, 1)
+		self:drawTextureScaledAspect(self.tickTexture, self.leftMargin + 3, y + boxDY + 2, self.boxSize, self.boxSize, 1, 1, 1, 1)
 	end
 	self:drawText(item.text, self.leftMargin + self.boxSize + self.textGap, y, 1, 1, 1, 1, self.font)
 	return y + item.height
@@ -93,9 +94,9 @@ function PanelMain:createChildren()
 
 	local radioBtns = ISRadioButtons:new(0, self.labelAuthor:getBottom() + 4, self.width, self.height, self, self.onRadioButton)
 	self:addChild(radioBtns)
-	radioBtns:addOption("Private", "private")
-	radioBtns:addOption("Everyone", "all")
-	radioBtns:addOption("Other", "other")
+	radioBtns:addOption(getText("IGUI_Map_Sharing_Private"), "private")
+	radioBtns:addOption(getText("IGUI_Map_Sharing_Everyone"), "all")
+	radioBtns:addOption(getText("IGUI_Map_Sharing_Other"), "other")
 	radioBtns:setWidthToFit()
 	self.radioBtns = radioBtns
 
@@ -105,14 +106,14 @@ function PanelMain:createChildren()
 
 	local tickBox = ISTickBox:new(0, 0, panel.width, 20, "", self, self.onTickBoxFaction)
 	panel:addChild(tickBox)
-	tickBox:addOption("Faction")
-	tickBox:addOption("Safehouse")
+	tickBox:addOption(getText("IGUI_Map_Sharing_Faction"))
+	tickBox:addOption(getText("IGUI_Map_Sharing_Safehouse"))
 	tickBox:setWidthToFit()
 	self.tickBox = tickBox
 
 	local btnWid = 200
 	local btnHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
-	self.buttonPlayers = ISButton:new(0, tickBox:getBottom() + 10, btnWid, btnHgt, "PLAYERS", self, self.onButtonPlayers)
+	self.buttonPlayers = ISButton:new(0, tickBox:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonPlayers"), self, self.onButtonPlayers)
 	panel:addChild(self.buttonPlayers)
 
 	panel:shrinkWrap(0, 0, nil)
@@ -139,7 +140,7 @@ end
 function PanelMain:prerender()
 	ISPanelJoypad.prerender(self)
 	local count = self.parent.panelPlayers.listbox:getCheckedCount()
-	self.buttonPlayers:setTitle(string.format("PLAYERS (%d)", count))
+	self.buttonPlayers:setTitle(getText("IGUI_Map_Sharing_ButtonPlayers", count))
 end
 
 function PanelMain:onRadioButton(buttons, index)
@@ -166,7 +167,7 @@ end
 
 function PanelMain:setCurrentSymbol(symbol)
 	self.currentSymbol = symbol
-	self.labelAuthor:setName("Author: " .. symbol:getAuthor())
+	self.labelAuthor:setName(getText("IGUI_Map_Sharing_Author", symbol:getAuthor()))
 	if symbol:isPrivate() then
 		self.radioBtns:setSelected(1, true)
 		self:onRadioButton(self.radioBtns, 1)
@@ -227,7 +228,7 @@ ISWorldMapSharing_PanelPlayers = ISPanelJoypad:derive("ISWorldMapSharing_PanelPl
 local PanelPlayers = ISWorldMapSharing_PanelPlayers
 
 function PanelPlayers:createChildren()
-	local label = ISLabel:new(0, 0, FONT_HGT_MEDIUM, "Players", 1, 1, 1, 1, UIFont.Medium, true)
+	local label = ISLabel:new(0, 0, FONT_HGT_MEDIUM, getText("IGUI_Map_Sharing_Players"), 1, 1, 1, 1, UIFont.Medium, true)
 	label.center = true
 	self:addChild(label)
 	
@@ -241,13 +242,13 @@ function PanelPlayers:createChildren()
 	local btnWid = 150
 	local btnHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
 
-	self.buttonAll = ISButton:new((self.listbox.width - btnWid) / 2, self.listbox:getBottom() + 10, btnWid, btnHgt, "ALL", self, self.onButtonAll)
+	self.buttonAll = ISButton:new((self.listbox.width - btnWid) / 2, self.listbox:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonAll"), self, self.onButtonAll)
 	self:addChild(self.buttonAll)
 
-	self.buttonNone = ISButton:new((self.listbox.width - btnWid) / 2, self.buttonAll:getBottom() + 10, btnWid, btnHgt, "NONE", self, self.onButtonNone)
+	self.buttonNone = ISButton:new((self.listbox.width - btnWid) / 2, self.buttonAll:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonNone"), self, self.onButtonNone)
 	self:addChild(self.buttonNone)
 
-	self.buttonBack = ISButton:new((self.listbox.width - btnWid) / 2, self.buttonNone:getBottom() + 10, btnWid, btnHgt, "BACK", self, self.onButtonBack)
+	self.buttonBack = ISButton:new((self.listbox.width - btnWid) / 2, self.buttonNone:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonBack"), self, self.onButtonBack)
 	self:addChild(self.buttonBack)
 
 	self:shrinkWrap(0, 0, nil)
@@ -443,6 +444,9 @@ function ISWorldMapSharing:close()
 	self:setCurrentPanel(self.panelMain)
 	self:setVisible(false)
 	self.parent:removeChild(self)
+	if self.legendWasVisible and self.parent.keyUI ~= nil then
+		self.parent.keyUI:setVisible(true)
+	end
 end
 
 function ISWorldMapSharing:onGainJoypadFocus(joypadData)

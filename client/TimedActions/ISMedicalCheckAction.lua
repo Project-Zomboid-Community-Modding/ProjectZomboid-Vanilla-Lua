@@ -43,15 +43,14 @@ function ISMedicalCheckAction:perform()
     local healthWindow = ISMedicalCheckAction.getHealthWindowForPlayer(self.otherPlayer)
     if healthWindow then
         healthPanel = healthWindow.nested
-        healthWindow:addToUIManager()
-        healthWindow:setVisible(true)
     else
-    healthPanel = ISHealthPanel:new(self.otherPlayer, x, y, 400, 400)
-    healthPanel:initialise()
+        healthPanel = ISHealthPanel:new(self.otherPlayer, x, y, 400, 400)
+        healthPanel:initialise()
+    end
 
     local title = getText("IGUI_health_playerHealth", self.otherPlayer:getDescriptor():getForename().." "..self.otherPlayer:getDescriptor():getSurname())
     if isClient() then
-        title = getText("IGUI_health_playerHealth", self.otherPlayer:getUsername())
+        title = getText("IGUI_health_playerHealth", self.otherPlayer:getDisguisedDisplayName())
     end
     local wrap = healthPanel:wrapInCollapsableWindow(title);
     wrap:setResizable(false)
@@ -60,7 +59,6 @@ function ISMedicalCheckAction:perform()
     wrap.visibleTarget = self;
 
     ISMedicalCheckAction.HealthWindows[self.otherPlayer] = wrap
-    end
 
     healthPanel.doctorLevel = self.character:getPerkLevel(Perks.Doctor);
     healthPanel:setOtherPlayer(self.character)

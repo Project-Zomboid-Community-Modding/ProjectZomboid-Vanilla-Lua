@@ -20,12 +20,7 @@ function ModInfoPanel.InteractionParam:render()
         else
             if self.pressed then
                 if val.available then
-                    self.parent:setModInfo(val.modInfo)
-                else
-                    local t = luautils.split(val.id, "\\")
-                    if t[1] ~= "" then
-                        activateSteamOverlayToWorkshopItem(t[1])
-                    end
+                    self.parent:updateView(val.modInfo)
                 end
             end
         end

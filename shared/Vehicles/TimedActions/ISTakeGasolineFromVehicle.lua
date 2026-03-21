@@ -7,8 +7,7 @@ local function predicateEmptyPetrol(item)
 end
 
 function ISTakeGasolineFromVehicle:isValid()
---	return self.vehicle:isInArea(self.part:getArea(), self.character)
-	return true;
+	return not self.character:hasFullInventory();
 end
 
 function ISTakeGasolineFromVehicle:waitToStart()
@@ -139,7 +138,8 @@ end
 function ISTakeGasolineFromVehicle:getDuration()
     self.itemStart = self.fluidCont:getAmount();
     self.tankStart = self.part:getContainerContentAmount();
-    local add = self.fluidCont:getFreeCapacity();
+    local freeInventoryCapacity = self.character:getFreeInventoryCapacity()/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
+    local add = math.min(self.fluidCont:getFreeCapacity(), freeInventoryCapacity);
     local take = math.min(add, self.tankStart);
     self.tankTarget = self.tankStart - take;
     self.itemTarget = self.itemStart + take;

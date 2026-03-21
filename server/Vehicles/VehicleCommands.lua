@@ -292,6 +292,15 @@ function Commands.crash(player, args)
 	end
 end
 
+function Commands.damageFromHitChr(player, args)
+	local vehicle = getVehicleById(args.vehicle);
+	if vehicle then
+		vehicle:damageFromHitChr(args.dmgFront, args.dmgBack);
+	else
+		noise('no such vehicle id='..tostring(args.vehicle))
+	end
+end
+
 function Commands.getKey(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then

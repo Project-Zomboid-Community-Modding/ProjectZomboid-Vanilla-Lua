@@ -183,6 +183,7 @@ AnimalDefinitions.animals["raccoonboar"].minAgeForBaby = AnimalDefinitions.anima
 AnimalDefinitions.animals["raccoonboar"].babyType = AnimalDefinitions.animals["raccoonsow"].babyType;
 AnimalDefinitions.animals["raccoonboar"].wanderMul = 600;
 AnimalDefinitions.animals["raccoonboar"].alwaysFleeHumans = true;
+AnimalDefinitions.animals["raccoonboar"].dontAttackOtherMale = true;
 AnimalDefinitions.animals["raccoonboar"].male = true;
 AnimalDefinitions.animals["raccoonboar"].collidable = false;
 AnimalDefinitions.animals["raccoonboar"].group = "raccoon";

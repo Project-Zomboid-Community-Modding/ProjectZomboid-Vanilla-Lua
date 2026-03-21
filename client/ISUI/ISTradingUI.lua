@@ -161,11 +161,11 @@ end
 
 function ISTradingUI:update()
     if not getPlayerByOnlineID(self.otherPlayer:getOnlineID()) then
-        self.blockingMessage = getText("IGUI_TradingUI_ClosedTrade", self.otherPlayer:getDisplayName())
+        self.blockingMessage = getText("IGUI_TradingUI_ClosedTrade", self.otherPlayer:getDisguisedDisplayName())
     end
     if not self.blockingMessage and (math.abs(getPlayerByOnlineID(self.otherPlayer:getOnlineID()):getX() - self.player:getX()) > 2 or
             math.abs(getPlayerByOnlineID(self.otherPlayer:getOnlineID()):getY() - self.player:getY()) > 2) then
-        self.blockingMessage2 = getText("IGUI_TradingUI_TooFarAway", self.otherPlayer:getDisplayName())
+        self.blockingMessage2 = getText("IGUI_TradingUI_TooFarAway", self.otherPlayer:getDisguisedDisplayName())
         return;
     else
         self.blockingMessage2 =nil;
@@ -220,7 +220,7 @@ function ISTradingUI:prerender()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawText(getText("IGUI_TradingUI_Title"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_TradingUI_Title")) / 2), z, 1,1,1,1, UIFont.Medium);
     self:drawText(getText("IGUI_TradingUI_YourOffer"), self.yourOfferDatas.x, self.yourOfferDatas.y - 32, 1,1,1,1, UIFont.Small);
-    self:drawText(getText("IGUI_TradingUI_HisOffer", self.otherPlayer:getDisplayName()), self.hisOfferDatas.x, self.hisOfferDatas.y - 32, 1,1,1,1, UIFont.Small);
+    self:drawText(getText("IGUI_TradingUI_HisOffer", self.otherPlayer:getDisguisedDisplayName()), self.hisOfferDatas.x, self.hisOfferDatas.y - 32, 1,1,1,1, UIFont.Small);
 
     local yourItems = getText("IGUI_TradingUI_Items", #self.yourOfferDatas.items, ISTradingUI.MaxItems);
     self:drawText(yourItems, self.yourOfferDatas.x, self.yourOfferDatas.y - 20, 1,1,1,1, UIFont.Small);
@@ -228,7 +228,7 @@ function ISTradingUI:prerender()
     self:drawText(hisItems, self.hisOfferDatas.x, self.hisOfferDatas.y - 20, 1,1,1,1, UIFont.Small);
 
     if self.otherSealedOffer then
-        self:drawText(getText("IGUI_TradingUI_OtherPlayerSealedOffer", self.otherPlayer:getDisplayName()), self.sealOffer.x, self.sealOffer.y + self.sealOffer.height + 5, 0.2,1,0.2,1, UIFont.Small);
+        self:drawText(getText("IGUI_TradingUI_OtherPlayerSealedOffer", self.otherPlayer:getDisguisedDisplayName()), self.sealOffer.x, self.sealOffer.y + self.sealOffer.height + 5, 0.2,1,0.2,1, UIFont.Small);
     end
     z = z + 30;
 end
@@ -443,7 +443,7 @@ ISTradingUI.AcceptedTrade = function(accepted)
         ISTradingUI.instance.pendingRequest = false;
         ISTradingUI.instance.blockingMessage = nil;
         if not accepted then
-            ISTradingUI.instance.blockingMessage = getText("IGUI_TradingUI_RefusedTrade", ISTradingUI.instance.otherPlayer:getDisplayName());
+            ISTradingUI.instance.blockingMessage = getText("IGUI_TradingUI_RefusedTrade", ISTradingUI.instance.otherPlayer:getDisguisedDisplayName());
         end
     end
 end
@@ -512,11 +512,11 @@ ISTradingUI.UpdateState = function(player, state)
     if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
         if state == ISTradingUI.States.SealOffer then
             ISTradingUI.instance.otherSealedOffer = true;
-            ISTradingUI.instance:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerSealedOffer", ISTradingUI.instance.otherPlayer:getDisplayName()), true, false, false);
+            ISTradingUI.instance:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerSealedOffer", ISTradingUI.instance.otherPlayer:getDisguisedDisplayName()), true, false, false);
         end
         if state == ISTradingUI.States.UnSealOffer then
             ISTradingUI.instance.otherSealedOffer = false;
-            ISTradingUI.instance:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerUnSealedOffer", ISTradingUI.instance.otherPlayer:getDisplayName()), true, false, false);
+            ISTradingUI.instance:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerUnSealedOffer", ISTradingUI.instance.otherPlayer:getDisguisedDisplayName()), true, false, false);
         end
         if state == ISTradingUI.States.FinalizeDeal then
             ISTradingUI.instance:finalizeDeal();

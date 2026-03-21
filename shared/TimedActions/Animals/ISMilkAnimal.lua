@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISMilkAnimal = ISBaseTimedAction:derive("ISMilkAnimal");
 
 function ISMilkAnimal:isValid()
-	return self.character:getSquare():DistTo(self.animal:getSquare()) < 3;
+	return self.character:getSquare():DistTo(self.animal:getSquare()) < 3 and not self.character:hasFullInventory();
 end
 
 function ISMilkAnimal:waitToStart()
@@ -67,7 +67,7 @@ function ISMilkAnimal:milk()
 	end
 
 	-- no available container, we stop
-	if not self.bucket or self.bucket:getFluidContainer():isFull() then
+	if not self.bucket or self.bucket:getFluidContainer():isFull() or self.character:hasFullInventory() then
 		--print("checking for another bucket")
 		if self.bucket then
 			self.bucket:setJobDelta(0.0);
@@ -89,7 +89,7 @@ function ISMilkAnimal:milk()
 				end
 			end
 		end
-		if not self.bucket or self.bucket:getFluidContainer():isFull() then
+		if not self.bucket or self.bucket:getFluidContainer():isFull() or self.character:hasFullInventory() then
 			--print("no bucket or full", self.bucket)
 			if isServer() then
 				self.netAction:forceComplete()

@@ -39,13 +39,17 @@ end
 
 function ISWashClothing.GetSoapRemaining(soaps)
 	local total = 0
-	for _,soap in ipairs(soaps) do
-		if instanceof(soap, "DrainableComboItem") then
-			total = total + soap:getCurrentUses();
-		elseif soap:getFluidContainer() and soap:getFluidContainer():contains(Fluid.CleaningLiquid) then
-			total = total + (soap:getFluidContainer():getAmount() * 10);
-		end
-	end
+    if soaps then
+        for i = 0, soaps:size() - 1 do
+            local soap = soaps:get(i)
+
+            if instanceof(soap, "DrainableComboItem") then
+                total = total + soap:getCurrentUses()
+            elseif soap:getFluidContainer() and soap:getFluidContainer():contains(Fluid.CleaningLiquid) then
+                total = total + (soap:getFluidContainer():getAmount() * 10)
+            end
+        end
+    end
 	return total
 end
 
@@ -94,10 +98,13 @@ function ISWashClothing:useSoap(item, part)
 	else
 		blood = item:getBloodLevel();
 	end
+
 	if blood > 0 then
-		for i,soap in ipairs(self.soaps) do
+        for i = 0, self.soaps:size() - 1 do
+            local soap = self.soaps:get(i)
 			if soap:hasComponent(ComponentType.FluidContainer) then
-				soap:getFluidContainer():adjustAmount(soap:getFluidContainer():getAmount() - 0.1);
+				soap:getFluidContainer():adjustAmount(soap:getFluidContainer():getAmount() - ZomboidGlobals.CleanStainCleaningFluidAmount);
+                sendItemStats(soap)
 				return true;
 			elseif soap:getCurrentUses() > 0 then
 				soap:UseAndSync();
@@ -215,13 +222,13 @@ function ISWashClothing:animEvent(event, parameter)
     end
 end
 
-function ISWashClothing:new(character, sink, soaps, item, bloodAmount, dirtAmount, noSoap)
+function ISWashClothing:new(character, sink, item, bloodAmount, dirtAmount, noSoap)
 	local o = ISBaseTimedAction.new(self, character)
 	o.sink = sink;
 	o.item = item;
 	o.bloodAmount = bloodAmount;
 	o.dirtAmount = dirtAmount;
-	o.soaps = soaps;
+    o.soaps = character:getInventory():getSoapList(nil, true)
 	o.noSoap = noSoap
 	o.forceProgressBar = true;
 	o.maxTime = o:getDuration();

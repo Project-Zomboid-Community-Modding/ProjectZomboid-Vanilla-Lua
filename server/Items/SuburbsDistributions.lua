@@ -7,8 +7,11 @@ WeaponUpgrades = {
 	Pistol = {"GunLight", "Laser", "TritiumSights"},
 	Pistol2 = {"GunLight", "Laser", "TritiumSights"},
 	Pistol3 = {"GunLight", "Laser", "TritiumSights"},
+	JS14_Rifle = {"x2Scope", "x4Scope", "Laser", "RedDot"},
+	JS3T_Shotgun = {"AmmoStraps", "RedDot"},
+	MSR7T_Rifle = { "x4Scope", "x8Scope", "RecoilPad"},
+	TrapperCarbine = {"x2Scope", "x4Scope", "Laser", "RedDot"}
 }
-
 
 -- can be used to clear all items from distribution tables.
 function ClearAllDistributionItems(_dist, _dorecursive)
@@ -182,7 +185,6 @@ local function mergeDistributions()
 	SuburbsDistributions.tech = SuburbsDistributions.technical
 	SuburbsDistributions.toolstorage = SuburbsDistributions.toolstorestorage
 	SuburbsDistributions.Satchel = SuburbsDistributions.Bag_Satchel
-	SuburbsDistributions.policestorage = SuburbsDistributions.policegunstorage -- this is needed because the two roomdefs are consitently used interchangably on the map
 end
 
 local function postDistributionMerge()

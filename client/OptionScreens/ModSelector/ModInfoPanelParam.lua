@@ -36,23 +36,25 @@ function ModInfoPanel.Param:render()
             modal:addToUIManager()
             modal:bringToTop()
         end
-    elseif self.type == "ModLink" then
-        self:drawText(self.modLink, self.borderX+UI_BORDER_SPACING, 2, 0.05, 0.45, 0.7, 0.9, UIFont.Small)
-        if self.modLink ~= "" and not (self:isMouseOver() and self:getMouseX() > self.borderX+UI_BORDER_SPACING and self:getMouseX() < self.borderX+UI_BORDER_SPACING + self.modLinkLen
+    elseif self.type == "Path" then
+        self:drawText(self.path, self.borderX+UI_BORDER_SPACING, 2, 0.05, 0.45, 0.7, 0.9, UIFont.Small)
+        if self.source == "Steam" and not (self:isMouseOver() and self:getMouseX() > self.borderX+UI_BORDER_SPACING and self:getMouseX() < self.borderX+UI_BORDER_SPACING + self.pathLen
                 and self:getMouseY() > 2 and self:getMouseY() < 2 + FONT_HGT_SMALL + 1) then
-            self:drawRectBorder(self.borderX+UI_BORDER_SPACING, 1+FONT_HGT_SMALL, self.modLinkLen, 1, 0.9, 0.05, 0.45, 0.7)
-        elseif self.modLink ~= "" and self.pressed then
+            self:drawRectBorder(self.borderX+UI_BORDER_SPACING, 1+FONT_HGT_SMALL, self.pathLen, 1, 0.9, 0.05, 0.45, 0.7)
+        elseif self.source == "Steam" and self.pressed then
             activateSteamOverlayToWorkshopItem(self.workshopID)
         end
     elseif self.type == "ModID" then
         self:drawText(self.modInfo:getId(), self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small)
     elseif self.type == "WorkshopID" then
         self:drawText(self.workshopID, self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small)
+    elseif self.type == "Source" then
+        self:drawText(self.source, self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small)
     elseif self.type == "ZomboidVersion" then
         if self.modInfo:isAvailableSelf() then
             self:drawText(self.zomboidVersion, self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.9, 0.9, 0.9, UIFont.Small)
         else
-            self:drawText("AVAILABLE ONLY IN DEBUG (mod must be updated to " .. getBreakModGameVersion():toString() .. "+ version)", self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.0, 0.0, 0.9, UIFont.Small)
+            self:drawText(self.zomboidVersion, self.borderX+UI_BORDER_SPACING, 2, 0.9, 0.0, 0.0, 0.9, UIFont.Small)
         end
     end
     self.pressed = false
@@ -75,9 +77,13 @@ function ModInfoPanel.Param:setModInfo(modInfo)
             .. " - "
             .. (self.modInfo:getVersionMax() and self.modInfo:getVersionMax():toString() or "**")
     self.workshopID = self.modInfo:getWorkshopID() == nil and "" or self.modInfo:getWorkshopID()
-    self.modLink = self.workshopID ~= "" and "https://steamcommunity.com/sharedfiles/filedetails/?id=" .. self.modInfo:getWorkshopID() or ""
+    self.source = self.modInfo:getSource()
+    self.path = self.modInfo:getDir()
+    if self.source == "Steam" then
+        self.path = "https://steamcommunity.com/sharedfiles/filedetails/?id=" .. self.modInfo:getWorkshopID()
+    end
     self.urlLen = getTextManager():MeasureStringX(UIFont.Small, self.modInfo:getUrl())
-    self.modLinkLen = getTextManager():MeasureStringX(UIFont.Small, self.modLink)
+    self.pathLen = getTextManager():MeasureStringX(UIFont.Small, self.path)
 end
 
 function ModInfoPanel.Param:new(x, y, width, type)
@@ -90,7 +96,8 @@ function ModInfoPanel.Param:new(x, y, width, type)
     o.tickTexture = getTexture("media/ui/inventoryPanes/Tickbox_Tick.png")
     o.zomboidVersion = ""
     o.workshopID = ""
-    o.modLink = ""
+    o.path = ""
+    o.source = ""
     o.borderX = width / 4.0
     return o
 end

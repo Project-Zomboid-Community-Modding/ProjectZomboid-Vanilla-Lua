@@ -36,9 +36,6 @@ function ISTakeTrap:complete()
 	self.character:getInventory():AddItem(self.trap:getItem());
 	sendAddItemToContainer(self.character:getInventory(), self.trap:getItem());
 	self.trap:getSquare():transmitRemoveItemFromSquare(self.trap);
-	self.trap:removeFromWorld();
-	self.trap:removeFromSquare();
-
 	return true;
 end
 

@@ -57,6 +57,12 @@ end
 
 function ISKillAnimalInInventory:kill()
     local animal = self.animalItem:getAnimal()
+    animal:setX(self.character:getX())
+    animal:setY(self.character:getY())
+    animal:setZ(self.character:getZ())
+    if self.character:getCurrentSquare() then
+        animal:setCurrentSquare(self.character:getCurrentSquare())
+    end
     animal:playBreedSound("death")
 	animal:setHealth(0);
     animal:doDeathSplatterAndSounds(nil, self.character, true);

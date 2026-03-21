@@ -22,7 +22,9 @@ function ISBuryCorpse:update()
 end
 
 function ISBuryCorpse:start()
-	--self:setActionAnim(CharacterActionAnims.Dig)
+    self:setOverrideHandModels(nil, nil)
+    self:setActionAnim("Loot")
+    self.character:SetVariable("LootPosition", "Low")
 end
 
 function ISBuryCorpse:stop()

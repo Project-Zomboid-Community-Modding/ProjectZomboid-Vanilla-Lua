@@ -106,9 +106,10 @@ fishingNet.checkTrap = function(player, trap, hours)
 
     local isBait = false
     local baitChance = 0
-    if trap:getSquare():getModData()["fishingNetBait"] ~= nil then
+    local baitAmount = trap:getSquare():getModData()["fishingNetBait"]
+    if baitAmount ~= nil then
         isBait = true
-        baitChance = 4 + (200 - trap:getSquare():getModData()["fishingNetBait"])/25
+        baitChance = 4 + (200 - baitAmount) / 25
     end
 
     for i=1,hours do
@@ -117,7 +118,7 @@ fishingNet.checkTrap = function(player, trap, hours)
             sendAddItemToContainer(player:getInventory(), item);
             fishCaught = true;
         end
-        if isBait and ZombRand(baitChance) then
+        if isBait and ZombRand(baitChance) == 0 then
             local catchType = Fishing.fishNetWithBait[ZombRand(#Fishing.fishNet)+1]
 
             local fishConfig = nil

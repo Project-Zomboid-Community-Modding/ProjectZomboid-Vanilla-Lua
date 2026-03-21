@@ -759,6 +759,7 @@ function MainOptions:addDisplayPanel()
 
 	local focusloss = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_focusloss"))
 	gameOption = GameOption:new('focusloss', focusloss)
+    focusloss.tooltip = getText("UI_optionscreen_focusloss_tooltip");
 	function gameOption.toUI(self)
 		local box = self.control
 		box:setSelected(1, getCore():getOptionFocusloss())
@@ -1994,7 +1995,7 @@ function MainOptions:addUIPanel()
 			for i=1,languages:size() do
 				local language = languages:get(i-1)
 				if language:text() == box.options[box.selected] then
-					if Translator.getLanguage():index() ~= language:index() then
+					if Translator.getLanguage() ~= language then
 						getCore():setOptionLanguageName(language:name())
 						Translator.setLanguage(language)
 						self:resetLua()

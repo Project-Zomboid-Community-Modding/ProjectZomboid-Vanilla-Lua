@@ -237,7 +237,7 @@ end
 
 function ISWidgetCraftLogicControl:onButtonClick(_button)
     if self.buttonCraft and _button==self.buttonCraft then
-        self:startCraft(false);
+        self:startCraft();
     end    
     if self.buttonCancel and _button==self.buttonCancel then
         if self.logic:getCraftLogic():isRunning() then
@@ -270,31 +270,26 @@ function ISWidgetCraftLogicControl:onButtonClick(_button)
     end
 end
 
-function ISWidgetCraftLogicControl:startCraft(force)
+function ISWidgetCraftLogicControl:startCraft()
     if not self.craftTimes then
         self.craftTimes = tonumber(self.entryBox:getInternalText()) or 1;
         self.craftTimes = math.max(1, self.craftTimes);
     end
-
-    if force then
-        if self.logic then
-            local monitor = self.logic:debugCanStart(self.player);
-            if monitor then
-                ISCraftRecipeMonitor.OnOpenPanel(monitor);
-            else
-                print("No craft recipe monitor returned!");
-            end
+    
+    local funcCanStart = function(_player, _entity, _component)
+        if not _component:getStartMode()==StartMode.Manual then
+            return false;
         end
+        return _component:canStart(_player);
+    end
+    local funcStart = function(_player, _entity, _component)
+        _component:start(_player);
+    end
+    
+    local itemsToTransfer = self.logic:getInventoryItemsToTransfer();
+    if #itemsToTransfer > 0 then
+        ISEntityUI.GenericCraftTransferAndStart(self.player, self.entity, self.logic:getCraftLogic(), funcCanStart, funcStart, itemsToTransfer, self.logic:getManualSelectItemSlot());
     else
-        local funcCanStart = function(_player, _entity, _component)
-            if not _component:getStartMode()==StartMode.Manual then
-                return false;
-            end
-            return _component:canStart(_player);
-        end
-        local funcStart = function(_player, _entity, _component)
-            _component:start(_player);
-        end
         ISEntityUI.GenericCraftStart(self.player, self.entity, self.logic:getCraftLogic(), funcCanStart, funcStart);
     end
 end

@@ -1,7 +1,9 @@
 DebugContextMenu = {};
 DebugContextMenu.staggerBacking = false;
 DebugContextMenu.stagTime = 0;
-DebugContextMenu.ticked = false;
+DebugContextMenu.player = nil;
+DebugContextMenu.pickedCharacters = nil;
+DebugContextMenu.highlightedCharacter = nil;
 
 local function removeDuplicates(list)
 	local result = {}
@@ -16,6 +18,7 @@ local function removeDuplicates(list)
 end
 
 DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
+    DebugContextMenu.player = player;
 	local playerObj = getSpecificPlayer(player)
 
 	if isClient() then
@@ -89,25 +92,23 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	local y = getMouseY()
 	local square,sqX,sqY,sqZ = DebugContextMenu.pickSquare(x, y)
 
-	for dy=-1,1 do
-		for dx=-1,1 do
-			local l_square = getCell():getGridSquare(sqX+dx, sqY+dy, sqZ)
-			if l_square then
-				for i=1, l_square:getMovingObjects():size() do
-					local obj = l_square:getMovingObjects():get(i - 1)
-					if instanceof(obj, "IsoGameCharacter") then
-						debugMenu:addOption(string.format("Animation Text (%s)", getClassSimpleName(obj)), obj, DebugContextMenu.onShowAnimationText)
-						if (obj:isAnimRecorderActive()) then
-                            debugMenu:addOption(string.format("%s - Stop Anim Recording", getClassSimpleName(obj)), obj, DebugContextMenu.onSetAnimRecorderActive, false)
-						else
-                            debugMenu:addOption(string.format("%s - Start Anim Recording", getClassSimpleName(obj)), obj, DebugContextMenu.onSetAnimRecorderActive, true)
-						end
-						break
-					end
-				end
+    local foundChars = DebugContextMenu.findIsoGameCharactersInSquare(square)
+    if #foundChars > 0 then
+        DebugContextMenu.pickedCharacters = foundChars
+        for _,obj in ipairs(DebugContextMenu.pickedCharacters) do
+            local optionAnimationText = debugMenu:addOption(string.format("%s (%s)", getText("IGUI_DebugContext_AnimationText"), getClassSimpleName(obj)), obj, DebugContextMenu.onShowAnimationText)
+            DebugContextMenu.initWorldCharacterHighlightOption(optionAnimationText, obj)
+            if (obj:isAnimationRecorderActive()) then
+                local optionStopAnimRecording = debugMenu:addOption(string.format("%s - %s", getClassSimpleName(obj), getText("IGUI_DebugContext_StopAnimRecording")), obj, DebugContextMenu.onSetAnimRecorderActive, false)
+                DebugContextMenu.initWorldCharacterHighlightOption(optionStopAnimRecording, obj)
+            else
+                local optionStartAnimRecording = debugMenu:addOption(string.format("%s - %s", getClassSimpleName(obj), getText("IGUI_DebugContext_StartAnimRecording")), obj, DebugContextMenu.onSetAnimRecorderActive, true)
+                DebugContextMenu.initWorldCharacterHighlightOption(optionStartAnimRecording, obj)
+            end
+        end
+    else
+        DebugContextMenu.pickedCharacters = nil
 			end
-		end
-	end
 
     if Core.isDevMode() then
         local devOption = debugMenu:addOption(getText("IGUI_DebugContext_DevMode"));
@@ -116,6 +117,8 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 
         devContext:addOption("Tailoring to CSV", nil, DebugContextMenu.doCSV);
         devContext:addOption("Fluid Containers to CSV", nil, DebugContextMenu.doFluidContainerCSV);
+        devContext:addOption("Firearms to CSV", nil, DebugContextMenu.doFirearmsCSV);
+        devContext:addOption("Moveable Tiles to CSV", nil, DebugContextMenu.doCSVMoveableTiles);
     end
 
     local brushToolOption = debugMenu:addOption("Brush Tool", worldobjects, nil);
@@ -176,6 +179,21 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	DebugContextMenu.doSurvivorSwapMenu(player, debugMenu, worldobjects, test)
 
 	DebugContextMenu.doForageMenu(player, debugMenu, worldobjects, test)
+end
+
+function DebugContextMenu.onHighlightWorldCharacter(_option, _menu, _isHighlighted, _object)
+    local generalHLColor = getCore():getWorldItemHighlightColor()
+	_object:setHighlighted(_menu.player, _isHighlighted, false)
+	_object:setHighlightColor(_menu.player, generalHLColor)
+	_object:setOutlineHighlight(_menu.player, _isHighlighted)
+	_object:setOutlineHighlightCol(_menu.player, generalHLColor)
+	ISInventoryPage.OnObjectHighlighted(_menu.player, _object, _isHighlighted)
+	DebugContextMenu.highlightedCharacter = _object
+end
+
+function DebugContextMenu.initWorldCharacterHighlightOption(option, object)
+	option.onHighlightParams = { object }
+	option.onHighlight = DebugContextMenu.onHighlightWorldCharacter
 end
 
 function DebugContextMenu.onFilmingToolsUI(playerObj)
@@ -309,10 +327,6 @@ end
 
 function DebugContextMenu.stagger(player, stag)
 	DebugContextMenu.staggerBacking = stag;
-	if stag and not DebugContextMenu.ticked then
-		DebugContextMenu.ticked = true;
-		Events.OnTick.Add(DebugContextMenu.onTick);
-	end
 end
 
 function DebugContextMenu.doDebugObjectMenu(player, context, worldobjects, test)
@@ -883,6 +897,20 @@ function DebugContextMenu.pickSquare(x, y)
 	return getCell():getGridSquare(worldX, worldY, z), worldX, worldY, z
 end
 
+function DebugContextMenu.findIsoGameCharactersInSquare(square)
+    local foundChars = {}
+    if square then
+        for i=1, square:getMovingObjects():size() do
+            local obj = square:getMovingObjects():get(i - 1)
+            if instanceof(obj, "IsoGameCharacter") then
+                table.insert(foundChars, obj);
+            end
+        end
+    end
+
+    return foundChars
+end
+
 function DebugContextMenu.OnBendFence(worldobjects, fence, towards)
 	local playerObj = getSpecificPlayer(0)
 	local props = fence:getProperties()
@@ -1368,6 +1396,27 @@ DebugContextMenu.onTick = function()
 			chr:setVariable("BumpFallType", "pushedFront");
 		end
 	end
+
+    local context = DebugContextMenu.player and getPlayerContextMenu(DebugContextMenu.player)
+    if context and context:isVisible() then
+        if DebugContextMenu.pickedCharacters then
+            local generalHLColor = getCore():getWorldItemHighlightColor()
+            local focusedHLColor = getCore():getGoodHighlitedColor()
+            for _,obj in ipairs(DebugContextMenu.pickedCharacters) do
+                local color = generalHLColor
+                if obj == DebugContextMenu.highlightedCharacter then
+                    color = focusedHLColor
+                end
+                obj:setHighlighted(DebugContextMenu.player, true, false)
+                obj:setHighlightColor(DebugContextMenu.player, color)
+                obj:setOutlineHighlight(DebugContextMenu.player, true)
+                obj:setOutlineHighlightCol(DebugContextMenu.player, color)
+            end
+        end
+    else
+        DebugContextMenu.player = nil
+        DebugContextMenu.highlightedCharacter = nil
+    end
 end
 
 DebugContextMenu.doForageMenu = function(player, context, worldobjects, test)
@@ -1377,20 +1426,6 @@ DebugContextMenu.doForageMenu = function(player, context, worldobjects, test)
 	local clickedY = screenToIsoY(player, context.x, context.y, character:getZ());
 	local square = getCell():getGridSquare(clickedX, clickedY, character:getZ());
 	ISSearchManager.createDebugContextMenu(player, context, manager, square)
-end
-
-DebugContextMenu.onTick = function()
-	if DebugContextMenu.staggerBacking then
-		DebugContextMenu.stagTime = DebugContextMenu.stagTime - 1;
-		if DebugContextMenu.stagTime < 0 then
-			local chr = IsoPlayer.getInstance();
-			DebugContextMenu.stagTime = 300;
-			chr:setBumpType("stagger");
-			chr:setVariable("BumpDone", false);
-			chr:setVariable("BumpFall", true);
-			chr:setVariable("BumpFallType", "pushedFront");
-		end
-	end
 end
 
 function DebugContextMenu.onAvatarUI(player)
@@ -1465,3 +1500,13 @@ end
 DebugContextMenu.doFluidContainerCSV = function()
     DebugCSVExportFluidContainers.doCSV();
 end
+
+DebugContextMenu.doFirearmsCSV = function()
+    DebugCSVExportFirearms.doCSV();
+end
+
+DebugContextMenu.doCSVMoveableTiles = function()
+    DebugCSVExportMoveableTiles.doCSV();
+end
+
+Events.OnTick.Add(DebugContextMenu.onTick);

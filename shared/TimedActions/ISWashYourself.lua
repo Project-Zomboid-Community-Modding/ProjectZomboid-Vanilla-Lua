@@ -29,13 +29,15 @@ function ISWashYourself:stop()
 end
 
 function ISWashYourself:washPart(visual, part)
+
 	if visual:getBlood(part) + visual:getDirt(part) <= 0 then
 		return false
 	end
 	if visual:getBlood(part) > 0 then
 		-- Soap is used for blood but not for dirt.
-		for _,soap in ipairs(self.soaps) do
-			if soap:getCurrentUses() > 0 then
+        for i = 0, self.soaps:size() - 1 do
+            local soap = self.soaps:get(i)
+			if instanceof (soap, "DrainableComboItem") and soap:getCurrentUses() > 0 then
 				soap:UseAndSync()
 				break
 			end
@@ -75,6 +77,19 @@ function ISWashYourself.GetRequiredSoap(character)
 		end
 	end
 	return units
+end
+
+function ISWashYourself.GetSoapRemaining(soaps)
+    local total = 0
+    if soaps and soaps.size then
+        for i=0, soaps:size()-1 do
+            local soap = soaps:get(i)
+            if instanceof(soap, "DrainableComboItem") then
+                total = total + soap:getCurrentUses()
+            end
+        end
+    end
+    return total
 end
 
 function ISWashYourself.GetRequiredWater(character)
@@ -140,18 +155,18 @@ function ISWashYourself:getDuration()
 		return 1;
 	end
 	local waterUnits = math.min(ISWashYourself.GetRequiredWater(self.character), self.sink:getFluidAmount());
-	if not self.soaps then
+	if self.soaps:isEmpty() then
 		return waterUnits * 126;
 	else
 		return waterUnits * 70;
 	end
 end
 
-function ISWashYourself:new(character, sink, soaps)
+function ISWashYourself:new(character, sink)
 	local o = ISBaseTimedAction.new(self, character)
 	o.sink = sink;
-	o.soaps = soaps;
-	o.useSoap = (ISWashYourself.GetRequiredSoap(character) <= ISWashClothing.GetSoapRemaining(soaps))
+	o.soaps = character:getInventory():getSoapList(nil, false)
+	o.useSoap = (ISWashYourself.GetRequiredSoap(character) <= ISWashClothing.GetSoapRemaining(o.soaps))
 	o.maxTime = o:getDuration();
 	o.forceProgressBar = true;
 	return o;
