@@ -8,20 +8,23 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local LABEL_HGT = FONT_HGT_MEDIUM + 6
 
+local GHC = getCore():getGoodHighlitedColor()
+local BHC = getCore():getBadHighlitedColor()
+
 function ISItemsListTable:initialise()
     ISPanel.initialise(self);
 end
 
 function ISItemsListTable:render()
     ISPanel.render(self);
-    
+
     local y = self.datas.y + self.datas.height + UI_BORDER_SPACING + 3
     self:drawText(getText("IGUI_DbViewer_TotalResult") .. self.totalResult, 0, y, 1,1,1,1,UIFont.Small)
     self:drawText(getText("IGUI_ItemList_Info"), 0, y + BUTTON_HGT, 1,1,1,1,UIFont.Small)
     self:drawText(getText("IGUI_ItemList_Info2"), 0, y + BUTTON_HGT*2, 1,1,1,1,UIFont.Small)
 
     y = self.filters:getBottom()
-    
+
     self:drawRectBorder(self.datas.x, y, self.datas:getWidth(), BUTTON_HGT, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawRect(self.datas.x, y, self.datas:getWidth(), BUTTON_HGT, self.listHeaderColor.a, self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
 
@@ -56,7 +59,7 @@ end
 
 function ISItemsListTable:createChildren()
     ISPanel.createChildren(self);
-    
+
     local btnWid = 100
     local bottomHgt = BUTTON_HGT*6 + UI_BORDER_SPACING*3 + LABEL_HGT -2
 
@@ -69,6 +72,7 @@ function ISItemsListTable:createChildren()
     self.datas.font = UIFont.NewSmall;
     self.datas.doDrawItem = self.drawDatas;
     self.datas.drawBorder = true;
+
     self.datas:addColumn("Type", 0); --note, trying to add translations to these breaks the menu completely. find some way to bypass this
     self.datas:addColumn("Name", 200+(getCore():getOptionFontSizeReal()*20));
     self.datas:addColumn("Category", 450+(getCore():getOptionFontSizeReal()*40));
@@ -78,23 +82,24 @@ function ISItemsListTable:createChildren()
     self.datas:addColumn("Forage", 970+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
     self.datas:addColumn("Loot", 1020+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
     self.datas:addColumn("#spawn", 1070+(getCore():getOptionFontSizeReal()*50))  --resize these based on longest item in contents
+
     self.datas:setOnMouseDoubleClick(self, ISItemsListTable.addItem);
     self:addChild(self.datas);
 
     local btnY = self.datas.y + self.datas.height + UI_BORDER_SPACING*2 + BUTTON_HGT*3
-        
+
     self.buttonAdd1 = ISButton:new(0, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add1"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd1.internal = "ADDITEM1";
     self.buttonAdd1.enable = false;
     self.buttonAdd1.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAdd1);
-        
+
     self.buttonAdd2 = ISButton:new(self.buttonAdd1:getRight() + UI_BORDER_SPACING, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add2"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd2.internal = "ADDITEM2";
     self.buttonAdd2.enable = false;
     self.buttonAdd2.borderColor = self.buttonBorderColor;
     self:addChild(self.buttonAdd2);
-        
+
     self.buttonAdd5 = ISButton:new(self.buttonAdd2:getRight() + UI_BORDER_SPACING, btnY, btnWid, BUTTON_HGT, getText("IGUI_AdminPanel_ItemList_Add5"), self, ISItemsListTable.onOptionMouseDown);
     self.buttonAdd5.internal = "ADDITEM5";
     self.buttonAdd5.enable = false;
@@ -113,7 +118,7 @@ function ISItemsListTable:createChildren()
     self.filters:initialise()
     self.filters:instantiate()
     self:addChild(self.filters)
-    
+
     local x = 0;
     local entryY = self.filters:getBottom() + BUTTON_HGT
     for i,column in ipairs(self.datas.columns) do
@@ -379,8 +384,8 @@ end
 function ISItemsListTable:filterCraft(widget, scriptItem)
     if widget.selected == 1 then return true end -- Any category
     local txtToCheck = string.lower(tostring(scriptItem:isCraftRecipeProduct()))
-getPlayer():Say("1" .. tostring(txtToCheck))
-getPlayer():Say("2" .. tostring(widget:getOptionText(widget.selected)))
+    getPlayer():Say("1" .. tostring(txtToCheck))
+    getPlayer():Say("2" .. tostring(widget:getOptionText(widget.selected)))
     return txtToCheck == widget:getOptionText(widget.selected)
 end
 
@@ -437,7 +442,7 @@ function ISItemsListTable:drawDatas(y, item, alt)
     if y + self:getYScroll() + self.itemheight < 0 or y + self:getYScroll() >= self.height then
         return y + self.itemheight
     end
-    
+
     local a = 0.9;
 
     if self.selected == item.index then
@@ -454,67 +459,71 @@ function ISItemsListTable:drawDatas(y, item, alt)
     local iconSize = FONT_HGT_SMALL;
     local xoffset = UI_BORDER_SPACING;
 
-    local clipX = self.columns[1].size
-    local clipX2 = self.columns[2].size
+    local column = 1
     local clipY = math.max(0, y + self:getYScroll())
     local clipY2 = math.min(self.height, y + self:getYScroll() + self.itemheight)
-    
-    self:setStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
+
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     self:drawText(item.item:getName(), xoffset, y + 3, 1, 1, 1, a, self.font);
     self:clearStencilRect()
 
-    clipX = self.columns[2].size
-    clipX2 = self.columns[3].size
-    self:setStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     self:drawText(item.item:getDisplayName(), self.columns[2].size + iconX + iconSize + 4, y + 3, 1, 1, 1, a, self.font);
     self:clearStencilRect()
 
-    clipX = self.columns[3].size
-    clipX2 = self.columns[4].size
-    self:setStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     self:drawText(item.item:getItemType():toString(), self.columns[3].size + xoffset, y + 3, 1, 1, 1, a, self.font);
     self:clearStencilRect()
 
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     if item.item:getDisplayCategory() ~= nil then
         self:drawText(getText("IGUI_ItemCat_" .. item.item:getDisplayCategory()), self.columns[4].size + xoffset, y + 4, 1, 1, 1, a, self.font);
-        else
+    else
         self:drawText("Error: No category set", self.columns[4].size + xoffset, y + 3, 1, 1, 1, a, self.font);
     end
+    self:clearStencilRect()
 
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     if item.item:getLootType() ~= nil then
         self:drawText(getText("Sandbox_" .. item.item:getLootType() .. "LootNew"), self.columns[5].size + xoffset, y + 3, 1, 1, 1, a, self.font);
     end
+    self:clearStencilRect()
 
-    local goodR = getCore():getGoodHighlitedColor():getR()
-    local goodG = getCore():getGoodHighlitedColor():getG()
-    local goodB = getCore():getGoodHighlitedColor():getB()
-
-    local badR = getCore():getBadHighlitedColor():getR()
-    local badG = getCore():getBadHighlitedColor():getG()
-    local badB = getCore():getBadHighlitedColor():getB()
-
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     if item.item:isCraftRecipeProduct() then
-        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, GHC:getR(), GHC:getG(), GHC:getB(), a, self.font);
     else
-        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+        self:drawText(tostring(item.item:isCraftRecipeProduct()), self.columns[6].size + xoffset, y + 3, BHC:getR(), BHC:getG(), BHC:getB(), a, self.font);
     end
+    self:clearStencilRect()
 
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     if item.item:canBeForaged() then
-        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, GHC:getR(), GHC:getG(), GHC:getB(), a, self.font);
     else
-        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+        self:drawText(tostring(item.item:canBeForaged()), self.columns[7].size + xoffset, y + 3, BHC:getR(), BHC:getG(), BHC:getB(), a, self.font);
     end
+    self:clearStencilRect()
 
+    column = column+1
+    self:setStencilRect(self.columns[column].size, clipY, self.columns[column+1].size - self.columns[column].size, clipY2 - clipY)
     if item.item:canSpawnAsLoot() then
-        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, GHC:getR(), GHC:getG(), GHC:getB(), a, self.font);
     else
-        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+        self:drawText(tostring(item.item:canSpawnAsLoot()), self.columns[8].size + xoffset, y + 3, BHC:getR(), BHC:getG(), BHC:getB(), a, self.font);
     end
+    self:clearStencilRect()
 
     if item.item:getNumSpawned() > 0 then
-        self:drawText(tostring(item.item:getNumSpawned()), self.columns[9].size + xoffset, y + 3, goodR, goodG, goodB, a, self.font);
+        self:drawText(tostring(item.item:getNumSpawned()), self.columns[9].size + xoffset, y + 3, GHC:getR(), GHC:getG(), GHC:getB(), a, self.font);
     else
-        self:drawText(tostring(item.item:getNumSpawned()), self.columns[9].size + xoffset, y + 3, badR, badG, badB, a, self.font);
+        self:drawText(tostring(item.item:getNumSpawned()), self.columns[9].size + xoffset, y + 3, BHC:getR(), BHC:getG(), BHC:getB(), a, self.font);
     end
 
 
@@ -530,6 +539,6 @@ function ISItemsListTable:drawDatas(y, item, alt)
             self:drawTextureScaledAspect2(texture, self.columns[2].size + iconX, y + (self.itemheight - iconSize) / 2, iconSize, iconSize,  1, 1, 1, 1);
         end
     end
-    
+
     return y + self.itemheight;
 end

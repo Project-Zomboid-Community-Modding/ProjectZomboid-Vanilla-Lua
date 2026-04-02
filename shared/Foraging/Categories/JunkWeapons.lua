@@ -132,7 +132,7 @@ local function generateJunkWeaponDefs()
 				JS14_Rifle                  = "Base.JS14_Rifle",
 				Katana                      = "Base.Katana",
 				L92_Carbine                 = "Base.L92_Carbine",
-				L94_Rifle                   = "Base.L92_Rifle",
+				L94_Rifle                   = "Base.L94_Rifle",
 				Pistol                      = "Base.Pistol",
 				Pistol2                     = "Base.Pistol2",
 				Pistol3                     = "Base.Pistol3",

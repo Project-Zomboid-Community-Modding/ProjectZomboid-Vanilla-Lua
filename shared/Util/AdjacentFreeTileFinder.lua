@@ -326,20 +326,54 @@ AdjacentFreeTileFinder.FindWall = function(gridSquare, north, playerObj)
     -- only do diags if no other choices.
     if #choices == 0 then
         -- now do diags.
-        local a = gridSquare:getAdjacentSquare(IsoDirections.NW)
-        local b = gridSquare:getAdjacentSquare(IsoDirections.NE)
-        local c = gridSquare:getAdjacentSquare(IsoDirections.SW)
-        local d = gridSquare:getAdjacentSquare(IsoDirections.SE)
+        if north then
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NW}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NE}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.W}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.E}, gridSquare, choices)
+        else
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NW}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.N}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.SW}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.S}, gridSquare, choices)
+        end
+    end
 
-        if AdjacentFreeTileFinder.privTrySquareWindow(gridSquare, a) then table.insert(choices, a) end
-        if AdjacentFreeTileFinder.privTrySquareWindow(gridSquare, b) then table.insert(choices, b) end
-        if AdjacentFreeTileFinder.privTrySquareWindow(gridSquare, c) then table.insert(choices, c) end
-        if AdjacentFreeTileFinder.privTrySquareWindow(gridSquare, d) then table.insert(choices, d) end
-
+    if #choices == 0 then
+        -- now do diags + 1 (because of stairs could block the access)
+        if north then
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.N, IsoDirections.N}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NW, IsoDirections.N}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NE, IsoDirections.N}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.S}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.SW}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.SE}, gridSquare, choices)
+        else
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.W, IsoDirections.W}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NW, IsoDirections.W}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.SW, IsoDirections.W}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.E}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.NE}, gridSquare, choices)
+            AdjacentFreeTileFinder.tryDirection({IsoDirections.SE}, gridSquare, choices)
+        end
     end
 
     -- if we have multiple choices, pick the one closest to the player
     return getClosestChoice(choices, playerObj)
+end
+
+function AdjacentFreeTileFinder.tryDirection(directions, gridSquare, choices)
+    local connectedSquare = gridSquare;
+    for i,v in pairs(directions) do
+        if connectedSquare then
+            connectedSquare = connectedSquare:getAdjacentSquare(v)
+        else
+            return false
+        end
+    end
+    if AdjacentFreeTileFinder.privTrySquareWindow(gridSquare, connectedSquare) then
+        table.insert(choices, connectedSquare)
+    end
 end
 
 function AdjacentFreeTileFinder.FindEdge(gridSquare, dir, playerObj, preferSameSquare)

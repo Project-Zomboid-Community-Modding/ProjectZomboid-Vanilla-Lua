@@ -43,6 +43,11 @@ function ISAddSafeZoneUI:updateButtons()
 					and string.trim(self.titleEntry:getInternalText()) ~= ""
 					and self.notIntersecting
 					and p ~= nil;
+    if self.ok:isEnabled() then
+        self.ok:enableAcceptColor()
+    else
+        self.ok:enableDisabledColor()
+    end
 end
 
 function ISAddSafeZoneUI:prerender()
@@ -126,7 +131,7 @@ function ISAddSafeZoneUI:initialise()
 	self.cancel.anchorBottom = true
 	self.cancel:initialise();
 	self.cancel:instantiate();
-	self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.cancel:enableCancelColor()
 	self:addChild(self.cancel);
 
 	self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_PvpZone_AddZone"), self, ISAddSafeZoneUI.onClick);
@@ -135,7 +140,7 @@ function ISAddSafeZoneUI:initialise()
 	self.ok.anchorBottom = true
 	self.ok:initialise();
 	self.ok:instantiate();
-	self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+	self.ok:enableDisabledColor()
 	self:addChild(self.ok);
 
 	self.startingPoint = ISButton:new(UI_BORDER_SPACING+1, self.ok.y - BUTTON_HGT - UI_BORDER_SPACING, self.width - (UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("IGUI_PvpZone_RedefineStartingPoint"), self, ISAddSafeZoneUI.onClick);

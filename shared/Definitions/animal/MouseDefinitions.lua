@@ -29,9 +29,9 @@ AnimalDefinitions.breeds["mouse"].breeds["golden"].forcedGenes["maxMilk"].maxVal
 AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconMale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconFemale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconBaby = "Item_Mouse";
-AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconMaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconFemaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconBabyDead = "Item_MouseDead.png";
+AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconMaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconFemaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["golden"].invIconBabyDead = "Item_MouseDead";
 AnimalDefinitions.breeds["mouse"].breeds["deer"] = {};
 AnimalDefinitions.breeds["mouse"].breeds["deer"].name = "deer";
 AnimalDefinitions.breeds["mouse"].breeds["deer"].texture = "Mouse_Deer";
@@ -44,9 +44,9 @@ AnimalDefinitions.breeds["mouse"].breeds["deer"].forcedGenes["maxMilk"].maxValue
 AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconMale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconFemale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconBaby = "Item_Mouse";
-AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconMaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconFemaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconBabyDead = "Item_MouseDead.png";
+AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconMaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconFemaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["deer"].invIconBabyDead = "Item_MouseDead";
 AnimalDefinitions.breeds["mouse"].breeds["white"] = {};
 AnimalDefinitions.breeds["mouse"].breeds["white"].name = "white";
 AnimalDefinitions.breeds["mouse"].breeds["white"].texture = "Mouse_White";
@@ -59,9 +59,9 @@ AnimalDefinitions.breeds["mouse"].breeds["white"].forcedGenes["maxMilk"].maxValu
 AnimalDefinitions.breeds["mouse"].breeds["white"].invIconMale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["white"].invIconFemale = "Item_Mouse";
 AnimalDefinitions.breeds["mouse"].breeds["white"].invIconBaby = "Item_Mouse";
-AnimalDefinitions.breeds["mouse"].breeds["white"].invIconMaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["white"].invIconFemaleDead = "Item_MouseDead.png";
-AnimalDefinitions.breeds["mouse"].breeds["white"].invIconBabyDead = "Item_MouseDead.png";
+AnimalDefinitions.breeds["mouse"].breeds["white"].invIconMaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["white"].invIconFemaleDead = "Item_MouseDead";
+AnimalDefinitions.breeds["mouse"].breeds["white"].invIconBabyDead = "Item_MouseDead";
 
 -- genome
 AnimalDefinitions.genome = AnimalDefinitions.genome or {};
@@ -129,6 +129,7 @@ AnimalDefinitions.animals["mousepups"].eatFromMother = true;
 AnimalDefinitions.animals["mousepups"].corpseSize = 0;
 AnimalDefinitions.animals["mousepups"].dung = "Dung_Mouse";
 AnimalDefinitions.animals["mousepups"].wildFleeTimeUntilDeadTimer = 50;
+AnimalDefinitions.animals["mousepups"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals = AnimalDefinitions.animals or {};
@@ -187,6 +188,7 @@ AnimalDefinitions.animals["mousefemale"].maxMilk = 2;
 AnimalDefinitions.animals["mousefemale"].corpseSize = 0;
 AnimalDefinitions.animals["mousefemale"].dung = "Dung_Mouse";
 AnimalDefinitions.animals["mousefemale"].wildFleeTimeUntilDeadTimer = 100;
+AnimalDefinitions.animals["mousefemale"].feedByHandAnim = AnimalDefinitions.animals["mousepups"].feedByHandAnim;
 
 AnimalDefinitions.animals = AnimalDefinitions.animals or {};
 AnimalDefinitions.animals["mouse"] = {};
@@ -239,6 +241,7 @@ AnimalDefinitions.animals["mouse"].turnDelta = 0.95;
 AnimalDefinitions.animals["mouse"].corpseSize = 0;
 AnimalDefinitions.animals["mouse"].dung = "Dung_Mouse";
 AnimalDefinitions.animals["mouse"].wildFleeTimeUntilDeadTimer = 100;
+AnimalDefinitions.animals["mouse"].feedByHandAnim = AnimalDefinitions.animals["mousepups"].feedByHandAnim;
 
 local mouse_sounds = {
 	idle = { name = "AnimalVoiceMouseIdle", slot = "voice", intervalMin = 10, intervalMax = 20 },

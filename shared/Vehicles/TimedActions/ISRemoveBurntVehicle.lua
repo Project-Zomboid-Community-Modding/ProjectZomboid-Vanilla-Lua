@@ -58,80 +58,80 @@ function ISRemoveBurntVehicle:perform()
 end
 
 function ISRemoveBurntVehicle:complete()
-	local totalXp = 5;
-	for i=1,math.max(5,self.character:getPerkLevel(Perks.MetalWelding)) do
-        -- removed due to render issues
--- 		if self:checkAddItem("BrokenGlass", 12) then totalXp = totalXp + 1 end;
--- 		if self:checkAddItem("BrokenGlass", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("AluminumScrap", 12) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("AluminumScrap", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("CopperScrap", 12) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("CopperScrap", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("ElectricWire", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("ElectricWire", 25) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("EngineParts", 25) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("EngineParts", 25) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("IronBand", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("IronBand", 25) then totalXp = totalXp + 1 end;
---
-		if self:checkAddItem("IronBandSmall", 15) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("IronBandSmall", 15) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("IronScrap", 12) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("IronScrap", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("MetalBar", 15) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("MetalBar", 15) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("MetalPipe", 15) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("MetalPipe", 15) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("NutsBolts", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("NutsBolts", 25) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("ScrapMetal", 12) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("ScrapMetal", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("Screws", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("Screws", 25) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("SheetMetal", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("SheetMetal", 25) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("SmallSheetMetal", 15) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("SmallSheetMetal", 15) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelBar", 25) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelBar", 25) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelBarHalf", 15) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelBarHalf", 15) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelBarQuarter", 12) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelBarQuarter", 12) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelBlock", 25) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelBlock", 25) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelChunk", 15) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelChunk", 15) then totalXp = totalXp + 1 end;
-
-        if self:checkAddItem("SteelPiece", 12) then totalXp = totalXp + 1 end;
-        if self:checkAddItem("SteelPiece", 12) then totalXp = totalXp + 1 end;
-
-		if self:checkAddItem("Wire", 25) then totalXp = totalXp + 1 end;
-		if self:checkAddItem("Wire", 25) then totalXp = totalXp + 1 end;
-	end
-	for i=1,10 do
-		self.item:Use(false, false, true);
-	end
-	addXp(self.character, Perks.MetalWelding, totalXp);
     if self.vehicle then
+        local totalXp = 5;
+        for i=1,math.max(5,self.character:getPerkLevel(Perks.MetalWelding)) do
+            -- removed due to render issues
+-- 		    if self:checkAddItem("BrokenGlass", 12) then totalXp = totalXp + 1 end;
+-- 		    if self:checkAddItem("BrokenGlass", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("AluminumScrap", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("AluminumScrap", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("CopperScrap", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("CopperScrap", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("ElectricWire", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("ElectricWire", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("EngineParts", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("EngineParts", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("IronBand", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("IronBand", 25) then totalXp = totalXp + 1 end;
+--
+            if self:checkAddItem("IronBandSmall", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("IronBandSmall", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("IronScrap", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("IronScrap", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("MetalBar", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("MetalBar", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("MetalPipe", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("MetalPipe", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("NutsBolts", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("NutsBolts", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("ScrapMetal", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("ScrapMetal", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("Screws", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("Screws", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SheetMetal", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SheetMetal", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SmallSheetMetal", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SmallSheetMetal", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelBar", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelBar", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelBarHalf", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelBarHalf", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelBarQuarter", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelBarQuarter", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelBlock", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelBlock", 25) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelChunk", 15) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelChunk", 15) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("SteelPiece", 12) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("SteelPiece", 12) then totalXp = totalXp + 1 end;
+
+            if self:checkAddItem("Wire", 25) then totalXp = totalXp + 1 end;
+            if self:checkAddItem("Wire", 25) then totalXp = totalXp + 1 end;
+        end
+        for i=1,10 do
+            self.item:Use(false, false, true);
+        end
+        addXp(self.character, Perks.MetalWelding, totalXp);
         self.vehicle:permanentlyRemove()
     else
         print('no such vehicle id=',self.vehicle:getId())
@@ -177,6 +177,9 @@ function ISRemoveBurntVehicle:checkAddItem(item, baseChance)
 end
 
 function ISRemoveBurntVehicle:getDuration()
+    if self.vehicle == nil then
+        return 0
+    end
     if self.character:isMechanicsCheat() or self.character:isTimedActionInstant() then
         return 10
     end

@@ -32,8 +32,8 @@ function ISMPScreenShading:render()
 end
 
 function ISMPScreenShading:onResolutionChange(oldw, oldh, neww, newh)
-    self:setWidth(neww)
-    self:setHeight(newh)
+    self:setWidth(getCore():getScreenWidth())
+    self:setHeight(getCore():getScreenHeight())
     self:setX(0)
     self:setY(0)
 end

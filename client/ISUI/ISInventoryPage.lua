@@ -1089,6 +1089,10 @@ function ISInventoryPage:selectContainer(button)
 	local playerObj = getSpecificPlayer(self.player)
 
     if button.inventory ~= self.inventoryPane.lastinventory then
+        if self.mouseOverColoredContainer then
+            self:stopHighlightContainer(self.mouseOverColoredContainer);
+        end
+        self.mouseOverColoredContainer = nil;
         local object = button.inventory and button.inventory:getParent() or nil
         if instanceof(object, "IsoThumpable") and object:isLockedToCharacter(playerObj) then
             return
@@ -1708,7 +1712,7 @@ function ISInventoryPage:refreshBackpacks()
 					if so:getContainer() ~= nil then
 					    -- added console spam when there's a missing container name translation string
 					    if getTextOrNull("IGUI_ContainerTitle_" .. so:getContainer():getType()) == nil and isDebugEnabled() then
-					        print("Missing IGUI_ContainerTitle_ tranlastion string for " .. tostring(so:getContainer():getType()))
+					        DebugType.Lua:warn("Missing IGUI_ContainerTitle_ tranlastion string for " .. tostring(so:getContainer():getType()))
 					    end
 
 					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
@@ -1729,7 +1733,7 @@ function ISInventoryPage:refreshBackpacks()
 						local container = o:getContainerByIndex(containerIndex-1)
 						-- added console spam when a container type doesn't have a translation string defined
 					    if getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) == nil and isDebugEnabled() then
-					        print("Missing IGUI_ContainerTitle_ translation string for " .. tostring(container:getType()))
+					        DebugType.Lua:warn("Missing IGUI_ContainerTitle_ translation string for " .. tostring(container:getType()))
 					    end
 					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
 						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or "!Needs IGUI_ContainerTitle defined for: " .. container:getType()
@@ -1805,6 +1809,14 @@ function ISInventoryPage:refreshBackpacks()
 			break
 		end
 	end
+
+    for _, button in ipairs(self.buttonPool) do
+        if self.mouseOverColoredContainer and self:getContainerParent(button.inventory) == self.mouseOverColoredContainer then
+            self:stopHighlightContainer(self.mouseOverColoredContainer);
+            self.mouseOverColoredContainer = nil;
+            break;
+        end
+    end
 
 	self.inventoryPane.inventory = self.inventoryPane.lastinventory
 	self.inventory = self.inventoryPane.inventory
@@ -1983,10 +1995,35 @@ function ISInventoryPage:onMouseOverButton(button,x,y)
         self:refreshBackpacks()
     end
 	self.mouseOverButton = button;
+    local newMouseOverColoredContainer = self:getContainerParent(button.inventory);
+    if self.isCollapsed then
+        return;
+    end
+    if self.mouseOverColoredContainer and self.mouseOverColoredContainer ~= newMouseOverColoredContainer and self:getContainerParent(self.coloredInv) ~= newMouseOverColoredContainer then
+        self:stopHighlightContainer(self.mouseOverColoredContainer);
+    end
+
+    if newMouseOverColoredContainer and newMouseOverColoredContainer ~= self.mouseOverColoredContainer and self:getContainerParent(self.coloredInv) ~= newMouseOverColoredContainer and not ObjectsHighlightedElsewhere[self.player+1][newMouseOverColoredContainer] and getCore():getOptionDoContainerOutline() then
+        self.mouseOverColoredContainer = newMouseOverColoredContainer;
+        self.mouseOverColoredContainerInv = button.inventory;
+        self.mouseOverColoredContainer:setOutlineHighlight(self.player, true);
+        self.mouseOverColoredContainer:setOutlineHlAttached(self.player, true);
+        self.mouseOverColoredContainer:setOutlineHighlightCol(self.player, getCore():getWorldItemHighlightColor():getR(), getCore():getWorldItemHighlightColor():getG(), getCore():getWorldItemHighlightColor():getB(), 1);
+    end
 end
 
 function ISInventoryPage:onMouseOutButton(button,x,y)
+    if not self.isCollapsed and self.mouseOverColoredContainer and self.mouseOverColoredContainer == self:getContainerParent(button.inventory) and self:getContainerParent(self.coloredInv) ~= self.mouseOverColoredContainer and self.mouseOverColoredContainerInv:getType() == button.inventory:getType() then
+        self:stopHighlightContainer(self.mouseOverColoredContainer);
+        self.mouseOverColoredContainer = nil;
+    end
 	self.mouseOverButton = nil;
+end
+
+function ISInventoryPage:stopHighlightContainer(container)
+    container:setHighlighted(self.player, false, false);
+    container:setOutlineHighlight(self.player, false);
+    container:setOutlineHlAttached(self.player, false);
 end
 
 function ISInventoryPage:canPutIn()

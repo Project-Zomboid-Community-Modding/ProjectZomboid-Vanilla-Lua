@@ -9,6 +9,8 @@ ISInventoryWindowContainerControls = ISPanelJoypad:derive("ISInventoryWindowCont
 ISInventoryWindowContainerControls_HandlerList = ISInventoryWindowContainerControls_HandlerList or {}
 ISInventoryWindowContainerControls_HandlerSet = ISInventoryWindowContainerControls_HandlerSet or {}
 
+local UI_MARGIN = 5;
+
 function ISInventoryWindowContainerControls.AddHandler(handlerClass)
     if ISInventoryWindowContainerControls_HandlerSet[handlerClass.Type] == handlerClass then return end
     ISInventoryWindowContainerControls_HandlerSet[handlerClass] = handlerClass
@@ -48,7 +50,6 @@ function ISInventoryWindowContainerControls:checkHandler(handlerClass, container
 end
 
 function ISInventoryWindowContainerControls:arrange()
-    local playerObj = getSpecificPlayer(self.inventoryWindow.player)
     local container = self:getDisplayedContainer()
     local lootWindow = getPlayerLoot(self.inventoryWindow.player)
     if not lootWindow or not lootWindow.inventoryPane.inventory then
@@ -76,7 +77,7 @@ function ISInventoryWindowContainerControls:arrange()
                 control:setVisible(true)
                 self:addChild(control)
                 table.insert(self.controls, control)
-                x = control:getRight() + 10
+                x = control:getRight() + UI_MARGIN
                 rowHgt = math.max(rowHgt, control:getHeight())
             end
         end

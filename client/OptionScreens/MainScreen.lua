@@ -15,6 +15,8 @@ local JOYPAD_TEX_SIZE = 32
 
 function MainScreen:initialise()
 	ISPanel.initialise(self);
+
+	DebugLog.General:debugln("MainScreen:initialize")
 end
 
 function MainScreen:getLatestSave()
@@ -333,19 +335,22 @@ function MainScreen:instantiate()
     -- ui, widthScaleMod, heightScaleMod, minWidth, minHeight
     local uis = {
         { self.scoreboard, 0.6, 0.7 },
-        { self.multiplayer, 1.0, 1.0 },
+        { self.multiplayer, 0.7, 0.8 },
         { self.connectToServer, 0.7, 0.8 },
         { self.onlineCoopScreen, 0.5, 0.6 },
-        { self.soloScreen, 0.7, 0.8 },
         { self.loadScreen, 0.7, 0.8 },
         { self.sandOptions, 0.7, 0.8 },
         { self.worldSelect, 0.7, 0.8 },
+        { self.soloScreen, 1, 1 },
+        { self.loadScreen, 1, 1 },
+        { self.sandOptions, 1, 1 },
+        { self.worldSelect, 1, 1 },
         { self.mapSpawnSelect, 1, 1 },
-        { self.charCreationProfession, 0.7, 0.8 },
-        { self.charCreationMain, 0.7, 0.8 },
+        { self.charCreationProfession, 1, 1 },
+        { self.charCreationMain, 1, 1 },
         { self.inviteFriends, 0.7, 0.8 },
         { self.modSelect, 0.9, 0.9 },
-        { self.lastStandPlayerSelect, 0.9, 0.9 },
+        { self.lastStandPlayerSelect, 1, 1 },
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },
@@ -645,11 +650,11 @@ function MainScreen:instantiate()
     end
     local versionWidth = getTextManager():MeasureStringX(UIFont.Small, version) + 10;
 
-    self.versionBtn = ISButton:new(self.reportBug.x - 15 - versionWidth, self.reportBug:getY(), 100, BUTTON_HGT, version, self, self.copyRev);
+    self.versionBtn = ISButton:new(self.width / 2 - versionWidth / 2, self.height - FONT_HGT_SMALL - 5, 100, BUTTON_HGT, version, self, self.copyRev);
     self.versionBtn.borderColor.a = 0.0;
     self.versionBtn.backgroundColor.a = 0;
     self.versionBtn.backgroundColorMouseOver.a = 0;
-    self.versionBtn:setAnchorLeft(false)
+    self.versionBtn:setAnchorLeft(true)
     self.versionBtn:setAnchorTop(false)
     self.versionBtn:setAnchorRight(true)
     self.versionBtn:setAnchorBottom(true)
@@ -751,6 +756,7 @@ function MainScreen:copyRev()
 end
 
 function MainScreen:render()
+    self.versionBtn:setVisible(MainScreen.instance.bottomPanel:isVisible())
     if self.inGame and isClient() then
         local labelSeparator = 16
         local newY = self.scoreOption:getBottom()
@@ -1415,7 +1421,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     if item.internal == "SOLO" then
         ActiveMods.getById("currentGame"):copyFrom(ActiveMods.getById("default"))
         MainScreen.instance.soloScreen:setVisible(true, joypadData);
-        MainScreen.instance.soloScreen.onMenuItemMouseDown(MainScreen.instance.soloScreen.survival,0,0);
+        MainScreen.instance.soloScreen:onItemClick(MainScreen.instance.soloScreen.panels[1], 0, 0);
     end
     if item.internal == "LOAD" then
         MainScreen.instance.loadScreen:setSaveGamesList();
@@ -2091,19 +2097,19 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 	self:recalcSize()
 	local uis = {
         { self.scoreboard, 0.6, 0.7 },
-        { self.multiplayer, 1.0, 1.0 },
+        { self.multiplayer, 0.7, 0.8 },
         { self.connectToServer, 0.7, 0.8 },
         { self.onlineCoopScreen, 0.5, 0.6 },
-        { self.soloScreen, 0.7, 0.8 },
-        { self.loadScreen, 0.7, 0.8 },
-        { self.sandOptions, 0.6, 0.8 },
-        { self.worldSelect, 0.7, 0.8 },
+        { self.soloScreen, 1, 1 },
+        { self.loadScreen, 1, 1 },
+        { self.sandOptions, 1, 1 },
+        { self.worldSelect, 1, 1 },
         { self.mapSpawnSelect, 1, 1 },
-        { self.charCreationProfession, 0.7, 0.8 },
-        { self.charCreationMain, 0.7, 0.8 },
+        { self.charCreationProfession, 1, 1 },
+        { self.charCreationMain, 1, 1 },
         { self.inviteFriends, 0.7, 0.8 },
         { self.modSelect, 0.9, 0.9 },
-        { self.lastStandPlayerSelect, 0.9, 0.9 },
+        { self.lastStandPlayerSelect, 1, 1 },
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },

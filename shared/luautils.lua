@@ -335,6 +335,27 @@ function luautils.walkToContainer(container, playerNum)
 	return true
 end
 
+function luautils.walkAdjObject(playerObj, object, allowDiagonal, keepActions)
+    if not object or not object:getSquare() or not playerObj:getCurrentSquare() then
+        return false
+    end
+    if not keepActions then
+        ISTimedActionQueue.clear(playerObj)
+    end
+    local square = luautils.getCorrectSquareForWall(playerObj, object:getSquare())
+    local diffX = math.abs(square:getX() + 0.5 - playerObj:getX())
+    local diffY = math.abs(square:getY() + 0.5 - playerObj:getY())
+    if diffX <= 1.6 and diffY <= 1.6 and playerObj:getSquare():canReachTo(square) then
+        return true
+    end
+    local action = ISPathFindAction:pathAdjacentToMultiTileObject(playerObj, object, allowDiagonal)
+    if not action then
+        return false
+    end
+    ISTimedActionQueue.add(action)
+    return true
+end
+
 function luautils.haveToBeTransfered(player, item, dontWalk)
 	if item and item:getContainer() ~= nil and item:getContainer() ~= player:getInventory() then
 		if dontWalk then return true; end

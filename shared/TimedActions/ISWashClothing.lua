@@ -102,11 +102,16 @@ function ISWashClothing:useSoap(item, part)
 	if blood > 0 then
         for i = 0, self.soaps:size() - 1 do
             local soap = self.soaps:get(i)
-			if soap:hasComponent(ComponentType.FluidContainer) then
-				soap:getFluidContainer():adjustAmount(soap:getFluidContainer():getAmount() - ZomboidGlobals.CleanStainCleaningFluidAmount);
+            if soap:hasComponent(ComponentType.FluidContainer) and soap:getFluidContainer():getAmount() > 0 then
+                local newAmount = soap:getFluidContainer():getAmount() - ZomboidGlobals.CleanStainCleaningFluidAmount
+                if newAmount <= 0.001 then
+                    soap:getFluidContainer():Empty()
+                else
+                    soap:getFluidContainer():adjustAmount(newAmount);
+                end
                 sendItemStats(soap)
 				return true;
-			elseif soap:getCurrentUses() > 0 then
+            elseif not soap:hasComponent(ComponentType.FluidContainer) and soap:getCurrentUses() > 0 then
 				soap:UseAndSync();
 				return true;
 			end

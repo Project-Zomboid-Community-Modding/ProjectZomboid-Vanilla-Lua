@@ -50,7 +50,7 @@ function ISPaintCursor:create(x, y, z, north, sprite)
 	if self.action == "plaster" then
 		local plaster = nil
 		if not ISBuildMenu.cheat then
-			plaster = playerInv:getFirstTypeRecurse("BucketPlasterFull")
+			plaster = playerInv:getFirstTagRecurse(ItemTag.PLASTER_BUCKET)
 			ISWorldObjectContextMenu.transferIfNeeded(playerObj, plaster)
 		end
 		ISTimedActionQueue.add(ISPlasterAction:new(playerObj, object, plaster))
@@ -232,7 +232,7 @@ function ISPaintCursor:hasItems()
 	end
 	if self.action == "plaster" then
 		if not ISBuildMenu.cheat then
-			local plaster = playerInv:getFirstTypeRecurse("BucketPlasterFull")
+			local plaster = playerInv:getFirstTagRecurse(ItemTag.PLASTER_BUCKET)
 			return plaster ~= nil
 		end
 		return true

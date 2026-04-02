@@ -161,6 +161,7 @@ function ISEmoteRadialMenu:emote(emote)
 	if emote == "shout" then
 		self.character:Callout(false);
 	end
+    self.character:setJoypadIgnoreAimUntilCentered(true)
 end
 
 function ISEmoteRadialMenu:configEmote()

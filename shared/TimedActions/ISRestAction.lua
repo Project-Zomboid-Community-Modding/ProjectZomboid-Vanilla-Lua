@@ -32,6 +32,13 @@ function ISRestAction:waitToStart()
 	return self.character:shouldBeTurning()
 end
 
+function ISRestAction:interruptWaitToStart()
+	if self.bed and (self.bed:getObjectIndex() ~= -1) then
+		self.bed:setSatChair(false)
+	end
+	self.character:setSitOnFurnitureObject(nil)
+end
+
 function ISRestAction:update()
 	if self.character then
 --		self.character:updateEnduranceWhileSitting();
@@ -73,9 +80,9 @@ function ISRestAction:start()
 end
 
 function ISRestAction:stop()
-	ISBaseTimedAction.stop(self);
 	self.character:setIsResting(false)
 	self.character:setBed(nil)
+	ISBaseTimedAction.stop(self);
 end
 
 function ISRestAction:animEvent(event, parameter)
@@ -87,7 +94,11 @@ function ISRestAction:animEvent(event, parameter)
 end
 
 function ISRestAction:serverStart()
-	emulateAnimEvent(self.netAction, 100, "update", nil)
+    local sitDir, _ = self:calculateSitOnFurnitureDirection(self.character, self.bed);
+    self.character:setSitOnFurnitureDirection(sitDir);
+    self.bed:setSatChair(true);
+    self.character:setSitOnFurnitureObject(self.bed);
+	emulateAnimEvent(self.netAction, 100, "update", nil);
 end
 
 function ISRestAction:serverStop()

@@ -744,9 +744,7 @@ AnimalContextMenu.onButcherAnimalFromInv = function(body, chr, knife)
     corpse:getSquare():addCorpse(corpse, false);
     corpse:transmitModData();
 
-    sendRemoveItemFromContainer(body:getContainer(), body);
-    body:getContainer():Remove(body);
-    ISTimedActionQueue.add(ISButcherAnimal:new(chr, corpse));
+    ISTimedActionQueue.add(ISButcherAnimal:new(chr, corpse, body));
 end
 
 AnimalContextMenu.onSetHungry = function(animal, playerObj)

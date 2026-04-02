@@ -113,10 +113,10 @@ function ISGarmentUI:doPatch(fabric, thread, needle, part, context, submenu)
 
 	if hole then
 		text = getText("ContextMenu_PatchHole");
-		allText = getText("ContextMenu_PatchAllHoles") .. fabric:getDisplayName();
+		allText = getText("ContextMenu_PatchAllHoles") .. " " .. fabric:getDisplayName();
 	elseif not patch then
 		text = getText("ContextMenu_AddPadding");
-		allText = getText("ContextMenu_AddPaddingAll") .. fabric:getDisplayName();
+		allText = getText("ContextMenu_AddPaddingAll") .. " " .. fabric:getDisplayName();
 	else
 		error "patch ~= nil"
 	end
@@ -145,12 +145,12 @@ function ISGarmentUI:doPatch(fabric, thread, needle, part, context, submenu)
 		if hole and (self.clothing:getHolesNumber() > 1) then
 			allOption = submenu:addOption(allText, self.chr, ISInventoryPaneContextMenu.repairAllClothing, self.clothing, self.parts, fabric, thread, needle, true)
 			allOption.itemForTexture = fabric
-			allTooltip.description = getText("Tooltip_PatchAllHoles") .. fabric:getDisplayName();
+			allTooltip.description = getText("Tooltip_PatchAllHoles") .. " " .. fabric:getDisplayName();
 			allOption.toolTip = allTooltip;
 		elseif not hole and not patch and (ISGarmentUI:getPaddablePartsNumber(self.clothing, self.parts) > 1) then
 			allOption = submenu:addOption(allText, self.chr, ISInventoryPaneContextMenu.repairAllClothing, self.clothing, self.parts, fabric, thread, needle, false)
 			allOption.itemForTexture = fabric
-			allTooltip.description = getText("Tooltip_AddPaddingToAll") .. fabric:getDisplayName();
+			allTooltip.description = getText("Tooltip_AddPaddingToAll") .. " " .. fabric:getDisplayName();
 			allOption.toolTip = allTooltip;
 		end
 	end

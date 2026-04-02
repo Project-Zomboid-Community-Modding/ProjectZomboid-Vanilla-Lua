@@ -115,19 +115,23 @@ function ISAddGasolineToVehicle:nextItem()
 end
 
 function ISAddGasolineToVehicle:complete()
-	self.fluidCont:adjustAmount(self.itemTarget)
+    if self.item == nil then
+        return false
+    end
     if self.vehicle then
         if not self.part then
             print('no such part ', self.part)
             return false
         end
+	    self.fluidCont:adjustAmount(self.itemTarget)
         self.part:setContainerContentAmount(self.tankTarget)
         self.vehicle:transmitPartModData(self.part)
+        self.item:syncItemFields();
     else
         print('no such vehicle id=', self.vehicle)
+        return false
     end
 
-    self.item:syncItemFields();
 	return true
 end
 
@@ -139,6 +143,9 @@ function ISAddGasolineToVehicle:serverStop()
 end
 
 function ISAddGasolineToVehicle:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
     self.tankStart = self.part:getContainerContentAmount();
     self.itemStart = self.fluidCont:getAmount();
     local add = self.part:getContainerCapacity() - self.tankStart;
@@ -151,11 +158,15 @@ end
 
 function ISAddGasolineToVehicle:new(character, part, item, otherItems)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
+	if item ~= nil then
+	    o.fluidCont = o.item:getFluidContainer();
+	end
     o.otherItems = otherItems
-	o.fluidCont = o.item:getFluidContainer();
 	o.maxTime = o:getDuration();
 	return o
 end

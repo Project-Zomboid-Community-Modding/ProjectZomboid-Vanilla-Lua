@@ -6,40 +6,46 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local ENTRY_HGT = FONT_HGT_SMALL + 3 * 2
+local ENTRY_HGT = FONT_HGT_MEDIUM + 6
 
 function ISMPEditServer:initialise()
 	ISPanel.initialise(self);
 
-    self.serverName = ISTextEntryBox:new("", 59, UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, ENTRY_HGT);
+    self:setWidth(getTextManager():MeasureStringX(UIFont.Medium, getText("UI_Server_Passwort_Hint")) + UI_BORDER_SPACING*5)
+
+    self.serverName = ISTextEntryBox:new("", UI_BORDER_SPACING+2, UI_BORDER_SPACING+2+FONT_HGT_MEDIUM, self:getWidth() - (UI_BORDER_SPACING+2)*2, ENTRY_HGT);
     self.serverName.font = UIFont.Medium
     self.serverName.onOtherKey = ISMPEditServer.onOtherKey
     self.serverName:initialise();
     self.serverName:instantiate();
     self:addChild(self.serverName);
 
-    self.serverAddress = ISTextEntryBox:new("", 59, self.serverName:getBottom() + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, ENTRY_HGT);
+    self.serverAddress = ISTextEntryBox:new("", self.serverName:getX(), self.serverName:getBottom()+UI_BORDER_SPACING+FONT_HGT_MEDIUM, self.serverName:getWidth(), ENTRY_HGT);
     self.serverAddress.font = UIFont.Medium
     self.serverAddress.onOtherKey = ISMPEditServer.onOtherKey
     self.serverAddress:initialise();
     self.serverAddress:instantiate();
+    self.serverAddress:setMasked(getCore():getOptionStreamerMode());
     self:addChild(self.serverAddress);
 
-    self.serverPort = ISTextEntryBox:new("16261", 295, self.serverAddress:getBottom() + UI_BORDER_SPACING, 86, ENTRY_HGT);
+    local portOffset = UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Medium, getText("UI_servers_port"))
+
+    self.serverPort = ISTextEntryBox:new("16261", self.serverName:getX() + portOffset, self.serverAddress:getBottom()+UI_BORDER_SPACING, self.serverName:getWidth() - portOffset, ENTRY_HGT);
     self.serverPort.font = UIFont.Medium
     self.serverPort.onOtherKey = ISMPEditServer.onOtherKey
     self.serverPort:initialise();
     self.serverPort:instantiate();
+    self.serverPort:setMasked(getCore():getOptionStreamerMode())
     self:addChild(self.serverPort);
 
-    self.serverPassword = ISTextEntryBox:new("", 59, self.serverPort:getBottom() + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, ENTRY_HGT);
+    self.serverPassword = ISTextEntryBox:new("", self.serverName:getX(), self.serverPort:getBottom()+UI_BORDER_SPACING+FONT_HGT_MEDIUM, self.serverName:getWidth(), ENTRY_HGT);
     self.serverPassword.font = UIFont.Medium
     self.serverPassword:initialise();
     self.serverPassword:instantiate();
     self.serverPassword:setMasked(true);
     self:addChild(self.serverPassword);
 
-    self.seePasswordBtn = ISButton:new(348, self.serverPassword.y, 33, BUTTON_HGT, "", self, ISMPEditServer.onClick);
+    self.seePasswordBtn = ISButton:new(self.serverPassword:getRight() - ENTRY_HGT, self.serverPassword:getY(), ENTRY_HGT, ENTRY_HGT, "", self, ISMPEditServer.onClick);
     self.seePasswordBtn.internal = "SEE";
     self.seePasswordBtn:setImage(self.ui_password_eye)
     self.seePasswordBtn:forceImageSize(22, 16)
@@ -47,21 +53,26 @@ function ISMPEditServer:initialise()
     self.seePasswordBtn:instantiate();
     self:addChild(self.seePasswordBtn);
 
-    self.cancelBtn = ISButton:new(60, self.serverPassword:getBottom() + UI_BORDER_SPACING, 93, BUTTON_HGT, getText("UI_servers_cancel"), self, ISMPEditServer.onClick);
+    local btnWidth = UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_cancel")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_save"))
+    )
+
+    self.cancelBtn = ISButton:new(UI_BORDER_SPACING+2 , self:getHeight() - BUTTON_HGT - UI_BORDER_SPACING - 2, btnWidth, BUTTON_HGT, getText("UI_servers_cancel"), self, ISMPEditServer.onClick);
     self.cancelBtn.internal = "CANCEL";
     self.cancelBtn:initialise();
     self.cancelBtn:instantiate();
     self.cancelBtn:enableCancelColor()
     self:addChild(self.cancelBtn);
 
-    self.saveBtn = ISButton:new(self:getWidth() - 60 - 93, self.cancelBtn.y, 93, BUTTON_HGT, getText("UI_servers_save"), self, ISMPEditServer.onClick);
+    self.saveBtn = ISButton:new(self:getWidth() - btnWidth - UI_BORDER_SPACING-2, self.cancelBtn:getY(), btnWidth, BUTTON_HGT, getText("UI_servers_save"), self, ISMPEditServer.onClick);
     self.saveBtn.internal = "SAVE";
     self.saveBtn:initialise();
     self.saveBtn:instantiate();
     self.saveBtn:enableAcceptColor()
+    self.saveBtn:setAnchorLeft(false);
+    self.saveBtn:setAnchorRight(true);
     self:addChild(self.saveBtn);
-
-    self:setHeight(self.saveBtn:getBottom() + UI_BORDER_SPACING)
 
     if self.server then
         self.serverName:setText(self.server:getName())
@@ -70,6 +81,11 @@ function ISMPEditServer:initialise()
         self.serverPassword:setText("")
         self.isPasswordModified = false;
     end
+
+    self:setHeight(self.serverPassword:getBottom() + UI_BORDER_SPACING*2 + BUTTON_HGT + 2)
+
+    self:setX ( (getCore():getScreenWidth() - self:getWidth()) / 2);
+    self:setY ( (getCore():getScreenHeight() - self:getHeight()) / 2);
 
     self.serverName:focus()
 end
@@ -122,11 +138,13 @@ function ISMPEditServer:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	self:drawRectBorder(1, 1, self.width-2, self.height-2, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawText(getText("UI_servers_server_name"), 70, self.serverName.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_servers_ip_domain"), 70, self.serverAddress.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
-	local textWid = getTextManager():MeasureStringX(UIFont.Medium, getText("UI_servers_port"))
-	self:drawText(getText("UI_servers_port"), self.serverPort.x - 4 - textWid, self.serverPort.y + (self.serverPort.height - FONT_HGT_MEDIUM) / 2, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_servers_server_password"), 70, self.serverPassword.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_server_name"), self.serverName:getX(), self.serverName:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_ip_domain"), self.serverName:getX(), self.serverAddress:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_port"), self.serverName:getX(), self.serverPort:getY(), 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_server_password"), self.serverName:getX(), self.serverPassword:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+
+    self.saveBtn:setY(self:getHeight() - UI_BORDER_SPACING-2 - BUTTON_HGT)
+    self.cancelBtn:setY(self:getHeight() - UI_BORDER_SPACING-2 - BUTTON_HGT)
 
     if not self.isPasswordModified then
         self.seePasswordBtn:setVisible(false)
@@ -161,7 +179,8 @@ function ISMPEditServer:render()
         self.isPasswordModified = true
     end
     if not self.isPasswordModified then
-        self:drawText(getText("UI_Server_Passwort_Hint"), 59+5, self.serverPassword.y + 3, 1, 1, 1, 1, UIFont.Medium);
+
+        self:drawText(getText("UI_Server_Passwort_Hint"), self.serverPassword:getX() + UI_BORDER_SPACING, self.serverPassword:getY() + (ENTRY_HGT-FONT_HGT_MEDIUM)/2, 1, 1, 1, 1, UIFont.Medium);
     end
 end
 
@@ -278,7 +297,7 @@ function ISMPEditServer:new(ui, server)
 	local o = ISPanelJoypad.new(self, x, y, width, height);
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.width = 440;
+    o.width = 550;
     o.height = 348;
     o.ui_password_eye = getTexture("media/ui/MP/mp_ui_password_eye.png");
     o.x = (ui:getWidth() - o.width) / 2;

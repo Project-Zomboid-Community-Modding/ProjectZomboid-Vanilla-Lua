@@ -136,6 +136,8 @@ function ISDPadWheels.onEquipPrimary(playerObj, item)
 	else
 		ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, item, 50, true, item:isTwoHandWeapon()));
 	end
+
+    playerObj:setJoypadIgnoreAimUntilCentered(true)
 end
 
 function ISDPadWheels.onToggleLight(playerObj, item)

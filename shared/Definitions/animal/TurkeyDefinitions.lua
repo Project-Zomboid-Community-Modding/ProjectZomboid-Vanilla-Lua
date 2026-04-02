@@ -111,6 +111,7 @@ AnimalDefinitions.animals["turkeypoult"].hungerBoost = 12;
 AnimalDefinitions.animals["turkeypoult"].thirstBoost = 22;
 AnimalDefinitions.animals["turkeypoult"].distToEat = 1;
 AnimalDefinitions.animals["turkeypoult"].corpseSize = 0;
+AnimalDefinitions.animals["turkeypoult"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals["turkeyhen"] = {};
@@ -178,6 +179,7 @@ AnimalDefinitions.animals["turkeyhen"].distToEat = 1;
 AnimalDefinitions.animals["turkeyhen"].corpseSize = 0.7;
 AnimalDefinitions.animals["turkeyhen"].idleSoundRadius = 20;
 AnimalDefinitions.animals["turkeyhen"].idleSoundVolume = 10;
+AnimalDefinitions.animals["turkeyhen"].feedByHandAnim = AnimalDefinitions.animals["turkeypoult"].feedByHandAnim;
 
 AnimalDefinitions.animals["gobblers"] = {};
 AnimalDefinitions.animals["gobblers"].bodyModel = "Turkey";
@@ -244,6 +246,7 @@ AnimalDefinitions.animals["gobblers"].minBodyPart = 11;
 AnimalDefinitions.animals["gobblers"].corpseSize = 0.7;
 AnimalDefinitions.animals["gobblers"].idleSoundRadius = 20;
 AnimalDefinitions.animals["gobblers"].idleSoundVolume = 10;
+AnimalDefinitions.animals["gobblers"].feedByHandAnim = AnimalDefinitions.animals["turkeypoult"].feedByHandAnim;
 
 
 local turkey_sounds = {

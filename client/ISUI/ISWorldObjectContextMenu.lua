@@ -520,7 +520,8 @@ ISWorldObjectContextMenu.onClaimWar = function(worldobjects, safehouse, attacker
 end
 
 ISWorldObjectContextMenu.onViewSafeHouse = function(worldobjects, safehouse, player)
-    local safehouseUI = ISSafehouseUI:new(getCore():getScreenWidth() / 2 - 250,getCore():getScreenHeight() / 2 - 225, 500, 450, safehouse, player);
+    local width = 500+getCore():getOptionFontSizeReal()*30
+    local safehouseUI = ISSafehouseUI:new((getCore():getScreenWidth()-width) / 2,getCore():getScreenHeight() / 2 - 225, width, 450, safehouse, player);
     safehouseUI:initialise()
     safehouseUI:addToUIManager()
 end
@@ -1390,35 +1391,6 @@ ISWorldObjectContextMenu.onLightBattery = function(worldobjects, light, player, 
     end
 end
 
-function ISWorldObjectContextMenu.doThumpableWindowOption(test, context, player)
-    local fetch = ISWorldObjectContextMenu.fetchVars
-    local playerObj = getSpecificPlayer(player)
-    local playerInv = playerObj:getInventory()
-    local worldobjects = nil
-    if fetch.thumpableWindow then
-        local addCurtains = fetch.thumpableWindow:HasCurtains();
-        local movedWindow = fetch.thumpableWindow:getSquare():getWindow(fetch.thumpableWindow:getNorth())
-        -- barricade, addsheet, etc...
-        -- you can do action only inside a house
-        -- add sheet (curtains) to window (sheet on 1st hand)
-        if not addCurtains and not movedWindow and playerInv:containsTypeRecurse("Sheet") then
-            if test == true then return true; end
-            context:addGetUpOption(getText("ContextMenu_Add_sheet"), worldobjects, ISWorldObjectContextMenu.onAddSheet, fetch.thumpableWindow, player);
-        end
-        if not movedWindow and fetch.thumpableWindow:canClimbThrough(playerObj) then
-            if test == true then return true; end
-            local climboption = context:addGetUpOption(getText("ContextMenu_Climb_through"), worldobjects, ISWorldObjectContextMenu.onClimbThroughWindow, fetch.thumpableWindow, player);
-            if not JoypadState.players[player+1] then
-                local tooltip = ISWorldObjectContextMenu.addToolTip()
-                tooltip:setName(getText("ContextMenu_Info"))
-                tooltip.description = getText("Tooltip_TapKey", getKeyName(getCore():getKey("Interact")));
-                climboption.toolTip = tooltip;
-            end
-        end
-	end
-    return false
-end
-
 ISWorldObjectContextMenu.onWaterDispenserBottle = function(playerObj, waterdispenser, bottle)
 	if luautils.walkAdj(playerObj, waterdispenser:getSquare(), false) then
 		ISTimedActionQueue.add(ISAddTakeDispenserBottle:new(playerObj, waterdispenser, bottle));
@@ -1706,94 +1678,6 @@ local function createWaterSourceTooltip(sink)
 	return tooltip
 end
 
-ISWorldObjectContextMenu.doFillFluidMenu = function(sink, playerNum, context)
-	local playerObj = getSpecificPlayer(playerNum)
-	if sink:getSquare():getBuilding() ~= playerObj:getBuilding() then return end;
-	local playerInv = playerObj:getInventory()
-	local allContainers = {}
-	local allContainerTypes = {}
-	local allContainersOfType = {}
-	local pourInto = playerInv:getAllEvalRecurse(function(item)
-		if item:getFluidContainer() and (not item:getFluidContainer():isFull()) and item:getFluidContainer():canAddFluid(Fluid.Water) then
-			return true;
-		end
-		return false
-	end)
-
-	if pourInto:isEmpty() then
-		return
-	end
-
-	local fillOption = context:addOption(getText("ContextMenu_Fill"), worldobjects, nil);
-	if not sink:getSquare() then --or not AdjacentFreeTileFinder.Find(sink:getSquare(), playerObj)
-		fillOption.notAvailable = true;
-		--if the player can reach the tile, populate the submenu, otherwise don't bother
-		return;
-	end
-
-	--make a table of all containers
-	for i=0, pourInto:size() - 1 do
-		local container = pourInto:get(i)
-		if sink:canTransferFluidTo(container:getFluidContainer()) then
-			table.insert(allContainers, container)
-		end
-	end
-
-	--the table can have small groups of identical containers		eg: 1, 1, 2, 3, 1, 3, 2
-	--so it needs sorting to group them all together correctly		eg: 1, 1, 1, 2, 2, 3, 3
-	table.sort(allContainers, function(a,b) return not string.sort(a:getName(), b:getName()) end)
-
-	--once sorted, we can use it to make smaller tables for each item type
-	local previousContainer = nil;
-	for _,container in pairs(allContainers) do
-		if previousContainer ~= nil and container:getName() ~= previousContainer:getName() then
-			table.insert(allContainerTypes, allContainersOfType)
-			allContainersOfType = {}
-		end
-		table.insert(allContainersOfType, container)
-		previousContainer = container
-	end
-	table.insert(allContainerTypes, allContainersOfType)
-
-	--add the fill menu
-	local containerMenu = ISContextMenu:getNew(context)
-	local containerOption
-	context:addSubMenu(fillOption, containerMenu)
-	local tooltip = createWaterSourceTooltip(sink)
-	if #allContainers > 1 then
-		containerOption = containerMenu:addGetUpOption(getText("ContextMenu_FillAll"), worldobjects, ISWorldObjectContextMenu.onTakeWater, sink, allContainers, nil, playerNum);
-		containerOption.toolTip = tooltip
-	end
-
-	--add the fill container of type menu
-	for _,containerType in pairs(allContainerTypes) do
-		if #containerType > 0 then
-			local destItem = containerType[1]
-			if #containerType > 1 then --#containerType gets the length of the table.
-				containerOption = containerMenu:addOption(destItem:getName() .. " (" .. #containerType ..")", worldobjects, nil);
-				containerOption.itemForTexture = destItem
-				local containerTypeMenu = ISContextMenu:getNew(containerMenu)
-				containerMenu:addSubMenu(containerOption, containerTypeMenu)
-				local containerTypeOption
-				containerTypeOption = containerTypeMenu:addGetUpOption(getText("ContextMenu_FillOne"), worldobjects, ISWorldObjectContextMenu.onTakeWater, sink, {}, destItem, playerNum);
-				containerTypeOption.toolTip = tooltip
-				if containerType[2] ~= nil then
-					containerTypeOption = containerTypeMenu:addGetUpOption(getText("ContextMenu_FillAll"), worldobjects, ISWorldObjectContextMenu.onTakeWater, sink, containerType, nil, playerNum);
-					containerTypeOption.toolTip = tooltip
-				end
-			else
-				containerOption = containerMenu:addOption(destItem:getName(), worldobjects, ISWorldObjectContextMenu.onTakeWater, sink, nil, destItem, playerNum);
-				containerOption.itemForTexture = destItem
-				local t = createWaterSourceTooltip(sink)
-				if instanceof(destItem, "DrainableComboItem") then
-					t.description = t.description .. " <LINE> " .. getText("ContextMenu_ItemWaterCapacity") .. ": " .. math.floor(destItem:getCurrentUsesFloat()*10) .. "/10"
-				end
-				containerOption.toolTip = t
-			end
-		end
-	end
-end
-
 ISWorldObjectContextMenu.doFillFuelMenu = function(source, playerNum, context)
 	local playerObj = getSpecificPlayer(playerNum)
 	if source:getSquare():getBuilding() ~= playerObj:getBuilding() then return end;
@@ -1884,29 +1768,6 @@ local function formatWaterAmount(object, setX, amount, max)
 	return string.format("%s: <SETX:%d> %s / %s", object:getFluidUiName(), setX, luautils.round(amount, 2) .. "L", luautils.round(max, 2) .. "L")
 end
 
-ISWorldObjectContextMenu.doDrinkWaterMenu = function(object, player, context)
-	local playerObj = getSpecificPlayer(player)
-	local thirst = playerObj:getStats():get(CharacterStat.THIRST)
-	if object:getSquare():getBuilding() ~= playerObj:getBuilding() then return end;
-	if instanceof(object, "IsoClothingDryer") then return end
-	if instanceof(object, "IsoClothingWasher") then return end
-	local option = context:addGetUpOption(getText("ContextMenu_Drink"), worldobjects, ISWorldObjectContextMenu.onDrink, object, player);
-	local units = math.min(math.ceil(thirst / 0.1), 10)
-	units = math.min(units, object:getFluidAmount())
-	local tooltip = ISWorldObjectContextMenu.addToolTip()
-	local tx1 = getTextManager():MeasureStringX(tooltip.font, getText("Tooltip_food_Thirst") .. ":") + 20
-	local tx2 = getTextManager():MeasureStringX(tooltip.font, object:getFluidUiName() .. ":") + 20
-	local tx = math.max(tx1, tx2)
-	local waterAmount = object:getFluidAmount();
-	local waterMax = object:getFluidCapacity();
-	tooltip.description = tooltip.description ..formatWaterAmount(object, tx, waterAmount, waterMax);
-	if object:isTaintedWater() and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() then
-		tooltip.description = tooltip.description .. " <BR> <RGB:1,0.5,0.5> " .. getText("Tooltip_item_TaintedWater")
-	end
-	option.toolTip = tooltip;
-	option.iconTexture = getTexture("Item_WaterDrop");
-end
-
 ISWorldObjectContextMenu.calculateSoapAndWaterRequired = function(washList)
 	local soapRequired = 0
 	local waterRequired = 0
@@ -1917,195 +1778,8 @@ ISWorldObjectContextMenu.calculateSoapAndWaterRequired = function(washList)
 	return soapRequired, waterRequired
 end
 
-ISWorldObjectContextMenu.setWashClothingTooltip = function(soapRemaining, waterRemaining, washList, option)
-    local tooltip = ISWorldObjectContextMenu.addToolTip()
-    local soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washList)
-    if soapRemaining < soapRequired then
-        tooltip.description = tooltip.description .. getText("IGUI_Washing_WithoutSoap") .. " <LINE> "
-    else
-        tooltip.description = tooltip.description .. getText("IGUI_Washing_Soap") .. ": " .. round(math.min(soapRemaining, soapRequired), 2) .. " / " .. tostring(soapRequired) .. " <LINE> "
-    end
-    tooltip.description = tooltip.description .. getText("ContextMenu_WaterName") .. ": " .. round(math.min(waterRemaining, waterRequired), 2) .. " / " .. tostring(waterRequired)
-    option.toolTip = tooltip
-    if waterRemaining < waterRequired then
-        option.notAvailable = true
-    end
-end
-
-ISWorldObjectContextMenu.doWashClothingMenu = function(sink, player, context)
-	local playerObj = getSpecificPlayer(player)
-	if sink:getSquare():getBuilding() ~= playerObj:getBuilding() then return end;
-	local playerInv = playerObj:getInventory()
-	local washYourself = false
-	local washEquipment = false
-	local washList = {}
-    local soapList = character:getInventory():getSoapList(nil, true)
-	local noSoap = true
-
-	washYourself = ISWashYourself.GetRequiredWater(playerObj) > 0
-
-
-
-	local washClothing = {}
-	local clothingInventory = playerInv:getItemsFromCategory("Clothing")
-	for i=0, clothingInventory:size() - 1 do
-		local item = clothingInventory:get(i)
-		-- Wasn't able to reproduce the wash 'Blooo' bug, don't know the exact cause so here's a fix...
-		if not item:isHidden() and (item:hasBlood() or item:hasDirt()) and not item:hasTag(ItemTag.BREAK_WHEN_WET) then
-			if washEquipment == false then
-				washEquipment = true
-			end
-			table.insert(washList, item)
-			table.insert(washClothing, item)
-		end
-	end
-
-	local washOther = {}
-	local dirtyRagInventory = playerInv:getAllTag(ItemTag.CAN_BE_WASHED, ArrayList.new())
-	for i=0, dirtyRagInventory:size() - 1 do
-		local item = dirtyRagInventory:get(i)
-		if item:getJobDelta() == 0 then
-			if washEquipment == false then
-				washEquipment = true
-			end
-			table.insert(washList, item)
-			table.insert(washOther, item)
-		end
-	end
-
-	local washWeapon = {}
-	local weaponInventory = playerInv:getItemsFromCategory("Weapon")
-	for i=0, weaponInventory:size() - 1 do
-		local item = weaponInventory:get(i)
-		if item:hasBlood() then
-			if washEquipment == false then
-				washEquipment = true
-			end
-			table.insert(washList, item)
-			table.insert(washWeapon, item)
-		end
-	end
-
-	local washContainer = {}
-	local containerInventory = playerInv:getItemsFromCategory("Container")
-	for i=0, containerInventory:size() - 1 do
-		local item = containerInventory:get(i)
-		if not item:isHidden() and (item:hasBlood() or item:hasDirt()) then
-			washEquipment = true
-			table.insert(washList, item)
-			table.insert(washContainer, item)
-		end
-	end
-
-	-- Sort items from least-bloody to most-bloody.
-	table.sort(washList, ISWorldObjectContextMenu.compareClothingBlood)
-	table.sort(washClothing, ISWorldObjectContextMenu.compareClothingBlood)
-	table.sort(washOther, ISWorldObjectContextMenu.compareClothingBlood)
-	table.sort(washWeapon, ISWorldObjectContextMenu.compareClothingBlood)
-	table.sort(washContainer, ISWorldObjectContextMenu.compareClothingBlood)
-
-	if washYourself or washEquipment then
-		local mainOption = context:addOption(getText("ContextMenu_Wash"), nil, nil);
-		local mainSubMenu = ISContextMenu:getNew(context)
-		context:addSubMenu(mainOption, mainSubMenu)
-
-		local soapRemaining = 0;
-		if soapList and #soapList >= 1 then
-			soapRemaining = ISWashClothing.GetSoapRemaining(soapList)
-		end
-		local waterRemaining = sink:getFluidAmount()
-
-		if washYourself then
-			local soapRequired = ISWashYourself.GetRequiredSoap(playerObj)
-			local waterRequired = ISWashYourself.GetRequiredWater(playerObj)
-			local option = mainSubMenu:addGetUpOption(getText("ContextMenu_Yourself"), playerObj, ISWorldObjectContextMenu.onWashYourself, sink, soapList)
-			local tooltip = ISWorldObjectContextMenu.addToolTip()
-			if soapRemaining < soapRequired then
-				tooltip.description = tooltip.description .. getText("IGUI_Washing_WithoutSoap") .. " <LINE> "
-			else
-				tooltip.description = tooltip.description .. getText("IGUI_Washing_Soap") .. ": " .. round(math.min(soapRemaining, soapRequired), 2) .. " / " .. tostring(soapRequired) .. " <LINE> "
-			end
-			tooltip.description = tooltip.description .. getText("ContextMenu_WaterName") .. ": " .. round(math.min(waterRemaining, waterRequired), 2) .. " / " .. tostring(waterRequired)
-			local visual = playerObj:getHumanVisual()
-			local bodyBlood = 0
-			local bodyDirt = 0
-			for i=1,BloodBodyPartType.MAX:index() do
-				local part = BloodBodyPartType.FromIndex(i-1)
-				bodyBlood = bodyBlood + visual:getBlood(part)
-				bodyDirt = bodyDirt + visual:getDirt(part)
-			end
-			if bodyBlood > 0 then
-				tooltip.description = tooltip.description .. " <LINE> " .. getText("Tooltip_clothing_bloody") .. ": " .. math.ceil(bodyBlood / BloodBodyPartType.MAX:index() * 100) .. " / 100"
-			end
-			if bodyDirt > 0 then
-				tooltip.description = tooltip.description .. " <LINE> " .. getText("Tooltip_clothing_dirty") .. ": " .. math.ceil(bodyDirt / BloodBodyPartType.MAX:index() * 100) .. " / 100"
-			end
-			option.toolTip = tooltip
-			if waterRemaining < 1 then
-				option.notAvailable = true
-			end
-		end
-
-		if washEquipment then
-			if #washList > 0 then
-				local soapRequired = 0
-				local waterRequired = 0
-				local option = nil
-				if #washClothing > 0 then
-					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washClothing)
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllClothing"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washClothing, nil);
-					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washClothing, option)
-				end
-				if #washContainer > 0 then
-					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washContainer)
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllContainer"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washContainer, nil);
-					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washContainer, option)
-				end
-				if #washWeapon > 0 then
-					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washWeapon)
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllWeapon"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washWeapon, nil);
-					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washWeapon, option)
-				end
-				if #washOther > 0 then
-					soapRequired, waterRequired = ISWorldObjectContextMenu.calculateSoapAndWaterRequired(washOther)
-					option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashAllOther"), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, washOther, nil);
-					ISWorldObjectContextMenu.setWashClothingTooltip(soapRemaining, waterRemaining, washOther, option)
-				end
-			end
-			for i,item in ipairs(washList) do
-				local soapRequired = ISWashClothing.GetRequiredSoap(item)
-				local waterRequired = ISWashClothing.GetRequiredWater(item)
-				local tooltip = ISWorldObjectContextMenu.addToolTip();
-				if (soapRemaining < soapRequired) then
-					tooltip.description = tooltip.description .. getText("IGUI_Washing_WithoutSoap") .. " <LINE> "
-					noSoap = true;
-				else
-					tooltip.description = tooltip.description .. getText("IGUI_Washing_Soap") .. ": " .. tostring(math.min(soapRemaining, soapRequired)) .. " / " .. tostring(soapRequired) .. " <LINE> "
-					noSoap = false;
-				end
-				tooltip.description = tooltip.description .. getText("ContextMenu_WaterName") .. ": " .. string.format("%.2f", math.min(waterRemaining, waterRequired)) .. " / " .. tostring(waterRequired)
-				if (item:IsClothing() or item:IsInventoryContainer()) and (item:getBloodLevel() > 0) then
-					tooltip.description = tooltip.description .. " <LINE> " .. getText("Tooltip_clothing_bloody") .. ": " .. math.ceil(item:getBloodLevel()) .. " / 100"
-				end
-				if item:IsWeapon() and (item:getBloodLevel() > 0) then
-					tooltip.description = tooltip.description .. " <LINE> " .. getText("Tooltip_clothing_bloody") .. ": " .. math.ceil(item:getBloodLevel() * 100) .. " / 100"
-				end
-				if item:IsClothing() and item:getDirtiness() > 0 then
-					tooltip.description = tooltip.description .. " <LINE> " .. getText("Tooltip_clothing_dirty") .. ": " .. math.ceil(item:getDirtiness()) .. " / 100"
-				end
-				local option = mainSubMenu:addGetUpOption(getText("ContextMenu_WashClothing", item:getDisplayName()), playerObj, ISWorldObjectContextMenu.onWashClothing, sink, soapList, nil, item, noSoap);
-				option.toolTip = tooltip;
-				option.itemForTexture = item
-				if (waterRemaining < waterRequired) then
-					option.notAvailable = true;
-				end
-			end
-		end
-	end
-end
-
 ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, washList, singleClothing)
-	if not sink:getSquare() or not luautils.walkAdj(playerObj, sink:getSquare(), true) then
+	if not luautils.walkAdjObject(playerObj, sink, true, true) then
 		return
 	end
 
@@ -2147,7 +1821,7 @@ ISWorldObjectContextMenu.onWashClothing = function(playerObj, sink, soapList, wa
 end
 
 ISWorldObjectContextMenu.onWashYourself = function(playerObj, sink, soapList)
-	if not sink:getSquare() or not luautils.walkAdj(playerObj, sink:getSquare(), true) then
+	if not luautils.walkAdjObject(playerObj, sink, true, true) then
 		return
 	end
 
@@ -2367,7 +2041,7 @@ end
 
 ISWorldObjectContextMenu.onDrink = function(worldobjects, waterObject, player)
     local playerObj = getSpecificPlayer(player)
-	if not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true) then
+	if not waterObject:getSquare() or not luautils.walkAdjObject(playerObj, waterObject, true, true) then
 		return
 	end
 	local mask = ISInventoryPaneContextMenu.getEatingMask(playerObj, true)
@@ -2391,7 +2065,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 	for i,item in ipairs(waterContainerList) do
 		-- first case, fill an empty bottle
 		if item:canStoreWater() and not item:isWaterSource() then
-			if not didWalk and (not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true)) then
+			if not didWalk and not luautils.walkAdjObject(playerObj, waterObject, true, true) then
 				return
 			end
 			didWalk = true
@@ -2402,7 +2076,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 			end
 		elseif item:canStoreWater() and item:isWaterSource() then -- second case, a bottle contain some water, we just fill it
-			if not didWalk and (not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true)) then
+			if not didWalk and not luautils.walkAdjObject(playerObj, waterObject, true, true) then
 				return
 			end
 			didWalk = true
@@ -2415,7 +2089,7 @@ ISWorldObjectContextMenu.onTakeWater = function(worldobjects, waterObject, water
 				ISTimedActionQueue.add(ISInventoryTransferUtil.newInventoryTransferAction(playerObj, item, playerInv, returnToContainer))
 			end
 		elseif item:getFluidContainer() then --Fluid item
-			if not didWalk and (not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare(), true)) then
+			if not didWalk and not luautils.walkAdjObject(playerObj, waterObject, true, true) then
 				return
 			end
 			didWalk = true
@@ -2456,8 +2130,8 @@ ISWorldObjectContextMenu.onTakeFuelNew = function(worldobjects, fuelObject, fuel
 end
 
 ISWorldObjectContextMenu.onAddFluidFromItem = function(worldobjects, fluidObject, fluidItem, playerObj)
-	if not luautils.walkAdj(playerObj, fluidObject:getSquare(), true) then return end
 	if fluidItem:canStoreWater() and fluidObject:canTransferFluidFrom(fluidItem:getFluidContainer()) then
+		if not luautils.walkAdjObject(playerObj, fluidObject, true, true) then return end
 		ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), fluidItem, true)
 		ISTimedActionQueue.add(ISAddFluidFromItemAction:new(playerObj, fluidItem, fluidObject))
 	end
@@ -2705,6 +2379,18 @@ ISWorldObjectContextMenu.onPickupBrokenGlass = function(worldobjects, brokenGlas
     local playerObj = getSpecificPlayer(player)
     if luautils.walkAdj(playerObj, brokenGlass:getSquare()) then
         ISTimedActionQueue.add(ISPickupBrokenGlass:new(playerObj, brokenGlass));
+    end
+end
+
+ISWorldObjectContextMenu.onThrowCorpseOverFence = function(playerObj, fence, dir)
+    if luautils.walkAdjWindowOrDoor(playerObj, fence:getSquare(), fence, true) then
+        ISTimedActionQueue.add(ISThrowCorpseOverFence:new(playerObj, fence, dir));
+    end
+end
+
+ISWorldObjectContextMenu.onThrowCorpseThroughWindow = function(playerObj, window)
+    if luautils.walkAdjWindowOrDoor(playerObj, window:getSquare(), window, true) then
+        ISTimedActionQueue.add(ISThrowCorpseThroughWindow:new(playerObj, window));
     end
 end
 
@@ -3113,7 +2799,14 @@ end
 
 ISWorldObjectContextMenu.onFluidInfo = function(player, fluidcontainer)
 	local playerObj = getSpecificPlayer(player)
-	local square = fluidcontainer:getGameEntity():getSquare();
+	local entity = fluidcontainer:getGameEntity()
+	if instanceof(entity, "IsoObject") then
+		if luautils.walkAdjObject(playerObj, entity, true) then
+			ISTimedActionQueue.add(ISFluidPanelAction:new(playerObj, c, ISFluidInfoUI));
+		end
+		return
+	end
+	local square = entity:getSquare();
 	if not square or luautils.walkAdj(playerObj, square) then
 		local c = ISFluidContainer:new(fluidcontainer);
 		ISTimedActionQueue.add(ISFluidPanelAction:new(playerObj, c, ISFluidInfoUI));
@@ -3122,7 +2815,14 @@ end
 
 ISWorldObjectContextMenu.onFluidEmpty = function(player, fluidcontainer)
 	local playerObj = getSpecificPlayer(player)
-	local square = fluidcontainer:getGameEntity():getSquare();
+	local entity = fluidcontainer:getGameEntity()
+	if instanceof(entity, "IsoObject") then
+		if luautils.walkAdjObject(playerObj, entity, true) then
+			ISTimedActionQueue.add(ISFluidEmptyAction:new(playerObj, fluidcontainer));
+		end
+		return
+	end
+	local square = entity:getSquare();
 	if not square or luautils.walkAdj(playerObj, square) then
 		ISTimedActionQueue.add(ISFluidEmptyAction:new(playerObj, fluidcontainer));
 	end
@@ -3325,41 +3025,6 @@ ISWorldObjectContextMenu.doSheetRopeOptions = function(_context, _object, _world
 	end
 end
 
-function ISWorldObjectContextMenu.doFluidContainerMenu(context, object, player)
-	local containerName = getMoveableDisplayName(object) or object:getFluidUiName();
-	local option = context:addOption(containerName, nil, nil)
-
-	local mainSubMenu = ISContextMenu:getNew(context)
-	context:addSubMenu(option, mainSubMenu)
-
-	local isTrough = false;
-	-- so i can add my specifics thing for feeding trough (as it can have food too) in this context option.
-	if instanceof(object, "IsoFeedingTrough") then
-		context.troughSubmenu = mainSubMenu;
-		context.dontShowLiquidOption = true;
-		isTrough = true;
-	end
-
-    if not isTrough then
-        mainSubMenu:addOption(getText("Fluid_Show_Info"), player, ISWorldObjectContextMenu.onFluidInfo, object:getFluidContainer());
-    end
-    mainSubMenu:addOption(getText("Fluid_Transfer_Fluids"), player, ISWorldObjectContextMenu.onFluidTransfer, object:getFluidContainer());
-
-	if object:hasFluid() then
-		ISWorldObjectContextMenu.doDrinkWaterMenu(object, player, mainSubMenu);
-		ISWorldObjectContextMenu.doFillFluidMenu(object, player, mainSubMenu);
-	end
-	if object:hasWater() then
-		ISWorldObjectContextMenu.doWashClothingMenu(object, player, mainSubMenu);
-	end
-
-	if object:hasFluid() and object:getFluidCapacity() < 9999 then	-- capacity >= 9999 means infinite water.
-		mainSubMenu:addOption(getText("Fluid_Empty"), player, ISWorldObjectContextMenu.onFluidEmpty, object:getFluidContainer());
-	end
-
-	return mainSubMenu;
-end
-
 function ISWorldObjectContextMenu.getUpAndThen(playerObj, function1, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
 	local action = ISWaitWhileGettingUp:new(playerObj)
 	action:setOnComplete(function1, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
@@ -3386,6 +3051,20 @@ function ISWorldObjectContextMenu.onBarricade(spriteName, playerObj)
     buildEntity.dragNilAfterPlace = false;
 
     getCell():setDrag(buildEntity, playerObj:getPlayerNum());
+end
+
+function ISWorldObjectContextMenu.addFluidDebug(playerObj, fluidContainer, fluid)
+    local isoObject = fluidContainer:getGameEntity()
+    if instanceof(isoObject, "IsoFeedingTrough") then
+        ISFeedingTroughMenu.onAddWaterDebug(playerObj, isoObject, fluid)
+        return
+    end
+    if isClient() then
+        sendClientCommandV(playerObj, "object", "addFluidDebug", "x", isoObject:getX(), "y", isoObject:getY(), "z", isoObject:getZ(), "index", isoObject:getObjectIndex(), "fluidTypeStr", fluid:getFluidTypeString())
+        return
+    end
+    fluidContainer:removeFluid()
+    fluidContainer:addFluid(fluid, fluidContainer:getCapacity())
 end
 
 Events.OnPressWalkTo.Add(ISWorldObjectContextMenu.onWalkTo);

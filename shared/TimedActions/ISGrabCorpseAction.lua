@@ -120,7 +120,7 @@ end
 ----
 
 local function OnContextKey(playerObj, timePressedContext)
-    if playerObj:isGrappling() then
+    if playerObj:isGrappling() or getCore():getGameMode() == "Tutorial" then
         return
     end
     if timePressedContext > 700 then

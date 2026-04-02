@@ -247,7 +247,20 @@ function ISSpawnHordeUI:onSpawn()
 
 	local health = self.healthSlider:getCurrentValue()
 	if isClient() then
-		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -health %s -outfit %s ", self.selectX, self.selectY, self.selectZ, count, radius, tostring(crawler), tostring(isFallOnFront), tostring(isFakeDead), tostring(knockedDown), tostring(isInvulnerable), tostring(health), outfit or ""))
+		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -isSitting %s -health %s -isRecordingAnims %s -heightOffset %s -isRagdolling %s -outfit %s ",
+	        self.selectX, self.selectY, self.selectZ,
+            count, radius,
+            tostring(crawler),
+            tostring(isFallOnFront),
+            tostring(isFakeDead),
+            tostring(knockedDown),
+            tostring(isInvulnerable),
+            tostring(isSitting),
+            tostring(health),
+            tostring(isRecordingAnims),
+            tostring(heightOffset),
+            tostring(isRagdolling),
+            outfit or ""))
 		return
 	end
 	for i=1,count do

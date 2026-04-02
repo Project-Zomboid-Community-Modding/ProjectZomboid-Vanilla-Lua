@@ -88,6 +88,7 @@ AnimalDefinitions.animals["fawn"].trailerBaseSize = 100;
 AnimalDefinitions.animals["fawn"].minWeight = 15;
 AnimalDefinitions.animals["fawn"].maxWeight = 100;
 AnimalDefinitions.animals["fawn"].wildFleeTimeUntilDeadTimer = 300; -- this will be used as a random timer to make the animal drop dead once you shot him, he'll flee and drop lots of blood before dropping dead, it's lowered by the aiming skill
+AnimalDefinitions.animals["fawn"].feedByHandAnim = "AnimalLureLow";
 
 AnimalDefinitions.animals["doe"] = {};
 AnimalDefinitions.animals["doe"].bodyModel = "DeerDoe";
@@ -131,6 +132,7 @@ AnimalDefinitions.animals["doe"].trailerBaseSize = 300;
 AnimalDefinitions.animals["doe"].minWeight = 110;
 AnimalDefinitions.animals["doe"].maxWeight = 200;
 AnimalDefinitions.animals["doe"].wildFleeTimeUntilDeadTimer = 700;
+AnimalDefinitions.animals["doe"].feedByHandAnim = "AnimalLureHigh";
 
 AnimalDefinitions.animals["buck"] = {};
 AnimalDefinitions.animals["buck"].bodyModel = "DeerStag";
@@ -173,6 +175,7 @@ AnimalDefinitions.animals["buck"].trailerBaseSize = 300;
 AnimalDefinitions.animals["buck"].minWeight = 110;
 AnimalDefinitions.animals["buck"].maxWeight = 200;
 AnimalDefinitions.animals["buck"].wildFleeTimeUntilDeadTimer = 800;
+AnimalDefinitions.animals["buck"].feedByHandAnim = AnimalDefinitions.animals["doe"].feedByHandAnim;
 
 local buck_sounds = {
 	death = { name = "AnimalVoiceBuckDeath", slot = "voice", priority = 100 },

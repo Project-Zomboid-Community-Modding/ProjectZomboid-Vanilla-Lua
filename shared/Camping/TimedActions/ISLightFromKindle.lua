@@ -35,7 +35,7 @@ function ISLightFromKindle:updateKindling()
 	end
 	local randNumber = 300;
 	local randBrokeNumber = 300;
-	if self.isOutdoorsMan then
+	if self.character:hasTrait(CharacterTrait.WILDERNESS_KNOWLEDGE) or self.character:hasTrait(CharacterTrait.SCOUT) then
 		randNumber = 150;
 		randBrokeNumber = 450;
 	end
@@ -165,8 +165,6 @@ function ISLightFromKindle:new(character, plank, item, campfire)
 	o.stopOnWalk = true;
 	o.stopOnRun = true;
 	o.campfire = campfire;
-	-- if you are a outdoorsman (ranger) you can light the fire faster
-	o.isOutdoorsMan = character:hasTrait(CharacterTrait.OUTDOORSMAN);
 	o.maxTime = o:getDuration();
     o.caloriesModifier = 8;
 	return o;

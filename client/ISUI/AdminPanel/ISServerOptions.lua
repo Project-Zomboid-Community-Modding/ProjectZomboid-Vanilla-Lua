@@ -106,14 +106,14 @@ function ISServerOptions:create()
     self.saveBtn:initialise();
     self.saveBtn:instantiate();
     self.saveBtn.enable = false;
-    self.saveBtn.borderColor = self.buttonBorderColor;
+    self.saveBtn:enableDisabledColor()
     self:addChild(self.saveBtn);
 
     self.cancel = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING - 1, self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISServerOptions.onOptionMouseDown);
     self.cancel.internal = "CANCEL";
     self.cancel:initialise();
     self.cancel:instantiate();
-    self.cancel.borderColor = self.buttonBorderColor;
+    self.cancel:enableCancelColor()
     self:addChild(self.cancel);
 
     if not self.player:getRole():hasCapability(Capability.ChangeAndReloadServerOptions) then
@@ -180,6 +180,7 @@ function ISServerOptions:onServerOptionChange(option, newValue)
     newValue = string.gsub(newValue, "\"", "\\\"");
     if newValue ~= option:getValueAsString() then
         self.saveBtn.enable = true;
+        self.saveBtn:enableAcceptColor()
         SendCommandToServer("/changeoption " .. option:getName() .. " \"" .. newValue .. "\"");
         for i=1,#self.datas.items do
             local item = self.datas.items[i].item;

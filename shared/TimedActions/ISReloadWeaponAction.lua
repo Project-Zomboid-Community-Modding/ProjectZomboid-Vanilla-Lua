@@ -48,7 +48,7 @@ function ISReloadWeaponAction:start()
 	end
 	-- Setup IsPerformingAction & the current anim we want (check in AnimSets LoadHandgun.xml for example)
 	self:setOverrideHandModels(self.gun, nil);
-	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
+	self:setAnimVariable("WeaponReloadType", tostring(self.gun:getWeaponReloadType()))
 	self:setAnimVariable("isLoading", true);
 	self.ammoCountStart = self.gun:getCurrentAmmoCount()
 	self.gun:setJobType(getText("IGUI_JobType_LoadBulletsIntoFirearm"))
@@ -168,13 +168,13 @@ function ISReloadWeaponAction:serverStart()
 			self.netAction:forceComplete()
 		end
 	end
-	if self.gun:getWeaponReloadType() == "shotgun" then
+	if self.gun:getWeaponReloadType() == WeaponReloadType.SHOTGUN then
 		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 833), "loadFinished", nil)
-	elseif self.gun:getWeaponReloadType() == "revolver" then
+	elseif self.gun:getWeaponReloadType() == WeaponReloadType.REVOLVER then
 		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 950), "loadFinished", nil)
-	elseif self.gun:getWeaponReloadType() == "boltactionnomag" then
+	elseif self.gun:getWeaponReloadType() == WeaponReloadType.BOLT_ACTION_NO_MAG then
 		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 590), "loadFinished", nil)
-	elseif self.gun:getWeaponReloadType() == "doublebarrelshotgun" then
+	elseif self.gun:getWeaponReloadType() == WeaponReloadType.DOUBLE_BARREL_SHOTGUN then
 		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 2500), "loadFinished", nil)
 	else
 		emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1000), "loadFinished", nil)
@@ -437,7 +437,7 @@ ISReloadWeaponAction.attackHook = function(character, chargeDelta, weapon)
 					character:startAttackLoopSound(attackLoop);
 				end
 			else
-				character:playSound(weapon:getSwingSound());
+				character:playRangedWeaponShootSound(weapon:getSwingSound());
 			end
 			local radius = weapon:getSoundRadius() * getSandboxOptions():getOptionByName("FirearmNoiseMultiplier"):getValue();
 			if not character:isOutside() then

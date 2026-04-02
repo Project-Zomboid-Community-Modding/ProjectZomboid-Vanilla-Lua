@@ -16,7 +16,7 @@ function ISAddNonPvpZoneUI:initialise()
     self.cancel.anchorBottom = true
     self.cancel:initialise();
     self.cancel:instantiate();
-    self.cancel.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.cancel:enableCancelColor()
     self:addChild(self.cancel);
 
     self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_PvpZone_AddZone"), self, ISAddNonPvpZoneUI.onClick);

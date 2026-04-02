@@ -30,10 +30,12 @@ ISLootWindowContainerControls = ISPanelJoypad:derive("ISLootWindowContainerContr
 
 ISLootWindowContainerControls_HandlerList = ISLootWindowContainerControls_HandlerList or {}
 ISLootWindowContainerControls_HandlerSet = ISLootWindowContainerControls_HandlerSet or {}
+local UI_MARGIN = 5;
 
-function ISLootWindowContainerControls.AddHandler(handlerClass)
+function ISLootWindowContainerControls.AddHandler(handlerClass, displayToRight)
     if ISLootWindowContainerControls_HandlerSet[handlerClass.Type] == handlerClass then return end
     ISLootWindowContainerControls_HandlerSet[handlerClass] = handlerClass
+    handlerClass.displayToRight = displayToRight;
     local index = -1
     for index1,handlerClass1 in ipairs(ISLootWindowContainerControls_HandlerList) do
         if handlerClass.Type == handlerClass1.Type then
@@ -53,24 +55,24 @@ ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_TakeAl
 ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_TakeSameType)
 ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_MoveToFloor)
 ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_RemoveAll)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_MannequinSwitchOutfit)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_MannequinWearAll)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueToggle)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueAddTank)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueRemoveTank)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_ClothingDryerToggle)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_ClothingWasherToggle)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_CombinationWasherDryerToggle)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_CombinationWasherDryerSetMode)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_StoveToggle)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_StoveSettings)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_VehicleCloseTrunk)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_VehicleLockTrunk)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_AddFuelOption)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_LightFireOption)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PutOut)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_RemoveCampfire)
-ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_AddCorpseToCampfire)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_MannequinWearAll, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_MannequinSwitchOutfit, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueRemoveTank, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueAddTank, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PropaneBarbecueToggle, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_ClothingWasherToggle, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_ClothingDryerToggle, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_CombinationWasherDryerSetMode, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_CombinationWasherDryerToggle, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_StoveSettings, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_StoveToggle, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_VehicleLockTrunk, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_VehicleCloseTrunk, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_PutOut, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_LightFireOption, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_AddFuelOption, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_RemoveCampfire, true)
+ISLootWindowContainerControls.AddHandler(ISLootWindowObjectControlHandler_AddCorpseToCampfire, true)
 
 -- Use separate handlers for the floor container, because there is no IsoObject parent.
 ISLootWindowContainerControls_FloorHandlerList = ISLootWindowContainerControls_FloorHandlerList or {}
@@ -123,22 +125,34 @@ function ISLootWindowContainerControls:arrange()
     table.wipe(self.controls)
     if object then
         local x,y = 1,1
+        local xRight = -1
         local rowHgt = 0
         for _,handlerClass in ipairs(ISLootWindowContainerControls_HandlerList) do
             local handler = self:checkHandler(handlerClass, object, container)
             if handler:shouldBeVisible() then
                 local control = handler:getControl()
+
                 if (x > 0) and (x + control:getWidth() > self.width) then
                     x = 1
                     y = y + rowHgt + 1
                     rowHgt = 0
                 end
-                control:setX(x)
+                if handlerClass.displayToRight then
+                    if xRight == -1 then
+                        xRight = self.lootWindow.inventoryPane.width - control:getWidth() - 1
+                        control:setX(xRight)
+                    else
+                        control:setX(xRight - control:getWidth() - UI_MARGIN)
+                        xRight = control:getX()
+                    end
+                else
+                    control:setX(x)
+                    x = control:getRight() + UI_MARGIN
+                end
                 control:setY(y)
                 control:setVisible(true)
                 self:addChild(control)
                 table.insert(self.controls, control)
-                x = control:getRight() + 10
                 rowHgt = math.max(rowHgt, control:getHeight())
             end
         end

@@ -15,7 +15,7 @@ function ISMiniScoreboardUI:initialise()
     self.no.anchorBottom = true
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=0.4, g=0.4, b=0.4, a=0.9};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     local y = UI_BORDER_SPACING*2+1 + FONT_HGT_SMALL

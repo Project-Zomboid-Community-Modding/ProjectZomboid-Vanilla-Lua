@@ -32,7 +32,7 @@ function corpseStorageCheck.worldObjectContext(playerNum, contextMenu, _worldObj
 end
 
 function corpseStorageCheck.doContextDropCorpsesIntoContainers(playerNum, contextMenu, _worldObjects)
-    print("Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers Searching for suitable containers to drop into.")
+    log(DebugType.Grapple,"Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers Searching for suitable containers to drop into.")
 
     local playerObj = getSpecificPlayer(playerNum)
     if not playerObj then
@@ -45,7 +45,7 @@ function corpseStorageCheck.doContextDropCorpsesIntoContainers(playerNum, contex
 
     local isDraggingCorpse = playerObj:isDraggingCorpse()
     if not isDraggingCorpse then
-        print("Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers Not dragging a corpse.")
+        log(DebugType.Grapple,"Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers Not dragging a corpse.")
         return
     end
 
@@ -68,7 +68,7 @@ function corpseStorageCheck.doContextDropCorpsesIntoContainers(playerNum, contex
     end
 
     if #suitableContainers <= 0 then
-        print("Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers No suitable containers found.")
+        log(DebugType.Grapple, "Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers No suitable containers found.")
         return
     end
 
@@ -96,7 +96,7 @@ end
 function corpseStorageCheck.onDropCorpseInto(playerNum, targetContainer)
     local walkToSuccess = luautils.walkToContainer(targetContainer, playerNum)
     if not walkToSuccess then
-        print("Grapple:Warning: Could not find a path to destination container.")
+        log(DebugType.Grapple,"Grapple:Warning: Could not find a path to destination container.")
         return
     end
 
@@ -109,7 +109,7 @@ function corpseStorageCheck.onDropCorpseInto(playerNum, targetContainer)
     if doorNeedsOpening then
         local canOpen = targetContainer:canCharacterUnlockVehicleDoor(playerObj)
         if not canOpen then
-            print("Grapple:Warning: Player cannot open door. It may be locked or broken.")
+            log(DebugType.Grapple,"Grapple:Warning: Player cannot open door. It may be locked or broken.")
             return
         end
 
@@ -125,7 +125,7 @@ function corpseStorageCheck.onDropCorpseInto(playerNum, targetContainer)
 end
 
 function corpseStorageCheck.doContextGrabCorpsesFromContainers(playerNum, contextMenu, _worldObjects)
-    print("Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers Searching for suitable containers that contain a corpse.")
+    log(DebugType.Grapple,"Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers Searching for suitable containers that contain a corpse.")
 
     local playerObj = getSpecificPlayer(playerNum)
     if not playerObj then
@@ -138,7 +138,7 @@ function corpseStorageCheck.doContextGrabCorpsesFromContainers(playerNum, contex
 
     local isDraggingCorpse = playerObj:isDraggingCorpse()
     if isDraggingCorpse then
-        print("Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers Already dragging a corpse. Cannot grab another.")
+        log(DebugType.Grapple,"Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers Already dragging a corpse. Cannot grab another.")
         return
     end
 
@@ -161,7 +161,7 @@ function corpseStorageCheck.doContextGrabCorpsesFromContainers(playerNum, contex
     end
 
     if #suitableContainers <= 0 then
-        print("Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers No suitable containers found.")
+        log(DebugType.Grapple, "Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers No suitable containers found.")
         return
     end
 
@@ -189,13 +189,13 @@ end
 function corpseStorageCheck.onGrabCorpseFrom(playerNum, targetContainer)
     local corpseItem = targetContainer:findHumanCorpseItem()
     if not corpseItem then
-        print("Grapple:Warning: Target container does not have a corpse.")
+        log(DebugType.Grapple,"Grapple:Warning: Target container does not have a corpse.")
         return
     end
 
     local walkToSuccess = luautils.walkToContainer(targetContainer, playerNum)
     if not walkToSuccess then
-        print("Grapple:Warning: Could not find a path to target container.")
+        log(DebugType.Grapple,"Grapple:Warning: Could not find a path to target container.")
         return
     end
 
@@ -203,7 +203,7 @@ function corpseStorageCheck.onGrabCorpseFrom(playerNum, targetContainer)
     if doorNeedsOpening then
         local canOpen = targetContainer:canCharacterUnlockVehicleDoor(playerObj)
         if not canOpen then
-            print("Grapple:Warning: Player cannot open door. It may be locked or broken.")
+            log(DebugType.Grapple,"Grapple:Warning: Player cannot open door. It may be locked or broken.")
             return
         end
 

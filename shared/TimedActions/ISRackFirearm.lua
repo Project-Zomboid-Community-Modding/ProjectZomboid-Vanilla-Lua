@@ -17,7 +17,7 @@ function ISRackFirearm:start()
 	end
 
 	-- Setup IsPerformingAction & the current anim we want (check in AnimSets LoadHandgun.xml for example)
-	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
+	self:setAnimVariable("WeaponReloadType", tostring(self.gun:getWeaponReloadType()))
 
 	-- we asked to rack, we gonna remove bullets if one is chambered or load one is no one is chambered
 	-- chamber gun will need to be racked to remove bullet, otherwise we play the unload anim
@@ -134,7 +134,11 @@ function ISRackFirearm:serverStart()
 	self:ejectSpentRounds()
 	self:initVars()
 	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 100), "rackBullet", nil)
-	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1200), "rackingFinished", nil)
+	if self.gun:getWeaponReloadType() == WeaponReloadType.SHOTGUN then
+		emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 600), "rackingFinished", nil)
+	else
+		emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1200), "rackingFinished", nil)
+	end
 end
 
 function ISRackFirearm:getDuration()

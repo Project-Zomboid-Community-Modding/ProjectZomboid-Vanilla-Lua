@@ -41,7 +41,7 @@ function ISLoadBulletsInMagazine:update()
 end
 
 function ISLoadBulletsInMagazine:updateLoadingTime()
-    local animTimeDelta = self.character:getAnimationTimeDelta();
+    local animTimeDelta = self.character:getAnimationTimeDelta() * self.character:getVariableFloat("ReloadSpeed", 1.0);
     local oldUpdateLoadBulletsTime = self.updateLoadBulletsTime;
     self.updateLoadBulletsTime = (self.updateLoadBulletsTime + animTimeDelta) % 1.0;
     if oldUpdateLoadBulletsTime > self.updateLoadBulletsTime then
@@ -67,6 +67,10 @@ function ISLoadBulletsInMagazine:isLocal()
 end
 
 function ISLoadBulletsInMagazine:serverStart()
+    if not self.magazine then
+        self.netAction:forceComplete()
+        return
+    end
 	self:initVars()
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 500), "InsertBullet", nil)
 	emulateAnimEvent(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 550), "loadFinished", nil)

@@ -39,6 +39,9 @@ function ISWringClothing:perform()
 end
 
 function ISWringClothing:complete()
+    if self.item == nil then
+        return false
+    end
     if instanceof(self.item, "Clothing") then
         if self.item:getBodyLocation() == "Shoes" then
             self.item:setWetness(math.min(self.item:getWetness(), 60))
@@ -52,6 +55,9 @@ end
 
 
 function ISWringClothing:getDuration()
+    if self.item == nil then
+        return 0
+    end
     if self.character:isTimedActionInstant() then
         return 1
     end
@@ -61,7 +67,7 @@ end
 function ISWringClothing:new(character, item)
     local o = ISBaseTimedAction.new(self, character)
     o.item = item
-    o.maxTime = math.ceil(item:getWetness() * 5)
+    o.maxTime = o:getDuration()
     o.forceProgressBar = true
     return o
 end

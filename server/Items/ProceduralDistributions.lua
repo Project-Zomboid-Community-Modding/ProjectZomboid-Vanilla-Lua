@@ -5716,7 +5716,93 @@ ProceduralDistributions.list = {
 		},
 		junk = ClutterTables.BinJunk,
 	},
-	
+
+    BlacksmithLiterature = {
+        rolls = 4,
+        items = {
+            -- Books
+            "BookBlacksmith1", 2,
+            "BookBlacksmith2", 1,
+            "BookBlacksmith3", 0.5,
+            "BookBlacksmith4", 0.1,
+            "BookBlacksmith5", 0.05,
+            -- Schematics
+            "BSToolsSchematic", 10,
+            "CookwareSchematic", 10,
+            -- Magazines
+            "SmithingMag1", 4,
+            "SmithingMag2", 4,
+            "SmithingMag3", 4,
+            "SmithingMag4", 4,
+            "SmithingMag5", 4,
+            "SmithingMag6", 4,
+            "SmithingMag7", 4,
+            "SmithingMag8", 4,
+            "SmithingMag9", 4,
+            "SmithingMag10", 4,
+            "SmithingMag11", 4,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    BlacksmithMolds = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "CeramicCrucible", 20,
+            -- Components
+            "ClaySheetMold", 20,
+            "IronIngotMold", 20,
+            "IronBarMold", 20,
+            "SteelBarMold", 20,
+            "SteelIngotMold", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    BlacksmithTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "CeramicCrucible", 4,
+            "DrawPlate", 8,
+            "File", 8,
+            "MetalworkingChisel", 8,
+            "MetalworkingPliers", 4,
+            "MetalworkingPunch", 8,
+            "SheetMetalSnips", 4,
+            "SmallFileSet", 8,
+            "SmallPunchSet", 8,
+            "SmallSaw", 8,
+            "SmithingHammer", 8,
+            "Tongs", 8,
+            -- Components
+            "Bellows", 8,
+            "BlowerFan", 2,
+            "IronIngotMold", 2,
+            "Mov_ElectricBlowerForge", 1,
+            "IronBarMold", 2,
+            "SteelBarMold", 1,
+            "SteelIngotMold", 1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	BookstoreBags = {
 		rolls = 4,
 		items = {
@@ -9337,7 +9423,24 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CarpentryBooks = {
+        rolls = 8,
+        items = {
+            "BookCarpentry1", 10,
+            "BookCarpentry2", 8,
+            "BookCarpentry3", 6,
+            "BookCarpentry4", 4,
+            "BookCarpentry5", 2,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CarSuspensionModern1 = {
 		isShop = true,
 		rolls = 4,
@@ -9598,8 +9701,56 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
-	CatfishKitchenButcher = {
+
+    CarvingWorkshopTools = {
+        rolls = 4,
+        items = {
+            -- Knives
+            "LargeKnife", 20,
+            "LargeKnife", 10,
+            "SmallKnife", 50,
+            "SmallKnife", 20,
+            -- Tools
+            "File", 20,
+            "GardenSaw", 20,
+            "HandDrill", 20,
+            "Saw", 20,
+            "SmallFileSet", 20,
+            "Whetstone", 20,
+            -- Misc.
+            "Twine", 20,
+            "LeatherStrips", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    CarvingWorkshopMaterials = {
+        isShop = true,
+        rolls = 4,
+        items = {
+            "LargeBranch", 10,
+            "LongStick", 50,
+            "LongStick", 20,
+            "Plank", 20,
+            "Plank", 10,
+            "SmallHandle", 50,
+            "SmallHandle", 20,
+            "TreeBranch2", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    CatfishKitchenButcher = {
 		ignoreZombieDensity = true,
 		rolls = 4,
 		items = {
@@ -11920,7 +12071,31 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CobblerTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "Awl", 20,
+            "KnifeSmall", 20,
+            "Needle", 50,
+            "Needle", 20,
+            "Saw", 20,
+            "Scissors", 20,
+            -- Materials
+            "Plank", 20,
+            "Thread", 50,
+            "Thread", 20,
+            "Thread_Aramid", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	ComicStoreCounter = {
 		isShop = true,
 		rolls = 4,
@@ -13838,7 +14013,24 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateCoke = {
+        rolls = 8,
+        items = {
+            "EmptySandbag", 50,
+            "EmptySandbag", 20,
+            "EmptySandbag", 20,
+            "EmptySandbag", 10,
+        },
+        bags = BagsAndContainers.CoalSack,
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateCondiments = {
 		ignoreZombieDensity = true,
 		isShop = true,
@@ -14678,7 +14870,25 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateFlintNodules = {
+        isShop = true,
+        rolls = 8,
+        items = {
+            "FlintNodule", 50,
+            "FlintNodule", 20,
+            "FlintNodule", 20,
+            "FlintNodule", 10,
+            "FlintNodule", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateFoldingChairs = {
 		rolls = 4,
 		items = {
@@ -15259,11 +15469,11 @@ ProceduralDistributions.list = {
 		isShop = true,
 		rolls = 4,
 		items = {
-			"LeatherStrips", 50,
-			"LeatherStrips", 20,
-			"LeatherStrips", 20,
-			"LeatherStrips", 10,
-			"LeatherStrips", 10,
+			"Leather_Crude_Medium_Tan", 50,
+			"Leather_Crude_Medium_Tan", 20,
+			"Leather_Crude_Medium_Tan", 20,
+			"Leather_Crude_Medium_Tan", 10,
+			"Leather_Crude_Medium_Tan", 10,
 		},
 		junk = {
 			rolls = 1,
@@ -15272,7 +15482,25 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateLeatherLarge = {
+        isShop = true,
+        rolls = 4,
+        items = {
+            "Leather_Crude_Large_Tan", 50,
+            "Leather_Crude_Large_Tan", 20,
+            "Leather_Crude_Large_Tan", 20,
+            "Leather_Crude_Large_Tan", 10,
+            "Leather_Crude_Large_Tan", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateLightRoundTable = {
 		rolls = 1,
 		items = {
@@ -17140,10 +17368,10 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
 	CrateStoneBlocks = {
 		isShop = true,
-		rolls = 4,
+		rolls = 8,
 		items = {
 			"StoneBlock", 50,
 			"StoneBlock", 20,
@@ -17158,7 +17386,25 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    CrateStones = {
+        isShop = true,
+        rolls = 8,
+        items = {
+            "Stone2", 50,
+            "Stone2", 20,
+            "Stone2", 20,
+            "Stone2", 10,
+            "Stone2", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	CrateSugar = {
 		ignoreZombieDensity = true,
 		isShop = true,
@@ -22534,7 +22780,44 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    FurnitureFactoryTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "Awl", 8,
+            "CarpentryChisel", 8,
+            "ClubHammer", 4,
+            "Hammer", 20,
+            "HandDrill", 8,
+            "Saw", 20,
+            "Screwdriver", 10,
+            "ViseGrips", 4,
+            "WoodenMallet", 4,
+            -- Materials
+            "CircularSawblade", 4,
+            "DuctTape", 4,
+            "Epoxy", 2,
+            "Glue", 4,
+            "NailsBox", 20,
+            "ScrewsBox", 8,
+            "Woodglue", 2,
+            -- Misc.
+            "Handiknife", 1,
+            "KnifePocket", 1,
+            "Multitool", 0.1,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "MarkerBlack", 4,
+                "MeasuringTape", 10,
+                "Notepad", 10,
+                "Pencil", 10,
+            }
+        }
+    },
+
 	GarageCarpentry = {
 		rolls = 4,
 		items = {
@@ -24731,7 +25014,38 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    GlassWorkshopTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "CeramicCrucibleSmall", 50,
+            "CeramicCrucibleSmall", 20,
+            "GlassBlowingPipe", 50,
+            "GlassBlowingPipe", 20,
+            "MetalworkingPliers", 50,
+            "MetalworkingPliers", 20,
+            -- Accessories
+            "Glasses_SafetyGoggles", 20,
+            "Hat_BuildersRespirator", 20,
+            -- Literature
+            "BookGlassmaking1", 4,
+            "BookGlassmaking2", 2,
+            "BookGlassmaking3", 1,
+            "BookGlassmaking4", 0.5,
+            "BookGlassmaking5", 0.1,
+            "GlassmakingMag1", 4,
+            "GlassmakingMag2", 4,
+            "GlassmakingMag3", 4,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	GolfLockers = {
 		rolls = 4,
 		items = {
@@ -29274,7 +29588,50 @@ ProceduralDistributions.list = {
 		}
 	},
 
-	KnifeFactoryCutlery = {
+    KnappingBooks = {
+        rolls = 8,
+        items = {
+            "BookKnapping1", 10,
+            "BookKnapping2", 8,
+            "BookKnapping3", 6,
+            "BookKnapping4", 4,
+            "BookKnapping5", 2,
+            "PrimitiveToolMag1", 10,
+            "PrimitiveToolMag2", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    KnappingTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "KnappingTool", 50,
+            "KnappingTool", 20,
+            "MasonsChisel", 20,
+            "MasonsChisel", 10,
+            -- Materials
+            "Antlers", 10,
+            "FlatStone", 10,
+            "FlintNodule", 50,
+            "FlintNodule", 20,
+            "LeatherStrips", 50,
+            "LeatherStrips", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    KnifeFactoryCutlery = {
 		isShop = true,
 		rolls = 4,
 		items = {
@@ -32896,6 +33253,22 @@ ProceduralDistributions.list = {
 		}
 	},
 
+    MagazineRackFancy = {
+        rolls = 4,
+        items = {
+            "Magazine_Rich", 50,
+            "Magazine_Rich", 20,
+            "Magazine_Rich", 20,
+            "Magazine_Rich", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	MannequinFactoryPaint = {
 		rolls = 4,
 		items = {
@@ -36506,7 +36879,6 @@ ProceduralDistributions.list = {
             -- Armor
             "ElbowPad_Left_Tactical", 1,
             "Kneepad_Left_Tactical", 1,
-            "ThighProtective_L", 0.1,
             "Vest_BulletCivilian", 2,
             -- Knives/Blades
             "Katana", 0.1,
@@ -38558,8 +38930,6 @@ ProceduralDistributions.list = {
 			"ElbowPad_Left_Tactical", 1,
 			"Hat_RiotHelmet", 2,
 			"Kneepad_Left_Tactical", 4,
-			"ShinKneeGuard_L_Protective", 2,
-			"ThighProtective_L", 1,
 			"Vest_BulletCivilian", 2,
 			-- Clothing
 			"Glasses_Aviators", 1,
@@ -39469,6 +39839,212 @@ ProceduralDistributions.list = {
 		}
 	},
 
+
+    RangerBooks = {
+        rolls = 4,
+        items = {
+            "Book_Nature", 20,
+            "Book_Nature", 10,
+            "BookForaging1", 10,
+            "BookForaging2", 8,
+            "BookForaging3", 6,
+            "BookForaging4", 4,
+            "BookForaging5", 2,
+            "BookTracking1", 10,
+            "BookTracking2", 8,
+            "BookTracking3", 6,
+            "BookTracking4", 4,
+            "BookTracking5", 2,
+            "BookTrapping1", 10,
+            "BookTrapping2", 8,
+            "BookTrapping3", 6,
+            "BookTrapping4", 4,
+            "BookTrapping5", 2,
+            "Paperback_Nature", 50,
+            "Paperback_Nature", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    RangerDesk = {
+        rolls = 2,
+        items = {
+            -- Keys/Keyrings
+            "CarKey", 2,
+            "KeyRing_SecurityPass", 0.1,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            -- Outfit
+            "Glasses_Aviators", 1,
+            "Glasses_Sun", 2,
+            "HandTorch", 4,
+            "WalkieTalkie4", 8,
+            -- Weapons
+            "Revolver", 1,
+            "Revolver_Long", 0.1,
+            -- Food
+            "BeefJerky", 1,
+            "DehydratedMeatStick", 1,
+            "GranolaBar", 1,
+            "SunflowerSeeds", 1,
+            "Chocolate", 1,
+            -- Literature
+            "Book_Nature", 4,
+            "Diary2", 0.1,
+            "Journal", 10,
+            "Magazine_Firearm", 4,
+            "Magazine_Outdoors", 10,
+            "Newspaper", 4,
+            "Newspaper_Recent", 4,
+            "Notepad", 10,
+            "Paperback_Nature", 8,
+            "HerbalistMag", 2,
+            -- Misc.
+            "CardDeck", 8,
+            "Flask", 0.1,
+            "MenuCard", 10,
+            "Paperwork", 20,
+            "Paperwork", 10,
+            "Photo", 1,
+            "Pills", 1,
+            "PillsVitamins", 1,
+            -- Special
+            "CompassDirectional", 4,
+            "CanteenEmpty", 2,
+            "InsectRepellent", 2,
+            "KnifePocket", 1,
+            "MagnesiumFirestarter", 2,
+            "Multitool", 0.1,
+            "P38", 2,
+            "Whistle", 2,
+            -- Moveables
+            "Mov_BlackModernPhone", 0.01,
+        },
+        junk = ClutterTables.DeskJunk,
+    },
+
+    RangerLockers = {
+        rolls = 4,
+        items = {
+            -- Keys/Keyrings
+            "CarKey", 2,
+            "KeyRing_SecurityPass", 0.1,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            "Key1", 0.5,
+            -- Clothing
+            "Belt2", 4,
+            "Glasses_Aviators", 1,
+            "Glasses_Sun", 2,
+            "Hat_Ranger", 4,
+            "Jacket_Ranger", 8,
+            "Shirt_Ranger", 10,
+            "Shoes_Random", 8,
+            "Trousers_Ranger", 8,
+            "Tshirt_Ranger", 10,
+            -- Accessories
+            "CanteenEmpty", 1,
+            "CompassDirectional", 1,
+            "FirstAidKit", 4,
+            "FirstAidKit_NewPro", 4,
+            "HandTorch", 4,
+            "InsectRepellent", 2,
+            "HolsterSimple", 8,
+            "KnifePocket", 1,
+            "MagnesiumFirestarter", 2,
+            "Multitool", 0.1,
+            "P38", 1,
+            "WalkieTalkie4", 1,
+            "Whistle", 2,
+            -- Literature
+            "BookForaging1", 1,
+            "BookForaging2", 0.8,
+            "BookForaging3", 0.6,
+            "BookForaging4", 0.4,
+            "BookForaging5", 0.2,
+            "BookTracking1", 1,
+            "BookTracking2", 0.8,
+            "BookTracking3", 0.6,
+            "BookTracking4", 0.4,
+            "BookTracking5", 0.2,
+            "BookTrapping2", 0.8,
+            "BookTrapping3", 0.6,
+            "BookTrapping4", 0.4,
+            "BookTrapping5", 0.2,
+            "Magazine", 4,
+            "Magazine_Outdoors", 4,
+            "Magazine_Firearm", 10,
+            "Paperback", 4,
+            "Paperback_Nature", 8,
+            -- Misc.
+            "BeefJerky", 1,
+            "Chocolate", 1,
+            "CDplayer", 2,
+            "DehydratedMeatStick", 1,
+            "Disc_Retail", 2,
+            "GranolaBar", 4,
+            "Earbuds", 1,
+            "Flask", 0.1,
+            "Gum", 10,
+            "Handbag", 0.5,
+            "Headphones", 1,
+            "Lunchbag", 1,
+            "Lunchbox", 1,
+            "Lunchbox2", 0.01,
+            "Money", 4,
+            "Purse", 0.5,
+            "Sportsbottle", 1,
+            "Suitcase", 0.2,
+            "SunflowerSeeds", 1,
+            "TobaccoChewing", 1,
+            "WristWatch_Left_ClassicBlack", 0.1,
+            "WristWatch_Left_ClassicBrown", 0.1,
+            "WristWatch_Left_ClassicGold", 0.1,
+            "WristWatch_Left_DigitalBlack", 0.1,
+            "WristWatch_Left_DigitalDress", 0.1,
+            "WristWatch_Left_DigitalRed", 0.1,
+            -- Bags/Containers
+            "Bag_DuffelBagTINT", 0.5,
+            "Bag_FannyPackFront", 2,
+            "Bag_MedicalBag", 0.1,
+            "Bag_Satchel", 0.2,
+            "Bag_Satchel_Medical", 0.1,
+            "Briefcase", 0.2,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+                "CombinationPadlock", 10,
+                "Padlock", 1,
+            }
+        }
+    },
+
+    RangerMagazines = {
+        rolls = 6,
+        items = {
+            "Magazine_Outdoors_New", 50,
+            "Magazine_Outdoors_New", 20,
+            "Magazine_Outdoors_New", 20,
+            "Magazine_Outdoors_New", 10,
+            "Magazine_Firearm_New", 20,
+            "Magazine_Firearm_New", 10,
+            "Brochure", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	RangerOutfit = {
 		rolls = 3,
 		items = {
@@ -39504,6 +40080,62 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
+
+    RangerStorageGuns = {
+        gunStorage = true,
+        dontSpawnAmmo = true,
+        rolls = 4,
+        items = {
+            -- Pistols
+            "Revolver", 50,
+            "Revolver", 20,
+            "Revolver_Long", 8,
+            --Shotguns
+            "Shotgun", 20,
+            "Shotgun", 10,
+            -- Rifles
+            "HuntingRifle", 50,
+            "HuntingRifle", 20,
+            "VarmintRifle", 50,
+            "VarmintRifle", 20,
+            -- Accessories
+            "HolsterSimple", 20,
+            "HolsterSimple", 10,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    RangerStorageTraps = {
+        rolls = 4,
+        items = {
+            -- Traps
+            "TrapBox", 20,
+            "TrapBox", 10,
+            "TrapCage", 20,
+            "TrapCage", 10,
+            "TrapCrate", 20,
+            "TrapCrate", 10,
+            "TrapMouse", 50,
+            "TrapMouse", 20,
+            "TrapSnare", 50,
+            "TrapSnare", 20,
+            -- Misc.
+            "Garbagebag_box", 20,
+            "RatPoison", 50,
+            "RatPoison", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
 
 	RangerTools = {
 		rolls = 3,
@@ -46826,13 +47458,13 @@ ProceduralDistributions.list = {
 		items = {
 			-- Armor
 			"ElbowPad_Left_Tactical", 20,
-			"GreaveBodyArmour_Left_SWAT", 20,
-			"Hat_SWAT", 20,
+			"Hat_SWAT", 50,
+            "Hat_SWAT", 20,
 			"Kneepad_Left_Tactical", 20,
-			"ThighBodyArmour_L_SWAT", 20,
-			"Vambrace_BodyArmour_Left_SWAT", 20,
-			"Vest_BulletSWAT", 20,
+            "ShinKneeGuard_L_Protective", 20,
+            "ThighProtective_L", 20,
 			"Vest_BulletSWAT", 50,
+			"Vest_BulletSWAT", 20,
 			-- Equipment
 			"WalkieTalkie4", 20,
 			-- Bags/Containers
@@ -46881,7 +47513,64 @@ ProceduralDistributions.list = {
 			}
 		}
 	},
-	
+
+    TailoringLiterature = {
+        rolls = 4,
+        items = {
+            "BookTailoring1", 10,
+            "BookTailoring2", 8,
+            "BookTailoring3", 6,
+            "BookTailoring4", 4,
+            "BookTailoring5", 2,
+            "SewingPattern", 50,
+            "SewingPattern", 20,
+            "TailoringMag1", 1,
+            "TailoringMag2", 4,
+            "TailoringMag3", 2,
+            "TailoringMag4", 2,
+            "TailoringMag5", 2,
+            "TailoringMag6", 1,
+            "TailoringMag7", 4,
+            "TailoringMag8", 4,
+            "TailoringMag9", 2,
+            "TailoringMag10", 4,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
+    TailoringTools = {
+        rolls = 4,
+        items = {
+            -- Tools
+            "Awl", 20,
+            "Needle", 50,
+            "Needle", 20,
+            -- Thread
+            "Thread_Aramid", 10,
+            "Thread_Sinew", 20,
+            "Thread_Sinew", 10,
+            "Thread", 50,
+            "Thread", 20,
+            "Thread", 20,
+            "Thread", 10,
+            -- Misc.
+            "MeasuringTape", 20,
+            "Scissors", 20,
+            "Thimble", 20,
+        },
+        junk = {
+            rolls = 1,
+            items = {
+
+            }
+        }
+    },
+
 	TestingLab = {
 		rolls = 4,
 		items = {

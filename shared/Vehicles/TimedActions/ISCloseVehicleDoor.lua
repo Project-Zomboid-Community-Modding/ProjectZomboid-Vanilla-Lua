@@ -53,19 +53,21 @@ function ISCloseVehicleDoor:complete()
 	if self.vehicle then
         if not self.part then
         	print('no such part '..tostring(self.part))
-        	return
+        	return false
         end
         if not self.part:getDoor() then
         	print('part ' .. self.part .. ' has no door')
-        	return
+        	return false
         end
         self.part:getDoor():setOpen(false)
         self.vehicle:transmitPartDoor(self.part)
         self:collapseLootWindow()
+
+	    triggerEvent("OnContainerUpdate")
     else
        	print('no such vehicle id='..tostring(self.vehicle))
+        return false
     end
-	triggerEvent("OnContainerUpdate")
 
 	return true
 end
@@ -95,7 +97,9 @@ function ISCloseVehicleDoor:new(character, vehicle, part)
 	local o = ISBaseTimedAction.new(self, character)
 	o.vehicle = vehicle
 	o.part = part
-	o.seat = part:getContainerSeatNumber()
+	if part ~= nil then
+	    o.seat = part:getContainerSeatNumber()
+	end
 	o.stopOnWalk = false
 	o.stopOnRun = false
 	o.maxTime = o:getDuration()

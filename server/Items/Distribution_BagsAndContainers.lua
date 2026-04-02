@@ -990,6 +990,23 @@ BagsAndContainers.Clothing_Generic = {
 	}
 }
 
+BagsAndContainers.CoalSack = {
+    rolls = 8,
+    items = {
+        "Coke", 50,
+        "Coke", 20,
+        "Coke", 20,
+        "Coke", 10,
+        "Coke", 10,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
 BagsAndContainers.CookieJar = {
 	rolls = 4,
 	items = {

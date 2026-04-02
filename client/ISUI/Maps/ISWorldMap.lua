@@ -134,6 +134,9 @@ function WorldMapOptions:getVisibleOptions()
 		table.insert(optionNames, "PlayerNames")
 	end
 	table.insert(optionNames, "Symbols")
+	if isClient() then
+		table.insert(optionNames, "RemoteSymbols")
+	end
 	table.insert(optionNames, "HighlightStreet")
 	table.insert(optionNames, "LargeStreetLabel")
 	table.insert(optionNames, "ShowStreetNames")

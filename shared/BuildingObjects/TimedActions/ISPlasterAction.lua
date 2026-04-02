@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISPlasterAction = ISBaseTimedAction:derive("ISPlasterAction");
 
 function ISPlasterAction:isValid()
-	return self.character:isBuildCheat() or self.character:getInventory():contains("BucketPlasterFull");
+	return self.character:isBuildCheat() or self.character:getInventory():containsTag(ItemTag.PLASTER_BUCKET);
 end
 
 function ISPlasterAction:update()

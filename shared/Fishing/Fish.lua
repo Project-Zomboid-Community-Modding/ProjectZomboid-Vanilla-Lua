@@ -212,10 +212,12 @@ function Fish:createFish(fishConfig)
 		fishSizeData.size = "Big"
 	end
 
-	-- Not sure why fish above 0.6 are having this tooltip mistakenly applied?
-	-- Changed to no longer rely on Recipe.OnTest results and just check weight directly.
 	if not RecipeCodeOnTest.cutFish(item, nil) then
-		item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
+		item:setTooltip("Tooltip_Fishing_TooSmallForSlicing")
+    elseif item:getScriptItem():getTooltip() then
+        item:setTooltip(item:getScriptItem():getTooltip())
+    else
+        item:setTooltip(nil)
 	end
 
     self.fishSize = fishSizeData.length / 20.0

@@ -98,6 +98,8 @@ AnimalDefinitions.animals["raccoonkit"].minEnclosureSize = 40;
 AnimalDefinitions.animals["raccoonkit"].dung = "Dung_Raccoon";
 AnimalDefinitions.animals["raccoonkit"].wildFleeTimeUntilDeadTimer = 150;
 AnimalDefinitions.animals["raccoonkit"].sitRandomly = true;
+AnimalDefinitions.animals["raccoonkit"].canBeKilledWithoutWeapon = true;
+AnimalDefinitions.animals["raccoonkit"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals = AnimalDefinitions.animals or {};
@@ -153,6 +155,7 @@ AnimalDefinitions.animals["raccoonsow"].minEnclosureSize = AnimalDefinitions.ani
 AnimalDefinitions.animals["raccoonsow"].dung = "Dung_Raccoon";
 AnimalDefinitions.animals["raccoonsow"].wildFleeTimeUntilDeadTimer = 250;
 AnimalDefinitions.animals["raccoonsow"].sitRandomly = AnimalDefinitions.animals["raccoonkit"].sitRandomly;
+AnimalDefinitions.animals["raccoonsow"].feedByHandAnim = AnimalDefinitions.animals["raccoonkit"].feedByHandAnim;
 
 
 AnimalDefinitions.animals["raccoonboar"] = {};
@@ -206,6 +209,7 @@ AnimalDefinitions.animals["raccoonboar"].minEnclosureSize = AnimalDefinitions.an
 AnimalDefinitions.animals["raccoonboar"].dung = "Dung_Raccoon";
 AnimalDefinitions.animals["raccoonboar"].wildFleeTimeUntilDeadTimer = 250;
 AnimalDefinitions.animals["raccoonboar"].sitRandomly = AnimalDefinitions.animals["raccoonkit"].sitRandomly;
+AnimalDefinitions.animals["raccoonboar"].feedByHandAnim = AnimalDefinitions.animals["raccoonkit"].feedByHandAnim;
 
 local raccoon_kit_sounds = {
 	death = { name = "AnimalVoiceBabyRaccoonDeath", slot = "voice", priority = 100 },

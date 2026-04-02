@@ -34,21 +34,25 @@ function ISOpenCloseVehicleWindow:complete()
    	if self.vehicle then
    		if not self.part then
    			print('no such part '..tostring(self.part))
-   			return
+   			return false
    		end
    		if not self.part:getWindow() then
    			print('part ' .. self.part .. ' has no window')
-   			return
+   			return false
    		end
    		self.part:getWindow():setOpen(self.open)
    		self.vehicle:transmitPartWindow(self.part)
    	else
    		print('no such vehicle id='..tostring(self.vehicle))
+   	    return false
    	end
    	return true
 end
 
 function ISOpenCloseVehicleWindow:getDuration()
+	if self.part == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
@@ -57,9 +61,11 @@ end
 
 function ISOpenCloseVehicleWindow:new(character, part, open)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
-	o.window = part:getWindow()
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	    o.window = part:getWindow()
+	end
 	o.open = open
 	o.stopOnWalk = false
 	o.ignoreHandsWounds = true;

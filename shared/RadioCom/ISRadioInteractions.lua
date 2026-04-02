@@ -140,6 +140,11 @@ Interactions.LBA = function(_player, _amount) doSkill(_player, _amount, getText(
 Interactions.SBA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_SmallBlade"), Perks.SmallBlade); end
 Interactions.MAS = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Masonry"), Perks.Masonry); end
 Interactions.POT = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Pottery"), Perks.Pottery); end
+Interactions.BLA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Blacksmith"), Perks.Blacksmith); end
+Interactions.GLA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Glassmaking"), Perks.Glassmaking); end
+Interactions.HUS = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Husbandry"), Perks.Husbandry); end
+Interactions.BUT = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Butchering"), Perks.Butchering); end
+Interactions.TRA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Tracking"), Perks.Tracking); end
 
 local instance = nil;
 

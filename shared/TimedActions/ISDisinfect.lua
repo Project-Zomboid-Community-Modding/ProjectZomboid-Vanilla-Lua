@@ -82,6 +82,7 @@ function ISDisinfect:complete()
     end
     if self.alcohol:hasComponent(ComponentType.FluidContainer) and self.alcohol:getFluidContainer():getAmount() > 0.15 then
 		self.alcohol:getFluidContainer():adjustAmount(self.alcohol:getFluidContainer():getAmount() - 0.15);
+        sendItemStats(self.alcohol);
     elseif instanceof(self.alcohol, "DrainableComboItem") then
         self.alcohol:UseAndSync();
     end

@@ -86,7 +86,7 @@ function namedColorToTable(_name)
     if c then
         return colorToTable(c);
     end
-    print("env.lua-> namedColorToTable color not found: "..tostring(_name));
+    DebugType.Lua:warn("env.lua-> namedColorToTable color not found: " .. tostring(_name));
     return {
         r=1,
         g=1,

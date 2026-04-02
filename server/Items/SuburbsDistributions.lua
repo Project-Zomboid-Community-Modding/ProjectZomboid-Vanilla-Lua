@@ -180,6 +180,8 @@ local function mergeDistributions()
 	SuburbsDistributions.opthroom = SuburbsDistributions.optometrist
 	SuburbsDistributions.restaurant = SuburbsDistributions.restaurantdining
 	SuburbsDistributions.restaurant_dining = SuburbsDistributions.restaurantdining
+    SuburbsDistributions.sewingstore = SuburbsDistributions.tailoringworkshop
+    SuburbsDistributions.sewingstorage = SuburbsDistributions.tailoringworkshop
 	SuburbsDistributions.storageclothes = SuburbsDistributions.clothingstorage
 	SuburbsDistributions.tacokitchen = SuburbsDistributions.mexicankitchen
 	SuburbsDistributions.tech = SuburbsDistributions.technical

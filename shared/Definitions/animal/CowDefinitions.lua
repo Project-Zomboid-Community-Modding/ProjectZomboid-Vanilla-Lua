@@ -172,6 +172,7 @@ AnimalDefinitions.animals["cowcalf"].thirstHungerTrigger = 0.4;
 AnimalDefinitions.animals["cowcalf"].corpseSize = 2.5; -- this is used to make the cars bump higher when driving over a corpse, here 2x compared to normal (it's a float)
 AnimalDefinitions.animals["cowcalf"].idleSoundRadius = 20; -- to attract zombies when playing idle sound
 AnimalDefinitions.animals["cowcalf"].idleSoundVolume = 10;
+AnimalDefinitions.animals["cowcalf"].feedByHandAnim = "AnimalLureLow";
 
 AnimalDefinitions.animals["cow"] = {};
 AnimalDefinitions.animals["cow"].bodyModel = "CowBody"; -- the 3D model
@@ -241,6 +242,7 @@ AnimalDefinitions.animals["cow"].maxBlood = 3500;
 AnimalDefinitions.animals["cow"].corpseSize = 4;
 AnimalDefinitions.animals["cow"].idleSoundRadius = 50;
 AnimalDefinitions.animals["cow"].idleSoundVolume = 30;
+AnimalDefinitions.animals["cow"].feedByHandAnim = "AnimalLureHigh";
 
 AnimalDefinitions.animals["bull"] = {};
 AnimalDefinitions.animals["bull"].bodyModel = "Bull_Body";
@@ -307,6 +309,7 @@ AnimalDefinitions.animals["bull"].maxBlood = 3500;
 AnimalDefinitions.animals["bull"].corpseSize = AnimalDefinitions.animals["cow"].corpseSize;
 AnimalDefinitions.animals["bull"].idleSoundRadius = 50;
 AnimalDefinitions.animals["bull"].idleSoundVolume = 30;
+AnimalDefinitions.animals["bull"].feedByHandAnim = AnimalDefinitions.animals["cow"].feedByHandAnim;
 
 -- NOTE: bull.breeds must not be the same table as cow.breeds.
 local bull_sounds = {

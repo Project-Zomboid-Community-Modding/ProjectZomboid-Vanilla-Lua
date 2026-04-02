@@ -31,6 +31,9 @@ function ISLockDoors:perform()
 end
 
 function ISLockDoors:complete()
+    if self.vehicle == nil then
+        return false
+    end
     for seat=1,self.vehicle:getMaxPassengers() do
     	local part = self.vehicle:getPassengerDoor(seat-1)
     	if part then
@@ -65,6 +68,9 @@ function ISLockDoors:complete()
 end
 
 function ISLockDoors:getDuration()
+    if self.vehicle == nil then
+        return 0
+    end
      if self.character:isTimedActionInstant() then
         return 1;
      end

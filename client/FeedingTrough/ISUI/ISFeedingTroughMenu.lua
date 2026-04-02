@@ -37,11 +37,6 @@ function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, world
 
 	local isoObject = luaObject:getIsoObject()
 
-	-- if don't have our submenu, means we clicked on the slave part of the trough
-	if not subMenu and isoObject:getFluidContainer() then
-		subMenu = ISWorldObjectContextMenu.doFluidContainerMenu(context, isoObject, player);
-	end
-
 	-- if we don't have submenu it means we can't have water currently, only food, still needs to create the submenu
 	if not subMenu then
 		local menuName = ISWorldObjectContextMenu.getMoveableDisplayName(isoObject) or isoObject:getFluidUiName();
@@ -62,13 +57,20 @@ function ISFeedingTroughMenu.OnFillWorldObjectContextMenu(player, context, world
 			subMenu:addDebugOption("Remove Food", playerObj, ISFeedingTroughMenu.onRemoveFoodDebug, isoObject);
 		end
 
-		subMenu:addDebugOption("Add Water", playerObj, ISFeedingTroughMenu.onAddWaterDebug, isoObject);
+        local waterAmount = isoObject:getWater()
+        if waterAmount < isoObject:getMaxWater() then
+            subMenu:addDebugOption("Add Water", playerObj, ISFeedingTroughMenu.onAddWaterDebug, isoObject);
+        end
+        if waterAmount > 0 then
+            subMenu:addDebugOption("Remove Water", playerObj, ISFeedingTroughMenu.onRemoveWaterDebug, isoObject);
+        end
 	end
 
 	return true
 end
 
-ISFeedingTroughMenu.onAddWaterDebug = function(playerObj, isoObject)
+ISFeedingTroughMenu.onAddWaterDebug = function(playerObj, isoObject, fluid)
+    fluid = fluid or Fluid.Get(FluidType.TaintedWater)
     if isClient() then
         local x;
         local y;
@@ -84,7 +86,8 @@ ISFeedingTroughMenu.onAddWaterDebug = function(playerObj, isoObject)
         sendClientCommandV(playerObj, "feedingThrough", "addWaterDebug",
         			"x", x,
         			"y", y,
-        			"z", isoObject:getZ());
+        			"z", isoObject:getZ(),
+        			"fluidTypeStr", fluid:getFluidTypeString());
     else
         if isoObject:getContainer() then
         	isoObject:getContainer():removeAllItems();
@@ -94,8 +97,26 @@ ISFeedingTroughMenu.onAddWaterDebug = function(playerObj, isoObject)
         	isoObject:createFluidContainer();
         end
 
-        isoObject:addWater(FluidType.TaintedWater, isoObject:getMaxWater());
+        isoObject:addWater(fluid:getFluidType(), isoObject:getMaxWater());
         isoObject:checkOverlayAfterAnimalEat();
+    end
+end
+
+ISFeedingTroughMenu.onRemoveWaterDebug = function(playerObj, isoObject)
+    if isClient() then
+        local x
+        local y
+        if isoObject:getLinkedX() > 0 and isoObject:getLinkedY() > 0 then
+            x = isoObject:getLinkedX()
+            y = isoObject:getLinkedY()
+        else
+            x = isoObject:getX()
+            y = isoObject:getY()
+        end
+        sendClientCommandV(playerObj, "feedingThrough", "removeWaterDebug", "x", x, "y", y, "z", isoObject:getZ())
+    else
+        isoObject:removeWater(isoObject:getWater() + 1)
+        isoObject:checkOverlayAfterAnimalEat()
     end
 end
 

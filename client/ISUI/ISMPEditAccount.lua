@@ -6,14 +6,13 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local ENTRY_HGT = FONT_HGT_SMALL + 3 * 2
-local COMBO_HGT = FONT_HGT_SMALL + 3 * 2
-local TICKBOX_HGT = FONT_HGT_SMALL + 3 * 2
+local ENTRY_HGT = FONT_HGT_MEDIUM + 6
+local QR_CODE_HGT = 180
 
 function ISMPEditAccount:initialise()
 	ISPanel.initialise(self);
 
-    self.login = ISTextEntryBox:new("", 59, UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, ENTRY_HGT);
+    self.login = ISTextEntryBox:new("", UI_BORDER_SPACING+2, UI_BORDER_SPACING+2+FONT_HGT_MEDIUM, self:getWidth() - (UI_BORDER_SPACING+2)*2, ENTRY_HGT);
     self.login.font = UIFont.Medium
     self.login:initialise();
     self.login:instantiate();
@@ -21,18 +20,20 @@ function ISMPEditAccount:initialise()
     self.login.onOtherKey = ISMPEditAccount.onOtherKey
     self.login.onCommandEntered = ISMPEditAccount.onCommandEntered;
     self.login.target = self;
+    self.login:setAnchorRight(true);
     self:addChild(self.login);
 
-    self.authType = ISComboBox:new(59, self.login:getBottom() + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, COMBO_HGT, self, self.onComboAuthType);
+    self.authType = ISComboBox:new(self.login:getX(), self.login:getBottom()+UI_BORDER_SPACING+FONT_HGT_MEDIUM, self.login:getWidth(), ENTRY_HGT, self, self.onComboAuthType);
     self.authType.internal = "AUTHTYPE";
     self.authType:initialise();
     self.authType:instantiate();
     self.authType.choicesColor = {r=1, g=1, b=1, a=1}
     self.authType:addOption(getText("UI_servers_auth_password"))
     self.authType.image = self.ui_droplist
+    self.authType:setAnchorRight(true);
     self:addChild(self.authType);
 
-    self.password = ISTextEntryBox:new("", 59, self.authType:getBottom() + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 322, ENTRY_HGT);
+    self.password = ISTextEntryBox:new("", self.login:getX(), self.authType:getBottom()+UI_BORDER_SPACING+FONT_HGT_MEDIUM, self.login:getWidth(), ENTRY_HGT);
     self.password.font = UIFont.Medium
     self.password:initialise();
     self.password:instantiate();
@@ -40,17 +41,20 @@ function ISMPEditAccount:initialise()
     self.password.onOtherKey = ISMPEditAccount.onOtherKey
     self.password.onCommandEntered = ISMPEditAccount.onCommandEntered;
     self.password.target = self;
+    self.password:setAnchorRight(true);
     self:addChild(self.password);
 
-    self.seePasswordBtn = ISButton:new(348, self.password.y, 33, BUTTON_HGT, "", self, ISMPEditAccount.onClick);
+    self.seePasswordBtn = ISButton:new(self.password:getRight()-ENTRY_HGT, self.password:getY(), ENTRY_HGT, ENTRY_HGT, "", self, ISMPEditAccount.onClick);
     self.seePasswordBtn.internal = "SEE";
     self.seePasswordBtn:setImage(self.ui_password_eye)
     self.seePasswordBtn:forceImageSize(22, 16)
     self.seePasswordBtn:initialise();
     self.seePasswordBtn:instantiate();
+    self.seePasswordBtn:setAnchorLeft(false);
+    self.seePasswordBtn:setAnchorRight(true);
     self:addChild(self.seePasswordBtn);
 
-    self.rememberPasswordTickBox = ISTickBox:new(59, self.password:getBottom() + UI_BORDER_SPACING, TICKBOX_HGT, TICKBOX_HGT, "");
+    self.rememberPasswordTickBox = ISTickBox:new(59, self.password:getBottom()+UI_BORDER_SPACING, ENTRY_HGT, ENTRY_HGT, "");
     self.rememberPasswordTickBox.internal = "REMEMBER";
     self.rememberPasswordTickBox:initialise();
     self.rememberPasswordTickBox:instantiate();
@@ -59,24 +63,24 @@ function ISMPEditAccount:initialise()
     self.rememberPasswordTickBox:setSelected(1, true)
     self:addChild(self.rememberPasswordTickBox);
 
-    local addBelow = self.rememberPasswordTickBox
+    self.addBelow = self.rememberPasswordTickBox
     if getSteamModeActive() then
-        self.steamRelayTickBox = ISTickBox:new(59, self.rememberPasswordTickBox:getBottom() + 4, TICKBOX_HGT, TICKBOX_HGT, "");
+        self.steamRelayTickBox = ISTickBox:new(59, self.rememberPasswordTickBox:getBottom()+UI_BORDER_SPACING, ENTRY_HGT, ENTRY_HGT, "");
         self.steamRelayTickBox.internal = "STEAMRELAY";
         self.steamRelayTickBox:initialise();
         self.steamRelayTickBox:instantiate();
         self.steamRelayTickBox.choicesColor = {r=1, g=1, b=1, a=1}
         self.steamRelayTickBox:addOption(getText("UI_servers_useSteamRelay"))
         self:addChild(self.steamRelayTickBox);
-        addBelow = self.steamRelayTickBox
+        self.addBelow = self.steamRelayTickBox
     end
 
-    self.googleAuthPopup = ISPanel:new(59-20, addBelow:getBottom() + UI_BORDER_SPACING, 322+40, 350);
+    self.googleAuthPopup = ISPanel:new(self.login:getX(), self.addBelow:getBottom()+UI_BORDER_SPACING, self.login:getWidth(), BUTTON_HGT + QR_CODE_HGT + FONT_HGT_MEDIUM + UI_BORDER_SPACING*3 + 1);
     self.googleAuthPopup.internal = "googleAuthPopup";
     self.googleAuthPopup:initialise();
     self.googleAuthPopup:instantiate();
     self.googleAuthPopup.choicesColor = {r=1, g=1, b=1, a=1}
-    self.googleAuthPopup:setAnchorLeft(false);
+    self.googleAuthPopup:setAnchorLeft(true);
     self.googleAuthPopup:setAnchorRight(true);
     self.googleAuthPopup:setAnchorTop(true);
     self.googleAuthPopup:setAnchorBottom(false);
@@ -84,13 +88,13 @@ function ISMPEditAccount:initialise()
     self.googleAuthPopup:setVisible(true);
     self:addChild(self.googleAuthPopup);
 
-    self.googleAuthLabel = ISLabel:new(0, 30, 18, getText("UI_servers_send_QR_Label"), 1, 1, 1, 1, UIFont.Medium, true);
+    self.googleAuthLabel = ISLabel:new(0, 0, FONT_HGT_MEDIUM, getText("UI_servers_send_QR_Label"), 1, 1, 1, 1, UIFont.Medium, true);
     self.googleAuthLabel:initialise();
     self.googleAuthLabel:instantiate();
     self.googleAuthLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthLabel:getWidth()/2);
     self.googleAuthPopup:addChild(self.googleAuthLabel);
 
-    self.googleAuthButton = ISButton:new(10, self.googleAuthPopup:getHeight()-52, 93, BUTTON_HGT, getText("UI_servers_send_QR"), self, ISMPEditAccount.onClick);
+    self.googleAuthButton = ISButton:new(10, self.googleAuthPopup:getHeight()-BUTTON_HGT - UI_BORDER_SPACING - 1, 93, BUTTON_HGT, getText("UI_servers_send_QR"), self, ISMPEditAccount.onClick);
     self.googleAuthButton.internal = "QR";
     self.googleAuthButton:initialise();
     self.googleAuthButton:instantiate();
@@ -104,27 +108,31 @@ function ISMPEditAccount:initialise()
         ISPanel.render(self)
         self:drawTextCentre(self.statusLabel, self.width / 2, 60, 1, 1.0, 1.0, 1, UIFont.Large);
         if self.qrTexture then
-            self:drawTexture(self.qrTexture, self.width / 2 - self.qrTexture:getWidth()/2, 90, 1, 1, 1, 1)
+            self:drawTexture(self.qrTexture, self.width / 2 - self.qrTexture:getWidth()/2, FONT_HGT_MEDIUM+UI_BORDER_SPACING, 1, 1, 1, 1)
         end
     end
     self.googleAuthPopup:setVisible(false);
 
-    self.cancelBtn = ISButton:new(60, addBelow:getBottom() + UI_BORDER_SPACING, 93, BUTTON_HGT, getText("UI_servers_cancel"), self, ISMPEditAccount.onClick);
+    local btnWidth = UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_cancel")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_save")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_button_connect"))
+    )
+    self.cancelBtn = ISButton:new(UI_BORDER_SPACING+2 , self:getHeight() - UI_BORDER_SPACING-2, btnWidth, BUTTON_HGT, getText("UI_servers_cancel"), self, ISMPEditAccount.onClick);
     self.cancelBtn.internal = "CANCEL";
     self.cancelBtn:initialise();
     self.cancelBtn:instantiate();
     self.cancelBtn:enableCancelColor()
     self:addChild(self.cancelBtn);
 
-    self.saveBtn = ISButton:new(self:getWidth() - 60 - 93, self.cancelBtn.y, 93, BUTTON_HGT, getText("UI_servers_save"), self, ISMPEditAccount.onClick);
+    self.saveBtn = ISButton:new(self:getWidth() - UI_BORDER_SPACING - btnWidth-2, self.cancelBtn:getY(), btnWidth, BUTTON_HGT, getText("UI_servers_save"), self, ISMPEditAccount.onClick);
     self.saveBtn.internal = "SAVE";
     self.saveBtn:initialise();
     self.saveBtn:instantiate();
     self.saveBtn:enableAcceptColor()
+    self.saveBtn:setAnchorLeft(false);
+    self.saveBtn:setAnchorRight(true);
     self:addChild(self.saveBtn);
-
-    self:setHeight(self.saveBtn:getBottom() + UI_BORDER_SPACING)
-    self.originalHeight = self.height
 
     if self.account then
         self.login:setText(self.account:getUserName())
@@ -147,23 +155,44 @@ function ISMPEditAccount:initialise()
 
     ISMPEditAccount.instance = self
 
+    self:setWidth(UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, self.servers_serveripmessage_lines[0]),
+        getTextManager():MeasureStringX(UIFont.Medium, self.servers_serveripmessage_lines[1]),
+        getTextManager():MeasureStringX(UIFont.Medium, self.servers_serveripwarning_lines[0]),
+        getTextManager():MeasureStringX(UIFont.Medium, self.servers_serveripwarning_lines[1])
+    ))
+    self:setHeight(self.addBelow:getBottom() + UI_BORDER_SPACING*3 + FONT_HGT_MEDIUM*2 + 2 + BUTTON_HGT)
+    self:setX ( (getCore():getScreenWidth() - self:getWidth()) / 2);
+    self:setY ( (getCore():getScreenHeight() - self:getHeight()) / 2);
+
+    local tickboxX = (UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, getText("UI_servers_remember_password")),
+        getTextManager():MeasureStringX(UIFont.Medium, getText("UI_servers_useSteamRelay"))
+    ))
+
+    self.rememberPasswordTickBox:setX((self.width-tickboxX)/2)
+    if getSteamModeActive() then
+        self.steamRelayTickBox:setX(self.rememberPasswordTickBox:getX())
+    end
+
     self.login:focus()
 end
 
 function ISMPEditAccount:onComboAuthType()
     if self.authType.selected ~= 1 and self.authType:isEnabled() then
+        self:setHeight(self.googleAuthPopup:getBottom() + UI_BORDER_SPACING*3 + FONT_HGT_MEDIUM*2 + 2 + BUTTON_HGT);
         self.googleKey = generateSecretKey();
         self.googleAuthPopup.qrTexture = createQRCodeTex(self.login:getInternalText():trim(),self.googleKey)
         self.googleAuthPopup:setVisible(true);
         self.googleAuthButton:setEnable(true)
         self.googleAuthButton:setX((self.googleAuthPopup:getWidth() - self.googleAuthButton:getWidth())/2);
-        self:setHeight(self.originalHeight + self.googleAuthPopup.height + UI_BORDER_SPACING);
+        self.googleAuthLabel:setX(self.googleAuthPopup:getWidth()/2 - self.googleAuthLabel:getWidth()/2);
     else
-        self:setHeight(self.originalHeight);
+        self:setHeight(self.addBelow:getBottom() + UI_BORDER_SPACING*3 + FONT_HGT_MEDIUM*2 + 2 + BUTTON_HGT)
         self.googleAuthPopup:setVisible(false);
     end
-    self.saveBtn:setY(self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT)
-    self.cancelBtn:setY(self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT)
+    self.saveBtn:setY(self:getHeight() - UI_BORDER_SPACING-2 - BUTTON_HGT)
+    self.cancelBtn:setY(self:getHeight() - UI_BORDER_SPACING-2 - BUTTON_HGT)
     self:setX ( (getCore():getScreenWidth() - self:getWidth()) / 2);
     self:setY ( (getCore():getScreenHeight() - self:getHeight()) / 2);
 end
@@ -246,20 +275,19 @@ function ISMPEditAccount:prerender()
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	self:drawRectBorder(1, 1, self.width-2, self.height-2, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawText(getText("UI_servers_login"), 70, self.login.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_servers_authentication_type"), 70, self.authType.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
-	self:drawText(getText("UI_servers_password"), 70, self.password.y - FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_login"), self.login:getX(), self.login:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_authentication_type"), self.authType:getX(), self.authType:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
+	self:drawText(getText("UI_servers_password"), self.password:getX(), self.password:getY()-FONT_HGT_MEDIUM, 1, 1, 1, 1, UIFont.Medium);
 
-    if getSteamModeActive() then
-        local useSteamRelay = self.steamRelayTickBox.selected[1]
-        if (useSteamRelay) then
-            self:drawTextCentre(self.servers_serveripmessage_lines[0], self.width / 2, self.height + UI_BORDER_SPACING, 0.9, 0.9, 0.9, 1, UIFont.Medium);
-            self:drawTextCentre(self.servers_serveripmessage_lines[1], self.width / 2, self.height + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 0.9, 0.9, 0.9, 1, UIFont.Medium);
-        else
-            self:drawTextCentre(self.servers_serveripwarning_lines[0], self.width / 2, self.height + UI_BORDER_SPACING, 0.9, 0.9, 0.9, 1, UIFont.Medium);
-            self:drawTextCentre(self.servers_serveripwarning_lines[1], self.width / 2, self.height + UI_BORDER_SPACING + FONT_HGT_MEDIUM, 0.9, 0.9, 0.9, 1, UIFont.Medium);
-        end
+    local QRspacing = 0
+    if self.googleAuthPopup:getIsVisible() then
+        QRspacing = self.googleAuthPopup:getHeight() + UI_BORDER_SPACING
     end
+
+    self:drawTextCentre(self.servers_serveripwarning_lines[0], self.width / 2, self.addBelow:getBottom() + UI_BORDER_SPACING + QRspacing, 0.9, 0.9, 0.9, 1, UIFont.Medium);
+    self:drawTextCentre(self.servers_serveripwarning_lines[1], self.width / 2, self.addBelow:getBottom() + UI_BORDER_SPACING + FONT_HGT_MEDIUM + QRspacing, 0.9, 0.9, 0.9, 1, UIFont.Medium);
+
+
     if not self.isPasswordModified then
         self.seePasswordBtn:setVisible(false)
     else
@@ -303,7 +331,7 @@ function ISMPEditAccount:render()
         self.isPasswordModified = true
     end
     if not self.isPasswordModified then
-        self:drawText(getText("UI_Server_Passwort_Hint"), 59+5, self.password.y + 3, 1, 1, 1, 1, UIFont.Medium);
+        self:drawText(getText("UI_Server_Passwort_Hint"), self.password:getX() + UI_BORDER_SPACING, self.password:getY() + (ENTRY_HGT-FONT_HGT_MEDIUM)/2, 1, 1, 1, 1, UIFont.Medium);
     end
 
     if self.connectAfter then

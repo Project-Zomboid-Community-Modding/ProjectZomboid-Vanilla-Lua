@@ -16,7 +16,7 @@ function ISFactionsList:initialise()
     self.no.anchorBottom = true
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM+1

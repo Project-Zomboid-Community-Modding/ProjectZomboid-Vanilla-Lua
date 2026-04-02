@@ -49,7 +49,7 @@ function ISMoveablesAction:isValid()
         self:stop();
         return false;
     end;
-    if not ISMoveableDefinitions.cheat then
+    if not ISMoveableDefinitions.cheat and not self.character:isMovablesCheat() then
         --ensure the player hasn't moved too far away while the action was in queue
         local diffX = math.abs(self.square:getX() + 0.5 - self.character:getX());
         local diffY = math.abs(self.square:getY() + 0.5 - self.character:getY());
@@ -222,7 +222,7 @@ function ISMoveablesAction:complete()
 end
 
 function ISMoveablesAction:getDuration()
-    if self.character:isTimedActionInstant() or ISMoveableDefinitions.cheat then
+    if self.character:isTimedActionInstant() or self.character:isMovablesCheat() or ISMoveableDefinitions.cheat then
         return 1;
     end
     if self.moveProps and self.moveProps.isMoveable and self.mode and self.mode~="rotate" and self.mode~= "scrap" and self.mode~="repair" then

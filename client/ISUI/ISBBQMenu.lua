@@ -4,6 +4,85 @@ local function predicateNotEmpty(item)
 	return item:getCurrentUsesFloat() > 0
 end
 
+function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
+
+	if test and ISWorldObjectContextMenu.Test then return true end
+	local playerObj = getSpecificPlayer(player)
+	if playerObj:getVehicle() then return end
+
+	local bbq = nil
+
+	for _,object in ipairs(worldobjects) do
+		local square = object:getSquare()
+		if square then
+			local index = square:getNextNonItemObjectIndex(0)
+			while index >= 0 and index < square:getObjects():size() do
+				local object2 = square:getObjects():get(index)
+				index = square:getNextNonItemObjectIndex(index + 1)
+				if object2:isFireInteractionObject() then
+					bbq = object2
+                end
+			end
+		end
+	end
+
+	if not bbq then return end
+	if test then return ISWorldObjectContextMenu.setTest() end
+
+    local bbqOption = context:addOption(bbq:getTileName(), worldobjects, nil);
+    local tile = bbq:getSpriteName();
+    if tile then
+        bbqOption.iconTexture = getTexture(tile):splitIcon();
+    end
+    local bbqMenu = ISContextMenu:getNew(context);
+    context:addSubMenu(bbqOption, bbqMenu);
+
+	if playerObj:DistToSquared(bbq:getX() + 0.5, bbq:getY() + 0.5) < 2 * 2 then
+        local fireState;
+        if bbq:isLit() then
+            fireState = getText("IGUI_Fireplace_Burning")
+        elseif bbq:isSmouldering() then
+            fireState = getText("IGUI_Fireplace_Smouldering")
+        else
+            fireState = getText("IGUI_Fireplace_Unlit")
+        end
+		local text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(bbq:getFuelAmount())) .. " (" .. fireState .. ")"
+		if bbq:isPropaneBBQ() and not bbq:hasPropaneTank() then
+			text = text .. " <LINE> <RGB:1,0,0> " .. getText("IGUI_BBQ_NeedsPropaneTank")
+		end
+        local option = bbqMenu:addOption(text, worldobjects, ISBBQMenu.onDisplayInfo, player, bbq)
+	end
+
+    if bbq:isPropaneBBQ() then
+            if bbq:hasFuel() then
+            if bbq:isLit() then
+                bbqMenu:addOption(getText("ContextMenu_Turn_Off"), worldobjects, ISBBQMenu.onToggle, player, bbq)
+            else
+                bbqMenu:addOption(getText("ContextMenu_Turn_On"), worldobjects, ISBBQMenu.onToggle, player, bbq)
+            end
+        end
+        local tank = ISBBQMenu.FindPropaneTank(playerObj, bbq)
+        if tank then
+            bbqMenu:addOption(getText("ContextMenu_Insert_Propane_Tank"), worldobjects, ISBBQMenu.onInsertPropaneTank, player, bbq, tank)
+        end
+        if bbq:isPropaneBBQ() and bbq:hasPropaneTank() then
+            if test then return ISWorldObjectContextMenu.setTest() end
+            bbqMenu:addOption(getText("ContextMenu_Remove_Propane_Tank"), worldobjects, ISBBQMenu.onRemovePropaneTank, player, bbq)
+        end
+        return
+    end
+
+	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
+	ISCampingMenu.doAddFuelOption(bbqMenu, worldobjects, bbq:getFuelAmount(), fuelInfo, bbq, ISBBQAddFuel)
+
+	if bbq:isLit() then
+		bbqMenu:addOption(campingText.putOutCampfire, worldobjects, ISBBQMenu.onExtinguish, player, bbq)
+	else
+		ISCampingMenu.doLightFireOption(playerObj, bbqMenu, worldobjects, bbq:hasFuel(),
+				fuelInfo, bbq, ISBBQLightFromPetrol, ISBBQLightFromLiterature, ISBBQLightFromKindle)
+	end
+end
+
 function ISBBQMenu.onDisplayInfo(worldobjects, player, bbq)
 	local playerObj = getSpecificPlayer(player)
 	if not AdjacentFreeTileFinder.isTileOrAdjacent(playerObj:getCurrentSquare(), bbq:getSquare()) then

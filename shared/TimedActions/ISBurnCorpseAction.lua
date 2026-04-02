@@ -61,6 +61,7 @@ end
 function ISBurnCorpseAction:complete()
     self.character:burnCorpse(self.corpse);
     self.petrol:getFluidContainer():adjustAmount(self.petrol:getFluidContainer():getAmount() - ZomboidGlobals.BurnCorpsePetrolAmount);
+    sendItemStats(self.petrol);
     self.lighter:UseAndSync();
 
     return true;

@@ -21,6 +21,12 @@ function ISLabel:setName(name)
 	end
 end
 
+function ISLabel:setNameWithoutMoving(name)
+    if self.name == name then return end
+    self.name = name
+    self:setWidth(getTextManager():MeasureStringX(self.font, name))
+end
+
 function ISLabel:setWidthToName(minWidth)
 	local width = getTextManager():MeasureStringX(self.font, self.name)
 	width = math.max(width, minWidth or 0)

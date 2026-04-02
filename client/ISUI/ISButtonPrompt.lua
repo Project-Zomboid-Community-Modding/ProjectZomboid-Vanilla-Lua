@@ -547,18 +547,18 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
         if obj:isDestroyed() then
             -- nothing
         elseif obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.closeDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Close_door"), nil, nil)
         else
-            self:setAPrompt(getText("ContextMenu_Open_door"), ISButtonPrompt.openDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Open_door"), nil, nil)
         end
         return
     end
 
     if instanceof(obj, "IsoThumpable") and obj:isDoor() then
         if obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), ISButtonPrompt.closeDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Close_door"), nil, nil)
         else
-            self:setAPrompt(getText("ContextMenu_Open_door"), ISButtonPrompt.openDoor, obj)
+            self:setAPrompt(getText("ContextMenu_Open_door"), nil, nil)
         end
         return
     end
@@ -567,9 +567,9 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
         if obj:isDestroyed() or obj:getBarricadeForCharacter(playerObj) then
             -- nothing
         elseif obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_window"), ISButtonPrompt.closeWindow, obj)
+            self:setAPrompt(getText("ContextMenu_Close_window"), nil, nil)
         elseif not obj:getSprite() or not obj:getSprite():getProperties():has("WindowLocked") then
-            self:setAPrompt(getText("ContextMenu_Open_window"), ISButtonPrompt.openWindow, obj)
+            self:setAPrompt(getText("ContextMenu_Open_window"), nil, nil)
         end
         return
     end

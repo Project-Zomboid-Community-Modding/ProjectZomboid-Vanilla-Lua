@@ -12,7 +12,7 @@ function ISUnloadBulletsFromFirearm:start()
 	end
 	self.gun:setJobType(getText("IGUI_JobType_UnloadBulletsFromFirearm"))
 	self:setActionAnim(CharacterActionAnims.Reload)
-	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
+	self:setAnimVariable("WeaponReloadType", tostring(self.gun:getWeaponReloadType()))
 	self:setAnimVariable("isUnloading", true)
 	self.ammoCountStart = self.gun:getCurrentAmmoCount()
 	self.gun:setJobDelta(0.0)

@@ -67,11 +67,15 @@ function ISInflateTire:complete()
         self.vehicle:transmitPartModData(self.part)
     else
         print('no such vehicle id=',self.vehicle)
+        return false
     end
     return true
 end
 
 function ISInflateTire:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
     if self.character:isTimedActionInstant() then
        return 1
     end
@@ -80,10 +84,12 @@ end
 
 function ISInflateTire:new(character, part, item, psiTarget)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	    o.psiStart = part:getContainerContentAmount()
+	end
 	o.item = item
-	o.psiStart = part:getContainerContentAmount()
 	o.psiTarget = psiTarget
 	o.stopOnWalk = true
 	o.stopOnRun = true

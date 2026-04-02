@@ -241,18 +241,13 @@ end
 
 function ISAdminPanelUI:onOptionMouseDown(button, x, y)
     if button.internal == "ADMINPOWER" then
-        if ISAdminPowerUI.instance then
-            ISAdminPowerUI.instance:close()
-        end
-        local modal = ISAdminPowerUI:new(50, 200, 480, 350, getPlayer())
-        modal:initialise();
-        modal:addToUIManager();
+        ISAdminPowerUI.OnOpenPanel()
     end
     if button.internal == "ITEMLIST" then
         if ISItemsListViewer.instance then
             ISItemsListViewer.instance:close()
         end
-        local modal = ISItemsListViewer:new(50, 200, 1050+(getCore():getOptionFontSizeReal()*50), 650+(getCore():getOptionFontSizeReal()*50), getPlayer())
+        local modal = ISItemsListViewer:new(50, 200, 1050+(getCore():getOptionFontSizeReal()*100), 650+(getCore():getOptionFontSizeReal()*50), getPlayer())
         modal:initialise();
         modal:addToUIManager();
     end
@@ -303,7 +298,7 @@ function ISAdminPanelUI:onOptionMouseDown(button, x, y)
         if ISUsersList.instance then
             ISUsersList.instance:closeModal()
         end
-        local ui = ISUsersList:new(50,50,800,600, getPlayer());
+        local ui = ISUsersList:new(50,50,800+(getCore():getOptionFontSizeReal()*50),600, getPlayer());
         ui:initialise();
         ui:addToUIManager();
     end

@@ -45,13 +45,11 @@ end
 function ISGiveWaterToAnimal:start()
 	self.animal:getBehavior():setBlockMovement(true);
 
-	self:setAnimVariable("FoodType", self.item:getEatType());
-	self:setActionAnim("fill_container_tap");
-	if not self.item:getEatType() then
-		self:setOverrideHandModels(nil, self.item:getStaticModel())
-	else
-		self:setOverrideHandModels(self.item:getStaticModel(), nil)
-	end
+    if self.animal:isExistInTheWorld() then
+        self:setActionAnim(self.animal:getFeedByHandAnim())
+        self.character:faceThisObject(self.animal)
+        self:setOverrideHandModels(self.item:getStaticModel(), nil)
+    end
 	self.sound = self.character:playSound("GiveWaterAnimal")
 end
 

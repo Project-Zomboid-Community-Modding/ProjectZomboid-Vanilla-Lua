@@ -13,11 +13,7 @@ function ISWriteSomething:isValid()
     if vehicle and vehicle:isDriver(self.character) then
         return not vehicle:isEngineRunning() or vehicle:getSpeed2D() == 0
     end
-    if isClient() and self.item then
-        return self.container:containsID(self.item:getID()) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
-    else
-        return self.container:containsID(self.item:getID()) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
-    end
+    return (not self.container or self.container:containsID(self.item:getID())) and ((self.item:getNumberOfPages() > 0 and self.item:getAlreadyReadPages() <= self.item:getNumberOfPages()) or self.item:getNumberOfPages() < 0);
 end
 
 function ISWriteSomething:update()
@@ -26,7 +22,7 @@ end
 
 
 function ISWriteSomething:start()
-    if isClient() and self.item then
+    if isClient() and self.item and self.container then
         self.item = self.container:getItemById(self.item:getID())
     end
 

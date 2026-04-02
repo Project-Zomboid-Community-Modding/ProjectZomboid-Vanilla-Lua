@@ -959,7 +959,7 @@ function onJoypadActivateNotifyPlayer(joypadData)
     local playerObj = getSpecificPlayer(playerNum)
     if not playerObj then return end
 
-    setPlayerJoypad(playerNum, joypadData.id, playerObj, nil)
+    setPlayerJoypad(playerNum, joypadData.id, playerObj, nil, false)
 end
 
 function onJoypadActivateUI(id)
@@ -1125,7 +1125,7 @@ JoypadState.onGameStart = function()
         joypadData.player = playerNum
         JoypadState.players[playerNum+1] = joypadData
         local playerObj = getSpecificPlayer(playerNum)
-        setPlayerJoypad(playerNum, joypadData.id, playerObj, nil)
+        setPlayerJoypad(playerNum, joypadData.id, playerObj, nil, false)
         createPlayerData(playerNum)
         -- FIXME: obsolete?
         getPlayerInventory(playerNum):setController(joypadData.id)

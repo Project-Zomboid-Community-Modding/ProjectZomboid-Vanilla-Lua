@@ -1391,7 +1391,7 @@ function ISVehicleMenu.processShiftEnter(playerObj, vehicle, seat)
 	else
 		if not vehicle:isSeatInstalled(0) or not vehicle:isSeatInstalled(seat) then
 			-- playerObj:Say(getText("IGUI_PlayerText_VehicleSeatRemoved"))
-			HaloTextHelper.addBadText(playerObj, getText("IIGUI_PlayerText_VehicleSeatRemoved"));
+			HaloTextHelper.addBadText(playerObj, getText("IGUI_PlayerText_VehicleSeatRemoved"));
 -- 			HaloTextHelper.addText(playerObj, getText("IIGUI_PlayerText_VehicleSeatRemoved"), getCore():getGoodHighlitedColor());
 		elseif not vehicle:canSwitchSeat(seat, 0) then
 			ISVehicleMenu.processEnter(playerObj, vehicle, 0)

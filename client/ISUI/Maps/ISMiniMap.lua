@@ -103,6 +103,9 @@ function ISMiniMapOptionsPanel:getVisibleOptions()
 	local optionNames = {}
 	table.insert(optionNames, "Isometric")
 	table.insert(optionNames, "Symbols")
+	if isClient() then
+		table.insert(optionNames, "RemoteSymbols")
+	end
 	if TERRAIN_IMAGE then
 	    table.insert(optionNames, "TerrainImage")
 	end
@@ -119,7 +122,7 @@ function ISMiniMapOptionsPanel:getVisibleOptions()
 end
 
 function ISMiniMapOptionsPanel:isMultiplayerOption(optionName)
-	return optionName == "RemotePlayers" or optionName == "PlayerNames"
+	return optionName == "RemotePlayers" or optionName == "PlayerNames" or optionName == "RemoteSymbols"
 end
 
 function ISMiniMapOptionsPanel:synchUI()

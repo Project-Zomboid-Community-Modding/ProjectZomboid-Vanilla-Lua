@@ -3,6 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISDrinkFluidAction = ISBaseTimedAction:derive("ISDrinkFluidAction");
 
 function ISDrinkFluidAction:isValidStart()
+	if self.fluidContainer:isEmpty() then return false end
 	return self.character:getMoodles():getMoodleLevel(MoodleType.FOOD_EATEN) < 3 -- or self.character:getNutrition():getCalories() < 1000
 end
 
@@ -11,6 +12,7 @@ function ISDrinkFluidAction:waitToStart()
 end
 
 function ISDrinkFluidAction:isValid()
+	if self.fluidContainer:isEmpty() then return false end
 	if self.item:getWorldItem() ~= nil and self.item:getWorldItem():getFluidContainer() == self.fluidContainer then
 		return true;
 	end

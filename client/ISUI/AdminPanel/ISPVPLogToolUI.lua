@@ -2,6 +2,7 @@ ISPVPLogToolUI = ISPanel:derive("ISPVPLogToolUI");
 ISPVPLogToolUI.instance = nil
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
@@ -10,10 +11,26 @@ function ISPVPLogToolUI:initialise()
 
     requestPVPEvents()
 
-    local buttonWidth = 100
-    local tickBoxWidth = 150
+    --events
+    self.pvpEvents = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM + UI_BORDER_SPACING*2, self.width - UI_BORDER_SPACING*2-2, 10*BUTTON_HGT);
+    self.pvpEvents:initialise();
+    self.pvpEvents:instantiate();
+    self.pvpEvents.itemheight = BUTTON_HGT
+    self.pvpEvents.selected = 0;
+    self.pvpEvents.joypadParent = self;
+    self.pvpEvents.font = UIFont.Small;
+    self.pvpEvents.doDrawItem = self.drawEvents;
+    self.pvpEvents.onmousedown = self.onSelect
+    self.pvpEvents.drawBorder = true;
+    self:addChild(self.pvpEvents);
 
-    self.tickBox = ISTickBox:new(UI_BORDER_SPACING + 10, FONT_HGT_SMALL * 4, tickBoxWidth, BUTTON_HGT, "PVPLog", self, self.onTicked)
+    --tickboxes
+    local tickboxWidth = math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PVPLogTool_SendToChat")),
+        getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_PVPLogTool_WriteToFile"))
+    )
+
+    self.tickBox = ISTickBox:new((self.width-tickboxWidth)/2, self.pvpEvents:getBottom() + UI_BORDER_SPACING, tickboxWidth, BUTTON_HGT, "PVPLog", self, self.onTicked)
     self.tickBox.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBox:setFont(UIFont.Small)
     self:addChild(self.tickBox)
@@ -26,16 +43,23 @@ function ISPVPLogToolUI:initialise()
         self.tickBox:setSelected(n, getServerOptions():getBoolean("PVPLogToolFile"))
     end
 
-    self.close = ISButton:new(UI_BORDER_SPACING * 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, buttonWidth, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISPVPLogToolUI.onClick);
+    --buttons
+    local btnWidth = UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_RolesList_Close")),
+        getTextManager():MeasureStringX(UIFont.Medium, getText("UI_chat_Clear")),
+    getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_UserList_Teleport"))
+    )
+
+    self.close = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISPVPLogToolUI.onClick);
     self.close.internal = "CLOSE";
     self.close.anchorTop = false
     self.close.anchorBottom = true
     self.close:initialise();
     self.close:instantiate();
-    self.close.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.close:enableCancelColor();
     self:addChild(self.close);
 
-    self.clear = ISButton:new(self.width - buttonWidth - UI_BORDER_SPACING * 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, buttonWidth, BUTTON_HGT, getText("UI_chat_Clear"), self, ISPVPLogToolUI.onClick);
+    self.clear = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING-1, self.close:getY(), btnWidth, BUTTON_HGT, getText("UI_chat_Clear"), self, ISPVPLogToolUI.onClick);
     self.clear.internal = "CLEAR";
     self.clear.anchorTop = false
     self.clear.anchorBottom = true
@@ -44,7 +68,7 @@ function ISPVPLogToolUI:initialise()
     self.clear.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.clear);
 
-    self.teleport = ISButton:new(self.width - buttonWidth - UI_BORDER_SPACING * 2 - buttonWidth - UI_BORDER_SPACING * 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, buttonWidth, BUTTON_HGT, getText("IGUI_UserList_Teleport"), self, ISPVPLogToolUI.onClick);
+    self.teleport = ISButton:new((self.width - btnWidth)/2, self.close:getY(), btnWidth, BUTTON_HGT, getText("IGUI_UserList_Teleport"), self, ISPVPLogToolUI.onClick);
     self.teleport.internal = "TELEPORT";
     self.teleport.anchorTop = false
     self.teleport.anchorBottom = true
@@ -53,18 +77,6 @@ function ISPVPLogToolUI:initialise()
     self.teleport.borderColor = {r=1, g=1, b=1, a=0.1};
     self.teleport:setVisible(false)
     self:addChild(self.teleport);
-
-    self.pvpEvents = ISScrollingListBox:new(UI_BORDER_SPACING + tickBoxWidth, FONT_HGT_SMALL * 4, self.width - tickBoxWidth - UI_BORDER_SPACING * 3, 10 * (FONT_HGT_SMALL + 4));
-    self.pvpEvents:initialise();
-    self.pvpEvents:instantiate();
-    self.pvpEvents.itemheight = FONT_HGT_SMALL + 4
-    self.pvpEvents.selected = 0;
-    self.pvpEvents.joypadParent = self;
-    self.pvpEvents.font = UIFont.Small;
-    self.pvpEvents.doDrawItem = self.drawEvents;
-    self.pvpEvents.onmousedown = self.onSelect
-    self.pvpEvents.drawBorder = true;
-    self:addChild(self.pvpEvents);
 
     local events = PVPLogTool.getEvents()
     for i=0,events:size()-1 do
@@ -102,7 +114,6 @@ function ISPVPLogToolUI:prerender()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(getText("IGUI_AdminPanel_PVPLogTool"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_PVPLogTool")) / 2), UI_BORDER_SPACING + 1, 1, 1, 1, 1, UIFont.Medium);
-    self:drawRect(UI_BORDER_SPACING * 2, UI_BORDER_SPACING * 2 + FONT_HGT_SMALL, self.width - UI_BORDER_SPACING * 4, 1, 0.5, 1, 1, 1);
     if getPlayer():getRole():hasCapability(Capability.TeleportToCoordinates) then
         self.teleport:setVisible(ISPVPLogToolUI.instance.selectedItem ~= nil)
     end

@@ -156,7 +156,11 @@ function ISStatisticsUI:createChildren()
     ISCollapsableWindow.createChildren(self)
 
     local y = self:titleBarHeight() + UI_BORDER_SPACING
-    local tickBoxWidth = 70
+    local tickBoxWidth = BUTTON_HGT + UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, "Performance"),
+        getTextManager():MeasureStringX(UIFont.Medium, "Network"),
+        getTextManager():MeasureStringX(UIFont.Medium, "Characters")
+    )
     local tickBoxHeight = getTextManager():getFontHeight(UIFont.Small)
     local width = self.width - SCROLLBAR;
 
@@ -165,12 +169,12 @@ function ISStatisticsUI:createChildren()
     self.tickBoxLeft:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxLeft)
 
-    self.tickBoxCenter = ISTickBox:new(width/2 - tickBoxWidth/2 + 10, y, tickBoxWidth, tickBoxHeight, "Settings center", self, self.onTickedCenter)
+    self.tickBoxCenter = ISTickBox:new(width/2 - tickBoxWidth/2 + UI_BORDER_SPACING, y, tickBoxWidth, tickBoxHeight, "Settings center", self, self.onTickedCenter)
     self.tickBoxCenter.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBoxCenter:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxCenter)
 
-    self.tickBoxRight = ISTickBox:new(width - tickBoxWidth - 10, y, tickBoxWidth, tickBoxHeight, "Settings right", self, self.onTickedRight)
+    self.tickBoxRight = ISTickBox:new(width - tickBoxWidth - UI_BORDER_SPACING, y, tickBoxWidth, tickBoxHeight, "Settings right", self, self.onTickedRight)
     self.tickBoxRight.choicesColor = {r=1, g=1, b=1, a=1}
     self.tickBoxRight:setFont(UIFont.NewSmall)
     self:addChild(self.tickBoxRight)
@@ -205,12 +209,21 @@ end
 function ISStatisticsUI:close()
     self:setVisible(false);
     self:removeFromUIManager();
-    self.player:setShowMPInfos(false)
     ISStatisticsUI.instance = nil
+    toggleStatisticsTransmission()
 end
 
 function ISStatisticsUI:prerender()
     ISCollapsableWindow.prerender(self);
+    local tickBoxWidth = BUTTON_HGT + UI_BORDER_SPACING + math.max(
+        getTextManager():MeasureStringX(UIFont.Medium, "Performance"),
+        getTextManager():MeasureStringX(UIFont.Medium, "Network"),
+        getTextManager():MeasureStringX(UIFont.Medium, "Characters")
+    )
+    local width = self.width - SCROLLBAR;
+    self.tickBoxRight:setX(width - tickBoxWidth - UI_BORDER_SPACING)
+    self.tickBoxCenter:setX(width/2 - tickBoxWidth/2 + UI_BORDER_SPACING)
+
 end
 
 function ISStatisticsUI:initialise()
@@ -223,7 +236,7 @@ function ISStatisticsUI:render()
 end
 
 function ISStatisticsUI:new(x, y, player)
-    local width = 300
+    local width = 300+(getCore():getOptionFontSizeReal()*100)
     local height = 730
     local o = ISCollapsableWindow.new(self, x, y, width, height)
     o.playerNum = player:getPlayerNum()
@@ -249,7 +262,7 @@ function ISStatisticsUI:new(x, y, player)
     o.showNetwork = true
     o.showCharacters = true
 
-    player:setShowMPInfos(true)
     ISStatisticsUI.instance = o
+    toggleStatisticsTransmission()
     return o;
 end

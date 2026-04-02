@@ -287,6 +287,24 @@ Commands.object.setWaterAmount = function(player, args)
 	obj:transmitModData()
 end
 
+Commands.object.addFluidDebug = function(player, args)
+	local sq = getCell():getGridSquare(args.x, args.y, args.z)
+	if not sq then
+		return
+	end
+	if not args.index or args.index < 0 or args.index >= sq:getObjects():size() then
+		return
+	end
+    if not args.fluidTypeStr then
+        return
+    end
+	local o = sq:getObjects():get(args.index)
+	if o ~= nil and o:getFluidContainer() ~= nil then
+		o:getFluidContainer():removeFluid()
+		o:getFluidContainer():addFluid(args.fluidTypeStr)
+	end
+end
+
 Commands.object.clearContainerExplore = function(player, args)
 	local sq = getCell():getGridSquare(args.x, args.y, args.z)
 	if not sq then
@@ -1079,7 +1097,32 @@ Commands.feedingThrough.addWaterDebug = function(player, args)
     	isoObject:createFluidContainer();
     end
 
-    isoObject:addWater(FluidType.TaintedWater, isoObject:getMaxWater());
+    local fluidTypeStr = args.fluidTypeStr or "TaintedWater"
+    local fluidType = Fluid.Get(FluidTypeStr)
+    isoObject:addWater(fluidType, isoObject:getMaxWater());
+    isoObject:sendSyncEntity(nil);
+    isoObject:checkOverlayAfterAnimalEat();
+end
+Commands.feedingThrough.removeWaterDebug = function(player, args)
+    if not player:getRole():hasCapability(Capability.AnimalCheats) then
+        print('feedingThrough.removeWaterDebug The player\'s access level is not sufficient to perform this action')
+        return
+    end
+
+    local isoObject = nil;
+    local sq = getCell():getGridSquare(args.x, args.y, args.z);
+    for i=1, sq:getObjects():size() do
+        local obj = sq:getObjects():get(i-1);
+        if instanceof(obj, "IsoFeedingTrough") then
+            isoObject = obj;
+            break;
+        end
+    end
+
+    if isoObject:getFluidContainer() then
+        isoObject:removeWater(isoObject:getWater() + 1);
+    end
+
     isoObject:sendSyncEntity(nil);
     isoObject:checkOverlayAfterAnimalEat();
 end

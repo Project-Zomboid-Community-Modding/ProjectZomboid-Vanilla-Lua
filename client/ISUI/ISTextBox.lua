@@ -8,15 +8,16 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 function ISTextBox:initialise()
     ISPanelJoypad.initialise(self);
 
-	local buttonWid1 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")) + 12
-	local buttonWid2 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")) + 12
-	local buttonWid = math.max(buttonWid1, buttonWid2, 100)
+	local buttonWid = UI_BORDER_SPACING*2 + math.max(
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")),
+        getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel"))
+    )
     self:setWidth(math.max((buttonWid*2+UI_BORDER_SPACING*3+2)*2, self.width))
 
     self.fontHgt = FONT_HGT_MEDIUM
     local inset = 2
     local height = inset + self.fontHgt * self.numLines + inset
-    self.entry = ISTextEntryBox:new(self.defaultEntryText, self:getWidth() / 2 - ((self:getWidth() - 40) / 2), self:getHeight() / 2, self:getWidth() - 40, height);
+    self.entry = ISTextEntryBox:new(self.defaultEntryText, UI_BORDER_SPACING+1, self:getHeight() / 2, self:getWidth() - UI_BORDER_SPACING*2 - 2, height);
     self.entry.font = UIFont.Medium
     self.entry:initialise();
     self.entry:instantiate();

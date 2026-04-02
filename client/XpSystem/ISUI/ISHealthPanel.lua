@@ -557,7 +557,7 @@ function ISHealthPanel:drawText(str, x, y, r, g, b, a, font)
 	ISUIElement.drawText(self, str, x, y, r, g, b, a, font)
 	local width = getTextManager():MeasureStringX(font or UIFont.Small, str)
     local roundToNearest = 20
-	self.textRight = x + width - math.fmod(x + width, roundToNearest) + roundToNearest*2
+	self.textRight = math.max(self.textRight or 0, x + width - math.fmod(x + width, roundToNearest) + roundToNearest * 2)
 end
 
 function ISHealthBodyPartListBox:doDrawItem(y, item, alt)

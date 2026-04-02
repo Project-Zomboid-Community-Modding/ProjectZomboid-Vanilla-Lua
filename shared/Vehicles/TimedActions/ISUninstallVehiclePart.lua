@@ -38,12 +38,12 @@ function ISUninstallVehiclePart:perform()
 end
 
 function ISUninstallVehiclePart:complete()
-	local perksTable = VehicleUtils.getPerksTableForChr(self.part:getTable("install").skills, self.character)
     if self.vehicle then
     	if not self.part then
     		print('no such part '..tostring(self.part))
     		return false
     	end
+	    local perksTable = VehicleUtils.getPerksTableForChr(self.part:getTable("install").skills, self.character)
     	local keyvalues = self.part:getTable("install");
     	local perks = keyvalues.skills;
     	local success, failure = VehicleUtils.calculateInstallationSuccess(perks, self.character, perksTable);
@@ -90,12 +90,16 @@ function ISUninstallVehiclePart:complete()
    		end
    	else
    		print('no such vehicle id=', self.vehicle)
+   		return false
    	end
 
 	return true
 end
 
 function ISUninstallVehiclePart:getDuration()
+    if self.part == nil then
+        return 0
+    end
     if self.character:isMechanicsCheat() or self.character:isTimedActionInstant() then
         return 1
     end
@@ -104,11 +108,13 @@ end
 
 function ISUninstallVehiclePart:new(character, part, workTime)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	    o.jobType = getText("Tooltip_Vehicle_Uninstalling", part:getInventoryItem():getDisplayName());
+	end
 	o.workTime = workTime
 	o.maxTime = o:getDuration();
-	o.jobType = getText("Tooltip_Vehicle_Uninstalling", part:getInventoryItem():getDisplayName());
 	return o
 end
 

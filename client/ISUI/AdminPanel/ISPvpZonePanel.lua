@@ -57,7 +57,7 @@ function ISPvpZonePanel:initialise()
     self.no.internal = "OK";
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     self:setHeight(self.no:getBottom() + UI_BORDER_SPACING+1)

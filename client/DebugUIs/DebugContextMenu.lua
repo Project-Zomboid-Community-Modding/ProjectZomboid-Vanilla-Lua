@@ -1345,7 +1345,6 @@ DebugContextMenu.addRBDebugMenu = function(context, building)
 				rbOption.notAvailable = true;
 				local tooltip = ISWorldObjectContextMenu.addToolTip()
 				tooltip:setName("Building not valid");
-				tooltip.description = RBBasic:getSurvivorStories():get(i):getDebugLine();
 				rbOption.toolTip = tooltip;
 			end
 		end

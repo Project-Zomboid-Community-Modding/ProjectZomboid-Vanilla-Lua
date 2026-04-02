@@ -129,6 +129,7 @@ AnimalDefinitions.animals["chick"].hungerBoost = 15;
 AnimalDefinitions.animals["chick"].thirstBoost = 22;
 AnimalDefinitions.animals["chick"].distToEat = 1;
 AnimalDefinitions.animals["chick"].corpseSize = 0;
+AnimalDefinitions.animals["chick"].feedByHandAnim = "AnimalLureLow";
 
 AnimalDefinitions.animals["hen"] = {};
 AnimalDefinitions.animals["hen"].bodyModel = "Chicken_Hen";
@@ -192,6 +193,7 @@ AnimalDefinitions.animals["hen"].distToEat = 1;
 AnimalDefinitions.animals["hen"].corpseSize = 0.7;
 AnimalDefinitions.animals["hen"].idleSoundRadius = 20;
 AnimalDefinitions.animals["hen"].idleSoundVolume = 10;
+AnimalDefinitions.animals["hen"].feedByHandAnim = AnimalDefinitions.animals["chick"].feedByHandAnim;
 
 AnimalDefinitions.animals["cockerel"] = {};
 AnimalDefinitions.animals["cockerel"].bodyModel = "Chicken_Cockrel";
@@ -257,6 +259,7 @@ AnimalDefinitions.animals["cockerel"].minBodyPart = 11; -- this is used to make 
 AnimalDefinitions.animals["cockerel"].corpseSize = 0.7;
 AnimalDefinitions.animals["cockerel"].idleSoundRadius = 20;
 AnimalDefinitions.animals["cockerel"].idleSoundVolume = 10;
+AnimalDefinitions.animals["cockerel"].feedByHandAnim = AnimalDefinitions.animals["chick"].feedByHandAnim;
 
 
 local chicken_sounds = {

@@ -152,6 +152,7 @@ AnimalDefinitions.animals["rabkitten"].stressAboveGround = true;
 AnimalDefinitions.animals["rabkitten"].litterEatTogether = true;
 AnimalDefinitions.animals["rabkitten"].thirstHungerTrigger = 0.2;
 AnimalDefinitions.animals["rabkitten"].wildFleeTimeUntilDeadTimer = 100;
+AnimalDefinitions.animals["rabkitten"].feedByHandAnim = "AnimalLureLow";
 
 AnimalDefinitions.animals["rabdoe"] = {};
 AnimalDefinitions.animals["rabdoe"].bodyModel = "Rab_Body";
@@ -205,6 +206,7 @@ AnimalDefinitions.animals["rabdoe"].stressAboveGround = true;
 AnimalDefinitions.animals["rabdoe"].hungerBoost = 16;
 AnimalDefinitions.animals["rabdoe"].thirstBoost = 20;
 AnimalDefinitions.animals["rabdoe"].wildFleeTimeUntilDeadTimer = 300;
+AnimalDefinitions.animals["rabdoe"].feedByHandAnim = AnimalDefinitions.animals["rabkitten"].feedByHandAnim;
 
 AnimalDefinitions.animals["rabbuck"] = {};
 AnimalDefinitions.animals["rabbuck"].bodyModel = "Rab_Body";
@@ -253,6 +255,7 @@ AnimalDefinitions.animals["rabbuck"].stressAboveGround = true;
 AnimalDefinitions.animals["rabbuck"].hungerBoost = 16;
 AnimalDefinitions.animals["rabbuck"].thirstBoost = 20;
 AnimalDefinitions.animals["rabbuck"].wildFleeTimeUntilDeadTimer = 300;
+AnimalDefinitions.animals["rabbuck"].feedByHandAnim = AnimalDefinitions.animals["rabkitten"].feedByHandAnim;
 
 local rabbit_sounds = {
 	death = { name = "AnimalVoiceRabbitDeath", slot = "voice", priority = 100 },

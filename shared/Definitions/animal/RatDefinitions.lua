@@ -27,9 +27,9 @@ AnimalDefinitions.breeds["rat"].breeds["grey"].forcedGenes["maxMilk"].maxValue =
 AnimalDefinitions.breeds["rat"].breeds["grey"].invIconMale = "Item_Rat";
 AnimalDefinitions.breeds["rat"].breeds["grey"].invIconFemale = "Item_Rat";
 AnimalDefinitions.breeds["rat"].breeds["grey"].invIconBaby = "Item_Rat";
-AnimalDefinitions.breeds["rat"].breeds["grey"].invIconMaleDead = "Item_DeadRat.png";
-AnimalDefinitions.breeds["rat"].breeds["grey"].invIconFemaleDead = "Item_DeadRat.png";
-AnimalDefinitions.breeds["rat"].breeds["grey"].invIconBabyDead = "Item_DeadRat.png";
+AnimalDefinitions.breeds["rat"].breeds["grey"].invIconMaleDead = "Item_RatDead";
+AnimalDefinitions.breeds["rat"].breeds["grey"].invIconFemaleDead = "Item_RatDead";
+AnimalDefinitions.breeds["rat"].breeds["grey"].invIconBabyDead = "Item_RatDead";
 AnimalDefinitions.breeds["rat"].breeds["white"] = {};
 AnimalDefinitions.breeds["rat"].breeds["white"].name = "white";
 AnimalDefinitions.breeds["rat"].breeds["white"].texture = "Rat_White";
@@ -42,9 +42,9 @@ AnimalDefinitions.breeds["rat"].breeds["white"].forcedGenes["maxMilk"].maxValue 
 AnimalDefinitions.breeds["rat"].breeds["white"].invIconMale = "Item_Rat";
 AnimalDefinitions.breeds["rat"].breeds["white"].invIconFemale = "Item_Rat";
 AnimalDefinitions.breeds["rat"].breeds["white"].invIconBaby = "Item_Rat";
-AnimalDefinitions.breeds["rat"].breeds["white"].invIconMaleDead = "Item_DeadRat.png";
-AnimalDefinitions.breeds["rat"].breeds["white"].invIconFemaleDead = "Item_DeadRat.png";
-AnimalDefinitions.breeds["rat"].breeds["white"].invIconBabyDead = "Item_DeadRat.png";
+AnimalDefinitions.breeds["rat"].breeds["white"].invIconMaleDead = "Item_RatDead";
+AnimalDefinitions.breeds["rat"].breeds["white"].invIconFemaleDead = "Item_RatDead";
+AnimalDefinitions.breeds["rat"].breeds["white"].invIconBabyDead = "Item_RatDead";
 
 -- genome
 AnimalDefinitions.genome = AnimalDefinitions.genome or {};
@@ -116,6 +116,7 @@ AnimalDefinitions.animals["ratbaby"].addTrackingXp = false; -- don't add trackin
 AnimalDefinitions.animals["ratbaby"].corpseSize = 0;
 AnimalDefinitions.animals["ratbaby"].dung = "Dung_Rat";
 AnimalDefinitions.animals["ratbaby"].wildFleeTimeUntilDeadTimer = 50;
+AnimalDefinitions.animals["ratbaby"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals = AnimalDefinitions.animals or {};
@@ -177,6 +178,7 @@ AnimalDefinitions.animals["ratfemale"].addTrackingXp = false;
 AnimalDefinitions.animals["ratfemale"].corpseSize = 0;
 AnimalDefinitions.animals["ratfemale"].dung = "Dung_Rat";
 AnimalDefinitions.animals["ratfemale"].wildFleeTimeUntilDeadTimer = 100;
+AnimalDefinitions.animals["ratfemale"].feedByHandAnim = AnimalDefinitions.animals["ratbaby"].feedByHandAnim;
 
 
 AnimalDefinitions.animals["rat"] = {};
@@ -232,6 +234,7 @@ AnimalDefinitions.animals["rat"].addTrackingXp = false;
 AnimalDefinitions.animals["rat"].corpseSize = AnimalDefinitions.animals["ratfemale"].corpseSize
 AnimalDefinitions.animals["rat"].dung = "Dung_Rat";
 AnimalDefinitions.animals["rat"].wildFleeTimeUntilDeadTimer = 100;
+AnimalDefinitions.animals["rat"].feedByHandAnim = AnimalDefinitions.animals["ratbaby"].feedByHandAnim;
 
 local rat_sounds = {
 	pain = { name = "AnimalVoiceRatPain", slot = "voice", priority = 50 },

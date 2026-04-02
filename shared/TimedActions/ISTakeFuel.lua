@@ -21,7 +21,7 @@ function ISTakeFuel:update()
 end
 
 function ISTakeFuel:updateUse(delta)
-    local actionCurrent = math.floor(self.amount * delta + 0.001);
+    local actionCurrent = math.floor(self.amount * delta + 0.001 + self.itemStart);
 	local itemCurrent = self.petrolCan:getFluidContainer():getAmount();
 	if actionCurrent > itemCurrent then
         local pumpCurrent = tonumber(self.fuelStation:getPipedFuelAmount())
@@ -58,6 +58,9 @@ function ISTakeFuel:perform()
 end
 
 function ISTakeFuel:complete()
+    if self.petrolCan == nil then
+        return false
+    end
 	local itemCurrent = self.petrolCan:getFluidContainer():getAmount();
 	if self.itemTarget > itemCurrent then
 		self.petrolCan:getFluidContainer():addFluid(Fluid.Petrol, self.itemTarget - itemCurrent);
@@ -82,10 +85,12 @@ function ISTakeFuel:animEvent(event, parameter)
 end
 
 function ISTakeFuel:getDuration()
+    if self.petrolCan == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
-
 	return self.amount * 50
 end
 
@@ -94,12 +99,14 @@ function ISTakeFuel:new(character, fuelStation, petrolCan)
 	o.fuelStation = fuelStation;
 	o.square = fuelStation:getSquare();
 	o.petrolCan = petrolCan;
-	local freeCapacity = petrolCan:getFluidContainer():getFreeCapacity();
-	local pumpCurrent = tonumber(o.fuelStation:getPipedFuelAmount());
-    local freeInventoryCapacity = character:getFreeInventoryCapacity()/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
-	o.amount = math.min(math.min(pumpCurrent, freeCapacity), freeInventoryCapacity);
-	o.itemStart = petrolCan:getFluidContainer():getAmount();
-	o.itemTarget = o.itemStart + o.amount;
-	o.maxTime = o:getDuration();
+	if petrolCan ~= nil then
+        local freeCapacity = petrolCan:getFluidContainer():getFreeCapacity();
+        local pumpCurrent = tonumber(o.fuelStation:getPipedFuelAmount());
+        local freeInventoryCapacity = character:getFreeInventoryCapacity()/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
+        o.amount = math.min(math.min(pumpCurrent, freeCapacity), freeInventoryCapacity);
+        o.itemStart = petrolCan:getFluidContainer():getAmount();
+        o.itemTarget = o.itemStart + o.amount;
+    end
+    o.maxTime = o:getDuration();
 	return o;
 end

@@ -567,7 +567,6 @@ function MapSpawnSelect:hideOrShowSaveName()
 	end
 
 	self.listbox:setY(self.startY)
-	self.listbox:setHeight((FONT_HGT_LARGE+6)*10)
 end
 
 function MapSpawnSelect:onOptionMouseDown(button, x, y)
@@ -746,10 +745,17 @@ function MapSpawnSelect:recalculateMapSize()
 	self.listbox:setWidth(listboxWidth)
 	self.richText:setWidth(self.listbox.width)
 
-	if not MainScreen.instance.inGame then
-		self.textEntry:setWidth(self.listbox:getRight() - self.textEntry.x)
+    self.listbox:setHeight(self.listbox.itemheight * #self.listbox.items)
+    self.richText:setY(self.listbox:getBottom() + UI_BORDER_SPACING)
+
+    if not MainScreen.instance.inGame then
+        self.textEntry:setWidth(self.listbox:getRight() - self.textEntry.x)
         self.seedPanel:setWidth(self.listbox.width)
-	end
+        self.seedPanel:setY(self.mapPanel:getBottom() - self.seedPanel:getHeight())
+        self.richText:setHeight(self.seedPanel:getY() - self.richText:getY() - UI_BORDER_SPACING)
+    else
+        self.richText:setHeight(self.mapPanel:getBottom() - self.richText:getY())
+    end
 end
 
 function MapSpawnSelect:zoomMap(x, y, scale)
@@ -893,7 +899,7 @@ function MapSpawnSelect:create()
         self.textEntry:setText(sdf:format(Calendar.getInstance():getTime()));
 	end
 
-	self.listbox = MapSpawnSelectListBox:new(UI_BORDER_SPACING+1, self.startY, (self.width - UI_BORDER_SPACING*3 - 2) / 4, (FONT_HGT_LARGE+6)*10);
+	self.listbox = MapSpawnSelectListBox:new(UI_BORDER_SPACING+1, self.startY, (self.width - UI_BORDER_SPACING*3 - 2) / 4, (FONT_HGT_LARGE+6)*7);
 	self.listbox:initialise();
 	self.listbox:instantiate();
 	self.listbox:setAnchorLeft(true);
@@ -904,6 +910,7 @@ function MapSpawnSelect:create()
 	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
 	self.listbox.drawBorder = true;
 	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5};
+    --itemheight
 
     local advPanelHeight = UI_BORDER_SPACING*2 + BUTTON_HGT + 2
 	self.richText = MapSpawnSelectInfoPanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, self.height - self.listbox:getBottom() - UI_BORDER_SPACING*4 - BUTTON_HGT - 1 - advPanelHeight);

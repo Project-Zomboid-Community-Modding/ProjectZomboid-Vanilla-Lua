@@ -16,7 +16,7 @@ function ISSafehousesList:initialise()
     self.no.anchorBottom = true
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM + 1
@@ -102,7 +102,8 @@ function ISSafehousesList:onClick(button)
         end
     end
     if button.internal == "VIEW" then
-        local safehouseUI = ISSafehouseUI:new(getCore():getScreenWidth() / 2 - 250,getCore():getScreenHeight() / 2 - 225, 500, 450, self.selectedSafehouse, self.player);
+        local width = 500+getCore():getOptionFontSizeReal()*30
+        local safehouseUI = ISSafehouseUI:new((getCore():getScreenWidth()-width) / 2,getCore():getScreenHeight() / 2 - 225, width, 450, safehouse, player);
         safehouseUI:initialise()
         safehouseUI:addToUIManager()
     end

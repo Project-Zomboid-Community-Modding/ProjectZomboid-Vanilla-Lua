@@ -58,63 +58,71 @@ function ISInstallVehiclePart:perform()
 end
 
 function ISInstallVehiclePart:complete()
-	self.item:setJobDelta(0)
---	self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", getGameTime():getCalender():getTimeInMillis());
-
-	self.character:removeFromHands(self.item)
-	self.character:getInventory():DoRemoveItem(self.item)
-	sendRemoveItemFromContainer(self.character:getInventory(),self.item)
-
-	local perksTable = VehicleUtils.getPerksTableForChr(self.part:getTable("install").skills, self.character)
+    if self.item == nil then
+        return false
+    end
    	if self.vehicle then
     	if not self.part then
     		print('no such part ',self.part)
-    		return
+    		return false
     	end
-    		local keyvalues = self.part:getTable("install");
-    		local perks = keyvalues.skills;
-    		local success, failure = VehicleUtils.calculateInstallationSuccess(perks, self.character, perksTable);
-    		if not instanceof(self.item, "InventoryItem") then
-    			print('item is nil')
-    			return
-    		end
-    		if instanceof(self.item, "Radio") and self.item:getDeviceData() ~= nil then
-    			local presets = self.item:getDeviceData():getDevicePresets()
-    			if self.part:getDeviceData() == nil then
-                    self.part:createSignalDevice()
-                end
-    			self.part:getDeviceData():cloneDevicePresets(presets)
-    		end
-    		if ZombRand(100) < success then
-    			self.part:setInventoryItem(self.item, self.character:getPerkLevel(Perks.Mechanics))
-    			local tbl = self.part:getTable("install")
-    			if tbl and tbl.complete then
-    				VehicleUtils.callLua(tbl.complete, self.vehicle, self.part)
-    			end
-    			self.vehicle:transmitPartItem(self.part)
-    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
-    			self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
-    		elseif ZombRand(100) < failure then
-    			self.item:setCondition(self.item:getCondition() - ZombRand(5,10));
-    			self.character:getInventory():AddItem(self.item);
-    			sendAddItemToContainer(self.character:getInventory(), self.item);
-    			playServerSound("PZ_MetalSnap", self.character:getCurrentSquare());
-    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
-    			addXp(self.character, Perks.Mechanics, 1);
-    		else
-    			self.character:getInventory():AddItem(self.item);
-    			sendAddItemToContainer(self.character:getInventory(), self.item);
-    			self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
-    			addXp(self.character, Perks.Mechanics, 1);
-    		end
-    	else
-    		print('no such vehicle id=',self.vehicle)
-    	end
+	    self.item:setJobDelta(0)
+--	    self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", getGameTime():getCalender():getTimeInMillis());
+
+	    self.character:removeFromHands(self.item)
+	    self.character:getInventory():DoRemoveItem(self.item)
+	    sendRemoveItemFromContainer(self.character:getInventory(),self.item)
+
+        local perksTable = VehicleUtils.getPerksTableForChr(self.part:getTable("install").skills, self.character)
+
+        local keyvalues = self.part:getTable("install");
+        local perks = keyvalues.skills;
+        local success, failure = VehicleUtils.calculateInstallationSuccess(perks, self.character, perksTable);
+        if not instanceof(self.item, "InventoryItem") then
+            print('item is nil')
+            return
+        end
+        if instanceof(self.item, "Radio") and self.item:getDeviceData() ~= nil then
+            local presets = self.item:getDeviceData():getDevicePresets()
+            if self.part:getDeviceData() == nil then
+                self.part:createSignalDevice()
+            end
+            self.part:getDeviceData():cloneDevicePresets(presets)
+        end
+        if ZombRand(100) < success then
+            self.part:setInventoryItem(self.item, self.character:getPerkLevel(Perks.Mechanics))
+            local tbl = self.part:getTable("install")
+            if tbl and tbl.complete then
+                VehicleUtils.callLua(tbl.complete, self.vehicle, self.part)
+            end
+            self.vehicle:transmitPartItem(self.part)
+            self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
+            self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
+        elseif ZombRand(100) < failure then
+            self.item:setCondition(self.item:getCondition() - ZombRand(5,10));
+            self.character:getInventory():AddItem(self.item);
+            sendAddItemToContainer(self.character:getInventory(), self.item);
+            playServerSound("PZ_MetalSnap", self.character:getCurrentSquare());
+            self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
+            addXp(self.character, Perks.Mechanics, 1);
+        else
+            self.character:getInventory():AddItem(self.item);
+            sendAddItemToContainer(self.character:getInventory(), self.item);
+            self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = false})
+            addXp(self.character, Perks.Mechanics, 1);
+        end
+    else
+    	print('no such vehicle id=',self.vehicle)
+    	return false
+    end
 
 	return true
 end
 
 function ISInstallVehiclePart:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
     if self.character:isMechanicsCheat() or self.character:isTimedActionInstant() then
         return 1
     end
@@ -123,8 +131,10 @@ end
 
 function ISInstallVehiclePart:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
 	o.maxTimeInit = maxTimeInit
 	o.maxTime = maxTimeInit

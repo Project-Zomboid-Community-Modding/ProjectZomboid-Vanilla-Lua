@@ -12,6 +12,11 @@ ISButcherHookUI.ui = {};
 function ISButcherHookUI:render()
     ISCollapsableWindowJoypad.render(self);
 
+    if self.chr:getVehicle() then
+        self:close();
+        return;
+    end
+
     -- reset height because the debug stuff modify it
     self:setHeight(320);
 

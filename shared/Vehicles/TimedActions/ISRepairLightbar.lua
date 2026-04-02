@@ -35,14 +35,16 @@ function ISRepairLightbar:perform()
 end
 
 function ISRepairLightbar:complete()
-
-	local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
-	local giveXP = self.character:getMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2") == nil
+    if self.item == nil then
+        return false
+    end
     if self.vehicle then
     	if not self.part then
     		noise('no such part Ligthbar')
     		return false
     	end
+	    local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
+	    local giveXP = self.character:getMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2") == nil
     	local condPerPart = 15 + (skill)
 
     	self.part:setCondition(self.part:getCondition() + condPerPart)
@@ -61,15 +63,19 @@ function ISRepairLightbar:complete()
 
     	self.character:sendObjectChange(IsoObjectChange.MECHANIC_ACTION_DONE, { success = true})
     	self.character:addMechanicsItem(self.item:getID() .. self.vehicle:getMechanicalID() .. "1", self.part, getGameTime():getCalender():getTimeInMillis());
+	    self.character:addMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2", self.part, getGameTime():getCalender():getTimeInMillis());
     else
     	print('no such vehicle id=',self.vehicle)
+    	return false
     end
-	self.character:addMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2", self.part, getGameTime():getCalender():getTimeInMillis());
 
 	return true
 end
 
 function ISRepairLightbar:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
@@ -80,8 +86,10 @@ end
 function ISRepairLightbar:new(character, part, item, maxTimeInit)
 	print("ISRepairLightbar")
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
 	o.maxTimeInit = maxTimeInit
 	o.maxTime = maxTimeInit

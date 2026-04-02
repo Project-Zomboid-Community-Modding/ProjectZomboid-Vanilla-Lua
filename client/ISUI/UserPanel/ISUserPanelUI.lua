@@ -128,7 +128,8 @@ end
 function ISUserPanelUI:onOptionMouseDown(button, x, y)
     if button.internal == "SAFEHOUSEPANEL" then
         if SafeHouse.hasSafehouse(self.player) then
-            local modal = ISSafehouseUI:new(getCore():getScreenWidth() / 2 - 250, getCore():getScreenHeight() / 2 - 225, 500, 450, SafeHouse.hasSafehouse(self.player), self.player);
+            local width = 500+getCore():getOptionFontSizeReal()*30
+            local modal = ISSafehouseUI:new((getCore():getScreenWidth()-width) / 2,getCore():getScreenHeight() / 2 - 225, width, 450, SafeHouse.hasSafehouse(self.player), self.player);
             modal:initialise();
             modal:addToUIManager();
         end

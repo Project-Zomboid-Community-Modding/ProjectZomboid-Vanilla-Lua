@@ -11,7 +11,7 @@ function ISEjectMagazine:start()
 		self:forceStop()
 		return
 	end
-	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
+	self:setAnimVariable("WeaponReloadType", tostring(self.gun:getWeaponReloadType()))
 	self:setAnimVariable("isUnloading", true)
 	self:setOverrideHandModels(self.gun, nil)
 	self:setActionAnim(CharacterActionAnims.Reload)

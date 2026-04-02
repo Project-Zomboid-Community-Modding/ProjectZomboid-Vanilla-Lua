@@ -48,7 +48,10 @@ function ISKillAnimalInInventory:complete()
         if not self:canKillAnimal() then
             return false;
         end
-        PVPLogTool.logKill(self.character, self.animal)
+        local animal = self.animalItem and self.animalItem:getAnimal()
+        if animal then
+            PVPLogTool.logKill(self.character, animal)
+        end
     end
     self:kill();
 

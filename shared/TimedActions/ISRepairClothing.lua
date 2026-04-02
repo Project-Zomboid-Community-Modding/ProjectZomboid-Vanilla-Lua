@@ -61,6 +61,7 @@ function ISRepairClothing:perform()
 end
 
 function ISRepairClothing:complete()
+    if self.clothing == nil or self.fabric == nil or self.thread == nil or self.needle == nil then return false end
 
 	self.clothing:addPatch(self.character, self.part, self.fabric);
 
@@ -81,6 +82,7 @@ function ISRepairClothing:complete()
 end
 
 function ISRepairClothing:getDuration()
+    if self.clothing == nil or self.fabric == nil or self.thread == nil or self.needle == nil then return 0 end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end

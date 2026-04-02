@@ -137,7 +137,7 @@ end
 
 function ISEquipWeaponAction:complete()
 
-	if self:isAlreadyEquipped(self.item) then
+	if self.item == nil or self:isAlreadyEquipped(self.item) then
 		return false
 	end
 	-- kludge for knapsack sprayers
@@ -256,6 +256,9 @@ function ISEquipWeaponAction:complete()
 end
 
 function ISEquipWeaponAction:getDuration()
+    if self.item == nil then
+        return 0
+    end
     if self.character:getSecondaryHandItem() and self.character:getSecondaryHandItem() == self.item then
         return 0;
     end
@@ -294,28 +297,31 @@ function ISEquipWeaponAction:new (character, item, maxTimeInit, primary, twoHand
 	else
 		o.hotbar = getPlayerHotbar(character:getPlayerNum());
 	end
-	o.fromHotbar = o.hotbar and o.hotbar:isItemAttached(item);
-	o.useProgressBar = not o.fromHotbar;
 
-    if instanceof(item, "HandWeapon") and not item:isTwoHandWeapon() then
-        o.twoHands = false;
-		if character:getSecondaryHandItem() and instanceof(item, "HandWeapon") then
-		end
+    if item ~= nil then
+        o.fromHotbar = o.hotbar and o.hotbar:isItemAttached(item);
+        o.useProgressBar = not o.fromHotbar;
+
+        if instanceof(item, "HandWeapon") and not item:isTwoHandWeapon() then
+            o.twoHands = false;
+            if character:getSecondaryHandItem() and instanceof(item, "HandWeapon") then
+            end
+        end
+        if item:isRequiresEquippedBothHands() then
+            o.twoHands = true;
+        end
+        if o.twoHands then
+            o.jobType = getText("ContextMenu_Equip_Two_Hands") .. " " .. item:getName()
+        elseif o.primary then
+            o.jobType = getText("ContextMenu_Equip_Primary") .. " " .. item:getName()
+        else
+            o.jobType = getText("ContextMenu_Equip_Secondary") .. " " .. item:getName()
+        end
+        if o.maxTime > 1 and o.fromHotbar then
+            o.animSpeed = o.maxTime / o:adjustMaxTime(o.maxTime)
+        else
+            o.animSpeed = 1.0
+        end
     end
-    if item:isRequiresEquippedBothHands() then
-        o.twoHands = true;
-    end
-	if o.twoHands then
-		o.jobType = getText("ContextMenu_Equip_Two_Hands") .. " " .. item:getName()
-	elseif o.primary then
-		o.jobType = getText("ContextMenu_Equip_Primary") .. " " .. item:getName()
-	else
-		o.jobType = getText("ContextMenu_Equip_Secondary") .. " " .. item:getName()
-	end
-	if o.maxTime > 1 and o.fromHotbar then
-		o.animSpeed = o.maxTime / o:adjustMaxTime(o.maxTime)
-	else
-		o.animSpeed = 1.0
-	end
 	return o
 end

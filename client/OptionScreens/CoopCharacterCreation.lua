@@ -111,7 +111,7 @@ function CoopCharacterCreation:accept()
 	if isClient() and self.playerIndex > 0 then
 		username = CoopUserName.instance:getUserName()
 	end
-	setPlayerJoypad(self.playerIndex, self.joypadIndex, nil, username)
+	setPlayerJoypad(self.playerIndex, self.joypadIndex, nil, username, true)
 
 	self.joypadData.focus = nil
 	self.joypadData.lastfocus = nil

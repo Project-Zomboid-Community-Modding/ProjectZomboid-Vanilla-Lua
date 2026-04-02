@@ -17,7 +17,6 @@ function ISBuildIsoEntity:walkTo(x, y, z)
     local name = self.objectInfo:getScript():getName();
 
     if luautils.stringEnds(name, "Stairs") and self.north then
-            print("ISBuildingObject -> walkTo stairs")
             square = getCell():getGridSquare(x+2, y, z)
     elseif luautils.stringEnds(name, "Stairs") then
             square = getCell():getGridSquare(x, y+2, z)
@@ -189,6 +188,9 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 	end
 
 	if testCollisions then
+        if square:has(IsoPropertyType.GARAGE_DOOR) then
+            return false
+        end
 		-- check if we are passing through a wall - do not allow
 		if _extendsN and ((square:getProperties():has(IsoFlagType.collideN) or square:getProperties():has(IsoFlagType.WallN) or square:getProperties():has(IsoFlagType.WallNW) or square:getProperties():has(IsoFlagType.WindowN) or square:getProperties():has(IsoFlagType.DoorWallN) or square:getProperties():has(IsoFlagType.HoppableN))) then
 			return false;
@@ -400,7 +402,6 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		end
 
 		-- WALL STUFF
-		-- if we don't have floor we gonna check if there's a stairs under it, in this case we allow the build
 		local hasFloor = square:hasFloor(self.north);
 		-- for pole we need to check the tile on northwest (y-1, x-1) and west (x-1)
 		if self.isPole then
@@ -419,9 +420,11 @@ function ISBuildIsoEntity:isValidPerSquare(square, tileInfo, _requiresFloor, _ex
 		if not hasFloor then
 			local belowSQ = getCell():getGridSquare(square:getX(), square:getY(), square:getZ()-1)
 			if belowSQ then
-				if self.north and not belowSQ:HasStairsWest() then return false; end
-				if not self.north and not belowSQ:HasStairsNorth() then return false; end
-				if not belowSQ:has(IsoObjectType.wall) then return false; end
+                if self.north then
+                    return belowSQ:has(IsoPropertyType.WALL_N, IsoPropertyType.WALL_NW, IsoPropertyType.WINDOW_FRAME_N, IsoPropertyType.DOOR_WALL_N)
+                else
+                    return belowSQ:has(IsoPropertyType.WALL_W, IsoPropertyType.WALL_NW, IsoPropertyType.WINDOW_FRAME_W, IsoPropertyType.DOOR_WALL_W)
+                end
 			end
 		end
 	end

@@ -542,8 +542,9 @@ function BuildRecipeCode.windowGlass.OnCreate(params)
 	local window = IsoWindow.new(getCell(), thumpable:getSquare(), thumpable:getSprite(), thumpable:getNorth());
 	window:setIsLocked(false);
 	thumpable:getSquare():AddSpecialObject(window);
+    thumpable:getSquare():RemoveTileObject(thumpable)
 
-	thumpable:getSquare():transmitRemoveItemFromSquare(thumpable);
+	return { replaceObject = true, object = window };
 end
 
 function BuildRecipeCode.woodLampPillar.OnCreate(params)

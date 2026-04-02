@@ -172,12 +172,12 @@ end
 
 function ISFactionUI:onClickShowTag(clickedOption, enabled)
     self.player:setShowTag(enabled);
-    sendPlayerStatsChange(self.player);
+    sendFactionStatsChange(self.player);
 end
 
 function ISFactionUI:onClickFactionPvp(clickedOption, enabled)
     self.player:setFactionPvp(enabled);
-    sendPlayerStatsChange(self.player);
+    sendFactionStatsChange(self.player);
 end
 
 function ISFactionUI:onTagColor(button)

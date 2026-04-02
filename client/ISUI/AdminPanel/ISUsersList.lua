@@ -4,12 +4,14 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local GHC = getCore():getGoodHighlitedColor()
+local BHC = getCore():getBadHighlitedColor()
 
 function ISUsersList:initialise()
     ISPanel.initialise(self);
-    local btnWid = 100
 
-    self.add = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_UserList_Add"), self, ISUsersList.onClick);
+    local btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_UserList_Add"))
+    self.add = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("IGUI_UserList_Add"), self, ISUsersList.onClick);
     self.add.internal = "ADD";
     self.add.anchorTop = false
     self.add.anchorBottom = true
@@ -28,7 +30,8 @@ function ISUsersList:initialise()
     else
         buttonTitle = getText("IGUI_UserList_BannedIPs")
     end
-    self.bannedIPs = ISButton:new((UI_BORDER_SPACING+1)*2+ btnWid, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, buttonTitle, self, ISUsersList.onClick);
+    btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, buttonTitle)
+    self.bannedIPs = ISButton:new(self.add:getRight() + UI_BORDER_SPACING, self.add:getY(), btnWidth, BUTTON_HGT, buttonTitle, self, ISUsersList.onClick);
     self.bannedIPs.internal = "BANNEDLIST";
     self.bannedIPs.anchorTop = false
     self.bannedIPs.anchorBottom = true
@@ -41,14 +44,18 @@ function ISUsersList:initialise()
     end
     self:addChild(self.bannedIPs);
 
-    local searchHeight = FONT_HGT_SMALL + 4 * 2
-    local titleFilterWid = getTextManager():MeasureStringX(UIFont.Large, getText("IGUI_UsersList_Filter"))
-    local titleFilter = ISLabel:new(self:getWidth()-UI_BORDER_SPACING*2-250-titleFilterWid, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, searchHeight, getText("IGUI_UsersList_Filter"), 1, 1, 1, 1, UIFont.Small, true)
-    titleFilter:initialise()
-    titleFilter:instantiate()
-    self:addChild(titleFilter)
+    btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RolesList_Close"))
+    self.close = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, self.add:getY(), btnWidth, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISUsersList.onClick);
+    self.close.internal = "CLOSE";
+    self.close.anchorTop = false
+    self.close.anchorBottom = true
+    self.close:initialise();
+    self.close:instantiate();
+    self.close.borderColor = {r=1, g=1, b=1, a=0.1};
+    self:addChild(self.close);
 
-    self.searchEntry = ISTextEntryBox:new("", self:getWidth()-UI_BORDER_SPACING*3-250, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, 150 , searchHeight)
+    local searchWidth = 200
+    self.searchEntry = ISTextEntryBox:new("", self.close:getX() - searchWidth - UI_BORDER_SPACING, self.add:getY(), searchWidth , BUTTON_HGT)
     self.searchEntry.font = UIFont.Small
     self.searchEntry:setTooltip(getText("IGUI_UsersList_FilterTooltip"))
     self.searchEntry.onTextChange = function() self:doSearch() end
@@ -68,20 +75,16 @@ function ISUsersList:initialise()
     self.searchEntry:instantiate()
     self:addChild(self.searchEntry)
 
-    self.close = ISButton:new(self.width - btnWid - (UI_BORDER_SPACING+1)*2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISUsersList.onClick);
-    self.close.internal = "CLOSE";
-    self.close.anchorTop = false
-    self.close.anchorBottom = true
-    self.close:initialise();
-    self.close:instantiate();
-    self.close.borderColor = {r=1, g=1, b=1, a=0.1};
-    self:addChild(self.close);
+    local titleFilterWid = getTextManager():MeasureStringX(UIFont.Large, getText("IGUI_UsersList_Filter"))
+    local titleFilter = ISLabel:new(self.searchEntry:getX() - titleFilterWid, self.add:getY(), BUTTON_HGT, getText("IGUI_UsersList_Filter"), 1, 1, 1, 1, UIFont.Small, true)
+    titleFilter:initialise()
+    titleFilter:instantiate()
+    self:addChild(titleFilter)
 
-    local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM+1
     self.datas = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+(UI_BORDER_SPACING+1)*2, self.width - (UI_BORDER_SPACING+1)*2, self:getHeight() - BUTTON_HGT - (UI_BORDER_SPACING + 1)*4 - FONT_HGT_MEDIUM);
     self.datas:initialise();
     self.datas:instantiate();
-    self.datas.itemheight = 3 * FONT_HGT_SMALL + 8
+    self.datas.itemheight = BUTTON_HGT*3
     self.datas.selected = 0;
     self.datas.joypadParent = self;
     self.datas.font = UIFont.NewSmall;
@@ -110,6 +113,7 @@ end
 
 function ISUsersList:drawDatas(y, item, alt)
     local a = 0.9;
+    local yOffset = y+(BUTTON_HGT-FONT_HGT_SMALL)/2
 
     self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
@@ -119,40 +123,63 @@ function ISUsersList:drawDatas(y, item, alt)
 
     local color = item.item:getRole():getColor()
 
-    self:drawText(item.item:getUsername(), 12, y + 4, color:getR(), color:getG(), color:getB(), a, UIFont.Medium);
+    self:drawText(item.item:getUsername(), UI_BORDER_SPACING+1, yOffset, color:getR(), color:getG(), color:getB(), a, UIFont.Medium);
     if item.item:isOnline() then
-        self:drawText("Online", 12, y + 4 + FONT_HGT_MEDIUM, 0.1, 1.0, 0.1, a, UIFont.Medium);
+        self:drawText("Online", UI_BORDER_SPACING+1, yOffset + FONT_HGT_MEDIUM, GHC:getR(), GHC:getG(), GHC:getB(), a, UIFont.Medium);
     else
-        self:drawText("Offline", 12, y + 4 + FONT_HGT_MEDIUM, 0.5, 0.5, 0.5, a, UIFont.Medium);
+        self:drawText("Offline", UI_BORDER_SPACING+1, yOffset + FONT_HGT_MEDIUM, 0.5, 0.5, 0.5, a, UIFont.Medium);
     end
 
-    if item.item:getWarningPoints() == 0 then
-        self:drawText(getText("IGUI_UsersList_WarningPoints", item.item:getWarningPoints()), self:getWidth()- 170, y + 4, 0.3, 1.0, 0.3, a, UIFont.Small);
-    elseif item.item:getWarningPoints() < 10 then
-        self:drawText(getText("IGUI_UsersList_WarningPoints", item.item:getWarningPoints()), self:getWidth()- 170, y + 4, 1.0, 1.0, 0.3, a, UIFont.Small);
-    else
-        self:drawText(getText("IGUI_UsersList_WarningPoints", item.item:getWarningPoints()), self:getWidth()- 170, y + 4, 1.0, 0.3, 0.3, a, UIFont.Small);
-    end
-    if item.item:getSuspicionPoints() == 0 then
-        self:drawText(getText("IGUI_UsersList_SuspicionPoints", item.item:getSuspicionPoints()), self:getWidth()- 170, y + 2 + FONT_HGT_SMALL, 0.3, 1.0, 0.3, a, UIFont.Small);
-    elseif item.item:getSuspicionPoints() < 10 then
-        self:drawText(getText("IGUI_UsersList_SuspicionPoints", item.item:getSuspicionPoints()), self:getWidth()- 170, y + 2 + FONT_HGT_SMALL, 1.0, 1.0, 0.3, a, UIFont.Small);
-    else
-        self:drawText(getText("IGUI_UsersList_SuspicionPoints", item.item:getSuspicionPoints()), self:getWidth()- 170, y + 2 + FONT_HGT_SMALL, 1.0, 0.3, 0.3, a, UIFont.Small);
-    end
-    if item.item:getKicks() == 0 then
-        self:drawText(getText("IGUI_UsersList_Kicks", item.item:getKicks()), self:getWidth()- 170, y + 1 + 2 * FONT_HGT_SMALL, 0.3, 1.0, 0.3, a, UIFont.Small);
-    else
-        self:drawText(getText("IGUI_UsersList_Kicks", item.item:getKicks()), self:getWidth()- 170, y + 1 + 2 * FONT_HGT_SMALL, 1.0, 0.3, 0.3, a, UIFont.Small);
-    end
+    local warningPointsValue = item.item:getWarningPoints()
+    local suspicionPointsValue = item.item:getSuspicionPoints()
+    local kicksValue = item.item:getKicks()
 
+    local warningPointsString = getText("IGUI_UsersList_WarningPoints", warningPointsValue)
+    local suspicionPointsString = getText("IGUI_UsersList_SuspicionPoints", suspicionPointsValue)
+    local kicksString = getText("IGUI_UsersList_Kicks", kicksValue)
+
+    local textX = self:getWidth() - UI_BORDER_SPACING - 1 - math.max(
+        getTextManager():MeasureStringX(UIFont.Small, warningPointsString),
+        getTextManager():MeasureStringX(UIFont.Small, suspicionPointsString),
+        getTextManager():MeasureStringX(UIFont.Small, kicksString)
+    )
+
+    local progress = math.min(warningPointsValue/10.0, 1.0)
+    local r = BHC:getR()*progress + GHC:getR()*(1-progress)
+    local g = BHC:getG()*progress + GHC:getG()*(1-progress)
+    local b = BHC:getB()*progress + GHC:getB()*(1-progress)
+    self:drawText(warningPointsString, textX, yOffset, r, g, b, 1, UIFont.Small);
+
+    progress = math.min(suspicionPointsValue/10.0, 1.0)
+    r = BHC:getR()*progress + GHC:getR()*(1-progress)
+    g = BHC:getG()*progress + GHC:getG()*(1-progress)
+    b = BHC:getB()*progress + GHC:getB()*(1-progress)
+    self:drawText(suspicionPointsString, textX, yOffset+BUTTON_HGT, r, g, b, 1, UIFont.Small);
+
+    progress = math.min(kicksValue, 1.0)
+    r = BHC:getR()*progress + GHC:getR()*(1-progress)
+    g = BHC:getG()*progress + GHC:getG()*(1-progress)
+    b = BHC:getB()*progress + GHC:getB()*(1-progress)
+    self:drawText(kicksString, textX, yOffset+BUTTON_HGT*2, r, g, b, 1, UIFont.Small);
+
+    local detailsRoleString = getText("IGUI_UsersList_DetailsRole", item.item:getRole():getName())
+    local detailsLastConnectString = getText("IGUI_UsersList_DetailsLastConnection", item.item:getLastConnection())
+    local detailsAuthString = getText("IGUI_UsersList_DetailsAuthType", item.item:getAuthTypeName())
+    local detailsNoWhitelistString = getText("IGUI_UsersList_DetailsNoWhitelist")
+
+    textX = textX - UI_BORDER_SPACING*3 - math.max(
+        getTextManager():MeasureStringX(UIFont.Small, detailsRoleString),
+        getTextManager():MeasureStringX(UIFont.Small, detailsLastConnectString),
+        getTextManager():MeasureStringX(UIFont.Small, detailsAuthString),
+        getTextManager():MeasureStringX(UIFont.Small, detailsNoWhitelistString)
+    )
+
+    self:drawText(detailsRoleString, textX, yOffset, 1, 1, 1, a, self.font);
     if item.item:isInWhitelist() then
-        self:drawText(getText("IGUI_UsersList_DetailsRole", item.item:getRole():getName()), self:getWidth() - 480, y + 4, 1, 1, 1, a, self.font);
-        self:drawText(getText("IGUI_UsersList_DetailsLastConnection", item.item:getLastConnection()), self:getWidth() - 480, y + 2 + FONT_HGT_SMALL, 1, 1, 1, a, self.font);
-        self:drawText(getText("IGUI_UsersList_DetailsAuthType", item.item:getAuthTypeName()), self:getWidth() - 480, y + 1 + 2 * FONT_HGT_SMALL, 1, 1, 1, a, self.font);
+        self:drawText(detailsLastConnectString, textX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font);
+        self:drawText(detailsAuthString, textX, yOffset+BUTTON_HGT*2, 1, 1, 1, a, self.font);
     else
-        self:drawText(getText("IGUI_UsersList_DetailsRole", item.item:getRole():getName()), self:getWidth() - 480, y + 4, 1, 1, 1, a, self.font);
-        self:drawText(getText("IGUI_UsersList_DetailsNoWhitelist"), self:getWidth() - 480, y + 2 + FONT_HGT_SMALL, 1, 1, 1, a, self.font);
+        self:drawText(detailsNoWhitelistString, textX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font);
     end
 
     return y + self.itemheight;
@@ -320,13 +347,15 @@ function ISUsersList:doContextMenu(item, x, y)
     local playerNum = self.player:getPlayerNum()
     local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY());
     local roles = getRoles()
-    if self.player:getRole():hasCapability(Capability.ChangeAccessLevel) then
+    if self.player:getRole():hasCapability(Capability.ChangeAccessLevel) and self.player:getRole():getPosition() >= item:getRole():getPosition() then
         local setRoleOption = context:addOption('Set Role', worldobjects, nil)
         local subMenu = context:getNew(context)
         context:addSubMenu(setRoleOption, subMenu);
         for i=0,roles:size()-1 do
             local role = roles:get(i);
-            subMenu:addOption(getText("IGUI_UserList_SetRole", role:getName()), ISUsersList.instance, ISUsersList.onSetRoleClickOption, item, role:getName());
+            if self.player:getRole():getPosition() >= role:getPosition() then
+                subMenu:addOption(getText("IGUI_UserList_SetRole", role:getName()), ISUsersList.instance, ISUsersList.onSetRoleClickOption, item, role:getName());
+            end
         end
     end
     if item:isOnline() then
@@ -440,7 +469,7 @@ function ISUsersList:doContextMenu(item, x, y)
         end
 
     end
-    if self.player:getRole():hasCapability(Capability.ModifyNetworkUsers) then
+    if self.player:getRole():hasCapability(Capability.ModifyNetworkUsers) and self.player:getRole():getPosition() >= item:getRole():getPosition() then
         context:addOption(getText("IGUI_UserList_Delete"), ISUsersList.instance, ISUsersList.onClickOption, item, "Delete");
         context:addOption(getText("IGUI_UserList_ResetTOTPSecret"), ISUsersList.instance, ISUsersList.onClickOption, item, "ResetTOTPSecret");
         context:addOption(getText("IGUI_UserList_ResetPassword"), ISUsersList.instance, ISUsersList.onClickOption, item, "ResetPassword");

@@ -144,6 +144,7 @@ AnimalDefinitions.animals["piglet"].minBlood = 200;
 AnimalDefinitions.animals["piglet"].maxBlood = 600;
 AnimalDefinitions.animals["piglet"].idleSoundRadius = 20;
 AnimalDefinitions.animals["piglet"].idleSoundVolume = 10;
+AnimalDefinitions.animals["piglet"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals["sow"] = {};
@@ -215,6 +216,7 @@ AnimalDefinitions.animals["sow"].idleSoundRadius = 40;
 AnimalDefinitions.animals["sow"].idleSoundVolume = 20;
 AnimalDefinitions.animals["sow"].hungerBoost = 3;
 AnimalDefinitions.animals["sow"].thirstBoost = 5;
+AnimalDefinitions.animals["sow"].feedByHandAnim = AnimalDefinitions.animals["piglet"].feedByHandAnim;
 
 AnimalDefinitions.animals["boar"] = {};
 AnimalDefinitions.animals["boar"].bodyModel = "FarmPig_BoarBody";
@@ -280,6 +282,7 @@ AnimalDefinitions.animals["boar"].idleSoundRadius = 40;
 AnimalDefinitions.animals["boar"].idleSoundVolume = 20;
 AnimalDefinitions.animals["boar"].hungerBoost = 3;
 AnimalDefinitions.animals["boar"].thirstBoost = 5;
+AnimalDefinitions.animals["boar"].feedByHandAnim = AnimalDefinitions.animals["sow"].feedByHandAnim;
 
 
 -- NOTE: boar.breeds must not be the same table as sow.breeds.

@@ -159,7 +159,7 @@ function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
             end
             local container = v:getOutermostContainer()
             if container then
-                if container:getParent() then
+                if container:getParent() and container:getParent() ~= self.chr then
                     sq = container:getParent():getSquare();
                 end
                 if container:getContainingItem() and container:getContainingItem():getWorldItem() then
@@ -180,7 +180,7 @@ function ISPlace3DItemCursor:renderOpaqueObjectsInWorld(x, y, z, square)
         end
         local container = item:getOutermostContainer()
         if container then
-            if container:getParent() then
+            if container:getParent() and container:getParent() ~= self.chr then
                 sq = container:getParent():getSquare();
             end
             if container:getContainingItem() and container:getContainingItem():getWorldItem() then

@@ -29,17 +29,17 @@ function ISTakeEngineParts:perform()
 end
 
 function ISTakeEngineParts:complete()
-
-	local cond = self.part:getCondition();
-	local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
-	local condForPart = math.max(20 - (skill), 5);
-
+    if self.item == nil then
+        return false
+    end
   	if self.vehicle then
    		if not self.part then
    			print('no such part Engine')
     		return false
    		end
-    	local cond = self.part:getCondition()
+
+	    local cond = self.part:getCondition();
+	    local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
     	local condForPart = math.max(20 - skill, 5)
     	condForPart = ZombRand(condForPart / 3, condForPart)
     	local numParts = math.floor(cond / condForPart)
@@ -57,14 +57,15 @@ function ISTakeEngineParts:complete()
     	else
     	    addXp(self.character, Perks.Mechanics, 1);
     	end
+
+        if not self.character:getMechanicsItem(self.vehicle:getMechanicalID() .. "3") then
+            addXp(self.character, Perks.Mechanics, math.floor(cond / condForPart)/2);
+        end
+        self.character:addMechanicsItem(self.vehicle:getMechanicalID() .. "3", self.part, getGameTime():getCalender():getTimeInMillis());
     else
     	print('no such vehicle id=',self.vehicle)
+        return false
     end
-
-	if not self.character:getMechanicsItem(self.vehicle:getMechanicalID() .. "3") then
-	    addXp(self.character, Perks.Mechanics, math.floor(cond / condForPart)/2);
-	end
-	self.character:addMechanicsItem(self.vehicle:getMechanicalID() .. "3", self.part, getGameTime():getCalender():getTimeInMillis());
 
 	return true
 end
@@ -78,6 +79,9 @@ function ISTakeEngineParts:getExtraLogData()
 end
 
 function ISTakeEngineParts:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
@@ -86,8 +90,10 @@ end
 
 function ISTakeEngineParts:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
 	o.maxTimeInit = maxTimeInit
 	o.maxTime = maxTimeInit

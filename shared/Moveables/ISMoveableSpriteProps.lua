@@ -298,8 +298,8 @@ function ISMoveableSpriteProps:getObjectHealth()
 end
 
 function ISMoveableSpriteProps:getBreakChance( _player )
-	if ISMoveableDefinitions.cheat then return 0; end
-	if _player and self.isMoveable and self.canBreak and self.pickUpTool then
+    if ISMoveableDefinitions.cheat or _player:isMovablesCheat() then return 0; end
+    if _player and self.isMoveable and self.canBreak and self.pickUpTool then
         local toolDef = ISMoveableDefinitions:getInstance().getToolDefinition( self.pickUpTool ); --ISMoveableSpriteProps.toolDefinitions[self.pickUpTool];
         if toolDef then
             local perkLevel = _player:getPerkLevel(toolDef.perk);
@@ -393,7 +393,7 @@ function ISMoveableSpriteProps:getActionTime( _player, _mode )
 end
 
 function ISMoveableSpriteProps:hasRequiredSkill( _player, _mode )
-	if ISMoveableDefinitions.cheat then return true; end
+    if ISMoveableDefinitions.cheat or _player:isMovablesCheat() then return true; end
     if _mode == "scrap" then
         if not _player then return false end
         if not self.canScrap then return false end
@@ -456,7 +456,7 @@ function ISMoveableSpriteProps:hasRequiredSkill( _player, _mode )
 end
 
 function ISMoveableSpriteProps:hasTool( _player, _mode )
-	if ISMoveableDefinitions.cheat then return true; end
+    if ISMoveableDefinitions.cheat or _player:isMovablesCheat() then return true; end
     local tool = (_mode == "pickup" and self.pickUpTool) or (_mode == "place" and self.placeTool);
     if tool and _player then
         local inventory = _player:getInventory();
@@ -656,7 +656,7 @@ function ISMoveableSpriteProps:getInfoPanelDescription( _square, _object, _playe
         if InfoPanelFlags.scrapChance then
             local chance = ColorInfo.new(0, 0, 0, 1)
             getCore():getBadHighlitedColor():interp(getCore():getGoodHighlitedColor(), InfoPanelFlags.scrapChance/100, chance);
-            infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, getText("Tooltip_Chance"), 255, 255, 255, tostring(InfoPanelFlags.scrapChance), chance:getR()*255,chance:getG()*255,chance:getB()*255 );
+            infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, getText("IGUI_ChanceToBreak")..":", 255, 255, 255, tostring(100 - InfoPanelFlags.scrapChance), chance:getR()*255,chance:getG()*255,chance:getB()*255 );
         end
         if InfoPanelFlags.repairChance then
             local chance = ColorInfo.new(0, 0, 0, 1)
@@ -901,12 +901,12 @@ function ISMoveableSpriteProps:getInfoPanelFlagsPerTile( _square, _object, _play
         InfoPanelFlags.doorInFrame = InfoPanelFlags.doorInFrame or (_object and instanceof(_object,"IsoThumpable") and _object:isDoorFrame() and _square:getDoor(_object:getNorth()));
         InfoPanelFlags.floorAtTopOfStairs = InfoPanelFlags.floorAtTopOfStairs or self:isFloorAtTopOfStairs(_object);
         InfoPanelFlags.windowInFrame = InfoPanelFlags.windowInFrame or (instanceof(_object,"IsoThumpable") and _object:isWindow() and _square:getWindow(_object:getNorth()))
-	end
-	
-	if ISMoveableDefinitions.cheat then
-		InfoPanelFlags.hasItems = false;
-		InfoPanelFlags.tooHeavy = false;
-	end
+    end
+
+    if ISMoveableDefinitions.cheat or _player:isMovablesCheat() then
+        InfoPanelFlags.hasItems = false;
+        InfoPanelFlags.tooHeavy = false;
+    end
 end
 
 -- returns the moveable object if found on square, in case of wall overlays returns the wallobject and overlay spriteinstance.
@@ -1069,10 +1069,10 @@ end
 --in case of wall objects, _object is not passed (nil)
 function ISMoveableSpriteProps:canPickUpMoveable( _character, _square, _object )
     --print("MultiSprite movable CanPickUp test")
-	if ISMoveableDefinitions.cheat then
-		self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
-		return true;
-	end
+    if ISMoveableDefinitions.cheat or _character:isMovablesCheat() then
+        self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
+        return true;
+    end
     if self.isMoveable and self.isMultiSprite then
         local sgrid = self:getSpriteGridInfo(_square, true);
         if not sgrid then return false; end
@@ -1755,11 +1755,11 @@ function ISMoveableSpriteProps:canPlaceMoveableInternal( _character, _square, _i
         end
 
         if canPlace and _character and instanceof(_character, "IsoPlayer") then
-			if not ISMoveableDefinitions.cheat and not _character:isMovablesCheat() then
-				local hasSKill, _ = self:hasRequiredSkill( _character, "place" );
-				local hasTool = not self.placeTool and true or self:hasTool( _character, "place" );
-				canPlace = hasSKill and hasTool;
-			end
+            if not ISMoveableDefinitions.cheat and not _character:isMovablesCheat() then
+                local hasSKill, _ = self:hasRequiredSkill( _character, "place" );
+                local hasTool = not self.placeTool and true or self:hasTool( _character, "place" );
+                canPlace = hasSKill and hasTool;
+            end
         end
     end
     return canPlace;
@@ -3474,9 +3474,9 @@ function ISMoveableSpriteProps:scrapGiveXp(_character, _scrapDef)
 end
 
 function ISMoveableSpriteProps:getChanceByDef(scrapDef, chr)
-	if ISMoveableDefinitions.cheat then
-		return 100;
-	end
+    if ISMoveableDefinitions.cheat or chr:isMovablesCheat() then
+        return 100;
+    end
     local chance = 10 + chr:getPerkLevel(scrapDef.perk)*10;
     if scrapDef.baseChance then
         chance = chance + scrapDef.baseChance;
@@ -3527,10 +3527,10 @@ function ISMoveableSpriteProps:canScrapObject(_character)
             end
         end
     end
-	if ISMoveableDefinitions.cheat then
-		canScrap = true;
-		chance = 100;
-	end
+    if ISMoveableDefinitions.cheat or _character:isMovablesCheat() then
+        canScrap = true;
+        chance = 100;
+    end
 -- 	print("Result" .. tostring(result))
 -- 	print("chance" .. tostring(chance))
 -- 	print("perkName" .. tostring(perkName))
@@ -3753,7 +3753,7 @@ function ISMoveableSpriteProps:canRepairObject(_character)
             end;
         --end;
 
-        if ISMoveableDefinitions.cheat then
+        if ISMoveableDefinitions.cheat or _character:isMovablesCheat() then
             canRepair = true;
             chance = 100;
         end;

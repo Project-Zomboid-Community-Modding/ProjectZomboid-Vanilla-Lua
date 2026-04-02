@@ -1,37 +1,38 @@
-if not isClient() then return end
-
 ISAdminPowerUI = ISPanel:derive("ISAdminPowerUI");
 ISAdminPowerUI.messages = {};
-
-ISAdminPowerUI.cheatTooltips = {}
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local BUTTON_WIDTH = 100
 
 function ISAdminPowerUI:initialise()
-    ISPanel.initialise(self);
-    local btnWid = 100
+    ISPanel.initialise(self)
 
-    self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RadioSave"), self, ISAdminPowerUI.onClick);
-    self.ok.internal = "SAVE";
-    self.ok.anchorTop = false
-    self.ok.anchorBottom = true
-    self.ok:initialise();
-    self.ok:instantiate();
-    self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
-    self:addChild(self.ok);
-    
-    self.tickBox = ISTickBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+UI_BORDER_SPACING*2+1, 100, BUTTON_HGT, "Admin Powers", self, self.onTicked)
-    self.tickBox.backgroundColor.a = 1
-    self.tickBox.background = false
-    self.tickBox.choicesColor = {r=1, g=1, b=1, a=1}
-    self.tickBox.leftMargin = 2
-    self.tickBox:setFont(UIFont.Small)
-    self:addChild(self.tickBox);
+    self.tickBoxLeft = ISTickBox:new(UI_BORDER_SPACING, FONT_HGT_MEDIUM+UI_BORDER_SPACING * 2, BUTTON_WIDTH, BUTTON_HGT, "Admin Powers", self, self.onTicked)
+    self.tickBoxLeft.backgroundColor.a = 1
+    self.tickBoxLeft.background = false
+    self.tickBoxLeft.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxLeft.leftMargin = 2
+    self.tickBoxLeft:setFont(UIFont.Small)
+    self:addChild(self.tickBoxLeft)
 
-    self.richText = ISRichTextLayout:new(self.width-(UI_BORDER_SPACING+1)*2)
+    self:addAdminPowerOptionsLeft()
+
+    self.tickBoxRight = ISTickBox:new(UI_BORDER_SPACING * 2 + self.tickBoxLeft:getWidth(), FONT_HGT_MEDIUM+UI_BORDER_SPACING * 2, BUTTON_WIDTH, BUTTON_HGT, "Admin Powers", self, self.onTicked)
+    self.tickBoxRight.backgroundColor.a = 1
+    self.tickBoxRight.background = false
+    self.tickBoxRight.choicesColor = {r=1, g=1, b=1, a=1}
+    self.tickBoxRight.leftMargin = 2
+    self.tickBoxRight:setFont(UIFont.Small)
+    self:addChild(self.tickBoxRight)
+
+    self:addAdminPowerOptionsRight()
+
+    self:setWidth(self.tickBoxLeft:getWidth() + self.tickBoxRight:getWidth() + UI_BORDER_SPACING * 3)
+
+    self.richText = ISRichTextLayout:new(self:getWidth() - UI_BORDER_SPACING * 2)
     self.richText.marginLeft = 0
     self.richText.marginTop = 0
     self.richText.marginRight = 0
@@ -40,229 +41,287 @@ function ISAdminPowerUI:initialise()
     self.richText:initialise()
     self.richText:paginate()
 
-    self:addAdminPowerOptions()
+    self:setHeight(FONT_HGT_MEDIUM + math.max(self.tickBoxLeft:getHeight(), self.tickBoxRight:getHeight()) + self.richText:getHeight() + BUTTON_HGT + UI_BORDER_SPACING * 5)
+
+    self.ok = ISButton:new(self:getWidth() / 2 - UI_BORDER_SPACING / 2 - BUTTON_WIDTH, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT, BUTTON_WIDTH, BUTTON_HGT, getText("IGUI_RadioSave"), self, ISAdminPowerUI.onClick);
+    self.ok.internal = "SAVE";
+    self.ok:initialise();
+    self.ok:instantiate();
+    self.ok:enableAcceptColor()
+    self:addChild(self.ok);
+
+    self.cancel = ISButton:new(self:getWidth() / 2 + UI_BORDER_SPACING / 2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT, BUTTON_WIDTH, BUTTON_HGT, getText("IGUI_RadioClose"), self, ISAdminPowerUI.onClick);
+    self.cancel.internal = "CLOSE";
+    self.cancel:initialise();
+    self.cancel:instantiate();
+    self.cancel:enableCancelColor()
+    self:addChild(self.cancel);
 end
 
-function ISAdminPowerUI:addAdminPowerOptions()
-    self.setFunction = {}
+function ISAdminPowerUI:addOptionLeft(text, selected, setFunction)
+    local n = self.tickBoxLeft:addOption(getText("IGUI_CheatPanel_"..text), text)
+    self.tickBoxLeft:setSelected(n, selected)
+    self.setFunctionLeft[n] = setFunction
+end
+
+function ISAdminPowerUI:addOptionRight(text, selected, setFunction)
+    local n = self.tickBoxRight:addOption(getText("IGUI_CheatPanel_"..text), text)
+    self.tickBoxRight:setSelected(n, selected)
+    self.setFunctionRight[n] = setFunction
+end
+
+function ISAdminPowerUI:addTooltip(tooltips, name, capability)
+    if isClient() then
+        tooltips[getText("IGUI_CheatPanel_"..name)] = getText("IGUI_CheatPanel_"..name.."_tooltip") .. "\n" .. getText("IGUI_AdminPanel_Tooltip_Capability", capability)
+    else
+        tooltips[getText("IGUI_CheatPanel_"..name)] = getText("IGUI_CheatPanel_"..name.."_tooltip")
+    end
+end
+
+function ISAdminPowerUI:addAdminPowerOptionsLeft()
+    self.setFunctionLeft = {}
+    self.cheatTooltipsLeft = {}
     if self.player:getRole():hasCapability(Capability.ToggleInvisibleHimself) then
-        self:addOption(getText("IGUI_AdminPanel_Invisible"), self.player:isInvisible(), function(self, selected)
+        self:addOptionLeft("Invisible", self.player:isInvisible(), function(self, selected)
             self.player:setInvisible(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_Invisible")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleInvisibleHimself:name())
+        self:addTooltip(self.cheatTooltipsLeft, "Invisible", Capability.ToggleInvisibleHimself:name())
     end
     if self.player:getRole():hasCapability(Capability.ToggleGodModHimself) then
-        self:addOption(getText("IGUI_AdminPanel_GodMode"), self.player:isGodMod(), function(self, selected)
+        self:addOptionLeft("GodMod", self.player:isGodMod(), function(self, selected)
             self.player:setGodMod(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_GodMode")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleGodModHimself:name())
+        self:addTooltip(self.cheatTooltipsLeft, "GodMod", Capability.ToggleGodModHimself:name())
     end
     if self.player:getRole():hasCapability(Capability.ToggleNoclipHimself) then
-        self:addOption(getText("IGUI_AdminPanel_NoClip"), self.player:isNoClip(), function(self, selected)
+        self:addOptionLeft("NoClip", self.player:isNoClip(), function(self, selected)
             self.player:setNoClip(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_NoClip")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleNoclipHimself:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseTimedActionInstantCheat) then
-        self:addOption(getText("IGUI_AdminPanel_TimedActionInstant"), self.player:isTimedActionInstantCheat(), function(self, selected)
-            self.player:setTimedActionInstantCheat(selected);
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_TimedActionInstant")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseTimedActionInstantCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedCarry) then
-        self:addOption(getText("IGUI_AdminPanel_UnlimitedCarry"), self.player:isUnlimitedCarry(), function(self, selected)
-            self.player:setUnlimitedCarry(selected);
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedCarry")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedCarry:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedEndurance) then
-        self:addOption(getText("IGUI_AdminPanel_UnlimitedEndurance"), self.player:isUnlimitedEndurance(), function(self, selected)
-            self.player:setUnlimitedEndurance(selected);
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedEndurance")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedEndurance:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedAmmo) then
-        self:addOption(getText("IGUI_AdminPanel_UnlimitedAmmo"), self.player:isUnlimitedAmmo(), function(self, selected)
-            self.player:setUnlimitedAmmo(selected);
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_UnlimitedAmmo")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleUnlimitedAmmo:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleKnowAllRecipes) then
-        self:addOption(getText("IGUI_AdminPanel_KnowAllRecipes"), self.player:isKnowAllRecipes(), function(self, selected)
-            self.player:setKnowAllRecipes(selected);
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_KnowAllRecipes")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ToggleKnowAllRecipes:name())
+        self:addTooltip(self.cheatTooltipsLeft, "NoClip", Capability.ToggleNoclipHimself:name())
     end
     if self.player:getRole():hasCapability(Capability.UseFastMoveCheat) then
-        self:addOption(getText("IGUI_AdminPanel_FastMove"), ISFastTeleportMove.cheat, function(self, selected)
+        self:addOptionLeft("FastMove", ISFastTeleportMove.cheat, function(self, selected)
             ISFastTeleportMove.cheat = selected;
             self.player:setFastMoveCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FastMove")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFastMoveCheat:name()) .. "\n" .. getText("IGUI_AdminPanel_Tooltip_FastMove")
+        self:addTooltip(self.cheatTooltipsLeft, "FastMove", Capability.UseFastMoveCheat:name())
+    end
+    if self.player:getRole():hasCapability(Capability.UseTimedActionInstantCheat) then
+        self:addOptionLeft("TimedActionInstant", self.player:isTimedActionInstantCheat(), function(self, selected)
+            self.player:setTimedActionInstantCheat(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsLeft, "TimedActionInstant", Capability.UseTimedActionInstantCheat:name())
+    end
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedCarry) then
+        self:addOptionLeft("UnlimitedCarry", self.player:isUnlimitedCarry(), function(self, selected)
+            self.player:setUnlimitedCarry(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedCarry", Capability.ToggleUnlimitedCarry:name())
+    end
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedEndurance) then
+        self:addOptionLeft("UnlimitedEndurance", self.player:isUnlimitedEndurance(), function(self, selected)
+            self.player:setUnlimitedEndurance(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedEndurance", Capability.ToggleUnlimitedEndurance:name())
+    end
+    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedAmmo) then
+        self:addOptionLeft("UnlimitedAmmo", self.player:isUnlimitedAmmo(), function(self, selected)
+            self.player:setUnlimitedAmmo(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedAmmo", Capability.ToggleUnlimitedAmmo:name())
+    end
+    if self.player:getRole():hasCapability(Capability.ToggleKnowAllRecipes) then
+        self:addOptionLeft("KnowAllRecipes", self.player:isKnowAllRecipes(), function(self, selected)
+            self.player:setKnowAllRecipes(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsLeft, "KnowAllRecipes", Capability.ToggleKnowAllRecipes:name())
     end
     if self.player:getRole():hasCapability(Capability.UseBuildCheat) then
-        self:addOption(getText("IGUI_AdminPanel_BuildCheat"), ISBuildMenu.cheat, function(self, selected)
+        self:addOptionLeft("BuildCheat", ISBuildMenu.cheat, function(self, selected)
             ISBuildMenu.cheat = selected;
             self.player:setBuildCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_BuildCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseBuildCheat:name())
+        self:addTooltip(self.cheatTooltipsLeft, "BuildCheat", Capability.UseBuildCheat:name())
     end
     if self.player:getRole():hasCapability(Capability.UseFarmingCheat) then
-        self:addOption(getText("IGUI_AdminPanel_FarmingCheat"), ISFarmingMenu.cheat, function(self, selected)
+        self:addOptionLeft("FarmingCheat", ISFarmingMenu.cheat, function(self, selected)
             ISFarmingMenu.cheat = selected;
             self.player:setFarmingCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FarmingCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFarmingCheat:name())
+        self:addTooltip(self.cheatTooltipsLeft, "FarmingCheat", Capability.UseFarmingCheat:name())
     end
     if self.player:getRole():hasCapability(Capability.UseFishingCheat) then
-        self:addOption(getText("IGUI_AdminPanel_FishingCheat"), self.player:isFishingCheat(), function(self, selected)
+        self:addOptionLeft("FishingCheat", self.player:isFishingCheat(), function(self, selected)
             self.player:setFishingCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_FishingCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseFishingCheat:name())
+        self:addTooltip(self.cheatTooltipsLeft, "FishingCheat", Capability.UseFishingCheat:name())
     end
+    self.tickBoxLeft:setWidthToFit()
+end
+
+function ISAdminPowerUI:addAdminPowerOptionsRight()
+    self.setFunctionRight = {}
+    self.cheatTooltipsRight = {}
     if self.player:getRole():hasCapability(Capability.UseHealthCheat) then
-        self:addOption(getText("IGUI_AdminPanel_HealthCheat"), ISHealthPanel.cheat, function(self, selected)
+        self:addOptionRight("HealthCheat", ISHealthPanel.cheat, function(self, selected)
             ISHealthPanel.cheat = selected;
             self.player:setHealthCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_HealthCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseHealthCheat:name())
+        self:addTooltip(self.cheatTooltipsRight, "HealthCheat", Capability.UseHealthCheat:name())
     end
     if self.player:getRole():hasCapability(Capability.UseMechanicsCheat) then
-        self:addOption(getText("IGUI_AdminPanel_MechanicsCheat"), ISVehicleMechanics.cheat, function(self, selected)
+        self:addOptionRight("MechanicsCheat", ISVehicleMechanics.cheat, function(self, selected)
             ISVehicleMechanics.cheat = selected;
             self.player:setMechanicsCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_MechanicsCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseMechanicsCheat:name())
+        self:addTooltip(self.cheatTooltipsRight, "MechanicsCheat", Capability.UseMechanicsCheat:name())
     end
     if self.player:getRole():hasCapability(Capability.UseMovablesCheat) then
-        self:addOption(getText("IGUI_AdminPanel_MoveableCheat"), ISMoveableDefinitions.cheat, function(self, selected)
+        self:addOptionRight("MoveableCheat", ISMoveableDefinitions.cheat, function(self, selected)
             ISMoveableDefinitions.cheat = selected;
             self.player:setMovablesCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_MoveableCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseMovablesCheat:name())
+        self:addTooltip(self.cheatTooltipsRight, "MoveableCheat", Capability.UseMovablesCheat:name())
     end
     if self.player:getRole():hasCapability(Capability.CanSeeAll) then
-        self:addOption(getText("IGUI_AdminPanel_CanSeeAll"), self.player:canSeeAll(), function(self, selected)
-            self.player:setCanSeeAll(selected)
+        self:addOptionRight("CanSeeAll", self.player:canSeeAll(), function(self, selected)
+            self.player:setCanSeeAll(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_CanSeeAll")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.CanSeeAll:name())
+        self:addTooltip(self.cheatTooltipsRight, "CanSeeAll", Capability.CanSeeAll:name())
     end
     if self.player:getRole():hasCapability(Capability.CanHearAll) then
-        self:addOption(getText("IGUI_AdminPanel_CanHearAll"), self.player:canHearAll(), function(self, selected)
-            self.player:setCanHearAll(selected)
+        self:addOptionRight("CanHearAll", self.player:canHearAll(), function(self, selected)
+            self.player:setCanHearAll(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_CanHearAll")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.CanHearAll:name())
+        self:addTooltip(self.cheatTooltipsRight, "CanHearAll", Capability.CanHearAll:name())
     end
     if self.player:getRole():hasCapability(Capability.ManipulateZombie) then
-        self:addOption(getText("IGUI_AdminPanel_ZombiesDontAttack"), self.player:isZombiesDontAttack(), function(self, selected)
-            self.player:setZombiesDontAttack(selected)
+        self:addOptionRight("ZombiesDontAttack", self.player:isZombiesDontAttack(), function(self, selected)
+            self.player:setZombiesDontAttack(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_ZombiesDontAttack")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.ManipulateZombie:name())
-    end
-    if self.player:getRole():hasCapability(Capability.GetStatistic) then
-        self:addOption(getText("IGUI_AdminPanel_ShowMPInfos"), self.player:isShowMPInfos(), function(self, selected)
-            self.player:setShowMPInfos(selected)
-        end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_ShowMPInfos")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.GetStatistic:name())
+        self:addTooltip(self.cheatTooltipsRight, "ZombiesDontAttack", Capability.ManipulateZombie:name())
     end
     if self.player:getRole():hasCapability(Capability.UseBrushToolManager) then
-        self:addOption(getText("IGUI_AdminPanel_BrushTool"), BrushToolManager.cheat, function(self, selected)
-            BrushToolManager.cheat = selected;
-            self.player:setCanUseBrushTool(selected)
+        self:addOptionRight("BrushTool", BrushToolManager.cheat, function(self, selected)
+            BrushToolManager.cheat = selected
+            self.player:setCanUseBrushTool(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_BrushTool")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseBrushToolManager:name())
+        self:addTooltip(self.cheatTooltipsRight, "BrushTool", Capability.UseBrushToolManager:name())
     end
-    if self.player:getRole():hasCapability(Capability.UseLootTool) then
-        self:addOption(getText("IGUI_AdminPanel_LootTool"), ISLootZed.cheat, function(self, selected)
+    if self.player:getRole():hasCapability(Capability.UseLootZed) then
+        self:addOptionRight("LootZed", ISLootZed.cheat, function(self, selected)
             ISLootZed.cheat = selected;
-            ISLootLog.cheat = selected
-            self.player:setCanUseLootTool(selected)
+            self.player:setCanUseLootZed(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_AdminPanel_LootTool")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.UseLootTool:name())
+        self:addTooltip(self.cheatTooltipsRight, "LootZed", Capability.UseLootZed:name())
+    end
+    if self.player:getRole():hasCapability(Capability.UseLootLog) then
+        self:addOptionRight("LootLog", ISLootLog.cheat, function(self, selected)
+            ISLootLog.cheat = selected;
+            self.player:setCanUseLootLog(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsRight, "LootLog", Capability.UseLootLog:name())
     end
     if self.player:getRole():hasCapability(Capability.AnimalCheats) then
-        self:addOption(getText("IGUI_CheatPanel_AnimalCheat"), AnimalContextMenu.cheat, function(self, selected)
+        self:addOptionRight("AnimalCheat", AnimalContextMenu.cheat, function(self, selected)
             AnimalContextMenu.cheat = selected;
             self.player:setAnimalCheat(selected);
         end);
-        ISAdminPowerUI.cheatTooltips[getText("IGUI_CheatPanel_AnimalCheat")] = getText("IGUI_AdminPanel_Tooltip_Capability", Capability.AnimalCheats:name())
+        self:addTooltip(self.cheatTooltipsRight, "AnimalCheat", Capability.AnimalCheats:name())
     end
-
-    self.tickBox:setWidthToFit()
-
-    self:setHeight(self.tickBox:getBottom() + self.richText:getHeight() + self.ok:getHeight() + UI_BORDER_SPACING*3+1)
-end
-
-function ISAdminPowerUI:addOption(text, selected, setFunction)
-    local n = self.tickBox:addOption(text)
-    self.tickBox:setSelected(n, selected)
-    self.setFunction[n] = setFunction
+    if self.player:getRole():hasCapability(Capability.AnimalCheats) then
+        self:addOptionRight("AnimalExtraValues", self.player:isAnimalExtraValuesCheat(), function(self, selected)
+            self.player:setAnimalExtraValuesCheat(selected);
+        end);
+        self:addTooltip(self.cheatTooltipsRight, "AnimalExtraValues", Capability.AnimalCheats:name())
+    end
+    self.tickBoxRight:setWidthToFit()
 end
 
 function ISAdminPowerUI:onTicked(index, selected)
 end
 
-function ISAdminPowerUI:render()
-    if self.tickBox:isMouseOver() and ISAdminPowerUI.cheatTooltips[self.tickBox.optionsIndex[self.tickBox.mouseOverOption]] ~= nil then
-        local text = ISAdminPowerUI.cheatTooltips[self.tickBox.optionsIndex[self.tickBox.mouseOverOption]]
-        if not self.tickBox.tooltipUI then
-            self.tickBox.tooltipUI = ISToolTip:new()
-            self.tickBox.tooltipUI:setOwner(self.tickBox)
-            self.tickBox.tooltipUI:setVisible(false)
-            self.tickBox.tooltipUI:setAlwaysOnTop(true)
+function ISAdminPowerUI:renderTickBox(tickBox, tooltips)
+    if tickBox:isMouseOver() and tooltips[tickBox.optionsIndex[tickBox.mouseOverOption]] ~= nil then
+        local text = tooltips[tickBox.optionsIndex[tickBox.mouseOverOption]]
+        if not tickBox.tooltipUI then
+            tickBox.tooltipUI = ISToolTip:new()
+            tickBox.tooltipUI:setOwner(tickBox)
+            tickBox.tooltipUI:setVisible(false)
+            tickBox.tooltipUI:setAlwaysOnTop(true)
         end
-        if not self.tickBox.tooltipUI:getIsVisible() then
+        if not tickBox.tooltipUI:getIsVisible() then
             if string.contains(text, "\n") then
-                self.tickBox.tooltipUI.maxLineWidth = 1000 -- don't wrap the lines
+                tickBox.tooltipUI.maxLineWidth = 1000 -- don't wrap the lines
             else
-                self.tickBox.tooltipUI.maxLineWidth = 300
+                tickBox.tooltipUI.maxLineWidth = 300
             end
-            self.tickBox.tooltipUI:addToUIManager()
-            self.tickBox.tooltipUI:setVisible(true)
+            tickBox.tooltipUI:addToUIManager()
+            tickBox.tooltipUI:setVisible(true)
         end
-        self.tickBox.tooltipUI.description = text
-        self.tickBox.tooltipUI:setX(self.tickBox:getMouseX() + 23)
-        self.tickBox.tooltipUI:setY(self.tickBox:getMouseY() + 23)
+        tickBox.tooltipUI.description = text
+        tickBox.tooltipUI:setX(tickBox:getMouseX() + 23)
+        tickBox.tooltipUI:setY(tickBox:getMouseY() + 23)
     else
-        if self.tickBox.tooltipUI and self.tickBox.tooltipUI:getIsVisible() then
-            self.tickBox.tooltipUI:setVisible(false)
-            self.tickBox.tooltipUI:removeFromUIManager()
+        if tickBox.tooltipUI and tickBox.tooltipUI:getIsVisible() then
+            tickBox.tooltipUI:setVisible(false)
+            tickBox.tooltipUI:removeFromUIManager()
         end
+    end
+end
+
+function ISAdminPowerUI:render()
+    self:renderTickBox(self.tickBoxLeft, self.cheatTooltipsLeft)
+    self:renderTickBox(self.tickBoxRight, self.cheatTooltipsRight)
+    if not self.player and getPlayer() then
+        self.player = getPlayer()
+    end
+    if self.player:isDead() and not getPlayer():isDead() then
+        self.player = getPlayer()
     end
 end
 
 function ISAdminPowerUI:prerender()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_AdminPower"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_AdminPower")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
-
-    self.richText:render(UI_BORDER_SPACING+1, self.ok.y - UI_BORDER_SPACING - self.richText:getHeight(), self)
+    if isClient() then
+        self:drawText(getText("IGUI_AdminPanel_AdminPower"), self.width / 2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_AdminPower")) / 2), UI_BORDER_SPACING, 1, 1, 1, 1, UIFont.Medium);
+        self.richText:render(UI_BORDER_SPACING, math.max(self.tickBoxLeft:getBottom(), self.tickBoxRight:getBottom()) + UI_BORDER_SPACING, self)
+    else
+        self:drawText("Cheats", self.width / 2 - (getTextManager():MeasureStringX(UIFont.Medium, "Cheats") / 2), UI_BORDER_SPACING, 1, 1, 1, 1, UIFont.Medium);
+    end
 end
 
 function ISAdminPowerUI:onClick(button)
     if button.internal == "SAVE" then
         if not self.player:isDead() then
-            for i=1,#self.tickBox.options do
-                self.setFunction[i](self, self.tickBox:isSelected(i))
+            for i=1,#self.tickBoxLeft.options do
+                self.setFunctionLeft[i](self, self.tickBoxLeft:isSelected(i))
+            end
+            for i=1,#self.tickBoxRight.options do
+                self.setFunctionRight[i](self, self.tickBoxRight:isSelected(i))
             end
             sendPlayerExtraInfo(self.player)
         end
     
-        self:setVisible(false);
-        self:removeFromUIManager();
+        self:setVisible(false)
+        self:removeFromUIManager()
+    end
+
+    if button.internal == "CLOSE" then
+        self:setVisible(false)
+        self:removeFromUIManager()
     end
 end
 
-ISAdminPowerUI.onGameStart = function()
-    ISBuildMenu.cheat = getPlayer():isBuildCheat();
-    ISFarmingMenu.cheat = getPlayer():isFarmingCheat();
-    ISHealthPanel.cheat = getPlayer():isHealthCheat();
-    ISMoveableDefinitions.cheat = getPlayer():isMovablesCheat();
-    BrushToolManager.cheat = getPlayer():isCanUseBrushTool();
-    ISFastTeleportMove.cheat = getPlayer():isFastMoveCheat();
-    AnimalContextMenu.cheat = getPlayer():isAnimalCheat();
-    ISLootZed.cheat = getPlayer():canUseLootTool();
-    ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
+function ISAdminPowerUI.OnOpenPanel()
+    if ISAdminPowerUI.instance==nil then
+        ISAdminPowerUI.instance = ISAdminPowerUI:new(50, 200, 480, 350, getPlayer())
+        ISAdminPowerUI.instance:initialise();
+    end
+    ISAdminPowerUI.instance:addToUIManager();
+    ISAdminPowerUI.instance:setVisible(true);
+    return ISAdminPowerUI.instance;
 end
 
 function ISAdminPowerUI:new(x, y, width, height, player)
@@ -280,6 +339,19 @@ function ISAdminPowerUI:new(x, y, width, height, player)
     o.moveWithMouse = true;
     ISAdminPowerUI.instance = o;
     return o;
+end
+
+ISAdminPowerUI.onGameStart = function()
+    ISBuildMenu.cheat = getPlayer():isBuildCheat();
+    ISFarmingMenu.cheat = getPlayer():isFarmingCheat();
+    ISHealthPanel.cheat = getPlayer():isHealthCheat();
+    ISMoveableDefinitions.cheat = getPlayer():isMovablesCheat();
+    BrushToolManager.cheat = getPlayer():isCanUseBrushTool();
+    ISFastTeleportMove.cheat = getPlayer():isFastMoveCheat();
+    AnimalContextMenu.cheat = getPlayer():isAnimalCheat();
+    ISLootZed.cheat = getPlayer():canUseLootZed();
+    ISLootLog.cheat = getPlayer():canUseLootLog();
+    ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
 end
 
 Events.OnGameStart.Add(ISAdminPowerUI.onGameStart)

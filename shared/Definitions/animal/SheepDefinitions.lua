@@ -200,6 +200,7 @@ AnimalDefinitions.animals["lamb"].minBlood = 200;
 AnimalDefinitions.animals["lamb"].maxBlood = 600;
 AnimalDefinitions.animals["lamb"].idleSoundRadius = 20;
 AnimalDefinitions.animals["lamb"].idleSoundVolume = 10;
+AnimalDefinitions.animals["lamb"].feedByHandAnim = "AnimalLureLow";
 
 
 AnimalDefinitions.animals["ewe"] = {};
@@ -273,6 +274,7 @@ AnimalDefinitions.animals["ewe"].idleSoundRadius = 40;
 AnimalDefinitions.animals["ewe"].idleSoundVolume = 20;
 AnimalDefinitions.animals["ewe"].hungerBoost = 3;
 AnimalDefinitions.animals["ewe"].thirstBoost = 5;
+AnimalDefinitions.animals["ewe"].feedByHandAnim = "AnimalLure";
 
 AnimalDefinitions.animals["ram"] = {};
 AnimalDefinitions.animals["ram"].bodyModel = "Sheep_RamSheared";
@@ -344,6 +346,7 @@ AnimalDefinitions.animals["ram"].idleSoundRadius = 40;
 AnimalDefinitions.animals["ram"].idleSoundVolume = 20;
 AnimalDefinitions.animals["ram"].hungerBoost = 3;
 AnimalDefinitions.animals["ram"].thirstBoost = 5;
+AnimalDefinitions.animals["ram"].feedByHandAnim = AnimalDefinitions.animals["ewe"].feedByHandAnim;
 
 local ewe_sounds = {
 	death = { name = "AnimalVoiceSheepDeath", slot = "voice", priority = 100 },

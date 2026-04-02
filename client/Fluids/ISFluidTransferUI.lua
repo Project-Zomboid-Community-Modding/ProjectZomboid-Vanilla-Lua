@@ -181,7 +181,7 @@ function ISFluidTransferUI:createChildren()
 
     local buttonWidth = (self.panelRight:getRight() - self.panelLeft.x - UI_BORDER_SPACING)/2
 
-    local btnText = getText("Fluid_Transfer");
+    btnText = getText("Fluid_Transfer");
     self.btnTransfer = ISButton:new(self.panelLeft.x, y, buttonWidth, BUTTON_HGT, btnText, self, ISFluidTransferUI.onButton);
     self.btnTransfer.internal = "TRANSFER";
     self.btnTransfer:initialise();
@@ -189,7 +189,7 @@ function ISFluidTransferUI:createChildren()
     self.btnTransfer:enableAcceptColor();
     self:addChild(self.btnTransfer);
 
-    local btnText = getText("Fluid_Close");
+    btnText = getText("Fluid_Close");
     self.btnClose = ISButton:new(self.btnTransfer:getRight() + UI_BORDER_SPACING, y, buttonWidth, BUTTON_HGT, btnText, self, ISFluidTransferUI.onButton);
     self.btnClose.internal = "CLOSE";
     self.btnClose:initialise();
@@ -199,18 +199,19 @@ function ISFluidTransferUI:createChildren()
 
     y = self.btnClose:getBottom() + UI_BORDER_SPACING + 1
 
-    self.titleLabel:setX(x/2);
-    self.fluidTitleLabel:setX(x/2);
-    self.errorLabel:setX(x/2);
-    self.errorLabel.originalX = x/2;
-    self.maxTransferLabel:setX(x/2);
-    self.transferringLabel:setX(x/2);
+    self:setWidth(x);
+    self:setHeight(y);
+
+    local centre = x/2
+    self.titleLabel:setX(centre);
+    self.fluidTitleLabel:setX(centre);
+    self.errorLabel:setX(centre);
+    self.errorLabel.originalX = centre;
+    self.maxTransferLabel:setX(centre);
+    self.transferringLabel:setX(centre);
 
     self:setMaxTransfer(0);
     self:setTransferring(0);
-
-    self:setWidth(x);
-    self:setHeight(y);
 end
 
 function ISFluidTransferUI:setMaxTransfer(_value)
@@ -225,10 +226,20 @@ end
 
 function ISFluidTransferUI:onContainerAdd( _item, _panel)
     self:validatePanel(true);
+    self:resetSlider();
 end
 
 function ISFluidTransferUI:onContainerRemove( _removedItem, _panel)
     self:validatePanel(true);
+    self:resetSlider();
+end
+
+function ISFluidTransferUI:resetSlider()
+    if (self.panelLeft:getContainer() and self.panelRight:getContainer()) and FluidContainer.CanTransfer(self.panelLeft:getContainer(), self.panelRight:getContainer()) then
+        self.slider:setCurrentValue(self.slider.maxValue);
+    else
+        self.slider:setCurrentValue(0.0);
+    end
 end
 
 function ISFluidTransferUI:onContainerVerify( _item, _panel)
@@ -295,9 +306,9 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
     local to = self.panelRight:getContainer();
 
     if from and from:getPrimaryFluid() then
-        self.fluidTitleLabel:setName((from:getUiName()):gsub("%b()$",""))
+        self.fluidTitleLabel:setNameWithoutMoving((from:getUiName()):gsub("%b()$",""))
     else
-        self.fluidTitleLabel:setName("")
+        self.fluidTitleLabel:setNameWithoutMoving("")
     end
 
 
@@ -339,7 +350,7 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
     self.panelRight:setInvalid(false);
 
     if (not self.disableTransfer) and (from and to) and FluidContainer.CanTransfer(from, to) then
-        self.errorLabel:setName(self.errorDefault);
+        self.errorLabel:setNameWithoutMoving(self.errorDefault);
 
         local fromAmount = from:getAmount();
         local toFree = to:getCapacity() - to:getAmount();
@@ -368,7 +379,7 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
     else
         if not self.disableTransfer then
             local error = FluidContainer.GetTransferReason(from, to);
-            self.errorLabel:setName(error);
+            self.errorLabel:setNameWithoutMoving(error);
             if not from or from:isEmpty() then
                 self.panelLeft:setInvalid(true);
             elseif not to or to:isFull() then
@@ -378,7 +389,7 @@ function ISFluidTransferUI:validatePanel(_forceUpdate)
                 self.panelRight:setInvalid(true);
             end
         else
-            self.errorLabel:setName(getText("Fluid_Reason_Transfer"));
+            self.errorLabel:setNameWithoutMoving(getText("Fluid_Reason_Transfer"));
             self.panelLeft:setInvalid(true);
             self.panelRight:setInvalid(true);
         end
@@ -516,6 +527,7 @@ function ISFluidTransferUI:onButton(_btn)
 
         self:validatePanel();
         self:arrangePanels();
+        self:resetSlider();
     elseif _btn.internal=="CLOSE" then
         self:close()
     end

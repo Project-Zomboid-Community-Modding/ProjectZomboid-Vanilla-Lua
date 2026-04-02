@@ -108,23 +108,28 @@ function ISTakeGasolineFromVehicle:nextItem()
 end
 
 function ISTakeGasolineFromVehicle:complete()
-	if not predicateEmptyPetrol(self.item) then
-		self.fluidCont:adjustAmount(self.itemTarget)
-	else
-		self.fluidCont:addFluid(Fluid.Petrol, self.itemTarget)
-	end
+    if self.item == nil then
+        return false
+    end
 	if self.vehicle then
    		if not self.part then
    			print('no such part ',self.part)
    			return false
    		end
+	    if not predicateEmptyPetrol(self.item) then
+		    self.fluidCont:adjustAmount(self.itemTarget)
+	    else
+		    self.fluidCont:addFluid(Fluid.Petrol, self.itemTarget)
+	    end
 		self.part:setContainerContentAmount(self.tankTarget)
    		self.vehicle:transmitPartModData(self.part)
+
+	    self.item:syncItemFields();
    	else
    		print('no such vehicle id=',self.vehicle)
+   		return false
    	end
 
-	self.item:syncItemFields();
     return true
 end
 
@@ -136,6 +141,9 @@ function ISTakeGasolineFromVehicle:serverStop()
 end
 
 function ISTakeGasolineFromVehicle:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
     self.itemStart = self.fluidCont:getAmount();
     self.tankStart = self.part:getContainerContentAmount();
     local freeInventoryCapacity = self.character:getFreeInventoryCapacity()/ZomboidGlobals.EquippedOrWornEncumbranceMultiplier;
@@ -149,11 +157,15 @@ end
 
 function ISTakeGasolineFromVehicle:new(character, part, item, otherItems)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
 	o.otherItems = otherItems
-	o.fluidCont = o.item:getFluidContainer();
+	if item ~= nil then
+	    o.fluidCont = o.item:getFluidContainer();
+	end
 	o.maxTime = o:getDuration();
 	return o
 end

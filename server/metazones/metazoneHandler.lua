@@ -13,7 +13,7 @@ end
 
 local function handleMannequinZone(file, v)
 	if v.properties == nil then
-		print('ERROR: Mannequin zone missing properties in '..file..' at '..v.x..','..v.y..','..v.z)
+		DebugType.Lua:error('ERROR: Mannequin zone missing properties in '..file..' coords: '..v.x..', '..v.y..', '..v.z)
 		return
 	end
 	getWorld():registerMannequinZone(v.name, v.type, v.x, v.y, v.z, v.width, v.height, v.properties)
@@ -127,7 +127,7 @@ function doMapZones()
             end
             table.wipe(objects)
         else
-            print('can\'t find map objects file: '..file)
+            DebugType.Lua:warn('can\'t find map objects file: ' .. file)
         end
         local file2 = 'media/maps/'..dirs:get(i-1)..'/regions.lua'
         if fileExists(file2) then

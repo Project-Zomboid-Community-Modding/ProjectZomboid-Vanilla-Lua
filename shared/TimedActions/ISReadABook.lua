@@ -321,7 +321,7 @@ function ISReadABook:complete()
 
     if self.item:getLearnedRecipes() and not self.item:getLearnedRecipes():isEmpty() then
         self.character:getAlreadyReadBook():add(self.item:getFullType());
-         if self.item:getLearnedRecipes():contains("Herbalist") and not self.character:hasTrait(CharacterTrait.HERBALIST) then
+         if self.item:getLearnedRecipes():contains("Herbalist") and not self.character:hasTrait(CharacterTrait.HERBALIST) and not self.character:hasTrait(CharacterTrait.HERBALIST_PROF) then
              self.character:hasTrait(CharacterTrait.HERBALIST);
          end
     end
@@ -331,7 +331,8 @@ function ISReadABook:complete()
 
         local args = { itemId=self.item:getID() }
         sendServerCommand(self.character, 'literature', 'readLiterature', args)
-
+    elseif SkillBook[self.item:getSkillTrained()] and not self.isLiteratureRead then
+        ISReadABook.checkMultiplier(self);
     elseif self.item:getAlreadyReadPages() >= self.item:getNumberOfPages() then
         self.item:setAlreadyReadPages(0);
     end

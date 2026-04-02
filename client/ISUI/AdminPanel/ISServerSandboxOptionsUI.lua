@@ -279,7 +279,7 @@ end
 
 
 function SandboxOptionsScreenPresetPanel:createChildren()
-	
+
 	local label = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING+1, BUTTON_HGT, getText("UI_ServerSettings_ListOfPresets"), 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(label)
 
@@ -383,8 +383,13 @@ function ISServerSandboxOptionsUI:doSearch()
 end
 
 function ISServerSandboxOptionsUI:createChildren()
-	local titleHgt = FONT_HGT_LARGE
 	local btnWid = 100
+
+    local titleWid = getTextManager():MeasureStringX(UIFont.Large, getText("UI_optionscreen_SandboxOptions"))
+    local title = ISLabel:new(self.width / 2 - titleWid / 2, UI_BORDER_SPACING+1, FONT_HGT_LARGE, getText("UI_optionscreen_SandboxOptions"), 1, 1, 1, 1, UIFont.Large, true)
+    title:initialise()
+    title:instantiate()
+    self:addChild(title)
 
 	local SettingsTable = ServerSettingsScreen.getSandboxSettingsTable()
 	SettingsTable[1] = {
@@ -400,9 +405,9 @@ function ISServerSandboxOptionsUI:createChildren()
 	end
 
 	local scrollBarWid = 17
+    local searchY = UI_BORDER_SPACING*2 + FONT_HGT_LARGE + 1
 
-	local searchHeight = FONT_HGT_SMALL + 4 * 2
-	self.searchEntry = ISTextEntryBox:new("", UI_BORDER_SPACING+1, UI_BORDER_SPACING*2 + titleHgt + 1, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, searchHeight)
+	self.searchEntry = ISTextEntryBox:new("", UI_BORDER_SPACING+1, searchY, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, BUTTON_HGT)
 	self.searchEntry.font = UIFont.Small
 	self.searchEntry.onTextChange = function() self:doSearch() end
 	self.searchEntry.setText = function(_self, str)
@@ -422,7 +427,7 @@ function ISServerSandboxOptionsUI:createChildren()
     self.searchEntry:setClearButton(true)
 	self:addChild(self.searchEntry)
 
-	self.listbox = SandboxOptionsScreenListBox:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING*3 + searchHeight + titleHgt + 1, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, self.height - BUTTON_HGT*2 - titleHgt - UI_BORDER_SPACING*5-2)
+	self.listbox = SandboxOptionsScreenListBox:new(UI_BORDER_SPACING+1, self.searchEntry:getBottom() + UI_BORDER_SPACING, UI_BORDER_SPACING*2 + maxWid + scrollBarWid, self.height - self.searchEntry:getBottom() - BUTTON_HGT - UI_BORDER_SPACING*3 - 1)
 	self.listbox:initialise()
 	self.listbox:setAnchorLeft(true)
 	self.listbox:setAnchorRight(false)
@@ -450,12 +455,6 @@ function ISServerSandboxOptionsUI:createChildren()
 
 	self:setWidth(self.listbox:getRight() + MAX_WIDTH + scrollBarWid + UI_BORDER_SPACING*2)
 	self:ignoreWidthChange()
-
-	local titleWid = getTextManager():MeasureStringX(UIFont.Large, getText("UI_optionscreen_SandboxOptions"))
-	local title = ISLabel:new(self.width / 2 - titleWid / 2, UI_BORDER_SPACING+1, FONT_HGT_LARGE, getText("UI_optionscreen_SandboxOptions"), 1, 1, 1, 1, UIFont.Large, true)
-	title:initialise()
-	title:instantiate()
-	self:addChild(title)
 
 	self.closeButton = ISButton:new(self.width - UI_BORDER_SPACING - btnWid - 1, self.height - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, self.onButtonClose)
 	self.closeButton.internal = "CLOSE"

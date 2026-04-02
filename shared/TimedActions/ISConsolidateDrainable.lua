@@ -23,7 +23,11 @@ function ISConsolidateDrainable:update()
     end
     if not isClient() then
 	    if self.drainable:getCurrentUsesFloat() <= 0 then
-		    self:forceComplete();
+            if isServer() then
+                self.netAction:forceComplete()
+            else
+                self:forceComplete()
+            end
 	    end
 	    local fromDelta = self.fromStart + (self.fromTarget - self.fromStart) * progress;
 	    self.drainable:setUsedDelta(fromDelta);

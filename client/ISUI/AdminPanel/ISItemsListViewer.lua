@@ -112,7 +112,7 @@ function ISItemsListViewer.OnOpenPanel()
         ISItemsListViewer.instance:setKeyboardFocus()
         return
     end
-    local modal = ISItemsListViewer:new(50, 200, 1150+(getCore():getOptionFontSizeReal()*50), 650+(getCore():getOptionFontSizeReal()*50))
+    local modal = ISItemsListViewer:new(50, 200, 1150+(getCore():getOptionFontSizeReal()*100), 650+(getCore():getOptionFontSizeReal()*50))
     modal:initialise();
     modal:addToUIManager();
     modal.instance:setKeyboardFocus()

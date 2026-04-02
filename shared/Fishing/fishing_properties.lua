@@ -707,7 +707,7 @@ table.insert(Fishing.fishNetWithBait, "Base.ChannelCatfish")
 table.insert(Fishing.fishNetWithBait, "Base.FlatheadCatfish")
 
 function Fishing.onCreateFish(item)
-    if not item then return end
+    if not item or isClient() then return end
 
     local itemType = item:getFullType()
     local fishConfig = nil
@@ -759,7 +759,7 @@ function Fishing.onCreateFish(item)
     end
 
     if not RecipeCodeOnTest.cutFish(item, nil) then
-        item:setTooltip(getText("Tooltip_Fishing_TooSmallForSlicing"))
+        item:setTooltip("Tooltip_Fishing_TooSmallForSlicing")
     end
 
 end

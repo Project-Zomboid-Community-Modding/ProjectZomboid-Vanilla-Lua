@@ -56,11 +56,11 @@ function ISUnlockVehicleDoor:complete()
     if self.vehicle then
     	if not self.part then
     		print('no such part '..tostring(self.part))
-    		return
+    		return false
     	end
     	if not self.part:getDoor() then
     		print('part ' .. self.part .. ' has no door')
-    		return
+    		return false
     	end
     	self.vehicle:toggleLockedDoor(self.part, self.character, false)
     	self.vehicle:transmitPartDoor(self.part)
@@ -69,19 +69,25 @@ function ISUnlockVehicleDoor:complete()
     	end
     else
     	print('no such vehicle id='..tostring(self.vehicle))
+    	return false
     end
 
 	return true;
 end
 
 function ISUnlockVehicleDoor:getDuration()
+    if self.part == nil then
+        return 0
+    end
 	return 1;
 end
 
 function ISUnlockVehicleDoor:new(character, part)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.forceValid = false
 	o.stopOnWalk = false
 	o.stopOnRun = false

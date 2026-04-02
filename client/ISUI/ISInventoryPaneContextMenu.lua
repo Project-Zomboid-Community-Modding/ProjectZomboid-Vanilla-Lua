@@ -537,7 +537,16 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     end
 
     if c == 1 and tests.mediaText then
-        context:addOption(getText("IGUI_media_readLabel"), player, ISInventoryPaneContextMenu.onMediaText, tests.mediaText)
+        local option = context:addOption(getText("IGUI_media_readLabel"), player, ISInventoryPaneContextMenu.onMediaText, tests.mediaText)
+        if playerObj:tooDarkToRead() then
+            option.notAvailable = true
+            option.toolTip = ISInventoryPaneContextMenu.addToolTip();
+            option.toolTip.description = getText("ContextMenu_TooDark");
+        elseif playerObj:hasTrait(CharacterTrait.ILLITERATE) then
+            option.notAvailable = true
+            option.toolTip = ISInventoryPaneContextMenu.addToolTip();
+            option.toolTip.description = getText("ContextMenu_Illiterate");
+        end
     end
 
     if c == 1 and tests.researchableRecipes and tests.researchableRecipes:getScriptItem() and tests.researchableRecipes:getScriptItem():getResearchableRecipes(playerObj, true):size() > 0 then
@@ -1022,6 +1031,7 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
 	local recentlyRead = false
 	local uninteresting = false
 	local recipeItem = false
+    local canBeRead = true
 	for i,k in ipairs(actualItems) do
         if playerObj:tooDarkToRead() then
             local nopeText = getText("ContextMenu_Read")
@@ -1043,12 +1053,14 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
             local tooltip = ISInventoryPaneContextMenu.addToolTip();
             tooltip.description = getText("ContextMenu_Illiterate");
             nope.toolTip = tooltip;
+            canBeRead = false
 		elseif k:getLvlSkillTrained() ~= -1 and SkillBook[k:getSkillTrained()].perk and	k:getLvlSkillTrained() > playerObj:getPerkLevel(SkillBook[k:getSkillTrained()].perk) + 1 then
 			local nope = context:addOption(getText("ContextMenu_Read"));	
 			nope.notAvailable = true
 			local tooltip = ISInventoryPaneContextMenu.addToolTip();
 			tooltip.description = getText("ContextMenu_TooComplicated");
 			nope.toolTip = tooltip;
+            canBeRead = false
 		end
 		if k:hasTag(ItemTag.PICTURE) then picture = true end
 		if k:hasTag(ItemTag.PICTUREBOOK) then picturebook = true end
@@ -1060,35 +1072,37 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
         end
     end
     local readOption
-    if playerObj:hasTrait(CharacterTrait.ILLITERATE) and picturebook and not recentlyRead then
-        readOption = context:addOption(getText("ContextMenu_Look_at_pictures"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-    elseif playerObj:hasTrait(CharacterTrait.ILLITERATE) and picturebook and recentlyRead then
-        readOption = context:addOption(getText("ContextMenu_ReLook_at_pictures"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-        local tooltip = ISInventoryPaneContextMenu.addToolTip();
-        tooltip.description = getText("ContextMenu_RecentlyRead");
-        readOption.toolTip = tooltip;
-    elseif picture and recentlyRead then
-        readOption = context:addOption(getText("ContextMenu_ReLook_at_picture"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-        local tooltip = ISInventoryPaneContextMenu.addToolTip();
-        tooltip.description = getText("ContextMenu_RecentlyRead");
-        readOption.toolTip = tooltip;
-    elseif picture then
-        readOption = context:addOption(getText("ContextMenu_Look_at_picture"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-    elseif recentlyRead then
-        readOption = context:addOption(getText("ContextMenu_ReRead"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-        local tooltip = ISInventoryPaneContextMenu.addToolTip();
-        tooltip.description = getText("ContextMenu_RecentlyRead");
-        readOption.toolTip = tooltip;
-    else
-        readOption = context:addOption(getText("ContextMenu_Read"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
-        if #actualItems == 1 then
-            readOption.itemForTexture = actualItems[1]
-        end
-        if uninteresting then
+    if canBeRead then
+        if playerObj:hasTrait(CharacterTrait.ILLITERATE) and picturebook and not recentlyRead then
+            readOption = context:addOption(getText("ContextMenu_Look_at_pictures"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
+        elseif playerObj:hasTrait(CharacterTrait.ILLITERATE) and picturebook and recentlyRead then
+            readOption = context:addOption(getText("ContextMenu_ReLook_at_pictures"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
             local tooltip = ISInventoryPaneContextMenu.addToolTip();
-            tooltip.description = getText("ContextMenu_EmptyNotebook");
+            tooltip.description = getText("ContextMenu_RecentlyRead");
             readOption.toolTip = tooltip;
-            readOption.notAvailable = true;
+        elseif picture and recentlyRead then
+            readOption = context:addOption(getText("ContextMenu_ReLook_at_picture"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_RecentlyRead");
+            readOption.toolTip = tooltip;
+        elseif picture then
+            readOption = context:addOption(getText("ContextMenu_Look_at_picture"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
+        elseif recentlyRead then
+            readOption = context:addOption(getText("ContextMenu_ReRead"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
+            local tooltip = ISInventoryPaneContextMenu.addToolTip();
+            tooltip.description = getText("ContextMenu_RecentlyRead");
+            readOption.toolTip = tooltip;
+        else
+            readOption = context:addOption(getText("ContextMenu_Read"), items, ISInventoryPaneContextMenu.onLiteratureItems, player);
+            if #actualItems == 1 then
+                readOption.itemForTexture = actualItems[1]
+            end
+            if uninteresting then
+                local tooltip = ISInventoryPaneContextMenu.addToolTip();
+                tooltip.description = getText("ContextMenu_EmptyNotebook");
+                readOption.toolTip = tooltip;
+                readOption.notAvailable = true;
+            end
         end
     end
     if playerObj:isAsleep() then
@@ -1520,9 +1534,9 @@ ISInventoryPaneContextMenu.doClothingPatchMenu = function(player, clothing, cont
                 local option = subMenuPart:addOption(fabric1:getDisplayName(), playerObj, ISInventoryPaneContextMenu.repairClothing, clothing, part, fabric1, thread, needle)
                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
                 if clothing:canFullyRestore(playerObj, part, fabric1) then
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
                 else
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric1) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric1);
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric1) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric1);
                 end
                 option.toolTip = tooltip;
             end
@@ -1530,9 +1544,9 @@ ISInventoryPaneContextMenu.doClothingPatchMenu = function(player, clothing, cont
                 local option = subMenuPart:addOption(fabric2:getDisplayName(), playerObj, ISInventoryPaneContextMenu.repairClothing, clothing, part, fabric2, thread, needle)
                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
                 if clothing:canFullyRestore(playerObj, part, fabric2) then
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
                 else
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE>  <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric2) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric2);
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE>  <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric2) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric2);
                 end
                 option.toolTip = tooltip;
             end
@@ -1540,9 +1554,9 @@ ISInventoryPaneContextMenu.doClothingPatchMenu = function(player, clothing, cont
                 local option = subMenuPart:addOption(fabric3:getDisplayName(), playerObj, ISInventoryPaneContextMenu.repairClothing, clothing, part, fabric3, thread, needle)
                 local tooltip = ISInventoryPaneContextMenu.addToolTip();
                 if clothing:canFullyRestore(playerObj, part, fabric3) then
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE> <RGB:0,1,0> " .. getText("Tooltip_FullyRestore");
                 else
-                    tooltip.description = getText("IGUI_perks_Tailoring") .. " :" .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE>  <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric3) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric3);
+                    tooltip.description = getText("IGUI_perks_Tailoring") .. ": " .. playerObj:getPerkLevel(Perks.Tailoring) .. " <LINE>  <RGB:0,1,0> " .. getText("Tooltip_ScratchDefense")  .. " +" .. Clothing.getScratchDefenseFromItem(playerObj, fabric3) .. " <LINE> " .. getText("Tooltip_BiteDefense") .. " +" .. Clothing.getBiteDefenseFromItem(playerObj, fabric3);
                 end
                 option.toolTip = tooltip;
             end
@@ -2250,10 +2264,10 @@ end
 
 ISInventoryPaneContextMenu.doDrinkFluidMenu = function(playerObj, fluidContainer, context)
     if not fluidContainer or not fluidContainer:getFluidContainer() then return end
-    if fluidContainer:getJobDelta() > 0 and (fluidContainer:getJobType() == getText("ContextMenu_Drink") or (fluidContainer:getCustomMenuOption() and fluidContainer:getJobType() == fluidContainer:getCustomMenuOption())) then
+    local item = instanceof(fluidContainer, "IsoWorldInventoryObject") and fluidContainer:getItem() or fluidContainer;
+    if item:getJobDelta() > 0.0 and (item:getJobType() == getText("ContextMenu_Drink") or (item:getCustomMenuOption() and item:getJobType() == item:getCustomMenuOption())) then
         return
     end
-    local item = instanceof(fluidContainer, "IsoWorldInventoryObject") and fluidContainer:getItem() or fluidContainer;
     if (instanceof(fluidContainer, "IsoWorldInventoryObject") and item:getJobDelta() ~= 0.0) then return end
     local openingRecipe = item:getOpeningRecipe()
     if not item:isSealed() then openingRecipe = nil end
@@ -3407,10 +3421,10 @@ ISInventoryPaneContextMenu.OnNewCraft = function(selectedItem, recipe, player, a
         local itemsToReturn = logic:getRecipeData():getAllPutBackInputItems()
 
         if logic:isUsingRecipeAtHandBenefit() then
-            recipeAtHandItem = logic:getUsingRecipeAtHandItem()
+            local recipeAtHandItem = logic:getUsingRecipeAtHandItem()
             if recipeAtHandItem then
-                table.insert(items, recipeAtHandItem)
-                table.insert(itemsToReturn, recipeAtHandItem)
+                items:add(recipeAtHandItem)
+                itemsToReturn:add(recipeAtHandItem)
             end
         end
 

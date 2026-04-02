@@ -22,7 +22,7 @@ function ISRolesList:initialise()
     end
     self:addChild(self.add);
 
-    self.edit = ISButton:new((UI_BORDER_SPACING+1)*2 + btnWid, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RolesList_Edit"), self, ISRolesList.onClick);
+    self.edit = ISButton:new(self.add:getRight() + UI_BORDER_SPACING, self.add:getY(), btnWid, BUTTON_HGT, getText("IGUI_RolesList_Edit"), self, ISRolesList.onClick);
     self.edit.internal = "EDIT";
     self.edit.anchorTop = false
     self.edit.anchorBottom = true
@@ -32,7 +32,7 @@ function ISRolesList:initialise()
     self:addChild(self.edit);
     self.edit.enable = false;
 
-    self.delete = ISButton:new((UI_BORDER_SPACING+1)*3 + btnWid*2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RolesList_Delete"), self, ISRolesList.onClick);
+    self.delete = ISButton:new(self.edit:getRight() + UI_BORDER_SPACING, self.add:getY(), btnWid, BUTTON_HGT, getText("IGUI_RolesList_Delete"), self, ISRolesList.onClick);
     self.delete.internal = "DELETE";
     self.delete.anchorTop = false
     self.delete.anchorBottom = true
@@ -42,13 +42,13 @@ function ISRolesList:initialise()
     self:addChild(self.delete);
     self.delete.enable = false;
 
-    self.close = ISButton:new(self.width - btnWid - (UI_BORDER_SPACING+1)*2, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISRolesList.onClick);
+    self.close = ISButton:new(self.width - btnWid - UI_BORDER_SPACING - 1, self.add:getY(), btnWid, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISRolesList.onClick);
     self.close.internal = "CLOSE";
     self.close.anchorTop = false
     self.close.anchorBottom = true
     self.close:initialise();
     self.close:instantiate();
-    self.close.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.close:enableCancelColor()
     self:addChild(self.close);
 
     local listY = UI_BORDER_SPACING*2 + FONT_HGT_MEDIUM+1

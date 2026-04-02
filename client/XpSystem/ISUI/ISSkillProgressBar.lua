@@ -60,7 +60,7 @@ end
 
 function ISSkillProgressBar:updateTooltip(lvlSelected)
 	-- we display the correct message
-	self.message = self.perk:getName() .. xpSystemText.lvl .. lvlSelected + 1;
+	self.message = self.perk:getName() .. " " .. xpSystemText.lvl .. " " .. lvlSelected + 1;
 	-- first if the lvl is unlocked
 	if lvlSelected < self.level then
 		self.message = self.message .. " <LINE> " .. xpSystemText.unlocked;

@@ -328,6 +328,71 @@ function ISCampingMenu.doLightFireOption(playerObj, context, worldobjects, hasFu
 
 end
 
+ISCampingMenu.doCampingMenu = function(player, context, worldobjects, test)
+
+	if test and ISWorldObjectContextMenu.Test then return true end
+
+	local playerObj = getSpecificPlayer(player)
+	if playerObj:getVehicle() then return end
+
+	local campfire = nil
+
+	for _,v in ipairs(worldobjects) do
+		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(v:getSquare())
+	end
+
+	if not campfire then return end
+	if test then return ISWorldObjectContextMenu.setTest() end
+
+	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
+
+	local isoCampfireObject = campfire:getIsoObject();
+    local campfireOption = context:addOption(isoCampfireObject:getTileName(), worldobjects, nil)
+    local tile = isoCampfireObject:getSpriteName();
+    if tile then
+        campfireOption.iconTexture = getTexture(tile):splitIcon();
+    end
+    local campfireMenu = ISContextMenu:getNew(context);
+    context:addSubMenu(campfireOption, campfireMenu);
+
+	local distance = playerObj:DistToSquared(isoCampfireObject:getX() + 0.5, isoCampfireObject:getY() + 0.5)
+	if distance < 4 then -- distance < 2 * 2
+		local text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(luautils.round(campfire.fuelAmt))) ..
+				" (" .. (campfire.isLit and getText("IGUI_Fireplace_Burning") or getText("IGUI_Fireplace_Unlit")) .. ")"
+        local option = campfireMenu:addOption(text, worldobjects, ISCampingMenu.onDisplayInfo, player, campfire)
+	end
+
+	-- Add corpse to fire
+	if playerObj:isGrappling() then
+		option = campfireMenu:addOption(getText("ContextMenu_CampfireCorpse"), worldobjects, ISCampingMenu.onDropCorpse, playerObj, isoCampfireObject, campfire)
+		if campfire.isLit then
+			option.notAvailable = true
+			option.toolTip = ISToolTip:new()
+			option.toolTip:initialise()
+			option.toolTip:setVisible(false)
+			option.toolTip:setName(getText("ContextMenu_CampfireCorpse"))
+			option.toolTip.description = getText("Tooltip_campfire_addcorpse")
+		elseif distance > 1.5 then
+			option.notAvailable = true
+			option.toolTip = ISToolTip:new()
+			option.toolTip:initialise()
+			option.toolTip:setVisible(false)
+			option.toolTip:setName(getText("ContextMenu_CampfireCorpse"))
+			option.toolTip.description = getText("Tooltip_campfire_addcorpse_far")
+		end
+	end
+
+	ISCampingMenu.doAddFuelOption(campfireMenu, worldobjects, campfire.fuelAmt or 0, fuelInfo, campfire, ISAddFuelAction)
+
+	if campfire.isLit then
+		campfireMenu:addOption(campingText.putOutCampfire, worldobjects, ISCampingMenu.onPutOutCampfire, playerObj, campfire)
+	else
+		ISCampingMenu.doLightFireOption(playerObj, campfireMenu, worldobjects, campfire.fuelAmt and campfire.fuelAmt > 0,
+				fuelInfo, campfire, ISLightFromPetrol, ISLightFromLiterature, ISLightFromKindle)
+	end
+	campfireMenu:addOption(campingText.removeCampfire, worldobjects, ISCampingMenu.onRemoveCampfire, playerObj, campfire);
+end
+
 function ISCampingMenu.toPlayerInventory(playerObj, item)
 	ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
 end

@@ -67,7 +67,9 @@ end
 
 function ContextualActionHandlers.OpenButcherHook(action, playerObj, hook, arg2, arg3, arg4)
     local sq = getSquare(hook:getX(), hook:getY(), hook:getZ());
-    if not luautils.walkAdj(playerObj, sq) then return; end
+    if playerObj:getVehicle() and not luautils.walkAdj(playerObj, sq) then
+        return;
+    end
 
     ISTimedActionQueue.add(ISOpenButcherHookUI:new(playerObj, hook));
 end

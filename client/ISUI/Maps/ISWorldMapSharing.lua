@@ -92,7 +92,13 @@ function PanelMain:createChildren()
 	self.labelAuthor = ISLabel:new(0, label:getBottom() + 4, FONT_HGT_SMALL, "Author: XXX", 1, 1, 1, 1, UIFont.Small, true)
 	self:addChild(self.labelAuthor)
 
-	local radioBtns = ISRadioButtons:new(0, self.labelAuthor:getBottom() + 4, self.width, self.height, self, self.onRadioButton)
+	local tickBox = ISTickBox:new(0, self.labelAuthor:getBottom() + 4, self.width, 20, "", self, self.onTickBoxHideAuthor)
+	self:addChild(tickBox)
+	tickBox:addOption(getText("IGUI_Map_Sharing_HideAuthor"))
+	tickBox:setWidthToFit()
+	self.hideAuthorTickBox = tickBox;
+
+	local radioBtns = ISRadioButtons:new(0, self.hideAuthorTickBox:getBottom() + 4, self.width, self.height, self, self.onRadioButton)
 	self:addChild(radioBtns)
 	radioBtns:addOption(getText("IGUI_Map_Sharing_Private"), "private")
 	radioBtns:addOption(getText("IGUI_Map_Sharing_Everyone"), "all")
@@ -143,6 +149,9 @@ function PanelMain:prerender()
 	self.buttonPlayers:setTitle(getText("IGUI_Map_Sharing_ButtonPlayers", count))
 end
 
+function PanelMain:onTickBoxHideAuthor(index, selected)
+end
+
 function PanelMain:onRadioButton(buttons, index)
 	if buttons:getOptionData(index) == "private" then
 		self.tickBox.enable = false
@@ -168,6 +177,13 @@ end
 function PanelMain:setCurrentSymbol(symbol)
 	self.currentSymbol = symbol
 	self.labelAuthor:setName(getText("IGUI_Map_Sharing_Author", symbol:getAuthor()))
+	if not symbol:isShared() or symbol:isAuthorLocalPlayer() then
+		self.hideAuthorTickBox:setVisible(false)
+		self.hideAuthorTickBox:setSelected(1, false)
+	else
+		self.hideAuthorTickBox:setVisible(true)
+		self.hideAuthorTickBox:setSelected(1, self.mapUI.mapAPI:getSymbolsAPIv2():isAuthorHidden(symbol:getAuthor()))
+	end
 	if symbol:isPrivate() then
 		self.radioBtns:setSelected(1, true)
 		self:onRadioButton(self.radioBtns, 1)
@@ -193,6 +209,9 @@ function PanelMain:setJoypadButtons()
 	self:clearJoypadFocus()
 	self.joypadButtons = {}
 	self.joypadButtonsY = {}
+	if self.hideAuthorTickBox:isVisible() then
+	    self:insertNewLineOfButtons(self.hideAuthorTickBox)
+	end
 	self:insertNewLineOfButtons(self.radioBtns)
 	if self.tickBox.enable then
 		self:insertNewLineOfButtons(self.tickBox)
@@ -202,7 +221,9 @@ function PanelMain:setJoypadButtons()
 	end
 	self.joypadIndexY = joypadIndexY
 	self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
-	self.joypadButtons[self.joypadIndex]:setJoypadFocused(true)
+	if getJoypadData(self.mapUI.playerNum) ~= nil then
+		self.joypadButtons[self.joypadIndex]:setJoypadFocused(true)
+	end
 end
 
 function PanelMain:onGainJoypadFocus(joypadData)
@@ -218,9 +239,10 @@ function PanelMain:onJoypadDown(button, joypadData)
 	ISPanelJoypad.onJoypadDown(self, button, joypadData)
 end
 
-function PanelMain:new(x, y, width, height)
+function PanelMain:new(x, y, width, height, mapUI)
 	local o = ISPanelJoypad.new(self, x, y, width, height)
 	o:noBackground()
+	o.mapUI = mapUI
 	return o
 end
 
@@ -366,7 +388,7 @@ Events.OnMiniScoreboardUpdate.Add(ISWorldMapSharing_PanelPlayers.onMiniScoreboar
 Events.OnScoreboardUpdate.Add(ISWorldMapSharing_PanelPlayers.onScoreboardUpdate)
 
 function ISWorldMapSharing:createChildren()
-	self.panelMain = PanelMain:new(10, 10, 100, 100)
+	self.panelMain = PanelMain:new(10, 10, 100, 100, self.mapUI)
 	self:addChild(self.panelMain)
 
 	self.panelPlayers = PanelPlayers:new(10, 10, 100, 100)
@@ -406,6 +428,7 @@ end
 
 function ISWorldMapSharing:applyChanges()
 	if not self.currentSymbol then return end
+	self.mapUI.mapAPI:getSymbolsAPIv2():setAuthorHidden(self.currentSymbol:getAuthor(), self.panelMain.hideAuthorTickBox:isSelected(1))
 	if not self.currentSymbol:canClientModify() then return end
 	if self.panelMain.radioBtns:isSelected(1) then -- private
 		self.currentSymbol:setSharing(nil)

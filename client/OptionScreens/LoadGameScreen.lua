@@ -752,7 +752,6 @@ function LoadGameScreen:onDeleteModalClick(button)
 			MainScreen.instance.loadOption:setVisible(false)
 			MainScreen.instance.latestSaveOption:setVisible(false)
 			MainScreen.instance.soloScreen:setVisible(true, self.joyfocus)
-			MainScreen.instance.soloScreen.onMenuItemMouseDown(MainScreen.instance.soloScreen.survival,0,0);
         else
             LoadGameScreen.instance:setVisible(true, self.joyfocus);
         end

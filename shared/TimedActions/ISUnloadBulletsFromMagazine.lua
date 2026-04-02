@@ -49,7 +49,7 @@ function ISUnloadBulletsFromMagazine:isLocal()
 end
 
 function ISUnloadBulletsFromMagazine:updateLoadingTime()
-    local animTimeDelta = self.character:getAnimationTimeDelta();
+    local animTimeDelta = self.character:getAnimationTimeDelta() * self.character:getVariableFloat("ReloadSpeed", 1.0);
     local oldUpdateLoadBulletsTime = self.updateLoadBulletsTime;
     self.updateLoadBulletsTime = (self.updateLoadBulletsTime + animTimeDelta) % 1.0;
     if oldUpdateLoadBulletsTime > self.updateLoadBulletsTime then

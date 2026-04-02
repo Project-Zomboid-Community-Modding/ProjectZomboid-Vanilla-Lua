@@ -214,6 +214,9 @@ function ISWashVehicle:complete()
     if not isServer() then
         return true
     end
+    if self.vehicle == nil then
+        return false
+    end
     local waterAvailable = ISWashVehicle.getWaterAmountForPlayer(self.character)
     local waterUsed = math.ceil(self.vehicle:getBloodIntensity(self.id) * 100 / ISWashVehicle.BLOOD_PER_WATER)
     waterUsed = math.min(waterUsed, waterAvailable)
@@ -226,6 +229,9 @@ function ISWashVehicle:complete()
 end
 
 function ISWashVehicle:getDuration()
+    if self.vehicle == nil then
+        return 0
+    end
     if self.character:isTimedActionInstant() then
         return 1
     end

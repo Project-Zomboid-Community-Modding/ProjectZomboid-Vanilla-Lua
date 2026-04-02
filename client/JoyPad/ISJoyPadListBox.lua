@@ -89,7 +89,7 @@ function ISJoypadListBox:cmdTakeOver(playerNum)
 	joypadData:setController(controller)
 	joypadData:setActive(true)
 	joypadData.player = playerNum
-	setPlayerJoypad(playerNum, controller.id, playerObj, nil)
+	setPlayerJoypad(playerNum, controller.id, playerObj, nil, false)
 	createPlayerData(playerNum)
 	-- FIXME: obsolete?
 	getPlayerInventory(playerNum):setController(controller.id)
@@ -147,7 +147,7 @@ function ISJoypadListBox:cmdAddSaved(player)
 		end
 		player = nil
 	end
-	setPlayerJoypad(playerNum, joypadData.id, player, nil)
+	setPlayerJoypad(playerNum, joypadData.id, player, nil, false)
 end
 
 function ISJoypadListBox:getUserNameCallback(button, playerObj)
@@ -170,7 +170,7 @@ function ISJoypadListBox:getUserNameCallback(button, playerObj)
 			joypadData:setController(controller)
 			joypadData:setActive(true)
 			joypadData.player = playerNum
-			setPlayerJoypad(playerNum, joypadData.id, playerObj, username)
+			setPlayerJoypad(playerNum, joypadData.id, playerObj, username, false)
 		else
 			joypadData.focus = nil
 		end

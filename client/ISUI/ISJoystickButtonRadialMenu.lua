@@ -42,6 +42,7 @@ function ISJoystickButtonRadialMenu.onJoypadButtonReleased(button, joypadData)
 			playerObj:setAutoWalk(true)
 		end
 	end
+    playerObj:setJoypadIgnoreAimUntilCentered(true)
 end
 
 -- Called by ISButtonPrompt.update()
@@ -96,6 +97,7 @@ end
 
 function ISJoystickButtonRadialMenu.onToggleCrouch(playerObj)
 	playerObj:setSneaking(not playerObj:isSneaking())
+	playerObj:setJoypadIgnoreAimUntilCentered(true)
 end
 
 function ISJoystickButtonRadialMenu.onToggleSit(playerObj)
@@ -108,16 +110,14 @@ function ISJoystickButtonRadialMenu.onToggleSit(playerObj)
 		STATE[playerNum+1].wasAutoWalk = false
 		playerObj:reportEvent("EventSitOnGround")
 	end
+    playerObj:setJoypadIgnoreAimUntilCentered(true)
 end
 
 function ISJoystickButtonRadialMenu.onToggleAutoWalk(playerObj)
 	local playerNum = playerObj:getPlayerNum()
 	local isAutoWalk = STATE[playerNum+1].wasAutoWalk
 	playerObj:setAutoWalk(not isAutoWalk)
-	if playerObj:isAutoWalk() then
-		playerObj:setAutoWalkDirection(playerObj:getForwardDirection())
-		playerObj:getAutoWalkDirection():rotate(45 * math.pi / 180)
-	end
 	STATE[playerNum+1].wasAutoWalk = playerObj:isAutoWalk()
+	playerObj:setJoypadIgnoreAimUntilCentered(true)
 end
 

@@ -53,6 +53,9 @@ function ISSmashVehicleWindow:perform()
 end
 
 function ISSmashVehicleWindow:complete()
+    if self.part == nil then
+        return false
+    end
     self.window:hit(self.character);
 	if not instanceof(self.character:getPrimaryHandItem(),"HandWeapon") and not instanceof(self.character:getSecondaryHandItem(),"HandWeapon") then
 	    self.character:getBodyDamage():setScratchedWindow();
@@ -70,9 +73,11 @@ end
 
 function ISSmashVehicleWindow:new(character, part)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
-	o.window = part:getWindow()
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	    o.window = part:getWindow()
+	end
 	o.stopOnWalk = false
 	o.stopOnRun = false
 	o.maxTime = o:getDuration()

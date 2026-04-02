@@ -35,15 +35,16 @@ function ISRepairEngine:perform()
 end
 
 function ISRepairEngine:complete()
-
-	local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
-	local numberOfParts = self.character:getInventory():getNumberOfItem("EngineParts", false, true);
-	local giveXP = self.character:getMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2") == nil
     if self.vehicle then
     	if not self.part then
     		noise('no such part Engine')
     		return false
     	end
+
+	    local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();
+	    local numberOfParts = self.character:getInventory():getNumberOfItem("EngineParts", false, true);
+	    local giveXP = self.character:getMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2") == nil
+
     	local condPerPart = 1 + (skill / 2)
     	if condPerPart > 5 then condPerPart = 5 end
     	local done = 0
@@ -78,15 +79,19 @@ function ISRepairEngine:complete()
         else
             addXp(self.character, Perks.Mechanics, 1);
         end
+	    self.character:addMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2", self.part, getGameTime():getCalender():getTimeInMillis());
     else
     	print('no such vehicle id=',self.vehicle)
+    	return false
     end
-	self.character:addMechanicsItem(self.part:getVehicle():getMechanicalID() .. "2", self.part, getGameTime():getCalender():getTimeInMillis());
 
 	return true
 end
 
 function ISRepairEngine:getDuration()
+    if self.part == nil or self.item == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
@@ -95,8 +100,10 @@ end
 
 function ISRepairEngine:new(character, part, item, maxTimeInit)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.item = item
 	o.maxTimeInit = maxTimeInit
 	o.maxTime = maxTimeInit

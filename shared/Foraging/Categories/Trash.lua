@@ -84,6 +84,7 @@ local function generateTrashDefs()
 			xp = 5,
 			categories = { "Junk", "Trash"},
 			items = {
+				BathTowel        = "Base.BathTowel",
 				Bobber			 = "Base.Bobber",
 				Camera           = "Base.Camera",
 				CameraDisposable = "Base.CameraDisposable",

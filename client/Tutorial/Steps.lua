@@ -626,7 +626,6 @@ function InventoryUseStep:eat()
     local complete = not itemToEat;
     if complete then
         Tutorial1.closeBothInv();
-        JoypadState.disableYInventory = true;
         getPlayer():getStats():set(CharacterStat.FOOD_SICKNESS, 40);
         getCore():setBlinkingMoodle("Sick");
     end

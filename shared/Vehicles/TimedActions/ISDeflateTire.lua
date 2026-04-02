@@ -62,11 +62,15 @@ function ISDeflateTire:complete()
         self.vehicle:transmitPartModData(self.part)
     else
         print('no such vehicle id=',self.vehicle)
+        return false
     end
     return true
 end
 
 function ISDeflateTire:getDuration()
+    if self.part == nil then
+        return 0
+    end
     if self.character:isTimedActionInstant() then
        return 1
     end
@@ -75,9 +79,11 @@ end
 
 function ISDeflateTire:new(character, part, psiTarget)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
-	o.psiStart = part:getContainerContentAmount()
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	    o.psiStart = part:getContainerContentAmount()
+	end
 	o.psiTarget = psiTarget
     o.stopOnWalk = true
     o.stopOnRun = true

@@ -121,7 +121,7 @@ function ContextMenuCode.CompostInteraction(context, option, compost, playerObj,
 end
 
 function ContextMenuCode.OnButcherHook(context, hook, playerObj, param)
-	if luautils.walkAdj(playerObj, hook:getSquare(), false) then
+	if not playerObj:getVehicle() and luautils.walkAdj(playerObj, hook:getSquare(), false) then
 		ISTimedActionQueue.add(ISOpenButcherHookUI:new(playerObj, hook));
 	end
 end

@@ -177,6 +177,7 @@ function ISLightbarUI:new(x, y, width, height, playerObj)
 	o.playerNum = playerObj:getPlayerNum()
 	o.playerObj = playerObj
 	o.vehicle = o.playerObj:getVehicle()
+    o.moveWithMouse = true;
     if y == 0 then
         o.y = getPlayerScreenTop(o.playerNum) + (getPlayerScreenHeight(o.playerNum) - height) / 2
         o:setY(o.y)

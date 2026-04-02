@@ -19,5 +19,6 @@ biome_map_config = {
     { pixel = 217, biome = "birch_forest", ore = "map_forest", zone = "BirchForest" },
     { pixel = 230, biome = "birchmix_forest", ore = "map_forest", zone = "BirchMixForest" }, -- HP
     { pixel = 243, biome = "organic_forest", ore = "map_forest", zone = "OrganicForest" },
+    { pixel = 254, biome = "dirt", ore = "dirt", zone = "ForagingNav" }, -- Dirt, will not spawn anything, but need to be here to validate spawns
     { pixel = 255, biome = "primary_forest", ore = "map_deep_forest", zone = "DeepForest" },
 }

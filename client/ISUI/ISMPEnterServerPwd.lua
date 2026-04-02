@@ -75,10 +75,16 @@ function ISMPEnterServerPwd:onResolutionChange(oldw, oldh, neww, newh)
 end
 
 function ISMPEnterServerPwd:prerender()
+	self:setWidth(math.max(440, self.ui:getWidth() / 2));
+	self:setHeight(math.max(220, self.ui:getHeight() / 3));
+	self:setX(self.ui:getX() + self:getWidth() / 2);
+	self:setY(self.ui:getY() + self:getHeight() / 2);
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	self:drawRectBorder(1, 1, self.width-2, self.height-2, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-	self:drawText(getText("UI_servers_enterServerPwd", self.server:getName()), 70, 20, 1, 1, 1, 1, UIFont.Medium);
+	local text = getTextManager():WrapText(UIFont.Medium, getText("UI_servers_enterServerPwd", self.server:getName()), self:getWidth() - 70 * 2, 1, "...");
+	self:drawText(text, (self:getWidth() - getTextManager():MeasureStringX(UIFont.Medium, text)) / 2, 20, 1, 1, 1, 1, UIFont.Medium);
+	self.password:setX((self:getWidth() - 322) / 2);
 end
 
 function ISMPEnterServerPwd:render()
@@ -112,11 +118,8 @@ function ISMPEnterServerPwd:onMouseUpOutside(x, y)
     if not self:getIsVisible() then
         return;
     end
-
     self.moving = false;
     ISMouseDrag.dragView = nil;
-
-    self:destroy();
 end
 
 function ISMPEnterServerPwd:onMouseDown(x, y)
@@ -184,7 +187,7 @@ function ISMPEnterServerPwd:new(ui, server)
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.width = 440;
-    o.height = 400;
+    o.height = 220;
     o.x = (ui:getWidth() - o.width) / 2;
     o.y = (ui:getHeight() - o.height) / 2;
     o.ui = ui

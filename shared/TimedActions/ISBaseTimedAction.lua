@@ -49,6 +49,9 @@ function ISBaseTimedAction:waitToStart()
 	return false
 end
 
+function ISBaseTimedAction:interruptWaitToStart()
+end
+
 function ISBaseTimedAction:start()
 
 end

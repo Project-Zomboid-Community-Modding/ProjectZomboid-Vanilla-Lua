@@ -11,6 +11,11 @@ function ISFeedAnimalFromHand:update()
 end
 
 function ISFeedAnimalFromHand:start()
+    if self.animal:isExistInTheWorld() then
+        self:setActionAnim(self.animal:getFeedByHandAnim())
+        self:setOverrideHandModels(self.food, nil)
+        self.character:faceThisObject(self.animal)
+    end
 	self.animal:getBehavior():setBlockMovement(true);
 	if self.food:getFluidContainer() then
 		self.sound = self.character:playSound("GiveWaterAnimal")

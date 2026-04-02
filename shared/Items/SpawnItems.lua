@@ -225,6 +225,7 @@ SpawnItems.TraitKeyRings = {
     [CharacterTrait.GRACEFUL] = { ItemKey.Container.KEY_RING_KITTY, },
     [CharacterTrait.HEARTY_APPETITE] = { ItemKey.Container.KEY_RING_HOTDOG, },
     [CharacterTrait.HERBALIST] = { ItemKey.Container.KEY_RING_PINE_TREE, },
+    [CharacterTrait.HERBALIST_PROF] = { ItemKey.Container.KEY_RING_PINE_TREE, },
     [CharacterTrait.HIKER] = { ItemKey.Container.KEY_RING_PINE_TREE, },
     [CharacterTrait.HUNTER] = { ItemKey.Container.KEY_RING_PINE_TREE, },
     [CharacterTrait.IRON_GUT] = { ItemKey.Container.KEY_RING_HOTDOG, },

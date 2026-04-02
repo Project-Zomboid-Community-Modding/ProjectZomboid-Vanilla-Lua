@@ -21,7 +21,7 @@ function ISInsertMagazine:start()
 	if isClient() and self.magazine then
 		self.magazine = self.character:getInventory():getItemById(self.magazine:getID())
 	end
-	self:setAnimVariable("WeaponReloadType", self.gun:getWeaponReloadType())
+	self:setAnimVariable("WeaponReloadType", tostring(self.gun:getWeaponReloadType()))
 	self:setAnimVariable("isLoading", true)
 	self:setOverrideHandModels(self.gun, nil)
 	self:setActionAnim(CharacterActionAnims.Reload)
@@ -58,6 +58,10 @@ function ISInsertMagazine:loadAmmo()
 end
 
 function ISInsertMagazine:serverStart()
+    if not self.gun or not self.magazine then
+        self.netAction:forceComplete()
+        return
+    end
 	self:initVars()
 	emulateAnimEventOnce(self.netAction, ISReloadWeaponAction.getReloadTime(self.character, 1500), "loadFinished", nil)
 end

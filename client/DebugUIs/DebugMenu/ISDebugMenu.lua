@@ -16,9 +16,7 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 function ISDebugMenu:setupButtons()
     -- MAIN
     local general = self:addButtonInfo(getText("IGUI_DebugMenu_Main_General"), function() ISGeneralDebug.OnOpenPanel() end, "MAIN");
-    if not isClient() then
-        self:addButtonInfo(getText("IGUI_DebugMenu_Main_Cheats"), function() ISCheatPanelUI.OnOpenPanel() end, "MAIN");
-    end
+    self:addButtonInfo(getText("IGUI_DebugMenu_Main_Cheats"), function() ISAdminPowerUI.OnOpenPanel() end, "MAIN");
     self:addButtonInfo(getText("IGUI_DebugMenu_Main_Climate"), function() ClimateControlDebug.OnOpenPanel() end, "MAIN");
     self:addButtonInfo(getText("IGUI_DebugMenu_Main_CraftRecipes"), function() ISCraftRecipeDbgWindow.OnOpenPanel() end, "MAIN");
     self:addButtonInfo(getText("IGUI_DebugMenu_Main_Player"), function() ISPlayerStatsUI.OnOpenPanel() end, "MAIN");

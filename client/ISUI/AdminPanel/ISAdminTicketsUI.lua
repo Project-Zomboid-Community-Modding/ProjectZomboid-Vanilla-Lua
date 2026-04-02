@@ -9,8 +9,8 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 local COL_1_WIDTH = 200
-local COL_2_WIDTH = 50
-local COL_3_WIDTH = 75
+local COL_2_WIDTH = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("0000"))
+local COL_3_WIDTH = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("Viewed"))
 
 function ISAdminTicketsUI:initialise()
     ISPanel.initialise(self);
@@ -35,7 +35,7 @@ function ISAdminTicketsUI:initialise()
     self.no.anchorBottom = true
     self.no:initialise();
     self.no:instantiate();
-    self.no.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.no:enableCancelColor()
     self:addChild(self.no);
 
     self.answerTicketBtn = ISButton:new(self:getWidth() - btnWid - UI_BORDER_SPACING+1,  self:getHeight() - padBottom - BUTTON_HGT, btnWid, BUTTON_HGT, getText("IGUI_TicketUI_AnswerTicket"), self, ISAdminTicketsUI.onClick);
@@ -188,11 +188,9 @@ function ISAdminTicketsUI:onClick(button)
         self:removeFromUIManager();
     end
     if button.internal == "ANSWERTICKET" then
-        local inset = 2
-        local titleBarHeight = 16
-        local height = titleBarHeight + 8 + FONT_HGT_SMALL + 8 + FONT_HGT_MEDIUM * 5 + inset * 2 + BUTTON_HGT + 10 * 2
-        height = math.max(height, 200)
-        local modal = ISTextBox:new(self.x + 50, 200, 400, height, getText("IGUI_TicketUI_AnswerTicket"), "", self, ISAdminTicketsUI.onAnswerTicket);
+        local width = 400
+        local height = FONT_HGT_MEDIUM + UI_BORDER_SPACING*3 + BUTTON_HGT
+        local modal = ISTextBox:new(self.x + (self.width-width)/2, self.y + self.height/2-height, width, height, getText("IGUI_TicketUI_AnswerTicket"), "", self, ISAdminTicketsUI.onAnswerTicket);
         modal:setNumberOfLines(5)
         modal:setMaxLines(5)
         modal:setMultipleLine(true)

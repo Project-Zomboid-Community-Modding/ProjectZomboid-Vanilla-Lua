@@ -99,6 +99,9 @@ function ISWearClothing:perform()
 end
 
 function ISWearClothing:complete()
+    if self.item == nil then
+        return false
+    end
 	if self:isAlreadyEquipped(self.item) then
 		return false;
 	end
@@ -138,6 +141,9 @@ function ISWearClothing:isAlreadyEquipped(item)
 end
 
 function ISWearClothing:getDuration()
+    if self.item == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1;
 	end
@@ -197,7 +203,7 @@ ISWearClothing.WalkBodyLocations = {
     }
 
 ISWearClothing.isStopOnWalk = function(item)
-    if not item:getClothingItem() then return false end
+    if item == nil or not item:getClothingItem() then return false end
     for i,bodyLocation in ipairs(ISWearClothing.WalkBodyLocations) do
         if (item:getBodyLocation() and item:getBodyLocation() == bodyLocation) or (item:canBeEquipped() and item:canBeEquipped() == bodyLocation) then
             return false

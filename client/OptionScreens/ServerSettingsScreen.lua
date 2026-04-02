@@ -4190,7 +4190,6 @@ SettingsTable = {
 				settings = {
 					{ name = "MaxPlayers" },
 					{ name = "Open" },
-					{ name = "AutoCreateUserInWhiteList" },
 					{ name = "DropOffWhiteListAfterDeath" },
 					{ name = "DisplayUserName" },
 					{ name = "ShowFirstAndLastName" },

@@ -367,6 +367,12 @@ function ISButton:enableCancelColor()
 	self:setBorderRGBA(r, g, b, 1)
 end
 
+function ISButton:enableDisabledColor()
+    self:setBackgroundRGBA(0, 0, 0, 1)
+    self:setBackgroundColorMouseOverRGBA(0, 0, 0, 1)
+    self:setBorderRGBA(0.7, 0.1, 0.1, 0.7)
+end
+
 function ISButton:toggleAcceptCancel(bEnabled)
 	if bEnabled then
 		self:enableAcceptColor()

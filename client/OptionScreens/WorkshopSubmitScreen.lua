@@ -751,7 +751,7 @@ function Page5:create()
 	self.button2:setFont(UIFont.Medium)
 	self:addChild(self.button2)
 
-	local label5 = ISLabel:new(0, self.button2:getBottom() + 12, labelHgt, getText("UI_WorkshopSubmit_Legal1") .. " ", 1, 1, 1, 1, UIFont.Small, true)
+	local label5 = ISLabel:new(0, self.button2:getBottom() + 12, labelHgt, getText("UI_WorkshopSubmit_Legal1"), 1, 1, 1, 1, UIFont.Small, true)
 	local label6 = ISLabel:new(0, self.button2:getBottom() + 12, labelHgt, getText("UI_WorkshopSubmit_Legal2"), 0, 1, 1, 1, UIFont.Small, true)
 	label6.onMouseDown = self.onMouseDownLegal
 	local totalWidth = label5:getWidth() + label6:getWidth()
@@ -759,10 +759,6 @@ function Page5:create()
 	label6:setX(label5:getRight())
 	self:addChild(label5)
 	self:addChild(label6)
-
-	self.tipLabel = ISLabel:new(self.width / 2 - buttonWid / 2 - 28, self.button1:getBottom() + 4, labelHgt, "WARNING: Uploading a mod will require clicking a popup box which may not be visible in Fullscreen/Borderless mode.", 1, 0, 0, 1, UIFont.Small, true)
-	self.tipLabelVal = 0
-	self:addChild(self.tipLabel)
 
 	local dy = (self.height - 30 - label6:getBottom()) / 3
 	local uis = self:getChildren()
@@ -798,10 +794,6 @@ function Page5:render()
 	elseif self.joyfocus and self.joypadIndexY == 0 then
 		self:setISButtonForB(self.backButton)
 	end
-
-	self.tipLabelVal = self.tipLabelVal + 0.1
-	self.tipLabel.g = (math.sin(self.tipLabelVal)+1)/2
-	self.tipLabel.b = self.tipLabel.g
 end
 
 function Page5:aboutToShow(joypadData)

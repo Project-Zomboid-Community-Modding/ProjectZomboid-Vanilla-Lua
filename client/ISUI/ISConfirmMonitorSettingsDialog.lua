@@ -20,6 +20,8 @@ end
 function ISConfirmMonitorSettingsDialog:render()
 	ISModalDialog.render(self)
 	local timeRemaining = math.max(0, 20 - (getTimestamp() - self.startTime))
+    self:setX(getCore():getScreenWidth() / 2 - self.width / 2)
+    self:setY(getCore():getScreenHeight() / 2 - self.height / 2)
 	self:drawTextCentre(getText("UI_ConfirmMonitorSettings_RevertIn", math.ceil(timeRemaining)), self:getWidth() / 2, 20 + FONT_HGT_SMALL + 10, 1, 1, 1, 1, UIFont.Small)
 end
 

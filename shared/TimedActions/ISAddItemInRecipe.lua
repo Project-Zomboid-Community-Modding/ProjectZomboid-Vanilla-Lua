@@ -79,6 +79,9 @@ function ISAddItemInRecipe:complete()
 
 	if isServer() then
 		sendItemStats(self.baseItem)
+        if self.usedItem:getContainer() then
+            sendItemStats(self.usedItem)
+        end
 	end
 
 	return true;

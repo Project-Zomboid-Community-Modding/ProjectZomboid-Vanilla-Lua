@@ -224,7 +224,7 @@ function ISAnimalUI:render()
     end
     y = y + FONT_HGT_SMALL + 4;
 
-    if self.animal:getBabies() and not self.animal:getBabies():isEmpty() and self.animal:getCurrentSquare() then
+    if self.animal:getBabies() and not self.animal:getBabies():isEmpty() and (self.animal:getCurrentSquare() or self.animal:getVehicle()) then
         self:drawTextRight(getText("IGUI_Animal_Babies"), self.xOffset, y, 1,1,1,1, UIFont.Small);
         for i=0,self.animal:getBabies():size()-1 do
             local baby = self.animal:getBabies():get(i);
@@ -232,7 +232,7 @@ function ISAnimalUI:render()
                 break;
             end
             local r,g,b = 1,1,1;
-            if (self.animal:getDZone() ~= baby:getDZone() and (self.animal:getCurrentSquare():DistToProper(baby) > 10) or not baby:isExistInTheWorld()) then
+            if not (self.animal:getVehicle() and baby:getVehicle() and self.animal:getVehicle() == baby:getVehicle()) and (self.animal:getDZone() ~= baby:getDZone() and (self.animal:getCurrentSquare():DistToProper(baby) > 10) or not baby:isExistInTheWorld()) then
                 r,g,b = 1,0.2,0.2;
             end
             self:drawText("- " .. baby:getFullName(), self.xOffset + 10, y, r,g,b,0.5, UIFont.Small);

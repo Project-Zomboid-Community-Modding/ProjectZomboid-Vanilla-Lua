@@ -83,11 +83,15 @@ function ISRefuelFromGasPump:complete()
         self.vehicle:transmitPartModData(self.part)
     else
         print('no such vehicle id=', self.vehicle)
+        return false
     end
 	return true
 end
 
 function ISRefuelFromGasPump:getDuration()
+    if self.part == nil then
+        return 0
+    end
     self.tankStart = self.part:getContainerContentAmount()
 	-- Pumps start with 100 units of fuel.  8 pump units = 1 PetrolCan according to ISTakeFuel.
 	self.pumpStart = self.fuelStation:getPipedFuelAmount();
@@ -103,8 +107,10 @@ end
 
 function ISRefuelFromGasPump:new(character, part, fuelStation)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = part:getVehicle()
 	o.part = part
+	if part ~= nil then
+	    o.vehicle = part:getVehicle()
+	end
 	o.fuelStation = fuelStation;
 	o.stopOnWalk = true
 	o.stopOnRun = true

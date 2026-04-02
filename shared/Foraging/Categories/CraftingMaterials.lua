@@ -16,6 +16,7 @@ local function generateCraftingMaterialDefs()
 				CopperScrap				= "Base.CopperScrap",
 				IronScrap				= "Base.IronScrap",
 				SteelScrap				= "Base.SteelScrap",
+                Nails				= "Base.Nails",
 			},
 		},
 		tools = {
