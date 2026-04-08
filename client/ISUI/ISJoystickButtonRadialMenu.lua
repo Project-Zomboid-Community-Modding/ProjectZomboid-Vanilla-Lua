@@ -31,11 +31,6 @@ function ISJoystickButtonRadialMenu.onJoypadButtonReleased(button, joypadData)
 		if STATE[playerNum+1].leftPressedMS == nil then
 			return
 		end
-		if getTimestampMs() - STATE[playerNum+1].leftPressedMS < 250 then
-			-- Quick click/release without displaying the radial menu.
-			-- TODO: Add an Accesibility option to choose the action.
-			ISJoystickButtonRadialMenu.onToggleCrouch(playerObj)
-		end
 		STATE[playerNum+1].leftPressedMS = nil
 		if STATE[playerNum+1].wasAutoWalk then
 			STATE[playerNum+1].wasAutoWalk = false
@@ -92,7 +87,7 @@ function ISJoystickButtonRadialMenu.displayLeft(joypadData)
 	menu:setHideWhenButtonReleased(Joypad.LStickButton)
 	setJoypadFocus(playerNum, menu)
 	playerObj:setJoypadIgnoreAimUntilCentered(true)
-	setPlayerMovementActive(playerNum, false)
+	setPlayerButtonsActive(playerNum, false)
 end
 
 function ISJoystickButtonRadialMenu.onToggleCrouch(playerObj)

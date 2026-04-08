@@ -472,6 +472,8 @@ function ISPanelJoypad:prerender()
 end
 
 function ISPanelJoypad:new (x, y, width, height)
+    DebugType.ISUI:debugln("Creating ISPanelJoypad. Coords: " .. tostring(x) .. ", " .. tostring(y) .. ", Dimensions: " .. tostring(width) .. ", " .. tostring(height))
+    DebugType.ISUI:printStackTrace(LogSeverity.Noise, 14, nil)
 	local o = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)

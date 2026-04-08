@@ -246,7 +246,6 @@ function ISButtonPrompt:cmdShowInventory()
 
     joypadData.focus = ui
     updateJoypadFocus(joypadData)
-    playerObj:setBannedAttacking(true)
 end
 
 function ISButtonPrompt:cmdShowLoot()
@@ -259,7 +258,6 @@ function ISButtonPrompt:cmdShowLoot()
 
     joypadData.focus = ui
     updateJoypadFocus(joypadData)
-    playerObj:setBannedAttacking(true)
 end
 
 function ISButtonPrompt:cmdToggleLight(light)

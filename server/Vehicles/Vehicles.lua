@@ -1339,20 +1339,9 @@ function VehicleUtils.callLua(functionName, arg1, arg2, arg3, arg4)
 	end
 end
 
-function VehicleUtils.OnUseVehicle(character, vehicle, pressedNotTapped)
-	pressedNotTapped = false;
+function VehicleUtils.OnUseVehicle(character, vehicle)
 	if character:getVehicle() == vehicle then
-		if pressedNotTapped then
-			if vehicle:isDriver(character) and vehicle:isEngineWorking() then
-				if vehicle:isEngineRunning() then
-					ISVehicleMenu.onShutOff(character)
-				else
-					ISVehicleMenu.onStartEngine(character)
-				end
-			end
-		else
-			ISVehicleMenu.onExit(character)
-		end
+        ISVehicleMenu.onExit(character)
 	else
 		local part = vehicle:getUseablePart(character)
 		if part then

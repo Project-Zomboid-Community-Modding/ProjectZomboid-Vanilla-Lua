@@ -506,32 +506,44 @@ function setPrevPrevFocusForPlayer(playerID)
     --  updateJoypadFocus(joypadData);
 end
 
+function isIgnoreAim(uiElement)
+    return uiElement ~= nil and uiElement.ignoreAim == true
+end
+
+function isIgnoreButtons(uiElement)
+    return uiElement ~= nil
+end
+
 function updateJoypadFocus(joypadData)
 
     if joypadData.lastfocus ~= joypadData.focus then
-        noise("change focus from %s to %s",
-            uiToString(joypadData.lastfocus),
-            uiToString(joypadData.focus))
+        DebugType.ISUI:debugln("change focus from %s to %s. ignoreAim: %s, ignoreButtons: %s", uiToString(joypadData.lastfocus), uiToString(joypadData.focus), isIgnoreAim(joypadData.focus), isIgnoreButtons(joypadData.focus))
+
         local lastfocus = joypadData.lastfocus
         joypadData.lastfocus = nil
         joypadData.switchingFocusFrom = lastfocus
         if joypadData.focus ~= nil then
-            noise("focus in %s", uiToString(joypadData.focus))
+            DebugType.ISUI:noise("focus in %s", uiToString(joypadData.focus))
             joypadData.focus:onGainJoypadFocus(joypadData);
         end
+
         joypadData.switchingFocusFrom = nil
         if lastfocus ~= nil then
-            noise("focus out %s", uiToString(lastfocus))
+            DebugType.ISUI:noise("focus out %s", uiToString(lastfocus))
             lastfocus:onLoseJoypadFocus(joypadData);
         end
+
+        DebugType.ISUI:printStackTrace(LogSeverity.Noise, 3, nil)
     end
 
     if joypadData.player ~= nil and getSpecificPlayer(joypadData.player) then
         if joypadData.focus ~= nil then
             joypadData.lastactualfocus = joypadData.focus;
-            setPlayerMovementActive(joypadData.player, false);
-        else
-            setPlayerMovementActive(joypadData.player, true);
+        end
+        setPlayerButtonsActive(joypadData.player, isIgnoreButtons(joypadData.focus) == false);
+        setJoypadIgnoreAim(joypadData.player, isIgnoreAim(joypadData.focus))
+        if joypadData.lastfocus ~= joypadData.focus and joypadData.focus ~= nil then
+            setJoypadIgnoreAimUntilCentered(joypadData.player, true);
         end
         joypadData.lastfocus = joypadData.focus;
 
@@ -558,7 +570,7 @@ function updateJoypadFocus(joypadData)
     end
 
     if JoypadState.disableMovement then
-        setPlayerMovementActive(joypadData.player, false);
+        setPlayerButtonsActive(joypadData.player, false);
     end
 end
 

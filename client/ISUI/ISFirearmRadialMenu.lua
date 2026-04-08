@@ -348,7 +348,7 @@ function ISFirearmRadialMenu.onRepeatRBumper(buttonPrompt)
 		local frm = ISFirearmRadialMenu:new(playerObj)
 		frm:fillMenu()
 		frm:display()
-		setPlayerMovementActive(buttonPrompt.player, false)
+		setPlayerButtonsActive(buttonPrompt.player, false)
 	end
 end
 

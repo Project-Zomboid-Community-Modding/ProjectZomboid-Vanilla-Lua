@@ -126,6 +126,8 @@ function ISRadialMenu:undisplay()
 end
 
 function ISRadialMenu:new(x, y, innerRadius, outerRadius, playerNum)
+    DebugType.ISUI:debugln("Creating ISRadialMenu. playerNum: " .. tostring(playerNum) ..", Coords: " .. tostring(x) .. ", " .. tostring(y) .. ", innerRadius " .. tostring(innerRadius) .. ", outerRadius  " .. tostring(outerRadius))
+    DebugType.ISUI:printStackTrace(LogSeverity.Noise, 14, nil)
 	local o = ISPanelJoypad.new(self, x, y, outerRadius * 2, outerRadius * 2)
 	o.innerRadius = innerRadius
 	o.outerRadius = outerRadius
@@ -134,6 +136,7 @@ function ISRadialMenu:new(x, y, innerRadius, outerRadius, playerNum)
 	o:setForceCursorVisible(playerNum == 0)
 	o.sounds = {}
 	o.disableJoypadNavigation = true -- ISFirearmRadialMenu is displayed by holding down the right bumper
+	o.ignoreAim = true
 	return o
 end
 
