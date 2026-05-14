@@ -43,7 +43,7 @@ MODDING FAQ:
 --if isServer() then return; end;
 
 local table = table;
-local math  = math;
+local math = math;
 
 local function iterList(_list)
 	local list = _list;
@@ -67,83 +67,83 @@ local function clamp(_value, _min, _max)
 end
 
 forageSystem = {
-	isInitialised		 = false,
+	isInitialised = false,
 	-- definition tables
-	itemDefs             = {}, -- item table
-	catDefs    		     = {}, -- category definitions
-	zoneDefs             = {}, -- zone definitions
-	skillDefs            = {   -- occupation and trait bonus definitions
+	itemDefs = {}, -- item table
+	catDefs = {}, -- category definitions
+	zoneDefs = {}, -- zone definitions
+	skillDefs = {   -- occupation and trait bonus definitions
 		occupation = {},
-		trait      = {},
+		trait = {},
 	},
 
 	-- internal tables (pre-import)
-	forageDefinitions	 = {},
-	zoneDefinitions		 = {},
-	categoryDefinitions	 = {},
-	defaultDefinitions	 = {},
+	forageDefinitions = {},
+	zoneDefinitions = {},
+	categoryDefinitions = {},
+	defaultDefinitions = {},
 
 	-- forage system loot tables
-	lootTable			 = {},  -- the loot table - see generateLootTable for structure
-	lootTableMonth		 = 1,
-	processedEntries	 = {},
+	lootTable = {},  -- the loot table - see generateLootTable for structure
+	lootTableMonth = 1,
+	processedEntries = {},
 
 	--tracking for rerolling icons
-	currentMonth         = 0,
-	currentTime          = "isDay",
-	currentWeather       = "isNormal",
+	currentMonth = 0,
+	currentTime = "isDay",
+	currentWeather = "isNormal",
 	--
-	maxIconsPerZone      = 2000,-- maximum icons possible in any zone
-	zoneDensityMulti     = 20,  -- default icon density value for all zones.
+	maxIconsPerZone = 2000,-- maximum icons possible in any zone
+	zoneDensityMulti = 20,  -- default icon density value for all zones.
 	-- sandbox settings
-	abundanceSettings    = {
-		NatureAbundance  = { -75, -50, 0, 50, 100 }, -- bonus percent density per zone
-		OtherLoot        = { -100, -95, -75, -50, 0, 50, 100 }, -- bonus percent density per zone
+	abundanceSettings = {
+		NatureAbundance = { -75, -50, 0, 50, 100 }, -- bonus percent density per zone
+		OtherLoot = { -100, -95, -75, -50, 0, 50, 100 }, -- bonus percent density per zone
 	},
 	-- extended chance settings (percents)
-	monthBonus           = 50,  -- good forage months
-	monthMalus           = -50, -- bad forage months
+	monthBonus = 50,  -- good forage months
+	monthMalus = -50, -- bad forage months
 	-- vision settings (squares)
-	levelBonus           = 0.5, -- bonus per perk level
+	levelBonus = 0.5, -- bonus per perk level
 	-- vision settings (radius multipliers)
-	aimMultiplier		 = 1.33,    --multiply radius by this amount when aiming/looking around
-	sneakMultiplier		 = 1.10,    --multiply radius by this amount when sneaking
-	darkVisionRadius	 = 1.5,     --icon radius for dark squares (less than lightPenaltyCutoff)
-	minVisionRadius      = 3.0,     --the minimum radius from center for vision checks (well lit squares)
-	maxVisionRadius      = 10.0,    --the maximum radius from center for vision checks (before bonuses)
-	visionRadiusCap      = 15.0,    --the maximum radius cap from center for vision checks (after bonuses)
-	minimumSizeBonus     = 0.50,    --used in calculating bonus for item size
+	aimMultiplier = 1.33,    --multiply radius by this amount when aiming/looking around
+	sneakMultiplier = 1.10,    --multiply radius by this amount when sneaking
+	darkVisionRadius = 1.5,     --icon radius for dark squares (less than lightPenaltyCutoff)
+	minVisionRadius = 3.0,     --the minimum radius from center for vision checks (well lit squares)
+	maxVisionRadius = 10.0,    --the maximum radius from center for vision checks (before bonuses)
+	visionRadiusCap = 15.0,    --the maximum radius cap from center for vision checks (after bonuses)
+	minimumSizeBonus = 0.50,    --used in calculating bonus for item size
 
 	-- foraging penalty
-	endurancePenalty     = 0.015,
-	fatiguePenalty       = -0.001,
+	endurancePenalty = 0.015,
+	fatiguePenalty = -0.001,
 
 	-- vision settings (percents) (search radius)
-	lightPenaltyMax      = 95, -- darkness effect on search radius (light level)
-	weatherPenaltyMax    = 75, -- weather effect (rain, fog, snow)
+	lightPenaltyMax = 95, -- darkness effect on search radius (light level)
+	weatherPenaltyMax = 75, -- weather effect (rain, fog, snow)
 	exhaustionPenaltyMax = 75, -- exhaustion effect (endurance, fatigue)
-	panicPenaltyMax      = 95, -- panic effect (fear, panic, stress)
-	bodyPenaltyMax       = 75, -- body effect (drunk, pain, sickness, food sickness)
-	clothingPenaltyMax   = 95, -- clothing effect (helmet, glasses, blindfolds)
-	hungerBonusMax       = 50, -- hunger effect (finding food when hungry)
-	effectReductionMax   = 75, -- maximum effect reduction from traits/occupation
+	panicPenaltyMax = 95, -- panic effect (fear, panic, stress)
+	bodyPenaltyMax = 75, -- body effect (drunk, pain, sickness, food sickness)
+	clothingPenaltyMax = 95, -- clothing effect (helmet, glasses, blindfolds)
+	hungerBonusMax = 50, -- hunger effect (finding food when hungry)
+	effectReductionMax = 75, -- maximum effect reduction from traits/occupation
 
 	-- specific to lighting level - if penalty is higher than this, cannot spot anything (radius will still change)
-	lightPenaltyCutoff	 = 50,
+	lightPenaltyCutoff = 50,
 
-	clothingPenalties 	  = {  -- clothing vision penalties (percents)
+	clothingPenalties = {  -- clothing vision penalties (percents)
 		--unless it covers the eye area, it has no penalty
 		--regular hats, bandanas, etc. have no penalty
-		FullSuitHead    = 75,   --completely covers the head, face and eyes
-		FullHat		    = 75,   --completely covers the head, face and eyes
-		MaskFull	    = 50,   --covering the face and eyes but not head
-		SCBA    	    = 50,   --covering the face and eyes but not head
-		SCBAnotank	    = 50,   --covering the face and eyes but not head
-		MaskEyes	    = 20,   --just covering the face but with eye holes
-		Mask	        = 20,   --just covering the face but with eye holes
-		Eyes		    = 2.5,  --small debuff for wearing sunglasses
-		LeftEye		    = 2.5,  --yarr, eyepatches give a little debuff
-		RightEye	    = 2.5,  --yarr, eyepatches give a little debuff
+		FullSuitHead = 75,   --completely covers the head, face and eyes
+		FullHat = 75,   --completely covers the head, face and eyes
+		MaskFull = 50,   --covering the face and eyes but not head
+		SCBA = 50,   --covering the face and eyes but not head
+		SCBAnotank = 50,   --covering the face and eyes but not head
+		MaskEyes = 20,   --just covering the face but with eye holes
+		Mask = 20,   --just covering the face but with eye holes
+		Eyes = 2.5,  --small debuff for wearing sunglasses
+		LeftEye = 2.5,  --yarr, eyepatches give a little debuff
+		RightEye = 2.5,  --yarr, eyepatches give a little debuff
 	};
 
 	isForageableFuncs = {
@@ -152,10 +152,10 @@ forageSystem = {
 	},
 
 	-- base XP modifier for foraging (percent)
-	globalXPModifier     = 400,
+	globalXPModifier = 400,
 
 	-- diminishing base XP returns per level for foraging items below skill level (percent)
-	levelXPModifier      = 5,
+	levelXPModifier = 5,
 
 	-- alternate sprites used for world items in search mode
 	worldSprites = {
@@ -768,22 +768,22 @@ end
 function forageSystem.createZoneData(_forageZone, _zoneDef)
 	local zoneData = {};
 	--
-	zoneData.id             = _forageZone:getName();
+	zoneData.id = _forageZone:getName();
 	_forageZone:setName(zoneData.id);
 	_forageZone:setOriginalName(zoneData.id);
-	zoneData.name           = _zoneDef.name;
-	zoneData.x              = _forageZone:getX();
-	zoneData.y              = _forageZone:getY();
-	zoneData.size           = _forageZone:getWidth() * _forageZone:getHeight();
-	zoneData.bounds         = {
-		x1			    = zoneData.x,
-		y1			    = zoneData.y,
-		x2			    = zoneData.x + _forageZone:getWidth(),
-		y2			    = zoneData.y + _forageZone:getHeight(),
+	zoneData.name = _zoneDef.name;
+	zoneData.x = _forageZone:getX();
+	zoneData.y = _forageZone:getY();
+	zoneData.size = _forageZone:getWidth() * _forageZone:getHeight();
+	zoneData.bounds = {
+		x1 = zoneData.x,
+		y1 = zoneData.y,
+		x2 = zoneData.x + _forageZone:getWidth(),
+		y2 = zoneData.y + _forageZone:getHeight(),
 	};
-	zoneData.itemsTotal     = 0;
-	zoneData.itemsLeft      = 0;
-	zoneData.forageIcons    = {};
+	zoneData.itemsTotal = 0;
+	zoneData.itemsLeft = 0;
+	zoneData.forageIcons = {};
 	forageSystem.checkMetaZone(zoneData);
 	--
 	forageSystem.fillZone(zoneData);
@@ -1431,10 +1431,10 @@ function forageSystem.getZoneRandomCoord(_zoneData)
 end
 
 function forageSystem.getZoneRandomCoordNearPoint(_zoneData, _minDist, _x, _y)
-	local x1, x2    = _zoneData.bounds.x1, _zoneData.bounds.x2;
-	local y1, y2    = _zoneData.bounds.y1, _zoneData.bounds.y2;
-	local newX      = _x + ZombRand(_minDist / 2, _minDist);
-	local newY      = _y + ZombRand(_minDist / 2, _minDist);
+	local x1, x2 = _zoneData.bounds.x1, _zoneData.bounds.x2;
+	local y1, y2 = _zoneData.bounds.y1, _zoneData.bounds.y2;
+	local newX = _x + ZombRand(_minDist / 2, _minDist);
+	local newY = _y + ZombRand(_minDist / 2, _minDist);
 	if isInRect(newX, newY, x1, x2, y1, y2) then
 		return newX, newY;
 	end;
@@ -1847,6 +1847,9 @@ end
 function forageSystem.getLightLevelPenalty(_character, _square, _doReduction)
 	if not (_square and _character) then return 0; end;
 	local lightLevel = _square:getLightLevel(_character:getPlayerNum());
+    if _square == _character:getSquare() then
+        lightLevel = math.max(lightLevel, math.min(1, _character:getTorchStrength()));
+    end
 	local dayLightStrength = getClimateManager():getDayLightStrength();
 	--just make it fully bright if over 80%
 	if lightLevel > 0.8 then lightLevel = 1; end;
@@ -2128,11 +2131,11 @@ function forageSystem.itemFound(_character, _itemType, _distanceTravelled)
 end
 
 function forageSystem.giveXP(_character, _itemDef, _distanceTravelled)
-	local globalXPModifier		= forageSystem.globalXPModifier / 100;
-	local levelXPModifier		= forageSystem.levelXPModifier / 100;
-	local perkLevel				= _character:getPerkLevel(Perks.PlantScavenging);
-	local diminishingReturn		= 1 - ((perkLevel - _itemDef.skill) * levelXPModifier);
-	local xpAmount				= math.max((_distanceTravelled * globalXPModifier) * diminishingReturn, 1);
+	local globalXPModifier = forageSystem.globalXPModifier / 100;
+	local levelXPModifier = forageSystem.levelXPModifier / 100;
+	local perkLevel = _character:getPerkLevel(Perks.PlantScavenging);
+	local diminishingReturn = 1 - ((perkLevel - _itemDef.skill) * levelXPModifier);
+	local xpAmount = math.max((_distanceTravelled * globalXPModifier) * diminishingReturn, 1);
 
 	addXp(_character, Perks.PlantScavenging, xpAmount);
 end
@@ -2140,11 +2143,11 @@ end
 --function forageSystem.giveItemXP(_character, _itemDef, _amount)
 --	local pfPerk;
 --	--
---	local xpAmount              = _itemDef.xp * (_amount or 1);
---	local globalXPModifier      = forageSystem.globalXPModifier / 100;
---	local levelXPModifier       = forageSystem.levelXPModifier / 100;
---	local perkLevel             = forageSystem.getPerkLevel(_character, _itemDef);
---	local diminishingReturn     = 1 - ((perkLevel - _itemDef.skill) * levelXPModifier);
+--	local xpAmount = _itemDef.xp * (_amount or 1);
+--	local globalXPModifier = forageSystem.globalXPModifier / 100;
+--	local levelXPModifier = forageSystem.levelXPModifier / 100;
+--	local perkLevel = forageSystem.getPerkLevel(_character, _itemDef);
+--	local diminishingReturn = 1 - ((perkLevel - _itemDef.skill) * levelXPModifier);
 --	--
 --	xpAmount = math.max((xpAmount * globalXPModifier) * diminishingReturn, 1);
 --	for _, perk in ipairs(_itemDef.perks) do
@@ -2320,6 +2323,54 @@ function forageSystem.doDeadTrapAnimalSpawn(_character, _inventory, _itemDef, _i
 		end;
 	end;
 	return _items; --custom spawn scripts must return an arraylist of items (or nil)
+end
+
+function forageSystem.actionComplete(_character, _iconID)
+    local manager = ISSearchManager.getManager(_character)
+    local forageIcon = manager.forageIcons[_iconID]
+	if forageIcon == nil or forageIcon.itemList == nil then return; end;
+	--
+	--flag the icon for removal
+	forageIcon:setIsBeingRemoved(true);
+	--do the icon removal
+	manager:removeItem(forageIcon);
+	manager:removeIcon(forageIcon);
+	--do the foraging action
+	forageSystem.forageAction(_character, forageIcon);
+	--trigger event so other managers will remove the icon
+	triggerEvent("onUpdateIcon", forageIcon.zoneData, forageIcon.iconID, nil);
+end
+
+function forageSystem.forageAction(_character, _forageIcon)
+	forageSystem.doFatiguePenalty(_character);
+	forageSystem.doEndurancePenalty(_character);
+	--
+	-- add the items to player inventory
+	-- these items are generated when the icon is first spotted in _forageIcon.itemList
+	local itemsAdded = _forageIcon.itemList
+	local itemsTable = {};
+	for i = 0, itemsAdded:size() - 1 do
+		local item = itemsAdded:get(i);
+		if not itemsTable[item:getFullType()] then itemsTable[item:getFullType()] = {item = item, count = 0}; end;
+		itemsTable[item:getFullType()].count = itemsTable[item:getFullType()].count + 1;
+	end;
+	--
+	--create the halo note, injecting the item image
+	local itemTexture;
+	for _, itemData in pairs(itemsTable) do
+		local item = itemData.item;
+		local itemCount = itemData.count;
+		if item:getTexture() ~= nil then
+			if string.find(tostring(item:getTexture():getName()), "media") and string.find(tostring(item:getTexture():getName()), "textures") then
+				itemTexture = "[img="..tostring(item:getTexture():getName()).."]";
+			else
+				itemTexture = "[img=media/textures/"..tostring(item:getTexture():getName()).."]"
+			end
+		else
+			itemTexture = ""
+		end
+        HaloTextHelper.addText(_character,itemTexture.."    "..itemCount.. " "..item:getDisplayName());
+	end;
 end
 
 Events.OnItemFound.Add(forageSystem.itemFound);

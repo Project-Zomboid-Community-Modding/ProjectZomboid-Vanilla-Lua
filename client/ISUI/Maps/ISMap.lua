@@ -394,6 +394,16 @@ function ISMap:initMapData()
 
 	-- Reveal the area of this map on the world map.
 	MapUtils.revealKnownArea(self)
+	if (isClient()) then
+	    local mapAPI = self.mapAPI;
+	    local args = {
+	        x1 = mapAPI:getMinXInSquares(),
+	        y1 = mapAPI:getMinYInSquares(),
+	        x2 = mapAPI:getMaxXInSquares(),
+	        y2 = mapAPI:getMaxYInSquares()
+	    };
+	    sendClientCommand(self.character, "map", "setKnownInSquares", args);
+    end
 end
 
 function ISMap:updateJoypad()

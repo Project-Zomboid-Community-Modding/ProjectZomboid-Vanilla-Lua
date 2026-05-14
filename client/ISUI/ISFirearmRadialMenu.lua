@@ -325,7 +325,7 @@ function ISFirearmRadialMenu.getBestRBButtonAction(buttonPrompt)
 	if not ISFirearmRadialMenu.checkWeapon(playerObj) then
 		return
 	end
-	buttonPrompt:setRBPrompt("RELOAD", onJoypadReload)
+	buttonPrompt:setButtonBindingPrompt(CharacterJoypadButtonBinding.ReloadWeapon, "RELOAD", onJoypadReload)
 	return true
 end
 

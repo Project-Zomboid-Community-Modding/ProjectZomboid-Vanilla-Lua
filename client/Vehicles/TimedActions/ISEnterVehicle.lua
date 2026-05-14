@@ -42,7 +42,7 @@ function ISEnterVehicle:start()
 	local worldPos = Vector3f.new()
 	self.vehicle:getWorldPos(outside:getOffset(), worldPos)
 
-	if self.character:DistTo(worldPos:x(), worldPos:y()) > 2 then
+	if self.character:DistToSquared(worldPos:x(), worldPos:y()) > 2 * 2 then
 		return
 	end
 

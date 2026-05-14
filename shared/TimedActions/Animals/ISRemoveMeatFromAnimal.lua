@@ -114,6 +114,8 @@ function ISRemoveMeatFromAnimal:complete()
 	end
 
 	syncVisuals(self.character);
+    syncClothingFields(self.character);
+    sendHumanVisual(self.character);
 
 	for i=0,bloodGround do
 		addBloodSplat(self.hook:getSquare(), 2, ZombRandFloat(-0.3, 0.3), ZombRandFloat(-0.3, 0.3))

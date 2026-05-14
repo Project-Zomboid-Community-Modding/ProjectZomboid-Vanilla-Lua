@@ -17,7 +17,7 @@ end
 function ISUnequipAction:start()
 	self.item:setJobType(getText("ContextMenu_Unequip") .. " " .. self.item:getName());
 	self.item:setJobDelta(0.0);
-    if self.isDropping and self.character:isHandItem(self.item) then
+    if (self.reason == "drop" or self.reason == "place") and self.character:isHandItem(self.item) then
         -- Unequipping then dropping a held item is nearly instantaneous.
 	elseif self.fromHotbar then
 		self.character:setVariable("AttachItemSpeed", self.animSpeed)
@@ -130,7 +130,8 @@ function ISUnequipAction:complete()
 	sendEquip(self.character)
 
 	triggerEvent("OnClothingUpdated", self.character)
-	if isForceDropHeavyItem(self.item) then
+
+	if self.reason ~= "drop" and self.reason ~= "place" and isForceDropHeavyItem(self.item) then
 		self.character:getInventory():Remove(self.item);
 		sendRemoveItemFromContainer(self.character:getInventory(), self.item)
 		local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(self.character, self.character:getCurrentSquare(), self.item)
@@ -159,7 +160,7 @@ function ISUnequipAction:getDuration()
     end
 end
 
-function ISUnequipAction:new(character, item, maxTimeInit)
+function ISUnequipAction:new(character, item, maxTimeInit, reason)
 	local o = ISBaseTimedAction.new(self, character);
 	o.item = item;
 	o.stopOnAim = false;
@@ -167,6 +168,7 @@ function ISUnequipAction:new(character, item, maxTimeInit)
 	o.stopOnRun = true;
 	o.maxTimeInit = maxTimeInit
 	o.maxTime = maxTimeInit
+	o.reason = reason
 	o.ignoreHandsWounds = true;
 	o.clothingAction = true;
 	o.stopOnWalk = ISWearClothing.isStopOnWalk(item);

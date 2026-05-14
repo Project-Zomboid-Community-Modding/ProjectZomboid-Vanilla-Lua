@@ -104,6 +104,21 @@ function ISPathFindAction:setRunActionsAfterFailing(b)
 	self.runActionsAfterFailing = b
 end
 
+function ISPathFindAction:debugRender()
+	if self.goal[1] == 'NearestPreferred' then
+		local locations = self.goal[2]
+		local locationsAlt = self.goal[3]
+		for i=1,#locations,3 do
+			local x,y,z = locations[i],locations[i+1],locations[i+2]
+			renderIsoCircle(x, y, z, 0.1, 16, 1.0, 1.0, 1.0, 1.0, 1.0)
+		end
+		for i=1,#locationsAlt,3 do
+			local x,y,z = locationsAlt[i],locationsAlt[i+1],locationsAlt[i+2]
+			renderIsoCircle(x, y, z, 0.1, 16, 1.0, 1.0, 0.0, 0.0, 1.0)
+		end
+	end
+end
+
 function ISPathFindAction:pathToLocationF(character, targetX, targetY, targetZ)
 	local o = ISBaseTimedAction.new(self, character)
 	o.stopOnAim = false
@@ -184,9 +199,12 @@ function ISPathFindAction:pathToGrabCorpse(character, corpse)
     return o
 end
 
-local function tryAddLocationAdjacentToObject(square, direction, added, locations)
+local function tryAddLocationAdjacentToObject(square, direction, added, locations, predicate, predicateArg)
     local adjacent = square:getAdjacentSquare(direction)
     if adjacent == nil then return end
+    if predicate and predicate(predicateArg, adjacent) then
+        return
+    end
     if luautils.tableContains(added, adjacent) then
         return
     end
@@ -212,43 +230,41 @@ local function tryAddLocationAdjacentToObject(square, direction, added, location
     end
 end
 
-local function tryAddLocationsAdjacentToObject(square, added, locations, diagonal)
+local function tryAddLocationsAdjacentToObject(square, added, locations, diagonal, predicate, predicateArg)
     if diagonal then
-        tryAddLocationAdjacentToObject(square, IsoDirections.NW, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.NE, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.SE, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.SW, added, locations)
+        tryAddLocationAdjacentToObject(square, IsoDirections.NW, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.NE, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.SE, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.SW, added, locations, predicate, predicateArg)
     else
-        tryAddLocationAdjacentToObject(square, IsoDirections.N, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.S, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.W, added, locations)
-        tryAddLocationAdjacentToObject(square, IsoDirections.E, added, locations)
+        tryAddLocationAdjacentToObject(square, IsoDirections.N, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.S, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.W, added, locations, predicate, predicateArg)
+        tryAddLocationAdjacentToObject(square, IsoDirections.E, added, locations, predicate, predicateArg)
     end
 end
 
-function ISPathFindAction:pathAdjacentToMultiTileObject(character, object, allowDiagonal)
+function ISPathFindAction:pathAdjacentToSquares(character, squares, allowDiagonal)
     if not character:getCurrentSquare() then
         return nil
     end
     local added = {}
     local locations = {}
-    local objects = ArrayList.new()
-    object:getSpriteGridObjectsIncludingSelf(objects)
-    for i=1,objects:size() do
-        local square = objects:get(i-1):getSquare()
-        tryAddLocationsAdjacentToObject(square, added, locations, false)
+    local predicate = function(_squares, _square)
+        return luautils.tableContains(_squares, _square)
+    end
+    for _,square in ipairs(squares) do
+        tryAddLocationsAdjacentToObject(square, added, locations, false, predicate, squares)
     end
     -- It's important to add the cardinal directions first, to avoid adding multiple
     -- destinations on the same square.  Also, these diagonal destinations are only
     -- used if no cardinal destination is available.
     local locationsAlt = {}
     if allowDiagonal then
-        for i=1,objects:size() do
-            local square = objects:get(i-1):getSquare()
-            tryAddLocationsAdjacentToObject(square, added, locationsAlt, true)
+        for _,square in ipairs(squares) do
+            tryAddLocationsAdjacentToObject(square, added, locationsAlt, true, predicate, squares)
         end
     end
-    objects:clear()
     if #locations + #locationsAlt == 0 then
         return nil
     end
@@ -259,6 +275,87 @@ function ISPathFindAction:pathAdjacentToMultiTileObject(character, object, allow
         return ISPathFindAction:pathToNearest(character, locations)
     end
     return ISPathFindAction:pathToNearestPreferred(character, locations, locationsAlt)
+end
+
+local function isSquareAdjacentToAny(square, squares)
+    for _,square2 in ipairs(squares) do
+        if square:isAdjacentTo(square2) then
+            return true
+        end
+    end
+    return false
+end
+
+local function isSquareCardinalAdjacentToAny(square, squares)
+    for _,square2 in ipairs(squares) do
+        if square2:getAdjacentSquare(IsoDirections.W) == square or
+                square2:getAdjacentSquare(IsoDirections.N) or
+                square2:getAdjacentSquare(IsoDirections.E) == square or
+                square2:getAdjacentSquare(IsoDirections.S) == square then
+            return true
+        end
+    end
+    return false
+end
+
+function ISPathFindAction:pathAdjacentToSquaresPredicate(character, squares, allowDiagonal, predicate, predicateArg)
+    if not character:getCurrentSquare() then
+        return nil
+    end
+    local added = {}
+    local locations = {}
+    for _,square in ipairs(squares) do
+        tryAddLocationsAdjacentToObject(square, added, locations, false, predicate, predicateArg)
+    end
+    -- It's important to add the cardinal directions first, to avoid adding multiple
+    -- destinations on the same square.  Also, these diagonal destinations are only
+    -- used if no cardinal destination is available.
+    local locationsAlt = {}
+    if allowDiagonal then
+        for _,square in ipairs(squares) do
+            tryAddLocationsAdjacentToObject(square, added, locationsAlt, true, predicate, predicateArg)
+        end
+    end
+    if #locations + #locationsAlt == 0 then
+        return nil
+    end
+    if #locations == 0 then
+        return ISPathFindAction:pathToNearest(character, locationsAlt)
+    end
+    if #locationsAlt == 0 then
+        return ISPathFindAction:pathToNearest(character, locations)
+    end
+    -- Pathfind to diagonals that are in squares adjacent (in a cardinal direction) to an excluded square
+    if type(predicateArg.squaresExcluded) == 'table' then
+        local locationsAlt1 = {}
+        for i=1,#locationsAlt,3 do
+            local x,y,z = locationsAlt[i],locationsAlt[i+1],locationsAlt[i+2]
+            local square = getCell():getGridSquare(fastfloor(x), fastfloor(y), fastfloor(z))
+            if isSquareCardinalAdjacentToAny(square, predicateArg.squaresExcluded) then
+                table.insert(locations, x)
+                table.insert(locations, y)
+                table.insert(locations, z)
+            else
+                table.insert(locationsAlt1, x)
+                table.insert(locationsAlt1, y)
+                table.insert(locationsAlt1, z)
+            end
+        end
+        locationsAlt = locationsAlt1
+    end
+    return ISPathFindAction:pathToNearestPreferred(character, locations, locationsAlt)
+end
+
+function ISPathFindAction:pathAdjacentToMultiTileObject(character, object, allowDiagonal)
+    local squares = {}
+    local objects = ArrayList.new()
+    object:getSpriteGridObjectsIncludingSelf(objects)
+    for i=1,objects:size() do
+        local square = objects:get(i-1):getSquare()
+        table.insert(squares, square)
+    end
+    objects:clear()
+    return ISPathFindAction:pathAdjacentToSquares(character, squares, allowDiagonal)
 end
 
 -- Debug function for testing pathfinding.

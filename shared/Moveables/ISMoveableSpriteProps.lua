@@ -76,31 +76,31 @@ function ISMoveableSpriteProps.new( _sprite )
 	end
 	
 	if sprite then
-        s.sprite                        = sprite;
-		local props 					= sprite:getProperties();
+        s.sprite = sprite;
+		local props = sprite:getProperties();
 		if props then
-            s.spriteProps               = props;
+            s.spriteProps = props;
 
-			s.spriteName 				= sprite:getName();
-			s.blocksPlacement			= props:has("BlocksPlacement");
-			s.isHigh 					= props:has("IsHigh");
-			s.isLow 					= props:has("IsLow");
-			s.isTable 					= props:has("IsTable");
-			s.isTableTop 				= props:has("IsTableTop");
-			s.isStackable				= props:has("IsStackable");
-			s.isWaterCollector			= props:has("IsWaterCollector");
-            s.material 					= props:has("Material") and props:get("Material");
-            s.material2 				= props:has("Material2") and props:get("Material2")~="Undefined" and props:get("Material2");
-            s.material3 				= props:has("Material3") and props:get("Material3")~="Undefined" and props:get("Material3");
+			s.spriteName = sprite:getName();
+			s.blocksPlacement = props:has("BlocksPlacement");
+			s.isHigh = props:has("IsHigh");
+			s.isLow = props:has("IsLow");
+			s.isTable = props:has("IsTable");
+			s.isTableTop = props:has("IsTableTop");
+			s.isStackable = props:has("IsStackable");
+			s.isWaterCollector = props:has("IsWaterCollector");
+            s.material = props:has("Material") and props:get("Material");
+            s.material2 = props:has("Material2") and props:get("Material2")~="Undefined" and props:get("Material2");
+            s.material3 = props:has("Material3") and props:get("Material3")~="Undefined" and props:get("Material3");
 
             -- values for scrapping, scrapables are not always valid movables.
-            s.canScrap                  = props:has("CanScrap");
+            s.canScrap = props:has("CanScrap");
             if s.canScrap then
                 if s.material and s.material ~= "Undefined" then
-                    s.scrapUseTool      = not props:has("ScrapUseTool");
-                    s.scrapUseSkill     = not props:has("ScrapUseSkill");
-                    s.scrapSize			= props:get("ScrapSize") or "Medium";
-                    s.scrapToolUses     = props:has("ScrapToolUseOverride") and props:get("ScrapToolUseOverride");
+                    s.scrapUseTool = not props:has("ScrapUseTool");
+                    s.scrapUseSkill = not props:has("ScrapUseSkill");
+                    s.scrapSize = props:get("ScrapSize") or "Medium";
+                    s.scrapToolUses = props:has("ScrapToolUseOverride") and props:get("ScrapToolUseOverride");
                     if not s.scrapToolUses or s.scrapToolUses < 0 then
                         if s.scrapSize=="Small" then
                             s.scrapToolUses = 3;
@@ -115,41 +115,41 @@ function ISMoveableSpriteProps.new( _sprite )
                 end
             end
 
-            s.surface                   = props:has("Surface") and tonumber(props:get("Surface")) or 0;
-            s.surfaceIsOffset           = props:has("IsSurfaceOffset");
-            s.yOffsetCursor             = 0; --render offset used in the movable cursor.
+            s.surface = props:has("Surface") and tonumber(props:get("Surface")) or 0;
+            s.surfaceIsOffset = props:has("IsSurfaceOffset");
+            s.yOffsetCursor = 0; --render offset used in the movable cursor.
 			
-			s.isMoveable				= s.spriteName and props:has("IsMoveAble") or false;
+			s.isMoveable = s.spriteName and props:has("IsMoveAble") or false;
 			
-			s.facing 					= props:has("Facing") and props:get("Facing") or nil;
+			s.facing = props:has("Facing") and props:get("Facing") or nil;
 			s.isoType = props:has("IsoType") and props:get("IsoType") or "IsoObject";
-			s.groupName					= props:has("GroupName") and props:get("GroupName") or nil;
-			s.name 						= (s.groupName and (s.groupName .. " ") or "") .. (props:has("CustomName") and props:get("CustomName") or "Moveable object");
+			s.groupName = props:has("GroupName") and props:get("GroupName") or nil;
+			s.name = (s.groupName and (s.groupName .. " ") or "") .. (props:has("CustomName") and props:get("CustomName") or "Moveable object");
 
             if not s.isMoveable and s.canScrap and s.name == "Moveable object" then
-                s.name                  = "Scrapable object";
+                s.name = "Scrapable object";
             end
 
 			if s.isMoveable then
-                s.customItem            = props:has("CustomItem") and props:get("CustomItem") or nil;
-				s.type 					= props:has("MoveType") and props:get("MoveType") or "Object";
-				s.pickUpTool			= props:has("PickUpTool") and props:get("PickUpTool")~="None" and props:get("PickUpTool") or nil;
-				s.placeTool				= props:has("PlaceTool") and props:get("PlaceTool")~="None" and props:get("PlaceTool") or nil;
-                s.canBreak				= s.pickUpTool and props:has("CanBreak"); --false; --s.pickUpTool and props:has("CanBreak"); --can only break uppon tool use
-				s.pickUpLevel			= props:has("PickUpLevel") and tonumber(props:get("PickUpLevel")) or 0; --0; --props:has("PickUpLevel") and tonumber(props:get("PickUpLevel")) or 0;
-                s.rawWeight				= props:has("PickUpWeight") and tonumber(props:get("PickUpWeight")) or 50;
-				s.weight				= s.rawWeight / 10; --0.1; -- s.rawWeight / 10; --props:has("PickUpWeight") and tonumber(props:get("PickUpWeight"))/10 or 1.0;
-				s.isClosedState			= props:has("IsClosedState") or false;
-				s.Noffset				= props:has("Noffset") and tonumber(props:get("Noffset")) or 0;
-				s.Soffset				= props:has("Soffset") and tonumber(props:get("Soffset")) or 0;
-				s.Woffset				= props:has("Woffset") and tonumber(props:get("Woffset")) or 0;
-				s.Eoffset				= props:has("Eoffset") and tonumber(props:get("Eoffset")) or 0;
-				s.linkedOffset 			= props:has("LinkedOffset") and tonumber(props:get("LinkedOffset")) or 0;
-				s.linkedLoc				= props:has("LinkedLocIs") and props:get("LinkedLocIs") or nil;
-				s.wallOverlay			= props:has(IsoFlagType.WallOverlay);
-                s.ignoreSurfaceSnap     = props:has("IgnoreSurfaceSnap");
-                s.isGridExtensionTile   = props:has("IsGridExtensionTile");
-                s.allowDoorFrame        = props:has("WallObjectAllowDoorframe");
+                s.customItem = props:has("CustomItem") and props:get("CustomItem") or nil;
+				s.type = props:has("MoveType") and props:get("MoveType") or "Object";
+				s.pickUpTool = props:has("PickUpTool") and props:get("PickUpTool")~="None" and props:get("PickUpTool") or nil;
+				s.placeTool = props:has("PlaceTool") and props:get("PlaceTool")~="None" and props:get("PlaceTool") or nil;
+                s.canBreak = s.pickUpTool and props:has("CanBreak"); --false; --s.pickUpTool and props:has("CanBreak"); --can only break uppon tool use
+				s.pickUpLevel = props:has("PickUpLevel") and tonumber(props:get("PickUpLevel")) or 0; --0; --props:has("PickUpLevel") and tonumber(props:get("PickUpLevel")) or 0;
+                s.rawWeight = props:has("PickUpWeight") and tonumber(props:get("PickUpWeight")) or 50;
+				s.weight = s.rawWeight / 10; --0.1; -- s.rawWeight / 10; --props:has("PickUpWeight") and tonumber(props:get("PickUpWeight"))/10 or 1.0;
+				s.isClosedState = props:has("IsClosedState") or false;
+				s.Noffset = props:has("Noffset") and tonumber(props:get("Noffset")) or 0;
+				s.Soffset = props:has("Soffset") and tonumber(props:get("Soffset")) or 0;
+				s.Woffset = props:has("Woffset") and tonumber(props:get("Woffset")) or 0;
+				s.Eoffset = props:has("Eoffset") and tonumber(props:get("Eoffset")) or 0;
+				s.linkedOffset = props:has("LinkedOffset") and tonumber(props:get("LinkedOffset")) or 0;
+				s.linkedLoc = props:has("LinkedLocIs") and props:get("LinkedLocIs") or nil;
+				s.wallOverlay = props:has(IsoFlagType.WallOverlay);
+                s.ignoreSurfaceSnap = props:has("IgnoreSurfaceSnap");
+                s.isGridExtensionTile = props:has("IsGridExtensionTile");
+                s.allowDoorFrame = props:has("WallObjectAllowDoorframe");
 				if s.wallOverlay then
 					if s.type=="WallObject" then		-- is this sprite is walloverlay check if the assigned type is wallobject
 						s.type = "WallOverlay";
@@ -179,15 +179,15 @@ function ISMoveableSpriteProps.new( _sprite )
                     end
                 end
                 
-                s.isMultiSprite     = s.sprite:getSpriteGrid()~=nil;
+                s.isMultiSprite = s.sprite:getSpriteGrid()~=nil;
                 s.isForceSingleItem = props:has("ForceSingleItem") or false;
 			end
 			
 			if s.spriteName then
-				local index				= lastIndexOf(s.spriteName, "_");
+				local index = lastIndexOf(s.spriteName, "_");
 				if index then
-					s.sheetName 		= s.spriteName:sub(1, index-1);
-					s.spriteID 			= tonumber(s.spriteName:sub(index));
+					s.sheetName = s.spriteName:sub(1, index-1);
+					s.spriteID = tonumber(s.spriteName:sub(index));
 				end
 				if s.isMoveable and tostring(s.sheetName)..tostring(s.spriteID) ~= s.spriteName then
 					s.isMoveable = false;
@@ -206,12 +206,12 @@ function ISMoveableSpriteProps:instanceItem(_spriteNameOverride)
 	if self.isMoveable then
 		local item;
         if self.customItem then
-            item 	= instanceItem(self.customItem);
+            item = instanceItem(self.customItem);
         else
             if self.isMultiSprite then
-                item 	= instanceItem("Moveables.Moveable");
+                item = instanceItem("Moveables.Moveable");
             else
-                item 	= instanceItem("Moveables."..self.spriteName);
+                item = instanceItem("Moveables."..self.spriteName);
             end
         end
         local spriteName = _spriteNameOverride or self.spriteName;
@@ -363,7 +363,7 @@ function ISMoveableSpriteProps:addInventoryItemToSquare( _square, _item, _max, _
             for i = 1, amount do
                 local randNum = ZombRand(0,101);
                 if randNum < _chance then
-                    local item 	= instanceItem( _item );
+                    local item = instanceItem( _item );
                     if item then
                         _square:AddWorldInventoryItem(item, 0.5, 0.5, 0);
                     end
@@ -527,6 +527,8 @@ local function resetInfoPanelFlags()
     InfoPanelFlags.mustPlaceRoomRoof = nil;
     InfoPanelFlags.isOperational = nil; -- for stuff that cant be moved due it being operated (like bbq)
     InfoPanelFlags.removePropane = nil;
+    InfoPanelFlags.basementWallAdjacentToTheVoid = nil;
+    InfoPanelFlags.isSatChair = nil;
 end
 
 function ISMoveableSpriteProps:getInfoPanelDescription( _square, _object, _player, _mode )
@@ -691,6 +693,8 @@ function ISMoveableSpriteProps:getInfoPanelDescription( _square, _object, _playe
         if InfoPanelFlags.mustPlaceRoomRoof then infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, "- "..getText("IGUI_MustPlaceRoomRoof"), bR,bG,bB ); end
         if InfoPanelFlags.isOperational then infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, "- "..getText("IGUI_IsOperational"), bR,bG,bB ); end
         if InfoPanelFlags.removePropane then infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, "- "..getText("IGUI_RemovePropane"), bR,bG,bB ); end
+        if InfoPanelFlags.basementWallAdjacentToTheVoid then ISMoveableSpriteProps.addLineToInfoTable( infoTable, "- "..getText("IGUI_Moveables_BasementWallAdjacentToTheVoid"), bR,bG,bB ); end
+        if InfoPanelFlags.isSatChair then infoTable = ISMoveableSpriteProps.addLineToInfoTable( infoTable, "- "..getText("IGUI_Moveables_IsSatChair"), bR,bG,bB ); end
         return infoTable;
     end
 end
@@ -858,6 +862,9 @@ function ISMoveableSpriteProps:getInfoPanelFlagsPerTile( _square, _object, _play
     if _mode == "rotate" and self:canRotateDirection() then
         InfoPanelFlags.hasItems = false
     end
+    if _mode == "rotate" and _object ~= nil and _object:isSatChair() then
+        InfoPanelFlags.isSatChair = true
+    end
 
     if self.type=="WindowObject" then
         InfoPanelFlags.needStandingInside = _player:getSquare() and _player:getSquare():has(IsoFlagType.exterior);
@@ -901,6 +908,7 @@ function ISMoveableSpriteProps:getInfoPanelFlagsPerTile( _square, _object, _play
         InfoPanelFlags.doorInFrame = InfoPanelFlags.doorInFrame or (_object and instanceof(_object,"IsoThumpable") and _object:isDoorFrame() and _square:getDoor(_object:getNorth()));
         InfoPanelFlags.floorAtTopOfStairs = InfoPanelFlags.floorAtTopOfStairs or self:isFloorAtTopOfStairs(_object);
         InfoPanelFlags.windowInFrame = InfoPanelFlags.windowInFrame or (instanceof(_object,"IsoThumpable") and _object:isWindow() and _square:getWindow(_object:getNorth()))
+        InfoPanelFlags.basementWallAdjacentToTheVoid = InfoPanelFlags.basementWallAdjacentToTheVoid or self:isBasementWallAdjacentToTheVoid(_object)
     end
 
     if ISMoveableDefinitions.cheat or _player:isMovablesCheat() then
@@ -938,8 +946,8 @@ end
 -- Finds the moveable defined by _spriteName in inventory
 function ISMoveableSpriteProps:findInInventory( _character, _spriteName )
     if _character and _spriteName then
-        local items 			= _character:getInventory():getItems();
-        local items_size 		= items:size();
+        local items = _character:getInventory():getItems();
+        local items_size = items:size();
         for i=0,items_size-1, 1 do
             local item = items:get(i);
             if instanceof(item, "Moveable") and item:getWorldSprite() then
@@ -1173,7 +1181,7 @@ function ISMoveableSpriteProps:pickUpMoveable( _character, _square, _createItem,
                     local spriteGrid = self.sprite:getSpriteGrid();
                     if not spriteGrid then return false; end
 
-                    local item 	= self:instanceItem(spriteGrid:getAnchorSprite():getName());
+                    local item = self:instanceItem(spriteGrid:getAnchorSprite():getName());
                     if instanceof(obj, "IsoThumpable") then
                         self:saveThumpableParameters(item:getModData(), obj);
                     end
@@ -1212,7 +1220,7 @@ end
 function ISMoveableSpriteProps:pickUpMoveableInternal( _character, _square, _object, _sprInstance, _spriteName, _createItem, _rotating )
     --if _object and self:canPickUpMoveable( _character, _square, not _sprInstance and _object or nil ) then
     local objIsIsoWindow = self.type == "Window" and instanceof(_object,"IsoWindow");
-    local item 	= self:instanceItem(_spriteName);
+    local item = self:instanceItem(_spriteName);
 
     if item or (objIsIsoWindow and _object:isDestroyed()) then      -- destroyed windows return nil for instanceItem()
         GameEntityFactory.TransferComponents(_object, item);
@@ -1384,8 +1392,8 @@ end
 -- Finds the moveable defined by _spriteName in inventory
 function ISMoveableSpriteProps:findInInventoryMultiSprite( _character, _spriteName )
     if _character and _spriteName then
-        local items 			= _character:getInventory():getItems();
-        local items_size 		= items:size();
+        local items = _character:getInventory():getItems();
+        local items_size = items:size();
         for i=0,items_size-1, 1 do
             local item = items:get(i);
             if instanceof(item, "Moveable") and self.customItem and (item:getFullType() == self.customItem) and (item:getName() == self.name) then
@@ -1410,8 +1418,8 @@ function ISMoveableSpriteProps:findInInventoryMultiSprite( _character, _spriteNa
                     --print(" test "..tostring(x)..":"..tostring(y)..":"..tostring(sz));
                     local sq = getCell():getGridSquare(x,y,sz);
                     if sq and sq:getWorldObjects() then
-                        local items 			= sq:getWorldObjects();
-                        local items_size 		= items:size();
+                        local items = sq:getWorldObjects();
+                        local items_size = items:size();
                         for i=0,items_size-1, 1 do
                             if instanceof(items:get(i), "IsoWorldInventoryObject") then
                                 local item = items:get(i):getItem();
@@ -1691,7 +1699,7 @@ function ISMoveableSpriteProps:canPlaceMoveableInternal( _character, _square, _i
                 end
             end
         elseif self.type == "Vegitation" then
-            local sqTexName 	= _square:getFloor() and _square:getFloor():getSprite() and _square:getFloor():getSprite():getName() or false;
+            local sqTexName = _square:getFloor() and _square:getFloor():getSprite() and _square:getFloor():getSprite():getName() or false;
             if sqTexName and ( string.sub(sqTexName, 1, string.len("blends_natural")) == "blends_natural" ) then
                 canPlace = self:isFreeTile( _square );
             end
@@ -1742,7 +1750,7 @@ function ISMoveableSpriteProps:canPlaceMoveableInternal( _character, _square, _i
             local isNorth = (self:hasFaces() and self.facing == "N" or self.facing == "S") or false;
             local wallFrame = self:getWallForFacing( _square, isNorth and "S" or "E", "WindowFrame" );
             if wallFrame then
-                local window    = _square:getWindow(isNorth);
+                local window = _square:getWindow(isNorth);
                 canPlace = not window;
 --[[
                 if window and window:getSprite() and window:getSprite():getName() then
@@ -1871,10 +1879,10 @@ end
 
 function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteName )
     local obj;
-    local north         = self.facing and (self.facing=="N" or self.facing=="S");
-    --local hasTileFloor  = _square and _square:getFloor();
-    local insertIndex   = _square:getObjects() and _square:getObjects():size();
-    local removeList    = {}; -- table used to remove objects after place (due to insertIndex)
+    local north = self.facing and (self.facing=="N" or self.facing=="S");
+    --local hasTileFloor = _square and _square:getFloor();
+    local insertIndex = _square:getObjects() and _square:getObjects():size();
+    local removeList = {}; -- table used to remove objects after place (due to insertIndex)
     local TileIsoObjectType = getSprite( _spriteName ):getType()
 
     -- Place under IsoWorldInventoryObjects
@@ -1933,8 +1941,8 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
         local wallFrame = self:getWallForFacing( _square, north and "S" or "E", "WindowFrame" );
         local objects = _square:getObjects();
         for i=0, objects:size()-1 do
-            local object 		= objects:get(i);
-            local sprite 		= object:getSprite();
+            local object = objects:get(i);
+            local sprite = object:getSprite();
 
             if sprite and sprite:getName() then
                 if instanceof(object, "IsoWindow") then
@@ -1984,11 +1992,11 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
         obj = IsoCurtain.new( getCell(), _square, _spriteName, north );
         if self:hasFaces() and (self.facing == "S" or self.facing == "E") then          -- If facing south or east, make sure window object is placed directly after window or windowFrame
             local wallFrame = self:getWallForFacing( _square, north and "S" or "E", "WindowFrame" );
-            local window    = _square:getWindow(north);
+            local window = _square:getWindow(north);
 
             local objects = _square:getObjects();
             for i=0, objects:size()-1 do
-                local object 		= objects:get(i);
+                local object = objects:get(i);
 
                 if (window and object == window) or (wallFrame and object == wallFrame) then
                     insertIndex = i+1;
@@ -2007,9 +2015,9 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
 
             local objects = _square:getObjects();
             for i=0, objects:size()-1 do
-                local object 		= objects:get(i);
-                local spr 			= object:getSprite();
-                local mprops 		= ISMoveableSpriteProps.new( spr );
+                local object = objects:get(i);
+                local spr = object:getSprite();
+                local mprops = ISMoveableSpriteProps.new( spr );
                 if self.facing ~= nil and mprops.isMoveable and mprops.isTable and mprops:hasFaces() then
                     insertIndex = i+1;
                     local tmpSprite = self:getFaceSpriteFromParentObject( object );
@@ -2398,7 +2406,7 @@ function ISMoveableSpriteProps:snapFaceToSquare( _square )
         if (self.type == "Object" or self.type == "Vegitation") and self.isTableTop then
             local tableObject = self:getSpecificMoveableObjectFromSquare( _square, "Table" );
             if tableObject then
-                local sprite 		= tableObject:getSprite();
+                local sprite = tableObject:getSprite();
                 if sprite then
                     local props = sprite:getProperties();
                     if props then
@@ -2446,10 +2454,10 @@ function ISMoveableSpriteProps:snapFaceToSquare( _square )
 end
 
 local wallModeTable = {
-    Wall            = { N = {"WallN", "WallNW"}, W = {"WallW", "WallNW"} },
-    WallAndDoor     = { N = {"WallN", "WallNW","DoorWallN"}, W = {"WallW", "WallNW","DoorWallW"} },
-    WindowFrame     = { N = {IsoFlagType.WindowN}, W = {IsoFlagType.WindowW} },
-    DoorFrame     = { N = {"WallN", "WallNW", "DoorWallN"}, W = {"WallW", "WallNW", "DoorWallW"} },
+    Wall = { N = {"WallN", "WallNW"}, W = {"WallW", "WallNW"} },
+    WallAndDoor = { N = {"WallN", "WallNW","DoorWallN"}, W = {"WallW", "WallNW","DoorWallW"} },
+    WindowFrame = { N = {IsoFlagType.WindowN}, W = {IsoFlagType.WindowW} },
+    DoorFrame = { N = {"WallN", "WallNW", "DoorWallN"}, W = {"WallW", "WallNW", "DoorWallW"} },
 }
 -- gets a Wall for the defined facing (N S E W)
 -- optionally can retrieve windowframes
@@ -2496,7 +2504,7 @@ function ISMoveableSpriteProps:getMoveableOverlayFromObject( _object )
     if _object then
         local sprList = _object:getChildSprites();
         if sprList then
-            local list_size 	= sprList:size();
+            local list_size = sprList:size();
             if list_size > 0 then
                 for i=list_size-1, 0, -1 do
                     local sprite = sprList:get(i):getParentSprite();
@@ -2517,10 +2525,10 @@ end
 -- get specific moveables from the square
 function ISMoveableSpriteProps:getSpecificMoveableObjectFromSquare( _square, _objectType )
     if _square and _objectType then
-        local objects   = _square:getObjects();
+        local objects = _square:getObjects();
         for i=0, objects:size()-1 do
-            local object 		= objects:get(i);
-            local sprite 		= object:getSprite();
+            local object = objects:get(i);
+            local sprite = object:getSprite();
             if sprite then
                 local props = sprite:getProperties();
                 if props then
@@ -2540,8 +2548,8 @@ end
 -- returns the face from a table on square if possible
 function ISMoveableSpriteProps:getFaceSpriteFromParentObject( _object )
     if _object and self.isMoveable and self:hasFaces() then
-        local ownFaces      = self:getFaces();
-        local sprite 		= _object:getSprite();
+        local ownFaces = self:getFaces();
+        local sprite = _object:getSprite();
         if sprite then
             local props = sprite:getProperties();
             if props then
@@ -2580,7 +2588,7 @@ function ISMoveableSpriteProps:canManuallyRotate()
     return false;
 end
 
--- return if this object's IsoDirection can be changed via rotation (an not by changing sprites)
+-- return if this object's IsoDirection can be changed via rotation (and not by changing sprites)
 function ISMoveableSpriteProps:canRotateDirection()
     if self.isMoveable and self.isoType == "IsoMannequin" then
         return true;
@@ -2620,6 +2628,9 @@ function ISMoveableSpriteProps:canRotateMoveable( _square, _object, _origProps )
                         if not origMember.object:isObjectNoContainerOrEmpty() then
                             return false;
                         end
+                        if origMember.object:isSatChair() then
+                            return false;
+                        end
                     end
                     for _,gridMember in ipairs(sgrid) do
                         local coveredByOrig = false;
@@ -2647,6 +2658,9 @@ end
 -- checks if the current rotation can be applied (current rotation should be 'self')
 function ISMoveableSpriteProps:canRotateMoveableInternal( _square, _object )
     self.yOffsetCursor = _object and _object:getRenderYOffset() or 0;
+    if _object and _object:isSatChair() then
+        return false;
+    end
     if self.isMoveable and self:hasFaces() then
         if _object and not _object:isObjectNoContainerOrEmpty() then
             return false;
@@ -2709,8 +2723,8 @@ function ISMoveableSpriteProps:rotateMoveableInternal( _character, _square, _ori
             if self.isTable then                                                                                    -- If table then rotate tabletop items (sinks etc) to match table face.
                 local tableTopObject = self:getSpecificMoveableObjectFromSquare( _square, "TableTop" );
                 if tableTopObject then
-                    local sprite 		= tableTopObject:getSprite();
-                    local mprops 		= ISMoveableSpriteProps.new( sprite );
+                    local sprite = tableTopObject:getSprite();
+                    local mprops = ISMoveableSpriteProps.new( sprite );
                     if mprops.isMoveable and mprops.isTableTop and mprops:hasFaces() then
                         local newSpriteName = mprops:getFaceSpriteFromParentObject( obj );
                         if newSpriteName then
@@ -2746,7 +2760,10 @@ function ISMoveableSpriteProps:rotateMoveableInternal( _character, _square, _ori
     end
 end
 
-function ISMoveableSpriteProps:walkAdj(character, square, keepActions)
+function ISMoveableSpriteProps:walkAdj(character, square, keepActions, directionNew)
+    if self:walkAdjMultiTile(character, square:getX(), square:getY(), square:getZ(), keepActions, directionNew) then
+        return true
+    end
     if luautils.walkAdj(character, square, keepActions) then
         return true
     else
@@ -2764,8 +2781,89 @@ function ISMoveableSpriteProps:walkAdj(character, square, keepActions)
     return false
 end
 
-function ISMoveableSpriteProps:walkToAndEquip( _character, _square, _mode )
+function ISMoveableSpriteProps:getSpriteGridTopLeft(_x, _y)
+    if self.isMultiSprite and self.sprite:getSpriteGrid() ~= nil then
+        local spriteGrid = self.sprite:getSpriteGrid()
+        local xo = spriteGrid:getSpriteGridPosX(self.sprite)
+        local yo = spriteGrid:getSpriteGridPosY(self.sprite)
+        return _x-xo, _y-yo
+    end
+    return _x,_y
+end
+
+function ISMoveableSpriteProps:getMultiTileSquares(_left, _top, _z)
+    if self.isMultiSprite and self.sprite:getSpriteGrid() ~= nil then
+        local squares = {}
+        local spriteGrid = self.sprite:getSpriteGrid()
+        local w = spriteGrid:getWidth()
+        local h = spriteGrid:getHeight()
+        for x=0,w-1 do
+            for y=0,h-1 do
+                local objSprite = spriteGrid:getSprite(x, y)
+                if objSprite then
+                    local square = getCell():getGridSquare(_left + x, _top + y, _z)
+                    table.insert(squares, square)
+                end
+            end
+        end
+        if #squares > 0 then
+            return squares
+        end
+    end
+    return nil
+end
+
+local function intersectDisjointAux(squares1, squares2, intersect, disjoint)
+    for _,square1 in ipairs(squares1) do
+        local index2 = luautils.indexOf(squares2, square1)
+        if index2 == -1 then
+            if not luautils.tableContains(disjoint, square1) then
+                table.insert(disjoint, square1)
+            end
+        elseif not luautils.tableContains(intersect, square1) then
+            table.insert(intersect, square1)
+        end
+    end
+end
+
+local function intersectDisjoint(squares1, squares2)
+    local intersect = {}
+    local disjoint = {}
+    intersectDisjointAux(squares1, squares2, intersect, disjoint)
+    intersectDisjointAux(squares2, squares1, intersect, disjoint)
+    return intersect,disjoint
+end
+
+function ISMoveableSpriteProps:walkAdjMultiTile(_character, _x, _y, _z, _keepActions, _directionRotated)
+    local left,top = self:getSpriteGridTopLeft(_x, _y)
+    local squares = self:getMultiTileSquares(left, top, _z)
+    if squares ~= nil then
+        if _directionRotated then
+            local faces = self:getFaces()
+            if faces[_directionRotated] then
+                local propsRotated = ISMoveableSpriteProps.new(faces[_directionRotated]);
+                local squaresRotated = propsRotated:getMultiTileSquares(left, top, _z)
+                local intersect,disjoint = intersectDisjoint(squares, squaresRotated)
+                if #intersect == 0 then
+                    intersect = squares
+                    disjoint = squaresRotated
+                end
+                return luautils.walkAdjSquaresExcluded(_character, intersect, disjoint, true, _keepActions)
+            end
+        end
+        return luautils.walkAdjSquares(_character, squares, true, _keepActions)
+    end
+    return false
+end
+
+function ISMoveableSpriteProps:walkToAndEquip( _character, _square, _mode, _origSpriteName )
     local dowalk = false;
+    local keepActions = false
+    if _character:isSittingOnFurniture() then
+        ISTimedActionQueue.clear(_character)
+        ISTimedActionQueue.add(ISWaitWhileGettingUp:new(_character))
+        keepActions = true
+    end
     if self.type == "Window" or self.type == "WindowObject" then
         local dir = self.facing;
         if self.type == "Window" then
@@ -2773,13 +2871,17 @@ function ISMoveableSpriteProps:walkToAndEquip( _character, _square, _mode )
             dir = isNorth and "S" or "E";
         end
         local windowFrame = self:getWallForFacing( _square, dir, "WindowFrame" );
-        dowalk = windowFrame and luautils.walkAdjWindowOrDoor( _character, _square, windowFrame, false);
+        dowalk = windowFrame and luautils.walkAdjWindowOrDoor( _character, _square, windowFrame, keepActions);
     elseif instanceof(self.object, "IsoDoor") or (instanceof(self.object, "IsoThumpable") and self.object:isDoor()) then
-        dowalk = luautils.walkAdjWindowOrDoor( _character, _square, self.object, false);
+        dowalk = luautils.walkAdjWindowOrDoor( _character, _square, self.object, keepActions);
     elseif self.object ~= nil and self.object:getType() == IsoObjectType.wall then
-        dowalk = luautils.walkAdjWindowOrDoor( _character, _square, self.object, false);
+        dowalk = luautils.walkAdjWindowOrDoor( _character, _square, self.object, keepActions);
+    elseif _mode == "rotate" then
+        local propsOld = ISMoveableSpriteProps.new(_origSpriteName)
+        local directionOld = propsOld:getFaceDirectionFromSpriteName(_origSpriteName)
+        dowalk = self:walkAdj( _character, _square, keepActions, directionOld );
     else
-        dowalk = self:walkAdj( _character, _square, false );
+        dowalk = self:walkAdj( _character, _square, keepActions );
     end
     if dowalk and _mode == "scrap" then
         local tool = self:hasScrapTool(_character, false)
@@ -2870,15 +2972,16 @@ function ISMoveableSpriteProps:getSoundFromTool( _square, _character, _mode )
                     end
                 end
             end
-		elseif self.customItem then
-			if self.customItem == "Base.CampingTentKit2" then
-				if _mode == "pickup" then
-					return _character:playSound("TentTakeDown")
-				end
-				if _mode == "place" then
-					return _character:playSound("TentPutUp")
-				end
-			end
+        elseif self.customItem then
+            local scriptItem = getScriptManager():FindItem(self.customItem)
+            if scriptItem ~= nil then
+                if _mode == "pickup" and scriptItem:getSoundByID("PickUpFurniture") ~= nil then
+                    return _character:playSound(scriptItem:getSoundByID("PickUpFurniture"))
+                end
+                if _mode == "place" and scriptItem:getSoundByID("PlaceFurniture") ~= nil then
+                    return _character:playSound(scriptItem:getSoundByID("PlaceFurniture"))
+                end
+            end
         end
     end
     return nil
@@ -2936,7 +3039,7 @@ function ISMoveableSpriteProps:addScrapItemToSquare( _square, _item, _max, _chan
             for i = 1, amount do
                 local randNum = ZombRandFloat(0,101);
                 if randNum < _chance then
-                    local item 	= instanceItem( _item );
+                    local item = instanceItem( _item );
                     if item then
                         if self.keyId and self.keyId ~= -1 then
                             if item:getType() == "Doorknob" then
@@ -3101,7 +3204,7 @@ end
 function ISMoveableSpriteProps:addAllScrapItemsToSquare( _square, _list )
     local added = 0;
     for k,v in ipairs(_list.usable) do
-        local item 	= instanceItem( v );
+        local item = instanceItem( v );
         if item then
             if self.keyId and self.keyId ~= -1 then
                 if item:getType() == "Doorknob" then
@@ -3114,7 +3217,7 @@ function ISMoveableSpriteProps:addAllScrapItemsToSquare( _square, _list )
         end
     end
     for k,v in ipairs(_list.unusable) do
-        local item 	= instanceItem( v );
+        local item = instanceItem( v );
         if item then
             _square:AddWorldInventoryItem(item, ZombRandFloat(0.1,0.9), ZombRandFloat(0.1,0.9), 0);
             --added = added +1; unusable not counted for this
@@ -3122,6 +3225,14 @@ function ISMoveableSpriteProps:addAllScrapItemsToSquare( _square, _list )
     end
     if isClient() then ISInventoryPage.dirtyUI(); end
     return added;
+end
+
+function ISMoveableSpriteProps:transmitPlaySound(_character, _sound)
+    if isServer() then
+        sendPlaySound(_sound, false, _character)
+    else
+        _character:playSound(_sound)
+    end
 end
 
 function ISMoveableSpriteProps:scrapObject(_character)
@@ -3155,15 +3266,18 @@ function ISMoveableSpriteProps:scrapObject(_character)
     end
     if _character ~= nil and added == 0 then
         if instanceof(self.object, "IsoThumpable") then
-            _character:playSound(self.object:getBreakSound())
+            self:transmitPlaySound(_character, self.object:getBreakSound())
         elseif not self.customItem then
-            _character:playSound(IsoThumpable.GetBreakFurnitureSound(self.object:getSprite()))
+            self:transmitPlaySound(_character, IsoThumpable.GetBreakFurnitureSound(self.object:getSprite()))
         else
             local scrapDef = ISMoveableDefinitions:getInstance().getScrapDefinition(self.material)
             if scrapDef ~= nil and scrapDef.sound == "Dismantle" then
-                _character:playSound("DismantleFailed")
+                self:transmitPlaySound(_character, "DismantleFailed")
             end
         end
+    end
+    if _character ~= nil and added > 0 then
+        self:playScrapSuccessSound(_character)
     end
     --[[
     if added == 0 then
@@ -3330,7 +3444,11 @@ end
 function ISMoveableSpriteProps:scrapHaloNoteCheck(_character, _itemsAdded)
     if _character then
         if _itemsAdded == 0 then
-            _character:setHaloNote(getText("IGUI_Moveable_Fail"), 255,255,255,300);
+            if isServer() then
+                _character:sendObjectChange(IsoObjectChange.SET_HALO_NOTE, { note=getText("IGUI_Moveable_Fail"), r=255, g=255, b=255, dispTime=300 });
+            else
+                _character:setHaloNote(getText("IGUI_Moveable_Fail"), 255,255,255,300);
+            end
         end
     end
 end
@@ -3427,7 +3545,7 @@ function ISMoveableSpriteProps:scrapObjectInternal( _character, _scrapDef, _squa
         self:scrapGiveXp(_character, scrapDef);
 
         if _character:getPrimaryHandType() == "BlowTorch" then
-            _character:getPrimaryHandItem():Use()
+            _character:getPrimaryHandItem():UseAndSync()
         end
 
         --[[
@@ -3568,6 +3686,9 @@ function ISMoveableSpriteProps:canScrapObjectInternal(_result, _object)
             canScrap = false
         end
     end
+    if canScrap and self:isBasementWallAdjacentToTheVoid(_object) then
+        canScrap = false
+    end
     return canScrap;
 end
 
@@ -3663,6 +3784,18 @@ function ISMoveableSpriteProps:getScrapSound( _character )
 --                return sound;
             end
         end
+    end
+end
+
+function ISMoveableSpriteProps:playScrapSuccessSound( _character )
+    -- Presumably this will be fleshed out for other objects in the future.
+    local fenceTypeHigh = self.object:getProperty("FenceTypeHigh")
+    if fenceTypeHigh == "Metal" or fenceTypeHigh == "MetalBars" then
+        self:transmitPlaySound(_character, "BreakFurnitureMetal")
+    end
+    local fenceTypeLow = self.object:getProperty("FenceTypeLow")
+    if fenceTypeLow == "Barbwire" or fenceTypeLow == "Metal" or fenceTypeLow == "MetalGate" then
+        self:transmitPlaySound(_character, "BreakFurnitureMetal")
     end
 end
 
@@ -3887,7 +4020,7 @@ function ISThumpableSpriteProps:addToolString(infoTable, tag, hasTool)
     return infoTable
 end
 
-function ISThumpableSpriteProps:walkToAndEquip( _character, _square, _mode )
+function ISThumpableSpriteProps:walkToAndEquip( _character, _square, _mode, _origSpriteName )
     if _mode ~= "scrap" and _mode ~= "repair" then return false end
     if luautils.walkAdj(_character, _square, false) then
         local tool = _character:getInventory():getFirstTagEvalRecurse(ItemTag.SAW, predicateNotBroken)
@@ -4130,6 +4263,20 @@ end
 
 function ISMoveableSpriteProps:isBreakablePlant(_object)
     return false -- TODO
+end
+
+function ISMoveableSpriteProps:isBasementWallAdjacentToTheVoid(object)
+	if object == nil then return false end
+	if object:hasProperty(IsoFlagType.WallN) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_North(object)
+	end
+	if object:hasProperty(IsoFlagType.WallW) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_West(object)
+	end
+	if object:hasProperty(IsoFlagType.WallNW) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_North(object) or IsoCell.isBasementWallAdjacentToTheVoid_West(object)
+	end
+	return false
 end
 
 --[[

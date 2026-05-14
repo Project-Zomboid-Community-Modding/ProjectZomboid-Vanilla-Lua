@@ -428,6 +428,7 @@ function NewGameScreen:clickPlay()
             mainScreenInstance.charCreationProfession.previousScreen = "NewGameScreen"
             mainScreenInstance.charCreationProfession:setVisible(true, self.joyfocus)
         end
+        mapSpawnSelectInstance:saveGenParams()
         return
     end
 

@@ -15,17 +15,18 @@ function ISBuildIsoEntity:walkTo(x, y, z)
 
 	-- We should path to the bottom end of stairs, not the top end
     local name = self.objectInfo:getScript():getName();
-
     if luautils.stringEnds(name, "Stairs") and self.north then
-            square = getCell():getGridSquare(x+2, y, z)
+        square = getCell():getGridSquare(x+2, y, z)
+        return luautils.walkAdj(playerObj, square, false, excludeTiles)
     elseif luautils.stringEnds(name, "Stairs") then
-            square = getCell():getGridSquare(x, y+2, z)
+        square = getCell():getGridSquare(x, y+2, z)
+        return luautils.walkAdj(playerObj, square, false, excludeTiles)
     end
 
 	if self.isWallLike then
 		return luautils.walkAdjWall(playerObj, square, self.north)
 	else
-		return luautils.walkAdj(playerObj, square, false, excludeTiles)
+		return luautils.walkAdjSquares(playerObj, excludeTiles, true, true)
 	end
 end
 
@@ -57,11 +58,10 @@ function ISBuildIsoEntity:renderFloorGrid(x, y, z)
 			for yy=0,face:getHeight()-1 do
 				local square = getCell():getGridSquare(x + xx, y + yy, z);
 				local tileInfo = face:getTileInfo(xx, yy, 0);
-				local hc = colorBad;
-				if square and tileInfo then --and tileInfoSprite then
-					hc = self:isValidPerSquare(square, tileInfo, true, yy > 0, xx > 0) and colorGood or colorBad;
+				if square and tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) then
+					local hc = self:isValidPerSquare(square, tileInfo, true, yy > 0, xx > 0) and colorGood or colorBad;
+					floorCursorSprite:RenderGhostTileColor(x + xx, y + yy, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 				end
-				floorCursorSprite:RenderGhostTileColor(x + xx, y + yy, z, hc:getR(), hc:getG(), hc:getB(), 0.8)
 			end
 		end
 	end
@@ -460,7 +460,7 @@ function ISBuildIsoEntity:isValid(square)
 			for yy=0,face:getHeight()-1 do
 				local tileInfo = face:getTileInfo(xx,yy,zz);
 				local sq = getCell():getGridSquare(x+xx, y+yy, z+zz);
-				if tileInfo then
+				if tileInfo and (tileInfo:getSpriteName() or tileInfo:isBlocking()) then
 					if not sq then
 						return false;
 					else

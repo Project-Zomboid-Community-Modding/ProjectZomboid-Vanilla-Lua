@@ -67,6 +67,7 @@ function SCampfireSystem:addCampfire(grid)
 	luaObject:initNew()
 	luaObject:addObject()
 	luaObject:addContainer()
+	luaObject.exterior = grid:isOutside()
 	luaObject:getIsoObject():transmitCompleteItemToClients()
 
 -- 	self:noise("#campfires="..self:getLuaObjectCount())

@@ -19,7 +19,7 @@ function WaterMarkUI:render()
 
     local y = -FONT_HGT_SMALL - 3;
     local alpha = 0.3;
-    self:drawTextRight("x: ".. math.floor(self.chr:getX()) .. " , y: " .. math.floor(self.chr:getY()) .. ", z: " .. math.floor(self.chr:getZ()), self.revButton:getWidth(), y, 1, 1, 1, 1, UIFont.NewSmall);
+    self:drawTextRight("x: ".. math.floor(self.chr:getX()) .. " , y: " .. math.floor(self.chr:getY()) .. ", z: " .. math.floor(self.chr:getZ()) .. " ; " .. getPlayerScreenWidth(self.chr:getIndex()) .. "x" .. getPlayerScreenHeight(self.chr:getIndex()) .. "@" .. getPerformance():getFramerate(), self.revButton:getWidth(), y, 1, 1, 1, 1, UIFont.NewSmall);
     y = y - FONT_HGT_SMALL - 3;
     if isClient() then
         local statusData = getMPStatus()

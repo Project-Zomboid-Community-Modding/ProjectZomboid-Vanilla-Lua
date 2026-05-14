@@ -146,7 +146,7 @@ function AdminContextMenu.OnGetDoorKey(worldobjects, door, player)
     end
 
     if isClient() then
-        SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
+        SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getUsername() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
     else
         local item = instanceItem("Base.Key1")
         item:setKeyId(keyID)

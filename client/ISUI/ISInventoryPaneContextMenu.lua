@@ -627,11 +627,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
 
     local addDropOption = true
     if tests.unequip and isForceDropHeavyItem(tests.unequip) then
-        if isClient() then
-            context:addOption(getText("ContextMenu_Drop"), items, ISInventoryPaneContextMenu.onDropItems, player);
-        else
-            context:addOption(getText("ContextMenu_Drop"), items, ISInventoryPaneContextMenu.onUnEquip, player);
-        end
+        context:addOption(getText("ContextMenu_Drop"), items, ISInventoryPaneContextMenu.onDropItems, player);
         addDropOption = false
     elseif tests.unequip then
         context:addOption(getText("ContextMenu_Unequip"), items, ISInventoryPaneContextMenu.onUnEquip, player);
@@ -1059,6 +1055,13 @@ function ISInventoryPaneContextMenu.doLiteratureMenu(context, items, player)
 			nope.notAvailable = true
 			local tooltip = ISInventoryPaneContextMenu.addToolTip();
 			tooltip.description = getText("ContextMenu_TooComplicated");
+			nope.toolTip = tooltip;
+            canBeRead = false
+		elseif k:getMaxLevelTrained() ~= -1 and SkillBook[k:getSkillTrained()].perk and	k:getMaxLevelTrained() <= playerObj:getPerkLevel(SkillBook[k:getSkillTrained()].perk) then
+			local nope = context:addOption(getText("ContextMenu_Read"));
+			nope.notAvailable = true
+			local tooltip = ISInventoryPaneContextMenu.addToolTip();
+			tooltip.description = getText("ContextMenu_TooSimple");
 			nope.toolTip = tooltip;
             canBeRead = false
 		end
@@ -2718,6 +2721,7 @@ function ISInventoryPaneContextMenu:onRenameFoodClick(button, player, item)
 			if length <= MAXIMUM_RENAME_LENGTH then 
 				item:setName(button.parent.entry:getText());				
 				item:setCustomName(true);
+                item:syncItemFields();
 				local pdata = getPlayerData(playerNum);
 				pdata.playerInventory:refreshBackpacks();
 				pdata.lootInventory:refreshBackpacks();
@@ -3620,8 +3624,10 @@ ISInventoryPaneContextMenu.eatItem = function(item, percentage, player, openingR
         -- return required item to original container if applicable
         ISCraftingUI.ReturnItemToContainer(playerObj, itemRequired, itemRequiredCont)
     end
-    -- return item to original container if applicable
-    ISCraftingUI.ReturnItemToOriginalContainer(playerObj, item)
+    if not (eatPercentage and openingRecipe) then
+        -- return item to original container if applicable
+        ISCraftingUI.ReturnItemToOriginalContainer(playerObj, item)
+    end
 end
 
 -- Function that unequip primary weapon and equip the selected weapon
@@ -3824,9 +3830,7 @@ ISInventoryPaneContextMenu.dropItem = function(item, player)
 
     playerObj:removeAttachedItem(item)
     if playerObj:isHandItem(item) then
-        local action = ISUnequipAction:new(playerObj, item, 1)
-        action.isDropping = true
-		ISTimedActionQueue.add(action)
+        ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 1, "drop"))
     else
         ISInventoryPaneContextMenu.unequipItem(item, player)
     end

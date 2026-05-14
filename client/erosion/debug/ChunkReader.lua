@@ -3,50 +3,50 @@ EDebug = EDebug or {};
 function EDebug.ChunkReader( _chunkTileW )
     local self = {};
 
-    local self_chunkTileWidth 	= _chunkTileW or 10;
+    local self_chunkTileWidth = _chunkTileW or 10;
 
-    local self_Point 			= Point2D;
-    local self_Floor			= math.floor;
+    local self_Point = Point2D;
+    local self_Floor = math.floor;
 
-    local self_chunkMap 		= getWorld():getCell():getChunkMap(getPlayer():getPlayerNum());
-    local self_chunkMapWidth 	= self_chunkMap:getWidthInTiles() / self_chunkTileWidth;
+    local self_chunkMap = getWorld():getCell():getChunkMap(getPlayer():getPlayerNum());
+    local self_chunkMapWidth = self_chunkMap:getWidthInTiles() / self_chunkTileWidth;
 
     local self_p_chunkMapOffset = self_Point:new( self_Floor(self_chunkMapWidth/2), self_Floor(self_chunkMapWidth/2) );
 
     -- Points
-    local self_p_zero 			= self_Point:new(0,0);
-    local self_p_dir 			= self_Point:new(0,0);
-    local self_p_cur 			= self_Point:new(0,0);
-    local self_p_ringStart 		= self_Point:new(0,0);
-    local self_p_centerPoint 	= self_Point:new(0,0);
-    local self_p_A 				= self_Point:new(0,0);
-    local self_p_B 				= self_Point:new(0,0);
-    local self_p_dirA 			= self_Point:new(0,0);
-    local self_p_dirB 			= self_Point:new(0,0);
-    local self_p_startDirA 		= self_Point:new(0,0);
-    local self_p_startDirB 		= self_Point:new(0,0);
+    local self_p_zero = self_Point:new(0,0);
+    local self_p_dir = self_Point:new(0,0);
+    local self_p_cur = self_Point:new(0,0);
+    local self_p_ringStart = self_Point:new(0,0);
+    local self_p_centerPoint = self_Point:new(0,0);
+    local self_p_A = self_Point:new(0,0);
+    local self_p_B = self_Point:new(0,0);
+    local self_p_dirA = self_Point:new(0,0);
+    local self_p_dirB = self_Point:new(0,0);
+    local self_p_startDirA = self_Point:new(0,0);
+    local self_p_startDirB = self_Point:new(0,0);
     -- vars
-    local self_corner 			= 0;
-    local self_size_max 		= self_Floor( self_chunkMapWidth /2 ) -1;
-    local self_size_cur 		= 0;
-    local self_flip				= true;
-    local self_steps            = 0;
-    local self_size_next        = 0;
+    local self_corner = 0;
+    local self_size_max = self_Floor( self_chunkMapWidth /2 ) -1;
+    local self_size_cur = 0;
+    local self_flip = true;
+    local self_steps = 0;
+    local self_size_next = 0;
     --Clockwise directions
-    local self_dircw 			= {	[-1] 	= { [-1] = self_Point:new( 1, 0), [0] = self_Point:new( 0,-1), [1] = self_Point:new( 0,-1), },
+    local self_dircw = {	[-1] 	= { [-1] = self_Point:new( 1, 0), [0] = self_Point:new( 0,-1), [1] = self_Point:new( 0,-1), },
         [ 0]	= { [-1] = self_Point:new( 1, 0), [0] = self_Point:new( 0, 0), [1] = self_Point:new(-1, 0), },
         [ 1]	= { [-1] = self_Point:new( 0, 1), [0] = self_Point:new( 0, 1), [1] = self_Point:new(-1, 0), }, };
     --Counter Clockwise directions
-    local self_dirccw 			= {	[-1] 	= { [-1] = self_Point:new( 0, 1), [0] = self_Point:new( 0, 1), [1] = self_Point:new( 1, 0), },
+    local self_dirccw = {	[-1] 	= { [-1] = self_Point:new( 0, 1), [0] = self_Point:new( 0, 1), [1] = self_Point:new( 1, 0), },
         [ 0]	= { [-1] = self_Point:new(-1, 0), [0] = self_Point:new( 0, 0), [1] = self_Point:new( 1, 0), },
         [ 1]	= { [-1] = self_Point:new(-1, 0), [0] = self_Point:new( 0,-1), [1] = self_Point:new( 0,-1), }, };
 
     function self.SetNextRing( _ringNum )
-        self_steps 			= 0;
-        self_size_cur 		= _ringNum;
-        self_size_next 		= self_size_cur > 0 and 8 * self_size_cur or 1;
-        self_p_ringStart 	= self_p_centerPoint + ( self_p_dir * self_Point:new( self_size_cur, self_size_cur ) );
-        self_corner 		= (self_size_cur*2)-1;
+        self_steps = 0;
+        self_size_cur = _ringNum;
+        self_size_next = self_size_cur > 0 and 8 * self_size_cur or 1;
+        self_p_ringStart = self_p_centerPoint + ( self_p_dir * self_Point:new( self_size_cur, self_size_cur ) );
+        self_corner = (self_size_cur*2)-1;
         if self_p_dir.x == 0 or self_p_dir.y == 0 then self_corner = self_size_cur-1 end --if not a "corner" direction adjust corner count
 
         self_p_cur.setPoint( 	self_p_ringStart );

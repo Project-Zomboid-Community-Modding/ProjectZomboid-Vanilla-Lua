@@ -21,7 +21,11 @@ function ISItemSlotRemoveAction:start()
     if self.itemSlot then
         self.itemSlot.actionRemove = self;
     end
-    self.item = self.targetItem or self.resource:peekItem();
+    if isClient() then
+        self.item = self.resource:getItemById(self.targetItem) or self.resource:peekItem()
+    else
+        self.item = self.targetItem or self.resource:peekItem();
+    end
     self.maxTime = 30+(self.item:getWeight()*3);
 	self:setActionAnim(self.actionAnim);
 	for key,value in pairs(self.actionAnimVariables) do
@@ -64,12 +68,12 @@ function ISItemSlotRemoveAction:perform()
 end
 
 function ISItemSlotRemoveAction:complete()
-	local removedItem = nil;
-	if self.targetItem then
-		removedItem = self.resource:removeItem(self.targetItem);
+    local removedItem = nil
+    if isServer() then
+	    removedItem = self.resource:removeItemById(self.targetItem) or self.resource:pollItem()
 	else
-		removedItem = self.resource:pollItem();
-	end
+	    removedItem = self.resource:removeItem(self.targetItem) or self.resource:pollItem()
+    end
     self.resource:sync()
 
 	if removedItem then
@@ -91,12 +95,20 @@ function ISItemSlotRemoveAction:stopSound()
 end
 
 -- The internalItemSlot argument has a different name from the field in the object so that in multiplayer this field is not passed to the server side.
-function ISItemSlotRemoveAction:new(character, entity, resource, internalItemSlot, item)
+function ISItemSlotRemoveAction:new(character, entity, resource, internalItemSlot, targetItem)
 	local o = ISBaseTimedAction.new(self, character)
 	o.entity = entity
 	o.resource = resource;
     o.itemSlot = internalItemSlot;
-	o.targetItem = item;
+    if isClient() then
+        if targetItem then
+	        o.targetItem = targetItem:getID()
+	    else
+            o.targetItem = -1
+        end
+    else
+	    o.targetItem = targetItem
+	end
 	o.maxTime = o:getDuration()
 
 	o.actionAnimVariables = {}

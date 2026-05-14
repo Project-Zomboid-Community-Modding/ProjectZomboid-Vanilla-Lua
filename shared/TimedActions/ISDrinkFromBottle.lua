@@ -84,7 +84,7 @@ function ISDrinkFromBottle:drink(food, percentage)
             if self.item:getFluidContainer():contains(Fluid.TaintedWater) then
                 --tainted water shouldn't kill the player but make them sick - dangerous when sick
                 local bodyDamage	= self.character:getBodyDamage();
-                local stats			= self.character:getStats();
+                local stats = self.character:getStats();
                 if stats:get(CharacterStat.POISON) < 20 and stats:getSickness() < 0.3 then
 					local basePoison = 10;
 					if self.character:hasTrait(CharacterTrait.IRON_GUT) then

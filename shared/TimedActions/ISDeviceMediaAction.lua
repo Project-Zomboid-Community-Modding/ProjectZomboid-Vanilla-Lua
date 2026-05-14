@@ -37,8 +37,8 @@ end
 
 function ISDeviceMediaAction:new(character, isRemove, secondaryItem, parameter)
 	local o = ISBaseTimedAction.new(self, character)
-	o.stopOnWalk        = false;
-    o.stopOnRun         = true;
+	o.stopOnWalk = false;
+    o.stopOnRun = true;
     o.ignoreHandsWounds = true;
 	o.maxTime = o:getDuration();
 	o.isRemove = isRemove;

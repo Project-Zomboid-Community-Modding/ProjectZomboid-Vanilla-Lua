@@ -126,15 +126,15 @@ end
 
 function ISBuildAction:start()
     if not self.item.noNeedHammer then
-        self.sawSound = 0
+        self.sawSound = 0;
 		self.hammer = self.character:getPrimaryHandItem();
-        self.hammerSound = 0
+        self.hammerSound = 0;
     end
     if self.item.craftingBank then
-        self.craftingSound = 0
+        self.craftingSound = 0;
 	end
 
-	self.soundTime = 0
+	self.soundTime = 0;
 
 	self.item.ghostSprite = IsoSprite.new();
 	self.item.ghostSprite:LoadSingleTexture(self.spriteName);
@@ -142,14 +142,15 @@ function ISBuildAction:start()
 	self.item.ghostSpriteY = self.y;
 	self.item.ghostSpriteZ = self.z;
 
-	self.item:onTimedActionStart(self)
+	self.item:onTimedActionStart(self);
 
 	if isClient() then
-		self.action:setWaitForFinished(true)
+        self.item.containers = ISInventoryPaneContextMenu.getContainers(self.character);
+        self.action:setWaitForFinished(true);
 	end
 
-	self.transactionId = createBuildAction(self.character, self.x, self.y, self.z, self.north, self.spriteName, self.item)
-	self.started = true
+	self.transactionId = createBuildAction(self.character, self.x, self.y, self.z, self.north, self.spriteName, self.item);
+	self.started = true;
 end
 
 function ISBuildAction:stop()
@@ -274,7 +275,7 @@ function ISBuildAction:new(character, item, x, y, z, north, spriteName, time)
     o.started = false;
     o.transactionId = 0;
     if isClient() then -- The client completes the transfer after receiving packet ActionPacket from the server
-        o.maxTime  = -1
+        o.maxTime = -1
     end
 	return o;
 end

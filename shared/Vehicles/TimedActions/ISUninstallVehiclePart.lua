@@ -111,7 +111,9 @@ function ISUninstallVehiclePart:new(character, part, workTime)
 	o.part = part
 	if part ~= nil then
 	    o.vehicle = part:getVehicle()
-	    o.jobType = getText("Tooltip_Vehicle_Uninstalling", part:getInventoryItem():getDisplayName());
+	    if part:getInventoryItem() ~= nil then
+	        o.jobType = getText("Tooltip_Vehicle_Uninstalling", part:getInventoryItem():getDisplayName());
+	    end
 	end
 	o.workTime = workTime
 	o.maxTime = o:getDuration();

@@ -226,7 +226,7 @@ function ISVehiclePartMenu.onUninstallPart(playerObj, part)
 		ISTimedActionQueue.add(ISOpenVehicleDoor:new(playerObj, part:getVehicle(), engineCover))
 		ISTimedActionQueue.add(ISUninstallVehiclePart:new(playerObj, part, time))
 		ISTimedActionQueue.add(ISCloseVehicleDoor:new(playerObj, part:getVehicle(), engineCover))
-	else
+	elseif part ~= nil then
 		ISTimedActionQueue.add(ISUninstallVehiclePart:new(playerObj, part, time))
 	end
 end

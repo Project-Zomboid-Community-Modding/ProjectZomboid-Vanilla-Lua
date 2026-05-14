@@ -16,7 +16,7 @@ function FireBrushUI:initialise()
     local buttonWid = 150
     local buttonHgt = 25
 
-    self.brushType = ISRadioButtons:new(self:getWidth()/2 - 50, 26, 150, 20, self)
+    self.brushType = ISRadioButtons:new(self:getWidth()/2 - 150/2, 26, 150, 20, self)
     self.brushType.choicesColor = {r=1, g=1, b=1, a=1}
     self.brushType:initialise()
     self.brushType.autoWidth = true;
@@ -55,6 +55,10 @@ function FireBrushUI:initialise()
     self.close:initialise();
     self.close:instantiate();
     self:addChild(self.close);
+
+    self:setElementWidthToMaxOf(self.addByClick, self.removeByClick, self.addByArea, self.removeByArea, self.close)
+    self:shrinkWrap(25, 10, nil)
+    self.brushType:setX(self.width / 2 - self.brushType.width / 2)
 end
 
 function FireBrushUI:destroy()
@@ -64,22 +68,29 @@ function FireBrushUI:destroy()
 end
 
 function FireBrushUI:onClick(button)
+    if button.internal ~= "CLOSE" then
+        local wasCurrent = self.currentButton == button
+        self:disableCurrentButton()
+        if wasCurrent then
+            return
+        end
+        self.currentButton = button
+        button:enableAcceptColor()
+    end
     if button.internal == "ADDBYAREA" then
         self.selectEnd = false
         self.startPos = nil
         self.endPos = nil
-        self.zPos = self.player:getZ()
+        self.zPos = self.player:getZi()
         self.selectStart = true
-
         self.selectByClick = false
         self.isAdd = true
     elseif button.internal == "REMOVEBYAREA" then
         self.selectEnd = false
         self.startPos = nil
         self.endPos = nil
-        self.zPos = self.player:getZ()
+        self.zPos = self.player:getZi()
         self.selectStart = true
-
         self.selectByClick = false
         self.isAdd = false
     elseif button.internal == "ADDBYCLICK" then
@@ -87,27 +98,48 @@ function FireBrushUI:onClick(button)
         self.isAdd = true
         self.selectStart = false
         self.selectEnd = false
+        self.zPos = self.player:getZi()
     elseif button.internal == "REMOVEBYCLICK" then
         self.selectByClick = true
         self.isAdd = false
         self.selectStart = false
         self.selectEnd = false
+        self.zPos = self.player:getZi()
     elseif button.internal == "CLOSE" then
         self:destroy();
     end
 end
 
+function FireBrushUI:disableCurrentButton()
+    if self.currentButton then
+        self.currentButton:restoreDefaultColors()
+        self.currentButton = nil
+    end
+    self.selectStart = false
+    self.selectEnd = false
+    self.selectByClick = false
+    self.startPos = nil
+    self.endPos = nil
+end
+
 function FireBrushUI:prerender()
+    self.zPos = self.player:getZi()
     self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
     self:drawTextureScaled(self.titlebarbkg, 2, 1, self:getWidth() - 4, 16 - 2, 1, 1, 1, 1);
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
 
 function FireBrushUI:render()
+    local r,g,b,a = 1.0,1.0,0.0,0.25
     if self.selectStart or self.selectByClick then
         local xx, yy = ISCoordConversion.ToWorld(getMouseXScaled(), getMouseYScaled(), self.zPos)
         local sq = getCell():getGridSquare(math.floor(xx), math.floor(yy), self.zPos)
-        if sq and sq:getFloor() then sq:getFloor():setHighlighted(true) end
+        if self.selectStart then
+            r = 1.0
+            g = 1.0
+            b = 1.0
+        end
+        if sq and sq:getFloor() then addAreaHighlightForPlayer(self.playerNum, sq:getX(), sq:getY(), sq:getX() + 1, sq:getY() + 1, sq:getZ(), r, g, b, a) end
     elseif self.selectEnd then
         local xx, yy = ISCoordConversion.ToWorld(getMouseXScaled(), getMouseYScaled(), self.zPos)
         xx = math.floor(xx)
@@ -117,25 +149,14 @@ function FireBrushUI:render()
         local x2 = math.max(xx, self.startPos.x)
         local y1 = math.min(yy, self.startPos.y)
         local y2 = math.max(yy, self.startPos.y)
-
-        for x = x1, x2 do
-            for y = y1, y2 do
-                local sq = cell:getGridSquare(x, y, self.zPos)
-                if sq and sq:getFloor() then sq:getFloor():setHighlighted(true) end
-            end
-        end
+        addAreaHighlightForPlayer(self.playerNum, x1, y1, x2 + 1, y2 + 1, self.zPos, r, g, b, a)
     elseif self.startPos ~= nil and self.endPos ~= nil then
         local cell = getCell()
         local x1 = math.min(self.startPos.x, self.endPos.x)
         local x2 = math.max(self.startPos.x, self.endPos.x)
         local y1 = math.min(self.startPos.y, self.endPos.y)
         local y2 = math.max(self.startPos.y, self.endPos.y)
-        for x = x1, x2 do
-            for y = y1, y2 do
-                local sq = cell:getGridSquare(x, y, self.zPos)
-                if sq and sq:getFloor() then sq:getFloor():setHighlighted(true) end
-            end
-        end
+        addAreaHighlightForPlayer(self.playerNum, x1, y1, x2 + 1, y2 + 1, self.zPos, r, g, b, a)
     end
 end
 
@@ -186,6 +207,29 @@ function FireBrushUI:onMouseUpOutside(x, y)
     ISMouseDrag.dragView = nil
 end
 
+function FireBrushUI:applyOnSquare(sq)
+    if sq == nil or (self.isAdd and sq:getFloor() == nil) then
+        return
+    end
+    if self.brushType:isSelected(1) then
+        if self.isAdd then
+            self:addFire(sq)
+        else
+            self:removeFire(sq)
+        end
+    elseif self.brushType:isSelected(2) then
+        if self.isAdd then
+            self:addSmoke(sq)
+        else
+            self:removeSmoke(sq)
+        end
+    else
+        if self.isAdd then
+            self:addExplosion(sq)
+        end
+    end
+end
+
 function FireBrushUI:applyOnArea()
     local cell = getCell()
     local x1 = math.min(self.startPos.x, self.endPos.x)
@@ -195,37 +239,17 @@ function FireBrushUI:applyOnArea()
     local z1 = self.zPos
     local z2 = self.zPos
     if not self.isAdd then
-        z1 = 0
-        z2 = 8
+        z1 = getMinimumWorldLevel()
+        z2 = getMaximumWorldLevel()
     end
-
     for z = z1, z2 do
         for x = x1, x2 do
             for y = y1, y2 do
                 local sq = cell:getGridSquare(x, y, z)
-                if sq ~= nil then
-                    if self.brushType:isSelected(1) then
-                        if self.isAdd then
-                            self:addFire(sq)
-                        else
-                            self:removeFire(sq)
-                        end
-                    elseif self.brushType:isSelected(2) then
-                        if self.isAdd then
-                            self:addSmoke(sq)
-                        else
-                            self:removeSmoke(sq)
-                        end
-                    else
-                        if self.isAdd then
-                            self:addExplosion(sq)
-                        end
-                    end
-                end
+                self:applyOnSquare(sq)
             end
         end
     end
-
     self.selectEnd = false
     self.startPos = nil
     self.endPos = nil
@@ -269,26 +293,14 @@ function FireBrushUI:onMouseDownOutside(x, y)
         self.endPos = { x = math.floor(xx), y = math.floor(yy) }
         self.selectEnd = false
         self:applyOnArea()
+        if self.currentButton then
+            self.currentButton:restoreDefaultColors()
+            self.currentButton = nil
+        end
     end
     if self.selectByClick then
         local sq = getCell():getGridSquare(xx, yy, self.zPos)
-        if self.brushType:isSelected(1) then
-            if self.isAdd then
-                self:addFire(sq)
-            else
-                self:removeFire(sq)
-            end
-        elseif self.brushType:isSelected(2) then
-            if self.isAdd then
-                self:addSmoke(sq)
-            else
-                self:removeSmoke(sq)
-            end
-        else
-            if self.isAdd then
-                self:addExplosion(sq)
-            end
-        end
+        self:applyOnSquare(sq)
     end
 end
 
@@ -297,6 +309,7 @@ function FireBrushUI:new(x, y, width, height, player)
     setmetatable(o, self)
     self.__index = self
     o.player = player;
+    o.playerNum = player:getPlayerNum();
     o.titlebarbkg = getTexture("media/ui/Panel_TitleBar.png");
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
 

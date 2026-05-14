@@ -472,20 +472,24 @@ Commands.player.onHealthCheatCurrentPlayer = function(player, args)
 	if action == "blood" then
 		otherPlayer:addBlood(BloodBodyPartType.FromIndex(BodyPartType.ToIndex(bodyPart:getType())), false, true, false);
 		syncVisuals(otherPlayer)
+		sendHumanVisual(otherPlayer)
 	end
 	if action == "removeblood" then
 		otherPlayer:getVisual():setBlood(BloodBodyPartType.FromIndex(BodyPartType.ToIndex(bodyPart:getType())), 0);
 		otherPlayer:resetModelNextFrame();
 		syncVisuals(otherPlayer)
+		sendHumanVisual(otherPlayer)
 	end
 	if action == "dirt" then
 		otherPlayer:addDirt(BloodBodyPartType.FromIndex(BodyPartType.ToIndex(bodyPart:getType())), nil, false);
 		syncVisuals(otherPlayer)
+		sendHumanVisual(otherPlayer)
 	end
 	if action == "removedirt" then
 		otherPlayer:getVisual():setDirt(BloodBodyPartType.FromIndex(BodyPartType.ToIndex(bodyPart:getType())), 0);
 		otherPlayer:resetModelNextFrame();
 		syncVisuals(otherPlayer)
+		sendHumanVisual(otherPlayer)
 	end
 	if action == "bite" then
 		if bodyPart:bitten() then
@@ -1097,12 +1101,12 @@ Commands.feedingThrough.addWaterDebug = function(player, args)
     	isoObject:createFluidContainer();
     end
 
-    local fluidTypeStr = args.fluidTypeStr or "TaintedWater"
-    local fluidType = Fluid.Get(FluidTypeStr)
+    local fluidType = (args.fluidTypeStr and args.fluidTypeStr ~= "") and FluidType.FromNameLower(string.lower(args.fluidTypeStr)) or FluidType.TaintedWater
     isoObject:addWater(fluidType, isoObject:getMaxWater());
     isoObject:sendSyncEntity(nil);
     isoObject:checkOverlayAfterAnimalEat();
 end
+
 Commands.feedingThrough.removeWaterDebug = function(player, args)
     if not player:getRole():hasCapability(Capability.AnimalCheats) then
         print('feedingThrough.removeWaterDebug The player\'s access level is not sufficient to perform this action')
@@ -1196,6 +1200,38 @@ Commands.item.changeRecording = function(player, args)
     end
     item:setRecordedMediaIndexInteger(args.mediaIndex)
     sendReplaceItemInContainer(item:getContainer(), item, item)
+end
+
+Commands.map = {}
+
+Commands.map.setKnownInSquares = function(player, args)
+    WorldMapVisitedServer.getInstance():setKnownInSquares(player, args.x1, args.y1, args.x2, args.y2);
+end
+
+Commands.map.forget = function(player, args)
+    WorldMapVisitedServer.getInstance():forget(player);
+end
+
+Commands.fishing = {}
+Commands.fishing.brokeRodLine = function(player, args)
+	local rodItem = player:getInventory():getItemWithID(args.itemID);
+    if not rodItem then
+        print("fishing.brokeRodLine rodItem not found")
+        return
+    end
+
+    local breakRod = nil
+    local replacement = Fishing.breakRodReplacement[rodItem:getFullType()]
+    if replacement ~= nil then
+        breakRod = player:getInventory():AddItem(replacement)
+        sendAddItemToContainer(player:getInventory(), breakRod)
+    end
+
+    player:getInventory():Remove(rodItem);
+    sendRemoveItemFromContainer(player:getInventory(), rodItem);
+
+    player:setPrimaryHandItem(breakRod)
+    player:setSecondaryHandItem(breakRod)
 end
 
 ClientCommands.OnClientCommand = function(module, command, player, args)

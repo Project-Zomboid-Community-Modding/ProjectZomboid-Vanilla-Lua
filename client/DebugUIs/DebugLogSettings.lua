@@ -21,7 +21,7 @@ end
 
 function DebugLogSettings:onComboBox(comboBox, debugType)
 	local logSeverity = comboBox:getOptionData(comboBox.selected)
-	DebugLog.setLogSeverity(debugType, logSeverity)
+	debugType:setLogSeverity(logSeverity)
 	DebugLog:save()
 end
 
@@ -30,7 +30,7 @@ function DebugLogSettings:onSetAll(comboBox)
 	local debugTypes = DebugLog.getDebugTypes()
 	for i=1,debugTypes:size() do
 		local debugType = debugTypes:get(i-1)
-		DebugLog.setLogSeverity(debugType, logSeverity)
+		debugType:setLogSeverity(logSeverity)
 	end
 	comboBox.selected = 0 -- no selected option
 	self:syncCombos()
@@ -97,13 +97,13 @@ function DebugLogSettings:setVisible(bVisible)
 	if bVisible then
 		self:syncCombos()
 	else
-		DebugLog.save() -- this call was removed but I can't remember where it used to be
+		DebugLog.save()
 	end
 end
 
 function DebugLogSettings:syncCombos()
 	for debugType,comboBox in pairs(self.comboLookup) do
-		local logSeverity = DebugLog.getLogSeverity(debugType)
+		local logSeverity = debugType:getLogSeverity()
 		comboBox:selectData(logSeverity)
 	end
 end

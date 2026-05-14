@@ -454,19 +454,21 @@ function MapSpawnSelect:fillList()
 	for _,v in ipairs(regions) do
 		local info = getMapInfo(v.name)
 		if info then
-			local item = {};
-			item.name = info.title or "NO TITLE";
-			item.region = v;
-			item.dir = v.name;
-			item.desc = info.description or "NO DESCRIPTION";
-			if info.spawnSelectImagePyramid then
-				spawnSelectImagePyramid = info.spawnSelectImagePyramid -- only one is supported
-			end
-			item.zoomX = info.zoomX
-			item.zoomY = info.zoomY
-			item.zoomS = info.zoomS
-			item.demoVideo = info.demoVideo
-			self:checkSorted(item);
+            if not info.only_for_game_mode or GameMode.get(ResourceLocation.of(getCore():getGameMode())) == info.only_for_game_mode then
+                local item = {};
+                item.name = info.title or "NO TITLE";
+                item.region = v;
+                item.dir = v.name;
+                item.desc = info.description or "NO DESCRIPTION";
+                if info.spawnSelectImagePyramid then
+                    spawnSelectImagePyramid = info.spawnSelectImagePyramid -- only one is supported
+                end
+                item.zoomX = info.zoomX
+                item.zoomY = info.zoomY
+                item.zoomS = info.zoomS
+                item.demoVideo = info.demoVideo
+                self:checkSorted(item);
+            end
 		else
 			local item = {}
 			item.name = v.name;
@@ -745,7 +747,13 @@ function MapSpawnSelect:recalculateMapSize()
 	self.listbox:setWidth(listboxWidth)
 	self.richText:setWidth(self.listbox.width)
 
-    self.listbox:setHeight(self.listbox.itemheight * #self.listbox.items)
+    local maxItems = 9
+    if self.smallResolution then
+        maxItems = 5
+    elseif self.mediumResolution then
+        maxItems = 7
+    end
+    self.listbox:setHeight(math.min(self.listbox.itemheight * maxItems, self.listbox.itemheight * #self.listbox.items))
     self.richText:setY(self.listbox:getBottom() + UI_BORDER_SPACING)
 
     if not MainScreen.instance.inGame then
@@ -842,6 +850,9 @@ function MapSpawnSelect:onJoypadNavigateStart_Descendant(descendant, joypadData)
 end
 
 function MapSpawnSelect:onResolutionChange(oldw, oldh, neww, newh)
+    self.smallResolution = getCore():getScreenWidth() <= 1600
+    self.mediumResolution = getCore():getScreenWidth() <= 1920
+
 	self:recalculateMapSize()
 end
 
@@ -909,7 +920,7 @@ function MapSpawnSelect:create()
 	self.listbox.doDrawItem = MapSpawnSelect.doDrawItem
 	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
 	self.listbox.drawBorder = true;
-	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5};
+	self.listbox.backgroundColor = {r=0, g=0, b=0, a=0.5};
     --itemheight
 
     local advPanelHeight = UI_BORDER_SPACING*2 + BUTTON_HGT + 2
@@ -921,7 +932,7 @@ function MapSpawnSelect:create()
 	self.richText:initialise();
 	self.richText:setAnchorLeft(true);
 	self.richText:setAnchorBottom(true);
-	self.richText.backgroundColor  = {r=0, g=0, b=0, a=0.5};
+	self.richText.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	self:addChild(self.richText);
 	self.richText:addScrollBars()
 
@@ -931,7 +942,7 @@ function MapSpawnSelect:create()
 		self.seedPanel:initialise()
 		self.seedPanel:instantiate()
 		self.seedPanel:setAnchorsTBLR(false, true, true, false)
-		self.seedPanel.backgroundColor  = {r=0, g=0, b=0, a=0.5};
+		self.seedPanel.backgroundColor = {r=0, g=0, b=0, a=0.5};
 		self:addChild(self.seedPanel)
         self.seedTextBox = self.seedPanel.seedTextBox
         self.randomButton = self.seedPanel.randomButton

@@ -35,6 +35,9 @@ function BrushToolManager:createChildren()
     self.help:initialise();
     self.help:instantiate();
     self:addChild(self.help);
+
+    self:setElementWidthToMaxOf(self.chooseTile, self.controlFire, self.help)
+    self:shrinkWrap(10, 10, nil)
 end
 
 function BrushToolManager:onClick(button)
@@ -63,7 +66,7 @@ end
 function BrushToolManager:new(x, y, width, height, character)
     local o = ISCollapsableWindow.new(self, x, y, width, height);
     o:setResizable(false)
-    o.title = "Brush Tool Manager"
+    o.title = "B.T.M."
     o.character = character
 
     return o

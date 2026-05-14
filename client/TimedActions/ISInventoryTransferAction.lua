@@ -170,9 +170,9 @@ function ISInventoryTransferAction:update()
                 self.action:setTime(self.maxTime)
             end
         end
-	end
-
-
+	elseif not self.srcContainer:contains(self.item) then
+        self:forceStop();
+    end
 end
 
 ISInventoryTransferAction.putSound = nil;
@@ -839,7 +839,7 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 
 	if item then -- kludge to fix error when filling gas bottles out of backpack
 		if isClient() then -- The client completes the transfer after receiving packet ItemTransactionPacket from the server
-			o.maxTime  = -1
+			o.maxTime = -1
 		end
 		o.queueList = {};
 		local queuedItem = {items = {o.item}, time = o.maxTime, type = o.item:getFullType()};

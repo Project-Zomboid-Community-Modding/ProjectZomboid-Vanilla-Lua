@@ -341,7 +341,7 @@ end
 
 ISHealthPanel.onCheatItem = function(itemType, playerObj)
     if isClient() then
-        SendCommandToServer("/additem \"" .. playerObj:getDisplayName() .. "\" \"" .. luautils.trim(itemType) .. "\"")
+        SendCommandToServer("/additem \"" .. playerObj:getUsername() .. "\" \"" .. luautils.trim(itemType) .. "\"")
     else
         local item = instanceItem(itemType)
         playerObj:getInventory():AddItem(item);
@@ -1932,6 +1932,27 @@ function ISHealthPanel:dropItemsOnBodyPart(bodyPart, items)
     end
 end
 
+ISHealthPanel.ReceiveMedicalCheckRequest = function(requester)
+    local modal = ISModalDialog:new(getCore():getScreenWidth() / 2 - 175,getCore():getScreenHeight() / 2 - 75, 350, 150, getText("ContextMenu_Medical_Check_Request", requester:getDisplayName()), true, nil, ISHealthPanel.onAnswerMedicalCheckRequest);
+    modal:initialise();
+    modal:addToUIManager();
+    modal.requester = requester;
+    modal.moveWithMouse = true;
+    modal:bringToTop();
+end
+
+function ISHealthPanel:onAnswerMedicalCheckRequest(button)
+    if button.internal == "YES" then
+        acceptMedicalCheck(getPlayer(), button.parent.requester);
+    end
+end
+
+ISHealthPanel.AcceptedMedicalCheck = function(target, requester)
+    if ISHealthPanel.canPerformMedicalCheck(target, requester) then
+        ISTimedActionQueue.add(ISMedicalCheckAction:new(requester, target));
+    end
+end
+
 ISHealthPanel.onCheatHealthCommand = function(module, command, args)
     if not isClient() then return end
     if module == "ISHealthPanel" and command == "onHealthCheat" then
@@ -1939,4 +1960,20 @@ ISHealthPanel.onCheatHealthCommand = function(module, command, args)
         ISHealthPanel.onCheatCurrentPlayer(pl:getBodyDamage():getBodyParts():get(args.bodyPartIndex), args.action, pl)
     end
 end
+
+ISHealthPanel.canPerformMedicalCheck = function(target, requester)
+    if isMultiplayer() and requester:getRole():hasCapability(Capability.CanMedicalCheat) then
+        return true;
+    else
+        if luautils.walkAdj(target, requester:getCurrentSquare()) or
+				(target:isSeatedInVehicle() and requester:isSeatedInVehicle() and target:getVehicle() == requester:getVehicle()) then
+            return true;
+        end
+    end
+    return false;
+end
+
+
 Events.OnServerCommand.Add(ISHealthPanel.onCheatHealthCommand)
+Events.RequestMedicalCheck.Add(ISHealthPanel.ReceiveMedicalCheckRequest)
+Events.AcceptedMedicalCheck.Add(ISHealthPanel.AcceptedMedicalCheck)

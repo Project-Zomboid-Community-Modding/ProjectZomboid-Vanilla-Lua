@@ -80,7 +80,7 @@ function ISButtonPrompt:prerender()
     if self.xPrompt ~= nil then
         buttonHgt = self.buttonX:getHeight()
         local dx,dy = 0,0
-        if joypadID and isJoypadPressed(joypadID, getJoypadXButton(joypadID)) then dx,dy = 3,3 end
+        if joypadID and JoypadButton.X:isDown(joypadID) then dx,dy = 3,3 end
         self:drawTexture(self.buttonX, dx + x, dy + self.y1 + rowHgt + (rowHgt - buttonHgt) / 2, 0.9, 1, 1, 1);
         self:drawText(self.xPrompt, x + buttonWid + textPadX, self.y1 + rowHgt + (rowHgt - fontHgt) / 2, 1, 1, 1, 0.9, UIFont.NewLarge);
     end
@@ -120,7 +120,7 @@ function ISButtonPrompt:prerender()
     if self.aPrompt ~= nil then
         buttonHgt = self.buttonA:getHeight()
         local dx,dy = 0,0
-        if joypadID and isJoypadPressed(joypadID, getJoypadAButton(joypadID)) then dx,dy = 3,3 end
+        if joypadID and JoypadButton.A:isDown(joypadID) then dx,dy = 3,3 end
         self:drawTexture(self.buttonA, x - shift + dx, self.y1 + rowHgt + (rowHgt - buttonHgt) / 2 + dy, 0.9, 1, 1, 1);
         self:drawTextRight(self.aPrompt, x - textPadX - shift, self.y1 + rowHgt + (rowHgt - fontHgt) / 2, 1, 1, 1, 0.9, UIFont.NewLarge);
     end
@@ -165,11 +165,11 @@ end
 
 function ISButtonPrompt:interact(worldobjects)
     local playerObj = getSpecificPlayer(self.player)
-    if playerObj:getVehicle() then
+    if playerObj == nil or playerObj:getVehicle() then
         return
     end
     
-    worldobjects = self:getXButtonObjects(nil)
+    worldobjects = self:getInteractOptionsButtonObjects(nil)
     if not worldobjects then return end
     
     local s = getSpecificPlayer(self.player):getCurrentSquare();
@@ -319,51 +319,107 @@ function ISButtonPrompt:dropCorpse()
     playerObj:setDoContinueGrapple(false)
 end
 
-function ISButtonPrompt:getBestAButtonAction(dir)
+function ISButtonPrompt:clearButtonBindings()
+    self:setAPrompt(nil, nil, nil);
+    self:setBPrompt(nil, nil, nil);
+    self:setXPrompt(nil, nil, nil);
+    self:setYPrompt(nil, nil, nil);
+    self:setLBPrompt(nil, nil, nil);
+    self:setRBPrompt(nil, nil, nil);
+end
+
+function ISButtonPrompt:getBestButtonBindingAction(buttonBinding, dir)
     if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setAPrompt(nil, nil, nil);
+        self:clearButtonBindings()
         return;
     end
 
-    if dir == nil then
-        self:setAPrompt(nil, nil, nil);
-    end
-
-    if getCell():getDrag(self.player) then
-        self:setAPrompt(getCell():getDrag(self.player):getAPrompt(), nil);
-    end
-
     local playerObj = getSpecificPlayer(self.player)
-    
-    if playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
-
-    local vehicle = playerObj:getVehicle()
-    if vehicle then
-        self:setAPrompt(getText("IGUI_ExitVehicle"), self.cmdExitVehicle)
-        return
-    end
-
-    local square1 = playerObj:getCurrentSquare();
-    if square1 == nil then return; end
-
     if dir == nil then
         dir = playerObj:getDir();
     end
 
+    if (CharacterJoypadButtonBinding.Interact) then
+        self:getBestInteractButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.Sprint) then
+        self:getBestSprintButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.CancelAction) then
+        self:getBestCancelButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.ClimbThrough) then
+        self:getBestClimbThroughButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.SmashWindow) then
+        self:getBestSmashWindowButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.Brakes) then
+        self:getBestApplyBrakesButtonAction(dir)
+    end
+    if (CharacterJoypadButtonBinding.CruiseControl) then
+    end
+
+    local button = buttonBinding:getJoypadButton()
+    if (button == JoypadButton.A) then
+        if getCell():getDrag(self.player) then
+            self:setAPrompt(getCell():getDrag(self.player):getAPrompt(), nil);
+        end
+    end
+    if (button == JoypadButton.X) then
+        self:getBestXButtonAction(dir)
+    end
+    if (button == JoypadButton.Y) then
+        self:getBestYButtonAction(dir)
+    end
+    if (button == JoypadButton.LeftBump) then
+        self:getBestLBButtonAction(dir)
+    end
+    if (button == JoypadButton.RightBump) then
+        self:getBestRBButtonAction(dir)
+    end
+
     if dir == IsoDirections.NE then
-        self:testAButtonAction(IsoDirections.N);
-        self:testAButtonAction(IsoDirections.E);
+        self:testInteractButtonAction(IsoDirections.N);
+        self:testInteractButtonAction(IsoDirections.E);
     elseif dir == IsoDirections.SE then
-        self:testAButtonAction(IsoDirections.S);
-        self:testAButtonAction(IsoDirections.E);
+        self:testInteractButtonAction(IsoDirections.S);
+        self:testInteractButtonAction(IsoDirections.E);
     elseif dir == IsoDirections.SW then
-        self:testAButtonAction(IsoDirections.S);
-        self:testAButtonAction(IsoDirections.W);
+        self:testInteractButtonAction(IsoDirections.S);
+        self:testInteractButtonAction(IsoDirections.W);
     elseif dir == IsoDirections.NW then
-        self:testAButtonAction(IsoDirections.N);
-        self:testAButtonAction(IsoDirections.W);
+        self:testInteractButtonAction(IsoDirections.N);
+        self:testInteractButtonAction(IsoDirections.W);
     else
-        self:testAButtonAction(dir);
+        self:testInteractButtonAction(dir);
+    end
+end
+
+function ISButtonPrompt:getBestInteractButtonAction(dir)
+    local playerObj = getSpecificPlayer(self.player)
+    if playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
+
+    local vehicle = playerObj:getVehicle()
+    if vehicle then
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("IGUI_ExitVehicle"), self.cmdExitVehicle)
+        return
+    end
+
+    if dir == IsoDirections.NE then
+        self:testInteractButtonAction(IsoDirections.N);
+        self:testInteractButtonAction(IsoDirections.E);
+    elseif dir == IsoDirections.SE then
+        self:testInteractButtonAction(IsoDirections.S);
+        self:testInteractButtonAction(IsoDirections.E);
+    elseif dir == IsoDirections.SW then
+        self:testInteractButtonAction(IsoDirections.S);
+        self:testInteractButtonAction(IsoDirections.W);
+    elseif dir == IsoDirections.NW then
+        self:testInteractButtonAction(IsoDirections.N);
+        self:testInteractButtonAction(IsoDirections.W);
+    else
+        self:testInteractButtonAction(dir);
     end
 
     if self.aPrompt then return end
@@ -391,29 +447,33 @@ function ISButtonPrompt:getBestAButtonAction(dir)
     if dir1 ~= nil then
         obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir1)
         if obj then
-            self:doAButtonDoorOrWindowOrWindowFrame(dir1, obj)
+            self:doInteractButtonDoorOrWindowOrWindowFrame(dir1, obj)
             return
         end
     end
     if dir2 ~= nil then
         obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir2)
         if obj then
-            self:doAButtonDoorOrWindowOrWindowFrame(dir1, obj)
+            self:doInteractButtonDoorOrWindowOrWindowFrame(dir1, obj)
             return
         end
     end
 end
 
-function ISButtonPrompt:testAButtonAction(dir)
+function ISButtonPrompt:testInteractButtonAction(dir)
     local playerObj = getSpecificPlayer(self.player)
+    if (playerObj == nil) then return end
+
     local square1 = playerObj:getCurrentSquare();
+    if (square1 == nil) then return end
+
     local square2 = square1:getAdjacentSquare(dir);
-    if square2 == nil then return; end
+    if square2 == nil then return end
 
     if self.aPrompt == nil then
         local obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir)
         if obj then
-            self:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
+            self:doInteractButtonDoorOrWindowOrWindowFrame(dir, obj)
         end
     end
         
@@ -424,9 +484,9 @@ function ISButtonPrompt:testAButtonAction(dir)
                 local object = square1:getObjects():get(i-1)
                 if instanceof(object, "IsoLightSwitch") then
                     if object:isActivated() then
-                        self:setAPrompt(getText("ContextMenu_Turn_Off"), self.cmdToggleLight, object)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_Off"), self.cmdToggleLight, object)
                     else
-                        self:setAPrompt(getText("ContextMenu_Turn_On"), self.cmdToggleLight, object)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_On"), self.cmdToggleLight, object)
                     end
                     break
                 end
@@ -437,9 +497,9 @@ function ISButtonPrompt:testAButtonAction(dir)
                     local object = square2:getObjects():get(i-1)
                     if instanceof(object, "IsoLightSwitch") then
                         if object:isActivated() then
-                            self:setAPrompt(getText("ContextMenu_Turn_Off"), self.cmdToggleLight, object)
+                            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_Off"), self.cmdToggleLight, object)
                         else
-                            self:setAPrompt(getText("ContextMenu_Turn_On"), self.cmdToggleLight, object)
+                            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_On"), self.cmdToggleLight, object)
                         end
                         break
                     end
@@ -453,11 +513,11 @@ function ISButtonPrompt:testAButtonAction(dir)
             -- Stove on adjacent square
             for i=1,square2:getObjects():size() do
                 local object = square2:getObjects():get(i-1)
-                if instanceof(object, "IsoStove") and not ISWorldObjectContextMenu.isSomethingTo(object, self.player) then
+                if instanceof(object, "IsoStove") and object:getContainerCount() > 0 and not ISWorldObjectContextMenu.isSomethingTo(object, self.player) then
                     if object:Activated() then
-                        self:setAPrompt(getText("ContextMenu_Turn_Off"), self.cmdToggleStove, object)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_Off"), self.cmdToggleStove, object)
                     else
-                        self:setAPrompt(getText("ContextMenu_Turn_On"), self.cmdToggleStove, object)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Turn_On"), self.cmdToggleStove, object)
                     end
                     break
                 end
@@ -487,23 +547,23 @@ function ISButtonPrompt:testAButtonAction(dir)
                         end
                     end
                     if seatForDoor ~= -1 then
-                        self:setAPrompt(getText("IGUI_EnterVehicle"), self.cmdEnterVehicle, vehicle, seatForDoor)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("IGUI_EnterVehicle"), self.cmdEnterVehicle, vehicle, seatForDoor)
                     elseif part:getDoor():isOpen() then
                         local label = "ContextMenu_Close_door"
                         if isHood then label = "IGUI_CloseHood" end
                         if isTrunk then label = "IGUI_CloseTrunk" end
-                        self:setAPrompt(getText(label), self.cmdCloseVehicleDoor, playerObj, part)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText(label), self.cmdCloseVehicleDoor, playerObj, part)
                     else
                         local label = "ContextMenu_Open_door"
                         if isHood then label = "IGUI_OpenHood" end
                         if isTrunk then label = "IGUI_OpenTrunk" end
-                        self:setAPrompt(getText(label), self.cmdOpenVehicleDoor, playerObj, part)
+                        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText(label), self.cmdOpenVehicleDoor, playerObj, part)
                     end
                 end
             else
                 local seat = vehicle:getBestSeat(playerObj)
                 if seat ~= -1 then
-                    self:setAPrompt(getText("IGUI_EnterVehicle"), self.cmdEnterVehicle, vehicle, seat)
+                    self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("IGUI_EnterVehicle"), self.cmdEnterVehicle, vehicle, seat)
                 end
             end
         end
@@ -518,7 +578,7 @@ function ISButtonPrompt:testAButtonAction(dir)
             device = playerObj:getSecondaryHandItem();
         end
         if device and not getCore():getGameMode() == "Tutorial" then
-            self:setAPrompt(getText("IGUI_DeviceOptions"), self.openDeviceOptions, device)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("IGUI_DeviceOptions"), self.openDeviceOptions, device)
         end
     end
 
@@ -531,32 +591,32 @@ function ISButtonPrompt:testAButtonAction(dir)
                 if (not label) or (label == GameEntity.getDefaultEntityDisplayName()) then
                     label = getText("Entity_Open_Window")
                 end
-                self:setAPrompt(label, self.openEntityUI, obj)
+                self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, label, self.openEntityUI, obj)
             end
         end
     end
 end
 
-function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
+function ISButtonPrompt:doInteractButtonDoorOrWindowOrWindowFrame(dir, obj)
     local playerObj = getSpecificPlayer(self.player)
-    local square1 = playerObj:getCurrentSquare()
+    if (playerObj == nil) then return end
 
     if instanceof(obj, "IsoDoor") then
         if obj:isDestroyed() then
             -- nothing
         elseif obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Close_door"), nil, nil)
         else
-            self:setAPrompt(getText("ContextMenu_Open_door"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Open_door"), nil, nil)
         end
         return
     end
 
     if instanceof(obj, "IsoThumpable") and obj:isDoor() then
         if obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_door"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Close_door"), nil, nil)
         else
-            self:setAPrompt(getText("ContextMenu_Open_door"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Open_door"), nil, nil)
         end
         return
     end
@@ -565,30 +625,21 @@ function ISButtonPrompt:doAButtonDoorOrWindowOrWindowFrame(dir, obj)
         if obj:isDestroyed() or obj:getBarricadeForCharacter(playerObj) then
             -- nothing
         elseif obj:IsOpen() then
-            self:setAPrompt(getText("ContextMenu_Close_window"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Close_window"), nil, nil)
         elseif not obj:getSprite() or not obj:getSprite():getProperties():has("WindowLocked") then
-            self:setAPrompt(getText("ContextMenu_Open_window"), nil, nil)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("ContextMenu_Open_window"), nil, nil)
         end
         return
     end
 end
 
-function ISButtonPrompt:getBestBButtonAction(dir)
-    if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setBPrompt(nil, nil, nil);
-        return;
-    end
-
-    if dir == nil then
-        self:setBPrompt(nil, nil, nil);
-    end
-
+function ISButtonPrompt:getBestCancelButtonAction(dir)
     local buildObject = getCell():getDrag(self.player)
     if buildObject then
         if buildObject.getBPrompt then
             self:setBPrompt(buildObject:getBPrompt(), nil);
         else
-            self:setBPrompt(getText("UI_Cancel"), nil);
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.CancelAction, getText("UI_Cancel"), nil);
         end
         return
     end
@@ -596,56 +647,40 @@ function ISButtonPrompt:getBestBButtonAction(dir)
     local playerObj = getSpecificPlayer(self.player)
 
     if isPlayerDoingActionThatCanBeCancelled(playerObj) then
-        self:setBPrompt(getText("UI_Cancel"), ISButtonPrompt.stopAction);
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.CancelAction, getText("UI_Cancel"), ISButtonPrompt.stopAction);
         return
     end
 
     if playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
 
-    local vehicle = playerObj:getVehicle()
-    if vehicle then
-        if vehicle:isDriver(playerObj) and vehicle:isEngineRunning() then
-            self:setBPrompt(getText("IGUI_VehicleApplyBrakes"))
-        else
-            self:setBPrompt(nil, nil, nil)
-        end
-        return
-    end
-
 	if playerObj:isDraggingCorpse() then
-        self:setBPrompt(getText("ContextMenu_Drop_Corpse"), ISButtonPrompt.dropCorpse)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.CancelAction, getText("ContextMenu_Drop_Corpse"), ISButtonPrompt.dropCorpse)
         return
 	end
+end
 
-    if playerObj:isSprinting() then
-        self:setBPrompt(getText("IGUI_StopSprint"), nil)
-        return
-    elseif playerObj:isRunning() and playerObj:canSprint() then
-        self:setBPrompt(getText("IGUI_StartSprint"), nil)
-        return
-    end
-
-    local square1 = playerObj:getCurrentSquare();
-    if square1 == nil then return; end
+function ISButtonPrompt:getBestClimbThroughButtonAction(dir)
+    local playerObj = getSpecificPlayer(self.player)
+    if playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
 
     if dir == nil then
-        dir = getSpecificPlayer(self.player):getDir();
+        dir = playerObj:getDir();
     end
 
     if dir == IsoDirections.NE then
-        self:testBButtonAction(IsoDirections.N)
-        self:testBButtonAction(IsoDirections.E)
+        self:testClimbThroughButtonAction(IsoDirections.N)
+        self:testClimbThroughButtonAction(IsoDirections.E)
     elseif dir == IsoDirections.SE then
-        self:testBButtonAction(IsoDirections.S)
-        self:testBButtonAction(IsoDirections.E)
+        self:testClimbThroughButtonAction(IsoDirections.S)
+        self:testClimbThroughButtonAction(IsoDirections.E)
     elseif dir == IsoDirections.SW then
-        self:testBButtonAction(IsoDirections.S)
-        self:testBButtonAction(IsoDirections.W)
+        self:testClimbThroughButtonAction(IsoDirections.S)
+        self:testClimbThroughButtonAction(IsoDirections.W)
     elseif dir == IsoDirections.NW then
-        self:testBButtonAction(IsoDirections.N)
-        self:testBButtonAction(IsoDirections.W)
+        self:testClimbThroughButtonAction(IsoDirections.N)
+        self:testClimbThroughButtonAction(IsoDirections.W)
     else
-        self:testBButtonAction(dir)
+        self:testClimbThroughButtonAction(dir)
     end
 
     if self.bPrompt then return end
@@ -673,34 +708,80 @@ function ISButtonPrompt:getBestBButtonAction(dir)
     if dir1 ~= nil then
         obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir1)
         if obj then
-            self:doBButtonDoorOrWindowOrWindowFrame(dir1, obj)
+            self:doClimbThroughButtonDoorOrWindowOrWindowFrame(dir1, obj)
             return
         end
     end
     if dir2 ~= nil then
         obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir2)
         if obj then
-            self:doBButtonDoorOrWindowOrWindowFrame(dir1, obj)
+            self:doClimbThroughButtonDoorOrWindowOrWindowFrame(dir1, obj)
             return
         end
     end
 end
 
-function ISButtonPrompt:testBButtonAction(dir)
-    if self.bPrompt then return end
-    
+function ISButtonPrompt:getBestSmashWindowButtonAction(dir)
     local playerObj = getSpecificPlayer(self.player)
+    if playerObj == nil or playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
+
+    if dir == IsoDirections.NE then
+        self:testSmashWindowButtonAction(IsoDirections.N)
+        self:testSmashWindowButtonAction(IsoDirections.E)
+    elseif dir == IsoDirections.SE then
+        self:testSmashWindowButtonAction(IsoDirections.S)
+        self:testSmashWindowButtonAction(IsoDirections.E)
+    elseif dir == IsoDirections.SW then
+        self:testSmashWindowButtonAction(IsoDirections.S)
+        self:testSmashWindowButtonAction(IsoDirections.W)
+    elseif dir == IsoDirections.NW then
+        self:testSmashWindowButtonAction(IsoDirections.N)
+        self:testSmashWindowButtonAction(IsoDirections.W)
+    else
+        self:testSmashWindowButtonAction(dir)
+    end
+end
+
+function ISButtonPrompt:getBestApplyBrakesButtonAction(dir)
+    local playerObj = getSpecificPlayer(self.player)
+    if playerObj == nil or playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
+
+    local vehicle = playerObj:getVehicle()
+    if vehicle then
+        if vehicle:isDriver(playerObj) and vehicle:isEngineRunning() then
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Brakes, getText("IGUI_VehicleApplyBrakes"))
+        end
+        return
+    end
+end
+
+function ISButtonPrompt:getBestSprintButtonAction(dir)
+    local playerObj = getSpecificPlayer(self.player)
+    if playerObj == nil or playerObj:getIgnoreMovement() or playerObj:isAsleep() then return end
+
+    if playerObj:isSprinting() then
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Sprint, getText("IGUI_StopSprint"), nil)
+        return
+    elseif playerObj:isRunning() and playerObj:canSprint() then
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Sprint, getText("IGUI_StartSprint"), nil)
+        return
+    end
+end
+
+function ISButtonPrompt:testClimbThroughButtonAction(dir)
+    local playerObj = getSpecificPlayer(self.player)
+    if (playerObj == nil) then return end
 
     local obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir)
 
     if instanceof(obj, "IsoWindow") then
         if obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-            self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
             return
         else
             local barricade = obj:getBarricadeForCharacter(playerObj)
             if not obj:IsOpen() and not obj:isSmashed() and not barricade and not JoypadState.disableSmashWindow then
-                self:setBPrompt(getText("ContextMenu_Smash_window"), ISButtonPrompt.smashWindow, obj)
+                self:setButtonBindingPrompt(CharacterJoypadButtonBinding.SmashWindow, getText("ContextMenu_Smash_window"), ISButtonPrompt.smashWindow, obj)
                 return
             end
         end
@@ -708,67 +789,74 @@ function ISButtonPrompt:testBButtonAction(dir)
 
     if instanceof(obj, "IsoThumpable") then
         if obj:isWindow() and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-            self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
             return
         elseif obj:isHoppable() and obj:canClimbOver(playerObj) and not playerObj:isIgnoreContextKey() then
-            self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
             return
         end
     end
 
     if instanceof(obj, "IsoWindowFrame") then
         if obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-            self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
             return
         end
     end
 
     if playerObj:hopFence(dir, true) and not playerObj:isIgnoreContextKey() and not JoypadState.disableClimbOver then
-        self:setBPrompt(getText("ContextMenu_Climb_over"), ISButtonPrompt.climbFence);
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_over"), ISButtonPrompt.climbFence);
         return
     end
 
     if playerObj:canClimbOverWall(dir) and not playerObj:isIgnoreContextKey() and not JoypadState.disableClimbOver then
-        self:setBPrompt(getText("ContextMenu_Climb_over"), ISButtonPrompt.climbOverWall, dir)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_over"), ISButtonPrompt.climbOverWall, dir)
         return
     end
 end
 
-function ISButtonPrompt:doBButtonDoorOrWindowOrWindowFrame(dir, obj)
+function ISButtonPrompt:testSmashWindowButtonAction(dir)
     local playerObj = getSpecificPlayer(self.player)
-    local square1 = playerObj:getCurrentSquare()
+    if (playerObj == nil) then return end
+
+    local obj = playerObj:getContextDoorOrWindowOrWindowFrame(dir)
+    if instanceof(obj, "IsoWindow") then
+        if obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
+        else
+            local barricade = obj:getBarricadeForCharacter(playerObj)
+            if not obj:IsOpen() and not obj:isSmashed() and not barricade and not JoypadState.disableSmashWindow then
+                self:setButtonBindingPrompt(CharacterJoypadButtonBinding.SmashWindow, getText("ContextMenu_Smash_window"), ISButtonPrompt.smashWindow, obj)
+                return
+            end
+        end
+    end
+end
+
+function ISButtonPrompt:doClimbThroughButtonDoorOrWindowOrWindowFrame(dir, obj)
+    local playerObj = getSpecificPlayer(self.player)
+    if (playerObj == nil) then return end
 
     if instanceof(obj, "IsoWindow") and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-        self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
         return
     end
 
     if instanceof(obj, "IsoThumpable") and obj:isWindow() and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-        self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
         return
     end
 
     if instanceof(obj, "IsoWindowFrame") and obj:canClimbThrough(playerObj) and not playerObj:isIgnoreContextKey() then
-        self:setBPrompt(getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.ClimbThrough, getText("ContextMenu_Climb_through"), ISButtonPrompt.climbInWindow, obj)
         return
     end
 end
 
 function ISButtonPrompt:getBestYButtonAction(dir)
-    if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setYPrompt(nil, nil, nil);
-        return;
-    end
-
-    if dir == nil then
-        self:setYPrompt(nil, nil, nil);
-    end
-
     if getCell():getDrag(self.player) then
         self:setYPrompt(getCell():getDrag(self.player):getYPrompt(), nil);
         return;
     end
-
 
     local joypadData = self.player and JoypadState.players[self.player+1] or nil
     if joypadData and joypadData.disableYInventory then
@@ -778,7 +866,7 @@ function ISButtonPrompt:getBestYButtonAction(dir)
     local playerObj = getSpecificPlayer(self.player)
     if playerObj:getVehicle() then
         self.isLoot = false
-        self:setYPrompt(getText("IGUI_Controller_Inventory"), ISButtonPrompt.cmdShowInventory, nil)
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Inventory, getText("IGUI_Controller_Inventory"), ISButtonPrompt.cmdShowInventory, nil)
         return
     end
 
@@ -869,27 +957,17 @@ function ISButtonPrompt:getBestYButtonAction(dir)
 
     if loot then
 	    self.isLoot = true;
-        self:setYPrompt(getText("IGUI_Controller_Loot"), ISButtonPrompt.cmdShowLoot, nil);
-
+        self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Inventory, getText("IGUI_Controller_Loot"), ISButtonPrompt.cmdShowLoot, nil);
     else
 		if not getSpecificPlayer(self.player):isAsleep() then
 			self.isLoot = false;
-			self:setYPrompt(getText("IGUI_Controller_Inventory"), ISButtonPrompt.cmdShowInventory, nil);
+			self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Inventory, getText("IGUI_Controller_Inventory"), ISButtonPrompt.cmdShowInventory, nil);
         end
     end
 end
 
 
 function ISButtonPrompt:getBestXButtonAction(dir)
-    if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setXPrompt(nil, nil, nil);
-        return;
-    end
-
-    if dir == nil then
-        self:setXPrompt(nil, nil, nil);
-    end
-
     local drag = getCell():getDrag(self.player)
     if drag then
         if drag.getXPrompt then
@@ -905,7 +983,7 @@ function ISButtonPrompt:getBestXButtonAction(dir)
     if vehicle then
         if vehicle:isDriver(playerObj) then
             local joypadData = self.player and JoypadState.players[self.player+1] or nil
-            self:setXPrompt(getText("IGUI_Controller_CruiseControl"), ISVehicleRegulator.onJoypadPressX, joypadData)
+            self:setButtonBindingPrompt(CharacterJoypadButtonBinding.CruiseControl, getText("IGUI_Controller_CruiseControl"), ISVehicleRegulator.onJoypadPressX, joypadData)
         end
         return
     end
@@ -914,13 +992,12 @@ function ISButtonPrompt:getBestXButtonAction(dir)
 
     -- The context-menu code is far too slow to be called every frame.
     -- So always display the 'interact' prompt, even if pressing X has no effect.
-    self:setXPrompt(getText("IGUI_Controller_Interact"), ISButtonPrompt.interact, objects)
+    self:setButtonBindingPrompt(CharacterJoypadButtonBinding.InteractOptions, getText("IGUI_Controller_Interact"), ISButtonPrompt.interact, objects)
 end
 
-function ISButtonPrompt:getXButtonObjects(dir)
+function ISButtonPrompt:getInteractOptionsButtonObjects(dir)
     if self.list == nil then
         self.list = LuaList:new();
-
     end
     local objects = self.list;
 
@@ -1004,11 +1081,6 @@ function ISButtonPrompt:getXButtonObjects(dir)
 end
 
 function ISButtonPrompt:getBestLBButtonAction(dir)
-    if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setLBPrompt(nil, nil, nil);
-        return;
-    end
-
     if getCell():getDrag(self.player) then
         self:setLBPrompt(getCell():getDrag(self.player):getLBPrompt(), nil, nil);
     elseif ISFirearmRadialMenu.getBestLBButtonAction(self) then
@@ -1018,11 +1090,6 @@ function ISButtonPrompt:getBestLBButtonAction(dir)
 end
 
 function ISButtonPrompt:getBestRBButtonAction(dir)
-    if UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
-        self:setRBPrompt(nil, nil, nil);
-        return;
-    end
-
     if getCell():getDrag(self.player) then
         self:setRBPrompt(getCell():getDrag(self.player):getRBPrompt(), nil, nil);
     elseif ISFirearmRadialMenu.getBestRBButtonAction(self) then
@@ -1064,6 +1131,32 @@ end
 function ISButtonPrompt:onRBPress()
     if self.rbFunc then
         self:rbFunc(self.rbParams[1], self.rbParams[2], self.rbParams[3], self.rbParams[4])
+    end
+end
+
+function ISButtonPrompt:setButtonBindingPrompt(buttonBinding, str, func, param1, param2, param3, param4)
+    local button = buttonBinding:getJoypadButton()
+    self:setButtonPrompt(button, str, func, param1, param2, param3, param4)
+end
+
+function ISButtonPrompt:setButtonPrompt(button, str, func, param1, param2, param3, param4)
+    if (button == JoypadButton.A) then
+        self:setAPrompt(str, func, param1, param2, param3, param4)
+    end
+    if (button == JoypadButton.B) then
+        self:setBPrompt(str, func, param1, param2, param3, param4)
+    end
+    if (button == JoypadButton.X) then
+        self:setXPrompt(str, func, param1, param2, param3, param4)
+    end
+    if (button == JoypadButton.Y) then
+        self:setYPrompt(str, func, param1, param2, param3, param4)
+    end
+    if (button == JoypadButton.LeftBump) then
+        self:setLBPrompt(str, func, param1, param2, param3, param4)
+    end
+    if (button == JoypadButton.RightBump) then
+        self:setRBPrompt(str, func, param1, param2, param3, param4)
     end
 end
 

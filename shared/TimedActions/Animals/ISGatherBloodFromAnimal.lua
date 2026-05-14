@@ -35,6 +35,8 @@ function ISGatherBloodFromAnimal:updateBucket()
 	if ZombRand(20 + (self.perkLevel * 3)) then
 		self.character:addBlood(nil, true, false, false);
 		syncVisuals(self.character);
+        syncClothingFields(self.character);
+        sendHumanVisual(self.character);
 	end
 	self.bucket:getFluidContainer():addFluid(FluidType.AnimalBlood, rest);
 	self.bucket:sendSyncEntity(nil);

@@ -883,9 +883,7 @@ ISFarmingMenu.getPlantName = function(plant)
 	end
 	
 	if plant:getObject() then
-		ISFarmingMenu.TEMP_PLANT = copyTable(ISFarmingMenu.TEMP_PLANT, plant)
-		ISFarmingMenu.TEMP_PLANT.nbOfGrow = ISFarmingMenu.TEMP_PLANT.nbOfGrow - 1
-		return farming_vegetableconf.getObjectName(ISFarmingMenu.TEMP_PLANT)
+		return farming_vegetableconf.getObjectName(plant)
 	else
 		return "Dead " .. getText("Farming_" .. plant.typeOfSeed);
 	end

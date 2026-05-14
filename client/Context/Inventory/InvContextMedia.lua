@@ -1,8 +1,8 @@
 ISInventoryMenuElements = ISInventoryMenuElements or {};
 
 function ISInventoryMenuElements.ContextMedia()
-    local self 					= ISMenuElement.new();
-    self.invMenu			    = ISContextManager.getInstance().getInventoryMenu();
+    local self = ISMenuElement.new();
+    self.invMenu = ISContextManager.getInstance().getInventoryMenu();
 
     function self.init()
     end

@@ -912,11 +912,11 @@ function ISVehicleMenu.onDebugEditor(playerObj, vehicle)
 end
 
 function ISVehicleMenu.onDisableAlarm(playerObj, vehicle)
-	vehicle:setAlarmed(false)
+	sendClientCommand(playerObj, 'vehicle', 'setAlarmed', { vehicle = vehicle:getId(), alarmed = false })
 end
 
 function ISVehicleMenu.onEnableAlarm(playerObj, vehicle)
-	vehicle:setAlarmed(true)
+	sendClientCommand(playerObj, 'vehicle', 'setAlarmed', { vehicle = vehicle:getId(), alarmed = true })
 end
 
 function ISVehicleMenu.addSetScriptMenu(context, playerObj, vehicle)
@@ -1362,6 +1362,11 @@ function ISVehicleMenu.moveItemsFromSeat(playerObj, vehicle, seat, moveThem, doE
 end
 
 function ISVehicleMenu.onEnter(playerObj, vehicle, seat)
+    local radialMenu = getPlayerRadialMenu(playerObj:getPlayerNum())
+    if radialMenu:isReallyVisible() then
+        radialMenu:undisplay()
+    end
+
 	if vehicle:isSeatOccupied(seat) then
 		if vehicle:getCharacter(seat) then
 			-- playerObj:Say(getText("IGUI_PlayerText_VehicleSomeoneInSeat"))
@@ -1537,6 +1542,11 @@ function ISVehicleMenu.onEnterAux2(playerObj, vehicle, seat)
 end
 
 function ISVehicleMenu.onExit(playerObj, seatFrom)
+    local radialMenu = getPlayerRadialMenu(playerObj:getPlayerNum())
+    if radialMenu:isReallyVisible() then
+        radialMenu:undisplay()
+    end
+
     local vehicle = playerObj:getVehicle()
     vehicle:updateHasExtendOffsetForExit(playerObj)
 	if (not playerObj:isBlockMovement()) then

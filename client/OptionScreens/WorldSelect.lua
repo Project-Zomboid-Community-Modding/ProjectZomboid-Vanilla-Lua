@@ -247,7 +247,7 @@ function WorldSelect:create()
 	self.listbox:setOnMouseDownFunction(self, WorldSelect.onSelectWorld)
 	self.listbox:setOnMouseDoubleClick(self, WorldSelect.onDblClick)
 	self.listbox.onJoypadBeforeDeactivate = self.onJoypadBeforeDeactivate_listbox
-	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5}
+	self.listbox.backgroundColor = {r=0, g=0, b=0, a=0.5}
 	self:addChild(self.listbox)
 
 	self.mapListbox = ISScrollingListBox:new(self.listbox:getRight() + UI_BORDER_SPACING, startY, self.width - self.listbox:getRight() - UI_BORDER_SPACING*2 - 1, self.listbox.height)
@@ -257,7 +257,7 @@ function WorldSelect:create()
 	self.mapListbox.itemheight = 50
 	self.mapListbox.doDrawItem = WorldSelect.doDrawItem
 	self.mapListbox.itemsSelectable = false
-	self.mapListbox.backgroundColor  = {r=0, g=0, b=0, a=0.5}
+	self.mapListbox.backgroundColor = {r=0, g=0, b=0, a=0.5}
 	self:addChild(self.mapListbox)
 
 	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2

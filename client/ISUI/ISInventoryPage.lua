@@ -887,11 +887,11 @@ end
 function ISInventoryPage:onJoypadDirUp(joypadData)
     local shoulderSwitch = getCore():getOptionShoulderButtonContainerSwitch()
     if shoulderSwitch == 3 then
-        if isJoypadPressed(joypadData.id, Joypad.LBumper) then
+        if JoypadButton.LeftBump:isDown(joypadData.id) then
             getPlayerInventory(self.player):selectPrevContainer()
             return
         end
-        if isJoypadPressed(joypadData.id, Joypad.RBumper) then
+        if JoypadButton.RightBump:isDown(joypadData.id) then
             getPlayerLoot(self.player):selectPrevContainer()
             return
         end
@@ -903,11 +903,11 @@ end
 function ISInventoryPage:onJoypadDirDown(joypadData)
     local shoulderSwitch = getCore():getOptionShoulderButtonContainerSwitch()
     if shoulderSwitch == 3 then
-        if isJoypadPressed(joypadData.id, Joypad.LBumper) then
+        if JoypadButton.LeftBump:isDown(joypadData.id) then
             getPlayerInventory(self.player):selectNextContainer()
             return
         end
-        if isJoypadPressed(joypadData.id, Joypad.RBumper) then
+        if JoypadButton.RightBump:isDown(joypadData.id) then
             getPlayerLoot(self.player):selectNextContainer()
             return
         end

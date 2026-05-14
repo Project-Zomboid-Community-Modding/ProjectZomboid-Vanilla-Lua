@@ -16,7 +16,7 @@ local JOYPAD_TEX_SIZE = 32
 function MainScreen:initialise()
 	ISPanel.initialise(self);
 
-	DebugLog.General:debugln("MainScreen:initialize")
+	DebugType.General:debugln("MainScreen:initialize")
 end
 
 function MainScreen:getLatestSave()
@@ -186,6 +186,9 @@ function MainScreen:instantiate()
     self.mainOptions.backgroundColor = {r=0, g=0, b=0, a=0.8};
     self.mainOptions.borderColor = {r=1, g=1, b=1, a=0.5};
 
+    self.creditsScreen = CreditsScreen:new(0, 0, self.width, self.height)
+    self.creditsScreen:initialise()
+
     if self.inGame then
         if isClient() then
             self.scoreboard = ISScoreboard:new(0, 0, self.width, self.height);
@@ -305,6 +308,7 @@ function MainScreen:instantiate()
         self:addChild(self.sandOptions);
         self:addChild(self.onlineCoopScreen);
         self:addChild(self.soloScreen);
+        self:addChild(self.creditsScreen);
         self:addChild(self.loadScreen);
         self:addChild(self.worldSelect);
         self:addChild(self.mapSpawnSelect);
@@ -342,6 +346,7 @@ function MainScreen:instantiate()
         { self.sandOptions, 0.7, 0.8 },
         { self.worldSelect, 0.7, 0.8 },
         { self.soloScreen, 1, 1 },
+        { self.creditsScreen, 1, 1 },
         { self.loadScreen, 1, 1 },
         { self.sandOptions, 1, 1 },
         { self.worldSelect, 1, 1 },
@@ -520,6 +525,13 @@ function MainScreen:instantiate()
                 self.bottomPanel:addChild(self.workshopOption)
                 labelY = labelY + labelHgt
             end
+
+            self.creditOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_credits"), 1, 1, 1, 1, UIFont.Large, true);
+            self.creditOption.internal = "CREDITS";
+            self.creditOption:initialise();
+            self.bottomPanel:addChild(self.creditOption);
+            self.creditOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            labelY = labelY + labelHgt
         end
         self.defaultJoypadOption = self.survivalOption
     else
@@ -697,6 +709,7 @@ function MainScreen:instantiate()
 		self.lastStandPlayerSelect:create();
         self.sandOptions:create();
         self.soloScreen:create();
+        self.creditsScreen:create()
         self.loadScreen:create();
         self.onlineCoopScreen:create();
         self.multiplayer:create();
@@ -811,59 +824,6 @@ function MainScreen:prerender()
     local textManager = getTextManager();
 
     self.time = self.time + ((1.0 / 60)*getGameTime():getMultiplier());
-
-    local lastIsSameTitle = false;
-    local nextIsSameTitle = false;
-
-    if self.time > 11.8 then
-        if self.credits:size() > self.creditsIndex then
-            if self.creditsIndex > 0 then
-                if self.credits:get(self.creditsIndex-1).title == self.credits:get(self.creditsIndex).title then
-                    lastIsSameTitle = true;
-                end
-            end
-
-            if self.credits:size()-1 > self.creditsIndex then
-                if self.credits:get(self.creditsIndex+1).title == self.credits:get(self.creditsIndex).title then
-                    nextIsSameTitle = true;
-                end
-            end
-        end
-        local credAlpha = self.creditTime / self.creditTimeMax;
-        if(credAlpha <= 0.5) then
-            credAlpha = credAlpha * 2;
-        elseif (credAlpha >= 0.8) then
-            credAlpha = 1.0 - ((credAlpha - 0.8) * 5);
-        else
-            credAlpha = 1;
-        end
-        local credAlpha2 = self.creditTime / self.creditTimeMax;
-        if(credAlpha2 <= 0.1) then
-            credAlpha2 = credAlpha2 * 10;
-            if lastIsSameTitle then credAlpha2 = 1; end
-        elseif (credAlpha2 >= 0.9) then
-            credAlpha2 = 1.0 - ((credAlpha2 - 0.9) * 10);
-            if nextIsSameTitle then credAlpha2 = 1; end
-        else
-            credAlpha2 = 1;
-        end
-
-        self.creditTime = self.creditTime +  ((1.0 / 60)*getGameTime():getMultiplier());
-        if self.creditTime > self.creditTimeMax then
-            self.creditTime = 0;
-            self.creditsIndex = self.creditsIndex + 1;
-        end
-        if self.credits:size() > self.creditsIndex and not self.inGame and ISDemoPopup.instance == nil then
-            textManager:DrawString(UIFont.Small, (getCore():getScreenWidth()*0.75)+50 , getCore():getScreenHeight()*0.1, self.credits:get(self.creditsIndex).title, 1, 1, 1, credAlpha2);
-
-            local x = (getCore():getScreenWidth()*0.75);
-            local xwid = textManager:MeasureStringX(UIFont.Large, self.credits:get(self.creditsIndex).name);
-            if(x + xwid > getCore():getScreenWidth()) then
-               x = x - ((x + xwid) - getCore():getScreenWidth()) - 10;
-            end
-            textManager:DrawString(UIFont.Large, x, (getCore():getScreenHeight()*0.1) + 26, self.credits:get(self.creditsIndex).name, 1, 1, 1, credAlpha);
-        end
-    end
 
     local mainScreen = MainScreenState.getInstance();
 	if mainScreen ~= nil and (ISDemoPopup.instance == nil) then
@@ -1374,6 +1334,10 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
 
     local joypadData = JoypadState.getMainMenuJoypad()
 
+    if item.internal == "CREDITS" then
+        MainScreen.instance.creditsScreen:setVisible(true, joypadData);
+    end
+
     if item.internal == "EXIT" then
         if isQuitCooldown() then
             return
@@ -1634,120 +1598,6 @@ function MainScreen:onReturnToGame()
 	end
 end
 
-function MainScreen:addCredit(credit, number)
-    if number == 0 then --for the Formosa Interactive title
-        self.credits:add({title = getText("UI_credits_header_" .. credit), name = ""});
-    end
-    for i = 1, number do
-        self.credits:add({title = getText("UI_credits_header_" .. credit), name = getText("UI_credits_" .. credit .. i)});
-    end
-end
-
-function MainScreen:doArtCredits()
-    self:addCredit("Art", 4);
-    self:addCredit("ArtAndAnimation", 1);
-end
-function MainScreen:doCodeCredits()
-    self:addCredit("Code", 12);
-end
-function MainScreen:doWritingCredits()
-    self:addCredit("WrittenBy", 2);
-end
-function MainScreen:doScriptingCredits()
-    self:addCredit("Mapping", 2);
-    self:addCredit("AdditionalMapping", 2);
-end
-
-function MainScreen:doCredits()
-    local r = ZombRand(5);
-
-    self:addCredit("Music", 1);
-
-    if r == 0 then
-        self:doArtCredits();
-        self:doCodeCredits();
-        self:doWritingCredits();
-        self:doScriptingCredits();
-    end
-    if r == 1 then
-        self:doCodeCredits();
-        self:doArtCredits();
-        self:doWritingCredits();
-        self:doScriptingCredits();
-    end
-    if r == 2 then
-        self:doWritingCredits();
-        self:doScriptingCredits();
-        self:doArtCredits();
-        self:doCodeCredits();
-    end
-    if r == 3 then
-        self:doWritingCredits();
-        self:doScriptingCredits();
-        self:doCodeCredits();
-        self:doArtCredits();
-    end
-    if r == 4 then
-        self:doCodeCredits();
-        self:doWritingCredits();
-        self:doScriptingCredits();
-        self:doArtCredits();
-    end
-
-    self:addCredit("Design", 1);
-    self:addCredit("Tools", 2);
-    self:addCredit("AdditionalArt", 4);
-
-    self:addCredit("AdditionalCode", 14);
-
-    self:addCredit("LootArtiste", 1);
-    self:addCredit("Contributor", 6);
-
-    self:addCredit("Titles", 1);
-    self:addCredit("SysAdmin", 1);
-    self:addCredit("SysAdminSupport", 1);
-    self:addCredit("OperationsManager", 1);
-    self:addCredit("SeniorProducer", 1);
-    self:addCredit("LeadQa", 1);
-    self:addCredit("Qa", 1);
-    self:addCredit("Videography", 1);
-    self:addCredit("CommunityManager", 1);
-    self:addCredit("TechSupport", 1);
-    self:addCredit("Hr", 1);
-    self:addCredit("Accounts", 1);
-    self:addCredit("OnlineMapCoordinator", 1);
-    self:addCredit("Wiki", 6);
-
-    self:addCredit("HeadRaccoon", 1);
-    self:addCredit("Localization", 1);
-
-    self:addCredit("VertexBreak", 10);
-
-    self:addCredit("GeneralArcade", 2);
-
-    self:addCredit("TheTeaDivision", 7);
-
-    self:addCredit("FormosaInteractive", 0);
-    self:addCredit("SoundSupervisor", 1);
-    self:addCredit("TechnicalSoundDesigner", 1);
-    self:addCredit("LeadSoundDesigner", 1);
-    self:addCredit("SoundDesigner", 5);
-    self:addCredit("AssociateSoundDesigner", 2);
-    self:addCredit("FormosaSeniorProducer", 1);
-    self:addCredit("Producer", 1);
-    self:addCredit("InteractiveMusicComposer", 2);
-
-    self:addCredit("DedicatedToTheMemoryOf", 2);
-
-    self:addCredit("SpecialInfected", 63);
-
-    self:addCredit("SpecialThanksTo", 45);
-
-    self:addCredit("AudioEngine", 1);
-    self:addCredit("UsesBinkVideo", 1);
-
-end
-
 function MainScreen:onKeyRelease(key)
     if self.inGame then return end
     if key ~= Keyboard.KEY_ESCAPE and key ~= Keyboard.KEY_RETURN then return end
@@ -1762,6 +1612,7 @@ function MainScreen:onKeyRelease(key)
         { self.modSelect },
         { self.sandOptions },
         { self.soloScreen },
+        { self.creditsScreen },
         { self.worldSelect }
     }
     for _,ui in ipairs(uis) do
@@ -1792,13 +1643,8 @@ function MainScreen:new (inGame)
 	o.anchorBottom = false;
     o.warningFadeMax = 10;
     o.warningFade = o.warningFadeMax;
-    o.credits = LuaList:new();
-    o.creditsIndex = 0;
     o.delay = inGame and -1 or 500 -- milliseconds
     o.firstFrame = false
-    o.creditTimeMax = 7;
-    o.creditTime = 0;
-    o:doCredits();
     o.time = 0;
     o.inGame = inGame;
     o.version = getCore():getVersion() .. " " .. "pzBullet(" .. getCore():getBulletVersion() .. ")";
@@ -2007,6 +1853,7 @@ function MainScreen:onGainJoypadFocus(joypadData)
 		{ self.optionsOption },
 		{ self.modsOption },
 		{ self.workshopOption },
+        { self.creditOption },
 		{ self.exitOption },
 		{ self.quitToDesktop },
 	}
@@ -2101,6 +1948,7 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
         { self.connectToServer, 0.7, 0.8 },
         { self.onlineCoopScreen, 0.5, 0.6 },
         { self.soloScreen, 1, 1 },
+        { self.creditsScreen, 1, 1 },
         { self.loadScreen, 1, 1 },
         { self.sandOptions, 1, 1 },
         { self.worldSelect, 1, 1 },
@@ -2161,6 +2009,9 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
 	end
 	if self.soloScreen then
 		self.soloScreen:onResolutionChange(oldw, oldh, neww, newh)
+    end
+    if self.creditsScreen then
+        self.creditsScreen:onResolutionChange(oldw, oldh, neww, newh)
     end
     if self.loadScreen then
         self.loadScreen:onResolutionChange(oldw, oldh, neww, newh)
@@ -2235,6 +2086,7 @@ function MainScreen:getAllUIs()
 		self.multiplayer,
 		self.onlineCoopScreen,
 		self.soloScreen,
+        self.creditsScreen,
 		self.loadScreen,
 		self.sandOptions,
 		self.worldSelect,

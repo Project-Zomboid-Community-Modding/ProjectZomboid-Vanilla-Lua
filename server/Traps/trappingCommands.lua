@@ -72,7 +72,7 @@ end
 function Commands.checkTrap(player, args)
 	local trap = getTrapAt(args.x, args.y, args.z)
 	if trap then
-        ISTrapMenu.onCheckTrap(nil, player, trap);
+        ISTrapMenu.onCheckTrap(nil, trap, player);
 	else
 		noise('no trap found at '..args.x..','..args.y..','..args.z)
 	end

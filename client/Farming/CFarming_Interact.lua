@@ -301,10 +301,10 @@ CFarming_Interact.ChangeClimbDirection = function(key)
     if getCore():isKey("ReleaseRope", key) then
         player:fallFromRope()
     elseif isUp and not doUp then
-        player:getStateMachineParams(ClimbDownSheetRopeState:instance()):clear()
+        player:clear(ClimbDownSheetRopeState:instance())
         player:reportEvent("EventClimbDownRope")
     elseif doUp and not isUp then
-        player:getStateMachineParams(ClimbSheetRopeState:instance()):clear()
+        player:clear(ClimbSheetRopeState:instance())
         player:reportEvent("EventClimbRope")
     end
 end

@@ -122,15 +122,24 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
     if string.find(command, "SIZE:") then
 
 		local size = string.sub(command, 6);
-		if(size == "small") then
+		if size == "small" then
 			self.font = UIFont.NewSmall;
 		end
-		if(size == "medium") then
+		if size == "medium" then
 			self.font = UIFont.Medium;
 		end
-		if(size == "large") then
+		if size == "large" then
 			self.font = UIFont.Large;
 		end
+        if size == "intro" then
+            self.font = UIFont.Intro;
+        end
+        if size == "credits1" then
+            self.font = UIFont.Cred1;
+        end
+        if size == "credits2" then
+            self.font = UIFont.Cred2;
+        end
 		self.fonts[self.currentLine] = self.font;
 	end
 
@@ -311,7 +320,7 @@ function ISRichTextPanel:processCommand(command, x, y, lineImageHeight, lineHeig
             w = tonumber(string.trim(vs[2]))
             h = tonumber(string.trim(vs[3]))
         end
-        self.images[self.imageCount] = Joypad.Texture[string.sub(command, 8)]
+        self.images[self.imageCount] = Joypad.Texture.fromCommand(string.sub(command, 8))
         if w == 0 then
             w = self.images[self.imageCount]:getWidth()
             h = self.images[self.imageCount]:getHeight()
@@ -366,7 +375,32 @@ function ISRichTextPanel:replaceKeyNames(text)
 	return text
 end
 
+function ISRichTextPanel:setOnMouseDownFunction(target, onmousedown)
+    self.onmousedown = onmousedown;
+    self.target = target;
+end
+
+function ISRichTextPanel:setOnMouseUpFunction(target, onmouseup)
+    self.onmouseup = onmouseup;
+    self.target = target;
+end
+
+function ISRichTextPanel:onMouseDown(x, y)
+    if self.onmousedown then
+        self.onmousedown(self.target);
+    end
+end
+
+function ISRichTextPanel:onMouseUp(x, y)
+    if self.onmouseup then
+        self.onmouseup(self.target);
+    end
+end
+
 function ISRichTextPanel:onMouseWheel(del)
+    if self.blockMouseWheel then
+        return false
+    end
 	self:setYScroll(self:getYScroll() - (del*18));
     return true;
 end
@@ -651,6 +685,15 @@ function ISRichTextPanel:render()
 	end
 
 	if self.clip then self:clearStencilRect() end
+
+    self:updateAutoScroll()
+end
+
+function ISRichTextPanel:updateAutoScroll()
+    if not self.autoScrollSpeed then
+        return
+    end
+    self:setYScroll(self:getYScroll() - self.autoScrollSpeed)
 end
 
 function ISRichTextPanel:onResize()

@@ -467,7 +467,7 @@ function ISBuildPanel:new(x, y, width, height, player, craftBench, isoObject, re
     o.leftHandedMode = true;
     o.recipeListMode = true;
 
-    o.minimumWidth = 600;
+    o.minimumWidth = 500;
     o.minimumHeight = 500;
 
     o.playerLastSquare = nil;

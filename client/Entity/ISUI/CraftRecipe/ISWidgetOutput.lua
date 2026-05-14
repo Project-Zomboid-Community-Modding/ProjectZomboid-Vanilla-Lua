@@ -1,7 +1,8 @@
 require "ISUI/ISPanel"
 
-local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 5
 
 ISWidgetOutput = ISPanel:derive("ISWidgetOutput");
 
@@ -50,9 +51,8 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local spacing = self.margin;
     local labelHeight = math.max(self.primary.label:getHeight(), self.labelIconSize);
-    local minHeight = self.iconBorderSizeY + spacing + labelHeight + self.margin;
+    local minHeight = self.iconBorderSizeY + labelHeight + UI_BORDER_SPACING*2;
 
     width = math.max(width, self.iconBorderSizeX);
     height = math.max(height, minHeight);
@@ -66,14 +66,14 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
 
     -- set qty label
     self.primary.label:setName(self.primary.amountStr);
-    local x = self.iconBorderSizeX - (self.margin*2) - self.primary.label:getWidth();
-    local y = self.iconBorderSizeY - self.margin - self.primary.label:getHeight();
+    local x = self.iconBorderSizeX - (UI_BORDER_SPACING*2) - self.primary.label:getWidth();
+    local y = self.iconBorderSizeY - UI_BORDER_SPACING - self.primary.label:getHeight();
     self.primary.label:setX(x);
     self.primary.label.originalX = self.primary.label:getX();
     self.primary.label:setY(y);
     if self.secondary then
         self.primary.label:setName(self.primary.amountStr);
-        x = self.iconBorderSizeX - (self.margin*2) - self.secondary.label:getWidth();
+        x = self.iconBorderSizeX - (UI_BORDER_SPACING*2) - self.secondary.label:getWidth();
         self.secondary.label:setX(x);
         self.secondary.label.originalX = self.secondary.label:getX();
         self.secondary.label:setY(y);
@@ -82,17 +82,17 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
 
     -- set icon positions
     x = 0
-    y = self.margin + self.iconBorderSizeY + spacing;
+    y = self.iconBorderSizeY + UI_BORDER_SPACING;
     local iconAdj = (self.primary.label:getHeight() - self.labelIconSize) / 2;
 
     self.iconCreate:setX(x);
     self.iconCreate:setY(y + iconAdj);
 
     -- set item name label
-    x = self.labelIconSize + spacing;
+    x = self.labelIconSize + UI_BORDER_SPACING;
     local clampToWidth = width - x;
     local itemLabel = self.secondary and self.secondary.iconText or self.primary.iconText or "";
-    local wrappedText = getTextManager():WrapText(self.primary.itemNameLabel.font, itemLabel, clampToWidth, 3, "...");
+    local wrappedText = getTextManager():WrapText(self.primary.itemNameLabel.font, itemLabel, clampToWidth, 2, "...");
     local textHeight = getTextManager():MeasureStringY(self.primary.itemNameLabel.font, wrappedText);
     self.primary.itemNameLabel:setX(x);
     self.primary.itemNameLabel.originalX = self.primary.itemNameLabel:getX();
@@ -100,13 +100,13 @@ function ISWidgetOutput:calculateLayout(_preferredWidth, _preferredHeight)
     self.primary.itemNameLabel:setHeight(textHeight);
     self.primary.itemNameLabel:setY(y);
 
-    minHeight = self.iconBorderSizeY + spacing + (getTextManager():getFontHeight(UIFont.Small)*3) + self.margin;
+    minHeight = self.iconBorderSizeY + (getTextManager():getFontHeight(UIFont.Small)*2) + UI_BORDER_SPACING*2;
     height = math.max(height, minHeight);
 
     if self.arrow then
         self.arrow:setX(x);
         self.arrow:setY((height/2)-(self.arrow:getHeight()/2));
-        x = self.arrow:getX() + self.arrow:getWidth() + spacing;
+        x = self.arrow:getX() + self.arrow:getWidth() + UI_BORDER_SPACING;
     end
 
     self:setWidth(width);
@@ -333,13 +333,13 @@ function ISWidgetOutput:new (x, y, width, height, player, logic, outputScript)
     o.outputScript = outputScript;
     o.createScript = outputScript:getCreateToItemScript();
 
-    o.iconSize = 48 * ICON_SCALE;
-    o.iconMargin = 12 * FONT_SCALE;
-    o.labelIconSize = 18 * ICON_SCALE;
+    local scaleIncrease = (getCore():getOptionFontSizeReal()-1)
+    o.iconSize = 48+scaleIncrease*14
+    o.labelIconSize = 18+scaleIncrease*5
 
     o.normalBorderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.iconBorderSizeX = (o.iconMargin * 2) + (o.iconSize*1.5);
-    o.iconBorderSizeY = (o.iconMargin * 2) + o.iconSize;
+    o.iconBorderSizeX = (UI_BORDER_SPACING * 2) + (o.iconSize*1.5);
+    o.iconBorderSizeY = (UI_BORDER_SPACING * 2) + o.iconSize;
 
     o.interactiveMode = false;
 
@@ -350,7 +350,6 @@ function ISWidgetOutput:new (x, y, width, height, player, logic, outputScript)
 
     o.background = false;
 
-    o.margin = 5;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
 

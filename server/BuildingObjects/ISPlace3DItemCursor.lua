@@ -25,7 +25,7 @@ function ISPlace3DItemCursor:create(x, y, z, north, sprite)
         if luautils.walkAdjAltTest(self.chr, self.selectedSqDrop, self.itemSq, true) then
             for i,v in ipairs(self.items) do
                 if self.chr:isEquipped(v) then
-                    ISTimedActionQueue.add(ISUnequipAction:new(self.chr, v, 1));
+                    ISTimedActionQueue.add(ISUnequipAction:new(self.chr, v, 1, "place"));
                 end
                 local action = ISDropWorldItemAction:new(self.chr, v, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, #self.items > 1)
                 action.isPlaceItem = true
@@ -36,7 +36,7 @@ function ISPlace3DItemCursor:create(x, y, z, north, sprite)
         local item = table.remove(self.items, 1)
         if luautils.walkAdjAltTest(self.chr, self.selectedSqDrop, self.itemSq, true) then
             if self.chr:isEquipped(item) then
-                ISTimedActionQueue.add(ISUnequipAction:new(self.chr, item, 1));
+                ISTimedActionQueue.add(ISUnequipAction:new(self.chr, item, 1, "place"));
             end
             local action = ISDropWorldItemAction:new(self.chr, item, self.selectedSqDrop, self.render3DItemXOffset, self.render3DItemYOffset, self.render3DItemZOffset, self.render3DItemRot, false)
             action.isPlaceItem = true
@@ -346,7 +346,7 @@ end
 function ISPlace3DItemCursor:checkPositionJoypad()
     local joypadID = self.chr:getJoypadBind()
     if joypadID == -1 then return end
-    self.joypadPositionActive = isJoypadPressed(joypadID, getJoypadYButton(joypadID))
+    self.joypadPositionActive = JoypadButton.Y:isDown(joypadID)
     if self.joypadPositionActive then
         self.chr:setIgnoreMovement(true)
         local axisX = getJoypadMovementAxisX(joypadID)

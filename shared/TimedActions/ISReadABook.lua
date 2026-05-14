@@ -53,6 +53,10 @@ function ISReadABook:update()
                 if not isClient() then
                     self:doHaloText()
                 end
+                if self.item:getNumberOfPages() > 0 then
+                    self.character:setAlreadyReadPages(self.item:getFullType(), 0)
+                    self:forceStop()
+                end
             end
         else
             if not isClient() then
@@ -307,7 +311,11 @@ function ISReadABook:revealPrintMediaLocationsOnMap(mediaID)
             break
         end
         for _, sqData in ipairs(locationData) do
-            WorldMapVisited.getInstance():setKnownInSquares(sqData.x1, sqData.y1, sqData.x2, sqData.y2)
+            if (isServer()) then
+                WorldMapVisitedServer.getInstance():setKnownInSquares(self.character, sqData.x1, sqData.y1, sqData.x2, sqData.y2);
+            else
+                WorldMapVisited.getInstance():setKnownInSquares(sqData.x1, sqData.y1, sqData.x2, sqData.y2);
+            end
         end
     end
 end
@@ -346,7 +354,11 @@ function ISReadABook:complete()
     end
 
     if self.item:hasModData() and self.item:getModData().printMedia then
-        self.character:addReadPrintMedia(self.item:getModData().printMedia.id)
+        local mediaID = self.item:getModData().printMedia.id
+        self.character:addReadPrintMedia(mediaID)
+        if getCore():getOptionAutoRevealPrintMediaMapLocations() then
+            self:revealPrintMediaLocationsOnMap(mediaID)
+        end
     end
 
     ISReadABook.checkMultiplier(self);
@@ -354,7 +366,7 @@ function ISReadABook:complete()
 
     --PF_Recipes + PF_Traits + PF_AlreadyReadBook
     sendSyncPlayerFields(self.character, 0x00000007);
-    syncItemFields(self.character, self.item)
+    syncItemFields(self.character, self.item);
 
     return true;
 end
@@ -384,7 +396,13 @@ function ISReadABook:animEvent(event, parameter)
                         return
                     end
                 elseif self.item:getMaxLevelTrained() < self.character:getPerkLevel(SkillBook[self.item:getSkillTrained()].perk) + 1 then
+                    self.character:setAlreadyReadPages(self.item:getFullType(), 0)
+                    self.item:setAlreadyReadPages(0);
+                    syncItemFields(self.character, self.item)
+                    self.forceStopped = true
+                    self.netAction:forceComplete()
                     self:doHaloText()
+                    return
                 else
                     ISReadABook.checkMultiplier(self);
                 end

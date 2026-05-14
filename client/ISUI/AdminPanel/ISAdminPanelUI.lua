@@ -427,3 +427,15 @@ function ISAdminPanelUI.OnNetworkUsersReceived()
 end
 
 Events.OnNetworkUsersReceived.Add(ISAdminPanelUI.OnNetworkUsersReceived)
+
+function ISAdminPanelUI.OnRoleUpdated()
+    if ISAdminPanelUI.instance then
+        ISAdminPanelUI.instance:updateButtons();
+    end
+
+    if ISAdminPowerUI.instance then
+        ISAdminPowerUI.instance:updateAdminPower();
+    end
+end
+
+Events.RefreshCheats.Add(ISAdminPanelUI.OnRoleUpdated)

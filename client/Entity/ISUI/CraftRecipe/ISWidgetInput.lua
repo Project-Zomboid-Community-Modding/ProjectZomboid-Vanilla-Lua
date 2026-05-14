@@ -1,7 +1,8 @@
 require "ISUI/ISPanel"
 
-local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 5
 
 ISWidgetInput = ISPanel:derive("ISWidgetInput");
 
@@ -70,29 +71,27 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local topMargin = self.logic:isManualSelectInputs() and self.selectInputButtonSize / 2 or 0;
-    local spacing = self.margin;
     local labelHeight = math.max(self.primary.label:getHeight(), self.labelIconSize);
-    local minHeight = topMargin + self.iconBorderSizeY + spacing + labelHeight + self.margin;
-    
-    width = math.max(width, self.iconBorderSizeX + topMargin);
+    local minHeight = self.iconBorderSizeY + labelHeight + UI_BORDER_SPACING*2;
+
+    width = math.max(width, self.iconBorderSizeX);
     height = math.max(height, minHeight);
 
-    self.primary.icon:setX((self.iconBorderSizeX/2)-(self.primary.icon:getWidth()/2));
-    self.primary.icon:setY(topMargin + (self.iconBorderSizeY/2)-(self.primary.icon:getHeight()/2));
+    self.primary.icon:setY((self.iconBorderSizeY-self.primary.icon:getHeight())/2);
+    self.primary.icon:setX(self.primary.icon:getY());
     if self.secondary then
-        self.secondary.icon:setX((self.iconBorderSizeX/2)-(self.secondary.icon:getWidth()/2));
-        self.secondary.icon:setY(topMargin + (self.iconBorderSizeY/2)-(self.secondary.icon:getHeight()/2));
+        self.secondary.icon:setY((self.iconBorderSizeY-self.secondary.icon:getHeight())/2);
+        self.secondary.icon:setX(self.secondary.icon:getY());
     end
     
     -- set qty label
-    local x = self.iconBorderSizeX - (self.margin*2) - self.primary.label:getWidth();
-    local y = topMargin + self.iconBorderSizeY - self.margin - self.primary.label:getHeight();
+    local x = self.iconBorderSizeX - (UI_BORDER_SPACING*2) - self.primary.label:getWidth();
+    local y = self.iconBorderSizeY - UI_BORDER_SPACING - self.primary.label:getHeight();
     self.primary.label:setX(x);
     self.primary.label.originalX = self.primary.label:getX();
     self.primary.label:setY(y);
     if self.secondary then
-        x = self.iconBorderSizeX - (self.margin*2) - self.secondary.label:getWidth();
+        x = self.iconBorderSizeX - (UI_BORDER_SPACING*2) - self.secondary.label:getWidth();
         self.secondary.label:setX(x);
         self.secondary.label.originalX = self.secondary.label:getX();
         self.secondary.label:setY(y);
@@ -101,7 +100,7 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
 
     -- set selectInputButton pos
     if self.primary.selectInputButton then
-        x = self.iconBorderSizeX - self.primary.selectInputButton:getWidth() + topMargin;
+        x = self.iconBorderSizeX - self.primary.selectInputButton:getWidth();
         y = 0
         self.primary.selectInputButton:setX(x);
         self.primary.selectInputButton:setY(y);
@@ -109,7 +108,7 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     
     -- set icon positions
     x = 0
-    y = topMargin + self.iconBorderSizeY + spacing;
+    y = self.iconBorderSizeY + UI_BORDER_SPACING;
     local iconAdj = (self.primary.label:getHeight() - self.labelIconSize) / 2;
 
     self.iconTool:setX(x);
@@ -120,7 +119,7 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     self.iconReturned:setY(y + iconAdj);
     
     -- set item name label
-    x = self.labelIconSize + spacing;
+    x = self.labelIconSize + UI_BORDER_SPACING;
     local clampToWidth = self.iconBorderSizeX - x;
     local itemLabel = self.secondary and self.secondary.iconText or self.primary.iconText or "";
     if self.primary.isItemCount and self.primary.iconText and self.secondary and self.secondary.iconText then
@@ -128,7 +127,7 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
         itemLabel = getText("IGUI_CraftingWindow_InputWithContents", self.primary.iconText, self.secondary.iconText);
     end
     
-    local wrappedText = getTextManager():WrapText(self.primary.itemNameLabel.font, itemLabel, clampToWidth, 3, "...");
+    local wrappedText = getTextManager():WrapText(self.primary.itemNameLabel.font, itemLabel, clampToWidth, 2, "...");
     local textHeight = getTextManager():MeasureStringY(self.primary.itemNameLabel.font, wrappedText);
     self.primary.itemNameLabel:setX(x);
     self.primary.itemNameLabel.originalX = self.primary.itemNameLabel:getX();
@@ -136,13 +135,13 @@ function ISWidgetInput:calculateLayout(_preferredWidth, _preferredHeight)
     self.primary.itemNameLabel:setHeight(textHeight);
     self.primary.itemNameLabel:setY(y);
 
-    minHeight = topMargin + self.iconBorderSizeY + spacing + (getTextManager():getFontHeight(UIFont.Small)*3) + self.margin;
+    minHeight = self.iconBorderSizeY + (getTextManager():getFontHeight(UIFont.Small)*2) + UI_BORDER_SPACING*2;
     height = math.max(height, minHeight);
 
     if self.arrow then
         self.arrow:setX(x);
         self.arrow:setY((height/2)-(self.arrow:getHeight()/2));
-        x = self.arrow:getX() + self.arrow:getWidth() + spacing;
+        x = self.arrow:getX() + self.arrow:getWidth() + UI_BORDER_SPACING;
     end
     
     self:setWidth(width);
@@ -162,9 +161,8 @@ function ISWidgetInput:prerender()
     end
     
     -- border the main icon
-    local topMargin = self.primary.selectInputButton:isVisible() and self.selectInputButtonSize / 2 or 0;
-    self:drawRectStatic(0, topMargin, self.iconBorderSizeX, self.iconBorderSizeY, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-    self:drawRectBorderStatic(0, topMargin, self.iconBorderSizeX, self.iconBorderSizeY, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+    self:drawRectStatic(0, 0, self.iconBorderSizeX, self.iconBorderSizeY, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
+    self:drawRectBorderStatic(0, 0, self.iconBorderSizeX, self.iconBorderSizeY, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 end
 
 function ISWidgetInput:render()
@@ -615,10 +613,10 @@ function ISWidgetInput:new (x, y, width, height, player, logic, inputScript) --r
     o.consumeScript = inputScript:getConsumeFromItemScript();
     o.createScript = inputScript:getCreateToItemScript();
 
-    o.iconSize = 48 * ICON_SCALE;
-    o.iconMargin = 12 * FONT_SCALE;
-    o.labelIconSize = 18 * ICON_SCALE;
-    o.selectInputButtonSize = 24 * ICON_SCALE;
+    local scaleIncrease = (getCore():getOptionFontSizeReal()-1)
+    o.iconSize = 48+scaleIncrease*14
+    o.labelIconSize = 18+scaleIncrease*5
+    o.selectInputButtonSize = 24+scaleIncrease*5
     
     o.selectInputButtonBackgroundColor = {r=0.8, g=0.8, b=0.8, a=1};
     o.selectInputButtonBackgroundColorMouseOver = {r=0.365, g=0.196, b=0.125, a=1};
@@ -626,8 +624,8 @@ function ISWidgetInput:new (x, y, width, height, player, logic, inputScript) --r
     o.selectInputButtonTextureColorMouseOver = {r=0.909, g=0.929, b=0.78, a=1};
 
     o.normalBorderColor = {r=0.4, g=0.4, b=0.4, a=1};
-    o.iconBorderSizeX = (o.iconMargin * 2) + (o.iconSize*1.5);
-    o.iconBorderSizeY = (o.iconMargin * 2) + o.iconSize;
+    o.iconBorderSizeX = (UI_BORDER_SPACING*2) + (o.iconSize*1.5);
+    o.iconBorderSizeY = (UI_BORDER_SPACING*2) + o.iconSize;
     
     o.interactiveMode = false;
     o.displayAsOutput = false;

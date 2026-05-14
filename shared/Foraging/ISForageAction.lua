@@ -30,52 +30,11 @@ function ISForageAction:start()
 end
 
 function ISForageAction:perform()
-	if self.forageIcon == nil or self.forageIcon.itemList == nil then return; end;
-	--
-	--flag the icon for removal
-	self.forageIcon:setIsBeingRemoved(true);
-	--do the icon removal
-	self.manager:removeItem(self.forageIcon);
-	self.manager:removeIcon(self.forageIcon);
-	--do the foraging action
-	self:forage();
-	--trigger event so other managers will remove the icon
-	triggerEvent("onUpdateIcon", self.forageIcon.zoneData, self.forageIcon.iconID, nil);
+	if not isClient() then
+        forageSystem.actionComplete(self.character, self.iconID)
+    end
 	ISBaseTimedAction.perform(self); -- remove from queue / start next.
 end
-
-function ISForageAction:forage()
-	forageSystem.doFatiguePenalty(self.character);
-	forageSystem.doEndurancePenalty(self.character);
-	--
-	-- add the items to player inventory
-	-- these items are generated when the icon is first spotted in self.forageIcon.itemList
-	local itemsAdded = self.forageIcon.itemList
-	local itemsTable = {};
-	for i = 0, itemsAdded:size() - 1 do
-		local item = itemsAdded:get(i);
-		if not itemsTable[item:getFullType()] then itemsTable[item:getFullType()] = {item = item, count = 0}; end;
-		itemsTable[item:getFullType()].count = itemsTable[item:getFullType()].count + 1;
-	end;
-	--
-	--create the halo note, injecting the item image
-	local itemTexture;
-	for _, itemData in pairs(itemsTable) do
-		local item = itemData.item;
-		self.itemCount = itemData.count;
-		if item:getTexture() ~= nil then
-			if string.find(tostring(item:getTexture():getName()), "media") and string.find(tostring(item:getTexture():getName()), "textures") then
-				itemTexture = "[img="..tostring(item:getTexture():getName()).."]";
-			else
-				itemTexture = "[img=media/textures/"..tostring(item:getTexture():getName()).."]"
-			end
-		else
-			itemTexture = ""
-		end
-        HaloTextHelper.addText(self.character,itemTexture.."    "..self.itemCount.. " "..item:getDisplayName());
-	end;
-end
-
 
 function ISForageAction:complete()
 	-- add the items to player inventory
@@ -90,6 +49,7 @@ function ISForageAction:complete()
 			end
 			itemList:add(item)
 		end
+        sendServerCommand(self.character, 'forage', 'complete', { iconID = self.iconID })
 	else
 		itemList = self.forageIcon.itemList or ArrayList.new()
 	end
@@ -113,11 +73,11 @@ function ISForageAction:new(character, iconID, itemDataList, targetContainer, it
 	o.itemDataList = itemDataList;
 	--
 	if not isServer() then
-		o.iconID = iconID;
 		o.manager = ISSearchManager.getManager(character);
 		o.forageIcon = o.manager.forageIcons[iconID];
 		o.zoneData = o.forageIcon.zoneData;
 	end;
+    o.iconID = iconID;
 	o.itemDef = forageSystem.itemDefs[o.itemType];
 	--
     o.stopOnWalk = false;

@@ -165,8 +165,8 @@ function ISComboBoxPopup:setComboBox(comboBox)
     self.selected = comboBox.selected
     self:setHeight(math.min(#comboBox.options, 9) * self.itemheight)
     
-    self:setX(comboBox:getAbsoluteX())
     self:setWidth(comboBox:getWidth())
+    self:setX(comboBox:getAbsoluteX())
     if comboBox.openUpwards or (comboBox:getAbsoluteY() + comboBox:getHeight() + self:getHeight() > getCore():getScreenHeight()) then
         self:setY(comboBox:getAbsoluteY() - self:getHeight())
     else

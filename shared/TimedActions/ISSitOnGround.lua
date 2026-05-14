@@ -45,3 +45,26 @@ function ISSitOnGround:new(character, bed)
 	o.bed = bed
 	return o
 end
+
+local function onKeyPress(key)
+    if not getCore():isKey("SitOnGround", key) then
+        return
+    end
+    local playerObj = getSpecificPlayer(0)
+    if not playerObj or playerObj:getVehicle() then
+        return
+    end
+    if playerObj:isSitOnGround() or playerObj:isSittingOnFurniture() then
+        playerObj:StopAllActionQueue()
+        playerObj:setVariable("forceGetUp", true)
+    else
+        playerObj:setAutoWalk(false)
+        playerObj:reportEvent("EventSitOnGround")
+    end
+end
+
+local function onGameStart()
+    Events.OnKeyPressed.Add(onKeyPress)
+end
+
+Events.OnGameStart.Add(onGameStart)

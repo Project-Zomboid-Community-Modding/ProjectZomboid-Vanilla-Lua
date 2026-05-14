@@ -32,14 +32,10 @@ function ISMoveablesAction:isValid()
     local plSquare = self.character:getSquare();
     if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
         --ensure we can reach the object from here (wall, door, window or fence)
-        if self.square:isSomethingTo(plSquare) then
-            if self.square:isDoorTo(plSquare) and self.square:isDoorBlockedTo(plSquare) then
-                if (not self:isReachableObjectType()) then
-                    self:stop();
-                    return false;
-                end
-            end
-        end;
+        if not self:isAdjacentToAnySquare() then
+            self:stop();
+            return false;
+        end
         --ensures another action has not destroyed the object first
         if (self.mode == "scrap" or self.mode == "repair") and (not self:isValidObject()) then
             self:stop();
@@ -51,9 +47,7 @@ function ISMoveablesAction:isValid()
     end;
     if not ISMoveableDefinitions.cheat and not self.character:isMovablesCheat() then
         --ensure the player hasn't moved too far away while the action was in queue
-        local diffX = math.abs(self.square:getX() + 0.5 - self.character:getX());
-        local diffY = math.abs(self.square:getY() + 0.5 - self.character:getY());
-        if diffX > 1.6 or diffY > 1.6 then
+        if not self:isAdjacentToAnySquare() then
             self:stop();
             return false;
         end;
@@ -77,9 +71,55 @@ function ISMoveablesAction:isValid()
     return true;
 end
 
+function ISMoveablesAction:isAdjacentToAnySquare()
+    local plSquare = self.character:getSquare()
+    if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
+        local moveProps = self.origMoveProps or self.moveProps
+        if moveProps then
+            local left,top = moveProps:getSpriteGridTopLeft(self.square:getX(), self.square:getY())
+            local squares = moveProps:getMultiTileSquares(left, top, self.square:getZ())
+            if squares then
+                for _,square in ipairs(squares) do
+                    if self:isAdjacentToSquare(square) then
+                        return true
+                    end
+                end
+                if self.mode == "rotate" then
+                    local rotatedMoveProps = self.moveProps
+                    squares = rotatedMoveProps:getMultiTileSquares(left, top, self.square:getZ())
+                    if squares then
+                        for _,square in ipairs(squares) do
+                            if self:isAdjacentToSquare(square) then
+                                return true
+                            end
+                        end
+                    end
+                end
+                return false
+            end
+        end
+        return self:isAdjacentToSquare(self.square)
+    end
+    return false
+end
+
+function ISMoveablesAction:isAdjacentToSquare(square)
+    local plSquare = self.character:getSquare()
+    if plSquare == nil then return false end
+    if not plSquare:isAdjacentTo(square) then return false end
+    if square:isSomethingTo(plSquare) and square:isDoorTo(plSquare) and square:isDoorBlockedTo(plSquare) then
+        if not self:isReachableObjectType() then
+            return false
+        end
+    end
+    return true
+end
+
 function ISMoveablesAction:waitToStart()
     if self.mode and self.mode=="scrap" and self.moveProps and self.moveProps.object then
         self.character:faceThisObject(self.moveProps.object)
+    elseif self.mode == "rotate" then
+        self.character:faceThisObject(self.object)
     else
         self.character:faceLocation(self.square:getX(), self.square:getY())
     end
@@ -128,10 +168,6 @@ end
 
 function ISMoveablesAction:start()
     self:setActionSound();
-    if self.sound and self.sound ~= 0 then
-        --self.sound = sound;
-        self.character:stopOrTriggerSound(self.sound);
-    end
     if self.mode and (self.mode=="scrap" or self.mode=="repair") then
         if self.mode == "scrap" then
             local hc = getCore():getBadHighlitedColor();
@@ -153,6 +189,14 @@ function ISMoveablesAction:start()
             self:setOverrideHandModels("Screwdriver", nil);
         end
     end
+    if self.mode=="scrap" then
+        if self.deviceData then
+            local device = self.deviceData;
+            if device:getIsTurnedOn() then
+                device:setIsTurnedOn(false);
+            end
+        end
+    end
     if self.moveCursor then
         self.moveCursor:clearCache()
     end
@@ -162,12 +206,6 @@ function ISMoveablesAction:stop()
     if self.mode and self.mode=="scrap" then
 		self.moveProps.object:setHighlighted(self.playerNum, false);
 		ISInventoryPage.OnObjectHighlighted(self.playerNum, self.moveProps.object, false)
-		if self.deviceData then
-            local device = self.deviceData;
-            if device:getIsTurnedOn() then
-                device:setIsTurnedOn(false);
-            end
-        end
 	end
     if self.sound and self.sound ~= 0 then
         self.character:stopOrTriggerSound(self.sound);
@@ -238,13 +276,13 @@ end
 function ISMoveablesAction:new(character, square, mode, origSpriteName, object, direction, item, moveCursor )
     local o = ISBaseTimedAction.new(self, character)
     o.playerNum = character:getPlayerNum()
-    o.square            = square;
-    o.origSpriteName    = origSpriteName;
-    o.spriteFrame       = 0;
-    o.mode              = mode;
-    o.object            = object;
-    o.direction         = direction;
-    o.item              = item;
+    o.square = square;
+    o.origSpriteName = origSpriteName;
+    o.spriteFrame = 0;
+    o.mode = mode;
+    o.object = object;
+    o.direction = direction;
+    o.item = item;
     if (o.mode == "pickup") or (o.mode == "scrap") then
         o.moveProps = ISMoveableSpriteProps.fromObject( object );
         if o.moveProps.spriteName ~= origSpriteName then
@@ -252,7 +290,7 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
             if o.moveProps.spriteProps ~= nil and (o.moveProps.spriteProps:has("WallNW") or o.moveProps.spriteProps:has("WallN") or o.moveProps.spriteProps:has("WallW")) then
                 local sprList = object:getChildSprites();
                 if sprList then
-                    local list_size 	= sprList:size();
+                    local list_size = sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();
@@ -289,6 +327,7 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
     end
     if o.mode == "rotate" then
         local _moveProps = ISMoveableSpriteProps.new( object:getSprite():getName() );
+        o.origMoveProps = _moveProps
         local faces = _moveProps:getFaces();
         if faces[direction] then
             _moveProps = ISMoveableSpriteProps.new( faces[direction] );
@@ -296,11 +335,11 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
         o.moveProps = _moveProps
     end
 
-    o.moveCursor        = moveCursor;
+    o.moveCursor = moveCursor;
     if isServer() then
-        o.moveCursor        = nil;
+        o.moveCursor = nil;
     end
-    o.maxTime           = o:getDuration()
+    o.maxTime = o:getDuration()
 
     if moveCursor and (mode == "place" or mode == "rotate") and o.moveProps:canRotateDirection() then
         o.cursorFacing = moveCursor.cursorFacing or moveCursor.joypadFacing

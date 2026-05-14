@@ -226,7 +226,7 @@ function ISPrintMediaTextPanel:processCommand(command, x, y, lineImageHeight, li
             w = tonumber(string.trim(vs[2]))
             h = tonumber(string.trim(vs[3]))
         end
-        self.images[self.imageCount] = Joypad.Texture[string.sub(command, 8)]
+        self.images[self.imageCount] = Joypad.Texture.fromCommand(string.sub(command, 8))
         if w == 0 then
             w = self.images[self.imageCount]:getWidth()
             h = self.images[self.imageCount]:getHeight()

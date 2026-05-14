@@ -181,6 +181,8 @@ function ButcheringUtil.butcherAnimalFromGround(carcass, player, keepCorpse)
         player:addBlood(nil, true, false, false);
     end
     syncVisuals(player);
+    syncClothingFields(player);
+    sendHumanVisual(player);
 
     for i=0,bloodGround do
         addBloodSplat(carcass:getSquare(), 2, ZombRandFloat(-0.3, 0.3), ZombRandFloat(-0.3, 0.3))

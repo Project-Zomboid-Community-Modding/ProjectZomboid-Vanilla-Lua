@@ -7,49 +7,111 @@ JoypadState.joypads = {}
 JoypadState.forceActivate = nil;
 
 Joypad = {}
-Joypad.AButton = 0;
-Joypad.BButton = 1;
-Joypad.XButton = 2;
-Joypad.YButton = 3;
-Joypad.LBumper = 4;
-Joypad.RBumper = 5;
-Joypad.Back = 6
-Joypad.Start = 7
-Joypad.LStickButton = 8
-Joypad.RStickButton = 9
-Joypad.Other = 10
-
-Joypad.DPadLeft = 100
-Joypad.DPadRight = 101
-Joypad.DPadUp = 102
-Joypad.DPadDown = 103
+Joypad.AButton = JoypadButton.A
+Joypad.BButton = JoypadButton.B
+Joypad.XButton = JoypadButton.X
+Joypad.YButton = JoypadButton.Y
+Joypad.LBumper = JoypadButton.LeftBump
+Joypad.RBumper = JoypadButton.RightBump
+Joypad.Back = JoypadButton.Back
+Joypad.Start = JoypadButton.Start
+Joypad.LStickButton = JoypadButton.LeftStick
+Joypad.RStickButton = JoypadButton.RightStick
+Joypad.Other = JoypadButton.Guide
+Joypad.DPadLeft = JoypadButton.DPadLeft
+Joypad.DPadRight = JoypadButton.DPadRight
+Joypad.DPadUp = JoypadButton.DPadUp
+Joypad.DPadDown = JoypadButton.DPadDown
 
 local textureType = getCore():getOptionControllerButtonStyle() == 1 and "XBOX" or "PS4"
 
+Joypad.ButtonTextures = {}
+	Joypad.ButtonTextures[JoypadButton.A] = getTexture("media/ui/controller/".. textureType .. "_A.png")
+	Joypad.ButtonTextures[JoypadButton.B] = getTexture("media/ui/controller/".. textureType .. "_B.png")
+	Joypad.ButtonTextures[JoypadButton.X] = getTexture("media/ui/controller/".. textureType .. "_X.png")
+	Joypad.ButtonTextures[JoypadButton.Y] = getTexture("media/ui/controller/".. textureType .. "_Y.png")
+	Joypad.ButtonTextures[JoypadButton.LeftBump] = getTexture("media/ui/controller/".. textureType .. "_LB.png")
+	Joypad.ButtonTextures[JoypadButton.RightBump] = getTexture("media/ui/controller/".. textureType .. "_RB.png")
+	Joypad.ButtonTextures[JoypadButton.Start] = getTexture("media/ui/controller/".. textureType .. "_Menu.png")
+	Joypad.ButtonTextures[JoypadButton.Back] = getTexture("media/ui/controller/".. textureType .. "_View.png")
+	Joypad.ButtonTextures[JoypadButton.LeftStick] = getTexture("media/ui/controller/".. textureType .. "_AnalogueL.png")
+	Joypad.ButtonTextures[JoypadButton.RightStick] = getTexture("media/ui/controller/".. textureType .. "_AnalogueR.png")
+	Joypad.ButtonTextures[JoypadButton.DPadUp] = getTexture("media/ui/controller/".. textureType .. "_DPad_Up.png")
+	Joypad.ButtonTextures[JoypadButton.DPadRight] = getTexture("media/ui/controller/".. textureType .. "_DPad_Right.png")
+	Joypad.ButtonTextures[JoypadButton.DPadDown] = getTexture("media/ui/controller/".. textureType .. "_DPad_Down.png")
+	Joypad.ButtonTextures[JoypadButton.DPadLeft] = getTexture("media/ui/controller/".. textureType .. "_DPad_Left.png")
+	Joypad.ButtonTextures[JoypadButton.Guide] = getTexture("media/ui/inventoryPanes/Tickbox_Cross.png") --placeholder image for Guide button
+
+Joypad.AxisTextures = {}
+	Joypad.AxisTextures[JoypadAxis2d.LeftStick] = getTexture("media/ui/controller/".. textureType .. "_AnalogueL.png")
+	Joypad.AxisTextures[JoypadAxis2d.RightStick] = getTexture("media/ui/controller/".. textureType .. "_AnalogueR.png")
+	Joypad.AxisTextures[JoypadAxis1d.LeftStickX] = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_LR.png")
+	Joypad.AxisTextures[JoypadAxis1d.LeftStickY] = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_UD.png")
+	Joypad.AxisTextures[JoypadAxis1d.RightStickX] = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_LR.png")
+	Joypad.AxisTextures[JoypadAxis1d.RightStickY] = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_UD.png")
+	Joypad.AxisTextures[JoypadAxis1d.LeftTrigger] = getTexture("media/ui/controller/".. textureType .. "_LeftTrigger.png")
+	Joypad.AxisTextures[JoypadAxis1d.RightTrigger] = getTexture("media/ui/controller/".. textureType .. "_RightTrigger.png")
+
 Joypad.Texture = {}
-Joypad.Texture.AButton = getTexture("media/ui/controller/".. textureType .. "_A.png")
-Joypad.Texture.BButton = getTexture("media/ui/controller/".. textureType .. "_B.png")
-Joypad.Texture.XButton = getTexture("media/ui/controller/".. textureType .. "_X.png")
-Joypad.Texture.YButton = getTexture("media/ui/controller/".. textureType .. "_Y.png")
-Joypad.Texture.LBumper = getTexture("media/ui/controller/".. textureType .. "_LB.png")
-Joypad.Texture.RBumper = getTexture("media/ui/controller/".. textureType .. "_RB.png")
-Joypad.Texture.DPadLeft = getTexture("media/ui/controller/".. textureType .. "_DPad_Left.png")
-Joypad.Texture.DPadRight = getTexture("media/ui/controller/".. textureType .. "_DPad_Right.png")
-Joypad.Texture.DPadUp = getTexture("media/ui/controller/".. textureType .. "_DPad_Up.png")
-Joypad.Texture.DPadDown = getTexture("media/ui/controller/".. textureType .. "_DPad_Down.png")
+Joypad.Texture.AButton = Joypad.ButtonTextures[JoypadButton.A]
+Joypad.Texture.BButton = Joypad.ButtonTextures[JoypadButton.B]
+Joypad.Texture.XButton = Joypad.ButtonTextures[JoypadButton.X]
+Joypad.Texture.YButton = Joypad.ButtonTextures[JoypadButton.Y]
+Joypad.Texture.LBumper = Joypad.ButtonTextures[JoypadButton.LeftBump]
+Joypad.Texture.RBumper = Joypad.ButtonTextures[JoypadButton.RightBump]
+Joypad.Texture.Start = Joypad.ButtonTextures[JoypadButton.Start]
+Joypad.Texture.Back = Joypad.ButtonTextures[JoypadButton.Back]
+Joypad.Texture.Menu = Joypad.ButtonTextures[JoypadButton.Start]
+Joypad.Texture.View = Joypad.ButtonTextures[JoypadButton.Back]
+Joypad.Texture.LStick = Joypad.AxisTextures[JoypadAxis2d.LeftStick]
+Joypad.Texture.LStickLR = Joypad.AxisTextures[JoypadAxis1d.LeftStickX]
+Joypad.Texture.LStickUD = Joypad.AxisTextures[JoypadAxis1d.LeftStickY]
+Joypad.Texture.RStick = Joypad.AxisTextures[JoypadAxis2d.RightStick]
+Joypad.Texture.RStickLR = Joypad.AxisTextures[JoypadAxis1d.RightStickX]
+Joypad.Texture.RStickUD = Joypad.AxisTextures[JoypadAxis1d.RightStickY]
 Joypad.Texture.DPad = getTexture("media/ui/controller/".. textureType .. "_DPad.png")
-Joypad.Texture.LStick = getTexture("media/ui/controller/".. textureType .. "_AnalogueL.png")
-Joypad.Texture.LStickUD = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_UD.png")
-Joypad.Texture.LStickLR = getTexture("media/ui/controller/".. textureType .. "_AnalogueL_LR.png")
-Joypad.Texture.RStick = getTexture("media/ui/controller/".. textureType .. "_AnalogueR.png")
-Joypad.Texture.RStickUD = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_UD.png")
-Joypad.Texture.RStickLR = getTexture("media/ui/controller/".. textureType .. "_AnalogueR_LR.png")
-Joypad.Texture.LTrigger = getTexture("media/ui/controller/".. textureType .. "_LeftTrigger.png")
-Joypad.Texture.RTrigger = getTexture("media/ui/controller/".. textureType .. "_RightTrigger.png")
-Joypad.Texture.Menu = getTexture("media/ui/controller/".. textureType .. "_Menu.png")
-Joypad.Texture.View = getTexture("media/ui/controller/".. textureType .. "_View.png")
-Joypad.Texture.Back = Joypad.Texture.View
-Joypad.Texture.Start = Joypad.Texture.Menu
+Joypad.Texture.DPadUp = Joypad.ButtonTextures[JoypadButton.DPadUp]
+Joypad.Texture.DPadRight = Joypad.ButtonTextures[JoypadButton.DPadRight]
+Joypad.Texture.DPadDown = Joypad.ButtonTextures[JoypadButton.DPadDown]
+Joypad.Texture.DPadLeft = Joypad.ButtonTextures[JoypadButton.DPadLeft]
+Joypad.Texture.LTrigger = Joypad.AxisTextures[JoypadAxis1d.LeftTrigger]
+Joypad.Texture.RTrigger = Joypad.AxisTextures[JoypadAxis1d.RightTrigger]
+
+Joypad.Texture.fromCommand = function(command)
+    local buttonBinding = CharacterJoypadButtonBinding.fromString(command)
+    if (buttonBinding) then
+        local button = buttonBinding:getJoypadButton()
+        if (button ~= nil) then
+            return Joypad.ButtonTextures[button]
+        end
+
+        local axis1d = buttonBinding:getJoypadAxis1d()
+        if (axis1d ~= nil) then
+            return Joypad.AxisTextures[axis1d]
+        end
+
+        local axis2d = buttonBinding:getJoypadAxis2d()
+        if (axis2d ~= nil) then
+            return Joypad.AxisTextures[axis2d]
+        end
+    end
+
+    local axisBinding = CharacterJoypadAxis2dBinding.fromString(command)
+    if (axisBinding) then
+        local axis = axisBinding:getJoypadAxis()
+        if (axis ~= nil) then
+            return Joypad.AxisTextures[axis]
+        end
+    end
+
+    local hardButton = Joypad.Texture[command]
+    if (hardButton ~= nil) then
+        return hardButton
+    end
+
+    DebugType.Lua:warn("Could not find binding for command: " .. command)
+    DebugType.Lua:printStackTrace(LogSeverity.Warning, -1, nil)
+end
 
 joypad = {}
 joypad.wantNoise = getDebug()
@@ -89,7 +151,7 @@ function JoypadControllerData:new(id)
     o.pressed = {}
     o.wasPressed = {}
     for n = 1,getButtonCount(id) do
-        o.pressed[n-1] = isJoypadPressed(id, n-1)
+        o.pressed[n-1] = JoypadButton.isButtonDown(id, n-1)
     end
     o.connected = isJoypadConnected(id)
     o.joypad = nil
@@ -555,14 +617,12 @@ function updateJoypadFocus(joypadData)
             end
 
             local buts = getButtonPrompts(joypadData.player);
-
             if buts ~= nil then
-                buts:getBestAButtonAction(nil);
-                buts:getBestBButtonAction(nil);
-                buts:getBestYButtonAction(nil);
-                buts:getBestXButtonAction(nil);
-                buts:getBestLBButtonAction(nil);
-                buts:getBestRBButtonAction(nil);
+                buts:clearButtonBindings()
+                local buttonBindings = CharacterJoypadButtonBinding.allBindings()
+                for _,buttonBinding in ipairs(buttonBindings) do
+                     buts:getBestButtonBindingAction(buttonBinding, nil)
+                end
             end
         end
     else
@@ -748,20 +808,6 @@ function JoypadControllerData:onReleaseRight()
     end
 end
 
-local function translateButton(joypad, button)
-    if button == getJoypadAButton(joypad) then return Joypad.AButton end
-    if button == getJoypadBButton(joypad) then return Joypad.BButton end
-    if button == getJoypadXButton(joypad) then return Joypad.XButton end
-    if button == getJoypadYButton(joypad) then return Joypad.YButton end
-    if button == getJoypadLBumper(joypad) then return Joypad.LBumper end
-    if button == getJoypadRBumper(joypad) then return Joypad.RBumper end
-    if button == getJoypadBackButton(joypad) then return Joypad.Back end
-    if button == getJoypadStartButton(joypad) then return Joypad.Start end
-    if button == getJoypadLeftStickButton(joypad) then return Joypad.LStickButton end
-    if button == getJoypadRightStickButton(joypad) then return Joypad.RStickButton end
-    return Joypad.Other
-end
-
 function JoypadControllerData:update(time)
     if not self.connected then
         return
@@ -881,17 +927,17 @@ function JoypadControllerData:update(time)
     for n = 0,getButtonCount(i)-1 do
         if v.pressed[n] == nil then v.pressed[n] = true; end
         v.wasPressed[n] = v.pressed[n];
-        v.pressed[n] = isJoypadPressed(i, n);
+        v.pressed[n] = JoypadButton.isButtonDown(i, n);
         if v.pressed[n] and not v.wasPressed[n] then
-            local button = translateButton(v.id, n)
+            local button = JoypadButton.fromIndex(n)
             v.pressedTime[n] = time
             v:onPressButton(button)
         elseif v.wasPressed[n] and not v.pressed[n] then
-            local button = translateButton(v.id, n)
+            local button = JoypadButton.fromIndex(n)
             v:onReleaseButton(button)
             v.pressedTime[n] = 0
         elseif v.pressed[n] then
-            local button = translateButton(v.id, n)
+            local button = JoypadButton.fromIndex(n)
             v:onHoldButton(button, time - (v.pressedTime[n] or time))
         end
     end

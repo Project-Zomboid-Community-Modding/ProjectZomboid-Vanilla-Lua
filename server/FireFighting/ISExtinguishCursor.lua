@@ -83,10 +83,13 @@ function ISExtinguishCursor:render(x, y, z, square)
 	if self:isRunningAction() then return end
 	x,y,z = self:getTopLeftOfSquares(x, y, z)
 	local bValid = self:isValidArea(x, y, z)
+	local radius = 1
+	local segments = 18
+	local thickness = 1
 	if bValid then
-		renderIsoCircle(x + 1, y + 1, z, 1, getCore():getGoodHighlitedColor():getR(),getCore():getGoodHighlitedColor():getG(),getCore():getGoodHighlitedColor():getB(), 0.5, 1)
+		renderIsoCircle(x + 1, y + 1, z, radius, segments, thickness, getCore():getGoodHighlitedColor():getR(),getCore():getGoodHighlitedColor():getG(),getCore():getGoodHighlitedColor():getB(), 0.5)
 	else
-		renderIsoCircle(x + 1, y + 1, z, 1, getCore():getBadHighlitedColor():getR(),getCore():getBadHighlitedColor():getG(),getCore():getBadHighlitedColor():getB(), 0.5, 1)
+		renderIsoCircle(x + 1, y + 1, z, radius, segments, thickness, getCore():getBadHighlitedColor():getR(),getCore():getBadHighlitedColor():getG(),getCore():getBadHighlitedColor():getB(), 0.5)
 	end
 	--[[
 	if not self.floorSprite then
@@ -122,13 +125,14 @@ function ISExtinguishCursor:render(x, y, z, square)
 	if #squares == 0 then return end
 	local closestSq = self:getClosestSquare(squares)
 	local playerSq = self.character:getCurrentSquare()
+	radius = 0.5
 	if playerSq == closestSq then
-		renderIsoCircle(playerSq:getX() + 0.5, playerSq:getY() + 0.5, playerSq:getZ(), 0.5, 1, 1, 1, 0.8, 1)
+		renderIsoCircle(playerSq:getX() + 0.5, playerSq:getY() + 0.5, playerSq:getZ(), radius, segments, thickness, 1, 1, 1, 0.8)
 --		self.floorSprite:RenderGhostTileColor(playerSq:getX(), playerSq:getY(), playerSq:getZ(), 1, 1, 1, 0.8)
 	else
 		local adjacent = AdjacentFreeTileFinder.Find(closestSq, self.character)
 		if adjacent then
-			renderIsoCircle(adjacent:getX() + 0.5, adjacent:getY() + 0.5, adjacent:getZ(), 0.5, 1, 1, 1, 0.8, 1)
+			renderIsoCircle(adjacent:getX() + 0.5, adjacent:getY() + 0.5, adjacent:getZ(), radius, segments, thickness, 1, 1, 1, 0.8)
 --			self.floorSprite:RenderGhostTileColor(adjacent:getX(), adjacent:getY(), adjacent:getZ(), 1, 1, 1, 0.8)
 		end
 	end

@@ -30,8 +30,8 @@ function ISSLEvent:setEvent(_event)
         local eventSounds = self.storyEvent:getEventSounds();
         if eventSounds~=nil and eventSounds:size()>0 then
             for i=0, eventSounds:size()-1 do
-                local eSound 		= eventSounds:get(i);
-                local dataPoints    = eSound:getDataPoints();
+                local eSound = eventSounds:get(i);
+                local dataPoints = eSound:getDataPoints();
 
                 self:addEventSoundItem(eSound);
 

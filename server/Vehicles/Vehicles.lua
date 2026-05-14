@@ -227,7 +227,7 @@ function Vehicles.Create.GasTank(vehicle, part)
 		return;
 	end
 	-- First, we check if there will be gas in there
-	local initialChance = 70;
+	local initialChance = 45;
 	if SandboxVars.ChanceHasGas == 1 then
 		initialChance = 20;
 	end
@@ -411,8 +411,8 @@ end
 function Vehicles.Create.Seat_Racecar(vehicle, part)
 	local seat = part:getContainerSeatNumber()
 	local areaId = vehicle:getPassengerArea(seat)
-	DebugLog.log("areaId 1")
-	DebugLog.log(tostring(areadId))
+	DebugType.General:debugln("areaId 1")
+	DebugType.General:debugln(tostring(areadId))
 	if areaId == "SeatFrontLeft" then
         local item = VehicleUtils.createPartInventoryItem(part)
     end
@@ -1524,9 +1524,9 @@ function VehicleUtils.initHeadlight(vehicle, part)
 		distance = 3;
 		intensity = 0.2;
 		if part:getId() == "HeadlightRearLeft" then
-			part:createSpotLightColor(xOffset, -yOffset, distance, intensity, dot, focusing, 1.0f, 0.2f, 0.2f)
+			part:createSpotLightColor(xOffset, -yOffset, distance, intensity, dot, focusing, 1.0, 0.2, 0.2)
 		elseif part:getId() == "HeadlightRearRight" then
-			part:createSpotLightColor(-xOffset, -yOffset, distance, intensity, dot, focusing, 1.0f, 0.2f, 0.2f)
+			part:createSpotLightColor(-xOffset, -yOffset, distance, intensity, dot, focusing, 1.0, 0.2, 0.2)
 		end
 	end
 end

@@ -3,21 +3,21 @@ require "BuildingObjects/ISBuildingObject"
 ISPaintCursor = ISBuildingObject:derive("ISPaintCursor");
 
 local PaintColor = {
-	PaintBlack 		= {r=0.20,g=0.20,b=0.20};
-	PaintBlue  		= {r=0.35,g=0.35,b=0.80};
-	PaintBrown 		= {r=0.45,g=0.23,b=0.11};
-	PaintCyan  		= {r=0.50,g=0.80,b=0.80};
-	PaintGreen 		= {r=0.41,g=0.80,b=0.41};
-	PaintGrey  		= {r=0.50,g=0.50,b=0.50};
-	PaintLightBlue  = {r=0.55,g=0.55,b=0.87};
+	PaintBlack = {r=0.20,g=0.20,b=0.20};
+	PaintBlue = {r=0.35,g=0.35,b=0.80};
+	PaintBrown = {r=0.45,g=0.23,b=0.11};
+	PaintCyan = {r=0.50,g=0.80,b=0.80};
+	PaintGreen = {r=0.41,g=0.80,b=0.41};
+	PaintGrey = {r=0.50,g=0.50,b=0.50};
+	PaintLightBlue = {r=0.55,g=0.55,b=0.87};
 	PaintLightBrown = {r=0.59,g=0.44,b=0.21};
-	PaintOrange		= {r=0.79,g=0.44,b=0.19};
-	PaintPink  		= {r=0.81,g=0.60,b=0.60};
-	PaintPurple		= {r=0.61,g=0.40,b=0.63};
-	PaintRed   		= {r=0.63,g=0.10,b=0.10};
-	PaintTurquoise  = {r=0.49,g=0.70,b=0.80};
-	PaintWhite 		= {r=0.92,g=0.92,b=0.92};
-	PaintYellow 	= {r=0.84,g=0.78,b=0.30};
+	PaintOrange = {r=0.79,g=0.44,b=0.19};
+	PaintPink = {r=0.81,g=0.60,b=0.60};
+	PaintPurple = {r=0.61,g=0.40,b=0.63};
+	PaintRed = {r=0.63,g=0.10,b=0.10};
+	PaintTurquoise = {r=0.49,g=0.70,b=0.80};
+	PaintWhite = {r=0.92,g=0.92,b=0.92};
+	PaintYellow = {r=0.84,g=0.78,b=0.30};
 }
 
 function ISPaintCursor:create(x, y, z, north, sprite)

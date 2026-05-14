@@ -220,7 +220,7 @@ function CoopOptionsScreen:create()
 
     self.statusTextY = UI_BORDER_SPACING + 1 + FONT_HGT_LARGE + 30
 
-    self.serverProgressBar = ISProgressBar:new (20, self.statusTextY+FONT_HGT_LARGE+10, self.width-40, 25, "", UIFont.Small);
+    self.serverProgressBar = ISProgressBar:new (20, self.statusTextY+FONT_HGT_LARGE+10, self.width - UI_BORDER_SPACING * 4, 25, "", UIFont.Small);
     self.serverProgressBar.progressColor = namedColorToTable("ProgressYellow");
     self.serverProgressBar.progressTexture = self.horzTexture;
     self.serverProgressBar.forceIt = true;
@@ -523,6 +523,7 @@ function CoopOptionsScreen:onStartButtonDown(button, x, y)
         end
         CoopServer:launch(CoopConnection.servername, CoopConnection.username, CoopConnection.memory);
     end
+    self.serverProgressBar:setWidth(self.width - UI_BORDER_SPACING * 4);
     self.serverProgressBar:setVisible(true);
     self.serverProgressBar:setProgress(0);
     self.nextProgress = 0;

@@ -581,6 +581,63 @@ function SandboxOptionsScreen:doSearch()
     end
 end
 
+local function isDebugSetting(setting)
+    return setting and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier")
+end
+
+local function shouldShowSetting(setting)
+    return getDebug() or not isDebugSetting(setting)
+end
+
+function SandboxOptionsScreen:createControlForSetting(setting, tooltip)
+    local control
+    if setting.type == "checkbox" then
+        control = ISTickBox:new(0, 0, ENTRY_HGT, ENTRY_HGT, "", self, self.onTickBoxSelected, setting.name)
+        control:addOption("")
+        control.selected[1] = setting.default
+        if setting.tooltip then
+            control.tooltip = tooltip
+        end
+    elseif setting.type == "entry" or setting.type == "string" then
+        if setting.advancedCombo then
+            control = SandboxAdvancedControl:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, setting, tooltip)
+            control:initialise()
+            control:instantiate()
+        else
+            control = ISTextEntryBox:new(setting.text, 0, 0, CONTROL_WIDTH, ENTRY_HGT)
+            control.font = UIFont.Medium
+            control.tooltip = tooltip
+            control:initialise()
+            control:instantiate()
+            control:setOnlyNumbers(setting.onlyNumbers or false)
+        end
+    elseif setting.type == "enum" then
+        control = ISComboBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, self, self.onComboBoxSelected, setting.name)
+        if tooltip then
+            control.tooltip = { defaultTooltip = tooltip }
+        end
+        control:initialise()
+        for index,value in ipairs(setting.values) do
+            control:addOption(value)
+            if index == setting.default then
+                control.selected = index
+            end
+        end
+    elseif setting.type == "spinbox" then
+        control = ISSpinBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, nil, nil)
+        control:initialise()
+        control:instantiate()
+        if setting.name == "StartYear" then
+            local firstYear = getSandboxOptions():getFirstYear()
+            for i=1,100 do
+                control:addOption(tostring(firstYear + i - 1))
+            end
+        elseif setting.name == "StartDay" then
+        end
+    end
+    return control
+end
+
 function SandboxOptionsScreen:createPanel(page)
     local panel = SandboxOptionsScreenPanel:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox:getY(), self.width - self.listbox:getRight() - UI_BORDER_SPACING*2-1, self.listbox:getHeight())
     panel._instance = self
@@ -600,79 +657,33 @@ function SandboxOptionsScreen:createPanel(page)
     local controls = {}
     local titles = {}
     for _,setting in ipairs(page.settings) do
-        local settingName = setting.translatedName
-        local tooltip = setting.tooltip
-        if tooltip then
-            tooltip = tooltip:gsub("\\n", "\n")
-            tooltip = tooltip:gsub("\\\"", "\"")
-        end
-        local label
-        local control
-        if setting.type == "checkbox" then
-            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISTickBox:new(0, 0, ENTRY_HGT, ENTRY_HGT, "", self, self.onTickBoxSelected, setting.name)
-            control:addOption("")
-            control.selected[1] = setting.default
-            if setting.tooltip then
-                control.tooltip = tooltip
+        if shouldShowSetting(setting) then
+            local settingName = setting.translatedName
+            local tooltip = setting.tooltip
+            if tooltip then
+                tooltip = tooltip:gsub("\\n", "\n")
+                tooltip = tooltip:gsub("\\\"", "\"")
             end
-        elseif setting.type == "entry" or setting.type == "string" then
-            if getDebug() and (setting.name == "WaterShutModifier" or setting.name == "ElecShutModifier") then
+            if getDebug() and isDebugSetting(setting) then
                 settingName = "*DEBUG* " .. setting.name
             end
-            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
-            if setting.advancedCombo then
-                control = SandboxAdvancedControl:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, setting, tooltip)
-                control:initialise()
-                control:instantiate()
-            else
-                control = ISTextEntryBox:new(setting.text, 0, 0, CONTROL_WIDTH, ENTRY_HGT)
-                control.font = UIFont.Medium
-                control.tooltip = tooltip
-                control:initialise()
-                control:instantiate()
-                control:setOnlyNumbers(setting.onlyNumbers or false)
-            end
-        elseif setting.type == "enum" then
-            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISComboBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, self, self.onComboBoxSelected, setting.name)
-            if tooltip then
-                control.tooltip = { defaultTooltip = tooltip }
-            end
-            control:initialise()
-            for index,value in ipairs(setting.values) do
-                control:addOption(value)
-                if index == setting.default then
-                    control.selected = index
-                end
-            end
-        elseif setting.type == "spinbox" then
-            label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
-            control = ISSpinBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, nil, nil)
-            control:initialise()
-            control:instantiate()
-            if setting.name == "StartYear" then
-                local firstYear = getSandboxOptions():getFirstYear()
-                for i=1,100 do
-                    control:addOption(tostring(firstYear + i - 1))
-                end
-            elseif setting.name == "StartDay" then
-            end
-        end
-        if label and control then
-            label.tooltip = tooltip
-            table.insert(labels, label)
-            table.insert(controls, control)
-            self.controls[setting.name] = control
-            table.insert(panel.settingNames, setting.name)
-            panel.labels[setting.name] = label
-            panel.controls[setting.name] = control
+            local label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
+            local control = self:createControlForSetting(setting, tooltip)
+            if label and control then
+                label.tooltip = tooltip
+                table.insert(labels, label)
+                table.insert(controls, control)
+                self.controls[setting.name] = control
+                table.insert(panel.settingNames, setting.name)
+                panel.labels[setting.name] = label
+                panel.controls[setting.name] = control
 
-            if setting.title then
-                titles[#labels] = { title = getText("Sandbox_Title_" .. setting.title) }
+                if setting.title then
+                    titles[#labels] = { title = getText("Sandbox_Title_" .. setting.title) }
+                end
+            else
+                error "no label or control"
             end
-        else
-            error "no label or control"
         end
     end
 

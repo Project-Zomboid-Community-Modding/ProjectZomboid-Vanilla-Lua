@@ -30,6 +30,7 @@ function SourceWindow:reloadFile()
     local y = self.sourceView:getYScroll();
     self:fill();
     self.sourceView:setYScroll(y);
+    self:fillFunctionCombo()
     return true;
 end
 
@@ -62,7 +63,23 @@ function SourceWindow:createChildren()
 
     ISCollapsableWindow.createChildren(self);
 
-    self.sourceView = ISScrollingListBox:new(0, self:titleBarHeight(), self.width, self.height - self:resizeWidgetHeight() - bottomHgt - self:titleBarHeight());
+    local ENTRY_HGT = FONT_HGT_SMALL + 3 * 2
+    self.topPanel = ISPanel:new(0, self:titleBarHeight(), self.width, ENTRY_HGT)
+    self.topPanel:noBackground()
+    self.topPanel.anchorRight = true
+    self:addChild(self.topPanel)
+
+    local comboWidth = math.min(450, math.max(self.width - 40, 100))
+    self.functionCombo = ISComboBox:new(self.width / 2 - comboWidth / 2, 0, comboWidth, self.topPanel.height, self, SourceWindow.onFunctionCombo)
+    self.functionCombo:setAnchorLeft(true)
+    self.functionCombo:setAnchorRight(false)
+    self.functionCombo:setEditable(true)
+    self.functionCombo.doRepaintStencil = true
+    self.topPanel:addChild(self.functionCombo)
+    self:fillFunctionCombo()
+
+    local y = self.topPanel:getBottom()
+    self.sourceView = ISScrollingListBox:new(0, y, self.width, self.height - self:resizeWidgetHeight() - bottomHgt - y);
     self.sourceView:setFont(getTextManager():getCurrentCodeFont(), 0)
     self.sourceView.filename = self.filename;
     self.sourceView.anchorRight = true;
@@ -211,6 +228,28 @@ function SourceWindow:setListBoxItemHeight(listBox)
     end
 end
 
+function SourceWindow:fillFunctionCombo()
+    self.functionCombo:clear()
+    local functionTable = getFunctionsForFile(self.filename)
+    if functionTable then
+        for _,v in ipairs(functionTable) do
+            self.functionCombo:addOptionWithData(v[1], v[2])
+        end
+    end
+end
+
+function SourceWindow:onFunctionCombo(combo)
+    local lineNumber = combo:getOptionData(combo.selected)
+    self:scrollToLine(lineNumber)
+end
+
+function SourceWindow:onResize()
+    ISCollapsableWindow.onResize(self)
+    local comboWidth = math.min(450, math.max(self.width - 40, 100))
+    self.functionCombo:setWidth(comboWidth)
+    self.functionCombo:setX(self.width / 2 - comboWidth / 2)
+end
+
 function SourceWindow:new (x, y, width, height, filename)
     log(DebugType.Lua, "sourcewindow: file:///"..filename);
 
@@ -222,10 +261,10 @@ function SourceWindow:new (x, y, width, height, filename)
     width = (700*del);
     height = getCore():getScreenHeight() - (getCore():getScreenHeight()/3) -48
     --o.data = {}
-    o = ISCollapsableWindow:new(x, y, width, height);
-    setmetatable(o, self)
-    self.__index = self
+    o = ISCollapsableWindow.new(self, x, y, width, height);
     o.backgroundColor = {r=0, g=0, b=0, a=1.0};
+    o.minimumWidth = 300
+    o.minimumHeight = 200
     o.filename = filename;
     o.keepOnScreen = false
     return o

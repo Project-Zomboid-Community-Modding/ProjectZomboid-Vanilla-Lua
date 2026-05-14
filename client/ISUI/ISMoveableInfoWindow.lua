@@ -222,6 +222,7 @@ end
 
 function ISMoveableInfoWindow:setHeaderText( _header, _font )
     if self.header and _header then
+        self.header:Clear();
         self.header:ReadString(_font or UIFont.Medium, _header, -1);
         self:calculateDimensions();
     end
@@ -282,6 +283,7 @@ function ISMoveableInfoWindow:setBodyTextOLD( _body, _font, _align )
             self.infoBody:setHorizontalAlign( "left" );
             self.customBodyAlign = nil;
         end
+        self.infoBody:Clear();
         self.infoBody:ReadString(_font or UIFont.Medium, _body, -1);
         self:calculateDimensions();
     end
@@ -289,6 +291,7 @@ end
 
 function ISMoveableInfoWindow:setFooterText( _footer, _font )
     if self.footer and _footer then
+        self.footer:Clear();
         self.footer:ReadString(_font or UIFont.Medium, _footer, -1);
         self:calculateDimensions();
     end
@@ -312,7 +315,7 @@ function ISMoveableInfoWindow:setTexture( _textureName, _allow, _square, _yoffse
 
                 local sprList = obj:getChildSprites();
                 if sprList and (not instanceof(obj,"IsoBarbecue")) then
-                    local list_size 	= sprList:size();
+                    local list_size = sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();

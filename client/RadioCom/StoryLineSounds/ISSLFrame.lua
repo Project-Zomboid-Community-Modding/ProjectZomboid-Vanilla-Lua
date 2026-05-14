@@ -105,7 +105,7 @@ function ISSLFrame:drawLinePoints()
     for k,v in ipairs(self.eventData) do
         if v.dataPoints and v.eventSound then
             for i=0, v.dataPoints:size()-1 do
-                local dataPoint     = v.dataPoints:get(i);
+                local dataPoint = v.dataPoints:get(i);
                 local x,y = self:dataToGrid(dataPoint:getTime(),dataPoint:getIntensity());
 
                 local i1,o1,i2,o2 = 1,3,2,5;
@@ -131,8 +131,8 @@ function ISSLFrame:drawGridData( _x, _y, _t )
             local c = v.eventSound:getColor();
 
             for i=0, v.dataPoints:size()-1 do
-                local dataPoint     = v.dataPoints:get(i);
-                local next 		    = i+1<v.dataPoints:size() and v.dataPoints:get(i+1) or nil;
+                local dataPoint = v.dataPoints:get(i);
+                local next = i+1<v.dataPoints:size() and v.dataPoints:get(i+1) or nil;
 
                 if dataPoint and next then
                     if _t>=dataPoint:getTime() and _t<next:getTime() then
@@ -154,8 +154,8 @@ function ISSLFrame:drawGridDataold( _x, _y, _t )
             local c = v.eventSound:getColor();
             for i=0, v.dataPoints:size()-1 do
                 if i+1<v.dataPoints:size()-1 then
-                    local dataPoint     = v.dataPoints:get(i);
-                    local next 		    = v.dataPoints:get(i+1);
+                    local dataPoint = v.dataPoints:get(i);
+                    local next = v.dataPoints:get(i+1);
 
                     if dataPoint:getTime()>=_t then
                         local t = (_t-dataPoint:getTime())/(next:getTime()-dataPoint:getTime());
@@ -212,8 +212,8 @@ function ISSLFrame:setStoryEvent( _event )
         local eventSounds = self.storyEvent:getEventSounds();
         if eventSounds~=nil and eventSounds:size()>0 then
             for i=0, eventSounds:size()-1 do
-                local eSound 		= eventSounds:get(i);
-                local dataPoints    = eSound:getDataPoints();
+                local eSound = eventSounds:get(i);
+                local dataPoints = eSound:getDataPoints();
 
                 table.insert(self.eventData, {eventSound=eSound, dataPoints= dataPoints});
 

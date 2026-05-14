@@ -98,7 +98,7 @@ function luautils.walk(playerObj, square, keepActions)
 end
 
 function luautils.walkAdj(playerObj, square, keepActions, excludeList)
-	if not keepActions then
+	if not keepActions and not isServer() then
 		ISTimedActionQueue.clear(playerObj);
 	end
 
@@ -106,7 +106,7 @@ function luautils.walkAdj(playerObj, square, keepActions, excludeList)
 	local onExcludedTile = false;
 	if excludeList then
 		for i, test in ipairs(excludeList) do
-			if playerObj:getX() == test:getX() and playerObj:getY() == test:getY() and playerObj:getZ() == test:getZ() then
+			if playerObj:getCurrentSquare() == test then
 				onExcludedTile = true;
 			end
 		end
@@ -349,6 +349,66 @@ function luautils.walkAdjObject(playerObj, object, allowDiagonal, keepActions)
         return true
     end
     local action = ISPathFindAction:pathAdjacentToMultiTileObject(playerObj, object, allowDiagonal)
+    if not action then
+        return false
+    end
+    ISTimedActionQueue.add(action)
+    return true
+end
+
+local function isAdjacentToSquare(playerObj, squares, excluded)
+    for _,square1 in ipairs(squares) do
+        local square = luautils.getCorrectSquareForWall(playerObj, square1)
+        if square == square1 or (not luautils.tableContains(squares, square) and not luautils.tableContains(excluded, square)) then
+            local diffX = math.abs(square:getX() + 0.5 - playerObj:getX())
+            local diffY = math.abs(square:getY() + 0.5 - playerObj:getY())
+            if diffX <= 1.6 and diffY <= 1.6 and playerObj:getCurrentSquare():canReachTo(square) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function luautils.walkAdjSquares(playerObj, squares, allowDiagonal, keepActions)
+    if not squares or #squares == 0 or not playerObj:getCurrentSquare() then
+        return false
+    end
+    if not keepActions then
+        ISTimedActionQueue.clear(playerObj)
+    end
+    if not luautils.tableContains(squares, playerObj:getCurrentSquare()) then
+        if isAdjacentToSquare(playerObj, squares, {}) then
+            return true
+        end
+    end
+    local action = ISPathFindAction:pathAdjacentToSquares(playerObj, squares, allowDiagonal)
+    if not action then
+        return false
+    end
+    ISTimedActionQueue.add(action)
+    return true
+end
+
+-- squares: table of squares, one of which the player should walk adjacent to
+-- squaresExcluded: table of squares the player must not stand on
+function luautils.walkAdjSquaresExcluded(playerObj, squares, squaresExcluded, allowDiagonal, keepActions)
+    if not squares or #squares == 0 or not squaresExcluded or not playerObj:getCurrentSquare() then
+        return false
+    end
+    if not keepActions then
+        ISTimedActionQueue.clear(playerObj)
+    end
+    if not luautils.tableContains(squares, playerObj:getCurrentSquare()) and not luautils.tableContains(squaresExcluded, playerObj:getCurrentSquare()) then
+        if isAdjacentToSquare(playerObj, squares, squaresExcluded) then
+            return true
+        end
+    end
+    local predicate = function(_args, _square)
+        return luautils.tableContains(_args.squares, _square) or luautils.tableContains(_args.squaresExcluded, _square)
+    end
+    local predicateArg = { squares = squares, squaresExcluded = squaresExcluded }
+    local action = ISPathFindAction:pathAdjacentToSquaresPredicate(playerObj, squares, allowDiagonal, predicate, predicateArg)
     if not action then
         return false
     end

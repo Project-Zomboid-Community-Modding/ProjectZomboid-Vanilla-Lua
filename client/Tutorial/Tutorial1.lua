@@ -115,7 +115,7 @@ Tutorial1.createWorldContextMenuFromContext = function(context, worldobjects)
     local bottle = (chr:getInventory():FindAndReturn("EmptyJar"));
     for i,v in ipairs(items) do
         if Tutorial1.contextMenuFillBottle and v:hasWater() and bottle then
-            context:addOption(getText("ContextMenu_Fill") .. bottle:getName(), worldobjects, ISWorldObjectContextMenu.onTakeWater, v, nil, bottle, chr:getPlayerNum());
+            context:addOption(getText("ContextMenu_Fill") .. " " .. bottle:getName(), worldobjects, ISWorldObjectContextMenu.onTakeWater, v, nil, bottle, chr:getPlayerNum());
             break;
         end
         if Tutorial1.contextMenuOpenCurtain and instanceof(v, "IsoCurtain") or (instanceof(v, "IsoWindow") and v:HasCurtains())then
@@ -307,16 +307,16 @@ Tutorial1.Init = function()
     Tutorial1.steps:add(ShotgunStep:new());
 
     Tutorial1.steps:get(0):begin();
-    
-    SurvivalGuideManager.blockSurvivalGuide = true;
+
+    SurvivalGuide.blockSurvivalGuide = true;
     getPlayer():setCanShout(false);
     getPlayer():setAllowSprint(false);
     getCore():setCollideZombies(false);
     
     ISReloadWeaponAction.disableReloading = true;
     
-    if SurvivalGuideManager.instance then
-        SurvivalGuideManager.instance.panel:setVisible(false);
+    if SurvivalGuide.instance then
+        SurvivalGuide.instance:setVisible(false);
     end
 
     Events.OnTick.Add(Tutorial1.Tick)

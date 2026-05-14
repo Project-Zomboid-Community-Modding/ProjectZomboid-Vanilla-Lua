@@ -41,6 +41,12 @@ function ISApplyBandage:update()
     self.character:setMetabolicTarget(Metabolics.LightDomestic);
 end
 
+function ISApplyBandage:serverStart()
+    if self.bodyPart:manipulatingUsername() == nil or self.bodyPart:manipulatingUsername() == "" then
+        self.bodyPart:setManipulatingUsername(self.character:getUsername());
+    end
+end
+
 function ISApplyBandage:start()
 
     if isClient() and self.item then
@@ -74,6 +80,11 @@ function ISApplyBandage:stop()
     if self.item then
         self.item:setJobDelta(0.0);
     end
+    self.bodyPart:setManipulatingUsername(nil);
+end
+
+function ISApplyBandage:serverStop()
+    self.bodyPart:setManipulatingUsername(nil);
 end
 
 function ISApplyBandage:perform()
@@ -88,6 +99,9 @@ function ISApplyBandage:perform()
 end
 
 function ISApplyBandage:complete()
+    if isServer() and self.bodyPart:manipulatingUsername() ~= "" and self.bodyPart:manipulatingUsername() ~= self.character:getUsername() then
+        return false;
+    end
     if self.character:hasTrait(CharacterTrait.HEMOPHOBIC) and self.bodyPart:getBleedingTime() > 0 then
         self.character:getStats():add(CharacterStat.PANIC, 50);
         --Stat_Panic
@@ -126,6 +140,7 @@ function ISApplyBandage:complete()
         end
         self.otherPlayer:getBodyDamage():SetBandaged(self.bodyPart:getIndex(), false, 0, false, nil);
     end
+    self.bodyPart:setManipulatingUsername(nil);
 
     -- This number is syncParam, flags are:
     -- BD_Bandaged + BD_bleeding + BD_IsInfected + BD_bitten + BD_cut + BD_alcoholicBandage + BD_stitched + BD_deepWounded
@@ -138,6 +153,9 @@ end
 function ISApplyBandage:getDuration()
     if self.character:isTimedActionInstant() then
         return 1;
+    end
+    if self.bodyPart:manipulatingUsername() ~= nil and self.bodyPart:manipulatingUsername() ~= self.character:getUsername() then --and self.bodyPart:manipulatingUsername() ~= nil
+        return 0;
     end
 
     return 120 - (self.doctorLevel * 4);

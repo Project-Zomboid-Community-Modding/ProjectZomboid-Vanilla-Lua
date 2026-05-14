@@ -562,11 +562,7 @@ end
 
 -- used to ensure heavy bags goto ground not inventory when equipping from hotbar
 local dropItemNow = function(character, item)
-	character:getInventory():Remove(item)
-	local dropX,dropY,dropZ = ISTransferAction.GetDropItemOffset(character, character:getCurrentSquare(), item)
-	character:getCurrentSquare():AddWorldInventoryItem(item, dropX, dropY, dropZ)
-	character:removeFromHands(item)
-	ISInventoryPage.renderDirty = true
+	ISInventoryPaneContextMenu.dropItem(item, character:getPlayerNum())
 end
 
 -- used to ensure heavy bags goto ground not inventory when equipping from hotbar
@@ -595,7 +591,7 @@ function ISHotbar:equipItem(item)
 		local both_hands = item:isTwoHandWeapon()
 		-- Drop corpse or generator
 		if isForceDropHeavyItem(primary) then
-			ISTimedActionQueue.add(ISUnequipAction:new(self.chr, primary, 50));
+			ISInventoryPaneContextMenu.dropItem(primary, self.chr:getIndex());
 		else
 			if primary and self:isInHotbar(primary) then
 				ISTimedActionQueue.add(ISUnequipAction:new(self.chr, primary, 20));

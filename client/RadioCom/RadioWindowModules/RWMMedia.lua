@@ -212,6 +212,9 @@ function RWMMedia:onJoypadDown(button)
     if button == Joypad.AButton then
         self:togglePlayMedia()
     elseif button == Joypad.BButton then
+        if not self.deviceData then
+            return
+        end
         if self.deviceData:hasMedia() then
             self:removeMedia();
         else

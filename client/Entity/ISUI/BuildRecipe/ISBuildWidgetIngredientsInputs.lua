@@ -1,7 +1,8 @@
 require "ISUI/ISPanelJoypad"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
+local UI_BORDER_SPACING = 5
+local INPUT_COLUMNS = 4 -- moved here for quick access in future, if needed
 
 ISBuildWidgetIngredientsInputs = ISPanelJoypad:derive("ISBuildWidgetIngredientsInputs");
 
@@ -11,11 +12,9 @@ end
 
 function ISBuildWidgetIngredientsInputs:createChildren()
     ISPanelJoypad.createChildren(self);
-
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
-    local fontHeight = -1; -- <=0 sets label initial height to font
-    self.inputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Requires"), 1.0, 1.0, 1.0, 1, UIFont.Medium, true);
+    self.inputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, FONT_HGT_SMALL, getText("IGUI_CraftingWindow_Requires"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     self.inputsLabel:initialise();
     self.inputsLabel:instantiate();
     self:addChild(self.inputsLabel);
@@ -51,11 +50,11 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local minWidth = self.margin*2;
-    local minHeight = self.margin;
+    local minWidth = UI_BORDER_SPACING*2;
+    local minHeight = UI_BORDER_SPACING;
 
     minWidth = math.max(minWidth, minWidth + self.inputsLabel:getWidth());
-    minHeight = minHeight + self.inputsLabel:getHeight() + self.margin;
+    minHeight = minHeight + self.inputsLabel:getHeight() + UI_BORDER_SPACING;
 
     local minInputWidth = 0;
     local minInputHeight = 0;
@@ -67,20 +66,19 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     end
     
     local inputCount = #self.inputs;
-    local inputCols = 4;
-    local inputRows = math.ceil(inputCount / inputCols);
+    local inputRows = math.ceil(inputCount / INPUT_COLUMNS);
     inputRows = math.max(1, inputRows);
 
-    local margins = inputRows * self.margin;
+    local margins = inputRows * UI_BORDER_SPACING;
     minHeight = minHeight + (minInputHeight * inputRows) + margins;
 
-    minWidth = math.max(minWidth, (self.itemMargin*2)+(minInputWidth*inputCols)+(self.itemSpacing*(inputCols - 1)));
+    minWidth = math.max(minWidth, (UI_BORDER_SPACING*(INPUT_COLUMNS+1))+(minInputWidth*INPUT_COLUMNS)+2);
 
     width = math.max(width, minWidth);
     height = math.max(height, minHeight);
 
-    local x = self.margin;
-    local y = self.margin;
+    local x = UI_BORDER_SPACING+1;
+    local y = x;
 
     self.inputsLabel:setX(x);
     self.inputsLabel.originalX = self.inputsLabel:getX();
@@ -91,21 +89,21 @@ function ISBuildWidgetIngredientsInputs:calculateLayout(_preferredWidth, _prefer
     self.joypadButtons = {}
     self.joypadButtonsY = {}
 
-    local inputTop = self.inputsLabel:getY() + self.inputsLabel:getHeight() + self.margin;
+    local inputTop = self.inputsLabel:getY() + self.inputsLabel:getHeight() + UI_BORDER_SPACING;
     local column = 0;
     local row = 0;
     for k,v in ipairs(self.inputs) do
         v:calculateLayout(minInputWidth, minInputHeight);
 
-        x = self.itemMargin + (column*(minInputWidth+self.itemSpacing));
-        y = inputTop + (row*(minInputHeight+self.margin));
+        x = UI_BORDER_SPACING + (column*(minInputWidth+UI_BORDER_SPACING));
+        y = inputTop + (row*(minInputHeight+UI_BORDER_SPACING));
         v:setX(x);
         v:setY(y);
         
         table.insert(self.joypadButtons, v)
 
         column = column + 1;
-        if column >= 4 then
+        if column >= INPUT_COLUMNS then
             column = 0;
             row = row + 1;
             table.insert(self.joypadButtonsY, self.joypadButtons)
@@ -181,16 +179,11 @@ function ISBuildWidgetIngredientsInputs:new (x, y, width, height, player, logic)
     o.backgroundColor = {r=0, g=0, b=0, a=0};
     o.borderColor = {r=1, g=1, b=1, a=0.7};
 
-    o.background = true;
-
     o.textureLink = getTexture("media/ui/Entity/icon_link_io.png");
 
-    o.margin = UI_BORDER_SPACING;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-    o.itemSpacing = 24;
-    o.itemMargin = 24;
-    o.itemNameMaxLines = 3;
+    o.itemNameMaxLines = 2;
 
     o.doToolTip = true;
 

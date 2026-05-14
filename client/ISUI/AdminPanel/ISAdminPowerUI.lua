@@ -7,6 +7,220 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local BUTTON_WIDTH = 100
 
+ISAdminPowerUI.OptionList = {}
+ISAdminPowerUI.OptionById = {}
+
+function ISAdminPowerUI.AddOption(id, side, capability, functionGet, functionSet)
+    local option = {}
+    option.id = id
+    option.text = getText("IGUI_CheatPanel_"..id)
+    option.side = side
+    option.capability = capability
+    if isClient() then
+        option.tooltip = getText("IGUI_CheatPanel_"..id.."_tooltip") .. "\n" .. getText("IGUI_AdminPanel_Tooltip_Capability", capability:name())
+    else
+        option.tooltip = getText("IGUI_CheatPanel_"..id.."_tooltip")
+    end
+    option.getValue = functionGet
+    option.setValue = functionSet
+    table.insert(ISAdminPowerUI.OptionList, option)
+    ISAdminPowerUI.OptionById[id] = option
+    return option
+end
+
+ISAdminPowerUI.AddOption("Invisible", "left", Capability.ToggleInvisibleHimself,
+    function(self)
+        return self.player:isInvisible()
+    end,
+    function(self, selected)
+        self.player:setInvisible(selected)
+    end
+)
+ISAdminPowerUI.AddOption("GodMod", "left", Capability.ToggleGodModHimself,
+    function(self)
+        return self.player:isGodMod()
+    end,
+    function(self, selected)
+        self.player:setGodMod(selected)
+    end
+)
+ISAdminPowerUI.AddOption("NoClip", "left", Capability.ToggleNoclipHimself,
+    function(self)
+        return self.player:isNoClip()
+    end,
+    function(self, selected)
+        self.player:setNoClip(selected)
+    end
+)
+ISAdminPowerUI.AddOption("FastMove", "left", Capability.UseFastMoveCheat,
+    function(self)
+        return ISFastTeleportMove.cheat
+    end,
+    function(self, selected)
+        ISFastTeleportMove.cheat = selected
+    end
+)
+ISAdminPowerUI.AddOption("TimedActionInstant", "left", Capability.UseTimedActionInstantCheat,
+    function(self)
+        return self.player:isTimedActionInstantCheat()
+    end,
+    function(self, selected)
+        self.player:setTimedActionInstantCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("UnlimitedCarry", "left", Capability.ToggleUnlimitedCarry,
+    function(self)
+        return self.player:isUnlimitedCarry()
+    end,
+    function(self, selected)
+        self.player:setUnlimitedCarry(selected)
+    end
+)
+ISAdminPowerUI.AddOption("UnlimitedEndurance", "left", Capability.ToggleUnlimitedEndurance,
+    function(self)
+        return self.player:isUnlimitedEndurance()
+    end,
+    function(self, selected)
+        self.player:setUnlimitedEndurance(selected)
+    end
+)
+ISAdminPowerUI.AddOption("UnlimitedAmmo", "left", Capability.ToggleUnlimitedAmmo,
+    function(self)
+        return self.player:isUnlimitedAmmo()
+    end,
+    function(self, selected)
+        self.player:setUnlimitedAmmo(selected)
+    end
+)
+ISAdminPowerUI.AddOption("KnowAllRecipes", "left", Capability.ToggleKnowAllRecipes,
+    function(self)
+        return self.player:isKnowAllRecipes()
+    end,
+    function(self, selected)
+        self.player:setKnowAllRecipes(selected)
+    end
+)
+ISAdminPowerUI.AddOption("BuildCheat", "left", Capability.UseBuildCheat,
+    function(self)
+        return ISBuildMenu.cheat
+    end,
+    function(self, selected)
+        ISBuildMenu.cheat = selected
+        self.player:setBuildCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("FarmingCheat", "left", Capability.UseFarmingCheat,
+    function(self)
+        return ISFarmingMenu.cheat
+    end,
+    function(self, selected)
+        ISFarmingMenu.cheat = selected
+        self.player:setFarmingCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("FishingCheat", "left", Capability.UseFishingCheat,
+    function(self)
+        return self.player:isFishingCheat()
+    end,
+    function(self, selected)
+        self.player:setFishingCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("HealthCheat", "right", Capability.UseHealthCheat,
+    function(self)
+        return ISHealthPanel.cheat
+    end,
+    function(self, selected)
+        ISHealthPanel.cheat = selected;
+        self.player:setHealthCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("MechanicsCheat", "right", Capability.UseMechanicsCheat,
+    function(self)
+        return ISVehicleMechanics.cheat
+    end,
+    function(self, selected)
+        ISVehicleMechanics.cheat = selected;
+        self.player:setMechanicsCheat(selected);
+    end
+)
+ISAdminPowerUI.AddOption("MoveableCheat", "right", Capability.UseMovablesCheat,
+    function(self)
+        return ISMoveableDefinitions.cheat
+    end,
+    function(self, selected)
+        ISMoveableDefinitions.cheat = selected
+        self.player:setMovablesCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("CanSeeAll", "right", Capability.CanSeeAll,
+    function(self)
+        return self.player:canSeeAll()
+    end,
+    function(self, selected)
+        self.player:setCanSeeAll(selected)
+    end
+)
+ISAdminPowerUI.AddOption("CanHearAll", "right", Capability.CanHearAll,
+    function(self)
+        return self.player:canHearAll()
+    end,
+    function(self, selected)
+        self.player:setCanHearAll(selected)
+    end
+)
+ISAdminPowerUI.AddOption("ZombiesDontAttack", "right", Capability.ManipulateZombie,
+    function(self)
+        return self.player:isZombiesDontAttack()
+    end,
+    function(self, selected)
+        self.player:setZombiesDontAttack(selected)
+    end
+)
+ISAdminPowerUI.AddOption("BrushTool", "right", Capability.UseBrushToolManager,
+    function(self)
+        return BrushToolManager.cheat
+    end,
+    function(self, selected)
+        BrushToolManager.cheat = selected
+        self.player:setCanUseBrushTool(selected)
+    end
+)
+ISAdminPowerUI.AddOption("LootZed", "right", Capability.UseLootZed,
+    function(self)
+        return ISLootZed.cheat
+    end, function(self, selected)
+        ISLootZed.cheat = selected
+        self.player:setCanUseLootZed(selected);
+    end
+)
+ISAdminPowerUI.AddOption("LootLog", "right", Capability.UseLootLog,
+    function(self)
+        return ISLootLog.cheat
+    end,
+    function(self, selected)
+        ISLootLog.cheat = selected
+        self.player:setCanUseLootLog(selected);
+    end
+)
+ISAdminPowerUI.AddOption("AnimalCheat", "right", Capability.AnimalCheats,
+    function(self)
+        return AnimalContextMenu.cheat
+    end,
+    function(self, selected)
+        AnimalContextMenu.cheat = selected
+        self.player:setAnimalCheat(selected)
+    end
+)
+ISAdminPowerUI.AddOption("AnimalExtraValues", "right", Capability.AnimalCheats,
+    function(self)
+        return self.player:isAnimalExtraValuesCheat()
+    end,
+    function(self, selected)
+        self.player:setAnimalExtraValuesCheat(selected)
+    end
+)
+
 function ISAdminPowerUI:initialise()
     ISPanel.initialise(self)
 
@@ -58,182 +272,59 @@ function ISAdminPowerUI:initialise()
     self:addChild(self.cancel);
 end
 
-function ISAdminPowerUI:addOptionLeft(text, selected, setFunction)
-    local n = self.tickBoxLeft:addOption(getText("IGUI_CheatPanel_"..text), text)
-    self.tickBoxLeft:setSelected(n, selected)
-    self.setFunctionLeft[n] = setFunction
+function ISAdminPowerUI:addOptionLeft(option)
+    local n = self.tickBoxLeft:addOption(option.text, option.id)
+    option.player = self.player
+    self.tickBoxLeft:setSelected(n, option:getValue())
+    self.optionsLeft[n] = option
+    self.cheatTooltipsLeft[option.text] = option.tooltip
 end
 
-function ISAdminPowerUI:addOptionRight(text, selected, setFunction)
-    local n = self.tickBoxRight:addOption(getText("IGUI_CheatPanel_"..text), text)
-    self.tickBoxRight:setSelected(n, selected)
-    self.setFunctionRight[n] = setFunction
+function ISAdminPowerUI:addOptionRight(option)
+    local n = self.tickBoxRight:addOption(option.text, option.id)
+    option.player = self.player
+    self.tickBoxRight:setSelected(n, option:getValue())
+    self.optionsRight[n] = option
+    self.cheatTooltipsRight[option.text] = option.tooltip
 end
 
-function ISAdminPowerUI:addTooltip(tooltips, name, capability)
-    if isClient() then
-        tooltips[getText("IGUI_CheatPanel_"..name)] = getText("IGUI_CheatPanel_"..name.."_tooltip") .. "\n" .. getText("IGUI_AdminPanel_Tooltip_Capability", capability)
-    else
-        tooltips[getText("IGUI_CheatPanel_"..name)] = getText("IGUI_CheatPanel_"..name.."_tooltip")
-    end
+function ISAdminPowerUI:updateAdminPower()
+    self.tickBoxLeft:clearOptions()
+    self:addAdminPowerOptionsLeft()
+    self.tickBoxRight:clearOptions()
+    self:addAdminPowerOptionsRight()
+    self.tickBoxRight:setX(UI_BORDER_SPACING * 2 + self.tickBoxLeft:getWidth())
+    local btnWidth = BUTTON_WIDTH * 2
+    local tickBoxWidth = self.tickBoxLeft:getWidth() + self.tickBoxRight:getWidth()
+    local textWidth = getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_AdminPower"))
+    self:setWidth(math.max(tickBoxWidth + UI_BORDER_SPACING * 3, btnWidth + UI_BORDER_SPACING * 2))
+    self.richText:setWidth(self:getWidth() - UI_BORDER_SPACING * 2)
+    self.richText.textDirty = true
+    self:setHeight(FONT_HGT_MEDIUM + math.max(self.tickBoxLeft:getHeight(), self.tickBoxRight:getHeight()) + self.richText:getHeight() + BUTTON_HGT + UI_BORDER_SPACING * 5)
+    self.ok:setX(self:getWidth() / 2 - UI_BORDER_SPACING / 2 - BUTTON_WIDTH)
+    self.ok:setY(self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT)
+    self.cancel:setX(self:getWidth() / 2 + UI_BORDER_SPACING / 2)
+    self.cancel:setY(self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT)
 end
 
 function ISAdminPowerUI:addAdminPowerOptionsLeft()
-    self.setFunctionLeft = {}
+    self.optionsLeft = {}
     self.cheatTooltipsLeft = {}
-    if self.player:getRole():hasCapability(Capability.ToggleInvisibleHimself) then
-        self:addOptionLeft("Invisible", self.player:isInvisible(), function(self, selected)
-            self.player:setInvisible(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "Invisible", Capability.ToggleInvisibleHimself:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleGodModHimself) then
-        self:addOptionLeft("GodMod", self.player:isGodMod(), function(self, selected)
-            self.player:setGodMod(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "GodMod", Capability.ToggleGodModHimself:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleNoclipHimself) then
-        self:addOptionLeft("NoClip", self.player:isNoClip(), function(self, selected)
-            self.player:setNoClip(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "NoClip", Capability.ToggleNoclipHimself:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseFastMoveCheat) then
-        self:addOptionLeft("FastMove", ISFastTeleportMove.cheat, function(self, selected)
-            ISFastTeleportMove.cheat = selected;
-            self.player:setFastMoveCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "FastMove", Capability.UseFastMoveCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseTimedActionInstantCheat) then
-        self:addOptionLeft("TimedActionInstant", self.player:isTimedActionInstantCheat(), function(self, selected)
-            self.player:setTimedActionInstantCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "TimedActionInstant", Capability.UseTimedActionInstantCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedCarry) then
-        self:addOptionLeft("UnlimitedCarry", self.player:isUnlimitedCarry(), function(self, selected)
-            self.player:setUnlimitedCarry(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedCarry", Capability.ToggleUnlimitedCarry:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedEndurance) then
-        self:addOptionLeft("UnlimitedEndurance", self.player:isUnlimitedEndurance(), function(self, selected)
-            self.player:setUnlimitedEndurance(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedEndurance", Capability.ToggleUnlimitedEndurance:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleUnlimitedAmmo) then
-        self:addOptionLeft("UnlimitedAmmo", self.player:isUnlimitedAmmo(), function(self, selected)
-            self.player:setUnlimitedAmmo(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "UnlimitedAmmo", Capability.ToggleUnlimitedAmmo:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ToggleKnowAllRecipes) then
-        self:addOptionLeft("KnowAllRecipes", self.player:isKnowAllRecipes(), function(self, selected)
-            self.player:setKnowAllRecipes(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "KnowAllRecipes", Capability.ToggleKnowAllRecipes:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseBuildCheat) then
-        self:addOptionLeft("BuildCheat", ISBuildMenu.cheat, function(self, selected)
-            ISBuildMenu.cheat = selected;
-            self.player:setBuildCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "BuildCheat", Capability.UseBuildCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseFarmingCheat) then
-        self:addOptionLeft("FarmingCheat", ISFarmingMenu.cheat, function(self, selected)
-            ISFarmingMenu.cheat = selected;
-            self.player:setFarmingCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "FarmingCheat", Capability.UseFarmingCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseFishingCheat) then
-        self:addOptionLeft("FishingCheat", self.player:isFishingCheat(), function(self, selected)
-            self.player:setFishingCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsLeft, "FishingCheat", Capability.UseFishingCheat:name())
+	for _,option in ipairs(ISAdminPowerUI.OptionList) do
+	    if option.side == "left" and self.player:getRole():hasCapability(option.capability) then
+            self:addOptionLeft(option)
+        end
     end
     self.tickBoxLeft:setWidthToFit()
 end
 
 function ISAdminPowerUI:addAdminPowerOptionsRight()
-    self.setFunctionRight = {}
+    self.optionsRight = {}
     self.cheatTooltipsRight = {}
-    if self.player:getRole():hasCapability(Capability.UseHealthCheat) then
-        self:addOptionRight("HealthCheat", ISHealthPanel.cheat, function(self, selected)
-            ISHealthPanel.cheat = selected;
-            self.player:setHealthCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "HealthCheat", Capability.UseHealthCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseMechanicsCheat) then
-        self:addOptionRight("MechanicsCheat", ISVehicleMechanics.cheat, function(self, selected)
-            ISVehicleMechanics.cheat = selected;
-            self.player:setMechanicsCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "MechanicsCheat", Capability.UseMechanicsCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseMovablesCheat) then
-        self:addOptionRight("MoveableCheat", ISMoveableDefinitions.cheat, function(self, selected)
-            ISMoveableDefinitions.cheat = selected;
-            self.player:setMovablesCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "MoveableCheat", Capability.UseMovablesCheat:name())
-    end
-    if self.player:getRole():hasCapability(Capability.CanSeeAll) then
-        self:addOptionRight("CanSeeAll", self.player:canSeeAll(), function(self, selected)
-            self.player:setCanSeeAll(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "CanSeeAll", Capability.CanSeeAll:name())
-    end
-    if self.player:getRole():hasCapability(Capability.CanHearAll) then
-        self:addOptionRight("CanHearAll", self.player:canHearAll(), function(self, selected)
-            self.player:setCanHearAll(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "CanHearAll", Capability.CanHearAll:name())
-    end
-    if self.player:getRole():hasCapability(Capability.ManipulateZombie) then
-        self:addOptionRight("ZombiesDontAttack", self.player:isZombiesDontAttack(), function(self, selected)
-            self.player:setZombiesDontAttack(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "ZombiesDontAttack", Capability.ManipulateZombie:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseBrushToolManager) then
-        self:addOptionRight("BrushTool", BrushToolManager.cheat, function(self, selected)
-            BrushToolManager.cheat = selected
-            self.player:setCanUseBrushTool(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "BrushTool", Capability.UseBrushToolManager:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseLootZed) then
-        self:addOptionRight("LootZed", ISLootZed.cheat, function(self, selected)
-            ISLootZed.cheat = selected;
-            self.player:setCanUseLootZed(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "LootZed", Capability.UseLootZed:name())
-    end
-    if self.player:getRole():hasCapability(Capability.UseLootLog) then
-        self:addOptionRight("LootLog", ISLootLog.cheat, function(self, selected)
-            ISLootLog.cheat = selected;
-            self.player:setCanUseLootLog(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "LootLog", Capability.UseLootLog:name())
-    end
-    if self.player:getRole():hasCapability(Capability.AnimalCheats) then
-        self:addOptionRight("AnimalCheat", AnimalContextMenu.cheat, function(self, selected)
-            AnimalContextMenu.cheat = selected;
-            self.player:setAnimalCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "AnimalCheat", Capability.AnimalCheats:name())
-    end
-    if self.player:getRole():hasCapability(Capability.AnimalCheats) then
-        self:addOptionRight("AnimalExtraValues", self.player:isAnimalExtraValuesCheat(), function(self, selected)
-            self.player:setAnimalExtraValuesCheat(selected);
-        end);
-        self:addTooltip(self.cheatTooltipsRight, "AnimalExtraValues", Capability.AnimalCheats:name())
+	for _,option in ipairs(ISAdminPowerUI.OptionList) do
+	    if option.side == "right" and self.player:getRole():hasCapability(option.capability) then
+            self:addOptionRight(option)
+        end
     end
     self.tickBoxRight:setWidthToFit()
 end
@@ -294,18 +385,19 @@ end
 
 function ISAdminPowerUI:onClick(button)
     if button.internal == "SAVE" then
-        if not self.player:isDead() then
+        if not self.player:isDead() and self.player:getRole():hasAdminPower() then
             for i=1,#self.tickBoxLeft.options do
-                self.setFunctionLeft[i](self, self.tickBoxLeft:isSelected(i))
+                self.optionsLeft[i]:setValue(self.tickBoxLeft:isSelected(i))
             end
             for i=1,#self.tickBoxRight.options do
-                self.setFunctionRight[i](self, self.tickBoxRight:isSelected(i))
+                self.optionsRight[i]:setValue(self.tickBoxRight:isSelected(i))
             end
             sendPlayerExtraInfo(self.player)
         end
     
         self:setVisible(false)
         self:removeFromUIManager()
+        self:saveOptions()
     end
 
     if button.internal == "CLOSE" then
@@ -314,11 +406,24 @@ function ISAdminPowerUI:onClick(button)
     end
 end
 
+function ISAdminPowerUI:saveOptions()
+    if isClient() then return end
+    if not self.player or self.player:isDead() then return end
+	local writer = getFileWriter("CheatPanel.ini", true, false)
+	for _,option in ipairs(ISAdminPowerUI.OptionList) do
+        option.player = self.player
+        local value = option:getValue() and "true" or "false"
+	    writer:write(option.id.."="..value..lineSeparator())
+    end
+	writer:close()
+end
+
 function ISAdminPowerUI.OnOpenPanel()
-    if ISAdminPowerUI.instance==nil then
+    if ISAdminPowerUI.instance == nil then
         ISAdminPowerUI.instance = ISAdminPowerUI:new(50, 200, 480, 350, getPlayer())
         ISAdminPowerUI.instance:initialise();
     end
+    ISAdminPowerUI.instance:updateAdminPower();
     ISAdminPowerUI.instance:addToUIManager();
     ISAdminPowerUI.instance:setVisible(true);
     return ISAdminPowerUI.instance;
@@ -342,16 +447,41 @@ function ISAdminPowerUI:new(x, y, width, height, player)
 end
 
 ISAdminPowerUI.onGameStart = function()
-    ISBuildMenu.cheat = getPlayer():isBuildCheat();
-    ISFarmingMenu.cheat = getPlayer():isFarmingCheat();
-    ISHealthPanel.cheat = getPlayer():isHealthCheat();
-    ISMoveableDefinitions.cheat = getPlayer():isMovablesCheat();
-    BrushToolManager.cheat = getPlayer():isCanUseBrushTool();
-    ISFastTeleportMove.cheat = getPlayer():isFastMoveCheat();
-    AnimalContextMenu.cheat = getPlayer():isAnimalCheat();
-    ISLootZed.cheat = getPlayer():canUseLootZed();
-    ISLootLog.cheat = getPlayer():canUseLootLog();
-    ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
+    if isClient() then
+        ISBuildMenu.cheat = getPlayer():isBuildCheat();
+        ISFarmingMenu.cheat = getPlayer():isFarmingCheat();
+        ISHealthPanel.cheat = getPlayer():isHealthCheat();
+        ISMoveableDefinitions.cheat = getPlayer():isMovablesCheat();
+        BrushToolManager.cheat = getPlayer():isCanUseBrushTool();
+        ISFastTeleportMove.cheat = getPlayer():isFastMoveCheat();
+        AnimalContextMenu.cheat = getPlayer():isAnimalCheat();
+        ISLootZed.cheat = getPlayer():canUseLootZed();
+        ISLootLog.cheat = getPlayer():canUseLootLog();
+        ISVehicleMechanics.cheat = getPlayer():isMechanicsCheat();
+    else
+        local playerObj = getSpecificPlayer(0)
+        if not playerObj or playerObj:isDead() then return end
+        -- if single player and it's not debug mode, all cheats should be disabled
+        if not getDebug() then return end
+        local reader = getFileReader("CheatPanel.ini", false)
+        if not reader then return end
+        while true do
+            local line = reader:readLine()
+            if not line then
+                reader:close()
+                break
+            end
+            local ss = luautils.split(line, "=")
+            local id = ss[1]
+            local value = ss[2]
+            local option = ISAdminPowerUI.OptionById[id]
+            if option then
+                option.player = playerObj
+                option:setValue(value == "true")
+            end
+        end
+        DebugLog.log("Cheats enabled/disabled on game start in lua from the file CheatPanel.ini.")
+    end
 end
 
 Events.OnGameStart.Add(ISAdminPowerUI.onGameStart)

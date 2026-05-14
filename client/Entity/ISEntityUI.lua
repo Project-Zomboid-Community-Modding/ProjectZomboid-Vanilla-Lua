@@ -348,9 +348,11 @@ end
 local function createWindow(_player, _windowInstance, _isoObject)
     local playerNum = _player:getPlayerNum();
 
-    local x = getMouseX() + 10;
-    local y = getMouseY() + 10;
+    local x = 0;
+    local y = 0;
     local adjustPos = true;
+
+    local craftInventoryPanelWidth = 210 --minimum width of ISCraftInventoryPanel.lua + XUI border spacing [5]*2
 
     local width = 0;
     local height = 0;
@@ -368,14 +370,14 @@ local function createWindow(_player, _windowInstance, _isoObject)
         if ISEntityUI.players[playerNum].windows[windowKey].instance then
             ISEntityUI.players[playerNum].windows[windowKey].instance:close();
         end
-        if ISEntityUI.players[playerNum].windows[windowKey].x and ISEntityUI.players[playerNum].windows[windowKey].y then
-            x = ISEntityUI.players[playerNum].windows[windowKey].x;
-            y = ISEntityUI.players[playerNum].windows[windowKey].y;
-            adjustPos = false;
-        end
         if ISEntityUI.players[playerNum].windows[windowKey].width and ISEntityUI.players[playerNum].windows[windowKey].height then
-            width = ISEntityUI.players[playerNum].windows[windowKey].width;
-            height = ISEntityUI.players[playerNum].windows[windowKey].height;
+            width = math.min(ISEntityUI.players[playerNum].windows[windowKey].width, getCore():getScreenWidth() - craftInventoryPanelWidth);
+            height = math.min(ISEntityUI.players[playerNum].windows[windowKey].height, getCore():getScreenHeight() - craftInventoryPanelWidth);
+        end
+        if ISEntityUI.players[playerNum].windows[windowKey].x and ISEntityUI.players[playerNum].windows[windowKey].y then
+            x = math.min(ISEntityUI.players[playerNum].windows[windowKey].x, getCore():getScreenWidth() - width - craftInventoryPanelWidth);
+            y = math.min(ISEntityUI.players[playerNum].windows[windowKey].y, getCore():getScreenHeight() - height - craftInventoryPanelWidth);
+            adjustPos = false;
         end
         locked = ISEntityUI.players[playerNum].windows[windowKey].locked;
     else

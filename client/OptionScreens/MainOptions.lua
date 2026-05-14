@@ -548,7 +548,6 @@ function MainOptions:create()
 	self:addSoundPanel()
 
 	local reload = MainOptions.loadKeys();
-	SurvivalGuideEntries.addEntry11();
 	self:addKeybindingPanel()
 
 	self:addAccessibilityPanel()
@@ -2651,6 +2650,20 @@ function MainOptions:addAccessibilityPanel()
 	end
 	self.gameOptions:add(gameOption)
 
+    local pausemap = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_mapViewPause"))
+    gameOption = GameOption:new('mapViewPause', pausemap)
+    pausemap.tooltip = getText("UI_optionscreen_mapViewPause_tt");
+    function gameOption.toUI(self)
+        self.control:setSelected(1, getCore():getOptionMapViewPause())
+    end
+    function gameOption.apply(self)
+        if self.control:isSelected(1) ~= getCore():getOptionMapViewPause() then
+            MainOptions.instance.monitorSettings.changed = true
+        end
+        getCore():setOptionMapViewPause(self.control:isSelected(1))
+    end
+    self.gameOptions:add(gameOption)
+
 	-- SHOULDER BUTTON CONTAINER SWITCH
 	local shoulderButton = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_ShoulderButtonContainerSwitch"),
 			{
@@ -2977,33 +2990,42 @@ function MainOptions:addControllerPanel()
 	self.mainPanel:addChild(panel)
 	self.stuffBelowControllerTickbox = panel
 
-	local btn = ISButton:new(0, UI_BORDER_SPACING, 120, BUTTON_HGT, getText("UI_optionscreen_controller_reload"), self, MainOptions.ControllerReload)
+	local stuffBelowControllerTickboxY = UI_BORDER_SPACING
+
+	local btn = ISButton:new(0, stuffBelowControllerTickboxY, 120, BUTTON_HGT, getText("UI_optionscreen_controller_reload"), self, MainOptions.ControllerReload)
 	btn:initialise()
 	btn:instantiate()
 	self.stuffBelowControllerTickbox:addChild(btn)
 
-	y = btn:getY() + btn:getHeight()
+	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + BUTTON_HGT + UI_BORDER_SPACING
 
-	label = ISLabel:new(0, y + UI_BORDER_SPACING, BUTTON_HGT, getText("UI_optionscreen_gamepad_sensitivity"), 1, 1, 1, 1, UIFont.Medium, true)
+	label = ISLabel:new(0, stuffBelowControllerTickboxY, FONT_HGT_MEDIUM, getText("UI_optionscreen_gamepad_sensitivity"), 1, 1, 1, 1, UIFont.Medium, true)
 	label:initialise()
 	self.stuffBelowControllerTickbox:addChild(label)
 
-	y = label:getY() + label:getHeight()
+	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + FONT_HGT_MEDIUM + UI_BORDER_SPACING
 
-	local buttonSize = BUTTON_HGT
-	self.btnJoypadSensitivityM = ISButton:new(0, y + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "-", self, MainOptions.joypadSensitivityM)
+	self.btnJoypadSensitivityM = ISButton:new(0, stuffBelowControllerTickboxY, BUTTON_HGT, BUTTON_HGT, "-", self, MainOptions.joypadSensitivityM)
 	self.btnJoypadSensitivityM:initialise()
 	self.btnJoypadSensitivityM:instantiate()
 	self.btnJoypadSensitivityM:setEnable(false)
 	self.stuffBelowControllerTickbox:addChild(self.btnJoypadSensitivityM)
-	self.labelJoypadSensitivity = ISLabel:new(self.btnJoypadSensitivityM:getX()+self.btnJoypadSensitivityM:getWidth()+UI_BORDER_SPACING, y + UI_BORDER_SPACING, BUTTON_HGT, getText("UI_optionscreen_select_gamepad"), 1, 1, 1, 1, UIFont.Small, true)
+
+	local sensitivityText = getText("UI_optionscreen_select_gamepad")
+	self.labelJoypadSensitivity = ISLabel:new(self.btnJoypadSensitivityM:getX() + self.btnJoypadSensitivityM:getWidth() + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, sensitivityText) / 2, stuffBelowControllerTickboxY, BUTTON_HGT, sensitivityText, 1, 1, 1, 1, UIFont.Small, true)
+	self.labelJoypadSensitivity.center = true
 	self.labelJoypadSensitivity:initialise()
 	self.stuffBelowControllerTickbox:addChild(self.labelJoypadSensitivity)
-	self.btnJoypadSensitivityP = ISButton:new(self.labelJoypadSensitivity:getX()+self.labelJoypadSensitivity:getWidth()+UI_BORDER_SPACING, y + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "+", self, MainOptions.joypadSensitivityP)
+
+	self.btnJoypadSensitivityP = ISButton:new(self.labelJoypadSensitivity:getX() + self.labelJoypadSensitivity:getWidth() / 2 + UI_BORDER_SPACING, stuffBelowControllerTickboxY, BUTTON_HGT, BUTTON_HGT, "+", self, MainOptions.joypadSensitivityP)
 	self.btnJoypadSensitivityP:initialise()
 	self.btnJoypadSensitivityP:instantiate()
 	self.btnJoypadSensitivityP:setEnable(false)
 	self.stuffBelowControllerTickbox:addChild(self.btnJoypadSensitivityP)
+
+	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + BUTTON_HGT + UI_BORDER_SPACING
+
+	panel:setHeight(stuffBelowControllerTickboxY)
 
 	local panel = ISControllerTestPanel:new(self.width / 2, UI_BORDER_SPACING+1, self.width - UI_BORDER_SPACING+1 - (self.width / 2), self.mainPanel.height - (UI_BORDER_SPACING+1)*2)
 	panel:setAnchorRight(true)
@@ -3067,6 +3089,19 @@ function MainOptions:addMultiplayerPanel()
 			getPlayer():setSpeakColourInfo(getCore():getMpTextColor())
 			sendPersonalColor(getPlayer())
 		end
+	end
+	self.gameOptions:add(gameOption)
+
+	local populateServerListOnStartTickbox = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_populateServerListOnStart"));
+	populateServerListOnStartTickbox.tooltip = getText("UI_optionscreen_populateServerListOnStartTooltip");
+	gameOption = GameOption:new('populateServerListOnStart', populateServerListOnStartTickbox)
+	function gameOption.toUI(self)
+		local box = self.control;
+		box:setSelected(1, getCore():isPopulateServerListOnStart());
+	end
+	function gameOption.apply(self)
+		local box = self.control;
+		getCore():setPopulateServerListOnStart(box:isSelected(1));
 	end
 	self.gameOptions:add(gameOption)
 end

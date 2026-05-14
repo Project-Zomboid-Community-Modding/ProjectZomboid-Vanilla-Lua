@@ -4,18 +4,8 @@ fishingNet = ISBuildingObject:derive("fishingNet");
 
 function fishingNet:create(x, y, z, north, sprite)
     local grid = getCell():getGridSquare(x, y, z);
-    local net = IsoObject.new(grid, sprite, "FishingNet");
-    grid:AddTileObject(net)
-    net:transmitCompleteItemToClients();
-    fishingNet.doTimestamp(net);
-
-    --fishingNet.setBait(net, self.item:getModData()["Bait"])
-    self.character:setSecondaryHandItem(nil)
-    self.character:getInventory():Remove(self.item)
-    sendRemoveItemFromContainer(self.character:getInventory(), self.item);
-
---    getSoundManager():PlayWorldSound("waterSplash", false, self.character:getSquare(), 1, 20, 1, false)
-    self.character:playSound("PlaceFishingNet");
+    ISInventoryPaneContextMenu.transferIfNeeded(self.character, self.item)
+	ISTimedActionQueue.add(ISPlaceFishingNetAction:new(self.character, self.item, grid, sprite))
     if not isServer() then
         getCell():setDrag(nil, self.player);
     end
@@ -31,13 +21,13 @@ function fishingNet:new(character, item)
     o.character = character
     o.player = character:getPlayerNum();
     o.item = item
-    o.skipBuildAction = not isClient();
+	o.skipBuildAction = true
     o.skipWalk = true;
     return o;
 end
 
 function fishingNet:isValid(square, north)
-    if not self.character:getInventory():contains("FishingNet") then return false end
+    if not self.character:getInventory():containsRecursive(self.item) then return false end
     return square:DistToProper(self.character:getCurrentSquare()) < 5 and square:getProperties():has(IsoFlagType.water);
 --    return true;
 end

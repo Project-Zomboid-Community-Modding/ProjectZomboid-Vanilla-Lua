@@ -24,7 +24,7 @@ function BuildRecipeCode.barricade.OnIsValid(params)
 
 	for i = 0,objects:size()-1 do
         local object = objects:get(i);
-        if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+        if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow") or instanceof(object,"IsoWindowFrame")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
             if (params.facing == "s" or params.facing == "e") and (params.north == object:getNorth()) and not object:getBarricadeOnOppositeSquare() then
                 return true;
             elseif (params.facing == "n" or params.facing == "w") and (params.north == object:getNorth()) and not object:getBarricadeOnSameSquare() then
@@ -48,7 +48,7 @@ function BuildRecipeCode.barricade.OnIsValidPlanks(params)
 
 	for i = 0,objects:size()-1 do
          local object = objects:get(i);
-         if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+         if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow") or instanceof(object,"IsoWindowFrame")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
              if (params.facing == "s" or params.facing == "e") and (not object:getBarricadeOnOppositeSquare() or (object:getBarricadeOnOppositeSquare() and object:getBarricadeOnOppositeSquare():canAddPlank())) then
 				 if params.facing == "s" and object:getNorth() then
 					 return true
@@ -81,7 +81,7 @@ function BuildRecipeCode.barricade.TimedActionOnIsValid(params)
 	local objects = square:getObjects();
 	for i = 0,objects:size()-1 do
 		local object = objects:get(i);
-		if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
+		if (((instanceof(object, "IsoDoor") and not object:IsOpen()) or instanceof(object,"IsoWindow") or instanceof(object,"IsoWindowFrame")) and object:isBarricadeAllowed()) or (instanceof(object, "IsoThumpable") and object:getCanBarricade()) then
 			return true;
 		end
 	end
@@ -107,7 +107,7 @@ function BuildRecipeCode.barricade.OnCreate(params)
     local doNorth = params.facing == "n" or params.facing == "s"
 	for i=objects:size()-1, 0, -1 do
 		local object = objects:get(i);
-        local objectValid = instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow()))
+        local objectValid = instanceof(object, "IsoDoor") or instanceof(object,"IsoWindow") or instanceof(object,"IsoWindowFrame") or (instanceof(object, "IsoThumpable") and (object:isDoor() or object:isWindow()))
         if objectValid and object:getNorth() == doNorth then
             local oppositeSq = object:getOppositeSquare();
             if square == oppositeSq then

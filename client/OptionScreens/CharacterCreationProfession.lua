@@ -145,7 +145,8 @@ function CharacterCreationProfession:create()
     self:addChild(self.playButton);
 
     btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_characreation_random"))
-    self.randomButton = ISButton:new(self.playButton:getX() - UI_BORDER_SPACING - btnWidth, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_characreation_random"), self, self.randomizeTraits);
+    self.randomButton = ISButton:new(self.playButton:getX() - UI_BORDER_SPACING - btnWidth, self.backButton.y, btnWidth, BUTTON_HGT, getText("UI_characreation_random"), self, self.onOptionMouseDown);
+    self.randomButton.internal = "RANDOMIZE";
     self.randomButton:initialise();
     self.randomButton:instantiate();
     self.randomButton:setAnchorLeft(false);
@@ -611,6 +612,9 @@ function CharacterCreationProfession:onOptionMouseDown(button, x, y)
     if button.internal == "RESETTRAITS" then
         self:resetTraits();
     end
+    if button.internal == "RANDOMIZE" then
+        self:randomizeTraits();
+    end
 end
 
 function CharacterCreationProfession:repopulateTraitLists()
@@ -709,6 +713,12 @@ function CharacterCreationProfession:removeTrait(index)
     end
 
     self:repopulateTraitLists()
+end
+
+function CharacterCreationProfession:removeAllTraits()
+    for i = #self.listboxTraitSelected.items, 1, -1 do
+        self:removeTrait(i);
+    end
 end
 
 function CharacterCreationProfession:update()
@@ -1458,18 +1468,14 @@ end
 function CharacterCreationProfession:resetBuild()
     self.listboxProf.selected = 1;
     self:onSelectProf(self:getSelectedProf());
-    while #self.listboxTraitSelected.items > 0 do
-        self:removeTrait(1);
-    end
+    self:removeAllTraits();
     self:checkXPBoost();
     self.listboxTraitSelected.selected = -1;
 end
 
 function CharacterCreationProfession:resetTraits()
     self:onSelectProf(self.listboxProf.items[1].item);
-    while #self.listboxTraitSelected.items > 0 do
-        self:removeTrait(1);
-    end
+    self:removeAllTraits();
     self:onSelectProf(self:getSelectedProf());
 end
 

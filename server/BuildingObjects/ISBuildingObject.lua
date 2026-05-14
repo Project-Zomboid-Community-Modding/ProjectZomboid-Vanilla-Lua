@@ -456,9 +456,9 @@ function ISBuildingObject:reset()
 	self.west = false;
 	self.chosenSprite = nil;
 	self.dragNilAfterPlace = false;
-	self.xJoypad = -1;
-	self.yJoypad = -1;
-	self.zJoypad = -1;
+	self.xJoypad = nil;
+	self.yJoypad = nil;
+	self.zJoypad = nil;
 	self.isWallLike = false;
 	self.isCorner = false;
 	self.completionSound = nil;
@@ -532,6 +532,9 @@ function ISBuildingObject:isValid(square)
 	end
 	local blockedByCharacters = self.isWallLike ~= true
 	return buildUtil.canBePlace(self, square) and square:isFreeOrMidair(blockedByCharacters)
+end
+
+function ISBuildingObject:beforeWorldRender(x, y, z)
 end
 
 function ISBuildingObject:render(x, y, z, square)
@@ -636,8 +639,8 @@ function ISBuildingObject:onJoypadPressButton(joypadIndex, joypadData, button)
 
     if button == Joypad.YButton then
         if self.isYButtonResetCursor then
-            self.xJoypad = self.character:getCurrentSquare():getX()
-            self.yJoypad = self.character:getCurrentSquare():getY()
+            self.xJoypad = self.character:getXi()
+            self.yJoypad = self.character:getYi()
         end
     end
 
@@ -717,7 +720,7 @@ function ISBuildingObject:renderOpaqueObjectsInWorld(x, y, z, square)
 end
 
 function DoTileBuildingJoyPad(draggingItem, isRender, x, y, z)
-    if draggingItem.xJoypad == -1 then
+    if draggingItem.xJoypad == nil then
         draggingItem.xJoypad = x;
         draggingItem.yJoypad = y;
 --        local buts = getButtonPrompts(playerIndex);
@@ -736,7 +739,7 @@ local function RenderOpaqueObjectsInWorld(playerIndex, x, y, z, square)
 	if bo == nil then return end
 	if not bo.renderOpaqueObjectsInWorld then return end
 	if JoypadState.players[playerIndex+1] then
-		if bo.xJoypad == -1 then
+		if bo.xJoypad == nil then
 			bo.xJoypad = x
 			bo.yJoypad = y
 		end

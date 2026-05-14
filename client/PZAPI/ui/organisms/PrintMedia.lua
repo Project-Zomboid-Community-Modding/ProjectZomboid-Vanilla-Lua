@@ -288,6 +288,15 @@ UI.PrintMedia = UI.Window{
                     local maxLen = 0
                     for _, sqData in ipairs(locationData) do
                         WorldMapVisited.getInstance():setKnownInSquares(sqData.x1, sqData.y1, sqData.x2, sqData.y2)
+                        if (isClient()) then
+                            local args = {
+                                x1 = sqData.x1,
+                                y1 = sqData.y1,
+                                x2 = sqData.x2,
+                                y2 = sqData.y2
+                            };
+                            sendClientCommand(getPlayer(), "map", "setKnownInSquares", args);
+                        end
                         xx = xx + sqData.x1 + sqData.x2
                         yy = yy + sqData.y1 + sqData.y2
                         maxLen = math.max((sqData.x2 - sqData.x1), (sqData.y2 - sqData.y1), maxLen)

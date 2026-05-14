@@ -52,24 +52,7 @@ function ISDPadWheels.onDisplayLeft(joypadData)
 end
 
 function ISDPadWheels.showSurvGuide(playerIndex)
-	if not SurvivalGuideManager.blockSurvivalGuide then
-		if SurvivalGuideManager.instance == nil then
-			Events.OnTick.Add(doSurvivalGuide);
-		else
-			local panel = SurvivalGuideManager.instance.panel
-			panel:setVisible(not panel:getIsVisible());
-			local joypadData = JoypadState.players[1]
-			if panel:isVisible() then
-				if joypadData and joypadData.focus ~= panel then
-					joypadData.focus = panel
-				end
-			else
-				if joypadData then
-					joypadData.focus = nil
-				end
-			end
-		end
-	end
+    SurvivalGuide.onKeyPressed(getCore():getKey("Toggle Survival Guide"))
 end
 
 function ISDPadWheels.showAnimalZoneUI(playerNum)

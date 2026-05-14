@@ -44,7 +44,7 @@ function ISSLSounds:loadSounds( _filter )
     local sounds = getSLSoundManager():getStorySounds();
     if sounds~=nil and sounds:size()>0 then
         for i=0, sounds:size()-1 do
-            local eSound 		= sounds:get(i);
+            local eSound = sounds:get(i);
 
             if _filter == nil or string.contains(string.lower(eSound:getName()), _filter) then
                 self:addSoundItem(eSound);

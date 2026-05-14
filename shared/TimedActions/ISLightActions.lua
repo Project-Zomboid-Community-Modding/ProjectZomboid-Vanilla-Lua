@@ -106,10 +106,10 @@ end
 
 function ISLightActions:new(mode, character, lightswitch, item)
     local o = ISBaseTimedAction.new(self, character);
-    o.mode              = mode;
-    o.lightswitch       = lightswitch;
-    o.item              = item;
-    o.maxTime           = o:getDuration()
+    o.mode = mode;
+    o.lightswitch = lightswitch;
+    o.item = item;
+    o.maxTime = o:getDuration()
     o.ignoreHandsWounds = true;
 
     return o;

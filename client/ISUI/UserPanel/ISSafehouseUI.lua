@@ -423,10 +423,10 @@ end
 function ISSafehouseUI:onAnswerSafehouseInvite(button)
     ISSafehouseUI.inviteDialogs[button.parent.host] = nil
     if button.internal == "YES" then
-        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer(), true)
+        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer():getUsername(), true)
     end
     if button.internal == "NO" then
-        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer(), false)
+        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer():getUsername(), false)
     end
 end
 

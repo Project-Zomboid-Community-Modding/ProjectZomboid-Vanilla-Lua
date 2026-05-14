@@ -67,6 +67,9 @@ end
 
 function ISGrabItemAction:perform()
 	local queuedItem = table.remove(self.queueList, 1);
+    if not queuedItem then
+        return
+    end
 	for i,item in ipairs(queuedItem.items) do
 		self.item = item
 		-- Check destination container capacity and item-count limit.

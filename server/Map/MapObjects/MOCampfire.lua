@@ -13,11 +13,15 @@ end
 local function ReplaceExistingObject(isoObject, fuelAmount)
 	local square = isoObject:getSquare()
 	removeExistingLuaObject(square)
-	local modData = isoObject:getModData()
-	modData.exterior = square:isOutside()
-	modData.isLit = fuelAmount > 0
-	modData.fuelAmt = fuelAmount
-	return isoObject
+	square:transmitRemoveItemFromSquare(isoObject)
+	square:RemoveTileObject(isoObject)
+
+	local luaObject = SCampfireSystem.instance:addCampfire(square)
+	luaObject.isLit = fuelAmount > 0
+	luaObject.fuelAmt = fuelAmount
+	luaObject:saveData()
+
+	return luaObject:getIsoObject()
 end
 
 local function NewBurning(object)

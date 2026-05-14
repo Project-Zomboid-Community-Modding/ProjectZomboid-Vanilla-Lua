@@ -1,5 +1,9 @@
 require "ISUI/ISPanelJoypad"
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
+local UI_BORDER_SPACING = 5
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+
 local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
 local ICON_SCALE = math.max(1, math.floor(FONT_SCALE));
 local BUTTON_ICON_SIZE = 16 * ICON_SCALE;
@@ -36,9 +40,9 @@ function ISWidgetBuildControl:createChildren()
     --self.slider.customData = _data;
     self:addChild(self.slider);
 
-    self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, 32, getText("IGUI_CraftingWindow_Build"))
+    self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, BUTTON_HGT, getText("IGUI_CraftingWindow_Build"))
     --self.buttonPrev.image = getTexture("ArrowLeft");
-    self.buttonCraft.font = UIFont.Medium;
+    self.buttonCraft.font = UIFont.Small;
     self.buttonCraft.target = self;
     self.buttonCraft.onclick = ISWidgetBuildControl.onButtonClick;
     self.buttonCraft.enable = true;
@@ -51,11 +55,11 @@ function ISWidgetBuildControl:createChildren()
 
     -- Debug tool to force being able to do recipes regardless of knowing recipes, skills, whatever
     if isDebugEnabled() and debugSpam and (self.player:getRole() and self.player:getRole():hasCapability(Capability.UseBuildCheat)) then
-        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, 32, "Force Action")
+        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, BUTTON_HGT, "Force Action")
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
         self.buttonForceCraft.joypadTextureWH = BUTTON_ICON_SIZE;
         --self.buttonPrev.image = getTexture("ArrowLeft");
-        self.buttonForceCraft.font = UIFont.Medium;
+        self.buttonForceCraft.font = UIFont.Small;
         self.buttonForceCraft.target = self;
         self.buttonForceCraft.onclick = ISWidgetBuildControl.onButtonClick;
         self.buttonForceCraft.enable = true;
@@ -71,67 +75,67 @@ end
 function ISWidgetBuildControl:calculateLayout(_preferredWidth, _preferredHeight)
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
+    local allowBatchCrafting = self.allowBatchCraft and (not self.logic:isManualSelectInputs())
 
-    local minHeight = self.margin*3;
-    minHeight = minHeight + self.entryBox:getHeight() + self.margin;
-    minHeight = minHeight + self.buttonCraft:getHeight();
+    local minHeight = UI_BORDER_SPACING*2 + BUTTON_HGT*1 + 2;
+
+    if allowBatchCrafting then
+        minHeight = minHeight + self.entryBox:getHeight() + UI_BORDER_SPACING;
+    end
     if self.buttonForceCraft then
-        minHeight = minHeight + self.buttonForceCraft:getHeight();
+        minHeight = minHeight + BUTTON_HGT + UI_BORDER_SPACING;
     end
     if self.buttonKnowAllRecipes then
-        minHeight = minHeight + self.buttonForceCraft:getHeight();
+        minHeight = minHeight + BUTTON_HGT + UI_BORDER_SPACING;
     end
 
     height = math.max(height, minHeight);
 
-    local x = self.margin;
-    local y = self.margin;
+    local x = UI_BORDER_SPACING+1;
+    local y = x;
+    local btnWidth = width-x*2
 
-    if self.allowBatchCraft and (not self.logic:isManualSelectInputs()) and self.entryBox and self.slider then
-        self.entryBox:setVisible(true);
-        self.slider:setVisible(true);
+    self.entryBox:setVisible(allowBatchCrafting);
+    self.slider:setVisible(allowBatchCrafting);
 
+    if allowBatchCrafting then
         self.entryBox:setX(x);
         self.entryBox:setY(y);
 
         local centerY = self.entryBox:getY() + (self.entryBox:getHeight()/2);
 
-        local offX = self.entryBox:getX() + self.entryBox:getWidth() + self.margin;
+        local offX = self.entryBox:getX() + self.entryBox:getWidth() + UI_BORDER_SPACING;
         self.slider:setX(offX);
         self.slider:setY(centerY - (self.slider:getHeight()/2));
-        self.slider:setWidth(width-self.margin-offX);
+        self.slider:setWidth(width-UI_BORDER_SPACING-offX);
         self.slider:paginate();
 
-        y = self.entryBox:getY() + self.entryBox:getHeight() + self.margin;
-    else
-        if self.entryBox then self.entryBox:setVisible(false); end
-        if self.slider then self.slider:setVisible(false); end
+        y = self.entryBox:getY() + self.entryBox:getHeight() + UI_BORDER_SPACING;
     end
 
     self.buttonCraft:setX(x);
-    self.buttonCraft:setWidth(width-(self.margin*2));
+    self.buttonCraft:setWidth(btnWidth);
     self.buttonCraft:setY(y);
 
-    y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;
+    y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + UI_BORDER_SPACING;
 
     if self.buttonForceCraft then
         self.buttonForceCraft:setX(x);
-        self.buttonForceCraft:setWidth(width-(self.margin*2));
+        self.buttonForceCraft:setWidth(btnWidth);
         self.buttonForceCraft:setY(y);
 
-        y = self.buttonForceCraft:getY() + self.buttonForceCraft:getHeight() + self.margin;
+        y = self.buttonForceCraft:getY() + self.buttonForceCraft:getHeight() + UI_BORDER_SPACING;
     end
 
     if self.buttonKnowAllRecipes then
         self.buttonKnowAllRecipes:setX(x);
-        self.buttonKnowAllRecipes:setWidth(width-(self.margin*2));
+        self.buttonKnowAllRecipes:setWidth(btnWidth);
         self.buttonKnowAllRecipes:setY(y);
 
-        y = self.buttonKnowAllRecipes:getY() + self.buttonKnowAllRecipes:getHeight() + self.margin;
+        y = self.buttonKnowAllRecipes:getY() + self.buttonKnowAllRecipes:getHeight() + UI_BORDER_SPACING;
     end
 
-    self.boxHeight = y;
-
+    self.boxHeight = height;
     self:setWidth(width);
     self:setHeight(height);
 
@@ -252,7 +256,6 @@ function ISWidgetBuildControl:new(x, y, width, height, player, logic)
     o.interactiveMode = false;
     o.allowBatchCraft = true;
 
-    o.margin = 5;
     o.minimumWidth = 100;
     o.minimumHeight = 0;
 

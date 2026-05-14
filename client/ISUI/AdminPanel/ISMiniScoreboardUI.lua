@@ -64,13 +64,13 @@ end
 
 function ISMiniScoreboardUI:onCommand(player, command)
     if command == "TELEPORT" then
-        SendCommandToServer("/teleport \"" .. player.displayName .. "\"");
+        SendCommandToServer("/teleport \"" .. player.username .. "\"");
     elseif command == "TELEPORTTOYOU" then
-        SendCommandToServer("/teleportplayer \"" .. player.displayName .. "\" \"" .. self.admin:getDisplayName() .. "\"");
+        SendCommandToServer("/teleportplayer \"" .. player.username .. "\" \"" .. self.admin:getUsername() .. "\"");
     elseif command == "INVISIBLE" then
-        SendCommandToServer("/invisibleplayer \"" .. player.displayName .. "\"");
+        SendCommandToServer("/invisibleplayer \"" .. player.username .. "\"");
     elseif command == "GODMOD" or command == "GODMODE" then
-        SendCommandToServer("/godmodplayer \"" .. player.displayName .. "\"");
+        SendCommandToServer("/godmodplayer \"" .. player.username .. "\"");
     elseif command == "STATS" then
         local playerObj = getPlayerFromUsername(player.username)
         if not playerObj then return end -- player hasn't been encountered yet

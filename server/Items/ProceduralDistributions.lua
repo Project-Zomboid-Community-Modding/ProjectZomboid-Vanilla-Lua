@@ -52298,7 +52298,6 @@ ProceduralDistributions.list = {
 			"WoodenBarCastMold", 2,
 			"WoodenBlacksmithAnvilMold", 1,
 			"WoodenBrickMold", 2,
-			"WoodenCrucibleMold", 2,
 			"WoodenIngotCastMold", 2,
 			"WoodenShingleMold", 2,
 			"WoodenTileMold", 2,

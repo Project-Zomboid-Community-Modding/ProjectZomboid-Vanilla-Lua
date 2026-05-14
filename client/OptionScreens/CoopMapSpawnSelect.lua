@@ -59,6 +59,7 @@ function CoopMapSpawnSelect:fillList()
 			local z = playerObj:getZ()
 			local region = {
 				name = getText("UI_mapspawn_WithPlayer" .. (playerIndex+1)),
+				key = "WithPlayer" .. (playerIndex+1),
 				points = {
 					unemployed = {
 						{posX=x, posY=y, posZ=z},
@@ -88,7 +89,7 @@ end
 
 function CoopMapSpawnSelect:clickNext()
 	self.selectedRegion = self.listbox.items[self.listbox.selected].item.region
-	setSpawnRegion(self.selectedRegion.name)
+	setSpawnRegion(self.selectedRegion.key or self.selectedRegion.name)
 	self:setVisible(false)
 	CoopCharacterCreation.instance.charCreationProfession:setVisible(true, self.joyfocus)
 end

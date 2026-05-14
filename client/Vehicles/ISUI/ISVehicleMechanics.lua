@@ -139,8 +139,15 @@ function ISVehicleMechanics:createChildren()
 	self:setInfo(getText("IGUI_InfoPanel_Mechanics"))	;
 
 	local rh = self.resizable and self:resizeWidgetHeight() or 0
-	local y = self:titleBarHeight() + 10 + 5 + FONT_HGT_MEDIUM + FONT_HGT_SMALL * (5 + 1) + 10
-	
+	self.progressHgt = FONT_HGT_SMALL
+	self.progressPadBottom = 4
+	self.rectY = self:titleBarHeight() + 10
+	self.rectHgt = 5 + FONT_HGT_MEDIUM + FONT_HGT_SMALL * 5 + self.progressHgt + self.progressPadBottom
+	if getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
+		self.rectHgt = self.rectHgt + FONT_HGT_SMALL
+	end
+    self.progressY = self.rectY + self.rectHgt - self.progressPadBottom - self.progressHgt
+	local y = self:titleBarHeight() + 10 + self.rectHgt + 10
 	self.listbox = ISScrollingListBox:new(self.xCarTexOffset, y, 220, self.height - rh - 10 - y);
 	self.listbox:initialise();
 	self.listbox:instantiate();
@@ -1129,17 +1136,14 @@ function ISVehicleMechanics:render()
 	
 	-- car info rect
 	local x = self.xCarTexOffset;
-	local y = self:titleBarHeight() + 10;
+	local y = self.rectY;
 	local lineHgt = FONT_HGT_SMALL;
+	local rectY = self.rectY;
 	local rectWidth = self:getWidth() - self.xCarTexOffset - 10;
-	local rectHgt = 5 + FONT_HGT_MEDIUM + FONT_HGT_SMALL * (5 + 1) -- +1 for the progressbar
-	self:drawRectBorder(x, y, rectWidth, rectHgt, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+	local rectHgt = self.rectHgt
+	self:drawRectBorder(x, rectY, rectWidth, rectHgt, 1, self.borderColor.r, self.borderColor.g, self.borderColor.b);
 	x = x + 5;
 	y = y + 5;
-	local debugLine = "";
-	if getCore():getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
-		debugLine = " ( Vehicle Report: " .. self.vehicle:getScript():getName() .. " )";
-	end
     local carName = self.vehicle:getScript():getCarModelName() or self.vehicle:getScript():getName()
 	local name = getText("IGUI_VehicleName" .. carName);
 	if string.match(self.vehicle:getScript():getName(), "Burnt") then
@@ -1149,8 +1153,13 @@ function ISVehicleMechanics:render()
 		end
 		name = getText("IGUI_VehicleNameBurntCar", name);
 	end
-	self:drawTextCentre(name .. debugLine, x + (rectWidth / 2), y, self.partCatRGB.r, self.partCatRGB.g, self.partCatRGB.b, self.partCatRGB.a, UIFont.Medium);
+	self:drawTextCentre(name, x + (rectWidth / 2), y, self.partCatRGB.r, self.partCatRGB.g, self.partCatRGB.b, self.partCatRGB.a, UIFont.Medium);
 	y = y + FONT_HGT_MEDIUM;
+	if getCore():getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
+		local debugLine = getText("IGUI_Mechanics_VehicleScript", self.vehicle:getScript():getFullType())
+		self:drawTextCentre(debugLine, x + (rectWidth / 2), y, 0.66, 0.66, 0.66, 1.0, UIFont.Small);
+		y = y + lineHgt;
+	end
 	self:drawText(getText("Tooltip_item_Mechanic") .. ": " .. getText("IGUI_VehicleType_" .. self.vehicle:getScript():getMechanicType()), x, y, self.partCatRGB.r, self.partCatRGB.g, self.partCatRGB.b, self.partCatRGB.a, UIFont.Small);
 	y = y + lineHgt;
 	self:drawText(getText("IGUI_OverallCondition") .. ": ", x, y, self.partCatRGB.r, self.partCatRGB.g, self.partCatRGB.b, self.partCatRGB.a, UIFont.Small);
@@ -1168,26 +1177,24 @@ function ISVehicleMechanics:render()
 	--	else
 	--		self:drawText("Failure", x + getTextManager():MeasureStringX(UIFont.Small, "Engine :") + 2, y, 1, 0, 0, self.partCatRGB.a, UIFont.Small);
 	--	end
-	y = y + lineHgt + 4;
 	local actionQueue = ISTimedActionQueue.getTimedActionQueue(self.chr);
 	local progress = false;
 	if actionQueue and actionQueue.queue and actionQueue.queue[1] and actionQueue.queue[1].jobType and actionQueue.queue[1].jobType ~= "" then
-		local progressY = 30 + rectHgt - lineHgt - 4
-		self:drawProgressBar(x, progressY, rectWidth - 10, lineHgt - 2, actionQueue.queue[1]:getJobDelta(), fgBar);
-		self:drawTextCentre(actionQueue.queue[1].jobType, (self.width - 12 + x) / 2, progressY - 2, 0.8, 0.8, 0.8, 1, UIFont.Small);
-		y = y + lineHgt;
+		local progressY = self.progressY
+		self:drawProgressBar(x, progressY, rectWidth - 10, self.progressHgt, actionQueue.queue[1]:getJobDelta(), fgBar);
+		self:drawTextCentre(actionQueue.queue[1].jobType, (self.width - 12 + x) / 2, progressY, 0.8, 0.8, 0.8, 1, UIFont.Small);
 		progress = true;
 	end
 	
 	if not progress and self.flashTimer > 0 then
-		local progressY = 30 + rectHgt - lineHgt - 4
+		local progressY = self.progressY
 		self.flashTimer = self.flashTimer - 1
 		if self.flashFailure then
-			self:drawProgressBar(x, progressY, rectWidth - 10, lineHgt - 2, 100, {r=0.5, g=0.1, b=0.1, a=self.flashTimerAlpha});
-			self:drawTextCentre(getText("IGUI_Failure"), (self.width - 12 + x) / 2, progressY- 2, 0.8, 0.8, 0.8, 1, UIFont.Small);
+			self:drawProgressBar(x, progressY, rectWidth - 10, self.progressHgt, 100, {r=0.5, g=0.1, b=0.1, a=self.flashTimerAlpha});
+			self:drawTextCentre(getText("IGUI_Failure"), (self.width - 12 + x) / 2, progressY, 0.8, 0.8, 0.8, 1, UIFont.Small);
 		else
-			self:drawProgressBar(x, progressY, rectWidth - 10, lineHgt - 2, 100, {r=0.1, g=0.6, b=0.1, a=self.flashTimerAlpha});
-			self:drawTextCentre(getText("IGUI_Success"), (self.width - 12 + x) / 2, progressY- 2, 0.8, 0.8, 0.8, 1, UIFont.Small);
+			self:drawProgressBar(x, progressY, rectWidth - 10, self.progressHgt, 100, {r=0.1, g=0.6, b=0.1, a=self.flashTimerAlpha});
+			self:drawTextCentre(getText("IGUI_Success"), (self.width - 12 + x) / 2, progressY, 0.8, 0.8, 0.8, 1, UIFont.Small);
 		end
 		if self.flashTimerAlphaInc then
 			self.flashTimerAlpha = self.flashTimerAlpha + 0.06;
@@ -1196,14 +1203,8 @@ function ISVehicleMechanics:render()
 			self.flashTimerAlpha = self.flashTimerAlpha - 0.06;
 			if self.flashTimerAlpha <= 0 then self.flashTimerAlpha = 0; self.flashTimerAlphaInc = true; end
 		end
-		y = y + lineHgt;
 	end
-	
-	-- list of parts
-	x = self.xCarTexOffset;
-	y = 140;
-	--	self:drawText("Parts:", x, y, self.partCatRGB.r, self.partCatRGB.g, self.partCatRGB.b, self.partCatRGB.a, UIFont.Medium);
-	
+
 	local selectedPart;
 	if self.listbox.items[self.listbox.selected] then
 		selectedPart = self.listbox.items[self.listbox.selected].item.part;
@@ -1224,7 +1225,10 @@ function ISVehicleMechanics:render()
 end
 
 function ISVehicleMechanics:renderPartDetail(part)
-	local y = self:titleBarHeight() + 10 + FONT_HGT_MEDIUM + 5;
+	local y = self.rectY + FONT_HGT_MEDIUM + 5;
+	if getCore():getDebug() or getSandboxOptions():isUnstableScriptNameSpam() then
+		y = y + FONT_HGT_SMALL
+	end
 	local x = self.xCarTexOffset + (self.width - 10 - self.xCarTexOffset) / 2;
 	local lineHgt = FONT_HGT_SMALL;
 	local inventoryItem = part:getInventoryItem();
@@ -1501,6 +1505,7 @@ function ISVehicleMechanics:new(x, y, character, vehicle)
 	setmetatable(o, self);
 	self.__index = self;
 	o.minimumHeight = height
+	o.listWidth = 0
 	o.chr = character;
 	o.playerNum = character:getPlayerNum();
 	o.vehicle = vehicle;

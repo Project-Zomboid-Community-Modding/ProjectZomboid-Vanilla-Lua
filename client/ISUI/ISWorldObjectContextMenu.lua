@@ -872,14 +872,9 @@ ISWorldObjectContextMenu.onCheckStats = function(worldobjects, player, otherPlay
 	ui:setVisible(true);
 end
 
-ISWorldObjectContextMenu.onMedicalCheck = function(worldobjects, player, otherPlayer)
-    if isMultiplayer() and player:getRole():hasCapability(Capability.CanMedicalCheat) then
-        ISTimedActionQueue.add(ISMedicalCheckAction:new(player, otherPlayer))
-    else
-        if luautils.walkAdj(player, otherPlayer:getCurrentSquare()) or
-				(player:isSeatedInVehicle() and otherPlayer:isSeatedInVehicle() and player:getVehicle() == otherPlayer:getVehicle()) then
-            ISTimedActionQueue.add(ISMedicalCheckAction:new(player, otherPlayer))
-        end
+ISWorldObjectContextMenu.onMedicalCheck = function(worldobjects, requester, target)
+    if ISHealthPanel.canPerformMedicalCheck(target, requester) then
+        requestMedicalCheck(target, requester);
     end
 end
 
@@ -1506,7 +1501,7 @@ end
 
 ISWorldObjectContextMenu.onGetDoorKey = function(worldobjects, player, door, doorKeyId)
 	if isClient() then
-		SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(doorKeyId)) .. "\"")
+		SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getUsername() .. "\" \"" .. luautils.trim(tostring(doorKeyId)) .. "\"")
 	else
 		local newKey = instanceItem("Base.Key1")
 		getSpecificPlayer(player):getInventory():AddItem(newKey);
@@ -2800,6 +2795,7 @@ end
 ISWorldObjectContextMenu.onFluidInfo = function(player, fluidcontainer)
 	local playerObj = getSpecificPlayer(player)
 	local entity = fluidcontainer:getGameEntity()
+    local c = ISFluidContainer:new(fluidcontainer);
 	if instanceof(entity, "IsoObject") then
 		if luautils.walkAdjObject(playerObj, entity, true) then
 			ISTimedActionQueue.add(ISFluidPanelAction:new(playerObj, c, ISFluidInfoUI));
@@ -2808,7 +2804,7 @@ ISWorldObjectContextMenu.onFluidInfo = function(player, fluidcontainer)
 	end
 	local square = entity:getSquare();
 	if not square or luautils.walkAdj(playerObj, square) then
-		local c = ISFluidContainer:new(fluidcontainer);
+
 		ISTimedActionQueue.add(ISFluidPanelAction:new(playerObj, c, ISFluidInfoUI));
 	end
 end
@@ -2875,7 +2871,7 @@ ISWorldObjectContextMenu.onRemoveGroundCoverItemHammerOrPickAxe = function(world
 end
 
 ISWorldObjectContextMenu.chairCheckList = {}
-ISWorldObjectContextMenu.chairCheckList.badList = { "Barstool", "Chair", "Chairs", "Ottoman", "Stool", "Stump", "Block", "Table", "Toilet"} --Futon",
+ISWorldObjectContextMenu.chairCheckList.badList = { "Barstool", "Chair", "Chairs", "Ottoman", "Stool", "Stump", "Block", "Table", "Toilet", "Swingset"}
 ISWorldObjectContextMenu.chairCheckList.goodList = { "Beach", "Black Fancy", "Comfy", "Dentist Patient", "Fancy White", "Lazy", "Light Blue", "Modern White", "Rattan", "Salon", "Victorian", "Yellow Modern"} -- , "Plastic"
 
 ISWorldObjectContextMenu.chairCheck = function(bed)

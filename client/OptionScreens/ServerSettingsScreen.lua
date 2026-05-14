@@ -4279,7 +4279,7 @@ SettingsTable = {
 					{ name = "SafehouseAllowRespawn" },
 					{ name = "SafehouseDaySurvivedToClaim" },
 					{ name = "SafeHouseRemovalTime" },
-					{ name = "DisableSafehouseWhenPlayerConnected" },
+					{ name = "DisableSafehouseWhenOwnerConnected" },
 					{ name = "SafehouseAllowNonResidential" },
 					{ name = "SafehouseDisableDisguises" },
 				},

@@ -305,6 +305,7 @@ local reloadMagazine = function(playerObj, magazine)
 	local itemKey = magazine:getAmmoType():getItemKey();
 	local ammoCount = magazine:getCurrentAmmoCount() + ISInventoryPaneContextMenu.transferBullets(playerObj, itemKey, magazine:getCurrentAmmoCount(), magazine:getMaxAmmo())
 	if ammoCount > 0 then
+		ISWorldObjectContextMenu.transferIfNeeded(playerObj, magazine)
 		ISTimedActionQueue.add(ISLoadBulletsInMagazine:new(playerObj, magazine, ammoCount))
 	end
 	return ammoCount

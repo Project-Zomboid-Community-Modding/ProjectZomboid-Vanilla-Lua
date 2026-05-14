@@ -502,7 +502,7 @@ debugScenarios.FenrisScenario = {
     end,
     removeInitialZ = function() 
         local player = getPlayer()
-        local zombies = getCell():getObjectList()
+        local zombies = getCell():getObjectListForLua()
         for i=zombies:size(),1,-1 do
             local zombie = zombies:get(i-1)
             if instanceof(zombie, "IsoZombie") and player:DistTo(zombie) < 100 then

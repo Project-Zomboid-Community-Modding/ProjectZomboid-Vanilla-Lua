@@ -8,6 +8,7 @@ STATE[4] = {}
 function ISJoystickButtonRadialMenu.onJoypadDown(button, joypadData)
 	local playerNum = joypadData.player
 	local playerObj = getSpecificPlayer(playerNum)
+	if playerObj == nil then return end
 	if playerObj:getVehicle() then
 		return
 	end

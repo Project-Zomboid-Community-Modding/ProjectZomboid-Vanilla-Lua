@@ -20,6 +20,9 @@ local function FindBarricadeAble(square, dir)
 end
 
 local function ReplaceExistingObject(object, dir, numPlank, numMetalSheet, numMetalBar)
+    if isServer() and instanceof(object, "IsoBarricade") then
+        return
+    end
 	local square = object:getSquare()
 	local addTo = FindBarricadeAble(square, dir)
 	if not addTo then

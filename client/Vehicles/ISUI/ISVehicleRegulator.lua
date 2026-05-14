@@ -9,7 +9,7 @@ local function isRegulatorButtonPressed(joypadData)
 	local playerIndex = joypadData.player
 	local playerObj = getSpecificPlayer(playerIndex)
 
-	if not isJoypadPressed(joypadData.id, getJoypadXButton(joypadData.id)) then return false end
+	if not JoypadButton.X:isDown(joypadData.id) then return false end
 
 	local vehicle = playerObj:getVehicle()
 	if vehicle == nil then return false end

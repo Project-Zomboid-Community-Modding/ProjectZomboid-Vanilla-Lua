@@ -94,7 +94,11 @@ function LuaFileBrowser:onButtonReload()
     if self.buttonReloadRow == -1 then return end
     local item = self.fileList.items[self.buttonReloadRow]
     if not item then return end
-    reloadLuaFile(item.item)
+    if SourceWindow.map[item.item] then
+        SourceWindow.map[item.item]:reloadFile()
+    else
+        reloadLuaFile(item.item)
+    end
 end
 
 function LuaFileBrowser:createChildren()

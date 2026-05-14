@@ -10,7 +10,7 @@ function ISFluidUtil.validateContainer(_container)
     end
     if _container:getOwner() then
         if instanceof(_container:getOwner(), "InventoryItem") then
-            return _container:getOwner():isInPlayerInventory()
+            return _container:getOwner():isInPlayerInventory() or getPlayer():getInventory():containsID(_container:getOwner():getID())
         elseif instanceof(_container:getOwner(), "IsoObject") then
             return _container:getOwner():isExistInTheWorld(); --todo when multi-tile implemented check if multi-tile still valid.
         end

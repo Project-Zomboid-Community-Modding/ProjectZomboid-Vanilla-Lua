@@ -7,34 +7,6 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local JOYPAD_TEX_SIZE = 32
 
-local axisTextures = {
-	Joypad.Texture.LStickLR,
-	Joypad.Texture.LStickUD,
-	Joypad.Texture.RStickLR,
-	Joypad.Texture.RStickUD,
-	Joypad.Texture.LTrigger,
-	Joypad.Texture.RTrigger
-}
-
-local buttonTextures =
-{
-	Joypad.Texture.AButton,
-	Joypad.Texture.BButton,
-	Joypad.Texture.XButton,
-	Joypad.Texture.YButton,
-	Joypad.Texture.LBumper,
-	Joypad.Texture.RBumper,
-	Joypad.Texture.View,
-	Joypad.Texture.Menu,
-	getTexture("media/ui/inventoryPanes/Tickbox_Cross.png"), --placeholder image for unused button
-	Joypad.Texture.LStick,
-	Joypad.Texture.RStick,
-	Joypad.Texture.DPadUp,
-	Joypad.Texture.DPadRight,
-	Joypad.Texture.DPadDown,
-	Joypad.Texture.DPadLeft
-}
-
 function ISControllerTestPanel:onControllerSelected()
 	JoypadState.controllerTest = false
 	self.selectedController = nil
@@ -62,7 +34,7 @@ function ISControllerTestPanel:onControllerSelected()
 		end
 		self.mainOptions.btnJoypadSensitivityP:setEnable(true)
 		self.mainOptions.btnJoypadSensitivityM:setEnable(true)
-		if getControllerAxisCount(controller)>0 then
+		if JoypadAxis1d.getAxisCount() > 0 then
 			self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
 		end
 	end
@@ -71,16 +43,17 @@ end
 function ISControllerTestPanel:joypadSensitivityM()
 	local controller = self.selectedController
 	if not controller then return end
-	local axisCount = getControllerAxisCount(controller)
+	local axisCount = JoypadAxis1d.getAxisCount()
 	for i=1,axisCount do
-		local deadZone = getControllerDeadZone(controller, i-1) - 0.05
+        local axis = JoypadAxis1d.fromIndex(i-1)
+		local deadZone = axis:getDeadZone(controller) - 0.05
 		if deadZone<0 then
 			deadZone = 0;
 		end
 		if deadZone>1 then
 			deadZone = 1;
 		end
-		setControllerDeadZone(controller, i-1, deadZone)
+		axis:setDeadZone(controller, deadZone)
 	end
 	self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
 	saveControllerSettings(controller)
@@ -89,16 +62,17 @@ end
 function ISControllerTestPanel:joypadSensitivityP()
 	local controller = self.selectedController
 	if not controller then return end
-	local axisCount = getControllerAxisCount(controller)
+	local axisCount = JoypadAxis1d.getAxisCount()
 	for i=1,axisCount do
-		local deadZone = getControllerDeadZone(controller, i-1) + 0.05
+        local axis = JoypadAxis1d.fromIndex(i-1)
+		local deadZone = axis:getDeadZone(controller) + 0.05
 		if deadZone<0 then
 			deadZone = 0;
 		end
 		if deadZone>1 then
 			deadZone = 1;
 		end
-		setControllerDeadZone(controller, i-1, deadZone)
+		axis:setDeadZone(controller, deadZone)
 	end
 	self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
 	saveControllerSettings(controller)
@@ -114,14 +88,24 @@ function ISControllerTestPanel:render()
 	local axisY = self.combo:getBottom() + UI_BORDER_SPACING
 	local barWid = 200
 	local barHeight = math.max(JOYPAD_TEX_SIZE+UI_BORDER_SPACING, BUTTON_HGT)
-	local axisCount = getControllerAxisCount(controller)
+    local axisCount = JoypadAxis1d.getAxisCount()
 	for i=1,axisCount do
+            local axis = JoypadAxis1d.fromIndex(i-1)
 			self:drawText(getText("UI_ControllerTest_Axis", i-1), UI_BORDER_SPACING+1, axisY + (barHeight-FONT_HGT_SMALL)/2, 1, 1, 1, 1, UIFont.Small)
-			local f = (1 + getControllerAxisValue(controller, i-1)) / 2
+
+			local f = (1 + axis:getValue(controller)) / 2
 			self:drawProgressBar(barX, axisY, barWid, barHeight, f, { r=0.9,g=0.9,b=0.9,a=1 })
-			local deadZone = getControllerDeadZone(controller, i-1)
-			self:drawRect(barX + barWid / 2 - barWid / 2 * deadZone, axisY, barWid * deadZone, barHeight, 0.5, 0, 0, 1)
-			self:drawTextureScaled(axisTextures[i], barX+barWid+UI_BORDER_SPACING, axisY + (barHeight-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1)
+
+			local deadZone = axis:getDeadZone(controller)
+			if (axis == JoypadAxis1d.LeftTrigger or axis == JoypadAxis1d.RightTrigger) then
+                -- Trigger dead-zones are at the minValue
+			    self:drawRect(barX, axisY, barWid * deadZone, barHeight, 0.5, 0, 0, 1)
+			else
+                -- Thumb stick dead-zones are at the middle
+                self:drawRect(barX + barWid / 2 - barWid / 2 * deadZone, axisY, barWid * deadZone, barHeight, 0.5, 0, 0, 1)
+            end
+
+			self:drawTextureScaled(Joypad.AxisTextures[axis], barX+barWid+UI_BORDER_SPACING, axisY + (barHeight-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1)
 			axisY = axisY + barHeight + UI_BORDER_SPACING
 	end
 
@@ -130,7 +114,7 @@ function ISControllerTestPanel:render()
 	local buttonY = axisY + UI_BORDER_SPACING
 	local buttonWidth = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2 + BUTTON_HGT
 	local buttonHeight = math.max(JOYPAD_TEX_SIZE+UI_BORDER_SPACING, BUTTON_HGT)
-	local buttonCount = getControllerButtonCount(controller)
+	local buttonCount = JoypadButton.getButtonCount()
 	buttonCount = math.min(buttonCount, 40)
 	if buttonCount > 0 then
 		self:drawText(getText("UI_ControllerTest_Buttons"), UI_BORDER_SPACING+1, buttonY, 1, 1, 1, 1, UIFont.Small)
@@ -138,20 +122,15 @@ function ISControllerTestPanel:render()
 	buttonY = buttonY + self.smallFontHgt + UI_BORDER_SPACING
 	local buttonsBottom = buttonY
 	for i=1,buttonCount do
-		if i ~= 9 then --hide the home button
+        local button = JoypadButton.fromIndex(i-1)
+		if button ~= JoypadButton.Guide then --hide the home button
 			local r,g,b = 0.5,0.5,0.5
-			if isJoypadPressed(controller,i-1) then
+			if button:isDown(controller) then
 				self:drawRect(buttonX, buttonY, buttonWidth, buttonHeight, 1.0, 0.2, 0.2, 0.2)
 				r,g,b = 0.9,0.9,0.9
-				if i-1 == Joypad.AButton then
-					isAY = isAY + 1
-				end
-				if i-1 == Joypad.YButton then
-					isAY = isAY + 1
-				end
 			end
 			self:drawRectBorder(buttonX, buttonY, buttonWidth, buttonHeight, 1.0, r, g, b)
-			self:drawTextureScaled(buttonTextures[i], buttonX+UI_BORDER_SPACING, buttonY + (buttonHeight-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1)
+			self:drawTextureScaled(Joypad.ButtonTextures[button], buttonX+UI_BORDER_SPACING, buttonY + (buttonHeight-JOYPAD_TEX_SIZE)/2, JOYPAD_TEX_SIZE, JOYPAD_TEX_SIZE, 1)
 			self:drawTextCentre(tostring(i-1), buttonX+buttonWidth - BUTTON_HGT/2 - UI_BORDER_SPACING,
 					buttonY - getTextManager():CentreStringYOffset(UIFont.Small, tostring(i-1)) + (buttonHeight-FONT_HGT_SMALL)/2, 1, 1, 1, 1, UIFont.Small)
 			buttonsBottom = buttonY + buttonHeight
@@ -162,7 +141,7 @@ function ISControllerTestPanel:render()
 			end
 		end
 	end
-	if isAY == 2 then
+	if JoypadButton.A:isDown(controller) and JoypadButton.Y:isDown(controller) then
 		JoypadState.controllerTest = false
 	end
 

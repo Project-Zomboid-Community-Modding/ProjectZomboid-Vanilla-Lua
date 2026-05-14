@@ -116,10 +116,10 @@ end
 function ISClothingExtraAction:complete()
 	self.character:removeFromHands(self.item)
 	self.character:removeWornItem(self.item, false)
-	self.character:getInventory():Remove(self.item)
-	sendRemoveItemFromContainer(self.character:getInventory(), self.item);
 
 	local newItem = self:createItem(self.item, self.extra)
+	self.character:getInventory():Remove(self.item)
+	sendRemoveItemFromContainer(self.character:getInventory(), self.item);
 	self.character:getInventory():AddItem(newItem)
 	sendAddItemToContainer(self.character:getInventory(), newItem);
 

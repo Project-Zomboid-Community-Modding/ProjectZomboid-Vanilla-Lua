@@ -172,6 +172,10 @@ end
 function ISHandcraftAction:perform()
 	--log(DebugType.CraftLogic, "ISHandcraftAction.perform")
 
+    if not isClient() and self.eatPercentage > 0 and self.logic:getRecipeData() then
+        self.logic:getRecipeData():setEatPercentage(self.eatPercentage)
+    end
+
 	self:clearItemsProgressBar(false);
 	
 	if self.sound and self.character:getEmitter():isPlaying(self.sound) then

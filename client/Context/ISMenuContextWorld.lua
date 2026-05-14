@@ -1,25 +1,25 @@
 ISMenuContextWorld = {};
 
 function ISMenuContextWorld.new()
-	local self 					= ISMenuElement.new();
+	local self = ISMenuElement.new();
 
-    self.debug                  = false;
-    self.contextData            = {[0]={},[1]={},[2]={},[3]={}};
+    self.debug = false;
+    self.contextData = {[0]={},[1]={},[2]={},[3]={}};
 
     function self.reset(_playerNum)
         local contextData = self.contextData[_playerNum];
         if contextData then
-            contextData.context 				= nil;
-            contextData.playerNum 				= nil;
-            contextData.player 				    = nil;
-            contextData.playerRoom				= nil;
-            contextData.inventory 				= nil;
-            contextData.object                  = nil;
-            contextData.objects 				= nil;
-            contextData.test 					= nil;
-            contextData.isJoypad                = false;
-            contextData.joypadData              = nil;
-            contextData.squares                 = {};
+            contextData.context = nil;
+            contextData.playerNum = nil;
+            contextData.player = nil;
+            contextData.playerRoom = nil;
+            contextData.inventory = nil;
+            contextData.object = nil;
+            contextData.objects = nil;
+            contextData.test = nil;
+            contextData.isJoypad = false;
+            contextData.joypadData = nil;
+            contextData.squares = {};
         end
     end
 	
@@ -57,18 +57,18 @@ function ISMenuContextWorld.new()
 
         local contextData = self.getContextData(_playerNum);
 
-        contextData.context 				= context;
-        contextData.playerNum 				= _playerNum;
-        contextData.player 				    = playerObj;
-        contextData.playerRoom				= playerObj:getCurrentSquare() and playerObj:getCurrentSquare():getRoom();
-        contextData.inventory 				= playerObj:getInventory();
-        contextData.object                  = _object;
-        contextData.objects 				= _objects;
-        contextData.test 					= _test;
+        contextData.context = context;
+        contextData.playerNum = _playerNum;
+        contextData.player = playerObj;
+        contextData.playerRoom = playerObj:getCurrentSquare() and playerObj:getCurrentSquare():getRoom();
+        contextData.inventory = playerObj:getInventory();
+        contextData.object = _object;
+        contextData.objects = _objects;
+        contextData.test = _test;
 
         if JoypadState.players[_playerNum+1] then
-            contextData.isJoypad                = true;
-            contextData.playerData              = getPlayerData(_playerNum);
+            contextData.isJoypad = true;
+            contextData.playerData = getPlayerData(_playerNum);
         end
 
         contextData.objects = self.getAllObjects(contextData);
@@ -158,28 +158,28 @@ end
 --ISMenuContextWorld = {};
 
 function ISMenuContextWorld.new()
-	local self 					= ISMenuElement.new();
+	local self = ISMenuElement.new();
 
-    self.contextData      = {[0]={},[1]={},[2]={},[3]={}};
+    self.contextData = {[0]={},[1]={},[2]={},[3]={}};
 
     function self.reset(_playerNum)
         local contextData = self.contextData[_playerNum];
         if contextData then
-            contextData.context 				= nil;
-            contextData.playerNum 				= nil;
-            contextData.player 				    = nil;
-            contextData.playerRoom				= nil;
-            contextData.inventory 				= nil;
-            --contextData.object 				    = nil;
-            --contextData.sq						= nil;
-            --contextData.sqTrue					= nil;
-            --contextData.window 				    = nil;
-            --contextData.thump 					= nil;
-            contextData.objects 				= nil;
-            --contextData.worldObjects			= nil;
-            contextData.test 					= nil;
-            --contextData.x 						= nil;
-            --contextData.y 						= nil;
+            contextData.context = nil;
+            contextData.playerNum = nil;
+            contextData.player = nil;
+            contextData.playerRoom = nil;
+            contextData.inventory = nil;
+            --contextData.object = nil;
+            --contextData.sq = nil;
+            --contextData.sqTrue = nil;
+            --contextData.window = nil;
+            --contextData.thump = nil;
+            contextData.objects = nil;
+            --contextData.worldObjects = nil;
+            contextData.test = nil;
+            --contextData.x = nil;
+            --contextData.y = nil;
         end
     end
 
@@ -227,18 +227,18 @@ function ISMenuContextWorld.new()
 
         local contextData = self.getContextData(_playerNum);
 
-        contextData.context 				= context;
-        contextData.playerNum 				= _playerNum;
-        contextData.player 				    = playerObj;
-        contextData.playerRoom				= playerObj:getCurrentSquare():getRoom();
-        contextData.inventory 				= playerObj:getInventory();
-        contextData.object 				    = _object;
-        --contextData.window 				    = IsoObjectPicker.Instance:PickWindow(_x, _y);
-        --contextData.thump 					= IsoObjectPicker.Instance:PickThumpable(_x, _y);
-        contextData.objects 				= _objects;
-        contextData.test 					= _test;
-        --contextData.x 						= _x;
-        --contextData.y 						= _y;
+        contextData.context = context;
+        contextData.playerNum = _playerNum;
+        contextData.player = playerObj;
+        contextData.playerRoom = playerObj:getCurrentSquare():getRoom();
+        contextData.inventory = playerObj:getInventory();
+        contextData.object = _object;
+        --contextData.window = IsoObjectPicker.Instance:PickWindow(_x, _y);
+        --contextData.thump = IsoObjectPicker.Instance:PickThumpable(_x, _y);
+        contextData.objects = _objects;
+        contextData.test = _test;
+        --contextData.x = _x;
+        --contextData.y = _y;
 
 		if _object and instanceof(_object, "IsoMovingObject") then
             contextData.sq = _object:getCurrentSquare();
@@ -265,7 +265,7 @@ function ISMenuContextWorld.new()
             return not _test and context or false;
         end
 
-        contextData.worldObjects 			= self.getWorldObjects( contextData.sq );
+        contextData.worldObjects = self.getWorldObjects( contextData.sq );
 
 
 for index, element in self.elements.indexIterator() do
@@ -289,9 +289,9 @@ function self.getWorldObjects( _sq )
     local t = {};
     local objects = _sq:getObjects();
     for i=0, objects:size()-1 do
-        local lObject 		= objects:get(i);
-        local lSprite 		= lObject:getSprite();
-        local lProps 		= lSprite:getProperties();
+        local lObject = objects:get(i);
+        local lSprite = lObject:getSprite();
+        local lProps = lSprite:getProperties();
 
         table.insert( t, { object = lObject, sprite = lSprite, props = lProps } );
     end

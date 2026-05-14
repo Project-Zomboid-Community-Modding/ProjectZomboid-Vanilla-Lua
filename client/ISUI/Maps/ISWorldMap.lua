@@ -538,7 +538,7 @@ function ISWorldMap:onMouseUpPrintMedia()
     local win = PZAPI.UI.PrintMedia{
         x = 20, y = 20,
     }
-    win.media_id = val
+    win.media_id = self.mouseOverPrintMedia.mediaID
     win.data = getText(val:getTranslationInfoKey())
     win.children.bar.children.name.text = getText(val:getTranslationKey())
     win.textTitle = win.children.bar.children.name.text
@@ -1007,6 +1007,7 @@ function ISWorldMap:onConfirmForget(button)
 	if button.internal ~= "YES" then return end
 	self.mapAPI:getSymbolsAPI():clearUserAnnotations()
 	WorldMapVisited.getInstance():forget()
+	sendClientCommand(getPlayer(), "map", "forget", {});
 end
 
 function ISWorldMap:onToggleSymbols()
@@ -1167,6 +1168,9 @@ function ISWorldMap:close()
 	if getSpecificPlayer(0) then
 		getWorld():setDrawWorld(true)
 	end
+    if ISWorldMap.shouldPause() then
+        setGameSpeed(1);
+    end
 	for i=1,getNumActivePlayers() do
 		if getSpecificPlayer(i-1) then
 			getSpecificPlayer(i-1):setBlockMovement(false)
@@ -1479,6 +1483,10 @@ function ISWorldMap:new(x, y, width, height)
 	return o
 end
 
+function ISWorldMap.shouldPause()
+    return MainScreen.instance.inGame and not isClient() and getCore():getOptionMapViewPause();
+end
+
 function ISWorldMap.IsAllowed()
 	if getCore():getGameMode() == "Tutorial" then return false end
 	return SandboxVars.Map and (SandboxVars.Map.AllowWorldMap == true) or false
@@ -1524,6 +1532,9 @@ function ISWorldMap.ShowWorldMap(playerNum, centerX, centerY, zoom)
 
 		ISWorldMap_instance:addToUIManager()
 		ISWorldMap_instance.getJoypadFocus = true
+        if ISWorldMap.shouldPause() then
+            setGameSpeed(0);
+        end
 		for i=1,getNumActivePlayers() do
 			if getSpecificPlayer(i-1) then
 				getSpecificPlayer(i-1):setBlockMovement(true)
@@ -1554,6 +1565,9 @@ function ISWorldMap.ShowWorldMap(playerNum, centerX, centerY, zoom)
 	else
 		ISWorldMap_instance:setHideUnvisitedAreas(false)
 	end
+    if ISWorldMap.shouldPause() then
+        setGameSpeed(0);
+    end
 end
 
 function ISWorldMap.HideWorldMap(playerNum)
@@ -1629,7 +1643,7 @@ function ISWorldMap.checkKey(key)
 		-- For debugging the map in the main menu without starting a game.
 		return false
 	end
-	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then
+	if getGameSpeed() == 0 and (not ISWorldMap_instance or not ISWorldMap_instance:isVisible()) then
 		return false
 	end
 	local playerObj = getSpecificPlayer(0)

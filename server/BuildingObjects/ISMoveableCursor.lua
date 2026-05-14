@@ -25,8 +25,10 @@ ISMoveableCursor.cacheMode = {}; --nil;
 ISMoveableCursor.normalColor = { r=0.5, g=0.5, b=0.5 };
 ISMoveableCursor.validColor = { r=0.5, g=1, b=0.5 };
 ISMoveableCursor.invalidColor = { r=1, g=0, b=0 };
+ISMoveableCursor.DEBUG_RENDER = getDebug() and false
 
 function ISMoveableCursor:deactivate()
+    self:resetObjectHiddenDuringRotate()
     ISMoveableCursor.cacheMode[self.player] = nil;
 end
 
@@ -183,44 +185,68 @@ end
 
 function ISMoveableCursor:create(_x, _y, _z, _north, _sprite)
     showDebugInfoInChat("Cursor Create \'ISMoveableCursor\' "..tostring(_x)..", "..tostring(_y)..", "..tostring(_z)..", "..tostring(_north)..", "..tostring(_sprite))
-    local square = getCell():getGridSquare(_x, _y, _z);
-    if square ~= nil then
-        if not self:isValid(square) then
-            return
-        end
+    if ISMoveableCursor.DEBUG_RENDER then self.pathfindAction = nil end
+    if self:cannotCreate(_x, _y, _z) then
+        ISTimedActionQueue.clear(getSpecificPlayer(self.player))
+        self.cursorFacing = nil
+        self.joypadFacing = nil
+        self.objectListCache = nil
+        return
     end
-    if self.canCreate and self.currentMoveProps and self.origSpriteName then
-        if self.currentMoveProps then
-            if ISMoveableDefinitions.cheat or self.currentMoveProps:walkToAndEquip( self.character, self.currentSquare, ISMoveableCursor.mode[self.player] ) then
-                if ISMoveableCursor.mode[self.player] == "scrap" then
-                    if self.currentMoveProps.object:getProperties():has(IsoFlagType.solidfloor) then
-                        local adjacent = AdjacentFreeTileFinder.Find(self.currentSquare, self.character)
-                        if adjacent ~= nil then
-                            ISTimedActionQueue.add(ISWalkToTimedAction:new(self.character, adjacent))
-                        end
-                    end
+    local mode = ISMoveableCursor.mode[self.player]
+    local moveProps = (mode == "rotate") and self.origMoveProps or self.currentMoveProps
+    local spriteName = (mode == "rotate") and self.currentMoveProps.spriteName or self.origMoveProps.spriteName
+    if ISMoveableDefinitions.cheat or moveProps:walkToAndEquip(self.character, self.currentSquare, mode, spriteName) then
+        if ISMoveableCursor.DEBUG_RENDER then
+            local taq = ISTimedActionQueue.getTimedActionQueue(self.character)
+            if #taq.queue > 0 then
+                local action = taq.queue[#taq.queue]
+                if action.Type == 'ISPathFindAction' and action.goal[1] == 'NearestPreferred' then
+                    self.pathfindAction = action
                 end
-                local mode = ISMoveableCursor.mode[self.player]
-                local object = nil
-                local sprInstance = nil
-                local direction = self.currentMoveProps:getFaceDirectionFromSpriteName( self.currentMoveProps.sprite:getName())
-                local item = nil
-                if mode == "place" then
-                    item = self.currentMoveProps:findInInventory( self.character, self.origSpriteName );
-                end
-                if mode == "rotate" then
-                    object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.origSpriteName );
-                end
-                if (mode == "pickup") or (mode == "scrap") or (mode == "repair") then
-                    object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.currentMoveProps.spriteName );
-                end
-                ISTimedActionQueue.add(ISMoveablesAction:new(self.character, self.currentSquare, mode, self.origSpriteName, object, direction, item, self ));
             end
         end
+        if mode == "scrap" then
+            if self.currentMoveProps.object:getProperties():has(IsoFlagType.solidfloor) then
+                local adjacent = AdjacentFreeTileFinder.Find(self.currentSquare, self.character)
+                if adjacent ~= nil then
+                    ISTimedActionQueue.add(ISWalkToTimedAction:new(self.character, adjacent))
+                end
+            end
+        end
+        local object = nil
+        local sprInstance = nil
+        local direction = self.currentMoveProps:getFaceDirectionFromSpriteName( self.currentMoveProps.sprite:getName())
+        local item = nil
+        if mode == "place" then
+            item = self.currentMoveProps:findInInventory( self.character, self.origSpriteName );
+        end
+        if mode == "rotate" then
+            object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.origSpriteName );
+        end
+        if (mode == "pickup") or (mode == "scrap") or (mode == "repair") then
+            object, sprInstance = self.currentMoveProps:findOnSquare( self.currentSquare, self.currentMoveProps.spriteName );
+        end
+        ISTimedActionQueue.add(ISMoveablesAction:new(self.character, self.currentSquare, mode, self.origSpriteName, object, direction, item, self ));
     end
     self.cursorFacing = nil;
     self.joypadFacing = nil;
     self.objectListCache = nil;
+end
+
+function ISMoveableCursor:cannotCreate(x, y, z)
+    local square = getCell():getGridSquare(x, y, z)
+    if square ~= nil and not self:isValid(square) then
+        return true
+    end
+    if not self.canCreate or not self.currentMoveProps or not self.origSpriteName then
+        return true
+    end
+    local mode = ISMoveableCursor.mode[self.player]
+    if mode == "rotate" and self:isFacingOriginalDirection() then
+        return true
+    end
+    return false
 end
 
 function ISMoveableCursor:getInfoPanel()
@@ -272,6 +298,42 @@ function ISMoveableCursor:setInfoPanel( _square, _object, _moveProps, _customTex
     return infoPanel;
 end
 
+local function isMouseOverUI()
+	local uis = UIManager.getUI()
+	for i=1,uis:size() do
+		local ui = uis:get(i-1)
+		if ui:isMouseOver() then
+			return true
+		end
+	end
+	return false
+end
+
+-- beforeWorldRender() is called before the world is rendered, whereas render() is called after the world is rendered.
+-- This method is needed so IsoObject.setDoRender() is called before the world is rendered, to avoid objects not being
+-- rendered for one frame when the current object changes.  Unfortunately, various checks here are duplicated from
+-- ISBuildingObject.DoTileBuilding() and our render() method.
+function ISMoveableCursor:beforeWorldRender(x, y, z)
+    local square = getCell():getGridSquare(x, y, z)
+    if (self.isLeftDown or self.build) and self.square then
+        square = self.square
+    end
+    if self.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() and not GameKeyboard.isKeyDown("Attack/Click") and isMouseOverUI() then
+        square = nil
+    end
+    self:isValid(square, self.north)
+    local mode = ISMoveableCursor.mode[self.player]
+    local renderRotateIndicator = self.objectSprite and (mode == "place" or mode == "rotate")
+    if (instanceof(self.cacheObject, "Moveable") and IsoMannequin.isMannequinSprite(self.objectSprite)) or instanceof(self.cacheObject, "IsoMannequin") then
+        renderRotateIndicator = false
+    end
+    if renderRotateIndicator then
+        self:setObjectHiddenDuringRotate(self.objectListCache and self.objectListCache.object or nil)
+    else
+        self:resetObjectHiddenDuringRotate()
+    end
+end
+
 function ISMoveableCursor:render( _x, _y, _z, _square )
     self.renderX, self.renderY, self.renderZ = _x, _y, _z;
 
@@ -286,81 +348,157 @@ function ISMoveableCursor:render( _x, _y, _z, _square )
         end
     end
 
-    if self.currentMoveProps and self.currentMoveProps.isMultiSprite and self.currentMoveProps.sprite:getSpriteGrid()~=nil then
-        if self.origMoveProps then
-            local origGrid = self.origMoveProps.sprite:getSpriteGrid();
-            local xo = origGrid:getSpriteGridPosX(self.origMoveProps.sprite);
-            local yo = origGrid:getSpriteGridPosY(self.origMoveProps.sprite);
+    local mode = ISMoveableCursor.mode[self.player]
+    local renderRotateIndicator = self.objectSprite and (mode == "place" or mode == "rotate")
 
-            local spriteGrid = self.currentMoveProps.sprite:getSpriteGrid();
-            local w = spriteGrid:getWidth();
-            local h = spriteGrid:getHeight();
-            local wx, wy = _x-xo,_y-yo;
-            for x=0, w-1 do
-                for y=0,h-1 do
-                    local square = getCell():getGridSquare(wx+x, wy+y, _z);
-                    if square and square:getFloor() and square:getFloor():getSprite() then
-                        square:getFloor():getSprite():RenderGhostTileColor(wx+x, wy+y, _z, 0.75, 1, 0.75, 0.25);
-                    end
-
-                    local objSprite = spriteGrid:getSprite(x, y);
-                    if objSprite then
-                        local yoffset =self.yOffset;
-                        if ISMoveableCursor.mode[self.player] == "place" and self.currentMoveProps.name=="Police Sign" then --dirty hack :/
-                            yoffset = self.currentMoveProps.surface;
-                        end
-                        objSprite:RenderGhostTileColor(wx+x, wy+y, _z, 0, yoffset * Core.getTileScale(), color.r, color.g, color.b, 0.8);
-                    end
-                end
-            end
-        end
+    if self.origMoveProps and self.origMoveProps.isMultiSprite and self.currentMoveProps and self.currentMoveProps.isMultiSprite then
+        self:renderSpriteGrid(_x, _y, _z, color)
     else
-        if self:getFloorCursorSprite() then
-            --self:getFloorCursorSprite():RenderGhostTileColor(_x, _y, _z, color.r, color.g, color.b, 0.5);
+        if not renderRotateIndicator and self:getFloorCursorSprite() then
             self:getFloorCursorSprite():RenderGhostTileColor(_x, _y, _z, 0.75, 1, 0.75, 0.25);
         end
         if self.objectSprite then
-            if self.currentMoveProps and self.currentMoveProps:canRotateDirection() then
-                local dir = IsoDirections.Max
-                local cursorFacing = self.cursorFacing or self.joypadFacing
-                if cursorFacing then
-                    local facing = { "N", "W", "S", "E" }
-                    dir = IsoDirections[facing[cursorFacing]]
-                end
-                if instanceof(self.cacheObject, "Moveable") then
-                    if IsoMannequin.isMannequinSprite(self.objectSprite) then
-                        IsoMannequin.renderMoveableItem(self.cacheObject, _x, _y, _z, dir)
-                        return
-                    end
-                end
-                if instanceof(self.cacheObject, "IsoMannequin") then
-                    IsoMannequin.renderMoveableObject(self.cacheObject, _x, _y, _z, dir)
-                    return
-                end
+            if self:renderObjectThatCanRotate(_x, _y, _z, renderRotateIndicator) then
+                return
             end
             self.objectSprite:RenderGhostTileColor(_x, _y, _z, 0, self.yOffset * Core.getTileScale(), color.r, color.g, color.b, 0.8);
+        end
+    end
 
-            --self.objectSprite:RenderGhostTileColor(_x, _y, _z, 0, self.yOffset, 1, 1, 1, 0.8);
+    if renderRotateIndicator then
+        local cx,cy = self:getCenterOfRotation()
+        local rotateIndicatorDir = nil
+        if self.currentMoveProps then
+            rotateIndicatorDir = self.currentMoveProps:getFaceDirectionFromSpriteName(self.currentMoveProps.sprite:getName())
+            if rotateIndicatorDir then
+                rotateIndicatorDir = IsoDirections.fromString(rotateIndicatorDir)
+            end
+        end
+        self:renderRotateIndicator(cx, cy, _z, rotateIndicatorDir)
+    end
+
+    if ISMoveableCursor.DEBUG_RENDER and (self.pathfindAction ~= nil) then
+        self.pathfindAction:debugRender()
+    end
+end
+
+function ISMoveableCursor:renderSpriteGrid(_x, _y, _z, color)
+    local origGrid = self.origMoveProps.sprite:getSpriteGrid()
+    local xo = origGrid:getSpriteGridPosX(self.origMoveProps.sprite)
+    local yo = origGrid:getSpriteGridPosY(self.origMoveProps.sprite)
+
+    local spriteGrid = self.currentMoveProps.sprite:getSpriteGrid()
+    local w = spriteGrid:getWidth()
+    local h = spriteGrid:getHeight()
+    local wx, wy = _x-xo,_y-yo
+    for x=0,w-1 do
+        for y=0,h-1 do
+            local square = getCell():getGridSquare(wx+x, wy+y, _z)
+            if square and square:getFloor() and square:getFloor():getSprite() then
+                square:getFloor():getSprite():RenderGhostTileColor(wx+x, wy+y, _z, 0.75, 1, 0.75, 0.25)
+            end
+            local objSprite = spriteGrid:getSprite(x, y)
+            if objSprite then
+                local yoffset = self.yOffset
+                if ISMoveableCursor.mode[self.player] == "place" and self.currentMoveProps.name=="Police Sign" then --dirty hack :/
+                    yoffset = self.currentMoveProps.surface
+                end
+                objSprite:RenderGhostTileColor(wx+x, wy+y, _z, 0, yoffset * Core.getTileScale(), color.r, color.g, color.b, 0.8)
+            end
         end
     end
 end
 
+function ISMoveableCursor:renderObjectThatCanRotate(_x, _y, _z, renderRotateIndicator)
+    if not self.currentMoveProps or not self.currentMoveProps:canRotateDirection() then
+        return false
+    end
+    local dir = nil
+    local cursorFacing = self.cursorFacing or self.joypadFacing
+    if cursorFacing then
+        local facing = { IsoDirections.N, IsoDirections.W, IsoDirections.S, IsoDirections.E }
+        dir = facing[cursorFacing]
+    end
+    if instanceof(self.cacheObject, "Moveable") then
+        if IsoMannequin.isMannequinSprite(self.objectSprite) then
+            IsoMannequin.renderMoveableItem(self.cacheObject, _x, _y, _z, dir)
+            if renderRotateIndicator then
+                local cx,cy = self:getCenterOfRotation()
+                self:renderRotateIndicator(cx, cy, _z, dir or IsoMannequin.getDirectionFromItem(self.cacheObject, self.player))
+            end
+            return true
+        end
+    end
+    if instanceof(self.cacheObject, "IsoMannequin") then
+        IsoMannequin.renderMoveableObject(self.cacheObject, _x, _y, _z, dir)
+        if renderRotateIndicator then
+            local cx,cy = self:getCenterOfRotation()
+            self:renderRotateIndicator(cx, cy, _z, dir or self.cacheObject:getDir())
+        end
+        return true
+    end
+    return false
+end
+
+function ISMoveableCursor:renderRotateIndicator(_x, _y, _z, _dir)
+    local radius = 0.5
+    local segments = 18
+    local thickness = 1
+    local r,g,b,a = 0.0,1.0,1.0,0.25
+    renderIsoCircle(_x, _y, _z, radius, segments, thickness, r, g, b, a)
+    if _dir then
+        local tipX = _x + _dir:dx()
+        local tipY = _y + _dir:dy()
+        local baseX = _x + _dir:dx() * radius
+        local baseY = _y + _dir:dy() * radius
+        local baseLength = 0.5
+        local baseLeftX = baseX + _dir:RotLeft(2):dx() * baseLength / 2
+        local baseLeftY = baseY + _dir:RotLeft(2):dy() * baseLength / 2
+        local baseRightX = baseX + _dir:RotRight(2):dx() * baseLength / 2
+        local baseRightY = baseY + _dir:RotRight(2):dy() * baseLength / 2
+        renderIsoLine(baseLeftX, baseLeftY, _z, tipX, tipY, _z, thickness, r, g, b, a)
+        renderIsoLine(baseRightX, baseRightY, _z, tipX, tipY, _z, thickness, r, g, b, a)
+    end
+end
+
+function ISMoveableCursor:isFacingOriginalDirection()
+    if self.currentMoveProps and self.currentMoveProps:canRotateDirection() then
+        local cursorFacing = self.cursorFacing or self.joypadFacing
+        if not cursorFacing then
+            return true
+        end
+        local facing = { IsoDirections.N, IsoDirections.W, IsoDirections.S, IsoDirections.E }
+        local dir = facing[cursorFacing]
+        if instanceof(self.cacheObject, "Moveable") and IsoMannequin.isMannequinSprite(self.objectSprite) then
+            return IsoMannequin.getDirectionFromItem(self.cacheObject, self.player) == dir
+        end
+        if instanceof(self.cacheObject, "IsoMannequin") then
+            return self.cacheObject:getDir() == dir
+        end
+        return false
+    end
+    if self.currentMoveProps and self.currentMoveProps.spriteName == self.origMoveProps.spriteName then
+        return true
+    end
+    return false
+end
+
 function ISMoveableCursor:isValid( _square )
-    self.currentMoveProps   = nil;
-    self.origMoveProps      = nil;
-    self.canCreate          = nil;
-    self.objectSprite       = nil;
-    self.origSpriteName     = nil;
-    self.colorMod           = ISMoveableSpriteProps.invalidColor;
-    self.yOffset            = 0;
+    self.currentMoveProps = nil;
+    self.origMoveProps = nil;
+    self.canCreate = nil;
+    self.objectSprite = nil;
+    self.origSpriteName = nil;
+    self.colorMod = ISMoveableSpriteProps.invalidColor;
+    self.yOffset = 0;
 
     if ISMoveableCursor.mode[self.player] == "pickup" or ISMoveableCursor.mode[self.player] == "rotate" then
-        self.objectIndex    = self.currentSquare ~= _square and -1 or self.objectIndex;
+        self.objectIndex = self.currentSquare ~= _square and -1 or self.objectIndex;
     end
     if _square ~= self.currentSquare then
         self.objectListCache = nil;
     end
-    self.currentSquare  = _square;
+    self.currentSquare = _square;
 
     --if self.currentSquare == nil or not self.currentSquare:isCouldSee(self.player) then
     if self.currentSquare == nil then
@@ -377,7 +515,7 @@ function ISMoveableCursor:isValid( _square )
         return false
     end
 
-    if self.character:getCharacterActions():isEmpty() then
+    if self.character:getCharacterActions():isEmpty() and not self.character:isSittingOnFurniture() then
         self.character:faceLocation(_square:getX(), _square:getY())
     end
 
@@ -395,14 +533,14 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, object, moveProps );
-                    self.currentMoveProps   = moveProps;
-                    self.origMoveProps      = moveProps;
-                    self.canCreate          = moveProps:canPickUpMoveable( self.character, _square, object );
-                    self.colorMod           = ISMoveableCursor.normalColor; --self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                    self.objectSprite       = nil; --moveProps.sprite; disabled object sprite for pickup
-                    self.origSpriteName     = moveProps.spriteName;
+                    self.currentMoveProps = moveProps;
+                    self.origMoveProps = moveProps;
+                    self.canCreate = moveProps:canPickUpMoveable( self.character, _square, object );
+                    self.colorMod = ISMoveableCursor.normalColor; --self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                    self.objectSprite = nil; --moveProps.sprite; disabled object sprite for pickup
+                    self.origSpriteName = moveProps.spriteName;
                     --self.cursorFacing = nil;
-                    self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
                     self.isWallLike = moveProps.type == "Window"
                     self.nSprite = moveProps.spriteProps:has(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, object, moveProps );
@@ -445,14 +583,14 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, item, moveProps );
-                    self.currentMoveProps       = moveProps;
-                    self.canCreate              = moveProps:canPlaceMoveable( self.character, _square, item );
-                    self.colorMod               = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                    self.cacheInvObjectSprite   = item:getWorldSprite();
-                    self.objectSprite           = moveProps.sprite;
-                    self.origSpriteName         = origName;
+                    self.currentMoveProps = moveProps;
+                    self.canCreate = moveProps:canPlaceMoveable( self.character, _square, item );
+                    self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                    self.cacheInvObjectSprite = item:getWorldSprite();
+                    self.objectSprite = moveProps.sprite;
+                    self.origSpriteName = origName;
                     --self.cursorFacing = nil;
-                    self.yOffset                = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPlaceMoveable function
+                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPlaceMoveable function
                     self.isWallLike = moveProps.type == "Window"
                     self.nSprite = moveProps.spriteProps:has(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, item, moveProps );
@@ -491,24 +629,24 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, object, moveProps, faces[faceIndex] );
-                    self.currentMoveProps   = moveProps;
-                    self.canCreate          = moveProps:canRotateMoveable( _square, object, origProps ); --FIXME
-                    self.colorMod           = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor; --ISMoveableCursor.normalColor;
-                    self.objectSprite       = moveProps.sprite;
-                    self.origSpriteName     = origName;
-                    self.yOffset            = moveProps:getYOffsetCursor();
+                    self.currentMoveProps = moveProps;
+                    self.canCreate = moveProps:canRotateMoveable( _square, object, origProps ); --FIXME
+                    self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor; --ISMoveableCursor.normalColor;
+                    self.objectSprite = moveProps.sprite;
+                    self.origSpriteName = origName;
+                    self.yOffset = moveProps:getYOffsetCursor();
                     self:setInfoPanel( _square, object, moveProps, faces[faceIndex] );
                     --self.cursorFacing = nil;
                     return true;
                 end
             end
             if moveProps and moveProps.sprite and moveProps:canRotateDirection() then
-                self.currentMoveProps   = moveProps;
-                self.canCreate          = moveProps:canRotateMoveable( _square, object, origProps );
-                self.colorMod           = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                self.objectSprite       = moveProps.sprite;
-                self.origSpriteName     = origName;
-                self.yOffset            = moveProps:getYOffsetCursor();
+                self.currentMoveProps = moveProps;
+                self.canCreate = moveProps:canRotateMoveable( _square, object, origProps );
+                self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                self.objectSprite = moveProps.sprite;
+                self.origSpriteName = origName;
+                self.yOffset = moveProps:getYOffsetCursor();
                 self:setInfoPanel( _square, object, moveProps );
                 return true;
             end
@@ -522,14 +660,14 @@ function ISMoveableCursor:isValid( _square )
                 local object = objects[self.objectIndex].object;
                 local moveProps = objects[self.objectIndex].moveProps;
                 if moveProps and moveProps.sprite then
-                    self.currentMoveProps   = moveProps;
-                    self.origMoveProps      = moveProps;
-                    self.canCreate          = moveProps:canScrapObject( self.character ).canScrap;
+                    self.currentMoveProps = moveProps;
+                    self.origMoveProps = moveProps;
+                    self.canCreate = moveProps:canScrapObject( self.character ).canScrap;
                     local colorInfo = getCore():getBadHighlitedColor() -- same color as the Disassemble context menu
-                    self.colorMod           = { r=colorInfo:getR(), g=colorInfo:getG(), b=colorInfo:getB() }-- ISMoveableCursor.normalColor;
-                    self.objectSprite       = moveProps.sprite;
-                    self.origSpriteName     = moveProps.spriteName;
-                    self.yOffset            = moveProps:getYOffsetCursor();
+                    self.colorMod = { r=colorInfo:getR(), g=colorInfo:getG(), b=colorInfo:getB() }-- ISMoveableCursor.normalColor;
+                    self.objectSprite = moveProps.sprite;
+                    self.origSpriteName = moveProps.spriteName;
+                    self.yOffset = moveProps:getYOffsetCursor();
                     self:setInfoPanel( _square, object, moveProps );
                     return true;
                 end
@@ -545,14 +683,14 @@ function ISMoveableCursor:isValid( _square )
                 local moveProps = objects[self.objectIndex].moveProps;
 
                 if moveProps and moveProps.sprite then
-                    self.currentMoveProps   = moveProps;
-                    self.origMoveProps      = moveProps;
-                    self.canCreate          = moveProps:canRepairObject ( self.character ).canRepair;
-                    self.colorMod           = ISMoveableCursor.normalColor;
-                    self.objectSprite       = nil;
-                    self.origSpriteName     = moveProps.spriteName;
-                    self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
-                    self.isWallLike         = moveProps.type == "Window"
+                    self.currentMoveProps = moveProps;
+                    self.origMoveProps = moveProps;
+                    self.canCreate = moveProps:canRepairObject ( self.character ).canRepair;
+                    self.colorMod = ISMoveableCursor.normalColor;
+                    self.objectSprite = nil;
+                    self.origSpriteName = moveProps.spriteName;
+                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.isWallLike = moveProps.type == "Window"
                     self:setInfoPanel( _square, object, moveProps );
                     return true;
                 end
@@ -632,14 +770,35 @@ function ISMoveableCursor:getDirectionFromItem(item)
     return IsoDirections.S
 end
 
+function ISMoveableCursor:getCenterOfRotation()
+    if self.currentSquare then
+        local cx = self.currentSquare:getX() + 0.5
+        local cy = self.currentSquare:getY() + 0.5
+        if ISMoveableCursor.mode[self.player] == "rotate" and self.origMoveProps and self.origMoveProps.isMultiSprite and self.origMoveProps.sprite:getSpriteGrid() ~= nil then
+            local spriteGrid = self.origMoveProps.sprite:getSpriteGrid()
+            local left,top = self.origMoveProps:getSpriteGridTopLeft(self.renderX, self.renderY)
+            cx = (left + spriteGrid:getWidth() / 2)
+            cy = (top + spriteGrid:getHeight() / 2)
+        end
+        return cx,cy
+    end
+    return 0,0
+end
+
 function ISMoveableCursor:rotateMouse(x, y)
     if self.currentSquare then
         if ISMoveableCursor.mode[self.player] == "rotate" and not self.canCreate then
             --return;
         end
-        -- we start to get the direction the mouse is compared to the selected square for the item
-        local difx = x - self.currentSquare:getX();
-        local dify = y - self.currentSquare:getY();
+        local clickWorldX = screenToIsoX(self.player, getMouseX(), getMouseY(), self.currentSquare:getZ())
+        local clickWorldY = screenToIsoY(self.player, getMouseX(), getMouseY(), self.currentSquare:getZ())
+        local cx,cy = self:getCenterOfRotation();
+        local difx = clickWorldX - cx
+        local dify = clickWorldY - cy
+        if math.sqrt(difx * difx + dify * dify) < math.sqrt(0.5 * 0.5 + 0.5 * 0.5) then
+            self.cursorFacing = nil
+            return
+        end
         -- west
         if difx < 0 and math.abs(difx) > math.abs(dify) then
             self:setCursorFacing(2);-- "W";
@@ -657,6 +816,37 @@ function ISMoveableCursor:rotateMouse(x, y)
             self:setCursorFacing(3); --"S";
         end
     end
+end
+
+function ISMoveableCursor:setObjectHiddenDuringRotate(object)
+    if object == self.objectHiddenDuringRotate then
+        return
+    end
+    self:resetObjectHiddenDuringRotate()
+    self.objectHiddenDuringRotate = object
+    if object then
+        local objects = object:getSpriteGridObjectsIncludingSelf(ArrayList.new())
+        for i=1,objects:size() do
+            local object = objects:get(i-1)
+            object:setDoRender(false)
+            object:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+        end
+        objects:clear()
+    end
+end
+
+function ISMoveableCursor:resetObjectHiddenDuringRotate()
+    if self.objectHiddenDuringRotate == nil then
+        return
+    end
+    local objects = self.objectHiddenDuringRotate:getSpriteGridObjectsIncludingSelf(ArrayList.new())
+    for i=1,objects:size() do
+        local object = objects:get(i-1)
+        object:setDoRender(true)
+        object:invalidateRenderChunkLevel(FBORenderChunk.DIRTY_REDRAW)
+    end
+    objects:clear()
+    self.objectHiddenDuringRotate = nil
 end
 
 function ISMoveableCursor:setCursorFacing(facing)
@@ -678,7 +868,7 @@ function ISMoveableCursor:getRotateableObject()
     for i = square:getObjects():size(),1,-1 do
         local obj = square:getObjects():get(i-1);
         local moveProps = ISMoveableSpriteProps.new(obj:getSprite());
-        if moveProps and moveProps:canManuallyRotate() then
+        if moveProps and moveProps:canManuallyRotate() and self:shouldAddObject(obj, moveProps) then
             return { object = obj, moveProps = moveProps };
         end
     end
@@ -686,10 +876,10 @@ function ISMoveableCursor:getRotateableObject()
 end
 
 function ISMoveableCursor:getInventoryObjectList()
-    local objects           = {};
+    local objects = {};
     local spriteBuffer	= {};
-    local items 			= self.character:getInventory():getItems();
-    local items_size 		= items:size();
+    local items = self.character:getInventory():getItems();
+    local items_size = items:size();
     for i=0,items_size-1, 1 do
         local item = items:get(i);
         if instanceof(item, "Moveable") then
@@ -771,7 +961,7 @@ function ISMoveableCursor:getObjectList()
         local obj = square:getObjects():get(i-1);
         local moveProps = ISMoveableSpriteProps.new(obj:getSprite());
         if moveProps and moveProps.isMoveable then
-            local add  = true;
+            local add = true;
 
             --[[if instanceof(obj,"IsoBarbecue") and obj:isLit() then
                 add = false;
@@ -786,7 +976,7 @@ function ISMoveableCursor:getObjectList()
             if moveProps.spriteProps:has("WallNW") or moveProps.spriteProps:has("WallN") or moveProps.spriteProps:has("WallW") then
                 local sprList = obj:getChildSprites();
                 if sprList then
-                    local list_size 	= sprList:size();
+                    local list_size = sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();

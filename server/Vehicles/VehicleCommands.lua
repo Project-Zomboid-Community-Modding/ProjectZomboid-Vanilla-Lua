@@ -294,7 +294,7 @@ end
 
 function Commands.damageFromHitChr(player, args)
 	local vehicle = getVehicleById(args.vehicle);
-	if vehicle then
+	if vehicle and vehicle:isDriver(player) then
 		vehicle:damageFromHitChr(args.dmgFront, args.dmgBack);
 	else
 		noise('no such vehicle id='..tostring(args.vehicle))
@@ -435,6 +435,15 @@ function Commands.setSkinIndex(player, args)
 	end
 end
 
+function Commands.setAlarmed(player, args)
+	local vehicle = getVehicleById(args.vehicle)
+	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
+		vehicle:setAlarmed(args.alarmed or false)
+		vehicle:transmitAlarmed()
+	else
+		noise('no such vehicle id='..tostring(args.vehicle))
+	end
+end
 
 VehicleCommands.OnClientCommand = function(module, command, player, args)
 	if module == 'vehicle' and Commands[command] then

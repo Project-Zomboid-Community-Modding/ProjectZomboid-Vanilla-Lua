@@ -114,7 +114,7 @@ function ISSafehouseAddPlayerUI:onClick(button)
             local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_InvitationSent",self.selectedPlayer), false, nil, nil);
             modal:initialise()
             modal:addToUIManager()
-            sendSafehouseInvite(self.safehouse, self.player, self.selectedPlayer);
+            sendSafehouseInvite(self.safehouse, self.player:getUsername(), self.selectedPlayer);
         else
             sendSafehouseChangeOwner(self.safehouse, self.selectedPlayer)
             self.safehouseUI:populateList();

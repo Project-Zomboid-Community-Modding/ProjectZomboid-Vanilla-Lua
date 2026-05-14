@@ -300,11 +300,13 @@ function ISMakeUpUI:onSelectLocation()
 	self.comboMakeup:setWidthToOptions(120);
 end
 
-function ISMakeUpUI:updateAvatar()
+function ISMakeUpUI:updateAvatar(noTriggerEvent)
 	if self.needsUpdateAvatar then
 		self.needsUpdateAvatar = false
 		self.avatarPanel:setCharacter(self.character)
-		triggerEvent("OnClothingUpdated", self.character)
+		if not noTriggerEvent then
+		    triggerEvent("OnClothingUpdated", self.character)
+		end
 	end
 end
 
@@ -314,6 +316,7 @@ function ISMakeUpUI:prerender()
 	local x,y,w,h = self.avatarX, self.avatarY, self.avatarWidth, self.avatarHeight
 	self:drawRectBorder(x - 2, y - 2, w + 4, h + 4, 1, 0.3, 0.3, 0.3);
 	self:drawTextureScaled(self.avatarBackgroundTexture, x, y, w, h, 1, 0.4, 0.4, 0.4);
+	self.avatarPanel:setCharacter(self.character);
 end
 
 function ISMakeUpUI:update()
@@ -426,5 +429,13 @@ function ISMakeUpUI.OnPlayerDeath(playerObj)
 	end
 end
 
+function ISMakeUpUI.OnClothingUpdated(playerObj)
+	local ui = ISMakeUpUI.windows[playerObj:getPlayerNum()+1]
+	if ui then
+		ui:updateAvatar(true)
+	end
+end
+
 Events.OnPlayerDeath.Add(ISMakeUpUI.OnPlayerDeath)
+Events.OnClothingUpdated.Add(ISMakeUpUI.OnClothingUpdated)
 

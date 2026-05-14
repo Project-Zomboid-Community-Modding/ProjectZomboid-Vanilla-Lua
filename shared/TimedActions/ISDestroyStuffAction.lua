@@ -134,12 +134,12 @@ function ISDestroyStuffAction:complete()
 	if self.cornerCounter == 0 or self.cornerCounter == 1 then
 		for i=0,self.item:getSquare():getObjects():size()-1 do
 			local o = self.item:getSquare():getObjects():get(i)
-			if o:getProperties():has(IsoFlagType.attachedW) and (self.cornerCounter == 1) then
+			if o:hasProperty(IsoFlagType.attachedW) and (self.cornerCounter == 1) then
 				o:getSquare():transmitRemoveItemFromSquare(o)
 				o:getSquare():RemoveTileObject(o)
 				break
 			end
-			if o:getProperties():has(IsoFlagType.attachedN) and (self.cornerCounter == 0) then
+			if o:hasProperty(IsoFlagType.attachedN) and (self.cornerCounter == 0) then
 				o:getSquare():transmitRemoveItemFromSquare(o)
 				o:getSquare():RemoveTileObject(o)
 				break
@@ -224,14 +224,12 @@ function ISDestroyStuffAction:complete()
 
 	local sq = self.item:getSquare()
 	local campfire = SCampfireSystem.instance:getLuaObjectOnSquare(sq)
-	if campfire ~= nil then
-		if campfire.isLit then
-			for i = 0,sq:getObjects():size()-1 do
-				local fireObj = sq:getObjects():get(i)
-				if instanceof(fireObj, 'IsoFire') and fireObj:isPermanent() then
-					square:transmitRemoveItemFromSquare(fireObj)
-					square:getProperties():unset(IsoFlagType.burning)
-				end
+	if campfire ~= nil and campfire.isLit and campfire:getIsoObject() == self.item then
+		for i = 0,sq:getObjects():size()-1 do
+			local fireObj = sq:getObjects():get(i)
+			if instanceof(fireObj, 'IsoFire') and fireObj:isPermanent() then
+				sq:transmitRemoveItemFromSquare(fireObj)
+				sq:getProperties():unset(IsoFlagType.burning)
 			end
 		end
 	end

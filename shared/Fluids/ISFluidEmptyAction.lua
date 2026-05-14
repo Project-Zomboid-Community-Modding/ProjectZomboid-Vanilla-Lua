@@ -45,6 +45,9 @@ end
 
 function ISFluidEmptyAction:getDuration()
     local maxTime = self.amount * ISFluidUtil.getTransferActionTimePerLiter();
+    if self.container:getFluidContainer():getTransferRate() > 0.0f then
+        maxTime = maxTime/self.container:getFluidContainer():getTransferRate();
+    end
     if maxTime < ISFluidUtil.getMinTransferActionTime() then
         maxTime = ISFluidUtil.getMinTransferActionTime();
     end

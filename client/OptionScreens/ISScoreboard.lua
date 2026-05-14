@@ -105,7 +105,7 @@ function ISScoreboard:doAdminButtons()
     if self.selectedPlayer then
         local dy = self.listbox:getYScroll()
 		local username = self.selectedPlayer
-        if username ~= getSpecificPlayer(0):getDisplayName() then
+        if username ~= getSpecificPlayer(0):getUsername() then
             self.kickButton.enable = getPlayer():getRole():hasCapability(Capability.KickUser);
             self.banButton.enable = getPlayer():getRole():hasCapability(Capability.BanUnbanUser);
             self.teleportButton.enable = getPlayer():getRole():hasCapability(Capability.TeleportToPlayer);
@@ -155,7 +155,7 @@ function ISScoreboard:onContext(button)
     elseif button.internal == "TELEPORT" then
         SendCommandToServer("/teleport " .. username);
     elseif button.internal == "TELEPORTTOYOU" then
-        SendCommandToServer("/teleportplayer " .. username .. " \"" .. getPlayer():getDisplayName() .. "\"");
+        SendCommandToServer("/teleportplayer " .. username .. " \"" .. getPlayer():getUsername() .. "\"");
     elseif button.internal == "MUTE" then
         ISChat.instance:mute(self.selectedPlayer)
 		self:doAdminButtons()

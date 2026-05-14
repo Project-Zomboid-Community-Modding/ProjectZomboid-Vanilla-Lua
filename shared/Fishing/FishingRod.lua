@@ -111,6 +111,7 @@ function FishingRod:update()
 end
 
 function FishingRod:updateLine()
+    if isServer() then return true end
     self:updateLineMoveCoeff()
 
     local tension = self:getTension()
@@ -308,11 +309,18 @@ function FishingRod:damageLine()
         self.rodItem:getModData().fishing_LineCondition = 1.0
     end
     self.rodItem:getModData().fishing_LineCondition = self.rodItem:getModData().fishing_LineCondition - self:getLineTypeCoeff()
+    self.rodItem:syncItemFields()
 end
 
 function FishingRod:brokeLine() -- TODO : move result of broke to fishing file
+    self.player:playSound("BreakFishingLine")
+    addSound(self.player, self.player:getX(), self.player:getY(), self.player:getZ(), 20, 1)
     if not isServer() then
         Fishing.ManagerInstances[self.playerIndex]:changeState("None")
+    end
+    if isClient() then
+        sendClientCommandV(self.player, "fishing", "brokeRodLine", "itemID", self.rodItem:getID())
+        return
     end
 
     local breakRod = nil
@@ -320,9 +328,6 @@ function FishingRod:brokeLine() -- TODO : move result of broke to fishing file
     if replacement ~= nil then
         breakRod = self.player:getInventory():AddItem(replacement)
     end
-
-    self.player:playSound("BreakFishingLine")
-    addSound(self.player, self.player:getX(), self.player:getY(), self.player:getZ(), 20, 1)
 
     if not isClient() then
         self.player:getInventory():Remove(self.rodItem);

@@ -103,7 +103,7 @@ function ISSafehousesList:onClick(button)
     end
     if button.internal == "VIEW" then
         local width = 500+getCore():getOptionFontSizeReal()*30
-        local safehouseUI = ISSafehouseUI:new((getCore():getScreenWidth()-width) / 2,getCore():getScreenHeight() / 2 - 225, width, 450, safehouse, player);
+        local safehouseUI = ISSafehouseUI:new((getCore():getScreenWidth()-width) / 2,getCore():getScreenHeight() / 2 - 225, width, 450, self.selectedSafehouse, self.player);
         safehouseUI:initialise()
         safehouseUI:addToUIManager()
     end

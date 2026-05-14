@@ -1613,6 +1613,24 @@ function ISUIElement:setForceCursorVisible(force)
 	end
 end
 
+function ISUIElement:getMaxWidthOfElements(...)
+    local uis = {...}
+    local width = 0
+    for _,ui in ipairs(uis) do
+        width = math.max(width, ui:getWidth())
+    end
+    return width
+end
+
+function ISUIElement:setElementWidthToMaxOf(...)
+    local uis = {...}
+    local width = self:getMaxWidthOfElements(unpack(uis))
+    for _,ui in ipairs(uis) do
+        ui:setWidth(width)
+    end
+    return width
+end
+
 function ISUIElement:shrinkWrap(padRight, padBottom, predicate)
 	local xMax = 0
 	local yMax = 0

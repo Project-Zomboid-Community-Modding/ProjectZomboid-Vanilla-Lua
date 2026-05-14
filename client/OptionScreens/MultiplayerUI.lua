@@ -295,7 +295,9 @@ function MultiplayerUI:create()
     self:onResolutionChange(0, 0, self.width, self.height)
 
     self.created = true
-    self:requestServerList()
+    if (getCore():isPopulateServerListOnStart()) then
+        self:requestServerList();
+    end
 end
 
 function MultiplayerUI:onClickSort(button)
@@ -760,7 +762,7 @@ function MultiplayerUI:onPressButtonOnAccountList(button, x, y)
         self.screenShading:bringToTop()
         self.modal:bringToTop()
     elseif button.internal == "CONNECT" then
-        DebugLog.General:debugln("Connecting to server (IP: " .. tostring(button.server:getIp()) .. "; Port: " .. tostring(button.server:getPort()) .. ").")
+        DebugType.General:debugln("Connecting to server (IP: " .. tostring(button.server:getIp()) .. "; Port: " .. tostring(button.server:getPort()) .. ").")
         self:connectToServer(button.server, button.account);
     end
 end

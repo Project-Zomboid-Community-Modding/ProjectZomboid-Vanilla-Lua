@@ -771,6 +771,7 @@ AnimalContextMenu.onPetAnimal = function(animal, chr)
     animal:getBehavior():setBlockMovement(true);
     local vec = animal:getAttachmentWorldPos("head");
     if not vec then return; end
+    vec:set(vec:x(), vec:y(), animal:getZ())
     ISTimedActionQueue.add(ISWalkToTimedActionF:new(chr, vec));
     ISTimedActionQueue.add(ISPetAnimal:new(chr, animal))
 end

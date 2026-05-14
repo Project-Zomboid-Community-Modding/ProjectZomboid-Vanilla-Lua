@@ -277,6 +277,11 @@ function ISScrollingListBox:setOnMouseDownFunction(target, onmousedown)
 	self.target = target;
 end
 
+function ISScrollingListBox:setOverrideAButtonFunction(target, fct)
+    self.overrideAButtonFunction = fct;
+    self.target = target;
+end
+
 function ISScrollingListBox:invokeOnMouseDownFunction()
 	if self.onmousedown and self.items[self.selected] then
 		self.onmousedown(self.target, self.items[self.selected].item);
@@ -640,6 +645,10 @@ function ISScrollingListBox:render()
 end
 
 function ISScrollingListBox:onJoypadDown(button, joypadData)
+    if button == Joypad.AButton and self.overrideAButtonFunction then
+        self.overrideAButtonFunction(self.target, self.items[self.selected].item);
+        return;
+    end
 	if button == Joypad.AButton and self.onmousedblclick then
 		if (#self.items > 0) and (self.selected ~= -1) then
 			local previousSelected = self.selected;

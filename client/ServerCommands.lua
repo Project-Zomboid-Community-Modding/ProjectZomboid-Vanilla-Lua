@@ -157,18 +157,16 @@ end
 Commands.recipe.openAndEat = function(args)
     local player = getPlayerByOnlineID(args.onlineID)
     if player ~= nil then
-        -- The last ISInventoryTransferAction may contain an invalid item object
-        local queue = ISTimedActionQueue.getTimedActionQueue(player)
-        local index = queue:indexOfType("ISInventoryTransferAction")
-        if index >= 0 then
-            table.remove(queue.queue, index)
-        end
-
         local item = player:getInventory():getItemWithID(args.itemId)
         if item ~= nil then
             ISTimedActionQueue.add(ISEatFoodAction:new(player, item, args.eatPercentage));
         end
     end
+end
+
+Commands.forage = {}
+Commands.forage.complete = function(args)
+    forageSystem.actionComplete(getPlayer(), args.iconID)
 end
 
 ServerCommands.OnServerCommand = function(module, command, args)

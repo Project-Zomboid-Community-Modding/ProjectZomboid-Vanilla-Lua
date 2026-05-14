@@ -2,8 +2,11 @@ require "BuildingObjects/ISBuildingObject"
 
 ISDestroyCursor = ISBuildingObject:derive("ISDestroyCursor");
 
+local DESTROY_WEST = 0
+local DESTROY_NORTH = 1
+
 function ISDestroyCursor:create(x, y, z, north, sprite)
-    showDebugInfoInChat("Cursor Create \'ISDestroyCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
+	showDebugInfoInChat("Cursor Create \'ISDestroyCursor\' "..tostring(x)..", "..tostring(y)..", "..tostring(z)..", "..tostring(north)..", "..tostring(sprite))
 	local sq = getWorld():getCell():getGridSquare(x, y, z)
 	local player = self.character
 	local destroy = self:getObjectList()[self.objectIndex]
@@ -70,21 +73,73 @@ function ISDestroyCursor:_isDoorWallW(object)
 	return object and object:getProperties() and object:getProperties():has("DoorWallW")
 end
 
-function ISDestroyCursor:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
-		--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
-		--only need to test for "CornerWestWall", if it has that, it will have CornerNorthWall as well
-		if self.cornerCounter == 0 and self.currentObject ~= nil and self.currentObject:getSprite():getProperties():has("CornerWestWall") then
-			--if 0, destroy west wall, keep north. if 1, destroy north wall, keep west
-			self.cornerCounter = 1
-		else
-			self.cornerCounter = 0
-			self.objectIndex = self.objectIndex + 1
-			local objects = self:getObjectList()
-			if self.objectIndex > #objects then
-				self.objectIndex = 1
+function ISDestroyCursor:cycleToPreviousObject()
+	local objects = self:getObjectList()
+	--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
+	--only need to test for "CornerWestWall", if it has that, it will have CornerNorthWall as well
+	if self.currentObject ~= nil and self.currentObject:hasProperty("CornerWestWall") then
+		if self.cornerCounter == DESTROY_NORTH and self:canDestroyWall_West(self.currentObject) then
+			self.cornerCounter = DESTROY_WEST
+			return
+		end
+		if #objects > 1 then
+			-- north wall --> west wall --> previous object (handled below)
+		elseif self.cornerCounter == DESTROY_WEST and self:canDestroyWall_North(self.currentObject) then
+			self.cornerCounter = DESTROY_NORTH
+			return
+		end
+	end
+	if #objects > 1 then
+		self.objectIndex = self.objectIndex - 1
+		if self.objectIndex < 1 then
+			self.objectIndex = #objects
+		end
+		local object = objects[self.objectIndex]
+		if object:hasProperty("CornerWestWall") then
+			if self:canDestroyWall_North(object) then
+				self.cornerCounter = DESTROY_NORTH
+			else
+				self.cornerCounter = DESTROY_WEST
 			end
 		end
+	end
+end
+
+function ISDestroyCursor:cycleToNextObject()
+	local objects = self:getObjectList()
+	--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
+	--only need to test for "CornerWestWall", if it has that, it will have CornerNorthWall as well
+	if self.currentObject ~= nil and self.currentObject:hasProperty("CornerWestWall") then
+		if self.cornerCounter == DESTROY_WEST and self:canDestroyWall_North(self.currentObject) then
+			self.cornerCounter = DESTROY_NORTH
+			return
+		end
+		if #objects > 1 then
+			-- West wall --> north wall --> next object (handled below)
+		elseif self.cornerCounter == DESTROY_NORTH and self:canDestroyWall_West(self.currentObject) then
+			self.cornerCounter = DESTROY_WEST
+			return
+		end
+	end
+	if #objects > 1 then
+		self.objectIndex = self.objectIndex + 1
+		if self.objectIndex > #objects then
+			self.objectIndex = 1
+		end
+		local object = objects[self.objectIndex]
+		if object:hasProperty("CornerWestWall") then
+			if self:canDestroyWall_West(object) then
+				self.cornerCounter = DESTROY_WEST
+			else
+				self.cornerCounter = DESTROY_NORTH
+			end
+		end
+	end
+end
+
+function ISDestroyCursor:rotateKey(key)
+	if getCore():isKey("Rotate building", key) then
+		self:cycleToNextObject()
 	end
 end
 
@@ -120,6 +175,7 @@ function ISDestroyCursor:render(x, y, z, square)
 	self.renderZ = z
 
 	local objects = self:getObjectList()
+	if self.objectIndex == 0 and #objects > 0 then self.objectIndex = 1 end
 	if self.objectIndex > #objects then self.objectIndex = #objects end
 	if self.objectIndex >= 1 and self.objectIndex <= #objects then
 		local object = objects[self.objectIndex]
@@ -150,11 +206,12 @@ function ISDestroyCursor:render(x, y, z, square)
 		else
 			local offsetX,offsetY = 0,(object:getRenderYOffset() * Core.getTileScale())
 			--corner walls need special handling here
-			if object:getSprite():getProperties():has("CornerNorthWall") then --if it has one, it will have the other
-				if self.cornerCounter == 0 and object:getSprite():getProperties():has("CornerNorthWall") then
-					getSprite(object:getSprite():getProperties():get("CornerNorthWall")):RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
-				elseif self.cornerCounter == 1 and object:getSprite():getProperties():has("CornerWestWall") then
-					getSprite(object:getSprite():getProperties():get("CornerWestWall")):RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
+			if object:hasProperty("CornerNorthWall") then --if it has one, it will have the other
+				self:checkNorthWestCorner(object)
+				if self.cornerCounter == DESTROY_NORTH and object:hasProperty("CornerNorthWall") then
+					getSprite(object:getProperty("CornerNorthWall")):RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
+				elseif self.cornerCounter == DESTROY_WEST and object:hasProperty("CornerWestWall") then
+					getSprite(object:getProperty("CornerWestWall")):RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
 				end
 			else
 				object:getSprite():RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
@@ -172,33 +229,11 @@ function ISDestroyCursor:onJoypadPressButton(joypadIndex, joypadData, button)
 	end
 
 	if button == Joypad.RBumper then
-		--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
-		if self.cornerCounter == 0 and self.currentObject ~= nil and self.currentObject:getSprite():getProperties():has("CornerWestWall") then
-			--if 0, destroy west wall, keep north. if 1, destroy north wall, keep west
-			self.cornerCounter = 1
-		else
-			self.cornerCounter = 0
-			self.objectIndex = self.objectIndex + 1
-			local objects = self:getObjectList()
-			if self.objectIndex > #objects then
-				self.objectIndex = 1
-			end
-		end
+		self:cycleToNextObject()
 	end
 
 	if button == Joypad.LBumper then
-		--special handling for corner walls, which should be treated as two separate walls, and destroyed accordingly
-		if self.cornerCounter == 1 and self.currentObject ~= nil and self.currentObject:getSprite():getProperties():has("CornerWestWall") then
-			--if 0, destroy west wall, keep north. if 1, destroy north wall, keep west
-			self.cornerCounter = 0
-		else
-			self.cornerCounter = 1
-			self.objectIndex = self.objectIndex - 1
-			if self.objectIndex < 1 then
-				local objects = self:getObjectList()
-				self.objectIndex = #objects
-			end
-		end
+		self:cycleToPreviousObject()
 	end
 end
 
@@ -227,6 +262,17 @@ function ISDestroyCursor:getRBPrompt()
 end
 
 function ISDestroyCursor:couldSeeOpposite(object, square)
+	if object:hasProperty(IsoFlagType.WallNW) and object:hasProperty("CornerNorthWall") then
+		local squareW = square:getAdjacentSquare(IsoDirections.W)
+		if squareW ~= nil and squareW:isCouldSee(self.player) then
+			return true
+		end
+		local squareN = square:getAdjacentSquare(IsoDirections.N)
+		if squareN ~= nil and squareN:isCouldSee(self.player) then
+			return true
+		end
+		return false
+	end
 	if object:getProperties():has(IsoFlagType.cutN) or object:getProperties():has(IsoFlagType.collideN) or self:_isDoorN(object) or
 			(object:getType() == IsoObjectType.doorFrN) then
 		local sq = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
@@ -241,6 +287,9 @@ function ISDestroyCursor:couldSeeOpposite(object, square)
 end
 
 function ISDestroyCursor:canDestroy(object)
+	if self:isBasementWallAdjacentToTheVoid(object) then
+		return false
+	end
 	-- No destroying door-wall that has a door.
 	if self:_isDoorWallN(object) or self:_isDoorWallW(object) then
 		local isNorth = self:_isDoorWallN(object)
@@ -316,6 +365,42 @@ function ISDestroyCursor:isFloorAtTopOfStairs(object)
 	square = getCell():getGridSquare(object:getX(), object:getY() + 1, object:getZ() - 1)
 	if square and square:has(IsoObjectType.stairsTN) then return true end
 	return false
+end
+
+function ISDestroyCursor:checkNorthWestCorner(object)
+	if self.cornerCounter == DESTROY_WEST and not self:canDestroyWall_West(object) then
+		self.cornerCounter = DESTROY_NORTH
+	elseif self.cornerCounter == DESTROY_NORTH and not self:canDestroyWall_North(object) then
+		self.cornerCounter = DESTROY_WEST
+	end
+end
+
+function ISDestroyCursor:isBasementWallAdjacentToTheVoid(object)
+	if object == nil then return false end
+	if object:hasProperty(IsoFlagType.WallN) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_North(object)
+	end
+	if object:hasProperty(IsoFlagType.WallW) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_West(object)
+	end
+	if object:hasProperty(IsoFlagType.WallNW) then
+		return IsoCell.isBasementWallAdjacentToTheVoid_North(object) and IsoCell.isBasementWallAdjacentToTheVoid_West(object)
+	end
+	return false
+end
+
+function ISDestroyCursor:canDestroyWall_North(object)
+	if IsoCell.isBasementWallAdjacentToTheVoid_North(object) then return false end
+	local square = object:getSquare()
+	local squareN = square and square:getAdjacentSquare(IsoDirections.N) or nil
+	return square ~= nil and square:isCouldSee(self.player) or squareN ~= nil and squareN:isCouldSee(self.player)
+end
+
+function ISDestroyCursor:canDestroyWall_West(object)
+	if IsoCell.isBasementWallAdjacentToTheVoid_West(object) then return false end
+	local square = object:getSquare()
+	local squareW = square and square:getAdjacentSquare(IsoDirections.W) or nil
+	return square ~= nil and square:isCouldSee(self.player) or squareW ~= nil and squareW:isCouldSee(self.player)
 end
 
 function ISDestroyCursor:getObjectList()

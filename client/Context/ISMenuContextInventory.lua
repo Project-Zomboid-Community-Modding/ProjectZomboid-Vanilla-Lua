@@ -1,26 +1,26 @@
 ISMenuContextInventory = {};
 
 function ISMenuContextInventory.new()
-	local self 		= ISMenuElement.new();
-    self.playerNum  = nil;
-    self.player     = nil;
-    self.context    = nil;
-    self.items      = nil;
-    self.inventory  = nil;
-    self.test       = nil;
+	local self = ISMenuElement.new();
+    self.playerNum = nil;
+    self.player = nil;
+    self.context = nil;
+    self.items = nil;
+    self.inventory = nil;
+    self.test = nil;
 	
 	function self.init()
 		self.loadElements( ISInventoryMenuElements );
 	end	
 
 	function self.createMenu( _player, _context, _items, _item )
-        local playerObj 	= getSpecificPlayer(_player);
-        self.playerNum      = _player;
-        self.player         = playerObj;
-        self.context        = _context;
-        self.items          = _items;
-        self.inventory 	    = playerObj:getInventory();
-        self.test 		    = false;
+        local playerObj = getSpecificPlayer(_player);
+        self.playerNum = _player;
+        self.player = playerObj;
+        self.context = _context;
+        self.items = _items;
+        self.inventory = playerObj:getInventory();
+        self.test = false;
 
         for i,k in pairs(_items) do
             -- inventory item list

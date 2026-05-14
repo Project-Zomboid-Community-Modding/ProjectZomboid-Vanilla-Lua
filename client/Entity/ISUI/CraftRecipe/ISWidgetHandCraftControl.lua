@@ -4,10 +4,9 @@ ISWidgetHandCraftControl = ISPanelJoypad:derive("ISWidgetHandCraftControl");
 
 local debugSpam = true
 
-local FONT_SCALE = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-local BUTTON_SIZE = getTextManager():getFontHeight(UIFont.Small) * 1.5
-local ICON_SCALE = math.max(1, (FONT_SCALE - math.floor(FONT_SCALE)) < 0.5 and math.floor(FONT_SCALE) or math.ceil(FONT_SCALE));
-local BUTTON_ICON_SIZE = 16 * ICON_SCALE;
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
+local UI_BORDER_SPACING = 5
+local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISWidgetHandCraftControl:initialise()
 	ISPanelJoypad.initialise(self);
@@ -17,20 +16,19 @@ function ISWidgetHandCraftControl:createChildren()
     ISPanelJoypad.createChildren(self);
 
     self.colProgress = safeColorToTable(self.xuiSkin:color("C_ValidGreen"));
-
-    local fontHeight = -1; -- <=0 sets label initial height to font
     
-    self.quantityLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "Quantity:", 1, 1, 1, 1, UIFont.Small, true);
+    self.quantityLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, "Quantity:", 1, 1, 1, 1, UIFont.Small, true);
     self.quantityLabel:initialise();
     self.quantityLabel:instantiate();
     self:addChild(self.quantityLabel);
     
-    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, "Time Required:", 1, 1, 1, 1, UIFont.Small, true);
+    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, "Time Required:", 1, 1, 1, 1, UIFont.Small, true);
     self.durationLabel:initialise();
     self.durationLabel:instantiate();
     self:addChild(self.durationLabel);
 
-    self.entryBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTextEntryBox, "", 0, 0, 70, 20);
+    local btnWidth = BUTTON_HGT + getTextManager():MeasureStringX(UIFont.NewSmall, "0000")
+    self.entryBox = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISTextEntryBox, "", 0, 0, btnWidth, BUTTON_HGT);
     self.entryBox.font = UIFont.Small;
     self.entryBox:initialise();
     self.entryBox:instantiate();
@@ -40,9 +38,8 @@ function ISWidgetHandCraftControl:createChildren()
     self.entryBox:setOnlyNumbers(true);
     self:addChild(self.entryBox);
 
-    local buttonSize = getTextManager():getFontHeight(UIFont.Small) + 2;
-    
-    self.buttonMax = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize*2, buttonSize, "MAX")
+    btnWidth = UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.NewSmall, "MAX")
+    self.buttonMax = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, btnWidth, BUTTON_HGT, "MAX")
     self.buttonMax.font = UIFont.Small;
     self.buttonMax.target = self;
     self.buttonMax.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -51,7 +48,7 @@ function ISWidgetHandCraftControl:createChildren()
     self.buttonMax:instantiate();
     self:addChild(self.buttonMax);
 
-    self.buttonMore = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize, buttonSize, "")
+    self.buttonMore = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT, BUTTON_HGT, "")
     self.buttonMore.image = getTexture("media/ui/Entity/BTN_Plus_Icon_48x48.png");
     self.buttonMore.target = self;
     self.buttonMore.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -60,7 +57,7 @@ function ISWidgetHandCraftControl:createChildren()
     self.buttonMore:instantiate();
     self:addChild(self.buttonMore);
 
-    self.buttonLess = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, buttonSize, buttonSize, "")
+    self.buttonLess = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_HGT, BUTTON_HGT, "")
     self.buttonLess.image = getTexture("media/ui/Entity/BTN_Minus_Icon_48x48.png");
     self.buttonLess.target = self;
     self.buttonLess.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -70,14 +67,14 @@ function ISWidgetHandCraftControl:createChildren()
     self:addChild(self.buttonLess);
 
     local style = self.styleBar or "S_ProgressBar_Craft";
-    self.progressBar = ISXuiSkin.build(self.xuiSkin, style, ISProgressBar, 0, 0, 150, buttonSize, false, UIFont.Small);
+    self.progressBar = ISXuiSkin.build(self.xuiSkin, style, ISProgressBar, 0, 0, 150, BUTTON_HGT, false, UIFont.Small);
     self.progressBar.progressColor = self.colProgress;
     self.progressBar:initialise();
     self.progressBar:instantiate();
     self.progressBar:setProgress(0);
     self:addChild(self.progressBar);
 
-    self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, getText("IGUI_CraftingWindow_Craft"))
+    self.buttonCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 0, BUTTON_HGT, getText("IGUI_CraftingWindow_Craft"))
     self.buttonCraft.font = UIFont.Small;
     self.buttonCraft.target = self;
     self.buttonCraft.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -90,9 +87,9 @@ function ISWidgetHandCraftControl:createChildren()
 
     -- Debug tool to force being able to do recipes regardless of knowing recipes, skills, whatever
     if isDebugEnabled() and debugSpam then
-        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, BUTTON_SIZE * 1.5, BUTTON_SIZE, "Force Action")
+        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 0, BUTTON_HGT, "Force Action")
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
-        self.buttonForceCraft.joypadTextureWH = BUTTON_ICON_SIZE;
+        self.buttonForceCraft.joypadTextureWH = FONT_HGT_SMALL;
         self.buttonForceCraft.font = UIFont.Small;
         self.buttonForceCraft.target = self;
         self.buttonForceCraft.onclick = ISWidgetHandCraftControl.onButtonClick;
@@ -112,127 +109,90 @@ function ISWidgetHandCraftControl:calculateLayout(_preferredWidth, _preferredHei
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local minHeight = self.margin*3;
-    
-    minHeight = minHeight + self.quantityLabel:getHeight() + self.margin;
-    minHeight = minHeight + self.entryBox:getHeight() + self.margin;
-    minHeight = minHeight + self.buttonCraft:getHeight();
+    local leftSideWidth = self.quantityLabel:getWidth() + self.buttonLess:getWidth() + self.entryBox:getWidth() + self.buttonMore:getWidth() + self.buttonMax:getWidth() + UI_BORDER_SPACING*4
+    local rightSideWidth = self.durationLabel:getWidth() + UI_BORDER_SPACING + BUTTON_HGT*2
+    local minWidth = (UI_BORDER_SPACING + math.max(leftSideWidth, rightSideWidth))*2 + BUTTON_HGT;
+
+    local minHeight = BUTTON_HGT*2 + UI_BORDER_SPACING*3 + 2;
+
     if self.buttonForceCraft then
-        minHeight = minHeight + self.buttonForceCraft:getHeight();
+        minHeight = minHeight + BUTTON_HGT + UI_BORDER_SPACING;
     end
     if self.buttonKnowAllRecipes then
-        minHeight = minHeight + self.buttonForceCraft:getHeight();
+        minHeight = minHeight + BUTTON_HGT + UI_BORDER_SPACING;
     end
 
     height = math.max(height, minHeight);
+    width = math.max(width, minWidth)
 
-    local x = self.margin;
-    local y = self.margin;
+    local x = UI_BORDER_SPACING+1;
+    local y = x;
     local midX = width / 2;
-    
-    -- labels
-    local heightUsed = 0;
+    local yOffset = 0
+
+    -- quantity
+    self.quantityLabel:setVisible(self.allowBatchCraft);
+    self.buttonLess:setVisible(self.allowBatchCraft);
+    self.entryBox:setVisible(self.allowBatchCraft);
+    self.buttonMore:setVisible(self.allowBatchCraft);
+    self.buttonMax:setVisible(self.allowBatchCraft);
+
     if self.allowBatchCraft then
-        if self.quantityLabel then
-            self.quantityLabel:setVisible(true);
-            self.quantityLabel:setX(x);
-            self.quantityLabel:setY(y);
-            heightUsed = math.max(heightUsed, self.quantityLabel:getHeight())
-        end
-    else
-        self.quantityLabel:setVisible(false);
+        self.quantityLabel:setX(x);
+        self.quantityLabel:setY(y);
+
+        self.buttonLess:setX(self.quantityLabel:getRight() + UI_BORDER_SPACING);
+        self.buttonLess:setY(y);
+
+        self.entryBox:setX(self.buttonLess:getRight() + UI_BORDER_SPACING);
+        self.entryBox:setY(y);
+
+        self.buttonMore:setX(self.entryBox:getRight() + UI_BORDER_SPACING);
+        self.buttonMore:setY(y);
+
+        self.buttonMax:setX(self.buttonMore:getRight() + UI_BORDER_SPACING);
+        self.buttonMax:setY(y);
+
+        yOffset = BUTTON_HGT + UI_BORDER_SPACING
     end
 
-    if self.durationLabel then
+    if self.durationLabel and self.progressBar then
         self.durationLabel:setX(midX);
-        self.durationLabel.originalX = self.durationLabel:getX();
         self.durationLabel:setY(y);
-        heightUsed = math.max(heightUsed, self.durationLabel:getHeight())
-    end
-    
-    if heightUsed > 0 then
-        y = y + heightUsed + self.margin;
-    end
-    
-    -- qty buttons and progressBar
-    heightUsed = 0;
-    if self.allowBatchCraft then
-        if self.buttonLess then
-            self.buttonLess:setVisible(true);
-            self.buttonLess:setX(x);
-            self.buttonLess:setY(y);
-            x = x + self.buttonPadding + self.buttonLess:getWidth();
-            heightUsed = math.max(heightUsed, self.buttonLess:getHeight())
-        end
 
-        if self.entryBox then
-            self.entryBox:setVisible(true);
-            self.entryBox:setX(x);
-            self.entryBox:setY(y);
-            x = x + self.buttonPadding + self.entryBox:getWidth();
-            heightUsed = math.max(heightUsed, self.entryBox:getHeight())
-        end
-
-        if self.buttonMore then
-            self.buttonMore:setVisible(true);
-            self.buttonMore:setX(x);
-            self.buttonMore:setY(y);
-            x = x + self.buttonPadding + self.buttonMore:getWidth();
-            heightUsed = math.max(heightUsed, self.buttonMore:getHeight())
-        end
-
-        if self.buttonMax then
-            self.buttonMax:setVisible(true);
-            self.buttonMax:setX(x);
-            self.buttonMax:setY(y);
-            x = x + self.buttonPadding + self.buttonMax:getWidth();
-            heightUsed = math.max(heightUsed, self.buttonMax:getHeight())
-        end
-    else
-        if self.entryBox then self.entryBox:setVisible(false); end
-        if self.buttonMax then self.buttonMax:setVisible(false); end
-        if self.buttonMore then self.buttonMore:setVisible(false); end
-        if self.buttonLess then self.buttonLess:setVisible(false); end
-    end
-
-    if self.progressBar then
-        local progressBarWidth = width - midX - self.margin;
-        self.progressBar:setWidth(progressBarWidth);
-        self.progressBar:setX(midX);
+        self.progressBar:setWidth(width - self.durationLabel:getRight() - UI_BORDER_SPACING*2 - 1);
+        self.progressBar:setX(self.durationLabel:getRight() + UI_BORDER_SPACING);
         self.progressBar:setY(y);
-        heightUsed = math.max(heightUsed, self.progressBar:getHeight())
+
+        yOffset = BUTTON_HGT + UI_BORDER_SPACING
     end
 
-    if heightUsed > 0 then
-        y = y + heightUsed + self.margin;
-    end
+    y = y + yOffset
 
     -- craft buttons
-    x = self.margin;
     self.buttonCraft:setX(x);
-    self.buttonCraft:setWidth(width-(self.margin*2));
+    self.buttonCraft:setWidth(width - UI_BORDER_SPACING*2 - 2);
     self.buttonCraft:setY(y);
 
-    y = self.buttonCraft:getY() + self.buttonCraft:getHeight() + self.margin;
+    y = self.buttonCraft:getBottom() + UI_BORDER_SPACING;
 
     if self.buttonForceCraft then
         self.buttonForceCraft:setX(x);
-        self.buttonForceCraft:setWidth(width-(self.margin*2));
+        self.buttonForceCraft:setWidth(self.buttonCraft:getWidth());
         self.buttonForceCraft:setY(y);
 
-        y = self.buttonForceCraft:getY() + self.buttonForceCraft:getHeight() + self.margin;
+        y = self.buttonForceCraft:getBottom() + UI_BORDER_SPACING;
     end
 
     if self.buttonKnowAllRecipes then
         self.buttonKnowAllRecipes:setX(x);
-        self.buttonKnowAllRecipes:setWidth(width-(self.margin*2));
+        self.buttonKnowAllRecipes:setWidth(self.buttonCraft:getWidth());
         self.buttonKnowAllRecipes:setY(y);
 
-        y = self.buttonKnowAllRecipes:getY() + self.buttonKnowAllRecipes:getHeight() + self.margin;
+        y = self.buttonKnowAllRecipes:getBottom() + UI_BORDER_SPACING;
     end
 
-    self.boxHeight = y;
-
+    self.boxHeight = height;
     self:setWidth(width);
     self:setHeight(height);
 
@@ -493,9 +453,6 @@ function ISWidgetHandCraftControl:new(x, y, width, height, player, logic)
     o.interactiveMode = false;
     o.allowBatchCraft = true;
 
-    o.buttonPadding = 5;
-    
-    o.margin = 5;
     o.minimumWidth = 100;
     o.minimumHeight = 0;
 

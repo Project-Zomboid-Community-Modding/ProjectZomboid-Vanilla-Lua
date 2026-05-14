@@ -1504,7 +1504,7 @@ function BandageStep.Vault()
     end
     
     if JoypadState.players[1] then
-        if not BandageStep.runned and isJoypadRTPressed(0) then
+        if not BandageStep.runned and CharacterJoypadButtonBinding.Run:isDown(getSpecificPlayer(0):getJoypadBind()) then
             getPlayer():setIgnoreInputsForDirection(false);
             BandageStep.runned = true;
         end
@@ -2159,8 +2159,8 @@ function ShotgunStep.SurvivalGuideOpen()
         ShotgunStep.soundTimer = 0;
     end
     getPlayer():setSprinting(false);
-    SurvivalGuideManager.blockSurvivalGuide = false;
-    if SurvivalGuideManager.instance and SurvivalGuideManager.instance.panel:isVisible() then
+    SurvivalGuide.blockSurvivalGuide = false;
+    if SurvivalGuide.instance and SurvivalGuide.instance:isVisible() then
         return true;
     end
     

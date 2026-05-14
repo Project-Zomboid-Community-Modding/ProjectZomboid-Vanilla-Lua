@@ -1,7 +1,8 @@
 require "ISUI/ISPanel"
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
+local UI_BORDER_SPACING = 5
+local OUTPUT_COLUMNS = 4 -- moved here for quick access in future, if needed
 
 ISWidgetIngredientsOutputs = ISPanel:derive("ISWidgetIngredientsOutputs");
 
@@ -11,11 +12,9 @@ end
 
 function ISWidgetIngredientsOutputs:createChildren()
     ISPanel.createChildren(self);
-
     local recipe = self.logic and self.logic:getRecipe() or self.recipe;
 
-    local fontHeight = -1; -- <=0 sets label initial height to font
-    self.outputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, fontHeight, getText("IGUI_CraftingWindow_Creates"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
+    self.outputsLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, FONT_HGT_SMALL, getText("IGUI_CraftingWindow_Creates"), 1.0, 1.0, 1.0, 1, UIFont.Small, true);
     self.outputsLabel:initialise();
     self.outputsLabel:instantiate();
     self:addChild(self.outputsLabel);
@@ -112,11 +111,11 @@ function ISWidgetIngredientsOutputs:calculateLayout(_preferredWidth, _preferredH
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    local minWidth = self.margin*2;
-    local minHeight = self.margin;
+    local minWidth = UI_BORDER_SPACING*2;
+    local minHeight = UI_BORDER_SPACING;
 
     minWidth = math.max(minWidth, minWidth + self.outputsLabel:getWidth());
-    minHeight = minHeight + self.outputsLabel:getHeight() + self.margin;
+    minHeight = minHeight + self.outputsLabel:getHeight() + UI_BORDER_SPACING;
     
     local minOutputWidth = 0;
     local minOutputHeight = 0;
@@ -128,38 +127,37 @@ function ISWidgetIngredientsOutputs:calculateLayout(_preferredWidth, _preferredH
     end
 
     local outputCount = #self.outputs;
-    local outputCols = 4;
-    local outputRows = math.ceil(outputCount / outputCols);
+    local outputRows = math.ceil(outputCount / OUTPUT_COLUMNS);
     outputRows = math.max(1, outputRows);
 
-    local margins = outputRows * self.margin;
+    local margins = outputRows * UI_BORDER_SPACING;
     minHeight = minHeight + (minOutputHeight * outputRows) + margins;
 
-    minWidth = math.max(minWidth, (self.itemMargin*2)+(minOutputWidth*outputCols)+(self.itemSpacing*(outputCols - 1)));
+    minWidth = math.max(minWidth, (UI_BORDER_SPACING*(OUTPUT_COLUMNS+1))+(minOutputWidth*OUTPUT_COLUMNS)+2);
 
     width = math.max(width, minWidth);
     height = math.max(height, minHeight);
 
-    local x = self.margin;
-    local y = self.margin;
+    local x = UI_BORDER_SPACING+1;
+    local y = x;
 
     self.outputsLabel:setX(x);
     self.outputsLabel.originalX = self.outputsLabel:getX();
     self.outputsLabel:setY(y);
 
-    local outputTop = self.outputsLabel:getY() + self.outputsLabel:getHeight() + self.margin;
+    local outputTop = self.outputsLabel:getY() + self.outputsLabel:getHeight() + UI_BORDER_SPACING;
     local column = 0;
     local row = 0;
     for k,v in ipairs(self.outputs) do
         v:calculateLayout(minOutputWidth, minOutputHeight);
 
-        x = self.itemMargin + (column*(minOutputWidth+self.itemSpacing));
-        y = outputTop + (row*(minOutputHeight+self.margin));
+        x = UI_BORDER_SPACING + (column*(minOutputWidth+UI_BORDER_SPACING));
+        y = outputTop + (row*(minOutputHeight+UI_BORDER_SPACING));
         v:setX(x);
         v:setY(y);
 
         column = column + 1;
-        if column >= 4 then
+        if column >= OUTPUT_COLUMNS then
             column = 0;
             row = row + 1;
         end
@@ -203,19 +201,11 @@ function ISWidgetIngredientsOutputs:new (x, y, width, height, player, logic) -- 
     o.backgroundColor = {r=0, g=0, b=0, a=0};
     o.borderColor = {r=1, g=1, b=1, a=0.7};
 
-    o.background = true;
-
     o.textureLink = getTexture("media/ui/Entity/icon_link_io.png");
 
-    o.margin = UI_BORDER_SPACING;
     o.minimumWidth = 0;
     o.minimumHeight = 0;
-
-    local fontScale = getTextManager():getFontHeight(UIFont.Small) / 19; -- normalize to 1080p
-
-    o.itemSpacing = 10 * fontScale;
-    o.itemMargin = 10 * fontScale;
-    o.itemNameMaxLines = 3;
+    o.itemNameMaxLines = 2;
 
     o.doToolTip = true;
 

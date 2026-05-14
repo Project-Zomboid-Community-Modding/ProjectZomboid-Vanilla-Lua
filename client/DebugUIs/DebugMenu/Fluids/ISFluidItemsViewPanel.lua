@@ -107,7 +107,7 @@ function ISFluidItemsViewPanel:addItem(item)
     local playerObj = self.player;
     if not playerObj or playerObj:isDead() then return end
     if isClient() then
-        SendCommandToServer("/additem \"" .. playerObj:getDisplayName() .. "\" \"" .. luautils.trim(item:getFullName()) .. "\"")
+        SendCommandToServer("/additem \"" .. playerObj:getUsername() .. "\" \"" .. luautils.trim(item:getFullName()) .. "\"")
     else
         local item = instanceItem(item:getFullName())
         playerObj:getInventory():AddItem(item);

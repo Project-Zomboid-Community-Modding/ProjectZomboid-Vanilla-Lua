@@ -1,0 +1,64 @@
+
+-- Customize bindings for Gamepad here.
+-- These are the enums you have access to:
+-- enum JoypadButton {
+--     A,
+--     B,
+--     X,
+--     Y,
+--     LeftStick,
+--     RightStick,
+--     LeftBump,
+--     RightBump,
+--
+-- enum JoypadAxis1d {
+--     LeftTrigger,
+--     RightTrigger;
+--
+-- enum JoypadAxis2d {
+--     LeftStick,
+--     RightStick;
+--
+-- And these are the enums you modify, by calling setBinding on them:
+-- enum CharacterJoypadButtonBinding {
+--     Aim(CharacterJoypadAxis2dBinding.Aiming, CharacterInputComponent.GAMEPAD_AIM_VALUE_MIN, Float.MAX_VALUE),
+--     PrecisionAim(JoypadAxis1d.RightTrigger, CharacterInputComponent.GAMEPAD_MIN_VALUE_TRIGGER_AIMING, Float.MAX_VALUE),
+--     Melee(JoypadAxis1d.LeftTrigger, CharacterInputComponent.GAMEPAD_MIN_VALUE_TRIGGER_MELEE, Float.MAX_VALUE),
+--     Attack(JoypadAxis1d.RightTrigger, CharacterInputComponent.GAMEPAD_MIN_VALUE_TRIGGER_SHOOT, Float.MAX_VALUE),
+--     Run(CharacterJoypadAxis2dBinding.Movement, CharacterInputComponent.GAMEPAD_MIN_VALUE_RUN, Float.MAX_VALUE),
+--     Interact(JoypadButton.A),
+--     WalkTo(),
+--     Crouch(JoypadButton.LeftStick),
+--     ReloadWeapon(JoypadButton.RightBump),
+--     RackFirearm(JoypadButton.LeftBump),
+--     Sprint(JoypadButton.RightStick),
+--     CancelAction(JoypadButton.B),
+--     ManualFloorAtk(),
+--
+-- enum CharacterJoypadAxis2dBinding {
+--     Movement(JoypadAxis2d.LeftStick),
+--     Aiming(JoypadAxis2d.RightStick);
+
+-- Eg:
+-- -- Swap the sticks
+-- CharacterJoypadAxis2dBinding.Movement:setBinding(JoypadAxis2d.RightStick)
+-- CharacterJoypadAxis2dBinding.Aiming:setBinding(JoypadAxis2d.LeftStick)
+--
+-- -- Assign buttons
+-- CharacterJoypadButtonBinding.Aim:setBinding(JoypadButton.A)
+-- CharacterJoypadButtonBinding.PrecisionAim:setBinding(JoypadButton.RightBump)
+-- CharacterJoypadButtonBinding.Melee:setBinding(JoypadButton.LeftBump)
+-- CharacterJoypadButtonBinding.Attack:setBinding(JoypadAxis1d.LeftTrigger, -0.95)
+-- CharacterJoypadButtonBinding.Run:setBinding(JoypadButton.B)
+-- CharacterJoypadButtonBinding.Interact:setBinding(JoypadButton.X)
+-- CharacterJoypadButtonBinding.WalkTo:setBinding(nil)
+-- CharacterJoypadButtonBinding.Crouch:setBinding(JoypadButton.Y)
+-- CharacterJoypadButtonBinding.ReloadWeapon:setBinding(nil)
+-- CharacterJoypadButtonBinding.RackFirearm:setBinding(nil)
+-- CharacterJoypadButtonBinding.Sprint:setBinding(JoypadButton.RightBump)
+-- CharacterJoypadButtonBinding.CancelAction:setBinding(nil)
+-- CharacterJoypadButtonBinding.ManualFloorAtk:setBinding(nil)
+
+CharacterJoypadButtonBinding.Run:setBinding(JoypadButton.LeftBump)
+
+

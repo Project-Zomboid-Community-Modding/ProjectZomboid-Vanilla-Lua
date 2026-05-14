@@ -78,6 +78,11 @@ function ISFitnessAction:showHandModel()
 	end
 end
 
+function ISFitnessAction:forceStop()
+    self.fitness:setCurrentExercise(null);
+    self.action:forceStop();
+end
+
 function ISFitnessAction:stop()
 	if not isClient() and not isServer() then
 		self.character:SetVariable("FitnessFinished","true");
@@ -143,6 +148,7 @@ function ISFitnessAction:serverStart()
 
 function ISFitnessAction:serverStop()
 	emulateAnimEventOnce(self.netAction, 100, nil, "FitnessFinished=TRUE")
+    self.fitness:setCurrentExercise(null);
 end
 
 function ISFitnessAction:animEvent(event, parameter)

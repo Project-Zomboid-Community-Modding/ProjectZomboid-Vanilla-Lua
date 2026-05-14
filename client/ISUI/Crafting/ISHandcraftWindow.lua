@@ -373,7 +373,7 @@ function ISHandcraftWindow:new(x, y, width, height, player, isoObject, queryOver
     o.resizable = true;
     o.enableHeader = true;
 
-    o.minimumWidth = 1200;
+    o.minimumWidth = 500;
     o.minimumHeight = 400;
 
     o.maximumWidth = 0;

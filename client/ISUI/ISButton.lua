@@ -351,6 +351,12 @@ function ISButton:setTextureRGBA(r, g, b, a)
 	self.textureColor.a = a
 end
 
+function ISButton:restoreDefaultColors()
+	self:setBackgroundRGBA(0.0, 0.0, 0.0, 1.0)
+	self:setBackgroundColorMouseOverRGBA(0.3, 0.3, 0.3, 1.0)
+	self:setBorderRGBA(0.7, 0.7, 0.7, 1)
+end
+
 function ISButton:enableAcceptColor()
 	local GHC = getCore():getGoodHighlitedColor()
 	local r, g, b = GHC:getR(), GHC:getG(), GHC:getB()

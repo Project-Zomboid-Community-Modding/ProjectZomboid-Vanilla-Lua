@@ -120,6 +120,8 @@ function ISRemoveHeadFromAnimal:complete()
 		self.character:addBlood(nil, true, false, false);
 	end
 	syncVisuals(self.character);
+    syncClothingFields(self.character);
+    sendHumanVisual(self.character);
 
 	-- if the animal is rotten you don't get a head but a skull
 	local head = ButcheringUtil.getHead(self.body:getTypeAndBreed());

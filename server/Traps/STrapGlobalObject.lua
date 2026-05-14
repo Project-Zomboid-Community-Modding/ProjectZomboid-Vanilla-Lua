@@ -203,7 +203,7 @@ end
 
 function STrapGlobalObject:addAliveAnimal(character)
     local animalStr = self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)];
-    local breed  = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)];
+    local breed = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)];
 
     --print("alive animal", animalStr)
     --print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);print("test", self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]);
@@ -251,7 +251,7 @@ function STrapGlobalObject:addAliveAnimal(character)
 
     forceDropHeavyItems(character)
     character:getInventory():AddItem(invItem);
-    sendAddItemToContainer(character:getInventory(), invItem);
+    sendPickupAnimalFromTrap(animal, character, invItem);
 
     character:setPrimaryHandItem(nil);
     character:setSecondaryHandItem(nil);
@@ -275,7 +275,7 @@ function STrapGlobalObject:removeAnimal(character)
         if self.animal.aliveAnimals ~= nil and #self.animal.aliveAnimals > 0 then
             -- Create a dead IsoAnimal, then store it in a new Base.AnimalCorpse item.
             local animalType = self.animal.aliveAnimals[ZombRand(1, #self.animal.aliveAnimals + 1)]
-            local breedName  = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)]
+            local breedName = self.animal.aliveBreed[ZombRand(1, #self.animal.aliveBreed + 1)]
             isoAnimal = IsoAnimal.new(getCell(), character:getX(), character:getY(), character:getZ(), animalType, breedName)
             self:removeAnimalCorpse(character, isoAnimal)
         elseif self.animal.item ~= nil then
@@ -308,7 +308,7 @@ function STrapGlobalObject:removeAnimalCorpse(character, isoAnimal)
 
     -- Set the animal's stats depending on the random size
     -- FIXME: I don't know if these are needed.
-    local typicalSize  = item:getBaseHunger() * -100;
+    local typicalSize = item:getBaseHunger() * -100;
     local statsModifier = size / typicalSize;
     item:setBaseHunger(item:getBaseHunger() * statsModifier);
     item:setHungChange(item:getHungChange() * statsModifier);
@@ -340,7 +340,7 @@ function STrapGlobalObject:removeAnimalItem(character)
         addXp(character, Perks.Trapping, xp);
     end
 
-    local typicalSize  = item:getBaseHunger() * -100;
+    local typicalSize = item:getBaseHunger() * -100;
     local statsModifier = size / typicalSize;
 
     -- Set the animal's stats depending on the random size

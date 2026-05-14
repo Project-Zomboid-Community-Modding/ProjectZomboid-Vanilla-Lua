@@ -46,7 +46,7 @@ function Fishing.Utils.isStopFishingButtonPressed(joypad)
             end
         end
     else
-        return isJoypadPressed(joypad, Joypad.BButton)
+        return JoypadButton.B:isDown(joypad)
     end
     return false
 end

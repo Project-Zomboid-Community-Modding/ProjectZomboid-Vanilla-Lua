@@ -37,6 +37,9 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 		break;
 	end
 
+	-- Avoid changing the passed-in table
+	worldobjects = copyTable(worldobjects)
+
 	for i=1,square:getObjects():size() do
 		table.insert(worldobjects, square:getObjects():get(i-1))
 	end
@@ -592,7 +595,7 @@ DebugContextMenu.onHitLandmine = function(vehicle, square)
 end
 
 function DebugContextMenu.OnRemoveAllZombies(zombie)
-	local zombies = getCell():getObjectList()
+	local zombies = getCell():getObjectListForLua()
 	for i=zombies:size(),1,-1 do
 		local zombie = zombies:get(i-1)
 		if instanceof(zombie, "IsoZombie") then
@@ -607,7 +610,7 @@ function DebugContextMenu.OnRemoveAllZombiesClient(zombie)
 end
 
 function DebugContextMenu.OnRemoveAllAnimals(zombie)
-	local animals = getCell():getObjectList()
+	local animals = getCell():getObjectListForLua()
 	for i=animals:size(),1,-1 do
 		local animal = animals:get(i-1)
 		if instanceof(animal, "IsoAnimal") then
@@ -696,7 +699,7 @@ function DebugContextMenu.OnGetBuildingKey(worldobjects, player)
 	local sq = getSpecificPlayer(player):getCurrentSquare()
 	if sq and sq:getBuilding() then
 		if isClient() then
-			SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\" \""..luautils.trim(tostring(ItemPickerJava.KeyNamer.getName(sq))).."\"")
+			SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getUsername() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\" \""..luautils.trim(tostring(ItemPickerJava.KeyNamer.getName(sq))).."\"")
 		else
 			local key = instanceItem("Base.Key1")
 			key:setKeyId(sq:getBuilding():getDef():getKeyId())
@@ -738,7 +741,7 @@ function DebugContextMenu.OnGetDoorKey(worldobjects, door, player)
 	end
 
 	if isClient() then
-		SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getDisplayName() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
+		SendCommandToServer("/addkey \"" .. getSpecificPlayer(player):getUsername() .. "\" \"" .. luautils.trim(tostring(keyID)) .. "\"")
 	else
 		local item = instanceItem("Base.Key1")
 		item:setKeyId(keyID)

@@ -307,7 +307,7 @@ function ISFactionUI:onClick(button)
         self.addPlayerUI = factionUI;
     end
     if button.internal == "CHANGETITLE" then
-        local modal = ISTextBox:new(self.x + 200, 200, 300, 180, getText("IGUI_SafehouseUI_ChangeTitle"), self.faction:getName(), nil, ISFactionUI.onChangeTitle);
+        local modal = ISTextBox:new(self.x + 200, 200, 300, 180, getText("IGUI_FactionUI_ChangeTitle"), self.faction:getName(), nil, ISFactionUI.onChangeTitle);
         modal.faction = self.faction;
         modal:initialise();
         modal:addToUIManager();
@@ -340,6 +340,7 @@ end
 
 function ISFactionUI:onChangeTitle(button)
     if button.internal == "OK" then
+        button.parent.faction:removeFaction()
         button.parent.faction:setName(button.parent.entry:getText());
         button.parent.faction:syncFaction();
     end

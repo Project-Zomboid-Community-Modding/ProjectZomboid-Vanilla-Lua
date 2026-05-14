@@ -1,6 +1,8 @@
 require "ISUI/ISPanel"
 
-local SMALL_FONT_HGT = getTextManager():getFontHeight(UIFont.Small);
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small);
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local UI_BORDER_SPACING = 5
 
 ISCraftInventoryPanel = ISPanel:derive("ISCraftInventoryPanel");
 
@@ -89,7 +91,7 @@ function ISCraftInventoryPanel:createChildren()
     self.itemListBox.vscroll:setAnchorRight(false);
     self.itemListBox.vscroll:setAnchorTop(false);
     self.itemListBox.vscroll:setAnchorBottom(false);
-    self.itemListBox.itemheight = 32;
+    self.itemListBox.itemheight = BUTTON_HGT;
     self.itemListBox.selected = 0;
     self.itemListBox.joypadParent = self;
     self.itemListBox.logic = self.logic;
@@ -110,10 +112,10 @@ function ISCraftInventoryPanel:calculateLayout(_preferredWidth, _preferredHeight
     local width = math.max(self.minimumWidth, _preferredWidth or 0);
     local height = math.max(self.minimumHeight, _preferredHeight or 0);
 
-    self.itemListBox:setX(self.margin);
-    self.itemListBox:setY(self.margin);
-    self.itemListBox:setWidth(width-(self.margin*2));
-    self.itemListBox:setHeight(height-(self.margin*2));
+    self.itemListBox:setX(UI_BORDER_SPACING);
+    self.itemListBox:setY(UI_BORDER_SPACING);
+    self.itemListBox:setWidth(width-(UI_BORDER_SPACING*2));
+    self.itemListBox:setHeight(height-(UI_BORDER_SPACING*2));
 
     self.itemListBox.vscroll:setX(self.itemListBox:getWidth()-self.itemListBox.vscroll:getWidth());
     self.itemListBox.vscroll:setHeight(self.itemListBox:getHeight());
@@ -490,7 +492,7 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.2, 1.0, 1.0, 1.0);
 
         dx = (width/2)-(data.textWidth/2);
-        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
+        dy = y + ((self.itemheight/2)-(FONT_HGT_SMALL/2));
 
         if data.hasExpandArrow then
             local iconTexture = getTexture("media/ui/Entity/Icon_ExpandArrow_Closed_48x48.png");
@@ -509,7 +511,7 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
         self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.1, 1.0, 1.0, 1.0);
 
         dx = 10;
-        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
+        dy = y + ((self.itemheight/2)-(FONT_HGT_SMALL/2));
 
         self:drawText( data.text, dx, dy, 1, 1, 1, 1.0, self.font);
     else
@@ -533,7 +535,7 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
             self:drawTextureScaledAspect(data.iconTexture, dx, y+2, self.itemheight-4, self.itemheight-4, 1, data.iconColor.r, data.iconColor.g, data.iconColor.b);
         end
         dx = dx + self.itemheight + 16;
-        dy = y + ((self.itemheight/2)-(SMALL_FONT_HGT/2));
+        dy = y + ((self.itemheight/2)-(FONT_HGT_SMALL/2));
 
         if data.isUnavailable then
             self:drawText( data.text, dx, dy, 1, 1, 1, 0.5, self.font);
@@ -721,10 +723,9 @@ function ISCraftInventoryPanel:new(x, y, width, height, player, logic)
     
     o.isResourceItemSlot = false; -- true if this ISCraftInventoryPanel relates to a Resource ISItemSlot
     o.showCurrentContents = false; -- true if this ISCraftInventoryPanel should show the current contents of a Resource IsItemSlot
-    
-    o.margin = 5;
-    o.minimumWidth = 256;
-    o.minimumHeight = 32;
+
+    o.minimumWidth = 200;
+    o.minimumHeight = BUTTON_HGT;
 
     o.autoFillContents = false;
 

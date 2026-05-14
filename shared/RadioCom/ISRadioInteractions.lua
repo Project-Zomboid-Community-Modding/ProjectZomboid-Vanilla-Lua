@@ -119,7 +119,7 @@ Interactions.COO = function(_player, _amount) doSkill(_player, _amount, getText(
 Interactions.FRM = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Farming"), Perks.Farming); end           --farming
 Interactions.DOC = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Doctor"), Perks.Doctor); end            --firstaid
 Interactions.ELC = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Electricity"), Perks.Electricity); end           --electricty
-Interactions.MTL = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Metalworking"), Perks.MetalWelding); end            --metalwelding
+Interactions.MTL = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_MetalWelding"), Perks.MetalWelding); end
 Interactions.FKN = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_FlintKnapping"), Perks.FlintKnapping); end
 Interactions.CRV = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Carving"), Perks.Carving); end
 --firearm
@@ -144,7 +144,7 @@ Interactions.BLA = function(_player, _amount) doSkill(_player, _amount, getText(
 Interactions.GLA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Glassmaking"), Perks.Glassmaking); end
 Interactions.HUS = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Husbandry"), Perks.Husbandry); end
 Interactions.BUT = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Butchering"), Perks.Butchering); end
-Interactions.TRA = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Tracking"), Perks.Tracking); end
+Interactions.TRK = function(_player, _amount) doSkill(_player, _amount, getText("IGUI_perks_Tracking"), Perks.Tracking); end
 
 local instance = nil;
 
