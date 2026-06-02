@@ -170,7 +170,7 @@ AnimalContextMenu.doMenu = function(player, context, animal, test)
         option.toolTip = tooltip;
     end
 
-    if (animal:getBehavior():canBeAttached() or AnimalContextMenu.cheat) and not animal:getData():getAttachedPlayer() then
+    if (animal:getBehavior():canBeAttached() or AnimalContextMenu.cheat) and not animal:getData():getAttachedPlayer() and not animal:getData():getAttachedTree() then
         local nbOfRopes = playerObj:getInventory():getNumberOfItem("Base.Rope");
         local option = animalSubMenu:addOption(getText("ContextMenu_AttachAnimal"), animal, AnimalContextMenu.onAttachAnimal, playerObj);
         if(nbOfRopes <= playerObj:getAttachedAnimals():size() and not AnimalContextMenu.cheat) then
@@ -730,6 +730,8 @@ AnimalContextMenu.onGetAnimalBonesFromInv = function(body, chr, knife)
     corpse:getSquare():addCorpse(corpse, false);
 
     chr:getInventory():Remove(body);
+    sendRemoveItemFromContainer(chr:getInventory(), body);
+
     ISTimedActionQueue.add(ISGetAnimalBones:new(chr, corpse))
 end
 

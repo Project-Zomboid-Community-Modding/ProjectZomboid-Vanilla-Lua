@@ -6,11 +6,12 @@ function ISBaseObject:initialise()
 
 end
 
-function ISBaseObject:derive (type)
+function ISBaseObject:derive(type)
     local o = {}
     setmetatable(o, self)
     self.__index = self
-	o.Type= type;
+	o.Type = type
+	o.SuperType = self
     return o
 end
 
@@ -18,7 +19,42 @@ function ISBaseObject:new()
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
+	o.SuperType = nil
 	return o
+end
+
+function ISBaseObject:instanceof(object, type)
+    if (object == nil) then
+        return false
+    end
+
+    if (isTable(object) == false) then
+        -- Not an object
+        return false
+    end
+
+    if (object.Type == nil) then
+        DebugType.LuaObject:printStackTrace(LogSeverity.Warning, 4, "No Type found: " .. tostring(object))
+        return false
+    end
+
+    type = type or self.Type
+
+    if (type ~= ISBaseObject.Type and ISBaseObject:instanceof(object, ISBaseObject.Type) == false) then
+        DebugType.LuaObject:printStackTrace(LogSeverity.Warning, 4, "Not an ISBaseObject: " .. tostring(object))
+        return false;
+    end
+
+    if (object.Type == type) then
+        return true
+    end
+
+    if (object.SuperType == object.Type) then
+        DebugType.LuaObject:printStackTrace(LogSeverity.Error, 4, "Cyclic type info. SuperType == Type: " .. tostring(object.Type) .. " " .. tostring(object))
+        return false;
+    end
+
+    return object.SuperType ~= nil and ISBaseObject:instanceof(object.SuperType, type)
 end
 
 function ISBaseObject:addEventListener(_event, _callback, _target)

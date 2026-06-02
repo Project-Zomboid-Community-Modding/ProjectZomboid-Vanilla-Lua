@@ -1,7 +1,7 @@
 Fishing = Fishing or {}
 
 Fishing.Bobber = {}
-local Bobber = Fishing.Bobber
+Bobber = Fishing.Bobber
 
 Fishing.ServerBobberManager = { }
 
@@ -149,8 +149,7 @@ function Bobber:update()
             self.nibbleTimer = self.nibbleTimer - getGameTime():getMultiplier()
             if self.nibbleTimer <= 0 and not self.catchFishStarted then
                 if self.fish and not self.fish.isTrash then
-                    self.fishingRod.rodItem:getModData().fishing_Lure = nil
-                    self.fishingRod.rodItem:setName(getText(self.fishingRod.rodItem:getScriptItem():getDisplayName()))
+                    self.fishingRod:removeLure()
                 end
                 self.fish = nil
             end
@@ -255,6 +254,9 @@ function Bobber:destroy()
     if not isServer() then
         Events.RenderOpaqueObjectsInWorld.Remove(self.renderFunc);
     end
+    if isServer() and self.fish ~= nil and self.fishingRod.rodItem ~= nil then
+        self.fishingRod:consumeLure(self.fish.isTrash)
+    end
 end
 
 Bobber.onFishingActionMPUpdate = function(data)
@@ -277,7 +279,6 @@ Bobber.onFishingActionMPUpdate = function(data)
 
             bobber.fish = fish
         else
-            print("Bobber.onFishingActionMPUpdate bobber.fish = nil")
             bobber.fish = nil
         end
     end
@@ -288,6 +289,13 @@ Bobber.onFishingActionMPUpdate = function(data)
         end
         bobber.catchFishStarted = data.CatchFishStarted;
     end
+end
+
+Bobber.getBobber = function(player)
+    if isServer() then
+        return Fishing.ServerBobberManager[player:getOnlineID()];
+    end
+    return nil
 end
 
 Events.OnFishingActionMPUpdate.Add(Bobber.onFishingActionMPUpdate);

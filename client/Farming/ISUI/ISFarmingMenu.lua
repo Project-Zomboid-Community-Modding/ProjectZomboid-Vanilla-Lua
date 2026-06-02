@@ -429,7 +429,7 @@ ISFarmingMenu.canDigHereSquare = function(square)
 
     local groundFloor = getSandboxOptions():getOptionByName("PlaceDirtAboveground"):getValue() == true or square:getZ() == 0
     if not groundFloor then return false end;
-    if ISShovelGroundCursor.GetDirtGravelSand(square) == "dirt" then return true end
+    if square:isFree(false) and ISShovelGroundCursor.GetDirtGravelSand(square) == "dirt" then return true end
     return false
 end
 

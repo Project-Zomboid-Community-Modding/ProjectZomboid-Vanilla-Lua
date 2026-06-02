@@ -3,8 +3,8 @@ require "Foraging/ISSearchManager";
 require "Foraging/ISZoneDisplay";
 
 ISSearchWindow = ISCollapsableWindow:derive("ISSearchWindow");
-ISSearchWindow.players = {};
-ISSearchWindow.showDebug = false;
+ISSearchWindow.players          = {};
+ISSearchWindow.showDebug        = false;
 
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
@@ -199,7 +199,7 @@ function ISSearchWindow:initialise()
 	self.searchFocus.selected	= 1;
 	self:updateSearchFocusCategories();
 	self.searchFocus.onChange	= self.onChangeSearchFocusCategory;
-	self.searchFocus.target = self;
+	self.searchFocus.target		= self;
 	self:addChild(self.searchFocus);
 
 	self.toggleSearchMode = ISButton:new(UI_BORDER_SPACING + 1, self.searchFocus:getBottom() + UI_BORDER_SPACING, self.width-(UI_BORDER_SPACING+1)*2, BUTTON_HGT, getText("UI_enable_search_mode"), self.manager, ISSearchManager.toggleSearchMode);
@@ -211,10 +211,14 @@ function ISSearchWindow:initialise()
 	self:setHeight(self.toggleSearchMode:getBottom()+UI_BORDER_SPACING+1);
 	self:bringToTop();
 
-	self:setInfo(getText("SurvivalGuide_entrie11moreinfo"));
+	self.infoButton:setVisible(true)
 
 	self:setVisible(false);
 	ISLayoutManager.RegisterWindow('ISSearchWindow', ISSearchWindow, self);
+end
+
+function ISSearchWindow:onInfo(button)
+    SurvivalGuide.openEntry(SurvivalGuideEntry.FORAGING)
 end
 
 function ISSearchWindow:new(_manager)
@@ -222,30 +226,30 @@ function ISSearchWindow:new(_manager)
 	setmetatable(o, self);
 	self.__index = self;
 
-	o.x = 120;
-	o.y = 300;
-	o.width = 420;
-	o.height = 170;
+	o.x                 	= 120;
+	o.y                 	= 300;
+	o.width             	= 420;
+	o.height            	= 170;
 
-	o.joypadMoveSpeed = 20;
-	o.overrideBPrompt = true;
-	o.tooltipForced = nil;
+	o.joypadMoveSpeed   	= 20;
+	o.overrideBPrompt   	= true;
+	o.tooltipForced     	= nil;
 
-	o.showBackground = true;
-	o.showBorder = true;
-	o.backgroundColor = {r=0, g=0, b=0, a=1};
-	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
+	o.showBackground    	= true;
+	o.showBorder        	= true;
+	o.backgroundColor   	= {r=0, g=0, b=0, a=1};
+	o.borderColor       	= {r=0.4, g=0.4, b=0.4, a=1};
 
-	o.manager = _manager;
-	o.character = _manager.character;
-	o.player = _manager.player;
-	o.gameTime = getGameTime();
-	o.climateManager = getClimateManager();
+	o.manager           	= _manager;
+	o.character         	= _manager.character;
+	o.player            	= _manager.player;
+	o.gameTime          	= getGameTime();
+	o.climateManager    	= getClimateManager();
 
-	o.title = getText("UI_investigate_area_window_title");
+	o.title             	= getText("UI_investigate_area_window_title");
 
-	o.visibleTarget = o;
-	o.visibleFunction = ISSearchWindow.onToggleVisible;
+	o.visibleTarget			= o;
+	o.visibleFunction		= ISSearchWindow.onToggleVisible;
 
 	o.searchFocusCategory	= "None";
 

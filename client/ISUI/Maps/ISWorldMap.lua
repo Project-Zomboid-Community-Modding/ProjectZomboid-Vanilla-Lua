@@ -1480,6 +1480,7 @@ function ISWorldMap:new(x, y, width, height)
 	o.texViewIsometric = getTexture("media/textures/worldMap/ViewIsometric.png")
 	o.texViewOrthographic = getTexture("media/textures/worldMap/ViewOrtho.png")
 	o.texViewTerrainImage = getTexture("media/textures/worldMap/ViewPyramid.png")
+	o.activeWhilePaused = true
 	return o
 end
 

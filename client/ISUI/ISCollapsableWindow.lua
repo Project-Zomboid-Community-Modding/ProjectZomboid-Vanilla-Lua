@@ -60,7 +60,7 @@ function ISCollapsableWindow:createChildren()
 	self.closeButton:setImage(self.closeButtonTexture);
 	self:addChild(self.closeButton);
 
-    self.infoButton = ISButton:new(1 + buttonHeight + buttonOffset, 1, buttonHeight, buttonHeight, "", self, ISCollapsableWindow.onInfo);
+    self.infoButton = ISButton:new(1 + buttonHeight + buttonOffset, 1, buttonHeight, buttonHeight, "", self, self.onInfo);
     self.infoButton:initialise();
     self.infoButton.borderColor.a = 0.0;
     self.infoButton.backgroundColor.a = 0.0;

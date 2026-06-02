@@ -173,3 +173,11 @@ end
 
 Events.DoSpecialTooltip.Add(DoSpecialTooltip)
 
+CFarmingSystem.destroyPlant = function(square)
+    if not square then return end
+    args = {}
+    args.x = square:getX()
+    args.y = square:getY()
+    args.z = square:getZ()
+	CFarmingSystem.instance:sendCommand(getSpecificPlayer(0), 'destroy', args)
+end

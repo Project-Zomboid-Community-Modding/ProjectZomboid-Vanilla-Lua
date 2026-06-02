@@ -23,6 +23,7 @@ function ISTextBox:initialise()
     self.entry:instantiate();
     self.entry:setMaxLines(self.maxLines)
     self.entry:setMultipleLine(self.multipleLine)
+    self.entry:setClearButton(true)
     self:addChild(self.entry);
 
     self.colorBtn = ISButton:new(self.entry.x + self.entry.width + 5, self.entry.y, height, height, "", self, ISTextBox.onColorPicker);

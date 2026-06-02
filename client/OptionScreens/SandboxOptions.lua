@@ -610,6 +610,7 @@ function SandboxOptionsScreen:createControlForSetting(setting, tooltip)
             control:initialise()
             control:instantiate()
             control:setOnlyNumbers(setting.onlyNumbers or false)
+            control:setClearButton(true)
         end
     elseif setting.type == "enum" then
         control = ISComboBox:new(0, 0, CONTROL_WIDTH, ENTRY_HGT, self, self.onComboBoxSelected, setting.name)

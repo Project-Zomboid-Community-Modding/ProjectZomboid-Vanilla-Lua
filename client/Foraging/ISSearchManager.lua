@@ -35,15 +35,15 @@ LuaEventManager.AddEvent("onToggleSearchMode");
 LuaEventManager.AddEvent("onEnableSearchMode");
 LuaEventManager.AddEvent("onDisableSearchMode");
 
-ISSearchManager = ISPanel:derive("ISSearchManager");
-ISSearchManager.players = {};
-ISSearchManager.showDebug = false;
-ISSearchManager.showDebugLocations = false;
-ISSearchManager.showDebugExtended = false;
-ISSearchManager.showDebugVision = false;
-ISSearchManager.showDebugVisionRadius = false;
+ISSearchManager         			    = ISPanel:derive("ISSearchManager");
+ISSearchManager.players 			    = {};
+ISSearchManager.showDebug 			    = false;
+ISSearchManager.showDebugLocations	    = false;
+ISSearchManager.showDebugExtended	    = false;
+ISSearchManager.showDebugVision		    = false;
+ISSearchManager.showDebugVisionRadius   = false;
 
-ISSearchManager.updateEvents = {
+ISSearchManager.updateEvents          = {
 	{ method = "updateCurrentZone",      tick = 10 },
 	{ method = "checkActiveZones",       tick = 30 },
 	{ method = "updateLocationTracking", tick = 10 },
@@ -53,14 +53,14 @@ ISSearchManager.updateEvents = {
 };
 
 --containers matching these types will be detected as a stash
-ISSearchManager.stashTypes = {
+ISSearchManager.stashTypes              = {
 	["ShotgunBox"]	= true,
 	["GunBox"] 		= true,
 	["ToolsBox"] 	= true,
 };
 
 --skip these item types when adding world pins
-ISSearchManager.ignoredItemTypes = {
+ISSearchManager.ignoredItemTypes        = {
 	["Base.UnusableWood"]   = true,
 	["Base.UnusableMetal"]  = true,
 };
@@ -279,12 +279,12 @@ function ISSearchManager:addIcon(_id, _iconClass, _itemType, _itemObj, _x, _y, _
 		local itemObj = _itemObj or instanceItem(_itemType or "Base.Plank");
 		local itemType = _itemType or itemObj:getFullType();
 		local icon = {
-			id = id,
-			x = _x,
-			y = _y,
-			z = _z,
-			itemObj = itemObj,
-			itemType = itemType,
+			id          = id,
+			x           = _x,
+			y           = _y,
+			z		    = _z,
+			itemObj     = itemObj,
+			itemType    = itemType,
 			isBonusIcon = false,
 		};
 		self[_iconClass][id] = ISBaseIcon:new(self, icon);
@@ -384,14 +384,14 @@ function ISSearchManager:createBonusIcon(_square, _catDef, _zoneData)
 	if pickedItemType then
 		local iconID = getRandomUUID();
 		local forageIcon = {
-			id = iconID,
-			zoneid = _zoneData.id,
-			x = _square:getX(),
-			y = _square:getY(),
-			z = _square:getZ(),
-			catName = _catDef.name,
-			itemType = pickedItemType,
-			isBonusIcon = true,
+			id          			= iconID,
+			zoneid      			= _zoneData.id,
+			x           			= _square:getX(),
+			y           			= _square:getY(),
+			z           			= _square:getZ(),
+			catName     			= _catDef.name,
+			itemType    			= pickedItemType,
+			isBonusIcon				= true,
 			canRollForSearchFocus	= false,
 		};
 		_zoneData.forageIcons[iconID] = forageIcon;
@@ -425,14 +425,14 @@ function ISSearchManager:createSpecificIcon(_square, _itemType, _zoneData, _isBo
 		for _ = 1, _count do
 			local iconID = getRandomUUID();
 			local forageIcon = {
-				id = iconID,
-				zoneid = _zoneData.id,
-				x = square:getX(),
-				y = square:getY(),
-				z = square:getZ(),
-				catName = pickedItemType.categories[1],
-				itemType = pickedItemType.type,
-				isBonusIcon = type(_isBonus == "boolean") and _isBonus or false,
+				id          			= iconID,
+				zoneid      			= _zoneData.id,
+				x           			= square:getX(),
+				y           			= square:getY(),
+				z           			= square:getZ(),
+				catName     			= pickedItemType.categories[1],
+				itemType    			= pickedItemType.type,
+				isBonusIcon				= type(_isBonus == "boolean") and _isBonus or false,
 				canRollForSearchFocus	= type(_isFocus == "boolean") and _isFocus or true,
 			};
 			_zoneData.forageIcons[iconID] = forageIcon;
@@ -533,14 +533,14 @@ function ISSearchManager:createIconsForWorldItems(_square)
 			iconID = tostring(square).."-"..itemType;
 			if not (self.worldObjectIcons[iconID] or self.worldIconStack[iconID]) then
 				icon = {
-					id = iconID,
-					x = worldObject:getWorldPosX(),
-					y = worldObject:getWorldPosY(),
-					z = worldObject:getWorldPosZ(),
-					itemObj = itemObj,
+					id       		= iconID,
+					x        		= worldObject:getWorldPosX(),
+					y        		= worldObject:getWorldPosY(),
+					z			 	= worldObject:getWorldPosZ(),
+					itemObj  		= itemObj,
 					itemObjTable	= {},
-					itemType = itemType,
-					isBonusIcon = false,
+					itemType 		= itemType,
+					isBonusIcon     = false,
 					isTrack = ISAnimalTracksFinder.isTrack(worldObject);
 				};
 				icon.itemObjTable[itemObj] = itemObj;
@@ -579,12 +579,12 @@ function ISSearchManager:createIconsForContainers(_square, _object)
 			if not self.stashIcons[object] then
 				local itemObj = instanceItem("Base.Plank");
 				local icon = {
-					id = object,
-					x = square:getX() + 0.5,
-					y = square:getY() + 0.5,
-					z = square:getZ(),
-					itemObj = itemObj,
-					itemType = itemObj:getFullType(),
+					id          = object,
+					x           = square:getX() + 0.5,
+					y           = square:getY() + 0.5,
+					z		    = square:getZ(),
+					itemObj     = itemObj,
+					itemType    = itemObj:getFullType(),
 					isBonusIcon = false,
 				};
 				self.stashIcons[object] = ISStashIcon:new(self, icon);
@@ -999,61 +999,61 @@ function ISSearchManager:loadIcons()
 end
 
 function ISSearchManager:updateModifiers()
-	local character = self.character;
+	local character			= self.character;
 	--
-	self.perkLevel = self.character:getPerkLevel(Perks.PlantScavenging);
-	self.square = self.character:getCurrentSquare();
+	self.perkLevel			= self.character:getPerkLevel(Perks.PlantScavenging);
+	self.square				= self.character:getCurrentSquare();
 	--
 	self.modifiers = {
-		aimBonus = math.max(forageSystem.getAimVisionBonus(character) * self.aimMulti, 1),
-		sneakBonus = math.max(forageSystem.getSneakVisionBonus(character) * self.sneakMulti, 1),
-		traitBonus = forageSystem.getTraitVisionBonus(character),
-		professionBonus = forageSystem.getProfessionVisionBonus(character),
-		panicPenalty = forageSystem.getPanicPenalty(character),
-		bodyPenalty = forageSystem.getBodyPenalty(character),
+		aimBonus			= math.max(forageSystem.getAimVisionBonus(character) * self.aimMulti, 1),
+		sneakBonus			= math.max(forageSystem.getSneakVisionBonus(character) * self.sneakMulti, 1),
+		traitBonus			= forageSystem.getTraitVisionBonus(character),
+		professionBonus		= forageSystem.getProfessionVisionBonus(character),
+		panicPenalty		= forageSystem.getPanicPenalty(character),
+		bodyPenalty			= forageSystem.getBodyPenalty(character),
 		exhaustionPenalty	= forageSystem.getExhaustionPenalty(character),
-		clothingPenalty = forageSystem.getClothingPenalty(character),
-		weatherPenalty = forageSystem.getWeatherPenalty(character, self.square),
-		movementPenalty = forageSystem.getMovementVisionPenalty(character),
-		lightPenalty = forageSystem.getLightLevelPenalty(character, self.square, true),
+		clothingPenalty		= forageSystem.getClothingPenalty(character),
+		weatherPenalty		= forageSystem.getWeatherPenalty(character, self.square),
+		movementPenalty		= forageSystem.getMovementVisionPenalty(character),
+		lightPenalty		= forageSystem.getLightLevelPenalty(character, self.square, true),
 	};
 end
 
 function ISSearchManager:getOverlayRadius()
 	self:updateModifiers();
 	--
-	local modifiers = self.modifiers;
+	local modifiers			= self.modifiers;
 	-- skill bonuses
-	local traitBonus = modifiers.traitBonus;
-	local professionBonus = modifiers.professionBonus;
+	local traitBonus        = modifiers.traitBonus;
+	local professionBonus   = modifiers.professionBonus;
 	-- overlay minimum maximum radius settings
-	local minRadius = self.minRadius + professionBonus + traitBonus;
-	local maxRadius = self.maxRadius + professionBonus + traitBonus;
-	local maxRadiusCap = self.maxRadiusCap;
+	local minRadius         = self.minRadius + professionBonus + traitBonus;
+	local maxRadius         = self.maxRadius + professionBonus + traitBonus;
+	local maxRadiusCap      = self.maxRadiusCap;
 	-- begin calculations
-	local levelRadius = (maxRadius - minRadius) * (self.perkLevel / 10);
-	local overlayRadius = clamp(minRadius + levelRadius, minRadius, maxRadius);
+	local levelRadius       = (maxRadius - minRadius) * (self.perkLevel / 10);
+	local overlayRadius     = clamp(minRadius + levelRadius, minRadius, maxRadius);
 	-- apply penalties
 	local penalties = {
-		panic = modifiers.panicPenalty,
-		body = modifiers.bodyPenalty,
-		exhaustion = modifiers.exhaustionPenalty,
-		clothing = modifiers.clothingPenalty,
-		weather = modifiers.weatherPenalty,
-		movement = modifiers.movementPenalty,
+		panic 				= modifiers.panicPenalty,
+		body				= modifiers.bodyPenalty,
+		exhaustion			= modifiers.exhaustionPenalty,
+		clothing			= modifiers.clothingPenalty,
+		weather 			= modifiers.weatherPenalty,
+		movement 			= modifiers.movementPenalty,
 	};
 
 	for _, modifier in pairs(penalties) do overlayRadius = overlayRadius * modifier; end;
 
 	--only the highest modifier applies for aim or sneak
-	local visionBonus = math.max(modifiers.aimBonus, modifiers.sneakBonus);
+	local visionBonus 		= math.max(modifiers.aimBonus, modifiers.sneakBonus);
 
-	overlayRadius = overlayRadius * visionBonus;
-	maxRadius = maxRadius * visionBonus;
-	minRadius = minRadius * visionBonus;
-	maxRadius = math.min(maxRadius, maxRadiusCap);
+	overlayRadius 			= overlayRadius * visionBonus;
+	maxRadius 				= maxRadius * visionBonus;
+	minRadius 				= minRadius * visionBonus;
+	maxRadius 				= math.min(maxRadius, maxRadiusCap);
 
-	overlayRadius = overlayRadius * modifiers.lightPenalty;
+	overlayRadius 			= overlayRadius * modifiers.lightPenalty;
 
 	return clamp(overlayRadius, self.minRadius, maxRadius);
 end
@@ -1158,10 +1158,10 @@ function ISSearchManager:checkMarkers()
 end
 
 function ISSearchManager:resetVisionBonuses()
-	self.aimMulti = 0;
-	self.aimBonusTick = 0;
-	self.sneakMulti = 0;
-	self.sneakBonusTick = 0;
+	self.aimMulti              = 0;
+	self.aimBonusTick          = 0;
+	self.sneakMulti            = 0;
+	self.sneakBonusTick        = 0;
 end
 
 function ISSearchManager:updateVisionBonuses()
@@ -1241,150 +1241,150 @@ function ISSearchManager:new(_character)
 	local w, h = eyeTex.eyeconOn:getWidth(), eyeTex.eyeconOn:getHeight();
 	o = ISPanel:new(0, 0, 0, 0);
 	setmetatable(o, self)
-	self.__index = self;
-	o.baseWidth = w;
-	o.baseHeight = h;
-	o.textureWidth = w;
-	o.textureHeight = h;
-	o.width = 0;
-	o.height = 0;
+	self.__index      = self;
+	o.baseWidth     		= w;
+	o.baseHeight    		= h;
+	o.textureWidth     		= w;
+	o.textureHeight    		= h;
+	o.width          		= 0;
+	o.height         		= 0;
 
-	o.texture = eyeTex.eyeconOn;
-	o.textureColor = { r = 1, g = 1, b = 1, a = 0 };
+	o.texture         		= eyeTex.eyeconOn;
+	o.textureColor    		= { r = 1, g = 1, b = 1, a = 0 };
 
-	o.alphaStep = 0.05;
-	o.minAlpha = 0;	 --minimum alpha value (debug)
-	o.activeAlpha = 0;	 --mode is active
-	o.spotAlpha = 0.33;  --something is in view not center view
+	o.alphaStep				= 0.05;
+	o.minAlpha				= 0;	 --minimum alpha value (debug)
+	o.activeAlpha			= 0;	 --mode is active
+	o.spotAlpha				= 0.33;  --something is in view not center view
 
-	o.character = _character;
-	o.player = _character:getPlayerNum();
-	o.square = _character:getCurrentSquare();
-	o.cell = _character:getCell();
-	o.perkLevel = _character:getPerkLevel(Perks.PlantScavenging);
+	o.character       		= _character;
+	o.player          		= _character:getPlayerNum();
+	o.square				= _character:getCurrentSquare();
+	o.cell            		= _character:getCell();
+	o.perkLevel				= _character:getPerkLevel(Perks.PlantScavenging);
 
-	o.isSearchMode = false;
-	o.isEffectOverlay = false;
-	o.isSpotting = false;
+	o.isSearchMode    		= false;
+	o.isEffectOverlay   	= false;
+	o.isSpotting      		= false;
 
-	o.iconCategories = {
-		forageIcons = "forageIcons",
-		activeIcons = "activeIcons",
-		closeIcons = "closeIcons",
+	o.iconCategories		= {
+		forageIcons			= "forageIcons",
+		activeIcons 		= "activeIcons",
+		closeIcons 			= "closeIcons",
 		worldObjectIcons	= "worldObjectIcons",
-		stashIcons = "stashIcons",
+		stashIcons 			= "stashIcons",
 	};
 
-	o.forageIcons = {};
-	o.activeIcons = {};
+	o.forageIcons			= {};
+	o.activeIcons			= {};
 
-	o.closeIcons = {};
+	o.closeIcons			= {};
 
-	o.worldObjectIcons = {};
-	o.stashIcons = {};
+	o.worldObjectIcons		= {};
+	o.stashIcons			= {};
 
-	o.seenIcons = {};
-	o.xpIcons = {};
+	o.seenIcons				= {};
+	o.xpIcons				= {};
 
-	o.iconStack = {};
-	o.iconQueue = 0;
-	o.worldIconStack = {};
+	o.iconStack				= {};
+	o.iconQueue				= 0;
+	o.worldIconStack		= {};
 
 	--activating icons
-	o.iconLoadRate = 100;
-	o.activeIconRadius = 20;
-	o.cellIconRadius = 8;
+	o.iconLoadRate			= 100;
+	o.activeIconRadius		= 20;
+	o.cellIconRadius		= 8;
 
 	--zone data
-	o.activeZones = {};
-	o.activeZoneRadius = 10;
-	o.currentZoneName = nil;
-	o.currentZone = nil;
+	o.activeZones			= {};
+	o.activeZoneRadius		= 10;
+	o.currentZoneName		= nil;
+	o.currentZone			= nil;
 
-	o.updateTick = 0;
-	o.updateTickMax = 200;
-	o.updateEvents = ISSearchManager.updateEvents;
+	o.updateTick			= 0;
+	o.updateTickMax			= 200;
+	o.updateEvents			= ISSearchManager.updateEvents;
 
-	o.disableTick = 0;
-	o.disableTickMax = 15;
+	o.disableTick			= 0;
+	o.disableTickMax		= 15;
 
 	--force find system
-	o.currentTimestamp = getTimestampMs();
-	o.lastTimestamp = 0;
-	o.timeDelta = 0;
-	o.timeSinceFind = 0;
-	o.timeToMoveIcon = 30000;
-	o.timeToMoveIconMax = 30000;
+	o.currentTimestamp		= getTimestampMs();
+	o.lastTimestamp			= 0;
+	o.timeDelta				= 0;
+	o.timeSinceFind			= 0;
+	o.timeToMoveIcon		= 30000;
+	o.timeToMoveIconMax		= 30000;
 	o.timeToMoveIconExtra	= 1000;
 	o.reducedTimePerLevel	= -1500;
-	o.distanceMoveExtra = 10;
+	o.distanceMoveExtra		= 10;
 	o.distanceMoveThreshold	= 10;
 
-	o.lastUpdateX = _character:getX();
-	o.lastUpdateY = _character:getY();
-	o.lastFoundX = o.lastUpdateX;
-    o.lastFoundY = o.lastUpdateY;
-    o.lastSpottedX = o.lastUpdateX;
-    o.lastSpottedY = o.lastUpdateY;
-    o.distanceSinceFind = 0;
+	o.lastUpdateX			= _character:getX();
+	o.lastUpdateY			= _character:getY();
+	o.lastFoundX			= o.lastUpdateX;
+    o.lastFoundY			= o.lastUpdateY;
+    o.lastSpottedX          = o.lastUpdateX;
+    o.lastSpottedY          = o.lastUpdateY;
+    o.distanceSinceFind		= 0;
     o.maxDistanceSinceFind	= 0;
-    o.maxDistanceBonus = 20;
+    o.maxDistanceBonus  	= 20;
 
 	--sprite affinity
-	o.movedIcons = {};
-	o.movedIconsSquares = {};
-	o.checkedSquares = {};
+	o.movedIcons			= {};
+	o.movedIconsSquares		= {};
+	o.checkedSquares		= {};
 	o.spriteCheckedSquares	= {};
-	o.affinityAddedChunks = {};
-	o.squareStack = {};
-	o.squareCheckRate = 100;
-	o.spriteAffinities = forageSystem.spriteAffinities;
+	o.affinityAddedChunks  	= {};
+	o.squareStack			= {};
+	o.squareCheckRate		= 100;
+	o.spriteAffinities      = forageSystem.spriteAffinities;
 
 	--overlay
-	o.searchModeOverlay = getSearchMode():getSearchModeForPlayer(o.player);
-	o.searchMode = getSearchMode();
-	o.radius = 0;
-	o.minRadius = forageSystem.minVisionRadius;
-	o.maxRadius = forageSystem.maxVisionRadius;
-	o.maxRadiusCap = forageSystem.visionRadiusCap;
-	o.overlayValues = {
-		blur = 0,
-		desaturation = 0,
-		darkness = 0,
+	o.searchModeOverlay		= getSearchMode():getSearchModeForPlayer(o.player);
+	o.searchMode			= getSearchMode();
+	o.radius				= 0;
+	o.minRadius             = forageSystem.minVisionRadius;
+	o.maxRadius             = forageSystem.maxVisionRadius;
+	o.maxRadiusCap          = forageSystem.visionRadiusCap;
+	o.overlayValues			= {
+		blur				= 0,
+		desaturation		= 0,
+		darkness			= 0,
 	};
 	o.effectOverlayValues	= {
-		blur = 0,
-		desaturation = 0,
-		darkness = 0,
+		blur				= 0,
+		desaturation		= 0,
+		darkness			= 0,
 	};
 
-	o.stashTypes = ISSearchManager.stashTypes;
+	o.stashTypes			= ISSearchManager.stashTypes;
 
-	o.ignoredItemTypes = ISSearchManager.ignoredItemTypes;
+	o.ignoredItemTypes      = ISSearchManager.ignoredItemTypes;
 
 	o.ignoredItemCategories = {};
 
-	o.zoom = 1;
+	o.zoom                  = 1;
 
-	o.isoMarkers = {};
-	o.worldMarkers = {};
-	o.debugMarkers = {};
-	o.debugArrows = {};
+	o.isoMarkers            = {};
+	o.worldMarkers          = {};
+	o.debugMarkers          = {};
+	o.debugArrows           = {};
 
 	--tracker for bonus and delay before aim multi takes effect
-	o.aimMulti = 0;
-	o.aimBonusTick = 0;
-	o.aimBonusTickMax = 10;
+	o.aimMulti              = 0;
+	o.aimBonusTick          = 0;
+	o.aimBonusTickMax       = 10;
 
 	--tracker for bonus and delay before sneak multi takes effect
-	o.sneakMulti = 0;
-	o.sneakBonusTick = 0;
-	o.sneakBonusTickMax = 10;
+	o.sneakMulti            = 0;
+	o.sneakBonusTick        = 0;
+	o.sneakBonusTickMax     = 10;
 
-	o.visibleTarget = o;
-	o.visibleFunction = ISSearchManager.onToggleVisible;
+	o.visibleTarget			= o;
+	o.visibleFunction		= ISSearchManager.onToggleVisible;
 
-	o.isOverride = false;
+	o.isOverride			= false;
 
 	o:initialise();
 	return o;
@@ -1490,21 +1490,21 @@ function ISSearchManager.onUpdateIcon(_zoneData, _iconID, _icon)
 			if manager.forageIcons[iconID] then
 				manager.forageIcons[iconID]:removeIsoMarker();
 				manager.forageIcons[iconID]:removeWorldMarker();
-				manager.forageIcons[iconID].xCoord = icon.xCoord;
-				manager.forageIcons[iconID].yCoord = icon.yCoord;
-				manager.forageIcons[iconID].icon.x = icon.xCoord;
-				manager.forageIcons[iconID].icon.y = icon.yCoord;
-				manager.forageIcons[iconID].itemDef = icon.itemDef;
-				manager.forageIcons[iconID].catDef = icon.catDef;
-				manager.forageIcons[iconID].zoneDef = icon.zoneDef;
-				manager.forageIcons[iconID].itemType = icon.itemType;
-				manager.forageIcons[iconID].icon.itemType = icon.itemType;
-				manager.forageIcons[iconID].icon.catName = icon.catDef.name;
-				manager.forageIcons[iconID].itemObj = icon.itemObj;
-				manager.forageIcons[iconID].itemTexture = icon.itemTexture;
-				manager.forageIcons[iconID].altWorldTexture = icon.altWorldTexture;
-				manager.forageIcons[iconID].render3DTexture = icon.render3DTexture;
-				manager.forageIcons[iconID].itemSize = icon.itemDef.itemSize or 1.0;
+				manager.forageIcons[iconID].xCoord				= icon.xCoord;
+				manager.forageIcons[iconID].yCoord				= icon.yCoord;
+				manager.forageIcons[iconID].icon.x				= icon.xCoord;
+				manager.forageIcons[iconID].icon.y				= icon.yCoord;
+				manager.forageIcons[iconID].itemDef				= icon.itemDef;
+				manager.forageIcons[iconID].catDef				= icon.catDef;
+				manager.forageIcons[iconID].zoneDef				= icon.zoneDef;
+				manager.forageIcons[iconID].itemType			= icon.itemType;
+				manager.forageIcons[iconID].icon.itemType		= icon.itemType;
+				manager.forageIcons[iconID].icon.catName		= icon.catDef.name;
+				manager.forageIcons[iconID].itemObj				= icon.itemObj;
+				manager.forageIcons[iconID].itemTexture			= icon.itemTexture;
+				manager.forageIcons[iconID].altWorldTexture		= icon.altWorldTexture;
+				manager.forageIcons[iconID].render3DTexture		= icon.render3DTexture;
+				manager.forageIcons[iconID].itemSize			= icon.itemDef.itemSize or 1.0;
 			end;
 			manager.activeIcons[iconID] = nil;
 			_zoneData.forageIcons[iconID] = icon.icon;

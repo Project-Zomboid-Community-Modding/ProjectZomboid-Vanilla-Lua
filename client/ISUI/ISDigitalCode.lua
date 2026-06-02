@@ -2,21 +2,30 @@ require "ISUI/ISPanelJoypad"
 
 ISDigitalCode = ISPanelJoypad:derive("ISDigitalCode");
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local UI_BORDER_SPACING = 10
+local BUTTON_HGT = FONT_HGT_SMALL + 6
+local ENTRY_HGT = FONT_HGT_SMALL + 4
+
 function ISDigitalCode:initialise()
 	ISPanel.initialise(self);
-    self.button1p = ISButton:new((self:getWidth() / 2) - 28, (self:getHeight() / 2) - 25, 16, 16, getText("^"), self, ISDigitalCode.onClick);
+	local y1 = UI_BORDER_SPACING + FONT_HGT_SMALL
+	local y2 = y1 + BUTTON_HGT
+	local y3 = y2 + ENTRY_HGT
+    self.button1p = ISButton:new((self:getWidth() / 2) - 28, y1, 16, BUTTON_HGT, getText("^"), self, ISDigitalCode.onClick);
     self.button1p.internal = "B1PLUS";
     self.button1p:initialise();
     self.button1p:instantiate();
     self.button1p.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button1p);
 
-    self.number1 = ISTextEntryBox:new("0", self:getWidth() / 2 - 28, self:getHeight() / 2 -5, 18, 18);
+    self.number1 = ISTextEntryBox:new("0", self:getWidth() / 2 - 28, y2, 18, ENTRY_HGT);
     self.number1:initialise();
     self.number1:instantiate();
+    self.number1:setOnlyNumbers(true);
     self:addChild(self.number1);
 
-    self.button1m = ISButton:new(self:getWidth() / 2 - 28, (self:getHeight() / 2) + 16, 16, 16, getText("v"), self, ISDigitalCode.onClick);
+    self.button1m = ISButton:new(self:getWidth() / 2 - 28, y3, 16, BUTTON_HGT, getText("v"), self, ISDigitalCode.onClick);
     self.button1m.internal = "B1MINUS";
     self.button1m:initialise();
     self.button1m:instantiate();
@@ -24,54 +33,69 @@ function ISDigitalCode:initialise()
     self:addChild(self.button1m);
 
     --
-    self.button2p = ISButton:new(self:getWidth() / 2 -8, (self:getHeight() / 2) - 25, 16, 16, getText("^"), self, ISDigitalCode.onClick);
+    self.button2p = ISButton:new(self:getWidth() / 2 -8, y1, 16, BUTTON_HGT, getText("^"), self, ISDigitalCode.onClick);
     self.button2p.internal = "B2PLUS";
     self.button2p:initialise();
     self.button2p:instantiate();
     self.button2p.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button2p);
 
-    self.number2 = ISTextEntryBox:new("0", self:getWidth() / 2 -8, self:getHeight() / 2 -5, 18, 18);
+    self.number2 = ISTextEntryBox:new("0", self:getWidth() / 2 -8, y2, 18, ENTRY_HGT);
     self.number2:initialise();
     self.number2:instantiate();
+    self.number2:setOnlyNumbers(true);
     self:addChild(self.number2);
 
-    self.button2m = ISButton:new(self:getWidth() / 2 -8, (self:getHeight() / 2) + 16, 16, 16, getText("v"), self, ISDigitalCode.onClick);
+    self.button2m = ISButton:new(self:getWidth() / 2 -8, y3, 16, BUTTON_HGT, getText("v"), self, ISDigitalCode.onClick);
     self.button2m.internal = "B2MINUS";
     self.button2m:initialise();
     self.button2m:instantiate();
     self.button2m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button2m);
 
-    self.button3p = ISButton:new(self:getWidth() / 2 + 12, (self:getHeight() / 2) - 25, 16, 16, getText("^"), self, ISDigitalCode.onClick);
+    self.button3p = ISButton:new(self:getWidth() / 2 + 12, y1, 16, BUTTON_HGT, getText("^"), self, ISDigitalCode.onClick);
     self.button3p.internal = "B3PLUS";
     self.button3p:initialise();
     self.button3p:instantiate();
     self.button3p.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button3p);
 
-    self.number3 = ISTextEntryBox:new("0", self:getWidth() / 2 + 12, self:getHeight() / 2 - 5, 18, 18);
+    self.number3 = ISTextEntryBox:new("0", self:getWidth() / 2 + 12, y2, 18, ENTRY_HGT);
     self.number3:initialise();
     self.number3:instantiate();
+    self.number3:setOnlyNumbers(true);
     self:addChild(self.number3);
 
-    self.button3m = ISButton:new(self:getWidth() / 2 + 12, (self:getHeight() / 2) + 16, 16, 16, getText("v"), self, ISDigitalCode.onClick);
+    self.button3m = ISButton:new(self:getWidth() / 2 + 12, y3, 16, BUTTON_HGT, getText("v"), self, ISDigitalCode.onClick);
     self.button3m.internal = "B3MINUS";
     self.button3m:initialise();
     self.button3m:instantiate();
     self.button3m.borderColor = {r=1, g=1, b=1, a=0.1};
     self:addChild(self.button3m);
 
-    self.ok = ISButton:new((self:getWidth() / 2) - 13, self:getHeight() - 20, 26, 15, getText("UI_Ok"), self, ISDigitalCode.onClick);
+    local buttonWidth1 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Ok")) + 10
+    local buttonWidth2 = getTextManager():MeasureStringX(UIFont.Small, getText("UI_Cancel")) + 10
+    local buttonWidth = math.max(buttonWidth1, buttonWidth2)
+
+    self.ok = ISButton:new((self:getWidth() / 2) - buttonWidth - 5, y3 + BUTTON_HGT + 5, buttonWidth, BUTTON_HGT, getText("UI_Ok"), self, ISDigitalCode.onClick);
     self.ok.internal = "OK";
     self.ok:initialise();
     self.ok:instantiate();
-    self.ok.borderColor = {r=1, g=1, b=1, a=0.1};
+    self.ok:enableAcceptColor();
     self:addChild(self.ok);
+
+    self.cancel = ISButton:new((self:getWidth() / 2) + 5, y3 + BUTTON_HGT + 5, buttonWidth, BUTTON_HGT, getText("UI_Cancel"), self, ISDigitalCode.onClick);
+    self.cancel.internal = "CANCEL";
+    self.cancel:initialise();
+    self.cancel:instantiate();
+    self.cancel:enableCancelColor();
+    self:addChild(self.cancel);
 
     self:insertNewLineOfButtons(self.button1p, self.button2p, self.button3p)
     self:insertNewLineOfButtons(self.button1m, self.button2m, self.button3m)
     self:insertNewLineOfButtons(self.ok)
+
+    self:setHeight(self.ok:getBottom() + UI_BORDER_SPACING)
 end
 
 function ISDigitalCode:destroy()
@@ -91,6 +115,12 @@ function ISDigitalCode:onClick(button)
         end
         if self.onclick ~= nil then
             self.onclick(self.target, button, self.character, self.padlock, self.thumpable);
+        end
+    end
+    if button.internal == "CANCEL" then
+        self:destroy()
+        if JoypadState.players[self.player+1] then
+            setJoypadFocus(self.player, nil)
         end
     end
     if button.internal == "B1PLUS" then
@@ -130,12 +160,13 @@ function ISDigitalCode:decrement(number)
 end
 
 function ISDigitalCode:prerender()
+    self:setHeight(self.ok:getBottom() + UI_BORDER_SPACING)
 	self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
 	self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     if self.new then
-	    self:drawTextCentre(getText("IGUI_SetCode"), self:getWidth()/2, 10, 1, 1, 1, 1, UIFont.Small);
+	    self:drawTextCentre(getText("IGUI_SetCode"), self:getWidth()/2, UI_BORDER_SPACING, 1, 1, 1, 1, UIFont.Small);
     else
-        self:drawTextCentre(getText("IGUI_EnterCode"), self:getWidth()/2, 10, 1, 1, 1, 1, UIFont.Small);
+        self:drawTextCentre(getText("IGUI_EnterCode"), self:getWidth()/2, UI_BORDER_SPACING, 1, 1, 1, 1, UIFont.Small);
     end
 end
 

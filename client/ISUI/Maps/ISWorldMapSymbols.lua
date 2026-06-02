@@ -1213,14 +1213,14 @@ function ISWorldMapSymbols:createChildren()
 					x = UI_BORDER_SPACING+1
 					y = y + btnHgt + btnPad
 					column = 0
-					tab:insertNewListOfButtonsList(symbolButtons)
+					tab:insertNewListOfButtons(symbolButtons)
 					symbolButtons = {}
 				end
 			end
 		end
 
 		if #symbolButtons > 0 then
-			tab:insertNewListOfButtonsList(symbolButtons)
+			tab:insertNewListOfButtons(symbolButtons)
 		end
 
 		tab.joypadIndexY = math.floor(#tab.joypadButtonsY / 2)

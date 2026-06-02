@@ -1292,7 +1292,15 @@ function ISWorldObjectContextMenu.doLightSwitchOption(test, context, player)
 
             -- lightbulbs can be changed regardless, as long as the lamp can be modified (which are all isolightswitches that are movable, see IsoLightSwitch constructor)
             if fetch.lightSwitch:hasLightBulb() then
-                lightSwitchSubmenu:addGetUpOption(getText("ContextMenu_RemoveLightbulb"), worldobjects, ISWorldObjectContextMenu.onLightBulb, fetch.lightSwitch, player, true);
+                local removeBulbOption = lightSwitchSubmenu:addGetUpOption(getText("ContextMenu_RemoveLightbulb"), worldobjects, ISWorldObjectContextMenu.onLightBulb, fetch.lightSwitch, player, true);
+                local bulb = getScriptManager():FindItem(fetch.lightSwitch:getBulbItem())
+
+                if playerObj and bulb and not playerObj:getInventory():hasRoomFor(playerObj, bulb:getActualWeight()) then
+                    removeBulbOption.notAvailable = true
+                    local toolTip = ISWorldObjectContextMenu.addToolTip()
+                    toolTip.description = "<RGB:1,0,0> " .. getText("IGUI_ToHeavy")
+                    removeBulbOption.toolTip = toolTip
+                end
             else
                 local items = playerInv:getAllEvalRecurse(function(item) return luautils.stringStarts(item:getType(), "LightBulb") end)
 
@@ -2176,7 +2184,9 @@ end
 ISWorldObjectContextMenu.onClimbSheetRope = function(worldobjects, square, down, player)
 	if square then
 		local playerObj = getSpecificPlayer(player)
-		ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, square))
+		if not (square:isSolid() or square:isSolidTrans()) or square ~= playerObj:getCurrentSquare() then
+			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, square))
+		end
 		ISTimedActionQueue.add(ISClimbSheetRopeAction:new(playerObj, down))
 	end
 end
@@ -2211,6 +2221,7 @@ end
 ISWorldObjectContextMenu.addRemoveCurtainOption = function(context, worldobjects, curtain, player)
 	local scriptItem = getScriptManager():FindItem("Base.Sheet")
 	if not scriptItem then return end
+    local playerObj = getSpecificPlayer(player)
 
 	local option = context:addGetUpOption(getText("ContextMenu_Remove_curtains"), worldobjects, ISWorldObjectContextMenu.onRemoveCurtain, curtain, player)
 	option.toolTip = ISWorldObjectContextMenu.addToolTip()
@@ -2221,6 +2232,10 @@ ISWorldObjectContextMenu.addRemoveCurtainOption = function(context, worldobjects
 	if curtain:getSprite() and curtain:getSprite():getProperties():has("IsMoveAble") then
 		option.toolTip.description = option.toolTip.description .. " <LINE> <LINE> " .. getText("Tooltip_PickUpCurtains")
 	end
+    if playerObj and not playerObj:getInventory():hasRoomFor(playerObj, scriptItem:getActualWeight()) then
+        option.notAvailable = true
+        option.toolTip.description = option.toolTip.description .. "<LINE> <LINE> <RGB:1,0,0>" .. getText("IGUI_ToHeavy")
+    end
 	return option
 end
 

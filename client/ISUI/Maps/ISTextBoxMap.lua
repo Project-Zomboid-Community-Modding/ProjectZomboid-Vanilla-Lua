@@ -252,7 +252,7 @@ function ISTextBoxMap:prerender()
 
 		if self.joypadIndexY == 0 then
 
-		elseif self.joypadIndexY == 2 then
+		elseif self.joypadIndexY == self:getChildJoypadIndexY(self.entry) then
 			self:drawTextureScaled(Joypad.Texture.AButton, self.width / 2, self.height + 2, dy - 4, dy - 4, 1, 1, 1, 1)
 			self:drawText(getText("IGUI_TextBox_Edit"), self.width / 2 + dy + 4, self.height + (dy - FONT_HGT_SMALL) / 2, 1, 1, 1, 1)
 		end
@@ -427,12 +427,16 @@ end
 
 function ISTextBoxMap:onGainJoypadFocus(joypadData)
 	ISCollapsableWindowJoypad.onGainJoypadFocus(self, joypadData)
-	self.joypadIndexY = 2
-	self.joypadIndex = 1
+	self.joypadIndexY = self:getChildJoypadIndexY(self.entry)
+	self.joypadIndex = self:getChildJoypadIndex(self.entry)
 	self.entry:setJoypadFocused(true, joypadData)
 end
 
 function ISTextBoxMap:onJoypadDown(button, joypadData)
+	if button == Joypad.BButton and self.joypadIndexY ~= 0 then
+		self.entry:setJoypadFocused(false, joypadData)
+		self.joypadIndexY = 0
+	end
 	ISCollapsableWindowJoypad.onJoypadDown(self, button, joypadData)
 end
 
@@ -448,7 +452,6 @@ end
 
 function ISTextBoxMap:onJoypadDirUp(joypadData)
 	if self.joypadIndexY == 0 then
-		self.entry:setJoypadFocused(true, joypadData)
 		self.joypadIndexY = #self.joypadButtonsY
 		return
 	end

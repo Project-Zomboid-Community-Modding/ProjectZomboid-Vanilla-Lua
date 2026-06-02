@@ -719,7 +719,8 @@ function ISInventoryPane:transferAll()
 		local toFloor = getPlayerLoot(self.player).inventory:getType() == "floor"
 		for i = 0, it:size()-1 do
 			local item = it:get(i);
-			local ok = not item:isEquipped() and not item:isItemType(ItemType.KEY_RING) and not item:hasTag(ItemTag.KEY_RING) and not hotBar:isInHotbar(item)
+			local keyRingInInventory = self.inventory == playerObj:getInventory() and (item:isItemType(ItemType.KEY_RING) or item:hasTag(ItemTag.KEY_RING))
+			local ok = not item:isEquipped() and not keyRingInInventory and not hotBar:isInHotbar(item)
 			if item:isFavorite() then
 				ok = false
 			end
@@ -2313,7 +2314,7 @@ function ISInventoryPane:renderdetails(doDragged)
                             self:drawTexture(getTexture("media/ui/Tick_Mark-10.png"), texOffsetX+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
                         local fluidContainer = item:getFluidContainer() or (item:getWorldItem() and item:getWorldItem():getFluidContainer());
-						if fluidContainer ~= nil and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1)) then
+                        if fluidContainer ~= nil and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1 and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue())) then
 							self:drawTexture(self.poisonIcon, (10+auxDXY+xoff), (y*self.itemHgt)+self.headerHgt+auxDXY-1+yoff, 1, 1, 1, 1);
 						end
                         if item:isFavorite() then
@@ -2349,7 +2350,7 @@ function ISInventoryPane:renderdetails(doDragged)
                             self:drawTexture(self.poisonIcon, 10+16+xoff+auxDXY, texOffsetY+auxDXY-1, 1, 1, 1, 1);
                         end
                         local fluidContainer = item:getFluidContainer() or (item:getWorldItem() and item:getWorldItem():getFluidContainer());
-						if fluidContainer ~= nil and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue() and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1)) then
+                        if fluidContainer ~= nil and (not fluidContainer:isEmpty()) and (fluidContainer:contains(Fluid.Bleach) or (fluidContainer:contains(Fluid.TaintedWater) and fluidContainer:getPoisonRatio() > 0.1 and getSandboxOptions():getOptionByName("EnableTaintedWaterText"):getValue())) then
 							self:drawTexture(self.poisonIcon, (10+auxDXY+xoff), (y*self.itemHgt)+self.headerHgt+auxDXY-1+yoff, 1, 1, 1, 1);
 						end
                         if item:isFavorite() then

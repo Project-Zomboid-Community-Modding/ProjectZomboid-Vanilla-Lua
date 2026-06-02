@@ -36,7 +36,7 @@ function ISAnimalTracksUI:render()
     self:drawText(self.track:getFreshnessString(self.trackingLevel), textX2, yoffset, 1,1,1,1, UIFont.NewSmall);
 
     self:setWidth(self.textRight + UI_BORDER_SPACING)
-    self:setHeight(yoffset + FONT_HGT_SMALL + UI_BORDER_SPACING)
+    self:setHeight(math.max(yoffset, self.iconSize) + FONT_HGT_SMALL + UI_BORDER_SPACING)
 end
 
 function ISAnimalTracksUI:drawText(str, x, y, r, g, b, a, font)

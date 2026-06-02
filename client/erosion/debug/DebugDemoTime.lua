@@ -13,52 +13,52 @@ function EDebug.DemoTime( _erosionMain )
         return instance;
     end
 
-    local publ = {};
-    local priv = {};
+    local publ              = {};
+    local priv              = {};
 
-    priv.ErosionMain = _erosionMain;
-    priv.startMonth = _erosionMain:getConfig():getDebug():getStartMonth();
-    priv.startDay = _erosionMain:getConfig():getDebug():getStartDay();
-    priv.Seasons = priv.ErosionMain:getSeasons();
-    priv.tmpCounter = 0;
-    priv.isRunning = true;
+    priv.ErosionMain        = _erosionMain;
+    priv.startMonth         = _erosionMain:getConfig():getDebug():getStartMonth();
+    priv.startDay           = _erosionMain:getConfig():getDebug():getStartDay();
+    priv.Seasons            = priv.ErosionMain:getSeasons();
+    priv.tmpCounter 		= 0;
+    priv.isRunning			= true;
 
-    priv.processSpeed = 10;
+    priv.processSpeed 		= 10;
 
     -- classes and functions
-    priv.Point = Point2D;
-    priv.ChunkReader = false;
-    priv.Rand = ZombRand;
-    priv.Floor = math.floor;
+    priv.Point 				= Point2D;
+    priv.ChunkReader 		= false;
+    priv.Rand				= ZombRand;
+    priv.Floor				= math.floor;
 
     -- chunks
-    priv.chunk = false;
-    priv.chunkPos = false;
-    priv.chunkModData = false;
-    priv.gameTime = false;
-    priv.textMngr = false;
-    priv.chunkTileWidth = 10;
-    priv.p_chunkCurrent = priv.Point:new(-100000, -100000);
-    priv.p_chunkLast = priv.Point:new(-100000, -100000);
-    priv.p_chunkDirCenter = priv.Point:new(-100000, -100000);
-    priv.p_chunkMoveDir = priv.Point:new(0, 0);
-    priv.p_chunkBox = priv.Point:new(1, 1);
+    priv.chunk				= false;
+    priv.chunkPos			= false;
+    priv.chunkModData		= false;
+    priv.gameTime           = false;
+    priv.textMngr           = false;
+    priv.chunkTileWidth 	= 10;
+    priv.p_chunkCurrent 	= priv.Point:new(-100000, -100000);
+    priv.p_chunkLast 		= priv.Point:new(-100000, -100000);
+    priv.p_chunkDirCenter 	= priv.Point:new(-100000, -100000);
+    priv.p_chunkMoveDir 	= priv.Point:new(0, 0);
+    priv.p_chunkBox 		= priv.Point:new(1, 1);
 
-    priv.p_workingOn = priv.Point:new(0, 0);
+    priv.p_workingOn 	    = priv.Point:new(0, 0);
 
-    priv.globalErosion = 100;
-    priv.newTick = 0;
-    priv.tick = 0;
+    priv.globalErosion		= 100;
+    priv.newTick            = 0;
+    priv.tick               = 0;
 
-    priv.monthDays = { 30, 27, 30, 29, 30, 29, 30, 30, 29, 30, 29, 30 };
+    priv.monthDays          = { 30, 27, 30, 29, 30, 29, 30, 30, 29, 30, 29, 30 };
 
-    priv.txt = {};
-    priv.pause = true;
-    priv.dispMap = true;
-    priv.dispDebug = true;
-    priv.dispText = true;
-    priv.disptext1 = "";
-    priv.disptext2 = "";
+    priv.txt                = {};
+    priv.pause              = true;
+    priv.dispMap            = true;
+    priv.dispDebug          = true;
+    priv.dispText           = true;
+    priv.disptext1          = "";
+    priv.disptext2          = "";
 
     function priv.keyPressed( _key )
         --map on/off = o, 24, pause = p, 25, freq back/forward = [], 26/27, debugtext on/off = L, 38, text on/off = K, 37
@@ -93,19 +93,19 @@ function EDebug.DemoTime( _erosionMain )
     end
 
     function publ.GameStart()
-        priv.gameTime = GameTime.getInstance();
+        priv.gameTime				= GameTime.getInstance();
         priv.gameTime:setDay( priv.startDay );
         priv.gameTime:setMonth( priv.startMonth );
-        priv.textMngr = getTextManager();
+        priv.textMngr 		        = getTextManager();
 
         -- set starting position
-        priv.ChunkReader = EDebug.ChunkReader( priv.chunkTileWidth );
+        priv.ChunkReader 			= EDebug.ChunkReader( priv.chunkTileWidth );
 
-        local chunkX = priv.Floor( getPlayer():getX() / priv.chunkTileWidth);
-        local chunkY = priv.Floor( getPlayer():getY() / priv.chunkTileWidth);
-        priv.p_chunkCurrent = priv.Point:new( chunkX, chunkY );
-        priv.p_chunkLast = priv.Point:new( chunkX, chunkY );
-        priv.p_chunkDirCenter = priv.Point:new( chunkX, chunkY );
+        local chunkX 				= priv.Floor( getPlayer():getX() / priv.chunkTileWidth);
+        local chunkY 				= priv.Floor( getPlayer():getY() / priv.chunkTileWidth);
+        priv.p_chunkCurrent 		= priv.Point:new( chunkX, chunkY );
+        priv.p_chunkLast 			= priv.Point:new( chunkX, chunkY );
+        priv.p_chunkDirCenter 		= priv.Point:new( chunkX, chunkY );
 
         -- set chunkreader start pos
         priv.ChunkReader.SetNextRing( 0 );

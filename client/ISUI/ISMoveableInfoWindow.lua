@@ -315,7 +315,7 @@ function ISMoveableInfoWindow:setTexture( _textureName, _allow, _square, _yoffse
 
                 local sprList = obj:getChildSprites();
                 if sprList and (not instanceof(obj,"IsoBarbecue")) then
-                    local list_size = sprList:size();
+                    local list_size 	= sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();

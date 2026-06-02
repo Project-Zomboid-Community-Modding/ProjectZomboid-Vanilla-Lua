@@ -124,3 +124,65 @@ function onMouseWheelScrollHandler(_self, _del)
     end
     return false
 end
+
+-- Source: https://www.tutorialspoint.com/lua/lua_data_types.htm
+function isTable(object)
+    return type(object) == "table"
+end
+
+-- Source: https://www.tutorialspoint.com/lua/lua_data_types.htm
+function isFunction(object)
+    return type(object) == "function"
+end
+
+-- Source: https://www.tutorialspoint.com/lua/lua_data_types.htm
+function isNil(object)
+    return type(object) == "nil"
+end
+
+-- Source: https://www.tutorialspoint.com/lua/lua_data_types.htm
+function isBoolean(object)
+    return type(object) == "boolean"
+end
+
+-- Source: https://www.tutorialspoint.com/lua/lua_data_types.htm
+function isNumber(object)
+    return type(object) == "number"
+end
+
+function isString(object)
+    return type(object) == "string"
+end
+
+function math.sign(x)
+   return x > 0 and 1 or (x < 0 and -1 or 0)
+end
+
+function math.length2sq(x, y)
+    return x * x + y * y
+end
+
+function math.length2(x, y)
+    local lengthSq = math.length2sq(x, y)
+    return math.sqrt(lengthSq)
+end
+
+function math.rangesOverlap(a1, a2, b1, b2)
+    local minA = math.min(a1, a2)
+    local maxA = math.max(a1, a2)
+    local minB = math.min(b1, b2)
+    local maxB = math.max(b1, b2)
+
+    return math.isBetweenInclusive(minB, minA, maxA)
+        or math.isBetweenInclusive(maxB, minA, maxA)
+        or math.isBetweenInclusive(minA, minB, maxB)
+        or math.isBetweenInclusive(maxA, minB, maxB)
+end
+
+function math.isBetweenInclusive(val, min, max)
+    return min <= val and max >= val
+end
+
+function math.clamp(val, min, max)
+    return math.min(max, math.max(min, val))
+end

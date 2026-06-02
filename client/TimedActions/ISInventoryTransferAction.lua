@@ -33,6 +33,11 @@ function ISInventoryTransferAction:isValid()
 	end
 	self.dontAdd = false;
 
+    if not self.srcContainer:contains(self.item) then
+        self.dontAdd = true;
+        return true;
+    end
+
 	-- Limit items per container in MP
 	if isClient() then
 		if not self.started and not isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer, nil, self.character) then
@@ -63,12 +68,7 @@ function ISInventoryTransferAction:isValid()
 		end;
 		return true;
 	end;
-	
-	if self.allowMissingItems and not self.srcContainer:contains(self.item) then -- if the item is destroyed before, for example when crafting something, we want to transfer the items left back to their original position, but some might be destroyed by the recipe (like molotov, the gas can will be returned, but the ripped sheet is destroyed)
---		self:stop();
-		self.dontAdd = true;
-		return true;
-	end
+
 	if (not self.destContainer:isExistYet()) or (not self.srcContainer:isExistYet()) then
 		return false
 	end
@@ -403,6 +403,21 @@ function ISInventoryTransferAction:getTransferCompleteSoundName()
     return nil
 end
 
+function ISInventoryTransferAction:playTransferCompleteSound(item)
+    if #self.queueList > 0 then
+        local queuedItem = self.queueList[1]
+        for _,item2 in ipairs(queuedItem.items) do
+            if item2:getFullType() == item:getFullType() then
+                return
+            end
+        end
+    end
+    local soundName = self:getTransferCompleteSoundName()
+    if soundName ~= nil and not self.character:getEmitter():isPlaying(soundName) then
+        self.character:getEmitter():playSound(soundName)
+    end
+end
+
 function ISInventoryTransferAction:stopLoopingSound()
     if self.loopSound then
         -- FIXME: RummageInInventory uses ActionProgressPercent but doesn't stop playing when it is set to 100.
@@ -607,6 +622,7 @@ function ISInventoryTransferAction:transferItem(item)
 	end
 
 	if isClient() then
+		self:playTransferCompleteSound(item)
 		return
 	end
 
@@ -658,22 +674,15 @@ function ISInventoryTransferAction:transferItem(item)
 	ISInventoryPage.renderDirty = true
 
 	-- do the overlay sprite
-	if not isClient() then
-		if self.srcContainer:getParent() and self.srcContainer:getParent():getOverlaySprite() then
-			ItemPicker.updateOverlaySprite(self.srcContainer:getParent())
-		end
-		if self.destContainer:getParent() then
-			ItemPicker.updateOverlaySprite(self.destContainer:getParent())
-		end
-	end
-
-    if isServer() then
-        return
+    if self.srcContainer:getParent() and self.srcContainer:getParent():getOverlaySprite() then
+        ItemPicker.updateOverlaySprite(self.srcContainer:getParent())
+    end
+    if self.destContainer:getParent() then
+        ItemPicker.updateOverlaySprite(self.destContainer:getParent())
     end
 
-    local soundName = self:getTransferCompleteSoundName()
-    if soundName ~= nil and not self.character:getEmitter():isPlaying(soundName) then
-        self.character:getEmitter():playSound(soundName)
+    if not isServer() then
+        self:playTransferCompleteSound(item)
     end
 end
 
@@ -839,7 +848,7 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 
 	if item then -- kludge to fix error when filling gas bottles out of backpack
 		if isClient() then -- The client completes the transfer after receiving packet ItemTransactionPacket from the server
-			o.maxTime = -1
+			o.maxTime  = -1
 		end
 		o.queueList = {};
 		local queuedItem = {items = {o.item}, time = o.maxTime, type = o.item:getFullType()};

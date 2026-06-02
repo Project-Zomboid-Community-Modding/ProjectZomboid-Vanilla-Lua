@@ -1,3 +1,4 @@
+require "ISUI/Gamepad/JoyPadSetup"
 require "PZAPI/ui/atoms/Text"
 require "PZAPI/ui/molecules/TextButton"
 require "PZAPI/ui/organisms/Window"

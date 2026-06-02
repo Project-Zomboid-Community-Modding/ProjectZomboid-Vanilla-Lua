@@ -1,8 +1,8 @@
 local function getLuaNetModule( _name, _debug )
-    local self = {};
+    local self 			= {};
     local self_commands = {};
-    local self_LuaNet = LuaNet:getInstance();
-    local self_name = _name;
+    local self_LuaNet 	= LuaNet:getInstance();
+    local self_name 	= _name;
     local self_debug	= _debug or false;
 
     -- ***********************************************************************************************
@@ -29,23 +29,23 @@ local function getLuaNetModule( _name, _debug )
     -- ***********************************************************************************************
     -- listen (used internally)
     -- table		_package	= a LuaNet package
-    -- IsoPlayer	_player = on server carries over IsoPlayer
+    -- IsoPlayer	_player		= on server carries over IsoPlayer
     -- ***********************************************************************************************
     function self.listen( _package, _player )
         if self_LuaNet.isRunning() then
             -- read LuaNet package
-            local com = _package.command;
+            local com 		= _package.command;
             local recipient = _package.recipient;
-            local source = _package.source;
-            local payload = _package.payload;
+            local source 	= _package.source;
+            local payload 	= _package.payload;
 
             if self_debug then print( "LuaNet: Lookup handler for -> ", com ); end
             if com and self_commands[ com ] then
                 if isServer() and recipient then
                     if self_debug then print( "LuaNet: Forwarding to player -> ", recipient ); end
                     -- if a recipient is set in the _package_ then forward it to that player
-                    local players = getOnlinePlayers();
-                    local array_size = players:size();
+                    local players 		= getOnlinePlayers();
+                    local array_size 	= players:size();
                     for i=0, array_size-1, 1 do
                         local player = players:get(i);
                         if player:getUsername() == recipient then
@@ -58,8 +58,8 @@ local function getLuaNetModule( _name, _debug )
                     if self_debug then print( "LuaNet: Passing payload to handler for -> ", com ); end
                     if not _player and source then
                         -- if on _player is not set and source is, then attempt to get IsoPlayer from source username
-                        local players = getOnlinePlayers();
-                        local array_size = players:size();
+                        local players 		= getOnlinePlayers();
+                        local array_size 	= players:size();
                         for i=0, array_size-1, 1 do
                             local player = players:get(i);
                             if player:getUsername() == source then
@@ -89,7 +89,7 @@ local function getLuaNetModule( _name, _debug )
 
     -- ***********************************************************************************************
     -- sendPlayer (NOTE: has slightly different behaviour for server and client, read comments for info.)
-    -- IsoPlayer	_player = IsoPlayer instance of the recipient
+    -- IsoPlayer	_player		= IsoPlayer instance of the recipient
     -- string		_command	= name of the command
     -- arg			...			= any number of arguments
     -- ***********************************************************************************************
@@ -102,11 +102,11 @@ local function getLuaNetModule( _name, _debug )
         end
 
         -- create the package
-        local package = {};
-        package.command = _command;
-        package.recipient = false;
-        package.source = false;
-        package.payload = { ... };		-- payload will be unpacked in exact order to the handler function on the receiving end.
+        local package 		= {};
+        package.command 	= _command;
+        package.recipient 	= false;
+        package.source 		= false;
+        package.payload 	= { ... };		-- payload will be unpacked in exact order to the handler function on the receiving end.
         if isServer() then
             if _player then
                 -- if player set, send package directly to player, no need to add source or recipient info
@@ -138,21 +138,21 @@ end
 	LUANET MAIN CLASS:
 --]]
 
-local instance = false;	-- stores instance
+local instance 	= false;	-- stores instance
 local validInit = false;	-- variable used to prevent initialization by users
 
-LuaNet = {};
+LuaNet 			= {};
 
 function LuaNet:getInstance()
     if instance then
         return instance;
     end
 
-    local self = {};
-    local self_name = "LuaNet";
-    local self_modules = {};
-    local self_running = false;
-    local self_debug = false;
+    local self 			= {};
+    local self_name 	= "LuaNet";
+    local self_modules 	= {};
+    local self_running 	= false;
+    local self_debug 	= false;
 
     -- ***********************************************************************************************
     -- self.setDebug
@@ -202,9 +202,9 @@ function LuaNet:getInstance()
 
     -- ***********************************************************************************************
     -- self_listen (private function)
-    -- string			_module = name of the module
+    -- string			_module		= name of the module
     -- LuaNetPackage	_package	= table containing package info
-    -- IsoPlayer		_player = optional, on server passes it player on client not
+    -- IsoPlayer		_player		= optional, on server passes it player on client not
     -- ***********************************************************************************************
     local function self_listen( _module, _package, _player )
         if self_modules[ _module ] then
@@ -216,9 +216,9 @@ function LuaNet:getInstance()
 
     -- ***********************************************************************************************
     -- self_listen (private function)
-    -- string			_mainModule = name of the main module must match this self_name (LuaNet)
-    -- string			_module = name of the module
-    -- LuaNetPackage	_package = table containing package info
+    -- string			_mainModule		= name of the main module must match this self_name (LuaNet)
+    -- string			_module			= name of the module
+    -- LuaNetPackage	_package	    = table containing package info
     -- ***********************************************************************************************
     local function self_listenClient( _mainModule, _module, _package )
         if _mainModule == self_name then
@@ -228,10 +228,10 @@ function LuaNet:getInstance()
 
     -- ***********************************************************************************************
     -- self_listen (private function)
-    -- string			_mainModule = name of the main module must match this self_name (LuaNet)
-    -- string			_module = name of the module
-    -- IsoPlayer		_player = optional, on server passes it player on client not
-    -- LuaNetPackage	_package = table containing package info
+    -- string			_mainModule		= name of the main module must match this self_name (LuaNet)
+    -- string			_module			= name of the module
+    -- IsoPlayer		_player			= optional, on server passes it player on client not
+    -- LuaNetPackage	_package	    = table containing package info
     -- ***********************************************************************************************
     local function self_listenServer( _mainModule, _module, _player, _package )
         if _mainModule == self_name then

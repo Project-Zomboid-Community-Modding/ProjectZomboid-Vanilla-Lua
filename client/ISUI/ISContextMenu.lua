@@ -1203,6 +1203,7 @@ function ISContextMenu:getNew(parentContext)
     else
         context.subInstance = table.remove(context.subMenuPool, #context.subMenuPool)
     end
+    context.subInstance.wantMouseEvents = true;
     context.subInstance:initialise();
     context.subInstance:instantiate();
     context.subInstance:addToUIManager();

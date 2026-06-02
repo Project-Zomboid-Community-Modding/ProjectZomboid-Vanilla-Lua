@@ -16,7 +16,6 @@ function ISPickUpGroundCoverItem:update()
 end
 
 function ISPickUpGroundCoverItem:start()
-	addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), 20, 10)
 	self:setActionAnim("Loot")
 	self.character:SetVariable("LootPosition", "Low")
 	self:setOverrideHandModels(nil, nil)

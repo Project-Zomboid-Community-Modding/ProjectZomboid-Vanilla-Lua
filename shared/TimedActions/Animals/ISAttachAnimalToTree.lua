@@ -40,12 +40,49 @@ end
 function ISAttachAnimalToTree:complete()
 	if self.remove then
 		self.animal:getData():setAttachedTree(nil);
+		self:takeRope()
+		self.character:getAttachedAnimals():add(self.animal);
+		self.animal:getData():setAttachedPlayer(self.character);
 	else
 		self.animal:getData():setAttachedTree(self.tree);
 		self.character:removeAttachedAnimal(self.animal);
 		self.animal:getData():setAttachedPlayer(nil);
+		self:attachRope()
 	end
 	return true
+end
+
+function ISAttachAnimalToTree:takeRope()
+	if self.character:isAnimalCheat() then return end
+	local item = self.character:getInventory():AddItem("Base.Rope")
+	if item == nil then return end
+	sendAddItemToContainer(self.character:getInventory(), item)
+end
+
+function ISAttachAnimalToTree:attachRope()
+	if self.character:isAnimalCheat() then return end
+	local item = self:getRopeToRemoveFromInventory()
+	if item == nil then return end
+	sendRemoveItemFromContainer(self.character:getInventory(), item)
+	self.character:getInventory():Remove(item)
+end
+
+function ISAttachAnimalToTree:getRopeToRemoveFromInventory()
+	if self.character:getAttachedAnimals():isEmpty() then
+		return self.character:getPrimaryHandItem() or self:getRopeNotInHand()
+	end
+	return self:getRopeNotInHand()
+end
+
+function ISAttachAnimalToTree:getRopeNotInHand(ropes)
+	local ropes = self.character:getInventory():getAllType("Base.Rope")
+	for i=1,ropes:size() do
+		local item = ropes:get(i-1)
+		if not self.character:isPrimaryHandItem(item) then
+			return item
+		end
+	end
+	return nil
 end
 
 function ISAttachAnimalToTree:getDuration()

@@ -74,9 +74,9 @@ function ISEjectMagazine:animEvent(event, parameter)
 		end
 		if isServer() then
 			self.netAction:forceComplete()
-		else
-			self:forceComplete()
-		end
+		elseif not isClient() then
+            self:forceComplete()
+        end
 	end
 end
 

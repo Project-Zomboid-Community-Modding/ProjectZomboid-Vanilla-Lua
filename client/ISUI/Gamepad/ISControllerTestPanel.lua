@@ -3,19 +3,18 @@ require "ISUI/ISPanel"
 ISControllerTestPanel = ISPanel:derive("ControllerTest")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
-local JOYPAD_TEX_SIZE = 32
+local UI_BORDER_SPACING = FONT_HGT_SMALL / 10
+local BUTTON_HGT = FONT_HGT_SMALL + 2
+local JOYPAD_TEX_SIZE = FONT_HGT_SMALL
 
 function ISControllerTestPanel:onControllerSelected()
 	JoypadState.controllerTest = false
 	self.selectedController = nil
 	local controller = self.combo:getOptionData(self.combo.selected)
 	if controller < 0 or controller >= getControllerCount() then
-		if self.mainOptions then
-			self.mainOptions.labelJoypadSensitivity.name = getText("UI_optionscreen_select_gamepad")
-			self.mainOptions.btnJoypadSensitivityP:setEnable(false)
-			self.mainOptions.btnJoypadSensitivityM:setEnable(false)
+		if self.controllerTab then
+			self.controllerTab:setJoypadSelected(false)
+			self.controllerTab:setJoypadSensitivityName(getText("UI_optionscreen_select_gamepad"))
 		end
 		return
 	end
@@ -25,17 +24,15 @@ function ISControllerTestPanel:onControllerSelected()
 	self.axisLabelWid = getTextManager():MeasureStringX(UIFont.Small, getText("UI_ControllerTest_Axis", 9))
 	self.buttonX = UI_BORDER_SPACING*2+1
 	
-	if self.mainOptions then
+	if self.controllerTab then
 		local controller = self.selectedController
-		if not controller then 
-			self.mainOptions.btnJoypadSensitivityP:setEnable(false)
-			self.mainOptions.btnJoypadSensitivityM:setEnable(false)
+		if not controller then
+			self.controllerTab:setJoypadSelected(false)
 			return 
 		end
-		self.mainOptions.btnJoypadSensitivityP:setEnable(true)
-		self.mainOptions.btnJoypadSensitivityM:setEnable(true)
+		self.controllerTab:setJoypadSelected(true)
 		if JoypadAxis1d.getAxisCount() > 0 then
-			self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
+			self.controllerTab:setJoypadSensitivityName(string.format("%.2f",getControllerDeadZone(controller, 0)))
 		end
 	end
 end
@@ -55,7 +52,7 @@ function ISControllerTestPanel:joypadSensitivityM()
 		end
 		axis:setDeadZone(controller, deadZone)
 	end
-	self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
+	self.controllerTab:setJoypadSensitivityName(string.format("%.2f",getControllerDeadZone(controller, 0)))
 	saveControllerSettings(controller)
 end
 
@@ -74,7 +71,7 @@ function ISControllerTestPanel:joypadSensitivityP()
 		end
 		axis:setDeadZone(controller, deadZone)
 	end
-	self.mainOptions.labelJoypadSensitivity.name=string.format("%.2f",getControllerDeadZone(controller, 0))
+	self.controllerTab:setJoypadSensitivityName(string.format("%.2f",getControllerDeadZone(controller, 0)))
 	saveControllerSettings(controller)
 end
 
@@ -86,7 +83,7 @@ function ISControllerTestPanel:render()
 
 	local barX = getTextManager():MeasureStringX(UIFont.Small, getText("UI_ControllerTest_Axis", 9)) + UI_BORDER_SPACING*2+1
 	local axisY = self.combo:getBottom() + UI_BORDER_SPACING
-	local barWid = 200
+	local barWid = self:getWidth() - UI_BORDER_SPACING - JOYPAD_TEX_SIZE - UI_BORDER_SPACING - barX
 	local barHeight = math.max(JOYPAD_TEX_SIZE+UI_BORDER_SPACING, BUTTON_HGT)
     local axisCount = JoypadAxis1d.getAxisCount()
 	for i=1,axisCount do
@@ -109,7 +106,6 @@ function ISControllerTestPanel:render()
 			axisY = axisY + barHeight + UI_BORDER_SPACING
 	end
 
-	local isAY = 0
 	local buttonX = self.buttonX
 	local buttonY = axisY + UI_BORDER_SPACING
 	local buttonWidth = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2 + BUTTON_HGT
@@ -146,16 +142,22 @@ function ISControllerTestPanel:render()
 	end
 
 	if buttonCount > 0 then
-		self:drawText(getText("UI_ControllerTest_Pov"), UI_BORDER_SPACING+1, buttonsBottom + 12, 1, 1, 1, 1, UIFont.Small)
-		local povY = buttonsBottom + 12 + self.smallFontHgt + 8
+	    local povY = buttonsBottom + UI_BORDER_SPACING + UI_BORDER_SPACING
+
+		self:drawText(getText("UI_ControllerTest_Pov"), UI_BORDER_SPACING+1, povY, 1, 1, 1, 1, UIFont.Small)
+		povY = povY + BUTTON_HGT + UI_BORDER_SPACING
+
+        local povBarWidth = self:getWidth() - UI_BORDER_SPACING - barX - UI_BORDER_SPACING
 		self:drawText(getText("UI_ControllerTest_PovX"), UI_BORDER_SPACING+1, povY, 1, 1, 1, 1, UIFont.Small)
 		local f = (1 + getControllerPovX(controller)) / 2
-		self:drawProgressBar(barX, povY, 200, BUTTON_HGT, f, { r=0.9,g=0.9,b=0.9,a=1 })
+		self:drawProgressBar(barX, povY, povBarWidth, BUTTON_HGT, f, { r=0.9,g=0.9,b=0.9,a=1 })
 		povY = povY + BUTTON_HGT + UI_BORDER_SPACING
+
 		self:drawText(getText("UI_ControllerTest_PovY"), UI_BORDER_SPACING+1, povY, 1, 1, 1, 1, UIFont.Small)
 		local f = (1 + getControllerPovY(controller)) / 2
-		self:drawProgressBar(barX, povY, 200, BUTTON_HGT, f, { r=0.9,g=0.9,b=0.9,a=1 })
+		self:drawProgressBar(barX, povY, povBarWidth, BUTTON_HGT, f, { r=0.9,g=0.9,b=0.9,a=1 })
 		povY = povY + BUTTON_HGT + UI_BORDER_SPACING
+
 		if JoypadState.controllerTest then
 			self:drawText(getText("UI_ControllerTest_AY4exit"), UI_BORDER_SPACING+1, povY, 1, 0.2, 0.2, 1, UIFont.Small)
 		end
@@ -196,15 +198,18 @@ function ISControllerTestPanel:OnGamepadDisconnect(index)
 	self:setControllerCombo()
 end
 
-function ISControllerTestPanel:onResolutionChange(oldw, oldh, neww, newh)
+function ISControllerTestPanel:doLayout()
+    self:setWidth(self:getParent():getWidth())
+    ISPanel.doLayout(self)
 	self.combo:setWidth(self:getWidth() - UI_BORDER_SPACING*2-1 - self.label:getRight())
 end
 
-function ISControllerTestPanel:new(x, y, width, height)
+function ISControllerTestPanel:new(controllerTab, x, y, width, height)
 	local o = ISPanel:new(x, y, width, height)
 	setmetatable(o, self)
 	self.__index = self
 	o.axisY = {}
+	o.controllerTab = controllerTab
 	o.smallFontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
 	return o
 end

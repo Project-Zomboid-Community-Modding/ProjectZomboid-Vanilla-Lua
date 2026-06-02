@@ -58,19 +58,19 @@ ISPriorityTable = {};
 
 function ISPriorityTable.new()
 	local function getElement(_key, _value, _zindex)
-		local self = {};
-		self.key = _key;
-		self.value = _value;
+		local self 	= {};
+		self.key 	= _key;
+		self.value 	= _value;
 		self.zindex = _zindex;
 		return self;	
 	end
 
-	local name = "ISPriorityTable";
-	local array = {};
-	array.n = 0;
-	local list = {};
-	local self = {};
-	local defaultZ = 1000;
+	local name 			= "ISPriorityTable";
+	local array 		= {};
+	array.n 			= 0;
+	local list 			= {};
+	local self 			= {};
+	local defaultZ 		= 1000;
 	
 	local function setElement( _k, _v, _z ) 
 		local e = list[ _k ];

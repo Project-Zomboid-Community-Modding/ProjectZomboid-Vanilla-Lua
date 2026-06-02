@@ -484,21 +484,21 @@ function ISMoveableCursor:isFacingOriginalDirection()
 end
 
 function ISMoveableCursor:isValid( _square )
-    self.currentMoveProps = nil;
-    self.origMoveProps = nil;
-    self.canCreate = nil;
-    self.objectSprite = nil;
-    self.origSpriteName = nil;
-    self.colorMod = ISMoveableSpriteProps.invalidColor;
-    self.yOffset = 0;
+    self.currentMoveProps   = nil;
+    self.origMoveProps      = nil;
+    self.canCreate          = nil;
+    self.objectSprite       = nil;
+    self.origSpriteName     = nil;
+    self.colorMod           = ISMoveableSpriteProps.invalidColor;
+    self.yOffset            = 0;
 
     if ISMoveableCursor.mode[self.player] == "pickup" or ISMoveableCursor.mode[self.player] == "rotate" then
-        self.objectIndex = self.currentSquare ~= _square and -1 or self.objectIndex;
+        self.objectIndex    = self.currentSquare ~= _square and -1 or self.objectIndex;
     end
     if _square ~= self.currentSquare then
         self.objectListCache = nil;
     end
-    self.currentSquare = _square;
+    self.currentSquare  = _square;
 
     --if self.currentSquare == nil or not self.currentSquare:isCouldSee(self.player) then
     if self.currentSquare == nil then
@@ -533,14 +533,14 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, object, moveProps );
-                    self.currentMoveProps = moveProps;
-                    self.origMoveProps = moveProps;
-                    self.canCreate = moveProps:canPickUpMoveable( self.character, _square, object );
-                    self.colorMod = ISMoveableCursor.normalColor; --self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                    self.objectSprite = nil; --moveProps.sprite; disabled object sprite for pickup
-                    self.origSpriteName = moveProps.spriteName;
+                    self.currentMoveProps   = moveProps;
+                    self.origMoveProps      = moveProps;
+                    self.canCreate          = moveProps:canPickUpMoveable( self.character, _square, object );
+                    self.colorMod           = ISMoveableCursor.normalColor; --self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                    self.objectSprite       = nil; --moveProps.sprite; disabled object sprite for pickup
+                    self.origSpriteName     = moveProps.spriteName;
                     --self.cursorFacing = nil;
-                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
                     self.isWallLike = moveProps.type == "Window"
                     self.nSprite = moveProps.spriteProps:has(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, object, moveProps );
@@ -583,14 +583,14 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, item, moveProps );
-                    self.currentMoveProps = moveProps;
-                    self.canCreate = moveProps:canPlaceMoveable( self.character, _square, item );
-                    self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                    self.cacheInvObjectSprite = item:getWorldSprite();
-                    self.objectSprite = moveProps.sprite;
-                    self.origSpriteName = origName;
+                    self.currentMoveProps       = moveProps;
+                    self.canCreate              = moveProps:canPlaceMoveable( self.character, _square, item );
+                    self.colorMod               = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                    self.cacheInvObjectSprite   = item:getWorldSprite();
+                    self.objectSprite           = moveProps.sprite;
+                    self.origSpriteName         = origName;
                     --self.cursorFacing = nil;
-                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPlaceMoveable function
+                    self.yOffset                = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPlaceMoveable function
                     self.isWallLike = moveProps.type == "Window"
                     self.nSprite = moveProps.spriteProps:has(IsoFlagType.WindowN) and 2 or 1
                     self:setInfoPanel( _square, item, moveProps );
@@ -629,24 +629,24 @@ function ISMoveableCursor:isValid( _square )
 
                 if moveProps and moveProps.sprite then
                     --self:setInfoPanel( _square, object, moveProps, faces[faceIndex] );
-                    self.currentMoveProps = moveProps;
-                    self.canCreate = moveProps:canRotateMoveable( _square, object, origProps ); --FIXME
-                    self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor; --ISMoveableCursor.normalColor;
-                    self.objectSprite = moveProps.sprite;
-                    self.origSpriteName = origName;
-                    self.yOffset = moveProps:getYOffsetCursor();
+                    self.currentMoveProps   = moveProps;
+                    self.canCreate          = moveProps:canRotateMoveable( _square, object, origProps ); --FIXME
+                    self.colorMod           = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor; --ISMoveableCursor.normalColor;
+                    self.objectSprite       = moveProps.sprite;
+                    self.origSpriteName     = origName;
+                    self.yOffset            = moveProps:getYOffsetCursor();
                     self:setInfoPanel( _square, object, moveProps, faces[faceIndex] );
                     --self.cursorFacing = nil;
                     return true;
                 end
             end
             if moveProps and moveProps.sprite and moveProps:canRotateDirection() then
-                self.currentMoveProps = moveProps;
-                self.canCreate = moveProps:canRotateMoveable( _square, object, origProps );
-                self.colorMod = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
-                self.objectSprite = moveProps.sprite;
-                self.origSpriteName = origName;
-                self.yOffset = moveProps:getYOffsetCursor();
+                self.currentMoveProps   = moveProps;
+                self.canCreate          = moveProps:canRotateMoveable( _square, object, origProps );
+                self.colorMod           = self.canCreate and ISMoveableCursor.normalColor or ISMoveableCursor.invalidColor;
+                self.objectSprite       = moveProps.sprite;
+                self.origSpriteName     = origName;
+                self.yOffset            = moveProps:getYOffsetCursor();
                 self:setInfoPanel( _square, object, moveProps );
                 return true;
             end
@@ -660,14 +660,14 @@ function ISMoveableCursor:isValid( _square )
                 local object = objects[self.objectIndex].object;
                 local moveProps = objects[self.objectIndex].moveProps;
                 if moveProps and moveProps.sprite then
-                    self.currentMoveProps = moveProps;
-                    self.origMoveProps = moveProps;
-                    self.canCreate = moveProps:canScrapObject( self.character ).canScrap;
+                    self.currentMoveProps   = moveProps;
+                    self.origMoveProps      = moveProps;
+                    self.canCreate          = moveProps:canScrapObject( self.character ).canScrap;
                     local colorInfo = getCore():getBadHighlitedColor() -- same color as the Disassemble context menu
-                    self.colorMod = { r=colorInfo:getR(), g=colorInfo:getG(), b=colorInfo:getB() }-- ISMoveableCursor.normalColor;
-                    self.objectSprite = moveProps.sprite;
-                    self.origSpriteName = moveProps.spriteName;
-                    self.yOffset = moveProps:getYOffsetCursor();
+                    self.colorMod           = { r=colorInfo:getR(), g=colorInfo:getG(), b=colorInfo:getB() }-- ISMoveableCursor.normalColor;
+                    self.objectSprite       = moveProps.sprite;
+                    self.origSpriteName     = moveProps.spriteName;
+                    self.yOffset            = moveProps:getYOffsetCursor();
                     self:setInfoPanel( _square, object, moveProps );
                     return true;
                 end
@@ -683,14 +683,14 @@ function ISMoveableCursor:isValid( _square )
                 local moveProps = objects[self.objectIndex].moveProps;
 
                 if moveProps and moveProps.sprite then
-                    self.currentMoveProps = moveProps;
-                    self.origMoveProps = moveProps;
-                    self.canCreate = moveProps:canRepairObject ( self.character ).canRepair;
-                    self.colorMod = ISMoveableCursor.normalColor;
-                    self.objectSprite = nil;
-                    self.origSpriteName = moveProps.spriteName;
-                    self.yOffset = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
-                    self.isWallLike = moveProps.type == "Window"
+                    self.currentMoveProps   = moveProps;
+                    self.origMoveProps      = moveProps;
+                    self.canCreate          = moveProps:canRepairObject ( self.character ).canRepair;
+                    self.colorMod           = ISMoveableCursor.normalColor;
+                    self.objectSprite       = nil;
+                    self.origSpriteName     = moveProps.spriteName;
+                    self.yOffset            = moveProps:getYOffsetCursor(); -- this is updated in moveprops in canPickUpMoveable function
+                    self.isWallLike         = moveProps.type == "Window"
                     self:setInfoPanel( _square, object, moveProps );
                     return true;
                 end
@@ -876,10 +876,10 @@ function ISMoveableCursor:getRotateableObject()
 end
 
 function ISMoveableCursor:getInventoryObjectList()
-    local objects = {};
+    local objects           = {};
     local spriteBuffer	= {};
-    local items = self.character:getInventory():getItems();
-    local items_size = items:size();
+    local items 			= self.character:getInventory():getItems();
+    local items_size 		= items:size();
     for i=0,items_size-1, 1 do
         local item = items:get(i);
         if instanceof(item, "Moveable") then
@@ -961,7 +961,7 @@ function ISMoveableCursor:getObjectList()
         local obj = square:getObjects():get(i-1);
         local moveProps = ISMoveableSpriteProps.new(obj:getSprite());
         if moveProps and moveProps.isMoveable then
-            local add = true;
+            local add  = true;
 
             --[[if instanceof(obj,"IsoBarbecue") and obj:isLit() then
                 add = false;
@@ -976,7 +976,7 @@ function ISMoveableCursor:getObjectList()
             if moveProps.spriteProps:has("WallNW") or moveProps.spriteProps:has("WallN") or moveProps.spriteProps:has("WallW") then
                 local sprList = obj:getChildSprites();
                 if sprList then
-                    local list_size = sprList:size();
+                    local list_size 	= sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();

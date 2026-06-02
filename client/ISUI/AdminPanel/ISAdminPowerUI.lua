@@ -58,6 +58,7 @@ ISAdminPowerUI.AddOption("FastMove", "left", Capability.UseFastMoveCheat,
     end,
     function(self, selected)
         ISFastTeleportMove.cheat = selected
+        self.player:setFastMoveCheat(selected);
     end
 )
 ISAdminPowerUI.AddOption("TimedActionInstant", "left", Capability.UseTimedActionInstantCheat,

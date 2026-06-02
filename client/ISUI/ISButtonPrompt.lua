@@ -228,8 +228,47 @@ function ISButtonPrompt:closeDoor(door)
 end
 
 function ISButtonPrompt:smashWindow(window)
-    local player = getSpecificPlayer(self.player);
-    player:smashWindow(window);
+    local player = getSpecificPlayer(self.player)
+    local playerNum = player:getPlayerNum()
+
+    local function waitForCancelRelease()
+        local joypadData = JoypadState.players[playerNum + 1]
+
+        if joypadData and CharacterJoypadButtonBinding.CancelAction:isDown(joypadData.id) then
+            return
+        end
+
+        Events.OnTick.Remove(waitForCancelRelease)
+
+        local playerSquare = player:getSquare()
+        local windowSquare = window:getSquare()
+
+        if not playerSquare or not windowSquare or playerSquare:getZ() ~= windowSquare:getZ() then
+            return
+        end
+
+        local playerX, playerY = playerSquare:getX(), playerSquare:getY()
+        local windowX, windowY = windowSquare:getX(), windowSquare:getY()
+        local isAdjacent = false
+
+        if window:isNorth() then
+            if playerX == windowX and (playerY == windowY or playerY == windowY - 1) then
+                isAdjacent = true
+            end
+        else
+            if playerY == windowY and (playerX == windowX or playerX == windowX - 1) then
+                isAdjacent = true
+            end
+        end
+
+        if not isAdjacent then
+            return
+        end
+
+        ISTimedActionQueue.add(ISSmashWindow:new(player, window))
+    end
+
+    Events.OnTick.Add(waitForCancelRelease)
 end
 
 function ISButtonPrompt:sleep()

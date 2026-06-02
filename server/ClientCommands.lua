@@ -1234,6 +1234,15 @@ Commands.fishing.brokeRodLine = function(player, args)
     player:setSecondaryHandItem(breakRod)
 end
 
+Commands.fishing.missFish = function(player, args)
+    local bobber = Bobber.getBobber(player)
+    if not bobber then return end
+    local rod = bobber.fishingRod
+    if rod then
+        rod:missFish()
+    end
+end
+
 ClientCommands.OnClientCommand = function(module, command, player, args)
 	if Commands[module] and Commands[module][command] then
 		local argStr = ''

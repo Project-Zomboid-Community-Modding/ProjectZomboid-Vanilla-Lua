@@ -148,7 +148,7 @@ function ISLabel:setTranslation(translation)
     self.translation = translation;
     self.x = self.originalX;
     if self.font ~= nil then
-        self.width = getTextManager():MeasureStringX(self.font, translation);
+        self.width  = getTextManager():MeasureStringX(self.font, translation);
         if(self.left ~= true) then
             self.x = self.x - self.width;
         end

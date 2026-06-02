@@ -294,7 +294,9 @@ function ISBuildWindow:onJoypadNavigateStart_Descendant(descendant, joypadData)
     local recipePanel = self.BuildPanel.craftRecipePanel
     local recipeInputs = recipePanel and recipePanel.inputs or nil
     local craftControl = recipePanel and recipePanel.craftControl or nil
-    local inventoryPanel = nil
+    local inventoryPanel = self.BuildPanel.inventoryPanel.itemListBox
+    inventoryPanel.joypadNavigate = { left = recipePanel.inputs }
+    if not inventoryPanel:isReallyVisible() then inventoryPanel = nil end
     recipeCategories.joypadNavigate = { right = listOrIconPanel }
     recipeFilterPanel.joypadNavigate = { left = recipeCategories, right = recipeInputs, down = listOrIconPanel }
     listOrIconPanel.joypadNavigate = { left = recipeCategories,  up = recipeFilterPanel, right = recipeInputs }

@@ -41,6 +41,17 @@ Commands.fishing.removeLure = function(args)
     rod:getModData().fishing_Lure = nil
 end
 
+Commands.fishing.consumeLure = function(args)
+    local rod = getPlayer():getInventory():getItemWithID(args.rodId)
+
+    log(DebugType.Action, '[ServerCommands.fishing.consumeLure] '..tostring(getPlayer())..' rod '..tostring(rod))
+
+    local defaultName = rod:getScriptItem():getName()
+    rod:setName(getText(defaultName))
+
+    rod:getModData().fishing_Lure = nil
+end
+
 Commands.fishing.addChumToWater = function(args)
     FishSchoolManager.getInstance():addChum(args.x, args.y, args.force)
 end

@@ -565,6 +565,7 @@ function ISServerSandboxOptionsUI:createPanel(page)
 			control.backgroundColor.a = control.backgroundColor.a
 			control.backgroundColor.a = control.backgroundColor.a
 			control:setOnlyNumbers(setting.onlyNumbers or false)
+			control:setClearButton(true)
 		elseif setting.type == "enum" then
 			label = ISLabel:new(0, 0, entryHgt, settingName, 1, 1, 1, 1, UIFont.Small)
 			control = ISComboBox:new(0, 0, 200, entryHgt, self, self.onComboBoxSelected, setting.name)

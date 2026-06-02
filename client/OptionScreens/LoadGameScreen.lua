@@ -467,6 +467,9 @@ function LoadGameScreen:create()
 	self.searchEntry:initialise()
 	self.searchEntry:instantiate()
 	self.searchEntry:setClearButton(true)
+	self.searchEntry.onGainJoypadFocus = self.onGainJoypadFocus_child
+	self.searchEntry.onLoseJoypadFocus = self.onLoseJoypadFocus_child
+	self.searchEntry.onJoypadBeforeDeactivate = self.onJoypadBeforeDeactivate_child
 	self:addChild(self.searchEntry)
 
 	self.listbox = ISScrollingListBox:new(UI_BORDER_SPACING+1, self.startY+UI_BORDER_SPACING+ENTRY_HGT, (self.width - UI_BORDER_SPACING*3 - 2) / 2, self.height - UI_BORDER_SPACING*3 - BUTTON_HGT - ENTRY_HGT - self.startY - 1);
@@ -789,10 +792,17 @@ end
 
 function LoadGameScreen:onGainJoypadFocus_child(joypadData)
 	ISPanelJoypad.onGainJoypadFocus(self, joypadData)
-	self:setISButtonForA(self.parent.playButton)
-	self:setISButtonForB(self.parent.backButton)
-	self:setISButtonForX(self.parent.configButton)
-	self:setISButtonForY(self.parent.deleteButton)
+	if self == self.parent.searchEntry then
+		self.parent.playButton:clearJoypadButton()
+		self.parent.backButton:clearJoypadButton()
+		self.parent.configButton:clearJoypadButton()
+		self.parent.deleteButton:clearJoypadButton()
+	else
+		self:setISButtonForA(self.parent.playButton)
+		self:setISButtonForB(self.parent.backButton)
+		self:setISButtonForX(self.parent.configButton)
+		self:setISButtonForY(self.parent.deleteButton)
+	end
 	if self == self.parent.listbox then
 		self.joypadFocused = true
 	end
@@ -811,6 +821,13 @@ end
 
 function LoadGameScreen:onJoypadBeforeDeactivate_child(joypadData)
 	self.parent:onJoypadBeforeDeactivate(joypadData)
+end
+
+function LoadGameScreen:onJoypadDown_Descendant(descendant, button, joypadData)
+	if descendant == self.searchEntry and button == Joypad.BButton then
+		joypadData.focus = self.listbox
+		updateJoypadFocus(joypadData)
+	end
 end
 
 function LoadGameScreen:onJoypadDown_listbox(button, joypadData)

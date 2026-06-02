@@ -233,15 +233,10 @@ function ISEquipWeaponAction:complete()
         turnOn = false;
     end
 
-	if turnOn and not self.item:isActivated() then
+	if turnOn and not self.item:isActivated() and not self.item:getScriptItem():isItemType(ItemType.RADIO) then
 		self.item:setActivated(true);
 		self.item:playActivateSound();
 	end
-
-    if self.item:getScriptItem():isItemType(ItemType.RADIO) and self.item:getDeviceData() and self.item:getDeviceData():getIsPortable() and not self.item:getDeviceData():getIsTurnedOn() then
-        self.item:getDeviceData():playSoundSend("RadioButton", false);
-        self.item:getDeviceData():setIsTurnedOn( true );
-    end
 
 	if not isServer() then
 		getPlayerInventory(self.character:getPlayerNum()):refreshBackpacks()

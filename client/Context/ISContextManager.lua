@@ -33,11 +33,11 @@ function ISContextManager.getInstance()
 	
     function self.init()
 		if not hasInit then
-			menuWorld = ISMenuContextWorld.new();
+			menuWorld 				= ISMenuContextWorld.new();
 			menuWorld.init();
-			menuBuild = ISMenuContextBuild.new();
+			menuBuild				= ISMenuContextBuild.new();
 			menuBuild.init();
-			menuInventory = ISMenuContextInventory.new();
+			menuInventory			= ISMenuContextInventory.new();	
 			menuInventory.init();
 			Events.OnFillInventoryObjectContextMenu.Add(self.createInventoryMenu);
 			hasInit = true;

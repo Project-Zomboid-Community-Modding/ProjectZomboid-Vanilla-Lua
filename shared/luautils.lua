@@ -42,6 +42,14 @@ function luautils.indexOf(table1, value)
 	return -1
 end
 
+function luautils.remove(table1, value)
+	local indexOf = luautils.indexOf(table1, value)
+	if (indexOf > -1) then
+        table.remove(table1, indexOf)
+    end
+	return indexOf
+end
+
 function luautils.tableContains(table2, value)
 	for i,v in pairs(table2) do
 		if v == value then
@@ -49,6 +57,17 @@ function luautils.tableContains(table2, value)
 		end
 	end
 	return false
+end
+
+function luautils.concatenateArrays(table1, table2)
+    local newTable = {}
+    for _, entry in ipairs(table1) do
+        table.insert(newTable, entry)
+    end
+    for _, entry in ipairs(table2) do
+        table.insert(newTable, entry)
+    end
+    return newTable
 end
 
 -- get all the tile in the range of the startingGrid

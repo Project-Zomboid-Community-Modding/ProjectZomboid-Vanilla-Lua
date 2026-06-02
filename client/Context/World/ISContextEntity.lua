@@ -1,7 +1,7 @@
 ISWorldMenuElements = ISWorldMenuElements or {};
 
 function ISWorldMenuElements.ContextEntity()
-    local self = ISMenuElement.new();
+    local self 					= ISMenuElement.new();
 
     function self.init()
     end

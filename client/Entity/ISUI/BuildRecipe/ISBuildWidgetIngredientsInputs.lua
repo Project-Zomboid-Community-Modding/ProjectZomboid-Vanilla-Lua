@@ -162,6 +162,17 @@ function ISBuildWidgetIngredientsInputs:onLoseJoypadFocus(joypadData)
     self:clearJoypadFocus(joypadData)
 end
 
+function ISBuildWidgetIngredientsInputs:onJoypadDown(button, joypadData)
+    if button == Joypad.AButton then
+        local input = self.joypadButtons[self.joypadIndex]
+        if input and input.primary and input.primary.selectInputButton then
+            input:onSelectInputsClicked(input.primary.selectInputButton)
+        end
+        return
+    end
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
+end
+
 function ISBuildWidgetIngredientsInputs:onManualSelectChanged(_manualSelect)
     self:xuiRecalculateLayout();
 end

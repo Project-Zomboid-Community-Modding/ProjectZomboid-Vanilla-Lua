@@ -6,9 +6,14 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GHC = getCore():getGoodHighlitedColor()
 local BHC = getCore():getBadHighlitedColor()
+local SORT_BY_NAME = "name"
+local SORT_BY_ROLE = "role"
+local SORT_BY_LAST_CONNECTION = "lastconnection"
+local SORT_BY_WARNINGS = "warnings"
 
 function ISUsersList:initialise()
     ISPanel.initialise(self);
+    self:calculateColumnPositions()
 
     local btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_UserList_Add"))
     self.add = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWidth, BUTTON_HGT, getText("IGUI_UserList_Add"), self, ISUsersList.onClick);
@@ -43,6 +48,23 @@ function ISUsersList:initialise()
         self.bannedIPs.enable = true;
     end
     self:addChild(self.bannedIPs);
+
+    self.refresh = ISButton:new(self.bannedIPs:getRight() + UI_BORDER_SPACING, self.add:getY(), btnWidth, BUTTON_HGT, getText("IGUI_UserList_BannedIPs_Refresh"), self, self.refresh)
+    self.refresh.anchorTop = false
+    self.refresh.anchorBottom = true
+    self.refresh:initialise()
+    self.refresh:instantiate()
+    self.refresh.borderColor = { r=1, g=1, b=1, a=0.1 }
+    self:addChild(self.refresh)
+
+    local showOnlineOnlyTickBox = ISTickBox:new(self.refresh:getRight() + UI_BORDER_SPACING, self.add:getY(), BUTTON_HGT + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_UsersList_ShowOnlineOnlyFilter")), BUTTON_HGT, "showOnlineOnly", self, self.toggleShowOnlineOnly)
+    showOnlineOnlyTickBox.anchorTop = false
+    showOnlineOnlyTickBox.anchorBottom = true
+    showOnlineOnlyTickBox:initialise()
+    showOnlineOnlyTickBox:addOption(getText("IGUI_UsersList_ShowOnlineOnlyFilter"))
+    showOnlineOnlyTickBox:setSelected(1, self.showOnlineOnly)
+    showOnlineOnlyTickBox.choicesColor = { r=1, g=1, b=1, a=1 }
+    self:addChild(showOnlineOnlyTickBox)
 
     btnWidth = UI_BORDER_SPACING*2 + getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_RolesList_Close"))
     self.close = ISButton:new(self.width - btnWidth - UI_BORDER_SPACING - 1, self.add:getY(), btnWidth, BUTTON_HGT, getText("IGUI_RolesList_Close"), self, ISUsersList.onClick);
@@ -81,7 +103,16 @@ function ISUsersList:initialise()
     titleFilter:instantiate()
     self:addChild(titleFilter)
 
-    self.datas = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+(UI_BORDER_SPACING+1)*2, self.width - (UI_BORDER_SPACING+1)*2, self:getHeight() - BUTTON_HGT - (UI_BORDER_SPACING + 1)*4 - FONT_HGT_MEDIUM);
+    self.sortByNameButton = self:createColumnHeader(getText("IGUI_UsersList_NameColumn"), SORT_BY_NAME, UI_BORDER_SPACING + 1, self.roleColumnX - UI_BORDER_SPACING - 1, BUTTON_HGT)
+    self:addChild(self.sortByNameButton)
+    self.sortByRoleButton = self:createColumnHeader(getText("IGUI_UsersList_RoleColumn"), SORT_BY_ROLE, self.roleColumnX, self.lastConnectionColumnX - self.roleColumnX, BUTTON_HGT)
+    self:addChild(self.sortByRoleButton)
+    self.sortByLastConnectionButton = self:createColumnHeader(getText("IGUI_UsersList_LastConnectionColumn"), SORT_BY_LAST_CONNECTION, self.lastConnectionColumnX, self.warningsColumnX - self.lastConnectionColumnX, BUTTON_HGT)
+    self:addChild(self.sortByLastConnectionButton)
+    self.sortByWarningsButton = self:createColumnHeader(getText("IGUI_UsersList_WarningsColumn"), SORT_BY_WARNINGS, self.warningsColumnX, self:getWidth() - UI_BORDER_SPACING - 1 - self.warningsColumnX, BUTTON_HGT)
+    self:addChild(self.sortByWarningsButton)
+
+    self.datas = ISScrollingListBox:new(UI_BORDER_SPACING+1, FONT_HGT_MEDIUM+(UI_BORDER_SPACING+1)*2 + BUTTON_HGT, self.width - (UI_BORDER_SPACING+1)*2, self:getHeight() - BUTTON_HGT*2 - (UI_BORDER_SPACING + 1)*4 - FONT_HGT_MEDIUM);
     self.datas:initialise();
     self.datas:instantiate();
     self.datas.itemheight = BUTTON_HGT*3
@@ -97,18 +128,90 @@ function ISUsersList:initialise()
     self:populateList();
 end
 
+function ISUsersList:calculateColumnPositions()
+    local testWarningsNumber = 1000
+    local testSuspicionPointsString = getText("IGUI_UsersList_SuspicionPoints", testWarningsNumber)
+    local testDetailsLastConnectString = tostring(os.date("%Y-%m-%d %H:%m:%S"))
+    local testAuthTypeString = getText("IGUI_UsersList_DetailsAuthType", "google_auth")
+
+    self.warningsColumnX = self:getWidth() - UI_BORDER_SPACING - 1 - getTextManager():MeasureStringX(UIFont.Small, testSuspicionPointsString)
+    self.lastConnectionColumnX = self.warningsColumnX - UI_BORDER_SPACING*3 - getTextManager():MeasureStringX(UIFont.Small, testDetailsLastConnectString)
+    self.roleColumnX = self.lastConnectionColumnX - UI_BORDER_SPACING*3 - getTextManager():MeasureStringX(UIFont.Small, testAuthTypeString)
+end
+
+function ISUsersList:createColumnHeader(name, sortType, x, width)
+    local headerButton = ISButton:new(x, FONT_HGT_MEDIUM+(UI_BORDER_SPACING+1)*2, width, BUTTON_HGT, name, self, ISUsersList.onClickSort)
+    headerButton.internal = sortType
+    headerButton:initialise()
+    headerButton.backgroundColor = { r=1, g=1, b=1, a=0.3 }
+    headerButton.iconRightWidth = 10
+    headerButton.iconRightHeight = 10
+    headerButton.iconRightColor = { r=1, g=1, b=1, a=0.5 }
+    headerButton.titleLeft = true
+    return headerButton
+end
+
 function ISUsersList:populateList()
     self.datas:clear();
     local users = getUsers();
     local searchWord = self.searchEntry:getInternalText();
     for i=0,users:size()-1 do
         local user = users:get(i);
-        if searchWord == ''
-            or (not (searchWord == '') and (
-                string.find(user:getUsername(), searchWord) ~= nil)) then
+        local isSearchPassed = searchWord == '' or (not (searchWord == '') and (string.find(user:getUsername(), searchWord) ~= nil))
+        local isOnlineFilterPassed = not self.showOnlineOnly or user:isOnline()
+        if isSearchPassed and isOnlineFilterPassed then
             self.datas:addItem(user:getUsername(), user);
         end
     end
+    self.datas:sort(self.comparator)
+end
+
+function ISUsersList:refresh()
+    requestUsers()
+    self:populateList()
+end
+
+function ISUsersList.comparator(user1, user2)
+    if ISUsersList.instance == nil then
+        return
+    end
+    if (not ISUsersList.instance.showOnlineOnly) and (user1.item:isOnline() ~= user2.item:isOnline()) then
+        if user1.item:isOnline() then
+            return not ISUsersList.instance.sortDown
+        else
+            return ISUsersList.instance.sortDown
+        end
+    end
+
+    local result = 0
+    if ISUsersList.instance.sortType == SORT_BY_NAME then
+        if ISUsersList.instance.sortDown then
+            return user1.item:getUsername():upper() >= user2.item:getUsername():upper()
+        else
+            return user1.item:getUsername():upper() < user2.item:getUsername():upper()
+        end;
+    elseif ISUsersList.instance.sortType == SORT_BY_ROLE then
+        result = user1.item:getRole():getPosition() - user2.item:getRole():getPosition()
+    elseif ISUsersList.instance.sortType == SORT_BY_LAST_CONNECTION then
+        if ISUsersList.instance.sortDown then
+            return user1.item:getLastConnection() >= user2.item:getLastConnection()
+        else
+            return user1.item:getLastConnection() < user2.item:getLastConnection()
+        end;
+    elseif ISUsersList.instance.sortType == SORT_BY_WARNINGS then
+        local warningPointsValue = 1
+        local suspicionPointsValue = 2
+        local kicksValue = 3
+        result = (user1.item:getWarningPoints() - user2.item:getWarningPoints()) * warningPointsValue +
+            (user1.item:getSuspicionPoints() - user2.item:getSuspicionPoints()) * suspicionPointsValue +
+            (user1.item:getKicks() - user2.item:getKicks()) * kicksValue
+    end
+
+    if ISUsersList.instance.sortDown then
+        return result >= 0
+    else
+        return result < 0
+    end;
 end
 
 function ISUsersList:drawDatas(y, item, alt)
@@ -138,48 +241,35 @@ function ISUsersList:drawDatas(y, item, alt)
     local suspicionPointsString = getText("IGUI_UsersList_SuspicionPoints", suspicionPointsValue)
     local kicksString = getText("IGUI_UsersList_Kicks", kicksValue)
 
-    local textX = self:getWidth() - UI_BORDER_SPACING - 1 - math.max(
-        getTextManager():MeasureStringX(UIFont.Small, warningPointsString),
-        getTextManager():MeasureStringX(UIFont.Small, suspicionPointsString),
-        getTextManager():MeasureStringX(UIFont.Small, kicksString)
-    )
-
     local progress = math.min(warningPointsValue/10.0, 1.0)
     local r = BHC:getR()*progress + GHC:getR()*(1-progress)
     local g = BHC:getG()*progress + GHC:getG()*(1-progress)
     local b = BHC:getB()*progress + GHC:getB()*(1-progress)
-    self:drawText(warningPointsString, textX, yOffset, r, g, b, 1, UIFont.Small);
+    self:drawText(warningPointsString, self.parent.warningsColumnX, yOffset, r, g, b, 1, UIFont.Small)
 
     progress = math.min(suspicionPointsValue/10.0, 1.0)
     r = BHC:getR()*progress + GHC:getR()*(1-progress)
     g = BHC:getG()*progress + GHC:getG()*(1-progress)
     b = BHC:getB()*progress + GHC:getB()*(1-progress)
-    self:drawText(suspicionPointsString, textX, yOffset+BUTTON_HGT, r, g, b, 1, UIFont.Small);
+    self:drawText(suspicionPointsString, self.parent.warningsColumnX, yOffset+BUTTON_HGT, r, g, b, 1, UIFont.Small)
 
     progress = math.min(kicksValue, 1.0)
     r = BHC:getR()*progress + GHC:getR()*(1-progress)
     g = BHC:getG()*progress + GHC:getG()*(1-progress)
     b = BHC:getB()*progress + GHC:getB()*(1-progress)
-    self:drawText(kicksString, textX, yOffset+BUTTON_HGT*2, r, g, b, 1, UIFont.Small);
+    self:drawText(kicksString, self.parent.warningsColumnX, yOffset+BUTTON_HGT*2, r, g, b, 1, UIFont.Small)
 
     local detailsRoleString = getText("IGUI_UsersList_DetailsRole", item.item:getRole():getName())
-    local detailsLastConnectString = getText("IGUI_UsersList_DetailsLastConnection", item.item:getLastConnection())
     local detailsAuthString = getText("IGUI_UsersList_DetailsAuthType", item.item:getAuthTypeName())
     local detailsNoWhitelistString = getText("IGUI_UsersList_DetailsNoWhitelist")
 
-    textX = textX - UI_BORDER_SPACING*3 - math.max(
-        getTextManager():MeasureStringX(UIFont.Small, detailsRoleString),
-        getTextManager():MeasureStringX(UIFont.Small, detailsLastConnectString),
-        getTextManager():MeasureStringX(UIFont.Small, detailsAuthString),
-        getTextManager():MeasureStringX(UIFont.Small, detailsNoWhitelistString)
-    )
-
-    self:drawText(detailsRoleString, textX, yOffset, 1, 1, 1, a, self.font);
+    self:drawText(detailsRoleString, self.parent.roleColumnX, yOffset, 1, 1, 1, a, self.font)
     if item.item:isInWhitelist() then
-        self:drawText(detailsLastConnectString, textX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font);
-        self:drawText(detailsAuthString, textX, yOffset+BUTTON_HGT*2, 1, 1, 1, a, self.font);
+        self:drawText(detailsAuthString, self.parent.roleColumnX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font)
+        self:drawText(item.item:getLastConnection(), self.parent.lastConnectionColumnX, yOffset, 1, 1, 1, a, self.font)
     else
-        self:drawText(detailsNoWhitelistString, textX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font);
+        self:drawText(detailsNoWhitelistString, self.parent.roleColumnX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font)
+        self:drawText("-", self.parent.lastConnectionColumnX, yOffset, 1, 1, 1, a, self.font)
     end
 
     return y + self.itemheight;
@@ -195,10 +285,43 @@ function ISUsersList:doSearch()
     self:populateList();
 end
 
+function ISUsersList:toggleShowOnlineOnly()
+    self.showOnlineOnly = not self.showOnlineOnly
+    self:populateList()
+end
+
+function ISUsersList:onClickSort(button)
+    if self.sortType == button.internal then
+        self.sortDown = not self.sortDown
+    else
+        self.sortDown = true
+    end
+    self.sortType = button.internal
+    self:populateList()
+end
+
 function ISUsersList:prerender()
-    self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
-    self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText(getText("IGUI_AdminPanel_SeeUsers"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeUsers")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
+    self.sortByNameButton.iconRight = nil
+    self.sortByRoleButton.iconRight = nil
+    self.sortByLastConnectionButton.iconRight = nil
+    self.sortByWarningsButton.iconRight = nil
+    local icon = self.arrowUp
+    if self.sortDown then
+        icon = self.arrowDown
+    end
+    if self.sortType == SORT_BY_NAME then
+        self.sortByNameButton.iconRight = icon
+    elseif self.sortType == SORT_BY_ROLE then
+        self.sortByRoleButton.iconRight = icon
+    elseif self.sortType == SORT_BY_LAST_CONNECTION then
+        self.sortByLastConnectionButton.iconRight = icon
+    elseif self.sortType == SORT_BY_WARNINGS then
+        self.sortByWarningsButton.iconRight = icon
+    end
+
+    self:drawRect(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b)
+    self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
+    self:drawText(getText("IGUI_AdminPanel_SeeUsers"), self.width/2 - (getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_AdminPanel_SeeUsers")) / 2), UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium)
 end
 
 function ISUsersList:onClick(button)
@@ -400,7 +523,8 @@ function ISUsersList:doContextMenu(item, x, y)
                 banButton.toolTip = tooltip;
             end
         end
-        if getSteamModeActive() then
+        local steamMode = getSteamModeActive();
+        if steamMode then
             local banSteamIdButton;
             if item:getSteamIdBanned() ~= nil and item:getSteamIdBanned() ~= '' then
                 banSteamIdButton = context:addOption(getText("IGUI_UserList_UnBanBySteamID"), ISUsersList.instance, ISUsersList.onClickOption, item, "UnBanSteamID");
@@ -425,9 +549,12 @@ function ISUsersList:doContextMenu(item, x, y)
                     banSteamIdButton.toolTip = tooltip;
                 end
             end
-        else
+        end
+        local hasIpBan = item:getIpBanned() ~= nil and item:getIpBanned() ~= '';
+        local showBanIp = (not steamMode) or hasIpBan or item:isConnectedDirectly();
+        if showBanIp then
             local banIpButton;
-            if item:getIpBanned() ~= nil and item:getIpBanned() ~= '' then
+            if hasIpBan then
                 banIpButton = context:addOption(getText("IGUI_UserList_UnBanIP"), ISUsersList.instance, ISUsersList.onClickOption, item, "UnBanIP");
             else
                 banIpButton = context:addOption(getText("IGUI_UserList_BanIP"), ISUsersList.instance, ISUsersList.onClickOption, item, "BanIP");
@@ -496,6 +623,11 @@ function ISUsersList:new(x, y, width, height, player)
     o.height = height;
     o.player = player;
     o.moveWithMouse = true;
+    o.showOnlineOnly = false
+    o.arrowUp = getTexture("media/ui/ArrowUp.png")
+    o.arrowDown = getTexture("media/ui/ArrowDown.png")
+    o.sortDown = false
+    o.sortType = SORT_BY_NAME
     ISUsersList.instance = o;
     return o;
 end

@@ -166,6 +166,7 @@ function ISGameSoundVolumeControl:new(x, y, width, height, target, targetFunc)
 	local o = ISPanel:new(x, y, width, height)
 	setmetatable(o, self)
 	self.__index = self
+	o.SuperType = ISPanel
 	o.backgroundColor = {r=0, g=0, b=0, a=1}
 	o.borderColor = {r=1, g=1, b=1, a=0.5}
 	o.volume = 0
@@ -173,5 +174,6 @@ function ISGameSoundVolumeControl:new(x, y, width, height, target, targetFunc)
 	o.targetFunc = targetFunc
 	o.fade = UITransition.new()
 	o.isSlider = true
+	o.autoAddJoypadButton = true
 	return o
 end

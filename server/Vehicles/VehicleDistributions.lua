@@ -11005,7 +11005,7 @@ VehicleDistributions.MobileLibraryTruckBed = {
 VehicleDistributions.MobileLibrary = {
 	TruckBed = VehicleDistributions.MobileLibraryTruckBed;
 	
-	TrailerTrunk = VehicleDistributions.MobileLibraryTruckBed;
+	TrailerTrunk  = VehicleDistributions.MobileLibraryTruckBed;
 	
 	GloveBox = VehicleDistributions.GloveBox;
 	
@@ -11615,17 +11615,17 @@ local distributionTable = {
 		Specific = { VehicleDistributions.PackRat, VehicleDistributions.Drinker, VehicleDistributions.Camper, VehicleDistributions.BadTeens},
 	},
 
-	VanSeats_Trippy = {
+	VanSeats_Trippy  = {
 		Normal = VehicleDistributions.NormalHeavy,
 		Specific = { VehicleDistributions.PackRat, VehicleDistributions.Drinker, VehicleDistributions.Camper, VehicleDistributions.BadTeens},
 	},
 
-	VanSeats_Valkyrie = {
+	VanSeats_Valkyrie  = {
 		Normal = VehicleDistributions.NormalHeavy,
 		Specific = { VehicleDistributions.PackRat, VehicleDistributions.Drinker, VehicleDistributions.Camper, VehicleDistributions.BadTeens},
 	},
 
-	VanSeats_Mural = {
+	VanSeats_Mural  = {
 		Normal = VehicleDistributions.NormalHeavy,
 		Specific = { VehicleDistributions.PackRat, VehicleDistributions.Drinker, VehicleDistributions.Camper, VehicleDistributions.BadTeens},
 	},
@@ -11702,7 +11702,7 @@ local distributionTable = {
 	-- Airport Vehicles
 	PickUpTruckLightsAirport = { Normal = VehicleDistributions.PickUpTruckLights_Airport },
 	StepVanAirportCatering = { Normal = VehicleDistributions.StepVan_AirportCatering },
-	VanSeatsAirportShuttle = { Normal = VehicleDistributions.VanSeats_AirportShuttle  },
+	VanSeatsAirportShuttle  = { Normal = VehicleDistributions.VanSeats_AirportShuttle  },
 	-- new utility vehicles
 	VanUtility = { Normal = VehicleDistributions.ConstructionWorker },
 	VanDeerValley = { Normal = VehicleDistributions.ConstructionWorker },
@@ -11795,7 +11795,7 @@ local distributionTable = {
 	ModernCarLightsMeadeSheriff = { Normal = VehicleDistributions.PoliceSheriff },
 	ModernCarLightsWestPoint = { Normal = VehicleDistributions.Police },
 	PickUpVanLightsLouisvilleCounty = { Normal = VehicleDistributions.Police },
-	PickUpVanLightsStatePolice = { Normal = VehicleDistributions.PoliceState },
+	PickUpVanLightsStatePolice  = { Normal = VehicleDistributions.PoliceState },
 	StepVan_LouisvilleSWAT = { Normal = VehicleDistributions.PoliceSWAT },
 }
 

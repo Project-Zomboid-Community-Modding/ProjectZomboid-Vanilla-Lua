@@ -339,28 +339,38 @@ function FishingRod:brokeLine() -- TODO : move result of broke to fishing file
 end
 
 function FishingRod:missFish()
-    if isServer() then return end
+    self.bobber.fish = nil
+    if isClient() then
+        sendClientCommandV(self.player, "fishing", "missFish")
+        return
+    end
+    self:removeLure()
+end
+
+function FishingRod:removeLure()
     self.rodItem:getModData().fishing_Lure = nil
     self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
-    self.bobber.fish = nil
+    if isServer() then
+        local args = { rodId=self.rodItem:getID() }
+        sendServerCommand(self.player, 'fishing', 'consumeLure', args)
+    end
 end
 
 function FishingRod:consumeLure(isTrash)
+    if isClient() then return end
     local lure = self.rodItem:getModData().fishing_Lure
+    local consumed = false
     if lure ~= nil then
         if Fishing.lure.ArtificalLure[lure] then
             local chance = ZombRand(30 * (self.skillLevel + 1))
-            if chance == 0 and not isTrash then
-                self.rodItem:getModData().fishing_Lure = nil
-                self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
-            end
+            consumed = chance == 0 and not isTrash
         else
             local chance = ZombRand(20)
-            if chance > self.skillLevel and not isTrash then
-                self.rodItem:getModData().fishing_Lure = nil
-                self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
-            end
+            consumed = chance > self.skillLevel and not isTrash
         end
+    end
+    if consumed then
+        self:removeLure()
     end
 end
 

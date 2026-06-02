@@ -103,7 +103,7 @@ function ISWindow:getClientHeight()
 end
 
 function ISWindow:render()
-	self:drawTextCentre(self.title, self:getCentreX(), 3, 1, 1, 1, 1);
+	self:drawTextCentre(self.title, self:getSelfCenterX(), 3, 1, 1, 1, 1);
 end
 
 function ISWindow:new (title, x, y, width, height)

@@ -146,6 +146,7 @@ function CoopOptionsScreen:create()
     entry.font = UIFont.Medium
     entry.onTextChange = CoopOptionsScreen.onUsernameChanged
     self.panel:addChild(entry)
+    entry:setClearButton(true)
     self.accountNameEntry = entry
 
     if getSteamModeActive() then

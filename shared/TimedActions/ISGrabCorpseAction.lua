@@ -117,49 +117,52 @@ function ISGrabCorpseAction:new (character, corpseBody)
     return o
 end
 
-----
+function ISGrabCorpseAction.PerformGrabCorpse()
+    local playerObj = getPlayer()
+    local body = playerObj and playerObj:findClosestCorpseOnGroundToPickup()
+    if (body == nil) then
+        return
+    end
 
-local function OnContextKey(playerObj, timePressedContext)
+    if playerObj:isSitOnGround() then
+        playerObj:setVariable("forceGetUp", true)
+    end
+    if playerObj:getPrimaryHandItem() then
+        ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getPrimaryHandItem(), 50));
+    end
+    if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem() ~= playerObj:getPrimaryHandItem() then
+        ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getSecondaryHandItem(), 50));
+    end
+    ISTimedActionQueue.add(ISGrabCorpseAction:new(playerObj, body))
+end
+
+function ISGrabCorpseAction.OnContextKey(playerObj, timePressedContext)
     if playerObj:isGrappling() or getCore():getGameMode() == "Tutorial" then
         return
     end
     if timePressedContext > 700 then
+        ISGrabCorpseAction.PerformGrabCorpse()
+    end
+end
+
+function ISGrabCorpseAction.OnKeyPressed(key)
+    if (getCore():isKey("GrabCorpse", key)) then
         local playerObj = getPlayer()
-        local sq = playerObj:getSquare()
-        local z = sq:getZ()
-        local dist = 1000
-        local body = nil
-        for x=sq:getX()-1, sq:getX()+1 do
-            for y=sq:getY()-1, sq:getY()+1 do
-                local square = getCell():getGridSquare(x,y,z);
-                local wobjs = square:getStaticMovingObjects()
-                for i=0, wobjs:size()-1 do
-                    local v = wobjs:get(i)
-                    if instanceof(v, "IsoDeadBody") and not v:isAnimal() and sq:canReachTo(square) and not square:haveFire() then
-                        if not (v:getStaticMovingObjectIndex() < 0) and not playerObj:isDraggingCorpse() then
-                            local d = playerObj:DistToSquared(x + 0.5, y + 0.5)
-                            if d < dist then
-                                dist = d
-                                body = v
-                            end
-                        end
-                    end
-                end
-            end
+        if (playerObj == nil) then
+            return
         end
-        if body then
-            if playerObj:isSitOnGround() then
-                playerObj:setVariable("forceGetUp", true)
-            end
-            if playerObj:getPrimaryHandItem() then
-                ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getPrimaryHandItem(), 50));
-            end
-            if playerObj:getSecondaryHandItem() and playerObj:getSecondaryHandItem() ~= playerObj:getPrimaryHandItem() then
-                ISTimedActionQueue.add(ISUnequipAction:new(playerObj, playerObj:getSecondaryHandItem(), 50));
-            end
-            ISTimedActionQueue.add(ISGrabCorpseAction:new(playerObj, body))
+
+        if (not playerObj:isDraggingCorpse()) then
+            ISGrabCorpseAction.PerformGrabCorpse()
+        else
+            playerObj:setDoGrappleLetGo()
         end
     end
 end
 
-Events.OnContextKey.Add(OnContextKey)
+local function OnGameStart()
+    Events.OnContextKey.Add(ISGrabCorpseAction.OnContextKey)
+	Events.OnKeyPressed.Add(ISGrabCorpseAction.OnKeyPressed)
+end
+
+Events.OnGameStart.Add(OnGameStart)

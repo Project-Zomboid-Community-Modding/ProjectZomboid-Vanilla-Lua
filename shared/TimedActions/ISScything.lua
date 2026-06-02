@@ -56,9 +56,27 @@ function ISScything:getGrass(sq)
             local args = { x = sq:getX(), y = sq:getY(), z = sq:getZ() }
             sendServerCommand('square', 'removeGrass', args)
         end
-        local items = self.character:getInventory():AddItems("Base.GrassTuft", ZombRand(3,7));
-        sendAddItemsToContainer(self.character:getInventory(), items);
+
+        local inv = self.character:getInventory()
+        local grassCount = ZombRand(3,7)
+        local itemsToSync = ArrayList.new()
+
+        for i=1, grassCount do
+            local grassTuft = instanceItem("Base.GrassTuft")
+
+            if inv:hasRoomFor(self.character, grassTuft) then
+                inv:AddItem(grassTuft)
+                itemsToSync:add(grassTuft)
+            else
+                sq:AddWorldInventoryItem(grassTuft, ZombRandFloat(0.1, 0.9), ZombRandFloat(0.1, 0.9), 0.0)
+            end
+        end
+
+        if not itemsToSync:isEmpty() then
+            sendAddItemsToContainer(inv, itemsToSync)
+        end
     end
+
     local plant = SFarmingSystem.instance:getLuaObjectOnSquare(sq)
     if plant and plant.state ~= "destroyed"  and plant.state ~= "harvested"  and plant.state ~= "plow" then
         if farming_vegetableconf.props[plant.typeOfSeed].scytheHarvest and plant:isAlive() and plant:canHarvest() then

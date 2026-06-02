@@ -244,7 +244,7 @@ xpUpdate.levelPerk = function(owner, perk, level, addBuffer)
 	end
 
 	local modifier = 0
-	if owner:hasTrait(CharacterTrait.INVENTIVE) then modifier = 1 end
+	if owner:isInventive() then modifier = 1 end
     -- learn all the growing seasons at Farming 10
 	if perk == Perks.Farming and level + modifier > 9 then
         for typeOfSeed,props in pairs(farming_vegetableconf.props) do
@@ -353,7 +353,7 @@ end
 xpUpdate.onLoad = function()
 	local playerObj = getSpecificPlayer(0)
 	local modifier = 0
-	if playerObj:hasTrait(CharacterTrait.INVENTIVE) then modifier = 1 end
+	if playerObj:isInventive() then modifier = 1 end
     -- learn all the growing seasons at Farming 10
 	if playerObj:getPerkLevel(Perks.Farming) + modifier > 9 then
         for typeOfSeed,props in pairs(farming_vegetableconf.props) do

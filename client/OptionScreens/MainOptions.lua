@@ -1,7 +1,11 @@
 require "ISUI/ISPanelJoypad"
 require "ISUI/ISButton"
-require "ISUI/ISControllerTestPanel"
+require "ISUI/Gamepad/ISControllerTestPanel"
+require "ISUI/Gamepad/ISControllerBindingsEditorPanel"
 require "ISUI/ISVolumeControl"
+require "ISUI/Style/ISStyle"
+require "OptionScreens/GameOption"
+require "gamepadBinding"
 
 require "defines"
 
@@ -11,169 +15,28 @@ MainOptions.keys = {};
 MainOptions.keyText = {};
 MainOptions.setKeybindDialog = nil;
 MainOptions.keyBindingLength = 0;
+MainOptions.style = ISStyle:new()
+MainOptions.style:setFont("Small", UIFont.Small)
+MainOptions.style:setFont("Medium", UIFont.Medium)
+MainOptions.style:setFont("Large", UIFont.Large)
+MainOptions.style:setFont("ISLabel", UIFont.Medium)
+MainOptions.style:setFont("ISButton", UIFont.Small)
+MainOptions.style.buttonHeight = MainOptions.style:getFontHeight("ISButton") + 6
+MainOptions.style.labelHeight = MainOptions.style:getFontHeight("ISLabel") + 6
+MainOptions.style.borderSpacing = MainOptions.style.labelHeight / 10
+MainOptions.style.joypadTexSize = MainOptions.style.labelHeight
+MainOptions.style.buttonPadding = MainOptions.style.joypadTexSize + MainOptions.style.borderSpacing * 2
+MainOptions.style.initialY = MainOptions.style.borderSpacing + 1
 
-local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
-local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
-local UI_BORDER_SPACING = 10
-local BUTTON_HGT = FONT_HGT_SMALL + 6
-local LABEL_HGT = FONT_HGT_MEDIUM + 6
-local JOYPAD_TEX_SIZE = 32
-local BUTTON_PADDING = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
+local FONT_HGT_SMALL = MainOptions.style:getFontHeight("Small")
+local FONT_HGT_MEDIUM = MainOptions.style:getFontHeight("Medium")
+local FONT_HGT_LARGE = MainOptions.style:getFontHeight("Large")
+local UI_BORDER_SPACING = MainOptions.style.borderSpacing
+local BUTTON_HGT = MainOptions.style.buttonHeight
+local LABEL_HGT = MainOptions.style.labelHeight
+local BUTTON_PADDING = MainOptions.style.buttonPadding
+local INITIAL_Y = MainOptions.style.initialY
 local IMMOVABLE_OBJECTS = {} --objects in this table do not get moved when centring the elements on the page
-local INITIAL_Y = UI_BORDER_SPACING + 1
-
-local GameOption = ISBaseObject:derive("GameOption")
-local GameOptions = ISBaseObject:derive("GameOptions")
-
-function GameOption:new(name, control, arg1, arg2)
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	o.name = name
-	o.control = control
-	o.arg1 = arg1
-	o.arg2 = arg2
-	if control.isCombobox then
-		control.onChange = self.onChangeComboBox
-		control.target = o
-	end
-	if control.isTickBox then
-		control.changeOptionMethod = self.onChangeTickBox
-		control.changeOptionTarget = o
-	end
-	if control.isSlider then
-		control.targetFunc = self.onChangeVolumeControl
-		control.target = o
-	end
-	if control.Type == "ISTextEntryBox" then
-		control.onTextChange = function()
-			o.gameOptions:onChange(o)
-			if o.onChange then
-				o:onChange(control:getInternalText())
-			end
-		end
-	end
-	if control.Type == "ISSliderPanel" then
-		control.target = o
-		control.onValueChange = function(self, val)
-			self.gameOptions:onChange(self)
-			if self.onChange then
-				self:onChange(val)
-			end
-		end
-	end
-	return o
-end
-
-function GameOption:storeCurrentValue()
-end
-
-function GameOption:restoreOriginalValue()
-end
-
-function GameOption:toUI()
-	print('ERROR: option "'..self.name..'" missing toUI()')
-end
-
-function GameOption:apply()
-	print('ERROR: option "'..self.name..'" missing apply()')
-end
-
-function GameOption:resetLua()
-	MainOptions.instance.resetLua = true
-end
-
-function GameOption:restartRequired(oldValue, newValue)
-	if getCore():getOptionOnStartup(self.name) == nil then
-		getCore():setOptionOnStartup(self.name, oldValue)
-	end
-	if getCore():getOptionOnStartup(self.name) == newValue then
-		return
-	end
-	MainOptions.instance.restartRequired = true
-end
-
-function GameOption:onChangeComboBox(box)
-	self.gameOptions:onChange(self)
-	if self.onChange then
-		self:onChange(box)
-	end
-end
-
-function GameOption:onChangeSlider(value, control)
-	self.gameOptions:onChange(self)
-	if self.onChange then
-		self:onChange(control, value)
-	end
-end
-
-function GameOption:onChangeTickBox(index, selected)
-	self.gameOptions:onChange(self)
-	if self.onChange then
-		self:onChange(index, selected)
-	end
-end
-
-function GameOption:onChangeVolumeControl(control, volume)
-	self.gameOptions:onChange(self)
-	if self.onChange then
-		self:onChange(control, volume)
-	end
-end
-
-function GameOptions:add(option)
-	option.gameOptions = self
-	table.insert(self.options, option)
-end
-
-function GameOptions:get(optionName)
-	for _,option in ipairs(self.options) do
-		if option.name == optionName then
-			return option
-		end
-	end
-	return nil
-end
-
-function GameOptions:apply()
-	for _,option in ipairs(self.options) do
-		option:apply()
-	end
-	self.changed = false
-end
-
-function GameOptions:storeCurrentValues()
-	for _,option in ipairs(self.options) do
-		option:storeCurrentValue()
-	end
-end
-
-function GameOptions:restoreOriginalValues()
-	for _,option in ipairs(self.options) do
-		option:restoreOriginalValue()
-	end
-end
-
-function GameOptions:toUI()
-	for _,option in ipairs(self.options) do
-		option:toUI()
-	end
-	self.changed = false
-end
-
-function GameOptions:onChange(option)
-	self.changed = true
-end
-
-function GameOptions:new()
-	local o = {}
-	setmetatable(o, self)
-	self.__index = self
-	o.options = {}
-	o.changed = false
-	return o
-end
 
 function MainOptions:initialise()
 	ISPanelJoypad.initialise(self);
@@ -202,18 +65,6 @@ function MainOptions:setResolutionAndFullScreen()
 		local w,h = string.match(s, '(%d+) x (%d+)')
 		getCore():setResolutionAndFullScreen(tonumber(w), tonumber(h), fullscreen)
 	end
-end
-
-function MainOptions:ControllerReload(button)
-	reloadControllerConfigFiles()
-end
-
-function MainOptions:joypadSensitivityM(button)
-	self.controllerTestPanel:joypadSensitivityM()
-end
-
-function MainOptions:joypadSensitivityP(button)
-	self.controllerTestPanel:joypadSensitivityP()
 end
 
 function MainOptions:addTextPane(x,y,w,h)
@@ -417,6 +268,8 @@ function MainOptions:addPage(name)
 
 	self.mainPanel:addScrollBars();
 	self.tabs:addView(name, self.mainPanel)
+
+	return self.mainPanel
 end
 
 -- THESE TWO ARE ACTUALLY self.mainPanel's new render / prerender functions...
@@ -2897,148 +2750,8 @@ function MainOptions:addAccessibilityPanel()
 end
 
 function MainOptions:addControllerPanel()
-	local y = INITIAL_Y;
 	self.addY = 0
-
-	self:addPage(getText("UI_optionscreen_controller"))
-	local x = UI_BORDER_SPACING+1
-
-	-- CONTROLLER BUTTON STYLE
-	local label = ISLabel:new(x, y, BUTTON_HGT, getText("UI_optionscreen_ControllerButtonStyle"), 1, 1, 1, 1, UIFont.Small, true);
-	label:initialise();
-	self.mainPanel:addChild(label);
-	local controllerButtonStyle = ISComboBox:new(label:getRight()+UI_BORDER_SPACING, y, 200, BUTTON_HGT);
-	controllerButtonStyle:initialise();
-	controllerButtonStyle:addOption(getText("UI_optionscreen_ControllerButtonStyle1"));
-	controllerButtonStyle:addOption(getText("UI_optionscreen_ControllerButtonStyle2"));
-	self.mainPanel:addChild(controllerButtonStyle);
-	self.mainPanel:insertNewLineOfButtons(controllerButtonStyle)
-
-	gameOption = GameOption:new('UI_optionscreen_ControllerButtonStyle', controllerButtonStyle)
-	function gameOption.toUI(self)
-		local box = self.control
-		box.selected = getCore():getOptionControllerButtonStyle()
-	end
-	function gameOption.apply(self)
-		local box = self.control
-		if box.options[box.selected] and (getCore():getOptionControllerButtonStyle() ~= box.selected) then
-			getCore():setOptionControllerButtonStyle(box.selected)
-			self:resetLua()
-		end
-	end
-	self.gameOptions:add(gameOption)
-	y = y + BUTTON_HGT + UI_BORDER_SPACING
-
-	label = ISLabel:new(x, y, FONT_HGT_SMALL, getText("UI_optionscreen_controller_tip"), 1, 1, 1, 1, UIFont.Small, true)
-	label:initialise()
-	self.mainPanel:addChild(label)
-
-	local controllerTickBox = ISTickBox:new(x + UI_BORDER_SPACING, label:getY() + label:getHeight() + UI_BORDER_SPACING, BUTTON_HGT, BUTTON_HGT, "HELLO?")
-	controllerTickBox.choicesColor = {r=1, g=1, b=1, a=1}
-	controllerTickBox:initialise();
-	self.mainPanel:addChild(controllerTickBox)
-
-	for i = 0, getControllerCount()-1 do
-		if isControllerConnected(i) then
-			local name = getControllerName(i)
-			controllerTickBox:addOption(name, nil)
-		end
-	end
-
-	gameOption = GameOption:new('controllers', controllerTickBox)
-	function gameOption.toUI(self)
-		local box = self.control
-		box:clearOptions()
-		for i = 1,getControllerCount() do
-			if isControllerConnected(i-1) then
-				local name = getControllerName(i-1)
-				local guid = getControllerGUID(i-1)
-				local index = box:addOption(name, i-1)
-				local active = getCore():getOptionActiveController(guid)
-				box:setSelected(index, active)
-			end
-		end
-	end
-	function gameOption.apply(self)
-		local box = self.control
-		for i = 1,box:getOptionCount() do
-			local controllerIndex = box:getOptionData(i)
-			getCore():setOptionActiveController(controllerIndex, box:isSelected(i))
-		end
-	end
-	self.gameOptions:add(gameOption)
-
-	-- If any controller connected, must work at least one
-	local haveActiveController = false
-	for i = 1,getControllerCount() do
-		if isControllerConnected(i-1) then
-			local guid = getControllerGUID(i-1)
-			local active = getCore():getOptionActiveController(guid)
-			if active then
-				haveActiveController = true
-			end
-		end
-	end
-	if not haveActiveController and getControllerCount() > 0 then
-		getCore():setOptionActiveController(0, true)
-	end
-
-	y = controllerTickBox:getY() + controllerTickBox:getHeight()
-
-	local panel = ISPanel:new(x, y, self.width / 2 - x, 100)
-	panel:noBackground()
-	self.mainPanel:addChild(panel)
-	self.stuffBelowControllerTickbox = panel
-
-	local stuffBelowControllerTickboxY = UI_BORDER_SPACING
-
-	local btn = ISButton:new(0, stuffBelowControllerTickboxY, 120, BUTTON_HGT, getText("UI_optionscreen_controller_reload"), self, MainOptions.ControllerReload)
-	btn:initialise()
-	btn:instantiate()
-	self.stuffBelowControllerTickbox:addChild(btn)
-
-	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + BUTTON_HGT + UI_BORDER_SPACING
-
-	label = ISLabel:new(0, stuffBelowControllerTickboxY, FONT_HGT_MEDIUM, getText("UI_optionscreen_gamepad_sensitivity"), 1, 1, 1, 1, UIFont.Medium, true)
-	label:initialise()
-	self.stuffBelowControllerTickbox:addChild(label)
-
-	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + FONT_HGT_MEDIUM + UI_BORDER_SPACING
-
-	self.btnJoypadSensitivityM = ISButton:new(0, stuffBelowControllerTickboxY, BUTTON_HGT, BUTTON_HGT, "-", self, MainOptions.joypadSensitivityM)
-	self.btnJoypadSensitivityM:initialise()
-	self.btnJoypadSensitivityM:instantiate()
-	self.btnJoypadSensitivityM:setEnable(false)
-	self.stuffBelowControllerTickbox:addChild(self.btnJoypadSensitivityM)
-
-	local sensitivityText = getText("UI_optionscreen_select_gamepad")
-	self.labelJoypadSensitivity = ISLabel:new(self.btnJoypadSensitivityM:getX() + self.btnJoypadSensitivityM:getWidth() + UI_BORDER_SPACING + getTextManager():MeasureStringX(UIFont.Small, sensitivityText) / 2, stuffBelowControllerTickboxY, BUTTON_HGT, sensitivityText, 1, 1, 1, 1, UIFont.Small, true)
-	self.labelJoypadSensitivity.center = true
-	self.labelJoypadSensitivity:initialise()
-	self.stuffBelowControllerTickbox:addChild(self.labelJoypadSensitivity)
-
-	self.btnJoypadSensitivityP = ISButton:new(self.labelJoypadSensitivity:getX() + self.labelJoypadSensitivity:getWidth() / 2 + UI_BORDER_SPACING, stuffBelowControllerTickboxY, BUTTON_HGT, BUTTON_HGT, "+", self, MainOptions.joypadSensitivityP)
-	self.btnJoypadSensitivityP:initialise()
-	self.btnJoypadSensitivityP:instantiate()
-	self.btnJoypadSensitivityP:setEnable(false)
-	self.stuffBelowControllerTickbox:addChild(self.btnJoypadSensitivityP)
-
-	stuffBelowControllerTickboxY = stuffBelowControllerTickboxY + BUTTON_HGT + UI_BORDER_SPACING
-
-	panel:setHeight(stuffBelowControllerTickboxY)
-
-	local panel = ISControllerTestPanel:new(self.width / 2, UI_BORDER_SPACING+1, self.width - UI_BORDER_SPACING+1 - (self.width / 2), self.mainPanel.height - (UI_BORDER_SPACING+1)*2)
-	panel:setAnchorRight(true)
-	panel:setAnchorBottom(true)
-	panel.drawBorder = true
-	panel.mainOptions = self
-	panel:initialise()
-	self.mainPanel:addChild(panel)
-	self.controllerTestPanel = panel
-
-	self.mainPanel:insertNewLineOfButtons(controllerTickBox, self.controllerTestPanel.combo)
-	self.mainPanel:insertNewLineOfButtons(btn)
-	self.mainPanel:insertNewLineOfButtons(self.btnJoypadSensitivityM, self.btnJoypadSensitivityP)
+	self.controllerTab = GameOptionControllerTab:new(self, self:addPage(getText("UI_optionscreen_controller")))
 end
 
 function MainOptions:addMultiplayerPanel()
@@ -3713,6 +3426,10 @@ function MainOptions:onConfirmMonitorSettingsClick(button, closeAfter)
 	if closeAfter then
 		self:close()
 	end
+
+    if not MainScreen.instance.inGame then
+        getCore():DelayResetLua("default", closeAfter and "optionsChangedAccepted" or "optionsChangedApplied")
+    end
 end
 
 function MainOptions:showRestartRequiredDialog(closeAfter)
@@ -4204,25 +3921,28 @@ function MainOptions.getAvailableLanguage()
 end
 
 function MainOptions:onResolutionChange(oldw, oldh, neww, newh)
-	self:centerKeybindings()
-	
-	local gameOption = self.gameOptions:get('resolution')
-	gameOption.control.options[1] = getText("UI_optionscreen_CurrentResolution", neww .. " x " .. newh)
+    local gameOption = self.gameOptions:get('resolution')
+    gameOption.control.options[1] = getText("UI_optionscreen_CurrentResolution", neww .. " x " .. newh)
 
-	local buttonOffsetX = (self.width - (self.backButton.width + self.acceptButton.width + self.saveButton.width + UI_BORDER_SPACING*2))/2
-	self.backButton:setX(buttonOffsetX)
-	self.acceptButton:setX(self.backButton:getRight()+UI_BORDER_SPACING)
-	self.saveButton:setX(self.acceptButton:getRight()+UI_BORDER_SPACING)
+    self:doLayout()
+end
 
-	self.controllerTestPanel:setX(self.width / 2)
-	self.controllerTestPanel:setWidth(self.width - UI_BORDER_SPACING+1 - (self.width / 2))
-	self.controllerTestPanel:onResolutionChange(oldw, oldh, neww, newh)
+function MainOptions:doLayout()
+	DebugType.ISUI:trace("MainOptions:doLayout")
+    ISPanelJoypad.doLayout(self)
 
-	self:centerTabChildrenX(getText("UI_optionscreen_display"))
-	self:centerTabChildrenX(getText("UI_optionscreen_UI"))
-	self:centerTabChildrenX(getText("UI_optionscreen_audio"))
-	self:centerTabChildrenX(getText("UI_optionscreen_accessibility"))
-	self:centerTabChildrenX(getText("UI_optionscreen_multiplayer"))
+    self:centerKeybindings()
+
+    local buttonOffsetX = (self.width - (self.backButton.width + self.acceptButton.width + self.saveButton.width + UI_BORDER_SPACING*2))/2
+    self.backButton:setX(buttonOffsetX)
+    self.acceptButton:setX(self.backButton:getRight()+UI_BORDER_SPACING)
+    self.saveButton:setX(self.acceptButton:getRight()+UI_BORDER_SPACING)
+
+    self:centerTabChildrenX(getText("UI_optionscreen_display"))
+    self:centerTabChildrenX(getText("UI_optionscreen_UI"))
+    self:centerTabChildrenX(getText("UI_optionscreen_audio"))
+    self:centerTabChildrenX(getText("UI_optionscreen_accessibility"))
+    self:centerTabChildrenX(getText("UI_optionscreen_multiplayer"))
 end
 
 function MainOptions:centerKeybindings()
@@ -4367,8 +4087,8 @@ function MainOptions.OnGamepadConnect(index)
 	local gameOption = MainOptions.instance.gameOptions:get("controllers")
 	if gameOption then
 		gameOption:toUI()
-		if MainOptions.instance.stuffBelowControllerTickbox then
-			MainOptions.instance.stuffBelowControllerTickbox:setY(gameOption.control:getBottom())
+		if MainOptions.instance.controllerCustomizationContainerPanel then
+			MainOptions.instance.controllerCustomizationContainerPanel:setY(gameOption.control:getBottom())
 		end
 	end
 	if MainOptions.instance.controllerTestPanel then
@@ -4382,8 +4102,8 @@ function MainOptions.OnGamepadDisconnect(index)
 	if gameOption then
 		gameOption:toUI()
 		gameOption:toUI()
-		if MainOptions.instance.stuffBelowControllerTickbox then
-			MainOptions.instance.stuffBelowControllerTickbox:setY(gameOption.control:getBottom())
+		if MainOptions.instance.controllerCustomizationContainerPanel then
+			MainOptions.instance.controllerCustomizationContainerPanel:setY(gameOption.control:getBottom())
 		end
 	end
 	if MainOptions.instance.controllerTestPanel then

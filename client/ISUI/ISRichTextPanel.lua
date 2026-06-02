@@ -684,7 +684,12 @@ function ISRichTextPanel:render()
 		self:drawRect(0, self:getScrollHeight() - self.marginBottom, self.width, 1, 1,1,1,1)
 	end
 
-	if self.clip then self:clearStencilRect() end
+	if self.clip then
+        self:clearStencilRect()
+        if self.doRepaintStencil then
+            self:repaintStencilRect(0, 0, self.width, self.height)
+        end
+    end
 
     self:updateAutoScroll()
 end

@@ -75,7 +75,6 @@ function ISAddAnimalInTrailer:complete()
 		end
 		if self.vehicle:getAreaDist("AnimalEntry", self.animal:getSquare():getX(), self.animal:getSquare():getY(), self.animal:getSquare():getZ()) <= distCheck then
 			self.vehicle:addAnimalInTrailer(self.animal)
-			sendAddAnimalInTrailer(self.animal, self.character, self.vehicle)
 		end
 	end
 

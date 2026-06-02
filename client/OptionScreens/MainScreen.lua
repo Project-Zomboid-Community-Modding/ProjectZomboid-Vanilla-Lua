@@ -359,7 +359,7 @@ function MainScreen:instantiate()
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },
-        { self.serverSettingsScreen, 0.5, 0.8, 960 },
+        { self.serverSettingsScreen, 0.6, 0.8, 960 },
     }
 
     for _,ui in ipairs(uis) do
@@ -1961,7 +1961,7 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },
-        { self.serverSettingsScreen, 0.5, 0.8, 960 },
+        { self.serverSettingsScreen, 0.6, 0.8, 960 },
 	}
 
 	for _,ui in ipairs(uis) do

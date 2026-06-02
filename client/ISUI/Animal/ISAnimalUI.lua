@@ -421,7 +421,7 @@ function ISAnimalUI:create()
     self.genderBtn:setVisible(AnimalContextMenu.cheat);
     self:addChild(self.genderBtn);
 
-    local infoTxt = getText("IGUI_AnimalUI_Info");
+    local infoTxt = getText("IGUI_AnimalUI_Info") .. " ";
     if not self.animal:isBaby() then
         infoTxt = infoTxt .. getText("IGUI_AnimalUI_Info_" .. self.animal:getAnimalType());
     else

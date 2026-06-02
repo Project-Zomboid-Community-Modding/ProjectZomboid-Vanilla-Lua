@@ -55,16 +55,22 @@ function SurvivalGuide:createChildren()
     self.videoRichText:setAnchorsTBLR(true, false, true, false)
     self.videoRichText.autosetheight = false
     self.videoRichText.clip = true
+    self.videoRichText.doRepaintStencil = true
     self.videoRichText:setMargins(0, 0, 0, 0)
     self.videoRichText.blockMouseWheel = true
     self:addChild(self.videoRichText)
+
+    local scrollbarWid = 13
 
     self.descriptionRichText = ISRichTextPanel:new(self.listBox:getRight(), self.videoRichText:getBottom(), self.videoRichText:getWidth(), self.listBox:getHeight() - self.videoRichText:getHeight())
     self.descriptionRichText:initialise()
     self.descriptionRichText:setAnchorsTBLR(false, true, true, false)
     self.descriptionRichText.autosetheight = false
-    self.descriptionRichText:setMargins(10, 10, 10, 0)
+    self.descriptionRichText:setMargins(10, 10, 10 + scrollbarWid, 0)
+    self.descriptionRichText.clip = true
+    self.descriptionRichText.doRepaintStencil = true
     self:addChild(self.descriptionRichText)
+    self.descriptionRichText:addScrollBars()
 
     local textWid = getTextManager():MeasureStringX(UIFont.NewSmall, getText("IGUI_Tutorial_ShowGuide"))
     self.showGuideTickBox = ISTickBox:new(UI_BORDER_SPACING + 1, self.height - BTN_HEIGHT - 2, textWid + 30, BTN_HEIGHT, "", self, SurvivalGuide.onClickShowSurvivalGuide)
@@ -147,6 +153,11 @@ end
 function SurvivalGuide:prerender()
     ISCollapsableWindowJoypad.prerender(self)
     self:drawRectBorder(0, self.listBox:getBottom(), self:getWidth(), self:getHeight() - self.listBox:getBottom(), 1, 1, 1, 1)
+    local playerNum = 0
+    local joypadData = getJoypadData(playerNum)
+    if joypadData ~= nil then
+        self.descriptionRichText:doRightJoystickScrolling(joypadData, 20, 10)
+    end
 end
 
 function SurvivalGuide:populateList()
@@ -241,8 +252,10 @@ function createSurvivalGuide()
         SurvivalGuide.instance:setVisible(false)
     end
 
-    if JoypadState.players[1] then
-        SurvivalGuide.instance:onGainJoypadFocus(JoypadState.players[1])
+    if SurvivalGuide.instance:isVisible() then
+        if JoypadState.players[1] then
+            SurvivalGuide.instance:onGainJoypadFocus(JoypadState.players[1])
+        end
     end
 end
 
@@ -275,6 +288,8 @@ function SurvivalGuide.openEntry(entry)
         createSurvivalGuide()
     end
     self = SurvivalGuide.instance
+    self:populateList()
+    self:restorePosition()
     local joypadData = JoypadState.players[1]
     if joypadData then
         self.previousJoypadFocus = joypadData.focus

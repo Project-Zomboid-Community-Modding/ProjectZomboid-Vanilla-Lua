@@ -8,6 +8,7 @@ end
 
 function ISPanel:noBackground()
 	self.background = false;
+	return self
 end
 
 function ISPanel:close()
@@ -46,7 +47,7 @@ function ISPanel:onMouseUpOutside(x, y)
 end
 
 function ISPanel:onMouseDown(x, y)
-    if not self.moveWithMouse then return true; end
+    if not self.moveWithMouse then return self:isWantMouseEvents() end
     if not self:getIsVisible() then
         return;
     end
@@ -97,6 +98,7 @@ function ISPanel:new (x, y, width, height)
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
+    o.SuperType = ISUIElement
 	o.x = x;
 	o.y = y;
 	o.background = true;

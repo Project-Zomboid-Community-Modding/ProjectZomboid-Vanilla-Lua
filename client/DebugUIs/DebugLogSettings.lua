@@ -4,6 +4,9 @@ DebugLogSettings = ISCollapsableWindow:derive("DebugLogSettings")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
+local LOG_SEVERITY_UNSPECIFIED = "unspecified"
+
+-----
 
 local HorizontalLine = ISPanel:derive("HorizontalLine")
 
@@ -19,21 +22,38 @@ function HorizontalLine:new(x, y, width)
 	return o
 end
 
+-----
+
 function DebugLogSettings:onComboBox(comboBox, debugType)
 	local logSeverity = comboBox:getOptionData(comboBox.selected)
-	debugType:setLogSeverity(logSeverity)
-	DebugLog:save()
+	if logSeverity == LOG_SEVERITY_UNSPECIFIED then
+		DebugLog.updateSelectedProfile(debugType, nil)
+	else
+		debugType:setLogSeverity(logSeverity)
+		DebugLog.updateSelectedProfile(debugType, logSeverity)
+	end
+end
+
+function DebugLogSettings:onSetProfile(comboBox)
+	local profileOrAlias = comboBox:getOptionData(comboBox.selected)
+	DebugLog.invokeProfile(profileOrAlias)
+	self:syncCombos()
 end
 
 function DebugLogSettings:onSetAll(comboBox)
 	local logSeverity = comboBox:getOptionData(comboBox.selected)
-	local debugTypes = DebugLog.getDebugTypes()
-	for i=1,debugTypes:size() do
-		local debugType = debugTypes:get(i-1)
-		debugType:setLogSeverity(logSeverity)
+	if logSeverity == LOG_SEVERITY_UNSPECIFIED then
+		DebugLog.updateSelectedProfileAll(nil)
+	else
+		DebugLog.updateSelectedProfileAll(logSeverity)
 	end
+	DebugLog.invokeSelectedProfile()
 	comboBox.selected = 0 -- no selected option
 	self:syncCombos()
+end
+
+function DebugLogSettings:onSave(button)
+	DebugLog.writeConfigFile()
 end
 
 function DebugLogSettings:createChildren()
@@ -50,10 +70,35 @@ function DebugLogSettings:createChildren()
 	local x = UI_BORDER_SPACING
 	local y = self:titleBarHeight() + 6
 
-	local comboBox = ISComboBox:new(x, y, comboWidth, comboHgt, self, self.onSetAll)
+	local comboBox = ISComboBox:new(x, y, comboWidth, comboHgt, self, self.onSetProfile)
+	self:addChild(comboBox)
+	comboBox.noSelectionText = "PROFILE"
+	local minWidth = getTextManager():MeasureStringX(UIFont.Small, comboBox.noSelectionText)
+	local selected = 0
+	local profileList = DebugLog.getProfileNames()
+	for i=1,profileList:size() do
+		local profileName = profileList:get(i-1)
+		comboBox:addOptionWithData(profileName, profileName)
+		if profileName == DebugLog.getSelectedProfileName() then
+			selected = comboBox:getOptionCount()
+		end
+	end
+	local aliasList = DebugLog.getProfileAliases()
+	for i=1,aliasList:size() do
+		local alias = "$"..aliasList:get(i-1)
+		comboBox:addOptionWithData(alias, alias)
+		if alias == DebugLog.getSelectedProfileName() then
+			selected = comboBox:getOptionCount()
+		end
+	end
+	comboBox.selected = selected
+	comboBox:setWidthToOptions(10 + minWidth + 5 + comboBox.image:getWidthOrig() + 3)
+
+	comboBox = ISComboBox:new(comboBox:getRight() + 20, y, comboWidth, comboHgt, self, self.onSetAll)
 	self:addChild(comboBox)
 	comboBox.noSelectionText = "SET ALL TO"
 	local minWidth = getTextManager():MeasureStringX(UIFont.Small, comboBox.noSelectionText)
+	comboBox:addOptionWithData("Unspecified", LOG_SEVERITY_UNSPECIFIED)
 	local logSeverityList = LogSeverity.getValueList()
 	for i=1,logSeverityList:size() do
 		local logSeverity = logSeverityList:get(i-1)
@@ -61,7 +106,12 @@ function DebugLogSettings:createChildren()
 	end
 	comboBox.selected = 0
 	comboBox:setWidthToOptions(10 + minWidth + 5 + comboBox.image:getWidthOrig() + 3)
+	self.comboSetAll = comboBox
+
+	local button = ISButton:new(comboBox:getRight() + 20, y, 20, comboHgt, "SAVE", self, self.onSave)
+	self:addChild(button)
 	y = comboBox:getBottom() + UI_BORDER_SPACING
+
 	local horizontalLine = HorizontalLine:new(x, y, 100)
 	self:addChild(horizontalLine)
 	y = horizontalLine:getBottom() + UI_BORDER_SPACING
@@ -73,6 +123,7 @@ function DebugLogSettings:createChildren()
 		self:addChild(label)
 		local comboBox = ISComboBox:new(x + maxWidth + 8, y, comboWidth, comboHgt, self, self.onComboBox, debugType)
 		self:addChild(comboBox)
+		comboBox:addOptionWithData("Unspecified", LOG_SEVERITY_UNSPECIFIED)
 		local logSeverityList = LogSeverity.getValueList()
 		for i=1,logSeverityList:size() do
 			local logSeverity = logSeverityList:get(i-1)
@@ -96,15 +147,25 @@ function DebugLogSettings:setVisible(bVisible)
 	ISCollapsableWindow.setVisible(self, bVisible)
 	if bVisible then
 		self:syncCombos()
-	else
-		DebugLog.save()
 	end
 end
 
 function DebugLogSettings:syncCombos()
+	local profileOrAlias = DebugLog.getSelectedProfileName()
+	local enabled = profileOrAlias ~= nil and profileOrAlias ~= "" and not luautils.stringStarts(profileOrAlias, "$")
+	self.comboSetAll:setEnabled(enabled)
 	for debugType,comboBox in pairs(self.comboLookup) do
-		local logSeverity = debugType:getLogSeverity()
+		local logSeverity
+		if profileOrAlias == nil then
+			logSeverity = debugType:getLogSeverity()
+		else
+			logSeverity = DebugLog.getLogSeverityForSelectedProfile(debugType)
+			if logSeverity == nil then
+				logSeverity = LOG_SEVERITY_UNSPECIFIED
+			end
+		end
 		comboBox:selectData(logSeverity)
+		comboBox:setEnabled(enabled)
 	end
 end
 

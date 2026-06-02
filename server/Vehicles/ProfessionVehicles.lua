@@ -2,7 +2,7 @@ ProfessionVehicles = {}
 
 ProfessionVehicles.OnCreateRegion = {}
 
-ProfessionVehicles.OnCreateRegion = function(region, square, direction)
+ProfessionVehicles.OnCreateRegion  = function(region, square, direction)
     if region == "General" then return end
     local vList = ProfessionVehicles[region]
     if not vList then return end

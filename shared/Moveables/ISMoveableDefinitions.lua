@@ -1,4 +1,4 @@
-local instance = nil;
+local instance  = nil;
 ISMoveableDefinitions = {};
 ISMoveableDefinitions.cheat = false;
 

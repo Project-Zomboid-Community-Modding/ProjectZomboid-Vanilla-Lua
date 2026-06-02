@@ -14,9 +14,9 @@ ISBaseIcon.updateEvents = {
 	{ method = "updateModifiers",           tick = 30 },
 };
 
-local pinIconBlank = getTexture("media/textures/Foraging/pinIconBlank.png");
-local pinIconUnknown = getTexture("media/textures/Foraging/pinIconUnknown.png");
-local poisonIcon = getTexture("media/ui/SkullPoison.png");
+local pinIconBlank      = getTexture("media/textures/Foraging/pinIconBlank.png");
+local pinIconUnknown    = getTexture("media/textures/Foraging/pinIconUnknown.png");
+local poisonIcon        = getTexture("media/ui/SkullPoison.png");
 local math = math;
 local getTimestampMs = getTimestampMs;
 
@@ -296,18 +296,18 @@ end
 
 function ISBaseIcon:updateModifiers()
 	local character = self.character;
-	self.modifiers.levelBonus = forageSystem.getLevelVisionBonus(self.perkLevel);
-	self.modifiers.traitBonus = forageSystem.getTraitVisionBonus(character);
-	self.modifiers.professionBonus = forageSystem.getProfessionVisionBonus(character);
-	self.modifiers.panic = forageSystem.getPanicPenalty(character);
-	self.modifiers.body = forageSystem.getBodyPenalty(character);
-	self.modifiers.exhaustion = forageSystem.getExhaustionPenalty(character);
-	self.modifiers.clothing = forageSystem.getClothingPenalty(character);
-	self.modifiers.difficulty = forageSystem.getDifficultyPenalty(self.perkLevel);
-	self.modifiers.size = forageSystem.getItemSizePenalty(self.itemSize);
-	self.modifiers.weather = forageSystem.getWeatherPenalty(character, self.square);
-	self.modifiers.categoryBonus = forageSystem.getCategoryBonus(character, self.catDef);
-	self.modifiers.hungerBonus = forageSystem.getHungerBonus(character, self.itemDef);
+	self.modifiers.levelBonus			= forageSystem.getLevelVisionBonus(self.perkLevel);
+	self.modifiers.traitBonus			= forageSystem.getTraitVisionBonus(character);
+	self.modifiers.professionBonus		= forageSystem.getProfessionVisionBonus(character);
+	self.modifiers.panic 				= forageSystem.getPanicPenalty(character);
+	self.modifiers.body					= forageSystem.getBodyPenalty(character);
+	self.modifiers.exhaustion			= forageSystem.getExhaustionPenalty(character);
+	self.modifiers.clothing				= forageSystem.getClothingPenalty(character);
+	self.modifiers.difficulty 			= forageSystem.getDifficultyPenalty(self.perkLevel);
+	self.modifiers.size 				= forageSystem.getItemSizePenalty(self.itemSize);
+	self.modifiers.weather				= forageSystem.getWeatherPenalty(character, self.square);
+	self.modifiers.categoryBonus		= forageSystem.getCategoryBonus(character, self.catDef);
+	self.modifiers.hungerBonus			= forageSystem.getHungerBonus(character, self.itemDef);
 end
 
 function ISBaseIcon:doVisionCheck()
@@ -317,36 +317,36 @@ function ISBaseIcon:doVisionCheck()
 	local maxRadius = self.maxRadius;
 	local minRadius = self.minRadius;
 	--
-	local levelBonus = self.modifiers.levelBonus;
-	local traitBonus = self.modifiers.traitBonus;
-	local professionBonus = self.modifiers.professionBonus;
+	local levelBonus        = self.modifiers.levelBonus;
+	local traitBonus        = self.modifiers.traitBonus;
+	local professionBonus   = self.modifiers.professionBonus;
 	--
 	local viewDistance = minRadius;
 	--
-	maxRadius = maxRadius + professionBonus + traitBonus;
-	viewDistance = viewDistance + levelBonus;
-	viewDistance = viewDistance + traitBonus;
-	viewDistance = viewDistance + professionBonus;
-	viewDistance = clamp(viewDistance, minRadius, maxRadius);
+	maxRadius       = maxRadius + professionBonus + traitBonus;
+	viewDistance    = viewDistance + levelBonus;
+	viewDistance    = viewDistance + traitBonus;
+	viewDistance    = viewDistance + professionBonus;
+	viewDistance    = clamp(viewDistance, minRadius, maxRadius);
 	--
 	local modifiers = {
-		panic = self.modifiers.panic,
-		body = self.modifiers.body,
+		panic 		= self.modifiers.panic,
+		body		= self.modifiers.body,
 		exhaustion	= self.modifiers.exhaustion,
 		clothing	= self.modifiers.clothing,
-		difficulty = self.modifiers.difficulty,
-		size = self.modifiers.size,
-		weather = self.modifiers.weather,
+		difficulty 	= self.modifiers.difficulty,
+		size 		= self.modifiers.size,
+		weather 	= self.modifiers.weather,
 	};
 	--
 	for _, modifier in pairs(modifiers) do viewDistance = viewDistance * modifier; end;
 	--
 	--only the highest modifier applies for aim or sneak
-	local aiming = math.max(forageSystem.getAimVisionBonus(character) * self.manager.aimMulti, 1);
-	local sneaking = math.max(forageSystem.getSneakVisionBonus(character) * self.manager.sneakMulti, 1);
+	local aiming    = math.max(forageSystem.getAimVisionBonus(character) * self.manager.aimMulti, 1);
+	local sneaking  = math.max(forageSystem.getSneakVisionBonus(character) * self.manager.sneakMulti, 1);
 
 	local categoryBonus = self.modifiers.categoryBonus;
-	local hungerBonus = self.modifiers.hungerBonus;
+	local hungerBonus   = self.modifiers.hungerBonus;
 
 	local visionBonus = math.max(aiming, sneaking) * categoryBonus * hungerBonus;
 
@@ -802,8 +802,8 @@ function ISBaseIcon:initGridSquare()
 		if square then
 			self.square = square;
 			self.adjacentSquares = {
-				north = square:getN(),
-				south = square:getS(),
+				north   = square:getN(),
+				south   = square:getS(),
 				east	= square:getE(),
 				west	= square:getW(),
 			};
@@ -850,124 +850,124 @@ function ISBaseIcon:new(_manager, _icon)
 	setmetatable(o, self)
 	self.__index = self;
 
-	o.width = 30;
-	o.height = 45;
-	o.baseWidth = o.width;
-	o.baseHeight = o.height;
+	o.width                 = 30;
+	o.height                = 45;
+	o.baseWidth             = o.width;
+	o.baseHeight            = o.height;
 
-	o.iconClass = "ISBaseIcon";
+	o.iconClass             = "ISBaseIcon";
 
-	o.manager = _manager;
-	o.character = _manager.character;
-	o.player = _manager.character:getPlayerNum();
-	o.perkLevel = _manager.perkLevel;
+	o.manager               = _manager;
+	o.character             = _manager.character;
+	o.player                = _manager.character:getPlayerNum();
+	o.perkLevel             = _manager.perkLevel;
 
-	o.icon = _icon;
-	o.iconID = _icon.id;
-	o.xCoord = _icon.x or 0;
-	o.yCoord = _icon.y or 0;
-	o.zCoord = _icon.z or 0;
+	o.icon                  = _icon;
+	o.iconID                = _icon.id;
+	o.xCoord                = _icon.x or 0;
+	o.yCoord                = _icon.y or 0;
+	o.zCoord                = _icon.z or 0;
 
-	o.zSize = 10;
+	o.zSize                 = 10;
 
-	o.texture = pinIconBlank;
-	o.textureColor = {r = 1, g = 1, b = 1, a = 0};
-	o.alphaTarget = 0;
+	o.texture               = pinIconBlank;
+	o.textureColor          = {r = 1, g = 1, b = 1, a = 0};
+	o.alphaTarget           = 0;
 
-	o.square = nil;
-	o.adjacentSquares = {};
+	o.square                = nil;
+	o.adjacentSquares       = {};
 
-	o.spotTimer = 0;
-	o.spotTimerMax = 10000;
-	o.lastTimestamp = 0;
-	o.currentTimestamp = 0;
+	o.spotTimer             = 0;
+	o.spotTimerMax          = 10000;
+	o.lastTimestamp         = 0;
+	o.currentTimestamp      = 0;
 
-	o.lastSeenHours = 0;
-	o.onSquareDistance = 1.5;
-	o.darkVisionRadius = forageSystem.darkVisionRadius;
-	o.minRadius = forageSystem.minVisionRadius;
-	o.maxRadius = forageSystem.maxVisionRadius;
-	o.maxRadiusCap = forageSystem.visionRadiusCap;
+	o.lastSeenHours         = 0;
+	o.onSquareDistance      = 1.5;
+	o.darkVisionRadius      = forageSystem.darkVisionRadius;
+	o.minRadius             = forageSystem.minVisionRadius;
+	o.maxRadius             = forageSystem.maxVisionRadius;
+	o.maxRadiusCap          = forageSystem.visionRadiusCap;
 
-	o.distanceToPlayer = 0;
-	o.viewDistance = 0;
-	o.identifyDistance = 0;
+	o.distanceToPlayer      = 0;
+	o.viewDistance          = 0;
+	o.identifyDistance      = 0;
 
-	o.isDarknessCapped = false;
+	o.isDarknessCapped      = false;
 
-	o.isNoticed = false;
-	o.isSeen = false;
-	o.isSeenThisUpdate = false;
+	o.isNoticed             = false;
+	o.isSeen                = false;
+	o.isSeenThisUpdate      = false;
 
-	o.identified = true;
+	o.identified            = true;
 
-	o.isBeingRemoved = false;
+	o.isBeingRemoved        = false;
 
-	o.renderItemTexture = true;
-	o.isBonusIcon = false;
-	o.isForageable = true;
+	o.renderItemTexture     = true;
+	o.isBonusIcon           = false;
+	o.isForageable          = true;
 
-	o.canMoveVertical = false;
+	o.canMoveVertical       = false;
 
-	o.posChanges = 0;
-	o.maxPosChanges = 10;
+	o.posChanges            = 0;
+	o.maxPosChanges         = 10;
 
-	o.onMouseDoubleClick = ISBaseIcon.doPickup;
+	o.onMouseDoubleClick    = ISBaseIcon.doPickup;
 
-	o.modifiers = {
-		levelBonus = 0,
-		traitBonus = 0,
-		professionBonus = 0,
-		panic = 0,
-		body = 0,
-		exhaustion = 0,
-		clothing = 0,
-		difficulty = 0,
-		size = 0,
-		weather = 0,
-		categoryBonus = 0,
-		hungerBonus = 0,
+	o.modifiers				= {
+		levelBonus			= 0,
+		traitBonus			= 0,
+		professionBonus		= 0,
+		panic 				= 0,
+		body				= 0,
+		exhaustion			= 0,
+		clothing			= 0,
+		difficulty 			= 0,
+		size 				= 0,
+		weather				= 0,
+		categoryBonus		= 0,
+		hungerBonus			= 0,
 	};
 
-	o.viewAngle = 30;
-	o.expandView = 0;
-	o.expandViewStep = 0.5;
+	o.viewAngle             = 30;
+	o.expandView            = 0;
+	o.expandViewStep        = 0.5;
 
-	o.textureCenter = 0;
-	o.pinOffset = 0;
+	o.textureCenter         = 0;
+	o.pinOffset             = 0;
 
-	o.itemType = _icon.itemType;
-	o.itemSize = _icon.itemSize or 1.0;
+	o.itemType              = _icon.itemType;
+	o.itemSize              = _icon.itemSize or 1.0;
 
-	o.moveState = "idle";
-	o.moveTargetX = o.xCoord;
-	o.moveTargetY = o.yCoord;
+	o.moveState             = "idle";
+	o.moveTargetX           = o.xCoord;
+	o.moveTargetY           = o.yCoord;
 
-	o.visionData = {};
+	o.visionData            = {};
 
-	o.managedMarkers = ISBaseIcon.managedMarkers;
-	o.worldMarker = nil;
-	o.isoMarker = nil;
+	o.managedMarkers        = ISBaseIcon.managedMarkers;
+	o.worldMarker           = nil;
+	o.isoMarker             = nil;
 
-	o.itemList = nil;
-	o.itemCount = 1;
-	o.isKnownPoison = false;
+	o.itemList              = nil;
+	o.itemCount             = 1;
+	o.isKnownPoison         = false;
 
-	o.updateTick = 0;
-	o.updateTickMax = 200;
-	o.updateEvents = ISBaseIcon.updateEvents;
+	o.updateTick			= 0;
+	o.updateTickMax			= 200;
+	o.updateEvents          = ISBaseIcon.updateEvents;
 
-	o.bounce = true;
-	o.bounceStep = 1 * math.pi;
-	o.bounceMax = 2 * math.pi;
-	o.bounceHeight = 24;
-	o.bounceSpeed = 0.1;
+	o.bounce				= true;
+	o.bounceStep			= 1 * math.pi;
+	o.bounceMax				= 2 * math.pi;
+	o.bounceHeight			= 24;
+	o.bounceSpeed			= 0.1;
 
 	o.canRollForSearchFocus	= false;
 
-	o.itemRotation = ZombRand(360);
+	o.itemRotation			= ZombRand(360);
 
-	o.distanceSnapshot = -1;
+	o.distanceSnapshot		= -1;
 
 	o:initialise();
 	return o;

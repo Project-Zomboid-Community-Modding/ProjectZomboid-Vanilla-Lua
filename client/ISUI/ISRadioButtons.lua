@@ -291,7 +291,10 @@ function ISRadioButtons:forceClick()
 end
 
 function ISRadioButtons:new (x, y, width, height, target, changeOptionFunc, arg1, arg2, arg3, arg4)
-	local o = ISPanel.new(self, x, y, width, height)
+	local o = ISPanel:new(x, y, width, height)
+	setmetatable(o, self)
+    self.__index = self
+    o.SuperType = ISPanel
 	o:noBackground()
 	o.textureCircle = getTexture("media/ui/RadioButtonCircle.png")
 	o.textureIndicator = getTexture("media/ui/RadioButtonIndicator.png")

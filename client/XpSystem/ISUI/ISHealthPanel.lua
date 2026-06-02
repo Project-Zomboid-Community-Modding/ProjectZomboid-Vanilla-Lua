@@ -355,13 +355,13 @@ function ISHealthPanel:update()
         if self:wasRemotePlayerRecreated() then
             self.parent:removeFromUIManager()
             if self.joyfocus then self.joyfocus.focus = nil end
-            self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
+            self:tryStopReceivingBodyDamageUpdates();
             return
         end
         if not self.parent:getIsVisible() then
             self.parent:removeFromUIManager()
             if self.joyfocus then self.joyfocus.focus = nil end
-            self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
+            self:tryStopReceivingBodyDamageUpdates();
             return
         end
         if (not isMultiplayer() or not self:getDoctor():getRole():hasCapability(Capability.CanMedicalCheat)) and
@@ -372,7 +372,7 @@ function ISHealthPanel:update()
                 math.abs(self.character:getY() - self.characterY) > 0.5) then
             self.parent:removeFromUIManager()
             if self.joyfocus then self.joyfocus.focus = nil end
-            self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
+            self:tryStopReceivingBodyDamageUpdates();
             return
         end
 		if (math.abs(self.otherPlayer:getX() - self.character:getX()) > 2 or
@@ -408,6 +408,13 @@ function ISHealthPanel:update()
     else
         self.textRight = 0
         self.listbox.textRight = 0
+    end
+end
+
+function ISHealthPanel:tryStopReceivingBodyDamageUpdates()
+    if self.otherPlayer then
+        self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient());
+        self.otherPlayer = nil;
     end
 end
 
@@ -913,7 +920,7 @@ function ISHealthPanel:onJoypadDown(button)
         if button == Joypad.BButton then
             self.parent:removeFromUIManager()
             setJoypadFocus(self.joyfocus.player, nil)
-            self:getDoctor():stopReceivingBodyDamageUpdates(self:getPatient())
+            self:tryStopReceivingBodyDamageUpdates();
         end
         if button == Joypad.AButton then
             local listItem = self.listbox.items[self.listbox.selected]

@@ -283,6 +283,7 @@ function ISTickBox:new (x, y, width, height, name, changeOptionTarget, changeOpt
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
+	o.SuperType = ISPanel
 	o.x = x;
 	o.y = y;
 	o.width = width;
@@ -317,6 +318,7 @@ function ISTickBox:new (x, y, width, height, name, changeOptionTarget, changeOpt
 	o.enable = true;
 	o.disabledOptions = {};
 	o.optionsIndex = {};
+	o.autoAddJoypadButton = true
 	return o
 end
 

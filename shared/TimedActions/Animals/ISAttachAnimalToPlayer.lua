@@ -39,14 +39,24 @@ end
 
 function ISAttachAnimalToPlayer:complete()
 	if not self.remove then
+		if self.animal:getData():getAttachedTree() then
+			self:takeRope()
+			self.animal:getData():setAttachedTree(nil);
+		end
 		self.character:getAttachedAnimals():add(self.animal);
-		self.animal:getData():setAttachedTree(nil);
 		self.animal:getData():setAttachedPlayer(self.character);
 	else
 		self.character:getAttachedAnimals():remove(self.animal);
 		self.animal:getData():setAttachedPlayer(nil);
 	end
 	return true
+end
+
+function ISAttachAnimalToPlayer:takeRope()
+	if self.character:isAnimalCheat() then return end
+	local item = self.character:getInventory():AddItem("Base.Rope")
+	if item == nil then return end
+	sendAddItemToContainer(self.character:getInventory(), item)
 end
 
 function ISAttachAnimalToPlayer:getDuration()

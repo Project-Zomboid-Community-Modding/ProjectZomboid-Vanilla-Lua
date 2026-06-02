@@ -61,7 +61,7 @@ function ISMoveableTools.isObjectMoveable(  _object )
             if moveProps.spriteProps:has("WallNW") or moveProps.spriteProps:has("WallN") or moveProps.spriteProps:has("WallW") then
                 local sprList = _object:getChildSprites();
                 if sprList then
-                    local list_size = sprList:size();
+                    local list_size 	= sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();

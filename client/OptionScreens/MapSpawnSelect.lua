@@ -313,24 +313,27 @@ end
 MapSpawnSelectSeedPanel = ISPanelJoypad:derive("MapSpawnSelectSeedPanel")
 
 function MapSpawnSelectSeedPanel:createChildren()
-	self.seedLabel = ISLabel:new(UI_BORDER_SPACING+1, UI_BORDER_SPACING / 2, BUTTON_HGT, getText("UI_advWorld_seed_label") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
+	self.seedLabel = ISLabel:new(UI_BORDER_SPACING, UI_BORDER_SPACING, BUTTON_HGT, getText("UI_advWorld_seed_label") .. ":", 1.0, 1.0, 1.0, 1.0, UIFont.Medium, true)
 	self.seedLabel:initialise()
 	self.seedLabel:instantiate()
 	self.seedLabel:setAnchorsTBLR(true, false, true, false)
 	self:addChild(self.seedLabel)
 
-	self.seedTextBox = ISTextEntryBox:new("", self.seedLabel:getWidth() + UI_BORDER_SPACING * 2, self.seedLabel.y, 150, BUTTON_HGT)
+	local btnWidth = JOYPAD_TEX_SIZE + UI_BORDER_SPACING * 2 + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
+	local randomButtonX = self:getRight() - btnWidth - UI_BORDER_SPACING * 2
+	local seedTextBoxX = self.seedLabel:getWidth() + UI_BORDER_SPACING * 2
+
+	self.seedTextBox = ISTextEntryBox:new("", seedTextBoxX, UI_BORDER_SPACING, randomButtonX - seedTextBoxX - UI_BORDER_SPACING, BUTTON_HGT)
 	self.seedTextBox.font = UIFont.Small
 	self.seedTextBox:initialise()
 	self.seedTextBox:instantiate()
 	self.seedTextBox:setOnlyText(true)
 	self.seedTextBox:setMaxTextLength(16)
 	self.seedTextBox:setAnchorsTBLR(true, false, true, false)
+	self.seedTextBox:setClearButton(true)
 	self:addChild(self.seedTextBox)
 
-	local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
-	local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
-	self.randomButton = ISButton:new(self.seedTextBox:getRight() + UI_BORDER_SPACING, self.seedLabel.y, btnWidth, BUTTON_HGT, getText("UI_advWorld_random_btn"), self, self.generateNewSeed)
+	self.randomButton = ISButton:new(randomButtonX, UI_BORDER_SPACING, btnWidth, BUTTON_HGT, getText("UI_advWorld_random_btn"), self, self.generateNewSeed)
 	self.randomButton:initialise()
 	self.randomButton:instantiate()
 	self.randomButton:setAnchorsTBLR(true, false, true, false)
@@ -340,6 +343,16 @@ function MapSpawnSelectSeedPanel:createChildren()
 	self.joypadIndexY = 1
 	self.joypadIndex = 1
 	self:insertNewLineOfButtons(self.seedTextBox, self.randomButton)
+end
+
+function MapSpawnSelectSeedPanel:onResolutionChange()
+	local btnWidth = JOYPAD_TEX_SIZE + UI_BORDER_SPACING * 2 + getTextManager():MeasureStringX(UIFont.Small, getText("UI_advWorld_random_btn"))
+	local randomButtonX = self:getRight() - btnWidth - UI_BORDER_SPACING * 2
+	local seedTextBoxX = self.seedLabel:getWidth() + UI_BORDER_SPACING * 2
+	self.seedTextBox:setX(seedTextBoxX)
+	self.seedTextBox:setWidth(randomButtonX - seedTextBoxX - UI_BORDER_SPACING)
+	self.randomButton:setX(randomButtonX)
+	self.randomButton:setWidth(btnWidth)
 end
 
 function MapSpawnSelectSeedPanel:render()
@@ -358,6 +371,15 @@ end
 function MapSpawnSelectSeedPanel:onLoseJoypadFocus(joypadData)
 	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
 	self:clearJoypadFocus(joypadData)
+end
+
+function MapSpawnSelectSeedPanel:onJoypadDown(button, joypadData)
+    if button == Joypad.BButton then
+        joypadData.focus = self.parent
+        updateJoypadFocus(joypadData)
+        return
+    end
+    ISPanelJoypad.onJoypadDown(self, button, joypadData)
 end
 
 function MapSpawnSelectSeedPanel:new(x, y, width, height)
@@ -662,13 +684,20 @@ function MapSpawnSelect:prerender()
 			focusOnEntry = true
 		end
 	end
+    local focusOnSeedPanel = self.seedPanel ~= nil and self.seedPanel.joyfocus
+    local focusOnScreenKeyboard = OnScreenKeyboard.IsVisible()
 	self.nextButton:setEnable(enable)
-	if self.ISButtonA and focusOnEntry then
+	if self.ISButtonA and (focusOnEntry or focusOnSeedPanel or focusOnScreenKeyboard) then
 		self.ISButtonA = nil
 		self.nextButton:clearJoypadButton()
-	elseif not self.ISButtonA and not focusOnEntry and self.joyfocus then
+	elseif not self.ISButtonA and not focusOnEntry and not focusOnSeedPanel and not focusOnScreenKeyboard and self.joyfocus then
 		self:setISButtonForA(self.nextButton)
 	end
+    if focusOnEntry or focusOnSeedPanel or focusOnScreenKeyboard then
+        self.backButton:clearJoypadButton()
+    elseif self.joyfocus then
+        self.listbox:setISButtonForB(self.backButton)
+    end
 end
 
 function MapSpawnSelect:render()
@@ -760,6 +789,7 @@ function MapSpawnSelect:recalculateMapSize()
         self.textEntry:setWidth(self.listbox:getRight() - self.textEntry.x)
         self.seedPanel:setWidth(self.listbox.width)
         self.seedPanel:setY(self.mapPanel:getBottom() - self.seedPanel:getHeight())
+        self.seedPanel:onResolutionChange()
         self.richText:setHeight(self.seedPanel:getY() - self.richText:getY() - UI_BORDER_SPACING)
     else
         self.richText:setHeight(self.mapPanel:getBottom() - self.richText:getY())
@@ -824,6 +854,20 @@ function MapSpawnSelect:onGainJoypadFocus(joypadData)
     updateJoypadFocus(joypadData)
     self.listbox:setISButtonForA(self.nextButton)
     self.listbox:setISButtonForB(self.backButton)
+end
+
+function MapSpawnSelect:onLoseJoypadFocus(joypadData)
+	ISPanelJoypad.onLoseJoypadFocus(self, joypadData)
+	self:clearJoypadFocus(joypadData)
+	self.backButton:clearJoypadButton()
+	self.nextButton:clearJoypadButton()
+end
+
+function MapSpawnSelect:onJoypadDown_Descendant(descendant, button, joypadData)
+    if descendant == self.textEntry and button == Joypad.BButton then
+        joypadData.focus = self.listbox
+        updateJoypadFocus(joypadData)
+    end
 end
 
 function MapSpawnSelect:onJoypadBeforeDeactivate_child(joypadData)
@@ -920,10 +964,10 @@ function MapSpawnSelect:create()
 	self.listbox.doDrawItem = MapSpawnSelect.doDrawItem
 	self.listbox:setOnMouseDoubleClick(self, MapSpawnSelect.onDblClick)
 	self.listbox.drawBorder = true;
-	self.listbox.backgroundColor = {r=0, g=0, b=0, a=0.5};
+	self.listbox.backgroundColor  = {r=0, g=0, b=0, a=0.5};
     --itemheight
 
-    local advPanelHeight = UI_BORDER_SPACING*2 + BUTTON_HGT + 2
+    local advPanelHeight = UI_BORDER_SPACING*3 + BUTTON_HGT
 	self.richText = MapSpawnSelectInfoPanel:new(self.listbox.x, self.listbox:getBottom() + UI_BORDER_SPACING, self.listbox.width, self.height - self.listbox:getBottom() - UI_BORDER_SPACING*4 - BUTTON_HGT - 1 - advPanelHeight);
 	self.richText.marginRight = UI_BORDER_SPACING+1
 	self.richText.marginLeft = UI_BORDER_SPACING+1
@@ -932,7 +976,7 @@ function MapSpawnSelect:create()
 	self.richText:initialise();
 	self.richText:setAnchorLeft(true);
 	self.richText:setAnchorBottom(true);
-	self.richText.backgroundColor = {r=0, g=0, b=0, a=0.5};
+	self.richText.backgroundColor  = {r=0, g=0, b=0, a=0.5};
 	self:addChild(self.richText);
 	self.richText:addScrollBars()
 
@@ -942,7 +986,7 @@ function MapSpawnSelect:create()
 		self.seedPanel:initialise()
 		self.seedPanel:instantiate()
 		self.seedPanel:setAnchorsTBLR(false, true, true, false)
-		self.seedPanel.backgroundColor = {r=0, g=0, b=0, a=0.5};
+		self.seedPanel.backgroundColor  = {r=0, g=0, b=0, a=0.5};
 		self:addChild(self.seedPanel)
         self.seedTextBox = self.seedPanel.seedTextBox
         self.randomButton = self.seedPanel.randomButton

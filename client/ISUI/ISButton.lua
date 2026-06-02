@@ -88,6 +88,26 @@ function ISButton:clearJoypadButton()
     self.joypadTexture = nil;
 end
 
+function ISButton:shouldDrawBackground()
+    if (self.mouseOver or self.pressed) then
+        return self.isHighlightedBackgroundVisible
+    end
+
+    return self.background and self.isBaseBackgroundVisible
+end
+
+function ISButton:shouldDrawBorder()
+    return self.mouseOver or self.pressed or self.background and self.isBorderVisible
+end
+
+function ISButton:getBackgroundColor()
+    if (self:shouldDrawBackground()) then
+        return self.backgroundColor
+    end
+
+    return { r = 0, g = 0, b = 0, a = 0 };
+end
+
 function ISButton:prerender()
 	if self.displayBackground and not self.isJoypad then
 		-- Checking self:isMouseOver() in case the button is becoming visible again.
@@ -103,18 +123,23 @@ function ISButton:prerender()
 			self.backgroundColorPressed.a = self.backgroundColorMouseOver.a
 			fill = self.backgroundColorPressed
 		end
-		self:drawRect(0, 0, self.width, self.height,
-			fill.a * f + self.backgroundColor.a * (1 - f),
-			fill.r * f + self.backgroundColor.r * (1 - f),
-			fill.g * f + self.backgroundColor.g * (1 - f),
-			fill.b * f + self.backgroundColor.b * (1 - f));
+	    if (self:shouldDrawBackground()) then
+	        local backgroundColor = self:getBackgroundColor()
+            self:drawRect(0, 0, self.width, self.height,
+                fill.a * f + backgroundColor.a * (1 - f),
+                fill.r * f + backgroundColor.r * (1 - f),
+                fill.g * f + backgroundColor.g * (1 - f),
+                fill.b * f + backgroundColor.b * (1 - f));
+        end
 		if self.textureBackground then
 			self:drawTextureScaled(self.textureBackground, 0, 0, self.width, self.height, 1-f, 1, 1, 1);
 		end
 		if self.iconRight then
 			self:drawTextureScaled(self.iconRight, self.width - self.iconRightWidth - 3, (self.height / 2 - self.iconRightHeight / 2), self.iconRightWidth, self.iconRightHeight, self.iconRightColor.a, self.iconRightColor.r, self.iconRightColor.g, self.iconRightColor.b);
 		end
-        self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+	    if (self:shouldDrawBorder()) then
+            self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
+        end
     end
 	if self.joypadFocused then
 		self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
@@ -138,11 +163,12 @@ function ISButton:prerender()
 			end
 		end
 		local f = self.blinkBGAlpha
+		local backgroundColor = self:getBackgroundColor()
 		self:drawRect(0, 0, self.width, self.height,
-			self.backgroundColorMouseOver.a * f + self.backgroundColor.a * (1 - f),
-			self.backgroundColorMouseOver.r * f + self.backgroundColor.r * (1 - f),
-			self.backgroundColorMouseOver.g * f + self.backgroundColor.g * (1 - f),
-			self.backgroundColorMouseOver.b * f + self.backgroundColor.b * (1 - f));
+			self.backgroundColorMouseOver.a * f + backgroundColor.a * (1 - f),
+			self.backgroundColorMouseOver.r * f + backgroundColor.r * (1 - f),
+			self.backgroundColorMouseOver.g * f + backgroundColor.g * (1 - f),
+			self.backgroundColorMouseOver.b * f + backgroundColor.b * (1 - f));
 		if self.textureBackground then
 			self:drawTextureScaled(self.textureBackground, 0, 0, self.width, self.height, f, 1, 1, 1);
 		end
@@ -455,6 +481,7 @@ function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmouse
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self
+    o.SuperType = ISPanel
 	o.x = x;
 	o.y = y;
 	o.font = UIFont.Small;
@@ -474,6 +501,9 @@ function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmouse
 	o.anchorBottom = false;
 	o.mouseOver = false;
 	o.displayBackground = true;
+	o.isBaseBackgroundVisible = true;
+	o.isHighlightedBackgroundVisible = true;
+	o.isBorderVisible = true;
 	o.title = title;
 	o.onclick = onclick;
 	o.onClickArgs = {}
@@ -497,5 +527,6 @@ function ISButton:new (x, y, width, height, title, clicktarget, onclick, onmouse
 	o.iconRightWidth = o.iconRightHeight;
 	o.iconRightColor = {r=1, g=1, b=1, a=1};
 	o.titleLeft = false; -- if true we draw the title on the left of the button instead of center
+	o.autoAddJoypadButton = true;
    return o
 end

@@ -42,21 +42,20 @@ function ISMedicalCheckAction:perform()
     local healthPanel = nil
     local healthWindow = ISMedicalCheckAction.getHealthWindowForPlayer(self.otherPlayer)
     if healthWindow then
-        healthPanel = healthWindow.nested
+        healthPanel = healthWindow.nested;
+        healthWindow:removeFromUIManager();
     else
-        healthPanel = ISHealthPanel:new(self.otherPlayer, x, y, 400, 400)
-        healthPanel:initialise()
+        healthPanel = ISHealthPanel:new(self.otherPlayer, x, y, 400, 400);
+        healthPanel:initialise();
     end
 
-    local title = getText("IGUI_health_playerHealth", self.otherPlayer:getDescriptor():getForename().." "..self.otherPlayer:getDescriptor():getSurname())
+    local title = getText("IGUI_health_playerHealth", self.otherPlayer:getDescriptor():getForename().." "..self.otherPlayer:getDescriptor():getSurname());
     if isClient() then
-        title = getText("IGUI_health_playerHealth", self.otherPlayer:getDisguisedDisplayName())
+        title = getText("IGUI_health_playerHealth", self.otherPlayer:getDisguisedDisplayName());
     end
-    local wrap = healthPanel:wrapInCollapsableWindow(title);
-    wrap:setResizable(false)
-    wrap:addToUIManager();
 
-    wrap.visibleTarget = self;
+    local wrap = healthPanel:wrapInCollapsableWindow(title, false);
+    wrap:addToUIManager();
 
     ISMedicalCheckAction.HealthWindows[self.otherPlayer] = wrap
 

@@ -102,6 +102,10 @@ function ISTextEntryBox:setClearButton(hasButton)
     self.javaObject:setClearButton(hasButton);
 end
 
+function ISTextEntryBox:hasClearButton()
+    return self.javaObject:hasClearButton()
+end
+
 function ISTextEntryBox:setText(str)
     if not str then
         str = "";
@@ -303,11 +307,22 @@ function ISTextEntryBox:onJoypadDown(button, joypadData)
 		local osk = OnScreenKeyboard.Show(joypadData.player, self, joypadData)
 		osk.prevFocus = joypadData.focus -- could be self or parent ISPanelJoypad
 		joypadData.focus = osk
+		return
+	end
+	if button == Joypad.XButton and self:hasClearButton() then
+		self:clear()
+		return
+	end
+	if self.parent then
+		self.parent:onJoypadDown_Descendant(self, button, joypadData)
 	end
 end
 
 function ISTextEntryBox:new (title, x, y, width, height)
 	local o = ISPanelJoypad.new(self, x, y, width, height);
+	setmetatable(o, self)
+    self.__index = self
+    o.SuperType = ISPanelJoypad
 	o.title = title;
 	o.backgroundColor = {r=0, g=0, b=0, a=0.5};
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
@@ -321,6 +336,7 @@ function ISTextEntryBox:new (title, x, y, width, height)
 	o.font = UIFont.Small
     o.currentText = title;
     o.placeholderText = nil
+    o.autoAddJoypadButton = true
 	return o
 end
 

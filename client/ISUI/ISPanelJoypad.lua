@@ -1,5 +1,115 @@
 require "ISUI/ISUIElement"
 
+local rowTree = {}
+function rowTree:new(elements)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+
+    o.elements = elements
+    o.above = nil
+    o.below = nil
+    o:splitOverlappingColumns()
+
+    return o
+end
+function rowTree:splitOverlappingColumns()
+    local elementCount = #self.elements
+    if (elementCount == 0) then return end
+
+    local i = 1
+    while i <= elementCount do
+        local element = self.elements[i]
+        local overlappingElementIdx = self:findHorizontallyOverlappingElement(element:getAbsoluteX(), element:getAbsoluteRight(),i)
+        if (overlappingElementIdx ~= nil and overlappingElementIdx ~= i) then
+            local elementsAbove, elementsEqual, elementsBelow = self:getSplitElements(element:getAbsoluteY())
+            if (#elementsAbove > 0) then
+                self.above = rowTree:new(elementsAbove)
+            end
+            self.elements = elementsEqual
+            if (#elementsBelow > 0) then
+                self.below = rowTree:new(elementsBelow)
+            end
+            break
+        end
+        i = i + 1
+    end
+end
+
+function rowTree:getBottomMostBranch()
+    if (self.below == nil) then return self end
+    return self.below:getBottomMostBranch()
+end
+
+function rowTree:getTopMostBranch()
+    if (self.above == nil) then return self end
+    return self.above:getTopMostBranch()
+end
+
+function rowTree:getSplitElements(y)
+    local elementsAbove = {}
+    local elementsEqual = {}
+    local elementsBelow = {}
+
+    for _,element in ipairs(self.elements) do
+        local elementY = element:getAbsoluteY()
+        if (elementY < y) then
+            table.insert(elementsAbove, element)
+        elseif (elementY > y) then
+             table.insert(elementsBelow, element)
+         else
+             table.insert(elementsEqual, element)
+        end
+    end
+
+    return elementsAbove, elementsEqual, elementsBelow
+end
+function rowTree:findHorizontallyOverlappingElement(left, right, vsElementIdx)
+    local overlappingElementIdx = nil
+    local elementCount = #self.elements
+    local elementIdx = 1
+    while elementIdx <= elementCount do
+        if (elementIdx ~= vsElementIdx) then
+            local element = self.elements[elementIdx]
+            local elementLeft = element:getAbsoluteX()
+            local elementRight = element:getAbsoluteX() + element:getWidth()
+            if (math.rangesOverlap(left, right, elementLeft, elementRight)) then
+                overlappingElementIdx = elementIdx
+                break
+            end
+        end
+        elementIdx = elementIdx + 1
+    end
+    return overlappingElementIdx
+end
+function rowTree:getAllRows(result)
+    result = result or {}
+    if (self.above ~= nil) then
+        self.above:getAllRows(result)
+    end
+
+    if (#self.elements > 0) then
+        table.insert(result, self.elements)
+    end
+
+    if (self.below ~= nil) then
+        self.below:getAllRows(result)
+    end
+
+    return result
+end
+function rowTree.rowToString(row)
+    local resultStr = "{ "
+    for i,element in ipairs(row) do
+        if (i > 1) then
+            resultStr = resultStr .. ", "
+        end
+        resultStr = resultStr .. element:toDebugString()
+    end
+    resultStr = resultStr .. " }"
+    return resultStr
+end
+
 ISPanelJoypad = ISUIElement:derive("ISPanelJoypad");
 
 function ISPanelJoypad:initialise()
@@ -26,23 +136,116 @@ function ISPanelJoypad:insertNewLineOfButtons(button1, button2, button3, button4
     if button8 then table.insert(newLine, button8); end
     if button9 then table.insert(newLine, button9); end
     if button10 then table.insert(newLine, button10); end
-    self.joypadButtons = newLine;
-    table.insert(self.joypadButtonsY, newLine);
+    self:insertNewListOfButtons(newLine)
     return newLine;
 end
 
 function ISPanelJoypad:insertNewListOfButtons(list)
     self.joypadButtons = list;
     table.insert(self.joypadButtonsY, list);
+
+    for _,element in ipairs(list) do
+        table.insert(self.allJoypadButtons, element)
+    end
 end
 
-function ISPanelJoypad:insertNewListOfButtonsList(list)
-    self.joypadButtons = list;
-    table.insert(self.joypadButtonsY, list);
+function ISPanelJoypad:removeListOfButtons(list)
+    local indexOf = luautils.indexOf(self.joypadButtonsY, list)
+    if (indexOf == -1) then
+        DebugType.ISUI.warn("ISPanelJoypad:removeListOfButtons> row not found.")
+        return false
+    end
+
+    table.remove(self.joypadButtonsY, list)
+    local newIndex = indexOf
+    if (indexOf > #self.joypadButtonsY) then
+        newIndex = #self.joypadButtonsY
+    end
+    self.joypadIndexY = newIndex
+    self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
+
+    return true
+end
+
+function ISPanelJoypad.rowListToDebugString(list)
+    local rowStr = "{"
+    local isFirst = true
+    for _,uiElement in pairs(list) do
+        if (isFirst == false) then
+            rowStr = rowStr .. ", "
+        else
+            rowStr = rowStr .. " "
+        end
+        rowStr = rowStr .. uiElement:toDebugString()
+        isFirst = false
+    end
+    rowStr = rowStr .. " }"
+    return rowStr
+end
+
+function ISPanelJoypad:addJoypadButtonRows(rows)
+    for _,row in pairs(rows) do
+        self:insertNewListOfButtons(row)
+    end
+end
+
+function ISPanelJoypad:removeJoypadButtonRows(rows)
+    for _,row in pairs(rows) do
+        self:removeListOfButtons(row)
+    end
+end
+
+function ISPanelJoypad:autoGenerateJoypadButtonsLists()
+    local joypadState = self:recordJoypadState()
+    self:clearJoypadButtonsList()
+    self:addJoypadButtonRows(ISPanelJoypad.autoGenerateJoypadButtonRowsFromUIElement(self))
+    self:restoreJoypadState(joypadState)
+end
+
+function ISPanelJoypad:clearJoypadButtonsList()
+    self.joypadIndex = 1
+    self.joypadIndexY = 1
+    self.joypadButtons = {}
+    self.joypadButtonsY = {}
+    self.allJoypadButtons = {}
+end
+
+function ISPanelJoypad.autoGenerateJoypadButtonRowsFromUIElement(uiRootElement)
+    local allJoypadButtons = uiRootElement:visitAndAllDescendants({}, ISPanelJoypad.autoAddUIElementToJoypadButtons)
+
+    -- sort elements by X
+    table.sort(allJoypadButtons, function(a, b) return a:getAbsoluteX() <= b:getAbsoluteX() end)
+    DebugType.ISUI:trace("Automatically adding JoypadButton lists from uiElement.")
+    for _,entry in ipairs(allJoypadButtons) do
+        DebugType.ISUI:trace("  Entry: " .. entry:toDebugString() .. " }")
+    end
+
+    local rootRow = rowTree:new(allJoypadButtons)
+    local allRows = rootRow:getAllRows()
+
+    DebugType.ISUI:trace("Completed generating rows.")
+    for i,row in ipairs(allRows) do
+        DebugType.ISUI:trace("  Row[" .. i .. "]: " .. rowTree.rowToString(row))
+    end
+
+    return allRows
+end
+
+function ISPanelJoypad.autoAddUIElementToJoypadButtons(allJoypadButtons, uiElement)
+    if (uiElement.autoAddJoypadButton == false) then
+        return false
+    end
+
+    if (luautils.tableContains(allJoypadButtons, uiElement)) then
+        return true
+    end
+
+    table.insert(allJoypadButtons, uiElement)
 end
 
 function ISPanelJoypad:noBackground()
 	self.background = false;
+	return self
 end
 
 function ISPanelJoypad:close()
@@ -121,7 +324,7 @@ function ISPanelJoypad:onJoypadDown(button, joypadData)
         child:hidePopup();
         return;
     end
-    if button == Joypad.AButton and child and (child.Type == "ISTextEntryBox") then
+    if (button == Joypad.AButton or button == Joypad.XButton) and child and (child.Type == "ISTextEntryBox") then
         child:onJoypadDown(button, joypadData);
         return;
     end
@@ -137,6 +340,28 @@ function ISPanelJoypad:onJoypadDown(button, joypadData)
     else
         ISUIElement.onJoypadDown(self, button, joypadData)
     end
+end
+
+function ISPanelJoypad:getChildJoypadIndexY(child)
+    for indexY,children in ipairs(self.joypadButtonsY) do
+        for index,child1 in ipairs(children) do
+            if child1 == child then
+                return indexY
+            end
+        end
+    end
+    return -1
+end
+
+function ISPanelJoypad:getChildJoypadIndex(child)
+    for indexY,children in ipairs(self.joypadButtonsY) do
+        for index,child1 in ipairs(children) do
+            if child1 == child then
+                return index
+            end
+        end
+    end
+    return -1
 end
 
 function ISPanelJoypad:getVisibleChildren(joypadIndexY)
@@ -210,12 +435,18 @@ function ISPanelJoypad:onJoypadDirLeft(joypadData)
     local child = children[self.joypadIndex]
     if child and child.isSlider then
         child:onJoypadDirLeft(joypadData)
-    elseif #children > 0 and self.joypadIndex > 1 then
-        children[self.joypadIndex]:setJoypadFocused(false, joypadData);
-        self.joypadIndex = self.joypadIndex - 1;
-        children[self.joypadIndex]:setJoypadFocused(true, joypadData);
     else
-        ISUIElement.onJoypadDirLeft(self, joypadData)
+        local nextChild = self:findNextNavigableChildX(child, -1)
+        if (nextChild ~= nil) then
+            child:setJoypadFocused(false, joypadData);
+            self:setJoypadFocus(nextChild, joypadData)
+        elseif #children > 0 and self.joypadIndex > 1 then
+            children[self.joypadIndex]:setJoypadFocused(false, joypadData);
+            self.joypadIndex = self.joypadIndex - 1;
+            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        else
+            ISUIElement.onJoypadDirLeft(self, joypadData)
+        end
     end
     self:ensureVisible()
 end
@@ -225,12 +456,18 @@ function ISPanelJoypad:onJoypadDirRight(joypadData)
     local child = children[self.joypadIndex]
     if child and child.isSlider then
         child:onJoypadDirRight(joypadData)
-    elseif #children > 0 and self.joypadIndex ~= #children then
-        children[self.joypadIndex]:setJoypadFocused(false, joypadData);
-        self.joypadIndex = self.joypadIndex + 1;
-        children[self.joypadIndex]:setJoypadFocused(true, joypadData);
     else
-        ISUIElement.onJoypadDirRight(self, joypadData)
+        local nextChild = self:findNextNavigableChildX(child, 1)
+        if (nextChild ~= nil) then
+            child:setJoypadFocused(false, joypadData);
+            self:setJoypadFocus(nextChild, joypadData)
+        elseif #children > 0 and self.joypadIndex ~= #children then
+            children[self.joypadIndex]:setJoypadFocused(false, joypadData);
+            self.joypadIndex = self.joypadIndex + 1;
+            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        else
+            ISUIElement.onJoypadDirRight(self, joypadData)
+        end
     end
     self:ensureVisible()
 end
@@ -247,7 +484,11 @@ function ISPanelJoypad:onJoypadDirUp(joypadData)
     elseif child and child.isKnob then
         child:onJoypadDirUp(joypadData)
     else
-        if (#self.joypadButtonsY > 0) and (self.joypadIndexY > self:getMinVisibleRow()) and (self.joypadIndexY <= #self.joypadButtonsY) then
+        local nextChild = self:findNextNavigableChildY(child, -1)
+        if (nextChild ~= nil) then
+            child:setJoypadFocused(false, joypadData);
+            self:setJoypadFocus(nextChild, joypadData)
+        elseif (#self.joypadButtonsY > 0) and (self.joypadIndexY > self:getMinVisibleRow()) and (self.joypadIndexY <= #self.joypadButtonsY) then
             child:setJoypadFocused(false, joypadData);
             self.joypadIndexY = self:getPrevVisibleRow(self.joypadIndexY);
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
@@ -276,7 +517,11 @@ function ISPanelJoypad:onJoypadDirDown(joypadData)
     elseif child and child.isKnob then
         child:onJoypadDirDown(joypadData)
     else
-        if (#self.joypadButtonsY > 0) and (self.joypadIndexY < self:getMaxVisibleRow()) then
+        local nextChild = self:findNextNavigableChildY(child, 1)
+        if (nextChild ~= nil) then
+            child:setJoypadFocused(false, joypadData);
+            self:setJoypadFocus(nextChild, joypadData)
+        elseif (#self.joypadButtonsY > 0) and (self.joypadIndexY < self:getMaxVisibleRow()) then
             child:setJoypadFocused(false, joypadData);
             self.joypadIndexY = self:getNextVisibleRow(self.joypadIndexY);
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
@@ -291,6 +536,100 @@ function ISPanelJoypad:onJoypadDirDown(joypadData)
         end
     end
     self:ensureVisible()
+end
+
+function ISPanelJoypad:findNextNavigableChildY(fromChild, yDir)
+    if (fromChild == nil) then
+        self.lastProjectedBounds = nil
+        self.lastIntercepts = nil
+        return nil
+    end
+
+    local minDistance = 0
+    local fromChildBounds = fromChild:getAbsoluteBounds()
+    local sampleFromBounds = fromChildBounds:getScaledFromCenter(1, 0.5):setHeight(1.0)
+    local sampleFromBounds1x = sampleFromBounds:getScaledFromCenter(0.01, 1.0)
+    local sampleFromBounds2x = sampleFromBounds:getScaledFromCenter(0.20, 1.0)
+    local sampleFromBounds3x = sampleFromBounds:getScaledFromCenter(0.50, 1.0)
+    local sampleFromBounds4x = sampleFromBounds:getScaledFromCenter(0.75, 1.0)
+
+    local foundResult = {
+        foundChild = nil,
+        foundChildDistance = nil,
+    }
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds1x, sampleFromBounds1x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds2x, sampleFromBounds2x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds3x, sampleFromBounds3x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds4x, sampleFromBounds4x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds, sampleFromBounds:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+    return foundResult.foundChild
+end
+
+function ISPanelJoypad:findNextNavigableChildX(fromChild, xDir)
+    if (fromChild == nil) then
+        self.lastProjectedBounds = nil
+        self.lastIntercepts = nil
+        return nil
+    end
+
+    local minDistance = 0
+    local fromChildBounds = fromChild:getAbsoluteBounds()
+    local sampleFromBounds = fromChildBounds:getScaledFromCenter(0.5, 1):setWidth(1.0)
+    local sampleFromBounds1x = sampleFromBounds:getScaledFromCenter(1.0, 0.01)
+    local sampleFromBounds2x = sampleFromBounds:getScaledFromCenter(1.0, 0.20)
+    local sampleFromBounds3x = sampleFromBounds:getScaledFromCenter(1.0, 0.50)
+    local sampleFromBounds4x = sampleFromBounds:getScaledFromCenter(1.0, 0.75)
+
+    local foundResult = {
+        foundChild = nil,
+        foundChildDistance = nil,
+    }
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds1x, sampleFromBounds1x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds2x, sampleFromBounds2x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds3x, sampleFromBounds3x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds4x, sampleFromBounds4x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+    self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds, sampleFromBounds:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+    return foundResult.foundChild
+end
+
+function ISPanelJoypad:findClosestNavigableChildAlongBounds(fromChild, fromChildBounds, projectedBounds, minDistance, distanceToFunc, results)
+    if (fromChild == nil) then
+        self.lastProjectedBounds = nil
+        self.lastIntercepts = nil
+        return nil
+    end
+
+    local foundChild = results.foundChild
+    local foundChildDistance = results.foundChildDistance
+    self.lastProjectedBounds = projectedBounds
+    self.lastIntercepts = {}
+    for _,child in ipairs(self.allJoypadButtons) do
+        if (child:isVisible() and child ~= fromChild) then
+            local childBounds = child:getAbsoluteBounds()
+            table.insert(self.lastIntercepts, childBounds)
+            if (childBounds:intersects(projectedBounds)) then
+                local yDistance = distanceToFunc(fromChildBounds, childBounds)
+                if ((foundChild == nil or foundChildDistance > yDistance) and yDistance > minDistance) then
+                    foundChild = child
+                    foundChildDistance = yDistance
+                    childBounds.hit = true
+                end
+            end
+        end
+    end
+
+    self.lastProjectedBounds.from = fromChild
+    self.lastProjectedBounds.fromChildBounds = fromChildBounds
+    self.lastProjectedBounds.hit = foundChild
+    self.lastProjectedBounds.hitDistance = foundChildDistance
+    results.foundChild = foundChild
+    results.foundChildDistance = foundChildDistance
+
+    if (self.lastProjectedBounds.hit) then
+        DebugType.ISUI:trace("Navigation hit. Using minDistance:" .. minDistance .. ", Found:" .. self.lastProjectedBounds.hit:toDebugString() .. ", at distance:" .. foundChildDistance)
+    end
+
+    return foundChild
 end
 
 function ISPanelJoypad:getJoypadFocus()
@@ -339,7 +678,7 @@ function ISPanelJoypad:recordJoypadState()
 end
 
 function ISPanelJoypad:restoreJoypadState(state)
-    if not state then return end
+    if not state or #self.joypadButtonsY == 0 then return end
     self.joypadIndexY = math.min(state.indexY or 1, #self.joypadButtonsY)
     self.joypadIndex = math.min(state.index or 1, #self.joypadButtonsY[self.joypadIndexY])
     self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
@@ -471,9 +810,51 @@ function ISPanelJoypad:prerender()
 	end
 end
 
+function ISPanelJoypad:render()
+    ISPanelJoypad.SuperType.render(self)
+
+    if(JoypadState.dbgDrawUINavigation) then
+        self:renderDebugUINavigation()
+    end
+end
+
+function ISPanelJoypad:renderDebugUINavigation()
+    if (self.lastProjectedBounds == nil) then
+        return
+    end
+
+    local projectedBounds = self:toLocalBounds(self.lastProjectedBounds)
+    if (projectedBounds.hit) then
+        self:drawRectBounds(projectedBounds, 0.15, 0.35, 0.35, 0.8)
+    else
+        self:drawRectBounds(projectedBounds, 0.15, 0.5, 0.2, 0.35)
+    end
+
+    for _,intercept in ipairs(self.lastIntercepts) do
+        local interceptLocal = self:toLocalBounds(intercept)
+        if (intercept.hit) then
+            self:drawRectBounds(interceptLocal, 0.15, 0.2, 0.5, 0.25)
+        else
+            self:drawRectBounds(interceptLocal, 0.10, 0.5, 0.2, 0.25)
+        end
+    end
+
+    if (self.lastProjectedBounds.fromChildBounds) then
+        local fromBounds = self:toLocalBounds(self.lastProjectedBounds.fromChildBounds)
+        if (projectedBounds.hit) then
+            self:drawRectBounds(fromBounds, 0.75, 0.1, 0.1, 0.8)
+        else
+            self:drawRectBounds(fromBounds, 0.75, 0.1, 0.1, 0.8)
+        end
+    end
+
+    if (self.lastProjectedBounds.hit) then
+        local hitBounds = self:toLocalBounds(self.lastProjectedBounds.hit:getAbsoluteBounds())
+        self:drawRectBounds(hitBounds, 0.5, 0.5, 0.9, 0.8)
+    end
+end
+
 function ISPanelJoypad:new (x, y, width, height)
-    DebugType.ISUI:debugln("Creating ISPanelJoypad. Coords: " .. tostring(x) .. ", " .. tostring(y) .. ", Dimensions: " .. tostring(width) .. ", " .. tostring(height))
-    DebugType.ISUI:printStackTrace(LogSeverity.Noise, 14, nil)
 	local o = {}
 	o = ISUIElement:new(x, y, width, height);
     setmetatable(o, self)
@@ -492,6 +873,7 @@ function ISPanelJoypad:new (x, y, width, height)
     o.joypadButtons = {};
     o.joypadIndex = 0;
     o.joypadButtonsY = {};
+    o.allJoypadButtons = {};
     o.joypadIndexY = 0;
     o.moveWithMouse = false;
    return o

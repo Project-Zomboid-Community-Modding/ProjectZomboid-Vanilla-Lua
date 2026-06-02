@@ -272,16 +272,14 @@ function ISScoreboard:create()
     table.insert(buttons, self.banButton)
     butY = butY + btnHgt2 + 2;
 
-    if not getSteamModeActive() then
-        self.banIpButton = ISButton:new(butX, butY, butWid, btnHgt2, getText("UI_Scoreboard_BanIp"), self, ISScoreboard.onContext);
-        self.banIpButton:initialise();
-        self.banIpButton.internal = "BANIP";
-        self.banIpButton:setAnchorLeft(false)
-        self.banIpButton:setAnchorRight(true)
-        self:addChild(self.banIpButton);
-        self.banIpButton.borderColor.a = 0.3;
-        table.insert(buttons, self.banIpButton)
-    end
+    self.banIpButton = ISButton:new(butX, butY, butWid, btnHgt2, getText("UI_Scoreboard_BanIp"), self, ISScoreboard.onContext);
+    self.banIpButton:initialise();
+    self.banIpButton.internal = "BANIP";
+    self.banIpButton:setAnchorLeft(false)
+    self.banIpButton:setAnchorRight(true)
+    self:addChild(self.banIpButton);
+    self.banIpButton.borderColor.a = 0.3;
+    table.insert(buttons, self.banIpButton)
 
     self.godmodButton = ISButton:new(butX + butWid + 10, butY, butWid, btnHgt2, getText("UI_Scoreboard_GodMod"), self, ISScoreboard.onContext);
     self.godmodButton:initialise();

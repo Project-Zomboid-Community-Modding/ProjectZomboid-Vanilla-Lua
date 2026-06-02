@@ -26,4 +26,6 @@ local PRIORITY = 5
 
 MapObjects.OnNewWithSprite("camping_01_19", Empty, PRIORITY)
 MapObjects.OnNewWithSprite("camping_01_20", Full, PRIORITY)
+MapObjects.OnNewWithSprite("carpentry_02_116", Empty, PRIORITY)
+MapObjects.OnNewWithSprite("carpentry_02_117", Full, PRIORITY)
 

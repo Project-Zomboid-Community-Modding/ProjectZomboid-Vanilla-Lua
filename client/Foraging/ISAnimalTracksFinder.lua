@@ -68,12 +68,12 @@ function ISAnimalTracksFinder:addItemIcon(track, chr)
         return;
     end
     local icon = {
-        id = track,
-        x = track:getWorldItem():getSquare():getX() + 0.5,
-        y = track:getWorldItem():getSquare():getY() + 0.5,
-        z = track:getWorldItem():getSquare():getZ(),
-        itemObj = track,
-        itemType = track:getFullType(),
+        id          = track,
+        x           = track:getWorldItem():getSquare():getX() + 0.5,
+        y           = track:getWorldItem():getSquare():getY() + 0.5,
+        z		    = track:getWorldItem():getSquare():getZ(),
+        itemObj     = track,
+        itemType    = track:getFullType(),
         isBonusIcon = false,
     };
 

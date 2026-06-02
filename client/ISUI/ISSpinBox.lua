@@ -9,6 +9,18 @@ function ISSpinBox:addOption(option)
 	end
 end
 
+function ISSpinBox:addOptions(options)
+    for _,option in ipairs(options) do
+        self:addOption(option)
+    end
+end
+
+function ISSpinBox:setSelectedOption(option)
+    if (#self.options == 0) then return end
+    local selectedOption = luautils.indexOf(self.options, option)
+    self.selected = math.clamp(selectedOption, 1, #self.options)
+end
+
 function ISSpinBox:createChildren()
 	self.leftButton = ISButton:new(1, 1, 15, self.height - 2, "", self, nil)
 	self.leftButton.internal = "LESS"

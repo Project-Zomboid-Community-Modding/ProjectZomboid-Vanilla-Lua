@@ -5,161 +5,161 @@ local GHC = getCore():getGoodHighlitedColor()
 local BHC = getCore():getBadHighlitedColor()
 
 local zdTex = {
-	eyeconOn = getTexture("media/ui/foraging/eyeconOn.png"),
+	eyeconOn			= getTexture("media/ui/foraging/eyeconOn.png"),
 
-	infoBtn = getTexture("media/ui/foraging/questionMark.png"),
-	prevBtn = getTexture("media/ui/inventoryPanes/Button_GuideP.png"),
-	nextBtn = getTexture("media/ui/inventoryPanes/Button_GuideN.png"),
+	infoBtn				= getTexture("media/ui/foraging/questionMark.png"),
+	prevBtn				= getTexture("media/ui/inventoryPanes/Button_GuideP.png"),
+	nextBtn				= getTexture("media/ui/inventoryPanes/Button_GuideN.png"),
 
 	celestial = {
-		stars = getTexture("media/ui/foraging/stars.png"),
+		stars			= getTexture("media/ui/foraging/stars.png"),
 	},
 	solar = {
-		sun = getTexture("media/ui/foraging/Sun.png"),
-		moon = getTexture("media/ui/foraging/Moon0.png"),
+		sun				= getTexture("media/ui/foraging/Sun.png"),
+		moon			= getTexture("media/ui/foraging/Moon0.png"),
 	},
 	moons = {
-		moon0 = getTexture("media/ui/foraging/Moon0.png"),
-		moon1 = getTexture("media/ui/foraging/Moon1.png"),
-		moon2 = getTexture("media/ui/foraging/Moon2.png"),
-		moon3 = getTexture("media/ui/foraging/Moon3.png"),
-		moon4 = getTexture("media/ui/foraging/Moon4.png"),
-		moon5 = getTexture("media/ui/foraging/Moon5.png"),
-		moon6 = getTexture("media/ui/foraging/Moon6.png"),
-		moon7 = getTexture("media/ui/foraging/Moon7.png"),
+		moon0			= getTexture("media/ui/foraging/Moon0.png"),
+		moon1			= getTexture("media/ui/foraging/Moon1.png"),
+		moon2			= getTexture("media/ui/foraging/Moon2.png"),
+		moon3			= getTexture("media/ui/foraging/Moon3.png"),
+		moon4			= getTexture("media/ui/foraging/Moon4.png"),
+		moon5			= getTexture("media/ui/foraging/Moon5.png"),
+		moon6			= getTexture("media/ui/foraging/Moon6.png"),
+		moon7			= getTexture("media/ui/foraging/Moon7.png"),
 	},
 	sky = {
-		clouds = getTexture("media/ui/foraging/clouds.png"),
+		clouds			= getTexture("media/ui/foraging/clouds.png"),
 	},
 	zones = {
-		Nav = getTexture("media/ui/foraging/zoneNav.png"),
-		Forest = getTexture("media/ui/foraging/ZoneForest.png"),
-		DeepForest = getTexture("media/ui/foraging/ZoneDeepForest.png"),
-		Farm = getTexture("media/ui/foraging/ZoneFarm.png"),
-		FarmLand = getTexture("media/ui/foraging/ZoneFarmLand.png"),
-		ForagingNav = getTexture("media/ui/foraging/zoneNav.png"),
-		TownZone = getTexture("media/ui/foraging/ZoneTown.png"),
-		TrailerPark = getTexture("media/ui/foraging/ZoneTrailerPark.png"),
-		Unknown = getTexture("media/ui/foraging/ZoneUnknown.png"),
-		Vegitation = getTexture("media/ui/foraging/ZoneVegetation.png"),
-		PHForest = getTexture("media/ui/foraging/ZoneForest.png"),
-		PRForest = getTexture("media/ui/foraging/ZoneForest.png"),
-		PHMixForest = getTexture("media/ui/foraging/ZoneDeepForest.png"),
-		FarmForest = getTexture("media/ui/foraging/ZoneForest.png"),
-		FarmMixForest = getTexture("media/ui/foraging/ZoneForest.png"),
-		BirchForest = getTexture("media/ui/foraging/ZoneForest.png"),
-		BirchMixForest = getTexture("media/ui/foraging/ZoneDeepForest.png"),
-		OrganicForest = getTexture("media/ui/foraging/ZoneDeepForest.png"),
+		Nav             = getTexture("media/ui/foraging/zoneNav.png"),
+		Forest          = getTexture("media/ui/foraging/ZoneForest.png"),
+		DeepForest      = getTexture("media/ui/foraging/ZoneDeepForest.png"),
+		Farm            = getTexture("media/ui/foraging/ZoneFarm.png"),
+		FarmLand        = getTexture("media/ui/foraging/ZoneFarmLand.png"),
+		ForagingNav		= getTexture("media/ui/foraging/zoneNav.png"),
+		TownZone        = getTexture("media/ui/foraging/ZoneTown.png"),
+		TrailerPark     = getTexture("media/ui/foraging/ZoneTrailerPark.png"),
+		Unknown         = getTexture("media/ui/foraging/ZoneUnknown.png"),
+		Vegitation      = getTexture("media/ui/foraging/ZoneVegetation.png"),
+		PHForest      	= getTexture("media/ui/foraging/ZoneForest.png"),
+		PRForest      	= getTexture("media/ui/foraging/ZoneForest.png"),
+		PHMixForest     = getTexture("media/ui/foraging/ZoneDeepForest.png"),
+		FarmForest     	= getTexture("media/ui/foraging/ZoneForest.png"),
+		FarmMixForest   = getTexture("media/ui/foraging/ZoneForest.png"),
+		BirchForest   	= getTexture("media/ui/foraging/ZoneForest.png"),
+		BirchMixForest  = getTexture("media/ui/foraging/ZoneDeepForest.png"),
+		OrganicForest  	= getTexture("media/ui/foraging/ZoneDeepForest.png"),
 	},
 	fog = {
-		fog1 = getTexture("media/ui/foraging/Fog1.png"),
-		fog2 = getTexture("media/ui/foraging/Fog2.png"),
-		fog3 = getTexture("media/ui/foraging/Fog3.png"),
+		fog1			= getTexture("media/ui/foraging/Fog1.png"),
+		fog2			= getTexture("media/ui/foraging/Fog2.png"),
+		fog3			= getTexture("media/ui/foraging/Fog3.png"),
 	},
 };
 
 ISZoneDisplay.tips = {
 	{ --unlocking new tips
-		level = 0,
-		title = getText("IGUI_SearchMode_Tip_Tips_Title"),
-		text = getText("IGUI_SearchMode_Tip_Tips_Text"),
-		shown = false,
+		level           = 0,
+		title           = getText("IGUI_SearchMode_Tip_Tips_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Tips_Text"),
+		shown           = false,
 	},
 	{ --skill requirements
-		level = 0,
-		title = getText("IGUI_SearchMode_Tip_Skill_Title"),
-		text = getText("IGUI_SearchMode_Tip_Skill_Text"),
-		shown = false,
+		level           = 0,
+		title           = getText("IGUI_SearchMode_Tip_Skill_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Skill_Text"),
+		shown           = false,
 	},
 	{ --search focus
-		level = 0,
-		title = getText("IGUI_SearchMode_Tip_SearchFocus_Title"),
-		text = getText("IGUI_SearchMode_Tip_SearchFocus_Text"),
-		shown = false,
+		level           = 0,
+		title           = getText("IGUI_SearchMode_Tip_SearchFocus_Title"),
+		text            = getText("IGUI_SearchMode_Tip_SearchFocus_Text"),
+		shown           = false,
 	},
 	{ --situational awareness
-		level = 1,
-		title = getText("IGUI_SearchMode_Tip_Situational_Title"),
-		text = getText("IGUI_SearchMode_Tip_Situational_Text"),
-		shown = false,
+		level           = 1,
+		title           = getText("IGUI_SearchMode_Tip_Situational_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Situational_Text"),
+		shown           = false,
 	},
 	{ --firewood and stones
-		level = 1,
-		title = getText("IGUI_SearchMode_Tip_FirewoodStones_Title"),
-		text = getText("IGUI_SearchMode_Tip_FirewoodStones_Text"),
-		shown = false,
+		level           = 1,
+		title           = getText("IGUI_SearchMode_Tip_FirewoodStones_Title"),
+		text            = getText("IGUI_SearchMode_Tip_FirewoodStones_Text"),
+		shown           = false,
 	},
 	{ --search open areas
-		level = 2,
-		title = getText("IGUI_SearchMode_Tip_Finding_Title"),
-		text = getText("IGUI_SearchMode_Tip_Finding_Text"),
-		shown = false,
+		level           = 2,
+		title           = getText("IGUI_SearchMode_Tip_Finding_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Finding_Text"),
+		shown           = false,
 	},
 	{ --visibility requirement
-		level = 3,
-		title = getText("IGUI_SearchMode_Tip_Visibility_Title"),
-		text = getText("IGUI_SearchMode_Tip_Visibility_Text"),
-		shown = false,
+		level           = 3,
+		title           = getText("IGUI_SearchMode_Tip_Visibility_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Visibility_Text"),
+		shown           = false,
 	},
 	{ --berries
-		level = 3,
-		title = getText("IGUI_SearchMode_Tip_Berries_Title"),
-		text = getText("IGUI_SearchMode_Tip_Berries_Text"),
-		shown = false,
+		level           = 3,
+		title           = getText("IGUI_SearchMode_Tip_Berries_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Berries_Text"),
+		shown           = false,
 	},
 	{ --darkness effect
-		level = 4,
-		title = getText("IGUI_SearchMode_Tip_Darkness_Title"),
-		text = getText("IGUI_SearchMode_Tip_Darkness_Text"),
-		shown = false,
+		level           = 4,
+		title           = getText("IGUI_SearchMode_Tip_Darkness_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Darkness_Text"),
+		shown           = false,
 	},
 	{ --mushrooms
-		level = 4,
-		title = getText("IGUI_SearchMode_Tip_Mushrooms_Title"),
-		text = getText("IGUI_SearchMode_Tip_Mushrooms_Text"),
-		shown = false,
+		level           = 4,
+		title           = getText("IGUI_SearchMode_Tip_Mushrooms_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Mushrooms_Text"),
+		shown           = false,
 	},
 	{ --weather effect
-		level = 5,
-		title = getText("IGUI_SearchMode_Tip_Weather_Title"),
-		text = getText("IGUI_SearchMode_Tip_Weather_Text"),
-		shown = false,
+		level           = 5,
+		title           = getText("IGUI_SearchMode_Tip_Weather_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Weather_Text"),
+		shown           = false,
 	},
 	{ --insects
-		level = 5,
-		title = getText("IGUI_SearchMode_Tip_Insects_Title"),
-		text = getText("IGUI_SearchMode_Tip_Insects_Text"),
-		shown = false,
+		level           = 5,
+		title           = getText("IGUI_SearchMode_Tip_Insects_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Insects_Text"),
+		shown           = false,
 	},
 	{ --medicinal herbs
-		level = 6,
-		title = getText("IGUI_SearchMode_Tip_Herbs_Title"),
-		text = getText("IGUI_SearchMode_Tip_Herbs_Text"),
-		shown = false,
+		level           = 6,
+		title           = getText("IGUI_SearchMode_Tip_Herbs_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Herbs_Text"),
+		shown           = false,
 	},
 	{ --categories tooltip
-		level = 7,
-		title = getText("IGUI_SearchMode_Tip_Categories_Title"),
-		text = getText("IGUI_SearchMode_Tip_Categories_Text"),
-		shown = false,
+		level           = 7,
+		title           = getText("IGUI_SearchMode_Tip_Categories_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Categories_Text"),
+		shown           = false,
 	},
 	{ --crops
-		level = 8,
-		title = getText("IGUI_SearchMode_Tip_Crops_Title"),
-		text = getText("IGUI_SearchMode_Tip_Crops_Text"),
-		shown = false,
+		level           = 8,
+		title           = getText("IGUI_SearchMode_Tip_Crops_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Crops_Text"),
+		shown           = false,
 	},
 	{ --seasons
-		level = 9,
-		title = getText("IGUI_SearchMode_Tip_Seasons_Title"),
-		text = getText("IGUI_SearchMode_Tip_Seasons_Text"),
-		shown = false,
+		level           = 9,
+		title           = getText("IGUI_SearchMode_Tip_Seasons_Title"),
+		text            = getText("IGUI_SearchMode_Tip_Seasons_Text"),
+		shown           = false,
 	},
 	{ --wild plants
-		level = 10,
-		title = getText("IGUI_SearchMode_Tip_WildPlants_Title"),
-		text = getText("IGUI_SearchMode_Tip_WildPlants_Text"),
-		shown = false,
+		level           = 10,
+		title           = getText("IGUI_SearchMode_Tip_WildPlants_Title"),
+		text            = getText("IGUI_SearchMode_Tip_WildPlants_Text"),
+		shown           = false,
 	},
 };
 
@@ -212,8 +212,8 @@ function ISZoneDisplay:showTip(_tip, _force)
 
 	self.infoBtn:setTextureRGBA(1, 1, 1, 1);
 
-	self.flashTipButton = false;
-	self.flashNumber = 0;
+	self.flashTipButton		= false;
+	self.flashNumber		= 0;
 
 	self.tipPanel.tip = _tip;
 
@@ -493,7 +493,7 @@ function ISZoneDisplay:getVisionTooltipText()
 	local text = "";
 
 	local visionRadius	= self.manager:getOverlayRadius();
-	local modifiers = self.manager.modifiers;
+	local modifiers		= self.manager.modifiers;
 	text = text .. rgbWhite .. getText("IGUI_SearchMode_Vision_Effect_Radius") .. ": " .. string.format("%.2f", visionRadius) .. " <LINE> ";
 	text = text .. getToolTipText(getText("IGUI_SearchMode_Vision_Effect_Aiming"), modifiers.aimBonus - 1, true);
 	text = text .. getToolTipText(getText("IGUI_SearchMode_Vision_Effect_Crouching"), modifiers.sneakBonus - 1, true);
@@ -818,64 +818,64 @@ end
 function ISZoneDisplay:close()    self:setVisible(false); self:removeFromUIManager();     end;
 
 function ISZoneDisplay:new(_parent)
-	local yPos = _parent and _parent:titleBarHeight() or 20;
+	local yPos			= _parent and _parent:titleBarHeight() or 20;
 
-	local o = ISPanel:new(0, yPos, 100, 40);
+	local o				= ISPanel:new(0, yPos, 100, 40);
 	setmetatable(o, self);
-	self.__index = self;
+	self.__index		= self;
 
-	o.x = 1;
-	o.y = yPos;
-	o.width = 418
-	o.height = 100;
-	o.moveWithMouse = false;
+	o.x					= 1;
+	o.y					= yPos;
+	o.width				= 418
+	o.height			= 100;
+	o.moveWithMouse		= false;
 
 	o.showBackground	= true;
-	o.showBorder = true;
+	o.showBorder		= true;
 	o.backgroundColor	= {r=0.5, g=0.5, b=0.5, a=0.7};
-	o.borderColor = {r=0.4, g=0.4, b=0.4, a=0};
-	o.alpha = 1;
+	o.borderColor		= {r=0.4, g=0.4, b=0.4, a=0};
+	o.alpha				= 1;
 
-	o.zdImages = {};
-	o.fadeTarget = "Unknown";
-	o.fadeTargets = { "Unknown" };
-	o.fadeElements = {};
+	o.zdImages			= {};
+	o.fadeTarget		= "Unknown";
+	o.fadeTargets		= { "Unknown" };
+	o.fadeElements		= {};
 
-	o.timeOfDay = 0;
-	o.dawn = 0;
-	o.noon = 0;
-	o.dusk = 0;
+	o.timeOfDay			= 0;
+	o.dawn				= 0;
+	o.noon				= 0;
+	o.dusk				= 0;
 
-	o.timeString = "";
-	o.moonPhase = "";
+	o.timeString		= "";
+	o.moonPhase			= "";
 
 	o.cloudIntensity	= 0;
-	o.fogIntensity = 0;
-	o.sunBright = 0;
-	o.moonBright = 0;
+	o.fogIntensity		= 0;
+	o.sunBright			= 0;
+	o.moonBright		= 0;
 
-	o.canSeeSky = false;
-	o.updateTick = 0;
-	o.updateTickMax = 100;
-	o.fogStep = 1;
+	o.canSeeSky			= false;
+	o.updateTick		= 0;
+	o.updateTickMax		= 100;
+	o.fogStep			= 1;
 
-	o.player = _parent.player;
-	o.character = _parent.character;
-	o.manager = _parent.manager;
-	o.gameTime = getGameTime();
+	o.player			= _parent.player;
+	o.character			= _parent.character;
+	o.manager			= _parent.manager;
+	o.gameTime			= getGameTime();
 	o.climateManager	= getClimateManager();
-	o.climateMoon = getClimateMoon();
+	o.climateMoon		= getClimateMoon();
 
-	o.currentZone = "Unknown";
-	o.currentZones = {};
+	o.currentZone		= "Unknown";
+	o.currentZones		= {};
 	o.zoneTitleString	= "Unknown";
 
-	o.currentTip = 1;
+	o.currentTip		= 1;
 	o.flashTipButton	= false;
-	o.blinkStep = 0;
-	o.flashNumber = 0;
+	o.blinkStep			= 0;
+	o.flashNumber		= 0;
 	o.flashNumberMax	= 10;
-	o.perkLevel = o.character:getPerkLevel(Perks.PlantScavenging);
+	o.perkLevel			= o.character:getPerkLevel(Perks.PlantScavenging);
 
 	o:initialise();
 

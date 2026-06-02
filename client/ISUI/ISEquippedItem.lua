@@ -126,6 +126,14 @@ function ISEquippedItem:prerender()
             self.debugBtn:setImage(self.debugIconOff);
         end
     end
+
+    if self.arfBtn then
+        if isAnimationRecorderActive() then
+            self.arfBtn:setImage(self.arfIconOn);
+        else
+            self.arfBtn:setImage(self.arfIconOff);
+        end
+    end
     
     if self.clientBtn then
         if ISUserPanelUI.instance then
@@ -448,6 +456,8 @@ function ISEquippedItem:onOptionMouseDown(button, x, y)
         else
             ISDebugMenu.OnOpenPanel();
         end
+    elseif button.internal == "ARF" then
+        setAnimationRecorderActive(not isAnimationRecorderActive())
     elseif button.internal == "USERPANEL" then
         if ISUserPanelUI.instance then
             ISUserPanelUI.instance:close()
@@ -641,6 +651,9 @@ function ISEquippedItem:new (x, y, width, height, chr)
     --debug
     o.debugIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_On_" .. TEXTURE_WIDTH .. ".png");
     o.debugIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Debug_Off_" .. TEXTURE_WIDTH .. ".png");
+    --arf
+    o.arfIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/ARF_Icon_On_" .. TEXTURE_WIDTH .. ".png");
+    o.arfIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/ARF_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
     --client
     o.clientIconOn = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_On_" .. TEXTURE_WIDTH .. ".png");
     o.clientIconOff = getTexture("media/ui/Sidebar/" .. TEXTURE_WIDTH .."/Client_Icon_Off_" .. TEXTURE_WIDTH .. ".png");
@@ -802,6 +815,7 @@ function ISEquippedItem:initialise()
         self:addChild(self.movableBtn);
         self:addMouseOverToolTipItem(self.movableBtn, getText("IGUI_MovableTooltip") );
 
+        self:setHeight(self.movableBtn:getBottom());
         y = self.movableBtn:getBottom() + UI_BORDER_SPACING + 5
 
         -- search button
@@ -816,6 +830,7 @@ function ISEquippedItem:initialise()
         self:addChild(self.searchBtn);
         self:addMouseOverToolTipItem(self.searchBtn, getText("UI_investigate_area_window_title") );
 
+        self:setHeight(self.searchBtn:getBottom());
         y = self.searchBtn:getBottom() + UI_BORDER_SPACING + 5
 
         -- animal zone button
@@ -830,6 +845,7 @@ function ISEquippedItem:initialise()
         self:addChild(self.zoneBtn);
         self:addMouseOverToolTipItem(self.zoneBtn, getText("IGUI_Zone_Name") );
 
+        self:setHeight(self.zoneBtn:getBottom());
         y = self.zoneBtn:getBottom() + UI_BORDER_SPACING + 5
 
         if ISWorldMap.IsAllowed() then
@@ -850,6 +866,7 @@ function ISEquippedItem:initialise()
                 self.mapPopup:setVisible(false)
             end
 
+            self:setHeight(self.mapBtn:getBottom());
             y = self.mapBtn:getBottom() + UI_BORDER_SPACING + 5
         end
 
@@ -868,12 +885,21 @@ function ISEquippedItem:initialise()
 
             self:setHeight(self.debugBtn:getBottom())
             y = self.debugBtn:getBottom() + UI_BORDER_SPACING + 5
-        elseif self.mapBtn then
-            self:setHeight(self.mapBtn:getBottom());
-        elseif self.searchBtn then
-            self:setHeight(self.searchBtn:getBottom());
-        else
-            self:setHeight(self.movableBtn:getBottom());
+
+            self.arfBtn = ISButton:new(0, y, TEXTURE_WIDTH, TEXTURE_HEIGHT, "", self, ISEquippedItem.onOptionMouseDown);
+            self.arfBtn:setImage(self.arfIconOff);
+            self.arfBtn.internal = "ARF";
+            self.arfBtn:initialise();
+            self.arfBtn:instantiate();
+            self.arfBtn:setDisplayBackground(false);
+            self.arfBtn:ignoreWidthChange();
+            self.arfBtn:ignoreHeightChange();
+
+            self:addChild(self.arfBtn);
+            self:addMouseOverToolTipItem(self.arfBtn, getText("IGUI_ARFRecording"));
+
+            self:setHeight(self.arfBtn:getBottom())
+            y = self.arfBtn:getBottom() + UI_BORDER_SPACING + 5
         end;
 
         if isClient() then

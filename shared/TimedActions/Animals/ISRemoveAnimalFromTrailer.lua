@@ -52,7 +52,7 @@ function ISRemoveAnimalFromTrailer:complete()
 		if instanceof(animal, "IsoDeadBody") then
 			invItem = animal:getItem();
 			self.character:getInventory():AddItem(invItem)
-			sendAddItemToContainer(self.character:getInventory(), invItem);
+			sendRemoveAndGrabAnimalFromTrailer(self.animal, self.character, self.vehicle, invItem)
 
 			animal:getSquare():removeCorpse(animal, false);
 			animal:invalidateCorpse();

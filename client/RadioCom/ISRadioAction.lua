@@ -171,18 +171,18 @@ function ISRadioAction:performTogglePlayMedia()
 end
 
 function ISRadioAction:new(mode, character, device, secondaryItem)
-    local o = {};
+    local o             = {};
     setmetatable(o, self);
-    self.__index = self;
-    o.mode = mode;
-    o.character = character;
-    o.device = device;
-    o.deviceData = device and device:getDeviceData();
-    o.secondaryItem = secondaryItem;
+    self.__index        = self;
+    o.mode              = mode;
+    o.character         = character;
+    o.device            = device;
+    o.deviceData        = device and device:getDeviceData();
+    o.secondaryItem     = secondaryItem;
 
-    o.stopOnWalk = false;
-    o.stopOnRun = true;
-    o.maxTime = 30;
+    o.stopOnWalk        = false;
+    o.stopOnRun         = true;
+    o.maxTime           = 30;
     o.ignoreHandsWounds = true;
 
     return o;

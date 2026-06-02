@@ -72,7 +72,7 @@ function ISItemSlotAddAction:complete()
 		return false;
 	end
 
-    if not self.item:getContainer() then
+    if not self.item:getContainer() and not self.item:getWorldItem() then
         return false;
     end
 	

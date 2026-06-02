@@ -700,6 +700,7 @@ function ISScrollingListBox:new (x, y, width, height)
 	o = ISPanelJoypad:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
+	o.SuperType = ISPanelJoypad
 	o.x = x;
 	o.y = y;
 	o:noBackground();
@@ -730,5 +731,6 @@ function ISScrollingListBox:new (x, y, width, height)
 	o.itemheightoverride = {}
 	o.items = {}
 	o.columns = {};
+	o.autoAddJoypadButton = true
 	return o
 end

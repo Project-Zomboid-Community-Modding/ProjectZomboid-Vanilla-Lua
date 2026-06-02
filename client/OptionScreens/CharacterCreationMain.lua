@@ -597,6 +597,7 @@ function CharacterCreationMain:createNameAndGender()
 	self.forenameEntry = ISTextEntryBox:new(MainScreen.instance.desc:getForename(), 0, self.yOffset, 0, BUTTON_HGT);
 	self.forenameEntry:initialise();
 	self.forenameEntry:instantiate();
+	self.forenameEntry:setClearButton(true);
 	self.characterPanel:addChild(self.forenameEntry);
 	table.insert(self.characterPanel.comboResizeTable, self.forenameEntry)
 	table.insert(self.characterPanel.repos3Table, self.forenameEntry)
@@ -610,6 +611,7 @@ function CharacterCreationMain:createNameAndGender()
 	self.surnameEntry = ISTextEntryBox:new(MainScreen.instance.desc:getSurname(), 0, self.forenameEntry:getBottom() + UI_BORDER_SPACING, 0, BUTTON_HGT);
 	self.surnameEntry:initialise();
 	self.surnameEntry:instantiate();
+	self.surnameEntry:setClearButton(true);
 	self.characterPanel:addChild(self.surnameEntry);
 	table.insert(self.characterPanel.comboResizeTable, self.surnameEntry)
 	table.insert(self.characterPanel.repos3Table, self.surnameEntry)

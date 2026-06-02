@@ -1,8 +1,8 @@
 ISMenuContext = {};
 
 function ISMenuContext.new()
-	local self = {};
-	self.elements = ISPriorityTable.new();	-- Specialized table for z index ordering, see Utils folder.
+	local self 		= {};
+	self.elements 	= ISPriorityTable.new();	-- Specialized table for z index ordering, see Utils folder.
 	
 	-- needs to be overridden
 	function self.createMenu()

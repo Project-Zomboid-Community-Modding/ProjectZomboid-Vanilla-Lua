@@ -100,6 +100,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     tests.usedInRecipes = nil;
     tests.inventoryItem = nil;
     tests.mediaText = nil;
+    tests.radio = nil;
 
 	-- For dropping stuff out of vehicle doors/windows.
 	local vehicleTest = {}
@@ -194,6 +195,9 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
         end
         if testItem:getMakeUpType() then
             tests.makeup = testItem;
+        end
+        if testItem:getScriptItem():isItemType(ItemType.RADIO) and testItem:getDeviceData() and testItem:getDeviceData():getIsPortable() then
+            tests.radio = testItem;
         end
         -- weapons cannot be fixed unless they aren't broken; broken objects needs to be reclaimed or reforged as part of crafting rework.
         if (not testItem:isBroken()) and testItem:getCondition() < testItem:getConditionMax() then
@@ -361,7 +365,7 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
 		if windowPart and windowPart:getWindow() then
 			vehicleTest.hasWindow = true
 			window = windowPart:getWindow()
-			if window:isOpen() then
+			if window:isOpen() or window:isDestroyed() then
 				vehicleTest.windowOpen = true
 			end
 		end
@@ -888,6 +892,10 @@ ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, it
     end
     if tests.makeup then
         ISInventoryPaneContextMenu.doMakeUpMenu(context, tests.makeup, playerObj)
+    end
+    if tests.radio and (playerObj:getPrimaryHandItem() == tests.radio or playerObj:getSecondaryHandItem() == tests.radio or playerObj:getClothingItem_Back() == tests.radio) then
+        local option = context:addOption(getText("IGUI_DeviceOptions"), playerObj, ISRadioAndTvMenu.openRadioPanel, tests.radio);
+        option.itemForTexture = tests.radio;
     end
 
     ISInventoryPaneContextMenu.doPlace3DItemOption(items, playerObj, context)

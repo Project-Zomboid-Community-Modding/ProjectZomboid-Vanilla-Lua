@@ -559,10 +559,13 @@ end
 function ButcheringUtil.createAnimalForHook(hook, newCorpse)
     local modData = newCorpse:getModData();
     local animal = IsoAnimal.new(getCell(), hook:getSquare():getX(), hook:getSquare():getY(), hook:getSquare():getZ(), modData["AnimalType"], modData["AnimalBreed"]);
-    if newCorpse then
-        modData["originalSize"] = newCorpse:getAnimalSize();
-        modData["deathTime"] = newCorpse:getDeathTime();
-    end
+    animal:copyGenome(newCorpse:getAnimalGenome())
+    animal:copyGeneticDisorder(newCorpse:getAnimalGeneticDisorder())
+    -- setWeight() clamps the value to the min/max weight, which are both affected by the animal's genome.
+    -- So, ensure the genome is updated before calling setWeight()!
+    animal:getData():setWeight(newCorpse:getWeight())
+    modData["originalSize"] = newCorpse:getAnimalSize();
+    modData["deathTime"] = newCorpse:getDeathTime();
     animal:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
     if modData["animalSize"] < animal:getData():getSize() then
         animal:getData():setSizeForced(modData["animalSize"]);

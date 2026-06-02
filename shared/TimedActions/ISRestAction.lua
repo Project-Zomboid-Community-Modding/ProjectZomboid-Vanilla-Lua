@@ -69,6 +69,11 @@ function ISRestAction:update()
 end
 
 function ISRestAction:start()
+    if self.bed and self.bed:isFurnitureOccupied(self.character) then
+        self:forceStop();
+        return;
+    end
+
 	if self:furnitureHasSittingData(self.bed) and self.useAnimations then
 		self.character:reportEvent("EventSitOnFurniture")
 		self:setWhileSittingDirection()
@@ -94,6 +99,11 @@ function ISRestAction:animEvent(event, parameter)
 end
 
 function ISRestAction:serverStart()
+    if self.bed and self.bed:isFurnitureOccupied(self.character) then
+        self.netAction:forceComplete();
+        return;
+    end
+
     local sitDir, _ = self:calculateSitOnFurnitureDirection(self.character, self.bed);
     self.character:setSitOnFurnitureDirection(sitDir);
     self.bed:setSatChair(true);

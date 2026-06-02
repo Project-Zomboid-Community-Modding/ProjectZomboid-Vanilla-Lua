@@ -275,7 +275,7 @@ function ISBuildAction:new(character, item, x, y, z, north, spriteName, time)
     o.started = false;
     o.transactionId = 0;
     if isClient() then -- The client completes the transfer after receiving packet ActionPacket from the server
-        o.maxTime = -1
+        o.maxTime  = -1
     end
 	return o;
 end

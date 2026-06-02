@@ -404,6 +404,7 @@ function SpawnRegionsNameFilePanel:createChildren()
 	self.entryName.font = UIFont.Medium
 	self.entryName.onCommandEntered = function(entry) self:onNameEntered() end
 	self:addChild(self.entryName)
+	self.entryName:setClearButton(true)
 
 	label = ISLabel:new(PADDING_X, self.entryName:getBottom() + UI_BORDER_SPACING, entryHgt, "file", 1, 1, 1, 1, UIFont.Medium, true)
 	self:addChild(label)
@@ -412,6 +413,7 @@ function SpawnRegionsNameFilePanel:createChildren()
 	self.entryFile.font = UIFont.Medium
 	self.entryFile.onCommandEntered = function(entry) self:onFileEntered() end
 	self:addChild(self.entryFile)
+	self.entryFile:setClearButton(true)
 
 	self:insertNewLineOfButtons(self.entryName)
 	self:insertNewLineOfButtons(self.entryFile)
@@ -794,9 +796,8 @@ function ServerSettingsScreenModsPanel:createChildren()
 	label:setX((self.width-label.width)/2)
 	self:addChild(label)
 
-	local buttonWid = getTextManager():MeasureStringX(UIFont.Medium, getText("UI_LoadGameScreen_ButtonChooseMods")) + UI_BORDER_SPACING*2
 	local listboxWid = math.min(self.width - 24 * 2, 500)
-	local listboxX = (self.width-(buttonWid + listboxWid + UI_BORDER_SPACING))/2
+	local listboxX = (self.width-listboxWid)/2
 
 	self.listbox = ServerSettingsScreenModsListBox:new(listboxX, label:getBottom() + UI_BORDER_SPACING, listboxWid, self.height - 24 * 2)
 	self.listbox:initialise()
@@ -812,18 +813,7 @@ function ServerSettingsScreenModsPanel:createChildren()
 	self.listbox.vscroll:setHeight(self.listbox.height)
 	self:addChild(self.listbox)
 
-	local button = ISButton:new(self.listbox:getRight() + UI_BORDER_SPACING, self.listbox.y, buttonWid, BUTTON_HGT, getText("UI_LoadGameScreen_ButtonChooseMods"), self, self.onButtonChoose)
-	button:initialise()
-	button:setAnchorLeft(true)
-	button:setAnchorTop(false)
-	button:setAnchorRight(false)
-	button:setAnchorBottom(false)
-	button.borderColor = {r=1, g=1, b=1, a=0.2}
-	button:setFont(UIFont.Medium)
-	self:addChild(button)
-	self.button = button
-
-	self:addJoypadColumn( { button } )
+	self:addJoypadColumn( { self.listbox } )
 	self:setJoypadColumn(1)
 end
 
@@ -939,8 +929,7 @@ function ServerSettingsScreenModsPanel:onResolutionChange()
 			child:setX((self.width-child.width)/2)
 		end
 	end
-	self.listbox:setX((self.width-(self.listbox.width + self.button.width + UI_BORDER_SPACING))/2)
-	self.button:setX(self.listbox:getRight() + UI_BORDER_SPACING)
+	self.listbox:setX((self.width-self.listbox.width)/2)
 end
 
 function ServerSettingsScreenModsListBox:prerender()
@@ -1061,6 +1050,7 @@ function ServerSettingsScreenMapsPanel:createChildren()
 	entry.tooltip = getTooltipText("UI_ServerSettings_AddOtherMap_tooltip")
 	entry.onCommandEntered = self.onAddOtherMap
 	self:addChild(entry)
+	entry:setClearButton(true)
 	self.entry = entry
 
 	self:addJoypadColumn( { self.listbox, self.comboBox, entry } )
@@ -2178,6 +2168,7 @@ function Page2:create()
 	self.entry.font = UIFont.Medium
 	self.entry:initialise()
 	self.entry:instantiate()
+	self.entry:setClearButton(true)
 	self.entry:setX((self.width-entryWid)/2)
 	self:addChild(self.entry)
 
@@ -2416,6 +2407,7 @@ function Page3:create()
 	self.filterEntry.onTextChange = function() self:doSearch() end
 	self.filterEntry:initialise()
 	self.filterEntry:instantiate()
+	self.filterEntry:setClearButton(true)
 	self:addChild(self.filterEntry)
 
 	self.controls = {}
@@ -2547,6 +2539,7 @@ function Page3:createPanel(category, page)
 			control:initialise()
 			control:instantiate()
 			control:setOnlyNumbers(setting.onlyNumbers or false)
+			control:setClearButton(true)
 		elseif setting.type == "enum" then
 			label = ISLabel:new(0, 0, LABEL_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
 			control = ISComboBox:new(0, 0, CONTROL_WIDTH, LABEL_HGT, self, self.onComboBoxSelected, category.name, setting.name)
@@ -2719,7 +2712,7 @@ function Page3:onPanelChange()
 			labelWidth = math.max(labelWidth, self.currentPanel.labels[name].width)
 		end
 
-		local xOffset = (panelWidth - (labelWidth + CONTROL_WIDTH + UI_BORDER_SPACING*2))/2
+		local xOffset = UI_BORDER_SPACING * 2
 
 		for i=1,#self.currentPanel.settingNames do
 			name = self.currentPanel.settingNames[i]
@@ -3179,6 +3172,7 @@ function Page4:create()
 	self.entry.font = UIFont.Medium
 	self.entry:initialise()
 	self.entry:instantiate()
+	self.entry:setClearButton(true)
 	self.entry:setX((self.width-self.entry.width)/2)
 	self:addChild(self.entry)
 
@@ -3344,6 +3338,7 @@ function Page5:create()
 	self.entry.font = UIFont.Medium
 	self.entry:initialise()
 	self.entry:instantiate()
+	self.entry:setClearButton(true)
 	self.entry:setX((self.width-self.entry.width)/2)
 	self:addChild(self.entry)
 
@@ -4110,6 +4105,9 @@ function ServerSettingsScreen:onResetLua(reason)
 			end
 
 			reactivateJoypadAfterResetLua()
+			if JoypadState.joypads[1] and not JoypadState.joypads[1].focus then
+				JoypadState.joypads[1].inMainMenu = true
+			end
 			self.pageStart:setVisible(false)
 			self.pageEdit:setVisible(true, JoypadState.getMainMenuJoypad())
 		end
@@ -4121,9 +4119,14 @@ function ServerSettingsScreen:onResetLua(reason)
 			DebugScenarios.instance = nil;
 		end
 
+		reactivateJoypadAfterResetLua()
+		if JoypadState.joypads[1] and not JoypadState.joypads[1].focus then
+			JoypadState.joypads[1].inMainMenu = true
+		end
+
 		self.prevScreen = CoopOptionsScreen.instance
 		self:aboutToShow()
-		self:setVisible(true)
+		self:setVisible(true, JoypadState.getMainMenuJoypad())
 	end
 end
 

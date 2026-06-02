@@ -151,6 +151,7 @@ function ISRadioWindow:update()
 
     if self.deviceData and self.deviceType=="InventoryItem" then        -- conveniently turn off radio when unequiped to prevent accidental loss of power.
         self.deviceData:setIsTurnedOn(false);
+        self.device:setActivated(false);
     end
 
     -- otherwise remove

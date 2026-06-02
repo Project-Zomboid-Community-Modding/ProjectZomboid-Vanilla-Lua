@@ -1,15 +1,83 @@
 require "ISBaseObject"
+require "ISUI/ISUITextureGetter"
+require "ISUI/Style/ISStyle"
+require "ISUI/Style/UIHorizontalAlignment"
+require "ISUI/Layout/ISDock"
+require "ISUI/Layout/ISBounds"
+require "luautils"
 
 ISUIElement = ISBaseObject:derive("ISUIElement");
 
 ISUIElement.IDMax = 1;
 
 function ISUIElement:initialise()
-	-- FIXME: need to avoid calling this method more than once, ID changes
-	self.children = {}
-	--	Give each UI element a unique ID.
-	self.ID = ISUIElement.IDMax;
-	 ISUIElement.IDMax = ISUIElement.IDMax + 1;
+    -- FIXME: need to avoid calling this method more than once, ID changes
+    self.children = {}
+    self.childrenInOrder = {}
+    --	Give each UI element a unique ID.
+    self.ID = ISUIElement.IDMax;
+    ISUIElement.IDMax = ISUIElement.IDMax + 1;
+end
+
+function ISUIElement:doLayout()
+    if (self.onDoLayout ~= nil) then
+        self.onDoLayout(self)
+    end
+
+    if (self.childrenInOrder == nil) then return end
+
+    local selfBounds = self:getScrollableBounds()
+    if (self.vscroll ~= nil) then
+        selfBounds.width = selfBounds.width - self.vscroll:getWidth()
+    end
+    for _,child in ipairs(self.childrenInOrder) do
+        local childDock = child.dock
+        local childBounds = child:getBounds()
+        if (childDock == ISDock.Fill) then
+            childBounds = selfBounds:getMovedTo(0, 0)
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.Left) then
+            childBounds.x = 0
+            childBounds.y = 0
+            childBounds.height = selfBounds.height
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.TopLeft) then
+            childBounds.x = 0
+            childBounds.y = 0
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.Top) then
+            childBounds.x = 0
+            childBounds.y = 0
+            childBounds.width = selfBounds.width
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.TopRight) then
+            childBounds.x = selfBounds.width - childBounds.width
+            childBounds.y = 0
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.Right) then
+            childBounds.x = selfBounds.width - childBounds.width
+            childBounds.y = 0
+            childBounds.height = selfBounds.height
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.BottomRight) then
+            childBounds.x = selfBounds.width - childBounds.width
+            childBounds.y = selfBounds.height - childBounds.height
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.Bottom) then
+            childBounds.x = 0
+            childBounds.y = selfBounds.height - childBounds.height
+            childBounds.width = selfBounds.width
+            child:setBounds(childBounds)
+        elseif (childDock == ISDock.BottomLeft) then
+            childBounds.x = 0
+            childBounds.y = selfBounds.height - childBounds.height
+            child:setBounds(childBounds)
+        end
+    end
+
+    for _,child in ipairs(self.childrenInOrder) do
+        child:doLayout()
+    end
 end
 
 function ISUIElement:setController(c)
@@ -18,6 +86,44 @@ end
 
 function ISUIElement:getController()
     return self.controller;
+end
+
+function ISUIElement:getBounds()
+    return ISBounds:new(self:getX(), self:getY(), self:getWidth(), self:getHeight())
+end
+
+function ISUIElement:getLocalBounds()
+    return ISBounds:new(0, 0, self:getWidth(), self:getHeight())
+end
+
+function ISUIElement:getAbsoluteBounds()
+    return ISBounds:new(self:getAbsoluteX(), self:getAbsoluteY(), self:getWidth(), self:getHeight())
+end
+
+function ISUIElement:toLocalBounds(absoluteBounds)
+    local myBounds = self:getAbsoluteBounds()
+    return absoluteBounds:getMoved(-myBounds.x, -myBounds.y)
+end
+
+function ISUIElement:getScrollableBounds()
+    local scrollableBounds = self:getBounds()
+
+    local scrollWidth = self:getScrollWidth()
+    if (scrollWidth ~= nil and scrollWidth > 0) then
+        scrollableBounds.width = scrollWidth
+    end
+
+    local scrollHeight = self:getScrollHeight()
+    if (scrollHeight ~= nil and scrollHeight > 0) then
+        scrollableBounds.height = scrollHeight
+    end
+    return scrollableBounds
+end
+function ISUIElement:setBounds(bounds)
+    self:setX(bounds.x)
+    self:setY(bounds.y)
+    self:setWidth(bounds.width)
+    self:setHeight(bounds.height)
 end
 
 function ISUIElement:setAnchorBottom(bAnchor)
@@ -113,6 +219,14 @@ function ISUIElement:setY(y)
 	end
 end
 
+function ISUIElement:setCenterY(y)
+    self:setY(y - self:getHeight() / 2)
+end
+
+function ISUIElement:setCenterX(x)
+    self:setX(x - self:getWidth() / 2)
+end
+
 function ISUIElement:setWidth(w)
 
    self.width = w;
@@ -156,6 +270,10 @@ function ISUIElement:getHeight()
 	return self.javaObject:getHeight();
 end
 
+function ISUIElement:getLeft()
+    return self:getX()
+end
+
 function ISUIElement:getRight()
 	if self.javaObject == nil then
 		self:instantiate();
@@ -163,11 +281,23 @@ function ISUIElement:getRight()
 	return self.javaObject:getX() + self.javaObject:getWidth();
 end
 
+function ISUIElement:getAbsoluteRight()
+    return self:getAbsoluteX() + self:getWidth()
+end
+
+function ISUIElement:getTop()
+    return self:getY()
+end
+
 function ISUIElement:getBottom()
 	if self.javaObject == nil then
 		self:instantiate();
 	end
 	return self.javaObject:getY() + self.javaObject:getHeight();
+end
+
+function ISUIElement:getAbsoluteBottom()
+    return self:getAbsoluteY() + self:getHeight()
 end
 
 function ISUIElement:getXScroll()
@@ -220,12 +350,24 @@ function ISUIElement:getMouseY()
 	return (getMouseY()-self.javaObject:getYScroll()) - self:getAbsoluteY();
 end
 
-function ISUIElement:getCentreX()
+function ISUIElement:getSelfCenterX()
 	return self:getWidth() / 2.0;
 end
 
-function ISUIElement:getCentreY()
-	return self:getHeight() / 2.0;
+function ISUIElement:getCenterX()
+	return self:getX() + self:getWidth() / 2.0;
+end
+
+function ISUIElement:getCenterY()
+	return self:getY() + self:getHeight() / 2.0;
+end
+
+function ISUIElement:getAbsoluteCenterX()
+	return self:getAbsoluteX() + self:getWidth() / 2.0;
+end
+
+function ISUIElement:getAbsoluteCenterY()
+	return self:getAbsoluteY() + self:getHeight() / 2.0;
 end
 
 function ISUIElement:getX()
@@ -513,12 +655,17 @@ function ISUIElement:setJoypadFocused(focused, joypadData)
 end
 
 function ISUIElement:setVisible(bVisible)
+    local wasVisible = self:isVisible()
 	if self.javaObject == nil then
 		self:instantiate();
 	end
 	self.javaObject:setVisible(bVisible);
     if self.visibleTarget and self.visibleFunction then
         self.visibleFunction(self.visibleTarget, self);
+    end
+
+    if (bVisible and bVisible ~= wasVisible) then
+        self:doLayout()
     end
 end
 
@@ -854,6 +1001,7 @@ function ISUIElement:instantiate()
 	self.javaObject:setAnchorTop(self.anchorTop);
 	self.javaObject:setAnchorBottom(self.anchorBottom);
 	self.javaObject:setWantKeyEvents(self.wantKeyEvents or false);
+	self.javaObject:setConsumeMouseEvents(self.wantMouseEvents or false);
 	self.javaObject:setWantExtraMouseEvents(self.wantExtraMouseEvents or false);
 	self.javaObject:setForceCursorVisible(self.forceCursorVisible or false);
 	self:createChildren();
@@ -864,6 +1012,7 @@ end
 
 function ISUIElement:drawTextureAllPoint(texture, tlx, tly, trx, try, brx, bry, blx, bly, r,g,b,a)
     if self.javaObject ~= nil then
+        local texture = ISUITextureGetter.checkGetTexture(texture)
         self.javaObject:DrawTexture(texture, tlx, tly, trx, try, brx, bry, blx, bly, r,g,b,a);
     end
 end
@@ -882,7 +1031,7 @@ end
 
 function ISUIElement:drawTextureScaled(texture, x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+        local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaled(texture, x, y, w, h, a);
 		else
@@ -891,9 +1040,20 @@ function ISUIElement:drawTextureScaled(texture, x, y, w, h, a, r, g, b)
 	end
 end
 
+function ISUIElement:drawSubTexture(texture, subX, subY, subW, subH, x, y, w, h, a, r, g, b)
+    if self.javaObject ~= nil then
+        local texture = ISUITextureGetter.checkGetTexture(texture)
+        if r==nil then
+            self.javaObject:DrawSubTextureRGBA(texture, x, y, w, h, 1, 1, 1, a);
+        else
+            self.javaObject:DrawSubTextureRGBA(texture, subX, subY, subW, subH, x, y, w, h, r, g, b, a);
+        end
+    end
+end
+
 function ISUIElement:drawTextureScaledUniform(texture, x, y, scale, a, r, g, b)
 	if self.javaObject ~= nil then
-
+        local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaledUniform(texture, x, y, scale, 1, 1, 1, a);
 		else
@@ -904,7 +1064,7 @@ end
 
 function ISUIElement:drawTextureScaledAspect(texture, x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaledAspect(texture, x, y, w, h, 1, 1, 1, a);
 		else
@@ -915,7 +1075,7 @@ end
 
 function ISUIElement:drawTextureScaledAspect2(texture, x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaledAspect2(texture, x, y, w, h, 1, 1, 1, a);
 		else
@@ -926,7 +1086,7 @@ end
 
 function ISUIElement:drawTextureScaledAspect3(texture, x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaledAspect3(texture, x, y, w, h, 1, 1, 1, a);
 		else
@@ -937,6 +1097,7 @@ end
 
 function ISUIElement:drawTexture(texture, x, y, a, r, g, b)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTexture(texture, x, y, a);
 		else
@@ -947,6 +1108,7 @@ end
 
 function ISUIElement:drawTextureTiled(texture, x, y, w, h, r, g, b, a)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if not r then
 			r,g,b,a = 1,1,1,1
 		end
@@ -956,6 +1118,7 @@ end
 
 function ISUIElement:drawTextureTiledX(texture, x, y, w, h, r, g, b, a)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if not r then
 			r,g,b,a = 1,1,1,1
 		end
@@ -965,6 +1128,7 @@ end
 
 function ISUIElement:drawTextureTiledY(texture, x, y, w, h, r, g, b, a)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if not r then
 			r,g,b,a = 1,1,1,1
 		end
@@ -974,6 +1138,7 @@ end
 
 function ISUIElement:drawTextureTiledYOffset(texture, x, y, w, h, r, g, b, a)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if not r then
 			r,g,b,a = 1,1,1,1
 		end
@@ -981,15 +1146,16 @@ function ISUIElement:drawTextureTiledYOffset(texture, x, y, w, h, r, g, b, a)
 	end
 end
 
-function ISUIElement:DrawTextureAngle(tex, centerX, centerY, angle)
+function ISUIElement:DrawTextureAngle(texture, centerX, centerY, angle)
     if self.javaObject ~= nil then
-       self.javaObject:DrawTextureAngle(tex, centerX, centerY, angle);
+        local texture = ISUITextureGetter.checkGetTexture(texture)
+        self.javaObject:DrawTextureAngle(texture, centerX, centerY, angle);
     end
 end
 
 function ISUIElement:drawTextureScaledStatic(texture, x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTextureScaled(texture, x, y, w, h, a);
 		else
@@ -1000,6 +1166,7 @@ end
 
 function ISUIElement:drawTextureStatic(texture, x, y, a, r, g, b)
 	if self.javaObject ~= nil then
+	    local texture = ISUITextureGetter.checkGetTexture(texture)
 		if r==nil then
 			self.javaObject:DrawTexture(texture, x, y, a);
 		else
@@ -1010,7 +1177,6 @@ end
 
 function ISUIElement:drawItemIcon(item, x, y, a, w, h)
 	if self.javaObject ~= nil then
-
 		self.javaObject:DrawItemIcon(item, x, y, a, w, h);
 	end
 end
@@ -1028,21 +1194,21 @@ function ISUIElement:drawRect( x, y, w, h, a, r, g, b)
 			return;
 		end
 		self.javaObject:DrawTextureScaledColor(nil,x, y, w, h, r, g, b, a);
-
 	end
+end
+
+function ISUIElement:drawRectBounds( bounds, a, r, g, b)
+	self:drawRect(bounds.x, bounds.y, bounds.width, bounds.height, a, r, g, b)
 end
 
 function ISUIElement:drawRectStatic( x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
 		self.javaObject:DrawTextureScaledColor(nil, x-self:getXScroll(), y-self:getYScroll(), w, h, r, g, b, a);
-
 	end
 end
 
 function ISUIElement:drawRectBorderStatic( x, y, w, h, a, r, g, b)
 	if self.javaObject ~= nil then
-
 		self.javaObject:DrawTextureScaledColor(nil, x-self:getXScroll(), y-self:getYScroll(), 1, h, r, g, b, a);
 		self.javaObject:DrawTextureScaledColor(nil, x-self:getXScroll()+1, y-self:getYScroll(), w-2, 1, r, g, b, a);
 		self.javaObject:DrawTextureScaledColor(nil, x-self:getXScroll()+w-1, y-self:getYScroll(), 1, h, r, g, b, a);
@@ -1060,10 +1226,29 @@ function ISUIElement:drawRectBorder( x, y, w, h, a, r, g, b)
 	end
 end
 
-function ISUIElement:drawLine2( x, y, x2, y2, a, r, g, b)
+function ISUIElement:drawLine2(x, y, x2, y2, a, r, g, b)
 	if self.javaObject ~= nil then
 		self.javaObject:DrawTexture(nil, x, y, x2, y2, x2+1, y2, x, y+1, r, g, b, a);
 	end
+end
+
+function ISUIElement:drawLine(texture, x, y, x2, y2, thickness, a, r, g, b)
+    if self.javaObject ~= nil then
+        local texture = ISUITextureGetter.checkGetTexture(texture)
+        self.javaObject:DrawLine(texture, x, y, x2, y2, thickness, r, g, b, a)
+    end
+end
+
+function ISUIElement:drawLineAbsolute(texture, x, y, x2, y2, thickness, a, r, g, b)
+    local absX = self:getAbsoluteX()
+    local absY = self:getAbsoluteY()
+    local scrollX = self:getXScroll()
+    local scrollY = self:getYScroll()
+
+    local dx = -absX - scrollX
+    local dy = -absY - scrollY
+    local texture = ISUITextureGetter.checkGetTexture(texture)
+    self:drawLine(texture, x + dx, y + dy, x2 + dx, y2 + dy, thickness, a, r, g, b)
 end
 
 function ISUIElement:drawPolygon(tex, x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a)
@@ -1119,7 +1304,6 @@ function ISUIElement:drawText(str, x, y, r, g, b, a, font)
 end
 
 function ISUIElement:drawTextRight(str, x, y, r, g, b, a, font)
-
 	if self.javaObject ~= nil and str ~= nil then
 		if self.isCollapsed then
 			return;
@@ -1203,6 +1387,7 @@ function ISUIElement:backMost()
 end
 
 function ISUIElement:addScrollBars(addHorizontal)
+    self:removeScrollBars()
 	self.vscroll = ISScrollBar:new(self, true);
 	self.vscroll:initialise();
 	self:addChild(self.vscroll);
@@ -1211,6 +1396,16 @@ function ISUIElement:addScrollBars(addHorizontal)
 		self.hscroll:initialise()
 		self:addChild(self.hscroll)
 	end
+end
+
+function ISUIElement:removeScrollBars()
+    if (self.vscroll) then
+        self.vscroll:detachFromParent()
+    end
+
+    if (self.hscroll) then
+        self.hscroll:detachFromParent()
+    end
 end
 
 function ISUIElement:isVScrollBarVisible()
@@ -1225,6 +1420,34 @@ function ISUIElement:getChildren()
 	return self.children;
 end
 
+function ISUIElement:getChildrenInOrder()
+	return self.childrenInOrder;
+end
+
+function ISUIElement:numChildren()
+    local numChildren = 0
+    if (self.children ~= nil) then
+        for _,child in pairs(self.children) do
+            numChildren = numChildren + 1
+        end
+    end
+
+    return numChildren
+end
+
+function ISUIElement:visitAndAllDescendants(param0, visitor)
+    visitor(param0, self)
+    self:visitAllDescendants(param0, visitor)
+    return param0
+end
+
+function ISUIElement:visitAllDescendants(param0, visitor)
+    for _,child in ipairs(self:getChildrenInOrder()) do
+        child:visitAndAllDescendants(param0, visitor)
+    end
+    return param0
+end
+
 function ISUIElement:addChild(otherElement)
 	if self.javaObject == nil then
 		self:instantiate();
@@ -1234,25 +1457,32 @@ function ISUIElement:addChild(otherElement)
 	end
 	if self.children == nil then
 		self.children = {}
+		self.childrenInOrder = {}
 		self.ID = ISUIElement.IDMax;
 		ISUIElement.IDMax = ISUIElement.IDMax + 1;
 	end
 	if otherElement.children == nil then
 		otherElement.children = {}
+		otherElement.childrenInOrder = {}
 		otherElement.ID = ISUIElement.IDMax;
 		ISUIElement.IDMax = ISUIElement.IDMax + 1;
 	end
+    if (otherElement:getParent() ~= self and otherElement:getParent() ~= nil) then
+        otherElement:detachFromParent()
+    end
 	self.children[otherElement.ID] = otherElement;
+	table.insert(self.childrenInOrder, otherElement)
 	self.javaObject:AddChild(otherElement.javaObject);
 	otherElement.parent = self;
+	return otherElement
 end
 
 function ISUIElement:removeChild(otherElement)
-
 	if self.javaObject == nil then
 		return;
 	end
 
+    luautils.remove(self.childrenInOrder, otherElement)
 	self.children[otherElement.ID] = nil;
 
 	if(otherElement.javaObject ~= nil) then
@@ -1265,7 +1495,15 @@ function ISUIElement:clearChildren()
 		return;
 	end
 	self.children = {}
+	self.childrenInOrder = {}
 	self.javaObject:ClearChildren();
+end
+
+function ISUIElement:detachFromParent()
+    local parent = self:getParent()
+    if (parent ~= nil) then
+        parent:removeChild(self)
+    end
 end
 
 function ISUIElement:onMouseWheel(del)
@@ -1514,7 +1752,6 @@ function ISUIElement:getScrollAreaHeight()
 end
 
 function ISUIElement:wrapInCollapsableWindow(title, resizable, subClass)
-
 	local titleBarHeight = ISCollapsableWindow.TitleBarHeight()
 	local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
 	local resizeWidgetHeight = (resizable == nil or resizable == true) and (BUTTON_HGT/2)+1 or 0
@@ -1558,9 +1795,11 @@ function ISUIElement:getUIName(name)
 end
 
 function ISUIElement:toString()
-	local name = self:getUIName()
-	if name == "" then return self.Type..'('..tostring(self)..')' end
-	return name
+	return tostring(self)
+end
+
+function ISUIElement:tostring()
+    return self:toPathString()
 end
 
 function ISUIElement:drawProgressBar(x, y, w, h, f, fg)
@@ -1593,6 +1832,23 @@ function ISUIElement:setWantKeyEvents(want)
 		self.wantKeyEvents = nil
 		self.javaObject:setWantKeyEvents(want)
 	end
+end
+
+function ISUIElement:setWantMouseEvents(want)
+	if self.javaObject == nil then
+		self.wantMouseEvents = want
+	else
+		self.wantMouseEvents = nil
+		self.javaObject:setConsumeMouseEvents(want)
+	end
+end
+
+function ISUIElement:isWantMouseEvents()
+    if self.javaObject == nil then
+        return self.wantMouseEvents
+    else
+        return self.javaObject:isConsumeMouseEvents()
+    end
 end
 
 function ISUIElement:setWantExtraMouseEvents(want)
@@ -1654,30 +1910,93 @@ function ISUIElement:centerOnScreen(playerNum)
     self:setY(y)
 end
 
-function ISUIElement:new (x, y, width, height)
-   local o = {}
-   setmetatable(o, self)
-   self.__index = self
+function ISUIElement:toDebugString()
+    return self:toTypeNameString() .. "{ name:" .. tostring(self.name) .. ", id:" .. tostring(self.ID) .. ", x:" .. self:getAbsoluteX() .. ", y:" .. self:getAbsoluteY() .. " }"
+end
 
-	-- The following is required to make Xui work:
-	x = x or 0;
-	y = y or 0;
-	width = width or 0;
-	height = height or 0;
-	-- end Xui fix.
+function ISUIElement:toTypeNameString()
+    local typeNameStr = self.Type
+    if (self.name ~= nil) then
+        typeNameStr = typeNameStr .. "(" .. tostring(self.name) .. ")"
+    end
+    if (self.creationCallStack ~= nil) then
+        typeNameStr = typeNameStr .. " createdStack: \n" .. tostring(self.creationCallStack) .. "\n"
+    end
+    return typeNameStr
+end
 
-   o.x = x
-   o.y = y
-   o.width = width;
-   o.height = height;
-   o.anchorLeft = true;
-   o.anchorRight = false;
-   o.anchorTop = true;
-   o.anchorBottom = false;
-   o.dock = "none";
-   o.minimumWidth = 0;
-   o.minimumHeight = 0;
-   o.scrollwidth = 0;
-   o.removed = false;
-   return o
+function ISUIElement:toPathString()
+    local selfStr = self:toTypeNameString()
+    local pathString = selfStr
+    if (self.parent ~= nil) then
+        if (self.parent.toPathString ~= nil) then
+            pathString = self.parent:toPathString() .. "." .. pathString
+        else
+            pathString = tostring(self.parent) .. "." .. pathString
+        end
+    end
+    return pathString
+end
+
+function ISUIElement:debugPrintTree(indent)
+    indent = indent or ""
+    DebugType.ISUI:debugln(indent .. self:toTypeNameString() .. "{ x:" .. self:getX() .. ", y:" .. self:getY() .. ", width:" .. self:getWidth() .. ", height:" .. self:getHeight() .. "}")
+
+    local childIndent = indent .. "  "
+    for _,child in ipairs(self:getChildrenInOrder()) do
+        child:debugPrintTree(childIndent)
+    end
+end
+
+
+function ISUIElement:getStyle()
+    if (self.style ~= nil) then
+        return self.style
+    end
+
+    local parent = self:getParent()
+    if (parent ~= nil) then
+        return parent:getStyle()
+    end
+
+    return nil
+end
+
+function ISUIElement:new(x, y, width, height)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+
+    -- The following is required to make Xui work:
+    x = x or 0;
+    y = y or 0;
+    width = width or 0;
+    height = height or 0;
+    -- end Xui fix.
+
+    o.name = nil;
+    o.creationCallStack = getISUIStackTrace(9)
+    o.x = x
+    o.y = y
+    o.width = width;
+    o.height = height;
+    o.anchorLeft = true;
+    o.anchorRight = false;
+    o.anchorTop = true;
+    o.anchorBottom = false;
+    o.dock = ISDock.None;
+    o.minimumWidth = 0;
+    o.minimumHeight = 0;
+    o.scrollwidth = 0;
+    o.removed = false;
+    o.onDoLayout = nil;
+    o.gameOption = nil;
+    o.contentHorizontalAlignment = UIHorizontalAlignment.Left
+    o.style = nil
+    o.autoAddJoypadButton = false;
+    o.wantKeyEvents = false
+    o.wantMouseEvents = true
+    o.wantExtraMouseEvents = false
+    o.forceCursorVisible = false
+    return o
 end

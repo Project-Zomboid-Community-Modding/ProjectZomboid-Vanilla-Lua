@@ -254,7 +254,6 @@ CFarming_Interact.FastDropItem = function(key)
     and not getCore():isKey("DropSecondaryHeldItem", key)
     and not getCore():isKey("DropWornBag", key)
     and not getCore():isKey("DropBothHeldItemsAndWornBag", key)
-    and not getCore():isKey("GrabCorpse", key)
     then return end
 
 	local player = getSpecificPlayer(0)
@@ -270,20 +269,6 @@ CFarming_Interact.FastDropItem = function(key)
 
     if player:getPrimaryHandItem() and (not player:getPrimaryHandItem():isFavorite()) and (getCore():isKey("DropPrimaryHeldItem", key) or getCore():isKey("DropBothHeldItems", key) or getCore():isKey("DropBothHeldItemsAndWornBag", key)) then
         ISInventoryPaneContextMenu.dropItem(player:getPrimaryHandItem(), player:getPlayerNum())
-    end
-
-    local square = player:getSquare()
-    if not square then return end
-    local body = square:getDeadBody()
-    if getCore():isKey("GrabCorpse", key) and square and body and body:getWeight() <= 60 + (player:getPerkLevel(Perks.Strength) * 7) then
-		if player:getPrimaryHandItem() then
-			ISTimedActionQueue.add(ISUnequipAction:new(player, player:getPrimaryHandItem(), 50));
-		end
-		if player:getSecondaryHandItem() and player:getSecondaryHandItem() ~= player:getPrimaryHandItem() then
-			ISTimedActionQueue.add(ISUnequipAction:new(player, player:getSecondaryHandItem(), 50));
-		end
-		ISTimedActionQueue.add(ISGrabCorpseAction:new(player, body));
-
     end
 end
 

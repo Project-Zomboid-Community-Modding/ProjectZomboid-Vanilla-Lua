@@ -30,7 +30,7 @@ function ISFluidContainerMenu.createMenu(context, item, waterContainer, playerOb
         end
     end
 
-    if waterContainer and not instanceof(waterContainer, "IsoWorldInventoryObject") then
+    if waterContainer and not instanceof(waterContainer, "IsoWorldInventoryObject") and waterContainer:getFluidContainer():isWaterOnlySource() then
         if getCore():getOptionAutoDrink() and playerObj:getInventory():contains(waterContainer) then
             subMenu:addOption(getText("ContextMenu_DisableAutodrink") , waterContainer, ISInventoryPaneContextMenu.AutoDrinkOff, playerObj);
         elseif playerObj:getInventory():contains(waterContainer) then

@@ -428,6 +428,7 @@ function ISMPButton:new (x, y, width, height, title, clicktarget, onclick, onmou
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
     self.__index = self
+    o.SuperType = ISPanel
 	o.x = x;
 	o.y = y;
 	o.font = UIFont.Small;
@@ -465,5 +466,6 @@ function ISMPButton:new (x, y, width, height, title, clicktarget, onclick, onmou
 	o.originalWidth = width;
 	o.originalHeight = height;
 	o.textureBackground = nil;
+	o.autoAddJoypadButton = true
    return o
 end

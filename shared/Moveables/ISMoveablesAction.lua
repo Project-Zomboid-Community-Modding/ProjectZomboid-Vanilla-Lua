@@ -276,13 +276,13 @@ end
 function ISMoveablesAction:new(character, square, mode, origSpriteName, object, direction, item, moveCursor )
     local o = ISBaseTimedAction.new(self, character)
     o.playerNum = character:getPlayerNum()
-    o.square = square;
-    o.origSpriteName = origSpriteName;
-    o.spriteFrame = 0;
-    o.mode = mode;
-    o.object = object;
-    o.direction = direction;
-    o.item = item;
+    o.square            = square;
+    o.origSpriteName    = origSpriteName;
+    o.spriteFrame       = 0;
+    o.mode              = mode;
+    o.object            = object;
+    o.direction         = direction;
+    o.item              = item;
     if (o.mode == "pickup") or (o.mode == "scrap") then
         o.moveProps = ISMoveableSpriteProps.fromObject( object );
         if o.moveProps.spriteName ~= origSpriteName then
@@ -290,7 +290,7 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
             if o.moveProps.spriteProps ~= nil and (o.moveProps.spriteProps:has("WallNW") or o.moveProps.spriteProps:has("WallN") or o.moveProps.spriteProps:has("WallW")) then
                 local sprList = object:getChildSprites();
                 if sprList then
-                    local list_size = sprList:size();
+                    local list_size 	= sprList:size();
                     if list_size > 0 then
                         for i=list_size-1, 0, -1 do
                             local sprite = sprList:get(i):getParentSprite();
@@ -335,11 +335,11 @@ function ISMoveablesAction:new(character, square, mode, origSpriteName, object, 
         o.moveProps = _moveProps
     end
 
-    o.moveCursor = moveCursor;
+    o.moveCursor        = moveCursor;
     if isServer() then
-        o.moveCursor = nil;
+        o.moveCursor        = nil;
     end
-    o.maxTime = o:getDuration()
+    o.maxTime           = o:getDuration()
 
     if moveCursor and (mode == "place" or mode == "rotate") and o.moveProps:canRotateDirection() then
         o.cursorFacing = moveCursor.cursorFacing or moveCursor.joypadFacing

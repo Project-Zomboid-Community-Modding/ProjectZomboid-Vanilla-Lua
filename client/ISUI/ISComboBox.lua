@@ -432,10 +432,11 @@ function ISComboBox:addOption(option)
 	end
 end
 
-function ISComboBox:addOptionWithData(option, data)
+function ISComboBox:addOptionWithData(option, data, tooltip)
 	local item = {}
 	item.text = option
 	item.data = data
+	item.tooltip = tooltip
 	table.insert(self.options, item);
 	if self.selected == 0 then
 		self.selected = 1
@@ -514,8 +515,20 @@ function ISComboBox:getSelected()
 	return self.selected;
 end
 
+function ISComboBox:getSelectedData()
+    return self.options[self:getSelected()].data
+end
+
 function ISComboBox:setSelected(value)
 	self.selected = value
+end
+
+function ISComboBox:setSelectedData(data)
+    for i, option in ipairs(self.options) do
+        if (option.data == data) then
+            self:setSelected(i)
+        end
+    end
 end
 
 function ISComboBox:setWidthToOptions(minWidth)
@@ -564,11 +577,18 @@ function ISComboBox:hasFilterText()
     return (filterText ~= nil) and (self.filterText:trim() ~= "")
 end
 
+function ISComboBox:setOnChange(target, onChange, onChangeArg1, onChangeArg2)
+    self.target = target;
+    self.onChange = onChange;
+    self.onChangeArgs = { onChangeArg1, onChangeArg2 }
+end
+
 function ISComboBox:new (x, y, width, height, target, onChange, onChangeArg1, onChangeArg2)
 	local o = {}
 	o = ISPanel:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
+	o.SuperType = ISPanel;
 	o.x = x;
 	o.y = y;
 	o.backgroundColor = {r=0, g=0, b=0, a=1};
@@ -596,5 +616,6 @@ function ISComboBox:new (x, y, width, height, target, onChange, onChangeArg1, on
     o.image = getTexture("media/ui/ArrowDown.png");
     o.fade = UITransition.new()
 	o.editable = false
+	o.autoAddJoypadButton = true
 	return o
 end

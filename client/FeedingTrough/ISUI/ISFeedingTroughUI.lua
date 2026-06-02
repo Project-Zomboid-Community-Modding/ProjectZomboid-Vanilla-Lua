@@ -8,7 +8,7 @@ ISFeedingTroughUI = ISCollapsableWindow:derive("ISFeedingTroughUI");
 function ISFeedingTroughUI:createChildren()
     ISCollapsableWindow.createChildren(self)
 
-    self.ignoreChildren = self.javaObject:getControls():size()
+    self.ignoreChildren = ArrayList.new(self.javaObject:getControls())
 
     local x = getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_FeedingTroughUI_AttachedAnimals"));
     x = math.max(x, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_Animal_TroughLinkedTo")));
@@ -52,7 +52,7 @@ function ISFeedingTroughUI:createChildren()
     self:addChild(label)
 
     self:shrinkWrap(UI_BORDER_SPACING + 1, UI_BORDER_SPACING + 1, function(_child)
-        return self.javaObject:getControls():indexOf(_child.javaObject) >= self.ignoreChildren
+        return not self.ignoreChildren:contains(_child.javaObject)
     end)
 end
 
@@ -80,7 +80,7 @@ function ISFeedingTroughUI:render()
     self.labelWater:setName(round(self.item:getWater(), 2) * 1000 .. " / " .. self.item:getMaxWater() * 1000 .. " mL");
 
     self:shrinkWrap(UI_BORDER_SPACING + 1, UI_BORDER_SPACING + 1, function(_child)
-        return self.javaObject:getControls():indexOf(_child.javaObject) >= self.ignoreChildren
+        return not self.ignoreChildren:contains(_child.javaObject)
     end)
 
     self:setInfo(getText("IGUI_Trough_Info"));

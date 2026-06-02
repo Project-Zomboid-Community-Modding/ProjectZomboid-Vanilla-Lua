@@ -382,7 +382,7 @@ function ISFluidContainerPanel:getIsoObjectTextures()
 
                 local sprList = obj:getChildSprites();
                 if sprList and (not instanceof(obj,"IsoBarbecue")) then
-                    local list_size = sprList:size();
+                    local list_size 	= sprList:size();
                     if list_size > 0 then
                         t.children = {};
                         for i=list_size-1, 0, -1 do

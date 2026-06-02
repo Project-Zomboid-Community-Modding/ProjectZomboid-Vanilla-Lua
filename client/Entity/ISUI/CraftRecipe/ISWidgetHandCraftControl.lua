@@ -373,24 +373,21 @@ end
 function ISWidgetHandCraftControl:onHandcraftActionStart(action)
     log(DebugType.CraftLogic, "ISWidgetHandCraftControl -> Craft action started")
     self.logic:startCraftAction(action);
-    self:triggerEvent(ISEntityUI.HandcraftStart, self, self.player, self.logic);     
+    self:triggerEvent(ISEntityUI.HandcraftStart, self, self.player, self.logic);
 end
 
 function ISWidgetHandCraftControl:onHandcraftActionComplete()
     log(DebugType.CraftLogic, "ISWidgetHandCraftControl -> Craft action completed")
 
+    self.logic:stopCraftAction();
+
     if self.craftTimes then
         self.craftTimes = self.craftTimes - 1;
         if self.craftTimes <= 0 then
             self.craftTimes = nil;
-            self.logic:stopCraftAction();
         else
             self:setCraftQuantity(self.craftTimes);
         end
-    end
-
-    if not self.craftTimes then
-        self.logic:stopCraftAction();
     end
 end
 

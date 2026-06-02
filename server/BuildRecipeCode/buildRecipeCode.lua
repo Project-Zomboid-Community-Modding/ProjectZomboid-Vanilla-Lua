@@ -301,7 +301,7 @@ function BuildRecipeCode.stairs.OnCreate(params)
 	end
 
     --add pillars
-    local floating = not square:HasStairsBelow(); --not square:TreatAsSolidFloor()
+    local floating = not square:has(IsoFlagType.solidfloor) and not square:HasStairsBelow();
     if (topNorth or topWest) and (thumpable:getTextureName() and string.contains(thumpable:getTextureName(), "carpentry")) and floating then
         local zI = z - 1;
         local pillarSprite = "carpentry_02_95";
@@ -313,7 +313,7 @@ function BuildRecipeCode.stairs.OnCreate(params)
 			sq = IsoGridSquare.new(getCell(), nil, x, y, zI);
 			getCell():ConnectNewSquare(sq, true);
         end
-        while zI >= 0 do
+        while zI >= sq:getChunk():getMinLevel() do
             local obj2 = IsoThumpable.new(getCell(), sq, pillarSprite, topNorth, {});
     		sq:AddSpecialObject(obj2);
     		obj2:transmitCompleteItemToClients();
