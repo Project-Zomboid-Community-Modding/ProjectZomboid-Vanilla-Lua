@@ -88,6 +88,7 @@ function ISMoveableSpriteProps.new( _sprite )
 			s.isTable 					= props:has("IsTable");
 			s.isTableTop 				= props:has("IsTableTop");
 			s.isStackable				= props:has("IsStackable");
+			s.fitsBeneathCountertop		= props:has(IsoPropertyType.FITS_BENEATH_COUNTERTOP)
 			s.isWaterCollector			= props:has("IsWaterCollector");
             s.material 					= props:has("Material") and props:get("Material");
             s.material2 				= props:has("Material2") and props:get("Material2")~="Undefined" and props:get("Material2");
@@ -1004,10 +1005,14 @@ function ISMoveableSpriteProps:getSpriteGridCache( _square, _verifyOnly, _getWor
         local sZ = _square:getZ();
 
         local index = 1;
+        local spriteName;
         for x=0,spriteGrid:getWidth()-1 do
             for y=0,spriteGrid:getHeight()-1 do
                 local square = getCell():getGridSquare(sX+x, sY+y, sZ);
                 local spriteForPos = spriteGrid:getSprite(x, y);
+                if spriteForPos then
+                    spriteName = spriteForPos:getName();
+                end
 
                 if _verifyOnly and not SpriteGridCache[index] then
                     return false;
@@ -1016,7 +1021,7 @@ function ISMoveableSpriteProps:getSpriteGridCache( _square, _verifyOnly, _getWor
                 local obj = false;
                 local sprInstance = nil;
                 if _getWorldObjects then
-                    obj, sprInstance = self:findOnSquare( square, spriteForPos:getName() );
+                    obj, sprInstance = self:findOnSquare( square, spriteName );
                     if not obj then
                         return false;
                     end
@@ -1356,7 +1361,7 @@ function ISMoveableSpriteProps:pickUpMoveableInternal( _character, _square, _obj
                 local spr = getSprite( repSprs[ ZombRand(1,#repSprs) ] );
                 if floor and spr then
                     floor:setSprite(spr);
-                    if isClient() then floor:transmitUpdatedSpriteToServer(); end --:transmitCompleteItemToServer(); end
+                    if isClient() then floor:transmitUpdatedSpriteToServer(); end
                     if isServer() then floor:transmitUpdatedSpriteToClients(); end
                 end
             end
@@ -1607,7 +1612,10 @@ function ISMoveableSpriteProps:canPlaceMoveableInternal( _character, _square, _i
         end
 
         if self.type == "Object" or _forceTypeObject then
-            if self.isTableTop then
+            if self.fitsBeneathCountertop and _square:has(IsoPropertyType.COUNTERTOP) and not _square:has(IsoPropertyType.FITS_BENEATH_COUNTERTOP) then
+                canPlace = true
+                self.yOffsetCursor = 0
+            elseif self.isTableTop then
                 --canPlace = _square:has("IsTable") and not _square:has("IsTableTop");			-- if the object is a tabletop then see if sq has table and no tabletop obj
                 local currentSurface = self:getTotalTableHeight(_square);
                 if _square:has("IsTable") then
@@ -1980,7 +1988,6 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
     elseif TileIsoObjectType == IsoObjectType.tree then
         local temp = IsoTree.new(_square, getSprite(_spriteName))
         _square:AddTileObject(temp)
-        if isClient() then temp:transmitCompleteItemToServer(); end
         if isServer() then temp:transmitCompleteItemToClients(); end
         triggerEvent("OnObjectAdded", temp)
     elseif self.type=="Window" then
@@ -2059,6 +2066,13 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
         local props = sprite and sprite:getProperties();
         local blockStyleSolid = props and (props:has(IsoFlagType.solid) or props:has(IsoFlagType.solidtrans)) or false;
         local currentSurface = self:getTotalTableHeight(_square);
+        if (self.fitsBeneathCountertop and not _square:has(IsoPropertyType.FITS_BENEATH_COUNTERTOP)) or (not self.isTableTop and not self.isStackable) then
+            currentSurface = 0
+            local countertop = _square:getCountertopObject()
+            if countertop ~= nil then
+                insertIndex = countertop:getObjectIndex()
+            end
+        end
         if self.isMoveable and self.isTableTop and (not self.ignoreSurfaceSnap) then -- and self.facing ~= nil then		-- face correction when possible for items that are supposed to be on tables (like sinks)
             local faces = self:getFaces();
 
@@ -2131,13 +2145,6 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
                 else
                     print("Warning: device data missing?>?")
                 end
-                --[[
-                if obj ~= nil then
-                    _square:AddTileObject(obj)
-                    if isClient() then obj:transmitCompleteItemToServer(); end
-                    triggerEvent("OnObjectAdded", obj)
-                end
-                ]]--
             else
                 if self.isoType == "IsoRadio" then
                     obj = IsoRadio.new( getCell(), _square, getSprite(itemSprite) );
@@ -2146,13 +2153,6 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
                     obj = IsoTelevision.new( getCell(), _square, getSprite(itemSprite) );
                     obj:setMovedThumpable(true);
                 end
-                --[[
-                if obj ~= nil then
-                    _square:AddTileObject(obj)
-                    if isClient() then obj:transmitCompleteItemToServer(); end
-                    triggerEvent("OnObjectAdded", obj)
-                end
-                ]]--
             end
 
         elseif self.isoType == "IsoJukebox" then
@@ -2377,7 +2377,6 @@ function ISMoveableSpriteProps:placeMoveableInternal( _square, _item, _spriteNam
         self:restoreComponentsAfterPlacing(obj, components)
 --         print("ISMoveableSpriteProps:placeMoveableInternal 21 ", obj)
         _square:AddSpecialObject( obj, insertIndex );
-        if isClient() then obj:transmitCompleteItemToServer(); end
         if isServer() then obj:transmitCompleteItemToClients(); end
 --         print("ISMoveableSpriteProps:placeMoveableInternal 22 ", obj)
         triggerEvent("OnObjectAdded", obj) -- for RainCollectorBarrel in singleplayer
@@ -3490,18 +3489,15 @@ function ISMoveableSpriteProps:scrapObjectInternal( _character, _scrapDef, _squa
 
         -- Carpentry objects should return items from modData "need:", not MaterialN tile properties.
         -- i.e., Log Walls should give back sheets/rope/twine used to build it, not nails.
-        if instanceof(object, "IsoThumpable") and object:hasModData() then
+        if instanceof(object, "IsoThumpable") and object:hasBuildMaterials() then
             --scrapDef = copyTable(_scrapDef)
             scrapDef.returnItems = {}
             scrapDef.returnItemsStatic = {}
-            for k,v in pairs(self.object:getModData()) do
-                if luautils.stringStarts(k, "need:") then
-                    local type = luautils.split(k, ":")[2]
-                    local count = tonumber(v)
-                    local item = { returnItem = type, maxAmount = count, chancePerRoll = 80 }
-                    table.insert(scrapDef.returnItemsStatic, item)
-                    scrapDef.fromModData = true;
-                end
+            for type,v in pairs(self.object:getBuildMaterials()) do
+                local count = tonumber(v)
+                local item = { returnItem = type, maxAmount = count, chancePerRoll = 80 }
+                table.insert(scrapDef.returnItemsStatic, item)
+                scrapDef.fromModData = true;
             end
 --            self.scrapSize = nil
             self.material2 = nil
@@ -3638,9 +3634,11 @@ function ISMoveableSpriteProps:canScrapObject(_character)
                 canScrap = false;
             else
                 for i,member in ipairs(grid) do
-                    canScrap = self:canScrapObjectInternal(result, member.object);
-                    if not canScrap then
-                        break;
+                    if member.object then
+                        canScrap = self:canScrapObjectInternal(result, member.object);
+                        if not canScrap then
+                            break;
+                        end
                     end
                 end
             end
@@ -4072,26 +4070,23 @@ end
 function ISThumpableSpriteProps:scrapObjectViaCursor( _character, _square, _origSpriteName, _moveCursor )
     -- This is from the old ISDismantleAction
     
-    for k,v in pairs(self.object:getModData()) do
-        if luautils.stringStarts(k, "need:") then
-            local type = luautils.split(k, ":")[2]
-            if type == "Base.Torch" then
-                -- Big hack for ISLightSource
-                self.object:toggleLightSource(false)
-                local item = instanceItem(type)
-                if item then
-                    item:setUsedDelta(0)
-                    self.object:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
-                end
-                item = self.object:removeCurrentFuel(nil)
-                if item then
-                    self.object:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
-                end
-            else
-                local count = ZombRand(tonumber(v))+1
-                for i=1,count do
-                    self.object:getSquare():AddWorldInventoryItem(type, 0, 0, 0)
-                end
+    for type,v in pairs(self.object:getBuildMaterials()) do
+        if type == "Base.Torch" then
+            -- Big hack for ISLightSource
+            self.object:toggleLightSource(false)
+            local item = instanceItem(type)
+            if item then
+                item:setUsedDelta(0)
+                self.object:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
+            end
+            item = self.object:removeCurrentFuel(nil)
+            if item then
+                self.object:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
+            end
+        else
+            local count = ZombRand(tonumber(v))+1
+            for i=1,count do
+                self.object:getSquare():AddWorldInventoryItem(type, 0, 0, 0)
             end
         end
     end

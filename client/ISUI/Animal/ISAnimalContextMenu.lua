@@ -720,33 +720,11 @@ AnimalContextMenu.onButcherAnimal = function(body, chr, knife)
 end
 
 AnimalContextMenu.onGetAnimalBonesFromInv = function(body, chr, knife)
-    local corpse = chr:getCurrentSquare():createAnimalCorpseFromItem(body);
-    corpse:setX(chr:getCurrentSquare():getX());
-    corpse:setY(chr:getCurrentSquare():getY());
-    corpse:setZ(chr:getCurrentSquare():getZ());
-
-    corpse:setSquare(chr:getCurrentSquare());
-
-    corpse:getSquare():addCorpse(corpse, false);
-
-    chr:getInventory():Remove(body);
-    sendRemoveItemFromContainer(chr:getInventory(), body);
-
-    ISTimedActionQueue.add(ISGetAnimalBones:new(chr, corpse))
+    ISTimedActionQueue.add(ISDropAnimalCorpseAndThen:new(chr, body, "getBones"))
 end
 
 AnimalContextMenu.onButcherAnimalFromInv = function(body, chr, knife)
-    local corpse = chr:getCurrentSquare():createAnimalCorpseFromItem(body);
-    corpse:setX(chr:getCurrentSquare():getX());
-    corpse:setY(chr:getCurrentSquare():getY());
-    corpse:setZ(chr:getCurrentSquare():getZ());
-
-    corpse:setSquare(chr:getCurrentSquare());
-
-    corpse:getSquare():addCorpse(corpse, false);
-    corpse:transmitModData();
-
-    ISTimedActionQueue.add(ISButcherAnimal:new(chr, corpse, body));
+    ISTimedActionQueue.add(ISDropAnimalCorpseAndThen:new(chr, body, "butcher"))
 end
 
 AnimalContextMenu.onSetHungry = function(animal, playerObj)
@@ -1040,10 +1018,7 @@ end
 
 AnimalContextMenu.onSanta = function(animal, playerObj)
     if isClient() then
-        sendClientCommandV(playerObj, "animal", "attach",
-                "id", animal:getOnlineID(),
-                "location", "head_hat",
-                "item", "Base.Hat_SantaHatDebug")
+        print("AnimalContextMenu.onSanta: singleplayer-only debug tool")
     else
         animal:setAttachedItem("head_hat", instanceItem("Base.Hat_SantaHatDebug"))
     end
@@ -1051,10 +1026,7 @@ end
 
 AnimalContextMenu.onBowtieGold = function(animal, playerObj)
     if isClient() then
-        sendClientCommandV(playerObj, "animal", "attach",
-                "id", animal:getOnlineID(),
-                "location", "bowtie",
-                "item", "Base.Animal_BowtieGold")
+        print("AnimalContextMenu.onBowtieGold: singleplayer-only debug tool")
     else
         animal:setAttachedItem("bowtie", instanceItem("Base.Animal_BowtieGold"))
     end
@@ -1062,10 +1034,7 @@ end
 
 AnimalContextMenu.onBowtieGreen = function(animal, playerObj)
     if isClient() then
-        sendClientCommandV(playerObj, "animal", "attach",
-                "id", animal:getOnlineID(),
-                "location", "bowtie",
-                "item", "Base.Animal_BowtieGreen")
+        print("AnimalContextMenu.onBowtieGreen: singleplayer-only debug tool")
     else
         animal:setAttachedItem("bowtie", instanceItem("Base.Animal_BowtieGreen"))
     end
@@ -1073,10 +1042,7 @@ end
 
 AnimalContextMenu.onBowtieRed = function(animal, playerObj)
     if isClient() then
-        sendClientCommandV(playerObj, "animal", "attach",
-                "id", animal:getOnlineID(),
-                "location", "bowtie",
-                "item", "Base.Animal_BowtieRed")
+        print("AnimalContextMenu.onBowtieRed: singleplayer-only debug tool")
     else
         animal:setAttachedItem("bowtie", instanceItem("Base.Animal_BowtieRed"))
     end

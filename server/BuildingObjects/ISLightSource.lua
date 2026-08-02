@@ -32,7 +32,7 @@ function ISLightSource:create(x, y, z, north, sprite)
 --    self.javaObject:getLightSource():insertNewFuel(getPlayer():getIventory():FindAndReturn("Torch"), getPlayer());
 
 	buildUtil.consumeMaterial(self);
-	self.javaObject:getModData()["need:"..self.baseItem] = "1"
+	self.javaObject:getBuildMaterials()[self.baseItem] = "1"
 	-- the wooden wall have 100 base health + 100 per carpentry lvl
 	self.javaObject:setMaxHealth(self:getHealth());
 	self.javaObject:setHealth(self.javaObject:getMaxHealth());

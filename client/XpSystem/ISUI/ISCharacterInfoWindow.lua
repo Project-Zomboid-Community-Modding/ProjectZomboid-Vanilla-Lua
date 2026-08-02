@@ -140,7 +140,6 @@ function ISCharacterInfoWindow:createChildren()
 	
 	self.protectionView = ISCharacterProtection:new(0, 8, tabTotalWidth, self.height-8, self.playerNum)
 	self.protectionView:initialise()
-	self.protectionView.infoText = getTextOrNull("UI_ProtectionPanel");
 	self.panel:addView(xpSystemText.protection, self.protectionView)
 
     self.clothingView = ISClothingInsPanel:new(getSpecificPlayer(self.playerNum), 0, 8, tabTotalWidth+200, self.height-8)

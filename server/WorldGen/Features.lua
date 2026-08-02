@@ -5,7 +5,8 @@ worldgen["features"] = {
     PLANT = {},
     BUSH = {},
     TREE = {},
-    ORE = {}
+    ORE = {},
+    NONE = {},
 }
 
 -- We preload all the features at this point

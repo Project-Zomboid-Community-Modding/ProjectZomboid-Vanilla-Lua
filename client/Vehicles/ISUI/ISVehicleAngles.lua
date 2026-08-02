@@ -108,7 +108,7 @@ end
 
 function ISVehicleAngles:onButtonDrop()
 	if not self.vehicle then return end
-	self.vehicle:setPhysicsActive(true)
+	self.vehicle:setPhysicsActive(true, true)
 	self:clearVehicle()
 end
 
@@ -123,7 +123,7 @@ function ISVehicleAngles:prerender()
 		self:clearVehicle()
 	end
 	if self.vehicle then
-		self.vehicle:setPhysicsActive(false)
+		self.vehicle:setPhysicsActive(false, false)
 		self.vehicle:setDebugZ(self.sliderZ.currentValue / 100)
 		self.vehicle:setAngles(self.angleX.currentValue - 180, self.angleY.currentValue - 180, self.angleZ.currentValue - 180)
 		local x = 20

@@ -183,7 +183,7 @@ function SandboxOptionsScreenPanel:onJoypadDirUp(joypadData)
             self.joypadIndexY = self.joypadIndexY - 1;
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
             children = self:getVisibleChildren(self.joypadIndexY)
-            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
+            self.joypadIndex = self:getClosestChild(children, child)
             if self.joypadIndex > #children then
                 self.joypadIndex = #children;
             end
@@ -213,7 +213,7 @@ function SandboxOptionsScreenPanel:onJoypadDirDown(joypadData)
             self.joypadIndexY = self.joypadIndexY + 1;
             self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
             children = self:getVisibleChildren(self.joypadIndexY)
-            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
+            self.joypadIndex = self:getClosestChild(children, child)
             if self.joypadIndex > #children then
                 self.joypadIndex = #children;
             end
@@ -666,7 +666,7 @@ function SandboxOptionsScreen:createPanel(page)
                 tooltip = tooltip:gsub("\\\"", "\"")
             end
             if getDebug() and isDebugSetting(setting) then
-                settingName = "*DEBUG* " .. setting.name
+                settingName = getText("IGUI_DebugContext_Title") .. " " .. getText("Sandbox_" .. setting.name)
             end
             local label = ISLabel:new(0, 0, ENTRY_HGT, settingName, 1, 1, 1, 1, UIFont.Medium)
             local control = self:createControlForSetting(setting, tooltip)

@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISAttachTrailerToVehicle = ISBaseTimedAction:derive("ISAttachTrailerToVehicle")
 
 function ISAttachTrailerToVehicle:isValid()
-	return self.vehicleA:getVehicleTowing() == nil
+	return self.vehicleA:getVehicleTowing() == nil or self.vehicleA:getVehicleTowing() == self.vehicleB
 end
 
 function ISAttachTrailerToVehicle:waitToStart()
@@ -21,23 +21,37 @@ end
 function ISAttachTrailerToVehicle:start()
 	self:setActionAnim("VehicleTrailer")
 	self.sound = self.character:getEmitter():playSound("VehicleTowAttach")
+	self.vehicleA:beginAttachingTrailer()
+	self:attachTrailer()
 end
 
 function ISAttachTrailerToVehicle:stop()
+	self.vehicleA:stopAttachingTrailer()
+	self:detachTrailer()
 	self:stopSound()
 	ISBaseTimedAction.stop(self)
 end
 
 function ISAttachTrailerToVehicle:perform()
+	self.vehicleA:stopAttachingTrailer()
 	self:stopSound()
+	-- needed to remove from queue / start next.
+	ISBaseTimedAction.perform(self)
+end
+
+function ISAttachTrailerToVehicle:attachTrailer()
 	local square = self.vehicleA:getCurrentSquare()
 	local vehicleB = ISVehicleTrailerUtils.getTowableVehicleNear(square, self.vehicleA, self.attachmentA, self.attachmentB)
 	if vehicleB == self.vehicleB then
 		local args = { vehicleA = self.vehicleA:getId(), vehicleB = self.vehicleB:getId(), attachmentA = self.attachmentA, attachmentB = self.attachmentB }
 		sendClientCommand(self.character, 'vehicle', 'attachTrailer', args)
 	end
-	-- needed to remove from queue / start next.
-	ISBaseTimedAction.perform(self)
+end
+
+function ISAttachTrailerToVehicle:detachTrailer()
+	self.vehicleA:stopAttachingTrailer()
+	local args = { vehicle = self.vehicleA:getId() }
+	sendClientCommand(self.character, 'vehicle', 'detachTrailer', args)
 end
 
 function ISAttachTrailerToVehicle:stopSound()

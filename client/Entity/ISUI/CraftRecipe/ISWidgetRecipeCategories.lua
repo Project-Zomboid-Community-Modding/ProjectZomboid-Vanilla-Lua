@@ -85,8 +85,8 @@ end
 
 function ISWidgetRecipeCategories:populateCategoryList()
     self.recipeCategoryPanel:clear();
-    self.recipeCategoryPanel:addItem("-- ALL --", "");
-    self.recipeCategoryPanel:addItem("Favourites", "*");
+    self.recipeCategoryPanel:addItem(getText("IGUI_CraftingCategories_All"), "");
+    self.recipeCategoryPanel:addItem(getText("IGUI_CraftingCategories_Favourites"), "*");
 
     local currentCategoryFilterFound = self.selectedCategory == "";
 
@@ -97,8 +97,8 @@ function ISWidgetRecipeCategories:populateCategoryList()
 
     local categories = self.callbackTarget:getCategoryList();
     for i = 0, categories:size()-1 do
-        local categoryNameCapitalised = string.upper(string.sub(categories:get(i), 1, 1)) .. string.sub(categories:get(i), 2, string.len(categories:get(i)));
-        local item = self.recipeCategoryPanel:addItem(categoryNameCapitalised, categories:get(i));
+        local categoryName = getText("IGUI_CraftingCategories_" .. string.upper(string.sub(categories:get(i), 1, 1)) .. string.sub(categories:get(i), 2, string.len(categories:get(i))))
+        local item = self.recipeCategoryPanel:addItem(categoryName, categories:get(i));
 
         if categories:get(i) == self.selectedCategory then
             self.recipeCategoryPanel.selected = item.itemindex;

@@ -661,6 +661,12 @@ ISEntityUI.ReadIni = function()
             if ISEntityUI.enableLog then print("created windowKey: "..currentWindowKey.." for player: "..currentPlayer) end
         else
             local values = string.split(line, "=");
+            if ISEntityUI.players[currentPlayer] == nil or ISEntityUI.players[currentPlayer].windows[currentWindowKey] == nil then
+                if ISEntityUI.enableLog then
+                    DebugType.Lua:error("Malformed EntityLayout.ini, unexpected line before player %s and window %s values were read.", currentPlayer, currentWindowKey)
+                end
+                break;
+            end
             if values[1] == "x" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].x = tonumber(values[2]); end    
             if values[1] == "y" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].y = tonumber(values[2]); end    
             if values[1] == "width" then ISEntityUI.players[currentPlayer].windows[currentWindowKey].width = tonumber(values[2]); end    

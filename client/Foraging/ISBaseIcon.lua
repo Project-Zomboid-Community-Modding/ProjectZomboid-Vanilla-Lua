@@ -399,7 +399,9 @@ function ISBaseIcon:updateAlpha()
 	if self.isoMarker then
 		self.isoMarker:setAlpha(self:getAlpha());
 	end;
-	if self:getAlpha() <= 0 then self:reset(); end;
+	if self:getAlpha() <= 0 then
+		self:reset();
+	end;
 end
 
 function ISBaseIcon:updatePinIconPosition()
@@ -438,7 +440,9 @@ function ISBaseIcon:initItem()
 end
 
 function ISBaseIcon:initItemCount()
-	if self.itemDef then
+	if self.icon and self.icon.count then
+		self.itemCount = self.icon.count;
+	elseif self.itemDef then
 		if self.itemDef.minCount == self.itemDef.maxCount then
 			self.itemCount = self.itemDef.minCount;
 		else
@@ -729,7 +733,9 @@ function ISBaseIcon:update()
 		self:updateTimestamp();
 		self:doUpdateEvents();
 		if self.manager:getIsSeen(self) then self:spotIcon(); end;
-		if (not self.isValidSquare) then self.manager:doChangePosition(self); return; end;
+		if (not self.isValidSquare) then
+			if isClient() then self.isValidSquare = true; else self.manager:doChangePosition(self); return; end;
+		end;
 		self:setIsSeenThisUpdate(self:getCanSeeThisUpdate());
 		if (not self:checkIsPlayerRunning()) then
 			if self:getIsSeenThisUpdate() then

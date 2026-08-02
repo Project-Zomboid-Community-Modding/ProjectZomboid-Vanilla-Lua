@@ -5,7 +5,7 @@ require "ISUI/ISRichTextPanel"
 require "ISUI/ISMPEditServer"
 require "ISUI/ISScrollingListBox"
 
-MultiplayerUI = ISPanel:derive("MultiplayerUI");
+MultiplayerUI = ISPanelJoypad:derive("MultiplayerUI");
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_NEW_SMALL = getTextManager():getFontHeight(UIFont.NewSmall)
@@ -45,7 +45,6 @@ function MultiplayerUI:instantiate()
 end
 
 function MultiplayerUI:create()
-
     self.screenShading = ISMPScreenShading:new(self);
     self.screenShading:initialise()
     self.screenShading:setVisible(false)
@@ -56,6 +55,7 @@ function MultiplayerUI:create()
     local btnPadding = JOYPAD_TEX_SIZE + UI_BORDER_SPACING*2
     local btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_back"))
     self.backButton = ISButton:new(0, 0, btnWidth, BUTTON_HGT, getText("UI_servers_back"), self, MultiplayerUI.onOptionMouseDown);
+    self.backButton.name = "backButton"
     self.backButton.internal = "BACK";
     self.backButton:initialise();
     self.backButton:instantiate();
@@ -64,6 +64,7 @@ function MultiplayerUI:create()
     self:addChild(self.backButton);
 
     self.showIPAddressesTickBox = ISTickBox:new(0, 0, BUTTON_HGT + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_streamerMode")), BUTTON_HGT, "", self, self.onToggleShowIPs);
+    self.showIPAddressesTickBox.name = "ShowIPAddressesTickBox"
     self.showIPAddressesTickBox.tooltip = getText("UI_servers_streamerMode_tooltip")
     self.showIPAddressesTickBox:initialise();
     self.showIPAddressesTickBox:instantiate();
@@ -74,6 +75,7 @@ function MultiplayerUI:create()
 
     btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_refresh"))
     self.refreshBtn = ISButton:new(0, 0, btnWidth, BUTTON_HGT, getText("UI_servers_refresh"), self, MultiplayerUI.onOptionMouseDown);
+    self.refreshBtn.name = "refreshBtn";
     self.refreshBtn.internal = "REFRESH";
     self.refreshBtn:initialise();
     self.refreshBtn:instantiate();
@@ -81,6 +83,7 @@ function MultiplayerUI:create()
 
     btnWidth = btnPadding + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_connect"))
     self.connectBtn = ISButton:new(0, 0, btnWidth, BUTTON_HGT, getText("UI_servers_connect"), self, MultiplayerUI.onOptionMouseDown);
+    self.connectBtn.name = "connectBtn";
     self.connectBtn.internal = "CONNECTFROMBROWSER";
     self.connectBtn:initialise();
     self.connectBtn:instantiate();
@@ -89,6 +92,9 @@ function MultiplayerUI:create()
 
 
     self.tabs = ISMPTabPanel:new(0, 0, 500, 32);
+    self.tabs.name = "tabs"
+    self.tabs.target = self
+    self.tabs.onActivateView = MultiplayerUI.onTabViewActiveTabChanged
     self.tabs:initialise();
     self.tabs.tabPadX = UI_BORDER_SPACING
     self.tabs.tabHeight = TAB_HEIGHT
@@ -99,12 +105,14 @@ function MultiplayerUI:create()
     self:addChild(self.tabs);
 
     self.leftFavoritesPanel = ISPanel:new(0, 0, 0, 0);
+    self.leftFavoritesPanel.name = "leftFavoritesPanel";
     self.leftFavoritesPanel:initialise();
     self.leftFavoritesPanel.borderColor = {r=0, g=0, b=0, a=0};
     self.leftFavoritesPanel.backgroundColor = {r=0, g=0, b=0, a=0};
     self.tabs:addView(getText("UI_servers_serverlist"), getTexture("media/ui/MP/mp_ui_star.png"), getTexture("media/ui/MP/mp_ui_star.png"), self.leftFavoritesPanel)
 
     self.leftInternetPanel = ISPanel:new(0, 0, 0, 0);
+    self.leftInternetPanel.name = "leftInternetPanel"
     self.leftInternetPanel:initialise();
     self.leftInternetPanel.borderColor = {r=0, g=0, b=0, a=0};
     self.leftInternetPanel.backgroundColor = {r=0, g=0, b=0, a=0};
@@ -113,12 +121,14 @@ function MultiplayerUI:create()
     end
 
     self.rightPanel = ISPanel:new(0, 0, 0, 0);
+    self.rightPanel.name = "rightPanel"
     self.rightPanel:initialise();
     self.rightPanel.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     self.rightPanel.backgroundColor = {r=0, g=0, b=0, a=0.8};
     self:addChild(self.rightPanel);
 
     self.rightPanelInternal = ISPanel:new(0, 0, 0, 0);
+    self.rightPanelInternal.name = "rightPanelInternal"
     self.rightPanelInternal:initialise();
     self.rightPanelInternal.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     self.rightPanelInternal.backgroundColor = {r=0, g=0, b=0, a=0.8};
@@ -127,6 +137,7 @@ function MultiplayerUI:create()
 
     btnWidth = btnPadding*2 + getTextManager():MeasureStringX(UIFont.Small, getText("UI_servers_remove_from_favourites"))
     self.rightPanelFavouritesButton = ISMPButton:new(0, 0, btnWidth, BUTTON_HGT, getText("UI_servers_remove_from_favourites"), self, MultiplayerUI.onOptionMouseDown);
+    self.rightPanelFavouritesButton.name = "rightPanelFavouritesButton"
     self.rightPanelFavouritesButton.internal = "FAVOURITES";
     self.rightPanelFavouritesButton:initialise();
     self.rightPanelFavouritesButton:instantiate();
@@ -140,6 +151,7 @@ function MultiplayerUI:create()
     self:addChild(self.rightPanelFavouritesButton);
 
     self.serverDescription = ISRichTextPanel:new(self.rightPanelMargin, 0, 300, 300);
+    self.serverDescription.name = "serverDescription"
     self.serverDescription:initialise();
     self:addChild(self.serverDescription);
     self.serverDescription.background = false;
@@ -155,6 +167,7 @@ function MultiplayerUI:create()
     end
 
     self.accountList = ISScrollingListBox:new(0, 0, 100, 100);
+    self.accountList.name = "accountList"
     self.accountList:initialise();
     self.accountList:instantiate();
     self.accountList.itemheight = ACCOUNT_LIST_ITEM_HEIGHT
@@ -170,6 +183,7 @@ function MultiplayerUI:create()
     self.leftFavoritesPanel:addChild(self.accountList);
 
     self.filter = ISTextEntryBox:new("", 0, 0, 33, 33);
+    self.filter.name = "filter"
     self.filter.font = UIFont.Medium
     self.filter:initialise();
     self.filter:instantiate();
@@ -178,6 +192,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filter);
 
     self.filterVersion = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterVersion.name = "filterVersion"
     self.filterVersion.tooltip = getText("UI_servers_versionCheck")
     self.filterVersion:initialise();
     self.filterVersion:instantiate();
@@ -186,6 +201,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterVersion);
 
     self.filterEmptyServer = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterEmptyServer.name = "filterEmptyServer"
     self.filterEmptyServer.tooltip = getText("UI_servers_showEmptyServer")
     self.filterEmptyServer:initialise();
     self.filterEmptyServer:instantiate();
@@ -195,6 +211,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterEmptyServer);
 
     self.filterWhitelistServer = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterWhitelistServer.name = "filterWhitelistServer"
     self.filterWhitelistServer.tooltip = getText("UI_servers_showWhitelistServer")
     self.filterWhitelistServer:initialise();
     self.filterWhitelistServer:instantiate();
@@ -203,6 +220,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterWhitelistServer);
 
     self.filterPwdProtected = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterPwdProtected.name = "filterPwdProtected"
     self.filterPwdProtected.tooltip = getText("UI_servers_showPwdProtectedServer")
     self.filterPwdProtected:initialise();
     self.filterPwdProtected:instantiate();
@@ -211,6 +229,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterPwdProtected);
 
     self.filterFullServer = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterFullServer.name = "filterFullServer"
     self.filterFullServer.tooltip = getText("UI_servers_showFullServer")
     self.filterFullServer:initialise();
     self.filterFullServer:instantiate();
@@ -220,6 +239,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterFullServer);
 
     self.filterModdedServer = ISTickBox:new(59, 317, FILTER_HGT, FILTER_HGT, "", self, self.onChangeFilter);
+    self.filterModdedServer.name = "filterModdedServer"
     self.filterModdedServer.tooltip = getText("UI_servers_showModdedServer")
     self.filterModdedServer:initialise();
     self.filterModdedServer:instantiate();
@@ -229,6 +249,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.filterModdedServer);
 
     self.internetList = ISScrollingListBox:new(0, 0, 100, 100);
+    self.internetList.name = "internetList"
     self.internetList:initialise();
     self.internetList:instantiate();
     self.internetList.itemheight = ACCOUNT_LIST_ITEM_HEIGHT
@@ -243,6 +264,7 @@ function MultiplayerUI:create()
 
     -- sorting buttons (on top of the list, their position is updated in the renderSortButtons function)
     self.buttonSortName = ISButton:new(0, 0, 0, 0, "Name", self, MultiplayerUI.onClickSort);
+    self.buttonSortName.name = "buttonSortName"
     self.buttonSortName.internal = "name";
     self.buttonSortName:initialise();
     self.buttonSortName:instantiate();
@@ -257,6 +279,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.buttonSortName);
 
     self.buttonSortPlayer = ISButton:new(0, 0, 0, 0, "Players", self, MultiplayerUI.onClickSort);
+    self.buttonSortPlayer.name = "buttonSortPlayer"
     self.buttonSortPlayer.internal = "player";
     self.buttonSortPlayer:initialise();
     self.buttonSortPlayer:instantiate();
@@ -271,6 +294,7 @@ function MultiplayerUI:create()
     self.leftInternetPanel:addChild(self.buttonSortPlayer);
 
     self.buttonSortPing = ISButton:new(0, 0, 0, 0, "Ping (ms)", self, MultiplayerUI.onClickSort);
+    self.buttonSortPing.name = "buttonSortPing"
     self.buttonSortPing.internal = "ping";
     self.buttonSortPing:initialise();
     self.buttonSortPing:instantiate();
@@ -290,14 +314,54 @@ function MultiplayerUI:create()
     end
     self:refreshList();
 
---    self.tabs:activateView(getText("UI_servers_publicServer"))
-
     self:onResolutionChange(0, 0, self.width, self.height)
 
     self.created = true
     if (getCore():isPopulateServerListOnStart()) then
         self:requestServerList();
     end
+
+    self:autoGenerateJoypadButtonsLists()
+end
+
+function MultiplayerUI:onTabViewActiveTabChanged(sender)
+    local joypadData = JoypadState.getMainMenuJoypad()
+    if joypadData then
+        joypadData.focus = self
+        updateJoypadFocus(joypadData)
+    end
+
+    self:autoGenerateJoypadButtonsLists()
+end
+
+function MultiplayerUI:onJoypadDown(button, joypadData)
+    if (self:handleTabNavigateButtonDown(button, joypadData) == false) then
+        ISPanelJoypad.onJoypadDown(self, button, joypadData)
+    end
+end
+
+function MultiplayerUI:onJoypadDown_Descendant(descendant, button, joypadData)
+    if (self:handleTabNavigateButtonDown(button, joypadData) == false) then
+        ISPanelJoypad.onJoypadDown_Descendant(self, descendant, button, joypadData)
+    end
+end
+
+function MultiplayerUI:handleTabNavigateButtonDown(button, joypadData)
+    if button == Joypad.LBumper or button == Joypad.RBumper then
+        local viewIndex = self.tabs:getActiveViewIndex()
+        if button == Joypad.LBumper then
+            viewIndex = viewIndex - 1
+        elseif button == Joypad.RBumper then
+            viewIndex = viewIndex + 1
+        end
+        viewIndex = math.clamp(viewIndex, 1, self.tabs:getNumViews())
+
+        getSoundManager():playUISound("UIActivateTab")
+        self.tabs:activateViewIndex(viewIndex)
+        return true
+    end
+
+    return false
 end
 
 function MultiplayerUI:onClickSort(button)
@@ -874,12 +938,12 @@ function MultiplayerUI:requestServerList()
     end
     MultiplayerUI.serverCount = steamRequestInternetServersCount()
     MultiplayerUI.received = 0
-    MultiplayerUI.startRefreshTime = getTimestamp()
     MultiplayerUI.refreshTime = getTimestamp()
     self.internetList:clear();
 
     if not isPublicServerListAllowed() then return; end
     if getSteamModeActive() then
+        MultiplayerUI.startRefreshTime = getTimestamp()
         steamRequestInternetServersList()
         return
     end
@@ -887,6 +951,7 @@ function MultiplayerUI:requestServerList()
     if servers == nil or #servers == 0 then
         return;
     end
+    MultiplayerUI.startRefreshTime = getTimestamp()
     for i, k in ipairs(self.serverList) do
         self.serverList[i] = nil;
     end
@@ -1591,7 +1656,7 @@ end
 
 function MultiplayerUI:new (x, y, width, height)
 	local o = {}
-	o = ISPanel:new(x, y, width, height);
+	o = ISPanelJoypad:new(x, y, width, height);
 	setmetatable(o, self)
 	self.__index = self
     o.created = false

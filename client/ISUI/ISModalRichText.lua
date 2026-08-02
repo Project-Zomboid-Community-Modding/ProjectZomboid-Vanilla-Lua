@@ -8,8 +8,13 @@ function ISModalRichText:initialise()
 	local btnHgt = math.max(25, FONT_HGT_SMALL + 3 * 2)
 	local padBottom = 10
 	if self.yesno then
-		self.yes = ISButton:new((self:getWidth() / 2) - btnWid - 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Yes"), self, ISModalRichText.onClick);
+        local yesWidth = getTextManager():MeasureStringX(UIFont.Small, getText(self.yesText))
+        local noWidth = getTextManager():MeasureStringX(UIFont.Small, getText(self.noText))
+        local yesNoWidth = math.max(btnWid, math.max(yesWidth, noWidth))
+
+		self.yes = ISButton:new((self:getWidth() / 2) - yesNoWidth - 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText(self.yesText), self, ISModalRichText.onClick);
 		self.yes.internal = "YES";
+		self.yes.isYes = true
 		self.yes.anchorTop = false
 		self.yes.anchorBottom = true
 		self.yes:initialise();
@@ -17,8 +22,9 @@ function ISModalRichText:initialise()
 		self.yes:enableAcceptColor();
 		self:addChild(self.yes);
 
-		self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_No"), self, ISModalRichText.onClick);
+		self.no = ISButton:new((self:getWidth() / 2) + 5, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText(self.noText), self, ISModalRichText.onClick);
 		self.no.internal = "NO";
+		self.no.isYes = false
 		self.no.anchorTop = false
 		self.no.anchorBottom = true
 		self.no:initialise();
@@ -28,6 +34,7 @@ function ISModalRichText:initialise()
 	else
 		self.ok = ISButton:new((self:getWidth() / 2) - btnWid / 2, self:getHeight() - padBottom - btnHgt, btnWid, btnHgt, getText("UI_Ok"), self, ISModalRichText.onClick);
 		self.ok.internal = "OK";
+		self.ok.isYes = true
 		self.ok.anchorTop = false
 		self.ok.anchorBottom = true
 		self.ok:initialise();
@@ -194,5 +201,7 @@ function ISModalRichText:new(x, y, width, height, text, yesno, target, onclick, 
 	o.param1 = param1;
 	o.param2 = param2;
     o.destroyOnClick = true;
+    o.yesText = "UI_Yes";
+    o.noText = "UI_No";
     return o;
 end

@@ -77,7 +77,7 @@ function ISFeedingTroughUI:render()
     self.labelLinkedTo:setName(text);
 
     self.labelFeed:setName(tostring(round(self.item:getCurrentFeedAmount(), 2)));
-    self.labelWater:setName(round(self.item:getWater(), 2) * 1000 .. " / " .. self.item:getMaxWater() * 1000 .. " mL");
+    self.labelWater:setName(round(self.item:getWater(), 2) * 1000 .. " / " .. self.item:getMaxWater() * 1000 .. getText("IGUI_Milliliter"));
 
     self:shrinkWrap(UI_BORDER_SPACING + 1, UI_BORDER_SPACING + 1, function(_child)
         return not self.ignoreChildren:contains(_child.javaObject)

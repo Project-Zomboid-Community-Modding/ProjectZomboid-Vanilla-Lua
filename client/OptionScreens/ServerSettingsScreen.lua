@@ -753,9 +753,7 @@ function ServerSettingsScreenBaseListBox:setJoypadFocused(focused, joypadData)
 				end
 				self.selectedBeforeReset = nil
 			end
-			if self.onmousedown and self.items[self.selected] then
-				self.onmousedown(self.target, self.items[self.selected].item);
-			end
+			self:invokeOnMouseDownFunction()
 		end
 	end
 	self.joypadFocused = focused;
@@ -2206,6 +2204,9 @@ function Page2:updateWhenVisible()
 	if self.checkName ~= newName then
 		self.checkName = newName
 		local nameValid = getServerSettingsManager():isValidNewName(newName)
+		if (nameValid) then
+			nameValid = getServerSettingsManager():settingsFolderValidLengthChecks(newName)
+		end
 		if nameValid then
 			self.entry.borderColor.a = 1
 			self.entry.borderColor.g = 0.4
@@ -3208,6 +3209,9 @@ function Page4:updateWhenVisible()
 	if self.checkName ~= newName then
 		self.checkName = newName
 		local nameValid = newName ~= self.settings:getName() and getServerSettingsManager():isValidNewName(newName)
+		if (nameValid) then
+			nameValid = getServerSettingsManager():settingsFolderValidLengthChecks(newName)
+		end
 		if nameValid then
 			self.entry.borderColor.a = 1
 			self.entry.borderColor.g = 0.4
@@ -3374,6 +3378,9 @@ function Page5:updateWhenVisible()
 	if self.checkName ~= newName then
 		self.checkName = newName
 		local nameValid = newName ~= self.settings:getName() and getServerSettingsManager():isValidNewName(newName)
+		if (nameValid) then
+			nameValid = getServerSettingsManager():settingsFolderValidLengthChecks(newName)
+		end
 		if nameValid then
 			self.entry.borderColor.a = 1
 			self.entry.borderColor.g = 0.4

@@ -10,7 +10,7 @@ function ISScoreboard:initialise()
     ISPanelJoypad.initialise(self)
 end
 
-function ISScoreboard:fillList(usernames, displayNames, steamIDs)
+function ISScoreboard:fillList(usernames, displayNames, steamIDs, pingValues)
     self.maxNameWid = 0
     self.listbox:clear()
     for i = 0,usernames:size()-1 do
@@ -22,6 +22,7 @@ function ISScoreboard:fillList(usernames, displayNames, steamIDs)
             data.profileName = getSteamProfileNameFromSteamID(data.steamID)
             data.avatar = getSteamAvatarFromSteamID(data.steamID)
         end
+        data.ping = pingValues:get(i)
         local item = self.listbox:addItem(displayName, data)
         if ISScoreboard.isAdmin and username ~= displayName then
             item.tooltip = username
@@ -34,9 +35,9 @@ function ISScoreboard:fillList(usernames, displayNames, steamIDs)
     end)
 end
 
-function ISScoreboard.onScoreboardUpdate(usernames, displayNames, steamIDs)
+function ISScoreboard.onScoreboardUpdate(usernames, displayNames, steamIDs, pingValues)
     ISScoreboard.isAdmin = canModifyPlayerScoreboard() or CoopServer:isRunning();
-    ISScoreboard.instance:fillList(usernames, displayNames, steamIDs);
+    ISScoreboard.instance:fillList(usernames, displayNames, steamIDs, pingValues);
     ISScoreboard.instance.playersConnected = usernames:size();
 end
 
@@ -179,6 +180,9 @@ function ISScoreboard:drawMap(y, item, alt)
     end
     self:drawRectBorder(0, (y), self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     local fontHgtLarge = FONT_HGT_LARGE
+
+    local pingString = getText("UI_Ping", item.item.ping)
+    self:drawText(pingString, self:getWidth() - 24 - getTextManager():MeasureStringX(UIFont.Large, pingString), y+(item.height - fontHgtLarge)/2, 0.9, 0.9, 0.9, 0.9, UIFont.Large);
 
     if (getSteamScoreboard() or getPlayer():getRole():hasCapability(Capability.GetSteamScoreboard)) and not getStreamModeActive() and getSteamModeActive() then
         local avatarW = 32

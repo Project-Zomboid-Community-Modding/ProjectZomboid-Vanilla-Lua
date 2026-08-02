@@ -337,8 +337,8 @@ end
 function ISSafehouseUI:onQuitSafehouse(button)
     if button.internal == "YES" then
         sendSafehouseChangeMember(button.parent.ui.safehouse, button.parent.ui.player:getUsername())
+        button.parent.ui:close();
     end
-    button.parent.ui:close();
 end
 
 function ISSafehouseUI:onRemovePlayerFromSafehouse(button, player)
@@ -403,7 +403,7 @@ function ISSafehouseUI.OnSafehousesChanged()
     end
 end
 
-ISSafehouseUI.ReceiveSafehouseInvite = function(safehouse, host)
+ISSafehouseUI.ReceiveSafehouseInvite = function(safehouse, host, username)
     if ISSafehouseUI.inviteDialogs[host] then
         if ISSafehouseUI.inviteDialogs[host]:isReallyVisible() then return end
         ISSafehouseUI.inviteDialogs[host] = nil
@@ -415,6 +415,7 @@ ISSafehouseUI.ReceiveSafehouseInvite = function(safehouse, host)
         modal:addToUIManager()
         modal.safehouse = safehouse;
         modal.host = host;
+        modal.username = username;
         modal.moveWithMouse = true;
         ISSafehouseUI.inviteDialogs[host] = modal
     end
@@ -423,10 +424,10 @@ end
 function ISSafehouseUI:onAnswerSafehouseInvite(button)
     ISSafehouseUI.inviteDialogs[button.parent.host] = nil
     if button.internal == "YES" then
-        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer():getUsername(), true)
+        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, button.parent.username, true)
     end
     if button.internal == "NO" then
-        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, getPlayer():getUsername(), false)
+        acceptSafehouseInvite(button.parent.safehouse, button.parent.host, button.parent.username, false)
     end
 end
 

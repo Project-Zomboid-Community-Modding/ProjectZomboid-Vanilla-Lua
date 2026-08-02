@@ -1,16 +1,12 @@
 local birch_forest = {
     features = {
         TREE = {
-            { f = worldgen.features.TREE.birch_jumbo, p = 0.45 },
-            { f = worldgen.features.TREE.birch, p = 0.05 },
-            { f = worldgen.features.TREE.hawthorn_jumbo, p = 0.075 },
-            { f = worldgen.features.TREE.hawthorn, p = 0.025 },
-            { f = worldgen.features.TREE.yellowwood_jumbo, p = 0.075 },
-            { f = worldgen.features.TREE.yellowwood, p = 0.025 },
-            { f = worldgen.features.TREE.grass_birch, p = 0.2 },
-            { f = worldgen.features.TREE.bush_birchforest, p = 0.1 },
+            { f = worldgen.features.TREE.birch_jumbo_xxl,      p = 0.3 },
+            { f = worldgen.features.TREE.birch_jumbo_xl,       p = 0.4 },
+            { f = worldgen.features.TREE.birch_jumbo,          p = 0.1 },
+            { f = worldgen.features.BUSH.bush_regular,         p = 0.1 },
+            { f = worldgen.features.ORE.boulderslow_prim,      p = 0.1 },
         },
-
         BUSH = {
             { f = worldgen.features.BUSH.bush_regular, p = 1 },
         },
@@ -23,6 +19,13 @@ local birch_forest = {
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.grass
+                },
+            },
+        },
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },
         hygrometry = { "DRY", "RAIN" },

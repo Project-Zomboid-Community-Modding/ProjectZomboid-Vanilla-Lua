@@ -328,6 +328,26 @@ function ISCampingMenu.doLightFireOption(playerObj, context, worldobjects, hasFu
 
 end
 
+function ISCampingMenu.pickBestCampfire(playerObj, campfires)
+	local best = nil
+	local bestDot = -1.0
+	for _,campfire in ipairs(campfires) do
+		local object = campfire:getIsoObject()
+		local dot = playerObj:getDotWithForwardDirection(object:getX() + 0.5, object:getY() + 0.5)
+		if dot > bestDot then
+			best = campfire
+			bestDot = dot
+		end
+	end
+	return best
+end
+
+function ISCampingMenu.selectCampfireInLootWindow(playerNum, isoCampfireObject)
+    local lootWindow = getPlayerLoot(playerNum)
+    if not lootWindow then return end
+    lootWindow:selectButtonForContainer(isoCampfireObject:getContainer())
+end
+
 ISCampingMenu.doCampingMenu = function(player, context, worldobjects, test)
 
 	if test and ISWorldObjectContextMenu.Test then return true end
@@ -336,17 +356,28 @@ ISCampingMenu.doCampingMenu = function(player, context, worldobjects, test)
 	if playerObj:getVehicle() then return end
 
 	local campfire = nil
-
-	for _,v in ipairs(worldobjects) do
-		campfire = CCampfireSystem.instance:getLuaObjectOnSquare(v:getSquare())
+	if playerObj:getJoypadBind() == -1 then
+		for _,v in ipairs(worldobjects) do
+			campfire = campfire or CCampfireSystem.instance:getLuaObjectOnSquare(v:getSquare())
+		end
+	else
+		local campfires = {}
+		for _,v in ipairs(worldobjects) do
+			local campfire1 = CCampfireSystem.instance:getLuaObjectOnSquare(v:getSquare())
+			if campfire1 then
+				table.insert(campfires, campfire1)
+			end
+		end
+		if #campfires == 0 then return end
+		campfire = ISCampingMenu.pickBestCampfire(playerObj, campfires)
 	end
-
 	if not campfire then return end
 	if test then return ISWorldObjectContextMenu.setTest() end
 
 	local fuelInfo = ISCampingMenu.getNearbyFuelInfo(playerObj)
 
 	local isoCampfireObject = campfire:getIsoObject();
+	ISCampingMenu.selectCampfireInLootWindow(player, isoCampfireObject)
     local campfireOption = context:addOption(isoCampfireObject:getTileName(), worldobjects, nil)
     local tile = isoCampfireObject:getSpriteName();
     if tile then
@@ -359,7 +390,7 @@ ISCampingMenu.doCampingMenu = function(player, context, worldobjects, test)
 	if distance < 4 then -- distance < 2 * 2
 		local text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(luautils.round(campfire.fuelAmt))) ..
 				" (" .. (campfire.isLit and getText("IGUI_Fireplace_Burning") or getText("IGUI_Fireplace_Unlit")) .. ")"
-        local option = campfireMenu:addOption(text, worldobjects, ISCampingMenu.onDisplayInfo, player, campfire)
+        local option = campfireMenu:addOption(text, worldobjects, ISCampingMenu.onDisplayInfo, playerObj, campfire)
 	end
 
 	-- Add corpse to fire

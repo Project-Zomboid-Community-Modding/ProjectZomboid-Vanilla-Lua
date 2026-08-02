@@ -1387,7 +1387,7 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
     if ISLootZed.cheat or isAdmin() then
         local playerObj = getSpecificPlayer(page.player)
         if not instanceof(container:getParent(), "BaseVehicle") and not (container:getType() == "inventorymale" or container:getType() == "inventoryfemale" or container:getType() == "floor") then
-            context:addOption("Refill container", container, function(container, playerObj)
+            context:addOption(getText("ContextMenu_RefillContainer"), container, function(container, playerObj)
                 if container:getSourceGrid() then
                     if isClient() then
                         local items = container:getItems()
@@ -1430,7 +1430,7 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
             end, playerObj)
         end
         if ISLootZed.cheat then
-            context:addOption("Open LootZed", container, function(container, playerObj)
+            context:addOption(getText("ContextMenu_LootZed"), container, function(container, playerObj)
                 LootZedTool.SpawnItemCheckerList = {}
                 LootZedTool.fillContainer_CalcChances(container, playerObj)
 
@@ -1990,6 +1990,17 @@ function ISInventoryPage:new (x, y, width, height, inventory, onCharacter, zoom)
    return o
 end
 
+function ISInventoryPage:shouldSetOutlineHighlight(button)
+    if not getCore():getOptionDoContainerOutline() then return false end
+    local object = self:getContainerParent(button.inventory)
+    if object == nil then return false end
+    if object == self.mouseOverColoredContainer then return false end
+    if object == self:getContainerParent(self.coloredInv) then return false end
+    if ObjectsHighlightedElsewhere[self.player+1][object] then return false end
+    if instanceof(object, "IsoPlayer") then return false end
+    return true
+end
+
 function ISInventoryPage:onMouseOverButton(button,x,y)
     if button.inventory:getContainingItem() and button.inventory:getContainingItem():getName() ~= button.name then
         self:refreshBackpacks()
@@ -2003,7 +2014,7 @@ function ISInventoryPage:onMouseOverButton(button,x,y)
         self:stopHighlightContainer(self.mouseOverColoredContainer);
     end
 
-    if newMouseOverColoredContainer and newMouseOverColoredContainer ~= self.mouseOverColoredContainer and self:getContainerParent(self.coloredInv) ~= newMouseOverColoredContainer and not ObjectsHighlightedElsewhere[self.player+1][newMouseOverColoredContainer] and getCore():getOptionDoContainerOutline() then
+    if self:shouldSetOutlineHighlight(button) then
         self.mouseOverColoredContainer = newMouseOverColoredContainer;
         self.mouseOverColoredContainerInv = button.inventory;
         self.mouseOverColoredContainer:setOutlineHighlight(self.player, true);

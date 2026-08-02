@@ -1022,25 +1022,27 @@ function forageSystem.recreateIcons()
 		local icon, removeIcon;
 		for zoneID, zoneData in pairs(forageData) do
 			if (not zoneData.forageIcons) then zoneData.forageIcons = {}; end;
-			for iconID in pairs(zoneData.forageIcons) do
-				removeIcon = true;
-				for _, manager in pairs(ISSearchManager.players) do
-					if manager and manager.isSearchMode then
-						icon = manager.forageIcons[iconID];
-						if icon and (icon:getIsSeen() or icon:getIsNoticed()) then
-							removeIcon = false;
-							icon.isNoticed = false;
+			if ISSearchManager then
+				for iconID in pairs(zoneData.forageIcons) do
+					removeIcon = true;
+					for _, manager in pairs(ISSearchManager.players) do
+						if manager and manager.isSearchMode then
+							icon = manager.forageIcons[iconID];
+							if icon and (icon:getIsSeen() or icon:getIsNoticed()) then
+								removeIcon = false;
+								icon.isNoticed = false;
+							end;
 						end;
 					end;
+					if removeIcon then
+						triggerEvent("onUpdateIcon", zoneData, iconID, nil);
+						zoneData.forageIcons[iconID] = nil;
+					end;
 				end;
-				if removeIcon then
-					triggerEvent("onUpdateIcon", zoneData, iconID, nil);
-					zoneData.forageIcons[iconID] = nil;
-				end;
-			end;
-			for _, manager in pairs(ISSearchManager.players) do
-				if manager and manager.isSearchMode and manager.activeZones[zoneID] ~= nil then
-					manager.activeZones[zoneID] = nil;
+				for _, manager in pairs(ISSearchManager.players) do
+					if manager and manager.isSearchMode and manager.activeZones[zoneID] ~= nil then
+						manager.activeZones[zoneID] = nil;
+					end;
 				end;
 			end;
 			forageSystem.checkRefillZone(zoneData);
@@ -1562,6 +1564,44 @@ function forageSystem.addCatDef(_catDef, _overwrite)
 		end;
 	end;
 	forageSystem.catDefs[categoryName] = catDef;
+end
+
+function forageSystem.getAffinitySpriteNames(_object)
+	local names = {};
+	local sprite = _object and _object:getSprite();
+	local name = sprite and sprite:getName();
+	if name then
+		names[#names + 1] = name;
+		local animSprites = _object:getAttachedAnimSprite();
+		if animSprites then
+			for animSprite in iterList(animSprites) do
+				local animName = animSprite and animSprite:getName();
+				if animName then names[#names + 1] = animName; end;
+			end;
+		end;
+	end;
+	return names;
+end
+
+function forageSystem.resolveSpriteAffinity(_spriteName, _focusCategory)
+	local categoryTable = _spriteName and forageSystem.spriteAffinities[_spriteName];
+	if not categoryTable then return nil; end;
+	if _focusCategory then
+		for _, categoryName in ipairs(categoryTable) do
+			if categoryName == _focusCategory then
+				local cd = forageSystem.catDefs[categoryName];
+				if cd and cd.chanceToMoveIcon
+					and ZombRandFloat(0.0, 100.0) < math.max(cd.chanceToMoveIcon * 2, 75.0) then
+					return _focusCategory, cd;
+				end;
+				break;
+			end;
+		end;
+	end;
+	local catName = categoryTable[ZombRand(#categoryTable) + 1];
+	local catDef = catName and forageSystem.catDefs[catName];
+	if not catDef then return nil; end;
+	return catName, catDef;
 end
 
 function forageSystem.populateCatDefs(_catDefs)

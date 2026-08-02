@@ -5,27 +5,22 @@ CDDA.Add = function()
 end
 
 CDDA.OnGameStart = function()
-	local pl = getPlayer();
+    local pl = getPlayer();
 
-	if pl:getHoursSurvived() > 0 then return end
+    if pl:getHoursSurvived() > 0 then return end
 
-	local square = pl:getCurrentSquare();
-	if not square then return end
-	local room = square:getRoom();
-	if not room then return end
-	local building = room:getBuilding();
-	if not building then return end
+    local square = pl:getCurrentSquare();
+    if not square then return end
+    local room = square:getRoom();
+    if not room then return end
+    local building = room:getBuilding();
+    if not building then return end
 
-	local i = 0
-	while i <= 4 do
-		local tile = building:getRandomRoom():getRandomSquare();
-		if tile:getRoom() == room then
-			-- nothing
-		else
-			i = i + 1;
-	        IsoFireManager.explode(getCell(), tile, 100000)
-		end
-	end
+    local badRooms = ArrayList.new()
+    badRooms:add("kitchen")
+    badRooms:add("garage")
+    local tile = building:getRandomRoomExcluding(badRooms):getRandomSquare()
+    IsoFireManager.explode(getCell(), tile, 100000)
 end
 
 CDDA.OnInitWorld = function()
@@ -95,12 +90,12 @@ end
 
 CDDA.id = "AReallyCDDAy";
 CDDA.completionText = "Survive a night to unlock next challenge.";
-CDDA.image = "media/lua/client/LastStand/AReallyCDDAy.png";
-CDDA.video = "CDDA.bik";
+CDDA.image = "media/lua/client/LastStand/a_really_cdday.png";
+CDDA.video = "a_really_cdday.bik";
 CDDA.gameMode = "A Really CD DA";
 CDDA.world = "Muldraugh, KY";
-CDDA.x = 36 * 300 + 21;
-CDDA.y = 31 * 300 + 111;
+CDDA.x = 10816;
+CDDA.y = 9413;
 CDDA.z = 0;
 
 CDDA.spawns = {

@@ -25,7 +25,7 @@ function ISFluidContainerMenu.createMenu(context, item, waterContainer, playerOb
 
             local fluidNames = FluidType.getAllFluidName();
             for i=0, fluidNames:size() -1 do
-                addFluidSubMenu:addOption(fluidNames:get(i), cont, ISFluidContainerMenu.addDebugFluid, fluidNames:get(i));
+                addFluidSubMenu:addOption(fluidNames:get(i), cont, ISFluidContainerMenu.addDebugFluid, fluidNames:get(i), item);
             end
         end
     end
@@ -71,7 +71,10 @@ function ISFluidContainerMenu.joypadHideInventoryAndLoot(playerObj)
     end
 end
 
-function ISFluidContainerMenu.addDebugFluid(cont, fluid)
+function ISFluidContainerMenu.addDebugFluid(cont, fluid, item)
     cont:removeFluid();
     cont:addFluid(FluidType.FromNameLower(fluid), cont:getCapacity());
+    if item then
+        item:syncItemFields()
+    end
 end

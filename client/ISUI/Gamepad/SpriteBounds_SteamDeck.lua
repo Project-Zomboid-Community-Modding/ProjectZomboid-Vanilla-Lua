@@ -1,4 +1,5 @@
 require "ISBaseObject"
+require "ISUI/ISUITextureGetter"
 
 SpriteBounds_SteamDeck = ISBaseObject:derive("SpriteBounds_SteamDeck")
 function SpriteBounds_SteamDeck:new()

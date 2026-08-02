@@ -126,7 +126,7 @@ function ISVehiclePartMenu.transferRequiredItems(playerObj, part, tbl)
 		for _,thing in ipairs(itemTable.scripts) do
 			local fullType = thing.script:getFullName()
 			-- FIXME: handle drainables
-			if typeToItem[fullType] ~= nil and #typeToItem[fullType] > 0 then
+			if typeToItem[fullType] ~= nil and #typeToItem[fullType] > 0 and not itemTable.item.equip then
 				local invItem = table.remove(typeToItem[fullType], 1)
 				 ISVehiclePartMenu.toPlayerInventory(playerObj, invItem)
 				 count = count + 1

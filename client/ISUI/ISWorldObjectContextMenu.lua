@@ -154,6 +154,9 @@ ISWorldObjectContextMenu.createMenu = function(player, worldobjects, x, y, test)
 	if UIManager.getSpeedControls():getCurrentGameSpeed() == 0 then
 		return;
 	end
+    if ISWorldMap_instance and ISWorldMap_instance:isVisible() then
+		return;
+	end
 
 	local playerObj = getSpecificPlayer(player)
 	if playerObj:isAsleep() then return end
@@ -163,7 +166,8 @@ ISWorldObjectContextMenu.createMenu = function(player, worldobjects, x, y, test)
 	context.dontShowLiquidOption = false;
 
     -- avoid doing action while trading (you could eat half an apple and still trade it...)
-    if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
+    local tradingUI = ISTradingUI.GetUIForPlayer(playerObj)
+    if tradingUI and tradingUI:isVisible() then
         context:addOption(getText("IGUI_TradingUI_CantRightClick"), nil, nil);
         return;
 	end
@@ -859,6 +863,10 @@ ISWorldObjectContextMenu.onTrade = function(worldobjects, player, otherPlayer)
     ui:addToUIManager();
     ui.pendingRequest = true;
     ui.blockingMessage = getText("IGUI_TradingUI_WaitingAnswer", otherPlayer:getDisplayName());
+    local playerNum = player:getIndex()
+    if getJoypadData(playerNum) then
+        setJoypadFocus(playerNum, ui)
+    end
     requestTrading(player, otherPlayer);
 end
 

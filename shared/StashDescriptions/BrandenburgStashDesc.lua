@@ -54,9 +54,10 @@ local stashMap = StashUtil.newStash("BBurgStashMap5", "Map", "Base.RosewoodMap",
 stashMap.buildingX = 1936
 stashMap.buildingY = 6583
 stashMap:addStamp("FaceHappy", nil, 1936, 6583, 0.65, 0.054, 0.054)
-stashMap:addStamp(nil, "Stash_BBurgMap5_Text2", 1927, 6586, 0.65, 0.054, 0.054)
+stashMap:addStamp(nil, "Stash_BBurgMap5_Text2", 1875, 6588, 0.650, 0.054, 0.054)
 stashMap:addStamp("ArrowNorth", nil, 2014, 6545, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_BBurgMap5_Text1", 1975, 6550, 0.65, 0.054, 0.054)
+
 
 --BBurgMap6 (floorboard stash)
 local stashMap = StashUtil.newStash("BBurgStashMap6", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
@@ -80,7 +81,7 @@ stashMap:addStamp(nil, "Stash_BBurgMap7_Text1", 2126, 5796, 0.156, 0.188, 0.49)
 stashMap:addStamp(nil, "Stash_BBurgMap7_Text2", 2158, 5852, 0.156, 0.188, 0.49)
 stashMap:addStamp("Skull", nil, 2243, 5820, 0, 0, 0)
 stashMap.spawnOnlyOnZed = true
---BBurgMap8 (tools cache)
+--BBurgMap8 (remote house, always has random basement)
 local stashMap = StashUtil.newStash("BBurgStashMap8", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
 stashMap.buildingX = 2774
 stashMap.buildingY = 5907
@@ -89,8 +90,9 @@ stashMap:addStamp(nil, "Stash_BBurgMap8_Text1", 2605, 5929, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_BBurgMap8_Text2", 2613, 5948, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_BBurgMap8_Text3", 2610, 5970, 0.06, 0.39, 0.17)
 stashMap:addStamp(nil, "Stash_BBurgMap8_Text4", 2611, 5992, 0.06, 0.39, 0.17)
-stashMap.spawnTable = "ToolsCache1";
-stashMap:addContainer("Toolbox",nil,"Base.Toolbox",nil,nil,nil,nil);
+--stashMap.spawnTable = "ToolsCache1";
+--stashMap:addContainer("ToolsBox",nil,"Base.Toolbox",nil,2770,5903,0);
+
 -- shotgun
 --stashMap.spawnTable = "ShotgunCache1";
 --stashMap:addContainer("ShotgunBox","floors_interior_tilesandwood_01_61",nil,"livingroom",nil,nil,nil);

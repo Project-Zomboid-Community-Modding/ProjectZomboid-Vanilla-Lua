@@ -181,7 +181,7 @@ function ISFitnessUI:render()
 	self:updateButtons(currentAction);
 	
 	if getDebug() then
-		self:drawText("Stiffness in " .. self.fitness:getCurrentExeStiffnessTimer(self.exeData.stiffness) .. " (" .. self.fitness:getCurrentExeStiffnessInc(self.exeData.stiffness) .. ")", 10, 22, 1,1,1,1, UIFont.Small);
+		self:drawText(getText("IGUI_StiffnessIn", self.fitness:getCurrentExeStiffnessTimer(self.exeData.stiffness), self.fitness:getCurrentExeStiffnessInc(self.exeData.stiffness)), 10, 22, 1,1,1,1, UIFont.Small);
 	end
 	
 	-- regularity progress bar

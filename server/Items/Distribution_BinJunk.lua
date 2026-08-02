@@ -1002,8 +1002,6 @@ ClutterTables.BinItems = {
 		"BaseballBat_Metal", 0.05,
 		"Basketball", 0.05,
 		"Birdie", 0.05,
-		"CanoePadel", 0.05,
-		"CanoePadelX2", 0.05,
 		"Dart", 0.05,
 		"DumbBell", 0.05,
 		"FieldHockeyStick", 0.05,
@@ -1124,7 +1122,6 @@ ClutterTables.BinItems = {
 		"WristWatch_Left_DigitalRed", 0.005,
 		"WristWatch_Left_Expensive", 0.0001,
 		-- Woodworking
-		"Axe", 0.005,
 		"CircularSawblade", 0.05,
 		"GardenSaw", 0.05,
 		"HandAxe", 0.05,
@@ -1132,7 +1129,6 @@ ClutterTables.BinItems = {
 		"Plank", 0.05,
 		"Saw", 0.05,
 		"Screws", 0.05,
-		"WoodAxe", 0.005,
 		"Woodglue", 0.005,
 		-- Unsorted
 		"Bell", 0.05,

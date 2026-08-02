@@ -319,67 +319,31 @@ function ISSearchManager:removeIcon(_icon)
 end
 
 function ISSearchManager:checkForSpriteAffinity(_square, _object, _zoneData)
-	local spriteName, spriteCategory, catDef;
-	local spriteAffinities = self.spriteAffinities;
-	local spriteTable = {};
-	spriteName = _object:getSprite() and _object:getSprite():getName();
-	if spriteName then
-		table.insert(spriteTable, spriteName);
-		local animSprites = _object:getAttachedAnimSprite();
-		if animSprites then
-			for animSprite in iterList(animSprites) do
-				spriteName = animSprite and animSprite:getName();
-				if spriteName then table.insert(spriteTable, spriteName); end;
-			end;
-		end;
-	end;
-	--
+	local searchWindow = ISSearchWindow.players[self.character];
+	local focusCategory = searchWindow and searchWindow.searchFocusCategory;
 	local doSpriteCheck = true;
-	local categoryTable;
-	for _, spriteName in ipairs(spriteTable) do
-		categoryTable = spriteAffinities[spriteName];
-		if categoryTable then
-			local useFocusCategory;
-			local chanceToPreferIcon;
-			--if we have a search focus set, we'll attempt to prefer that category when choosing an affinity category.
-			local searchWindow = ISSearchWindow.players[self.character];
-			if searchWindow then
-				--check if the focus also has a valid affinity for this sprite.
-				for _, categoryName in ipairs(categoryTable) do
-					if categoryName == searchWindow.searchFocusCategory then
-						catDef = forageSystem.catDefs[categoryName];
-						chanceToPreferIcon = math.max(catDef.chanceToMoveIcon * 2, 75.0);
-						if catDef and catDef.chanceToMoveIcon and ZombRandFloat(0.0, 100.0) < chanceToPreferIcon then
-							useFocusCategory = searchWindow.searchFocusCategory;
-						end;
-						break;
-					end;
-				end;
-			end;
-			--if we haven't found a focus category in the previous step it just picks a random category.
-			spriteCategory = useFocusCategory or categoryTable[ZombRand(#categoryTable) + 1];
-			catDef = spriteCategory and forageSystem.catDefs[spriteCategory] or false;
-			if spriteCategory and catDef then
-				if (not self:isIconOnSquare(_square, self.activeIcons)) then
-					doSpriteCheck = false;
-					if ZombRandFloat(0.0, 100.0) < catDef.chanceToMoveIcon then
-						self:findSpriteAffinityIcon(_square, catDef, _zoneData);
-                        self.affinityAddedChunks[_square:getChunk()] = true;
-						break;
-					elseif ZombRandFloat(0.0, 100.0) < catDef.chanceToCreateIcon then
-						self:createBonusIcon(_square, catDef, _zoneData);
-                        self.affinityAddedChunks[_square:getChunk()] = true;
-						break;
-					end;
+	for _, spriteName in ipairs(forageSystem.getAffinitySpriteNames(_object)) do
+		local spriteCategory, catDef = forageSystem.resolveSpriteAffinity(spriteName, focusCategory);
+		if spriteCategory and catDef then
+			if (not self:isIconOnSquare(_square, self.activeIcons)) then
+				doSpriteCheck = false;
+				if ZombRandFloat(0.0, 100.0) < catDef.chanceToMoveIcon then
+					self:findSpriteAffinityIcon(_square, catDef, _zoneData);
+					self.affinityAddedChunks[_square:getChunk()] = true;
+					break;
+				elseif ZombRandFloat(0.0, 100.0) < catDef.chanceToCreateIcon then
+					self:createBonusIcon(_square, catDef, _zoneData);
+					self.affinityAddedChunks[_square:getChunk()] = true;
+					break;
 				end;
 			end;
 		end;
 	end;
-	--
 	return doSpriteCheck;
 end
 
 function ISSearchManager:createBonusIcon(_square, _catDef, _zoneData)
+	if isClient() then return; end;
 	local pickedItemType = forageSystem.pickRandomItemType(_zoneData.name, _catDef.name);
 	if pickedItemType then
 		local iconID = getRandomUUID();
@@ -680,7 +644,11 @@ function ISSearchManager:spotIcon(_icon)
 	self:resetForceFindSystem();
 
 	if _icon.itemDef and (not self.xpIcons[_icon.iconID]) then
-		sendIconFound(self.character, _icon.itemType, _icon.distanceSnapshot)
+		if isClient() then
+			sendForageSpot(self.character, _icon.iconID);
+		else
+			sendIconFound(self.character, _icon.itemType, _icon.distanceSnapshot);
+		end;
 		self.xpIcons[_icon.iconID] = _icon.iconID;
 	end;
 end
@@ -782,6 +750,7 @@ function ISSearchManager:doMoveIconNearPlayer()
 end
 
 function ISSearchManager:doMoveIcon(_icon, _x, _y, _z)
+	if isClient() then return; end;
 	_icon:removeIsoMarker();
 	_icon:removeWorldMarker();
 	_icon.xCoord, _icon.yCoord, _icon.zCoord = _x, _y, _z;
@@ -908,16 +877,41 @@ end
 
 function ISSearchManager:createIconsForZone(_zoneData, _recreate)
 	local zoneData = _zoneData;
+	self.activeZones[zoneData.id] = zoneData;
+	if isClient() then
+		forageClient.requestZone(self.character);
+		return;
+	end;
 	local forageIcons = forageSystem.createForageIcons(zoneData, _recreate);
-	--
 	for _, icon in ipairs(forageIcons) do
 		if (not self.iconStack[icon]) and (not self.forageIcons[icon.id]) then
 			self.iconStack[icon] = zoneData;
 			self.iconQueue = self.iconQueue + 1;
 		end;
 	end;
-	--
-	self.activeZones[zoneData.id] = zoneData;
+end
+
+function ISSearchManager:applyServerPool(_zoneId, _icons)
+	if not _icons then return; end;
+	local plX, plY = self.character:getX(), self.character:getY();
+	local materialiseRadius = self.activeIconRadius;
+	for id, rec in pairs(_icons) do
+		if (not self.forageIcons[id]) and getDistance2D(rec.x, rec.y, plX, plY) <= materialiseRadius then
+			local zoneData = forageSystem.getForageZoneAt(rec.x, rec.y);
+			if zoneData then
+				local icon = {
+					id = id, zoneid = zoneData.id,
+					x = rec.x, y = rec.y, z = rec.z,
+					itemType = rec.itemType, catName = rec.catName, count = rec.count,
+					isBonusIcon = false, canRollForSearchFocus = false,
+				};
+				zoneData.forageIcons[id] = icon;
+				self.iconStack[icon] = zoneData;
+				self.iconQueue = self.iconQueue + 1;
+				self.activeZones[zoneData.id] = zoneData;
+			end;
+		end;
+	end;
 end
 
 function ISSearchManager:doChangeZone(_zoneData)
@@ -1210,6 +1204,14 @@ function ISSearchManager:update()
 		return;
 	end;
 	if self:getGameSpeed() == 0 then return; end;
+
+	if isClient() then
+		local now = getTimestampMs();
+		if (not self._nextForageReq) or now >= self._nextForageReq then
+			self._nextForageReq = now + 2000;
+			forageClient.requestZone(self.character);
+		end;
+	end;
 
 	self:doDisableCheck();
 	self:checkMarkers();

@@ -16,8 +16,10 @@ end
 
 function ISScrollingListBox:setJoypadFocused(focused, joypadData)
 	if focused then
-		joypadData.focus = self;
-		updateJoypadFocus(joypadData);
+		if self.stealJoypadFocusFromParent then
+			joypadData.focus = self;
+			updateJoypadFocus(joypadData);
+		end
 		if self.selected == -1 then
 			self.selected = 1;
 			if self.resetSelectionOnChangeFocus then
@@ -644,6 +646,18 @@ function ISScrollingListBox:render()
 	self:renderJoypadFocus()
 end
 
+function ISScrollingListBox:renderJoypadFocus(x, y, w, h)
+	if self.joypadFocused or (self.joyfocus and self.joyfocus.focus == self) then
+		if not x then
+			x,y,w,h = 0, 0, self.width, self.height
+		end
+		local r,g,b,a = 0.2, 1.0, 1.0, 0.4
+		if not self.joyfocus then r,g,b = 1.0, 1.0, 1.0 end
+		self:drawRectBorderStatic(x, y, w, h, a, r, g, b)
+		self:drawRectBorderStatic(x+1, y+1, w-2, h-2, a, r, g, b)
+	end
+end
+
 function ISScrollingListBox:onJoypadDown(button, joypadData)
     if button == Joypad.AButton and self.overrideAButtonFunction then
         self.overrideAButtonFunction(self.target, self.items[self.selected].item);
@@ -659,9 +673,22 @@ function ISScrollingListBox:onJoypadDown(button, joypadData)
 		self.joypadFocused = false;
 		joypadData.focus = self.joypadParent;
 		updateJoypadFocus(joypadData);
+		-- An old flaw in JoypadSetup is calling newFocus:onGainJoypadFocus() followed by oldFocus:onLoseJoypadFocus().
+		-- It is more sensible and flexible to call oldFocus:onLoseJoypadFocus() and then newFocus:onGainJoypadFocus().
+		if joypadData.focus == self.joypadParent and self.joypadParent:getJoypadFocus() == self then
+			self.joypadFocused = true;
+		end
 	else
 		ISPanelJoypad.onJoypadDown(self, button, joypadData);
 	end
+end
+
+function ISScrollingListBox:onJoypadDownInParent(button, joypadData)
+	if button == Joypad.AButton and not self.stealJoypadFocusFromParent then
+		joypadData.focus = self
+		return true
+	end
+	return false
 end
 
 function ISScrollingListBox:onLoseJoypadFocus(joypadData)
@@ -680,8 +707,8 @@ function ISScrollingListBox:setFont(font, padY)
 	self.itemheight = self.fontHgt + (self.itemPadY or 0) * 2;
 end
 
-function ISScrollingListBox:addColumn(columnName, size)
-	table.insert(self.columns, {name = columnName, size = size});
+function ISScrollingListBox:addColumn(columnName, size, id)
+	table.insert(self.columns, {name = columnName, size = size, id = id});
 end
 
 function ISScrollingListBox:getItem(index)
@@ -732,5 +759,6 @@ function ISScrollingListBox:new (x, y, width, height)
 	o.items = {}
 	o.columns = {};
 	o.autoAddJoypadButton = true
+	o.stealJoypadFocusFromParent = true
 	return o
 end

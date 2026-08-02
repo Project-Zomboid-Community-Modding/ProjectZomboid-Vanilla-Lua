@@ -587,7 +587,7 @@ function ISHealthBodyPartListBox:doDrawItem(y, item, alt)
         end
     end
     if ISHealthPanel.cheat then
-        self:drawText(BodyPartType.getDisplayName(bodyPart:getType()) .. " (health=" .. round(bodyPart:getHealth(), 4) .. ")", x - 15, y, 1, 1, 1, 1, UIFont.Small);
+        self:drawText(BodyPartType.getDisplayName(bodyPart:getType()) .. getText("IGUI_HealthEquals", round(bodyPart:getHealth(), 4)), x - 15, y, 1, 1, 1, 1, UIFont.Small);
     else
         self:drawText(BodyPartType.getDisplayName(bodyPart:getType()), x - 15, y, 1, 1, 1, 1, UIFont.Small);
     end
@@ -1819,12 +1819,12 @@ function ISHealthPanel:doBodyPartContextMenu(bodyPart, x, y)
     end
 
     if ISHealthPanel.cheat then
-        local option = context:addOption("Cheat", nil);
+        local option = context:addOption(getText("ContextMenu_Cheat"), nil);
         local cheatSubMenu = context:getNew(context);
         context:addSubMenu(option, cheatSubMenu);
 
         --- Spawn item ---
-        option = cheatSubMenu:addOption("Spawn Item")
+        option = cheatSubMenu:addOption(getText("ContextMenu_SpawnItem"))
         local cheatSpawnItemSubMenu = cheatSubMenu:getNew(cheatSubMenu)
         cheatSubMenu:addSubMenu(option, cheatSpawnItemSubMenu)
 
@@ -1836,38 +1836,38 @@ function ISHealthPanel:doBodyPartContextMenu(bodyPart, x, y)
         end
 
         --- Visual change ---
-        option = cheatSubMenu:addOption("Visual change")
+        option = cheatSubMenu:addOption(getText("ContextMenu_Visualchange"))
         local cheatVisualChangeSubMenu = cheatSubMenu:getNew(cheatSubMenu)
         cheatSubMenu:addSubMenu(option, cheatVisualChangeSubMenu)
 
-        cheatVisualChangeSubMenu:addOption("Add Dirt", bodyPart, ISHealthPanel.onCheat, "dirt", self.character, self.otherPlayer);
-        cheatVisualChangeSubMenu:addOption("Remove Dirt", bodyPart, ISHealthPanel.onCheat, "removedirt", self.character, self.otherPlayer);
-        cheatVisualChangeSubMenu:addOption("Add Blood", bodyPart, ISHealthPanel.onCheat, "blood", self.character, self.otherPlayer);
-        cheatVisualChangeSubMenu:addOption("Remove Blood", bodyPart, ISHealthPanel.onCheat, "removeblood", self.character, self.otherPlayer);
-        cheatVisualChangeSubMenu:addOption("Add Hole", bodyPart, ISHealthPanel.onCheat, "hole", self.character, self.otherPlayer);
-        cheatVisualChangeSubMenu:addOption("Add Patch", bodyPart, ISHealthPanel.onCheat, "patch", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_AddDirt"), bodyPart, ISHealthPanel.onCheat, "dirt", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_RemoveDirt"), bodyPart, ISHealthPanel.onCheat, "removedirt", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_AddBlood"), bodyPart, ISHealthPanel.onCheat, "blood", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_RemoveBlood"), bodyPart, ISHealthPanel.onCheat, "removeblood", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_AddHole"), bodyPart, ISHealthPanel.onCheat, "hole", self.character, self.otherPlayer);
+        cheatVisualChangeSubMenu:addOption(getText("ContextMenu_AddPatch"), bodyPart, ISHealthPanel.onCheat, "patch", self.character, self.otherPlayer);
 
         --- Part change ---
-        option = cheatSubMenu:addOption("Part change")
+        option = cheatSubMenu:addOption(getText("ContextMenu_Partchange"))
         local cheatPartChangeSubMenu = cheatSubMenu:getNew(cheatSubMenu)
         cheatSubMenu:addSubMenu(option, cheatPartChangeSubMenu)
 
-        cheatPartChangeSubMenu:addOption("Toggle Bleeding", bodyPart, ISHealthPanel.onCheat, "bleeding", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Bullet", bodyPart, ISHealthPanel.onCheat, "bullet", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Burned", bodyPart, ISHealthPanel.onCheat, "burned", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Burn Needs Wash", bodyPart, ISHealthPanel.onCheat, "burnWash", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Deep Wound", bodyPart, ISHealthPanel.onCheat, "deepWound", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Fracture", bodyPart, ISHealthPanel.onCheat, "fracture", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Glass Shards", bodyPart, ISHealthPanel.onCheat, "glass", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Infected", bodyPart, ISHealthPanel.onCheat, "infected", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Scratched", bodyPart, ISHealthPanel.onCheat, "scratched", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Laceration", bodyPart, ISHealthPanel.onCheat, "cut", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Bite", bodyPart, ISHealthPanel.onCheat, "bite", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Toggle Muscle Strain", bodyPart, ISHealthPanel.onCheat, "fatique", self.character, self.otherPlayer);
-        cheatPartChangeSubMenu:addOption("Health Full", bodyPart, ISHealthPanel.onCheat, "healthFull", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleBleeding"), bodyPart, ISHealthPanel.onCheat, "bleeding", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleBullet"), bodyPart, ISHealthPanel.onCheat, "bullet", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleBurned"), bodyPart, ISHealthPanel.onCheat, "burned", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleBurn Needs Wash"), bodyPart, ISHealthPanel.onCheat, "burnWash", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleDeep Wound"), bodyPart, ISHealthPanel.onCheat, "deepWound", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleFracture"), bodyPart, ISHealthPanel.onCheat, "fracture", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleGlass Shards"), bodyPart, ISHealthPanel.onCheat, "glass", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleInfected"), bodyPart, ISHealthPanel.onCheat, "infected", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleScratched"), bodyPart, ISHealthPanel.onCheat, "scratched", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleLaceration"), bodyPart, ISHealthPanel.onCheat, "cut", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleBite"), bodyPart, ISHealthPanel.onCheat, "bite", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_ToggleMuscle Strain"), bodyPart, ISHealthPanel.onCheat, "fatique", self.character, self.otherPlayer);
+        cheatPartChangeSubMenu:addOption(getText("IGUI_HealthFull"), bodyPart, ISHealthPanel.onCheat, "healthFull", self.character, self.otherPlayer);
 
         --- Health Full (Body) ---
-        cheatSubMenu:addOption("Health Full (Body)", bodyPart, ISHealthPanel.onCheat, "healthFullBody", self.character, self.otherPlayer)
+        cheatSubMenu:addOption(getText("IGUI_HealthFullBody"), bodyPart, ISHealthPanel.onCheat, "healthFullBody", self.character, self.otherPlayer)
     end
 
     if self.blockingMessage or context:isEmpty()  then
@@ -1939,10 +1939,11 @@ function ISHealthPanel:dropItemsOnBodyPart(bodyPart, items)
     end
 end
 
-ISHealthPanel.ReceiveMedicalCheckRequest = function(requester)
+ISHealthPanel.ReceiveMedicalCheckRequest = function(target, requester)
     local modal = ISModalDialog:new(getCore():getScreenWidth() / 2 - 175,getCore():getScreenHeight() / 2 - 75, 350, 150, getText("ContextMenu_Medical_Check_Request", requester:getDisplayName()), true, nil, ISHealthPanel.onAnswerMedicalCheckRequest);
     modal:initialise();
     modal:addToUIManager();
+    modal.target = target;
     modal.requester = requester;
     modal.moveWithMouse = true;
     modal:bringToTop();
@@ -1950,7 +1951,7 @@ end
 
 function ISHealthPanel:onAnswerMedicalCheckRequest(button)
     if button.internal == "YES" then
-        acceptMedicalCheck(getPlayer(), button.parent.requester);
+        acceptMedicalCheck(button.parent.target, button.parent.requester);
     end
 end
 

@@ -49,7 +49,7 @@ local function DoSpecialTooltip1(tooltip, square)
 	local layout = tooltip:beginLayout()
 	local text = getText("Fluid_Empty");
 	if waterAmount > 0 then
-		text = round(trough:getWater(), 2) * 1000 .. " / " .. trough:getMaxWater() * 1000 .. " mL";
+		text = round(trough:getWater(), 2) * 1000 .. " / " .. trough:getMaxWater() * 1000 .. getText("IGUI_Milliliter");
 	end
 	-- only display water if there's no food
 	if feedAmount <= 0 then

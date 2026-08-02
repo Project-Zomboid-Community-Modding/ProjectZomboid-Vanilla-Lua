@@ -19,13 +19,16 @@ end
 function ISAddTakeDispenserBottle:start()
     self:setActionAnim("Loot")
     self.character:SetVariable("LootPosition", "Mid")
+    self.sound = self.character:playSound(self.bottle and "WaterDispenserAddBottle" or "WaterDispenserRemoveBottle")
 end
 
 function ISAddTakeDispenserBottle:stop()
+    self:stopSound()
     ISBaseTimedAction.stop(self);
 end
 
 function ISAddTakeDispenserBottle:perform()
+    self:stopSound()
     -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self);
 end
@@ -79,6 +82,12 @@ function ISAddTakeDispenserBottle:complete()
 	end
 
     return true;
+end
+
+function ISAddTakeDispenserBottle:stopSound()
+	if self.sound and self.character:getEmitter():isPlaying(self.sound) then
+		self.character:stopOrTriggerSound(self.sound)
+	end
 end
 
 function ISAddTakeDispenserBottle:getDuration()

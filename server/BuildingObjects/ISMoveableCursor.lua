@@ -566,12 +566,7 @@ function ISMoveableCursor:isValid( _square )
                 local origName = moveProps.spriteName;
 
                 if moveProps and moveProps:hasFaces() then
-                    local faceIndex;
-                    if moveProps.isTableTop and not moveProps.ignoreSurfaceSnap then    -- adjustment for tabletops, they should always try to snap first if parent table has faces.
-                        faceIndex = moveProps:snapFaceToSquare( _square ) or self.cursorFacing;
-                    else
-                        faceIndex = self.cursorFacing or moveProps:snapFaceToSquare( _square );
-                    end
+                    local faceIndex = self.cursorFacing or moveProps:snapFaceToSquare( _square );
                     if faceIndex and moveProps:getIndexedFaces()[faceIndex] then
                         local tryMoveProps = ISMoveableSpriteProps.new( moveProps:getIndexedFaces()[faceIndex] );
                         if tryMoveProps and tryMoveProps.isMoveable and tryMoveProps.sprite then

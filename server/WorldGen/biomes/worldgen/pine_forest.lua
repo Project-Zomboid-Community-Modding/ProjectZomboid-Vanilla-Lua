@@ -9,17 +9,36 @@ local pine_forest = {
             { f = worldgen.features.PLANT.generic_plant, p = 0.1 },
             { f = worldgen.features.PLANT.floor_leaves, p = 0.1 },
         },
+        BUSH = {
+            { f = worldgen.features.BUSH.bush_primaryforest, p = 0.1 },
+        },
         TREE = {
-            { f = worldgen.features.TREE.pine_jumbo, p = 0.07083 },
-            { f = worldgen.features.TREE.holly_jumbo, p = 0.07083 },
-            { f = worldgen.features.TREE.hemlock_jumbo, p = 0.07083 },
-            { f = worldgen.features.TREE.pine, p = 0.0125 },
-            { f = worldgen.features.TREE.holly, p = 0.0125 },
-            { f = worldgen.features.TREE.hemlock, p = 0.0125 },
+            { f = worldgen.features.TREE.pine_jumbo_xxl, p = 0.035415 },
+            { f = worldgen.features.TREE.pine_jumbo_xl, p = 0.035415 },
+            { f = worldgen.features.TREE.pine_jumbo, p = 0.00625 },
+            { f = worldgen.features.TREE.pine, p = 0.00625 },
+
+            { f = worldgen.features.TREE.holly_jumbo_xxl, p = 0.035415 },
+            { f = worldgen.features.TREE.holly_jumbo_xl, p = 0.035415 },
+            { f = worldgen.features.TREE.holly_jumbo, p = 0.00625 },
+            { f = worldgen.features.TREE.holly, p = 0.00625 },
+
+            { f = worldgen.features.TREE.hemlock_jumbo_xxl, p = 0.035415 },
+            { f = worldgen.features.TREE.hemlock_jumbo_xl, p = 0.035415 },
+            { f = worldgen.features.TREE.hemlock_jumbo, p = 0.00625 },
+            { f = worldgen.features.TREE.hemlock, p = 0.00625 },
+
             { f = worldgen.features.TREE.stumps, p = 0.001 },
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.grass
+                },
+            },
+        },
         landscape = { "FOREST" },
         temperature = { "COLD" },
         hygrometry = { "DRY", "RAIN" },

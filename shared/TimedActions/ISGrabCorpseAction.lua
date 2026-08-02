@@ -32,7 +32,7 @@ function ISGrabCorpseAction:start()
     self.corpse:setJobType(getText("ContextMenu_Grab"));
     self.corpse:setJobDelta(0.0);
     self:setActionAnim("Loot");
-    self.character:SetVariable("LootPosition", "Low");
+    self:setAnimVariable("LootPosition", "Low");
     self.character:reportEvent("EventLootItem");
     self.sound = self.character:playSound(self.corpseBody:getPickUpSound())
 end

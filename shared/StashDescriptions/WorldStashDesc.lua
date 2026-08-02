@@ -8,13 +8,13 @@ require "StashDescriptions/StashUtil";
 
 -- WorldMap1 (survivor house)
 local stashMap = StashUtil.newStash("WorldStashMap1", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
-stashMap.buildingX = 7303
-stashMap.buildingY = 8430
+stashMap.buildingX = 7301
+stashMap.buildingY = 8459
 stashMap.spawnTable = "SurvivorCache1";
 stashMap.barricades = 75;
 stashMap.zombies = 1;
-stashMap:addStamp("Circle", nil, 7303, 8429, 0, 0, 0)
-stashMap:addStamp(nil, "Stash_WorldMap1_Text1", 7235, 8438, 0, 0, 0)
+stashMap:addStamp("Circle", nil, 7301, 8459, 0, 0, 0)
+stashMap:addStamp(nil, "Stash_WorldMap1_Text1", 7259, 8423, 0, 0, 0)
 stashMap:addStamp("Exclamation", nil, 7276, 8375, 0, 0, 0)
 stashMap:addStamp(nil, "Stash_WorldMap1_Text2", 7257, 8346, 0, 0, 0)
 
@@ -52,25 +52,21 @@ stashMap.buildingY = 7914
 
 --WorldMap5 (gun floorboard stash)
 local stashMap = StashUtil.newStash("WorldStashMap5", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
-
+stashMap.buildingX = 3971
+stashMap.buildingY = 6238
 stashMap:addStamp("Exclamation", nil, 3971, 6237, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WorldMap5_Text1", 3966, 6242, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WorldMap5_Text11", 3966, 6262, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WorldMap5_Text12", 3965, 6278, 0.129,0.129,0.129)
-
-stashMap.buildingX = 3971
-stashMap.buildingY = 6238
+stashMap.spawnTable = "ShotgunCache1";
+stashMap:addContainer("ShotgunBox","floors_interior_tilesandwood_01_61",nil,nil,nil,nil,nil);
 
 --WorldMap6 (location info)
 local stashMap = StashUtil.newStash("WorldStashMap6", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
-stashMap.buildingX = 10134
-stashMap.buildingY = 6650
-stashMap:addStamp("Gears", nil, 10134, 6650, 0.156, 0.188, 0.49)
+stashMap.buildingX = 0
+stashMap.buildingY = 1
 stashMap:addStamp(nil, "Stash_WorldMap6_Text1", 10104, 6657, 0.156, 0.188, 0.49)
 stashMap:addStamp(nil, "Stash_WorldMap6_Text2", 10083, 6692, 0.156, 0.188, 0.49)
-stashMap:addStamp("Circle", nil, 10104, 6630, 0.156, 0.188, 0.49)
-stashMap:addStamp("Circle", nil, 10158, 6625, 0.156, 0.188, 0.49)
-stashMap:addStamp("Circle", nil, 10144, 6683, 0.156, 0.188, 0.49)
 stashMap:addStamp("Cross", nil, 10285, 6677, 0.156, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WorldMap6_Text3", 10271, 6680, 0.65, 0.054, 0.054)
 stashMap:addStamp("Fish", nil, 10203, 6761, 0.156, 0.188, 0.49)
@@ -86,16 +82,17 @@ stashMap:addStamp(nil, "Stash_WorldMap7_Text1", 11640, 8797, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WorldMap7_Text2", 11649, 8832, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WorldMap7_Text21", 11598, 8851, 0.65, 0.054, 0.054)
 
-stashMap.buildingX = 11689
-stashMap.buildingY = 8973
+stashMap.buildingX = 11690
+stashMap.buildingY = 8793
 stashMap.spawnTable = "FoodCache1";
-stashMap:addContainer("FoodBox", "furniture_storage_02_19", nil, nil, 11689, 8789, 0)
+stashMap:addContainer("FoodBox", "furniture_storage_02_19", nil, nil, nil, nil, nil)
 
 --WorldMap8 (booze)
 local stashMap = StashUtil.newStash("WorldStashMap8", "Map", "Base.RosewoodMap", "Stash_AnnotedMap");
 stashMap.buildingX = 11459
 stashMap.buildingY = 8953
 stashMap.spawnTable = "BoozeCache1";
+stashMap:addContainer("BoozeBox", "furniture_storage_02_19", nil, nil, nil, nil, nil)
 stashMap:addStamp("ArrowNorthEast", nil, 11445, 8963, 0.65, 0.054, 0.054)
 stashMap:addStamp("FaceHappy", nil, 11433, 8974, 0.65, 0.054, 0.054)
 
@@ -267,8 +264,6 @@ stashMap.buildingX = 14549
 stashMap.buildingY = 4974
 stashMap.barricades = 80;
 stashMap.zombies = 8;
-stashMap.spawnTable = "GunCache2";
-stashMap:addContainer("GunBox", nil, "Base.Bag_AmmoBox_Mixed", "church", nil,nil,nil)
 stashMap.spawnTable = "GunCache2";
 stashMap:addContainer("GunBox", nil, "Base.Bag_AmmoBox_Mixed", "church", nil,nil,nil)
 stashMap:addContainer("GunBox", nil, "Base.Bag_FoodCanned", "church", nil,nil,nil)

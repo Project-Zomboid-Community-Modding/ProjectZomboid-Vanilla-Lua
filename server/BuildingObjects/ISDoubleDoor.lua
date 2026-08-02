@@ -54,34 +54,31 @@ function ISDoubleDoor:addDoorPart(x,y,z,north,sprite,index)
 end
 
 function ISDoubleDoor:overrideModData(spriteIndex)
-	local modData = self.javaObject:getModData();
-	local modData2 = copyTable(modData);
-	for k,v in pairs(modData2) do
-		if luautils.stringStarts(k, "need:") then
-			local itemFullType = luautils.split(k, ":")[2];
-			local count = tonumber(v);
-			if itemFullType == "Base.Doorknob" then
-				if spriteIndex == 2 or spriteIndex == 3 then
-					modData[k] = "1";
-				else
-					modData[k] = nil;
-				end
-			elseif itemFullType == "Base.Hinge" then
-				if spriteIndex == 1 or spriteIndex == 4 then
-					modData[k] = tostring(math.floor(count / 2 + 0.01));
-				else
-					modData[k] = nil;
-				end
+	local buildMaterials = self.javaObject:getBuildMaterials();
+	local buildMaterials2 = copyTable(buildMaterials);
+	for itemFullType,v in pairs(buildMaterials2) do
+		local count = tonumber(v);
+		if itemFullType == "Base.Doorknob" then
+			if spriteIndex == 2 or spriteIndex == 3 then
+				buildMaterials[itemFullType] = "1";
 			else
-				local count2 = math.floor(count / 4 + 0.01);
-				if (count % 4 ~= 0) and (spriteIndex <= count % 4) then
-					count2 = count2 + 1;
-				end
-				if count2 == 0 then
-					modData[k] = nil;
-				else
-					modData[k] = tostring(count2);
-				end
+				buildMaterials[itemFullType] = nil;
+			end
+		elseif itemFullType == "Base.Hinge" then
+			if spriteIndex == 1 or spriteIndex == 4 then
+				buildMaterials[itemFullType] = tostring(math.floor(count / 2 + 0.01));
+			else
+				buildMaterials[itemFullType] = nil;
+			end
+		else
+			local count2 = math.floor(count / 4 + 0.01);
+			if (count % 4 ~= 0) and (spriteIndex <= count % 4) then
+				count2 = count2 + 1;
+			end
+			if count2 == 0 then
+				buildMaterials[itemFullType] = nil;
+			else
+				buildMaterials[itemFullType] = tostring(count2);
 			end
 		end
 	end

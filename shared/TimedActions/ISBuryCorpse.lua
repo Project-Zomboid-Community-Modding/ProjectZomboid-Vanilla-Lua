@@ -85,5 +85,6 @@ function ISBuryCorpse:new(character, grave, primaryHandItem, bodySquare)
 	o.maxTime = o:getDuration();
     o.primaryHandItem = primaryHandItem;
 	o.bodySquare = bodySquare;
+	o.allowedWhileDraggingCorpses = true;
 	return o;
 end

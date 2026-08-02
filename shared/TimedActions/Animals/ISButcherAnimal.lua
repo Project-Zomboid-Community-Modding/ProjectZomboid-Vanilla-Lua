@@ -20,10 +20,6 @@ function ISButcherAnimal:update()
 end
 
 function ISButcherAnimal:serverStart()
-    if self.bodyItemToRemove then
-        sendRemoveItemFromContainer(self.character:getInventory(), self.bodyItemToRemove);
-        self.character:getInventory():Remove(self.bodyItemToRemove);
-    end
 end
 
 function ISButcherAnimal:start()
@@ -37,10 +33,6 @@ function ISButcherAnimal:start()
 			self.sound = self.character:playSound("ButcheringGatherMeatSmall")
 		end
 	end
-
-    if self.bodyItemToRemove and not isMultiplayer() then
-        self.character:getInventory():Remove(self.bodyItemToRemove);
-    end
 end
 
 function ISButcherAnimal:stop()
@@ -91,11 +83,10 @@ function ISButcherAnimal:isLargeAnimal(corpse)
 	return not modData["skeleton"];
 end
 
-function ISButcherAnimal:new(character, body, bodyItemToRemove)
+function ISButcherAnimal:new(character, body)
 	local o = ISBaseTimedAction.new(self, character)
 	o.body = body;
 	o.perkLevel = character:getPerkLevel(Perks.Butchering);
 	o.maxTime = o:getDuration();
-	o.bodyItemToRemove = bodyItemToRemove or false;
 	return o;
 end

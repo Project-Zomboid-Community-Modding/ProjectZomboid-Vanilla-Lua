@@ -755,20 +755,27 @@ function ISVehicleMechanics:doMenuTooltip(part, option, lua, name)
 				end
 			else
 				tooltip.description = tooltip.description .. " " .. getText("IGUI_CraftUI_OneOf") .. " <LINE> "
+				local needItemDisplayName = {}
+				local hasItemDisplayName = {}
 				for _,thing in ipairs(itemTable.scripts) do
-					if thing.script then -- zombie.scripting.objects.Item
-						local itemName = getItemName(thing.script:getFullName())
-						if not typeToItem[thing.script:getFullName()] then
-							tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. itemName .. " 0/1 <LINE> <INDENT:0> ";
-						else
-							tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.ghs .. itemName .. " 1/1 <LINE> <INDENT:0> ";
-						end
-					elseif thing.unknownType then
-						tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownType .. " 0/1 <LINE> <INDENT:0> ";
-					elseif thing.unknownTag then
-						tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownTag .. " 1/1 <LINE> <INDENT:0> ";
-					end
-				end
+					if thing.script then
+				        needItemDisplayName[thing.script:getDisplayName()] = thing.script:getDisplayName()
+                        if typeToItem[thing.script:getFullName()] then
+                            hasItemDisplayName[thing.script:getDisplayName()] = true
+                        end
+                    elseif thing.unknownType then
+                        tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownType .. " 0/1 <LINE> <INDENT:0> ";
+                    elseif thing.unknownTag then
+                        tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing.unknownTag .. " 1/1 <LINE> <INDENT:0> ";
+                    end
+                end
+				for _,thing in pairs(needItemDisplayName) do
+                    if not hasItemDisplayName[thing] then
+                        tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.bhs .. thing .. " 0/1 <LINE> <INDENT:0> ";
+                    else
+                        tooltip.description = tooltip.description .. " <INDENT:20> " .. ISVehicleMechanics.ghs .. thing .. " 1/1 <LINE> <INDENT:0> ";
+                    end
+                end
 			end
 --[[
 			local itemName = v.type;

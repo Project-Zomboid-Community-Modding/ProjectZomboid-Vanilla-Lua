@@ -226,6 +226,7 @@ function ISPlace3DItemCursor:getSurface(square)
     -- we list all our possible surface height, allow Shift to switch thru them
 --    local surface = 0
     self.surfacesPossible = {};
+    local countertop = -1
     for i=1,square:getObjects():size() do
         local object = square:getObjects():get(i-1);
         if object:getSurfaceOffsetNoTable() > 0 then
@@ -240,11 +241,20 @@ function ISPlace3DItemCursor:getSurface(square)
             end
             if add then
                 table.insert(self.surfacesPossible, newSurf)
+                if object:hasProperty(IsoPropertyType.COUNTERTOP) then
+                    countertop = #self.surfacesPossible
+                end
             end
 --            if newSurf > surface then
 --                surface = newSurf;
 --            end
         end
+    end
+    if countertop > 1 and self.surfacesPossible[countertop-1] + 10 >= self.surfacesPossible[countertop] then
+        table.remove(self.surfacesPossible, countertop-1)
+    end
+    if countertop ~= -1 and not square:has(IsoPropertyType.FITS_BENEATH_COUNTERTOP) then
+        table.insert(self.surfacesPossible, 0)
     end
 --    print(self.surfacesPossible[2])
 --    print("total possible surface: ")

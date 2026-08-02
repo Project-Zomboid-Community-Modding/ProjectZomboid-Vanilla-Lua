@@ -122,16 +122,15 @@ function ISFactionAddPlayerUI:onClick(button)
             local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_InvitationSent",self.selectedPlayer), false, nil, nil);
             modal:initialise()
             modal:addToUIManager()
-            sendFactionInvite(self.faction, self.player, self.selectedPlayer);
+            sendFactionInvite(self.faction, self.player:getUsername(), self.selectedPlayer)
         else
-            self.faction:setOwner(self.selectedPlayer);
-			self.factionUI.isOwner = false;
-            self.factionUI:populateList();
-			self.factionUI:updateButtons();
-            self:setVisible(false);
-            self:removeFromUIManager();
-            self.faction:syncFaction();
+            sendFactionChangeOwner(self.faction, self.selectedPlayer)
+            self.factionUI:populateList()
+            self.factionUI:updateButtons()
         end
+        self:setVisible(false);
+        self:removeFromUIManager();
+        ISFactionAddPlayerUI.instance = nil;
     end
 end
 

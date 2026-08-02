@@ -117,6 +117,7 @@ function ISWaterPlantAction:useItemOneUnit()
             local use = ZomboidGlobals.farmingFluidContainerMillilitresPerUse / 1000
             fluidContainer:adjustAmount(fluidContainer:getAmount() - use)
         end
+        syncItemFields(self.character, self.item);
         return
     end
     if self.item:IsDrainable() then

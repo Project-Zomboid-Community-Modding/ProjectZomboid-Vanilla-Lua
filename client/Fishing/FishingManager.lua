@@ -92,6 +92,7 @@ function FishingManager:disable()
         self.fishingRod = nil
     end
     self.tensionUI:setVisible(false)
+    getCore():setDisplayCursor(true)
 
     if self.states["ReelIn"].sound ~= nil then
         self.player:stopOrTriggerSound(self.states["ReelIn"].sound)

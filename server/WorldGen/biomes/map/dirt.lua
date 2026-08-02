@@ -1,5 +1,9 @@
 local dirt = {
-    features = { },
+    features = {
+        TREE = {
+            { f = worldgen.features.NONE.none, p = 1.0 },
+        },
+    },
     params = {
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },

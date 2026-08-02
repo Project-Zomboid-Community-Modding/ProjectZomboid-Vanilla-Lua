@@ -53,7 +53,10 @@ function ISUserPanelUI:create()
 
     if not Faction.isAlreadyInFaction(self.player) then
         self.factionBtn.title = getText("IGUI_FactionUI_CreateFaction");
-        if not Faction.canCreateFaction(self.player) then
+        if not getServerOptions():getBoolean("Faction") then
+            self.factionBtn.enable = false;
+            self.factionBtn.tooltip = getText("IGUI_FactionUI_Disabled");
+        elseif not Faction.canCreateFaction(self.player) then
             self.factionBtn.enable = false;
             self.factionBtn.tooltip = getText("IGUI_FactionUI_FactionSurvivalDay", getServerOptions():getInteger("FactionDaySurvivedToCreate"));
         end
@@ -116,9 +119,15 @@ end
 function ISUserPanelUI:updateButtons()
     if not Faction.isAlreadyInFaction(self.player) then
         self.factionBtn.title = getText("IGUI_FactionUI_CreateFaction");
-        if not Faction.canCreateFaction(self.player) then
+        if not getServerOptions():getBoolean("Faction") then
+            self.factionBtn.enable = false;
+            self.factionBtn.tooltip = getText("IGUI_FactionUI_Disabled");
+        elseif not Faction.canCreateFaction(self.player) then
             self.factionBtn.enable = false;
             self.factionBtn.tooltip = getText("IGUI_FactionUI_FactionSurvivalDay", getServerOptions():getInteger("FactionDaySurvivedToCreate"));
+        else
+            self.factionBtn.enable = true;
+            self.factionBtn.tooltip = nil;
         end
     else
         self.factionBtn.title = getText("UI_userpanel_factionpanel");

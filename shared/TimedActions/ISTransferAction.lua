@@ -118,6 +118,7 @@ function ISTransferAction:transferItem(character, item, srcContainer, destContai
 					end
 					_obj:getModData().RadioItemID = item:getID()
 					dropSquare:AddSpecialObject(_obj, dropSquare:getObjects():size())
+					_obj:transmitCompleteItemToClients()
 					_obj:transmitModData()
 					triggerEvent("OnObjectAdded", _obj)
 					dropSquare:RecalcProperties()

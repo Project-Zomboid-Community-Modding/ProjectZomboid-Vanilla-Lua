@@ -103,6 +103,24 @@ Commands.animal.removeDung = function(args)
     end
 end
 
+Commands.animalCorpse = {}
+Commands.animalCorpse.butcher = function(args)
+    local player = getPlayerByOnlineID(args.onlineID)
+    if player and args.corpse then
+        if luautils.walkAdj(player, args.corpse:getSquare()) then
+            ISTimedActionQueue.add(ISButcherAnimal:new(player, args.corpse))
+        end
+    end
+end
+Commands.animalCorpse.getBones = function(args)
+    local player = getPlayerByOnlineID(args.onlineID)
+    if player and args.corpse then
+        if luautils.walkAdj(player, args.corpse:getSquare()) then
+            ISTimedActionQueue.add(ISGetAnimalBones:new(player, args.corpse))
+        end
+    end
+end
+
 Commands.hutch = {}
 Commands.hutch.dirt = function(args)
     local hutch = getHutch(tonumber(args.x), tonumber(args.y), tonumber(args.z))

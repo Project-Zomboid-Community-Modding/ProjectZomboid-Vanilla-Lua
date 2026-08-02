@@ -664,7 +664,7 @@ function Vehicles.Update.PassengerCompartment(vehicle, part, elapsedMinutes)
 	local pcData = pc:getModData()
 	if not pcData.windowtemperature then pcData.windowtemperature = 0.0; end
 	if not pcData.temperature then pcData.temperature = 0.0; end
-	if vehicle:windowsOpen() > 0 and vehicle:getSquare():isInARoom() then
+	if vehicle:windowsOpen() > 0 and vehicle:getSquare() ~= nil and vehicle:getSquare():isInARoom() then
 		pcData.temperature = math.max(pcData.temperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, 0);
 		pcData.windowtemperature = math.max(pcData.windowtemperature - (0.1*vehicle:windowsOpen()) * elapsedMinutes, 0);
 	elseif vehicle:windowsOpen() > 0 then
@@ -1004,6 +1004,7 @@ end
 VehicleUtils = {}
 
 function VehicleUtils.getInventoryContainersRecurse(containers, container)
+	if luautils.tableContains(containers, container) then return end
 	table.insert(containers, container)
 	local items = container:getAllEvalRecurse(function(item) return instanceof(item, "InventoryContainer") end)
 	if items == nil or items:isEmpty() then return end

@@ -267,8 +267,8 @@ function ButcheringUtil.addAnimalPart(part, player, carcass, fromGround)
         minNb = minNb * 0.6;
         maxNb = maxNb * 0.6;
     else
-        minNb = minNb * 1.2;
-        maxNb = maxNb * 1.2;
+        minNb = minNb * 2.8;
+        maxNb = maxNb * 2.8;
     end
 
     -- every 2 pts in butchering gives * 1.1 max meat ratio

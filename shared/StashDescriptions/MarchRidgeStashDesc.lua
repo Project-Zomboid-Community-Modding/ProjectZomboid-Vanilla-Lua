@@ -14,7 +14,6 @@ stashMap:addContainer("GunBox",nil,"Base.Bag_DuffelBagTINT",nil,nil,nil,nil);
 stashMap:addStamp("X", nil, 9886, 12647, 0.129, 0.129, 0.129)
 stashMap:addStamp(nil, "Stash_MarchRidgeMap1_Text1", 9896, 12638, 0.129, 0.129, 0.129)
 --stashMap:addStamp("X", nil, 10125, 12788, 0.129, 0.129, 0.129)
---stashMap:addStamp(nil, "Stash_MarchRidgeMap1_Text2", 10087, 12794, 0.129, 0.129, 0.129)
 stashMap:addStamp("ArrowWest", nil, 10028, 12648, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_MarchRidgeMap1_Text3", 10037, 12640, 0.65, 0.054, 0.054)
 
@@ -87,7 +86,6 @@ stashMap.buildingY = 12813
 stashMap.spawnTable = "SurvivorCache1";
 stashMap:addStamp("House", nil, 9885, 12811, 0.129, 0.129, 0.129)
 stashMap:addStamp(nil, "Stash_MarchRidgeMap7_Text1", 9897, 12803, 0.129, 0.129, 0.129)
-stashMap:addStamp(nil, "Stash_MarchRidgeMap7_Text2", 10111, 12777, 0.129, 0.129, 0.129)
 stashMap:addStamp("ArrowSouth", nil, 9867, 12766, 0.129, 0.129, 0.129)
 stashMap:addStamp(nil, "Stash_MarchRidgeMap7_Text3", 9794, 12731, 0.129, 0.129, 0.129)
 

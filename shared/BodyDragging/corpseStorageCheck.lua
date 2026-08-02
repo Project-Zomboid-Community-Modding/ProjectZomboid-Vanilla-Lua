@@ -58,14 +58,10 @@ function corpseStorageCheck.doContextDropCorpsesIntoContainers(playerNum, contex
     local suitableContainers = {}
 
     local clickedContainers = playerObj:getContextWorldSuitableContainersToDropCorpseInObjects(_worldObjects)
-    for i = 0, clickedContainers:size() - 1 do
-        LuaTableUtil:insertUnique(suitableContainers, clickedContainers:get(i))
-    end
+    LuaTableUtil:insertAllUniqueElementsFromJavaList(suitableContainers, clickedContainers)
 
     local squareContainers = playerObj:getSuitableContainersToDropCorpseInSquare(clickedSquare);
-    for i = 0, squareContainers:size() - 1 do
-        LuaTableUtil:insertUnique(suitableContainers, squareContainers:get(i))
-    end
+    LuaTableUtil:insertAllUniqueElementsFromJavaList(suitableContainers, squareContainers)
 
     if #suitableContainers <= 0 then
         log(DebugType.Grapple, "Grapple:corpseStorageCheck.doContextDropCorpsesIntoContainers No suitable containers found.")
@@ -129,6 +125,11 @@ function corpseStorageCheck.doContextGrabCorpsesFromContainers(playerNum, contex
 
     local playerObj = getSpecificPlayer(playerNum)
     if not playerObj then
+        return
+    end
+
+    if playerObj:getVehicle() then
+        log(DebugType.Grapple,"Grapple:corpseStorageCheck.doContextGrabCorpsesFromContainers Player is inside a vehicle. Cannot grab a corpse.")
         return
     end
 

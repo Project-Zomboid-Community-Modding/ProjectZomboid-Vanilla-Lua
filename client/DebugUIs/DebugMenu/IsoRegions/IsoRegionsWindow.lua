@@ -1,4 +1,5 @@
 require "ISUI/ISCollapsableWindow"
+require "DebugCommands/DebugIsoRegionsEdit" -- SP path of onMapMouseDown calls DebugIsoRegionsEdit.run directly
 
 IsoRegionsWindow = ISCollapsableWindow:derive("IsoRegionsWindow")
 
@@ -49,7 +50,22 @@ function IsoRegionsWindow:onMapMouseDown(x, y)
 
     if self.renderer:isEditingEnabled() then
         self.renderer:unsetSelected();
-        self.renderer:editSquare(x, y);
+
+        local kind = self.renderer:getActiveEditKind()
+        if kind then
+            local player = getSpecificPlayer(0)
+            local payload = {
+                x = math.floor(x),
+                y = math.floor(y),
+                z = self.renderer:getZLevel(),
+                kind = kind,
+            }
+            if isClient() then
+                sendClientCommand(player, "debugIsoRegions", "editSquare", payload)
+            else
+                DebugIsoRegionsEdit.run(player, payload)
+            end
+        end
     end
     return false
 end

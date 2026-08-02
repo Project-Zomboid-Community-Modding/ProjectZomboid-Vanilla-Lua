@@ -8,14 +8,14 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISItemsListViewer:initialise()
     ISPanel.initialise(self);
-    local btnWid = getTextManager():MeasureStringX(UIFont.Small, "Player 1")+50
+    local btnWid = getTextManager():MeasureStringX(UIFont.Small, getText("UI_optionscreen_player1"))+50
 
     self.playerSelect = ISComboBox:new(self.width - UI_BORDER_SPACING - btnWid - 1, UI_BORDER_SPACING + 1, btnWid, BUTTON_HGT, self, self.onSelectPlayer)
     self.playerSelect:initialise()
-    self.playerSelect:addOption("Player 1")
-    self.playerSelect:addOption("Player 2")
-    self.playerSelect:addOption("Player 3")
-    self.playerSelect:addOption("Player 4")
+    self.playerSelect:addOption(getText("UI_optionscreen_player1"))
+    self.playerSelect:addOption(getText("UI_optionscreen_player2"))
+    self.playerSelect:addOption(getText("UI_optionscreen_player3"))
+    self.playerSelect:addOption(getText("UI_optionscreen_player4"))
     self:addChild(self.playerSelect)
 
     self.ok = ISButton:new(UI_BORDER_SPACING+1, self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT - 1, btnWid, BUTTON_HGT, getText("IGUI_CraftUI_Close"), self, ISItemsListViewer.onClick);
@@ -64,7 +64,7 @@ function ISItemsListViewer:initList()
 
     local listBox = ISItemsListTable:new(0, 0, self.panel.width, self.panel.height - self.panel.tabHeight, self);
     listBox:initialise();
-    self.panel:addView("All", listBox);
+    self.panel:addView(getText("ContextMenu_All"), listBox);
     listBox:initList(allItems)
 
     for _,moduleName in ipairs(moduleNames) do
@@ -75,7 +75,7 @@ function ISItemsListViewer:initList()
             cat1:initList(self.module[moduleName])
         end
     end
-    self.panel:activateView("All");
+    self.panel:activateView(getText("ContextMenu_All"));
 end
 
 function ISItemsListViewer:prerender()
@@ -97,7 +97,19 @@ function ISItemsListViewer:setKeyboardFocus()
     local view = self.panel:getActiveView()
     if not view then return end
     Core.UnfocusActiveTextEntryBox()
-    view.filterWidgetMap.Type:focus()
+    view.filterWidgetMap[ISItemsListTable.COLUMN_WEAPON_TYPE]:focus()
+end
+
+function ISItemsListViewer:isKeyConsumed(key)
+    return key == Keyboard.KEY_ESCAPE
+end
+
+function ISItemsListViewer:onKeyRelease(key)
+    if self:isVisible() and key == Keyboard.KEY_ESCAPE then
+        self:close()
+        self:removeFromUIManager()
+        return
+    end
 end
 
 function ISItemsListViewer:close()
@@ -132,5 +144,6 @@ function ISItemsListViewer:new(x, y, width, height)
     o.moveWithMouse = true;
     ISItemsListViewer.instance = o;
     ISDebugMenu.RegisterClass(self);
+    o:setWantKeyEvents(true)
     return o;
 end

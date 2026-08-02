@@ -144,6 +144,39 @@ ISFarmingMenu.doDigMenu = function(playerObj, context, worldobjects, test)
     end
 end
 
+function ISFarmingMenu.getBestPlantFromTable(playerObj, worldobjects)
+    if playerObj:getJoypadBind() == -1 then
+        for _,obj in ipairs(worldobjects) do
+            local plant = CFarmingSystem.instance:getLuaObjectOnSquare(obj:getSquare())
+            if plant ~= nil then
+                return plant
+            end
+        end
+        return nil
+    end
+    local plants = {}
+    for _,obj in ipairs(worldobjects) do
+        local plant = CFarmingSystem.instance:getLuaObjectOnSquare(obj:getSquare())
+        if plant then
+            table.insert(plants, plant)
+        end
+    end
+    return ISFarmingMenu.pickBestPlantForJoypadPlayer(playerObj, plants)
+end
+
+function ISFarmingMenu.pickBestPlantForJoypadPlayer(playerObj, plants)
+    local best = nil
+    local bestDot = -1.0
+    for _,plant in ipairs(plants) do
+        local object = plant:getIsoObject()
+        local dot = playerObj:getDotWithForwardDirection(object:getX() + 0.5, object:getY() + 0.5)
+        if dot > bestDot then
+            best = plant
+            bestDot = dot
+        end
+    end
+    return best
+end
 
 ISFarmingMenu.doFarmingMenu2 = function(player, context, worldobjects, test)
 	local playerObj = getSpecificPlayer(player)
@@ -167,48 +200,46 @@ ISFarmingMenu.doFarmingMenu2 = function(player, context, worldobjects, test)
     local sq = nil;
 	local currentPlant = nil;
 	local deadPlant = false;
-	for _,v in ipairs(worldobjects) do
-	    if v and v:getSquare() then
-            local plant = CFarmingSystem.instance:getLuaObjectOnSquare(v:getSquare())
-            if plant then
-                if plant.state == "dead" or plant.state == "rotten" or plant.state == "destroyed" or plant.state == "harvested" then deadPlant = true end
-                if plant.state ~= "plow" and playerInv:containsTagRecurse(ItemTag.FERTILIZER) or playerInv:containsTypeRecurse("Fertilizer") then -- fertilizer
-                    fertilizer = true;
-                end
-                if plant.state ~= "plow" and playerInv:containsTagRecurse(ItemTag.COMPOST) or playerInv:containsTypeRecurse("CompostBag") then -- fertilizer
-                    compost = true
-                end
-                if plant.state == "plow" and playerObj:getInventory():containsTagRecurse(ItemTag.IS_SEED) then -- sow seed
-                    canSeed = true;
-                end
-                if plant.state == "seeded" then -- water the plant
-                    canWater = true;
-                end
-                if plant.state ~= "plow" then -- info
-                    info = true;
-                end
-                -- disease
-                if plant.mildewLvl > 0 then -- mildew
-                    cureMildew = true;
-                end
-                if plant.fliesLvl > 0 then -- flies
-                    cureFlies = true;
-                end
-                -- harvest
-                if plant:canHarvest() then
-                    canHarvest = true;
-                end
-                currentPlant = plant
-                sq = v:getSquare();
-                break
-            end
+	local plant = ISFarmingMenu.getBestPlantFromTable(playerObj, worldobjects)
+    if plant then
+        if plant.state == "dead" or plant.state == "rotten" or plant.state == "destroyed" or plant.state == "harvested" then
+            deadPlant = true
         end
-	end
+        if plant.state ~= "plow" and playerInv:containsTagRecurse(ItemTag.FERTILIZER) or playerInv:containsTypeRecurse("Fertilizer") then -- fertilizer
+            fertilizer = true;
+        end
+        if plant.state ~= "plow" and playerInv:containsTagRecurse(ItemTag.COMPOST) or playerInv:containsTypeRecurse("CompostBag") then -- fertilizer
+            compost = true
+        end
+        if plant.state == "plow" and playerObj:getInventory():containsTagRecurse(ItemTag.IS_SEED) then -- sow seed
+            canSeed = true;
+        end
+        if plant.state == "seeded" then -- water the plant
+            canWater = true;
+        end
+        if plant.state ~= "plow" then -- info
+            info = true;
+        end
+        -- disease
+        if plant.mildewLvl > 0 then -- mildew
+            cureMildew = true;
+        end
+        if plant.fliesLvl > 0 then -- flies
+            cureFlies = true;
+        end
+        -- harvest
+        if plant:canHarvest() then
+            canHarvest = true;
+        end
+        currentPlant = plant
+        sq = plant:getSquare();
+    end
 
 	local cropsMenu;
 	if currentPlant or canSeed then
 		if test then return ISWorldObjectContextMenu.setTest() end;
-		local cropsOption = context:addOption(farming_vegetableconf.getObjectName(currentPlant) or getText("ContextMenu_Crops"), worldobjects, nil)
+		local optionText = (not isJoypadPlayer(player) and farming_vegetableconf.getObjectName(currentPlant)) or getText("ContextMenu_Crops")
+		local cropsOption = context:addOption(optionText, worldobjects, nil)
         local tile = farming_vegetableconf.getSpriteName(currentPlant);
         if tile then
             cropsOption.iconTexture = getTexture(tile):splitIcon();
@@ -374,32 +405,32 @@ ISFarmingMenu.doFarmingMenu2 = function(player, context, worldobjects, test)
 
 	if ISFarmingMenu.cheat and currentPlant and cropsMenu then
 		if test then return ISWorldObjectContextMenu.setTest() end
-		local option = cropsMenu:addDebugOption("Cheat", worldobjects, nil);
+		local option = cropsMenu:addDebugOption(getText("ContextMenu_Cheat"), worldobjects, nil);
 		local subMenu = ISContextMenu:getNew(cropsMenu);
         cropsMenu:addSubMenu(option, subMenu);
-		subMenu:addOption("Grow", worldobjects, ISFarmingMenu.onCheatGrow, currentPlant);
-		subMenu:addOption("Water To Max", worldobjects, ISFarmingMenu.onCheatWater, currentPlant);
-		subMenu:addOption("Zero Water", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = -currentPlant.waterLvl });
-		local option2 = subMenu:addOption("Aphids +5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'aphidLvl', count = 5 });
+		subMenu:addOption(getText("ContextMenu_Grow"), worldobjects, ISFarmingMenu.onCheatGrow, currentPlant);
+		subMenu:addOption(getText("ContextMenu_WaterToMax"), worldobjects, ISFarmingMenu.onCheatWater, currentPlant);
+		subMenu:addOption(getText("ContextMenu_ZeroWater"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = -currentPlant.waterLvl });
+		local option2 = subMenu:addOption(getText("ContextMenu_AphidsPlus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'aphidLvl', count = 5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Insect_Aphid.png");
-		option2 = subMenu:addOption("Aphids -5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'aphidLvl', count = -5 });
+		option2 = subMenu:addOption(getText("ContextMenu_AphidsMinus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'aphidLvl', count = -5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Insect_Aphid.png");
-		option2 = subMenu:addOption("Mildew +5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'mildewLvl', count = 5 });
+		option2 = subMenu:addOption(getText("ContextMenu_MildewPlus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'mildewLvl', count = 5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Mildew.png");
-		option2 = subMenu:addOption("Mildew -5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'mildewLvl', count = -5 });
+		option2 = subMenu:addOption(getText("ContextMenu_MildewMinus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'mildewLvl', count = -5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Mildew.png");
-		option2 = subMenu:addOption("Pest Flies +5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'fliesLvl', count = 5 });
+		option2 = subMenu:addOption(getText("ContextMenu_PestFliesPlus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'fliesLvl', count = 5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Insect_Fly.png");
-		option2 = subMenu:addOption("Pest Flies -5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'fliesLvl', count = -5 });
+		option2 = subMenu:addOption(getText("ContextMenu_PestFliesMinus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'fliesLvl', count = -5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Insect_Fly.png");
-		option2 = subMenu:addOption("Slugs +5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'slugsLvl', count = 5 });
+		option2 = subMenu:addOption(getText("ContextMenu_SlugsPlus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'slugsLvl', count = 5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Snail.png");
-		option2 = subMenu:addOption("Slugs -5", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'slugsLvl', count = -5 });
+		option2 = subMenu:addOption(getText("ContextMenu_SlugsMinus5"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'slugsLvl', count = -5 });
 	    option2.iconTexture = getTexture("media/textures/Item_Snail.png");
-		subMenu:addOption("Health +10", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'health', count = 10 });
-		subMenu:addOption("Health -10", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'health', count = -10 });
-		subMenu:addOption("Water +10", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = 10 });
-		subMenu:addOption("Water -10", worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = -10 });
+		subMenu:addOption(getText("ContextMenu_HealthPlus10"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'health', count = 10 });
+		subMenu:addOption(getText("ContextMenu_HealthMinus10"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'health', count = -10 });
+		subMenu:addOption(getText("ContextMenu_WaterPlus10"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = 10 });
+		subMenu:addOption(getText("ContextMenu_WaterMinus10"), worldobjects, ISFarmingMenu.onCheat, currentPlant, { var = 'waterLvl', count = -10 });
 	end
 end
 

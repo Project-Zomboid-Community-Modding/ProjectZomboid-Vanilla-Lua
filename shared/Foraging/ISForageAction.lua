@@ -30,29 +30,31 @@ function ISForageAction:start()
 end
 
 function ISForageAction:perform()
-	if not isClient() then
-        forageSystem.actionComplete(self.character, self.iconID)
-    end
+	if isClient() then
+		if forageClient and self.forageIcon then
+			forageClient.showForageHalo(self.character, self.forageIcon.itemList);
+		end;
+		if self.manager and self.manager.forageIcons[self.iconID] then
+			local icon = self.manager.forageIcons[self.iconID];
+			if icon.zoneData and icon.zoneData.forageIcons then icon.zoneData.forageIcons[self.iconID] = nil; end;
+			self.manager.seenIcons[self.iconID] = nil;
+			self.manager:removeIcon(icon);
+		end;
+	elseif not isServer() then
+		forageSystem.actionComplete(self.character, self.iconID)
+	end
 	ISBaseTimedAction.perform(self); -- remove from queue / start next.
 end
 
 function ISForageAction:complete()
-	-- add the items to player inventory
-	local itemList
 	if isServer() then
-		itemList = ArrayList.new()
-		for _, data in pairs(self.itemDataList) do
-			local item = instanceItem(data.type)
-			if instanceof(item, "Food") then
-				item:setPoisonPower(data.poisonPower)
-				item:setPoisonDetectionLevel(data.poisonDetectionLevel)
-			end
-			itemList:add(item)
-		end
-        sendServerCommand(self.character, 'forage', 'complete', { iconID = self.iconID })
-	else
-		itemList = self.forageIcon.itemList or ArrayList.new()
+		return forageServer.onPickup(self.character, self.iconID, self.targetContainer);
 	end
+	if isClient() then
+		return true
+	end
+
+	local itemList = self.forageIcon.itemList or ArrayList.new()
 
 	forageSystem.addOrDropItems(self.character, self.targetContainer, itemList)
 

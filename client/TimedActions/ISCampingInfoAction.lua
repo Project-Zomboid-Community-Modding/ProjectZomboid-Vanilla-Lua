@@ -4,7 +4,7 @@ require "ISUI/ISLayoutManager"
 ISCampingInfoAction = ISBaseTimedAction:derive("IsCampfireInfoAction")
 
 function ISCampingInfoAction:isValid()
-	return self.campfire:getObjectIndex() ~= -1
+	return self.campfire:getObject():getObjectIndex() ~= -1
 end
 
 function ISCampingInfoAction:perform()

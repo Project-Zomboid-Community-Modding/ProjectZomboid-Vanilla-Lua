@@ -69,17 +69,10 @@ function ISCreateFactionUI:updateButtons()
 end
 
 function ISCreateFactionUI:onClick(button)
-    if button.internal == "CANCEL" then
-        self:close()
-    end
     if button.internal == "OK" then
-        local faction = Faction.createFaction(self.entry:getInternalText(), self.player:getUsername());
-        self:setVisible(false);
-        self:removeFromUIManager();
-        local modal = ISFactionUI:new(getCore():getScreenWidth() / 2 - 250, getCore():getScreenHeight() / 2 - 225, 500, 450, faction, self.player);
-        modal:initialise();
-        modal:addToUIManager();
+        sendFactionCreate(self.entry:getInternalText(), self.player:getUsername())
     end
+    self:close()
 end
 
 function ISCreateFactionUI:close()

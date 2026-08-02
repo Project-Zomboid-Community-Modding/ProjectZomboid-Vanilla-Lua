@@ -437,35 +437,55 @@ function ISMPTabPanel:setHeight(h)
     ISPanel.setHeight(self, h);
 end
 
+function ISMPTabPanel:activateViewIndex(viewIndex)
+    local view = self.viewList[viewIndex]
+    if (view ~= nil) then
+        self:activateView(view.name)
+    end
+end
+
 function ISMPTabPanel:activateView(viewName)
+    local foundView = nil
+    local foundViewIndex = -1
 	for ind,value in ipairs(self.viewList) do
 		-- we get the view we want to display
 		if value.name == viewName then
-			self.activeView.view:setVisible(false);
-			value.view:setVisible(true);
-			value.view:setX(1)
-			value.view:setY(self.tabHeight)
-			value.view:setWidth(self:getWidth())
-            value.view:setHeight(self:getHeight() - self.tabHeight)
-			self.activeView = value;
-			self:ensureVisible(ind)
-
-			if self.parent and self.parent.infoButton then
-				if self.activeView.view.infoText then
-					self.parent:setInfo(self.activeView.view.infoText)
-				else
-					self.parent:setInfo(nil)
-				end
-			end
-
-			if self.onActivateView and self.target then
-				self.onActivateView(self.target, self);
-			end
-
-			return true;
+            foundView = value
+            foundViewIndex = ind
 		end
 	end
-	return false;
+
+    if (foundView == nil) then
+        return false
+    end
+
+    -- Hide all others first
+    for _,value in ipairs(self.viewList) do
+        if value ~= foundView then
+            value.view:setVisible(false)
+        end
+    end
+
+    foundView.view:setVisible(true);
+    foundView.view:setX(1)
+    foundView.view:setY(self.tabHeight)
+    foundView.view:setWidth(self:getWidth())
+    foundView.view:setHeight(self:getHeight() - self.tabHeight)
+    self.activeView = foundView;
+    self:ensureVisible(foundViewIndex)
+
+    if self.parent and self.parent.infoButton then
+        if self.activeView.view.infoText then
+            self.parent:setInfo(self.activeView.view.infoText)
+        else
+            self.parent:setInfo(nil)
+        end
+    end
+
+    if self.onActivateView and self.target then
+        self.onActivateView(self.target, self);
+    end
+    return true;
 end
 
 function ISMPTabPanel:getActiveView()
@@ -484,6 +504,10 @@ function ISMPTabPanel:getActiveViewIndex()
 		end
 	end
 	return nil
+end
+
+function ISMPTabPanel:getNumViews()
+    return #self.viewList
 end
 
 -- add a view to our tab panel

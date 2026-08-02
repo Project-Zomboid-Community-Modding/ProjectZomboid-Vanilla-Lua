@@ -89,5 +89,6 @@ function ISWalkToTimedAction:new (character, location, additionalTest, additiona
     o.pathIndex = 0;
     o.additionalTest = additionalTest;
     o.additionalContext = additionalContext;
+    o.allowedWhileDraggingCorpses = true;
     return o
 end

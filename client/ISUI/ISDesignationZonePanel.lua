@@ -94,7 +94,7 @@ function ISDesignationZonePanel:populateList()
             if zone:isStillStreamed() then
                 local newZone = {};
                 newZone.title = zone:getName();
-                newZone.size = zone:getW() * zone:getH();
+                newZone.size = zone:getFullZoneSize();
                 newZone.zone = zone;
                 self.zoneList:addItem(newZone.title, newZone);
             end
@@ -121,7 +121,7 @@ function ISDesignationZonePanel:drawList(y, item, alt)
         self.currentWidth = newWidth;
     end
 
-    self:drawText("Size: " .. item.item.size, self.currentWidth + 20, y + 2, 1, 1, 1, a, self.font);
+    self:drawText(getText("IGUI_DesignationZone_Size", item.item.size), self.currentWidth + 20, y + 2, 1, 1, 1, a, self.font);
 
     return y + self.itemheight;
 end

@@ -30,7 +30,6 @@ function ISHutchGrabCorpseAction:stop()
 end
 
 function ISHutchGrabCorpseAction:perform()
-    forceDropHeavyItems(self.character)
     self.corpse:setJobDelta(0.0);
     self.character:getInventory():setDrawDirty(true);
 
@@ -49,18 +48,20 @@ function ISHutchGrabCorpseAction:complete()
     if corpse == nil then
         return false;
     end
+    forceDropHeavyItems(self.character)
     self.character:getInventory():AddItem(corpse);
     sendAddItemToContainer(self.character:getInventory(), corpse);
     self.character:setPrimaryHandItem(corpse);
     self.character:setSecondaryHandItem(corpse);
     if isServer() then
-        sendEquip(self.character)
+        self.animal:setItemID(corpse:getID());
+        sendEquip(self.character);
     end
 
 
     self.hutch:removeAnimal(self.animal);
     --sendHutchGrabCorpseAction(self.animal, self.character, self.hutch, corpse);
-    self.hutch:sync()
+    self.hutch:sync();
 
     return true
 end

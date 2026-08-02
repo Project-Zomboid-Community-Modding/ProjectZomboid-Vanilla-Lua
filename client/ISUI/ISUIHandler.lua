@@ -16,9 +16,9 @@ ISUIHandler.setVisibleAllUI = function(visible)
 	else
 		for i,v in ipairs(ISUIHandler.visibleUI) do
 			for i=0,ui:size()-1 do
-				if v == ui:get(i):toString() then
+				if v == ui:get(i):toString() and not ui:get(i):isVisible() then
 					ui:get(i):setVisible(true);
-					break;
+                    break;
 				end
 			end
 		end

@@ -1,3 +1,5 @@
+require "DebugCommands/DebugAddEnclosure" -- SP path of onAddEnclosure calls DebugAddEnclosure.run directly
+
 DebugContextMenu = {};
 DebugContextMenu.staggerBacking = false;
 DebugContextMenu.stagTime = 0;
@@ -73,6 +75,7 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	end
 	mainMenu:addOption(text, playerObj, DebugContextMenu.onShowCursor);
     mainMenu:addOption(getText("IGUI_DebugContext_SpawnPoints"), square, DebugContextMenu.onSpawnPoints, playerObj);
+    mainMenu:addOption(getText("IGUI_ReloadTranslations"), nil, DebugContextMenu.onReloadTranslations);
 
 	local uiOption = debugMenu:addOption(getText("IGUI_DebugContext_UIs"), worldobjects, nil);
 	local uiMenu = ISContextMenu:getNew(debugMenu);
@@ -1084,6 +1087,10 @@ DebugContextMenu.onHordeManager = function(square, player)
 	ui:addToUIManager();
 end
 
+DebugContextMenu.onReloadTranslations = function()
+    Translator.loadFiles()
+end
+
 DebugContextMenu.onSpawnPoints = function(square, player)
 	local ui = ISSpawnPointsEditor:new()
 	ui:initialise()
@@ -1092,7 +1099,7 @@ DebugContextMenu.onSpawnPoints = function(square, player)
 end
 
 DebugContextMenu.doCheatMenu = function(context, playerObj)
-	local cheatOption = context:addOption("Cheat", nil, nil);
+	local cheatOption = context:addOption(getText("ContextMenu_Cheat"), nil, nil);
 	local cheatSubMenu = ISContextMenu:getNew(context)
 	context:addSubMenu(cheatOption, cheatSubMenu)
 
@@ -1437,40 +1444,10 @@ function DebugContextMenu.onAvatarUI(player)
 end
 
 function DebugContextMenu.onAddEnclosure(playerObj)
-	local size = 10;
-	DesignationZoneAnimal.new("NewZone", playerObj:getCurrentSquare():getX() - size, playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getZ(), playerObj:getCurrentSquare():getX() + size, playerObj:getCurrentSquare():getY() + size, true)
-
-	for x=playerObj:getCurrentSquare():getX()-9, playerObj:getCurrentSquare():getX()-4 do
-		for y=playerObj:getCurrentSquare():getY()-9, playerObj:getCurrentSquare():getY()-4 do
-			if (x == playerObj:getCurrentSquare():getX()-4 and y == playerObj:getCurrentSquare():getY()-4) or (x == playerObj:getCurrentSquare():getX()-9 and y == playerObj:getCurrentSquare():getY()-9) or (x == playerObj:getCurrentSquare():getX()-9 and y == playerObj:getCurrentSquare():getY()-4) or (x == playerObj:getCurrentSquare():getX()-4 and y == playerObj:getCurrentSquare():getY()-9) then
-				local sq = getSquare(x, y, 0);
-				local obj = IsoObject.getNew(sq, "walls_exterior_wooden_01_27", nil, false);
-				sq:AddTileObject(obj);
-			end
-			local sq =  IsoGridSquare.new(getCell(), nil, x, y, 1);
-			getCell():ConnectNewSquare(sq, false);
-			sq:addFloor("carpentry_02_56");
-		end
-	end
-
-	for x=playerObj:getCurrentSquare():getX() - size, playerObj:getCurrentSquare():getX()+(size-1) do
-		local sq = getSquare(x, playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getZ());
-		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_41", false, ISSimpleFurniture:new("Fence", "carpentry_02_41", "carpentry_02_41"));
-		sq:AddTileObject(fence);
-		sq = getSquare(x, playerObj:getCurrentSquare():getY() + size, playerObj:getCurrentSquare():getZ());
-		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_41", false, ISSimpleFurniture:new("Fence", "carpentry_02_41", "carpentry_02_41"));
-		sq:AddTileObject(fence);
-	end
-	for y=playerObj:getCurrentSquare():getY() - size, playerObj:getCurrentSquare():getY()+(size-1) do
-		local sq = getSquare(playerObj:getCurrentSquare():getX() - size, y, playerObj:getCurrentSquare():getZ());
-
-		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_40", false, ISSimpleFurniture:new("Fence", "carpentry_02_40", "carpentry_02_40"));
-		sq:AddTileObject(fence);
-
-		local sq = getSquare(playerObj:getCurrentSquare():getX() + size, y, playerObj:getCurrentSquare():getZ());
-		local fence = IsoThumpable.new(getCell(), sq, "carpentry_02_40", false, ISSimpleFurniture:new("Fence", "carpentry_02_40", "carpentry_02_40"));
-		sq:AddTileObject(fence);
-
+	if isClient() then
+		sendClientCommand(playerObj, "debugScenario", "addEnclosure", {})
+	else
+		DebugAddEnclosure.run(playerObj)
 	end
 end
 

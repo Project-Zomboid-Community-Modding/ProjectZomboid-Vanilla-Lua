@@ -20,7 +20,7 @@ function ISFactionUI:initialise()
     self.changeTitle:initialise();
     self.changeTitle:instantiate();
     self.changeTitle.borderColor = self.buttonBorderColor;
-    self.changeTitle:setVisible(true);
+    self.changeTitle:setVisible(false);
     self:addChild(self.changeTitle);
 
     --owner
@@ -67,8 +67,8 @@ function ISFactionUI:initialise()
     self.tagColor:initialise();
     self.tagColor.backgroundColor = {r = self.faction:getTagColor():getR(), g = self.faction:getTagColor():getG(), b = self.faction:getTagColor():getB(), a = 1};
     self:addChild(self.tagColor);
-    self.tagColorBtn = self.tagColor;
     self.tagColor.factionUI = self;
+    self.tagColor:setVisible(false);
 
     self.colorPicker = ISColorPicker:new(0, 0)
     self.colorPicker:initialise()
@@ -101,6 +101,7 @@ function ISFactionUI:initialise()
     self.addPlayer:instantiate();
     self.addPlayer.borderColor = self.buttonBorderColor;
     self:addChild(self.addPlayer);
+    self.addPlayer:setVisible(false);
 
     self.removePlayer = ISButton:new(0, self.playerList.y + self.playerList.height + UI_BORDER_SPACING, 70, BUTTON_HGT, getText("ContextMenu_Remove"), self, ISFactionUI.onClick);
     self.removePlayer.internal = "REMOVEPLAYER";
@@ -110,7 +111,7 @@ function ISFactionUI:initialise()
     self.removePlayer:setWidthToTitle(70)
     self.removePlayer:setX(self.playerList:getRight() - self.removePlayer.width)
     self:addChild(self.removePlayer);
-    self.removePlayer.enable = false;
+    self.removePlayer:setVisible(false);
 
     --tick boxes
 
@@ -142,7 +143,7 @@ function ISFactionUI:initialise()
     self.releaseFaction.parent = self;
     self.releaseFaction:setVisible(false);
 
-    self.quitFaction = ISButton:new(ownerLbl.x, 0, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_QuitFaction"), self, ISFactionUI.onClick);
+    self.quitFaction = ISButton:new(self.releaseFaction:getX() + self.releaseFaction:getWidth() + UI_BORDER_SPACING, 0, 70, BUTTON_HGT, getText("IGUI_SafehouseUI_QuitFaction"), self, ISFactionUI.onClick);
     self.quitFaction.internal = "QUITFACTION";
     self.quitFaction:initialise();
     self.quitFaction:instantiate();
@@ -191,7 +192,7 @@ end
 function ISFactionUI:onPickedTagColor(color, mouseUp)
     ISFactionUI.instance.tagColor.backgroundColor = { r=color.r, g=color.g, b=color.b, a = 1 }
     ISFactionUI.instance.faction:setTagColor(ColorInfo.new(color.r, color.g, color.b,1));
-    ISFactionUI.instance.faction:syncFaction();
+    sendFactionChangeTag(ISFactionUI.instance.faction)
 end
 
 function ISFactionUI:populateList()
@@ -229,7 +230,6 @@ function ISFactionUI:render()
     else
         self.selectedPlayer = nil;
     end
-    self.tagColor:setVisible(self.isOwner or self.isAdmin);
 end
 
 function ISFactionUI:prerender()
@@ -237,50 +237,42 @@ function ISFactionUI:prerender()
     self:drawRectBorder(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
     self:drawText(self.faction:getName(), (self.width - getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName())) / 2, UI_BORDER_SPACING+1, 1,1,1,1, UIFont.Medium);
     self.changeTitle:setY(UI_BORDER_SPACING);
-    self.changeTitle:setX(self.width/2 + ((getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName()) / 2) + 10))
-    self.owner:setName(self.faction:getOwner())
-    if self.isOwner or self.isAdmin then
-        self.releaseFaction:setVisible(true);
-        self.changeOwnership:setVisible(true);
-        self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING)
-    end
-    if self.isOwner or self.isAdmin or self.faction:getTag() then
-        self.tag:setName(self.faction:getTag() or "")
-        if self.isOwner or self.isAdmin then
-            self.changeTag:setVisible(true);
-            self.changeTag:setX(self.tag:getRight() + UI_BORDER_SPACING);
-            self.tagColor:setX(self.changeTag:getRight() + UI_BORDER_SPACING)
-            self.tagColor:setVisible(true);
-        end
-    end
+    self.changeTitle:setX(self.width/2 + ((getTextManager():MeasureStringX(UIFont.Medium, self.faction:getName()) / 2) + 10));
+    self.owner:setName(self.faction:getOwner());
+    self.changeOwnership:setX(self.owner:getRight() + UI_BORDER_SPACING);
+    self.tag:setName(self.faction:getTag() or "");
+    self.changeTag:setX(self.tag:getRight() + UI_BORDER_SPACING);
+    self.tagColor:setX(self.changeTag:getRight() + UI_BORDER_SPACING);
 end
 
 function ISFactionUI:updateButtons()
     if not self.isOwner and not self.isAdmin then
         self.releaseFaction:setVisible(false);
         self.changeOwnership:setVisible(false);
-        self.removePlayer.enable = false;
-        self.addPlayer.enable = false;
-        self.changeTitle.enable = true;
+        self.removePlayer:setVisible(false);
+        self.addPlayer:setVisible(false);
+        self.changeTitle:setVisible(false);
+        self.changeTag:setVisible(false);
+        self.tagColor:setVisible(false);
     else
-	    self.releaseFaction:setVisible(true);
+        self.releaseFaction:setVisible(true);
         self.changeOwnership:setVisible(true);
-        self.removePlayer.enable = true;
-        self.addPlayer.enable = true;
-        self.changeTitle.enable = true;
+        self.changeTitle:setVisible(true);
+        self.removePlayer:setVisible(true);
+        self.addPlayer:setVisible(true);
+        -- add + 1 because the owner is not count in the players list
+        if self.faction:getPlayers():size() + 1 >= getServerOptions():getInteger("FactionPlayersRequiredForTag") or self.isAdmin then
+            self.changeTag:setVisible(true);
+            self.tagColor:setVisible(true);
+        else
+            self.changeTag:setVisible(false);
+            self.tagColor:setVisible(false);
+        end
     end
     if self.faction:isMember(self.player:getUsername()) then
         self.quitFaction:setVisible(true);
     else
         self.quitFaction:setVisible(false);
-    end
-
-    self.changeTag.enable = false;
-    self.tagColor.enable = false;
-    -- add + 1 because the owner is not count in the players list
-    if self.faction:getPlayers():size() + 1 >= getServerOptions():getInteger("FactionPlayersRequiredForTag") then
-        self.changeTag.enable = true;
-        self.tagColor.enable = true;
     end
 end
 
@@ -289,8 +281,11 @@ function ISFactionUI:onClick(button)
         self:close()
     end
     if button.internal == "REMOVE" then
-        self.faction:removeFaction();
-        self:close()
+        local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_DisbandConfirm", self.selectedPlayer), true, nil, ISFactionUI.onDisbandFaction);
+        modal:initialise()
+        modal:addToUIManager()
+        modal.ui = self;
+        modal.moveWithMouse = true;
     end
     if button.internal == "REMOVEPLAYER" then
         local modal = ISModalDialog:new(0,0, 350, 150, getText("IGUI_FactionUI_RemoveConfirm", self.selectedPlayer), true, nil, ISFactionUI.onRemovePlayerFromFaction);
@@ -340,32 +335,38 @@ end
 
 function ISFactionUI:onChangeTitle(button)
     if button.internal == "OK" then
-        button.parent.faction:removeFaction()
-        button.parent.faction:setName(button.parent.entry:getText());
-        button.parent.faction:syncFaction();
+        sendFactionChangeTitle(button.parent.faction, button.parent.entry:getText())
     end
 end
 
 function ISFactionUI:onChangeTag(button)
     if button.internal == "OK" then
         button.parent.faction:setTag(button.parent.entry:getText());
-        button.parent.faction:syncFaction();
+        sendFactionChangeTag(button.parent.faction)
     end
 end
 
 function ISFactionUI:onQuitFaction(button)
     if button.internal == "YES" then
-        button.parent.ui.faction:removePlayer(button.parent.ui.player:getUsername());
-        button.parent.ui:setVisible(false);
-        button.parent.ui:removeFromUIManager();
+        sendFactionRemoveMember(button.parent.ui.faction, button.parent.ui.player:getUsername());
+        button.parent.ui:close();
     end
 end
 
 function ISFactionUI:onRemovePlayerFromFaction(button, player)
     if button.internal == "YES" then
-        button.parent.ui.faction:removePlayer(button.parent.ui.selectedPlayer);
+        sendFactionRemoveMember(button.parent.ui.faction, button.parent.ui.selectedPlayer)
         button.parent.ui:populateList();
     end
+end
+
+function ISFactionUI:onDisbandFaction(button, player)
+    if button.internal == "YES" then
+        if button.parent.ui.isOwner or getPlayer():getRole():hasCapability(Capability.FactionCheat) then
+            sendFactionDisband(button.parent.ui.faction)
+        end;
+    end;
+    button.parent.ui:close();
 end
 
 function ISFactionUI:new(x, y, width, height, faction, player)
@@ -392,14 +393,14 @@ end
 function ISFactionUI:onAnswerFactionInvite(button)
     ISFactionUI.inviteDialogs[button.parent.host] = nil
     if button.internal == "YES" then
-        -- FIXME: It seems strange the invited player adds herself to the faction, the host should do that.
-        -- FIXME: Need to update the faction ui if it's visible.
-        button.parent.faction:addPlayer(getPlayer():getUsername());
-        acceptFactionInvite(button.parent.faction, button.parent.host)
+        acceptFactionInvite(button.parent.faction, button.parent.host, button.parent.username, true)
+    end
+    if button.internal == "NO" then
+        acceptFactionInvite(button.parent.faction, button.parent.host, button.parent.username, false)
     end
 end
 
-ISFactionUI.ReceiveFactionInvite = function(factionName, host)
+ISFactionUI.ReceiveFactionInvite = function(faction, host, username)
     if ISFactionUI.inviteDialogs[host] then
         if ISFactionUI.inviteDialogs[host]:isReallyVisible() then return end
         ISFactionUI.inviteDialogs[host] = nil
@@ -409,8 +410,9 @@ ISFactionUI.ReceiveFactionInvite = function(factionName, host)
         local modal = ISModalDialog:new(getCore():getScreenWidth() / 2 - 175,getCore():getScreenHeight() / 2 - 75, 350, 150, getText("IGUI_FactionUI_Invitation", host, factionName), true, nil, ISFactionUI.onAnswerFactionInvite);
         modal:initialise()
         modal:addToUIManager()
-        modal.faction = Faction.getFaction(factionName);
+        modal.faction = faction;
         modal.host = host;
+        modal.username = username;
         modal.moveWithMouse = true;
         ISFactionUI.inviteDialogs[host] = modal
     end
@@ -426,15 +428,17 @@ ISFactionUI.AcceptedFactionInvite = function(factionName, host)
 end
 
 ISFactionUI.SyncFaction = function(factionName)
-    if ISFactionUI.instance and ISFactionUI.instance:isVisible() and factionName == ISFactionUI.instance.faction:getName() then
-        if ISFactionUI.instance.addPlayerUI and ISFactionUI.instance.addPlayerUI:isVisible() then
-            ISFactionUI.instance.addPlayerUI:populateList();
+    if ISFactionUI.instance then
+        if ISFactionUI.instance:isVisible() and factionName == ISFactionUI.instance.faction:getName() then
+            if ISFactionUI.instance.addPlayerUI and ISFactionUI.instance.addPlayerUI:isVisible() then
+                ISFactionUI.instance.addPlayerUI:populateList()
+            end
+            local faction = ISFactionUI.instance.faction
+            ISFactionUI.instance.isOwner = faction:isOwner(ISFactionUI.instance.player:getUsername())
+            ISFactionUI.instance.tagColor.backgroundColor = {r = faction:getTagColor():getR(), g = faction:getTagColor():getG(), b = faction:getTagColor():getB(), a = 1}
+            ISFactionUI.instance:populateList()
         end
-        local faction = ISFactionUI.instance.faction
-		ISFactionUI.instance.isOwner = faction:isOwner(ISFactionUI.instance.player:getUsername())
-        ISFactionUI.instance.tagColor.backgroundColor = {r = faction:getTagColor():getR(), g = faction:getTagColor():getG(), b = faction:getTagColor():getB(), a = 1}
-        ISFactionUI.instance:populateList();
-		ISFactionUI.instance:updateButtons();
+        ISFactionUI.instance:updateButtons()
     end
 end
 

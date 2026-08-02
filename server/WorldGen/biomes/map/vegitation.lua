@@ -1,7 +1,7 @@
 local vegitation = {
     features = {
         TREE = {
-            { f = worldgen.features.TREE.redbud_jumbo, p = 1 },
+            { f = worldgen.features.TREE.redbud_jumbo_xxl, p = 1 },
 
         },
         BUSH = {
@@ -10,12 +10,18 @@ local vegitation = {
         PLANT = {
             { f = worldgen.features.PLANT.grass_low,     p = 0 },
             { f = worldgen.features.PLANT.grass_medium,  p = 0 },
-
             { f = worldgen.features.PLANT.fern,          p = 1 },
             { f = worldgen.features.PLANT.generic_plant, p = 0 },
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.no_tree
+                },
+            },
+        },
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },
         hygrometry = { "DRY", "RAIN" },

@@ -282,7 +282,7 @@ function ISAnimalUI:render()
                 end
             y = y + FONT_HGT_SMALL + 4;
             if AnimalContextMenu.cheat then
-                self:drawTextRight("Last Time Milked", self.xOffset, y, 1,1,1,1, UIFont.Small);
+                self:drawTextRight(getText("IGUI_LastTimeMilked"), self.xOffset, y, 1,1,1,1, UIFont.Small);
                 self:drawText(round(self.animal:getData():getLastTimeMilkedInHour(),2) .. "", self.xOffset + 10, y, 1,1,1,0.5, UIFont.Small);
                 y = y + FONT_HGT_SMALL + 4;
             end
@@ -393,28 +393,28 @@ function ISAnimalUI:create()
     self.renameBtn:setVisible(true);
     self:addChild(self.renameBtn);
 
-    self.feedBtn = ISButton:new(0,0, btnWid, btnHgt, "Feed", self, ISAnimalUI.feedAnimal);
+    self.feedBtn = ISButton:new(0,0, btnWid, btnHgt, getText("ContextMenu_Feed"), self, ISAnimalUI.feedAnimal);
     self.feedBtn:initialise();
     self.feedBtn:instantiate();
     self.feedBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self.feedBtn:setVisible(false);
     self:addChild(self.feedBtn);
 
-    self.milkAnimalBtn = ISButton:new(0,0, btnWid, btnHgt, "Milk Animal", self, ISAnimalUI.onMilkAnimal);
+    self.milkAnimalBtn = ISButton:new(0,0, btnWid, btnHgt, getText("ContextMenu_Milk"), self, ISAnimalUI.onMilkAnimal);
     self.milkAnimalBtn:initialise();
     self.milkAnimalBtn:instantiate();
     self.milkAnimalBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self.milkAnimalBtn:setVisible(true);
     self:addChild(self.milkAnimalBtn);
 
-    self.ageBtn = ISButton:new(0,0, btnWid, btnHgt, "Set Age", self, ISAnimalUI.onSetAge);
+    self.ageBtn = ISButton:new(0,0, btnWid, btnHgt, getText("ContextMenu_SetAnimalAge"), self, ISAnimalUI.onSetAge);
     self.ageBtn:initialise();
     self.ageBtn:instantiate();
     self.ageBtn.borderColor = {r=1, g=1, b=1, a=0.1};
     self.ageBtn:setVisible(AnimalContextMenu.cheat);
     self:addChild(self.ageBtn);
 
-    self.genderBtn = ISButton:new(0,0, btnWid, btnHgt, "Change", self, ISAnimalUI.onChangeGender);
+    self.genderBtn = ISButton:new(0,0, btnWid, btnHgt, getText("IGUI_PlayerStats_Change"), self, ISAnimalUI.onChangeGender);
     self.genderBtn:initialise();
     self.genderBtn:instantiate();
     self.genderBtn.borderColor = {r=1, g=1, b=1, a=0.1};
@@ -423,9 +423,9 @@ function ISAnimalUI:create()
 
     local infoTxt = getText("IGUI_AnimalUI_Info") .. " ";
     if not self.animal:isBaby() then
-        infoTxt = infoTxt .. getText("IGUI_AnimalUI_Info_" .. self.animal:getAnimalType());
+        infoTxt = infoTxt .. (getTextOrNull("IGUI_AnimalUI_Info_" .. self.animal:getAnimalType()) or "");
     else
-        infoTxt = infoTxt .. getText("IGUI_AnimalUI_Info_" .. self.animal:getNextStageAnimalType());
+        infoTxt = infoTxt .. (getTextOrNull("IGUI_AnimalUI_Info_" .. self.animal:getNextStageAnimalType()) or "");
     end
     self:setInfo(infoTxt);
 
@@ -623,11 +623,7 @@ function ISAnimalUI:new(x, y, width, height, animal, player)
     o.refreshNeeded = true
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
-    o.animalName = getText("IGUI_AnimalType_" .. animal:getAnimalType());
-    if animal:getData():getBreed() then
-        o.animalName = getText("IGUI_Breed_" .. animal:getData():getBreed():getName()) .. " " .. o.animalName;
-    end
-    o.animalName = animal:getCustomName() or o.animalName;
+    o.animalName = animal:getCustomName() or animal:getFullName()
     o.skillLvl = player:getPerkLevel(Perks.Husbandry);
     o:setResizable(false)
     return o;

@@ -3,7 +3,7 @@ require "ISUI/ISScrollingListBox"
 require "ISUI/ISTabPanel"
 
 ISLiteratureUI = ISCollapsableWindowJoypad:derive("ISLiteratureUI")
-ISLiteratureList = ISScrollingListBox:derive("ISListeratureList")
+ISLiteratureList = ISPanel:derive("ISListeratureList")
 ISLiteratureMediaList = ISScrollingListBox:derive("ISListeratureMediaList")
 ISLiteratureGrowingList = ISScrollingListBox:derive("ISListeratureGrowingList")
 
@@ -142,7 +142,7 @@ function ISLiteratureList:doDrawItem(y, item, alt)
         end
     end
     if known or metaKnowledge == 1 or showUnknownRecipes then
-        self:drawText(Translator.getRecipeName(item.text), 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
+        self:drawText(item.text, 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
     else
         self:drawText("???", 6 + 32 + 6, y+itemPadY, r, g, b, a, self.font)
     end
@@ -151,8 +151,36 @@ function ISLiteratureList:doDrawItem(y, item, alt)
 	return y;
 end
 
-function ISLiteratureList:new(x, y, width, height, character)
-	local o = ISScrollingListBox.new(self, x, y, width, height)
+function ISLiteratureList:createChildren()
+    local filterHeight = FONT_HGT_SMALL + 4
+
+    self.filterBox = ISTextEntryBox:new("", 0, 0, self.width, filterHeight)
+    self.filterBox:initialise()
+    self.filterBox:instantiate()
+    self.filterBox.font = UIFont.NewSmall
+    self.filterBox:setPlaceholderText(getText("IGUI_FilterSearch"))
+    self.filterBox.onTextChangeFunction = ISLiteratureUI.setLists
+    self.filterBox.target = self.parent
+
+    self.list = ISScrollingListBox:new(0, self.filterBox:getBottom(), self.width, self.height - filterHeight)
+    self.list:initialise()
+    self.list:instantiate()
+    self.list:setFont(UIFont.Small, 3)
+    self.list.itemheight = BUTTON_HGT
+    self.list.doDrawItem = ISLiteratureList.doDrawItem
+    self.list.character = self.character
+
+    self:addChild(self.filterBox)
+    self:addChild(self.list)
+end
+
+function ISLiteratureList:new(x, y, width, height, character, parent)
+    local o = ISPanel.new(self, x, y, width, height)
+
+    o:setAnchorRight(true)
+    o:setAnchorBottom(true)
+    o:noBackground()
+    o.parent = parent
 	o.character = character
 	return o
 end
@@ -270,35 +298,26 @@ function ISLiteratureUI:createChildren()
 
 	-- BOOKS
 
-	local listbox1 = ISLiteratureList:new(0, 0, self.tabs.width, self.tabs.height - self.tabs.tabHeight, self.character)
-	listbox1:setAnchorRight(true)
-	listbox1:setAnchorBottom(true)
-	listbox1:setFont(UIFont.Small, 3)
-	listbox1.itemheight = BUTTON_HGT
+	local listbox1 = ISLiteratureList:new(0, 0, self.tabs.width, self.tabs.height - self.tabs.tabHeight, self.character, self)
 	self.tabs:addView(getText("IGUI_LiteratureUI_Skills"), listbox1)
-	self.listbox1 = listbox1
+	self.listbox1 = listbox1.list
+    self.listbox1Filter = listbox1.filterBox
 
 	-- MAGAZINES
 
-	local listbox2 = ISLiteratureList:new(0, 0, self.width, self.tabs.height - self.tabs.tabHeight, self.character)
-	listbox2:setAnchorRight(true)
-	listbox2:setAnchorBottom(true)
-	listbox2:setFont(UIFont.Small, 3)
-	listbox2.itemheight = BUTTON_HGT
+	local listbox2 = ISLiteratureList:new(0, 0, self.width, self.tabs.height - self.tabs.tabHeight, self.character, self)
 	self.tabs:addView(getText("IGUI_LiteratureUI_RecipeBooks"), listbox2)
-	self.listbox2 = listbox2
+	self.listbox2 = listbox2.list
+    self.listbox2Filter = listbox2.filterBox
 
 	-- RECIPES
 
-	local listbox3 = ISLiteratureList:new(0, 0, self.width, self.tabs.height - self.tabs.tabHeight, self.character)
-	listbox3:setAnchorRight(true)
-	listbox3:setAnchorBottom(true)
-	listbox3:setFont(UIFont.Small, 3)
-	listbox3.itemheight = BUTTON_HGT
-	self.tabs:addView(getText("IGUI_LiteratureUI_Recipes"), listbox3)
-	self.listbox3 = listbox3
+	local recipePanel = ISLiteratureList:new(0, 0, self.width, self.tabs.height - self.tabs.tabHeight, self.character, self)
+	self.tabs:addView(getText("IGUI_LiteratureUI_Recipes"), recipePanel)
+	self.recipeListBox = recipePanel.list
+    self.recipeListFilter = recipePanel.filterBox
 
-	self.listbox3:setOnMouseDownFunction(self, self.onRecipeSelected, self)
+	self.recipeListBox:setOnMouseDownFunction(self, self.onRecipeSelected, self)
 
 	-- RECORDED MEDIA
 
@@ -352,7 +371,7 @@ function ISLiteratureUI:setLists()
 					table.insert(other, item)
 					for j=1, item:getLearnedRecipes():size() do
 						local recipe = item:getLearnedRecipes():get(j-1)
-						table.insert(recipes, recipe)
+                        table.insert(recipes, {name = Translator.getRecipeName(recipe), id = recipe})
 					end
 				end
 			end
@@ -368,16 +387,24 @@ function ISLiteratureUI:setLists()
 		return not string.sort(a:getDisplayName(), b:getDisplayName())
 	end
 
-	local sortRecipe = function(a,b)
-		return string.sort(b, a);
-	end
+    local sortRecipe = function(a,b)
+        local aKnown = self.character:getKnownRecipes():contains(a.id)
+        local bKnown = self.character:getKnownRecipes():contains(b.id)
+
+        if aKnown ~= bKnown then
+            return aKnown
+        end
+
+        return a.name < b.name
+    end
 
 	local prev;
 
 	table.sort(skillBooks, sortFunc)
+    local textFilter = string.lower(self.listbox1Filter:getInternalText())
 	self.listbox1:clear()
 	for _,item in ipairs(skillBooks) do
-		if prev ~= item then
+		if prev ~= item and (not textFilter or string.contains(string.lower(item:getDisplayName()), textFilter)) then
 			self.listbox1:addItem(item:getDisplayName(), item)
 			prev = item;
 		end
@@ -386,9 +413,10 @@ function ISLiteratureUI:setLists()
 	prev = nil;
 
 	table.sort(other, sortFunc)
+    local textFilter = string.lower(self.listbox2Filter:getInternalText())
 	self.listbox2:clear()
 	for _,item in ipairs(other) do
-		if prev ~= item then
+		if prev ~= item and (not textFilter or string.contains(string.lower(item:getDisplayName()), textFilter)) then
 			self.listbox2:addItem(item:getDisplayName(), item)
 			prev = item;
 		end
@@ -398,19 +426,23 @@ function ISLiteratureUI:setLists()
 
 	local metaKnowledge = getSandboxOptions():getOptionByName("MetaKnowledge"):getValue()
 	table.sort(recipes, sortRecipe)
-	self.listbox3:clear()
+	self.recipeListBox:clear()
 	local scrollHeight = 0
-	for _,item in ipairs(recipes) do
-		if prev ~= item then
-			local listItem = self.listbox3:addItem(item, item)
-			if (metaKnowledge == 3) and not self.character:getKnownRecipes():contains(item) then
-				listItem.height = 0
-			end
-			scrollHeight = scrollHeight + listItem.height
-			prev = item;
-		end
+    local alreadyDone = {}
+    local textFilter = string.lower(self.recipeListFilter:getInternalText())
+	for _, recipe in ipairs(recipes) do
+        local recipeId = recipe.id
+        local recipeName = recipe.name
+        if not alreadyDone[recipeName] and (not textFilter or string.contains(string.lower(recipeName), textFilter)) then
+            local listItem = self.recipeListBox:addItem(recipeName, recipeId)
+            if (metaKnowledge == 3) and not self.character:getKnownRecipes():contains(recipeId) then
+                listItem.height = 0
+            end
+            scrollHeight = scrollHeight + listItem.height
+            alreadyDone[recipeName] = true
+        end
 	end
-	self.listbox3:setScrollHeight(scrollHeight)
+	self.recipeListBox:setScrollHeight(scrollHeight)
 
 	self:setMediaLists(media)
 

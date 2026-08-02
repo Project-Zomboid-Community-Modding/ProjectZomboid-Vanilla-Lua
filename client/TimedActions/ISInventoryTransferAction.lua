@@ -5,6 +5,7 @@ ISInventoryTransferAction = ISBaseTimedAction:derive("ISInventoryTransferAction"
 ISInventoryPage.putSoundContainer = nil
 ISInventoryTransferAction.putSoundDelay = 2
 ISInventoryTransferAction.putSoundTime = 0
+local CLIENT_DELAY_FOR_MULTI_TRANSACTION = 10
 -- keep only one instance of this action so we can queue item to transfer and avoid ton of instance when moving lot of items.
 
 function ISInventoryTransferAction:isValid()
@@ -13,20 +14,21 @@ function ISInventoryTransferAction:isValid()
 	end
 	if not self.destContainer or not self.srcContainer then
 		return false;
-   end
-	-- fix for players being able to replace items into containers they shouldn't
-	local containers = ISInventoryPaneContextMenu.getContainers(self.character)
-	if not containers:contains(self.destContainer) then
-		return false;
-	end
-	-- fix for players being able to add ingredients to evolved recipes after walking away from the container they are in
-	-- Items can be taken from bags inside bags in the player's inventory.
-	-- This isn't done for bags inside bags in object containers.
-	-- Bags in vehicle containers and on seats work, since those are displayed in the loot window.
-	if not containers:contains(self.srcContainer) and self.srcContainer:getOutermostContainer() ~= self.character:getInventory() then
-		return false;
-	end
-
+    end
+    if self.isTransferIntoVehicleSeatFromOutside then
+        -- fix for players being able to replace items into containers they shouldn't
+        local containers = ISInventoryPaneContextMenu.getContainers(self.character)
+        if not containers:contains(self.destContainer) then
+            return false;
+        end
+        -- fix for players being able to add ingredients to evolved recipes after walking away from the container they are in
+        -- Items can be taken from bags inside bags in the player's inventory.
+        -- This isn't done for bags inside bags in object containers.
+        -- Bags in vehicle containers and on seats work, since those are displayed in the loot window.
+        if not containers:contains(self.srcContainer) and self.srcContainer:getOutermostContainer() ~= self.character:getInventory() then
+            return false;
+        end
+    end
 	-- fix for items that were consumed in crafting still being put back into their container
 	if self.item:getIsCraftingConsumed() then
 		return false;
@@ -40,6 +42,10 @@ function ISInventoryTransferAction:isValid()
 
 	-- Limit items per container in MP
 	if isClient() then
+		local tradingUI = ISTradingUI.GetUIForPlayer(self.character)
+		if tradingUI and tradingUI:isVisible() then
+			return false;
+		end
 		if not self.started and not isItemTransactionConsistent(self.item, self.srcContainer, self.destContainer, nil, self.character) then
 			return false
 		end
@@ -85,9 +91,6 @@ function ISInventoryTransferAction:isValid()
 		return true
 	end
 
-    if ISTradingUI.instance and ISTradingUI.instance:isVisible() then
-        return false;
-	end
 	if not self.srcContainer:contains(self.item) then
 		return false;
     end
@@ -124,7 +127,6 @@ function ISInventoryTransferAction:isValid()
 end
 
 function ISInventoryTransferAction:update()
-
     -- players that aren't desensitized gain mild unhappiness from stripping items from corpses
     if self.character and (not self.character:hasTrait(CharacterTrait.DESENSITIZED)) and self.srcContainer and self.srcContainer:getType() and ( self.srcContainer:getType() == "inventoryfemale" or self.srcContainer:getType() == "inventorymale" ) then
         local rate =  getGameTime():getMultiplier();
@@ -205,7 +207,6 @@ function ISInventoryTransferAction:doActionAnim(cont)
 		self:setAnimVariable("LootPosition", "Low");
 	end
 	self.character:reportEvent("EventLootItem");
-	table.insert(self.transactions, { self.item, self.srcContainer, self.destContainer })
 end
 
 function ISInventoryTransferAction:startActionAnim()
@@ -243,6 +244,15 @@ function ISInventoryTransferAction:startActionAnim()
 	end
 
 	self.jobType = self.item:getJobType() .. ": " .. self.item:getName()
+end
+
+function ISInventoryTransferAction:waitToStart()
+    if not isClient() then
+        return false
+	else
+	    local timePassed = getTimestampMs() - self.startTime
+	    return timePassed < CLIENT_DELAY_FOR_MULTI_TRANSACTION
+    end
 end
 
 function ISInventoryTransferAction:start()
@@ -295,10 +305,15 @@ function ISInventoryTransferAction:start()
 
 	if isClient() then
 		self.action:setWaitForFinished(true)
+	    local items = { self.item }
+	    self:checkQueueList()
+	    if #self.queueList > 0 then
+	        items = self.queueList[1].items
+	    end
+	    self.transactionId = createItemTransaction(self.character, items, self.srcContainer, self.destContainer)
 	end
 
 	self:startActionAnim()
-	self.transactionId = createItemTransaction(self.character, self.item, self.srcContainer, self.destContainer)
 	self.started = true
 end
 
@@ -438,11 +453,6 @@ function ISInventoryTransferAction:stop()
 	if self.action then
 		self.action:setLoopedAction(false);
 	end
-	--if self.transactions then
-	--	for _,transaction in ipairs(self.transactions) do
-	--		removeItemTransaction(transaction[1], transaction[2], transaction[3])
-	--	end
-	--end
 	removeItemTransaction(self.transactionId, true)
 	ISBaseTimedAction.stop(self);
 	self.started = false
@@ -467,7 +477,9 @@ end
 function ISInventoryTransferAction:perform()
 	-- I would have done this in start(), however the first action added to the queue
 	-- is started immediately, before any other actions can be added.
-	self:checkQueueList()
+	if not isClient() then
+	    self:checkQueueList()
+	end
 
 	self.item:setJobDelta(0.0)
 --	print("perform on item", self.item, self.item:getDisplayName())
@@ -478,16 +490,24 @@ function ISInventoryTransferAction:perform()
 		getPlayerLoot(self.character:getPlayerNum()):selectButtonForContainer(self.selectedContainer)
 	end
 
-	if queuedItem ~= nil then
-		for i,item in ipairs(queuedItem.items) do
-			self.item = item
-			-- Check destination container capacity and item-count limit.
-			if not self:isValid() then
-				self.queueList = {}
-				break
-			end
-			self:transferItem(item);
-		end
+    if queuedItem ~= nil then
+        for i,item in ipairs(queuedItem.items) do
+            self.item = item
+		    -- Check destination container capacity and item-count limit.
+		    if not self:isValid() then
+			    self.queueList = {}
+			    break
+		    end
+	        if not isClient() then
+		        self:transferItem(item);
+		    end
+	        self:playTransferCompleteSound(item)
+	    end
+    end
+	if isClient() then
+	    self:checkQueueList()
+	    removeItemTransaction(self.transactionId, false)
+	    self.transactionId = 0
 	end
 	-- if we still have other item to transfer in our queue list, we "reset" the action
 	if #self.queueList > 0 then
@@ -503,12 +523,12 @@ function ISInventoryTransferAction:perform()
 		end
 		if isClient() then
 		    self.action:reset() -- set forceComplete=false
+	        self.transactionId = createItemTransaction(self.character, queuedItem.items, self.srcContainer, self.destContainer)
 		end
 		self.maxTime = time
 		self.action:setTime(tonumber(time))
 		self:resetJobDelta();
 		self:startActionAnim()
-		self.transactionId = createItemTransaction(self.character, self.item, self.srcContainer, self.destContainer)
 	else
 		self:playSourceContainerCloseSound()
 		self:playDestContainerCloseSound()
@@ -610,22 +630,6 @@ function ISInventoryTransferAction:getNotFullFloorSquare(item)
 	return nil
 end
 function ISInventoryTransferAction:transferItem(item)
-
-	removeItemTransaction(self.transactionId, false)
-	self.transactionId = 0
-
-	for index,transaction in ipairs(self.transactions) do
-		if transaction[1] == self.item and transaction[2] == self.srcContainer and transaction[3] == self.destContainer then
-			table.remove(self.transactions, index)
-			break
-		end
-	end
-
-	if isClient() then
-		self:playTransferCompleteSound(item)
-		return
-	end
-
 	if self:isAlreadyTransferred(item) then
 		return
 	end
@@ -719,7 +723,7 @@ function ISInventoryTransferAction:checkQueueList()
 		-- we check if in our queue list an item with the same type exist, so we can transfer them in bulk
 		-- limit this to 20 items (so transfer 20 per 20 nails)
 		-- only for item with weight < 0.1
-		if not isClient() and round(action.item:getWeight(), 3) <= 0.1 then
+		if round(action.item:getWeight(), 3) <= 0.1 then
 			for i,v in ipairs(self.queueList) do
 				if v.type == action.item:getFullType() and #v.items < 20 then
 	--				print("found same type in list", action.item:getFullType())
@@ -768,7 +772,7 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 	o.transactionId = 0;
 	o.srcContainer = srcContainer;
 	o.destContainer = destContainer;
-	o.transactions = {}
+	o.startTime = getTimestampMs()
 	-- handle people right click the same item while eating it
 	if not srcContainer or not destContainer then
 		o.maxTime = 0;
@@ -855,6 +859,8 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 		table.insert(o.queueList, queuedItem);
 		o.loopedAction = true
 	end
+
+    o.isTransferIntoVehicleSeatFromOutside = not o.srcContainer:isVehicleSeat() and o.destContainer:isVehicleSeat()
 
 	return o
 end

@@ -48,7 +48,7 @@ function ISBBQMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, t
         end
 		local text = getText("IGUI_BBQ_FuelAmount", ISCampingMenu.timeString(bbq:getFuelAmount())) .. " (" .. fireState .. ")"
 		if bbq:isPropaneBBQ() and not bbq:hasPropaneTank() then
-			text = text .. " <LINE> <RGB:1,0,0> " .. getText("IGUI_BBQ_NeedsPropaneTank")
+            text = text .. " / " .. getText("IGUI_BBQ_NeedsPropaneTank")
 		end
         local option = bbqMenu:addOption(text, worldobjects, ISBBQMenu.onDisplayInfo, player, bbq)
 	end

@@ -155,7 +155,7 @@ function ISReadABook:start()
     self:setActionAnim(CharacterActionAnims.Read);
     self:setOverrideHandModels(nil, self.item);
     self.character:setReading(true)
-    
+
     self.character:reportEvent("EventRead");
 
     if not SkillBook[self.item:getSkillTrained()] then
@@ -291,6 +291,7 @@ function ISReadABook:displayPrintMedia()
             end
             if button == Joypad.YButton then
                 self:onClickMapButton()
+                self.children.bar.children.closeButton:onLeftClick()
             end
         end
         setJoypadFocus(self.playerNum, win)
@@ -334,12 +335,17 @@ function ISReadABook:complete()
          end
     end
 
-    if not SkillBook[self.item:getSkillTrained()] and not self.isLiteratureRead then
+    local skillBookForSkillTrained = SkillBook[self.item:getSkillTrained()]
+    if skillBookForSkillTrained then
+        addXpMultiplier(self.character, skillBookForSkillTrained.perk, self.maxMultiplier, self.item:getLvlSkillTrained(), self.item:getMaxLevelTrained());
+    end
+
+    if not skillBookForSkillTrained and not self.isLiteratureRead then
         self.character:ReadLiterature(self.item);
 
         local args = { itemId=self.item:getID() }
         sendServerCommand(self.character, 'literature', 'readLiterature', args)
-    elseif SkillBook[self.item:getSkillTrained()] and not self.isLiteratureRead then
+    elseif skillBookForSkillTrained and not self.isLiteratureRead then
         ISReadABook.checkMultiplier(self);
     elseif self.item:getAlreadyReadPages() >= self.item:getNumberOfPages() then
         self.item:setAlreadyReadPages(0);

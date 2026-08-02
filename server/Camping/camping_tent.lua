@@ -96,17 +96,14 @@ function camping.destroyTent(tent)
 	local objects = camping.getTentObjects(tent)
 	for _,object in ipairs(objects) do
 		local square = object:getSquare()
-		if object:hasModData() then
+		if object:hasBuildMaterials() then
 			-- Copied from ISBuildingObject.onDestroy()
-			for index,value in pairs(object:getModData()) do
-				if luautils.stringStarts(index, "need:") then
-					local itemFullType = luautils.split(index, ":")[2]
-					for i=1,tonumber(value) do
-						if ZombRand(2) == 0 then
-							-- item destroyed
-						else
-							square:AddWorldInventoryItem(itemFullType, 0.0, 0.0, 0.0)
-						end
+			for itemFullType,value in pairs(object:getBuildMaterials()) do
+				for i=1,tonumber(value) do
+					if ZombRand(2) == 0 then
+						-- item destroyed
+					else
+						square:AddWorldInventoryItem(itemFullType, 0.0, 0.0, 0.0)
 					end
 				end
 			end

@@ -70,5 +70,6 @@ function ISWaitWhileGettingUp:new(character)
 	o.stopOnRun = false
 	o.maxTime = o:getDuration()
 	o.useProgressBar = false
+	o.allowedWhileDraggingCorpses = true
 	return o
 end	

@@ -16,6 +16,12 @@ function LuaTableUtil:insertUnique(list, element)
     return list;
 end
 
+function LuaTableUtil:insertAllUniqueElementsFromJavaList(list, elements)
+    for i = 0, elements:size() - 1 do
+        LuaTableUtil:insertUnique(list, elements:get(i))
+    end
+end
+
 function LuaTableUtil:contains(list, element)
     if not list then
         return false

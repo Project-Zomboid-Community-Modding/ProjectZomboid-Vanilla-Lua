@@ -3,7 +3,7 @@ local UI_MARGIN = 30
 local UI_MARGIN_RIGHT = UI_MARGIN
 local UI_MARGIN_RIGHT_JOYPAD = 70
 local AUTO_SCROLL_SPEED_NORMAL = 1
-local AUTO_SCROLL_SPEED_FAST = 3
+local AUTO_SCROLL_SPEED_FAST = 5
 local AUTO_SCROLL_SPEED_PAUSE = 0
 local AUTO_SCROLL_SPEED_REWIND = -1
 local BTN_HEIGHT = 25
@@ -48,6 +48,7 @@ function CreditsScreen:create()
 end
 
 function CreditsScreen:changeSpeed()
+    self:doCreditsText()
     if self.speedButton.speed == AUTO_SCROLL_SPEED_NORMAL then
         self:updateAutoScroll(AUTO_SCROLL_SPEED_FAST)
     elseif self.speedButton.speed == AUTO_SCROLL_SPEED_FAST then
@@ -169,31 +170,28 @@ function CreditsScreen:doCreditsText()
         local allRoles = roleGroup:getRoles()
         for j = 0, allRoles:size() - 1 do
             local role = allRoles:get(j)
-            text = text .. (getText(role:getTitle()) ~= "" and roleHeader or nameSeparator) .. getText(role:getTitle()) .. nameHeader
-            local allNames = role:getNames()
-            for k = 0, allNames:size() - 1 do
-                local name = allNames:get(k)
-                text = text .. nameSeparator .. name:getName()
+            if role == CreditsRole.LOCALIZATION then
+                local credits_translator = CreditsRole.getTranslatorCredits()
+                for language, translators in pairs(credits_translator) do
+                    text = text .. roleHeader .. language .. nameHeader .. nameSeparator
+                    for k = 0, translators:size() - 1 do
+                        text = text .. translators:get(k) .. nameSeparator
+                    end
+                end
+            else
+                local title = getTextOrNull(role:getTitle()) or ""
+                text = text .. (title ~= "" and roleHeader or nameSeparator) .. title .. nameHeader
+                local allNames = role:getNames()
+                for k = 0, allNames:size() - 1 do
+                    local name = allNames:get(k)
+                    text = text .. nameSeparator .. name:getName()
+                end
             end
         end
     end
 
-    text = text .. string.rep(nameSeparator, 5)
+    text = text .. roleGroupHeader .. getText("credits_spiffos_url") .. string.rep(nameSeparator, 5)
 
-    return text
-end
-
-function CreditsScreen:addToMap(key, searchKey, map, name)
-    if luautils.stringStarts(key, searchKey) then
-        table.insert(map, name)
-    end
-end
-
-function CreditsScreen:doCreditTable(title, creditTable)
-    local text = getText(title)
-    for _, name in ipairs(creditTable) do
-        text = text .. name
-    end
     return text
 end
 

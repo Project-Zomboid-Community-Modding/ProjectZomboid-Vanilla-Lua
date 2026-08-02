@@ -5,6 +5,13 @@ local bush_dry = {
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.no_tree
+                },
+            },
+        },
         bush = { "DRY" },
         placements = {
             GENERIC = {

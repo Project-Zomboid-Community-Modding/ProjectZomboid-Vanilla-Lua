@@ -1,5 +1,8 @@
 if isClient() then return end
 
+require "DebugCommands/DebugIsoRegionsEdit"
+require "DebugCommands/DebugAddEnclosure"
+
 local ClientCommands = {}
 local Commands = {}
 Commands.object = {}
@@ -427,19 +430,10 @@ end
 Commands.deadBody = {}
 Commands.deadBody.addBody = function(player, args)
     if ISDropCorpseIntoContainer.bodyCache[args.id] then
-        for character, container in pairs(ISDropCorpseIntoContainer.bodyCache[args.id]) do
-            local deadBody = character:becomeCorpseSilently()
-            if deadBody then
-                local corpse = deadBody:getItem()
-                if corpse and container:canItemFit(corpse) then
-                    container:AddItem(corpse)
-                    sendAddItemToContainer(container, corpse)
-                    local sq = deadBody:getSquare()
-                    if sq then
-                        sq:removeCorpse(deadBody, false)
-                        deadBody:invalidateCorpse()
-                    end
-                end
+        for draggedCharacter, container in pairs(ISDropCorpseIntoContainer.bodyCache[args.id]) do
+            local corpseItem = draggedCharacter:becomeCorpseItem(container, player)
+            if corpseItem then
+                sendAddItemToContainer(container, corpseItem)
             end
         end
         ISDropCorpseIntoContainer.bodyCache[args.id] = {}
@@ -1000,15 +994,6 @@ Commands.animal.happy = function(player, args)
 	local animal = getAnimal(tonumber(args.id))
 	animal:debugRandomHappyAnim()
 end
-Commands.animal.attach = function(player, args)
-	local animal = getAnimal(tonumber(args.id))
-	local item = instanceItem(args.item)
-	animal:setAttachedItem(args.location, item)
-	sendServerCommandV("animal", "attach",
-			"id", args.id,
-			"location", args.location,
-			"item", args.item)
-end
 Commands.animal.attackPlayer = function(player, args)
 	if not player:getRole():hasCapability(Capability.AnimalCheats) then
 		print('animal.attackPlayer The player\'s access level is not sufficient to perform this action')
@@ -1241,6 +1226,24 @@ Commands.fishing.missFish = function(player, args)
     if rod then
         rod:missFish()
     end
+end
+
+Commands.debugIsoRegions = {}
+Commands.debugIsoRegions.editSquare = function(player, args)
+    if not player:getRole():hasCapability(Capability.UseDebugContextMenu) then
+        print("debugIsoRegions.editSquare denied for "..tostring(player:getUsername()))
+        return
+    end
+    DebugIsoRegionsEdit.run(player, args)
+end
+
+Commands.debugScenario = Commands.debugScenario or {}
+Commands.debugScenario.addEnclosure = function(player, args)
+    if not player:getRole():hasCapability(Capability.UseDebugContextMenu) then
+        print("debugScenario.addEnclosure denied for "..tostring(player:getUsername()))
+        return
+    end
+    DebugAddEnclosure.run(player)
 end
 
 ClientCommands.OnClientCommand = function(module, command, player, args)

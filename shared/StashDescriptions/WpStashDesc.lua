@@ -39,10 +39,10 @@ stashMap:addContainer(nil,nil,"Base.Bag_DuffelBagTINT",nil,nil,nil,nil);
 
 local stashMap = StashUtil.newStash("WpStashMap4", "Map", "Base.WestpointMap", "Stash_AnnotedMap");
 stashMap.barricades = 20;
-stashMap.buildingX = 11196
-stashMap.buildingY = 6714
+stashMap.buildingX = 11187
+stashMap.buildingY = 6735
 stashMap.spawnTable = "ShotgunCache1";
-stashMap:addStamp("Target", nil, 11198, 6713, 0.129,0.129,0.129)
+stashMap:addStamp("Target", nil, 11187, 6735, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap4_Text1", 11210, 6705, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap4_Text3", 11158, 6755, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap4_Text31", 11158, 6770, 0.65, 0.054, 0.054)
@@ -71,7 +71,6 @@ stashMap.spawnTable = "ToolsCache1";
 stashMap:addStamp("Circle", nil, 11438, 6731, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap5_Text1", 11452, 6725, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap5_Text11", 11452, 6741, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap5_Text2", 11653, 7076, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap5_Text3", 11420, 6781, 0.129,0.129,0.129)
 stashMap:addContainer("ToolsBox","carpentry_01_16",nil,"bedroom",nil,nil,nil);
 
@@ -83,17 +82,16 @@ stashMap.buildingY = 6703
 stashMap.spawnTable = "ToolsCache1";
 stashMap:addStamp("Circle", nil, 11498, 6703, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap6_Text1", 11466, 6713, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap6_Text2", 12064, 6794, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap6_Text3", 11500, 6771, 0.65, 0.054, 0.054)
 stashMap:addContainer("ToolsBox","carpentry_01_16",nil,nil,nil,nil,nil);
 
 -- survivor houses
 local stashMap = StashUtil.newStash("WpStashMap7", "Map", "Base.WestpointMap", "Stash_AnnotedMap");
 stashMap.spawnOnlyOnZed = true;
-stashMap.buildingX = 11609
-stashMap.buildingY = 6778
+stashMap.buildingX = 11621
+stashMap.buildingY = 6779
 stashMap.spawnTable = "SurvivorCache1";
-stashMap:addStamp("House", nil, 11608, 6778, 0.129,0.129,0.129)
+stashMap:addStamp("House", nil, 11621, 6779, 0.129,0.129,0.129)
 
 local stashMap = StashUtil.newStash("WpStashMap8", "Map", "Base.WestpointMap", "Stash_AnnotedMap");
 stashMap.spawnOnlyOnZed = true;
@@ -105,7 +103,6 @@ stashMap.spawnTable = "SurvivorCache1";
 stashMap:addStamp("House", nil, 11507, 6801, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap8_Text1", 11517, 6792, 0.129,0.129,0.129)
 --stashMap:addStamp("Lightning", nil, 12070, 6762, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap8_Text2", 12078, 6751, 0.129,0.129,0.129)
 stashMap:addStamp("Exclamation", nil, 11608, 6778, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap8_Text3", 11616, 6767, 0.65, 0.054, 0.054)
 
@@ -119,7 +116,6 @@ stashMap.buildingY = 6816
 stashMap.spawnTable = "SurvivorCache2";
 stashMap:addStamp("Skull", nil, 11655, 6816, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap9_Text1", 11665, 6805, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap9_Text2", 11976, 6875, 0.129,0.129,0.129)
 stashMap:addStamp("Question", nil, 11784, 6842, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap9_Text3", 11795, 6832, 0.65, 0.054, 0.054)
 
@@ -132,7 +128,6 @@ stashMap.spawnTable = "SurvivorCache2";
 stashMap:addStamp("Skull", nil, 11645, 6693, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap10_Text1", 11655, 6686, 0.129,0.129,0.129)
 --stashMap:addStamp("X", nil, 11958, 6914, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap10_Text2", 11967, 6906, 0.129,0.129,0.129)
 stashMap:addStamp("Exclamation", nil, 11707, 6768, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap10_Text3", 11720, 6758, 0.129,0.129,0.129)
 
@@ -145,16 +140,17 @@ stashMap.spawnTable = "SurvivorCache2";
 stashMap:addStamp("Skull", nil, 11981, 6942, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap12_Text1", 11992, 6932, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap12_Text11", 11992, 6951, 0.65, 0.054, 0.054)
-stashMap:addStamp("X", nil, 12068, 6761, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap12_Text2", 12079, 6751, 0.129,0.129,0.129)
+stashMap:addStamp("X", nil, 12092, 6787, 0.129,0.129,0.129)
+stashMap:addStamp(nil, "Stash_WpMap12_Text2", 12063, 6782, 0.129,0.129,0.129)
 stashMap:addStamp("X", nil, 11919, 6835, 0.65, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap12_Text3", 11930, 6827, 0.65, 0.054, 0.054)
+
 
 -- gun/weapon cache
 local stashMap = StashUtil.newStash("WpStashMap13", "Map", "Base.WestpointMap", "Stash_AnnotedMap")
 stashMap.buildingX = 10890
-stashMap.buildingY = 6743
-stashMap:addStamp("Gun", nil, 10889, 6743, 0.129,0.129,0.129)
+stashMap.buildingY = 6741
+stashMap:addStamp("Gun", nil, 10889, 6740, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap13_Text1", 10836, 6749, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap13_Text2", 10836, 6772, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap13_Text3", 10837, 6793, 0.129,0.129,0.129)
@@ -183,14 +179,14 @@ stashMap.spawnTable = "SurvivorCache1"
 
 -- survivor house
 local stashMap = StashUtil.newStash("WpStashMap16", "Map", "Base.WestpointMap", "Stash_AnnotedMap")
-stashMap.buildingX = 11135
-stashMap.buildingY = 6854
-stashMap:addStamp("ArrowEast", nil, 11118, 6860, 0.129,0.129,0.129)
-stashMap:addStamp("ArrowNorth", nil, 11131, 6871, 0.129,0.129,0.129)
-stashMap:addStamp("ArrowEast", nil, 11149, 6852, 0.129,0.129,0.129)
-stashMap:addStamp(nil, "Stash_WpMap16_Text1", 11032, 6866, 0.129,0.129,0.129)
+stashMap.buildingX = 11141
+stashMap.buildingY = 6862
+stashMap:addStamp("ArrowEast", nil, 11123, 6865, 0.129,0.129,0.129)
+stashMap:addStamp("ArrowNorth", nil, 11138, 6881, 0.129,0.129,0.129)
+stashMap:addStamp("ArrowEast", nil, 11154, 6856, 0.129,0.129,0.129)
+stashMap:addStamp(nil, "Stash_WpMap16_Text1", 11032, 6866, 0.650, 0.054, 0.054)
 stashMap:addStamp(nil, "Stash_WpMap16_Text2", 11164, 6843, 0.129,0.129,0.129)
-stashMap:addStamp("ArrowSouth", nil, 11187, 6874, 0.129,0.129,0.129)
+stashMap:addStamp("ArrowSouth", nil, 11185, 6878, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap16_Text21", 11161, 6881, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap16_Text3", 11079, 6910, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap16_Text31", 11103, 6931, 0.129,0.129,0.129)
@@ -198,5 +194,6 @@ stashMap:addStamp(nil, "Stash_WpMap16_Text32", 11103, 6954, 0.129,0.129,0.129)
 stashMap:addStamp(nil, "Stash_WpMap16_Text4", 11077, 6987, 0.129,0.129,0.129)
 stashMap.barricades = 80
 stashMap.spawnTable = "SurvivorCache1"
+
 
 

@@ -2,6 +2,9 @@ require "TimedActions/ISBaseTimedAction"
 
 ISDryMyself = ISBaseTimedAction:derive("ISDryMyself");
 
+local MAX_USES = 10
+local TICKS_TO_MILLIS = 10
+
 function ISDryMyself:isValid()
 	if isClient() then
 		if self.started then
@@ -15,26 +18,23 @@ function ISDryMyself:isValid()
 end
 
 function ISDryMyself:update()
-	self.tick = self.tick + 1;
-	if self.tick >= self.timer then
-		self.tick = 0;
-		self.character:getBodyDamage():decreaseBodyWetness( self.character:getStats():get(CharacterStat.WETNESS) / 20 );
-
-		if isClient() then
-			if self.item then
-				local dt = self.item:getCurrentUsesFloat() - self.item:getUseDelta();
-				if dt > 0 then
-					self.item:setUsedDelta(dt);
-				else
-					self:forceStop();
-				end
-			end
-		else
-			self.item:Use();
-		end
-
-	end
+    if not isClient() then
+        if getTimeInMillis() - self.lastUse >= self.useDelay then
+            self.lastUse = getTimeInMillis()
+            self:useAndDry(false)
+        end
+    end
     self.character:setMetabolicTarget(Metabolics.LightDomestic);
+end
+
+function ISDryMyself:useAndDry(isSyncNeeded)
+    self.character:getBodyDamage():decreaseBodyWetness( self.character:getStats():get(CharacterStat.WETNESS) / MAX_USES )
+    if isSyncNeeded then
+        sendDamage(self.character)
+        self.item:UseAndSync()
+    else
+        self.item:Use()
+    end
 end
 
 function ISDryMyself:start()
@@ -56,65 +56,36 @@ function ISDryMyself:perform()
 end
 
 function ISDryMyself:complete()
-	self:syncItemUses();
-
-	if self.item then
-		self.item:UseAndSync();
-	end
-
-	self.character:getBodyDamage():decreaseBodyWetness( self.character:getStats():get(CharacterStat.WETNESS) );
-	sendDamage(self.character)
 	return true
 end
 
 function ISDryMyself:serverStart()
-	self.serverStartTime = getTimeInMillis();
+    emulateAnimEvent(self.netAction, self.useDelay, "serverTick", nil)
 end
 
-function ISDryMyself:serverStop()
-	self:syncItemUses();
-	self.character:getBodyDamage():decreaseBodyWetness( self.character:getStats():get(CharacterStat.WETNESS) * self.netAction:getProgress() );
-	sendDamage(self.character)
-end
-
-
-function ISDryMyself:syncItemUses()
-	if not self.item or not isServer() then
-		return
-	end
-
-	local duration = getTimeInMillis() - self.serverStartTime;
-	local timer = self.timer * 20;
-	local maxTime = self.maxTime * 20;
-
-	if duration > maxTime then
-		duration = maxTime;
-	end
-
-	local numberOfUses = math.ceil(duration / timer) + 1;
-	for i = 1, numberOfUses do
-		if i == numberOfUses then
-			self.item:UseAndSync();
-		else
-			self.item:Use();
-		end
-	end
+function ISDryMyself:animEvent(event, parameter)
+    if isServer() and self.item and event == "serverTick" then
+        if self.item:getCurrentUses() > 0 then
+            self:useAndDry(true)
+        else
+			self.netAction:forceComplete()
+        end
+    end
 end
 
 function ISDryMyself:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
-	local useLeft = math.ceil(self.item:getCurrentUsesFloat() * 10);
-	return (useLeft * 20) + 20
+	return 200
 end
 
 function ISDryMyself:new(character, item)
 	local o = ISBaseTimedAction.new(self, character)
 	o.item = item;
 	o.maxTime = o:getDuration();
-	o.timer = o.maxTime / 20;
-	o.tick = 0;
+	o.lastUse = 0
+	o.useDelay = o.maxTime * TICKS_TO_MILLIS / MAX_USES
     o.caloriesModifier = 4;
 	return o;
 end

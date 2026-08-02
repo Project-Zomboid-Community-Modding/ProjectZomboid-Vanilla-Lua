@@ -3,7 +3,7 @@ require "TimedActions/ISBaseTimedAction"
 ISPickupAnimal = ISBaseTimedAction:derive("ISPickupAnimal");
 
 function ISPickupAnimal:isValid()
-	return self.animal:isExistInTheWorld() and self.character:getSquare():DistTo(self.animal:getSquare()) < 3;
+	return self.animal and self.animal:isExistInTheWorld() and self.character:getSquare():DistTo(self.animal:getSquare()) < 3;
 end
 
 function ISPickupAnimal:waitToStart()
@@ -39,6 +39,10 @@ function ISPickupAnimal:perform()
 end
 
 function ISPickupAnimal:complete()
+    if not self:isValid() then
+        return false
+    end
+
 	local invItem = instanceItem("Base.Animal");
 	invItem:setAnimal(self.animal);
 	self.character:getInventory():AddItem(invItem);

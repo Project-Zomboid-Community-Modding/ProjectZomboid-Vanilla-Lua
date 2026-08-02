@@ -687,7 +687,7 @@ function ISVehicleMenu.FillMenuOutsideVehicle(player, context, vehicle, test)
 			local subMenu = ISContextMenu:getNew(context);
 			context:addSubMenu(option, subMenu);
 			for i=0, vehicle:getAnimals():size() - 1 do
-				local added = true;
+                added = true
 				subMenu:addOption(vehicle:getAnimals():get(i):getFullName(), playerObj, ISVehicleMenu.onRemoveAnimalFromTrailer, vehicle:getAnimals():get(i), vehicle);
 			end
 			if not added then
@@ -1345,18 +1345,26 @@ function ISVehicleMenu.moveItemsFromSeat(playerObj, vehicle, seat, moveThem, doE
 		end
 	end
 
-	local nextSeat = (seat + 1) % seats:size()
-	while (nextSeat ~= seat) do
-		if nextSeat ~= 0 and seats:get(nextSeat) and vehicle:canSwitchSeat(seat, nextSeat) and not vehicle:getCharacter(nextSeat) then
-			currentWeight = currentWeight - ISVehicleMenu.transferSeatItems(playerObj, vehicle, seats:get(seat), seats:get(nextSeat), desiredWeight, not moveThem)
-			if currentWeight <= desiredWeight then
-				if doEnter then
-					ISVehicleMenu.processEnter(playerObj, vehicle, seat);
-				end
-				return true
-			end
-		end
-		nextSeat = (nextSeat + 1) % seats:size()
+    local nextSeat = (seat + 1) % seats:size()
+    if not vehicle:canSwitchSeat(seat, nextSeat) or not seats:get(nextSeat) then
+        nextSeat = 0
+    end
+    local loopCount = 0
+    while (nextSeat ~= seat) do
+        if seats:get(nextSeat) and not vehicle:getCharacter(nextSeat) and vehicle:canSwitchSeat(seat, nextSeat) then
+            currentWeight = currentWeight - ISVehicleMenu.transferSeatItems(playerObj, vehicle, seats:get(seat), seats:get(nextSeat), desiredWeight, not moveThem)
+            if currentWeight <= desiredWeight then
+                if doEnter then
+                    ISVehicleMenu.processEnter(playerObj, vehicle, seat)
+                end
+                return true
+            end
+        end
+        nextSeat = (seat + 1) % seats:size()
+        loopCount = loopCount + 1
+        if loopCount >= seats:size() then
+            return false
+        end
 	end
 	return false
 end

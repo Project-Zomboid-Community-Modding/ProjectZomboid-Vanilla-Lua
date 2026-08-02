@@ -8,6 +8,7 @@ local VIDEO_SOURCE_WIDTH = 1920
 local VIDEO_SOURCE_HEIGHT = 658
 local PANEL_COUNT = 6
 local DATA_SHIFT_NUM = PANEL_COUNT
+local VIDEO_ASPECT_RATIO = 16 / 9
 
 local ModePanel = ISPanel:derive("ModePanel")
 
@@ -233,7 +234,7 @@ function NewGameScreen:loadChallenges()
 end
 
 function NewGameScreen:calcViewDimensions()
-    local wDelta = 0 + (self.width - self.height * (16 / 9))
+    local wDelta = 0 + (self.width - self.height * VIDEO_ASPECT_RATIO)
     wDelta = wDelta < 0 and 0 or wDelta
 
     local previewWidth = self.width - UI_BORDER_SPACING * 2 - wDelta

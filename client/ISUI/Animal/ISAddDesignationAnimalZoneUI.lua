@@ -136,16 +136,16 @@ function ISAddDesignationAnimalZoneUI:addZone()
     self:removeFromUIManager();
     local startX = self.startingX;
     local startY = self.startingY;
-    local endX = self.endX + 1;
-    local endY = self.endY + 1;
+    local endX = self.endX;
+    local endY = self.endY;
     if startX > endX then
-        endX = endX - 1;
-        startX = startX + 1;
+        startX,endX = endX,startX
     end
-    if startY > endY  then
-        endY = endY - 1;
-        startY = startY + 1;
+    if startY > endY then
+        startY,endY = endY,startY
     end
+    endX = endX + 1
+    endY = endY + 1
     local zone = DesignationZoneAnimal.new(self.titleEntry.name, startX, startY, luautils.round(self.player:getZ(), 0), endX, endY, true)
     zone:createSurroundingFence();
 
@@ -235,14 +235,10 @@ function ISAddDesignationAnimalZoneUI:prerender()
     local endX = self.endX;
     local endY = self.endY;
     if startingX > endX then
-        local x2 = endX;
-        endX = startingX;
-        startingX = x2;
+        startingX,endX = endX,startingX
     end
     if startingY > endY then
-        local y2 = endY;
-        endY = startingY;
-        startingY = y2;
+        startingY,endY = endY,startingY
     end
 
     local width = (endX - startingX) + 1;

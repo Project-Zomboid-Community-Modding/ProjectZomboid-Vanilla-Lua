@@ -66,7 +66,7 @@ function ISTickBox:render()
 	local totalHgt = #self.options * (self.itemHgt + UI_BORDER_SPACING) - UI_BORDER_SPACING
 	y = y + (self.height - totalHgt) / 2
 	local textDY = (self.itemHgt - self.fontHgt) / 2
-	local boxDY = 0
+	local boxDY = (self.itemHgt - self.boxSize) / 2
 	self._textColor = self._textColor or { r = 1, g = 1, b = 1, a = 1 }
     for i,v in ipairs(self.options) do
 		local disabled = false;
@@ -80,7 +80,7 @@ function ISTickBox:render()
         end
 
         if self.joypadFocused and self.joypadIndex == c then
-            self:drawRectBorder(self.leftMargin - 2, y+boxDY - 2, self.width + 4, self.boxSize + 4, 1.0, 0.6, 0.6, 0.6);
+            self:drawRectBorder(self.leftMargin - 2, y, self.width + 4, self.itemHgt, 1.0, 0.6, 0.6, 0.6);
             self:drawRect(self.leftMargin, y+boxDY, self.boxSize, self.boxSize, 1.0, 0.3, 0.3, 0.3);
         end
 

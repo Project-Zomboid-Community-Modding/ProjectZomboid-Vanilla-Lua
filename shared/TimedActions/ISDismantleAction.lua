@@ -52,26 +52,23 @@ function ISDismantleAction:complete()
 		end
 	end
 
-	for k,v in pairs(self.thumpable:getModData()) do
-		if luautils.stringStarts(k, "need:") then
-			local type = luautils.split(k, ":")[2]
-			if type == "Base.Torch" then
-				-- Big hack for ISLightSource
-				self.thumpable:toggleLightSource(false)
-				local item = instanceItem(type)
-				if item then
-					item:setUsedDelta(0)
-					self.thumpable:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
-				end
-				item = self.thumpable:removeCurrentFuel(nil)
-				if item then
-					self.thumpable:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
-				end
-			else
-				local count = ZombRand(tonumber(v))+1
-				for i=1,count do
-					self.thumpable:getSquare():AddWorldInventoryItem(type, 0, 0, 0)
-				end
+	for type,v in pairs(self.thumpable:getBuildMaterials()) do
+		if type == "Base.Torch" then
+			-- Big hack for ISLightSource
+			self.thumpable:toggleLightSource(false)
+			local item = instanceItem(type)
+			if item then
+				item:setUsedDelta(0)
+				self.thumpable:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
+			end
+			item = self.thumpable:removeCurrentFuel(nil)
+			if item then
+				self.thumpable:getSquare():AddWorldInventoryItem(item, 0, 0, 0)
+			end
+		else
+			local count = ZombRand(tonumber(v))+1
+			for i=1,count do
+				self.thumpable:getSquare():AddWorldInventoryItem(type, 0, 0, 0)
 			end
 		end
 	end

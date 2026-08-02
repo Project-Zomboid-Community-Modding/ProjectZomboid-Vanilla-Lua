@@ -446,7 +446,8 @@ function MainScreen:instantiate()
             self.bottomPanel:addChild(self.tutorialOption);
             labelY = labelY + labelHgt
         else
-            local hasSaveFiles = #getFullSaveDirectoryTable() > 0
+            self.hasSaveFiles = #getFullSaveDirectoryTable() > 0
+            self.continueDisabled = self.hasSaveFiles and MainScreen.latestSaveGameMode == "A Really CD DA" and not getSaveInfo(MainScreen.latestSaveWorld).playerAlive
 
             self.latestSaveOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_continue"), 1, 1, 1, 1, UIFont.Large, true);
             self.latestSaveOption.internal = "LATESTSAVE";
@@ -454,8 +455,7 @@ function MainScreen:instantiate()
             self.bottomPanel:addChild(self.latestSaveOption);
             self.latestSaveOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
             self.latestSaveOption:setVisible(false);
-            if (MainScreen.latestSaveGameMode and MainScreen.latestSaveWorld) and hasSaveFiles then
-                self.latestSaveOption:setVisible(true);
+            if (MainScreen.latestSaveGameMode and MainScreen.latestSaveWorld) and self.hasSaveFiles and not self.continueDisabled then
                 labelY = labelY + labelHgt
             end
 
@@ -464,9 +464,8 @@ function MainScreen:instantiate()
             self.loadOption:initialise();
             self.bottomPanel:addChild(self.loadOption);
             self.loadOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            if not hasSaveFiles then
-                self.loadOption:setVisible(false)
-            else
+            self.loadOption:setVisible(false)
+            if self.hasSaveFiles then
                 labelY = labelY + labelHgt
                 labelY = labelY + labelSeparator
             end
@@ -476,6 +475,7 @@ function MainScreen:instantiate()
             self.tutorialOption:initialise();
             self.tutorialOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
             self.bottomPanel:addChild(self.tutorialOption);
+            self.tutorialOption:setVisible(false)
             labelY = labelY + labelHgt
 
             self.survivalOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_solo"), 1, 1, 1, 1, UIFont.Large, true);
@@ -483,6 +483,7 @@ function MainScreen:instantiate()
             self.survivalOption:initialise();
             self.bottomPanel:addChild(self.survivalOption);
             self.survivalOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            self.survivalOption:setVisible(false)
             labelY = labelY + labelHgt
 
             self.onlineOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_multiplayer"), 1, 1, 1, 1, UIFont.Large, true);
@@ -490,7 +491,7 @@ function MainScreen:instantiate()
             self.onlineOption:initialise();
             self.bottomPanel:addChild(self.onlineOption);
             self.onlineOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            self.onlineOption:setVisible(true)
+            self.onlineOption:setVisible(false)
             labelY = labelY + labelHgt
 
             self.onlineCoopOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_coop"), 1, 1, 1, 1, UIFont.Large, true);
@@ -498,7 +499,7 @@ function MainScreen:instantiate()
             self.onlineCoopOption:initialise();
             self.bottomPanel:addChild(self.onlineCoopOption);
             self.onlineCoopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
-            self.onlineCoopOption:setVisible(true)
+            self.onlineCoopOption:setVisible(false)
             labelY = labelY + labelHgt
 
             labelY = labelY + labelSeparator
@@ -508,6 +509,7 @@ function MainScreen:instantiate()
             self.optionsOption:initialise();
             self.bottomPanel:addChild(self.optionsOption);
             self.optionsOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            self.optionsOption:setVisible(false)
             labelY = labelY + labelHgt
 
             self.modsOption = ISLabel:new(labelX, labelY, labelHgt, getText("UI_mainscreen_mods"), 1, 1, 1, 1, UIFont.Large, true);
@@ -515,6 +517,7 @@ function MainScreen:instantiate()
             self.modsOption:initialise();
             self.bottomPanel:addChild(self.modsOption);
             self.modsOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            self.modsOption:setVisible(false)
             labelY = labelY + labelHgt
 
             if WorkshopSubmitScreen.TEST or getSteamModeActive() then
@@ -523,6 +526,7 @@ function MainScreen:instantiate()
                 self.workshopOption:initialise()
                 self.workshopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu
                 self.bottomPanel:addChild(self.workshopOption)
+                self.workshopOption:setVisible(false)
                 labelY = labelY + labelHgt
             end
 
@@ -531,6 +535,7 @@ function MainScreen:instantiate()
             self.creditOption:initialise();
             self.bottomPanel:addChild(self.creditOption);
             self.creditOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+            self.creditOption:setVisible(false)
             labelY = labelY + labelHgt
         end
         self.defaultJoypadOption = self.survivalOption
@@ -585,15 +590,17 @@ function MainScreen:instantiate()
 	self.exitOption:initialise();
 	self.bottomPanel:addChild(self.exitOption);
 	self.exitOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+	self.exitOption:setVisible(false);
 	labelY = labelY + labelHgt
 
     if self.inGame then
+	    self.exitOption:setVisible(true);
         labelY = labelY + labelSeparator
-        self.quitToDesktop = ISLabel:new(labelX, labelY, labelHgt, getText("IGUI_PostDeath_Quit"), 1, 1, 1, 1, UIFont.Large, true);
-        self.quitToDesktop.internal = "QUIT_TO_DESKTOP";
-        self.quitToDesktop:initialise();
-        self.bottomPanel:addChild(self.quitToDesktop);
-        self.quitToDesktop.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
+        self.quitToDesktopOption = ISLabel:new(labelX, labelY, labelHgt, getText("IGUI_PostDeath_Quit"), 1, 1, 1, 1, UIFont.Large, true);
+        self.quitToDesktopOption.internal = "QUIT_TO_DESKTOP";
+        self.quitToDesktopOption:initialise();
+        self.bottomPanel:addChild(self.quitToDesktopOption);
+        self.quitToDesktopOption.onMouseDown = MainScreen.onMenuItemMouseDownMainMenu;
         labelY = labelY + labelHgt
     end
 
@@ -700,13 +707,12 @@ function MainScreen:instantiate()
             self.inviteFriends:create();
         end
     elseif not isDemo() then
-        -- Queries all the challenges...
         triggerEvent("OnChallengeQuery");
 
-		self.desc = SurvivorFactory.CreateSurvivor();
+        self.desc = SurvivorFactory.CreateSurvivor();
         self.charCreationMain:create();
-	    self.charCreationProfession:create();
-		self.lastStandPlayerSelect:create();
+        self.charCreationProfession:create();
+        self.lastStandPlayerSelect:create();
         self.sandOptions:create();
         self.soloScreen:create();
         self.creditsScreen:create()
@@ -716,8 +722,8 @@ function MainScreen:instantiate()
         self.bootstrapConnectPopup:create();
         self.connectToServer:create();
         self.serverConnectPopup:create();
-	    self.worldSelect:create();
-	    self.mapSpawnSelect:create();
+        self.worldSelect:create();
+        self.mapSpawnSelect:create();
         self.modSelect:create();
         if self.workshopSubmit then
             self.workshopSubmit:create()
@@ -727,22 +733,7 @@ function MainScreen:instantiate()
         end
         self.serverSettingsScreen:create()
 
-        if getCore():getOptionShowWelcomeMessage() then
-            local windowSize = 790+(getCore():getOptionFontSizeReal()*100);
-            self.animPopup = ISModalRichText:new((getCore():getScreenWidth()-windowSize)/2,getCore():getScreenHeight()/2-300,windowSize,600, getText("UI_B42MP"), false, nil, function(_, button)
-                getCore():setOptionShowWelcomeMessage(false)
-                getCore():saveOptions();
-            end);
-            self.animPopup:initialise();
-            self.animPopup.backgroundColor = {r=0, g=0, b=0, a=0.9};
-            self.animPopup.alwaysOnTop = true;
-            self.animPopup.chatText:paginate();
-            self.animPopup:setY(getCore():getScreenHeight()/2-(self.animPopup:getHeight()/2));
-            self.animPopup:setVisible(true);
-            self.animPopup:addToUIManager();
-            self.animPopup.prevFocus = self;
-            getCore():setAnimPopupDone(true)
-        end
+        self:startNormalMainScreen()
     end
 
     GameWindow.doRenderEvent(true);
@@ -762,6 +753,29 @@ function MainScreen:instantiate()
 		deleteAllGameModeSaves("LastStand")
 		deleteAllGameModeSaves("Tutorial")
 	end
+end
+
+function MainScreen:startNormalMainScreen()
+    if (MainScreen.latestSaveGameMode and MainScreen.latestSaveWorld) and self.hasSaveFiles and not self.continueDisabled then
+        self.latestSaveOption:setVisible(true);
+    end
+    if self.hasSaveFiles then
+        self.loadOption:setVisible(true)
+    end
+    self.tutorialOption:setVisible(true)
+    self.survivalOption:setVisible(true)
+    self.onlineOption:setVisible(true)
+    self.onlineCoopOption:setVisible(true)
+    self.optionsOption:setVisible(true)
+    self.modsOption:setVisible(true)
+    if WorkshopSubmitScreen.TEST or getSteamModeActive() then
+        self.workshopOption:setVisible(true)
+    end
+    self.creditOption:setVisible(true)
+    self.exitOption:setVisible(true)
+    if getDebug() then
+        doDebugScenarios();
+    end
 end
 
 function MainScreen:copyRev()
@@ -787,9 +801,9 @@ function MainScreen:render()
         self.exitOption:setY(newY)
         newY = self.exitOption:getBottom()
 
-        self.quitToDesktop:setY(newY)
+        self.quitToDesktopOption:setY(newY)
 
-        self.bottomPanel:setHeight(self.quitToDesktop:getBottom())
+        self.bottomPanel:setHeight(self.quitToDesktopOption:getBottom())
     end
 end
 
@@ -808,10 +822,10 @@ function MainScreen:prerender()
         self:drawRect(0, 0, self.width, self.height, 0.5, self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b);
         if isQuitCooldown() then
             self.exitOption:setColor(0.5, 0.5, 0.5)
-            self.quitToDesktop:setColor(0.5, 0.5, 0.5)
+            self.quitToDesktopOption:setColor(0.5, 0.5, 0.5)
         else
             self.exitOption:setColor(1, 1, 1)
-            self.quitToDesktop:setColor(1, 1, 1)
+            self.quitToDesktopOption:setColor(1, 1, 1)
         end
     end
     if self.delay > 0 then
@@ -1196,7 +1210,7 @@ function MainScreen.continueLatestSaveAux(fromResetLua, checkWorldVersion)
     end
     if checkWorldVersion and tonumber(saveInfo.worldVersion) < IsoWorld.getWorldVersion() then
         local modal = ISModalRichText:new(getCore():getScreenWidth() / 2 - 650 / 2,
-            getCore():getScreenHeight() / 2 - 350/2, 650, 350, getText("UI_worldscreen_SavefileOld42_13"), true,
+            getCore():getScreenHeight() / 2 - 350/2, 650, 350, getText("UI_worldscreen_SavefileConversion"), true,
             nil, function(_, button)
                 if button.internal == "YES" then
                     MainScreen.continueLatestSaveAux(fromResetLua, false)
@@ -1480,14 +1494,18 @@ end
 
 function MainScreen:onConfirmQuitToDesktop(button)
     if button.internal == "YES" then
-        setGameSpeed(1)
-        pauseSoundAndMusic()
-        setShowPausedMessage(true)
-        getCore():quitToDesktop()
+        self:quitToDesktop()
     else
         MainScreen.instance.bottomPanel:setVisible(true)
     end
     self.quitToDesktopDialog = nil
+end
+
+function MainScreen:quitToDesktop()
+    setGameSpeed(1)
+    pauseSoundAndMusic()
+    setShowPausedMessage(true)
+    getCore():quitToDesktop()
 end
 
 function MainScreen:onClickTermsOfService(button)
@@ -1800,10 +1818,6 @@ LoadMainScreenPanelInt = function (ingame)
 			end
         end
     end
-
-    if getDebug() and not ingame then
-        doDebugScenarios();
-    end
 end
 
 MainScreenPanelJoinSteam = function ()
@@ -1855,7 +1869,7 @@ function MainScreen:onGainJoypadFocus(joypadData)
 		{ self.workshopOption },
         { self.creditOption },
 		{ self.exitOption },
-		{ self.quitToDesktop },
+		{ self.quitToDesktopOption },
 	}
 	for _,ui in ipairs(uis) do
 		if ui[1] then
@@ -2150,12 +2164,12 @@ function MainScreen.setKeyboardMouseActivated()
 
         joypadData:clearController()
     end
-
-    if MainScreen.instance.termsOfService then
-        MainScreen.instance.termsOfService:setJoypadButton(nil);
+    if MainScreen.instance then
+        if MainScreen.instance.termsOfService then
+            MainScreen.instance.termsOfService:setJoypadButton(nil)
+        end
+        MainScreen.instance.joyfocus = nil
     end
-
-    MainScreen.instance.joyfocus = nil;
     revertToKeyboardAndMouseFromMainMenu();
 end
 

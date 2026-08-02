@@ -310,8 +310,8 @@ function GameOptionControllerTab:createGamepadBindingPresetsCBox(x, y)
             selectedPresetsTickBoxWidth = math.max(labelTextWidth, selectedPresetsTickBoxWidth)
         end
 
-        local createNewLabelText = "< Create New >"
-        local createNewDescriptionText = "Create a new preset."
+        local createNewLabelText = getText("UI_Controller_CreateNew")
+        local createNewDescriptionText = getText("UI_Controller_CreateNewPreset")
         self:addOptionWithData(createNewLabelText, "CreateNew", createNewDescriptionText)
         selectedPresetsTickBoxWidth = math.max(getTextManager():MeasureStringX(FONT_MEDIUM, createNewLabelText), selectedPresetsTickBoxWidth)
 

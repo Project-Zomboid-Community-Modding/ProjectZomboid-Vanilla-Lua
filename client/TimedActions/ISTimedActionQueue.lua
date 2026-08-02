@@ -90,7 +90,7 @@ function ISTimedActionQueue:onCompleted(action)
                 self.current:setJobDelta(newDelta)
             end
         else
-            print('ISTimedActionQueue:onCompleted: bugged action, cleared queue ', self.current.Type or "???")
+            DebugType.Action:warn('ISTimedActionQueue:onCompleted: bugged action %s, cleared queue', self.current.Type or "???")
             self:resetQueue()
             return
         end
@@ -119,7 +119,7 @@ function ISTimedActionQueue:tick()
 		return
 	end
 	if not action.character:getCharacterActions():contains(action.action) then
-		print('ISTimedActionQueue:tick: bugged action, cleared queue ', action.Type or "???")
+		DebugType.Action:warn('ISTimedActionQueue:tick: bugged action %s, cleared queue', action.Type or "???")
 		self:resetQueue()
 		action.character:setIsFarming(false)
         return
@@ -161,6 +161,11 @@ ISTimedActionQueue.add = function(action)
 	if instanceof(action.character, "IsoGameCharacter") and action.character:isAsleep() then
 		return;
 	end
+	if instanceof(action.character, "IsoPlayer") and action.character:isLocalPlayer()
+            and action.character:isDraggingCorpse() and not action.allowedWhileDraggingCorpses then
+        HaloTextHelper.addBadText(action.character, getText("IGUI_CantDoWhileDragging"))
+		return;
+	end
 	local queue = ISTimedActionQueue.getTimedActionQueue(action.character);
 
     if instanceof(action.character, "IsoGameCharacter") and action.character:isFarming() then
@@ -200,6 +205,11 @@ ISTimedActionQueue.addAfter = function(previousAction, action)
 		return nil;
 	end
     if instanceof(action.character, "IsoGameCharacter") and action.character:isAsleep() then
+        return nil;
+    end
+    if instanceof(action.character, "IsoPlayer") and action.character:isLocalPlayer()
+            and action.character:isDraggingCorpse() and not action.allowedWhileDraggingCorpses then
+        HaloTextHelper.addBadText(action.character, getText("IGUI_CantDoWhileDragging"))
         return nil;
     end
     local queue = ISTimedActionQueue.getTimedActionQueue(action.character);

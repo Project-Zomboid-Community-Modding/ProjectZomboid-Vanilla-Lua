@@ -90,7 +90,7 @@ function ISWidgetRecipeListPanel:render()
 
     -- show no recipes tooltip
     if #self.recipeListPanel.items == 0 then
-        self:clearStencilRect();
+        self:repaintStencilRect(0, 0, self.width, self.height)
         local tooltipStr = getText("IGUI_CraftingWindow_NoRecipes");
         local stringWidth = getTextManager():MeasureStringX(UIFont.Small, tooltipStr);
         local stringHeight = getTextManager():MeasureStringY(UIFont.Small, tooltipStr);
@@ -103,8 +103,8 @@ function ISWidgetRecipeListPanel:render()
         self:drawRect(boxX, boxY, boxWidth, boxHeight, 1, 0, 0, 0);
         self:drawRectBorder(boxX, boxY, boxWidth, boxHeight, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
         
-        local x = self.recipeListPanel:getX() + ((self.recipeListPanel:getWidth() - getTextManager():MeasureStringX(UIFont.Small, tooltipStr)) / 2);
-        local y = self.recipeListPanel:getY() + ((self.recipeListPanel:getHeight() - getTextManager():MeasureStringY(UIFont.Small, tooltipStr)) / 2);
+        local x = self.recipeListPanel:getX() + ((self.recipeListPanel:getWidth() - stringWidth) / 2);
+        local y = self.recipeListPanel:getY() + ((self.recipeListPanel:getHeight() - stringHeight) / 2);
         self:drawText(tooltipStr, x, y, 1.0, 1.0, 1.0, 1.0, UIFont.Small);
     end
 end
@@ -123,6 +123,9 @@ function ISWidgetRecipeListPanel:setDataList(_recipeCollection)
     self.recipeListPanel:clear();
     local recipeFoundIndex = self.recipeListPanel:addGroup(nil, _recipeCollection:getNodes(), currentRecipe, self.enabledShowAllFilter);
     self.recipeListPanel.selected = recipeFoundIndex;
+    local selectedItem = self.recipeListPanel.items[recipeFoundIndex];
+    local selectedRecipe = selectedItem and selectedItem.item or nil;
+    self.logic:setRecipe(selectedRecipe);
 end
 
 function ISWidgetRecipeListPanel:setInternalDimensions(_x, _y, _width, _height)

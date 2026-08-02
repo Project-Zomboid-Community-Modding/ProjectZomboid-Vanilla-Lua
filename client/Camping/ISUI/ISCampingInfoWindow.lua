@@ -16,17 +16,19 @@ end
 function ISCampingInfoWindow:update()
 	ISCollapsableWindow.update(self)
 
-	if self:getIsVisible() and (not self.object or self.object:getObjectIndex() == -1) then
-		if self.joyfocus then
-			self.joyfocus.focus = nil
-			updateJoypadFocus(self.joyfocus)
-		end
-		self:removeFromUIManager()
-		return
-	end
 	self.campfireTable = CCampfireSystem.instance:getLuaObjectOnSquare(self.object:getSquare())
+    if self:getIsVisible() then
+        local player = getSpecificPlayer(self.playerNum)
+        local xDist = player:getX() - self.campfireTable.x
+        local yDist = player:getY() - self.campfireTable.y
+        local pastX = xDist > 2 or xDist < -2
+        local pastY = yDist > 2 or yDist < -2
+        if pastX or pastY then
+            self:removeFromUIManager()
+        end
+    end
 	if self.fuelAmount ~= self.campfireTable.fuelAmt or
-			self.spriteName ~= self.object:getSpriteName() or
+			self.spriteName ~= self.object:getObject():getSpriteName() or
 			self.isLit ~= self.campfireTable.isLit then
 		self:setObject(self.object)
 	end
@@ -51,7 +53,7 @@ function ISCampingInfoWindow:setObject(campfireObject)
 		fireState = getText("IGUI_Fireplace_Unlit")
 	end
 	self.panel:setName(getText("IGUI_Campfire_Campfire"))
-	self.spriteName = campfireObject:getSpriteName()
+	self.spriteName = campfireObject:getObject():getSpriteName()
 	self.fuelAmount = self.campfireTable.fuelAmt
 	self.isLit = self.campfireTable.isLit == true
 	self.panel:setTexture(self.spriteName)

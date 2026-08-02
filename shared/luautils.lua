@@ -333,7 +333,9 @@ function luautils.walkToContainer(container, playerNum)
 			if part:getDoor() and part:getInventoryItem() then
 				-- TODO: open the door if needed
 			end
-			ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
+			local pathAction = ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea())
+			pathAction.allowedWhileDraggingCorpses = true
+			ISTimedActionQueue.add(pathAction)
 			return true
 		end
 		error "luautils.walkToContainer()"
@@ -350,7 +352,9 @@ function luautils.walkToContainer(container, playerNum)
 		return true
 	end
 	ISTimedActionQueue.clear(playerObj)
-	ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent))
+	local walkAction = ISWalkToTimedAction:new(playerObj, adjacent)
+	walkAction.allowedWhileDraggingCorpses = true
+	ISTimedActionQueue.add(walkAction)
 	return true
 end
 

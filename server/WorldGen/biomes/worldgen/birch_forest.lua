@@ -9,17 +9,36 @@ local birch_forest = {
             { f = worldgen.features.PLANT.generic_plant, p = 0.1 },
             { f = worldgen.features.PLANT.floor_leaves, p = 0.1 },
         },
+        BUSH = {
+            { f = worldgen.features.BUSH.bush_birchforest, p = 0.1 },
+        },
         TREE = {
-            { f = worldgen.features.TREE.birch_jumbo, p = 0.2125 },
+            { f = worldgen.features.TREE.birch_jumbo_xxl, p = 0.1 },
+            { f = worldgen.features.TREE.birch_jumbo_xl, p = 0.1 },
+            { f = worldgen.features.TREE.birch_jumbo, p = 0.0125 },
             { f = worldgen.features.TREE.birch, p = 0.0125 },
-            { f = worldgen.features.TREE.hawthorn_jumbo, p = 0.00625 },
-            { f = worldgen.features.TREE.hawthorn, p = 0.00625 },
-            { f = worldgen.features.TREE.yellowwood_jumbo, p = 0.00625 },
-            { f = worldgen.features.TREE.yellowwood, p = 0.00625 },
+
+            { f = worldgen.features.TREE.hawthorn_jumbo_xxl, p = 0.005 },
+            { f = worldgen.features.TREE.hawthorn_jumbo_xl, p = 0.005 },
+            { f = worldgen.features.TREE.hawthorn_jumbo, p = 0.00125 },
+            { f = worldgen.features.TREE.hawthorn, p = 0.00125 },
+
+            { f = worldgen.features.TREE.yellowwood_jumbo_xxl, p = 0.005 },
+            { f = worldgen.features.TREE.yellowwood_jumbo_xl, p = 0.005 },
+            { f = worldgen.features.TREE.yellowwood_jumbo_xl, p = 0.00125 },
+            { f = worldgen.features.TREE.yellowwood_jumbo_xl, p = 0.00125 },
+
             { f = worldgen.features.TREE.stumps, p = 0.001 },
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.grass
+                },
+            },
+        },
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },
         hygrometry = { "DRY", "RAIN" },

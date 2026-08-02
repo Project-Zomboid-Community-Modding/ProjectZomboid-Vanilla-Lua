@@ -221,7 +221,14 @@ ISAdminPowerUI.AddOption("AnimalExtraValues", "right", Capability.AnimalCheats,
         self.player:setAnimalExtraValuesCheat(selected)
     end
 )
-
+ISAdminPowerUI.AddOption("AlwaysDay", "right", Capability.ClimateManager,
+    function(self)
+        return self.player:isAlwaysDayCheat()
+    end,
+    function(self, selected)
+        self.player:setAlwaysDayCheat(selected)
+    end
+)
 function ISAdminPowerUI:initialise()
     ISPanel.initialise(self)
 
@@ -312,7 +319,7 @@ function ISAdminPowerUI:addAdminPowerOptionsLeft()
     self.optionsLeft = {}
     self.cheatTooltipsLeft = {}
 	for _,option in ipairs(ISAdminPowerUI.OptionList) do
-	    if option.side == "left" and self.player:getRole():hasCapability(option.capability) then
+	    if option.side == "left" and (isDebugEnabled() or self.player:getRole():hasCapability(option.capability)) then
             self:addOptionLeft(option)
         end
     end
@@ -323,7 +330,7 @@ function ISAdminPowerUI:addAdminPowerOptionsRight()
     self.optionsRight = {}
     self.cheatTooltipsRight = {}
 	for _,option in ipairs(ISAdminPowerUI.OptionList) do
-	    if option.side == "right" and self.player:getRole():hasCapability(option.capability) then
+	    if option.side == "right" and (isDebugEnabled() or self.player:getRole():hasCapability(option.capability)) then
             self:addOptionRight(option)
         end
     end
@@ -386,7 +393,7 @@ end
 
 function ISAdminPowerUI:onClick(button)
     if button.internal == "SAVE" then
-        if not self.player:isDead() and self.player:getRole():hasAdminPower() then
+        if not self.player:isDead() and (isDebugEnabled() or self.player:getRole():hasAdminPower()) then
             for i=1,#self.tickBoxLeft.options do
                 self.optionsLeft[i]:setValue(self.tickBoxLeft:isSelected(i))
             end

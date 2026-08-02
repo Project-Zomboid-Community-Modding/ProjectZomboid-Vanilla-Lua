@@ -55,5 +55,6 @@ function ISDropCorpseAction:new (character, targetSquare)
     local o = ISBaseTimedAction.new(self, character)
     o.maxTime = o:getDuration();
     o.forceProgressBar = true;
+    o.allowedWhileDraggingCorpses = true;
     return o
 end

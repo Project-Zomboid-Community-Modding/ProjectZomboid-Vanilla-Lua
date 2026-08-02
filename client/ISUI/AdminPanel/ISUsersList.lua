@@ -262,6 +262,7 @@ function ISUsersList:drawDatas(y, item, alt)
     local detailsRoleString = getText("IGUI_UsersList_DetailsRole", item.item:getRole():getName())
     local detailsAuthString = getText("IGUI_UsersList_DetailsAuthType", item.item:getAuthTypeName())
     local detailsNoWhitelistString = getText("IGUI_UsersList_DetailsNoWhitelist")
+    local pingString = getText("UI_Ping", item.item:getPing())
 
     self:drawText(detailsRoleString, self.parent.roleColumnX, yOffset, 1, 1, 1, a, self.font)
     if item.item:isInWhitelist() then
@@ -271,6 +272,7 @@ function ISUsersList:drawDatas(y, item, alt)
         self:drawText(detailsNoWhitelistString, self.parent.roleColumnX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font)
         self:drawText("-", self.parent.lastConnectionColumnX, yOffset, 1, 1, 1, a, self.font)
     end
+    self:drawText(pingString, self.parent.lastConnectionColumnX, yOffset+BUTTON_HGT, 1, 1, 1, a, self.font)
 
     return y + self.itemheight;
 end

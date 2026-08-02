@@ -38,9 +38,7 @@ end
 
 function ISTakeGenerator:complete()
 	forceDropHeavyItems(self.character)
-	local itemType = "Base.Generator"
-	local mData = self.generator:getModData()
-	if mData.generatorFullType then itemType = mData.generatorFullType end
+	local itemType = self.generator:getGeneratorItemType()
 	local item = instanceItem(itemType)
 	self.character:getInventory():AddItem(item);
 	item:setCondition(self.generator:getCondition());

@@ -365,16 +365,19 @@ function ISPanelJoypad:getChildJoypadIndex(child)
 end
 
 function ISPanelJoypad:getVisibleChildren(joypadIndexY)
-    local children = {}
-    if self.joypadButtonsY[joypadIndexY] then
-        local children1 = self.joypadButtonsY[joypadIndexY]
-        for _,child in ipairs(children1) do
-            if child:isVisible() then
-                table.insert(children, child)
+    return self.getVisibleElements(self.joypadButtonsY[joypadIndexY])
+end
+
+function ISPanelJoypad.getVisibleElements(uiElements)
+    local foundElements = {}
+    if uiElements then
+        for _,child in ipairs(uiElements) do
+            if child:isReallyVisible() then
+                table.insert(foundElements, child)
             end
         end
     end
-    return children
+    return foundElements
 end
 
 function ISPanelJoypad:getMinVisibleRow()
@@ -417,7 +420,19 @@ function ISPanelJoypad:getNextVisibleRow(row)
     return -1
 end
 
-function ISPanelJoypad:getClosestChild(children, x)
+function ISPanelJoypad:getClosestChildOnRow(rowIndex, fromChild)
+    local children = self:getVisibleChildren(rowIndex)
+    local joypadIndex = self:getClosestChild(children, fromChild)
+    joypadIndex = math.clamp(joypadIndex, 1, #children)
+    return children[joypadIndex]
+end
+
+function ISPanelJoypad:getClosestChild(children, fromChild)
+    local x = 0
+    if (fromChild ~= nil) then
+        x = fromChild.x + fromChild.width / 2
+    end
+
 	local closestDist = 100000
 	local closestIndex = -1
 	for i,child in ipairs(children) do
@@ -438,12 +453,10 @@ function ISPanelJoypad:onJoypadDirLeft(joypadData)
     else
         local nextChild = self:findNextNavigableChildX(child, -1)
         if (nextChild ~= nil) then
-            child:setJoypadFocused(false, joypadData);
             self:setJoypadFocus(nextChild, joypadData)
         elseif #children > 0 and self.joypadIndex > 1 then
-            children[self.joypadIndex]:setJoypadFocused(false, joypadData);
-            self.joypadIndex = self.joypadIndex - 1;
-            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+            nextChild = children[self.joypadIndex - 1]
+            self:setJoypadFocus(nextChild, joypadData)
         else
             ISUIElement.onJoypadDirLeft(self, joypadData)
         end
@@ -459,12 +472,10 @@ function ISPanelJoypad:onJoypadDirRight(joypadData)
     else
         local nextChild = self:findNextNavigableChildX(child, 1)
         if (nextChild ~= nil) then
-            child:setJoypadFocused(false, joypadData);
             self:setJoypadFocus(nextChild, joypadData)
-        elseif #children > 0 and self.joypadIndex ~= #children then
-            children[self.joypadIndex]:setJoypadFocused(false, joypadData);
-            self.joypadIndex = self.joypadIndex + 1;
-            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+        elseif #children > 0 and self.joypadIndex < #children then
+            nextChild = children[self.joypadIndex + 1]
+            self:setJoypadFocus(nextChild, joypadData)
         else
             ISUIElement.onJoypadDirRight(self, joypadData)
         end
@@ -486,18 +497,11 @@ function ISPanelJoypad:onJoypadDirUp(joypadData)
     else
         local nextChild = self:findNextNavigableChildY(child, -1)
         if (nextChild ~= nil) then
-            child:setJoypadFocused(false, joypadData);
             self:setJoypadFocus(nextChild, joypadData)
         elseif (#self.joypadButtonsY > 0) and (self.joypadIndexY > self:getMinVisibleRow()) and (self.joypadIndexY <= #self.joypadButtonsY) then
-            child:setJoypadFocused(false, joypadData);
-            self.joypadIndexY = self:getPrevVisibleRow(self.joypadIndexY);
-            self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
-            children = self:getVisibleChildren(self.joypadIndexY)
-            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
-            if self.joypadIndex > #children then
-                self.joypadIndex = #children;
-            end
-            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+            local joypadIndexY = self:getPrevVisibleRow(self.joypadIndexY);
+            nextChild = self:getClosestChildOnRow(joypadIndexY, child)
+            self:setJoypadFocus(nextChild, joypadData)
         else
             ISUIElement.onJoypadDirUp(self, joypadData)
         end
@@ -519,18 +523,11 @@ function ISPanelJoypad:onJoypadDirDown(joypadData)
     else
         local nextChild = self:findNextNavigableChildY(child, 1)
         if (nextChild ~= nil) then
-            child:setJoypadFocused(false, joypadData);
             self:setJoypadFocus(nextChild, joypadData)
         elseif (#self.joypadButtonsY > 0) and (self.joypadIndexY < self:getMaxVisibleRow()) then
-            child:setJoypadFocused(false, joypadData);
-            self.joypadIndexY = self:getNextVisibleRow(self.joypadIndexY);
-            self.joypadButtons = self.joypadButtonsY[self.joypadIndexY];
-            children = self:getVisibleChildren(self.joypadIndexY)
-            self.joypadIndex = self:getClosestChild(children, child.x + child.width / 2)
-            if self.joypadIndex > #children then
-                self.joypadIndex = #children;
-            end
-            children[self.joypadIndex]:setJoypadFocused(true, joypadData);
+            local joypadIndexY = self:getNextVisibleRow(self.joypadIndexY);
+            nextChild = self:getClosestChildOnRow(joypadIndexY, child)
+            self:setJoypadFocus(nextChild, joypadData)
         else
             ISUIElement.onJoypadDirDown(self, joypadData)
         end
@@ -562,6 +559,11 @@ function ISPanelJoypad:findNextNavigableChildY(fromChild, yDir)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds3x, sampleFromBounds3x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds4x, sampleFromBounds4x:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds, sampleFromBounds:getProjectedAlongY(yDir * 10000), minDistance, ISBounds.getYDistanceTo, foundResult)
+
+    if (foundResult.foundChild) then
+        DebugType.ISUI:trace("Navigation hit. From: %s, Found:%s, Using minDistance: %s, at distance:%s", fromChild:toDebugString(), foundResult.foundChild:toDebugString(), minDistance, foundResult.foundChildDistance)
+    end
+
     return foundResult.foundChild
 end
 
@@ -589,6 +591,11 @@ function ISPanelJoypad:findNextNavigableChildX(fromChild, xDir)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds3x, sampleFromBounds3x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds4x, sampleFromBounds4x:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
     self:findClosestNavigableChildAlongBounds(fromChild, sampleFromBounds, sampleFromBounds:getProjectedAlongX(xDir * 10000), minDistance, ISBounds.getXDistanceTo, foundResult)
+
+    if (foundResult.foundChild) then
+        DebugType.ISUI:trace("Navigation hit. From: %s, Found:%s, Using minDistance: %s, at distance:%s", fromChild:toDebugString(), foundResult.foundChild:toDebugString(), minDistance, foundResult.foundChildDistance)
+    end
+
     return foundResult.foundChild
 end
 
@@ -604,7 +611,7 @@ function ISPanelJoypad:findClosestNavigableChildAlongBounds(fromChild, fromChild
     self.lastProjectedBounds = projectedBounds
     self.lastIntercepts = {}
     for _,child in ipairs(self.allJoypadButtons) do
-        if (child:isVisible() and child ~= fromChild) then
+        if (child:isReallyVisible() and child ~= fromChild) then
             local childBounds = child:getAbsoluteBounds()
             table.insert(self.lastIntercepts, childBounds)
             if (childBounds:intersects(projectedBounds)) then
@@ -625,10 +632,6 @@ function ISPanelJoypad:findClosestNavigableChildAlongBounds(fromChild, fromChild
     results.foundChild = foundChild
     results.foundChildDistance = foundChildDistance
 
-    if (self.lastProjectedBounds.hit) then
-        DebugType.ISUI:trace("Navigation hit. Using minDistance:" .. minDistance .. ", Found:" .. self.lastProjectedBounds.hit:toDebugString() .. ", at distance:" .. foundChildDistance)
-    end
-
     return foundChild
 end
 
@@ -639,17 +642,25 @@ end
 
 function ISPanelJoypad:setJoypadFocus(child, joypadData)
     for indexY,buttons in ipairs(self.joypadButtonsY) do
-        for indexX,button in ipairs(buttons) do
+        for indexX,button in ipairs(self.getVisibleElements(buttons)) do
             if button == child then
                 self:clearJoypadFocus(joypadData)
                 self.joypadIndexY = indexY
                 self.joypadIndex = indexX
                 self.joypadButtons = buttons
                 child:setJoypadFocused(true, joypadData)
-                return
+                return true
             end
         end
     end
+    return false
+end
+
+function ISPanelJoypad:setJoypadFocusTopLeft(joypadData)
+    local rowIndex = self:getNextVisibleRow(0);
+    local children = self:getVisibleChildren(rowIndex)
+    local nextChild = children[1]
+    return self:setJoypadFocus(nextChild, joypadData)
 end
 
 function ISPanelJoypad:restoreJoypadFocus(joypadData)
@@ -660,9 +671,12 @@ function ISPanelJoypad:restoreJoypadFocus(joypadData)
 end
 
 function ISPanelJoypad:clearJoypadFocus(joypadData)
-    local child = self:getJoypadFocus()
-    if child then
-        child:setJoypadFocused(false, joypadData)
+    for _, entriesRow in ipairs(self.joypadButtonsY) do
+        for _, uiElement in ipairs(entriesRow) do
+            if (uiElement.joypadFocused) then
+                uiElement:setJoypadFocused(false, joypadData)
+            end
+        end
     end
 end
 
@@ -671,7 +685,7 @@ function ISPanelJoypad:recordJoypadState()
     state.indexY = math.max(self.joypadIndexY or 1, 1)
     state.index = math.max(self.joypadIndex or 1, 1)
     local joypadData = self.joyfocus
-    if joypadData ~= nil and joypadData.focus == self and self.joypadButtons ~= nil and #self.joypadButtons > 0 then
+    if joypadData ~= nil and joypadData.focus == self then
         self:clearJoypadFocus(joypadData)
     end
     return state
@@ -684,7 +698,7 @@ function ISPanelJoypad:restoreJoypadState(state)
     self.joypadButtons = self.joypadButtonsY[self.joypadIndexY]
     local joypadData = self.joyfocus
     if joypadData ~= nil and joypadData.focus == self then
-        self.joypadButtons[self.joypadIndex]:setJoypadFocused(true, joypadData)
+        self:restoreJoypadFocus(joypadData)
     end
 end
 
@@ -747,7 +761,7 @@ end
 
 function ISPanelJoypad:onMouseUp(x, y)
     if not self.moveWithMouse then return; end
-    if not self:getIsVisible() then
+    if not self:isReallyVisible() then
         return;
     end
 
@@ -761,7 +775,7 @@ end
 
 function ISPanelJoypad:onMouseUpOutside(x, y)
     if not self.moveWithMouse then return; end
-    if not self:getIsVisible() then
+    if not self:isReallyVisible() then
         return;
     end
 
@@ -771,7 +785,7 @@ end
 
 function ISPanelJoypad:onMouseDown(x, y)
     if not self.moveWithMouse then return; end
-    if not self:getIsVisible() then
+    if not self:isReallyVisible() then
         return;
     end
 

@@ -103,6 +103,8 @@ function SaveInfoPanel:setRichText()
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileOld") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
 	elseif selectedItem.item.worldVersion > IsoWorld.getWorldVersion() then
 		text = text .. canNotLoadText .. " <TEXT> <LINE> <RED> " .. getText("UI_worldscreen_SavefileNewerThanGame") .. versionText .. " <RGB:1,1,1> <H2> <LINE> "
+    elseif not selectedItem.item.playerAlive and selectedItem.item.gameMode == "A Really CD DA" then
+		text = text .. " <LINE> <CENTER> <H1> <RED> " .. getText("UI_worldscreen_SavefileCDDA")
 	end
 
 	self.richText.text = text
@@ -363,6 +365,15 @@ function ConfigPanel:setSavefile(folder, info)
 	self.checkExistsName = nil
 	self.saveFolder = folder
 	self.saveInfo = info
+    if info.gameMode == "A Really CD DA" then
+        self.buttonNewPlayer:setEnable(false)
+        self.buttonNewPlayer:enableDisabledColor()
+        self.buttonNewPlayer:setTooltip(getText("UI_LoadGameScreen_DisabledCDDA"))
+    else
+        self.buttonNewPlayer:setEnable(true)
+        self.buttonNewPlayer:restoreDefaultColors()
+        self.buttonNewPlayer:setTooltip(nil)
+    end
 end
 
 function ConfigPanel:onPlayerSelected(combo)
@@ -892,6 +903,8 @@ function LoadGameScreen:disableBtn()
 		elseif worldVersion <= 200 then
 			self.playButton:setEnable(false)
 		elseif not self:checkMapsAvailable(sel.item) then
+			self.playButton:setEnable(false)
+		elseif not sel.item.playerAlive and sel.item.gameMode == "A Really CD DA" then
 			self.playButton:setEnable(false)
 		else
 			self.playButton:setEnable(true)

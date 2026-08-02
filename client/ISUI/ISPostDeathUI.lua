@@ -7,8 +7,10 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISPostDeathUI:createChildren()
+    local respawnString = getCore():getGameMode() == "A Really CD DA" and getText("IGUI_PostDeath_Challenge") or getText("IGUI_PostDeath_Respawn")
+
 	local buttonWid = UI_BORDER_SPACING*2 + math.max(
-			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Respawn")),
+			getTextManager():MeasureStringX(UIFont.Small, respawnString),
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Exit")),
 			getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_PostDeath_Quit"))
 	)
@@ -25,8 +27,12 @@ function ISPostDeathUI:createChildren()
 	self:setX(self.screenX + (self.screenWidth - buttonWid) / 2)
 	self:setY(self.screenY + (self.screenHeight - 40 - totalHgt))
 
-	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, getText("IGUI_PostDeath_Respawn"), self, self.onRespawn)
+	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, respawnString, self, self.onRespawn)
 	self:configButton(button)
+    if getCore():getGameMode() == "A Really CD DA" then
+        button:setEnable(false)
+        button:enableDisabledColor()
+    end
 	self:addChild(button)
 	self.buttonRespawn = button
 	buttonY = buttonY + buttonHgt + buttonGapY

@@ -263,6 +263,7 @@ end
 
 function ISBuildPanel:onRecipeChanged(_recipe)
     self.recipesPanel:onRecipeChanged(_recipe);
+    self.inventoryPanelColumn.visible = self.logic:shouldShowManualSelectInputs() and self.logic:getRecipe() ~= nil;
 end
 
 function ISBuildPanel:setRecipeFilter(_filterString, _filterMode)

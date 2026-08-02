@@ -672,6 +672,9 @@ function ISHotbar:savePosition()
 	for i,v in pairs(self.availableSlot) do
 		modData["hotbar"][i] = v.slotType;
 	end
+	if isClient() then
+		self.chr:transmitModData()
+	end
 end
 
 function ISHotbar:getSlotForKey(key)

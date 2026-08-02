@@ -2,7 +2,8 @@ local sand_bank = {
     features = {
         GROUND = {
             { f = worldgen.features.GROUND.sand, p = 0.9 },
-            { f = worldgen.features.GROUND.dirt, p = 0.1 },
+            { f = worldgen.features.GROUND.dirt, p = 0.05 },
+            { f = worldgen.features.GROUND.clay, p = 0.05 },
         },
         TREE = {
             { f = worldgen.features.TREE.pine_jumbo, p = 0.0025 },
@@ -13,9 +14,16 @@ local sand_bank = {
         }
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.grass
+                },
+            },
+        },
         landscape = { "PLAIN" },
-        plant = { "GRASS" },
-        bush = { "DRY" },
+        --plant = { "GRASS" },
+        --bush = { "DRY" },
         temperature = { "HOT" },
         hygrometry = { "DRY" },
         zombies = 0.0,

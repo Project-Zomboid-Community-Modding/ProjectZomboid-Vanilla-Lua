@@ -100,6 +100,9 @@ function Fishing.States.Cast:update()
 end
 
 function Fishing.States.Cast:stop()
+    if self.manager.joypad and self.manager.joypad > -1 then
+        getCore():setDisplayCursor(false)
+    end
     self.manager.player:stopOrTriggerSound(self.sound)
 end
 

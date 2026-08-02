@@ -16,11 +16,17 @@ function WaterMarkUI:render()
     self:setWidth(self.revButton:getWidth());
     self:setX(getCore():getScreenWidth() - 10 - self.width);
     self:setY(getCore():getScreenHeight() - 10 - self.revButton:getHeight());
+    self.chr = getSpecificPlayer(0)
+    if not self.chr then
+        return;
+    end
 
     local y = -FONT_HGT_SMALL - 3;
     local alpha = 0.3;
-    self:drawTextRight("x: ".. math.floor(self.chr:getX()) .. " , y: " .. math.floor(self.chr:getY()) .. ", z: " .. math.floor(self.chr:getZ()) .. " ; " .. getPlayerScreenWidth(self.chr:getIndex()) .. "x" .. getPlayerScreenHeight(self.chr:getIndex()) .. "@" .. getPerformance():getFramerate(), self.revButton:getWidth(), y, 1, 1, 1, 1, UIFont.NewSmall);
-    y = y - FONT_HGT_SMALL - 3;
+    if isDebugEnabled() or not isClient() and getSandboxOptions():isUnstableScriptNameSpam() or isClient() and getServerOptions():getBoolean("ShowCoordinates") then
+        self:drawTextRight("x: ".. math.floor(self.chr:getX()) .. " , y: " .. math.floor(self.chr:getY()) .. ", z: " .. math.floor(self.chr:getZ()) .. " ; " .. getPlayerScreenWidth(self.chr:getIndex()) .. "x" .. getPlayerScreenHeight(self.chr:getIndex()) .. "@" .. getPerformance():getFramerate(), self.revButton:getWidth(), y, 1, 1, 1, 1, UIFont.NewSmall);
+        y = y - FONT_HGT_SMALL - 3;
+    end
     if isClient() then
         local statusData = getMPStatus()
         if tonumber(getMaxPlayers()) > 32 then
@@ -71,7 +77,6 @@ function WaterMarkUI:new(x, y, width, height)
     o.refreshNeeded = true
     o.borderColor = {r=0, g=0, b=0, a=0};
     o.backgroundColor = {r=0, g=0, b=0, a=0};
-    o.chr = getPlayer();
     o.version = getCore():getVersion() .. " " .. "pzBullet(" .. getCore():getBulletVersion() .. ")";
     return o;
 end

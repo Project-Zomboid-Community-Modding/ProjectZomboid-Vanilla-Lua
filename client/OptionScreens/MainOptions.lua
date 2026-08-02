@@ -1308,18 +1308,6 @@ function MainOptions:addUIPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	local showWelcomeMessage = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_showWelcomeMessage"))
-	gameOption = GameOption:new('showWelcomeMessage', showWelcomeMessage)
-	function gameOption.toUI(self)
-		local box = self.control
-		box:setSelected(1, getCore():getOptionShowWelcomeMessage())
-	end
-	function gameOption.apply(self)
-		local box = self.control
-		getCore():setOptionShowWelcomeMessage(box:isSelected(1))
-	end
-	self.gameOptions:add(gameOption)
-
 	local fontSize = self:addCombo(splitpoint, y, comboWidth, 20, getText("UI_optionscreen_FontSize"), { getText("UI_optionscreen_FontSize0"), getText("UI_optionscreen_FontSize1"), getText("UI_optionscreen_FontSize2"), getText("UI_optionscreen_FontSize3"), getText("UI_optionscreen_FontSize4"), getText("UI_optionscreen_FontSize5") }, 6)
 
 	if MainScreen.instance.inGame then
@@ -1870,24 +1858,9 @@ function MainOptions:addUIPanel()
 			end
 		end
 
-		local text = getText("UI_optionscreen_general_content").." "..getText("UI_optionscreen_translatedBy"):lower()..": \n";
+		local text = getText("UI_optionscreen_translatedBy"):lower()..": \n";
 		for k,v in ipairs(MainOptions.getGeneralTranslators(curLang)) do
 			text = text .. " - " .. v .. "\n";
-		end
-		local names = curLang and getRadioTranslators(curLang) or nil;
-		if names ~= nil and names:size() == 1 and names:get(0) == "unknown" then
-			-- "unknown" is the default WordZed name. Nasko asked to display nothing instead of "unknown".
-		else
-			text = text .. "\n" .. getText("UI_optionscreen_radio_content").." "..getText("UI_optionscreen_translatedBy"):lower()..": \n";
-			if names and names:size()>0 then
-				for i=1,names:size() do
-					if names:get(i-1) ~= "unknown" then
-						text = text .." - ".. names:get(i-1).."\n";
-					end
-				end
-			else
-				text = text .. " - "..getText("UI_optionscreen_no_translators").." -\n";
-			end
 		end
 		if box.options[box.selected]=="English" then
 			text = getText("UI_optionscreen_default_lang");
@@ -2699,17 +2672,17 @@ function MainOptions:addAccessibilityPanel()
 	end
 	self.gameOptions:add(gameOption)
 
-	local enableLightSensitivity = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_enableLightSensitivity"));
-	enableLightSensitivity.tooltip = getText("UI_optionscreen_enableLightSensitivity_tt");
-	gameOption = GameOption:new('enableLightSensitivity', enableLightSensitivity)
+	local disableLightningDuringStorms = self:addYesNo(splitpoint, y, BUTTON_HGT, BUTTON_HGT, getText("UI_optionscreen_disableLightningDuringStorms"));
+    disableLightningDuringStorms.tooltip = getText("UI_optionscreen_disableLightningDuringStorms_tt");
+	gameOption = GameOption:new('disableLightningDuringStorms', disableLightningDuringStorms)
 	function gameOption.toUI(self)
 		local box = self.control
-		box:setSelected(1, getCore():getOptionLightSensitivity())
+		box:setSelected(1, getCore():getOptionDisableLightningDuringStorms())
 	end
 	function gameOption.apply(self)
 		local box = self.control
-		if getCore():getOptionLightSensitivity() ~= box:isSelected(1) then
-			getCore():setOptionLightSensitivity(box:isSelected(1))
+		if getCore():getOptionDisableLightningDuringStorms() ~= box:isSelected(1) then
+			getCore():setOptionDisableLightningDuringStorms(box:isSelected(1))
 			self:resetLua()
 		end
 	end
@@ -3890,7 +3863,7 @@ function MainOptions.getGeneralTranslators(_language)
     if not _language then
         return {"???"}
     end
-    local credits = getTranslatorCredits(_language)
+    local credits = CreditsRole.getTranslatorCreditsList(_language)
     if credits then
         local result = {}
         for i=1,credits:size() do

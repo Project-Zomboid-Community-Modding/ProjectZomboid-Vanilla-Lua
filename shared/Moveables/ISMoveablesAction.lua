@@ -31,11 +31,6 @@ end
 function ISMoveablesAction:isValid()
     local plSquare = self.character:getSquare();
     if (plSquare and self.square) and (plSquare:getZ() == self.square:getZ()) then
-        --ensure we can reach the object from here (wall, door, window or fence)
-        if not self:isAdjacentToAnySquare() then
-            self:stop();
-            return false;
-        end
         --ensures another action has not destroyed the object first
         if (self.mode == "scrap" or self.mode == "repair") and (not self:isValidObject()) then
             self:stop();

@@ -556,8 +556,8 @@ function ISCraftInventoryPanel:drawListItem(y, item, alt)
 end
 
 function ISCraftInventoryPanel:onListDoubleClick(_item)
-    local previousText = self.selectedItem.name;
-    local wasNode = self.selectedItem.isNode;
+    local previousText = self.selectedItem and self.selectedItem.name or nil;
+    local wasNode = self.selectedItem and self.selectedItem.isNode;
     local maxIndex = 0;
     local minIndex = 0;
     if wasNode then

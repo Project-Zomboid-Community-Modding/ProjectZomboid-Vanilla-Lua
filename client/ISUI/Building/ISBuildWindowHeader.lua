@@ -21,7 +21,7 @@ function ISBuildWindowHeader:createChildren()
         self.iconSize = 32;
     end
 
-    local titleStr = "Building";
+    local titleStr = getText("IGUI_BackButton_Building");
     if self.titleStr then
         titleStr = self.titleStr;
     end

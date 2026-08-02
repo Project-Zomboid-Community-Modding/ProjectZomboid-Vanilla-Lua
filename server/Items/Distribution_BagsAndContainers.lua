@@ -2300,6 +2300,39 @@ BagsAndContainers.Bag_Police = {
     },
 }
 
+BagsAndContainers.PrisonIntakePersonalObjects = {
+    rolls = 1,
+    items = {
+        "CigarettePack", 20,
+        "Cigarillo", 10,
+        "CordlessPhone", 10,
+        "Cologne", 10,
+        "Comb", 10,
+        "LighterDisposable", 20,
+        "Money", 50,
+        "Money", 20,
+        "TobaccoChewing", 10,
+        "Wallet_Male", 100,
+        -- Misc.
+        "FlaskEmpty", 1,
+        "GuitarPick", 1,
+        "Harmonica", 1,
+        "Hairgel", 1,
+        "KnifePocket", 1,
+        "PokerChips", 1,
+        "SmokingPipe", 1,
+        "SnowGlobe", 1,
+        "TuningFork", 1,
+        "Whistle", 1,
+    },
+    junk = {
+        rolls = 1,
+        items = {
+
+        }
+    },
+}
+
 BagsAndContainers.ProduceStorage_Apple = {
 	rolls = 8,
 	items = {

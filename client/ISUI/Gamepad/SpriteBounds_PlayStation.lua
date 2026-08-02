@@ -1,4 +1,5 @@
 require "ISBaseObject"
+require "ISUI/ISUITextureGetter"
 
 SpriteBounds_PlayStation = ISBaseObject:derive("SpriteBounds_PlayStation")
 function SpriteBounds_PlayStation:new()

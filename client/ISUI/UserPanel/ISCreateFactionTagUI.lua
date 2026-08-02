@@ -69,16 +69,12 @@ function ISCreateFactionTagUI:updateButtons()
 end
 
 function ISCreateFactionTagUI:onClick(button)
-    if button.internal == "CANCEL" then
-        self:setVisible(false);
-        self:removeFromUIManager();
-    end
     if button.internal == "OK" then
         self.faction:setTag(button.parent.entry:getText());
-        self.faction:syncFaction();
-        self:setVisible(false);
-        self:removeFromUIManager();
+        sendFactionChangeTag(self.faction)
     end
+    self:setVisible(false);
+    self:removeFromUIManager();
 end
 
 function ISCreateFactionTagUI:new(x, y, width, height, player, faction)

@@ -14,8 +14,11 @@ end
 function ISPickAxeGroundCoverItem:isValid()
 	local pickAxe = self.character:getPrimaryHandItem()
 	if not pickAxe or not self:predicatePickAxe(pickAxe) then
-        return false
-    end
+		return false
+	end
+	if isClient() and self.started then
+		return true
+	end
 	--ensure the player hasn't moved too far away while the action was in queue
 	local diffX = math.abs(self.item:getSquare():getX() + 0.5 - self.character:getX());
 	local diffY = math.abs(self.item:getSquare():getY() + 0.5 - self.character:getY());
@@ -46,6 +49,7 @@ function ISPickAxeGroundCoverItem:start()
 	    self:setActionAnim("HammerOre")
 	end
 	addSound(self.character, self.character:getX(),self.character:getY(),self.character:getZ(), 20, 10);
+	self.started = true
 end
 
 function ISPickAxeGroundCoverItem:stop()
@@ -53,6 +57,17 @@ function ISPickAxeGroundCoverItem:stop()
 end
 
 function ISPickAxeGroundCoverItem:perform()
+    if not isClient() then
+        ISInventoryPage.renderDirty = true
+    end
+    if self:isMineralDeposit() then
+        self.character:playSound("CraftMineralDepositRemove")
+    end
+    -- needed to remove from queue / start next.
+    ISBaseTimedAction.perform(self);
+end
+
+function ISPickAxeGroundCoverItem:complete()
 	if self.item == nil then
 		return
 	end
@@ -111,13 +126,9 @@ function ISPickAxeGroundCoverItem:perform()
                 addXp(self.character, Perks.Masonry, 5);
             end
 		end
-        if self:isMineralDeposit() then
-            self.character:playSound("CraftMineralDepositRemove")
-        end
 		if trashItem then
 			local square = self.item:getSquare()
 			self.item:getSquare():SpawnWorldInventoryItem(trashItem, 0.0, 0.0, 0.0)
-			ISInventoryPage.renderDirty = true
 		end
 -- 		if self.objectType == "bigRockTwigs" then
 -- 			trashItem = "Base.Twigs"
@@ -126,17 +137,13 @@ function ISPickAxeGroundCoverItem:perform()
 -- 			ISInventoryPage.renderDirty = true
 -- 		end
 	end
-	if isClient() then
-		sledgeDestroy(self.item);
-	else
-		self.item:getSquare():transmitRemoveItemFromSquare(self.item)
-	end
+	self.item:getSquare():transmitRemoveItemFromSquare(self.item)
     if xp then
         addXp(self.character, Perks.Masonry, 5);
     end
 	addSound(self.character, self.character:getX(),self.character:getY(),self.character:getZ(), 10, 10);
     -- reduce the PickAxe condition
-	if not ISBuildMenu.cheat and self.pickaxe then
+	if not self.character:isBuildCheat() and self.pickaxe then
 -- 		local pickAxe = self.character:getPrimaryHandItem();
 -- 		local rollMax = self.pickAxe:getConditionLowerChance() * 2 end
 -- 	    if self.pickAxe and self.pickAxe:isTwoHandWeapon() then rollMax = self.pickAxe:getConditionLowerChance() * 2
@@ -146,8 +153,7 @@ function ISPickAxeGroundCoverItem:perform()
 -- 			ISWorldObjectContextMenu.checkWeapon(self.character);
 -- 		end
 	end
-    -- needed to remove from queue / start next.
-	ISBaseTimedAction.perform(self);
+	return true
 end
 
 function ISPickAxeGroundCoverItem:animEvent(event, parameter)

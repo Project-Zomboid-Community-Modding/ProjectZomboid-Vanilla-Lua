@@ -26,3 +26,11 @@ end
 function JoypadIconTextureGetter:getTextureFilePath()
     return  "media/ui/controller/".. self:getFileNamePrefix() .. "_" .. self.suffix .. ".png"
 end
+
+function JoypadIconTextureGetter:getWidthOrig()
+    return  self.texture:getWidthOrig()
+end
+
+function JoypadIconTextureGetter:getHeightOrig()
+    return  self.texture:getHeightOrig()
+end

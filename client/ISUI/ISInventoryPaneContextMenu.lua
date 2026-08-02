@@ -3184,15 +3184,27 @@ function CraftTooltip:layoutContents(x, y)
     local items = self.logic:getRecipeData():getAllInputItems()
     local x1 = x + marginLeft
 
+    local fullList = {}
+
     for i=0,items:size()-1 do
         local item = items:get(i)
         if item then
-            local x2 = x1
-            self:addImage(x2, y1 + imageDY, item:getTex():getName(), 1.0, 1.0, 1.0)
-            x2 = x2 + IMAGE_SIZE + 6
-            self:addText(x2, y1 + textDY, item:getName())
-            y1 = y1 + lineHeight
+            if not fullList[item:getFullType()] then
+                fullList[item:getFullType()] = {}
+                fullList[item:getFullType()].item = item
+                fullList[item:getFullType()].count = 1
+            else
+                fullList[item:getFullType()].count = fullList[item:getFullType()].count + 1
+            end
         end
+    end
+
+    for i, item in pairs(fullList) do
+        local x2 = x1
+        self:addImage(x2, y1 + imageDY, item.item:getTex():getName(), 1.0, 1.0, 1.0)
+        x2 = x2 + IMAGE_SIZE + 6
+        self:addText(x2, y1 + textDY, item.item:getName() .. (item.count > 1 and " x" .. item.count or ""))
+        y1 = y1 + lineHeight
     end
 
 	if self.recipe:getTooltip() then

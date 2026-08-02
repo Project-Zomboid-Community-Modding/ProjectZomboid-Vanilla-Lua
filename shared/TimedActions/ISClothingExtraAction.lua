@@ -24,6 +24,9 @@ function ISClothingExtraAction:start()
 	if isClient() then
 		self.item = self.character:getInventory():getItemById(self.item:getID())
 	end
+	if self.item == nil then
+		return
+	end
 	self.item:setJobType(getText("ContextMenu_Wear"));
 	self.item:setJobDelta(0.0);
 	self:setActionAnim("WearClothing");
@@ -39,7 +42,9 @@ end
 
 function ISClothingExtraAction:stop()
 	self:stopSound()
-	self.item:setJobDelta(0.0);
+	if self.item then
+	    self.item:setJobDelta(0.0);
+	end
 	ISBaseTimedAction.stop(self)
 end
 
@@ -146,6 +151,9 @@ function ISClothingExtraAction:complete()
 end
 
 function ISClothingExtraAction:getDuration()
+    if self.item == nil then
+        return 0
+    end
 	if self.character:isTimedActionInstant() then
 		return 1
 	end

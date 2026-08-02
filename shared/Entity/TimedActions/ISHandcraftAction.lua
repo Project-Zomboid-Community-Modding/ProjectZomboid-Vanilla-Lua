@@ -108,7 +108,7 @@ function ISHandcraftAction:start()
 		-- Without it, the CraftRecipeData.getAllInputItems() call below won't return manualInputs.
 		self.logic:canPerformCurrentRecipe()
 
-		if not isClient() and not self.force and not self.logic:canPerformCurrentRecipe() then
+		if not self.force and not self.logic:canPerformCurrentRecipe() then
 			log(DebugType.CraftLogic, "ISHandcraftAction.start -> canPerformCurrentRecipe failed.")
 			self:forceStop();
 			return;
@@ -127,6 +127,12 @@ function ISHandcraftAction:start()
 	end
 
 	self:clearItemsProgressBar(true);
+
+    if self.actionScript and self.actionScript:isCantSit() == true and self.character:isSitOnGround() then
+        self.character:setSitOnGround(false)
+    end
+
+    self:setOverrideHandModels(self.logic:getModelHandOne(), self.logic:getModelHandTwo());
 	
     if self.actionScript then
         self:setActionAnim(self.actionScript:getActionAnim());
@@ -138,12 +144,7 @@ function ISHandcraftAction:start()
 		end
     end
 
-    -- sitting stuff
-    if self.actionScript and self.actionScript:isCantSit() == true and self.character:isSitOnGround() then
-        self.character:setSitOnGround(false)
-    end
-
-    self:setOverrideHandModels(self.logic:getModelHandOne(), self.logic:getModelHandTwo());
+    self.craftStarted = true
 
 	if self.onStartFunc then
 		self.onStartFunc(self.onStartTarget, self);
@@ -413,5 +414,6 @@ function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, cr
 	o.recipeItem = recipeItem;
 	o.variableInputRatio = variableInputRatio or 1;
 	o.eatPercentage = eatPercentage or 0;
+    o.craftStarted = false
 	return o
 end

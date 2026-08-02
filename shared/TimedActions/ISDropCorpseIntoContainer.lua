@@ -50,6 +50,7 @@ function ISDropCorpseIntoContainer:new(character, targetContainer)
     o.maxTime = o:getDuration();
     o.targetContainer = targetContainer;
     o.grappledChar = character:getGrapplingTarget()
+    o.allowedWhileDraggingCorpses = true
 
     return o
 end

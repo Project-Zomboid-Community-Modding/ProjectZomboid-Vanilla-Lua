@@ -87,6 +87,9 @@ function ISFitnessAction:stop()
 	if not isClient() and not isServer() then
 		self.character:SetVariable("FitnessFinished","true");
 	end
+    if isClient() then
+        self.character:updateHandEquips()
+    end
 
 	self.character:setVariable("ExerciseEnded", true);
 	setGameSpeed(1);

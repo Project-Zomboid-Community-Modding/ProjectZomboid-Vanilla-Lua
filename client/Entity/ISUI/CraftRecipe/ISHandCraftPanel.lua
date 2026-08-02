@@ -245,7 +245,6 @@ function ISHandCraftPanel:onRecipeChanged(_recipe)
     self.recipesPanel:onRecipeChanged(_recipe);
 
     self.inventoryPanelColumn.visible = self.logic:shouldShowManualSelectInputs() and self.logic:getRecipe() ~= nil;
-    self.recipePanelColumn.visible = self.logic:getRecipe() ~= nil;
 
     self:xuiRecalculateLayout();
 end

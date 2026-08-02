@@ -48,18 +48,15 @@ function ISBuildingObject.onDestroy(thump, player)
 		camping.destroyTent(thump)
 		return
 	end
-	for index, value in pairs(thump:getModData()) do
-		if luautils.stringStarts(index, "need:") then
-			local itemFullType = luautils.split(index, ":")[2];
-			for i=1,tonumber(value) do
-				if ZombRand(2) == 0 then
-					-- item destroyed
-				elseif player then
-                    player:getInventory():AddItem(itemFullType);
-                else
-                    thump:getSquare():AddWorldInventoryItem(itemFullType, 0.0, 0.0, 0.0);
-                end
-			end
+	for itemFullType, value in pairs(thump:getBuildMaterials()) do
+		for i=1,tonumber(value) do
+			if ZombRand(2) == 0 then
+				-- item destroyed
+			elseif player then
+                player:getInventory():AddItem(itemFullType);
+            else
+                thump:getSquare():AddWorldInventoryItem(itemFullType, 0.0, 0.0, 0.0);
+            end
 		end
 	end
 --	ISBuildingObject.removeFromGround(thump:getSquare());
@@ -98,37 +95,35 @@ end
 
 -- render the item on the ground or launch the build
 function DoTileBuilding(draggingItem, isRender, x, y, z, square)
-	local spriteName = nil;
-	if not draggingItem.player then print('ERROR: player not set in DoTileBuilding'); draggingItem.player = 0 end;
+	if not draggingItem.player then
+	    DebugType.Lua:error("ERROR: player not set in DoTileBuilding")
+	    draggingItem.player = 0
+	end
+
+    local playerObj = getSpecificPlayer(draggingItem.player)
+    if (playerObj == nil) then
+        DebugType.Lua:error("ERROR: playerObj not found: " .. tostring(draggingItem.player))
+        return
+    end
+
 	-- if the square is nil we have to create it (for example, the 2nd floor square are nil)
 	if square == nil and getWorld():isValidSquare(x, y, z) then
---~ 		print("create new square : " .. x .. " " .. y);
 		square = getCell():createNewGridSquare(x, y, z, true);
---~ 		print("square created : " .. newSq:getX() .. " " .. newSq:getY());
 	end
---~ 	print("dragging : " .. x .. " " .. y);
---~ 	print("square is : " .. square:getX() .. " " .. square:getY());
+
+	if playerObj:isBuildButtonDown() then
+        draggingItem.isLeftDown = true
+	    draggingItem:rotateMouse(x, y);
+    else
+        draggingItem.isLeftDown = false
+        if playerObj:isBuildButtonReleased() then
+            draggingItem.build = draggingItem.canBeBuild;
+        end
+    end
+
 	-- get the sprite we have to display
-	if draggingItem.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() then
-		local mouseOverUI = isMouseOverUI();
-		--if Mouse:isLeftDown() then
-		if GameKeyboard.isKeyDown("Attack/Click") then
-			if not draggingItem.isLeftDown then
-				draggingItem.clickedUI = mouseOverUI;
-				draggingItem.isLeftDown = true;
-			end
-			if draggingItem.clickedUI then return end
-			draggingItem:rotateMouse(x, y);
-		else
-			if draggingItem.isLeftDown then
-				draggingItem.isLeftDown = false;
-				draggingItem.build = draggingItem.canBeBuild and not mouseOverUI and not draggingItem.clickedUI;
-				draggingItem.clickedUI = false;
-			end
-			if mouseOverUI then return end
-		end
-	end
-	spriteName = draggingItem:getSprite();
+	local spriteName = draggingItem:getSprite();
+
 	-- if we have the left mouse button down, we fix the item to the square we clicked
 	-- so while we have the left button down, we can drag the mouse to change the direction of the item (like in the Sims..)
 	if (draggingItem.isLeftDown or draggingItem.build) and draggingItem.square then
@@ -179,6 +174,7 @@ function DoTileBuilding(draggingItem, isRender, x, y, z, square)
 end
 
 function ISBuildingObject:tryBuild(x, y, z)
+    DebugType.Lua:debugln(tostring(self) .. ".tryBuild(x:" .. tostring(x) .. ", y:" .. tostring(y) .. ", z:" .. tostring(z) .. ")")
 	local square = getCell():getGridSquare(x, y, z)
 	local playerObj = getSpecificPlayer(self.player)
 	local playerInv = playerObj:getInventory()
@@ -276,7 +272,7 @@ function ISBuildingObject:tryBuild(x, y, z)
 			ISTimedActionQueue.add(buildAction)
 		end
 	else
-		print("ISBuildingObject -> tryBuild - cannot walkTo target")
+		DebugType.Lua:debugln("ISBuildingObject -> tryBuild - cannot walkTo target")
 		self:onActionComplete();
 		return nil;
 	end
@@ -286,7 +282,7 @@ end
 
 function ISBuildingObject:onActionComplete()
 	if self.buildPanelLogic ~= nil then
-		print("ISBuildingObject -> onActionComplete - refresh BuildPanel")
+		DebugType.Lua:debugln("ISBuildingObject -> onActionComplete - refresh BuildPanel")
 		self.buildPanelLogic:stopCraftAction();
 
 		-- Additional update to actualize the available items
@@ -429,24 +425,19 @@ function ISBuildingObject:haveMaterial(square)
 end
 
 function ISBuildingObject:reinit()
---~ 	ISBuildingObject.nSprite = 1;
-	self.isLeftDown = false;
-	self.clickedUI = false;
+    self.isLeftDown = false;
 	self.canBeBuild = false;
 	self.build = false;
 	self.square = nil;
---~ 	ISBuildingObject.north = false;
 end
 
 function ISBuildingObject:reset()
---	getCell():setDrag(nil);
 	self.northSprite = nil;
 	self.sprite = nil;
 	self.southSprite = nil;
 	self.eastSprite = nil;
 	self.nSprite = 1;
 	self.isLeftDown = false;
-	self.clickedUI = false;
 	self.canBeBuild = false;
 	self.build = false;
 	self.square = nil;
@@ -627,12 +618,6 @@ end
 
 function ISBuildingObject:onJoypadPressButton(joypadIndex, joypadData, button)
     local playerObj = getSpecificPlayer(joypadData.player)
-    if button == Joypad.AButton then
-        if self.canBeBuild then
-            self:tryBuild(self.xJoypad, self.yJoypad, self.zJoypad)
-        end
-    end
-
     if button == Joypad.BButton then
         getCell():setDrag(nil, joypadData.player);
     end
@@ -723,11 +708,6 @@ function DoTileBuildingJoyPad(draggingItem, isRender, x, y, z)
     if draggingItem.xJoypad == nil then
         draggingItem.xJoypad = x;
         draggingItem.yJoypad = y;
---        local buts = getButtonPrompts(playerIndex);
---        if buts ~= nil then
---            buts:getBestLBButtonAction(nil);
---            buts:getBestRBButtonAction(nil);
---        end
     end
     draggingItem.zJoypad = z;
     local square = getCell():getGridSquare(draggingItem.xJoypad, draggingItem.yJoypad, draggingItem.zJoypad);

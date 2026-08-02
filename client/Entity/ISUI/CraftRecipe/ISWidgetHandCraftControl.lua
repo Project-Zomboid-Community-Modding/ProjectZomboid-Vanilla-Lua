@@ -17,12 +17,12 @@ function ISWidgetHandCraftControl:createChildren()
 
     self.colProgress = safeColorToTable(self.xuiSkin:color("C_ValidGreen"));
     
-    self.quantityLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, "Quantity:", 1, 1, 1, 1, UIFont.Small, true);
+    self.quantityLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, getText("IGUI_CraftingWindow_Quantity"), 1, 1, 1, 1, UIFont.Small, true);
     self.quantityLabel:initialise();
     self.quantityLabel:instantiate();
     self:addChild(self.quantityLabel);
     
-    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, "Time Required:", 1, 1, 1, 1, UIFont.Small, true);
+    self.durationLabel = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISLabel, 0, 0, BUTTON_HGT, getText("IGUI_CraftingWindow_TimeRequired"), 1, 1, 1, 1, UIFont.Small, true);
     self.durationLabel:initialise();
     self.durationLabel:instantiate();
     self:addChild(self.durationLabel);
@@ -87,7 +87,7 @@ function ISWidgetHandCraftControl:createChildren()
 
     -- Debug tool to force being able to do recipes regardless of knowing recipes, skills, whatever
     if isDebugEnabled() and debugSpam then
-        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 0, BUTTON_HGT, "Force Action")
+        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 0, BUTTON_HGT, getText("IGUI_CraftingWindow_ForceAction"))
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
         self.buttonForceCraft.joypadTextureWH = FONT_HGT_SMALL;
         self.buttonForceCraft.font = UIFont.Small;
@@ -232,10 +232,10 @@ function ISWidgetHandCraftControl:prerender()
             else mm = round(seconds / 60, 0) end;
 
             local ss = math.fmod(seconds, 60);
-            local text = string.format("Time Required: %02dm %02ds", mm, ss);
+            local text = string.format(getText("IGUI_CraftingWindow_TimeRequired") .. " %02dm %02ds", mm, ss);
             self.durationLabel:setName(text)
         else
-            self.durationLabel:setName("Time Required: ??")
+            self.durationLabel:setName(getText("IGUI_CraftingWindow_TimeRequired") .. " ??")
         end
     end
     
@@ -393,7 +393,7 @@ end
 
 function ISWidgetHandCraftControl:onHandcraftActionCancelled()
     log(DebugType.CraftLogic, "ISWidgetHandCraftControl -> Craft action cancelled")
-    self.logic:stopCraftAction();
+    self.logic:stopCraftAction(true);
     self.craftTimes = nil;
 end
 

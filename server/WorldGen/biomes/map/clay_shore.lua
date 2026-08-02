@@ -6,6 +6,13 @@ local clay_shore = {
         blends_natural_01_71 = { { f = worldgen.features.GROUND.clay, p = "Sandbox.ClayRiverChance" } },
     },
     params = {
+        subbiomes = {
+            TREE = {
+                TREE = {
+                    worldgen.subbiomes.no_tree
+                },
+            },
+        },
         landscape = { "FOREST" },
         temperature = { "MEDIUM" },
         hygrometry = { "DRY", "RAIN" },

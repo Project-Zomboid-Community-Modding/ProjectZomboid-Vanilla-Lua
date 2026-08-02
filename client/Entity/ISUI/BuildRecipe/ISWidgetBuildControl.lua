@@ -55,7 +55,7 @@ function ISWidgetBuildControl:createChildren()
 
     -- Debug tool to force being able to do recipes regardless of knowing recipes, skills, whatever
     if isDebugEnabled() and debugSpam and (self.player:getRole() and self.player:getRole():hasCapability(Capability.UseBuildCheat)) then
-        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, BUTTON_HGT, "Force Action")
+        self.buttonForceCraft = ISXuiSkin.build(self.xuiSkin, "S_NeedsAStyle", ISButton, 0, 0, 48, BUTTON_HGT, getText("IGUI_CraftingWindow_ForceAction"))
         self.buttonForceCraft.iconTexture = getTexture("media/textures/Item_Plumpabug_Left.png");
         self.buttonForceCraft.joypadTextureWH = BUTTON_ICON_SIZE;
         --self.buttonPrev.image = getTexture("ArrowLeft");

@@ -324,7 +324,7 @@ function ISDesignationZoneAnimalZoneUI:prerender()
     z = z + FONT_HGT_SMALL + 5;
 
     local water = self:calcWater();
-    self:drawText(getText("IGUI_DesignationZone_Water") .. water .. " mL", 10, z, 1,1,1,1,UIFont.NewSmall);
+    self:drawText(getText("IGUI_DesignationZone_Water") .. water .. getText("IGUI_Milliliter"), 10, z, 1,1,1,1,UIFont.NewSmall);
     z = z + FONT_HGT_SMALL + 5;
 
     local nearRiver = self:calcNearRiver();

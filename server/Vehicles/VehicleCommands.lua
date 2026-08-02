@@ -406,6 +406,15 @@ function Commands.detachTrailer(player, args)
 	vehicle:breakConstraint(true, false)
 end
 
+function Commands.detachTrailerSpontaneous(player, args)
+	local vehicle = getVehicleById(args.vehicle)
+	if not vehicle then
+		noise('no such vehicle id='..tostring(args.vehicle))
+		return
+	end
+	vehicle:breakConstraint(true, false)
+end
+
 function Commands.cheatHotwire(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then

@@ -270,7 +270,7 @@ end
 
 function isJoypadFocusOnElementOrDescendant(playerNum, ui)
 	local joypadData = JoypadState.players[playerNum+1]
-	return joypadData and joypadData:isFocusOnElementOrDescendant(ui) or nil
+	return joypadData and joypadData:isFocusOnElementOrDescendant(ui) or false
 end
 
 function JoypadControllerData:onPauseButtonPressed()

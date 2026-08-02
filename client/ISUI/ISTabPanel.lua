@@ -112,7 +112,7 @@ function ISTabPanel:render()
 			x = x + tabWidth + gap;
 		end
 		-- if this tab is the active one, we make the tab btn lighter
-		if viewObject.name == self.activeView.name and not self.isDragging and not ISTabPanel.mouseOut then
+		if viewObject.id == self.activeView.id and not self.isDragging and not ISTabPanel.mouseOut then
 			self:drawTextureScaled(ISTabPanel.tabSelected, x, 0, tabWidth, self.tabHeight - 1, self.tabTransparency,1,1,1);
         else
             local alpha = self.tabTransparency;
@@ -214,7 +214,7 @@ function ISTabPanel:onMouseDown(x, y)
 			self.draggingTab = tabIndex - 1;
 			local clickedTab = self.viewList[self.draggingTab + 1];
 			getSoundManager():playUISound("UIActivateTab")
-			self:activateView(clickedTab.name)
+			self:activateViewById(clickedTab.id)
 		end
 	end
 end
@@ -408,6 +408,33 @@ function ISTabPanel:getView(viewName)
 	return nil;
 end
 
+function ISTabPanel:activateViewById(id)
+    for ind,value in ipairs(self.viewList) do
+        -- we get the view we want to display
+        if value.id == id then
+            self.activeView.view:setVisible(false);
+            value.view:setVisible(true);
+            self.activeView = value;
+            self:ensureVisible(ind)
+
+            if self.parent and self.parent.infoButton then
+                if self.activeView.view.infoText then
+                    self.parent:setInfo(self.activeView.view.infoText)
+                else
+                    self.parent:setInfo(nil)
+                end
+            end
+
+            if self.onActivateView and self.target then
+                self.onActivateView(self.target, self);
+            end
+
+            return true;
+        end
+    end
+    return false;
+end
+
 function ISTabPanel:activateView(viewName)
 	for ind,value in ipairs(self.viewList) do
 		-- we get the view we want to display
@@ -457,6 +484,7 @@ end
 function ISTabPanel:addView(name, view)
 	local viewObject = {};
 	viewObject.name = name;
+    viewObject.id = #self.viewList + 1
 	viewObject.view = view;
 	viewObject.tabWidth = getTextManager():MeasureStringX(UIFont.Small, name) + self.tabPadX;
 	viewObject.fade = UITransition.new()
