@@ -320,7 +320,7 @@ function ISTradingUI:initialise()
     end
     self:addChild(self.hisOfferDatas);
 
-    self.sealOffer = ISTickBox:new(self.yourOfferDatas.x, self.remove:getBottom() + 5, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_TradingUI_MaxItemReached")) + 20, 18, "", self, ISTradingUI.onSealOffer);
+    self.sealOffer = ISTickBox:new(self.yourOfferDatas.x, self.remove:getBottom() + 5, getTextManager():MeasureStringX(UIFont.Small, getText("IGUI_TradingUI_MaxItemReached", "")) + 20, 18, "", self, ISTradingUI.onSealOffer);
     self.sealOffer:initialise();
     self.sealOffer:instantiate();
     self.sealOffer.selected[1] = false;

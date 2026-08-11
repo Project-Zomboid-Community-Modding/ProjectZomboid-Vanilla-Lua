@@ -376,11 +376,11 @@ end
 
 function ISVehicleMenu.doTowingMenu(playerObj, vehicle, menu)
 	if vehicle:getVehicleTowing() then
-		menu:addSlice(getText("ContextMenu_Vehicle_DetachTrailer"), getTexture("media/ui/ZoomOut.png"), ISVehicleMenu.onDetachTrailer, playerObj, vehicle, vehicle:getTowAttachmentSelf())
+		menu:addSlice(getText("ContextMenu_Vehicle_DetachTrailer", ""), getTexture("media/ui/ZoomOut.png"), ISVehicleMenu.onDetachTrailer, playerObj, vehicle, vehicle:getTowAttachmentSelf())
 		return
 	end
 	if vehicle:getVehicleTowedBy() then
-		menu:addSlice(getText("ContextMenu_Vehicle_DetachTrailer"), getTexture("media/ui/ZoomOut.png"), ISVehicleMenu.onDetachTrailer, playerObj, vehicle:getVehicleTowedBy(), vehicle:getVehicleTowedBy():getTowAttachmentSelf())
+		menu:addSlice(getText("ContextMenu_Vehicle_DetachTrailer", ""), getTexture("media/ui/ZoomOut.png"), ISVehicleMenu.onDetachTrailer, playerObj, vehicle:getVehicleTowedBy(), vehicle:getVehicleTowedBy():getTowAttachmentSelf())
 		return
 	end
 
@@ -400,7 +400,7 @@ function ISVehicleMenu.doTowingMenu(playerObj, vehicle, menu)
 		end
 		local text = getText("ContextMenu_Vehicle_AttachVehicle", aName, bName, attachNameA, attachNameB);
 		if trailerA or trailerB then
-			text = getText("ContextMenu_Vehicle_AttachTrailer");
+			text = getText("ContextMenu_Vehicle_AttachTrailer", "", "");
 		end
 		menu:addSlice(text, getTexture("media/ui/ZoomIn.png"), ISVehicleMenu.onAttachTrailer, playerObj, vehicleTowing, attachmentA, attachmentB)
 		return

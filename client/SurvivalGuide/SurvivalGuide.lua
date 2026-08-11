@@ -176,24 +176,9 @@ function SurvivalGuide:populateList()
         if entry:getSubCategory() then
             subCategory = true
             name = "    " .. name
-            local translatedKeyList = ArrayList.new()
-            local keysList = entry:getKeys()
-            if JoypadState.players[1] then
-                keysList = entry:getJoypadKeys()
-            end
-            if keysList then
-                for j = 0, keysList:size() - 1 do
-                    translatedKeyList:add(self:getKeyName(keysList:get(j)))
-                end
-            end
-            local text = getTextOrNull(entry:getDescription() .. "_joypad")
-            if text and JoypadState.players[1] then
-                text = entry:getDescription() .. "_joypad"
-            else
-                text = entry:getDescription()
-            end
-            if getText(text) ~= "<IGNORE>" then
-                self.listBox:addItem(name, { title = title, description = getTextList(text, translatedKeyList), video = entry:getVideo(), subCategory = subCategory, id = entry:toString() })
+            local text = entry:getText(JoypadState.players[1] ~= nil)
+            if text then
+                self.listBox:addItem(name, { title = title, description = text, video = entry:getVideo(), subCategory = subCategory, id = entry:toString() })
             end
         else
             self.listBox:addItem(name, { title = title, spiffo = getText(entry:getDescription()), id = entry:toString(), category_image = getTextOrNull(entry:getCategoryImage()) })

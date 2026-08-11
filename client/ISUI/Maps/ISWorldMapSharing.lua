@@ -119,7 +119,7 @@ function PanelMain:createChildren()
 
 	local btnWid = 200
 	local btnHgt = math.max(FONT_HGT_SMALL + 3 * 2, 25)
-	self.buttonPlayers = ISButton:new(0, tickBox:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonPlayers"), self, self.onButtonPlayers)
+	self.buttonPlayers = ISButton:new(0, tickBox:getBottom() + 10, btnWid, btnHgt, getText("IGUI_Map_Sharing_ButtonPlayers", ""), self, self.onButtonPlayers)
 	panel:addChild(self.buttonPlayers)
 
 	panel:shrinkWrap(0, 0, nil)

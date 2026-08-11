@@ -3,8 +3,6 @@ WeatherChannel.channelUUID = "EMRG-711984"; --required for DynamicRadio
 WeatherChannel.debugTestAll = false;
 
 local function comp(_str)
-    --local radio = getZomboidRadio();
-    --return radio:computerize(_str);
     return _str;
 end
 
@@ -53,31 +51,30 @@ local zones = {
 
 function WeatherChannel.Init()
     activity = {
-        getRadioText("AEBS_rand_pre_0"),
-        getRadioText("AEBS_rand_pre_1"),
-        getRadioText("AEBS_rand_pre_2"),
-        --getRadioText("AEBS_rand_pre_3"),
-        getRadioText("AEBS_rand_pre_4"),
-        getRadioText("AEBS_rand_pre_5"),
-        getRadioText("AEBS_rand_pre_6"),
-        getRadioText("AEBS_rand_pre_7"),
-        getRadioText("AEBS_rand_pre_8"),
-        getRadioText("AEBS_rand_pre_9"),
-        getRadioText("AEBS_rand_pre_10"),
-        getRadioText("AEBS_rand_pre_11"),
-        getRadioText("AEBS_rand_pre_12"),
+        "AEBS_rand_pre_0",
+        "AEBS_rand_pre_1",
+        "AEBS_rand_pre_2",
+        "AEBS_rand_pre_4",
+        "AEBS_rand_pre_5",
+        "AEBS_rand_pre_6",
+        "AEBS_rand_pre_7",
+        "AEBS_rand_pre_8",
+        "AEBS_rand_pre_9",
+        "AEBS_rand_pre_10",
+        "AEBS_rand_pre_11",
+        "AEBS_rand_pre_12",
     };
 
     zones = {
-        { name = getRadioText("AEBS_zone_name_s"), sectors = { 2, 5, 8, 9 } },
-        { name = getRadioText("AEBS_zone_name_sw"), sectors = { 1, 3, 6, 7 } },
-        { name = getRadioText("AEBS_zone_name_nw"), sectors = { 10, 14, 15, 18 } },
-        { name = getRadioText("AEBS_zone_name_c"), sectors = { 11, 12, 13, 19 } },
-        { name = getRadioText("AEBS_zone_name_n"), sectors = { 17, 4, 16, 23 } },
-        { name = getRadioText("AEBS_zone_name_ne"), sectors = { 21, 25, 29, 31 } },
-        { name = getRadioText("AEBS_zone_name_w"), sectors = { 22, 24, 28, 32 } },
-        { name = getRadioText("AEBS_zone_name_e"), sectors = { 27, 30, 33, 36 } },
-        { name = getRadioText("AEBS_zone_name_se"), sectors = { 20, 26, 34, 35 } },
+        { name = "AEBS_zone_name_s", sectors = { 2, 5, 8, 9 } },
+        { name = "AEBS_zone_name_sw", sectors = { 1, 3, 6, 7 } },
+        { name = "AEBS_zone_name_nw", sectors = { 10, 14, 15, 18 } },
+        { name = "AEBS_zone_name_c", sectors = { 11, 12, 13, 19 } },
+        { name = "AEBS_zone_name_n", sectors = { 17, 4, 16, 23 } },
+        { name = "AEBS_zone_name_ne", sectors = { 21, 25, 29, 31 } },
+        { name = "AEBS_zone_name_w", sectors = { 22, 24, 28, 32 } },
+        { name = "AEBS_zone_name_e", sectors = { 27, 30, 33, 36 } },
+        { name = "AEBS_zone_name_se", sectors = { 20, 26, 34, 35 } },
     }
 end
 
@@ -116,7 +113,7 @@ function WeatherChannel.FillBroadcast(_gametime, _bc)
     local hour = _gametime:getHour();
     local c = { r=1.0, g=1.0, b=1.0 };
 
-    _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Intro")), c.r, c.g, c.b) );
+    _bc:AddRadioLine( RadioLine.new(comp(getText("AEBS_Intro")), c.r, c.g, c.b) );
 
     WeatherChannel.AddFuzz(c, _bc);
 
@@ -134,7 +131,7 @@ function WeatherChannel.FillBroadcast(_gametime, _bc)
 
     if getGameTime():getNightsSurvived() == getGameTime():getHelicopterDay1() then
         WeatherChannel.AddFuzz(c, _bc, 6);
-        _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Choppah")), c.r, c.g, c.b) );
+        _bc:AddRadioLine( RadioLine.new(comp(getText("AEBS_Choppah")), c.r, c.g, c.b) );
     end
 
     WeatherChannel.AddFuzz(c, _bc);
@@ -156,13 +153,13 @@ function WeatherChannel.AddPowerNotice(_c, _bc, _force)
     local day = getGameTime():getWorldAgeHours() / 24 + (getSandboxOptions():getTimeSinceApo() - 1) * 30
     local powerOffDay = getSandboxOptions():getElecShutModifier()
     if _force or (day >= powerOffDay-2 and day < powerOffDay-1) then
-        _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_1")), _c.r, _c.g, _c.b) );
+        _bc:AddRadioLine( RadioLine.new(comp(getText("AEBS_Power_1")), _c.r, _c.g, _c.b) );
     end
     if _force or (day >= powerOffDay-1 and day < powerOffDay) then
-        _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_2")), _c.r, _c.g, _c.b) );
+        _bc:AddRadioLine( RadioLine.new(comp(getText("AEBS_Power_2")), _c.r, _c.g, _c.b) );
     end
     if _force or (day >= powerOffDay) then
-        _bc:AddRadioLine( RadioLine.new(comp(getRadioText("AEBS_Power_3")), _c.r, _c.g, _c.b) );
+        _bc:AddRadioLine( RadioLine.new(comp(getText("AEBS_Power_3")), _c.r, _c.g, _c.b) );
     end
 end
 
@@ -170,27 +167,13 @@ function WeatherChannel.AddForecasting(_c, _bc, _hour)
     local clim = getClimateManager();
     local forecaster = clim:getClimateForecaster();
 
-    --if _hour<19 then
-        -- forecast today and tomorrow
-        local forecast = forecaster:getForecast();
-        WeatherChannel.AddForecast(_c, _bc, forecast, getRadioText("AEBS_Pre_today"), _hour<12);
+    local forecast = forecaster:getForecast();
+    WeatherChannel.AddForecast(_c, _bc, forecast, getText("AEBS_Pre_today"), _hour<12);
 
-        local forecast = forecaster:getForecast(1);
-        WeatherChannel.AddForecast(_c, _bc, forecast, getRadioText("AEBS_Pre_tomorrow"), true);
+    local forecast = forecaster:getForecast(1);
+    WeatherChannel.AddForecast(_c, _bc, forecast, getText("AEBS_Pre_tomorrow"), true);
 
-        WeatherChannel.AddExtremesForecasting(_c, _bc, 2);
-    --[[
-    else
-        -- if after seven forecast for tomorrow and the day after tomorrow
-        local forecast = forecaster:getForecast(1);
-        WeatherChannel.AddForecast(_c, _bc, forecast, getRadioText("AEBS_Pre_tomorrow"), true);
-
-        local forecast = forecaster:getForecast(2);
-        WeatherChannel.AddForecast(_c, _bc, forecast, getRadioText("AEBS_Pre_dayafter"), true);
-
-        WeatherChannel.AddExtremesForecasting(_c, _bc, 3);
-    end
-    --]]
+    WeatherChannel.AddExtremesForecasting(_c, _bc, 2);
 end
 
 function WeatherChannel.AddForecast(_c, _bc, _forecast, _prefix, _doFog)
@@ -223,140 +206,104 @@ function WeatherChannel.GetForecastString(_type, _forecast)
         local v = _forecast:getTemperature();
         local a,b,c = v:getTotalMean(), v:getTotalMin(), v:getTotalMax();
         local d = roundstring100(_forecast:getHumidity():getTotalMean()*100);
-        s = string.format(" "..getRadioText("AEBS_temperature"), Temperature.getTemperatureString(a), Temperature.getTemperatureString(b), Temperature.getTemperatureString(c), d);
-        --[[
-        elseif _type==2 then
-            local v = _forecast:getWindPower();
-            local a,b,c = v:getTotalMean(), v:getTotalMin(), v:getTotalMax();
-            a = roundstring(ClimateManager.ToKph(a)).." KpH";
-            b = roundstring(ClimateManager.ToKph(b)).." KpH";
-            c = roundstring(ClimateManager.ToKph(c)).." KpH";
-            local d = _forecast:getMeanWindAngleString();
-            local e = "Mostly clear sky."
-            local cloudsA = _forecast:getCloudiness():getTotalMean();
-            local cloudsB = _forecast:getCloudiness():getTotalMax();
-
-            if cloudsA>0.7 then
-                e = "Very strong cloud cover.";
-            elseif cloudsA>0.4 then
-                e = "Medium cloudiness.";
-                if cloudsB>0.7 then
-                    e = e .. " Periods of strong cloud cover."
-                end
-            else
-                if cloudsB>0.7 then
-                    e = e .. " Periods of strong cloud cover."
-                elseif cloudsB>0.4 then
-                    e = e .. " Periodically medium cloud cover."
-                end
-            end
-
-            s = string.format("Wind speed mean %s, min %s, max %s, average direction %s... %s", a, b, c, d, e);
-        --]]
+        s = " "..getText("AEBS_temperature", Temperature.getTemperatureString(a), Temperature.getTemperatureString(b), Temperature.getTemperatureString(c), d);
     elseif _type==2 then
         local v = _forecast:getWindPower();
         local a,b,c = v:getTotalMean(), v:getTotalMin(), v:getTotalMax();
-        --a = roundstring(ClimateManager.ToKph(a)).." KpH";
-        --b = roundstring(ClimateManager.ToKph(b)).." KpH";
-        --c = roundstring(ClimateManager.ToKph(c)).." KpH";
         if getCore():getOptionDisplayAsCelsius() then
-            c = roundstring(ClimateManager.ToKph(c))..getRadioText("AEBS_KpH");
+            c = roundstring(ClimateManager.ToKph(c))..getText("AEBS_KpH");
         else
-            c = roundstring(ClimateManager.ToMph(c))..getRadioText("AEBS_MpH");
+            c = roundstring(ClimateManager.ToMph(c))..getText("AEBS_MpH");
         end
         local d = _forecast:getMeanWindAngleString();
-        local dnew = getRadioText("AEBS_zone_name_"..d:lower());
+        local dnew = getText("AEBS_zone_name_"..d:lower());
         if dnew then
             d = dnew;
         end
-        local e = getRadioText("AEBS_clouds_0");
+        local e = getText("AEBS_clouds_0");
         local cloudsA = _forecast:getCloudiness():getTotalMean();
         local cloudsB = _forecast:getCloudiness():getTotalMax();
 
         if cloudsA>0.7 then
-            e = getRadioText("AEBS_clouds_2");
+            e = getText("AEBS_clouds_2");
         elseif cloudsA>0.4 then
-            e = getRadioText("AEBS_clouds_1");
+            e = getText("AEBS_clouds_1");
             if cloudsB>0.7 then
-                e = e .. " "..getRadioText("AEBS_clouds_4");
+                e = e .. " "..getText("AEBS_clouds_4");
             end
         else
             if cloudsB>0.7 then
-                e = e .. " "..getRadioText("AEBS_clouds_4");
+                e = e .. " "..getText("AEBS_clouds_4");
             elseif cloudsB>0.4 then
-                e = e .. " "..getRadioText("AEBS_clouds_3");
+                e = e .. " "..getText("AEBS_clouds_3");
             end
         end
 
-        local w = getRadioText("AEBS_wind_1");
+        local w = getText("AEBS_wind_1");
         if a>0.75 then
-            w = getRadioText("AEBS_wind_4");
+            w = getText("AEBS_wind_4");
         elseif a>0.5 then
-            w = getRadioText("AEBS_wind_3");
+            w = getText("AEBS_wind_3");
         elseif a>0.25 then
-            w = getRadioText("AEBS_wind_2");
+            w = getText("AEBS_wind_2");
         end
 
-        s = string.format(getRadioText("AEBS_wind_0"), w, d, c, e);
-        --s = string.format("Wind speed mean %s, min %s, max %s, average direction %s... %s", a, b, c, d, e);
+        s = getText("AEBS_wind_0", w, d, c, e);
     elseif _type==3 then
         local v = _forecast:getFogStrength();
         if v==1 then
-            s = getRadioText("AEBS_fog_2");
+            s = getText("AEBS_fog_2");
         elseif v>0.75 then
-            s = getRadioText("AEBS_fog_1");
+            s = getText("AEBS_fog_1");
         else
-            s = getRadioText("AEBS_fog_0");
+            s = getText("AEBS_fog_0");
         end
     elseif _type==4 or _type==5 then
-        --local hour = _gametime:getHour();
         if _type==4 then
-            --s = string.format(getRadioText("AEBS_weather_0_a"), tostring(ISDebugUtils.roundNum(_forecast:getWeatherStartTime(),0)));
-            s = string.format(getRadioText("AEBS_weather_0_a"), WeatherChannel.GetDaySegmentForHour(_forecast:getWeatherStartTime()));
+            s = getText("AEBS_weather_0_a", WeatherChannel.GetDaySegmentForHour(_forecast:getWeatherStartTime()));
         else
             local endTime = _forecast:getWeatherEndTime();
             if endTime>=22 then
-                s = getRadioText("AEBS_weather_0_b");
+                s = getText("AEBS_weather_0_b");
             else
-                --s = string.format(getRadioText("AEBS_weather_0_c"), tostring(ISDebugUtils.roundNum(endTime,0)));
-                s = string.format(getRadioText("AEBS_weather_0_c"), WeatherChannel.GetDaySegmentForHour(endTime));
+                s = getText("AEBS_weather_0_c", WeatherChannel.GetDaySegmentForHour(endTime));
             end
 
         end
 
         local t = {};
         if _forecast:isHasHeavyRain() then
-            table.insert(t,getRadioText("AEBS_weather_heavy_rain"));
+            table.insert(t,getText("AEBS_weather_heavy_rain"));
         end
         if _forecast:isHasStorm() then
-            table.insert(t,getRadioText("AEBS_weather_storm"));
+            table.insert(t,getText("AEBS_weather_storm"));
         end
         if _forecast:isHasTropicalStorm() then
-            table.insert(t,getRadioText("AEBS_weather_tropical"));
+            table.insert(t,getText("AEBS_weather_tropical"));
         end
         if _forecast:isHasBlizzard() then
-            table.insert(t,getRadioText("AEBS_weather_blizzard"));
+            table.insert(t,getText("AEBS_weather_blizzard"));
         end
 
         if #t>0 then
             if #t==1 then
-                s = s .. getRadioText("AEBS_weather_predicted")..t[1];
+                s = s .. getText("AEBS_weather_predicted")..t[1];
             else
-                s = s .. getRadioText("AEBS_weather_predicted");
+                s = s .. getText("AEBS_weather_predicted");
                 for k,v in ipairs(t) do
                     if k<#t then
                         s = s .. v .. (v~=#t-1 and ", " or "");
                     else
-                        s = s .. getRadioText("AEBS_weather_and_a") .. v .. "...";
+                        s = s .. getText("AEBS_weather_and_a") .. v .. "...";
                     end
                 end
             end
         else
-            s = s .. getRadioText("AEBS_weather_light_moderate");
+            s = s .. getText("AEBS_weather_light_moderate");
         end
 
         if _forecast:isChanceOnSnow() then
-            s = s..getRadioText("AEBS_weather_snowfall");
+            s = s..getText("AEBS_weather_snowfall");
         end
     end
     return s;
@@ -364,15 +311,15 @@ end
 
 function WeatherChannel.GetDaySegmentForHour(_hour)
     if _hour<=4 or _hour>=23 then
-        return getRadioText("AEBS_segment_night");
+        return getText("AEBS_segment_night");
     elseif _hour>=4 and _hour<8 then
-        return getRadioText("AEBS_segment_early_morning");
+        return getText("AEBS_segment_early_morning");
     elseif _hour>=8 and _hour<12 then
-        return getRadioText("AEBS_segment_morning");
+        return getText("AEBS_segment_morning");
     elseif _hour>=12 and _hour<18 then
-        return getRadioText("AEBS_segment_afternoon");
+        return getText("AEBS_segment_afternoon");
     elseif _hour>=18 and _hour<23 then
-        return getRadioText("AEBS_segment_evening");
+        return getText("AEBS_segment_evening");
     end
 end
 
@@ -385,14 +332,15 @@ function WeatherChannel.AddExtremesForecasting(_c, _bc, offset, _len)
         local forecast = forecaster:getForecast(i);
 
         if forecast and ( forecast:isHasBlizzard() or forecast:isHasTropicalStorm() or forecast:isHasStorm() ) then
-            local type = getRadioText("AEBS_weather_storm_C");
+            local type = getText("AEBS_weather_storm_C");
             if forecast:isHasTropicalStorm() then
-                type = getRadioText("AEBS_weather_tropical_C");
+                type = getText("AEBS_weather_tropical_C");
             elseif forecast:isHasBlizzard() then
-                type = getRadioText("AEBS_weather_blizzard_C");
+                type = getText("AEBS_weather_blizzard_C");
+            else
             end
 
-            local s = string.format(getRadioText("AEBS_weather_warning"), type, tostring(i));
+            local s = getText("AEBS_weather_warning", type, tostring(i));
             _bc:AddRadioLine( RadioLine.new(comp(s), _c.r, _c.g, _c.b) );
             return;
         end
@@ -411,33 +359,31 @@ function WeatherChannel.GetRandomString(_c, _bc, _doItThreshold, _forceRand)
     local s = nil;
     if rand<500 then
         local zone = zones[ZombRand(1,#zones)];
-        s = string.format(getRadioText("AEBS_random_0"), zone.name, zone.sectors[1], zone.sectors[2], zone.sectors[3], zone.sectors[4]);
+        s = getText("AEBS_random_0", getText(zone.name), zone.sectors[1], zone.sectors[2], zone.sectors[3], zone.sectors[4]);
     elseif rand<1000 then
-        s = string.format(getRadioText("AEBS_random_1"), ZombRand(1,36) );
+        s = getText("AEBS_random_1", ZombRand(1,36));
     elseif rand<1500 then
-        s = string.format(getRadioText("AEBS_random_2"), ZombRand(1,1000) );
+        s = getText("AEBS_random_2", ZombRand(1,1000));
     elseif rand<2000 then
-        s = string.format(getRadioText("AEBS_random_3"), activity[ZombRand(1,#activity)], ZombRand(1,36) );
-    --elseif rand==9000 then
-    --    s = getRadioText("AEBS_random_4");
+        s = getText("AEBS_random_3", activity[ZombRand(1,#activity)], ZombRand(1,36));
     elseif rand>=9000 and rand<9002 then
-        s = getRadioText("AEBS_random_5");
+        s = getText("AEBS_random_5");
     elseif rand>=9002 and rand<9004 then
-        s = getRadioText("AEBS_random_6");
+        s = getText("AEBS_random_6");
     elseif rand>=9004 and rand<9006 then
-        s = getRadioText("AEBS_random_7");
+        s = getText("AEBS_random_7");
     elseif rand>=9006 and rand<9008 then
-        s = getRadioText("AEBS_random_8");
+        s = getText("AEBS_random_8");
     elseif rand>=9008 and rand<9010 then
-        s = getRadioText("AEBS_random_9");
+        s = getText("AEBS_random_9");
     elseif rand>=9010 and rand<9012 then
-        s = getRadioText("AEBS_random_10");
+        s = getText("AEBS_random_10");
     elseif rand>=9012 and rand<9014 then
-        s = getRadioText("AEBS_random_11");
+        s = getText("AEBS_random_11");
     elseif rand>=9014 and rand<9016 then
-        s = getRadioText("AEBS_random_12");
+        s = getText("AEBS_random_12");
     elseif rand>=9016 and rand<9018 then
-        s = getRadioText("AEBS_random_13");
+        s = getText("AEBS_random_13");
     end
 
     if s~=nil then
@@ -454,17 +400,17 @@ function WeatherChannel.TestAll(_gametime, _bc)
     local forecaster = clim:getClimateForecaster();
 
     local c = { r=1.0, g=1.0, b=1.0 };
-    _bc:AddRadioLine( RadioLine.new(getRadioText("AEBS_Intro"), c.r, c.g, c.b) );
+    _bc:AddRadioLine( RadioLine.new(getText("AEBS_Intro"), c.r, c.g, c.b) );
     WeatherChannel.AddPowerNotice(c, _bc, true);
 
     local forecast = forecaster:getForecast();
-    WeatherChannel.AddForecast(c, _bc, forecast, getRadioText("AEBS_Pre_today"), true);
+    WeatherChannel.AddForecast(c, _bc, forecast, getText("AEBS_Pre_today"), true);
 
     local forecast = forecaster:getForecast(1);
-    WeatherChannel.AddForecast(c, _bc, forecast, getRadioText("AEBS_Pre_tomorrow"), true);
+    WeatherChannel.AddForecast(c, _bc, forecast, getText("AEBS_Pre_tomorrow"), true);
 
     local forecast = forecaster:getForecast(2);
-    WeatherChannel.AddForecast(c, _bc, forecast, getRadioText("AEBS_Pre_dayafter"), true);
+    WeatherChannel.AddForecast(c, _bc, forecast, getText("AEBS_Pre_dayafter"), true);
 
     WeatherChannel.AddExtremesForecasting(c, _bc, 3, 20);
 
@@ -484,7 +430,7 @@ function WeatherChannel.TestAll(_gametime, _bc)
     WeatherChannel.GetRandomString(c, _bc, 100, 9009);
     WeatherChannel.GetRandomString(c, _bc, 100, 9010);
 
-    _bc:AddRadioLine( RadioLine.new(getRadioText("AEBS_Choppah"), c.r, c.g, c.b) );
+    _bc:AddRadioLine( RadioLine.new(getText("AEBS_Choppah"), c.r, c.g, c.b) );
     WeatherChannel.AddFuzz(c, _bc, 6);
 end
 

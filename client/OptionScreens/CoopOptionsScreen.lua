@@ -292,12 +292,16 @@ function CoopOptionsScreen:prerender()
     end
 
     local text = nil
+    self.startButton.enable = true
     if self.worldVersion == 0 then
         -- not checked yet?
     elseif self.worldVersion > IsoWorld.getWorldVersion() then
         text = " <H1> <LEFT> <RED> " .. getText("UI_worldscreen_SaveCannotBeLoaded") .. " <LINE> <TEXT> <RED> " .. getText("UI_worldscreen_SavefileNewerThanGame") .. " <RGB:1,1,1> ";
     elseif self.worldVersion <= 115 then
         text = " <H1> <LEFT> <RED> " .. getText("UI_worldscreen_SaveCannotBeLoaded") .. " <LINE> <TEXT> <RED> " .. getText("UI_worldscreen_SavefileVehicle", self.worldVersion, IsoWorld.getWorldVersion()) .. " <RGB:1,1,1> "
+    elseif tonumber(self.worldVersion) <= 195 then
+        text = " <CENTER> <H1> <LEFT> <RED> " .. getText("UI_worldscreen_SaveCannotBeLoaded") .. " <LINE> <TEXT> <RED> " .. getText("UI_worldscreen_SavefileOld") .. " <RGB:1,1,1> ";
+        self.startButton.enable = false
     end
     if text then
         self.richText.text = text
@@ -428,6 +432,7 @@ function CoopOptionsScreen:onDeleteWorldStep2(button, joypadData)
     if button.internal == "NO" then return end
     local folder = self:getServerSaveFolder(CoopConnection.servername)
     if folder then
+        deleteDatabase(folder)
         deleteSave(folder)
         deleteSave(folder .. "_player")
     end
@@ -627,11 +632,11 @@ end
 
 function CoopOptionsScreen.onCoopServerMessage(tag, cookie, payload)
     if tag == "status" and CoopOptionsScreen.instance ~= nil then
-        local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Count")," ")[1];
+        local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Count", "")," ")[1];
         if luautils.stringStarts(payload, itemsCountTemplate) then
             CoopOptionsScreen.instance.workshopCount = tonumber(luautils.split(payload," ")[2]);
         else
-            local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Progress")," ")[1];
+            local itemsCountTemplate = luautils.split(getText("UI_ServerStatus_Downloaded_Workshop_Items_Progress", "", "")," ")[1];
 
             local payloadXln = luautils.stringStarts(payload, "UI_ServerStatus") and getText(payload) or payload
             CoopOptionsScreen.instance.serverStatus = payloadXln;

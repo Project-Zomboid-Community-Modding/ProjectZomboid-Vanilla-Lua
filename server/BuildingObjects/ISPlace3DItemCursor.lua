@@ -209,7 +209,7 @@ function ISPlace3DItemCursor:drawPrompt(playerNum, ui)
     local screenW = getPlayerScreenWidth(playerNum)
     local screenH = getPlayerScreenHeight(playerNum)
     local y = screenH - (FONT_HGT_MEDIUM * 4)
-    local textW = getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Place3DItem_Rotate"))
+    local textW = getTextManager():MeasureStringX(UIFont.Medium, getText("IGUI_Place3DItem_Rotate", "", ""))
     local hotBar = getPlayerHotbar(playerNum)
     if hotBar and hotBar:isReallyVisible() and (screenX + screenW - 30 - textW < hotBar:getRight()) then
         y = hotBar:getY() - FONT_HGT_MEDIUM * 3

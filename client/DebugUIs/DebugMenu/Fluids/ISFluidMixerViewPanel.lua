@@ -98,7 +98,7 @@ function ISFluidMixerViewPanel:createChildren()
 
     y = self:incY(y, self.amountBox, UI_BORDER_SPACING);
 
-    self.addFluidButton = ISButton:new(x, y, midWidth,BUTTON_HGT,getText("IGUI_Fluids_Mixer_Add"),self, ISFluidMixerViewPanel.onButtonClick);
+    self.addFluidButton = ISButton:new(x, y, midWidth,BUTTON_HGT,getText("IGUI_Fluids_Mixer_Add", ""),self, ISFluidMixerViewPanel.onButtonClick);
     self.addFluidButton:initialise();
     self.addFluidButton:instantiate();
     self.addFluidButton.enable = true;

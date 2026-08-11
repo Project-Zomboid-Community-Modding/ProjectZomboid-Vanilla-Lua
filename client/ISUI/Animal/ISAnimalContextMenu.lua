@@ -644,7 +644,7 @@ AnimalContextMenu.doAnimalBodyMenuFromInv = function(context, playerObj, animalb
 
     if animalbody:hasAnimalParts() and not playerObj:getVehicle() then
         local knife = playerObj:getInventory():getFirstTagEvalRecurse(ItemTag.BUTCHER_ANIMAL, predicateNotBroken)
-        local butcherOption = context:addOption(getText("ContextMenu_ButcherAnimal", animalbody:getDisplayName()), animalbody, AnimalContextMenu.onButcherAnimalFromInv, playerObj, knife);
+        local butcherOption = context:addOption(getText("ContextMenu_ButcherAnimal"), animalbody, AnimalContextMenu.onButcherAnimalFromInv, playerObj, knife);
         if not knife then
             butcherOption.notAvailable = true;
             local tooltip = ISWorldObjectContextMenu.addToolTip();
