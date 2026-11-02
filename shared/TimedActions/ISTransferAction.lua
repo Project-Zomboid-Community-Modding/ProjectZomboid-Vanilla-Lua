@@ -93,6 +93,9 @@ function ISTransferAction:removeItemOnCharacter(character, item)
 end
 
 function ISTransferAction:transferItem(character, item, srcContainer, destContainer, dropSquare)
+    if ItemContainer.chainContainsContainingItem(destContainer, item:getID()) then
+        return item
+    end
 
 	if destContainer:getType() ~= "TradeUI" then
 		srcContainer:DoRemoveItem(item);

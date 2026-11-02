@@ -48,13 +48,13 @@ end
 
 function ISButcherAnimal:complete()
 	-- case if another player picked up the body
-	if not self.body then
+	if not self.body
+		or not instanceof(self.body, "IsoDeadBody")
+		or self.body:getStaticMovingObjectIndex() < 0 then
 		return false;
 	end
 
 	ButcheringUtil.butcherAnimalFromGround(self.body, self.character);
-
-	--sendButcherAnimal(self.body, self.character)
 
 	return true
 end

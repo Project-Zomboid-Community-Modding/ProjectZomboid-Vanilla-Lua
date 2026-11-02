@@ -852,7 +852,7 @@ function LoadGameScreen:onJoypadNavigateStart_Descendant(descendant, button, joy
 end
 
 function LoadGameScreen:getChallenge(item)
-	for i,challenge in ipairs(LastStandChallenge) do
+	for i,challenge in ipairs(ChallengeList) do
 		if challenge.gameMode == item.gameMode then
 			return challenge
 		end

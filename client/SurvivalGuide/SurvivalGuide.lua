@@ -233,7 +233,7 @@ function createSurvivalGuide()
     SurvivalGuide.instance:initialise()
     SurvivalGuide.instance:addToUIManager()
 
-    if not getCore():getOptionShowSurvivalGuide() or (getCore():getGameMode() == "Tutorial" and SurvivalGuide.blockSurvivalGuide) or (isDemo() and ISDemoPopup.instance) then
+    if not getCore():getOptionShowSurvivalGuide() or (getCore():isTutorial() and SurvivalGuide.blockSurvivalGuide) or (isDemo() and ISDemoPopup.instance) then
         SurvivalGuide.instance:setVisible(false)
     end
 
@@ -297,7 +297,7 @@ SurvivalGuide.onKeyPressed = function(key)
     if MainScreen.instance and MainScreen.instance:isVisible() then
         return
     end
-	if getCore():isKey("Toggle Survival Guide", key) and not SurvivalGuide.blockSurvivalGuide then
+	if getCore():isKey(KeybindId.TOGGLE_SURVIVAL_GUIDE, key) and not SurvivalGuide.blockSurvivalGuide then
 		if not SurvivalGuide.instance then
 			createSurvivalGuide()
         else

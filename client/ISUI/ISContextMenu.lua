@@ -871,7 +871,7 @@ function ISContextMenu:allocOption(name, target, onSelect, param1, param2, param
 end
 
 function ISContextMenu:addOption(name, target, onSelect, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10)
-	if getCore():getGameMode() == "Tutorial" then
+	if getCore():isTutorial() then
 		if self:getOptionFromName(name) then
 			return;
 		end

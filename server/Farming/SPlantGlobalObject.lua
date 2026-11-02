@@ -56,12 +56,15 @@ function SPlantGlobalObject:stateFromIsoObject(isoObject)
 end
 
 function SPlantGlobalObject:stateToIsoObject(isoObject)
+	if not self:getSquare() then
+		return
+	end
+
 	self.exterior = self:getSquare():isOutside()
 	if tonumber(self.aphidLvl) then self.aphidLvl = math.min(self.aphidLvl, 100) end
 	if tonumber(self.fliesLvl) then self.fliesLvl = math.min(self.fliesLvl, 100) end
 	if tonumber(self.mildewLvl) then self.mildewLvl = math.min(self.mildewLvl, 100) end
 	if tonumber(self.slugsLvl) then self.slugsLvl = math.min(self.slugsLvl, 100) end
--- 	if tonumber(self.weedLvl) then self.weedLvl = math.min(self.weedLvl, 100) end
 
 	if self.lastWaterHour and self.lastWaterHour > SFarmingSystem.instance.hoursElapsed then
 		if farming_vegetableconf.props[self.typeOfSeed] then
@@ -689,19 +692,16 @@ function SPlantGlobalObject:rottenThis()
 	self:deadPlant()
 end
 
--- destroy the plant (someone walked on it :))
 function SPlantGlobalObject:destroyThis()
-	-- tomato has different smashed tile
--- 	if self.typeOfSeed == "Tomato" then
--- 		self:setSpriteName("vegetation_farming_01_14")
--- 	else
--- 		self:setSpriteName("vegetation_farming_01_13")
--- 	end
+    if self.state == "plow" then
+        self:removeObject()
+        return
+    end
+
 	self.state = "destroyed"
 	self:setSpriteName(farming_vegetableconf.getSpriteName(self))
 	self:setObjectName(farming_vegetableconf.getObjectName(self))
 	self:deadPlant()
--- 	self:saveData()
 end
 -- change the plant to a destroyed yet harvested state
 function SPlantGlobalObject:harvestThis()

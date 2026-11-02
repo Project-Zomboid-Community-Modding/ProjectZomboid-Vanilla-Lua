@@ -4,7 +4,7 @@ ISInventoryWindowControlHandler_TransferAll = ISInventoryWindowControlHandler:de
 local Handler = ISInventoryWindowControlHandler_TransferAll
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     return not self.container:isEmpty()
 end
 

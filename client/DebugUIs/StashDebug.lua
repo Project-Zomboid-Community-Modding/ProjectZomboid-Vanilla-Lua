@@ -92,15 +92,22 @@ function StashDebug:onClick(button)
     end
     if button.internal == "SPAWN" then
         if self.selectedStash then
-            local map = instanceItem(self.selectedStash:getItem());
-            StashSystem.doStashItem(self.selectedStash, map);
-            getPlayer():getInventory():AddItem(map);
-            ISMap:new(0, 0, 0, 0, map, 0);
-            map:doBuildingStash();
+            if isClient() then
+                sendClientCommand(getPlayer(), "debugAction", "spawnStashMap", { stashName = self.selectedStash:getName() });
+            else
+                local map = instanceItem(self.selectedStash:getItem());
+                StashSystem.doStashItem(self.selectedStash, map);
+                getPlayer():getInventory():AddItem(map);
+                ISMap:new(0, 0, 0, 0, map, 0);
+                map:doBuildingStash();
+            end
             self:populateList();
         end
     end
     if button.internal == "REINIT" then
+        if isClient() then
+            sendClientCommand(getPlayer(), "debugAction", "reinitStashes", {});
+        end
         StashSystem.reinit();
         self:populateList();
     end

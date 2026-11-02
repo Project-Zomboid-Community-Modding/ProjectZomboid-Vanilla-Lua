@@ -7,7 +7,8 @@ function ISChopTreeAction:isValid()
         self.character:isEnduranceSufficientForAction() and
         self.character:getPrimaryHandItem() ~= nil and
         self.character:getPrimaryHandItem():hasTag(ItemTag.CHOP_TREE) and
-        not self.character:getPrimaryHandItem():isBroken()
+        not self.character:getPrimaryHandItem():isBroken() and
+        not self.character:isSitting()
 end
 
 function ISChopTreeAction:waitToStart()
@@ -67,6 +68,7 @@ function ISChopTreeAction:animEvent(event, parameter)
 		if event == 'ChopTree' and self.axe then
 			self.tree:WeaponHit(self.character, self.axe)
 			local modifier = 1
+            triggerEvent("OnWeaponHitTree", self.character, self.axe)
 			if (self.character:getDescriptor():isCharacterProfession(CharacterProfession.LUMBERJACK)) then modifier = 0.5 end
             self.character:addCombatMuscleStrain(self.axe, 1, modifier)
 
@@ -74,7 +76,7 @@ function ISChopTreeAction:animEvent(event, parameter)
 			-- all of this is handled by tree:WeaponHit in java
 			-- 		if ZombRand(self.axe:getConditionLowerChance() * 2 + self.character:getMaintenanceMod() * 2) == 0 then
 			-- 			self.axe:setCondition(self.axe:getCondition() - 1)
-			-- 			ISWorldObjectContextMenu.checkWeapon(self.character);
+			-- 			ItemUtils.checkWeapon(self.character);
 			-- 		else
 			-- 			self.character:getXp():AddXP(Perks.Maintenance, 1)
 			-- 		end

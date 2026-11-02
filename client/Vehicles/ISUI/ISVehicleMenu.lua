@@ -217,7 +217,9 @@ function ISVehicleMenu.showRadialMenu(playerObj)
 				elseif playerObj:getMoodles():getMoodleLevel(MoodleType.PANIC) >= 1 then
 					menu:addSlice(getText("ContextMenu_PanicNoSleep"), getTexture("media/ui/vehicles/vehicle_sleep.png"), nil, playerObj, vehicle)
 					doSleep = false;
-					-- tried to sleep not so long ago
+				elseif playerObj:getMoodles():getMoodleLevel(MoodleType.NOXIOUS_SMELL) >= 1 then
+					menu:addSlice(getText("ContextMenu_SmellNoSleep"), getTexture("media/ui/vehicles/vehicle_sleep.png"), nil, playerObj, vehicle)
+					doSleep = false;
 				end
 			end
 		end
@@ -1649,30 +1651,30 @@ function ISVehicleMenu.onKeyPressed(key)
 	if not vehicle then
 		vehicle = ISVehicleMenu.getVehicleToInteractWith(playerObj)
 		if vehicle then
-			if getCore():isKey("VehicleMechanics", key) then
+			if getCore():isKey(KeybindId.VEHICLE_MECHANICS, key) then
 				ISVehicleMenu.onMechanic(playerObj, vehicle)
 				return
 			end
 		end
 		return
 	end
-	if getCore():isKey("StartVehicleEngine", key) then
+	if getCore():isKey(KeybindId.START_VEHICLE_ENGINE, key) then
 		if vehicle:isEngineRunning() then
 			ISVehicleMenu.onShutOff(playerObj)
 		else
 			ISVehicleMenu.onStartEngine(playerObj)
 		end
-	elseif getCore():isKey("VehicleHeater", key) then
+	elseif getCore():isKey(KeybindId.VEHICLE_HEATER, key) then
 		ISVehicleMenu.onToggleHeater(playerObj)
-	elseif getCore():isKey("VehicleMechanics", key) then
+	elseif getCore():isKey(KeybindId.VEHICLE_MECHANICS, key) then
 		ISVehicleMenu.onMechanic(playerObj, vehicle)
-	elseif getCore():isKey("VehicleHorn", key) then
+	elseif getCore():isKey(KeybindId.VEHICLE_HORN, key) then
 		if vehicle:isDriver(playerObj) then
 			ISVehicleMenu.onHornStop(playerObj)
 		end
 	end
 	-- Could be same as VehicleHorn key
-	if getCore():isKey("Shout", key) then
+	if getCore():isKey(KeybindId.SHOUT, key) then
 		if not vehicle:isDriver(playerObj) then
 			playerObj:Callout()
 		end
@@ -1683,12 +1685,12 @@ function ISVehicleMenu.onKeyStartPressed(key)
 	local playerObj = getSpecificPlayer(0)
 	if not playerObj then return end
 	if playerObj:isDead() then return end
-	if getCore():isKey("VehicleHorn", key) then
+	if getCore():isKey(KeybindId.VEHICLE_HORN, key) then
 		local vehicle = playerObj:getVehicle()
 		if vehicle and vehicle:isDriver(playerObj) then
 			ISVehicleMenu.onHornStart(playerObj)
 		end
-	elseif getCore():isKey("VehicleSwitchSeat", key) then
+	elseif getCore():isKey(KeybindId.VEHICLE_SWITCH_SEAT, key) then
 		local vehicle = ISVehicleMenu.getVehicleToInteractWith(playerObj)
 		if vehicle and vehicle:getScript() and vehicle:getScript():getWheelCount() > 0 then
 			ISVehicleMenu.onShowSeatUI(playerObj, vehicle)

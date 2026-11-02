@@ -1536,7 +1536,7 @@ end
 
 function ISVehicleMechanics:isKeyConsumed(key)
 	return key == Keyboard.KEY_ESCAPE or
-			getCore():isKey("VehicleMechanics", key)
+			getCore():isKey(KeybindId.VEHICLE_MECHANICS, key)
 end
 
 function ISVehicleMechanics:onKeyRelease(key)
@@ -1547,7 +1547,7 @@ function ISVehicleMechanics:onKeyRelease(key)
 			self:close()
 		end
 	end
-	if getCore():isKey("VehicleMechanics", key) then
+	if getCore():isKey(KeybindId.VEHICLE_MECHANICS, key) then
 		self:close();
 	end
 end

@@ -35,7 +35,7 @@ end
 function ISRemoveAnimalFromTrailer:complete()
 	local animal = self.vehicle:removeAnimalFromTrailer(self.animal)
 	if self.grab then
-		if not animal then return; end
+		if not animal then return false; end
 
 		local invItem;
 		if instanceof(animal, "IsoAnimal") then

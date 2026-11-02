@@ -167,6 +167,9 @@ end
 
 farming_vegetableconf.getObjectPhase = function(plant)
     local prop = farming_vegetableconf.props[plant.typeOfSeed]
+    if not prop then
+        return ""
+    end
     if plant.hasSeed then
         return getText("Farming_In_bloom");
 --         return getText("Farming_Seed_bearing");

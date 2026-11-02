@@ -94,7 +94,7 @@ function ISVehicleDashboard:createChildren()
 	self.speedregulatorTex = ISImage:new(14, 93, self.iconSpeedRegulator:getWidthOrig(), self.iconSpeedRegulator:getHeightOrig(), self.iconSpeedRegulator);
 	self.speedregulatorTex:initialise();
 	self.speedregulatorTex:instantiate();
-	self.speedregulatorTex.mouseovertext = getText("Tooltip_Dashboard_SpeedRegulator", Keyboard.getKeyName(Keyboard.KEY_LSHIFT), Keyboard.getKeyName(getCore():getKey("Forward")), Keyboard.getKeyName(getCore():getKey("Backward")))
+	self.speedregulatorTex.mouseovertext = getText("Tooltip_Dashboard_SpeedRegulator", getKeyName(Keyboard.KEY_LSHIFT), getKeyName(getCore():getKey(KeybindId.FORWARD)), getKeyName(getCore():getKey(KeybindId.BACKWARD)))
 	self:addChild(self.speedregulatorTex);
 
 	-- Use DebugConsole font which font-mods can't override.

@@ -358,7 +358,11 @@ function ISPrintMediaTextPanel:paginate()
 		cur = string.find(leftText, " ", cur+1);
 		if cur ~= nil then
 			local token = string.sub(leftText, 0, cur);
-			if string.find(token, "<") and string.find(token, ">") then -- handle missing ' ' after '>'
+			local tagStart = string.find(token, "<");
+			if tagStart and tagStart > 1 and string.find(token, ">", tagStart) and string.trim(string.sub(token, 1, tagStart - 1)) ~= '' then -- handle missing ' ' before '<': the text now, the tag next time round
+				cur = tagStart;
+				token = string.sub(leftText, 0, tagStart - 1);
+			elseif tagStart and string.find(token, ">") then -- handle missing ' ' after '>'
 				cur = string.find(token, ">") + 1;
 				token = string.sub(leftText, 0, cur - 1);
 			end

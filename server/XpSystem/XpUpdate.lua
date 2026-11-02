@@ -7,30 +7,32 @@ xpUpdate.lastY = 0;
 
 -- used everytime the player move
 xpUpdate.onPlayerMove = function(player)
+	local checkInterval = 1000;
+	local addXpChance = 0.05;
 	local x = player:getX();-- these values are used to prevent AFKing to grind nimble
 	local y = player:getY();
 	-- pacing/sprinting xp
 	-- if you're running and your endurance has changed
 	if (player:IsRunning() or player:isSprinting()) and player:getStats():get(CharacterStat.ENDURANCE) > player:getStats():getEnduranceWarning() then
 		-- you may gain 1 xp in sprinting or fitness
-		if xpUpdate.randXp() then
-		    addXp(player, Perks.Fitness, 1)
+		if player:isRandXp(checkInterval, addXpChance, Perks.Fitness) then
+			addXp(player, Perks.Fitness, 1.0)
 		end
-		if xpUpdate.randXp() then
-		    addXp(player, Perks.Sprinting, 1)
+		if player:isRandXp(checkInterval, addXpChance, Perks.Sprinting) then
+			addXp(player, Perks.Sprinting, 1.0)
 		end
 	end
 	--local manager = ISSearchManager.getManager(player); -- this is to nerf foraging and grinding nimble
 	--local searching = false;
 	if manager and manager.isSearchMode then searching = true end
 	-- aiming while moving, gain nimble xp (move faster in aiming mode)
-	if player:isAiming() and xpUpdate.randXp() and (xpUpdate.lastX ~= x or xpUpdate.lastY ~= y) and not player:getVehicle() then --the extra check is to prevent afking to grind nimble, the character must have moved to get the skill
-		addXp(player, Perks.Nimble, 1)
+	if player:isAiming() and player:isRandXp(checkInterval, addXpChance, Perks.Nimble) and (xpUpdate.lastX ~= x or xpUpdate.lastY ~= y) and not player:getVehicle() then --the extra check is to prevent afking to grind nimble, the character must have moved to get the skill
+		addXp(player, Perks.Nimble, 1.0)
 	end
 	-- if you're walking with a lot of stuff, you may gain in Strength
 	if player:getInventoryWeight() > player:getMaxWeight() * 0.5 then
-		if xpUpdate.randXp() then
-		    addXp(player, Perks.Strength, 2)
+		if player:isRandXp(checkInterval, addXpChance, Perks.Strength) then
+			addXp(player, Perks.Strength, 2.0)
 		end
 	end	
 	xpUpdate.lastX = x;-- these values are used to prevent AFKing to grind nimble
@@ -121,54 +123,46 @@ end
 
 -- if we press the toggle skill panel key we gonna display the character info screen
 xpUpdate.displayCharacterInfo = function(key)
-	local playerObj = getSpecificPlayer(0)
+	local playerNum = 0
+	local playerObj = getSpecificPlayer(playerNum)
 	if getGameSpeed() == 0 or not playerObj or playerObj:isDead() then
 		return;
 	end
-	if not getPlayerData(0) then return end
-	if getCore():isKey("Crafting UI", key) then
+	if not getPlayerData(playerNum) then return end
+	if getCore():isKey(KeybindId.CRAFTING_UI, key) then
 		local windowInstance = ISEntityUI.GetWindowInstance(0, "HandcraftWindow");
 		if windowInstance then
 			windowInstance:close();
 			windowInstance:removeFromUIManager();
 		else
-			ISEntityUI.OpenHandcraftWindow(getSpecificPlayer(0), nil);
+			ISEntityUI.OpenHandcraftWindow(playerObj, nil);
 		end
 	end
-    if getCore():isKey("Building UI", key) then
-        local windowInstance = ISEntityUI.GetWindowInstance(0, "BuildWindow");
+    if getCore():isKey(KeybindId.BUILDING_UI, key) then
+        local windowInstance = ISEntityUI.GetWindowInstance(playerNum, "BuildWindow");
         if windowInstance then
             windowInstance:close();
             windowInstance:removeFromUIManager();
         else
-            ISEntityUI.OpenBuildWindow(getSpecificPlayer(0));
+            ISEntityUI.OpenBuildWindow(playerObj);
         end
     end
-	if getCore():isKey("Toggle Skill Panel", key) then
-		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
+	if getCore():isKey(KeybindId.TOGGLE_SKILL_PANEL, key) then
+		xpUpdate.characterInfo = getPlayerInfoPanel(playerNum);
 		xpUpdate.characterInfo:toggleView(xpSystemText.skills);
 	end
-	if getCore():isKey("Toggle Health Panel", key) then
-		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
+	if getCore():isKey(KeybindId.TOGGLE_HEALTH_PANEL, key) then
+		xpUpdate.characterInfo = getPlayerInfoPanel(playerNum);
 		xpUpdate.characterInfo:toggleView(xpSystemText.health);
         xpUpdate.characterInfo.healthView.doctorLevel = playerObj:getPerkLevel(Perks.Doctor);
 	end
-	if getCore():isKey("Toggle Info Panel", key) then
-		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
+	if getCore():isKey(KeybindId.TOGGLE_INFO_PANEL, key) then
+		xpUpdate.characterInfo = getPlayerInfoPanel(playerNum);
 		xpUpdate.characterInfo:toggleView(xpSystemText.info);
 	end
-	if getCore():isKey("Toggle Clothing Protection Panel", key) then
-		xpUpdate.characterInfo = getPlayerInfoPanel(playerObj:getPlayerNum());
+	if getCore():isKey(KeybindId.TOGGLE_CLOTHING_PROTECTION_PANEL, key) then
+		xpUpdate.characterInfo = getPlayerInfoPanel(playerNum);
 		xpUpdate.characterInfo:toggleView(xpSystemText.protection);
-	end
-end
-
--- do we get xp ?
-xpUpdate.randXp = function()
-	if isServer() then
-		return ZombRand(100 * GameTime.getInstance():getInvMultiplier()) == 0;
-	else
-		return ZombRand(700 * GameTime.getInstance():getInvMultiplier()) == 0;
 	end
 end
 

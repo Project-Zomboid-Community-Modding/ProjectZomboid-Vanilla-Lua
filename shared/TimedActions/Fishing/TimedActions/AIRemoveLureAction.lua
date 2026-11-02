@@ -61,10 +61,10 @@ function AIRemoveLureAction:complete()
     end
     if isServer() then
         if lure then
-            local args = { rodId=self.rod:getID(), lureId = lure:getID() }
+            local args = { playerOnlineId=self.character:getOnlineID(), rodId=self.rod:getID(), lureId = lure:getID() }
             sendServerCommand(self.character, 'fishing', 'removeLure', args)
         else
-            local args = { rodId=self.rod:getID(), lureId = -1 }
+            local args = { playerOnlineId=self.character:getOnlineID(), rodId=self.rod:getID(), lureId = -1 }
             sendServerCommand(self.character, 'fishing', 'removeLure', args)
         end
     end

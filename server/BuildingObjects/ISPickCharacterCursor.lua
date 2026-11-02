@@ -10,7 +10,7 @@ function ISPickCharacterCursor:create(x, y, z, north, sprite)
 end
 
 function ISPickCharacterCursor:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		self.objectIndex = self.objectIndex + 1
 		local objects = self:getObjectList(nil)
 		if self.objectIndex > #objects then

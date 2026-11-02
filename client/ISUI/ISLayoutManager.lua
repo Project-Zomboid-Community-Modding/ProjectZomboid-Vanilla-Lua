@@ -4,7 +4,7 @@ ISLayoutManager.enableLog = false;
 
 -- Public API
 ISLayoutManager.RegisterWindow = function(name, funcs, target)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
     if ISLayoutManager.enableLog then print('layout: register window '..name) end
 	ISLayoutManager.windows[name] = {}
 	ISLayoutManager.windows[name].funcs = funcs
@@ -13,7 +13,7 @@ ISLayoutManager.RegisterWindow = function(name, funcs, target)
 end
 
 ISLayoutManager.DefaultRestoreWindow = function(window, layout)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	local x = tonumber(layout.x)
 	local y = tonumber(layout.y)
 	local width = tonumber(layout.width)
@@ -51,7 +51,7 @@ ISLayoutManager.DefaultRestoreWindow = function(window, layout)
 end
 
 ISLayoutManager.DefaultSaveWindow = function(window, layout)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	layout.x = window:getX()
 	layout.y = window:getY()
 	layout.width = window:getWidth()
@@ -61,7 +61,7 @@ end
 
 -- In-game windows are hidden when the main menu is shown
 ISLayoutManager.SaveWindowVisible = function(window, layout)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	local visible = window:getIsVisible()
 	if ISUIHandler.visibleUI and window:getJavaObject() then
 		for i,v in ipairs(ISUIHandler.visibleUI) do
@@ -75,7 +75,7 @@ end
 
 -- Private API
 ISLayoutManager.TryRestore = function(name)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	if ISLayoutManager.layouts == nil then
 		ISLayoutManager.ReadIni()
 	end
@@ -97,7 +97,7 @@ ISLayoutManager.TryRestore = function(name)
 end
 
 ISLayoutManager.CallRestoreLayout = function(name, layout)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	local w = ISLayoutManager.windows[name]
 	if w ~= nil and w.funcs.RestoreLayout ~= nil then
 		w.funcs.RestoreLayout(w.target, name, layout)
@@ -105,7 +105,7 @@ ISLayoutManager.CallRestoreLayout = function(name, layout)
 end
 
 ISLayoutManager.CallSaveLayout = function(name, layout)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	local w = ISLayoutManager.windows[name]
 	if w ~= nil and w.funcs.SaveLayout ~= nil then
 		w.funcs.SaveLayout(w.target, name, layout)
@@ -113,7 +113,7 @@ ISLayoutManager.CallSaveLayout = function(name, layout)
 end
 
 ISLayoutManager.FindResizeWidget = function(window)
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	for _,v in pairs(window:getChildren()) do
 		if v.Type == 'ISResizeWidget' then
 			return v
@@ -123,7 +123,7 @@ ISLayoutManager.FindResizeWidget = function(window)
 end
 
 ISLayoutManager.ReadIni = function()
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 	local reader = getFileReader("layout.ini", true)
 	ISLayoutManager.layouts = {}
 	local resolution = nil
@@ -167,7 +167,7 @@ ISLayoutManager.ReadIni = function()
 end
 
 ISLayoutManager.WriteIni = function()
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
     if ISLayoutManager.enableLog then print('layout: writing ini file') end
 	local writer = getFileWriter("layout.ini", true, false);
 	for _,v in pairs(ISLayoutManager.layouts) do
@@ -190,7 +190,7 @@ end
 
 ISLayoutManager.OnPostSave = function()
 
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
 
 	local xres = getCore():getScreenWidth()
 	local yres = getCore():getScreenHeight()

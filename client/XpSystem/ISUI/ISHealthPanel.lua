@@ -153,7 +153,7 @@ function ISHealthPanel:createChildren()
     self.fitness:instantiate();
 --    self.fitness.borderColor = self.buttonBorderColor;
     self:addChild(self.fitness);
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         self.fitness:setVisible(false);
     end
     self.blockingAlpha = 0.0;
@@ -1952,6 +1952,8 @@ end
 function ISHealthPanel:onAnswerMedicalCheckRequest(button)
     if button.internal == "YES" then
         acceptMedicalCheck(button.parent.target, button.parent.requester);
+    else
+        rejectMedicalCheck(button.parent.target, button.parent.requester);
     end
 end
 

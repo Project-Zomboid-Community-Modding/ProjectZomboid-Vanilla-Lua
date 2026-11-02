@@ -111,6 +111,7 @@ function ISPerkLog.init()
     --
     Events.OnCreatePlayer.Add(ISPerkLog.logCreatePlayer);
     Events.LevelPerk.Add(ISPerkLog.logPerkLevelChange);
+    Events.LogLevelPerk.Add(ISPerkLog.logPerkLevelChange);
     Events.OnPlayerDeath.Add(ISPerkLog.logDeath);
 end
 

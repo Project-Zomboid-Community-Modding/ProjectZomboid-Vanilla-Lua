@@ -260,10 +260,11 @@ local STATES = {}
 STATES[ClimbThroughWindowState.instance()] = true
 STATES[ClimbOverFenceState.instance()] = true
 STATES[ClimbOverWallState.instance()] = true
-STATES[ClimbSheetRopeState.instance()] = true
-STATES[ClimbDownSheetRopeState.instance()] = true
+STATES[ClimbState.instance()] = true
+STATES[ClimbDownState.instance()] = true
 STATES[CloseWindowState.instance()] = true
 STATES[OpenWindowState.instance()] = true
+STATES[ForceOpenState.instance()] = true
 
 ISTimedActionQueue.isPlayerDoingAction = function(playerObj)
     if not playerObj then return false end

@@ -76,19 +76,15 @@ function ISRemoveItemTool:onClick(button)
     end
     if button.internal == "REMOVE" then
         if self.startPos ~= nil and self.endPos ~= nil then
-            local itemBuffer = {}
-            for x = self.startPos.x, self.endPos.x do
-                for y = self.startPos.y, self.endPos.y do
-                    local sq = getSquare(x, y, self.zPos)
+            if self.itemType:isSelected(1) then
+                local args = { x1 = self.startPos.x, y1 = self.startPos.y, x2 = self.endPos.x, y2 = self.endPos.y, z = math.floor(self.zPos) }
+                sendClientCommand(self.player, 'object', 'removeWorldItemsInArea', args)
+            elseif self.itemType:isSelected(2) then
+                local itemBuffer = {}
+                for x = self.startPos.x, self.endPos.x do
+                    for y = self.startPos.y, self.endPos.y do
+                        local sq = getSquare(x, y, self.zPos)
 
-                    if self.itemType:isSelected(1) then
-                        for i=0, sq:getObjects():size()-1 do
-                            if instanceof(sq:getObjects():get(i), "IsoWorldInventoryObject") then
-                                local item = sq:getObjects():get(i)
-                                table.insert(itemBuffer, { it = item, square = sq })
-                            end
-                        end
-                    elseif self.itemType:isSelected(2) then
                         for i=0, sq:getStaticMovingObjects():size()-1 do
                             if instanceof(sq:getStaticMovingObjects():get(i), "IsoDeadBody") then
                                 local item = sq:getStaticMovingObjects():get(i)
@@ -97,17 +93,8 @@ function ISRemoveItemTool:onClick(button)
                         end
                     end
                 end
-            end
-            for i, itemData in ipairs(itemBuffer) do
-                local sq = itemData.square
-                local item = itemData.it
-                if self.itemType:isSelected(1) then
-                    sq:transmitRemoveItemFromSquare(item);
-                    item:removeFromWorld()
-                    item:removeFromSquare()
-                    item:setSquare(nil)
-                elseif self.itemType:isSelected(2) then
-                    sq:removeCorpse(item, false);
+                for i, itemData in ipairs(itemBuffer) do
+                    itemData.square:removeCorpse(itemData.it, false);
                 end
             end
             if self.OnRenderTick ~= nil then
@@ -290,33 +277,38 @@ function ISRemoveItemTool.removeItem(item, player)
     sendRemoveItemFromContainer(srcContainer, item);
 
     if srcContainer:getType() == "floor" and item:getWorldItem() ~= nil then
-        DesignationZoneAnimal.removeItemFromGround(item:getWorldItem())
-        if instanceof(item, "Radio") then
-            local grabSquare = item:getWorldItem():getSquare()
-            local _obj = nil
-            for i=0, grabSquare:getObjects():size()-1 do
-                local tObj = grabSquare:getObjects():get(i)
-                if instanceof(tObj, "IsoRadio") then
-                    if tObj:getModData().RadioItemID == item:getID() then
-                        _obj = tObj
-                        break
+        local worldItem = item:getWorldItem()
+        local grabSquare = worldItem:getSquare()
+        DesignationZoneAnimal.removeItemFromGround(worldItem)
+        if isClient() then
+            local args = { x = grabSquare:getX(), y = grabSquare:getY(), z = grabSquare:getZ(), id = item:getID() }
+            sendClientCommand(playerObj, 'object', 'removeWorldItem', args)
+        else
+            if instanceof(item, "Radio") then
+                local _obj = nil
+                for i=0, grabSquare:getObjects():size()-1 do
+                    local tObj = grabSquare:getObjects():get(i)
+                    if instanceof(tObj, "IsoRadio") then
+                        if tObj:getModData().RadioItemID == item:getID() then
+                            _obj = tObj
+                            break
+                        end
                     end
                 end
-            end
-            if _obj ~= nil then
-                local deviceData = _obj:getDeviceData()
-                if deviceData then
-                    item:setDeviceData(deviceData)
+                if _obj ~= nil then
+                    local deviceData = _obj:getDeviceData()
+                    if deviceData then
+                        item:setDeviceData(deviceData)
+                    end
+                    grabSquare:transmitRemoveItemFromSquare(_obj)
+                    grabSquare:RecalcProperties()
+                    grabSquare:RecalcAllWithNeighbours(true)
                 end
-                grabSquare:transmitRemoveItemFromSquare(_obj)
-                grabSquare:RecalcProperties()
-                grabSquare:RecalcAllWithNeighbours(true)
             end
-        end
 
-        item:getWorldItem():getSquare():transmitRemoveItemFromSquare(item:getWorldItem())
-        item:getWorldItem():getSquare():removeWorldObject(item:getWorldItem())
-        --item:getWorldItem():getSquare():getObjects():remove(item:getWorldItem())
+            grabSquare:transmitRemoveItemFromSquare(worldItem)
+            grabSquare:removeWorldObject(worldItem)
+        end
         item:setWorldItem(nil)
     elseif playerObj:getInventory() == srcContainer then
         playerObj:removeAttachedItem(item)

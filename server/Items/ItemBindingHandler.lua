@@ -13,14 +13,14 @@ ItemBindingHandler.onKeyPressed = function(key)
 	if not playerObj then
 		return
 	end
-	if getCore():isKey("Equip/Turn On/Off Light Source", key) then
+	if getCore():isKey(KeybindId.LIGHT_SOURCE, key) then
 		ItemBindingHandler.toggleLight(key)
 	end
 end
 
 function ItemBindingHandler.toggleLight(key)
 	local playerObj = getSpecificPlayer(0)
-	if getCore():isKey("ToggleVehicleHeadlights", key) then
+	if getCore():isKey(KeybindId.TOGGLE_VEHICLE_HEADLIGHTS, key) then
 		local vehicle = playerObj:getVehicle()
 		if vehicle and vehicle:isDriver(playerObj) and not playerObj:isAiming() then
 			if vehicle:hasHeadlights() then

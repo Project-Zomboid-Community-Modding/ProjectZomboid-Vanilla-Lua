@@ -266,7 +266,7 @@ function ISGarmentUI:doDrawItem(y, item, alt)
 	
 	if self.parent.clothing:getBloodlevelForPart(part) > 0 then
 		y = y + FONT_HGT_SMALL;
-		self:drawText(getText("IGUI_garment_Blood") .. round(self.parent.clothing:getBloodlevelForPart(part) * 100, 0) .. "%", 10, y, br,bg,bb, 1, UIFont.Small)
+		self:drawText(getText("IGUI_garment_Blood") .. " " .. round(self.parent.clothing:getBloodlevelForPart(part) * 100, 0) .. "%", 10, y, br,bg,bb, 1, UIFont.Small)
 	end
 	
 	local patch = self.parent.clothing:getPatchType(part);

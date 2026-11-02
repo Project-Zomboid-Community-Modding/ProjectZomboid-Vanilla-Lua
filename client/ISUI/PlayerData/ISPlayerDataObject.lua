@@ -109,7 +109,7 @@ function ISPlayerDataObject:createInventoryInterface()
     self.backButtonWheel:setAlwaysOnTop(true)
     self.backButtonWheel:addToUIManager()
 
-    if getCore():getGameMode() ~= "Tutorial" then
+    if not getCore():isTutorial() then
         self.playerHotbar = ISHotbar:new(playerObj)
         self.playerHotbar:initialise();
         self.playerHotbar:addToUIManager();
@@ -155,7 +155,7 @@ function ISPlayerDataObject:createInventoryInterface()
         ISLayoutManager.RegisterWindow('miniMap'..self.id, ISMiniMapOuter, self.miniMap) 
     end
 
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         self.characterInfo:setVisible(false);
         self.characterInfo:setX(25)
         self.characterInfo:setY(300)
@@ -289,10 +289,10 @@ function ISPlayerDataObject:new (id)
 end
 
 ISPlayerDataObject.onKeyPressed = function(key)
-    if getCore():isKey("Zoom in", key) then
+    if getCore():isKey(KeybindId.ZOOM_IN, key) then
         screenZoomIn();
     end
-    if getCore():isKey("Zoom out", key) then
+    if getCore():isKey(KeybindId.ZOOM_OUT, key) then
         screenZoomOut();
     end
 end

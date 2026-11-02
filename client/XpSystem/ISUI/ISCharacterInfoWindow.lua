@@ -154,7 +154,7 @@ function ISCharacterInfoWindow:createChildren()
 		ISLayoutManager.RegisterWindow('charinfowindow', ISCharacterInfoWindow, self)
 	end
     self.visibleOnStartup = self:getIsVisible() -- hack, see ISPlayerDataObject.lua
-    if getCore():getGameMode() == "Tutorial" then self:setVisible(false); end
+    if getCore():isTutorial() then self:setVisible(false); end
 end
 
 function ISCharacterInfoWindow:render()

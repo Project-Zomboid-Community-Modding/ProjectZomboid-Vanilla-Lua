@@ -33,10 +33,6 @@ function ISMenuContextWorld.new()
     end
 
 	function self.createMenu( _playerNum, _object, _objects, _x, _y, _test )
---        if getCore():getGameMode() == "Tutorial" then
---            Tutorial1.createWorldContextMenu(_playerNum, _objects, _x, _y);
---            return;
---        end
         local playerObj = getSpecificPlayer(_playerNum);
         if playerObj:isDead() or playerObj:isAsleep() or UIManager.getSpeedControls():getCurrentGameSpeed() == 0 or playerObj:getCurrentState() == FishingState.instance() then return end
         self.reset(_playerNum);

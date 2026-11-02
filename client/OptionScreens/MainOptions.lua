@@ -614,14 +614,14 @@ function MainOptions:addDisplayPanel()
     focusloss.tooltip = getText("UI_optionscreen_focusloss_tooltip");
 	function gameOption.toUI(self)
 		local box = self.control
-		box:setSelected(1, getCore():getOptionFocusloss())
+		box:setSelected(1, getCore():getOptionPauseOnFocusloss())
 	end
 	function gameOption.apply(self)
 		local box = self.control
-		if box:isSelected(1) ~= getCore():getOptionFocusloss() then
+		if box:isSelected(1) ~= getCore():getOptionPauseOnFocusloss() then
 			MainOptions.instance.monitorSettings.changed = true
 		end
-		getCore():setOptionFocusloss(box:isSelected(1))
+		getCore():setOptionPauseOnFocusloss(box:isSelected(1))
 	end
 	self.gameOptions:add(gameOption)
 
@@ -1435,9 +1435,7 @@ function MainOptions:addUIPanel()
 	gameOption = GameOption:new('zoomLevels', zoomLevelsTickBox)
 	function gameOption.toUI(self)
 		local box = self.control
-		local percentsStr = (Core.getTileScale() == 2) and
-				getCore():getOptionZoomLevels2x() or
-				getCore():getOptionZoomLevels1x()
+		local percentsStr = getCore():getOptionZoomLevels2x()
 		local percents = luautils.split(percentsStr, ";")
 		for i = 1,#box.options do
 			box:setSelected(i, (#percents == 0) or self:tableContains(percents, box.optionData[i]))
@@ -1452,11 +1450,8 @@ function MainOptions:addUIPanel()
 				s = s .. box.optionData[i]
 			end
 		end
-		if Core.getTileScale() == 2 and s ~= getCore():getOptionZoomLevels2x() then
+		if s ~= getCore():getOptionZoomLevels2x() then
 			getCore():setOptionZoomLevels2x(s)
-			getCore():zoomLevelsChanged()
-		elseif Core.getTileScale() == 1 and s ~= getCore():getOptionZoomLevels1x() then
-			getCore():setOptionZoomLevels1x(s)
 			getCore():zoomLevelsChanged()
 		end
 	end
@@ -2198,13 +2193,13 @@ function MainOptions:addKeybindingPanel()
 			keyTextElement.left = left
 			table.insert(MainOptions.keyText, keyTextElement);
 
-			if v.value == "ManualFloorAtk" then
+			if v.value == KeybindId.MANUAL_FLOOR_ATTACK:getId() then
 				-- MANUAL FLOOR ATK TOGGLE
 				y = y + BUTTON_HGT + UI_BORDER_SPACING;
 				local toggleAutoProneAtk = ISTickBox:new(x + UI_BORDER_SPACING, y+self.addY, BUTTON_HGT, BUTTON_HGT, "HELLO?")
 				toggleAutoProneAtk.choicesColor = {r=1, g=1, b=1, a=1}
 				toggleAutoProneAtk:initialise()
-				toggleAutoProneAtk.tooltip = getText("IGUI_ToggleAutoProneAtkTooltip", getKeyName(getCore():getKey("ManualFloorAtk")), getKeyName(getCore():getKey("Melee"))),
+				toggleAutoProneAtk.tooltip = getText("IGUI_ToggleAutoProneAtkTooltip", getKeyName(getCore():getKey(KeybindId.MANUAL_FLOOR_ATTACK)), getKeyName(getCore():getKey(KeybindId.MELEE))),
 				-- Must addChild *before* addOption() or ISUIElement:getKeepOnScreen() will restrict y-position to screen height
 				self.mainPanel:addChild(toggleAutoProneAtk)
 				toggleAutoProneAtk:addOption(getText("IGUI_ToggleAutoProneAtk"))
@@ -2235,7 +2230,7 @@ function MainOptions:addKeybindingPanel()
 				toggleToRunTickbox:initialise()
 				-- Must addChild *before* addOption() or ISUIElement:getKeepOnScreen() will restrict y-position to screen height
 				self.mainPanel:addChild(toggleToRunTickbox)
-				toggleToRunTickbox:addOption(getText("IGUI_ToggleToRun", getKeyName(getCore():getKey("Run"))))
+				toggleToRunTickbox:addOption(getText("IGUI_ToggleToRun", getKeyName(getCore():getKey(KeybindId.RUN))))
 				self.mainPanel:insertNewLineOfButtons(toggleToRunTickbox)
 				self.mainPanel:setScrollHeight(y + 50);
 
@@ -2243,7 +2238,7 @@ function MainOptions:addKeybindingPanel()
 				function gameOption.toUI(self)
 					local box = self.control
 					box:setSelected(1,getCore():isToggleToRun())
-					local runKeyName = getKeyName(getCore():getKey("Run"))
+					local runKeyName = getKeyName(getCore():getKey(KeybindId.RUN))
 					box.options[1] = getText("IGUI_ToggleToRun", runKeyName)
 					self.gameOptions:get("dblTapRunToSprint").control.options[1] = getText("UI_optionscreen_DblTapRunToSprint", runKeyName)
 				end
@@ -2266,7 +2261,7 @@ function MainOptions:addKeybindingPanel()
 				self.sprintBtn.enable = not getCore():isOptiondblTapJogToSprint();
 				tblTapSprint.choicesColor = {r=1, g=1, b=1, a=1};
 				tblTapSprint:initialise();
-				local runKeyName = getKeyName(getCore():getKey("Run"))
+				local runKeyName = getKeyName(getCore():getKey(KeybindId.RUN))
 				tblTapSprint:addOption(getText("UI_optionscreen_DblTapRunToSprint", runKeyName), "");
 				tblTapSprint.tooltip = getText("UI_optionscreen_DblTapRunToSprintTooltip", runKeyName, runKeyName):gsub("\\n", "\n");
 				self.mainPanel:addChild(tblTapSprint);
@@ -2296,7 +2291,7 @@ function MainOptions:addKeybindingPanel()
 				toggleToSprintTickbox:initialise()
 				-- Must addChild *before* addOption() or ISUIElement:getKeepOnScreen() will restrict y-position to screen height
 				self.mainPanel:addChild(toggleToSprintTickbox)
-				toggleToSprintTickbox:addOption(getText("IGUI_ToggleToSprint", getKeyName(getCore():getKey("Sprint"))))
+				toggleToSprintTickbox:addOption(getText("IGUI_ToggleToSprint", getKeyName(getCore():getKey(KeybindId.SPRINT))))
 				self.mainPanel:insertNewLineOfButtons(toggleToSprintTickbox)
 				self.mainPanel:setScrollHeight(y + 50);
 
@@ -2304,7 +2299,7 @@ function MainOptions:addKeybindingPanel()
 				function gameOption.toUI(self)
 					local box = self.control
 					box:setSelected(1,getCore():isToggleToSprint())
-					box.options[1] = getText("IGUI_ToggleToSprint", getKeyName(getCore():getKey("Sprint")))
+					box.options[1] = getText("IGUI_ToggleToSprint", getKeyName(getCore():getKey(KeybindId.SPRINT)))
 				end
 				function gameOption.apply(self)
 					local box = self.control
@@ -2324,7 +2319,7 @@ function MainOptions:addKeybindingPanel()
 				toggleAimTickbox:initialise()
 				-- Must addChild *before* addOption() or ISUIElement:getKeepOnScreen() will restrict y-position to screen height
 				self.mainPanel:addChild(toggleAimTickbox)
-				toggleAimTickbox:addOption(getText("UI_optionscreen_ToggleToAim", getKeyName(getCore():getKey("Aim"))))
+				toggleAimTickbox:addOption(getText("UI_optionscreen_ToggleToAim", getKeyName(getCore():getKey(KeybindId.AIM))))
 				self.mainPanel:insertNewLineOfButtons(toggleAimTickbox)
 				self.mainPanel:setScrollHeight(y + 50);
 
@@ -2332,7 +2327,7 @@ function MainOptions:addKeybindingPanel()
 				function gameOption.toUI(self)
 					local box = self.control
 					box:setSelected(1, getCore():isToggleToAim())
-					box.options[1] = getText("UI_optionscreen_ToggleToAim", getKeyName(getCore():getKey("Aim")))
+					box.options[1] = getText("UI_optionscreen_ToggleToAim", getKeyName(getCore():getKey(KeybindId.AIM)))
 				end
 				function gameOption.apply(self)
 					local box = self.control
@@ -3593,22 +3588,22 @@ function MainOptions.loadKeys()
 
 	-- update keys for new sneak anim & clothing panel
 	if getCore():getOptionUpdateSneakButton() then
-		getCore():addKeyBinding("Toggle Clothing Protection Panel", Keyboard.KEY_P, 0, false, false, false);
-		getCore():addKeyBinding("Toggle Safety", Keyboard.KEY_G, 0, false, false, false);
-		getCore():addKeyBinding("Crouch", Keyboard.KEY_C, 0, false, false, false);
-		getCore():addKeyBinding("Aim", Keyboard.KEY_LCONTROL, 0, false, false, false);
+		getCore():addKeyBinding(KeybindId.TOGGLE_CLOTHING_PROTECTION_PANEL, Keyboard.KEY_P, 0, false, false, false);
+		getCore():addKeyBinding(KeybindId.TOGGLE_SAFETY, Keyboard.KEY_G, 0, false, false, false);
+		getCore():addKeyBinding(KeybindId.CROUCH, Keyboard.KEY_C, 0, false, false, false);
+		getCore():addKeyBinding(KeybindId.AIM, Keyboard.KEY_LCONTROL, 0, false, false, false);
 		for i,v in ipairs(MainOptions.keys) do
-			if v.value == "Toggle Safety" then
-				v.key = getCore():getKey("Toggle Safety");
+			if v.value == KeybindId.TOGGLE_SAFETY:getId() then
+				v.key = getCore():getKey(KeybindId.TOGGLE_SAFETY);
 			end
-			if v.value == "Toggle Clothing Protection Panel" then
-				v.key = getCore():getKey("Toggle Clothing Protection Panel");
+			if v.value == KeybindId.TOGGLE_CLOTHING_PROTECTION_PANEL:getId() then
+				v.key = getCore():getKey(KeybindId.TOGGLE_CLOTHING_PROTECTION_PANEL);
 			end
-			if v.value == "Crouch" then
-				v.key = getCore():getKey("Crouch");
+			if v.value == KeybindId.CROUCH:getId() then
+				v.key = getCore():getKey(KeybindId.CROUCH);
 			end
-			if v.value == "Aim" then
-				v.key = getCore():getKey("Aim");
+			if v.value == KeybindId.AIM:getId() then
+				v.key = getCore():getKey(KeybindId.AIM);
 			end
 		end
 		reload = true;
@@ -3617,11 +3612,11 @@ function MainOptions.loadKeys()
 	end
 
 	-- force the change of vehicle horn if it's equal to Toggle Health Panel
-	if getCore():getKey("Toggle Health Panel") == getCore():getKey("VehicleHorn") then
-		getCore():addKeyBinding("VehicleHorn", getCore():getKey("Shout"), 0, false, false, false);
+	if getCore():getKey(KeybindId.TOGGLE_HEALTH_PANEL) == getCore():getKey(KeybindId.VEHICLE_HORN) then
+		getCore():addKeyBinding("VehicleHorn", getCore():getKey(KeybindId.SHOUT), 0, false, false, false);
 		for i,v in ipairs(MainOptions.keys) do
-			if v.value == "VehicleHorn" then
-				v.key = getCore():getKey("VehicleHorn");
+			if v.value == KeybindId.VEHICLE_HORN:getId() then
+				v.key = getCore():getKey(KeybindId.VEHICLE_HORN);
 				break;
 			end
 		end

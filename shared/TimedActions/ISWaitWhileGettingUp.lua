@@ -11,7 +11,7 @@ function ISWaitWhileGettingUp:waitToStart()
 end
 
 function ISWaitWhileGettingUp:start()
-	if not self.character:isSitOnGround() and not self.character:isSittingOnFurniture() then
+	if not self.character:isSitting() then
 		self:forceComplete()
 		return
 	end
@@ -19,7 +19,7 @@ function ISWaitWhileGettingUp:start()
 end
 
 function ISWaitWhileGettingUp:update()
-	if not self.character:isSitOnGround() and not self.character:isSittingOnFurniture() then
+	if not self.character:isSitting() then
 		self:forceComplete()
 	end
 end

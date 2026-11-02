@@ -5,6 +5,10 @@ ISFitnessUI.enduranceLevelThreshold = 2;
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local PRIMARY_ITEM = "primary"
+local SECONDARY_ITEM = "secondary"
+local TWO_HANDS_ITEM = "twohands"
+local CLOTHING_ITEM = "clothing"
 
 local function noise(str)
 	if getDebug() then print(str) end
@@ -206,6 +210,24 @@ function ISFitnessUI:prerender()
 	end
 end
 
+function ISFitnessUI:update()
+    if self.currentExercice and not self.player:getFitness():getCurrentExe() then
+        for type, item in pairs(self.itemsToReequip) do
+            if type == PRIMARY_ITEM then
+                ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), item, true, false);
+            elseif type == SECONDARY_ITEM then
+                ISWorldObjectContextMenu.equip(self.player, self.player:getSecondaryHandItem(), item, false, false);
+            elseif type == TWO_HANDS_ITEM then
+                ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), item, true, true);
+            else
+                ISInventoryPaneContextMenu.wearItem(item, self.player:getPlayerNum())
+            end
+        end
+        self.itemsToReequip = {}
+        self.currentExercice = nil
+    end
+end
+
 function ISFitnessUI:updateButtons(currentAction)
 	self.cancel.enable = false;
 	self.ok.enable = true;
@@ -245,16 +267,23 @@ function ISFitnessUI:equipItems()
 	if self.exeData.item and not self.player:getInventory():contains(self.exeData.item, true) then
 		return false;
 	end
+    self.itemsToReequip[PRIMARY_ITEM] = self.player:getPrimaryHandItem()
+    if not self.player:isItemInBothHands(self.player:getPrimaryHandItem()) then
+        self.itemsToReequip[SECONDARY_ITEM] = self.player:getSecondaryHandItem()
+    else
+        self.itemsToReequip[PRIMARY_ITEM] = nil
+        self.itemsToReequip[TWO_HANDS_ITEM] = self.player:getPrimaryHandItem()
+    end
 	if not self.exeData.prop then
 		ISInventoryPaneContextMenu.unequipItem(self.player:getPrimaryHandItem(), self.player:getPlayerNum())
 		if not self.player:isItemInBothHands(self.player:getPrimaryHandItem()) then
 			ISInventoryPaneContextMenu.unequipItem(self.player:getSecondaryHandItem(), self.player:getPlayerNum())
 		end
 	end
-	if self.exeData.prop == "twohands" then
+	if self.exeData.prop == TWO_HANDS_ITEM then
 		ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), self.exeData.item, true, true);
 	end
-	if self.exeData.prop == "primary" then
+	if self.exeData.prop == PRIMARY_ITEM then
 		ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), self.exeData.item, true, false);
 		self.player:setSecondaryHandItem(nil);
 	end
@@ -266,6 +295,7 @@ function ISFitnessUI:equipItems()
 	for i=0,self.player:getWornItems():size()-1 do
 		local item = self.player:getWornItems():get(i):getItem();
 		if item and instanceof(item, "InventoryContainer") then
+            self.itemsToReequip[CLOTHING_ITEM .. i] = item
 			ISTimedActionQueue.add(ISUnequipAction:new(self.player, item, 50));
 		end
 	end
@@ -278,6 +308,7 @@ function ISFitnessUI:onClick(button)
 		local haveItem = self:equipItems();
 		if not haveItem then return; end
 		local action = ISFitnessAction:new(self.player, self.selectedExe, tonumber(self.exeTime:getInternalText()), self.exeData, self.exeData.type);
+        self.currentExercice = self.exeData.type
 		action.fitnessUI = self;
 		ISTimedActionQueue.addGetUpAndThen(self.player, action);
 	elseif button.internal == "CLOSE" then
@@ -347,6 +378,7 @@ function ISFitnessUI:new(x, y, width, height, player, clickedSquare)
 	o.fitness = player:getFitness();
 	o.fgBar = {r=0, g=0.6, b=0, a=0.7 }
 	o.regularityProgressBarWidth = 150;
+    o.itemsToReequip = {}
 	ISFitnessUI.instance[player:getPlayerNum()+1] = o;
 
 	o.player:getFitness():init();

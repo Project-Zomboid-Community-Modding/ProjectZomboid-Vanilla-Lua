@@ -538,20 +538,15 @@ function ISVehicleSeatUI:setVehicle(vehicle)
 end
 
 function ISVehicleSeatUI:isKeyConsumed(key)
-	if getCore():isKey("VehicleHorn", key) then
+	if getCore():isKey(KeybindId.VEHICLE_HORN, key) then
 		-- Don't consume the key release, or the horn won't stop.
 		return false
 	end
 	return true
-	--[[
-	return (key == Keyboard.KEY_ESCAPE) or
-		(getCore():isKey("VehicleSwitchSeat", key)) or
-		(key >= Keyboard.KEY_1 and key <= Keyboard.KEY_9)
-	--]]
 end
 
 function ISVehicleSeatUI:onKeyPress(key)
-	if getCore():isKey("VehicleSwitchSeat", key) then
+	if getCore():isKey(KeybindId.VEHICLE_SWITCH_SEAT, key) then
 		self:closeSelf()
 		return
 	end

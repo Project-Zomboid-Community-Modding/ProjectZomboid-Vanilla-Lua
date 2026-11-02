@@ -34,6 +34,24 @@ function ISRadioAction:perform()
     ISBaseTimedAction.perform(self)
 end
 
+function ISRadioAction:complete()
+    if not isServer() then
+        return true;
+    end
+
+    if not self.deviceData then
+        return false;
+    end
+
+    if self.mode == "AddHeadphones" then
+        self:performAddHeadphones();
+    elseif self.mode == "RemoveHeadphones" then
+        self:performRemoveHeadphones();
+    end
+
+    return true;
+end
+
 -- ToggleOnOff
 function ISRadioAction:isValidToggleOnOff()
     return self.deviceData:getIsBatteryPowered() and self.deviceData:getPower()>0 or self.deviceData:canBePoweredHere();
@@ -139,8 +157,8 @@ function ISRadioAction:isValidRemoveHeadphones()
 end
 
 function ISRadioAction:performRemoveHeadphones()
-    if self:isValidRemoveHeadphones() and self.character:getInventory() then
-        self.deviceData:getHeadphones(self.character:getInventory());
+    if not isClient() and self:isValidRemoveHeadphones() and self.character:getInventory() then
+        self.deviceData:addHeadphonesToInventory(self.character:getInventory());
     end
 end
 
@@ -150,8 +168,8 @@ function ISRadioAction:isValidAddHeadphones()
 end
 
 function ISRadioAction:performAddHeadphones()
-    if self:isValidAddHeadphones() and self.secondaryItem then
-        self.deviceData:addHeadphones(self.secondaryItem);
+    if not isClient() and self:isValidAddHeadphones() and self.secondaryItem then
+        self.deviceData:addHeadphones(self.secondaryItem, self.secondaryItem:getContainer());
     end
 end
 

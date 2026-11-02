@@ -46,9 +46,9 @@ function ISMoveableCursor.exitCursorKey( _key )
         if not _key then
             disable = true;
         else
-            if getCore():isKey("Run", _key) then
+            if getCore():isKey(KeybindId.RUN, _key) then
                 disable = true;
-            elseif getCore():isKey("Interact", _key) then
+            elseif getCore():isKey(KeybindId.INTERACT, _key) then
                 disable = true;
             end
         end
@@ -97,7 +97,7 @@ function ISMoveableCursor.changeModeKey( _key, _playerNum, _joyPadTriggered )
         end
         return
     end
-    if getCore():isKey("Toggle mode", _key) or _joyPadTriggered then
+    if getCore():isKey(KeybindId.TOGGLE_MODE, _key) or _joyPadTriggered then
         local playerID = _playerNum or 0;
         for k,v in ipairs(ISMoveableCursor.modes.tags) do
             if v == ISMoveableCursor.mode[playerID] then
@@ -156,19 +156,19 @@ function ISMoveableCursor:setMoveableMode( _mode )
                     local lastbit = ""; --""[br/]'"..Keyboard.getKeyName(getCore():getKey("Toggle Moveable Panel Mode")).."' = change panel display mode."; -- "[br/]'"..Keyboard.getKeyName(getCore():getKey("Toggle mode")).."' = toggle moveable modes.[br/]'"..Keyboard.getKeyName(getCore():getKey("Toggle Moveable Panel Mode")).."' = change panel display mode.";
                     if ISMoveableCursor.mode[self.player] == "pickup" then
                         infoPanel:setHeaderText( getText("IGUI_Pickup"), UIFont.Medium );
-                        infoPanel:setFooterText( "'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
+                        infoPanel:setFooterText( "'"..getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
                     elseif ISMoveableCursor.mode[self.player] == "place" then
                         infoPanel:setHeaderText( getText("IGUI_Place"), UIFont.Medium );
-                        infoPanel:setFooterText( getText("IGUI_HoldButton")..".[br/]'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle2").."."..lastbit, UIFont.Small );
+                        infoPanel:setFooterText( getText("IGUI_HoldButton")..".[br/]'"..getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)).."' = "..getText("IGUI_Cycle2").."."..lastbit, UIFont.Small );
                     elseif ISMoveableCursor.mode[self.player] == "rotate" then
                         infoPanel:setHeaderText( getText("IGUI_Rotate"), UIFont.Medium );
-                        infoPanel:setFooterText( getText("IGUI_HoldButton")..".[br/]'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle3").."."..lastbit, UIFont.Small );
+                        infoPanel:setFooterText( getText("IGUI_HoldButton")..".[br/]'"..getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)).."' = "..getText("IGUI_Cycle3").."."..lastbit, UIFont.Small );
                     elseif ISMoveableCursor.mode[self.player] == "scrap" then
                         infoPanel:setHeaderText( getText("IGUI_Scrap"), UIFont.Medium );
-                        infoPanel:setFooterText( "'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
+                        infoPanel:setFooterText( "'"..getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
                     elseif ISMoveableCursor.mode[self.player] == "repair" then
                         infoPanel:setHeaderText( getText("IGUI_Repair"), UIFont.Medium );
-                        infoPanel:setFooterText( "'"..Keyboard.getKeyName(getCore():getKey("Rotate building")).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
+                        infoPanel:setFooterText( "'"..getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)).."' = "..getText("IGUI_Cycle1").."."..lastbit, UIFont.Small );
                     end
 
                     ISMoveableCursor.cacheMode[self.player] = ISMoveableCursor.mode[self.player];
@@ -318,7 +318,7 @@ function ISMoveableCursor:beforeWorldRender(x, y, z)
     if (self.isLeftDown or self.build) and self.square then
         square = self.square
     end
-    if self.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() and not GameKeyboard.isKeyDown("Attack/Click") and isMouseOverUI() then
+    if self.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() and not isKeyDown(KeybindId.ATTACK_CLICK) and isMouseOverUI() then
         square = nil
     end
     self:isValid(square, self.north)
@@ -704,7 +704,7 @@ function ISMoveableCursor:rotateKey(key, _joypadTriggered)
         self.cursorFacing = nil
         self.joypadFacing = nil
     end
-    if (getCore():isKey("Rotate building", key) or _joypadTriggered) and not self.cursorFacing then --disable key when rotating with mouse
+    if (getCore():isKey(KeybindId.ROTATE_BUILDING, key) or _joypadTriggered) and not self.cursorFacing then --disable key when rotating with mouse
         if ISMoveableCursor.mode[self.player] == "rotate" and not self.canCreate then
             --return;
         end

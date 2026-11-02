@@ -47,6 +47,7 @@ function ISDebugMenu:setupButtons()
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_UnitTests"), function() UnitTestsDebug:OnOpenPanel() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_CharacterDebug"), function() ISCharacterDebugUI.OnOpenPanel() end, "DEV");
     self:addButtonInfo(getText("IGUI_DebugMenu_Dev_ForgetRecipes"), function() ISDebugMenu:onForgetRecipes() end, "DEV");
+    self:addButtonInfo(getText("IGUI_DebugMenu_Dev_SeamEditor"), showSeamEditor, "DEV");
 
     --sort buttons alphabetically
     table.sort(self.buttons, function(a, b) return string.sort(b.title, a.title) end);

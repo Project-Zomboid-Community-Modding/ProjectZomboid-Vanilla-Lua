@@ -7,7 +7,7 @@ function ISWorldMenuElements.ContextEntity()
     end
 
     function self.createMenu( _data )
-        if getCore():getGameMode() == "Tutorial" then
+        if getCore():isTutorial() then
             return;
         end
 

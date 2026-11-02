@@ -87,8 +87,17 @@ function ISBuildIsoEntity:render(x, y, z, square)
 					if not self.tileCheck or self.tileCheck ~= getSprite(tileInfo:getSpriteName()) then
 						self.tileCheck = getSprite(tileInfo:getSpriteName());
 						local props = self.tileCheck:getProperties();
-						self.isWallLike = props:has(IsoPropertyType.WALL_N) or props:has(IsoPropertyType.WALL_W) or props:has(IsoPropertyType.WALL_N_TRANS) or props:has(IsoPropertyType.WALL_W_TRANS) or props:has(IsoPropertyType.WINDOW_N) or props:has(IsoPropertyType.WINDOW_W) or props:has(IsoPropertyType.DOOR_WALL_N) or props:has(IsoPropertyType.DOOR_WALL_W);
-					end
+						self.isWallLike = props:has(IsoPropertyType.WALL_N)
+                                            or props:has(IsoPropertyType.WALL_N_TRANS)
+                                            or props:has(IsoPropertyType.WALL_W)
+                                            or props:has(IsoPropertyType.WALL_W_TRANS)
+                                            or props:has(IsoPropertyType.WINDOW_N)
+                                            or props:has(IsoPropertyType.WINDOW_FRAME_N)
+                                            or props:has(IsoPropertyType.WINDOW_W)
+                                            or props:has(IsoPropertyType.WINDOW_FRAME_W)
+                                            or props:has(IsoPropertyType.DOOR_WALL_N)
+                                            or props:has(IsoPropertyType.DOOR_WALL_W);
+                    end
 					local sprite = tileInfo:getSpriteName() and self.spriteCache[tileInfo:getSpriteName()] or self.tileSprite;
 					if sprite then
 						local offsetY = 0
@@ -567,7 +576,11 @@ function ISBuildIsoEntity:create(x, y, z, north, sprite)
 
     if self.buildPanelLogic then
         self.buildPanelLogic:getRecipeDataInProgress():luaCallOnCreate(self.character);
-        self.buildPanelLogic:getRecipeDataInProgress():processDestroyAndUsedItems(self.character); -- todo handle syncing items and inventory stuff here
+        if (self.buildPanelLogic:getRecipeDataInProgress():getRecipe()) then
+            self.buildPanelLogic:getRecipeDataInProgress():processDestroyAndUsedItems(self.character); -- todo handle syncing items and inventory stuff here
+        else
+            print("ISBuildIsoEntity -> buildPanel recipe is invalid")
+        end
     end
 
 	self:updateModData()
@@ -593,7 +606,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 	if self.objectInfo:getScript():isProp() then
 		local props = ISMoveableSpriteProps.new(IsoObject.new(square, sprite):getSprite())
 		props.rawWeight = 10
-		props:placeMoveableInternal(square, instanceItem(ItemKey.Weapon.PLANK), sprite)
+		props:placeMoveableInternal(self.character, square, instanceItem(ItemKey.Weapon.PLANK), sprite)
 		return;
 	end
 
@@ -759,7 +772,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
 end
 
 function ISBuildIsoEntity:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		--todo
 		self.nSprite = self.nSprite + 1;
 		if self.nSprite > 4 then

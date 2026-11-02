@@ -1002,8 +1002,7 @@ function SandboxOptionsScreen:onOptionMouseDown(button, x, y)
         if preset and not preset.userDefined then
             local screenW = getCore():getScreenWidth()
             local screenH = getCore():getScreenHeight()
-            local modal = ISModalDialog:new((screenW - 230) / 2, (screenH - 120) / 2, 230, 120,
-                    "Overwrite media/lua/shared/Sandbox/" .. preset.name .. ".lua?", true, self, self.onSaveDeveloperPreset);
+            local modal = ISModalDialog:new((screenW - 230) / 2, (screenH - 120) / 2, 230, 120, getText("IGUI_Sandbox_Overwrite", "media/lua/shared/Sandbox/" .. preset.name .. ".lua"), true, self, self.onSaveDeveloperPreset);
             modal.backgroundColor.a = 0.9
             modal:initialise()
             modal:setCapture(true)

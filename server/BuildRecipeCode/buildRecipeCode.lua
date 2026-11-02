@@ -2,13 +2,19 @@ BuildRecipeCode = BuildRecipeCode or {}
 BuildRecipeCode.barricade = {}
 BuildRecipeCode.canBePlastered = {}
 BuildRecipeCode.stairs = {}
+BuildRecipeCode.fenceOrWall = {}
+BuildRecipeCode.fenceOrWallCanBePlastered = {}
 BuildRecipeCode.floor = {}
+BuildRecipeCode.door = {}
 BuildRecipeCode.doorFrame = {}
+BuildRecipeCode.doorFrameCanBePlastered = {}
 BuildRecipeCode.butcheringHook = {}
 BuildRecipeCode.chickenHutch = {}
 BuildRecipeCode.feedingTrough = {}
 BuildRecipeCode.campfire = {}
 BuildRecipeCode.composter = {}
+BuildRecipeCode.windowFrame = {}
+BuildRecipeCode.windowFrameCanBePlastered = {}
 BuildRecipeCode.windowGlass = {};
 BuildRecipeCode.woodLampPillar = {};
 
@@ -512,16 +518,14 @@ function BuildRecipeCode.campfire.OnCreate(params)
     local thumpable = params.thumpable;
 	local grid = thumpable:getSquare()
 	if not grid then return end
-	-- 	if self:getIsoObjectOnSquare(grid) then return nil end
+	thumpable:setBlockAllTheSquare(false)
 
 	local luaObject = SCampfireSystem.instance:newLuaObjectOnSquare(grid)
 	luaObject:initNew()
 	luaObject:addObject()
 	luaObject:addContainer()
-	--luaObject:getIsoObject():transmitCompleteItemToClients()
-	-- 	self:noise("#campfires="..self:getLuaObjectCount())
+    luaObject:getContainer():setExplored(true)
 	luaObject:saveData()
-	--return luaObject;
 end
 
 function BuildRecipeCode.composter.OnCreate(params)
@@ -616,4 +620,55 @@ function BuildRecipeCode.barrelOven.OnCreate(params)
 	end
 
 	return { replaceObject = true, object = javaObject };
+end
+
+function BuildRecipeCode.fenceOrWall.OnCreate(params)
+    local thumpable = params.thumpable
+    local square = thumpable:getSquare()
+    for i = square:getObjects():size(),1,-1 do
+        local object = square:getObjects():get(i-1)
+        if object:hasProperty(IsoFlagType.solidfloor) then
+            if i ~= thumpable:getObjectIndex() + 1 then
+                square:RemoveTileObject(thumpable, false)
+                square:AddSpecialObject(thumpable, i)
+            end
+            return nil
+        end
+    end
+    return nil
+end
+
+function BuildRecipeCode.fenceOrWallCanBePlastered.OnCreate(params)
+    params.thumpable:setCanBePlastered(true)
+    return BuildRecipeCode.fenceOrWall.OnCreate(params)
+end
+
+function BuildRecipeCode.door.OnCreate(params)
+    local thumpable = params.thumpable
+    local square = thumpable:getSquare()
+    for i = square:getObjects():size(),1,-1 do
+        local object = square:getObjects():get(i-1)
+        if (params.facing == "w" and object:isType(IsoObjectType.doorFrW)) or (params.facing == "n" and object:isType(IsoObjectType.doorFrN)) then
+            square:RemoveTileObject(thumpable, false)
+            square:AddSpecialObject(thumpable, i)
+            return nil
+        end
+    end
+    return BuildRecipeCode.fenceOrWall.OnCreate(params)
+end
+
+function BuildRecipeCode.doorFrame.OnCreate(params)
+    return BuildRecipeCode.fenceOrWall.OnCreate(params)
+end
+
+function BuildRecipeCode.doorFrameCanBePlastered.OnCreate(params)
+    return BuildRecipeCode.fenceOrWallCanBePlastered.OnCreate(params)
+end
+
+function BuildRecipeCode.windowFrame.OnCreate(params)
+    return BuildRecipeCode.fenceOrWall.OnCreate(params)
+end
+
+function BuildRecipeCode.windowFrameCanBePlastered.OnCreate(params)
+    return BuildRecipeCode.fenceOrWallCanBePlastered.OnCreate(params)
 end

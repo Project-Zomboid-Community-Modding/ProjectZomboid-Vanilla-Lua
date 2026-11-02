@@ -1,5 +1,7 @@
 require "ISUI/ISCollapsableWindow"
 
+local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+
 ZombiePopulationWindow = ISCollapsableWindow:derive("ZombiePopulationWindow")
 
 function ZombiePopulationWindow:initialise()
@@ -158,6 +160,38 @@ function ZombiePopulationWindow:renderTex()
 	self:setStencilRect(0, 0, self:getWidth(), self:getHeight())
 	self.renderer:render(self.javaObject, self.parent.zoom, self.parent.xpos, self.parent.ypos)
 	self:clearStencilRect()
+end
+
+function ZombiePopulationWindow:render()
+	ISCollapsableWindow.render(self)
+	local renderer = self.renderPanel.renderer
+	if renderer:getBoolean("Coordinates") then
+		self:renderCoordinates()
+	end
+end
+
+function ZombiePopulationWindow:renderCoordinates()
+	local renderer = self.renderPanel.renderer
+	local worldX = renderer:uiToWorldX(self.renderPanel:getMouseX())
+	local worldY = renderer:uiToWorldY(self.renderPanel:getMouseY())
+	local cellX256 = worldX / getCellSizeInSquares()
+	local cellY256 = worldY / getCellSizeInSquares()
+	local chunkX256 = worldX / getChunkSizeInSquares()
+	local chunkY256 = worldY / getChunkSizeInSquares()
+	local cellX300 = worldX / 300
+	local cellY300 = worldY / 300
+	local chunkX300 = worldX / 10
+	local chunkY300 = worldY / 10
+	local y = self:titleBarHeight() + 10
+	self.javaObject:drawTextWithBackground(UIFont.Small, string.format("Position: %d,%d", worldX, worldY), 10, y, 1.0, 1.0, 1.0, 1.0, 6, 4, 0.0, 0.0, 0.0, 1.0)
+	y = y + FONT_HGT_SMALL
+	self.javaObject:drawTextWithBackground(UIFont.Small, string.format("Chunk (256x256): %d,%d", chunkX256, chunkY256), 10, y, 1.0, 1.0, 1.0, 1.0, 6, 4, 0.0, 0.0, 0.0, 1.0)
+	y = y + FONT_HGT_SMALL
+	self.javaObject:drawTextWithBackground(UIFont.Small, string.format("Chunk (300x300): %d,%d", chunkX300, chunkY300), 10, y, 1.0, 1.0, 1.0, 1.0, 6, 4, 0.0, 0.0, 0.0, 1.0)
+	y = y + FONT_HGT_SMALL
+	self.javaObject:drawTextWithBackground(UIFont.Small, string.format("Cell (256x256): %d,%d", cellX256, cellY256), 10, y, 1.0, 1.0, 1.0, 1.0, 6, 4, 0.0, 0.0, 0.0, 1.0)
+	y = y + FONT_HGT_SMALL
+	self.javaObject:drawTextWithBackground(UIFont.Small, string.format("Cell (300x300): %d,%d", cellX300, cellY300), 10, y, 1.0, 1.0, 1.0, 1.0, 6, 4, 0.0, 0.0, 0.0, 1.0)
 end
 
 function ZombiePopulationWindow:new(x, y, width, height)

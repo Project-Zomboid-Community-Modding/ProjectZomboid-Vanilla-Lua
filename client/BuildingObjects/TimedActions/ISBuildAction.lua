@@ -108,14 +108,14 @@ function ISBuildAction:update()
     self:faceLocation();
 
     if isClient() then
-        if isActionDone(self.transactionId) then
+        if isActionDone(self.character, self.transactionId) then
             self:forceComplete();
-        elseif isActionRejected(self.transactionId) then
+        elseif isActionRejected(self.character, self.transactionId) then
             self:forceStop();
         end
 
         if self.maxTime == -1 then
-            local duration = getActionDuration(self.transactionId)
+            local duration = getActionDuration(self.character, self.transactionId)
             if duration > 0 then
                 self.maxTime = duration
                 self.action:setTime(self.maxTime)
@@ -165,7 +165,7 @@ function ISBuildAction:stop()
     if self.craftingSound and self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound) then
         self.character:stopOrTriggerSound(self.craftingSound);
     end
-	removeAction(self.transactionId, true)
+	removeAction(self.character, self.transactionId, true)
 	ISBaseTimedAction.stop(self);
     
     if self.onCompleteFunc then
@@ -199,7 +199,7 @@ end
 
 
 function ISBuildAction:perform()
-    removeAction(self.transactionId, false)
+    removeAction(self.character, self.transactionId, false)
 
 	self.item.ghostSprite = nil;
     if self.sawSound and self.sawSound ~= 0 and self.character:getEmitter():isPlaying(self.sawSound) then
@@ -222,7 +222,7 @@ function ISBuildAction:perform()
     -- reduce the condition of the hammer if it's a stone hammer
     local hammer = self.character:getPrimaryHandItem()
     if hammer and ( hammer:getType() == "HammerStone" or hammer:hasTag(ItemTag.CRUDE) ) and hammer:damageCheck(0,1,false) then
-        ISWorldObjectContextMenu.checkWeapon(self.character);
+        ItemUtils.checkWeapon(self.character);
     end
 
     self.item.character = self.character;

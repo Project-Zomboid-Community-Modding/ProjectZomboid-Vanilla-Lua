@@ -275,16 +275,6 @@ function MainScreen:instantiate()
         self.charCreationProfession.backgroundColor = {r=0, g=0, b=0, a=0.8};
         self.charCreationProfession.borderColor = {r=1, g=1, b=1, a=0.5};
 
-		self.lastStandPlayerSelect = LastStandPlayerSelect:new(0, 0, self.width, self.height);
-        self.lastStandPlayerSelect:initialise();
-        self.lastStandPlayerSelect:setVisible(false);
-        self.lastStandPlayerSelect:setAnchorRight(true);
-        self.lastStandPlayerSelect:setAnchorLeft(true);
-        self.lastStandPlayerSelect:setAnchorBottom(true);
-        self.lastStandPlayerSelect:setAnchorTop(true);
-        self.lastStandPlayerSelect.backgroundColor = {r=0, g=0, b=0, a=0.8};
-        self.lastStandPlayerSelect.borderColor = {r=1, g=1, b=1, a=0.5};
-
         self.serverSettingsScreen = ServerSettingsScreen:new(0, 0, self.width, self.height);
         self.serverSettingsScreen:initialise();
         self.serverSettingsScreen:setVisible(false);
@@ -317,7 +307,6 @@ function MainScreen:instantiate()
         self:addChild(self.connectToServer);
         self:addChild(self.serverConnectPopup);
         self:addChild(self.multiplayer);
-		self:addChild(self.lastStandPlayerSelect);
         if self.workshopSubmit then
             self:addChild(self.workshopSubmit)
         end
@@ -355,7 +344,6 @@ function MainScreen:instantiate()
         { self.charCreationMain, 1, 1 },
         { self.inviteFriends, 0.7, 0.8 },
         { self.modSelect, 0.9, 0.9 },
-        { self.lastStandPlayerSelect, 1, 1 },
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },
@@ -712,7 +700,6 @@ function MainScreen:instantiate()
         self.desc = SurvivorFactory.CreateSurvivor();
         self.charCreationMain:create();
         self.charCreationProfession:create();
-        self.lastStandPlayerSelect:create();
         self.sandOptions:create();
         self.soloScreen:create();
         self.creditsScreen:create()
@@ -750,8 +737,7 @@ function MainScreen:instantiate()
     end
 
 	if not self.inGame and not isDemo() then
-		deleteAllGameModeSaves("LastStand")
-		deleteAllGameModeSaves("Tutorial")
+		deleteAllGameModeSaves(GameMode.TUTORIAL)
 	end
 end
 
@@ -1010,9 +996,9 @@ MainScreen.startTutorial = function()
         getCore():ResetLua("currentGame", "startTutorial")
     end
 
-    deleteAllGameModeSaves("Tutorial");
+    deleteAllGameModeSaves(GameMode.TUTORIAL);
     MainScreen.instance:setDefaultSandboxVars()
-    getWorld():setGameMode("Tutorial");
+    getWorld():setGameMode(GameMode.TUTORIAL);
     local worldName = ZombRand(100000)..ZombRand(100000)..ZombRand(100000)..ZombRand(100000);
     getWorld():setWorld(worldName);
     doTutorial(Tutorial1);
@@ -1062,8 +1048,8 @@ function MainScreen.checkSaveFile()
     if not saveInfo.gameMode then
         local text = " <H1> " .. getText("UI_mainscreen_ErrorLoadingSavefile") .. " <H2> <LINE> <LINE> "
         text = text .. getText("UI_mainscreen_SavefileName", getWorld():getWorld()) .. " <LINE> <H2> "
-        local gameMode = getTextOrNull("IGUI_Gametime_" .. getWorld():getGameMode())
-        if not gameMode then gameMode = getWorld():getGameMode() end
+        local gameMode = getTextOrNull("IGUI_Gametime_" .. getWorld():getGameMode():toString())
+        if not gameMode then gameMode = getWorld():getGameMode():toString() end
         text = text .. getText("IGUI_Gametime_GameMode", gameMode) .. " <LINE> <H2> "
         text = text .. " <TEXT> <RED> " .. getText("UI_mainscreen_SavefileNotFound") .. " <RGB:1,1,1> <LINE> "
         MainScreen.displayCheckSavefileModal(text, true, saveInfo.activeMods)
@@ -1095,8 +1081,8 @@ function MainScreen.checkSaveFile()
     if errorMsg then
         local text = " <H1> " .. getText("UI_mainscreen_ErrorLoadingSavefile") .. " <H2> <LINE> <LINE> "
         text = text .. getText("UI_mainscreen_SavefileName", getWorld():getWorld()) .. " <LINE> <H2> "
-        local gameMode = getTextOrNull("IGUI_Gametime_" .. getWorld():getGameMode())
-        if not gameMode then gameMode = getWorld():getGameMode() end
+        local gameMode = getTextOrNull("IGUI_Gametime_" .. getWorld():getGameMode():toString())
+        if not gameMode then gameMode = getWorld():getGameMode():toString() end
         text = text .. getText("IGUI_Gametime_GameMode", gameMode) .. " <LINE> <H2> "
         text = text .. lastPlayed .. " <LINE> "
 
@@ -1259,7 +1245,7 @@ function MainScreen.continueLatestSaveAux(fromResetLua, checkWorldVersion)
         local map = saveInfo.mapName or "DEFAULT"
          -- Needed if map_ver.bin doesn't exist since we aren't showing WorldSelect
         getWorld():setMap(map)
-        if getWorld():getGameMode() == "Sandbox" then
+        if getWorld():getGameMode() == GameMode.SANDBOX then
             -- Ensure CharacterFreeTraits is available
             getSandboxOptions():loadCurrentGameBinFile()
         end
@@ -1281,16 +1267,12 @@ function MainScreen.continueLatestSaveAux(fromResetLua, checkWorldVersion)
 end
 
 MainScreen.continueLatestSave = function(gameMode, saveName)
-	if gameMode == "LastStand" then
-		return -- LastStand has no savefiles
-	end
-
     if gameMode == "Multiplayer" then
         return
     end
 
 	if gameMode == "Sandbox" then
-		getWorld():setGameMode("Sandbox")
+		getWorld():setGameMode(GameMode.SANDBOX)
 		getWorld():setWorld(saveName)
 		MainScreen.instance:setDefaultSandboxVars() -- in case map_sand.bin doesn't exist, FIXME: use SandboxOptions.getDefaultPreset()?
 		MainScreen.continueLatestSaveAux()
@@ -1298,9 +1280,9 @@ MainScreen.continueLatestSave = function(gameMode, saveName)
 	end
 
 	-- None of the above? Must be a challenge.  Ignore obsolete challenges.
-	for i,challenge in ipairs(LastStandChallenge) do
+	for i,challenge in ipairs(ChallengeList) do
 		if challenge.gameMode == gameMode then
-			LastStandData.chosenChallenge = challenge
+            ChallengeData.chosenChallenge = challenge
 			doChallenge(challenge)
 			getWorld():setWorld(saveName)
 			MainScreen.instance:setDefaultSandboxVars()
@@ -1374,7 +1356,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         return
     end
     if item.internal == "RETURN" then
-        ToggleEscapeMenu(getCore():getKey("Main Menu"))
+        ToggleEscapeMenu(getCore():getKey(KeybindId.MAIN_MENU))
         return
     end
 
@@ -1419,7 +1401,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         local modal = ISAdminPanelUI:new(200, 200, 350, 400)
         modal:initialise();
         modal:addToUIManager();
-        ToggleEscapeMenu(getCore():getKey("Main Menu"))
+        ToggleEscapeMenu(getCore():getKey(KeybindId.MAIN_MENU))
         return
     end
     if item.internal == "USERPANEL" then
@@ -1429,7 +1411,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
         local modal = ISUserPanelUI:new(200, 200, 400, 250, getPlayer())
         modal:initialise();
         modal:addToUIManager();
-        ToggleEscapeMenu(getCore():getKey("Main Menu"))
+        ToggleEscapeMenu(getCore():getKey(KeybindId.MAIN_MENU))
         return
     end
     if item.internal == "TUTORIAL" then
@@ -1437,7 +1419,7 @@ MainScreen.onMenuItemMouseDownMainMenu = function(item, x, y)
     end
     if item.internal == "APOCALYPSE" then
         MainScreen.instance:setDefaultSandboxVars()
-            getWorld():setGameMode("Sandbox");
+            getWorld():setGameMode(GameMode.SANDBOX);
             getWorld():setMap("DEFAULT")
             getWorld():setWorld("demo");
             deleteSave("Sandbox/demo");
@@ -1623,7 +1605,6 @@ function MainScreen:onKeyRelease(key)
     local uis = {
         { self.charCreationMain },
         { self.charCreationProfession },
-        { self.lastStandPlayerSelect },
         { self.loadScreen },
         { self.mainOptions },
         { self.mapSpawnSelect },
@@ -1696,7 +1677,7 @@ function stopDoingActionThatCanBeCancelled(playerObj)
 end
 
 local function StartPressCancelActionKey(key)
-	if not getCore():isKey("CancelAction", key) then return end
+	if not getCore():isKey(KeybindId.CANCEL_ACTION, key) then return end
 	if not MainScreen.instance or not MainScreen.instance.inGame then return end
 	if MainScreen.instance:getIsVisible() then return end
 	if getCell() and getCell():getDrag(0) then return end
@@ -1726,7 +1707,7 @@ function CancelAction(playerNum, addPreviousToRetrigger)
 end
 
 ToggleEscapeMenu = function (key)
-	if (getCore():isKey("Main Menu", key)) or (getCore():getKey("Main Menu") == 0 and key == Keyboard.KEY_ESCAPE) then
+	if (getCore():isKey(KeybindId.MAIN_MENU, key)) or (getCore():getKey(KeybindId.MAIN_MENU) == 0 and key == Keyboard.KEY_ESCAPE) then
 		if getCell() and getCell():getDrag(0) then -- if we press escape we first try to remove the dragged item (carpentry for exemple)
             if getCell():getDrag(0).close then
                 getCell():getDrag(0):close();
@@ -1971,7 +1952,6 @@ function MainScreen.onResolutionChange(oldw, oldh, neww, newh)
         { self.charCreationMain, 1, 1 },
         { self.inviteFriends, 0.7, 0.8 },
         { self.modSelect, 0.9, 0.9 },
-        { self.lastStandPlayerSelect, 1, 1 },
         { self.mainOptions, 0.7, 0.8 },
         { self.workshopSubmit, 0.9, 0.9 },
         { self.serverWorkshopItem, 0.9, 0.9 },
@@ -2109,7 +2089,6 @@ function MainScreen:getAllUIs()
 		self.charCreationMain,
 		self.inviteFriends,
 		self.modSelect,
-		self.lastStandPlayerSelect,
 		self.mainOptions,
 		self.mainOptions.gameSounds,
 		self.workshopSubmit,

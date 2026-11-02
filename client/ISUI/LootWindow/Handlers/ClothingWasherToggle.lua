@@ -4,7 +4,7 @@ ISLootWindowObjectControlHandler_ClothingWasherToggle = ISLootWindowObjectContro
 local Handler = ISLootWindowObjectControlHandler_ClothingWasherToggle
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     if not instanceof(self.object, "IsoClothingWasher") then return false end
     if self.object:getFluidAmount() <= 0 then return false end
     return (self.container ~= nil) and self.container:isPowered()

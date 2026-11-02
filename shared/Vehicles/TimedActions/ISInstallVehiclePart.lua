@@ -4,6 +4,7 @@ ISInstallVehiclePart = ISBaseTimedAction:derive("ISInstallVehiclePart")
 
 function ISInstallVehiclePart:isValid()
 	if self.character:isMechanicsCheat() then return true; end
+	if self.action and self.action:getJobDelta() >= 0.9 then return true; end
 	if isClient() and self.item then
 	    return self.vehicle:canInstallPart(self.character, self.part) and self.character:getInventory():containsID(self.item:getID());
 	else

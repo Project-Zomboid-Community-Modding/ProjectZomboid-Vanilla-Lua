@@ -4,7 +4,7 @@ ISInventoryWindowControlHandler_TransferSameType = ISInventoryWindowControlHandl
 local Handler = ISInventoryWindowControlHandler_TransferSameType
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     local lootWindow = getPlayerLoot(self.playerNum)
     local lootContainer = lootWindow.inventoryPane.inventory
     if lootContainer:isEmpty() then return false end

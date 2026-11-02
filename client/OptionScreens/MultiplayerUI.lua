@@ -1118,7 +1118,11 @@ function MultiplayerUI:prerender()
 end
 
 function MultiplayerUI:updateButtons()
-    self.connectBtn:setEnable(self.selectedInternetServer ~= nil);
+    if #self.internetList.items == 0 then
+        self.connectBtn:setEnable(false);
+    else
+        self.connectBtn:setEnable(self.selectedInternetServer ~= nil);
+    end
 end
 
 function MultiplayerUI:render()
@@ -1247,12 +1251,16 @@ function MultiplayerUI:render()
         self.serverDescription:setWidth(rightW)
         self.serverDescription:setHeight(rightH - rightY + rightTop - FONT_HGT_SMALL)
 
-        -- last updated
-        if self.selectedInternetServer then
-            self:drawText(getText("UI_servers_last_update") .. tostring(self.selectedInternetServer:getLastUpdate()) .. getText("UI_servers_minutes_ago"), rightX+UI_BORDER_SPACING, rightY+self.serverDescription:getHeight(), self.serverInfoGrayTextColor.r, self.serverInfoGrayTextColor.g, self.serverInfoGrayTextColor.b, self.serverInfoGrayTextColor.a, UIFont.Small);
+        local wipe = self.selectedInternetServer and self.selectedInternetServer:getLastWipe() or 0
+        local wipeText
+        if wipe and wipe > 0 then
+            local days = math.floor((getTimestamp() - wipe) / 86400)
+            local whenText = (days <= 0) and getText("UI_servers_wipe_today") or getText("UI_servers_wipe_days_ago", days)
+            wipeText = getText("UI_servers_last_wipe") .. " " .. whenText .. " (" .. self.selectedInternetServer:getLastWipeDate() .. ")"
         else
-            self:drawText(getText("UI_servers_last_update") .. "-" .. getText("UI_servers_minutes_ago"), rightX+UI_BORDER_SPACING, rightY+self.serverDescription:getHeight(), self.serverInfoGrayTextColor.r, self.serverInfoGrayTextColor.g, self.serverInfoGrayTextColor.b, self.serverInfoGrayTextColor.a, UIFont.Small);
+            wipeText = getText("UI_servers_last_wipe") .. " " .. getText("UI_servers_wipe_unknown")
         end
+        self:drawText(wipeText, rightX+UI_BORDER_SPACING, rightY+self.serverDescription:getHeight(), self.serverInfoGrayTextColor.r, self.serverInfoGrayTextColor.g, self.serverInfoGrayTextColor.b, self.serverInfoGrayTextColor.a, UIFont.Small);
 
         -- server count
         --if self.tabs:getActiveViewIndex() == 2 then
@@ -1610,6 +1618,9 @@ function MultiplayerUI.OnSteamRulesRefreshComplete(host, port, rules)
             if rules.mods then
                 v.item.server:setMods(rules.mods)
             end
+            if rules.lastWipe then
+                v.item.server:setLastWipe(tonumber(rules.lastWipe))
+            end
             updateServerToAccountList(v.item.server)
             if v.item.server == self.selectedInternetServer then
                 self:selectInternetServer(v.item.server)
@@ -1628,6 +1639,9 @@ function MultiplayerUI.OnSteamRulesRefreshComplete(host, port, rules)
         self.selectedInternetServer:setOpen(rules.open == "1")
         if rules.mods then
             self.selectedInternetServer:setMods(rules.mods)
+        end
+        if rules.lastWipe then
+            self.selectedInternetServer:setLastWipe(tonumber(rules.lastWipe))
         end
         self:selectInternetServer(self.selectedInternetServer)
     end

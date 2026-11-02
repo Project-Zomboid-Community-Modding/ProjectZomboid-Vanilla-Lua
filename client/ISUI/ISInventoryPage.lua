@@ -149,7 +149,7 @@ function ISInventoryPage:createChildren()
     self.closeButton:setImage(self.closebutton);
     self.closeButton:setSound('activate', nil) -- see close()
     self:addChild(self.closeButton);
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         self.closeButton:setVisible(false)
     end
 
@@ -182,7 +182,7 @@ function ISInventoryPage:createChildren()
     self.collapseButton.backgroundColorMouseOver.a = 0;
     self.collapseButton:setImage(self.collapsebutton);
     self:addChild(self.collapseButton);
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         self.collapseButton:setVisible(false);
     end
 	-- load the current weight of the container
@@ -863,7 +863,7 @@ function ISInventoryPage:onJoypadDown(button)
     -- 2: both buttons affect same window
     -- 3: left + d-pad affects inventory, right + dpad affects loot
     local shoulderSwitch = getCore():getOptionShoulderButtonContainerSwitch()
-    if getCore():getGameMode() == "Tutorial" then shoulderSwitch = 1 end
+    if getCore():isTutorial() then shoulderSwitch = 1 end
     if button == Joypad.LBumper then
         if shoulderSwitch == 1 then
             getPlayerInventory(self.player):selectNextContainer()
@@ -991,7 +991,7 @@ function ISInventoryPage:dropItemsInContainer(button)
 	if self.player ~= 0 then return false end
 	if ISMouseDrag.dragging == nil then return false end
 	local playerObj = getSpecificPlayer(self.player)
-	if (getCore():getGameMode() ~= "Tutorial") and self:canPutIn() then
+	if not getCore():isTutorial() and self:canPutIn() then
 		local doWalk = true
 		local items = {}
 		self.inventoryPane.draggedItems:reset()
@@ -1180,7 +1180,7 @@ function ISInventoryPage:onMouseMove(dx, dy)
         end
     end
 
-    if self.isCollapsed and isKeyDown("PanCamera") then
+    if self.isCollapsed and isKeyDown(KeybindId.PAN_CAMERA) then
         return
     end
 
@@ -1339,7 +1339,7 @@ end
 
 function ISInventoryPage:onBackpackMouseDown(button, x, y)
 	ISMouseDrag = {}
-	if not isKeyDown("Melee") then
+	if not isKeyDown(KeybindId.MELEE) then
 	    getSpecificPlayer(self.player):nullifyAiming();
     end
 end
@@ -1397,7 +1397,7 @@ function ISInventoryPage:onBackpackRightMouseDown(x, y)
                         end
 
                         for i, v in ipairs(tItems) do
-                            ISRemoveItemTool.removeItem(v, playerObj)
+                            ISRemoveItemTool.removeItem(v, playerObj:getPlayerNum())
                         end
 
                         local sq = container:getSourceGrid()
@@ -1731,12 +1731,13 @@ function ISInventoryPage:refreshBackpacks()
 					local o = obs:get(i)
 					for containerIndex = 1,o:getContainerCount() do
 						local container = o:getContainerByIndex(containerIndex-1)
+						local containerType
 						-- added console spam when a container type doesn't have a translation string defined
-					    if getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) == nil and isDebugEnabled() then
+					    if getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) == nil and getTextOrNull("IGUI_ContainerTitle_" .. container:getDisplayType()) == nil and isDebugEnabled() then
 					        DebugType.Lua:warn("Missing IGUI_ContainerTitle_ translation string for " .. tostring(container:getType()))
 					    end
 					    -- changed to just show the container type if there's no translation string to make it easier to add the needed string
-						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or "!Needs IGUI_ContainerTitle defined for: " .. container:getType()
+						local title = getTextOrNull("IGUI_ContainerTitle_" .. container:getType()) or getTextOrNull("IGUI_ContainerTitle_" .. container:getDisplayType()) or "!Needs IGUI_ContainerTitle defined for: " .. container:getType()
 						if container:getCustomName() then title = container:getCustomName() end
                         -- changed to include tooltips outside of the player inventory because some people want it
 						containerButton = self:addContainerButton(container, nil, title, title)
@@ -1839,9 +1840,12 @@ function ISInventoryPage:refreshBackpacks()
 			self.inventoryPane.inventory = self.backpacks[foundIndex].inventory
 			self.capacity = self.backpacks[foundIndex].capacity
 		elseif not found and #self.backpacks > 0 then
-			if self.backpacks[1] and self.backpacks[1].inventory then
+			if self.backpacks[1] and self.backpacks[1].inventory and (not self.backpacks[1].inventory:isLockedToCharacter(playerObj)) then
 				self.inventoryPane.inventory = self.backpacks[1].inventory
 				self.capacity = self.backpacks[1].capacity
+            else
+                self.inventoryPane.inventory = floorContainer
+                self.capacity = floorContainer:getMaxWeight()
 			end
 		elseif self.inventoryPane.lastinventory ~= nil then
 			self.inventoryPane.inventory = self.inventoryPane.lastinventory
@@ -2089,7 +2093,7 @@ function ISInventoryPage:SaveLayout(name, layout)
 end
 
 ISInventoryPage.onKeyPressed = function(key)
-	if getCore():isKey("Toggle Inventory", key) and getSpecificPlayer(0) and getGameSpeed() > 0 and getPlayerInventory(0) and getCore():getGameMode() ~= "Tutorial" then
+	if getCore():isKey(KeybindId.TOGGLE_INVENTORY, key) and getSpecificPlayer(0) and getGameSpeed() > 0 and getPlayerInventory(0) and not getCore():isTutorial() then
         getPlayerInventory(0):setVisible(not getPlayerInventory(0):getIsVisible());
         getPlayerLoot(0):setVisible(getPlayerInventory(0):getIsVisible());
     end
@@ -2160,7 +2164,7 @@ function ISInventoryPage:removeAll()
 end
 
 function ISInventoryPage:render3DItemPreview()
-    if isKeyDown("Rotate building") then
+    if isKeyDown(KeybindId.ROTATE_BUILDING) then
         if not self.render3DItemRot then
             self.render3DItemRot = 0;
         end

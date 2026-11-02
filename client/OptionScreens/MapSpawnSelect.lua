@@ -442,7 +442,7 @@ end
 
 function MapSpawnSelect:getChallengeSpawnRegion()
 	if not getCore():isChallenge() then return nil end
-	return LastStandData.getSpawnRegion()
+	return ChallengeData.getSpawnRegion()
 end
 
 function MapSpawnSelect:getSpawnRegions()
@@ -476,7 +476,7 @@ function MapSpawnSelect:fillList()
 	for _,v in ipairs(regions) do
 		local info = getMapInfo(v.name)
 		if info then
-            if not info.only_for_game_mode or GameMode.get(ResourceLocation.of(getCore():getGameMode())) == info.only_for_game_mode then
+            if not info.only_for_game_mode or getCore():getGameMode() == info.only_for_game_mode then
                 local item = {};
                 item.name = info.title or "NO TITLE";
                 item.region = v;
@@ -611,12 +611,9 @@ function MapSpawnSelect:clickBack()
         self:discardGenParams()
     end
 
-	if getWorld():getGameMode() == "Multiplayer" then
+	if getWorld():getGameMode() == GameMode.MULTIPLAYER then
 		backToSinglePlayer()
 		getCore():ResetLua("default", "exitJoinServer")
-	elseif self.previousScreen == "LastStandPlayerSelect" then
-		self.previousScreen = nil
-		LastStandPlayerSelect.instance:setVisible(true, self.joyfocus)
 	elseif self.previousScreen == "LoadGameScreen" then
 		MainScreen.resetLuaIfNeeded()
 		self.previousScreen = nil
@@ -649,7 +646,7 @@ function MapSpawnSelect:clickNext()
 		getWorld():setWorld(sanitizeWorldName(self.textEntry:getText()));
 		getWorld():setWorld(sanitizeWorldName(self.textEntry:getText()));
 	end
-	if getWorld():getGameMode() == "Sandbox" and not checkSaveFileExists("map_sand.bin") then
+	if getWorld():getGameMode() == GameMode.SANDBOX and not checkSaveFileExists("map_sand.bin") then
 		MainScreen.instance.sandOptions.previousScreen = "MapSpawnSelect";
 		MainScreen.instance.sandOptions:setVisible(true, self.joyfocus)
 	else
@@ -667,7 +664,7 @@ function MapSpawnSelect:prerender()
 		if worldName == "" or worldName ~= rawText or luautils.stringStarts(worldName, ".") or luautils.stringEnds(worldName, ".") then
 			enable = false
 		else
-			local checkExistName = getWorld():getGameMode() .. getFileSeparator() .. worldName
+			local checkExistName = getWorld():getGameMode():toString() .. getFileSeparator() .. worldName
 			if checkExistName ~= self.checkExistsName then
 				self.checkExistsName = checkExistName
 				self.checkExist = checkSaveFolderExists(checkExistName)

@@ -36,8 +36,8 @@ end
 
 function ISRepairEngine:complete()
     if self.vehicle then
-    	if not self.part then
-    		noise('no such part Engine')
+    	if not self.part or self.part:getId() ~= "Engine" then
+    		print('no such part Engine')
     		return false
     	end
 

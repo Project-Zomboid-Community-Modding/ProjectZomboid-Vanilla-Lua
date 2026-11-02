@@ -218,8 +218,8 @@ function NewGameScreen:create()
 end
 
 function NewGameScreen:loadChallenges()
-    table.sort(LastStandChallenge, function(a,b) return a.name < b.name end)
-    for i, info in ipairs(LastStandChallenge) do
+    table.sort(ChallengeList, function(a,b) return a.name < b.name end)
+    for i, info in ipairs(ChallengeList) do
         table.insert(self.gameModeData, {
             mode = info.name,
             title = info.name,
@@ -405,30 +405,15 @@ function NewGameScreen:clickPlay()
     mainScreenInstance:setDefaultSandboxVars()
 
     if self.selectedItem.data.challenge then
-        LastStandData.chosenChallenge = self.selectedItem.data.challenge
+        ChallengeData.chosenChallenge = self.selectedItem.data.challenge
         local worldName = ZombRand(100000)..ZombRand(100000)..ZombRand(100000)..ZombRand(100000)
         doChallenge(self.selectedItem.data.challenge)
         getWorld():setWorld(worldName)
-        if getCore():getGameMode() ~= "LastStand" then
-            mainScreenInstance.createWorld = true
-            if mapSpawnSelectInstance:hasChoices() then
-                mapSpawnSelectInstance:fillList()
-                mapSpawnSelectInstance.previousScreen = "NewGameScreen"
-                mapSpawnSelectInstance:setVisible(true, self.joyfocus)
-            else
-                mapSpawnSelectInstance:useDefaultSpawnRegion()
-                mainScreenInstance.charCreationProfession.previousScreen = "NewGameScreen"
-                mainScreenInstance.charCreationProfession:setVisible(true, self.joyfocus)
-            end
-        elseif #mainScreenInstance.lastStandPlayerSelect.listbox.items > 0 then
-            createWorld(worldName)
-            mainScreenInstance.lastStandPlayerSelect:setVisible(true, self.joyfocus)
-        else
-            createWorld(worldName)
-            mapSpawnSelectInstance:useDefaultSpawnRegion()
-            mainScreenInstance.charCreationProfession.previousScreen = "NewGameScreen"
-            mainScreenInstance.charCreationProfession:setVisible(true, self.joyfocus)
-        end
+
+        createWorld(worldName)
+        mapSpawnSelectInstance:useDefaultSpawnRegion()
+        mainScreenInstance.charCreationProfession.previousScreen = "NewGameScreen"
+        mainScreenInstance.charCreationProfession:setVisible(true, self.joyfocus)
         mapSpawnSelectInstance:saveGenParams()
         return
     end

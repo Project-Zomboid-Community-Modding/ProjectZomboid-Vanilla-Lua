@@ -472,13 +472,13 @@ function ISUsersList:doContextMenu(item, x, y)
     local playerNum = self.player:getPlayerNum()
     local context = ISContextMenu.get(playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY());
     local roles = getRoles()
-    if self.player:getRole():hasCapability(Capability.ChangeAccessLevel) and self.player:getRole():getPosition() >= item:getRole():getPosition() then
+    if (self.player:getRole():hasCapability(Capability.ChangeAccessLevel) and self.player:getRole():getPosition() >= item:getRole():getPosition()) or isCoopHost() then
         local setRoleOption = context:addOption('Set Role', worldobjects, nil)
         local subMenu = context:getNew(context)
         context:addSubMenu(setRoleOption, subMenu);
         for i=0,roles:size()-1 do
             local role = roles:get(i);
-            if self.player:getRole():getPosition() >= role:getPosition() then
+            if self.player:getRole():getPosition() >= role:getPosition() or isCoopHost() then
                 subMenu:addOption(getText("IGUI_UserList_SetRole", role:getName()), ISUsersList.instance, ISUsersList.onSetRoleClickOption, item, role:getName());
             end
         end

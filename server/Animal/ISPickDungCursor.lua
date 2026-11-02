@@ -79,7 +79,7 @@ function ISPickDungCursor:onJoypadPressButton(joypadIndex, joypadData, button)
 		return ISBuildingObject.onJoypadPressButton(self, joypadIndex, joypadData, button)
 	end
     if button == Joypad.YButton then
-        return self:rotateKey(getCore():getKey("Rotate building"))
+        return self:rotateKey(getCore():getKey(KeybindId.ROTATE_BUILDING))
     end
 end
 
@@ -128,7 +128,7 @@ function ISPickDungCursor:getClosestSquare(squares)
 end
 
 function ISPickDungCursor:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		self.radius = self.radius - 1
 		if self.radius == 0 then
 			self.radius = self.maxRadius

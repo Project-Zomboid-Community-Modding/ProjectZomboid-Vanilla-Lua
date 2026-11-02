@@ -684,6 +684,10 @@ function ButcheringUtil.getBuckets(character)
     return character:getInventory():getAvailableFluidContainer("AnimalBlood");
 end
 
+function ButcheringUtil.hasBucket(character)
+    return character:getInventory():containsAvailableFluidContainer("AnimalBlood");
+end
+
 function ButcheringUtil.isHookUsingSameCharacter(hook, character)
     if not hook:getUsingPlayer() then
         return true;
@@ -696,5 +700,19 @@ function ButcheringUtil.setUsingPlayerForHook(hook, character)
     if isServer() then
         hook:setUsingPlayer(character);
         hook:sync()
+    end
+end
+
+-- when we load an animal that was on a hook we need to recreate his corpse
+-- the corpse is created in java, but then the animal needs to be recreated
+function ButcheringUtil.onReattachAnimal(hook, animal)
+    animal:setDir(IsoDirections.NE)
+    local modData = animal:getModData()
+    local avatarDef = AnimalAvatarDefinition[modData["AnimalType"]]
+    if avatarDef then
+        animal:getData():setSizeForced(avatarDef.animalPositionSize)
+    end
+    if modData["animalSize"] < animal:getData():getSize() then
+        animal:getData():setSizeForced(modData["animalSize"])
     end
 end

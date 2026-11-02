@@ -14,8 +14,12 @@ function ISBrushToolTileCursor:create(x, y, z, north, sprite)
     if not tileAlreadyOnSquare then
         local props = ISMoveableSpriteProps.new(IsoObject.new(square, sprite):getSprite())
         props.rawWeight = 10
-        props:placeMoveableInternal(square, instanceItem("Base.Plank"), sprite)
+        props:placeMoveableInternal(self.character, square, instanceItem("Base.Plank"), sprite)
     end
+end
+
+function ISBrushToolTileCursor.onTileObjectAdded(square, sprite)
+    ISBrushToolTileCursor:create(square:getX(), square:getY(), square:getZ(), false, sprite)
 end
 
 function ISBrushToolTileCursor:render(x, y, z, square)
@@ -41,10 +45,4 @@ function ISBrushToolTileCursor:new(sprite, northSprite, character)
     return o
 end
 
-
-
-
-
-
-
-
+Events.OnTileObjectAdded.Add(ISBrushToolTileCursor.onTileObjectAdded)

@@ -16,6 +16,7 @@ function ISMPEditAccount:initialise()
     self.login.font = UIFont.Medium
     self.login:initialise();
     self.login:instantiate();
+    self.login:setMaxTextLength(getMaxUsernameLength());
     self.login.onTextChange = ISMPEditAccount.onLoginTextChange;
     self.login.onOtherKey = ISMPEditAccount.onOtherKey
     self.login.onCommandEntered = ISMPEditAccount.onCommandEntered;
@@ -302,7 +303,7 @@ function ISMPEditAccount.onLoginTextChange(txtEntry)
 
     self.saveBtn:setTooltip(nil);
 
-    if txt:len() < 2 then
+    if txt:len() < getMinUsernameLength() then
         self.saveBtn:setTooltip(getText("UI_servers_accountNameTooShort"));
         isValid = false;
     end

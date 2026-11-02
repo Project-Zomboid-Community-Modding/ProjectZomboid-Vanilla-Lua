@@ -92,7 +92,6 @@ function NewPlant(isoObject)
 	end
 	luaObject:toModData(isoObject:getModData())
 	luaObject:setSpriteName(farming_vegetableconf.getSpriteName(luaObject))
-	noise('created farming/houseplant luaObject from pre-existing isoObject '..luaObject.x..','..luaObject.y)
 end
 
 -- MapObjects.OnNewWithSprite("vegetation_farming_01_1", NewPlow, PRIORITY)
@@ -120,6 +119,10 @@ local function LoadPlant(isoObject)
 		noise("couldn't find valid modData for existing isoObject; recreating it")
 		NewPlant(isoObject)
 	end
+	if not isoObject:getSquare() then
+		return
+	end
+
 	SFarmingSystem.instance:loadIsoObject(isoObject)
 end
 

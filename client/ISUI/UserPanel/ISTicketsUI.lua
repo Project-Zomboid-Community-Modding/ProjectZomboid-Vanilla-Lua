@@ -120,8 +120,8 @@ function ISTicketsUI:render()
     self:drawRect(self.datas.x, 1 + self.datas.y - BUTTON_HGT, self.datas.width, BUTTON_HGT,self.listHeaderColor.a,self.listHeaderColor.r, self.listHeaderColor.g, self.listHeaderColor.b);
     self:drawRect(self.datas.x + COLUMN2_LEFT, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
 
-    self:drawText("ID", self.datas.x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 2, 1,1,1,1,UIFont.Small);
-    self:drawText("Message", self.datas.x + COLUMN2_LEFT+UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 2, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_ID"), self.datas.x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 2, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_Message"), self.datas.x + COLUMN2_LEFT+UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 2, 1,1,1,1,UIFont.Small);
 end
 
 function ISTicketsUI:onClick(button)

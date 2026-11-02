@@ -281,7 +281,7 @@ end
 
 function ISWorldMap:createChildren()
     local symbolsWidth = ISWorldMapSymbols.RequiredWidth()
-	self.symbolsUI = ISWorldMapSymbols:new(self.width - UI_BORDER_SPACING - symbolsWidth, UI_BORDER_SPACING, symbolsWidth, self.height - 40 * 2, self)
+	self.symbolsUI = ISWorldMapSymbols:new(self.width - UI_BORDER_SPACING - symbolsWidth, UI_BORDER_SPACING, symbolsWidth, self.height - 40 * 2, self, true)
 	self.symbolsUI:initialise()
 	self.symbolsUI:setAnchorLeft(false)
 	self.symbolsUI:setAnchorRight(true)
@@ -1194,7 +1194,7 @@ function ISWorldMap:close()
 end
 
 function ISWorldMap:isKeyConsumed(key)
-	if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then return true end
+	if key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.TOGGLE_UI, key) then return true end
 	if key == Keyboard.KEY_C then return true end
 	if key == Keyboard.KEY_S then return true end
 	return false
@@ -1215,7 +1215,7 @@ function ISWorldMap:onKeyRelease(key)
 			self:closeStashMap()
 			return
 		end
-		if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then
+		if key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.TOGGLE_UI, key) then
 			self:close()
 		end
 		if key == Keyboard.KEY_C then
@@ -1489,7 +1489,7 @@ function ISWorldMap.shouldPause()
 end
 
 function ISWorldMap.IsAllowed()
-	if getCore():getGameMode() == "Tutorial" then return false end
+	if getCore():isTutorial() then return false end
 	return SandboxVars.Map and (SandboxVars.Map.AllowWorldMap == true) or false
 end
 
@@ -1631,13 +1631,13 @@ end
 local KEYSTATE = {}
 
 function ISWorldMap.checkKey(key)
-	if not getCore():isKey("Map", key) then
+	if not getCore():isKey(KeybindId.MAP, key) then
 		return false
 	end
 	if not ISWorldMap.IsAllowed() then
 		return false
 	end
-	if getCore():getGameMode() == "Tutorial" then
+	if getCore():isTutorial() then
 		return false
 	end
 	if MainScreen.instance and not MainScreen.instance.inGame then

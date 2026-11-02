@@ -51,7 +51,7 @@ function CoopCharacterCreation:accept1()
 			getWorld():setLuaPosZ(randSpawnPoint.posZ or 0)
 		end
 	elseif getCore():isChallenge() then
-		-- This shouldn't happen. See LastStandData.getSpawnRegion()
+		-- This shouldn't happen. See ChallengeData.getSpawnRegion()
 		if globalChallenge.xcell ~= nil then
 			getWorld():setLuaPosX(globalChallenge.xcell * 300 + globalChallenge.x);
 			getWorld():setLuaPosY(globalChallenge.ycell * 300 + globalChallenge.y);

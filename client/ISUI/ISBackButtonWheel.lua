@@ -71,10 +71,6 @@ function ISBackButtonWheel:addCommands()
 		end
 	end
 
-	if Core.isLastStand() then
-		self:addSlice(getText("IGUI_BackButton_LastStand"), Joypad.Texture.AButton, self.onCommand, self, "LastStand")
-	end
-
 	if getCore():isZoomEnabled() and not getCore():getAutoZoom(self.playerNum) then
 		if ISBackButtonWheel.disableZoomOut then
 			self:addSlice(nil, nil, nil)
@@ -178,12 +174,6 @@ function ISBackButtonWheel:onCommand(command)
 			elseif multiplier == 20 then
 				UIManager.getSpeedControls():ButtonClicked("Wait")
 			end
-		end
-	elseif command == "LastStand" then
-		if Core.isLastStand() then
-			JoypadState.players[self.playerNum+1].focus = nil
-			doLastStandBackButtonWheel(self.playerNum, 's')
-			return
 		end
 	elseif command == "ForageMode" then
 		local manager =	ISSearchManager.getManager(playerObj);

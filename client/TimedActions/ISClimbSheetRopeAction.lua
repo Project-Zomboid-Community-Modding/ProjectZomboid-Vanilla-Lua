@@ -22,9 +22,9 @@ end
 
 function ISClimbSheetRopeAction:perform()
 	if self.down then
-		self.character:climbDownSheetRope()
+		self.character:climbDown()
 	else
-		self.character:climbSheetRope()
+		self.character:climb()
 	end
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self);

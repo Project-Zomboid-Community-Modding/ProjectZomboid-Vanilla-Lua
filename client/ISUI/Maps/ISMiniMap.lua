@@ -682,13 +682,13 @@ end
 ISMiniMap = {}
 
 function ISMiniMap.IsAllowed()
-	if getCore():getGameMode() == "Tutorial" then return false end
+	if getCore():isTutorial() then return false end
 	if not ISWorldMap.IsAllowed() then return end
 	return SandboxVars.Map and (SandboxVars.Map.AllowMiniMap == true) or false
 end
 
 function ISMiniMap.NeedsLight()
-	if getCore():getGameMode() == "Tutorial" then return false end
+	if getCore():isTutorial() then return false end
 	if not ISWorldMap.IsAllowed() then return end
 	return SandboxVars.Map and (SandboxVars.Map.MapNeedsLight == true) or false
 end

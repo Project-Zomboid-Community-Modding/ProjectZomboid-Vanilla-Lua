@@ -4,7 +4,7 @@ ISDropVehicleItemAction = ISBaseTimedAction:derive("ISDropVehicleItemAction");
 
 function ISDropVehicleItemAction:isValid()
 	local ground = self.dropSquare:getTotalWeightOfItemsOnFloor()
-	if ground + self.item:getUnequippedWeight() > 50 then
+	if ground + self.item:getUnequippedWeight() > 50 and not instanceof(self.item, "AnimalInventoryItem") then
 		return false
 	end
 	if isClient() and self.item then
@@ -44,7 +44,7 @@ function ISDropVehicleItemAction:stop()
 end
 
 function ISDropVehicleItemAction:complete()
-	local worldItem = self.dropSquare:AddWorldInventoryItem(self.item, 0, 0, 0, false)
+	local worldItem = self.dropSquare:AddWorldInventoryItem(self.item, 0, 0, 0, instanceof(self.item, "AnimalInventoryItem") and true or false)
 	if worldItem then
 		worldItem:setWorldZRotation(self.rotation);
 		if worldItem:getWorldItem() then

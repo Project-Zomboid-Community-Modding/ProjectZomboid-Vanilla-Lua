@@ -152,8 +152,8 @@ function ISReadABook:start()
     else
         self:setAnimVariable("ReadType", "book")
     end
-    self:setActionAnim(CharacterActionAnims.Read);
     self:setOverrideHandModels(nil, self.item);
+    self:setActionAnim(CharacterActionAnims.Read);
     self.character:setReading(true)
 
     self.character:reportEvent("EventRead");
@@ -187,7 +187,6 @@ function ISReadABook:stop()
     else
         self.character:playSound("CloseMagazine")
     end
-    syncItemFields(self.character, self.item);
     ISBaseTimedAction.stop(self);
 end
 
@@ -242,7 +241,7 @@ function ISReadABook:startLoadingPrintMediaTextures()
             if params["type"] == "texture" then
                 for key,value in pairs(params) do
                     if key == "texture" then
-                        loadstring("return " .. value)()
+                        return getTexture(value)
                     end
                 end
             end
@@ -343,7 +342,7 @@ function ISReadABook:complete()
     if not skillBookForSkillTrained and not self.isLiteratureRead then
         self.character:ReadLiterature(self.item);
 
-        local args = { itemId=self.item:getID() }
+        local args = { itemId=self.item:getID(), playerOnlineId=self.character:getOnlineID() }
         sendServerCommand(self.character, 'literature', 'readLiterature', args)
     elseif skillBookForSkillTrained and not self.isLiteratureRead then
         ISReadABook.checkMultiplier(self);
@@ -473,7 +472,7 @@ function ISReadABook:getDuration()
         time = time * 0.9;
     end
 
-    if self.character:isSitOnGround() or self.character:isSittingOnFurniture() then
+    if self.character:isSitting() then
         time = time * 0.9;
     end
 

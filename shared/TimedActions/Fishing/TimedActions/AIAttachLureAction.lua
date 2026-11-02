@@ -79,13 +79,15 @@ function AIAttachLureAction:complete()
     end
 
     if isServer() then
-        local args = { rodId=self.rod:getID(), lureFullType=self.lure:getFullType(), lureId=self.lure:getID() }
+        local args = { playerOnlineId=self.character:getOnlineID(), rodId=self.rod:getID(), lureFullType=self.lure:getFullType(), lureId=self.lure:getID() }
         sendServerCommand(self.character, 'fishing', 'attachLure', args)
 
         if doRemove then
             sendRemoveItemFromContainer(self.character:getInventory(), self.lure)
         end
 
+        self.character:setPrimaryHandItem(self.rod);
+        self.character:setSecondaryHandItem(nil);
     end
 
     return true;

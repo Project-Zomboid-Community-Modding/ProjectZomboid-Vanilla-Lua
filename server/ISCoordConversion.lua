@@ -17,9 +17,9 @@ ISCoordConversion.ToScreen = function(x, y, z, cz)
 end
 
 ISCoordConversion.ToWorld = function(x, y, z)
-
-	local wx = IsoUtils.XToIso( x, y, z );
-	local wy = IsoUtils.YToIso( x, y, z );
+	local playerIndex = 0
+	local wx = IsoUtils.XToIso( playerIndex, x, y, z );
+	local wy = IsoUtils.YToIso( playerIndex, x, y, z );
 
  --   --print("Output of ToWorld: "..wx..", "..wy)
 	return wx, wy;

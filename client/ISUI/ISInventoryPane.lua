@@ -411,9 +411,11 @@ function ISInventoryPane:doButtons(y)
     self.contextButton2:setVisible(false);
     self.contextButton3:setVisible(false);
 
+	local contextMenu = getPlayerContextMenu(self.player)
+	local playerObj = getSpecificPlayer(self.player)
 	if UIManager.getSpeedControls():getCurrentGameSpeed() == 0 or
-			getPlayerContextMenu(self.player):isAnyVisible() or
-			getSpecificPlayer(self.player):isAsleep() then
+			not contextMenu or contextMenu:isAnyVisible() or
+			not playerObj or playerObj:isAsleep() then
 		return
 	end
 
@@ -516,7 +518,7 @@ function ISInventoryPane:doButtons(y)
     local ypos = ((y-1)*self.itemHgt) + self.headerHgt;
     ypos = ypos + self:getYScroll();
 
-	if getCore():getGameMode() ~= "Tutorial" then
+	if not getCore():isTutorial() then
 		if mode1 then
 			self.contextButton1:setTitle(label1)
 			self.contextButton1.mode = mode1
@@ -644,6 +646,10 @@ function ISInventoryPane:transferItemsByWeight(items, container)
 			ISInventoryPaneContextMenu.dropItem(item, self.player)
 		else
             if corpseStorageCheck.isPlayerGrabbingCorpseItem(self.player, item, container) then
+                if playerObj:getVehicle() then
+                    return
+                end
+
 			    ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, item))
                 break
             end
@@ -833,7 +839,8 @@ function ISInventoryPane:updateTooltip()
 		end
 		item = item.items[1]
 	end
-	if getPlayerContextMenu(self.player):isAnyVisible() then
+	local contextMenu = getPlayerContextMenu(self.player)
+	if not contextMenu or contextMenu:isAnyVisible() then
 		item = nil
 	end
 	if item and self.toolRender and (item == self.toolRender.item) and
@@ -1143,7 +1150,7 @@ function ISInventoryPane:onMouseDoubleClick(x, y)
 		return self.vscroll:onMouseDoubleClick(x - self.vscroll.x, y + self:getYScroll() - self.vscroll.y)
 	end
 	if self.items and self.mouseOverOption and self.previousMouseUp == self.mouseOverOption then
-		if getCore():getGameMode() == "Tutorial" then
+		if getCore():isTutorial() then
 			if TutorialData.chosenTutorial.doubleClickInventory(self, x, y, self.mouseOverOption) then
 				return
 			end
@@ -1171,6 +1178,9 @@ function ISInventoryPane:onMouseDoubleClick(x, y)
 							doWalk = false
 						end
                         if v:isHumanCorpse() then
+                            if playerObj:getVehicle() then
+                                return
+                            end
                             ISTimedActionQueue.add(ISGrabCorpseItem:new(playerObj, v))
                             break
                         end
@@ -1190,6 +1200,9 @@ function ISInventoryPane:onMouseDoubleClick(x, y)
 				end
 			end
 		elseif item and item:getContainer() ~= playerInv then
+            if item:isHumanCorpse() and playerObj:getVehicle() then
+                return
+            end
 			if isForceDropHeavyItem(item) then
 				ISInventoryPaneContextMenu.equipHeavyItem(playerObj, item)
 			elseif luautils.walkToContainer(item:getContainer(), self.player) then
@@ -1214,7 +1227,7 @@ function ISInventoryPane:onMouseUp(x, y)
     end
 
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus ~= self and ISMouseDrag.draggingFocus ~= nil then
-        if getCore():getGameMode() ~= "Tutorial" then
+        if not getCore():isTutorial() then
             if self:canPutIn() then
                 local doWalk = true
                 local items = {}
@@ -1568,7 +1581,7 @@ function ISInventoryPane:doContextOnJoypadSelected()
     end
 	
 	local menu = nil;
-	if getCore():getGameMode() == "Tutorial" then
+	if getCore():isTutorial() then
 		menu = Tutorial1.createInventoryContextMenu(self.player, isInInv, contextMenuItems, self:getAbsoluteX()+64, self:getAbsoluteY()+8+(self.joyselection*self.itemHgt)+self:getYScroll());
 	else
     	menu = ISInventoryPaneContextMenu.createMenu(self.player, isInInv, contextMenuItems, self:getAbsoluteX()+64, self:getAbsoluteY()+8+(self.joyselection*self.itemHgt)+self:getYScroll());
@@ -1875,7 +1888,7 @@ function ISInventoryPane:update()
     -- NOTE: This only works because update() is called after all the mouse-event handling, so other UIElements
     -- have already had a chance to accept the drag.
     if ISMouseDrag.dragging ~= nil and ISMouseDrag.draggingFocus == self and not isMouseButtonDown(0) then
-		if getCore():getGameMode() == "Tutorial" then
+		if getCore():isTutorial() then
             if ISMouseDrag.draggingFocus then
                 ISMouseDrag.draggingFocus:onMouseUp(0,0);
             end
@@ -2003,17 +2016,21 @@ function ISInventoryPane:restoreSelection(selected)
     local row = 1
     for _,v in ipairs(self.itemslist) do
         local item = v.items[1]
-        if selected[item] == "group" then
+        local isGroup = selected[item] == "group"
+        if isGroup then
+            self.selected[row] = v
+        elseif selected[item] == "item" then
             self.selected[row] = item
         end
         row = row + 1
         if not self.collapsed[v.name] then
             for j=2,#v.items do
                 local item2 = v.items[j]
-                if selected[item2] then
+                if isGroup or selected[item2] then
                     self.selected[row] = item2
                 end
                 row = row + 1
+                if j == ISInventoryPane.MAX_ITEMS_IN_STACK_TO_RENDER + 1 then break end
             end
         end
     end
@@ -2204,6 +2221,10 @@ function ISInventoryPane:renderdetails(doDragged)
     end
     
     local player = getSpecificPlayer(self.player)
+    if self.inventory:isLockedToCharacter(player) then
+        DebugType.General:error("Container that is locked to the player is being rendered " .. tostring(self.inventory));
+        return
+    end
 
     local checkDraggedItems = false
     if doDragged and self.dragging ~= nil and self.dragStarted then

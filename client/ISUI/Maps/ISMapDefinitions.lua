@@ -953,7 +953,7 @@ LootMaps.Init.RiversideStashMap2 = function(mapUI)
 	MapUtils.initDirectoryMapData(mapUI, LootMaps.DEFAULT_MAP_DIRECTORY)
 	MapUtils.initDefaultStyleV3(mapUI)
 	replaceWaterStyle(mapUI)
-	mapAPI:setBoundsInSquares(6360, 5220, 6569, 5319)
+	mapAPI:setBoundsInSquares(7100, 6050, 7350, 6175)
 end
 LootMaps.Init.RiversideStashMap3 = function(mapUI)
 	local mapAPI = mapUI.javaObject:getAPIv1()

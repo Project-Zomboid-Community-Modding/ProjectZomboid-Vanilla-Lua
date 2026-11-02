@@ -7,22 +7,29 @@ local ClientCommands = {}
 local Commands = {}
 Commands.object = {}
 
-ClientCommands.wantNoise = getDebug()
-local noise = function(msg)
-	if (ClientCommands.wantNoise) then print('ClientCommand: '..msg) end
-end
-
 Commands.object.addFireOnSquare = function(player, args)
+	if not player:getRole():hasCapability(Capability.UseBrushToolManager) then
+		print('object.addFireOnSquare The player\'s access level is not sufficient to perform this action')
+		return
+	end
 	local sq = getCell():getGridSquare(args.x, args.y, args.z)
 	IsoFireManager.StartFire(getCell(), sq, true, 100, 500);
 end
 
 Commands.object.addSmokeOnSquare = function(player, args)
+	if not player:getRole():hasCapability(Capability.UseBrushToolManager) then
+		print('object.addSmokeOnSquare The player\'s access level is not sufficient to perform this action')
+		return
+	end
 	local sq = getCell():getGridSquare(args.x, args.y, args.z)
 	IsoFireManager.StartSmoke(getCell(), sq, true, 100, 500)
 end
 
 Commands.object.addExplosionOnSquare = function(player, args)
+	if not player:getRole():hasCapability(Capability.UseBrushToolManager) then
+		print('object.addExplosionOnSquare The player\'s access level is not sufficient to perform this action')
+		return
+	end
 	local sq = getCell():getGridSquare(args.x, args.y, args.z)
 	IsoFireManager.explode(getCell(), sq, 100)
 end
@@ -46,10 +53,10 @@ Commands.object.rotate = function(player, args)
 		if instanceof(o, 'IsoMannequin') then
 			o:rotate(args.dir)
 		else
-			noise('expected rotate-able got '..tostring(o))
+			DebugType.ClientCommand:error('expected rotate-able got %s', o)
 		end
 	else
-		noise('sq is null or index is invalid')
+		DebugType.ClientCommand:error('sq is null or index is invalid')
 	end
 end
 
@@ -58,15 +65,14 @@ Commands.object.openCloseCurtain = function(player, args)
 	if sq and args.index >= 0 and args.index < sq:getObjects():size() then
 		local o = sq:getObjects():get(args.index)
 		if instanceof(o, 'IsoDoor') then
-			noise('isCurtainOpen='..tostring(o:isCurtainOpen()))
 			if args.open ~= o:isCurtainOpen() then
 				o:toggleCurtain()
 			end
 		else
-			noise('expected door got '..tostring(o))
+			DebugType.ClientCommand:error('expected door got %s', o)
 		end
 	else
-		noise('sq is null or index is invalid')
+		DebugType.ClientCommand:error('sq is null or index is invalid')
 	end
 end
 
@@ -79,7 +85,7 @@ Commands.object.plumbObject = function(player, args)
 		object:transmitModData()
 		object:sendObjectChange('usesExternalWaterSource', { value = true })
 	else
-		noise('sq is null or index is invalid')
+		DebugType.ClientCommand:error('sq is null or index is invalid')
 	end
 end
 
@@ -134,7 +140,43 @@ Commands.object.removeBush = function(player, args)
 			end
 		end
 	else
-		noise('sq is null')
+		DebugType.ClientCommand:error('sq is null')
+	end
+end
+
+Commands.object.removeWorldItem = function(player, args)
+	if not checkPermissions(player, Capability.EditItem) then
+		DebugType.ClientCommand:warn('object.removeWorldItem denied for %s', tostring(player:getUsername()))
+		return
+	end
+	local sq = getCell():getGridSquare(args.x, args.y, args.z)
+	if not sq then
+		DebugType.ClientCommand:error('object.removeWorldItem: sq is null')
+		return
+	end
+	for i = sq:getWorldObjects():size() - 1, 0, -1 do
+		local worldItem = sq:getWorldObjects():get(i)
+		if worldItem:getItem() and worldItem:getItem():getID() == args.id then
+			sq:transmitRemoveItemFromSquare(worldItem)
+			return
+		end
+	end
+end
+
+Commands.object.removeWorldItemsInArea = function(player, args)
+	if not checkPermissions(player, Capability.UseDebugContextMenu) then
+		DebugType.ClientCommand:warn('object.removeWorldItemsInArea denied for %s', tostring(player:getUsername()))
+		return
+	end
+	for x = args.x1, args.x2 do
+		for y = args.y1, args.y2 do
+			local sq = getCell():getGridSquare(x, y, args.z)
+			if sq then
+				for i = sq:getWorldObjects():size() - 1, 0, -1 do
+					sq:transmitRemoveItemFromSquare(sq:getWorldObjects():get(i))
+				end
+			end
+		end
 	end
 end
 
@@ -207,10 +249,10 @@ Commands.object.shovelGround = function(player, args)
 				sendAddItemToContainer(player:getInventory(), item);
 			end
 		else
-			noise('expected IsoObject got '..tostring(o))
+			DebugType.ClientCommand:error('expected IsoObject got %s', o)
 		end
 	else
-		noise('sq is null')
+		DebugType.ClientCommand:error('sq is null')
 	end
 end
 
@@ -220,7 +262,7 @@ Commands.object.OnDestroyIsoThumpable = function(player, args)
 --		RainCollectorBarrel.OnDestroyIsoThumpable(thump, nil)
 --		TrapSystem.OnDestroyIsoThumpable(thump, nil)
 	else
-		noise('expected IsoThumpable, got '..tostring(thump))
+		DebugType.ClientCommand:error('expected IsoThumpable, got %s', thump)
 	end
 end
 
@@ -228,7 +270,7 @@ Commands.object.triggerRemote = function(player, args)
 	if args.id and args.range then
 		IsoTrap.triggerRemote(player, args.id, args.range)
 	else
-		noise('missing args')
+		DebugType.ClientCommand:error('missing args')
 	end
 end
 
@@ -309,6 +351,11 @@ Commands.object.addFluidDebug = function(player, args)
 end
 
 Commands.object.clearContainerExplore = function(player, args)
+	if not player:getRole():hasCapability(Capability.AddItem) then
+		print('object.clearContainerExplore The player\'s access level is not sufficient to perform this action')
+		return
+	end
+
 	local sq = getCell():getGridSquare(args.x, args.y, args.z)
 	if not sq then
 		return
@@ -441,15 +488,7 @@ Commands.deadBody.addBody = function(player, args)
 end
 
 Commands.player = {}
-Commands.player.onHealthCheat = function(player, args)
-	local otherPlayer = getPlayerByOnlineID(args.id)
-	if otherPlayer and checkPermissions(player, Capability.UseHealthCheat) then
-		sendServerCommand(otherPlayer, "ISHealthPanel", "onHealthCheat", args)
-	end
-end
-
-Commands.player.onHealthCheatCurrentPlayer = function(player, args)
-	local otherPlayer = getPlayerByOnlineID(args.id)
+local function applyHealthCheat(otherPlayer, args)
 	local action = args.action
 	local bodyPart = otherPlayer:getBodyDamage():getBodyParts():get(args.bodyPartIndex)
 	if action == "bleeding" then
@@ -544,18 +583,18 @@ Commands.player.onHealthCheatCurrentPlayer = function(player, args)
 
 		if bodyPart:getStiffness() > 0 then
 			bodyPart:setStiffness(0)
-			player:getFitness():removeStiffnessValue(BodyPartType.ToString(bodyPart:getType()))
+			otherPlayer:getFitness():removeStiffnessValue(BodyPartType.ToString(bodyPart:getType()))
 		end
 	end
 	if action == "healthFullBody" then
-		local bodyParts = player:getBodyDamage():getBodyParts()
+		local bodyParts = otherPlayer:getBodyDamage():getBodyParts()
 		for i=1, bodyParts:size() do
 			local bP = bodyParts:get(i-1)
 			bP:RestoreToFullHealth();
 
 			if bP:getStiffness() > 0 then
 				bP:setStiffness(0)
-				player:getFitness():removeStiffnessValue(BodyPartType.ToString(bP:getType()))
+				otherPlayer:getFitness():removeStiffnessValue(BodyPartType.ToString(bP:getType()))
 			end
 		end
 	end
@@ -588,12 +627,25 @@ Commands.player.onHealthCheatCurrentPlayer = function(player, args)
 	if action == "fatique" then
 		if bodyPart:getStiffness() > 0 then
 			bodyPart:setStiffness(0)
-			player:getFitness():removeStiffnessValue(BodyPartType.ToString(bodyPart:getType()))
+			otherPlayer:getFitness():removeStiffnessValue(BodyPartType.ToString(bodyPart:getType()))
 		else
 			bodyPart:setStiffness(100)
 		end
 	end
 	syncBodyPart(bodyPart, 0xFFFFFFFFFFF);
+end
+
+Commands.player.onHealthCheat = function(player, args)
+	local otherPlayer = getPlayerByOnlineID(args.id)
+	if otherPlayer and checkPermissions(player, Capability.UseHealthCheat) then
+		applyHealthCheat(otherPlayer, args)
+	end
+end
+
+Commands.player.onHealthCheatCurrentPlayer = function(player, args)
+	if getPlayerByOnlineID(args.id) == player and checkPermissions(player, Capability.UseHealthCheat) then
+		applyHealthCheat(player, args)
+	end
 end
 
 Commands.player.setWeight = function(player, args)
@@ -719,6 +771,34 @@ Commands.debugAction.mannequinCreateItem = function(player, args)
 	sendAddItemToContainer(player:getInventory(), item);
 end
 
+Commands.debugAction.spawnStashMap = function(player, args)
+	if not player:getRole():hasCapability(Capability.AddItem) then
+		print('debugAction.spawnStashMap The player\'s access level is not sufficient to perform this action')
+		return
+	end
+
+	local stash = StashSystem.getStash(args.stashName)
+	if not stash then
+		print('stash not found')
+		return
+	end
+
+	local map = instanceItem(stash:getItem())
+	StashSystem.doStashItem(stash, map)
+	player:getInventory():AddItem(map)
+	sendAddItemToContainer(player:getInventory(), map);
+	map:doBuildingStash()
+end
+
+Commands.debugAction.reinitStashes = function(player, args)
+	if not player:getRole():hasCapability(Capability.UseDebugContextMenu) then
+		print('debugAction.reinitStashes The player\'s access level is not sufficient to perform this action')
+		return
+	end
+
+	StashSystem.reinit()
+end
+
 Commands.animal = {}
 Commands.animal.add = function(player, args)
 	if not player:getRole():hasCapability(Capability.AnimalCheats) then
@@ -832,10 +912,10 @@ Commands.animal.invincible = function(player, args)
 end
 Commands.animal.kill = function(player, args)
 	if not player:getRole():hasCapability(Capability.AnimalCheats) then
-		print('animal.invincible The player\'s access level is not sufficient to perform this action')
+		DebugType.ClientCommand:error("The player's access level is not sufficient to perform this action")
 		return
 	end
-	local animal = getAnimal(tonumber(args.id))
+	local animal = getAnimal(tonumber(args.id) or -1)
 	if args.index then
 		local hutch = getHutch(tonumber(args.x), tonumber(args.y), tonumber(args.z))
 		animal:getData():setHutchPosition(tonumber(args.index))
@@ -853,7 +933,24 @@ Commands.animal.kill = function(player, args)
 		sendServerCommandV("animal", "kill",
 				"id", args.id)
 	end
-
+end
+Commands.animal.killInTrailer = function(player, args)
+	if not player:getRole():hasCapability(Capability.AnimalCheats) then
+		DebugType.ClientCommand:error("The player's access level is not sufficient to perform this action")
+		return
+	end
+	local vehicle = getVehicleById(tonumber(args.vehicle) or -1)
+	if vehicle then
+		local animal = vehicle:getAnimalById(tonumber(args.id) or -1)
+		if not animal then
+			DebugType.ClientCommand:error('no such animal %s in vehicle %s', args.id, args.vehicle)
+			return
+		end
+		animal:setAttackedBy(getFakeAttacker())
+		animal:setHealth(0)
+	else
+		DebugType.ClientCommand:error('no such vehicle id=%s', args.vehicle)
+	end
 end
 Commands.animal.setWool = function(player, args)
     if not player:getRole():hasCapability(Capability.AnimalCheats) then
@@ -1252,7 +1349,7 @@ ClientCommands.OnClientCommand = function(module, command, player, args)
 		if args then
 		    for k,v in pairs(args) do argStr = argStr..' '..k..'='..tostring(v) end
         end
-		noise('received '..module..' '..command..' '..tostring(player)..argStr)
+		DebugType.ClientCommand:noise('received %s %s %s %s', module, command, player, argStr)
 		Commands[module][command](player, args)
 	end
 end

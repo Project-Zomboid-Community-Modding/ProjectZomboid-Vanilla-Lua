@@ -5,6 +5,15 @@ ISEntityUI.enableLog = false;
 
 ISEntityUI.isoPanelWalkToDist = 3;
 
+local requiresPower = {
+    ["appliances_cooking_01_32"] = true, --toaster
+    ["appliances_cooking_01_33"] = true,
+    ["appliances_cooking_01_56"] = true, --coffee machine
+    ["appliances_cooking_01_57"] = true,
+    ["appliances_cooking_01_58"] = true,
+    ["appliances_cooking_01_59"] = true,
+}
+
 function ISEntityUI.WalkToEntity( _player, _entity, _dist )
     if _player and _entity and instanceof(_entity, "IsoObject") then
         local square = _entity:getSquare();
@@ -322,6 +331,21 @@ function ISEntityUI.GetCustomOpenWindowFunc(_entity)
 end
 
 function ISEntityUI.CanOpenWindowFor(_player, _entity)
+    if ISWorldMap_instance and ISWorldMap_instance:isVisible() then
+		return false;
+	end
+
+    if _entity == nil then
+        return false
+    end
+
+    if requiresPower[_entity:getSprite():getName()] then
+        local square = _entity:getSquare()
+        if not square or not (square:haveElectricity() or square:hasGridPower()) then
+            return false
+        end
+    end
+
     local customFunction = ISEntityUI.GetCustomCanOpenWindowFunc(_entity);
 
     if customFunction and customFunction~=ISEntityUI.CanOpenWindowFor then
@@ -537,6 +561,22 @@ function ISEntityUI.CloseWindows()
     end
 end
 
+function ISEntityUI.ValidateOpenWindows()
+    ISEntityUI.EnsurePlayers()
+
+    for _, player in pairs(ISEntityUI.players) do
+        if player.windows then
+            for _, window in pairs(player.windows) do
+                if window.instance and window.entityObj and window.playerObj then
+                    if not ISEntityUI.CanOpenWindowFor(window.playerObj, window.entityObj) then
+                        window.instance:close()
+                    end
+                end
+            end
+        end
+    end
+end
+
 function ISEntityUI.OpenBuildWindow(_player, _isoObject, _queryOverride, _ignoreFindSurface, recipe, itemString)
     local windowInstance = ISXuiSkin.build(skin, "BuildWindow", ISBuildWindow, 0, 0, 60, 30, _player, _isoObject, _queryOverride);
     createWindow(_player, windowInstance, _isoObject);
@@ -635,7 +675,7 @@ end
 
 ISEntityUI.ReadIni = function()
     ISEntityUI.players = {}
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
     local reader = getFileReader("entityLayout.ini", true)
     local currentPlayer = nil;
     local currentWindowKey = nil;
@@ -678,7 +718,7 @@ ISEntityUI.ReadIni = function()
 end
 
 ISEntityUI.WriteIni = function()
-    if getCore():getGameMode() == "Tutorial" then return; end
+    if getCore():isTutorial() then return; end
     if ISEntityUI.enableLog then print('layout: writing ini file') end
     local writer = getFileWriter("entityLayout.ini", true, false);
     
@@ -710,3 +750,4 @@ ISEntityUI.OnSave = function()
 end
 
 Events.OnPostSave.Add(ISEntityUI.OnSave)
+Events.OnElectricityChanged.Add(ISEntityUI.ValidateOpenWindows)

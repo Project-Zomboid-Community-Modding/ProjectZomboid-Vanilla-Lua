@@ -52,7 +52,7 @@ function ISDPadWheels.onDisplayLeft(joypadData)
 end
 
 function ISDPadWheels.showSurvGuide(playerIndex)
-    SurvivalGuide.onKeyPressed(getCore():getKey("Toggle Survival Guide"))
+    SurvivalGuide.onKeyPressed(getCore():getKey(KeybindId.TOGGLE_SURVIVAL_GUIDE))
 end
 
 function ISDPadWheels.showAnimalZoneUI(playerNum)

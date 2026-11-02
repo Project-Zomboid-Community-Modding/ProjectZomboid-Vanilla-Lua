@@ -47,14 +47,14 @@ function ISSitOnGround:new(character, bed)
 end
 
 local function onKeyPress(key)
-    if not getCore():isKey("SitOnGround", key) then
+    if not getCore():isKey(KeybindId.SIT_ON_GROUND, key) then
         return
     end
     local playerObj = getSpecificPlayer(0)
     if not playerObj or playerObj:getVehicle() then
         return
     end
-    if playerObj:isSitOnGround() or playerObj:isSittingOnFurniture() then
+    if playerObj:isSitting() then
         playerObj:StopAllActionQueue()
         playerObj:setVariable("forceGetUp", true)
     else

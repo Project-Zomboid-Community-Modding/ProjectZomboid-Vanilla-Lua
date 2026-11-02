@@ -16,6 +16,13 @@ function ContextualActionHandlers.ClimbSheetRope(action, playerObj, arg1, arg2, 
     ISWorldObjectContextMenu.onClimbSheetRope(worldobjects, square, down, playerNum)
 end
 
+function ContextualActionHandlers.ClimbLadder(action, playerObj, arg1, arg2, arg3, arg4)
+    local square = arg1
+    local down = arg2
+    local ladder = arg3
+    ISWorldObjectContextMenu.onClimbLadder(square, down, playerObj, ladder)
+end
+
 function ContextualActionHandlers.ClimbThroughWindow(action, playerObj, arg1, arg2, arg3, arg4)
     local worldobjects = nil
     local playerNum = playerObj:getIndex()

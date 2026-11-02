@@ -74,22 +74,6 @@ ISObjectClickHandler.doDoubleClick = function (object, x, y)
         return;
     end
 
---     changed clicking on workstations and crafting surfaces to open them to double clicking
---     added check to ensure that the player can properly access the square in question (ie not in another room; behind a fence; etc)
---     local playerNum = 0
---     local playerObj = getSpecificPlayer(playerNum)
---     if playerObj:canUseAsGenericCraftingSurface(object) and not object:getContainer() then
---         if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:IsAiming() and
---                 playerObj:getCurrentSquare() and object:getSquare() and
---                 playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
---                 not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
---
--- --         print("Opening crafting from ISObjectClickHandler")
---             ISEntityUI.OpenHandcraftWindow(playerObj, object);
---             return
---         end
---     end
-
     if object:getContainer() ~= nil then
 
         local parent = object:getSquare();
@@ -196,6 +180,10 @@ function ISObjectClickHandler.doClickSpecificObject(object, playerNum, playerObj
     local isPaused = UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0
     if isPaused then return false end
 
+    if playerObj:isClimbingLadder() or playerObj:isClimbingDownLadder() then
+        return false;
+    end
+
     if not playerObj or playerObj:isDead() then return false end
 
     if not playerObj:getCurrentSquare() then return false end
@@ -237,7 +225,7 @@ ISObjectClickHandler.doClick = function (object, x, y)
 
 
     local isPaused = UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0
-    if getCore():getGameMode() ~= "Tutorial" and not isPaused and instanceof(object, "IsoWaveSignal") and playerObj:isAlive() and not playerObj:isAiming() and
+    if not getCore():isTutorial() and not isPaused and instanceof(object, "IsoWaveSignal") and playerObj:isAlive() and not playerObj:isAiming() and
             playerObj:getCurrentSquare() and object:getSquare() and
             playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 1.5 and
             not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
@@ -248,7 +236,7 @@ ISObjectClickHandler.doClick = function (object, x, y)
     if object:getSpriteConfig() and object:getSpriteConfig():getMultiSquareMaster() then
         local old = object;
         object = object:getSpriteConfig():getMultiSquareMaster();
-        if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:isAiming() and
+        if not getCore():isTutorial() and not isPaused and playerObj:isAlive() and not playerObj:isAiming() and
                 playerObj:getCurrentSquare() and object:getSquare() and
                 playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
                 not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) and
@@ -260,20 +248,6 @@ ISObjectClickHandler.doClick = function (object, x, y)
         end
         object = old;
     end
-
--- --     changed clicking on workstations and crafting surfaces to open them to double clicking
--- --     added check to ensure that the player can properly access the square in question (ie not in another room; behind a fence; etc)
---     if playerObj:canUseAsGenericCraftingSurface(object) then
---         if getCore():getGameMode() ~= "Tutorial" and not isPaused and playerObj:isAlive() and not playerObj:isAiming() and
---                 playerObj:getCurrentSquare() and object:getSquare() and
---                 playerObj:DistToSquared(object:getX() + 0.5, object:getY() + 0.5) < 1.5 * 4.0 and
---                 not playerObj:getCurrentSquare():isSomethingTo(object:getSquare()) then
---
--- --         print("Opening crafting from ISObjectClickHandler")
---             ISEntityUI.OpenHandcraftWindow(playerObj, object);
---             return
---         end
---     end
 
     if isClient() and not SafeHouse.isSafehouseAllowLoot(sq, playerObj) then
         return

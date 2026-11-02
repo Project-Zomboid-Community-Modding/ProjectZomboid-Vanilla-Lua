@@ -261,7 +261,8 @@ function ISHotbar:update()
 	end
     -- show item tooltip when moused over
     local slotIndex = self:getSlotIndexAt(self:getMouseX(), self:getMouseY())
-    if slotIndex ~= -1 and self.attachedItems[slotIndex] and not getPlayerContextMenu(self.playerNum):isAnyVisible() then
+    local contextMenu = getPlayerContextMenu(self.playerNum)
+    if slotIndex ~= -1 and self.attachedItems[slotIndex] and contextMenu and not contextMenu:isAnyVisible() then
         local item = self.attachedItems[slotIndex]
         if self.toolRender then
             self.toolRender:setItem(item)
@@ -678,14 +679,14 @@ function ISHotbar:savePosition()
 end
 
 function ISHotbar:getSlotForKey(key)
-	if getCore():isKey("Hotbar 1", key) then return 1; end
-	if getCore():isKey("Hotbar 2", key) then return 2; end
-	if getCore():isKey("Hotbar 3", key) then return 3; end
-	if getCore():isKey("Hotbar 4", key) then return 4; end
-	if getCore():isKey("Hotbar 5", key) then return 5; end
-	if getCore():isKey("Hotbar 6", key) then return 6; end
-	if getCore():isKey("Hotbar 7", key) then return 7; end
-	if getCore():isKey("Hotbar 8", key) then return 8; end
+	if getCore():isKey(KeybindId.HOTBAR_1, key) then return 1; end
+	if getCore():isKey(KeybindId.HOTBAR_2, key) then return 2; end
+	if getCore():isKey(KeybindId.HOTBAR_3, key) then return 3; end
+	if getCore():isKey(KeybindId.HOTBAR_4, key) then return 4; end
+	if getCore():isKey(KeybindId.HOTBAR_5, key) then return 5; end
+	if getCore():isKey(KeybindId.HOTBAR_6, key) then return 6; end
+	if getCore():isKey(KeybindId.HOTBAR_7, key) then return 7; end
+	if getCore():isKey(KeybindId.HOTBAR_8, key) then return 8; end
 	return -1
 end
 

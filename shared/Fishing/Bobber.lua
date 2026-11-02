@@ -249,7 +249,7 @@ function Bobber:destroy()
     if not isClient() then
         Fishing.ServerBobberManager[self.player:getOnlineID()] = nil;
     else
-        removeAction(self.id, true)
+        removeAction(self.player, self.id, true)
     end
     if not isServer() then
         Events.RenderOpaqueObjectsInWorld.Remove(self.renderFunc);

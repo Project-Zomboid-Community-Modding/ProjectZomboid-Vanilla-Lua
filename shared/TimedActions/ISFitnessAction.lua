@@ -79,7 +79,7 @@ function ISFitnessAction:showHandModel()
 end
 
 function ISFitnessAction:forceStop()
-    self.fitness:setCurrentExercise(null);
+    self.fitness:setCurrentExercise(nil);
     self.action:forceStop();
 end
 
@@ -93,6 +93,7 @@ function ISFitnessAction:stop()
 
 	self.character:setVariable("ExerciseEnded", true);
 	setGameSpeed(1);
+    self.fitness:setCurrentExercise(nil)
 	ISBaseTimedAction.stop(self);
 end
 
@@ -151,7 +152,7 @@ function ISFitnessAction:serverStart()
 
 function ISFitnessAction:serverStop()
 	emulateAnimEventOnce(self.netAction, 100, nil, "FitnessFinished=TRUE")
-    self.fitness:setCurrentExercise(null);
+    self.fitness:setCurrentExercise(nil);
 end
 
 function ISFitnessAction:animEvent(event, parameter)

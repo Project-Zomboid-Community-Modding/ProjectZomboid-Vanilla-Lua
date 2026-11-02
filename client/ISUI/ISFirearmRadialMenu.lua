@@ -382,11 +382,11 @@ function ISFirearmRadialMenu.checkKey(key)
 	if getCell():getDrag(0) then
 		return false
 	end
-	if getCore():isKey("SharpenWeapon", key) and playerObj:getPrimaryHandItem() and playerObj:getPrimaryHandItem():isSharpenable() then
+	if getCore():isKey(KeybindId.SHARPEN_WEAPON, key) and playerObj:getPrimaryHandItem() and playerObj:getPrimaryHandItem():isSharpenable() then
         ISFirearmRadialMenu.sharpenWeapon(playerObj:getPrimaryHandItem(), playerObj)
 		return false
 	end
-	if not getCore():isKey("ReloadWeapon", key) then
+	if not getCore():isKey(KeybindId.RELOAD_WEAPON, key) then
 		return false
 	end
 	return true

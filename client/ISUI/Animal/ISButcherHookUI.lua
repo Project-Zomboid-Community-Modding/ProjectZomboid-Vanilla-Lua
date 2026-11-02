@@ -171,7 +171,7 @@ function ISButcherHookUI:updateLabelAndButtons()
     end
 
     -- if you have bucket you can gather animal blood, otherwise you bleed it
-    if self:getBuckets() and not self:getBuckets():isEmpty() then
+    if ButcheringUtil.hasBucket(self.chr) then
         self.removeBloodBtn:setTitle(getText("IGUI_ButcherHook_Gather"));
     else
         self.removeBloodBtn:setTitle(getText("IGUI_ButcherHook_Bleed"));
@@ -184,7 +184,7 @@ function ISButcherHookUI:updateLabelAndButtons()
         self:updateCorpseDatas();
 
         -- if we have bucket in inventory we can resume taking blood instead of spilling it on ground
-        if self:getBuckets() and not self:getBuckets():isEmpty() then
+        if ButcheringUtil.hasBucket(self.chr) then
             self.removeBloodBtn:setVisible(true)
         end
     end
@@ -268,6 +268,9 @@ function ISButcherHookUI:updatePositions(test, button, label, infoLabel, yoffset
     else
         button.enable = true;
         button.tooltip = nil;
+        if button == self.removeBloodBtn and not ButcheringUtil.hasBucket(self.chr) then
+            button.tooltip = getText("Tooltip_Animal_OptionalBucketButcher")
+        end
     end
 
     --self.animalPanel:setWidth(math.max(self.width, button:getRight() + UI_BORDER_SPACING+1))
@@ -655,17 +658,20 @@ function ISButcherHookUI:onCutCorpse()
 end
 
 function ISButcherHookUI:onRemoveBlood()
+    local bucketList = self:getBuckets();
+    if not bucketList or bucketList:isEmpty() then
+        self:onBleedAnimal()
+        return
+    end
+
     -- if you have bucket gives a context list to select one, otherwise just bleed the animal (blood goes on ground)
     local context = ISContextMenu.get(0, self.removeBloodBtn:getAbsoluteX() + 10, self.removeBloodBtn:getAbsoluteY() + 10)
     context:addOption(getText("IGUI_None"), self, ISButcherHookUI.onBleedAnimal);
 
-    local bucketList = self:getBuckets();
-    if bucketList then
-        for i=0,bucketList:size()-1 do
-            local bucket = bucketList:get(i);
-            local text = bucket:getDisplayName() .. " " .. bucket:getFluidContainer():getAmount() .. "/" .. bucket:getFluidContainer():getCapacity();
-            context:addOption(text, self, ISButcherHookUI.onSelectBucketForBlood, bucket);
-        end
+    for i=0,bucketList:size()-1 do
+        local bucket = bucketList:get(i);
+        local text = bucket:getDisplayName() .. " " .. bucket:getFluidContainer():getAmount() .. "/" .. bucket:getFluidContainer():getCapacity();
+        context:addOption(text, self, ISButcherHookUI.onSelectBucketForBlood, bucket);
     end
 
     if getJoypadData(self.playerNum) then
@@ -701,17 +707,6 @@ function ISButcherHookUI:close()
     self.hook:setLuaHook(nil);
     if getJoypadData(self.playerNum) then
         setJoypadFocus(self.playerNum, nil)
-    end
-end
-
--- when we load an animal that was on a hook we need to recreate his corpse
--- the corpse is created in java, but then the animal needs to be recreated
-function ISButcherHookUI.onReattachAnimal(hook, animal)
-    animal:setDir(IsoDirections.NE)
-    local modData = animal:getModData();
-    animal:getData():setSizeForced(AnimalAvatarDefinition[modData["AnimalType"]].animalPositionSize)
-    if modData["animalSize"] < animal:getData():getSize() then
-        animal:getData():setSizeForced(animal:getModData()["animalSize"]);
     end
 end
 

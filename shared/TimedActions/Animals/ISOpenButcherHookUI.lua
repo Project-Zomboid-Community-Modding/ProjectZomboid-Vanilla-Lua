@@ -28,13 +28,11 @@ end
 
 function ISOpenButcherHookUI:perform()
 
-    -- needed to remove from queue / start next.
     ISBaseTimedAction.perform(self);
 
-    -- Prevent multiple splitscreen players opening the UI for the same hook.
     for playerNum=1,4 do
         local existing = ISButcherHookUI.ui and ISButcherHookUI.ui[playerNum-1] or nil
-        if existing ~= nil and existing.hook == self.hook then
+        if existing ~= nil and (existing.hook == self.hook or (existing.chr == self.player and existing.hook ~= self.hook)) then
             existing:close()
         end
     end

@@ -816,10 +816,6 @@ function ISInventoryTransferAction:new (character, item, srcContainer, destConta
 			o.maxTime = o.maxTime * (w) * destCapacityDelta;
 		end
 
-        if getCore():getGameMode()=="LastStand" then
-            o.maxTime = o.maxTime * 0.3;
-        end
-
         if o.destContainer:getType()=="floor" then
 			if o.srcContainer == o.character:getInventory() then
 				o.maxTime = o.maxTime * 0.1;

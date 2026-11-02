@@ -17,7 +17,7 @@ function ISEmptyGraves:create(x, y, z, north, sprite)
 	self:setInfo(squareA, north, spriteAName, cell, "sprite2");
     if self.character:getPrimaryHandItem() then
         local skill = self.character:getPerkLevel(Perks.Strength)
-        local strain = (1 - (skill * 0.05)) * getGameTime():getMultiplier() * 50
+        local strain = (1 - (skill * 0.05)) * 50
         self.character:addCombatMuscleStrain(self.character:getPrimaryHandItem(), 1, strain)
     end
 end

@@ -144,7 +144,9 @@ function luautils.walkAdj(playerObj, square, keepActions, excludeList)
 
 	local adjacent = AdjacentFreeTileFinder.Find(square, playerObj, excludeList);
 	if adjacent ~= nil then
-		ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+		if not isServer() then
+			ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, adjacent));
+		end
 		return true;
 	else
 		return  false;

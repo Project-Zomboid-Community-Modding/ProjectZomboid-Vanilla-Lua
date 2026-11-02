@@ -4220,6 +4220,7 @@ SettingsTable = {
 					{ name = "PlayerBumpPlayer" },
 					{ name = "MapRemotePlayerVisibility" },
 					{ name = "AllowCoop" },
+					{ name = "ShowCoordinates" },
 				},
 			},
 			{

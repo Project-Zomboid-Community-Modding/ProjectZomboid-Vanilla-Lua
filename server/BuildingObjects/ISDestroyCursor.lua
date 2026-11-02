@@ -16,7 +16,7 @@ function ISDestroyCursor:create(x, y, z, north, sprite)
 		if not ISBuildMenu.cheat then
 			ISWorldObjectContextMenu.equip(player, player:getPrimaryHandItem(), self.sledgehammer:getType(), true)
 		end
-		ISTimedActionQueue.add(ISDestroyStuffAction:new(player, destroy, self:_isWall(destroy) and self.cornerCounter) or nil)
+		ISTimedActionQueue.add(ISDestroyStuffAction:new(player, destroy, self:_isWall(destroy) and self.cornerCounter or nil))
 	end
 end
 
@@ -138,14 +138,14 @@ function ISDestroyCursor:cycleToNextObject()
 end
 
 function ISDestroyCursor:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		self:cycleToNextObject()
 	end
 end
 
 function ISDestroyCursor:isValid(square)
 	if not self.dismantle and isClient() and getServerOptions():getBoolean("SledgehammerOnlyInSafehouse") and not isAdmin() then
-		local safe = SafeHouse.isSafeHouse(square, nil, true);
+		local safe = SafeHouse.isSafeHouse(square, nil, false);
 		if safe and safe:playerAllowed(self.character) then
 			return true;
 		end
@@ -214,7 +214,11 @@ function ISDestroyCursor:render(x, y, z, square)
 					getSprite(object:getProperty("CornerWestWall")):RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
 				end
 			else
-				object:getSprite():RenderGhostTileColor(x, y, z, offsetX, offsetY, color.r, color.g, color.b, 0.8)
+				local objects = object:getSpriteGridObjectsIncludingSelf(ArrayList.new())
+				for i=1,objects:size() do
+					local object1 = objects:get(i-1)
+					object1:getSprite():RenderGhostTileColor(object1:getX(), object1:getY(), object1:getZ(), offsetX, offsetY, color.r, color.g, color.b, 0.8)
+				end
 			end
 		end
 		self.currentObject = object

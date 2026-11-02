@@ -75,6 +75,9 @@ function Fishing.Utils.isPlayerAimOnWater(player, autoAim)
     end
 
     local sq = getSquare(x, y, 0)
+    if not Fishing.Utils.isAccessibleAimDist(player) then
+        return false
+    end
     if sq and sq:getProperties() and sq:getProperties():has(IsoFlagType.water) then
         return true
     end

@@ -95,7 +95,7 @@ WinterIsComing.Render = function()
 end
 
 WinterIsComing.id = "WinterIsComing";
-WinterIsComing.image = "media/lua/client/LastStand/winter_is_coming.png";
+WinterIsComing.image = "media/lua/client/Challenge/winter_is_coming.png";
 WinterIsComing.video = "winter_is_coming.bik";
 WinterIsComing.gameMode = "Winter is Coming";
 WinterIsComing.world = "Muldraugh, KY";

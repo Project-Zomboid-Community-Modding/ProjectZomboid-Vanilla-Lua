@@ -765,11 +765,11 @@ end
 
 ISChat.onToggleChatBox = function(key)
     if ISChat.instance==nil then return; end
-    if getCore():isKey("Toggle chat", key) then
+    if getCore():isKey(KeybindId.TOGGLE_CHAT, key) then
         ISChat.instance:focus();
     end
     local chat = ISChat.instance;
-    if getCore():isKey("Switch chat stream", key) then
+    if getCore():isKey(KeybindId.SWITCH_CHAT_STREAM, key) then
         chat.currentTabID = chat.currentTabID % chat.tabCnt + 1;
         chat.panel:activateView(chat.tabs[chat.currentTabID].tabTitle);
         ISChat.instance:onActivateView();

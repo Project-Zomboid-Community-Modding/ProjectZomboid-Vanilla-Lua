@@ -385,7 +385,7 @@ end
 function WorldMapEditorMode_Streets:onStreetNameEntered()
 	if not self.selectedStreet then return end
 	local text = self.streetNameEntry:getText()
-	self.selectedStreet:setTranslatedText(text)
+	self.selectedStreet:setUntranslatedText(text)
 end
 
 function WorldMapEditorMode_Streets:onWidthEntered()

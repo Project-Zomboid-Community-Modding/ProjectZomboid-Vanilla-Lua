@@ -616,7 +616,7 @@ function ISButtonPrompt:testInteractButtonAction(dir)
         if not device and (playerObj:getSecondaryHandItem() and instanceof(playerObj:getSecondaryHandItem(), "Radio")) then
             device = playerObj:getSecondaryHandItem();
         end
-        if device and not getCore():getGameMode() == "Tutorial" then
+        if device and not getCore():isTutorial() then
             self:setButtonBindingPrompt(CharacterJoypadButtonBinding.Interact, getText("IGUI_DeviceOptions"), self.openDeviceOptions, device)
         end
     end

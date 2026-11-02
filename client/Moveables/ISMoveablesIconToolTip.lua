@@ -20,7 +20,7 @@ end
 function ISMoveablesIconToolTip:render()
     ISPanel.render(self);
     if getCell():getDrag(0) and getCell():getDrag(0).isMoveableCursor then
-        self.subText = getText("IGUI_ToggleMode", Keyboard.getKeyName(getCore():getKey("Toggle mode")) );
+        self.subText = getText("IGUI_ToggleMode", getKeyName(getCore():getKey(KeybindId.TOGGLE_MODE)) );
         local text = getCell():getDrag(0):getMoveableMode():gsub("^%l", string.upper)
         local textY = (self:getHeight() - self.fontheight * 2) / 2
         self:drawText(getText("IGUI_" .. text), self.marginOffset+5,textY,1.0,0.85,0.05,1.0,UIFont.Small);
@@ -39,7 +39,7 @@ function ISMoveablesIconToolTip:new (x, y, width, height, marginOffset)
     o.y = y;
     o.marginOffset = marginOffset or 0;
     o.background = true;
-    o.subText = "Press '"..Keyboard.getKeyName(getCore():getKey("Toggle mode")).."' to change mode.";
+    o.subText = "Press '".. getKeyName(getCore():getKey(KeybindId.TOGGLE_MODE)).."' to change mode.";
     o.backgroundColor = {r=0, g=0, b=0, a=0.35};
     o.borderColor = {r=0.80, g=0.80, b=0.80, a=0};
     o.width = width;

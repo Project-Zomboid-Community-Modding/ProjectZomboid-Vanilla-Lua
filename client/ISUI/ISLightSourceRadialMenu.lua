@@ -277,7 +277,7 @@ STATE[3] = {}
 STATE[4] = {}
 
 function ISLightSourceRadialMenu.checkKey(key)
-	if not getCore():isKey("Equip/Turn On/Off Light Source", key) then
+	if not getCore():isKey(KeybindId.LIGHT_SOURCE, key) then
 		return false
 	end
 	if isGamePaused() then

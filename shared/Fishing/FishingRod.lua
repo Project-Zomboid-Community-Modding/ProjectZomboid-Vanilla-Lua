@@ -351,7 +351,7 @@ function FishingRod:removeLure()
     self.rodItem:getModData().fishing_Lure = nil
     self.rodItem:setName(Translator.getText(self.rodItem:getScriptItem():getDisplayName()))
     if isServer() then
-        local args = { rodId=self.rodItem:getID() }
+        local args = { playerOnlineId=self.player:getOnlineID(), rodId=self.rodItem:getID() }
         sendServerCommand(self.player, 'fishing', 'consumeLure', args)
     end
 end

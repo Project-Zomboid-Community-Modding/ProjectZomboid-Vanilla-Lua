@@ -160,7 +160,7 @@ function ISHandcraftWindow:prerender()
         if self.isoObjectInProximity then
             local header = getText("IGUI_CraftingWindow_Header");
             local props = self.isoObject:getProperties();
-            local surface = (props and props:has("IsMoveAble") and props:has("CustomName") and props:get("CustomName")) or getText("IGUI_CraftingWindow_Surface"); --self.isoObject:getProperties():has("IsMoveAble") and
+            local surface = Translator.getMoveableDisplayName(self.isoObject) or getText("IGUI_CraftingWindow_Surface")
             self.windowHeader.title.name = header .. surface;
         else
             self.windowHeader.title.name = getText("IGUI_CraftingWindow_Title");
@@ -287,11 +287,11 @@ function ISHandcraftWindow:validateSizeBounds()
 end
 
 function ISHandcraftWindow:isKeyConsumed(key)
-    return key == Keyboard.KEY_ESCAPE or getCore():isKey("Crafting UI", key)
+    return key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.CRAFTING_UI, key)
 end
 
 function ISHandcraftWindow:onKeyRelease(key)
-    if self:isVisible() and (key == Keyboard.KEY_ESCAPE or getCore():isKey("Crafting UI", key)) then
+    if self:isVisible() and (key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.CRAFTING_UI, key)) then
         self:close()
         self:removeFromUIManager();
         return

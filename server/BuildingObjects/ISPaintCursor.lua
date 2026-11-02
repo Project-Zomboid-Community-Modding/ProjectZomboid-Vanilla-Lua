@@ -75,7 +75,7 @@ function ISPaintCursor:_isDoorFrame(object)
 end
 
 function ISPaintCursor:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		self.objectIndex = self.objectIndex + 1
 		local objects = self:getObjectList()
 		if self.objectIndex > #objects then

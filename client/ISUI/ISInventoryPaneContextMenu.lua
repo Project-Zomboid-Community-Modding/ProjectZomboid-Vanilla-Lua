@@ -24,7 +24,7 @@ end
 
 -- MAIN METHOD FOR CREATING RIGHT CLICK CONTEXT MENU FOR INVENTORY ITEMS
 ISInventoryPaneContextMenu.createMenu = function(player, isInPlayerInventory, items, x, y, origin)
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         Tutorial1.createInventoryContextMenu(player, isInPlayerInventory, items ,x ,y);
         return;
     end
@@ -970,7 +970,7 @@ function ISInventoryPaneContextMenu.doStoveMenu(context, playerNum)
     local playerObj = getSpecificPlayer(playerNum)
     local loot = getPlayerLoot(playerNum)
 
-    if loot.inventoryPane.inventory and getCore():getGameMode() ~= "LastStand" then
+    if loot.inventoryPane.inventory then
         local object = loot.inventoryPane.inventory:getParent()
         if instanceof(object, "IsoCombinationWasherDryer") then
             ISWorldObjectContextMenu.toggleComboWasherDryer(context, playerObj, object)
@@ -983,7 +983,7 @@ function ISInventoryPaneContextMenu.doStoveMenu(context, playerNum)
         context:addOption(loot.toggleStove.title, loot, ISInventoryPage.toggleStove)
     end
 
-    if loot.inventoryPane.inventory and getCore():getGameMode() ~= "LastStand" then
+    if loot.inventoryPane.inventory then
         local stove = loot.inventoryPane.inventory:getParent()
         if instanceof(stove, "IsoStove") and stove:getContainer() and stove:getContainer():isPowered() then
             if stove:getContainer():getType() == "microwave" then
@@ -2666,47 +2666,15 @@ ISInventoryPaneContextMenu.onCheckMap = function(map, player)
         ISTimedActionQueue.add(action)
         return
     end
-
-    if JoypadState.players[player+1] then
-        local inv = getPlayerInventory(player)
-        local loot = getPlayerLoot(player)
-        inv:setVisible(false)
-        loot:setVisible(false)
-    end
-
-    local titleBarHgt = ISCollapsableWindow.TitleBarHeight()
-    local x = getPlayerScreenLeft(player) + 20
-    local y = getPlayerScreenTop(player) + 20
-    local width = getPlayerScreenWidth(player) - 20 * 2
-    local height = getPlayerScreenHeight(player) - 20 * 2 - titleBarHgt
-
-    local mapUI = ISMap:new(x, y, width, height, map, player);
-    mapUI:initialise();
-    local wrap = mapUI:wrapInCollapsableWindow(map:getName(), false, ISMapWrapper);
-    wrap:setInfo(getText("IGUI_Map_Info"));
-    wrap:setWantKeyEvents(true);
-    mapUI.wrap = wrap;
-    wrap.mapUI = mapUI;
-    map:doBuildingStash();
-    wrap:setVisible(true);
-    wrap:addToUIManager();
-	if JoypadState.players[player+1] then
-        setJoypadFocus(player, mapUI)
-    end
-    playerObj:addReadMap(map)
+    ISTimedActionQueue.add(ISReadMapItem:new(playerObj, map))
 end
 
 ISInventoryPaneContextMenu.onWriteSomething = function(notebook, editable, player)
-    local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
-    local height = 110 + (15 * fontHgt);
-    local modal = ISUIWriteJournal:new(0, 0, 350, height, nil, ISInventoryPaneContextMenu.onWriteSomethingClick, getSpecificPlayer(player), notebook, notebook:seePage(1), notebook:getName(), 15, editable, notebook:getPageToWrite());
-    modal:initialise();
-    modal:addToUIManager();
-    if JoypadState.players[player+1] then
-        setJoypadFocus(player, modal)
-    end
-    local action = ISWriteSomething:new(getSpecificPlayer(player), notebook)
-    action.modal = modal
+    local playerObj = getSpecificPlayer(player)
+    ISInventoryPaneContextMenu.transferIfNeeded(playerObj, notebook)
+    local action = ISWriteSomething:new(playerObj, notebook)
+    action.editable = editable
+    action.player = player
     ISTimedActionQueue.add(action)
 end
 
@@ -3834,7 +3802,7 @@ ISInventoryPaneContextMenu.hurricaneLanternExtinguish = function(item, player)
 end
 
 ISInventoryPaneContextMenu.dropItem = function(item, player)
-    if "Tutorial" == getCore():getGameMode() then
+    if getCore():isTutorial() then
         return;
     end
 	local playerObj = getSpecificPlayer(player)
@@ -4585,11 +4553,7 @@ ISInventoryPaneContextMenu.doContextConfigOptions = function(context, item, play
             local customFunction = entry:getCustomFunction();
             local option = nil;
             if customFunction then
-            	option = context:addOption(textRef, customFunction, ISInventoryPaneContextMenu.onCustomFunction, item, playerObj, entry:getExtraParam());
-            end
-            local timedAction = entry:getTimedAction();
-            if timedAction then
-            	option = context:addOption(textRef, timedAction, ISWorldObjectContextMenu.onTimedAction, item, playerObj, entry:getExtraParam());
+            	option = context:addOption(textRef, entry, ISInventoryPaneContextMenu.onCustomFunction, item, playerObj);
             end
             if option and entry:getIcon() and getTexture(entry:getIcon()) then
             	option.iconTexture = getTexture(entry:getIcon());
@@ -4598,8 +4562,8 @@ ISInventoryPaneContextMenu.doContextConfigOptions = function(context, item, play
     end
 end
 
-function ISInventoryPaneContextMenu.onCustomFunction(customFunction, item, playerObj, param)
-	assert(loadstring('return '..customFunction..'(...)'))(item, playerObj, param);
+function ISInventoryPaneContextMenu.onCustomFunction(entry, item, playerObj)
+    ISWorldObjectContextMenuLogic.callCustomFunction(entry, item, playerObj)
 end
 
 ISInventoryPaneContextMenu.onNoRecipes = function(items, item2, boolean, player)

@@ -150,7 +150,7 @@ function ISPickAxeGroundCoverItem:complete()
 	    self.pickaxe:damageCheck(0,2,false)
 -- 		if ZombRand(rollmax) == 0 then
 -- 			pickAxe:setCondition(pickAxe:getCondition() - 1);
--- 			ISWorldObjectContextMenu.checkWeapon(self.character);
+-- 			ItemUtils.checkWeapon(self.character);
 -- 		end
 	end
 	return true

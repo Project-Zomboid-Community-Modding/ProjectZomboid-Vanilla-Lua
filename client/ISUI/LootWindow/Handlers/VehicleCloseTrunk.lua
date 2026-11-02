@@ -4,7 +4,7 @@ ISLootWindowObjectControlHandler_VehicleCloseTrunk = ISLootWindowObjectControlHa
 local Handler = ISLootWindowObjectControlHandler_VehicleCloseTrunk
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     if not instanceof(self.object, "BaseVehicle") then return false end
     local doorPart = self.object:getUseablePart(self.playerObj)
     if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then

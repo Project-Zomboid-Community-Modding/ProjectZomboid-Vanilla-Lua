@@ -12,8 +12,8 @@ function ISDeflateTire:update()
 	local psi = self.psiStart + (self.psiTarget - self.psiStart) * self:getJobDelta()
 	if math.floor(psi) ~= self.psiSent then
 		if self.vehicle then
-            if not self.part then
-                print('no such part ',self.part)
+            if not self.part or self.part:getContainerContentType() ~= "Air" then
+                print('no such part Tire')
                 return
             end
             self.part:setContainerContentAmount(psi, true, true)
@@ -22,7 +22,7 @@ function ISDeflateTire:update()
             self.vehicle:setTireInflation(wheelIndex, self.part:getContainerContentAmount() / self.part:getContainerCapacity())
             self.vehicle:transmitPartModData(self.part)
         else
-            print('no such vehicle id=',self.vehicle)
+            print('no such vehicle')
         end
 		self.psiSent = math.floor(psi)
 	end
@@ -39,6 +39,9 @@ function ISDeflateTire:stop()
 end
 
 function ISDeflateTire:serverStop()
+    if not self.part or self.part:getContainerContentType() ~= "Air" then
+        return
+    end
     local psi = self.psiStart + (self.psiTarget - self.psiStart) * self.netAction:getProgress()
     self.part:setContainerContentAmount(math.floor(psi), true, true)
     self.vehicle:transmitPartModData(self.part)
@@ -53,15 +56,15 @@ end
 
 function ISDeflateTire:complete()
     if self.vehicle then
-        if not self.part then
-            print('no such part ',self.part)
+        if not self.part or self.part:getContainerContentType() ~= "Air" then
+            print('no such part Tire')
             return false
         end
         self.part:setContainerContentAmount(self.psiTarget, true, true)
         -- TODO: sync inflation
         self.vehicle:transmitPartModData(self.part)
     else
-        print('no such vehicle id=',self.vehicle)
+        print('no such vehicle')
         return false
     end
     return true
@@ -77,14 +80,14 @@ function ISDeflateTire:getDuration()
 	return (self.part:getContainerContentAmount()-self.psiTarget) * 50
 end
 
-function ISDeflateTire:new(character, part, psiTarget)
+function ISDeflateTire:new(character, part)
 	local o = ISBaseTimedAction.new(self, character)
 	o.part = part
 	if part ~= nil then
 	    o.vehicle = part:getVehicle()
 	    o.psiStart = part:getContainerContentAmount()
 	end
-	o.psiTarget = psiTarget
+	o.psiTarget = 0
     o.stopOnWalk = true
     o.stopOnRun = true
 	o.maxTime = o:getDuration()

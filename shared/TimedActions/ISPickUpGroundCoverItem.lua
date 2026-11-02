@@ -32,11 +32,11 @@ function ISPickUpGroundCoverItem:animEvent(event, parameter)
 		self.square:playSound("ChopTree");
 		addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), 20, 1)
 		if self.weapon and self.weapon:damageCheck(0,4,false) then
-			ISWorldObjectContextMenu.checkWeapon(self.character)
+			ItemUtils.checkWeapon(self.character)
 		end
 -- 		if self.weapon and ZombRand(self.weapon:getConditionLowerChance() * 4) == 0 then
 -- 			self.weapon:setCondition(self.weapon:getCondition() - 1)
--- 			ISWorldObjectContextMenu.checkWeapon(self.character)
+-- 			ItemUtils.checkWeapon(self.character)
 -- 		end
 	end
 
@@ -118,10 +118,6 @@ ISPickUpGroundCoverItem.grabItemTime2 = function(playerObj, trashItemWeight)
 	if w > 3 then w = 3; end;
 	maxTime = maxTime * (w) * destCapacityDelta;
 
-	if getCore():getGameMode()=="LastStand" then
-		maxTime = maxTime * 0.3;
-	end
-
 	if playerObj:hasTrait(CharacterTrait.DEXTROUS) then
 		maxTime = maxTime * 0.5
 	end
@@ -183,6 +179,7 @@ function ISPickUpGroundCoverItem:new(character, square, object)
 	o.spriteFrame = 0
 	return o
 end
+
 GroundCoverItems = {}
 GroundCoverItems["4Stones"] = "Stone2";
 GroundCoverItems["LargeStoneTwigs"] = "LargeStone";
@@ -190,6 +187,7 @@ GroundCoverItems["LargeStone"] = "LargeStone";
 GroundCoverItems["FlatStone"] = "FlatStone";
 GroundCoverItems["StoneTwigs"] = "Stone2";
 GroundCoverItems["Stone"] = "Stone2";
+GroundCoverItems["Stone2"] = "Stone2";
 GroundCoverItems["Log"] = "Log";
 GroundCoverItems["Twigs"] = "Twigs";
 GroundCoverItems["TreeBranch2"] = "TreeBranch2";

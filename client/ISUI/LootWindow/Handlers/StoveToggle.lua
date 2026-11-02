@@ -4,7 +4,7 @@ ISLootWindowObjectControlHandler_StoveToggle = ISLootWindowObjectControlHandler:
 local Handler = ISLootWindowObjectControlHandler_StoveToggle
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     return instanceof(self.object, "IsoStove") and (self.container ~= nil) and self.container:isPowered()
 end
 

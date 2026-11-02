@@ -92,7 +92,7 @@ function ISDemoPopup:new (x, y, width, height)
 end
 
 function DoDemoPopup()
-    if getCore():getGameMode() == "Tutorial" then return end
+    if getCore():isTutorial() then return end
     ISDemoPopup.getInstance();
 end
 

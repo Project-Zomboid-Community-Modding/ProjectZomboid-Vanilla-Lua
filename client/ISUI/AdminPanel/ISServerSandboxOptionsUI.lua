@@ -357,7 +357,7 @@ function SandboxOptionsScreenPresetPanel:settingsToUI(options)
 	self:addPresetToList("SixMonthsLater", getText("UI_NewGame_SixMonths"), false)
 	local presets = getSandboxPresets()
 	if presets then
-	    local mode = getCore():getGameMode()
+	    local mode = getCore():getGameMode():toString()
 		for i=1,presets:size() do
 			local fileName = presets:get(i-1)
 			self:addPresetToList(fileName, fileName, true)

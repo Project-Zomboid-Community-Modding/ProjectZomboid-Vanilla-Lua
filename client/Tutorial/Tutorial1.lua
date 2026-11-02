@@ -22,7 +22,9 @@ end
 
 Tutorial1.AddPlayer = function(p)
 
-    if getCore():isDedicated() then return end
+    if getCore():isDedicated() then
+        return
+    end
 
     p:setDir(IsoDirections.SE);
 end
@@ -59,41 +61,41 @@ Tutorial1.closeInv = function()
     end
 end
 
-Tutorial1.createInventoryContextMenu = function(player, isInPlayerInventory, items ,x ,y)
+Tutorial1.createInventoryContextMenu = function(player, isInPlayerInventory, items, x, y)
     local context = ISContextMenu.get(player, x, y);
     context.blinkOption = ISInventoryPaneContextMenu.blinkOption;
     local testItem = nil;
-    for i,v in ipairs(items) do
+    for i, v in ipairs(items) do
         if not instanceof(v, "InventoryItem") then
             testItem = v.items[1];
         end
     end
     if testItem then
         if Tutorial1.contextMenuEat and testItem:getType() == "DeadRat" then
-            local eatOption = context:addOption(getText("ContextMenu_Eat"), {testItem});
+            local eatOption = context:addOption(getText("ContextMenu_Eat"), { testItem });
             local subMenuEat = context:getNew(context)
             context:addSubMenu(eatOption, subMenuEat)
-            subMenuEat:addOption(getText("ContextMenu_Eat_All"), {testItem}, ISInventoryPaneContextMenu.onEatItems, 1, player);
-            subMenuEat:addOption(getText("ContextMenu_Eat_Half"), {testItem}, ISInventoryPaneContextMenu.onEatItems, 0.5, player)
-            subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), {testItem}, ISInventoryPaneContextMenu.onEatItems, 0.25, player)
+            subMenuEat:addOption(getText("ContextMenu_Eat_All"), { testItem }, ISInventoryPaneContextMenu.onEatItems, 1, player);
+            subMenuEat:addOption(getText("ContextMenu_Eat_Half"), { testItem }, ISInventoryPaneContextMenu.onEatItems, 0.5, player)
+            subMenuEat:addOption(getText("ContextMenu_Eat_Quarter"), { testItem }, ISInventoryPaneContextMenu.onEatItems, 0.25, player)
         end
         if Tutorial1.contextMenuEquipPrimary and instanceof(testItem, "HandWeapon") then
-            context:addOption(getText("ContextMenu_Equip_Primary"), {testItem}, ISInventoryPaneContextMenu.OnPrimaryWeapon, player);
+            context:addOption(getText("ContextMenu_Equip_Primary"), { testItem }, ISInventoryPaneContextMenu.OnPrimaryWeapon, player);
         end
         if Tutorial1.contextMenuEquip2Hand and instanceof(testItem, "HandWeapon") then
-            context:addOption(getText("ContextMenu_Equip_Two_Hands"), {testItem}, ISInventoryPaneContextMenu.OnTwoHandsEquip, player);
+            context:addOption(getText("ContextMenu_Equip_Two_Hands"), { testItem }, ISInventoryPaneContextMenu.OnTwoHandsEquip, player);
         end
         if Tutorial1.contextMenuEquipBag and instanceof(testItem, "InventoryContainer") and testItem:canBeEquipped() == ItemBodyLocation.BACK and not getPlayer():isEquipped(testItem) then
-            context:addOption(getText("ContextMenu_Equip_on_your_Back"), {testItem}, ISInventoryPaneContextMenu.onWearItems, player);
+            context:addOption(getText("ContextMenu_Equip_on_your_Back"), { testItem }, ISInventoryPaneContextMenu.onWearItems, player);
         end
         if Tutorial1.contextMenuWear then
             if instanceof(testItem, "Clothing") then
                 if getSpecificPlayer(player):isEquipped(testItem) then
-                    context:addOption(getText("ContextMenu_Unequip"), {testItem}, ISInventoryPaneContextMenu.onUnEquip, player);
+                    context:addOption(getText("ContextMenu_Unequip"), { testItem }, ISInventoryPaneContextMenu.onUnEquip, player);
                 else
                     ISInventoryPaneContextMenu.doWearClothingMenu(player, testItem, items, context);
                 end
-                
+
                 if testItem:getClothingItemExtraOption() then
                     ISInventoryPaneContextMenu.doClothingItemExtraMenu(context, testItem, getSpecificPlayer(player))
                 end
@@ -107,18 +109,18 @@ Tutorial1.createWorldContextMenuFromContext = function(context, worldobjects)
     local chr = getPlayer();
     context.blinkOption = ISInventoryPaneContextMenu.blinkOption;
     local items = {};
-    for i,v in ipairs(worldobjects) do
-        for i=0,v:getSquare():getObjects():size()-1 do
+    for i, v in ipairs(worldobjects) do
+        for i = 0, v:getSquare():getObjects():size() - 1 do
             table.insert(items, v:getSquare():getObjects():get(i));
         end
     end
     local bottle = (chr:getInventory():FindAndReturn("EmptyJar"));
-    for i,v in ipairs(items) do
+    for i, v in ipairs(items) do
         if Tutorial1.contextMenuFillBottle and v:hasWater() and bottle then
             context:addOption(getText("ContextMenu_Fill") .. " " .. bottle:getName(), worldobjects, ISWorldObjectContextMenu.onTakeWater, v, nil, bottle, chr:getPlayerNum());
-            break;
+            break ;
         end
-        if Tutorial1.contextMenuOpenCurtain and instanceof(v, "IsoCurtain") or (instanceof(v, "IsoWindow") and v:HasCurtains())then
+        if Tutorial1.contextMenuOpenCurtain and instanceof(v, "IsoCurtain") or (instanceof(v, "IsoWindow") and v:HasCurtains()) then
             if instanceof(v, "IsoWindow") then
                 v = v:HasCurtains();
             end
@@ -129,7 +131,7 @@ Tutorial1.createWorldContextMenuFromContext = function(context, worldobjects)
             if not context:getOptionFromName(text) then
                 context:addOption(text, worldobjects, ISWorldObjectContextMenu.onOpenCloseCurtain, v, chr:getPlayerNum());
             end
-            break;
+            break ;
         end
     end
     return context;
@@ -138,7 +140,7 @@ end
 Tutorial1.createWorldContextMenu = function(player, worldobjects, x, y)
     local context = ISContextMenu.get(player, x, y);
     return Tutorial1.createWorldContextMenuFromContext(context, worldobjects);
-    
+
 end
 
 -- Return true if the double-click was handled here.
@@ -158,8 +160,8 @@ Tutorial1.doubleClickInventory = function(inventoryPane, x, y, mouseOverOption)
         -- Double-clicked the icon to expand/collapse a stack.
         return false
     end
-    local items = ISInventoryPane.getActualItems({item})
-    for _,item2 in ipairs(items) do
+    local items = ISInventoryPane.getActualItems({ item })
+    for _, item2 in ipairs(items) do
         if instanceof(item2, "HandWeapon") or not Tutorial1.contextMenuEquipPrimary then
             -- Disable double-click to equip or unequip.
             return true
@@ -172,10 +174,10 @@ Tutorial1.Init = function()
 
     Tutorial1.steps = LuaList:new();
 
-    local m1 = Keyboard.getKeyName(getCore():getKey("Forward"))
-    local m2 = Keyboard.getKeyName(getCore():getKey("Left"))
-    local m3 = Keyboard.getKeyName(getCore():getKey("Backward"))
-    local m4 = Keyboard.getKeyName(getCore():getKey("Right"))
+    local m1 = getKeyName(getCore():getKey("Forward"))
+    local m2 = getKeyName(getCore():getKey("Left"))
+    local m3 = getKeyName(getCore():getKey("Backward"))
+    local m4 = getKeyName(getCore():getKey("Right"))
     Tutorial1.moveKeys = getText("IGUI_Tutorial1_MovementKeys", m1, m2, m3, m4)
 
     -- climate
@@ -184,33 +186,33 @@ Tutorial1.Init = function()
     if w:isRunning() then
         clim:stopWeatherAndThunder();
     end
-    
+
     -- remove fog
     local var = clim:getClimateFloat(5);
     var:setEnableOverride(true);
     var:setOverride(0, 1);
-    
+
     local chr = getPlayer();
     local inv = chr:getInventory();
-    
+
     local visual = chr:getHumanVisual();
     chr:setFemale(true);
     chr:getDescriptor():setFemale(true);
     chr:getDescriptor():setForename("Jane");
     chr:getDescriptor():setSurname("Doe");
-    
+
     -- reset
     chr:clearWornItems();
     chr:getInventory():clear();
     visual:setSkinTextureIndex(2);
-    
+
     -- chr visual
     local immutableColor = ImmutableColor.new(0.83, 0.67, 0.27, 1)
     visual:setHairModel("Longcurly");
     visual:setHairColor(immutableColor)
 
     chr:resetModel();
-    
+
     local clothe = inv:AddItem("Base.Tshirt_DefaultTEXTURE_TINT");
     local color = ImmutableColor.new(1, 1, 1, 1)
     clothe:getVisual():setTint(color);
@@ -267,13 +269,13 @@ Tutorial1.Init = function()
 
     -- gonna remove brothers fences to replace it with IsoThumpable
     Tutorial1.removeFences();
-    
+
     addVehicleDebug("Base.PickupBurnt", IsoDirections.E, -1, getSquare(164, 160, 0));
     addVehicleDebug("Base.CarNormalBurnt", IsoDirections.NE, -1, getSquare(168, 160, 0));
     addVehicleDebug("Base.TaxiBurnt", IsoDirections.N, -1, getSquare(169, 155, 0));
 
     Tutorial1.marker = getWorldMarkers();
-    
+
     if JoypadState.players[1] then
         Tutorial1.joypad = true;
         JoypadState.disableGrab = true;
@@ -292,10 +294,9 @@ Tutorial1.Init = function()
         ISBackButtonWheel.disableZoomIn = true;
         ISBackButtonWheel.disableScavenge = true;
     end
-    
+
     -- set autorized zooms
     setZoomLevels(1.75, 1.5, 1.25, 1.0);
-
 
     Tutorial1.steps:add(WelcomeStep:new())
     Tutorial1.steps:add(WalkToAdjacent:new())
@@ -312,9 +313,9 @@ Tutorial1.Init = function()
     getPlayer():setCanShout(false);
     getPlayer():setAllowSprint(false);
     getCore():setCollideZombies(false);
-    
+
     ISReloadWeaponAction.disableReloading = true;
-    
+
     if SurvivalGuide.instance then
         SurvivalGuide.instance:setVisible(false);
     end
@@ -322,10 +323,10 @@ Tutorial1.Init = function()
     Events.OnTick.Add(Tutorial1.Tick)
 end
 
-Tutorial1.openDoor = function(x,y,z, north)
+Tutorial1.openDoor = function(x, y, z, north)
     local sq = getSquare(x, y, z);
-    if sq and sq:getDoor(north) then
-        local door = sq:getDoor(north);
+    if sq and sq:getDoor(north and GridSquareEdgeFacingDirection.NORTH_SOUTH or GridSquareEdgeFacingDirection.EAST_WEST) then
+        local door = sq:getDoor(north and GridSquareEdgeFacingDirection.NORTH_SOUTH or GridSquareEdgeFacingDirection.EAST_WEST);
         door:setLocked(false);
         door:setLockedByKey(false);
         door:ToggleDoorSilent();
@@ -344,7 +345,7 @@ Tutorial1.lockDoor = function(x, y, z)
         print(string.format('Tutorial1.lockDoor() square is null @ %d,%d,%d', x, y, z))
         return
     end
-    for i=0, sq:getObjects():size() -1 do
+    for i = 0, sq:getObjects():size() - 1 do
         local obj = sq:getObjects():get(i);
         if instanceof(obj, "IsoDoor") then
             obj:setLockedByKey(true);
@@ -356,7 +357,7 @@ end
 
 Tutorial1.unlockDoor = function(x, y, z)
     local sq = getSquare(x, y, z);
-    for i=0, sq:getObjects():size() -1 do
+    for i = 0, sq:getObjects():size() - 1 do
         local obj = sq:getObjects():get(i);
         if instanceof(obj, "IsoDoor") then
             obj:setLockedByKey(false);
@@ -369,16 +370,16 @@ end
 Tutorial1.addBarricade = function(x, y, z)
     local sq = getSquare(x, y, z)
     if sq then
-        for i = 0, sq:getObjects():size()-1 do
+        for i = 0, sq:getObjects():size() - 1 do
             local o = sq:getObjects():get(i);
             if instanceof(o, "IsoWindow") then
                 -- 3 or 4 barricades block light and vision, making building interiors too dark for some player's liking. SPIF-1071
                 o:addBarricadesDebug(2, false);
-                break;
+                break ;
             end
             if instanceof(o, "IsoDoor") then
                 o:addRandomBarricades();
-                break;
+                break ;
             end
         end
     end
@@ -387,10 +388,10 @@ end
 Tutorial1.addMetalBarricade = function(x, y, z)
     local sq = getSquare(x, y, z)
     if sq then
-        for i = 0, sq:getObjects():size()-1 do
+        for i = 0, sq:getObjects():size() - 1 do
             local o = sq:getObjects():get(i);
             if instanceof(o, "IsoWindow") then
-                o:addBarricadesDebug(ZombRand(2,5), true);
+                o:addBarricadesDebug(ZombRand(2, 5), true);
                 o:setPermaLocked(true);
                 return o;
             end
@@ -398,7 +399,7 @@ Tutorial1.addMetalBarricade = function(x, y, z)
     end
 end
 
-Tutorial1.cratePositions = {{"lootingStuff", "counter", 157, 152, 0}};
+Tutorial1.cratePositions = { { "lootingStuff", "counter", 157, 152, 0 } };
 Tutorial1.FillContainers = function()
     for k, v in ipairs(Tutorial1.cratePositions) do
         local type = v[1];
@@ -409,7 +410,7 @@ Tutorial1.FillContainers = function()
         local sq = getCell():getGridSquare(x, y, z);
         if sq ~= nil then
             local objs = sq:getObjects();
-            for i = 0, objs:size()-1 do
+            for i = 0, objs:size() - 1 do
                 local o = objs:get(i);
                 local c = o:getContainer();
                 if c ~= nil and c:getType() == container then
@@ -438,9 +439,13 @@ Tutorial1.Render = function()
 end
 
 Tutorial1.Tick = function()
-    if getPlayer() == nil then return end;
+    if getPlayer() == nil then
+        return
+    end
 
-    if Tutorial1.steps == nil or Tutorial1.steps:isEmpty() then return; end
+    if Tutorial1.steps == nil or Tutorial1.steps:isEmpty() then
+        return
+    end
     if JoypadState.players[1] then
         Tutorial1.joypad = true;
     end
@@ -456,32 +461,34 @@ Tutorial1.Tick = function()
 end
 
 function Tutorial1.removeFences()
-    for x=178, 187 do
+    for x = 178, 187 do
         local sq = getSquare(x, 153, 0);
         Tutorial1.replaceFence(sq, true);
     end
-    
-    for y=143, 152 do
+
+    for y = 143, 152 do
         local sq = getSquare(188, y, 0);
         Tutorial1.replaceFence(sq, false);
     end
 end
 
 function Tutorial1.replaceFence(sq, north)
-    if not sq then return end;
-    for i=0, sq:getObjects():size()-1 do
+    if not sq then
+        return
+    end
+    for i = 0, sq:getObjects():size() - 1 do
         local obj = sq:getObjects():get(i);
         if obj:getType() == IsoObjectType.wall then
             local newFence = IsoThumpable.new(getCell(), sq, obj:getSprite():getName(), north, ISWoodenWall:new(obj:getSprite():getName(), obj:getSprite():getName(), nil));
             sq:AddTileObject(newFence);
             sq:RemoveTileObject(obj);
-            return;
+            return
         end
     end
 end
-    
+
 Tutorial1.name = "Tutorial1";
-Tutorial1.image = "media/lua/LastStand/Challenge1.png";
+Tutorial1.image = "media/lua/Challenge/Challenge1.png";
 Tutorial1.world = "challengemaps/Tutorial";
 Tutorial1.x = 157;
 Tutorial1.y = 157;

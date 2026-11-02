@@ -17,8 +17,6 @@ function CoopMapSpawnSelect:canRespawnWithOther()
 end
 
 function CoopMapSpawnSelect:hasChoices()
-	if Core.isLastStand() then return false end
-
 	local respawningPlayerIndex = CoopCharacterCreation.instance.playerIndex
 	if self:canRespawnWithSelf() then
 		if getSpecificPlayer(respawningPlayerIndex) then

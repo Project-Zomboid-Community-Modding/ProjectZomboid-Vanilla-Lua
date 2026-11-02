@@ -7,10 +7,11 @@ Commands.player = {}
 
 Commands.fishing = {}
 Commands.fishing.attachLure = function(args)
-    local rod = getPlayer():getInventory():getItemWithID(args.rodId)
-    local lure = getPlayer():getInventory():getItemWithID(args.lureId)
+    local playerObj = getPlayerByOnlineID(args.playerOnlineId)
+    local rod = playerObj:getInventory():getItemWithID(args.rodId)
+    local lure = playerObj:getInventory():getItemWithID(args.lureId)
 
-    log(DebugType.Action, '[ServerCommands.fishing.attachLure] '..tostring(getPlayer())..' rod '..tostring(rod)..' lure '..tostring(lure))
+    log(DebugType.Action, '[ServerCommands.fishing.attachLure] '..tostring(playerObj)..' rod '..tostring(rod)..' lure '..tostring(lure))
 
     local defaultName = rod:getScriptItem():getName()
     rod:setName(getText(defaultName) .. " " .. getText("UI_AttachLure_With") .. " " .. getItemName(args.lureFullType))
@@ -18,33 +19,35 @@ Commands.fishing.attachLure = function(args)
     rod:getModData().fishing_Lure = args.lureFullType
 
     if Fishing.lure.All[args.lureFullType].amountOfFoodHunger ~= -1 then
-        local lureItem = getPlayer():getInventory():getItemWithID(args.lureId)
+        local lureItem = playerObj:getInventory():getItemWithID(args.lureId)
         lureItem:setHungChange(lureItem:getHungChange() + Fishing.lure.All[args.lureFullType].amountOfFoodHunger / 100)
     end
 
-    getPlayer():setPrimaryHandItem(rod);
-    getPlayer():setSecondaryHandItem(nil);
+    playerObj:setPrimaryHandItem(rod);
+    playerObj:setSecondaryHandItem(nil);
 end
 
 Commands.fishing.removeLure = function(args)
-    local rod = getPlayer():getInventory():getItemWithID(args.rodId)
-    local lure = getPlayer():getInventory():getItemWithID(args.lureId)
+    local playerObj = getPlayerByOnlineID(args.playerOnlineId)
+    local rod = playerObj:getInventory():getItemWithID(args.rodId)
+    local lure = playerObj:getInventory():getItemWithID(args.lureId)
 
-    log(DebugType.Action, '[ServerCommands.fishing.removeLure] '..tostring(getPlayer())..' rod '..tostring(rod)..' lure '..tostring(lure))
+    log(DebugType.Action, '[ServerCommands.fishing.removeLure] '..tostring(playerObj)..' rod '..tostring(rod)..' lure '..tostring(lure))
 
     local defaultName = rod:getScriptItem():getName()
     rod:setName(getText(defaultName))
 
     if Fishing.IsArtificalLure(rod:getModData().fishing_Lure) then
-        getPlayer():setSecondaryHandItem(lure);
+        playerObj:setSecondaryHandItem(lure);
     end
     rod:getModData().fishing_Lure = nil
 end
 
 Commands.fishing.consumeLure = function(args)
-    local rod = getPlayer():getInventory():getItemWithID(args.rodId)
+    local playerObj = getPlayerByOnlineID(args.playerOnlineId)
+    local rod = playerObj:getInventory():getItemWithID(args.rodId)
 
-    log(DebugType.Action, '[ServerCommands.fishing.consumeLure] '..tostring(getPlayer())..' rod '..tostring(rod))
+    log(DebugType.Action, '[ServerCommands.fishing.consumeLure] '..tostring(playerObj)..' rod '..tostring(rod))
 
     local defaultName = rod:getScriptItem():getName()
     rod:setName(getText(defaultName))
@@ -72,9 +75,12 @@ end
 
 Commands.literature = {};
 Commands.literature.readLiterature = function(args)
-    local book = getPlayer():getInventory():getItemWithID(args.itemId)
-    getPlayer():ReadLiterature(book);
-    log(DebugType.Action, '[ServerCommands.literature.readLiterature] '..tostring(getPlayer())..' book '..tostring(book));
+    local player = args.playerOnlineId and getPlayerByOnlineID(args.playerOnlineId) or getPlayer()
+    local book = player and player:getInventory():getItemWithID(args.itemId)
+    if player and book then
+        player:ReadLiterature(book);
+    end
+    log(DebugType.Action, '[ServerCommands.literature.readLiterature] '..tostring(player)..' book '..tostring(book));
 end
 
 Commands.square = {};
@@ -205,7 +211,7 @@ ServerCommands.OnServerCommand = function(module, command, args)
         if args then
             for k,v in pairs(args) do argStr = argStr..' '..k..'='..tostring(v) end
         end
-        print('received command '..module..' '..command..' argStr: '..argStr)
+        log(DebugType.Lua, 'received command '..module..' '..command..' argStr: '..argStr)
         Commands[module][command](args)
     end
 end

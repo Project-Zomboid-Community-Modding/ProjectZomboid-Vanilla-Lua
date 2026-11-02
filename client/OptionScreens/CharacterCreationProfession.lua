@@ -567,17 +567,12 @@ function CharacterCreationProfession:onOptionMouseDown(button, x, y)
             WorldSelect.instance:setVisible(true, joypadData)
             return
         end
-        if self.previousScreen == "LastStandPlayerSelect" then
-            self.previousScreen = nil
-            LastStandPlayerSelect.instance:setVisible(true, joypadData)
-            return
-        end
         if self.previousScreen == "SandboxOptionsScreen" then
             self.previousScreen = nil
             SandboxOptionsScreen.instance:setVisible(true, joypadData)
             return
         end
-        if getWorld():getGameMode() == "Multiplayer" then
+        if getWorld():getGameMode() == GameMode.MULTIPLAYER then
             backToSinglePlayer()
             getCore():ResetLua("default", "exitJoinServer")
             return
@@ -1070,7 +1065,7 @@ function CharacterCreationProfession.initWorld()
     if isDemo() then
         return
     end
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         return
     end
     if MainScreen.instance == nil then

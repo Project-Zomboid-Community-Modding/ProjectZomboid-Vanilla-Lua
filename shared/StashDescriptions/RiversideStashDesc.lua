@@ -13,14 +13,14 @@ stashMap.spawnTable = "SurvivorCache1"
 
 -- tool cache
 local stashMap = StashUtil.newStash("RiversideStashMap2", "Map", "Base.RiversideMap", "Stash_AnnotedMap")
-stashMap.buildingX = 6255
-stashMap.buildingY = 5209
-stashMap:addStamp("Heart", nil, 6374, 5247, 0.65, 0.054, 0.054)
-stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text1", 6387, 5233, 0.65, 0.054, 0.054)
-stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text11", 6386, 5257, 0.65, 0.054, 0.054)
-stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text12", 6387, 5282, 0.65, 0.054, 0.054)
+stashMap.buildingX = 7146
+stashMap.buildingY = 6075
+stashMap:addStamp("Heart", nil, 7146, 6075, 0.65, 0.054, 0.054)
+stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text1", 7150, 6075, 0.65, 0.054, 0.054)
+stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text11", 7149, 6100, 0.65, 0.054, 0.054)
+stashMap:addStamp(nil, "Stash_RiversideStashMap2_Text12", 7150, 6125, 0.65, 0.054, 0.054)
 stashMap.spawnTable = "ToolsCache1";
-stashMap:addContainer("ToolsBox", nil, "Base.Bag_DuffelBagTINT", nil, 6255, 5209, 1)
+stashMap:addContainer("ToolsBox", nil, "Base.Bag_DuffelBagTINT", nil, 7145, 6075, 1)
 
 -- location info
 local stashMap = StashUtil.newStash("RiversideStashMap3", "Map", "Base.RiversideMap", "Stash_AnnotedMap")

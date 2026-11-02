@@ -15,40 +15,17 @@ function ISJoypadListBox:fill()
 		end
 	end
 	if not isDemo() then
-		if Core.isLastStand() then
-			listBox:addItem(getText("IGUI_Controller_AddNewPlayer"), { cmd = "addnew" })
-			local players = LastStandPlayerSelect:getAllSavedPlayers()
-			for _,player in ipairs(players) do
-				local inUse = false
-				for playerNum=0,getNumActivePlayers()-1 do
-					local playerObj = getSpecificPlayer(playerNum)
-					if playerObj and not playerObj:isDead() then
-						if playerObj:getDescriptor():getForename() == player.forename and playerObj:getDescriptor():getSurname() == player.surname then
-							inUse = true
-							break
-						end
-					end
-				end
-				if not inUse then
-					local label = getText("IGUI_Controller_AddSavedPlayer", player.forename, player.surname)
-					listBox:addItem(label, { cmd = "addsaved", player = player })
-				end
-			end
-		elseif isClient() and not getServerOptions():getBoolean("AllowCoop") then
-			
-		else
-			local players = IsoPlayer.getAllSavedPlayers()
-			if not isClient() or (players:size() < 3) then
-				listBox:addItem(getText("IGUI_Controller_AddNewPlayer"), { cmd = "addnew" })
-			end
-			for n=1,players:size() do
-				local playerObj = players:get(n-1)
-				if not playerObj:isSaveFileInUse() and playerObj:isSaveFileIPValid() then
-					local label = getText("IGUI_Controller_AddSavedPlayer", playerObj:getDescriptor():getForename(), playerObj:getDescriptor():getSurname())
-					listBox:addItem(label, { cmd = "addsaved", player = playerObj })
-				end
-			end
-		end
+        local players = IsoPlayer.getAllSavedPlayers()
+        if not isClient() or (players:size() < 3) then
+            listBox:addItem(getText("IGUI_Controller_AddNewPlayer"), { cmd = "addnew" })
+        end
+        for n=1,players:size() do
+            local playerObj = players:get(n-1)
+            if not playerObj:isSaveFileInUse() then
+                local label = getText("IGUI_Controller_AddSavedPlayer", playerObj:getDescriptor():getForename(), playerObj:getDescriptor():getSurname())
+                listBox:addItem(label, { cmd = "addsaved", player = playerObj })
+            end
+        end
 	end
 	listBox:addItem(getText("UI_Cancel"), { cmd = "cancel" })
 	local maxWidth = 200
@@ -117,7 +94,7 @@ function ISJoypadListBox:cmdAddSaved(player)
 	if isClient() then
 		local x = (getCore():getScreenWidth() - 260) / 2
 		local y = (getCore():getScreenHeight() - 120) / 2
-		local username = player:getModData().username or ("Player" .. tostring(joypadData.player))
+		local username = player:getUsername()
 		local modal = ISTextBox:new(x, y, 260, 120, getText("UI_servers_username"), username, self, ISJoypadListBox.getUserNameCallback, joypadData.player, player)
 		modal:initialise()
 		modal:addToUIManager()
@@ -139,14 +116,6 @@ function ISJoypadListBox:cmdAddSaved(player)
 	joypadData:setController(controller)
 	joypadData:setActive(true)
 	joypadData.player = playerNum
-	if Core.isLastStand() then
-		local desc = LastStandPlayerSelect:createSurvivorDescFromData(player)
-		getWorld():setLuaPlayerDesc(desc)
-		for i,v in ipairs(player.traits) do
-			getWorld():addLuaTrait(v)
-		end
-		player = nil
-	end
 	setPlayerJoypad(playerNum, joypadData.id, player, nil, false)
 end
 

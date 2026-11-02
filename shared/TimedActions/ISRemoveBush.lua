@@ -76,7 +76,7 @@ function ISRemoveBush:animEvent(event, parameter)
             end
 			self:useEndurance()
             if self.weapon and self.weapon:damageCheck(0,4,false) then
-                ISWorldObjectContextMenu.checkWeapon(self.character)
+                ItemUtils.checkWeapon(self.character)
             end
 		end
 	end

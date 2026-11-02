@@ -186,7 +186,7 @@ function Scene:render()
 			local pixelY = math.floor((y - tileY) / pixelSize) -- 0 - 256
 			local depth = self:java3("getGeometryDepthAt", self.selectedObjectName, pixelX + 0.5, pixelY + 0.5)
 			local depth2 = self:java3("getGeometryDepthAt", self.selectedObjectName, (x - tileX) / pixelSize + TEXTURE_OFFSET_X, (y - tileY) / pixelSize)
-			-- math.floor() should match TileDepthTexture.setBufferedImage()
+			-- math.floor() should match TileDepthTexture.setPixelBuffer()
 			self:drawText(string.format("%d,%d, %.4f / %.4f / %d", pixelX, pixelY, depth, depth2, math.floor(depth * 255)), x, y + 24, 0, 0, 0, 1, UIFont.Small)
 		end
 	end

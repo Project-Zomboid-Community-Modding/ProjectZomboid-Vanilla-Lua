@@ -10,7 +10,7 @@ local function FindBarricadeAble(square, dir)
 	if square == nil then
 		return nil
 	end
-	for i=1,square:getObjects():size() do
+	for i=square:getObjects():size(),1,-1 do
 		local object = square:getObjects():get(i-1)
 		if instanceof(object, "BarricadeAble") and (north == object:getNorth()) then
 			return object

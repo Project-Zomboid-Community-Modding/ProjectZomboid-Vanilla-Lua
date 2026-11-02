@@ -90,7 +90,7 @@ function doMapZones()
             reloadLuaFile(file)
             for k,v in ipairs(objects) do
 				-- Lua seriously needs a "continue", and yes, i refuse to use goto :D
-				if v.type ~= "Vegitation" and v.type ~= "DeepForest" and v.type ~= "Forest" and v.type ~= "TownZone" and v.type ~= "Farm" and v.type ~= "FarmLand" and v.type ~= "TrailerPark" then
+				if v.type ~= "Vegitation" and v.type ~= "DeepForest" and v.type ~= "Forest" and v.type ~= "TownZone" and v.type ~= "Farm" and v.type ~= "FarmLand" and v.type ~= "TrailerPark"  and v.type ~= "Nav" then
 					if v.type == "Animal" then
 						handleAnimalZone(file, v)
 					elseif v.type == "Basement" then
@@ -175,6 +175,11 @@ function doSpawnOrigins()
 	end
 end
 
+local function initDefaultStreetData()
+    getWorld():registerNavZones()
+end
+
 Events.OnLoadMapZones.Add(doMapZones);
 Events.OnLoadMapZones.Add(doSpawnOrigins);
+Events.OnLoadMapZones.Add(initDefaultStreetData);
 

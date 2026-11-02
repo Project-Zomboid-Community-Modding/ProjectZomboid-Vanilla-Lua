@@ -1416,7 +1416,7 @@ Events.OnPlayerDeath.Add(ISSearchManager.destroyUI);
 function ISSearchManager:toggleSearchMode(_isSearchMode)
 	self.updateTick = 0;
 	--prevent search mode toggle in tutorial
-	if "Tutorial" == getCore():getGameMode() then return; end;
+	if getCore():isTutorial() then return; end;
 
 	if type(_isSearchMode) == "boolean" then
 		self.isSearchMode = _isSearchMode;
@@ -1460,7 +1460,7 @@ Events.OnOverrideSearchManager.Add(ISSearchManager.handleOverride);
 
 function ISSearchManager.handleKeyPressed(_keyPressed)
 	if isGamePaused() then return end
-	if getCore():isKey("Toggle Search Mode", _keyPressed) then
+	if getCore():isKey(KeybindId.TOGGLE_SEARCH_MODE, _keyPressed) then
 		local manager = ISSearchManager.getManager(getSpecificPlayer(0));
 		if manager then
 			manager:toggleSearchMode();
@@ -1471,7 +1471,7 @@ end
 
 function ISSearchManager.initBinds()
 	table.insert(keyBinding, { value = "[Search Mode]" } );
-	table.insert(keyBinding, { value = "Toggle Search Mode", key = 207 } );
+	table.insert(keyBinding, { value = KeybindId.TOGGLE_SEARCH_MODE:getId(), key = 207 } );
 end
 
 function ISSearchManager.OnGameStart()

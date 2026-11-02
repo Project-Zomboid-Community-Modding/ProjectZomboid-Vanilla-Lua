@@ -214,10 +214,10 @@ function ISPlace3DItemCursor:drawPrompt(playerNum, ui)
     if hotBar and hotBar:isReallyVisible() and (screenX + screenW - 30 - textW < hotBar:getRight()) then
         y = hotBar:getY() - FONT_HGT_MEDIUM * 3
     end
-    ui:drawTextRight(getText("IGUI_Place3DItem_Rotate", getKeyName(getCore():getKey("Rotate building")), getKeyName(42)), screenX + screenW - 30, y, 1, 1, 1, 1, UIFont.NewMedium);
+    ui:drawTextRight(getText("IGUI_Place3DItem_Rotate", getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)), getKeyName(42)), screenX + screenW - 30, y, 1, 1, 1, 1, UIFont.NewMedium);
     y = y + FONT_HGT_MEDIUM;
     if self.surfacesPossible and #self.surfacesPossible > 1 then
-        ui:drawTextRight(getText("IGUI_Place3DItem_Surface", getKeyName(getCore():getKey("Toggle mode"))), screenX + screenW - 30, y, 1, 1, 1, 1, UIFont.NewMedium);
+        ui:drawTextRight(getText("IGUI_Place3DItem_Surface", getKeyName(getCore():getKey(KeybindId.TOGGLE_MODE))), screenX + screenW - 30, y, 1, 1, 1, 1, UIFont.NewMedium);
     end
 end
 
@@ -276,7 +276,7 @@ end
 function ISPlace3DItemCursor:checkSelectSurfaceKey() -- switch between our possible surface height when pressing Shift
     if self.chr:getPlayerNum() ~= 0 then return end
     if self.chr:getJoypadBind() ~= -1 then return end
-    local pressed = isKeyPressed("Toggle mode")
+    local pressed = isKeyPressed(KeybindId.TOGGLE_MODE)
     if pressed then
         self.surfaceSelected = self.surfaceSelected + 1;
         if self.surfaceSelected > #self.surfacesPossible then
@@ -288,7 +288,7 @@ end
 function ISPlace3DItemCursor:checkRotateKey()
     if self.chr:getPlayerNum() ~= 0 then return end
     if self.chr:getJoypadBind() ~= -1 then return end
-    local pressed = isKeyDown("Rotate building")
+    local pressed = isKeyDown(KeybindId.ROTATE_BUILDING)
     local reverse = isShiftKeyDown()
     self:handleRotate(pressed, reverse)
 end

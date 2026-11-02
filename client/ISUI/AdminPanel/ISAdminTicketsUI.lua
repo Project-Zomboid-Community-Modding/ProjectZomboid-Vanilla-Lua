@@ -170,16 +170,16 @@ function ISAdminTicketsUI:render()
 
     local x = self.datas.x
 
-    self:drawText("Author", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_Author"), x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
     x = x + COL_1_WIDTH
     self:drawRect(x, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText("ID", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_ID"), x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
     x = x + COL_2_WIDTH
     self:drawRect(x, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText("Viewed", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_Viewed"), x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
     x = x + COL_3_WIDTH
     self:drawRect(x, 1 + self.datas.y - BUTTON_HGT, 1, BUTTON_HGT,1,self.borderColor.r, self.borderColor.g, self.borderColor.b);
-    self:drawText("Message", x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
+    self:drawText(getText("IGUI_AdminPanel_Message"), x + UI_BORDER_SPACING, self.datas.y - BUTTON_HGT + 3, 1,1,1,1,UIFont.Small);
 end
 
 function ISAdminTicketsUI:onClick(button)

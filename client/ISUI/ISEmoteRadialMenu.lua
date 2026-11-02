@@ -177,7 +177,7 @@ STATE[3] = {}
 STATE[4] = {}
 
 function ISEmoteRadialMenu.checkKey(key)
-	if not (getCore():isKey("Emote", key) or getCore():isKey("Shout", key)) then
+	if not (getCore():isKey(KeybindId.EMOTE, key) or getCore():isKey(KeybindId.SHOUT, key)) then
 		return false
 	end
 	if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() == 0) then
@@ -200,7 +200,7 @@ function ISEmoteRadialMenu.onKeyPressed(key)
 	if not ISEmoteRadialMenu.checkKey(key) then
 		return
 	end
-	if getCore():getGameMode() == "Tutorial" and not getCore():isKey("Shout", key) then
+	if getCore():isTutorial() and not getCore():isKey(KeybindId.SHOUT, key) then
 		return;
 	end
 	local radialMenu = getPlayerRadialMenu(0)
@@ -217,7 +217,7 @@ function ISEmoteRadialMenu.onKeyRepeat(key)
 	if not ISEmoteRadialMenu.checkKey(key) then
 		return
 	end
-	if getCore():getGameMode() == "Tutorial" and not getCore():isKey("Shout", key) then
+	if getCore():isTutorial() and not getCore():isKey(KeybindId.SHOUT, key) then
 		return;
 	end
 	if STATE[1].radialWasVisible then
@@ -229,7 +229,7 @@ function ISEmoteRadialMenu.onKeyRepeat(key)
 	local playerObj = getSpecificPlayer(0);
 	local radialMenu = getPlayerRadialMenu(0)
 	local delay = 450
-	if (getTimestampMs() - STATE[1].keyPressedMS >= delay) and getCore():isKey("Emote", key) and not playerObj:getVehicle() then
+	if (getTimestampMs() - STATE[1].keyPressedMS >= delay) and getCore():isKey(KeybindId.EMOTE, key) and not playerObj:getVehicle() then
 		if not radialMenu:isReallyVisible() then
 			local frm = ISEmoteRadialMenu:new(playerObj)
 			frm:fillMenu()
@@ -241,7 +241,7 @@ function ISEmoteRadialMenu.onKeyReleased(key)
 	if not ISEmoteRadialMenu.checkKey(key) then
 		return
 	end
-	if getCore():getGameMode() == "Tutorial" and not getCore():isKey("Shout", key) then
+	if getCore():isTutorial() and not getCore():isKey(KeybindId.SHOUT, key) then
 		return;
 	end
 	if not STATE[1].keyPressedMS then
@@ -257,7 +257,7 @@ function ISEmoteRadialMenu.onKeyReleased(key)
 	end
 	
 	local delay = 450
-	if (getTimestampMs() - STATE[1].keyPressedMS < delay) and getCore():isKey("Shout", key) and not playerObj:getVehicle() then
+	if (getTimestampMs() - STATE[1].keyPressedMS < delay) and getCore():isKey(KeybindId.SHOUT, key) and not playerObj:getVehicle() then
 		playerObj:Callout(true);
 	end
 end

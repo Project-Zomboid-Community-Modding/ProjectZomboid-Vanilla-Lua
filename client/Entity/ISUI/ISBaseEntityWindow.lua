@@ -68,13 +68,22 @@ end
 
 function ISBaseEntityWindow:update()
     ISCollapsableWindow.update(self);
+    if self:shouldAutoClose() then
+       self:close();
+       return false;
+    end
+    return true;
+end
 
+function ISBaseEntityWindow:shouldAutoClose()
+    if self.entity and self:wasEntityRemoved() then
+        return true;
+    end
     local valid = false;
-
     if self.entity and self.player then
-        local dist = self.panelCloseDistance or 10;
         -- in case of IsoObject check distance.
-        if self.entity:getGameEntityType()==GameEntityType.IsoObject or self.entity:getGameEntityType()==GameEntityType.VehiclePart then
+        if self.entity:getGameEntityType() == GameEntityType.IsoObject or self.entity:getGameEntityType() == GameEntityType.VehiclePart then
+            local dist = self.panelCloseDistance or 10;
             if self.player:DistToProper(self.entity) <= dist then
                 valid = true;
             end
@@ -88,16 +97,20 @@ function ISBaseEntityWindow:update()
         end
         -- check to prevent players in vehicles from using this stuff
         if self.player and self.player:getVehicle() then
-            valid = false
+            valid = false;
         end
-    else
-        valid = false;
     end
+    return not valid;
+end
 
-    if not valid then
-       self:close();
+function ISBaseEntityWindow:wasEntityRemoved()
+    if self.entity:getGameEntityType() == GameEntityType.IsoObject then
+        return self.entity:getObjectIndex() == -1
     end
-    return valid;
+    if self.entity:getGameEntityType() == GameEntityType.VehiclePart then
+        return not getCell():getVehicles():contains(self.entity:getVehicle())
+    end
+    return false
 end
 
 function ISBaseEntityWindow:close()
@@ -140,7 +153,7 @@ function ISBaseEntityWindow:isKeyConsumed(key)
 end
 
 function ISBaseEntityWindow:onKeyRelease(key)
-    if self:isVisible() and (key == Keyboard.KEY_ESCAPE or getCore():isKey("Crafting UI", key)) then
+    if self:isVisible() and (key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.CRAFTING_UI, key)) then
         self:close()
         self:removeFromUIManager();
         return

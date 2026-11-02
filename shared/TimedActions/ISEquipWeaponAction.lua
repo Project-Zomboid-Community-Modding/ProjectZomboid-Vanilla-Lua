@@ -36,12 +36,12 @@ function ISEquipWeaponAction:start()
 		self.hotbar:setAttachAnim(self.item);
 		self:setActionAnim("DetachItem")
 		self.character:reportEvent("EventAttachItem");
+		if self.item:getEquipSound() then
+			self.sound = self.character:getEmitter():playSound(self.item:getEquipSound())
+		end
 	else
 		self:setActionAnim("EquipItem");
 		self.character:reportEvent("EventAttachItem");
-	end
-	if self.item:getEquipSound() then
-		self.sound = self.character:getEmitter():playSound(self.item:getEquipSound())
 	end
 end
 
@@ -111,8 +111,8 @@ function ISEquipWeaponAction:isAlreadyEquipped()
 end
 
 function ISEquipWeaponAction:perform()
-	if self.sound then
-		self.character:getEmitter():stopSound(self.sound)
+	if not self.fromHotbar and self.item:getEquipSound() then
+		self.sound = self.character:getEmitter():playSound(self.item:getEquipSound())
 	end
 
     self.item:setJobDelta(0.0);
@@ -250,30 +250,6 @@ function ISEquipWeaponAction:complete()
 	return true;
 end
 
-function ISEquipWeaponAction:getDuration()
-    if self.item == nil then
-        return 0
-    end
-    if self.character:getSecondaryHandItem() and self.character:getSecondaryHandItem() == self.item then
-        return 0;
-    end
-    if self.character:getPrimaryHandItem() and self.character:getPrimaryHandItem() == self.item then
-        return 0;
-    end
-    if self.character:isTimedActionInstant() then
-        return 1;
-    end
-    if isServer() then
-	    return self.maxTime
-	else
-	    if self.fromHotbar then
-	        return -1
-	    else
-	        return self.maxTime
-	    end
-	end
-end
-
 function ISEquipWeaponAction:new (character, item, maxTimeInit, primary, twoHands, alwaysTurnOn)
 	local o = ISBaseTimedAction.new(self, character);
 	o.item = item;
@@ -317,6 +293,9 @@ function ISEquipWeaponAction:new (character, item, maxTimeInit, primary, twoHand
         else
             o.animSpeed = 1.0
         end
+    end
+    if character:isTimedActionInstant() then
+        o.maxTime = 1;
     end
 	return o
 end

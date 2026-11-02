@@ -42,9 +42,6 @@ function ISUnequipAction:start()
 	else
 		self:setActionAnim("UnequipItem");
 	end
-	if self.item:getUnequipSound() then
-		self.sound = self.character:getEmitter():playSound(self.item:getUnequipSound())
-	end
 	if self.item:canBeActivated() and self.item:isActivated() then
         self.item:setActivated(false);
         syncItemActivated(self.character, self.item)
@@ -83,6 +80,9 @@ function ISUnequipAction:perform()
         else
 			self.character:stopOrTriggerSound(self.sound)
 		end
+	end
+	if self.item:getUnequipSound() then
+		self.sound = self.character:getEmitter():playSound(self.item:getUnequipSound())
 	end
 
 	if self.item:getContainer() ~= nil then -- for heavy items
@@ -145,21 +145,6 @@ function ISUnequipAction:complete()
 	return true
 end
 
-function ISUnequipAction:getDuration()
-    if self.character:isTimedActionInstant() then
-        return 1;
-    end
-    if isServer() then
-        return self.maxTime
-    else
-        if self.fromHotbar then
-            return -1
-        else
-            return self.maxTime
-        end
-    end
-end
-
 function ISUnequipAction:new(character, item, maxTimeInit, reason)
 	local o = ISBaseTimedAction.new(self, character);
 	o.item = item;
@@ -183,5 +168,8 @@ function ISUnequipAction:new(character, item, maxTimeInit, reason)
 	else
 		o.animSpeed = 1.0
 	end
+    if character:isTimedActionInstant() then
+        o.maxTime = 1;
+    end
 	return o;
 end

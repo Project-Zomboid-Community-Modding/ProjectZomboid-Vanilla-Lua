@@ -99,6 +99,7 @@ function ISSpawnHordeUI:createChildren()
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Recording"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_Ragdolling"));
 	self.boolOptions:addOption(getText("IGUI_SpawnHorde_OnFire"));
+	self.boolOptions:addOption(getText("IGUI_SpawnHorde_IsUseless"));
 
 	y=y+self.boolOptions:getHeight()+UI_BORDER_SPACING
 
@@ -216,6 +217,7 @@ function ISSpawnHordeUI:onSpawn()
 	local isRecordingAnims = false;
 	local isRagdolling = false;
 	local onFire = false;
+    local isUseless = false
 	if self.maleOutfits:contains(outfit) and not self.femaleOutfits:contains(outfit) then
 		femaleChance = 0;
 	end
@@ -249,10 +251,13 @@ function ISSpawnHordeUI:onSpawn()
     if self.boolOptions.selected[9] then
         onFire = true;
     end
+    if self.boolOptions.selected[10] then
+        isUseless = true;
+    end
 
 	local health = self.healthSlider:getCurrentValue()
 	if isClient() then
-		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -isSitting %s -health %s -isRecordingAnims %s -heightOffset %s -isRagdolling %s -onFire %s -outfit %s ",
+		SendCommandToServer(string.format("/createhorde2 -x %d -y %d -z %d -count %d -radius %d -crawler %s -isFallOnFront %s -isFakeDead %s -knockedDown %s -isInvulnerable %s -isSitting %s -health %s -isRecordingAnims %s -heightOffset %s -isRagdolling %s -onFire %s -isUseless %s -outfit %s ",
 	        self.selectX, self.selectY, self.selectZ,
             count, radius,
             tostring(crawler),
@@ -266,6 +271,7 @@ function ISSpawnHordeUI:onSpawn()
             tostring(heightOffset),
             tostring(isRagdolling),
             tostring(onFire),
+            tostring(isUseless),
             outfit or ""))
 		return
 	end
@@ -273,7 +279,7 @@ function ISSpawnHordeUI:onSpawn()
 		local x = ZombRand(self.selectX-radius, self.selectX+radius+1);
 		local y = ZombRand(self.selectY-radius, self.selectY+radius+1);
 		local z = self.selectZ;
-		addZombiesInOutfit(x, y, z, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims, heightOffset, isRagdolling, onFire);
+		addZombiesInOutfit(x, y, z, 1, outfit, femaleChance, crawler, isFallOnFront, isFakeDead, knockedDown, isInvulnerable, isSitting, health, isRecordingAnims, heightOffset, isRagdolling, onFire, isUseless);
 	end
 end
 

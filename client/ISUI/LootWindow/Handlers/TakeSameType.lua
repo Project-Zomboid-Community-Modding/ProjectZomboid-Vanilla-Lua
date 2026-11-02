@@ -4,7 +4,7 @@ ISLootWindowObjectControlHandler_TakeSameType = ISLootWindowObjectControlHandler
 local Handler = ISLootWindowObjectControlHandler_TakeSameType
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     local inventoryWindow = getPlayerInventory(self.playerNum)
     local inventoryContainer = inventoryWindow.inventoryPane.inventory
     if inventoryContainer:isEmpty() then return false end

@@ -73,53 +73,6 @@ function ContextMenuCode.BatteryLightSourceInteraction(context, param)
                 end
 end
 
-function ContextMenuCode.CompostInteraction(context, option, compost, playerObj, param)
-    local playerInv = playerObj:getInventory()
-	--local option = context:addOption(getText("ContextMenu_GetCompost") .. " (" .. round(compost:getCompost(),1) .. getText("ContextMenu_FullPercent") .. ")")
-	option.toolTip = ISWorldObjectContextMenu.addToolTip()
-	option.toolTip:setVisible(false)
-	option.toolTip:setName(getText("ContextMenu_Compost"))
-	local percent = round(compost:getCompost(), 1)
-	option.toolTip.description = percent .. getText("ContextMenu_FullPercent")
-	local COMPOST_PER_BAG = 10
-	local compostBagScriptItem = ScriptManager.instance:FindItem("Base.CompostBag")
-	local USES_PER_BAG = 1.0 / compostBagScriptItem:getUseDelta()
-	local COMPOST_PER_USE = COMPOST_PER_BAG / USES_PER_BAG
-	if percent < COMPOST_PER_USE then
-		option.toolTip.description = "<RGB:1,0,0> " .. getText("ContextMenu_CompostPercentRequired", percent, COMPOST_PER_USE)
-		option.notAvailable = true
-	end
-	local compostBags = playerInv:getAllTypeEvalRecurse("CompostBag", predicateNotFull)
-	local sandBags = playerInv:getAllEvalRecurse(predicateEmptySandbag)
-	if compostBags:isEmpty() and sandBags:isEmpty() then
-		option.toolTip.description = option.toolTip.description .. " <LINE> <RGB:1,0,0> " .. getText("ContextMenu_EmptySandbagRequired")
-		option.notAvailable = true
-	elseif not option.notAvailable then
-		for i=1,compostBags:size() do
-			local compostBag = compostBags:get(i-1)
-			local availableUses = USES_PER_BAG - compostBag:getCurrentUses()
-			context:addGetUpOption(getText("ContextMenu_GetCompostItem", compostBag:getDisplayName(), math.min(percent, availableUses * COMPOST_PER_USE)), compost, ISWorldObjectContextMenu.onGetCompost, compostBag, playerObj)
-		end
-		for i=1,sandBags:size() do
-			local sandBag = sandBags:get(i-1)
-			context:addGetUpOption(getText("ContextMenu_GetCompostItem", sandBag:getDisplayName(), math.min(percent, COMPOST_PER_BAG)), compost, ISWorldObjectContextMenu.onGetCompost, sandBag, playerObj)
-			break -- only 1 empty sandbag listed
-		end
-		option.subOption = context.subOptionNums
-	end
-	if compost:getCompost() + COMPOST_PER_USE <= 100 then
-		local compostBags = playerInv:getAllTypeRecurse("CompostBag")
-		if not compostBags:isEmpty() then
-			for i=1,compostBags:size() do
-				local compostBag = compostBags:get(i-1)
-				context:addGetUpOption(getText("ContextMenu_AddCompostItem", compostBag:getDisplayName(), math.min(100 - percent, compostBag:getCurrentUses() * COMPOST_PER_USE)), compost, ISWorldObjectContextMenu.onAddCompost, compostBag, playerObj)
-			end
-			local subMenuOption = context:addOption(getText("ContextMenu_AddCompost"))
-			context:addSubMenu(subMenuOption, subMenu)
-		end
-	end
-end
-
 function ContextMenuCode.OnButcherHook(context, hook, playerObj, param)
 	if not playerObj:getVehicle() and luautils.walkAdj(playerObj, hook:getSquare(), false) then
 		ISTimedActionQueue.add(ISOpenButcherHookUI:new(playerObj, hook));
@@ -157,30 +110,24 @@ end
 
 function ContextMenuCode.TakeBricks(context, entity, character, param)
 	if luautils.walkAdj(character, entity:getSquare(), false) then
-		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), "construction_01_5", "Base.ClayBrick", 20));
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare()));
 	end	
 end
 
 function ContextMenuCode.TakeHay(context, entity, character, param)
 	if luautils.walkAdj(character, entity:getSquare(), false) then
-		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.HayTuft", 20));
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare()));
 	end
 end
 
 function ContextMenuCode.TakeHayDouble(context, entity, character, param)
 	if luautils.walkAdj(character, entity:getSquare(), false) then
-		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.HayTuft", 40));
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare()));
 	end
 end
 
 function ContextMenuCode.TakeGoldBars(context, entity, character, param)
 	if luautils.walkAdj(character, entity:getSquare(), false) then
-		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), "location_military_knox_01_0", "Base.GoldBar", 30));
-	end
-end
-
-function ContextMenuCode.TakeLogs(context, entity, character, param)
-	if luautils.walkAdj(character, entity:getSquare(), false) then
-		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare(), nil, "Base.Log", 10));
+		ISTimedActionQueue.add(ISTakeBricks:new(character, entity, entity:getSquare()));
 	end
 end

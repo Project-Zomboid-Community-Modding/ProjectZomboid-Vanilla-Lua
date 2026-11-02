@@ -6,6 +6,12 @@ function ISFarmingCursorMouse:create(x, y, z, north, sprite)
 	self:onSquareSelected(getWorld():getCell():getGridSquare(x, y, z))
 end
 
+function ISFarmingCursorMouse:walkTo(x, y, z)
+	local square = getCell():getGridSquare(x, y, z)
+	if not square then return false end
+	return ISFarmingMenu.walkToPlant(self.character, square)
+end
+
 function ISFarmingCursorMouse:render(x, y, z, square)
 	local hc = getCore():getGoodHighlitedColor()
 	if not self:isValid(square) then

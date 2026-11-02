@@ -16,6 +16,10 @@ end
 
 function ISHandcraftAction:update()
 
+    if self.craftRecipe:getTags() and not self.craftRecipe:getTags():contains("CanBeDoneInDark") and self.character:tooDarkToRead() then
+        self:forceStop()
+    end
+
     if self.actionScript and self.actionScript:hasMuscleStrain() then
         self.actionScript:applyMuscleStrain(self.character)
     end
@@ -400,16 +404,16 @@ function ISHandcraftAction:new(character, craftRecipe, containers, isoObject, cr
 	o.manualInputs = convertToPZNetTable(manualInputs); -- a non-ordered key,value table where key=integer index of InputScript, and value=ArrayList of InventoryItem's.
 	o.craftRecipe = craftRecipe;
 	o.actionScript = o.craftRecipe and o.craftRecipe:getTimedActionScript();
-	--o.usesCustomDelta = true;
--- 	log(DebugType.CraftLogic, tostring(craftRecipe:getName()) .. " - can walk " .. tostring(craftRecipe:isCanWalk()))
-	o.stopOnWalk = not craftRecipe:isCanWalk();
-	if character and (character:hasTrait(CharacterTrait.ALL_THUMBS) or character:isWearingAwkwardGloves()) then
-	    o.stopOnWalk = true;
+    o.stopOnWalk = true;
+    local tags = craftRecipe:getTags()
+    if tags and tags:contains("CanBeDoneWhileWalking") then
+        o.stopOnWalk = false
     end
--- 	o.stopOnWalk = true;
+    if character and (character:hasAwkwardHands()) then
+        o.stopOnWalk = true;
+    end
 	o.stopOnRun = true;
 	o.maxTime = o:getDuration();
-
 	o.items = items;
 	o.recipeItem = recipeItem;
 	o.variableInputRatio = variableInputRatio or 1;

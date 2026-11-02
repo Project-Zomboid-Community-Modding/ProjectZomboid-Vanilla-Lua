@@ -267,14 +267,15 @@ function CoopOptionsScreen:prerender()
         self:drawRectBorder((self.width - barWidth) / 2, self.serverProgressBar:getBottom() + 32, barWidth, barHeight, 1.0, 0.9, 0.9, 0.9)
     end
 
-    self.panel:setVisible(self.uiStatus == "idle")
+    local isUiStatusIdle = self.uiStatus == "idle"
+    self.panel:setVisible(isUiStatusIdle)
 
     CoopConnection.username = self.accountNameEntry:getText()
     if getSteamModeActive() then
         CoopConnection.username = getCurrentUserProfileName()
     end
 
-    if self.uiStatus == "idle" then
+    if isUiStatusIdle then
         if getSteamModeActive() or isValidUserName(CoopConnection.username) then
             self.accountNameEntry:setValid(true)
             self.startButton:setEnable(true)
@@ -292,7 +293,11 @@ function CoopOptionsScreen:prerender()
     end
 
     local text = nil
-    self.startButton.enable = true
+
+    if isUiStatusIdle then
+        self.startButton.enable = true
+    end
+
     if self.worldVersion == 0 then
         -- not checked yet?
     elseif self.worldVersion > IsoWorld.getWorldVersion() then

@@ -90,11 +90,9 @@ UI.PrintMedia = UI.Window{
                                         for key, value in pairs(params) do
                                             if key ~= "type" then
                                                 if key == "width" then
-                                                    local val2 = loadstring("return " .. value)()
-                                                    self:setWidth(val2)
+                                                    self:setWidth(tonumber(value))
                                                 elseif key == "height" then
-                                                    local val2 = loadstring("return " .. value)()
-                                                    self:setHeight(val2)
+                                                    self:setHeight(tonumber(value))
                                                 end
                                             end
                                         end
@@ -102,7 +100,12 @@ UI.PrintMedia = UI.Window{
                                         self.children["element_" .. i] = UI.Text{}
                                         for key, value in pairs(params) do
                                             if key ~= "type" then
-                                                self.children["element_" .. i][key] = loadstring("return " .. value)()
+                                                if key == "font" then
+                                                    value = UIFont.FromString(value)
+                                                else
+                                                    value = tonumber(value)
+                                                end
+                                                self.children["element_" .. i][key] = value
                                             end
                                         end
 
@@ -121,7 +124,12 @@ UI.PrintMedia = UI.Window{
                                         self.children["element_" .. i] = UI.Texture{}
                                         for key, value in pairs(params) do
                                             if key ~= "type" then
-                                                self.children["element_" .. i][key] = loadstring("return " .. value)()
+                                                if key == "texture" then
+                                                    value = getTexture(value)
+                                                else
+                                                    value = tonumber(value)
+                                                end
+                                                self.children["element_" .. i][key] = value
                                             end
                                         end
                                         UI._addChild(self, self.children["element_" .. i])

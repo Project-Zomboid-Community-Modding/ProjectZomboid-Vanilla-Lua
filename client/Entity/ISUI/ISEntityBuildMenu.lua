@@ -205,6 +205,6 @@ end
 
 function ISEntityBuildMenu.addToolTip()
 	local toolTip = ISWorldObjectContextMenu.addToolTip();
-	toolTip.footNote = getText("Tooltip_craft_pressToRotate", Keyboard.getKeyName(getCore():getKey("Rotate building")))
+	toolTip.footNote = getText("Tooltip_craft_pressToRotate", Keyboard.getKeyName(getCore():getKey(KeybindId.ROTATE_BUILDING)))
 	return toolTip;
 end

@@ -90,7 +90,7 @@ end
 
 CDDA.id = "AReallyCDDAy";
 CDDA.completionText = "Survive a night to unlock next challenge.";
-CDDA.image = "media/lua/client/LastStand/a_really_cdday.png";
+CDDA.image = "media/lua/client/Challenge/a_really_cdday.png";
 CDDA.video = "a_really_cdday.bik";
 CDDA.gameMode = "A Really CD DA";
 CDDA.world = "Muldraugh, KY";

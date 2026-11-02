@@ -26,6 +26,16 @@ function ISWriteSomething:start()
         self.item = self.container:getItemById(self.item:getID())
     end
 
+    local fontHgt = getTextManager():getFontFromEnum(UIFont.Small):getLineHeight()
+    local height = 110 + (15 * fontHgt);
+    local modal = ISUIWriteJournal:new(0, 0, 350, height, nil, ISInventoryPaneContextMenu.onWriteSomethingClick, getSpecificPlayer(self.player), self.item, self.item:seePage(1), self.item:getName(), 15, self.editable, self.item:getPageToWrite());
+    modal:initialise();
+    modal:addToUIManager();
+    if JoypadState.players[self.player+1] then
+        setJoypadFocus(self.player, modal)
+    end
+    self.modal = modal
+
     if self.item:getReadType() then
         self:setAnimVariable("ReadType", self.item:getReadType())
     elseif (self.item:getType() == "Newspaper" or self.item:hasTag(ItemTag.NEWSPAPER_READ)) then

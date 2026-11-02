@@ -3,20 +3,16 @@ if isClient() then return end
 local VehicleCommands = {}
 local Commands = {}
 
-VehicleCommands.wantNoise = getDebug() or false
-
-local noise = function(msg)
-	if VehicleCommands.wantNoise then
-		print('VehicleCommands: '..msg)
-	end
+local noise = function(msg, ...)
+	DebugType.VehicleClientCommand:debugln(msg, unpack({...}))
 end
 
 function Commands.startEngine(player, args)
 	local vehicle = player:getVehicle()
-	local haveKey = args.haveKey;
 	if vehicle then
 		if vehicle:isDriver(player) then
 			if true or vehicle:isEngineWorking() then
+				local haveKey = player:getInventory():haveThisKeyId(vehicle:getKeyId()) ~= nil
 				vehicle:tryStartEngine(haveKey)
 			else
 				noise('engine not working')
@@ -29,66 +25,34 @@ function Commands.startEngine(player, args)
 	end
 end
 
-function Commands.fixPart(player, args)
-	local vehicle = getVehicleById(args.vehicle)
-	if vehicle then
-		local part = vehicle:getPartById(args.part)
-		if not part then
-			noise('no such part '..tostring(args.part))
-			return
-		end
-		local item = part:getInventoryItem()
-		if item then
-			part:setCondition(args.condition)
-			item:setCondition(args.condition)
-			item:setHaveBeenRepaired(args.haveBeenRepaired)
-			part:doInventoryItemStats(item, part:getMechanicSkillInstaller())
-			if part:isContainer() and not part:getItemContainer() then
-				-- Changing condition might change capacity.
-				-- This limits content amount to max capacity.
-				part:setContainerContentAmount(part:getContainerContentAmount())
-			end
-			vehicle:updatePartStats()
-			vehicle:updateBulletStats()
-			vehicle:transmitPartCondition(part)
-			vehicle:transmitPartItem(part)
-			vehicle:transmitPartModData(part)
-		else
-			noise('part item is missing'..args.part)
-		end
-	else
-		noise('no such vehicle id='..tostring(args.vehicle))
-	end
-end
-
 function Commands.setPartCondition(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		local part = vehicle:getPartById(args.part)
 		if not part then
-			noise('no such part '..tostring(args.part))
+			noise('no such part %s', tostring(args.part))
 			return
 		end
 		part:setCondition(args.condition)
 		part:doInventoryItemStats(part:getInventoryItem(), part:getMechanicSkillInstaller())
 		vehicle:transmitPartCondition(part)
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
 function Commands.setContainerContentAmount(player, args)
 	local vehicle = getVehicleById(args.vehicle)
-	if vehicle then
+	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		local part = vehicle:getPartById(args.part)
 		if not part then
-			noise('no such part '..tostring(args.part))
+			noise('no such part %s', tostring(args.part))
 			return
 		end
 		part:setContainerContentAmount(args.amount)
 		vehicle:transmitPartModData(part)
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -133,58 +97,21 @@ function Commands.setStoplightsOn(player, args)
 	end
 end
 
-function Commands.setTirePressure(player, args)
-	local vehicle = getVehicleById(args.vehicle)
-	if vehicle then
-		local part = vehicle:getPartById(args.part)
-		if not part then
-			noise('no such part '..tostring(args.part))
-			return
-		end
-		part:setContainerContentAmount(args.psi, true, true)
-		local wheelIndex = part:getWheelIndex()
-		-- TODO: sync inflation
-		vehicle:setTireInflation(wheelIndex, part:getContainerContentAmount() / part:getContainerCapacity())
-		vehicle:transmitPartModData(part)
-	else
-		noise('no such vehicle id='..tostring(args.vehicle))
-	end
-end
-
-function Commands.setDoorOpen(player, args)
-	local vehicle = getVehicleById(args.vehicle)
-	if vehicle then
-		local part = vehicle:getPartById(args.part)
-		if not part then
-			noise('no such part '..tostring(args.part))
-			return
-		end
-		if not part:getDoor() then
-			noise('part ' .. args.part .. ' has no door')
-			return
-		end
-		part:getDoor():setOpen(args.open)
-		vehicle:transmitPartDoor(part)
-	else
-		noise('no such vehicle id='..tostring(args.vehicle))
-	end
-end
-
 function Commands.damageWindow(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if vehicle then
 		local part = vehicle:getPartById(args.part)
 		if not part then
-			noise('no such part '..tostring(args.part))
+			noise('no such part %s', tostring(args.part))
 			return
 		end
 		if not part:getWindow() then
-			noise('part ' .. args.part .. ' has no window')
+			noise('part %s has no window', args.part)
 			return
 		end
 		part:getWindow():damage(tonumber(args.amount))
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -270,7 +197,7 @@ function Commands.putKeyOnDoor(player, args)
 	if vehicle then
 		vehicle:putKeyOnDoor(args.key)
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -279,17 +206,34 @@ function Commands.removeKeyFromDoor(player, args)
 	if vehicle then
 		vehicle:removeKeyFromDoor()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
 function Commands.crash(player, args)
 	local vehicle = getVehicleById(args.vehicle);
-	if vehicle then
-		vehicle:crash(args.amount, args.front);
-	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+	if not vehicle then
+		noise('no such vehicle id=%s', tostring(args.vehicle))
+		return
 	end
+	if not vehicle:isDriver(player) then
+		noise('player not driving vehicle')
+		return
+	end
+	vehicle:crash(args.amount, args.front);
+end
+
+function Commands.damageObjects(player, args)
+	local vehicle = getVehicleById(args.vehicle);
+	if not vehicle then
+		noise('no such vehicle id=%s', tostring(args.vehicle))
+		return
+	end
+	if not vehicle:isDriver(player) then
+		noise('player not driving vehicle')
+		return
+	end
+	vehicle:damageObjects(args.damage)
 end
 
 function Commands.damageFromHitChr(player, args)
@@ -297,7 +241,7 @@ function Commands.damageFromHitChr(player, args)
 	if vehicle and vehicle:isDriver(player) then
 		vehicle:damageFromHitChr(args.dmgFront, args.dmgBack);
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -310,7 +254,7 @@ function Commands.getKey(player, args)
 			sendAddItemToContainer(player:getInventory(), item);
 		end
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -319,7 +263,7 @@ function Commands.repair(player, args)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		vehicle:repair()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s,', tostring(args.vehicle))
 	end
 end
 
@@ -328,7 +272,7 @@ function Commands.setBloodIntensity(player, args)
 	if vehicle then
 		vehicle:setBloodIntensity(args.id, args.intensity)
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -338,7 +282,7 @@ function Commands.setRust(player, args)
 		vehicle:setRust(args.rust)
 		vehicle:transmitRust()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -347,21 +291,21 @@ function Commands.repairPart(player, args)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		local part = vehicle:getPartById(args.part)
 		if not part then
-			noise('no such part '..tostring(args.part))
+			noise('no such part %s', tostring(args.part))
 			return
 		end
 		part:repair()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
 function Commands.remove(player, args)
 	local vehicle = getVehicleById(args.vehicle)
-	if vehicle then
+	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		vehicle:permanentlyRemove()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -370,7 +314,7 @@ function Commands.configHeadlight(player, args)
 	if vehicle then
 		local part = vehicle:getPartById(args.part)
 		if not part then
-			noise('no such part '..tostring(args.part))
+			noise('no such part %s', tostring(args.part))
 			return
 		end
 		if args.dir == 1 then
@@ -379,7 +323,7 @@ function Commands.configHeadlight(player, args)
 			part:getLight():setFocusingDown()
 		end
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -387,11 +331,11 @@ function Commands.attachTrailer(player, args)
 	local vehicleA = getVehicleById(args.vehicleA)
 	local vehicleB = getVehicleById(args.vehicleB)
 	if not vehicleA then
-		noise('no such vehicle (A) id='..tostring(args.vehicleA))
+		noise('no such vehicle (A) id=%s', tostring(args.vehicleA))
 		return
 	end
 	if not vehicleB then
-		noise('no such vehicle (B) id='..tostring(args.vehicleB))
+		noise('no such vehicle (B) id=%s', tostring(args.vehicleB))
 		return
 	end
 	vehicleA:addPointConstraint(player, vehicleB, args.attachmentA, args.attachmentB)
@@ -400,19 +344,19 @@ end
 function Commands.detachTrailer(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if not vehicle then
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 		return
 	end
-	vehicle:breakConstraint(true, false)
+	vehicle:breakConstraint(player, true, false)
 end
 
 function Commands.detachTrailerSpontaneous(player, args)
 	local vehicle = getVehicleById(args.vehicle)
 	if not vehicle then
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 		return
 	end
-	vehicle:breakConstraint(true, false)
+	vehicle:breakConstraint(player, true, false)
 end
 
 function Commands.cheatHotwire(player, args)
@@ -420,7 +364,7 @@ function Commands.cheatHotwire(player, args)
 	if vehicle and checkPermissions(player, Capability.UseMechanicsCheat) then
 		vehicle:cheatHotwire(args.hotwired, args.broken)
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -430,7 +374,7 @@ function Commands.setHSV(player, args)
 		vehicle:setColorHSV(args.h, args.s, args.v)
 		vehicle:transmitColorHSV()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -440,7 +384,7 @@ function Commands.setSkinIndex(player, args)
 		vehicle:setSkinIndex(args.index)
 		vehicle:transmitSkinIndex()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -450,7 +394,7 @@ function Commands.setAlarmed(player, args)
 		vehicle:setAlarmed(args.alarmed or false)
 		vehicle:transmitAlarmed()
 	else
-		noise('no such vehicle id='..tostring(args.vehicle))
+		noise('no such vehicle id=%s', tostring(args.vehicle))
 	end
 end
 
@@ -461,7 +405,7 @@ VehicleCommands.OnClientCommand = function(module, command, player, args)
 		for k,v in pairs(args) do
 			argStr = argStr..' '..k..'='..tostring(v)
 		end
-		noise('received '..module..' '..command..' '..tostring(player)..argStr)
+		noise('received %s %s %s %s', module, command, tostring(player), argStr)
 		Commands[command](player, args)
 	end
 end

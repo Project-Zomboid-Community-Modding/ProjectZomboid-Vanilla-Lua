@@ -277,6 +277,13 @@ function ConnectToServer:OnConnected()
 	self:setVisible(false)
 	local joypadData = JoypadState.getMainMenuJoypad()
 	if not checkSavePlayerExists() then
+		if not isPlayerProfileReceived() then
+			self.previousScreen = self.previousScreen or MainScreen.instance.bottomPanel
+			self:setVisible(true)
+			self:OnConnectFailed(getText("UI_LoadPlayerProfileError"), "")
+			forceDisconnect()
+			return
+		end
 		if MapSpawnSelect.instance:hasChoices() then
 			MapSpawnSelect.instance:fillList()
 			MapSpawnSelect.instance:setVisible(true, joypadData)

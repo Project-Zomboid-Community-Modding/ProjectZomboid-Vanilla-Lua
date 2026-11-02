@@ -1,11 +1,6 @@
 ISTradingUI = ISPanelJoypad:derive("ISTradingUI");
 ISTradingUI.windows = {};
 ISTradingUI.CoolDownMessage = 300;
-ISTradingUI.States = {};
-ISTradingUI.States.PlayerClosedWindow = 0;
-ISTradingUI.States.SealOffer = 1;
-ISTradingUI.States.UnSealOffer = 2;
-ISTradingUI.States.FinalizeDeal = 3;
 ISTradingUI.MaxItems = 20;
 
 function ISTradingUI.GetUIForPlayer(playerObj)
@@ -357,9 +352,9 @@ end
 
 function ISTradingUI:onSealOffer(clickedOption, enabled)
     if enabled then
-        tradingUISendUpdateState(self.player, self.otherPlayer, ISTradingUI.States.SealOffer);
+        tradingUISendUpdateState(self.player, self.otherPlayer, TradingState.DealWasSealed);
     else
-        tradingUISendUpdateState(self.player, self.otherPlayer, ISTradingUI.States.UnSealOffer);
+        tradingUISendUpdateState(self.player, self.otherPlayer, TradingState.DealWasUnsealed);
     end
 end
 
@@ -412,6 +407,9 @@ function ISTradingUI:isItemOffered(item)
 end
 
 function ISTradingUI:update()
+    if self.player:isDead() then
+        return
+    end
     local otherPlayer = getPlayerByOnlineID(self.otherPlayer:getOnlineID())
     if not otherPlayer then
         self.blockingMessage = getText("IGUI_TradingUI_ClosedTrade", self.otherPlayer:getDisguisedDisplayName())
@@ -656,7 +654,7 @@ function ISTradingUI:onClick(button)
             self.historicalUI:close();
         end
         self:close();
-        tradingUISendUpdateState(self.player, self.otherPlayer, ISTradingUI.States.PlayerClosedWindow);
+        tradingUISendUpdateState(self.player, self.otherPlayer, TradingState.WindowWasClosed);
     end
     if button.internal == "ADD" then
         self:addSelectedInventoryItem()
@@ -681,7 +679,7 @@ function ISTradingUI:onClick(button)
         end
     end
     if button.internal == "ACCEPTDEAL" then
-        tradingUISendUpdateState(self.player, self.otherPlayer, ISTradingUI.States.FinalizeDeal);
+        tradingUISendUpdateState(self.player, self.otherPlayer, TradingState.DealWasFinalized);
         self:finalizeDeal();
     end
 end
@@ -850,7 +848,7 @@ function ISTradingUI:onAnswerTradeRequest(button)
     if button.internal == "YES" then
         local tradingUI = ISTradingUI.GetUIForPlayer(player)
         if tradingUI and tradingUI:isVisible() then
-            tradingUISendUpdateState(tradingUI.player, tradingUI.otherPlayer, ISTradingUI.States.PlayerClosedWindow);
+            tradingUISendUpdateState(tradingUI.player, tradingUI.otherPlayer, TradingState.WindowWasClosed);
             tradingUI:close();
         end
         ISTradingUI.tradeQuestionUI = nil;
@@ -955,7 +953,7 @@ end
 -- other player did something on his tradeUI (closed, seal his offer, finalize deal...)
 ISTradingUI.UpdateState = function(otherPlayer, player, state)
     local tradingUI = ISTradingUI.GetUIForPlayer(player)
-    if state == ISTradingUI.States.PlayerClosedWindow then
+    if state == TradingState.WindowWasClosed then
         if ISTradingUI.tradeQuestionUI and ISTradingUI.tradeQuestionUI:isVisible() then
             ISTradingUI.tradeQuestionUI:setVisible(false);
             ISTradingUI.tradeQuestionUI:removeFromUIManager();
@@ -964,15 +962,15 @@ ISTradingUI.UpdateState = function(otherPlayer, player, state)
         end
     end
     if tradingUI and tradingUI:isVisible() then
-        if state == ISTradingUI.States.SealOffer then
+        if state == TradingState.DealWasSealed then
             tradingUI.otherSealedOffer = true;
             tradingUI:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerSealedOffer", tradingUI.otherPlayer:getDisguisedDisplayName()), true, false, false);
         end
-        if state == ISTradingUI.States.UnSealOffer then
+        if state == TradingState.DealWasUnsealed then
             tradingUI.otherSealedOffer = false;
             tradingUI:setHistoryMessage(getText("IGUI_TradingUI_OtherPlayerUnSealedOffer", tradingUI.otherPlayer:getDisguisedDisplayName()), true, false, false);
         end
-        if state == ISTradingUI.States.FinalizeDeal then
+        if state == TradingState.DealWasFinalized then
             tradingUI:finalizeDeal();
         end
     end

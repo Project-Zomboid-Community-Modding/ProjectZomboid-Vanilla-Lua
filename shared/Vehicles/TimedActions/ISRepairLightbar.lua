@@ -39,8 +39,8 @@ function ISRepairLightbar:complete()
         return false
     end
     if self.vehicle then
-    	if not self.part then
-    		noise('no such part Ligthbar')
+    	if not self.part or self.part:getId() ~= "lightbar" then
+    		print('no such part Ligthbar')
     		return false
     	end
 	    local skill = self.character:getPerkLevel(Perks.Mechanics) - self.vehicle:getScript():getEngineRepairLevel();

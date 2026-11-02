@@ -146,7 +146,7 @@ ISWorldObjectContextMenu.createMenu = function(player, worldobjects, x, y, test)
 	if ISWorldObjectContextMenu.disableWorldMenu then
 		return;
 	end
-	if getCore():getGameMode() == "Tutorial" then
+	if getCore():isTutorial() then
 		local context = Tutorial1.createWorldContextMenu(player, worldobjects, x ,y);
 		return context;
 	end
@@ -892,26 +892,6 @@ ISWorldObjectContextMenu.onWakeOther = function(worldobjects, player, otherPlaye
     end
 end
 
-ISWorldObjectContextMenu.checkWeapon = function(chr)
-    local weapon = chr:getPrimaryHandItem()
-    if not weapon or weapon:getCondition() <= 0 then
-        chr:removeFromHands(weapon)
-        weapon = chr:getInventory():getBestWeapon(chr:getDescriptor())
-        if weapon and weapon ~= chr:getPrimaryHandItem() and weapon:getCondition() > 0 then
-            chr:setPrimaryHandItem(weapon)
-            if weapon:isTwoHandWeapon() and not chr:getSecondaryHandItem() then
-                chr:setSecondaryHandItem(weapon)
-            end
-        end
-
-		if isServer() then
-			sendServerCommand(chr, 'ui', 'dirtyUI', { });
-		else
-			ISInventoryPage.dirtyUI();
-		end
-    end
-end
-
 ISWorldObjectContextMenu.onToggleThumpableLight = function(lightSource, player)
 	local playerObj = getSpecificPlayer(player)
 	if luautils.walkAdj(playerObj, lightSource:getSquare()) then
@@ -1150,7 +1130,6 @@ function ISWorldObjectContextMenu.toggleComboWasherDryer(context, playerObj, obj
 	if not object then return end
 	if not object:getContainer() then return end
 	if ISWorldObjectContextMenu.isSomethingTo(object, playerNum) then return end
-	if getCore():getGameMode() == "LastStand" then return end
 
 	local objectName = object:getName() or "Combo Washer/Dryer"
 	local props = object:getProperties()
@@ -1322,8 +1301,8 @@ function ISWorldObjectContextMenu.doLightSwitchOption(test, context, player)
                     end
                 end
 
+                local bulbOption = lightSwitchSubmenu:addOption(getText("ContextMenu_AddLightbulb"), worldobjects, nil);
                 if found then
-                    local bulbOption = lightSwitchSubmenu:addOption(getText("ContextMenu_AddLightbulb"), worldobjects, nil);
                     local subMenuBulb = ISContextMenu:getNew(lightSwitchSubmenu);
                     lightSwitchSubmenu:addSubMenu(bulbOption, subMenuBulb);
 
@@ -1332,6 +1311,11 @@ function ISWorldObjectContextMenu.doLightSwitchOption(test, context, player)
                         bulbOption.color = {r = bulb:getColorRed(), g = bulb:getColorGreen(), b = bulb:getColorBlue()}
                         bulbOption.iconTexture = bulb:getTex();
                     end
+                else
+                    bulbOption.notAvailable = true
+                    local tooltip = ISInventoryPaneContextMenu.addToolTip();
+                    tooltip.description = getText("ContextMenu_AddLightbulb_RequiresBulb");
+                    bulbOption.toolTip = tooltip;
                 end
             end
 
@@ -1429,10 +1413,6 @@ ISWorldObjectContextMenu.grabItemTime = function(playerObj, witem)
 	local w = witem:getItem():getActualWeight();
 	if w > 3 then w = 3; end;
 	maxTime = maxTime * (w) * destCapacityDelta;
-
-	if getCore():getGameMode()=="LastStand" then
-		maxTime = maxTime * 0.3;
-	end
 
 	if playerObj:hasTrait(CharacterTrait.DEXTROUS) then
 		maxTime = maxTime * 0.5
@@ -2199,6 +2179,31 @@ ISWorldObjectContextMenu.onClimbSheetRope = function(worldobjects, square, down,
 	end
 end
 
+ISWorldObjectContextMenu.onClimbLadder = function(square, down, playerObj, ladder)
+    if square and ladder then
+        playerObj:removeAllAttachedAnimals();
+        if down then
+            local x = square:getX() + 0.5
+            local y = square:getY() + 0.7
+            if ladder:getProperties():has(IsoPropertyType.LADDER_S) then
+                y = square:getY() + 0.2
+            elseif ladder:getProperties():has(IsoPropertyType.LADDER_E) then
+                y = square:getY() + 0.5
+                x = square:getX() + 0.2
+            elseif ladder:getProperties():has(IsoPropertyType.LADDER_W) then
+                y = square:getY() + 0.5
+                x = square:getX() + 0.8
+            end
+            local position = Position3D.new(x, y, square:getZ())
+            ISTimedActionQueue.add(ISWalkToTimedActionF:new(playerObj, position, nil, nil))
+        else
+            ISTimedActionQueue.add(ISWalkToTimedAction:new(playerObj, square))
+        end
+
+        ISTimedActionQueue.add(ISClimbLadderAction:new(playerObj, down, ladder))
+    end
+end
+
 ISWorldObjectContextMenu.restoreDoor = function(playerObj, door, isOpen)
 	if door:IsOpen() ~= isOpen then
 		door:ToggleDoor(playerObj)
@@ -2297,6 +2302,22 @@ ISWorldObjectContextMenu.onOpenCloseWindow = function(worldobjects, window, play
     if (not playerObj:isBlockMovement()) then
         if luautils.walkAdjWindowOrDoor(playerObj, square, window) then
             ISTimedActionQueue.add(ISOpenCloseWindow:new(playerObj, window))
+        end
+    end
+end
+
+ISWorldObjectContextMenu.onForceOpen = function(worldobjects, object, player)
+    local playerObj = getSpecificPlayer(player)
+    local square = object:getSquare()
+    if (not playerObj:isBlockMovement()) then
+        if luautils.walkAdjWindowOrDoor(playerObj, square, object) then
+            local crowbar = playerObj:getInventory():getFirstTagEvalRecurse(ItemTag.CROWBAR, predicateNotBroken)
+            if not crowbar then
+                return
+            end
+            ISWorldObjectContextMenu.transferIfNeeded(playerObj, crowbar)
+            ISInventoryPaneContextMenu.equipWeapon(crowbar, true, true, player)
+            ISTimedActionQueue.add(ISForceOpen:new(playerObj, object))
         end
     end
 end
@@ -2963,7 +2984,7 @@ ISWorldObjectContextMenu.getBedQuality = function(playerObj, bed)
         end
         return bedType
     end
-    local bedType = bed:getProperties():get("BedType") or "averageBed"
+    bedType = bed:getProperties():get("BedType") or "averageBed"
     -- check for sleeping bags in tents
     if bed:getProperties() and bed:getProperties():has("CustomName") and
             (bed:getProperties():get("CustomName") == "Tent" or bed:getProperties():get("CustomName") == "Shelter") then
@@ -3054,14 +3075,8 @@ function ISWorldObjectContextMenu.getMoveableDisplayName(obj)
 	return getMoveableDisplayName(obj);
 end
 
-function ISWorldObjectContextMenu.onCustomFunction(context, object, playerObj, customFunction, param)
-	assert(loadstring('return '..customFunction..'(...)'))(context, object, playerObj, param);
-end
-
-function ISWorldObjectContextMenu.onTimedAction(timedAction, object, playerObj, param)
-    if luautils.walkAdj(playerObj, object:getSquare(), false) then
-    	ISTimedActionQueue.add(assert(loadstring(timedAction..':new(...)'))(playerObj, object, object:getSquare(), param));
-    end
+function ISWorldObjectContextMenu.onCustomFunction(context, object, playerObj, entry)
+    ISWorldObjectContextMenuLogic.callCustomFunction(entry, context, object, playerObj);
 end
 
 function ISWorldObjectContextMenu.onBarricade(spriteName, playerObj)

@@ -28,7 +28,10 @@ end
 function ISAnimalInVehiclePanel:onRightMouseUp(x, y)
     local animal = self.avatar.animal
     local context = ISContextMenu.get(self.animalUI.playerNum, x + self:getAbsoluteX(), y + self:getAbsoluteY())
-    context:addOption(getText("ContextMenu_AnimalInfo"), self.animalUI, ISVehicleAnimalUI.onAnimalInfo, animal);
+    if not animal:isDead() then
+        context:addOption(getText("ContextMenu_AnimalInfo"), self.animalUI, ISVehicleAnimalUI.onAnimalInfo, animal);
+    end
+
     local option = context:addOption(getText("ContextMenu_Grab"), self.animalUI, ISVehicleAnimalUI.onGrabAnimal, animal);
     if not animal:canBePicked(self.animalUI.character) then
         option.notAvailable = true;
@@ -39,7 +42,7 @@ function ISAnimalInVehiclePanel:onRightMouseUp(x, y)
         option.toolTip = toolTip
     end
 
-    context:addOption(getText("IGUI_TicketUI_RemoveTicket"), self.animalUI, ISVehicleAnimalUI.onRemoveAnimal, animal);
+    context:addOption(getText("ContextMenu_RemoveAnimalFromTrailer"), self.animalUI, ISVehicleAnimalUI.onRemoveAnimal, animal);
     if not animal:isDead() and animal:getStats():get(CharacterStat.THIRST) >= 0.1 then
         AnimalContextMenu.doWaterAnimalMenu(context, animal, self.animalUI.character);
     end
@@ -195,7 +198,11 @@ function ISVehicleAnimalUI:onAddAnimal()
 end
 
 function ISVehicleAnimalUI.onKillAnimalDebug(animal, player)
-    animal:setHealth(0)
+    if isClient() then
+        sendClientCommandV(playerObj, "animal", "killInTrailer", "vehicle", animal:getVehicle():getId(), "id", animal:getAnimalID())
+    else
+        animal:setHealth(0)
+    end
 end
 
 function ISVehicleAnimalUI:prerenderScrollPanel()

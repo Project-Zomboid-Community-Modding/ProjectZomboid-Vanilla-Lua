@@ -4,7 +4,7 @@ ISInventoryWindowControlHandler_TransferSameTypeMultiContainer = ISInventoryWind
 local Handler = ISInventoryWindowControlHandler_TransferSameTypeMultiContainer
 
 function Handler:shouldBeVisible()
-    if getCore():getGameMode() == "Tutorial" then return false end
+    if getCore():isTutorial() then return false end
     return true -- can always transfer to the floor
 end
 

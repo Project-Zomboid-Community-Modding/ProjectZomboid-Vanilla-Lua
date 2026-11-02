@@ -137,7 +137,7 @@ function ISGrabCorpseAction.PerformGrabCorpse()
 end
 
 function ISGrabCorpseAction.OnContextKey(playerObj, timePressedContext)
-    if playerObj:isGrappling() or getCore():getGameMode() == "Tutorial" then
+    if playerObj:isGrappling() or getCore():isTutorial() then
         return
     end
     if timePressedContext > 700 then
@@ -146,7 +146,7 @@ function ISGrabCorpseAction.OnContextKey(playerObj, timePressedContext)
 end
 
 function ISGrabCorpseAction.OnKeyPressed(key)
-    if (getCore():isKey("GrabCorpse", key)) then
+    if (getCore():isKey(KeybindId.GRAB_CORPSE, key)) then
         local playerObj = getPlayer()
         if (playerObj == nil) then
             return

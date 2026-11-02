@@ -18,7 +18,7 @@ function ISMoveableInfoWindow.setDisplayPosition(_position)
 end
 
 function ISMoveableInfoWindow.moveablePanelModeKey( _key )
-    if getCore():isKey("Toggle Moveable Panel Mode", _key) then
+    if getCore():isKey(KeybindId.TOGGLE_MOVABLE_PANEL_MODE, _key) then
         for k,v in ipairs(displayPositions) do
             if v == ISMoveableInfoWindow.displayPosition then
                 local next = k+1;

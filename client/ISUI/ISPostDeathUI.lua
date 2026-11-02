@@ -7,7 +7,7 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 
 function ISPostDeathUI:createChildren()
-    local respawnString = getCore():getGameMode() == "A Really CD DA" and getText("IGUI_PostDeath_Challenge") or getText("IGUI_PostDeath_Respawn")
+    local respawnString = getCore():getChallengeID() == CDDA.id and getText("IGUI_PostDeath_Challenge") or getText("IGUI_PostDeath_Respawn")
 
 	local buttonWid = UI_BORDER_SPACING*2 + math.max(
 			getTextManager():MeasureStringX(UIFont.Small, respawnString),
@@ -29,7 +29,7 @@ function ISPostDeathUI:createChildren()
 
 	local button = ISButton:new(buttonX, buttonY, buttonWid, buttonHgt, respawnString, self, self.onRespawn)
 	self:configButton(button)
-    if getCore():getGameMode() == "A Really CD DA" then
+    if getCore():getChallengeID() == CDDA.id then
         button:setEnable(false)
         button:enableDisabledColor()
     end
@@ -77,7 +77,7 @@ function ISPostDeathUI:prerender()
 	self.buttonQuit:setVisible(self.waitOver and allPlayersDead)
 	self.buttonExit:setVisible(self.waitOver and allPlayersDead)
 	local allowRespawn = isClient() or (getNumActivePlayers() > 1)
-	allowRespawn = getCore():getGameMode() ~= "Tutorial"
+	allowRespawn = not getCore():isTutorial()
 	if isClient() and getServerOptions():getBoolean("DropOffWhiteListAfterDeath") then
 		allowRespawn = false
 	end

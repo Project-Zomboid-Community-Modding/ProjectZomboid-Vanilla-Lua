@@ -77,6 +77,12 @@ end
 function ISWorldMapSymbolTool:getJoypadAButtonText()
 end
 
+function ISWorldMapSymbolTool:syncMapItem()
+	if self.mapUI.mapObj then
+		self.mapUI.mapObj:syncItemFields()
+	end
+end
+
 function ISWorldMapSymbolTool:new(symbolsUI)
 	local o = ISBaseObject.new(self)
 	o.symbolsUI = symbolsUI -- ISWorldMapSymbols
@@ -141,6 +147,7 @@ function ISWorldMapSymbolTool_AddSymbol:addSymbol(x, y)
 	if self.symbolsUI.character then
 		self.symbolsUI.character:playSoundLocal("MapAddSymbol")
 	end
+	self:syncMapItem()
 end
 
 function ISWorldMapSymbolTool_AddSymbol:new(symbolsUI)
@@ -271,6 +278,7 @@ function ISWorldMapSymbolTool_AddNote:onNoteAdded(button, playerNum)
 		textSymbol:setMatchPerspective(button.parent:isMatchPerspective())
 		textSymbol:setMinZoom(button.parent.minZoom or 0.0)
 		textSymbol:setMaxZoom(button.parent.maxZoom or 24.0)
+		self:syncMapItem()
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddNote")
 		end
@@ -448,6 +456,7 @@ function ISWorldMapSymbolTool_EditAnnotation:onNoteEdited(button, symbol)
 		if isClient() then
 			self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
 		end
+		self:syncMapItem()
 	end
 	-- Center on the edited symbol
 	local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
@@ -478,6 +487,7 @@ function ISWorldMapSymbolTool_EditAnnotation:onSymbolEdited(button, symbol)
 		if isClient() then
 			self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
 		end
+		self:syncMapItem()
     end
 	-- Center on the edited symbol
 	local isJoypad = JoypadState.players[self.symbolsUI.playerNum+1]
@@ -567,6 +577,7 @@ function ISWorldMapSymbolTool_MoveAnnotation:onMouseUp(x, y)
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddSymbol")
 		end
+		self:syncMapItem()
 		return true
 	end
 	return false
@@ -651,6 +662,7 @@ function ISWorldMapSymbolTool_MoveAnnotation:onJoypadDownInMap(button, joypadDat
 			if self.symbolsUI.character then
 				self.symbolsUI.character:playSoundLocal("MapAddSymbol")
 			end
+			self:syncMapItem()
 			return
 		end
 		local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
@@ -712,6 +724,7 @@ function ISWorldMapSymbolTool_RotateAnnotation:onMouseUp(x, y)
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapAddSymbol")
 		end
+		self:syncMapItem()
 		return true
 	end
 	return false
@@ -756,6 +769,7 @@ function ISWorldMapSymbolTool_RotateAnnotation:zeroRotation()
     if isClient() then
         self.symbolsUI.symbolsAPI:sendModifySymbol(symbol)
     end
+    self:syncMapItem()
 end
 
 
@@ -822,6 +836,7 @@ function ISWorldMapSymbolTool_RotateAnnotation:onJoypadDownInMap(button, joypadD
 			if self.symbolsUI.character then
 				self.symbolsUI.character:playSoundLocal("MapAddSymbol")
 			end
+			self:syncMapItem()
 			return
 		end
 		local index = self.symbolsUI.mouseOverNote or self.symbolsUI.mouseOverSymbol
@@ -913,6 +928,7 @@ function ISWorldMapSymbolTool_RemoveAnnotation:onConfirmRemoveAnnotation(button,
 		self.symbolsAPI:removeSymbolByIndex(symbolIndex)
 		self.symbolsUI.mouseOverNote = nil
 		self.symbolsUI.mouseOverSymbol = nil
+		self:syncMapItem()
     end
 end
 
@@ -924,6 +940,7 @@ function ISWorldMapSymbolTool_RemoveAnnotation:removeAnnotation()
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapRemoveMarking")
 		end
+		self:syncMapItem()
 		return true
 	end
 	if self.symbolsUI.mouseOverSymbol then
@@ -939,6 +956,7 @@ function ISWorldMapSymbolTool_RemoveAnnotation:removeAnnotation()
 		if self.symbolsUI.character then
 			self.symbolsUI.character:playSoundLocal("MapRemoveMarking")
 		end
+		self:syncMapItem()
 		return true
 	end
 	return false
@@ -1278,7 +1296,7 @@ function ISWorldMapSymbols:createChildren()
 	self:addChild(self.removeBtn)
 	y = y + btnHgt + btnPad
 
-	if isClient() then
+	if isClient() and self.isWorldMap then
 		self.sharingBtn = ISButton:new(UI_BORDER_SPACING+1, y, btnWid, btnHgt, getText("IGUI_Map_Sharing"), self, ISWorldMapSymbols.onButtonClick)
 		self.sharingBtn.internal = "SHARE"
 		self.sharingBtn:initialise()
@@ -1862,7 +1880,7 @@ function ISWorldMapSymbols:getJoypadAButtonText()
 	return nil
 end
 
-function ISWorldMapSymbols:new(x, y, width, height, mapUI)
+function ISWorldMapSymbols:new(x, y, width, height, mapUI, isWorldMap)
 	local o = ISPanelJoypad.new(self, x, y, width, height)
 	o.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
 	o.backgroundColor = {r=0, g=0, b=0, a=0.8}
@@ -1878,6 +1896,7 @@ function ISWorldMapSymbols:new(x, y, width, height, mapUI)
 	o.textCursor = getTexture("media/ui/LootableMaps/textCursor.png")
 	o.symbolTexList = {}
 	o.showTranslationOption = false
+	o.isWorldMap = isWorldMap
 	return o
 end
 

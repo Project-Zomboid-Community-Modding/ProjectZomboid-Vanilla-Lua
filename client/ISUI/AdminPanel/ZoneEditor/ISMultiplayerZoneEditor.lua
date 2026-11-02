@@ -272,7 +272,7 @@ function ISMultiplayerZoneEditor:onSwitchMode(mode)
 end
 
 function ISMultiplayerZoneEditor:isKeyConsumed(key)
-	if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then
+	if key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.TOGGLE_UI, key) then
 		return true
 	end
 	return true
@@ -289,7 +289,7 @@ function ISMultiplayerZoneEditor:onKeyRelease(key)
 		if self.mode[self.currentMode]:onKeyRelease(key) then
 			return
 		end
-		if key == Keyboard.KEY_ESCAPE or getCore():isKey("Toggle UI", key) then
+		if key == Keyboard.KEY_ESCAPE or getCore():isKey(KeybindId.TOGGLE_UI, key) then
 			self:close()
 		end
 	end

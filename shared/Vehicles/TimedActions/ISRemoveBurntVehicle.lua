@@ -58,6 +58,10 @@ function ISRemoveBurntVehicle:perform()
 end
 
 function ISRemoveBurntVehicle:complete()
+	if not self.character or not predicateBlowTorch(self.character:getPrimaryHandItem()) then
+		print('no blowtorch item')
+		return false
+	end
     if self.vehicle then
         local totalXp = 5;
         for i=1,math.max(5,self.character:getPerkLevel(Perks.MetalWelding)) do
@@ -134,7 +138,7 @@ function ISRemoveBurntVehicle:complete()
         addXp(self.character, Perks.MetalWelding, totalXp);
         self.vehicle:permanentlyRemove()
     else
-        print('no such vehicle id=',self.vehicle:getId())
+        print('no such vehicle')
         return false
     end
     return true
@@ -188,7 +192,10 @@ end
 
 function ISRemoveBurntVehicle:new(character, vehicle)
 	local o = ISBaseTimedAction.new(self, character)
-	o.vehicle = vehicle
+	if vehicle ~= nil and (string.match(vehicle:getScript():getName(), "Burnt")
+		or string.match(vehicle:getScript():getName(), "Smashed")) then
+		o.vehicle = vehicle
+	end
 	o.stopOnWalk = false
 	o.stopOnRun = false
 	o.maxTime = o:getDuration()

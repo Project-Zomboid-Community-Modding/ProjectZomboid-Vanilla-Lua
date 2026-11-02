@@ -97,7 +97,7 @@ function WorldSelect:onDblClick()
 end
 
 function WorldSelect:clickBack()
-	if getWorld():getGameMode() == "Multiplayer" then
+	if getWorld():getGameMode() == GameMode.MULTIPLAYER then
 		backToSinglePlayer()
 		getCore():ResetLua("default", "exitJoinServer")
 	elseif self.previousScreen == "LoadGameScreen" then
@@ -120,7 +120,7 @@ function WorldSelect:clickNext()
 		MapSpawnSelect.instance:fillList()
 		MapSpawnSelect.instance.previousScreen = "WorldSelect"
 		MapSpawnSelect.instance:setVisible(true, self.joyfocus)
-	elseif getWorld():getGameMode() == "Sandbox" then
+	elseif getWorld():getGameMode() == GameMode.SANDBOX then
 		MapSpawnSelect.instance:useDefaultSpawnRegion()
 		MainScreen.instance.sandOptions:setVisible(true, self.joyfocus)
 	else

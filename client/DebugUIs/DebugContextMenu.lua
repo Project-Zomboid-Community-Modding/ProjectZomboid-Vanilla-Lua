@@ -47,10 +47,6 @@ DebugContextMenu.doDebugMenu = function(player, context, worldobjects, test)
 	end
 	worldobjects = removeDuplicates(worldobjects)
 
-	if getCore():getGameMode()=="LastStand" then
-		return;
-	end
-
 	local debugOption1 = context:addDebugOption(getText("ContextMenu_Debug"), worldobjects, nil);
 	local debugMenu = ISContextMenu:getNew(context);
 	context:addSubMenu(debugOption1, debugMenu);
@@ -928,7 +924,7 @@ function DebugContextMenu.OnBendFence(worldobjects, fence, towards)
 	else
 		dir = (playerObj:getX() >= fence:getX()) and IsoDirections.W or IsoDirections.E
 	end
-	if towards then dir = IsoDirections.reverse(dir); end;
+	if towards then dir = dir:Rot180(); end;
 	BentFences.getInstance():bendFence(fence, dir)
 end
 

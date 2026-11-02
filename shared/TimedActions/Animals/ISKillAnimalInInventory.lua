@@ -78,6 +78,8 @@ function ISKillAnimalInInventory:kill()
     self.animalItem = nil
     self.character:getInventory():AddItem(corpseItem)
     sendAddItemToContainer(self.character:getInventory(), corpseItem)
+    self.character:setPrimaryHandItem(corpseItem);
+    self.character:setSecondaryHandItem(corpseItem);
 end
 
 function ISKillAnimalInInventory:getDuration()

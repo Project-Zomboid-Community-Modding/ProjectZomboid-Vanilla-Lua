@@ -2,7 +2,7 @@ TutorialData = {}
 TutorialData.choosenChallenge = {};
 
 function preLoadTutorialInit()
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         globalTutorial = TutorialData.chosenTutorial;
         getWorld():setLuaPosX(globalTutorial.x);
         getWorld():setLuaPosY(globalTutorial.y);
@@ -20,7 +20,7 @@ function doTutorialDraw()
 end
 
 function doTutorialInit()
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         getGameTime():setTimeOfDay(globalTutorial.hourOfDay);
         getGameTime():setMinutesPerDay(60 * 24);
         globalTutorial.Init();
@@ -34,7 +34,7 @@ end
 function doTutorialCreatePlayer(id)
     local pl = getSpecificPlayer(id);
 
-    if getCore():getGameMode() == "Tutorial" then
+    if getCore():isTutorial() then
         globalTutorial.AddPlayer(pl);
     end
 

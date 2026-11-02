@@ -85,9 +85,9 @@ function ISReloadWeaponAction.setReloadSpeed(character, rack)
 	-- check for ammo straps
 	local gun = character:getPrimaryHandItem();
 	local strap = character:getWornItem(ItemBodyLocation.AMMO_STRAP);
-	local reloadFast = character:hasEquippedTag(ItemTag.RELOAD_FAST_SHELLS) or character:hasEquippedTag(ItemTag.RELOAD_FAST_BULLETS)
+	local reloadFast = character:hasEquippedTag(ItemTag.RELOAD_FAST_SHELLS) or character:hasEquippedTag(ItemTag.RELOAD_FAST_BULLETS) or character:hasEquippedTag(ItemTag.RELOAD_FAST_MAGAZINES)
 	local strapFound = false;
-	if gun and (reloadFast or (strap and strap:getClothingItem())) then
+	if gun and (reloadFast or character:hasWornTag(ItemTag.RELOAD_FAST_MAGAZINES) or (strap and strap:getClothingItem())) then
 		local shell = false;
 		local magazine = false;
 		if gun:getAmmoType() == AmmoType.SHOTGUN_SHELLS then
@@ -472,15 +472,15 @@ ISReloadWeaponAction.onShoot = function(player, weapon)
 
 	-- for the dedicated server
 	if MoodlesUI.getInstance() then
-		MoodlesUI.getInstance():wiggle(MoodleType.PANIC);
-		MoodlesUI.getInstance():wiggle(MoodleType.STRESS);
-		MoodlesUI.getInstance():wiggle(MoodleType.DRUNK);
-		MoodlesUI.getInstance():wiggle(MoodleType.TIRED);
-		MoodlesUI.getInstance():wiggle(MoodleType.ENDURANCE);
+		MoodlesUI.wiggle(player, MoodleType.PANIC);
+		MoodlesUI.wiggle(player, MoodleType.STRESS);
+		MoodlesUI.wiggle(player, MoodleType.DRUNK);
+		MoodlesUI.wiggle(player, MoodleType.TIRED);
+		MoodlesUI.wiggle(player, MoodleType.ENDURANCE);
 		local body = player:getBodyDamage():getBodyParts()
 		for  x = BodyPartType.ToIndex(BodyPartType.Hand_L), BodyPartType.ToIndex(BodyPartType.UpperArm_R), 1 do
-			if body:get(x):getPain() then
-				MoodlesUI.getInstance():wiggle(MoodleType.PAIN);
+			if body:get(x):getPain() > 0 then
+				MoodlesUI.wiggle(player, MoodleType.PAIN);
 				break
 			end
 		end

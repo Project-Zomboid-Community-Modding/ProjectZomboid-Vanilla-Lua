@@ -269,7 +269,7 @@ function ISEquippedItem:prerender()
         end
     end
 
-    if "Tutorial" == getCore():getGameMode() then
+    if getCore():isTutorial() then
         self.movableBtn:setVisible(false);
         self.invBtn:setVisible(false);
         self.craftingBtn:setVisible(false);
@@ -287,7 +287,7 @@ function ISEquippedItem:prerender()
 end
 
 function ISEquippedItem:getDraggedEquippableItem()
-    if "Tutorial" == getCore():getGameMode() then
+    if getCore():isTutorial() then
         return
     end
     local dragging = ISInventoryPane.getActualItems(ISMouseDrag.dragging);
@@ -534,7 +534,8 @@ function ISEquippedItem:checkToolTip()
     self:doToolTip(activate, tooltiptext);
     -- show item tooltip when moused over
     local player = getSpecificPlayer(self.playerNum)
-    if mouseOverID ~= -1 and not getPlayerContextMenu(self.playerNum):isAnyVisible() then
+    local contextMenu = getPlayerContextMenu(self.playerNum)
+    if mouseOverID ~= -1 and contextMenu and player and not contextMenu:isAnyVisible() then
         local item1, item2 = player:getPrimaryHandItem(), player:getSecondaryHandItem()
         if item1 and mouseOverID == 1 then
             self:doInvToolTip(item1, player)
@@ -1252,7 +1253,7 @@ function ISEquippedItem:toggleSafety()
 end
 
 ISEquippedItem.onKeyPressed = function(key)
-    if getCore():isKey("Toggle Safety", key) then
+    if getCore():isKey(KeybindId.TOGGLE_SAFETY, key) then
         if isClient() then
             if getServerOptions():getBoolean("SafetySystem") then
                 ISEquippedItem:toggleSafety()

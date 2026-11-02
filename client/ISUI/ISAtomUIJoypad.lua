@@ -11,9 +11,7 @@ function ISAtomUIJoypad:getUIName(name)
 end
 
 function ISAtomUIJoypad:toString()
-	local name = self:getUIName()
-	if name == "" then return self._ATOM_UI_CLASS.class:getSimpleName() end
-	return name
+	return self:getUIName()
 end
 
 function ISAtomUIJoypad:isVisible()

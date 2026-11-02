@@ -22,6 +22,10 @@ ISInventoryBuildMenu.doBuildMenu = function(player, context, worldobjects, test)
 	local playerObj = getSpecificPlayer(player)
 	local playerInv = playerObj:getInventory();
 
+	if playerObj:getVehicle() then
+        return
+    end
+
     -- do the spill things menu
     shovel = playerInv:getFirstEvalRecurse(predicateTakeDirt)
 

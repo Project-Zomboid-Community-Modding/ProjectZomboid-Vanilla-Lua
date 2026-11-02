@@ -308,7 +308,7 @@ function ISVehiclePartMenu.onDeflateTire(playerObj, part)
 	end
 	-- TODO: choose desired tire pressure (underinflated - recommended - max)
 	ISTimedActionQueue.add(ISPathFindAction:pathToVehicleArea(playerObj, part:getVehicle(), part:getArea()))
-	ISTimedActionQueue.add(ISDeflateTire:new(playerObj, part, 0))
+	ISTimedActionQueue.add(ISDeflateTire:new(playerObj, part))
 end
 
 function ISVehiclePartMenu.onDeviceOptions(playerObj, part)

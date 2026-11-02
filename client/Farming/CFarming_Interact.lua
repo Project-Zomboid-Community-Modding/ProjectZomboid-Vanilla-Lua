@@ -25,7 +25,7 @@ end
 CFarming_Interact.SawOnContextKeyEvent = false
 
 CFarming_Interact.onKeyStartPressed = function(key)
-	if not getCore():isKey("Interact", key) then return end
+	if not getCore():isKey(KeybindId.INTERACT, key) then return end
 	CFarming_Interact.SawOnContextKeyEvent = false
 end
 
@@ -247,50 +247,27 @@ CFarming_Interact.onContextKey = function(player, timePressedContext)
     player:setIsFarming(false)
 end
 
-
 CFarming_Interact.FastDropItem = function(key)
-    if not getCore():isKey("DropBothHeldItems", key)
-    and not getCore():isKey("DropPrimaryHeldItem", key)
-    and not getCore():isKey("DropSecondaryHeldItem", key)
-    and not getCore():isKey("DropWornBag", key)
-    and not getCore():isKey("DropBothHeldItemsAndWornBag", key)
+    if not getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS, key)
+    and not getCore():isKey(KeybindId.DROP_PRIMARY_HELD_ITEM, key)
+    and not getCore():isKey(KeybindId.DROP_SECONDARY_HELD_ITEM, key)
+    and not getCore():isKey(KeybindId.DROP_WORN_BAG, key)
+    and not getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS_AND_WORN_BAG, key)
     then return end
 
 	local player = getSpecificPlayer(0)
     if not player then return end
 
-    if player:getClothingItem_Back() and (not player:getClothingItem_Back():isFavorite()) and (getCore():isKey("DropWornBag", key) or getCore():isKey("DropBothHeldItemsAndWornBag", key)) then
+    if player:getClothingItem_Back() and (not player:getClothingItem_Back():isFavorite()) and (getCore():isKey(KeybindId.DROP_WORN_BAG, key) or getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS_AND_WORN_BAG, key)) then
         ISInventoryPaneContextMenu.dropItem(player:getClothingItem_Back(), player:getPlayerNum())
     end
 
-    if player:getSecondaryHandItem() and (not player:getSecondaryHandItem():isFavorite()) and (getCore():isKey("DropSecondaryHeldItem", key) or getCore():isKey("DropBothHeldItems", key) or getCore():isKey("DropBothHeldItemsAndWornBag", key)) then
+    if player:getSecondaryHandItem() and (not player:getSecondaryHandItem():isFavorite()) and (getCore():isKey(KeybindId.DROP_SECONDARY_HELD_ITEM, key) or getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS, key) or getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS_AND_WORN_BAG, key)) then
         ISInventoryPaneContextMenu.dropItem(player:getSecondaryHandItem(), player:getPlayerNum())
     end
 
-    if player:getPrimaryHandItem() and (not player:getPrimaryHandItem():isFavorite()) and (getCore():isKey("DropPrimaryHeldItem", key) or getCore():isKey("DropBothHeldItems", key) or getCore():isKey("DropBothHeldItemsAndWornBag", key)) then
+    if player:getPrimaryHandItem() and (not player:getPrimaryHandItem():isFavorite()) and (getCore():isKey(KeybindId.DROP_PRIMARY_HELD_ITEM, key) or getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS, key) or getCore():isKey(KeybindId.DROP_BOTH_HELD_ITEMS_AND_WORN_BAG, key)) then
         ISInventoryPaneContextMenu.dropItem(player:getPrimaryHandItem(), player:getPlayerNum())
-    end
-end
-
-
-CFarming_Interact.ChangeClimbDirection = function(key)
-    local player = getSpecificPlayer(0)
-    if not player or not player:isClimbingRope() then return end
-    if not getCore():isKey("Forward", key)
-    and not getCore():isKey("Backward", key)
-    and not getCore():isKey("ReleaseRope", key)
-    then return end
-    local doUp = getCore():isKey("Forward", key)
-    local isUp = player:getCurrentState() == ClimbSheetRopeState.instance()
-
-    if getCore():isKey("ReleaseRope", key) then
-        player:fallFromRope()
-    elseif isUp and not doUp then
-        player:clear(ClimbDownSheetRopeState:instance())
-        player:reportEvent("EventClimbDownRope")
-    elseif doUp and not isUp then
-        player:clear(ClimbSheetRopeState:instance())
-        player:reportEvent("EventClimbRope")
     end
 end
 
@@ -312,7 +289,6 @@ local function OnGameStart()
 	Events.OnKeyStartPressed.Add(CFarming_Interact.onKeyStartPressed);
 	Events.OnContextKey.Add(CFarming_Interact.onContextKey);
 	Events.OnKeyPressed.Add(CFarming_Interact.FastDropItem);
-	Events.OnKeyPressed.Add(CFarming_Interact.ChangeClimbDirection);
 end
 
 Events.OnGameStart.Add(OnGameStart)

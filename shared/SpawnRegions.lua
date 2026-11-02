@@ -59,7 +59,7 @@ function SpawnRegionMgr.loadSpawnRegions(regions)
 end
 
 function SpawnRegionMgr.getSpawnRegionsAux()
-	if getWorld():getGameMode() == "Multiplayer" then
+	if getWorld():getGameMode() == GameMode.MULTIPLAYER then
 		if isServer() then
 			local filename = getServerName() .. "_spawnregions.lua"
 			if serverFileExists(filename) then

@@ -292,7 +292,7 @@ function Vehicles.Create.Headlight(vehicle, part)
 end
 
 function Vehicles.Create.Headlight_Racecar(vehicle, part)
-    return
+	VehicleUtils.initHeadlightWithoutItem(vehicle, part)
 end
 
 function Vehicles.Create.Radio(vehicle, part)
@@ -423,9 +423,7 @@ end
 
 function Vehicles.Init.Headlight(vehicle, part)
     -- NOTE: This sets all values to the default, including 'focusing' which used to be modifiable
-    -- NOTE: modified as it was spawning new headlights in vehicles if they had been removed, and the vehicle has been unloaded and then loaded
-    if part:getInventoryItem() == nil then return end
-	VehicleUtils.initHeadlight(vehicle, part)
+    VehicleUtils.initHeadlightWithoutItem(vehicle, part)
 end
 
 function Vehicles.Init.Tire(vehicle, part)
@@ -880,7 +878,7 @@ function Vehicles.Use.TrunkDoor(vehicle, part, character)
 end
 
 function Vehicles.CheckEngine.GasTank(vehicle, part)
-	return part:getInventoryItem() and round(part:getContainerContentAmount(), 3) > 0
+	return part:getInventoryItem() and vehicle:hasEnoughGasToRun()
 end
 
 function Vehicles.CheckEngine.Engine(vehicle, part)
@@ -1497,8 +1495,12 @@ function VehicleUtils.getPerksTableForChr(perks, chr)
 	return ret
 end
 
-function VehicleUtils.initHeadlight(vehicle, part)
-	local item = VehicleUtils.createPartInventoryItem(part)
+function VehicleUtils.initHeadlightWithoutItem(vehicle, part)
+	VehicleUtils.initHeadlight(vehicle, part, true)
+end
+
+function VehicleUtils.initHeadlight(vehicle, part, doNotCreateItem)
+	if not doNotCreateItem then VehicleUtils.createPartInventoryItem(part) end
 	local xOffset = 0.5
 	local yOffset = 2.0
 	local distance = 36

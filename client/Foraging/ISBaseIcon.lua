@@ -656,7 +656,9 @@ function ISBaseIcon:isNearby()				return self.distanceToPlayer <= self.maxRadius
 function ISBaseIcon:checkIsForageable()     return self.isForageable;                               end;
 
 function ISBaseIcon:checkForPoison()
-	if self.isTrack then return; end
+	if self.isTrack or not self.itemList or self.itemList:isEmpty() then
+        return
+    end
 	self.isKnownPoison = false;
 	for item in iterList(self.itemList) do
 		if self.character:isKnownPoison(item) then

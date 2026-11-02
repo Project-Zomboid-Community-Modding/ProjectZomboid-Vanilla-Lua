@@ -111,13 +111,17 @@ function DoTileBuilding(draggingItem, isRender, x, y, z, square)
 		square = getCell():createNewGridSquare(x, y, z, true);
 	end
 
-	if playerObj:isBuildButtonDown() then
-        draggingItem.isLeftDown = true
-	    draggingItem:rotateMouse(x, y);
-    else
+    if JoypadState.players[draggingItem.player + 1] then
         draggingItem.isLeftDown = false
-        if playerObj:isBuildButtonReleased() then
-            draggingItem.build = draggingItem.canBeBuild;
+    else
+        if playerObj:isBuildButtonDown() then
+            draggingItem.isLeftDown = true
+            draggingItem:rotateMouse(x, y)
+        else
+            draggingItem.isLeftDown = false
+            if playerObj:isBuildButtonReleased() then
+                draggingItem.build = draggingItem.canBeBuild
+            end
         end
     end
 
@@ -214,7 +218,11 @@ function ISBuildingObject:tryBuild(x, y, z)
 
 		if self.skipBuildAction then
 			-- farmingPlot doesn't need another action
-			self:create(x, y, z, self.north, self:getSprite());
+			if isClient() and self.Type == "ISBrushToolTileCursor" then
+				sendAddObjectToMap(square, self:getSprite());
+			else
+				self:create(x, y, z, self.north, self:getSprite());
+			end
 			self:onActionComplete();
 			return nil;
 		else
@@ -573,7 +581,7 @@ function ISBuildingObject:render(x, y, z, square)
 end
 
 function ISBuildingObject:rotateKey(key)
-	if getCore():isKey("Rotate building", key) then
+	if getCore():isKey(KeybindId.ROTATE_BUILDING, key) then
 		self.nSprite = self.nSprite + 1;
 		if self.nSprite > 4 then
 			self.nSprite = 1;
@@ -688,9 +696,8 @@ end
 
 function ISBuildingObject:getFloorCursorSprite()
 	if not ISBuildingObject.floorCursorSprite then
-		local spriteName = (Core.getTileScale() == 2) and 'media/ui/FloorTileCursor2x.png' or 'media/ui/FloorTileCursor.png'
 		ISBuildingObject.floorCursorSprite = IsoSprite.new()
-		ISBuildingObject.floorCursorSprite:LoadSingleTexture(spriteName)
+		ISBuildingObject.floorCursorSprite:LoadSingleTexture('media/ui/FloorTileCursor2x.png')
 	end
 	return ISBuildingObject.floorCursorSprite
 end

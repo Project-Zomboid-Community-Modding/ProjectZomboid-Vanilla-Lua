@@ -16,6 +16,11 @@ end
 function ISCampingInfoWindow:update()
 	ISCollapsableWindow.update(self)
 
+    if not self.object:getIsoObject() then
+        ISCampingInfoWindow.windows[self.character]:removeFromUIManager()
+        return
+    end
+
 	self.campfireTable = CCampfireSystem.instance:getLuaObjectOnSquare(self.object:getSquare())
     if self:getIsVisible() then
         local player = getSpecificPlayer(self.playerNum)

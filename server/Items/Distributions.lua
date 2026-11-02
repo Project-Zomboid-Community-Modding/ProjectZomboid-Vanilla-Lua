@@ -17714,7 +17714,7 @@ local distributionTable = {
 		items = {
 			"Oxygen_Tank", 20,
 			"Oxygen_Tank", 10,
-			"SCBA_notank", 50,
+			"SCBA", 50,
 		},
 		junk = {
 			rolls = 1,

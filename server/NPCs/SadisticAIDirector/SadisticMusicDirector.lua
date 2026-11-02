@@ -64,9 +64,6 @@ function SadisticMusicDirector:changeTrack()
     if getSpecificPlayer(0):isOutside() then
         mod = ZombRand(5) - 2;
     end
-    if getCore():getGameMode() == "LastStand" then
-        if self.drama < 6 then self.drama = 6; end
-    end
     local choice = MusicChoices.get(self.drama + mod);
     getSoundManager():playMusic(choice);
 

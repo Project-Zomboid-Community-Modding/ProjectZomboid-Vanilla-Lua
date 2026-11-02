@@ -32,7 +32,7 @@ function ISColorPickerHSB:createChildren()
 	self.hueSlider = ISSliderPanel:new(x2, y, SCROLL_BAR_WID, BUTTON_HGT, self, ISColorPickerHSB.onSliderChange);
 	self.hueSlider:initialise();
     self.hueSlider:instantiate();
-	self.hueSlider:setValues( 0.0, 1.0, 0.01 )
+	self.hueSlider:setValues( 0.0, 1.0, 0.01, 0.1 )
 	self.hueSlider:setCurrentValue( self.h, true )
     self.hueSlider.valueLabel = false;
     self:addChild(self.hueSlider);
@@ -47,7 +47,7 @@ function ISColorPickerHSB:createChildren()
 	self.satSlider = ISSliderPanel:new(x2, y, SCROLL_BAR_WID, BUTTON_HGT, self, ISColorPickerHSB.onSliderChange);
 	self.satSlider:initialise();
     self.satSlider:instantiate();
-	self.satSlider:setValues( 0.0, 1.0, 0.01 )
+	self.satSlider:setValues( 0.0, 1.0, 0.01, 0.1 )
 	self.satSlider:setCurrentValue( self.s, true )
     self.satSlider.valueLabel = false;
     self:addChild(self.satSlider);
@@ -62,7 +62,7 @@ function ISColorPickerHSB:createChildren()
 	self.valSlider = ISSliderPanel:new(x2, y, SCROLL_BAR_WID, BUTTON_HGT, self, ISColorPickerHSB.onSliderChange);
 	self.valSlider:initialise();
     self.valSlider:instantiate();
-	self.valSlider:setValues( 0.0, 1.0, 0.01 )
+	self.valSlider:setValues( 0.0, 1.0, 0.01, 0.1 )
 	self.valSlider:setCurrentValue( self.b, true )
     self.valSlider.valueLabel = false;
     self:addChild(self.valSlider);

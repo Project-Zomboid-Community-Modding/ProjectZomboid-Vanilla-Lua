@@ -3,8 +3,8 @@ ISWalkToCursor = ISBuildingObject:derive("ISWalkToCursor")
 local blockedPathfindingStates = {
     [ClimbOverFenceState.instance()] = true,
     [ClimbOverWallState.instance()] = true,
-    [ClimbSheetRopeState.instance()] = true,
-    [ClimbDownSheetRopeState.instance()] = true,
+    [ClimbState.instance()] = true,
+    [ClimbDownState.instance()] = true,
     [ClimbThroughWindowState.instance()] = true,
 };
 

@@ -1,8 +1,5 @@
 local dirt = {
     features = {
-        TREE = {
-            { f = worldgen.features.NONE.none, p = 1.0 },
-        },
     },
     params = {
         landscape = { "FOREST" },
@@ -16,11 +13,6 @@ local dirt = {
                 "!blends_natural_01_5",
                 "!blends_natural_01_6",
                 "!blends_natural_01_7",
-
-                "!blends_natural_01_64",
-                "!blends_natural_01_69",
-                "!blends_natural_01_70",
-                "!blends_natural_01_71",
             },
         },
         protected = {
